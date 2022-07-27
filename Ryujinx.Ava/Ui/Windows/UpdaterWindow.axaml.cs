@@ -22,9 +22,7 @@ namespace Ryujinx.Ava.Ui.Windows
             DataContext = this;
 
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
+
             Title = LocaleManager.Instance["RyujinxUpdater"];
         }
 

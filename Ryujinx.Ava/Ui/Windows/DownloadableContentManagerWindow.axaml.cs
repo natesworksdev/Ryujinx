@@ -43,7 +43,6 @@ namespace Ryujinx.Ava.Ui.Windows
             DataContext = this;
 
             InitializeComponent();
-            AttachDebugDevTools();
 
             Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance["DlcWindowTitle"];
         }
@@ -68,17 +67,10 @@ namespace Ryujinx.Ava.Ui.Windows
             DataContext = this;
 
             InitializeComponent();
-            AttachDebugDevTools();
 
             Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance["DlcWindowTitle"];
 
             LoadDownloadableContents();
-        }
-
-        [Conditional("DEBUG")]
-        private void AttachDebugDevTools()
-        {
-            this.AttachDevTools();
         }
 
         private void LoadDownloadableContents()

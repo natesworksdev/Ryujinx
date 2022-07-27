@@ -37,7 +37,6 @@ namespace Ryujinx.Ava.Ui.Windows
 
             InitializeComponent();
             Load();
-            AttachDebugDevTools();
 
             FuncMultiValueConverter<string, string> converter = new(parts => string.Format("{0}  {1}   {2}", parts.ToArray()));
             MultiBinding tzMultiBinding = new() { Converter = converter };
@@ -55,13 +54,6 @@ namespace Ryujinx.Ava.Ui.Windows
 
             InitializeComponent();
             Load();
-            AttachDebugDevTools();
-        }
-
-        [Conditional("DEBUG")]
-        private void AttachDebugDevTools()
-        {
-            this.AttachDevTools();
         }
 
         private void Load()

@@ -26,9 +26,6 @@ namespace Ryujinx.Ava.Ui.Windows
             DataContext = this;
 
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
 
             _ = DownloadPatronsJson();
         }

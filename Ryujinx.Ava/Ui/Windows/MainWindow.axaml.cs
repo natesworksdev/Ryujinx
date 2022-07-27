@@ -83,9 +83,8 @@ namespace Ryujinx.Ava.Ui.Windows
 
             DataContext = ViewModel;
 
-            InitializeComponent();
+            InitializeComponent(true);
             Load();
-            AttachDebugDevTools();
 
             UiHandler = new AvaHostUiHandler(this);
 
@@ -106,12 +105,6 @@ namespace Ryujinx.Ava.Ui.Windows
             }
 
             _rendererWaitEvent = new AutoResetEvent(false);
-        }
-
-        [Conditional("DEBUG")]
-        private void AttachDebugDevTools()
-        {
-            this.AttachDevTools();
         }
 
         public void LoadGameList()
