@@ -285,8 +285,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         private bool VertexRequiresScale()
         {
-            bool requiresScale = false;
-
             for (int i = 0; i < _textureBindingsCount[0]; i++)
             {
                 if ((_textureBindings[0][i].Flags & TextureUsageFlags.NeedsScaleValue) != 0)
@@ -295,14 +293,11 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             }
 
-            if (!requiresScale)
+            for (int i = 0; i < _imageBindingsCount[0]; i++)
             {
-                for (int i = 0; i < _imageBindingsCount[0]; i++)
+                if ((_imageBindings[0][i].Flags & TextureUsageFlags.NeedsScaleValue) != 0)
                 {
-                    if ((_imageBindings[0][i].Flags & TextureUsageFlags.NeedsScaleValue) != 0)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
@@ -576,7 +571,16 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
                 else
                 {
-                    if (state.Texture != hostTexture || state.Sampler != hostSampler)
+                    bool textureOrSamplerChanged = state.Texture != hostTexture || state.Sampler != hostSampler;
+
+                    if ((state.ScaleIndex != index || state.UsageFlags != usageFlags || textureOrSamplerChanged) &&
+                        UpdateScale(texture, usageFlags, index, stage))
+                    {
+                        hostTexture = texture?.GetTargetTexture(bindingInfo.Target);
+                        textureOrSamplerChanged = true;
+                    }
+
+                    if (textureOrSamplerChanged)
                     {
                         if (UpdateScale(texture, usageFlags, index, stage))
                         {
@@ -667,7 +671,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         cachedTexture?.SignalModified();
                     }
 
-                    if ((state.ScaleIndex != index || state.UsageFlags != usageFlags) &&
+                    if ((state.ScaleIndex != scaleIndex || state.UsageFlags != usageFlags) &&
                         UpdateScale(state.CachedTexture, usageFlags, scaleIndex, stage))
                     {
                         ITexture hostTextureRebind = state.CachedTexture.GetTargetTexture(bindingInfo.Target);
@@ -714,13 +718,14 @@ namespace Ryujinx.Graphics.Gpu.Image
                         texture?.SignalModified();
                     }
 
+                    if ((state.ScaleIndex != scaleIndex || state.UsageFlags != usageFlags || state.Texture != hostTexture) &&
+                        UpdateScale(texture, usageFlags, scaleIndex, stage))
+                    {
+                        hostTexture = texture?.GetTargetTexture(bindingInfo.Target);
+                    }
+
                     if (state.Texture != hostTexture)
                     {
-                        if (UpdateScale(texture, usageFlags, scaleIndex, stage))
-                        {
-                            hostTexture = texture?.GetTargetTexture(bindingInfo.Target);
-                        }
-
                         state.Texture = hostTexture;
                         state.ScaleIndex = scaleIndex;
                         state.UsageFlags = usageFlags;
