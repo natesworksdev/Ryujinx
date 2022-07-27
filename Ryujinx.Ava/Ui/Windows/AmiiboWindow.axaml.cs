@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Ava.Ui.ViewModels;

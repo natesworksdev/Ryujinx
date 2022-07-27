@@ -422,19 +422,19 @@ namespace Ryujinx.HLE.HOS
 
             if (File.Exists(titleAocMetadataPath))
             {
-                List<DlcContainer> dlcContainerList = JsonHelper.DeserializeFromFile<List<DlcContainer>>(titleAocMetadataPath);
+                List<DownloadableContentContainer> dlcContainerList = JsonHelper.DeserializeFromFile<List<DownloadableContentContainer>>(titleAocMetadataPath);
 
-                foreach (DlcContainer dlcContainer in dlcContainerList)
+                foreach (DownloadableContentContainer downloadableContentContainer in dlcContainerList)
                 {
-                    foreach (DlcNca dlcNca in dlcContainer.DlcNcaList)
+                    foreach (DownloadableContentNca downloadableContentNca in downloadableContentContainer.DownloadableContentNcaList)
                     {
-                        if (File.Exists(dlcContainer.Path))
+                        if (File.Exists(downloadableContentContainer.Path))
                         {
-                            _device.Configuration.ContentManager.AddAocItem(dlcNca.TitleId, dlcContainer.Path, dlcNca.Path, dlcNca.Enabled);
+                            _device.Configuration.ContentManager.AddAocItem(downloadableContentNca.TitleId, downloadableContentContainer.Path, downloadableContentNca.Path, downloadableContentNca.Enabled);
                         }
                         else
                         {
-                            Logger.Warning?.Print(LogClass.Application, $"Cannot find AddOnContent file {dlcContainer.Path}. It may have been moved or renamed.");
+                            Logger.Warning?.Print(LogClass.Application, $"Cannot find AddOnContent file {downloadableContentContainer.Path}. It may have been moved or renamed.");
                         }
                     }
                 }

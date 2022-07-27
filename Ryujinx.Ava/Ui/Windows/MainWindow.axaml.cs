@@ -2,10 +2,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
-using Avalonia.Win32;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
@@ -33,7 +31,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using InputManager = Ryujinx.Input.HLE.InputManager;
-using ProgressBar = Avalonia.Controls.ProgressBar;
+
 namespace Ryujinx.Ava.Ui.Windows
 {
     public partial class MainWindow : StyleableWindow

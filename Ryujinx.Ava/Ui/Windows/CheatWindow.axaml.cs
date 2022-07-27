@@ -1,6 +1,5 @@
 ﻿using Avalonia;
 using Avalonia.Collections;
-using Avalonia.Markup.Xaml;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Models;
 using Ryujinx.HLE.FileSystem;

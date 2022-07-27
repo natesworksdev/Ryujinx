@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Common.Configuration
 {
-    public struct DlcNca
+    public struct DownloadableContentNca
     {
         public string Path    { get; set; }
         public ulong  TitleId { get; set; }
