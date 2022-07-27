@@ -29,13 +29,12 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// Pool cache.
     /// This can keep multiple pools, and return the current one as needed.
     /// </summary>
-    class PoolCache<T> : IDisposable where T : IPool<T>, IDisposable
+    abstract class PoolCache<T> : IDisposable where T : IPool<T>, IDisposable
     {
         private const int MaxCapacity = 2;
         private const ulong MinDeltaForRemoval = 20000;
 
         private readonly GpuContext _context;
-        private readonly Func<GpuContext, GpuChannel, ulong, int, T> _factory;
         private readonly LinkedList<T> _pools;
         private ulong _currentTimestamp;
 
@@ -43,11 +42,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Constructs a new instance of the pool.
         /// </summary>
         /// <param name="context">GPU context that the texture pool belongs to</param>
-        /// <param name="factory">Method used to create a new pool instance</param>
-        public PoolCache(GpuContext context, Func<GpuContext, GpuChannel, ulong, int, T> factory)
+        public PoolCache(GpuContext context)
         {
             _context = context;
-            _factory = factory;
             _pools = new LinkedList<T>();
         }
 
@@ -101,13 +98,22 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             // If not found, create a new one.
-            pool = _factory(_context, channel, address, maximumId);
+            pool = CreatePool(_context, channel, address, maximumId);
 
             pool.CacheNode = _pools.AddLast(pool);
             pool.CacheTimestamp = _currentTimestamp;
 
             return pool;
         }
+
+        /// <summary>
+        /// Creates a new instance of the pool.
+        /// </summary>
+        /// <param name="context">GPU context that the pool belongs to</param>
+        /// <param name="channel">GPU channel that the pool belongs to</param>
+        /// <param name="address">Address of the pool in guest memory</param>
+        /// <param name="maximumId">Maximum ID of the pool (equal to maximum minus one)</param>
+        protected abstract T CreatePool(GpuContext context, GpuChannel channel, ulong address, int maximumId);
 
         public void Dispose()
         {

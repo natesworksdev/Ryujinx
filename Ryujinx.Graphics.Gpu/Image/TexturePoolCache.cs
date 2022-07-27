@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Constructs a new instance of the texture pool.
         /// </summary>
         /// <param name="context">GPU context that the texture pool belongs to</param>
-        public TexturePoolCache(GpuContext context) : base(context, CreateTexturePool)
+        public TexturePoolCache(GpuContext context) : base(context)
         {
         }
 
@@ -22,7 +22,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="channel">GPU channel that the texture pool belongs to</param>
         /// <param name="address">Address of the texture pool in guest memory</param>
         /// <param name="maximumId">Maximum texture ID of the texture pool (equal to maximum textures minus one)</param>
-        private static TexturePool CreateTexturePool(GpuContext context, GpuChannel channel, ulong address, int maximumId)
+        protected override TexturePool CreatePool(GpuContext context, GpuChannel channel, ulong address, int maximumId)
         {
             return new TexturePool(context, channel, address, maximumId);
         }
