@@ -582,11 +582,6 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     if (textureOrSamplerChanged)
                     {
-                        if (UpdateScale(texture, usageFlags, index, stage))
-                        {
-                            hostTexture = texture?.GetTargetTexture(bindingInfo.Target);
-                        }
-
                         state.Texture = hostTexture;
                         state.ScaleIndex = index;
                         state.UsageFlags = usageFlags;
