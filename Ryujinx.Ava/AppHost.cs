@@ -76,6 +76,7 @@ namespace Ryujinx.Ava
         private bool _isStopped;
         private bool _isActive;
         private long _lastCursorMoveTime;
+        private int _newVolume;
 
         private KeyboardHotkeyState _prevHotkeyState;
 
@@ -1023,6 +1024,14 @@ namespace Ryujinx.Ava
                             GraphicsConfig.ResScale =
                             (MaxResolutionScale + GraphicsConfig.ResScale - 2) % MaxResolutionScale + 1;
                             break;
+                        case KeyboardHotkeyState.VolumeUp:
+                            //_newVolume = Math.Clamp(((int)(Device.GetVolume() * 100) + 5), 0, 100);
+                            Device.SetVolume(1);
+                            break;
+                        case KeyboardHotkeyState.VolumeDown:
+                            //_newVolume = Math.Clamp(((int)(Device.GetVolume() * 100) + 5), 0, 100);
+                            Device.SetVolume(0);
+                            break;
                         case KeyboardHotkeyState.None:
                             (_keyboardInterface as AvaloniaKeyboard).Clear();
                             break;
@@ -1087,6 +1096,14 @@ namespace Ryujinx.Ava
             else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ResScaleDown))
             {
                 state = KeyboardHotkeyState.ResScaleDown;
+            }
+            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.VolumeUp))
+            {
+                state = KeyboardHotkeyState.VolumeUp;
+            }
+            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.VolumeDown))
+            {
+                state = KeyboardHotkeyState.VolumeDown;
             }
 
             return state;
