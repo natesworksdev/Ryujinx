@@ -242,7 +242,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                         }
                         else
                         {
-
                             data = LayoutConverter.ConvertBlockLinearToLinear(
                                 src.Width,
                                 src.Height,
