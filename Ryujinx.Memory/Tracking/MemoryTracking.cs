@@ -213,7 +213,7 @@ namespace Ryujinx.Memory.Tracking
 
                 if (count == 0 && !precise)
                 {
-                    if (_memoryManager.IsMapped(address))
+                    if (_memoryManager.IsRangeMapped(address, size))
                     {
                         // TODO: There is currently the possibility that a page can be protected after its virtual region is removed.
                         // This code handles that case when it happens, but it would be better to find out how this happens.
