@@ -216,13 +216,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                 {
                     var target = memoryManager.Physical.TextureCache.FindTexture(
                         memoryManager,
-                        dst,
                         dstGpuVa,
                         dstBpp,
                         dstStride,
+                        dst.Height,
                         xCount,
                         yCount,
-                        dstLinear);
+                        dstLinear,
+                        dst.MemoryLayout);
 
                     if (target != null)
                     {
@@ -241,6 +242,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                         }
                         else
                         {
+
                             data = LayoutConverter.ConvertBlockLinearToLinear(
                                 src.Width,
                                 src.Height,
