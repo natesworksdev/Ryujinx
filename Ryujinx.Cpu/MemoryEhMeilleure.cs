@@ -23,7 +23,7 @@ namespace Ryujinx.Cpu
             _baseAddress = (ulong)addressSpace.Pointer;
             ulong endAddress = _baseAddress + addressSpace.Size;
 
-            _trackingEvent = new TrackingEventDelegate(tracking.VirtualMemoryEventEh);
+            _trackingEvent = new TrackingEventDelegate(tracking.VirtualMemoryEvent);
             bool added = NativeSignalHandler.AddTrackedRegion((nuint)_baseAddress, (nuint)endAddress, Marshal.GetFunctionPointerForDelegate(_trackingEvent));
 
             if (!added)

@@ -53,10 +53,7 @@ namespace Ryujinx.Tests.Memory
         private void EnsureTranslator()
         {
             // Create a translator, as one is needed to register the signal handler or emit methods.
-            if (_translator == null)
-            {
-                _translator = new Translator(new JitMemoryAllocator(), new MockMemoryManager(), true);
-            }
+            _translator ??= new Translator(new JitMemoryAllocator(), new MockMemoryManager(), true);
         }
 
         [Test]

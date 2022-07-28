@@ -126,6 +126,7 @@ namespace Ryujinx.Common.Memory.PartialUnmaps
         public void TrimThreads()
         {
             const uint ExitCodeStillActive = 259;
+            const int ThreadQueryInformation = 0x40;
 
             Span<int> ids = LocalCounts.ThreadIds.ToSpan();
 
@@ -135,7 +136,7 @@ namespace Ryujinx.Common.Memory.PartialUnmaps
                 
                 if (id != 0)
                 {
-                    IntPtr handle = OpenThread(0x40, false, (uint)id);
+                    IntPtr handle = OpenThread(ThreadQueryInformation, false, (uint)id);
 
                     if (handle == IntPtr.Zero)
                     {

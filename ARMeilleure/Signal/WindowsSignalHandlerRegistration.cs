@@ -12,10 +12,10 @@ namespace ARMeilleure.Signal
         [DllImport("kernel32.dll")]
         private static extern ulong RemoveVectoredExceptionHandler(IntPtr handle);
 
-        [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi)]
         static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)] string lpFileName);
 
-        [DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
+        [DllImport("kernel32.dll", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
         private static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
 
         private static IntPtr _getCurrentThreadIdPtr;
