@@ -5,7 +5,8 @@ namespace Ryujinx.Common.Configuration
 {
     public struct DownloadableContentContainer
     {
-        public string Path { get; set; }
+        [JsonPropertyName("path")]
+        public string ContainerPath { get; set; }
         [JsonPropertyName("dlc_nca_list")]
         public List<DownloadableContentNca> DownloadableContentNcaList { get; set; }
     }

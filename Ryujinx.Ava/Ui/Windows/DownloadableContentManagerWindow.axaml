@@ -50,7 +50,7 @@
                                     Width="50"
                                     MinWidth="40"
                                     HorizontalAlignment="Right"
-                                    IsChecked="{Binding IsEnabled}" />
+                                    IsChecked="{Binding Enabled}" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                         <DataGridTemplateColumn.Header>

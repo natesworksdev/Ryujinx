@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Threading;
@@ -17,7 +16,6 @@ using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -50,8 +48,8 @@ namespace Ryujinx.Ava.Ui.Windows
         public DownloadableContentManagerWindow(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
         {
             VirtualFileSystem = virtualFileSystem;
-            TitleId = titleId;
-            TitleName = titleName;
+            TitleId           = titleId;
+            TitleName         = titleName;
 
             _downloadableContentJsonPath = Path.Combine(AppDataManager.GamesDirPath, titleId.ToString("x16"), "dlc.json");
 
@@ -77,9 +75,9 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             foreach (DownloadableContentContainer downloadableContentContainer in _downloadableContentContainerList)
             {
-                if (File.Exists(downloadableContentContainer.Path))
+                if (File.Exists(downloadableContentContainer.ContainerPath))
                 {
-                    using FileStream containerFile = File.OpenRead(downloadableContentContainer.Path);
+                    using FileStream containerFile = File.OpenRead(downloadableContentContainer.ContainerPath);
 
                     PartitionFileSystem pfs = new PartitionFileSystem(containerFile.AsStorage());
 
@@ -89,14 +87,14 @@ namespace Ryujinx.Ava.Ui.Windows
                     {
                         using var ncaFile = new UniqueRef<IFile>();
 
-                        pfs.OpenFile(ref ncaFile.Ref(), downloadableContentNca.Path.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                        pfs.OpenFile(ref ncaFile.Ref(), downloadableContentNca.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
-                        Nca nca = TryCreateNca(ncaFile.Get.AsStorage(), downloadableContentContainer.Path);
+                        Nca nca = TryCreateNca(ncaFile.Get.AsStorage(), downloadableContentContainer.ContainerPath);
                         if (nca != null)
                         {
                             DownloadableContents.Add(new DownloadableContentModel(nca.Header.TitleId.ToString("X16"),
-                                                                                  downloadableContentContainer.Path,
-                                                                                  downloadableContentNca.Path,
+                                                                                  downloadableContentContainer.ContainerPath,
+                                                                                  downloadableContentNca.FullPath,
                                                                                   downloadableContentNca.Enabled));
                         }
                     }
@@ -226,29 +224,29 @@ namespace Ryujinx.Ava.Ui.Windows
 
             foreach (DownloadableContentModel downloadableContent in DownloadableContents)
             {
-                if (container.Path != downloadableContent.ContainerPath)
+                if (container.ContainerPath != downloadableContent.ContainerPath)
                 {
-                    if (!string.IsNullOrWhiteSpace(container.Path))
+                    if (!string.IsNullOrWhiteSpace(container.ContainerPath))
                     {
                         _downloadableContentContainerList.Add(container);
                     }
 
                     container = new DownloadableContentContainer
                     {
-                        Path                       = downloadableContent.ContainerPath,
+                        ContainerPath              = downloadableContent.ContainerPath,
                         DownloadableContentNcaList = new List<DownloadableContentNca>()
                     };
                 }
 
                 container.DownloadableContentNcaList.Add(new DownloadableContentNca
                 {
-                    Enabled = downloadableContent.Enabled,
-                    TitleId = Convert.ToUInt64(downloadableContent.TitleId, 16),
-                    Path    = downloadableContent.FullPath
+                    Enabled  = downloadableContent.Enabled,
+                    TitleId  = Convert.ToUInt64(downloadableContent.TitleId, 16),
+                    FullPath = downloadableContent.FullPath
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(container.Path))
+            if (!string.IsNullOrWhiteSpace(container.ContainerPath))
             {
                 _downloadableContentContainerList.Add(container);
             }

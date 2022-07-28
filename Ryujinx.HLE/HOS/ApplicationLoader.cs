@@ -428,13 +428,13 @@ namespace Ryujinx.HLE.HOS
                 {
                     foreach (DownloadableContentNca downloadableContentNca in downloadableContentContainer.DownloadableContentNcaList)
                     {
-                        if (File.Exists(downloadableContentContainer.Path))
+                        if (File.Exists(downloadableContentContainer.ContainerPath))
                         {
-                            _device.Configuration.ContentManager.AddAocItem(downloadableContentNca.TitleId, downloadableContentContainer.Path, downloadableContentNca.Path, downloadableContentNca.Enabled);
+                            _device.Configuration.ContentManager.AddAocItem(downloadableContentNca.TitleId, downloadableContentContainer.ContainerPath, downloadableContentNca.FullPath, downloadableContentNca.Enabled);
                         }
                         else
                         {
-                            Logger.Warning?.Print(LogClass.Application, $"Cannot find AddOnContent file {downloadableContentContainer.Path}. It may have been moved or renamed.");
+                            Logger.Warning?.Print(LogClass.Application, $"Cannot find AddOnContent file {downloadableContentContainer.ContainerPath}. It may have been moved or renamed.");
                         }
                     }
                 }
