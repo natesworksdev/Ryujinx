@@ -1692,7 +1692,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 operandsMask |= ImageOperandsMask.ConstOffsets;
                 SpvInstruction arrayv2 = context.TypeArray(context.TypeVector(context.TypeS32(), 2), context.Constant(context.TypeU32(), 4));
-                operandsList.Add(context.CompositeConstruct(arrayv2, offsets[0], offsets[1], offsets[2], offsets[3]));
+                operandsList.Add(context.ConstantComposite(arrayv2, offsets[0], offsets[1], offsets[2], offsets[3]));
             }
 
             if (isMultisample)

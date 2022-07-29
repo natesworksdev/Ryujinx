@@ -51,6 +51,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             context.AddCapability(Capability.GroupNonUniformBallot);
             context.AddCapability(Capability.ImageBuffer);
+            context.AddCapability(Capability.ImageGatherExtended);
             context.AddCapability(Capability.ImageQuery);
             context.AddCapability(Capability.SampledBuffer);
             context.AddCapability(Capability.SubgroupBallotKHR);
