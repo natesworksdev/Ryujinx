@@ -12,6 +12,8 @@ namespace Ryujinx.Graphics.Shader.Translation
         // TODO: Non-hardcoded array size.
         public const int SamplerArraySize = 4;
 
+        private const int ThreadsPerWarp = 32;
+
         public ShaderStage Stage { get; }
 
         public bool GpPassthrough { get; }
@@ -131,7 +133,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             ThreadsPerInputPrimitive = header.ThreadsPerInputPrimitive;
             OutputTopology           = header.OutputTopology;
             MaxOutputVertices        = header.MaxOutputVertexCount;
-            LocalMemorySize          = header.ShaderLocalMemoryLowSize + header.ShaderLocalMemoryHighSize;
+            LocalMemorySize          = header.ShaderLocalMemoryLowSize + header.ShaderLocalMemoryHighSize + (header.ShaderLocalMemoryCrsSize / ThreadsPerWarp);
             ImapTypes                = header.ImapTypes;
             OmapTargets              = header.OmapTargets;
             OmapSampleMask           = header.OmapSampleMask;
