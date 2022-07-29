@@ -35,6 +35,7 @@ namespace Ryujinx.Ui
         private const int SwitchPanelHeight = 720;
         private const int TargetFps = 60;
         private const float MaxResolutionScale = 4.0f; // Max resolution hotkeys can scale to before wrapping.
+        private const float VolumeDelta = 0.05f;
 
         public ManualResetEvent WaitEvent { get; set; }
         public NpadManager NpadManager { get; }
@@ -57,6 +58,7 @@ namespace Ryujinx.Ui
         private readonly long _ticksPerFrame;
 
         private long _ticks = 0;
+        private float _newVolume;
 
         private readonly Stopwatch _chrono;
 
@@ -646,15 +648,15 @@ namespace Ryujinx.Ui
                 if (currentHotkeyState.HasFlag(KeyboardHotkeyState.VolumeUp) &&
                     !_prevHotkeyState.HasFlag(KeyboardHotkeyState.VolumeUp))
                 {
-                    int _newVolume = Math.Clamp(((int)(Device.GetVolume() * 100) + 5), 0, 100);
-                    Device.SetVolume(_newVolume/100f);
+                    _newVolume = Math.Clamp((Device.GetVolume() + VolumeDelta), 0, 1);
+                    Device.SetVolume(MathF.Round(_newVolume, 2));
                 }
 
                 if (currentHotkeyState.HasFlag(KeyboardHotkeyState.VolumeDown) &&
                     !_prevHotkeyState.HasFlag(KeyboardHotkeyState.VolumeDown))
                 {
-                    int _newVolume = Math.Clamp(((int)(Device.GetVolume() * 100) - 5), 0, 100);
-                    Device.SetVolume(_newVolume/100f);
+                    _newVolume = Math.Clamp((Device.GetVolume() - VolumeDelta), 0, 1);
+                    Device.SetVolume(MathF.Round(_newVolume, 2));
                 }
 
                 _prevHotkeyState = currentHotkeyState;

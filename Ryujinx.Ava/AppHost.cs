@@ -59,6 +59,8 @@ namespace Ryujinx.Ava
         private const int CursorHideIdleTime = 8; // Hide Cursor seconds
         private const float MaxResolutionScale = 4.0f; // Max resolution hotkeys can scale to before wrapping.
 
+        private const float VolumeDelta = 0.05f;
+
         private static readonly Cursor InvisibleCursor = new Cursor(StandardCursorType.None);
 
         private readonly AccountManager _accountManager;
@@ -76,7 +78,7 @@ namespace Ryujinx.Ava
         private bool _isStopped;
         private bool _isActive;
         private long _lastCursorMoveTime;
-        private int _newVolume;
+        private float _newVolume;
 
         private KeyboardHotkeyState _prevHotkeyState;
 
@@ -1014,7 +1016,6 @@ namespace Ryujinx.Ava
                             {
                                 Device.SetVolume(0);
                             }
-
                             _parent.ViewModel.Volume = Device.GetVolume();
                             break;
                         case KeyboardHotkeyState.ResScaleUp:
@@ -1025,12 +1026,14 @@ namespace Ryujinx.Ava
                             (MaxResolutionScale + GraphicsConfig.ResScale - 2) % MaxResolutionScale + 1;
                             break;
                         case KeyboardHotkeyState.VolumeUp:
-                            //_newVolume = Math.Clamp(((int)(Device.GetVolume() * 100) + 5), 0, 100);
-                            Device.SetVolume(1);
+                            _newVolume = Math.Clamp((Device.GetVolume() + VolumeDelta), 0, 1);
+                            Device.SetVolume(MathF.Round(_newVolume, 2));
+                            _parent.ViewModel.Volume = Device.GetVolume();
                             break;
                         case KeyboardHotkeyState.VolumeDown:
-                            //_newVolume = Math.Clamp(((int)(Device.GetVolume() * 100) + 5), 0, 100);
-                            Device.SetVolume(0);
+                            _newVolume = Math.Clamp((Device.GetVolume() - VolumeDelta), 0, 1);
+                            Device.SetVolume(MathF.Round(_newVolume, 2));
+                            _parent.ViewModel.Volume = Device.GetVolume();
                             break;
                         case KeyboardHotkeyState.None:
                             (_keyboardInterface as AvaloniaKeyboard).Clear();
