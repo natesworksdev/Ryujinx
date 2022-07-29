@@ -648,15 +648,15 @@ namespace Ryujinx.Ui
                 if (currentHotkeyState.HasFlag(KeyboardHotkeyState.VolumeUp) &&
                     !_prevHotkeyState.HasFlag(KeyboardHotkeyState.VolumeUp))
                 {
-                    _newVolume = Math.Clamp((Device.GetVolume() + VolumeDelta), 0, 1);
-                    Device.SetVolume(MathF.Round(_newVolume, 2));
+                    _newVolume = MathF.Round((Device.GetVolume() + VolumeDelta), 2);
+                    Device.SetVolume(_newVolume);
                 }
 
                 if (currentHotkeyState.HasFlag(KeyboardHotkeyState.VolumeDown) &&
                     !_prevHotkeyState.HasFlag(KeyboardHotkeyState.VolumeDown))
                 {
-                    _newVolume = Math.Clamp((Device.GetVolume() - VolumeDelta), 0, 1);
-                    Device.SetVolume(MathF.Round(_newVolume, 2));
+                    _newVolume = MathF.Round((Device.GetVolume() - VolumeDelta), 2);
+                    Device.SetVolume(_newVolume);
                 }
 
                 _prevHotkeyState = currentHotkeyState;

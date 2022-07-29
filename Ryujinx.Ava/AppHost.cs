@@ -1026,13 +1026,13 @@ namespace Ryujinx.Ava
                             (MaxResolutionScale + GraphicsConfig.ResScale - 2) % MaxResolutionScale + 1;
                             break;
                         case KeyboardHotkeyState.VolumeUp:
-                            _newVolume = Math.Clamp((Device.GetVolume() + VolumeDelta), 0, 1);
-                            Device.SetVolume(MathF.Round(_newVolume, 2));
+                            _newVolume = MathF.Round((Device.GetVolume() + VolumeDelta), 2);
+                            Device.SetVolume(_newVolume);
                             _parent.ViewModel.Volume = Device.GetVolume();
                             break;
                         case KeyboardHotkeyState.VolumeDown:
-                            _newVolume = Math.Clamp((Device.GetVolume() - VolumeDelta), 0, 1);
-                            Device.SetVolume(MathF.Round(_newVolume, 2));
+                            _newVolume = MathF.Round((Device.GetVolume() - VolumeDelta), 2);
+                            Device.SetVolume(_newVolume);
                             _parent.ViewModel.Volume = Device.GetVolume();
                             break;
                         case KeyboardHotkeyState.None:
