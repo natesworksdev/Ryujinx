@@ -68,60 +68,58 @@ namespace Ryujinx.Graphics.Vulkan
             CreateImages();
         }
 
-        private void CreateImages()
+        private unsafe void CreateImages()
         {
             _imageViews = new Auto<DisposableImageView>[ImageCount];
-            unsafe
+
+            var cbs = _gd.CommandBufferPool.Rent();
+            for (int i = 0; i < _images.Length; i++)
             {
-                var cbs = _gd.CommandBufferPool.Rent();
-                for (int i = 0; i < _images.Length; i++)
+                var imageCreateInfo = new ImageCreateInfo
                 {
-                    var imageCreateInfo = new ImageCreateInfo
-                    {
-                        SType = StructureType.ImageCreateInfo,
-                        ImageType = ImageType.ImageType2D,
-                        Format = _format,
-                        Extent =
-                            new Extent3D((uint?)_width,
-                                (uint?)_height, 1),
-                        MipLevels = 1,
-                        ArrayLayers = 1,
-                        Samples = SampleCountFlags.SampleCount1Bit,
-                        Tiling = ImageTiling.Optimal,
-                        Usage = ImageUsageFlags.ImageUsageColorAttachmentBit | ImageUsageFlags.ImageUsageTransferSrcBit | ImageUsageFlags.ImageUsageTransferDstBit,
-                        SharingMode = SharingMode.Exclusive,
-                        InitialLayout = ImageLayout.Undefined,
-                        Flags = ImageCreateFlags.ImageCreateMutableFormatBit
-                    };
+                    SType = StructureType.ImageCreateInfo,
+                    ImageType = ImageType.ImageType2D,
+                    Format = _format,
+                    Extent =
+                        new Extent3D((uint?)_width,
+                            (uint?)_height, 1),
+                    MipLevels = 1,
+                    ArrayLayers = 1,
+                    Samples = SampleCountFlags.SampleCount1Bit,
+                    Tiling = ImageTiling.Optimal,
+                    Usage = ImageUsageFlags.ImageUsageColorAttachmentBit | ImageUsageFlags.ImageUsageTransferSrcBit | ImageUsageFlags.ImageUsageTransferDstBit,
+                    SharingMode = SharingMode.Exclusive,
+                    InitialLayout = ImageLayout.Undefined,
+                    Flags = ImageCreateFlags.ImageCreateMutableFormatBit
+                };
 
-                    _gd.Api.CreateImage(_device, imageCreateInfo, null, out var image).ThrowOnError();
-                    _images[i] = new Auto<DisposableImage>(new DisposableImage(_gd.Api, _device, image));
+                _gd.Api.CreateImage(_device, imageCreateInfo, null, out var image).ThrowOnError();
+                _images[i] = new Auto<DisposableImage>(new DisposableImage(_gd.Api, _device, image));
 
-                    _gd.Api.GetImageMemoryRequirements(_device, image,
-                        out var memoryRequirements);
+                _gd.Api.GetImageMemoryRequirements(_device, image,
+                    out var memoryRequirements);
 
-                    var allocation = _gd.MemoryAllocator.AllocateDeviceMemory(_physicalDevice, memoryRequirements, MemoryPropertyFlags.MemoryPropertyDeviceLocalBit);
+                var allocation = _gd.MemoryAllocator.AllocateDeviceMemory(_physicalDevice, memoryRequirements, MemoryPropertyFlags.MemoryPropertyDeviceLocalBit);
 
-                    _imageSizes[i] = allocation.Size;
-                    _imageOffsets[i] = allocation.Offset;
+                _imageSizes[i] = allocation.Size;
+                _imageOffsets[i] = allocation.Offset;
 
-                    _imageAllocationAuto[i] = new Auto<MemoryAllocation>(allocation);
+                _imageAllocationAuto[i] = new Auto<MemoryAllocation>(allocation);
 
-                    _gd.Api.BindImageMemory(_device, image, allocation.Memory, allocation.Offset);
+                _gd.Api.BindImageMemory(_device, image, allocation.Memory, allocation.Offset);
 
-                    _imageViews[i] = CreateImageView(image, _format);
+                _imageViews[i] = CreateImageView(image, _format);
 
-                    Transition(
-                        cbs.CommandBuffer,
-                        image,
-                        0,
-                        0,
-                        ImageLayout.Undefined,
-                        ImageLayout.ColorAttachmentOptimal);
-                }
-
-                _gd.CommandBufferPool.Return(cbs);
+                Transition(
+                    cbs.CommandBuffer,
+                    image,
+                    0,
+                    0,
+                    ImageLayout.Undefined,
+                    ImageLayout.ColorAttachmentOptimal);
             }
+
+            _gd.CommandBufferPool.Return(cbs);
         }
 
         private unsafe Auto<DisposableImageView> CreateImageView(Image image, VkFormat format)
@@ -132,9 +130,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ComponentSwizzle.B,
                 ComponentSwizzle.A);
 
-            var aspectFlags = ImageAspectFlags.ImageAspectColorBit;
-
-            var subresourceRange = new ImageSubresourceRange(aspectFlags, 0, 1, 0, 1);
+            var subresourceRange = new ImageSubresourceRange(ImageAspectFlags.ImageAspectColorBit, 0, 1, 0, 1);
 
             var imageCreateInfo = new ImageViewCreateInfo()
             {
@@ -253,7 +249,7 @@ namespace Ryujinx.Graphics.Vulkan
             _gd.CommandBufferPool.Return(
                 cbs,
                 null,
-                new[] { PipelineStageFlags.PipelineStageColorAttachmentOutputBit },
+                stackalloc[] { PipelineStageFlags.PipelineStageColorAttachmentOutputBit },
                 null);
 
             var memory = _imageAllocationAuto[_nextImage].GetUnsafe().Memory;

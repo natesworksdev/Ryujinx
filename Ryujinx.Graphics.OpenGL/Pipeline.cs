@@ -1134,11 +1134,11 @@ namespace Ryujinx.Graphics.OpenGL
             _framebuffer.SetDrawBuffers(colors.Length);
         }
 
-        public unsafe void SetScissors(ReadOnlySpan<Rectangle<int>> regions)
+        public void SetScissors(ReadOnlySpan<Rectangle<int>> regions)
         {
             int count = Math.Min(regions.Length, Constants.MaxViewports);
 
-            int* v = stackalloc int[count * 4];
+            Span<int> v = stackalloc int[count * 4];
 
             for (int index = 0; index < count; index++)
             {
@@ -1172,7 +1172,7 @@ namespace Ryujinx.Graphics.OpenGL
                 }
             }
 
-            GL.ScissorArray(0, count, v);
+            GL.ScissorArray(0, count, ref v[0]);
         }
 
         public void SetStencilTest(StencilTestDescriptor stencilTest)

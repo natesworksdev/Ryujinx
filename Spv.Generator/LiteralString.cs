@@ -21,6 +21,7 @@ namespace Spv.Generator
         {
             writer.Write(_value.AsSpan());
 
+            // String must be padded to the word size (which is 4 bytes).
             int paddingSize = 4 - (Encoding.ASCII.GetByteCount(_value) % 4);
 
             Span<byte> padding = stackalloc byte[paddingSize];

@@ -249,9 +249,9 @@ namespace Ryujinx.Graphics.Vulkan
 
         public unsafe void Return(
             CommandBufferScoped cbs,
-            Semaphore[] waitSemaphores,
-            PipelineStageFlags[] waitDstStageMask,
-            Semaphore[] signalSemaphores)
+            ReadOnlySpan<Semaphore> waitSemaphores,
+            ReadOnlySpan<PipelineStageFlags> waitDstStageMask,
+            ReadOnlySpan<Semaphore> signalSemaphores)
         {
             lock (_commandBuffers)
             {

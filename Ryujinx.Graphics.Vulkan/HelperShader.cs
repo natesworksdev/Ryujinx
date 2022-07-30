@@ -22,8 +22,8 @@ namespace Ryujinx.Graphics.Vulkan
             _pipeline = new PipelineHelperShader(gd, device);
             _pipeline.Initialize();
 
-            _samplerLinear = gd.CreateSampler(GetSamplerCreateInfo(MinFilter.Linear, MagFilter.Linear));
-            _samplerNearest = gd.CreateSampler(GetSamplerCreateInfo(MinFilter.Nearest, MagFilter.Nearest));
+            _samplerLinear = gd.CreateSampler(GAL.SamplerCreateInfo.Create(MinFilter.Linear, MagFilter.Linear));
+            _samplerNearest = gd.CreateSampler(GAL.SamplerCreateInfo.Create(MinFilter.Nearest, MagFilter.Nearest));
 
             var vertexBindings = new ShaderBindings(
                 new[] { 1 },
@@ -60,24 +60,6 @@ namespace Ryujinx.Graphics.Vulkan
                 new ShaderSource(ShaderBinaries.ColorClearVertexShaderSource, vertexBindings, ShaderStage.Vertex, TargetLanguage.Glsl),
                 new ShaderSource(ShaderBinaries.ColorClearFragmentShaderSource, fragmentBindings2, ShaderStage.Fragment, TargetLanguage.Glsl),
             });
-        }
-
-        private static GAL.SamplerCreateInfo GetSamplerCreateInfo(MinFilter minFilter, MagFilter magFilter)
-        {
-            return new GAL.SamplerCreateInfo(
-                minFilter,
-                magFilter,
-                false,
-                AddressMode.ClampToEdge,
-                AddressMode.ClampToEdge,
-                AddressMode.ClampToEdge,
-                CompareMode.None,
-                GAL.CompareOp.Always,
-                new ColorF(0f, 0f, 0f, 0f),
-                0f,
-                0f,
-                0f,
-                1f);
         }
 
         public void Blit(
@@ -129,16 +111,12 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (dstRegion.X1 > dstRegion.X2)
             {
-                float temp = region[0];
-                region[0] = region[1];
-                region[1] = temp;
+                (region[0], region[1]) = (region[1], region[0]);
             }
 
             if (dstRegion.Y1 > dstRegion.Y2)
             {
-                float temp = region[2];
-                region[2] = region[3];
-                region[3] = temp;
+                (region[2], region[3]) = (region[3], region[2]);
             }
 
             var bufferHandle = gd.BufferManager.CreateWithHandle(gd, RegionBufferSize, false);
@@ -200,13 +178,13 @@ namespace Ryujinx.Graphics.Vulkan
             VkFormat dstFormat,
             Rectangle<int> scissor)
         {
+            const int ClearColorBufferSize = 16;
+
             gd.FlushAllCommands();
 
             using var cbs = gd.CommandBufferPool.Rent();
 
             _pipeline.SetCommandBuffer(cbs);
-
-            const int ClearColorBufferSize = 16;
 
             var bufferHandle = gd.BufferManager.CreateWithHandle(gd, ClearColorBufferSize, false);
 
@@ -266,16 +244,12 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (dstRegion.X1 > dstRegion.X2)
             {
-                float temp = region[0];
-                region[0] = region[1];
-                region[1] = temp;
+                (region[0], region[1]) = (region[1], region[0]);
             }
 
             if (dstRegion.Y1 > dstRegion.Y2)
             {
-                float temp = region[2];
-                region[2] = region[3];
-                region[3] = temp;
+                (region[2], region[3]) = (region[3], region[2]);
             }
 
             var bufferHandle = gd.BufferManager.CreateWithHandle(gd, RegionBufferSize, false);

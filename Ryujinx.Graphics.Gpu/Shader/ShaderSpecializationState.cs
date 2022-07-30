@@ -54,7 +54,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public Array5<uint> ConstantBufferUse;
 
         /// <summary>
-        /// Optional pipeline state captured at the time of the shader use.
+        /// Pipeline state captured at the time of shader use.
         /// </summary>
         public ProgramPipelineState? PipelineState;
 

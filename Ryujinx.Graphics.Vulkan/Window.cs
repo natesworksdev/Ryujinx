@@ -329,9 +329,9 @@ namespace Ryujinx.Graphics.Vulkan
 
             _gd.CommandBufferPool.Return(
                 cbs,
-                new[] { _imageAvailableSemaphore },
-                new[] { PipelineStageFlags.PipelineStageColorAttachmentOutputBit },
-                new[] { _renderFinishedSemaphore });
+                stackalloc[] { _imageAvailableSemaphore },
+                stackalloc[] { PipelineStageFlags.PipelineStageColorAttachmentOutputBit },
+                stackalloc[] { _renderFinishedSemaphore });
 
             // TODO: Present queue.
             var semaphore = _renderFinishedSemaphore;

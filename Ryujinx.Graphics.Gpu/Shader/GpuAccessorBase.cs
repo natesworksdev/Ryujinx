@@ -32,7 +32,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             if (_context.Capabilities.Api == TargetApi.Vulkan)
             {
-                return 1 + GetBindingFromIndex(index, _context.Capabilities.MaximumUniformBuffersPerStage, "Uniform buffer");
+                // We need to start counting from 1 since binding 0 is reserved for the support uniform buffer.
+                return GetBindingFromIndex(index, _context.Capabilities.MaximumUniformBuffersPerStage, "Uniform buffer") + 1;
             }
             else
             {

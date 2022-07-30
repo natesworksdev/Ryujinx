@@ -453,16 +453,17 @@ namespace Ryujinx.Headless.SDL2
             Logger.Info?.Print(LogClass.Application, label);
         }
 
-        private static (WindowBase, IRenderer) CreateRenderer(Options options)
+        private static WindowBase CreateWindow(Options options)
         {
-            WindowBase window;
-            IRenderer renderer;
+            return options.GraphicsBackend == GraphicsBackend.Vulkan
+                ? new VulkanWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, (bool)options.EnableMouse)
+                : new OpenGLWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, (bool)options.EnableMouse);
+        }
 
-            if (options.GraphicsBackend == GraphicsBackend.Vulkan)
+        private static IRenderer CreateRenderer(Options options, WindowBase window)
+        {
+            if (options.GraphicsBackend == GraphicsBackend.Vulkan && window is VulkanWindow vulkanWindow)
             {
-                VulkanWindow vulkanWindow = new VulkanWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, (bool)options.EnableMouse);
-                window = vulkanWindow;
-
                 string preferredGpuId = string.Empty;
 
                 if (!string.IsNullOrEmpty(options.PreferredGpuVendor))
@@ -480,18 +481,15 @@ namespace Ryujinx.Headless.SDL2
                     }
                 }
 
-                renderer = new VulkanRenderer(
+                return new VulkanRenderer(
                     (instance, vk) => new SurfaceKHR((ulong)(vulkanWindow.CreateWindowSurface(instance.Handle))),
                     vulkanWindow.GetRequiredInstanceExtensions,
                     preferredGpuId);
             }
             else
             {
-                window = new OpenGLWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, (bool)options.EnableMouse);
-                renderer = new OpenGLRenderer();
+                return new OpenGLRenderer();
             }
-
-            return (window, renderer);
         }
 
         private static Switch InitializeEmulationContext(WindowBase window, IRenderer renderer, Options options)
@@ -564,7 +562,8 @@ namespace Ryujinx.Headless.SDL2
 
             Logger.RestartTime();
 
-            (WindowBase window, IRenderer renderer) = CreateRenderer(options);
+            WindowBase window = CreateWindow(options);
+            IRenderer renderer = CreateRenderer(options, window);
 
             _window = window;
 

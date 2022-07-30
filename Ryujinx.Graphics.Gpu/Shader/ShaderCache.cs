@@ -100,9 +100,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             _programsToSaveQueue = new Queue<ProgramToSave>();
 
-            string diskCacheTitleId = GraphicsConfig.EnableShaderCache && GraphicsConfig.TitleId != null
-                ? Path.Combine(AppDataManager.GamesDirPath, GraphicsConfig.TitleId, "cache", "shader")
-                : null;
+            string diskCacheTitleId = GetDiskCachePath();
 
             _computeShaderCache = new ComputeShaderCacheHashTable();
             _graphicsShaderCache = new ShaderCacheHashTable();
@@ -112,6 +110,16 @@ namespace Ryujinx.Graphics.Gpu.Shader
             {
                 _cacheWriter = new BackgroundDiskCacheWriter(context, _diskCacheHostStorage);
             }
+        }
+
+        /// <summary>
+        /// Gets the path where the disk cache for the current application is stored.
+        /// </summary>
+        private static string GetDiskCachePath()
+        {
+            return GraphicsConfig.EnableShaderCache && GraphicsConfig.TitleId != null
+                ? Path.Combine(AppDataManager.GamesDirPath, GraphicsConfig.TitleId, "cache", "shader")
+                : null;
         }
 
         /// <summary>

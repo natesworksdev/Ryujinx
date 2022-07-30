@@ -36,7 +36,7 @@ namespace Ryujinx.Graphics.Shader
 
         /// <summary>
         /// Queries the alpha test comparison operator that is being used currently.
-        /// If alpha test is disabled, it can will be set to <see cref="AlphaTestOp.Always"/>.
+        /// If alpha test is disabled, it should be set to <see cref="AlphaTestOp.Always"/>.
         /// </summary>
         /// <returns>Current alpha test comparison</returns>
         AlphaTestOp QueryAlphaTestCompare()
@@ -45,7 +45,7 @@ namespace Ryujinx.Graphics.Shader
         }
 
         /// <summary>
-        /// Queries the current alpha test reference value used on the comparison.
+        /// Queries the current alpha test reference value used by the comparison.
         /// </summary>
         /// <returns>Current alpha test reference value</returns>
         float QueryAlphaTestReference()
@@ -54,9 +54,9 @@ namespace Ryujinx.Graphics.Shader
         }
 
         /// <summary>
-        /// Queries the type of a vertex shader input attribute at the specified <paramref name="location"/>.
+        /// Queries the type of the vertex shader input attribute at the specified <paramref name="location"/>.
         /// </summary>
-        /// <param name="location">Location of the input</param>
+        /// <param name="location">Location of the input attribute</param>
         /// <returns>Input type</returns>
         AttributeType QueryAttributeType(int location)
         {

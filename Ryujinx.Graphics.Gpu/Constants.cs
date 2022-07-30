@@ -18,7 +18,7 @@ namespace Ryujinx.Graphics.Gpu
         /// Maximum number of compute storage buffers.
         /// </summary>
         /// <remarks>
-        /// The maximum number of storage buffers is API limited, the hardware supports a unlimited amount.
+        /// The maximum number of storage buffers is API limited, the hardware supports an unlimited amount.
         /// </remarks>
         public const int TotalCpStorageBuffers = 16;
 
@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.Gpu
         /// Maximum number of graphics storage buffers.
         /// </summary>
         /// <remarks>
-        /// The maximum number of storage buffers is API limited, the hardware supports a unlimited amount.
+        /// The maximum number of storage buffers is API limited, the hardware supports an unlimited amount.
         /// </remarks>
         public const int TotalGpStorageBuffers = 16;
 
@@ -44,7 +44,7 @@ namespace Ryujinx.Graphics.Gpu
         /// Maximum number of textures on a single shader stage.
         /// </summary>
         /// <remarks>
-        /// The maximum number of textures is API limited, the hardware supports a unlimited amount.
+        /// The maximum number of textures is API limited, the hardware supports an unlimited amount.
         /// </remarks>
         public const int TotalTextures = 32;
 
@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.Gpu
         /// Maximum number of images on a single shader stage.
         /// </summary>
         /// <remarks>
-        /// The maximum number of images is API limited, the hardware supports a unlimited amount.
+        /// The maximum number of images is API limited, the hardware supports an unlimited amount.
         /// </remarks>
         public const int TotalImages = 8;
 
