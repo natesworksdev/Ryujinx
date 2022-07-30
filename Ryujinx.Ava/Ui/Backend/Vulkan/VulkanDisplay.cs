@@ -75,7 +75,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
 
         private static unsafe SwapchainKHR CreateSwapchain(VulkanInstance instance, VulkanDevice device,
             VulkanPhysicalDevice physicalDevice, VulkanSurface surface, out Extent2D swapchainExtent,
-            VulkanDisplay oldDisplay = null, bool vsyncEnabled = true)
+            SwapchainKHR? oldswapchain = null, bool vsyncEnabled = true)
         {
             if (_swapchainExtension == null)
             {
@@ -126,15 +126,15 @@ namespace Ryujinx.Ava.Ui.Vulkan
                 CompositeAlpha = compositeAlphaFlags,
                 PresentMode = presentMode,
                 Clipped = true,
-                OldSwapchain = oldDisplay?._swapchain ?? new SwapchainKHR()
+                OldSwapchain = oldswapchain ?? new SwapchainKHR()
             };
 
             _swapchainExtension.CreateSwapchain(device.InternalHandle, swapchainCreateInfo, null, out var swapchain)
                 .ThrowOnError();
 
-            if (oldDisplay != null)
+            if (oldswapchain != null)
             {
-                _swapchainExtension.DestroySwapchain(device.InternalHandle, oldDisplay._swapchain, null);
+                _swapchainExtension.DestroySwapchain(device.InternalHandle, oldswapchain.Value, null);
             }
 
             return swapchain;
@@ -263,7 +263,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
         private void Recreate()
         {
             _device.WaitIdle();
-            _swapchain = CreateSwapchain(_instance, _device, _physicalDevice, _surface, out _swapchainExtent, this, _vsyncEnabled);
+            _swapchain = CreateSwapchain(_instance, _device, _physicalDevice, _surface, out _swapchainExtent, _swapchain, _vsyncEnabled);
 
             CreateSwapchainImages();
         }

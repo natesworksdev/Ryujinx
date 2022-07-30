@@ -31,18 +31,11 @@ namespace Ryujinx.Ava.Ui.Vulkan
 
         private static VulkanPlatformInterface TryCreate()
         {
-            try
-            {
-                _options = AvaloniaLocator.Current.GetService<VulkanOptions>() ?? new VulkanOptions();
+            _options = AvaloniaLocator.Current.GetService<VulkanOptions>() ?? new VulkanOptions();
 
-                var instance = VulkanInstance.Create(_options);
+            var instance = VulkanInstance.Create(_options);
 
-                return new VulkanPlatformInterface(instance);
-            }
-            catch (Exception)
-            {
-                return null;
-            }
+            return new VulkanPlatformInterface(instance);
         }
 
         public static bool TryInitialize()
@@ -60,24 +53,17 @@ namespace Ryujinx.Ava.Ui.Vulkan
         public VulkanSurfaceRenderTarget CreateRenderTarget(IVulkanPlatformSurface platformSurface)
         {
             var surface = VulkanSurface.CreateSurface(Instance, platformSurface);
-            try
-            {
-                if (Device == null)
-                {
-                    PhysicalDevice = VulkanPhysicalDevice.FindSuitablePhysicalDevice(Instance, surface, _options.PreferDiscreteGpu, _options.PreferredDevice);
-                    var device = VulkanInitialization.CreateDevice(Instance.Api,
-                                                                   PhysicalDevice.InternalHandle,
-                                                                   PhysicalDevice.QueueFamilyIndex,
-                                                                   VulkanInitialization.GetSupportedExtensions(Instance.Api, PhysicalDevice.InternalHandle),
-                                                                   PhysicalDevice.QueueCount);
 
-                    Device = new VulkanDevice(device, PhysicalDevice, Instance.Api);
-                }
-            }
-            catch (Exception)
+            if (Device == null)
             {
-                surface.Dispose();
-                surface = null;
+                PhysicalDevice = VulkanPhysicalDevice.FindSuitablePhysicalDevice(Instance, surface, _options.PreferDiscreteGpu, _options.PreferredDevice);
+                var device = VulkanInitialization.CreateDevice(Instance.Api,
+                                                               PhysicalDevice.InternalHandle,
+                                                               PhysicalDevice.QueueFamilyIndex,
+                                                               VulkanInitialization.GetSupportedExtensions(Instance.Api, PhysicalDevice.InternalHandle),
+                                                               PhysicalDevice.QueueCount);
+
+                Device = new VulkanDevice(device, PhysicalDevice, Instance.Api);
             }
 
             var renderTarget = new VulkanSurfaceRenderTarget(this, surface);
