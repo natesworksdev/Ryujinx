@@ -1027,8 +1027,8 @@ namespace Ryujinx.Graphics.Vulkan
 
                 var region = new BufferImageCopy(
                     (ulong)offset,
-                    (uint)(rowLength + (rowLength % Info.BlockWidth)),
-                    (uint)(height + (height % Info.BlockHeight)),
+                    (uint)AlignUpNpot(rowLength, Info.BlockWidth),
+                    (uint)AlignUpNpot(height, Info.BlockHeight),
                     sl,
                     new Offset3D(0, 0, z),
                     extent);
@@ -1078,8 +1078,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             var region = new BufferImageCopy(
                 0,
-                (uint)(width + (width % Info.BlockWidth)),
-                (uint)(height + (height % Info.BlockHeight)),
+                (uint)AlignUpNpot(width, Info.BlockWidth),
+                (uint)AlignUpNpot(height, Info.BlockHeight),
                 sl,
                 new Offset3D(x, y, 0),
                 extent);
@@ -1092,6 +1092,17 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 _gd.Api.CmdCopyBufferToImage(commandBuffer, buffer, image, ImageLayout.General, 1, region);
             }
+        }
+
+        private static int AlignUpNpot(int size, int alignment)
+        {
+            int remainder = size % alignment;
+            if (remainder == 0)
+            {
+                return size;
+            }
+
+            return size + (alignment - remainder);
         }
 
         public void SetStorage(BufferRange buffer)
