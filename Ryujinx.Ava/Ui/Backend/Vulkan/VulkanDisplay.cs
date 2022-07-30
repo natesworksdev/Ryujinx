@@ -224,7 +224,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
             }
         }
 
-        private unsafe void DestroyCurrentImageViews()
+        private void DestroyCurrentImageViews()
         {
             for (var i = 0; i < _swapchainImageViews.Length; i++)
             {
