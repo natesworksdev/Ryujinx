@@ -109,6 +109,8 @@ namespace Ryujinx.Ava.Ui.Backend.Vulkan
                 Initialize();
 
                 vulkanRenderTarget.GrContext = GrContext;
+
+                return vulkanRenderTarget;
             }
 
             return null;
