@@ -1027,8 +1027,8 @@ namespace Ryujinx.Graphics.Vulkan
 
                 var region = new BufferImageCopy(
                     (ulong)offset,
-                    (uint)BitUtils.AlignUp(rowLength, Info.BlockWidth),
-                    (uint)BitUtils.AlignUp(height, Info.BlockHeight),
+                    (uint)(rowLength + (rowLength % Info.BlockWidth)),
+                    (uint)(height + (height % Info.BlockHeight)),
                     sl,
                     new Offset3D(0, 0, z),
                     extent);
@@ -1078,8 +1078,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             var region = new BufferImageCopy(
                 0,
-                (uint)BitUtils.AlignUp(width, Info.BlockWidth),
-                (uint)BitUtils.AlignUp(height, Info.BlockHeight),
+                (uint)(width + (width % Info.BlockWidth)),
+                (uint)(height + (height % Info.BlockHeight)),
                 sl,
                 new Offset3D(x, y, 0),
                 extent);
