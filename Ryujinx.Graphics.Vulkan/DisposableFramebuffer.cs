@@ -17,9 +17,9 @@ namespace Ryujinx.Graphics.Vulkan
             Value = framebuffer;
         }
 
-        public unsafe void Dispose()
+        public void Dispose()
         {
-            _api.DestroyFramebuffer(_device, Value, null);
+            _api.DestroyFramebuffer(_device, Value, Span<AllocationCallbacks>.Empty);
         }
     }
 }

@@ -550,7 +550,12 @@ namespace Ryujinx.Graphics.Vulkan
             return new CommandBufferPool(api, device, queue, queueLock, queueFamilyIndex);
         }
 
-        internal unsafe static void CreateDebugCallbacks(Vk api, GraphicsDebugLevel logLevel, Instance instance, out ExtDebugReport debugReport, out DebugReportCallbackEXT debugReportCallback)
+        internal unsafe static void CreateDebugCallbacks(
+            Vk api,
+            GraphicsDebugLevel logLevel,
+            Instance instance,
+            out ExtDebugReport debugReport,
+            out DebugReportCallbackEXT debugReportCallback)
         {
             debugReport = default;
 
@@ -558,7 +563,8 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 if (!api.TryGetInstanceExtension(instance, out debugReport))
                 {
-                    throw new VulkanException("Failed to get debug report extension.");
+                    debugReportCallback = default;
+                    return;
                 }
 
                 var flags = logLevel switch
@@ -570,7 +576,7 @@ namespace Ryujinx.Graphics.Vulkan
                                               DebugReportFlagsEXT.DebugReportPerformanceWarningBitExt |
                                               DebugReportFlagsEXT.DebugReportErrorBitExt |
                                               DebugReportFlagsEXT.DebugReportDebugBitExt,
-                    _ => throw new NotSupportedException()
+                    _ => throw new ArgumentException($"Invalid log level \"{logLevel}\".")
                 };
                 var debugReportCallbackCreateInfo = new DebugReportCallbackCreateInfoEXT()
                 {

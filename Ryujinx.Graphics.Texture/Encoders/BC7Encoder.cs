@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Graphics.Texture.Utils;
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -11,6 +12,8 @@ namespace Ryujinx.Graphics.Texture.Encoders
 {
     static class BC7Encoder
     {
+        private const int MinColorVarianceForModeChange = 160;
+
         public static void Encode(Memory<byte> outputStorage, ReadOnlyMemory<byte> data, int width, int height, EncodeMode mode)
         {
             int widthInBlocks = (width + 3) / 4;
@@ -54,7 +57,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
             }
         }
 
-        private static int[] _mostFrequentPartitions = new int[]
+        private static readonly int[] _mostFrequentPartitions = new int[]
         {
             0, 13, 2, 1, 15, 14, 10, 23
         };
@@ -97,11 +100,11 @@ namespace Ryujinx.Graphics.Texture.Encoders
                 bool constantAlpha = minColor.A == maxColor.A;
                 if (constantAlpha)
                 {
-                    selectedMode = variance > 160 ? 7 : 6;
+                    selectedMode = variance > MinColorVarianceForModeChange ? 7 : 6;
                 }
                 else
                 {
-                    if (variance > 160)
+                    if (variance > MinColorVarianceForModeChange)
                     {
                         Span<uint> uniqueRGB = stackalloc uint[16];
                         Span<uint> uniqueAlpha = stackalloc uint[16];
@@ -138,7 +141,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
             }
             else
             {
-                if (variance > 160)
+                if (variance > MinColorVarianceForModeChange)
                 {
                     selectedMode = 1;
                 }
@@ -454,10 +457,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
 
                 int finalIndexBitCount = i == fixUpTable[subset] ? colorIndexBitCount - 1 : colorIndexBitCount;
 
-                if (index >= (1 << finalIndexBitCount))
-                {
-                    throw new Exception("invalid index " + index);
-                }
+                Debug.Assert(index < (1 << finalIndexBitCount));
 
                 block.Encode(index, ref offset, finalIndexBitCount);
             }
@@ -475,10 +475,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
 
                     int finalIndexBitCount = i == 0 ? alphaIndexBitCount - 1 : alphaIndexBitCount;
 
-                    if (index >= (1 << finalIndexBitCount))
-                    {
-                        throw new Exception("invalid alpha index " + index);
-                    }
+                    Debug.Assert(index < (1 << finalIndexBitCount));
 
                     block.Encode(index, ref offset, finalIndexBitCount);
                 }

@@ -41,14 +41,6 @@ namespace Ryujinx.Headless.SDL2.Vulkan
             return (IntPtr)surfaceHandle;
         }
 
-        private static unsafe string GetStringFromUtf8Byte(byte* start)
-        {
-            byte* end = start;
-            while (*end != 0) end++;
-
-            return Encoding.UTF8.GetString(start, (int)(end - start));
-        }
-
         // TODO: Fix this in SDL2-CS.
         [DllImport("SDL2", EntryPoint = "SDL_Vulkan_GetInstanceExtensions", CallingConvention = CallingConvention.Cdecl)]
         public static extern SDL_bool SDL_Vulkan_GetInstanceExtensions_Workaround(IntPtr window, out uint count, IntPtr names);
@@ -66,7 +58,7 @@ namespace Ryujinx.Headless.SDL2.Vulkan
                     {
                         for (int i = 0; i < extensions.Length; i++)
                         {
-                            extensions[i] = GetStringFromUtf8Byte((byte*)rawExtensions[i]);
+                            extensions[i] = Marshal.PtrToStringUTF8(rawExtensions[i]);
                         }
 
                         return extensions;

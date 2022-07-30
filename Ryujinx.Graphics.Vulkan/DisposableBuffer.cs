@@ -1,24 +1,25 @@
 ﻿using Silk.NET.Vulkan;
+using System;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    struct DisposableBuffer : System.IDisposable
+    struct DisposableBuffer : IDisposable
     {
         private readonly Vk _api;
         private readonly Device _device;
 
-        public Buffer Value { get; }
+        public Silk.NET.Vulkan.Buffer Value { get; }
 
-        public DisposableBuffer(Vk api, Device device, Buffer buffer)
+        public DisposableBuffer(Vk api, Device device, Silk.NET.Vulkan.Buffer buffer)
         {
             _api = api;
             _device = device;
             Value = buffer;
         }
 
-        public unsafe void Dispose()
+        public void Dispose()
         {
-            _api.DestroyBuffer(_device, Value, null);
+            _api.DestroyBuffer(_device, Value, Span<AllocationCallbacks>.Empty);
         }
     }
 }

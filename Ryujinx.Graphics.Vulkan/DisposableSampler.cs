@@ -17,9 +17,9 @@ namespace Ryujinx.Graphics.Vulkan
             Value = sampler;
         }
 
-        public unsafe void Dispose()
+        public void Dispose()
         {
-            _api.DestroySampler(_device, Value, null);
+            _api.DestroySampler(_device, Value, Span<AllocationCallbacks>.Empty);
         }
     }
 }

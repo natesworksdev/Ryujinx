@@ -1,4 +1,5 @@
 ﻿using Silk.NET.Vulkan;
+using System;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -16,9 +17,9 @@ namespace Ryujinx.Graphics.Vulkan
             Value = bufferView;
         }
 
-        public unsafe void Dispose()
+        public void Dispose()
         {
-            _api.DestroyBufferView(_device, Value, null);
+            _api.DestroyBufferView(_device, Value, Span<AllocationCallbacks>.Empty);
         }
     }
 }

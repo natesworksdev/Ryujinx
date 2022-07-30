@@ -13,6 +13,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
     partial class CodeGenContext : Module
     {
+        private const uint SpirvVersionMajor = 1;
+        private const uint SpirvVersionMinor = 3;
+        private const uint SpirvVersionRevision = 0;
+        private const uint SpirvVersionPacked = (SpirvVersionMajor << 16) | (SpirvVersionMinor << 8) | SpirvVersionRevision;
+
         private readonly StructuredProgramInfo _info;
 
         public ShaderConfig Config { get; }
@@ -79,7 +84,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             StructuredProgramInfo info,
             ShaderConfig config,
             GeneratorPool<Instruction> instPool,
-            GeneratorPool<LiteralInteger> integerPool) : base(0x00010300, instPool, integerPool)
+            GeneratorPool<LiteralInteger> integerPool) : base(SpirvVersionPacked, instPool, integerPool)
         {
             _info = info;
             Config = config;

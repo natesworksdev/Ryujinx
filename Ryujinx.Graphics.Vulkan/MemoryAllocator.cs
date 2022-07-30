@@ -73,7 +73,7 @@ namespace Ryujinx.Graphics.Vulkan
             return -1;
         }
 
-        public unsafe void Dispose()
+        public void Dispose()
         {
             for (int i = 0; i < _blockLists.Count; i++)
             {

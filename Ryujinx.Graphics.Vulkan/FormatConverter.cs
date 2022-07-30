@@ -5,7 +5,7 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class FormatConverter
     {
-        public unsafe static void ConvertD24S8ToD32FS8(Span<byte> output, ReadOnlySpan<byte> input)
+        public static void ConvertD24S8ToD32FS8(Span<byte> output, ReadOnlySpan<byte> input)
         {
             const float UnormToFloat = 1f / 0xffffff;
 
@@ -27,7 +27,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public unsafe static void ConvertD32FS8ToD24S8(Span<byte> output, ReadOnlySpan<byte> input)
+        public static void ConvertD32FS8ToD24S8(Span<byte> output, ReadOnlySpan<byte> input)
         {
             Span<uint> outputUint = MemoryMarshal.Cast<byte, uint>(output);
             ReadOnlySpan<uint> inputUint = MemoryMarshal.Cast<byte, uint>(input);

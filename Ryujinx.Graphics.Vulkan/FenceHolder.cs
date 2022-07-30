@@ -38,26 +38,32 @@ namespace Ryujinx.Graphics.Vulkan
             return _fence;
         }
 
-        public unsafe void Put()
+        public void Put()
         {
             if (Interlocked.Decrement(ref _referenceCount) == 0)
             {
-                _api.DestroyFence(_device, _fence, null);
+                _api.DestroyFence(_device, _fence, Span<AllocationCallbacks>.Empty);
                 _fence = default;
             }
         }
 
         public void Wait()
         {
-            Span<Fence> fences = stackalloc Fence[1];
-            fences[0] = _fence;
+            Span<Fence> fences = stackalloc Fence[]
+            {
+                _fence
+            };
+
             FenceHelper.WaitAllIndefinitely(_api, _device, fences);
         }
 
         public bool IsSignaled()
         {
-            Span<Fence> fences = stackalloc Fence[1];
-            fences[0] = _fence;
+            Span<Fence> fences = stackalloc Fence[]
+            {
+                _fence
+            };
+
             return FenceHelper.AllSignaled(_api, _device, fences);
         }
 

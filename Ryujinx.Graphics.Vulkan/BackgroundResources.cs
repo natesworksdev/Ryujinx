@@ -70,12 +70,15 @@ namespace Ryujinx.Graphics.Vulkan
 
         private void Cleanup()
         {
-            foreach (KeyValuePair<Thread, BackgroundResource> tuple in _resources)
+            lock (_resources)
             {
-                if (!tuple.Key.IsAlive)
+                foreach (KeyValuePair<Thread, BackgroundResource> tuple in _resources)
                 {
-                    tuple.Value.Dispose();
-                    _resources.Remove(tuple.Key);
+                    if (!tuple.Key.IsAlive)
+                    {
+                        tuple.Value.Dispose();
+                        _resources.Remove(tuple.Key);
+                    }
                 }
             }
         }

@@ -110,7 +110,7 @@ namespace Ryujinx.Graphics.Vulkan
             if (Interlocked.Increment(ref _referenceCount) == 1)
             {
                 Interlocked.Decrement(ref _referenceCount);
-                throw new Exception("Attempted to inc ref of dead object.");
+                throw new InvalidOperationException("Attempted to increment the reference count of an object that was already destroyed.");
             }
         }
 

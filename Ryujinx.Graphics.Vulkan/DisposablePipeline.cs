@@ -17,9 +17,9 @@ namespace Ryujinx.Graphics.Vulkan
             Value = pipeline;
         }
 
-        public unsafe void Dispose()
+        public void Dispose()
         {
-            _api.DestroyPipeline(_device, Value, null);
+            _api.DestroyPipeline(_device, Value, Span<AllocationCallbacks>.Empty);
         }
     }
 }

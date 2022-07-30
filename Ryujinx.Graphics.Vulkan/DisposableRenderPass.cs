@@ -17,9 +17,9 @@ namespace Ryujinx.Graphics.Vulkan
             Value = renderPass;
         }
 
-        public unsafe void Dispose()
+        public void Dispose()
         {
-            _api.DestroyRenderPass(_device, Value, null);
+            _api.DestroyRenderPass(_device, Value, Span<AllocationCallbacks>.Empty);
         }
     }
 }

@@ -94,17 +94,11 @@ namespace Ryujinx.Graphics.Texture.Utils
 
         public static RgbaColor32 DivideGuarded(RgbaColor32 x, RgbaColor32 y, int resultIfZero)
         {
-            int DivideGuarded(int dividend, int divisor)
-            {
-                if (divisor == 0)
-                {
-                    return resultIfZero;
-                }
-
-                return dividend / divisor;
-            }
-
-            return new RgbaColor32(DivideGuarded(x.R, y.R), DivideGuarded(x.G, y.G), DivideGuarded(x.B, y.B), DivideGuarded(x.A, y.A));
+            return new RgbaColor32(
+                DivideGuarded(x.R, y.R, resultIfZero),
+                DivideGuarded(x.G, y.G, resultIfZero),
+                DivideGuarded(x.B, y.B, resultIfZero),
+                DivideGuarded(x.A, y.A, resultIfZero));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -200,6 +194,16 @@ namespace Ryujinx.Graphics.Texture.Utils
             {
                 return new RgbaColor8(ClampByte(R), ClampByte(G), ClampByte(B), ClampByte(A));
             }
+        }
+
+        private static int DivideGuarded(int dividend, int divisor, int resultIfZero)
+        {
+            if (divisor == 0)
+            {
+                return resultIfZero;
+            }
+
+            return dividend / divisor;
         }
 
         private static byte ClampByte(int value)

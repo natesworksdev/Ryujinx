@@ -73,10 +73,11 @@ namespace Ryujinx.Graphics.Texture.Utils
         {
             return index switch
             {
+                0 => R,
                 1 => G,
                 2 => B,
                 3 => A,
-                _ => R
+                _ => throw new ArgumentOutOfRangeException(nameof(index))
             };
         }
     }
