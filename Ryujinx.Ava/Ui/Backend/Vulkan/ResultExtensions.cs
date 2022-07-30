@@ -7,7 +7,10 @@ namespace Ryujinx.Ava.Ui.Vulkan
     {
         public static void ThrowOnError(this Result result)
         {
-            if (result != Result.Success) throw new Exception($"Unexpected API error \"{result}\".");
+            if (result != Result.Success)
+            {
+                throw new Exception($"Unexpected API error \"{result}\".");
+            }
         }
     }
 }

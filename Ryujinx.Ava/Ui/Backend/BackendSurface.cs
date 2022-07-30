@@ -60,6 +60,11 @@ namespace Ryujinx.Ava.Ui.Backend
 
         public virtual void Dispose()
         {
+            if (IsDisposed)
+            {
+                throw new ObjectDisposedException(nameof(BackendSurface));
+            }
+
             IsDisposed = true;
 
             if (_display != IntPtr.Zero)

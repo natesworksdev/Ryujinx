@@ -56,18 +56,20 @@ namespace Ryujinx.Ava.Ui.Vulkan
             get
             {
                 if (_surfaceFormat.Format == Format.Undefined)
+                {
                     _surfaceFormat = _surface.GetSurfaceFormat(_physicalDevice);
+                }
 
                 return _surfaceFormat;
             }
         }
 
-        public unsafe void Dispose()
+        public void Dispose()
         {
             _device.WaitIdle();
             _semaphorePair?.Dispose();
             DestroyCurrentImageViews();
-            _swapchainExtension.DestroySwapchain(_device.InternalHandle, _swapchain, null);
+            _swapchainExtension.DestroySwapchain(_device.InternalHandle, _swapchain, Span<AllocationCallbacks>.Empty);
             CommandBufferPool.Dispose();
         }
 
@@ -77,9 +79,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
         {
             if (_swapchainExtension == null)
             {
-                instance.Api.TryGetDeviceExtension(instance.InternalHandle, device.InternalHandle, out KhrSwapchain extension);
-
-                _swapchainExtension = extension;
+                instance.Api.TryGetDeviceExtension(instance.InternalHandle, device.InternalHandle, out _swapchainExtension);
             }
 
             while (!surface.CanSurfacePresent(physicalDevice))
@@ -106,7 +106,9 @@ namespace Ryujinx.Ava.Ui.Vulkan
 
             var imageCount = capabilities.MinImageCount + 1;
             if (capabilities.MaxImageCount > 0 && imageCount > capabilities.MaxImageCount)
+            {
                 imageCount = capabilities.MaxImageCount;
+            }
 
             var surfaceFormat = surface.GetSurfaceFormat(physicalDevice);
 
@@ -122,16 +124,14 @@ namespace Ryujinx.Ava.Ui.Vulkan
             {
                 var surfaceSize = surface.SurfaceSize;
 
-                var width = Math.Max(capabilities.MinImageExtent.Width,
-                    Math.Min(capabilities.MaxImageExtent.Width, (uint)surfaceSize.Width));
-                var height = Math.Max(capabilities.MinImageExtent.Height,
-                    Math.Min(capabilities.MaxImageExtent.Height, (uint)surfaceSize.Height));
+                var width = Math.Clamp((uint)surfaceSize.Width, capabilities.MinImageExtent.Width, capabilities.MaxImageExtent.Width);
+                var height = Math.Clamp((uint)surfaceSize.Height, capabilities.MinImageExtent.Height, capabilities.MaxImageExtent.Height);
 
                 swapchainExtent = new Extent2D(width, height);
             }
 
-            PresentModeKHR presentMode;
             var modes = presentModes.ToList();
+            var presentMode = PresentModeKHR.PresentModeFifoKhr;
 
             if (!vsyncEnabled && modes.Contains(PresentModeKHR.PresentModeImmediateKhr))
             {
@@ -144,10 +144,6 @@ namespace Ryujinx.Ava.Ui.Vulkan
             else if (modes.Contains(PresentModeKHR.PresentModeImmediateKhr))
             {
                 presentMode = PresentModeKHR.PresentModeImmediateKhr;
-            }
-            else
-            {
-                presentMode = PresentModeKHR.PresentModeFifoKhr;
             }
 
             var compositeAlphaFlags = CompositeAlphaFlagsKHR.CompositeAlphaOpaqueBitKhr;
@@ -173,7 +169,9 @@ namespace Ryujinx.Ava.Ui.Vulkan
                     ImageUsageFlags.ImageUsageColorAttachmentBit | ImageUsageFlags.ImageUsageTransferDstBit,
                 ImageSharingMode = SharingMode.Exclusive,
                 ImageArrayLayers = 1,
-                PreTransform = supportsIdentityTransform && isRotated ? SurfaceTransformFlagsKHR.SurfaceTransformIdentityBitKhr : capabilities.CurrentTransform,
+                PreTransform = supportsIdentityTransform && isRotated ?
+                    SurfaceTransformFlagsKHR.SurfaceTransformIdentityBitKhr :
+                    capabilities.CurrentTransform,
                 CompositeAlpha = compositeAlphaFlags,
                 PresentMode = presentMode,
                 Clipped = true,
@@ -228,12 +226,9 @@ namespace Ryujinx.Ava.Ui.Vulkan
 
         private unsafe void DestroyCurrentImageViews()
         {
-            if (_swapchainImageViews.Length > 0)
+            for (var i = 0; i < _swapchainImageViews.Length; i++)
             {
-                for (var i = 0; i < _swapchainImageViews.Length; i++)
-                {
-                    _instance.Api.DestroyImageView(_device.InternalHandle, _swapchainImageViews[i], null);
-                }
+                _instance.Api.DestroyImageView(_device.InternalHandle, _swapchainImageViews[i], Span<AllocationCallbacks>.Empty);
             }
         }
 
@@ -246,9 +241,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
         private void Recreate()
         {
             _device.WaitIdle();
-            _swapchain = CreateSwapchain(_instance, _device, _physicalDevice, _surface, out var extent, this, _vsyncEnabled);
-
-            _swapchainExtent = extent;
+            _swapchain = CreateSwapchain(_instance, _device, _physicalDevice, _surface, out _swapchainExtent, this, _vsyncEnabled);
 
             CreateSwapchainImages();
         }
@@ -261,9 +254,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
                 ComponentSwizzle.Identity,
                 ComponentSwizzle.Identity);
 
-            var aspectFlags = ImageAspectFlags.ImageAspectColorBit;
-
-            var subresourceRange = new ImageSubresourceRange(aspectFlags, 0, 1, 0, 1);
+            var subresourceRange = new ImageSubresourceRange(ImageAspectFlags.ImageAspectColorBit, 0, 1, 0, 1);
 
             var imageCreateInfo = new ImageViewCreateInfo
             {
@@ -394,9 +385,9 @@ namespace Ryujinx.Ava.Ui.Vulkan
                 1);
 
             commandBuffer.Submit(
-                new[] { _semaphorePair.ImageAvailableSemaphore },
-                new[] { PipelineStageFlags.PipelineStageColorAttachmentOutputBit },
-                new[] { _semaphorePair.RenderFinishedSemaphore });
+                stackalloc[] { _semaphorePair.ImageAvailableSemaphore },
+                stackalloc[] { PipelineStageFlags.PipelineStageColorAttachmentOutputBit },
+                stackalloc[] { _semaphorePair.RenderFinishedSemaphore });
 
             var semaphore = _semaphorePair.RenderFinishedSemaphore;
             var swapchain = _swapchain;
@@ -419,7 +410,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
             {
                 _swapchainExtension.QueuePresent(_device.PresentQueue.InternalHandle, presentInfo);
             }
-            
+
             CommandBufferPool.FreeUsedCommandBuffers();
         }
     }

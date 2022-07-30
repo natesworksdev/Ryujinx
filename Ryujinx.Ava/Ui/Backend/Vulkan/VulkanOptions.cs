@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Ryujinx.Ava.Ui.Vulkan
 {
@@ -18,12 +19,12 @@ namespace Ryujinx.Ava.Ui.Vulkan
         /// <summary>
         /// Specifies additional extensions to enable if available on the instance
         /// </summary>
-        public IList<string> InstanceExtensions { get; set; } = new List<string>();
+        public IEnumerable<string> InstanceExtensions { get; set; } = Enumerable.Empty<string>();
 
         /// <summary>
         /// Specifies layers to enable if available on the instance
         /// </summary>
-        public IList<string> EnabledLayers { get; set; } = new List<string>();
+        public IEnumerable<string> EnabledLayers { get; set; } = Enumerable.Empty<string>();
 
         /// <summary>
         /// Enables the debug layer

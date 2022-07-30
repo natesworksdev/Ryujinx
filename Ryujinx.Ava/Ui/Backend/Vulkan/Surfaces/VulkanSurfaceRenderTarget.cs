@@ -8,10 +8,10 @@ namespace Ryujinx.Ava.Ui.Vulkan.Surfaces
     {
         private readonly VulkanPlatformInterface _platformInterface;
 
-        public bool IsCorrupted { get; set; } = true;
         private readonly Format _format;
 
         public VulkanImage Image { get; private set; }
+        public bool IsCorrupted { get; private set; } = true;
 
         public uint MipLevels => Image.MipLevels;
 
@@ -27,7 +27,7 @@ namespace Ryujinx.Ava.Ui.Vulkan.Surfaces
 
             IsRgba = Display.SurfaceFormat.Format >= Format.R8G8B8A8Unorm &&
                      Display.SurfaceFormat.Format <= Format.R8G8B8A8Srgb;
-            
+
             _format = IsRgba ? Format.R8G8B8A8Unorm : Format.B8G8R8A8Unorm;
         }
 
@@ -47,7 +47,7 @@ namespace Ryujinx.Ava.Ui.Vulkan.Surfaces
 
         public void Dispose()
         {
-            _platformInterface.Device.WaitIdle();   
+            _platformInterface.Device.WaitIdle();
             DestroyImage();
             Display?.Dispose();
             Surface?.Dispose();

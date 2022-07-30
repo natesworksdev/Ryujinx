@@ -19,7 +19,11 @@ namespace Ryujinx.Ava.Ui.Controls
         }
 
         public readonly static StyledProperty<object> ImageProperty =
-            AvaloniaProperty.Register<RendererControl, object>(nameof(Image), 0, inherits: true, defaultBindingMode: BindingMode.TwoWay);
+            AvaloniaProperty.Register<RendererControl, object>(
+                nameof(Image),
+                0,
+                inherits: true,
+                defaultBindingMode: BindingMode.TwoWay);
 
         protected object Image
         {

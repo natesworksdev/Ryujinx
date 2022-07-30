@@ -143,7 +143,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public int BaseStyleIndex { get; set; }
         public int GraphicsBackendIndex
         {
-            get => graphicsBackendIndex; set
+            get => graphicsBackendIndex;
+            set
             {
                 graphicsBackendIndex = value;
                 OnPropertyChanged();

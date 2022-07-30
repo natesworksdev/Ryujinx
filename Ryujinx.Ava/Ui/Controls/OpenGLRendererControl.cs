@@ -12,10 +12,6 @@ using SPB.Graphics.OpenGL;
 using SPB.Platform;
 using SPB.Windowing;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
@@ -25,7 +21,9 @@ namespace Ryujinx.Ava.Ui.Controls
         public int Minor { get; }
         public OpenGLContextBase GameContext { get; set; }
 
-        public static OpenGLContextBase PrimaryContext => AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>().PrimaryContext.AsOpenGLContextBase();
+        public static OpenGLContextBase PrimaryContext =>
+            AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>()
+                .PrimaryContext.AsOpenGLContextBase();
 
         private SwappableNativeWindowBase _gameBackgroundWindow;
 

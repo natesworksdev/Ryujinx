@@ -38,16 +38,16 @@ namespace Ryujinx.Ava.Ui.Vulkan
             Queue = null;
         }
 
-        internal void Submit(SubmitInfo submitInfo, Fence fence = new())
+        internal void Submit(SubmitInfo submitInfo, Fence fence = default)
         {
             lock (_lock)
             {
-                Api.QueueSubmit(Queue.InternalHandle, 1, submitInfo, fence);
+                Api.QueueSubmit(Queue.InternalHandle, 1, submitInfo, fence).ThrowOnError();
             }
         }
 
         public void WaitIdle()
-        { 
+        {
             lock (_lock)
             {
                 Api.DeviceWaitIdle(InternalHandle);

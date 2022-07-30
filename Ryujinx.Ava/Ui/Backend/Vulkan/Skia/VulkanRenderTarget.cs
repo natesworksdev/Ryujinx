@@ -9,12 +9,11 @@ namespace Ryujinx.Ava.Ui.Backend.Vulkan
     internal class VulkanRenderTarget : ISkiaGpuRenderTarget
     {
         public GRContext GrContext { get; set; }
-        
+
         private readonly VulkanSurfaceRenderTarget _surface;
         private readonly IVulkanPlatformSurface _vulkanPlatformSurface;
 
-        public VulkanRenderTarget(VulkanPlatformInterface vulkanPlatformInterface,
-            IVulkanPlatformSurface vulkanPlatformSurface)
+        public VulkanRenderTarget(VulkanPlatformInterface vulkanPlatformInterface, IVulkanPlatformSurface vulkanPlatformSurface)
         {
             _surface = vulkanPlatformInterface.CreateRenderTarget(vulkanPlatformSurface);
             _vulkanPlatformSurface = vulkanPlatformSurface;
@@ -70,7 +69,7 @@ namespace Ryujinx.Ava.Ui.Backend.Vulkan
                         new GRBackendRenderTarget((int)size.Width, (int)size.Height, 1,
                             imageInfo);
                     var surface = SKSurface.Create(GrContext, renderTarget,
-                        session.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft,
+                        GRSurfaceOrigin.TopLeft,
                         _surface.IsRgba ? SKColorType.Rgba8888 : SKColorType.Bgra8888, SKColorSpace.CreateSrgb());
 
                     if (surface == null)
@@ -87,7 +86,9 @@ namespace Ryujinx.Ava.Ui.Backend.Vulkan
             finally
             {
                 if (!success)
+                {
                     session.Dispose();
+                }
             }
         }
 
@@ -108,7 +109,7 @@ namespace Ryujinx.Ava.Ui.Backend.Vulkan
                 SkSurface = surface;
                 _vulkanSession = vulkanSession;
 
-                SurfaceOrigin = vulkanSession.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft;
+                SurfaceOrigin = GRSurfaceOrigin.TopLeft;
             }
 
             public void Dispose()

@@ -26,12 +26,6 @@ namespace Ryujinx.Ava.Ui.Vulkan
                 .ThrowOnError();
         }
 
-        public unsafe void Dispose()
-        {
-            FreeUsedCommandBuffers();
-            _device.Api.DestroyCommandPool(_device.InternalHandle, _commandPool, null);
-        }
-
         private CommandBuffer AllocateCommandBuffer()
         {
             var commandBufferAllocateInfo = new CommandBufferAllocateInfo
@@ -56,7 +50,10 @@ namespace Ryujinx.Ava.Ui.Vulkan
         {
             lock (_usedCommandBuffers)
             {
-                foreach (var usedCommandBuffer in _usedCommandBuffers) usedCommandBuffer.Dispose();
+                foreach (var usedCommandBuffer in _usedCommandBuffers)
+                {
+                    usedCommandBuffer.Dispose();
+                }
 
                 _usedCommandBuffers.Clear();
             }
@@ -68,6 +65,12 @@ namespace Ryujinx.Ava.Ui.Vulkan
             {
                 _usedCommandBuffers.Add(commandBuffer);
             }
+        }
+
+        public void Dispose()
+        {
+            FreeUsedCommandBuffers();
+            _device.Api.DestroyCommandPool(_device.InternalHandle, _commandPool, Span<AllocationCallbacks>.Empty);
         }
 
         public class VulkanCommandBuffer : IDisposable
@@ -96,13 +99,6 @@ namespace Ryujinx.Ava.Ui.Vulkan
                 };
 
                 device.Api.CreateFence(device.InternalHandle, fenceCreateInfo, null, out _fence);
-            }
-
-            public unsafe void Dispose()
-            {
-                _device.Api.WaitForFences(_device.InternalHandle, 1, _fence, true, ulong.MaxValue);
-                _device.Api.FreeCommandBuffers(_device.InternalHandle, _commandBufferPool._commandPool, 1, InternalHandle);
-                _device.Api.DestroyFence(_device.InternalHandle, _fence, null);
             }
 
             public void BeginRecording()
@@ -145,7 +141,9 @@ namespace Ryujinx.Ava.Ui.Vulkan
                 EndRecording();
 
                 if (!fence.HasValue)
+                {
                     fence = _fence;
+                }
 
                 fixed (Semaphore* pWaitSemaphores = waitSemaphores, pSignalSemaphores = signalSemaphores)
                 {
@@ -171,6 +169,13 @@ namespace Ryujinx.Ava.Ui.Vulkan
                 }
 
                 _commandBufferPool.DisposeCommandBuffer(this);
+            }
+
+            public void Dispose()
+            {
+                _device.Api.WaitForFences(_device.InternalHandle, 1, _fence, true, ulong.MaxValue);
+                _device.Api.FreeCommandBuffers(_device.InternalHandle, _commandBufferPool._commandPool, 1, InternalHandle);
+                _device.Api.DestroyFence(_device.InternalHandle, _fence, Span<AllocationCallbacks>.Empty);
             }
         }
     }

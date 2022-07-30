@@ -28,7 +28,13 @@ namespace Ryujinx.Ava.Ui.Vulkan
 
         public float Scaling { get; }
 
-        public bool IsYFlipped { get; } = true;
+        private void Begin()
+        {
+            if (!Display.EnsureSwapchainAvailable())
+            {
+                _renderTarget.Invalidate();
+            }
+        }
 
         public void Dispose()
         {
@@ -37,12 +43,6 @@ namespace Ryujinx.Ava.Ui.Vulkan
             Display.BlitImageToCurrentImage(_renderTarget, _commandBuffer.InternalHandle);
 
             Display.EndPresentation(_commandBuffer);
-        }
-
-        private void Begin()
-        {
-            if (!Display.EnsureSwapchainAvailable())
-                _renderTarget.Invalidate();
         }
     }
 }

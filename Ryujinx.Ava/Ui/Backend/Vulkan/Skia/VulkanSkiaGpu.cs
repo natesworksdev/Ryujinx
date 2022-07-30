@@ -14,11 +14,10 @@ namespace Ryujinx.Ava.Ui.Backend.Vulkan
     {
         private readonly VulkanPlatformInterface _vulkan;
         private readonly long? _maxResourceBytes;
-        private GRContext _grContext;
         private GRVkBackendContext _grVkBackend;
         private bool _initialized;
 
-        public GRContext GrContext { get => _grContext; set => _grContext = value; }
+        public GRContext GrContext { get; private set; }
 
         public VulkanSkiaGpu(long? maxResourceBytes)
         {
@@ -41,23 +40,30 @@ namespace Ryujinx.Ava.Ui.Backend.Vulkan
                 if (deviceHandle != IntPtr.Zero)
                 {
                     addr = _vulkan.Device.Api.GetDeviceProcAddr(new Device(deviceHandle), name);
+
                     if (addr != IntPtr.Zero)
+                    {
                         return addr;
+                    }
 
                     addr = _vulkan.Device.Api.GetDeviceProcAddr(new Device(_vulkan.Device.Handle), name);
 
                     if (addr != IntPtr.Zero)
+                    {
                         return addr;
+                    }
                 }
 
                 addr = _vulkan.Device.Api.GetInstanceProcAddr(new Instance(_vulkan.Instance.Handle), name);
 
                 if (addr == IntPtr.Zero)
+                {
                     addr = _vulkan.Device.Api.GetInstanceProcAddr(new Instance(instanceHandle), name);
+                }
 
                 return addr;
             };
-            
+
             _grVkBackend = new GRVkBackendContext()
             {
                 VkInstance = _vulkan.Device.Handle,
@@ -67,10 +73,10 @@ namespace Ryujinx.Ava.Ui.Backend.Vulkan
                 GraphicsQueueIndex = _vulkan.PhysicalDevice.QueueFamilyIndex,
                 GetProcedureAddress = getProc
             };
-            _grContext = GRContext.CreateVulkan(_grVkBackend);
+            GrContext = GRContext.CreateVulkan(_grVkBackend);
             if (_maxResourceBytes.HasValue)
             {
-                _grContext.SetResourceCacheLimit(_maxResourceBytes.Value);
+                GrContext.SetResourceCacheLimit(_maxResourceBytes.Value);
             }
         }
 
@@ -98,13 +104,11 @@ namespace Ryujinx.Ava.Ui.Backend.Vulkan
                     continue;
                 }
 
-                var vulkanRenderTarget = new VulkanRenderTarget(_vulkan, window);
+                VulkanRenderTarget vulkanRenderTarget = new VulkanRenderTarget(_vulkan, window);
 
                 Initialize();
 
-                vulkanRenderTarget.GrContext = _grContext;
-
-                return vulkanRenderTarget;
+                vulkanRenderTarget.GrContext = GrContext;
             }
 
             return null;

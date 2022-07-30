@@ -23,28 +23,25 @@ namespace Ryujinx.Ava.Ui.Vulkan
         internal Instance InternalHandle { get; }
         public Vk Api { get; }
 
-        internal static IList<string> RequiredInstanceExtensions
+        internal static IEnumerable<string> RequiredInstanceExtensions
         {
             get
             {
-                var extensions = new List<string> { "VK_KHR_surface" };
-
+                yield return "VK_KHR_surface";
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    extensions.Add("VK_KHR_xlib_surface");
+                    yield return "VK_KHR_xlib_surface";
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    extensions.Add("VK_KHR_win32_surface");
+                    yield return "VK_KHR_win32_surface";
                 }
-
-                return extensions;
             }
         }
 
-        public unsafe void Dispose()
+        public void Dispose()
         {
-            Api?.DestroyInstance(InternalHandle, null);
+            Api?.DestroyInstance(InternalHandle, Span<AllocationCallbacks>.Empty);
             Api?.Dispose();
         }
 
@@ -102,7 +99,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
             };
 
             api.CreateInstance(in instanceCreateInfo, null, out var instance).ThrowOnError();
-            
+
             Marshal.FreeHGlobal(applicationName);
             Marshal.FreeHGlobal(engineName);
 

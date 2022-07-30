@@ -24,9 +24,9 @@ namespace Ryujinx.Ava.Ui.Vulkan
 
         internal PixelSize SurfaceSize => _vulkanPlatformSurface.SurfaceSize;
 
-        public unsafe void Dispose()
+        public void Dispose()
         {
-            SurfaceExtension.DestroySurface(_instance.InternalHandle, ApiHandle, null);
+            SurfaceExtension.DestroySurface(_instance.InternalHandle, ApiHandle, Span<AllocationCallbacks>.Empty);
             _vulkanPlatformSurface.Dispose();
         }
 
@@ -49,27 +49,25 @@ namespace Ryujinx.Ava.Ui.Vulkan
             return isSupported;
         }
 
-        internal unsafe SurfaceFormatKHR GetSurfaceFormat(VulkanPhysicalDevice physicalDevice)
+        internal SurfaceFormatKHR GetSurfaceFormat(VulkanPhysicalDevice physicalDevice)
         {
-            uint surfaceFormatsCount;
-
-            SurfaceExtension.GetPhysicalDeviceSurfaceFormats(physicalDevice.InternalHandle, ApiHandle,
-                &surfaceFormatsCount, null);
-
-            var surfaceFormats = new SurfaceFormatKHR[surfaceFormatsCount];
-
-            fixed (SurfaceFormatKHR* pSurfaceFormats = surfaceFormats)
-            {
-                SurfaceExtension.GetPhysicalDeviceSurfaceFormats(physicalDevice.InternalHandle, ApiHandle,
-                    &surfaceFormatsCount, pSurfaceFormats);
-            }
+            Span<uint> surfaceFormatsCount = stackalloc uint[1];
+            SurfaceExtension.GetPhysicalDeviceSurfaceFormats(physicalDevice.InternalHandle, ApiHandle, surfaceFormatsCount, Span<SurfaceFormatKHR>.Empty);
+            Span<SurfaceFormatKHR> surfaceFormats = stackalloc SurfaceFormatKHR[(int)surfaceFormatsCount[0]];
+            SurfaceExtension.GetPhysicalDeviceSurfaceFormats(physicalDevice.InternalHandle, ApiHandle, surfaceFormatsCount, surfaceFormats);
 
             if (surfaceFormats.Length == 1 && surfaceFormats[0].Format == Format.Undefined)
+            {
                 return new SurfaceFormatKHR(Format.B8G8R8A8Unorm, ColorSpaceKHR.ColorspaceSrgbNonlinearKhr);
+            }
+
             foreach (var format in surfaceFormats)
-                if (format.Format == Format.B8G8R8A8Unorm &&
-                    format.ColorSpace == ColorSpaceKHR.ColorspaceSrgbNonlinearKhr)
+            {
+                if (format.Format == Format.B8G8R8A8Unorm && format.ColorSpace == ColorSpaceKHR.ColorspaceSrgbNonlinearKhr)
+                {
                     return format;
+                }
+            }
 
             return surfaceFormats[0];
         }

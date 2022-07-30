@@ -49,10 +49,5 @@ namespace Ryujinx.Ava.Ui.Backend.Vulkan
 
             throw new PlatformNotSupportedException("The current platform does not support surface creation.");
         }
-
-        public override void Dispose()
-        {
-            base.Dispose();
-        }
     }
 }
