@@ -37,7 +37,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
         public string DeviceId { get; }
         public Version ApiVersion { get; }
         public static Dictionary<PhysicalDevice, PhysicalDeviceProperties> PhysicalDevices { get; private set; }
-        public static List<KeyValuePair<PhysicalDevice, PhysicalDeviceProperties>> SuitableDevices { get; private set; }
+        public static IEnumerable<KeyValuePair<PhysicalDevice, PhysicalDeviceProperties>> SuitableDevices { get; private set; }
 
         internal static void SelectAvailableDevices(VulkanInstance instance,
             VulkanSurface surface, bool preferDiscreteGpu, string preferredDevice)
@@ -68,10 +68,10 @@ namespace Ryujinx.Ava.Ui.Vulkan
                 x.Value,
                 surface.ApiHandle,
                 out _,
-                out _)).ToList();
+                out _));
         }
 
-        internal static unsafe VulkanPhysicalDevice FindSuitablePhysicalDevice(VulkanInstance instance,
+        internal static VulkanPhysicalDevice FindSuitablePhysicalDevice(VulkanInstance instance,
             VulkanSurface surface, bool preferDiscreteGpu, string preferredDevice)
         {
             SelectAvailableDevices(instance, surface, preferDiscreteGpu, preferredDevice);
@@ -180,7 +180,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
             return extensionProperties.Select(x => Marshal.PtrToStringAnsi((IntPtr)x.ExtensionName)).ToArray();
         }
 
-        private static unsafe uint FindSuitableQueueFamily(Vk api, PhysicalDevice physicalDevice, SurfaceKHR surface,
+        private static uint FindSuitableQueueFamily(Vk api, PhysicalDevice physicalDevice, SurfaceKHR surface,
             out uint queueCount)
         {
             const QueueFlags RequiredFlags = QueueFlags.QueueGraphicsBit | QueueFlags.QueueComputeBit;
