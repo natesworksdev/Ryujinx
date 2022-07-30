@@ -102,30 +102,9 @@ namespace Ryujinx.Ava.Ui.Vulkan
             bool isRotated = capabilities.CurrentTransform.HasFlag(SurfaceTransformFlagsKHR.SurfaceTransformRotate90BitKhr) ||
                 capabilities.CurrentTransform.HasFlag(SurfaceTransformFlagsKHR.SurfaceTransformRotate270BitKhr);
 
-            if (capabilities.CurrentExtent.Width != uint.MaxValue)
-            {
-                swapchainExtent = capabilities.CurrentExtent;
-            }
-            else
-            {
-                var surfaceSize = surface.SurfaceSize;
+            swapchainExtent = GetSwapchainExtent(surface, capabilities);
 
-                var width = Math.Clamp((uint)surfaceSize.Width, capabilities.MinImageExtent.Width, capabilities.MaxImageExtent.Width);
-                var height = Math.Clamp((uint)surfaceSize.Height, capabilities.MinImageExtent.Height, capabilities.MaxImageExtent.Height);
-
-                swapchainExtent = new Extent2D(width, height);
-            }
-
-            var compositeAlphaFlags = CompositeAlphaFlagsKHR.CompositeAlphaOpaqueBitKhr;
-
-            if (capabilities.SupportedCompositeAlpha.HasFlag(CompositeAlphaFlagsKHR.CompositeAlphaPostMultipliedBitKhr))
-            {
-                compositeAlphaFlags = CompositeAlphaFlagsKHR.CompositeAlphaPostMultipliedBitKhr;
-            }
-            else if (capabilities.SupportedCompositeAlpha.HasFlag(CompositeAlphaFlagsKHR.CompositeAlphaPreMultipliedBitKhr))
-            {
-                compositeAlphaFlags = CompositeAlphaFlagsKHR.CompositeAlphaPreMultipliedBitKhr;
-            }
+            CompositeAlphaFlagsKHR compositeAlphaFlags = GetSuitableCompositeAlphaFlags(capabilities);
 
             PresentModeKHR presentMode = GetSuitablePresentMode(physicalDevice, surface, vsyncEnabled);
 
@@ -159,6 +138,42 @@ namespace Ryujinx.Ava.Ui.Vulkan
             }
 
             return swapchain;
+        }
+
+        private static unsafe Extent2D GetSwapchainExtent(VulkanSurface surface, SurfaceCapabilitiesKHR capabilities)
+        {
+            Extent2D swapchainExtent;
+            if (capabilities.CurrentExtent.Width != uint.MaxValue)
+            {
+                swapchainExtent = capabilities.CurrentExtent;
+            }
+            else
+            {
+                var surfaceSize = surface.SurfaceSize;
+
+                var width = Math.Clamp((uint)surfaceSize.Width, capabilities.MinImageExtent.Width, capabilities.MaxImageExtent.Width);
+                var height = Math.Clamp((uint)surfaceSize.Height, capabilities.MinImageExtent.Height, capabilities.MaxImageExtent.Height);
+
+                swapchainExtent = new Extent2D(width, height);
+            }
+
+            return swapchainExtent;
+        }
+
+        private static unsafe CompositeAlphaFlagsKHR GetSuitableCompositeAlphaFlags(SurfaceCapabilitiesKHR capabilities)
+        {
+            var compositeAlphaFlags = CompositeAlphaFlagsKHR.CompositeAlphaOpaqueBitKhr;
+
+            if (capabilities.SupportedCompositeAlpha.HasFlag(CompositeAlphaFlagsKHR.CompositeAlphaPostMultipliedBitKhr))
+            {
+                compositeAlphaFlags = CompositeAlphaFlagsKHR.CompositeAlphaPostMultipliedBitKhr;
+            }
+            else if (capabilities.SupportedCompositeAlpha.HasFlag(CompositeAlphaFlagsKHR.CompositeAlphaPreMultipliedBitKhr))
+            {
+                compositeAlphaFlags = CompositeAlphaFlagsKHR.CompositeAlphaPreMultipliedBitKhr;
+            }
+
+            return compositeAlphaFlags;
         }
 
         private static unsafe PresentModeKHR GetSuitablePresentMode(VulkanPhysicalDevice physicalDevice, VulkanSurface surface, bool vsyncEnabled)
