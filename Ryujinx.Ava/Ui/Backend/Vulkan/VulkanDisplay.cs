@@ -90,20 +90,6 @@ namespace Ryujinx.Ava.Ui.Vulkan
             VulkanSurface.SurfaceExtension.GetPhysicalDeviceSurfaceCapabilities(physicalDevice.InternalHandle,
                 surface.ApiHandle, out var capabilities);
 
-            uint presentModesCount;
-
-            VulkanSurface.SurfaceExtension.GetPhysicalDeviceSurfacePresentModes(physicalDevice.InternalHandle,
-                surface.ApiHandle,
-                &presentModesCount, null);
-
-            var presentModes = new PresentModeKHR[presentModesCount];
-
-            fixed (PresentModeKHR* pPresentModes = presentModes)
-            {
-                VulkanSurface.SurfaceExtension.GetPhysicalDeviceSurfacePresentModes(physicalDevice.InternalHandle,
-                    surface.ApiHandle, &presentModesCount, pPresentModes);
-            }
-
             var imageCount = capabilities.MinImageCount + 1;
             if (capabilities.MaxImageCount > 0 && imageCount > capabilities.MaxImageCount)
             {
@@ -130,22 +116,6 @@ namespace Ryujinx.Ava.Ui.Vulkan
                 swapchainExtent = new Extent2D(width, height);
             }
 
-            var modes = presentModes.ToList();
-            var presentMode = PresentModeKHR.PresentModeFifoKhr;
-
-            if (!vsyncEnabled && modes.Contains(PresentModeKHR.PresentModeImmediateKhr))
-            {
-                presentMode = PresentModeKHR.PresentModeImmediateKhr;
-            }
-            else if (modes.Contains(PresentModeKHR.PresentModeMailboxKhr))
-            {
-                presentMode = PresentModeKHR.PresentModeMailboxKhr;
-            }
-            else if (modes.Contains(PresentModeKHR.PresentModeImmediateKhr))
-            {
-                presentMode = PresentModeKHR.PresentModeImmediateKhr;
-            }
-
             var compositeAlphaFlags = CompositeAlphaFlagsKHR.CompositeAlphaOpaqueBitKhr;
 
             if (capabilities.SupportedCompositeAlpha.HasFlag(CompositeAlphaFlagsKHR.CompositeAlphaPostMultipliedBitKhr))
@@ -156,6 +126,8 @@ namespace Ryujinx.Ava.Ui.Vulkan
             {
                 compositeAlphaFlags = CompositeAlphaFlagsKHR.CompositeAlphaPreMultipliedBitKhr;
             }
+
+            PresentModeKHR presentMode = GetSuitablePresentMode(physicalDevice, surface, vsyncEnabled);
 
             var swapchainCreateInfo = new SwapchainCreateInfoKHR
             {
@@ -187,6 +159,41 @@ namespace Ryujinx.Ava.Ui.Vulkan
             }
 
             return swapchain;
+        }
+
+        private static unsafe PresentModeKHR GetSuitablePresentMode(VulkanPhysicalDevice physicalDevice, VulkanSurface surface, bool vsyncEnabled)
+        {
+            uint presentModesCount;
+
+            VulkanSurface.SurfaceExtension.GetPhysicalDeviceSurfacePresentModes(physicalDevice.InternalHandle,
+                surface.ApiHandle,
+                &presentModesCount, null);
+
+            var presentModes = new PresentModeKHR[presentModesCount];
+
+            fixed (PresentModeKHR* pPresentModes = presentModes)
+            {
+                VulkanSurface.SurfaceExtension.GetPhysicalDeviceSurfacePresentModes(physicalDevice.InternalHandle,
+                    surface.ApiHandle, &presentModesCount, pPresentModes);
+            }
+
+            var modes = presentModes.ToList();
+            var presentMode = PresentModeKHR.PresentModeFifoKhr;
+
+            if (!vsyncEnabled && modes.Contains(PresentModeKHR.PresentModeImmediateKhr))
+            {
+                presentMode = PresentModeKHR.PresentModeImmediateKhr;
+            }
+            else if (modes.Contains(PresentModeKHR.PresentModeMailboxKhr))
+            {
+                presentMode = PresentModeKHR.PresentModeMailboxKhr;
+            }
+            else if (modes.Contains(PresentModeKHR.PresentModeImmediateKhr))
+            {
+                presentMode = PresentModeKHR.PresentModeImmediateKhr;
+            }
+
+            return presentMode;
         }
 
         internal static VulkanDisplay CreateDisplay(VulkanInstance instance, VulkanDevice device,
