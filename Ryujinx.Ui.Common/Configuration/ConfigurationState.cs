@@ -1151,6 +1151,8 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 configurationFileFormat.GraphicsBackend = GraphicsBackend.OpenGl;
 
+                result |= ConfigurationLoadResult.MigratedFromPreVulkan;
+
                 configurationFileUpdated = true;
             }
 
