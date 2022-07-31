@@ -735,7 +735,7 @@ namespace Ryujinx.Ui.Common.Configuration
             };
         }
 
-        public void Load(ConfigurationFileFormat configurationFileFormat, string configurationFilePath)
+        public ConfigurationLoadResult Load(ConfigurationFileFormat configurationFileFormat, string configurationFilePath)
         {
             bool configurationFileUpdated = false;
 
@@ -745,8 +745,10 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 LoadDefault();
 
-                return;
+                return ConfigurationLoadResult.NotLoaded;
             }
+
+            ConfigurationLoadResult result = ConfigurationLoadResult.Success;
 
             if (configurationFileFormat.Version < 2)
             {
@@ -1143,6 +1145,15 @@ namespace Ryujinx.Ui.Common.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 40)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 40.");
+
+                configurationFileFormat.GraphicsBackend = GraphicsBackend.OpenGl;
+
+                configurationFileUpdated = true;
+            }
+
             Logger.EnableFileLog.Value                = configurationFileFormat.EnableFileLog;
             Graphics.ResScale.Value                   = configurationFileFormat.ResScale;
             Graphics.ResScaleCustom.Value             = configurationFileFormat.ResScaleCustom;
@@ -1223,6 +1234,8 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 Ryujinx.Common.Logging.Logger.Notice.Print(LogClass.Application, $"Configuration file updated to version {ConfigurationFileFormat.CurrentVersion}");
             }
+
+            return result;
         }
 
         private static void LogValueChange<T>(object sender, ReactiveEventArgs<T> eventArgs, string valueName)
