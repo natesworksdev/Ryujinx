@@ -9,512 +9,299 @@ namespace Ryujinx.Graphics.Vulkan
     {
         public static ShaderStageFlags Convert(this ShaderStage stage)
         {
-            switch (stage)
+            return stage switch
             {
-                case ShaderStage.Vertex:
-                    return ShaderStageFlags.ShaderStageVertexBit;
-                case ShaderStage.Geometry:
-                    return ShaderStageFlags.ShaderStageGeometryBit;
-                case ShaderStage.TessellationControl:
-                    return ShaderStageFlags.ShaderStageTessellationControlBit;
-                case ShaderStage.TessellationEvaluation:
-                    return ShaderStageFlags.ShaderStageTessellationEvaluationBit;
-                case ShaderStage.Fragment:
-                    return ShaderStageFlags.ShaderStageFragmentBit;
-                case ShaderStage.Compute:
-                    return ShaderStageFlags.ShaderStageComputeBit;
+                ShaderStage.Vertex => ShaderStageFlags.ShaderStageVertexBit,
+                ShaderStage.Geometry => ShaderStageFlags.ShaderStageGeometryBit,
+                ShaderStage.TessellationControl => ShaderStageFlags.ShaderStageTessellationControlBit,
+                ShaderStage.TessellationEvaluation => ShaderStageFlags.ShaderStageTessellationEvaluationBit,
+                ShaderStage.Fragment => ShaderStageFlags.ShaderStageFragmentBit,
+                ShaderStage.Compute => ShaderStageFlags.ShaderStageComputeBit,
+                _ => LogInvalidAndReturn(stage, nameof(ShaderStage), (ShaderStageFlags)0)
             };
-
-            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(ShaderStage)} enum value: {stage}.");
-
-            return 0;
         }
 
         public static PipelineStageFlags ConvertToPipelineStageFlags(this ShaderStage stage)
         {
-            switch (stage)
+            return stage switch
             {
-                case ShaderStage.Vertex:
-                    return PipelineStageFlags.PipelineStageVertexShaderBit;
-                case ShaderStage.Geometry:
-                    return PipelineStageFlags.PipelineStageGeometryShaderBit;
-                case ShaderStage.TessellationControl:
-                    return PipelineStageFlags.PipelineStageTessellationControlShaderBit;
-                case ShaderStage.TessellationEvaluation:
-                    return PipelineStageFlags.PipelineStageTessellationEvaluationShaderBit;
-                case ShaderStage.Fragment:
-                    return PipelineStageFlags.PipelineStageFragmentShaderBit;
-                case ShaderStage.Compute:
-                    return PipelineStageFlags.PipelineStageComputeShaderBit;
+                ShaderStage.Vertex => PipelineStageFlags.PipelineStageVertexShaderBit,
+                ShaderStage.Geometry => PipelineStageFlags.PipelineStageGeometryShaderBit,
+                ShaderStage.TessellationControl => PipelineStageFlags.PipelineStageTessellationControlShaderBit,
+                ShaderStage.TessellationEvaluation => PipelineStageFlags.PipelineStageTessellationEvaluationShaderBit,
+                ShaderStage.Fragment => PipelineStageFlags.PipelineStageFragmentShaderBit,
+                ShaderStage.Compute => PipelineStageFlags.PipelineStageComputeShaderBit,
+                _ => LogInvalidAndReturn(stage, nameof(ShaderStage), (PipelineStageFlags)0)
             };
-
-            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(ShaderStage)} enum value: {stage}.");
-
-            return 0;
         }
 
         public static SamplerAddressMode Convert(this AddressMode mode)
         {
-            switch (mode)
+            return mode switch
             {
-                case AddressMode.Clamp:
-                    return SamplerAddressMode.ClampToEdge; // TODO: Should be clamp.
-                case AddressMode.Repeat:
-                    return SamplerAddressMode.Repeat;
-                case AddressMode.MirrorClamp:
-                    return SamplerAddressMode.ClampToEdge; // TODO: Should be mirror clamp.
-                case AddressMode.MirrorClampToEdge:
-                    return SamplerAddressMode.MirrorClampToEdgeKhr;
-                case AddressMode.MirrorClampToBorder:
-                    return SamplerAddressMode.ClampToBorder; // TODO: Should be mirror clamp to border.
-                case AddressMode.ClampToBorder:
-                    return SamplerAddressMode.ClampToBorder;
-                case AddressMode.MirroredRepeat:
-                    return SamplerAddressMode.MirroredRepeat;
-                case AddressMode.ClampToEdge:
-                    return SamplerAddressMode.ClampToEdge;
-            }
-
-            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(AddressMode)} enum value: {mode}.");
-
-            return SamplerAddressMode.ClampToEdge; // TODO: Should be clamp.
+                AddressMode.Clamp => SamplerAddressMode.ClampToEdge, // TODO: Should be clamp.
+                AddressMode.Repeat => SamplerAddressMode.Repeat,
+                AddressMode.MirrorClamp => SamplerAddressMode.ClampToEdge, // TODO: Should be mirror clamp.
+                AddressMode.MirrorClampToEdge => SamplerAddressMode.MirrorClampToEdgeKhr,
+                AddressMode.MirrorClampToBorder => SamplerAddressMode.ClampToBorder, // TODO: Should be mirror clamp to border.
+                AddressMode.ClampToBorder => SamplerAddressMode.ClampToBorder,
+                AddressMode.MirroredRepeat => SamplerAddressMode.MirroredRepeat,
+                AddressMode.ClampToEdge => SamplerAddressMode.ClampToEdge,
+                _ => LogInvalidAndReturn(mode, nameof(AddressMode), SamplerAddressMode.ClampToEdge)  // TODO: Should be clamp.
+            };
         }
 
         public static Silk.NET.Vulkan.BlendFactor Convert(this GAL.BlendFactor factor)
         {
-            switch (factor)
+            return factor switch
             {
-                case GAL.BlendFactor.Zero:
-                case GAL.BlendFactor.ZeroGl:
-                    return Silk.NET.Vulkan.BlendFactor.Zero;
-                case GAL.BlendFactor.One:
-                case GAL.BlendFactor.OneGl:
-                    return Silk.NET.Vulkan.BlendFactor.One;
-                case GAL.BlendFactor.SrcColor:
-                case GAL.BlendFactor.SrcColorGl:
-                    return Silk.NET.Vulkan.BlendFactor.SrcColor;
-                case GAL.BlendFactor.OneMinusSrcColor:
-                case GAL.BlendFactor.OneMinusSrcColorGl:
-                    return Silk.NET.Vulkan.BlendFactor.OneMinusSrcColor;
-                case GAL.BlendFactor.SrcAlpha:
-                case GAL.BlendFactor.SrcAlphaGl:
-                    return Silk.NET.Vulkan.BlendFactor.SrcAlpha;
-                case GAL.BlendFactor.OneMinusSrcAlpha:
-                case GAL.BlendFactor.OneMinusSrcAlphaGl:
-                    return Silk.NET.Vulkan.BlendFactor.OneMinusSrcAlpha;
-                case GAL.BlendFactor.DstAlpha:
-                case GAL.BlendFactor.DstAlphaGl:
-                    return Silk.NET.Vulkan.BlendFactor.DstAlpha;
-                case GAL.BlendFactor.OneMinusDstAlpha:
-                case GAL.BlendFactor.OneMinusDstAlphaGl:
-                    return Silk.NET.Vulkan.BlendFactor.OneMinusDstAlpha;
-                case GAL.BlendFactor.DstColor:
-                case GAL.BlendFactor.DstColorGl:
-                    return Silk.NET.Vulkan.BlendFactor.DstColor;
-                case GAL.BlendFactor.OneMinusDstColor:
-                case GAL.BlendFactor.OneMinusDstColorGl:
-                    return Silk.NET.Vulkan.BlendFactor.OneMinusDstColor;
-                case GAL.BlendFactor.SrcAlphaSaturate:
-                case GAL.BlendFactor.SrcAlphaSaturateGl:
-                    return Silk.NET.Vulkan.BlendFactor.SrcAlphaSaturate;
-                case GAL.BlendFactor.Src1Color:
-                case GAL.BlendFactor.Src1ColorGl:
-                    return Silk.NET.Vulkan.BlendFactor.Src1Color;
-                case GAL.BlendFactor.OneMinusSrc1Color:
-                case GAL.BlendFactor.OneMinusSrc1ColorGl:
-                    return Silk.NET.Vulkan.BlendFactor.OneMinusSrc1Color;
-                case GAL.BlendFactor.Src1Alpha:
-                case GAL.BlendFactor.Src1AlphaGl:
-                    return Silk.NET.Vulkan.BlendFactor.Src1Alpha;
-                case GAL.BlendFactor.OneMinusSrc1Alpha:
-                case GAL.BlendFactor.OneMinusSrc1AlphaGl:
-                    return Silk.NET.Vulkan.BlendFactor.OneMinusSrc1Alpha;
-                case GAL.BlendFactor.ConstantColor:
-                    return Silk.NET.Vulkan.BlendFactor.ConstantColor;
-                case GAL.BlendFactor.OneMinusConstantColor:
-                    return Silk.NET.Vulkan.BlendFactor.OneMinusConstantColor;
-                case GAL.BlendFactor.ConstantAlpha:
-                    return Silk.NET.Vulkan.BlendFactor.ConstantAlpha;
-                case GAL.BlendFactor.OneMinusConstantAlpha:
-                    return Silk.NET.Vulkan.BlendFactor.OneMinusConstantAlpha;
-            }
-
-            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(GAL.BlendFactor)} enum value: {factor}.");
-
-            return Silk.NET.Vulkan.BlendFactor.Zero;
+                GAL.BlendFactor.Zero or GAL.BlendFactor.ZeroGl => Silk.NET.Vulkan.BlendFactor.Zero,
+                GAL.BlendFactor.One or GAL.BlendFactor.OneGl => Silk.NET.Vulkan.BlendFactor.One,
+                GAL.BlendFactor.SrcColor or GAL.BlendFactor.SrcColorGl => Silk.NET.Vulkan.BlendFactor.SrcColor,
+                GAL.BlendFactor.OneMinusSrcColor or GAL.BlendFactor.OneMinusSrcColorGl => Silk.NET.Vulkan.BlendFactor.OneMinusSrcColor,
+                GAL.BlendFactor.SrcAlpha or GAL.BlendFactor.SrcAlphaGl => Silk.NET.Vulkan.BlendFactor.SrcAlpha,
+                GAL.BlendFactor.OneMinusSrcAlpha or GAL.BlendFactor.OneMinusSrcAlphaGl => Silk.NET.Vulkan.BlendFactor.OneMinusSrcAlpha,
+                GAL.BlendFactor.DstAlpha or GAL.BlendFactor.DstAlphaGl => Silk.NET.Vulkan.BlendFactor.DstAlpha,
+                GAL.BlendFactor.OneMinusDstAlpha or GAL.BlendFactor.OneMinusDstAlphaGl => Silk.NET.Vulkan.BlendFactor.OneMinusDstAlpha,
+                GAL.BlendFactor.DstColor or GAL.BlendFactor.DstColorGl => Silk.NET.Vulkan.BlendFactor.DstColor,
+                GAL.BlendFactor.OneMinusDstColor or GAL.BlendFactor.OneMinusDstColorGl => Silk.NET.Vulkan.BlendFactor.OneMinusDstColor,
+                GAL.BlendFactor.SrcAlphaSaturate or GAL.BlendFactor.SrcAlphaSaturateGl => Silk.NET.Vulkan.BlendFactor.SrcAlphaSaturate,
+                GAL.BlendFactor.Src1Color or GAL.BlendFactor.Src1ColorGl => Silk.NET.Vulkan.BlendFactor.Src1Color,
+                GAL.BlendFactor.OneMinusSrc1Color or GAL.BlendFactor.OneMinusSrc1ColorGl => Silk.NET.Vulkan.BlendFactor.OneMinusSrc1Color,
+                GAL.BlendFactor.Src1Alpha or GAL.BlendFactor.Src1AlphaGl => Silk.NET.Vulkan.BlendFactor.Src1Alpha,
+                GAL.BlendFactor.OneMinusSrc1Alpha or GAL.BlendFactor.OneMinusSrc1AlphaGl => Silk.NET.Vulkan.BlendFactor.OneMinusSrc1Alpha,
+                GAL.BlendFactor.ConstantColor => Silk.NET.Vulkan.BlendFactor.ConstantColor,
+                GAL.BlendFactor.OneMinusConstantColor => Silk.NET.Vulkan.BlendFactor.OneMinusConstantColor,
+                GAL.BlendFactor.ConstantAlpha => Silk.NET.Vulkan.BlendFactor.ConstantAlpha,
+                GAL.BlendFactor.OneMinusConstantAlpha => Silk.NET.Vulkan.BlendFactor.OneMinusConstantAlpha,
+                _ => LogInvalidAndReturn(factor, nameof(GAL.BlendFactor), Silk.NET.Vulkan.BlendFactor.Zero)
+            };
         }
 
         public static Silk.NET.Vulkan.BlendOp Convert(this GAL.BlendOp op)
         {
-            switch (op)
+            return op switch
             {
-                case GAL.BlendOp.Add:
-                case GAL.BlendOp.AddGl:
-                    return Silk.NET.Vulkan.BlendOp.Add;
-                case GAL.BlendOp.Subtract:
-                case GAL.BlendOp.SubtractGl:
-                    return Silk.NET.Vulkan.BlendOp.Subtract;
-                case GAL.BlendOp.ReverseSubtract:
-                case GAL.BlendOp.ReverseSubtractGl:
-                    return Silk.NET.Vulkan.BlendOp.ReverseSubtract;
-                case GAL.BlendOp.Minimum:
-                case GAL.BlendOp.MinimumGl:
-                    return Silk.NET.Vulkan.BlendOp.Min;
-                case GAL.BlendOp.Maximum:
-                case GAL.BlendOp.MaximumGl:
-                    return Silk.NET.Vulkan.BlendOp.Max;
-            }
-
-            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(GAL.BlendOp)} enum value: {op}.");
-
-            return Silk.NET.Vulkan.BlendOp.Add;
+                GAL.BlendOp.Add or GAL.BlendOp.AddGl => Silk.NET.Vulkan.BlendOp.Add,
+                GAL.BlendOp.Subtract or GAL.BlendOp.SubtractGl => Silk.NET.Vulkan.BlendOp.Subtract,
+                GAL.BlendOp.ReverseSubtract or GAL.BlendOp.ReverseSubtractGl => Silk.NET.Vulkan.BlendOp.ReverseSubtract,
+                GAL.BlendOp.Minimum or GAL.BlendOp.MinimumGl => Silk.NET.Vulkan.BlendOp.Min,
+                GAL.BlendOp.Maximum or GAL.BlendOp.MaximumGl => Silk.NET.Vulkan.BlendOp.Max,
+                _ => LogInvalidAndReturn(op, nameof(GAL.BlendOp), Silk.NET.Vulkan.BlendOp.Add)
+            };
         }
 
         public static Silk.NET.Vulkan.CompareOp Convert(this GAL.CompareOp op)
         {
-            switch (op)
+            return op switch
             {
-                case GAL.CompareOp.Never:
-                case GAL.CompareOp.NeverGl:
-                    return Silk.NET.Vulkan.CompareOp.Never;
-                case GAL.CompareOp.Less:
-                case GAL.CompareOp.LessGl:
-                    return Silk.NET.Vulkan.CompareOp.Less;
-                case GAL.CompareOp.Equal:
-                case GAL.CompareOp.EqualGl:
-                    return Silk.NET.Vulkan.CompareOp.Equal;
-                case GAL.CompareOp.LessOrEqual:
-                case GAL.CompareOp.LessOrEqualGl:
-                    return Silk.NET.Vulkan.CompareOp.LessOrEqual;
-                case GAL.CompareOp.Greater:
-                case GAL.CompareOp.GreaterGl:
-                    return Silk.NET.Vulkan.CompareOp.Greater;
-                case GAL.CompareOp.NotEqual:
-                case GAL.CompareOp.NotEqualGl:
-                    return Silk.NET.Vulkan.CompareOp.NotEqual;
-                case GAL.CompareOp.GreaterOrEqual:
-                case GAL.CompareOp.GreaterOrEqualGl:
-                    return Silk.NET.Vulkan.CompareOp.GreaterOrEqual;
-                case GAL.CompareOp.Always:
-                case GAL.CompareOp.AlwaysGl:
-                    return Silk.NET.Vulkan.CompareOp.Always;
-            }
-
-            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(GAL.CompareOp)} enum value: {op}.");
-
-            return Silk.NET.Vulkan.CompareOp.Never;
+                GAL.CompareOp.Never or GAL.CompareOp.NeverGl => Silk.NET.Vulkan.CompareOp.Never,
+                GAL.CompareOp.Less or GAL.CompareOp.LessGl => Silk.NET.Vulkan.CompareOp.Less,
+                GAL.CompareOp.Equal or GAL.CompareOp.EqualGl => Silk.NET.Vulkan.CompareOp.Equal,
+                GAL.CompareOp.LessOrEqual or GAL.CompareOp.LessOrEqualGl => Silk.NET.Vulkan.CompareOp.LessOrEqual,
+                GAL.CompareOp.Greater or GAL.CompareOp.GreaterGl => Silk.NET.Vulkan.CompareOp.Greater,
+                GAL.CompareOp.NotEqual or GAL.CompareOp.NotEqualGl => Silk.NET.Vulkan.CompareOp.NotEqual,
+                GAL.CompareOp.GreaterOrEqual or GAL.CompareOp.GreaterOrEqualGl => Silk.NET.Vulkan.CompareOp.GreaterOrEqual,
+                GAL.CompareOp.Always or GAL.CompareOp.AlwaysGl => Silk.NET.Vulkan.CompareOp.Always,
+                _ => LogInvalidAndReturn(op, nameof(GAL.CompareOp), Silk.NET.Vulkan.CompareOp.Never)
+            };
         }
 
         public static CullModeFlags Convert(this Face face)
         {
-            switch (face)
+            return face switch
             {
-                case Face.Back:
-                    return CullModeFlags.CullModeBackBit;
-                case Face.Front:
-                    return CullModeFlags.CullModeFrontBit;
-                case Face.FrontAndBack:
-                    return CullModeFlags.CullModeFrontAndBack;
-            }
-
-            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(Face)} enum value: {face}.");
-
-            return CullModeFlags.CullModeBackBit;
+                Face.Back => CullModeFlags.CullModeBackBit,
+                Face.Front => CullModeFlags.CullModeFrontBit,
+                Face.FrontAndBack => CullModeFlags.CullModeFrontAndBack,
+                _ => LogInvalidAndReturn(face, nameof(Face), CullModeFlags.CullModeBackBit)
+            };
         }
 
         public static Silk.NET.Vulkan.FrontFace Convert(this GAL.FrontFace frontFace)
         {
             // Flipped to account for origin differences.
-            switch (frontFace)
+            return frontFace switch
             {
-                case GAL.FrontFace.Clockwise:
-                    return Silk.NET.Vulkan.FrontFace.CounterClockwise;
-                case GAL.FrontFace.CounterClockwise:
-                    return Silk.NET.Vulkan.FrontFace.Clockwise;
-            }
-
-            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(GAL.FrontFace)} enum value: {frontFace}.");
-
-            return Silk.NET.Vulkan.FrontFace.Clockwise;
+                GAL.FrontFace.Clockwise => Silk.NET.Vulkan.FrontFace.CounterClockwise,
+                GAL.FrontFace.CounterClockwise => Silk.NET.Vulkan.FrontFace.Clockwise,
+                _ => LogInvalidAndReturn(frontFace, nameof(GAL.FrontFace), Silk.NET.Vulkan.FrontFace.Clockwise)
+            };
         }
 
         public static Silk.NET.Vulkan.IndexType Convert(this GAL.IndexType type)
         {
-            switch (type)
+            return type switch
             {
-                case GAL.IndexType.UByte:
-                    return Silk.NET.Vulkan.IndexType.Uint8Ext;
-                case GAL.IndexType.UShort:
-                    return Silk.NET.Vulkan.IndexType.Uint16;
-                case GAL.IndexType.UInt:
-                    return Silk.NET.Vulkan.IndexType.Uint32;
-            }
-
-            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(GAL.IndexType)} enum value: {type}.");
-
-            return Silk.NET.Vulkan.IndexType.Uint16;
+                GAL.IndexType.UByte => Silk.NET.Vulkan.IndexType.Uint8Ext,
+                GAL.IndexType.UShort => Silk.NET.Vulkan.IndexType.Uint16,
+                GAL.IndexType.UInt => Silk.NET.Vulkan.IndexType.Uint32,
+                _ => LogInvalidAndReturn(type, nameof(GAL.IndexType), Silk.NET.Vulkan.IndexType.Uint16)
+            };
         }
 
         public static Filter Convert(this MagFilter filter)
         {
-            switch (filter)
+            return filter switch
             {
-                case MagFilter.Nearest:
-                    return Filter.Nearest;
-                case MagFilter.Linear:
-                    return Filter.Linear;
-            }
-
-            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(MagFilter)} enum value: {filter}.");
-
-            return Filter.Nearest;
+                MagFilter.Nearest => Filter.Nearest,
+                MagFilter.Linear => Filter.Linear,
+                _ => LogInvalidAndReturn(filter, nameof(MagFilter), Filter.Nearest)
+            };
         }
 
         public static (Filter, SamplerMipmapMode) Convert(this MinFilter filter)
         {
-            switch (filter)
+            return filter switch
             {
-                case MinFilter.Nearest:
-                    return (Filter.Nearest, SamplerMipmapMode.Nearest);
-                case MinFilter.Linear:
-                    return (Filter.Linear, SamplerMipmapMode.Nearest);
-                case MinFilter.NearestMipmapNearest:
-                    return (Filter.Nearest, SamplerMipmapMode.Nearest);
-                case MinFilter.LinearMipmapNearest:
-                    return (Filter.Linear, SamplerMipmapMode.Nearest);
-                case MinFilter.NearestMipmapLinear:
-                    return (Filter.Nearest, SamplerMipmapMode.Linear);
-                case MinFilter.LinearMipmapLinear:
-                    return (Filter.Linear, SamplerMipmapMode.Linear);
-            }
-
-            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(MinFilter)} enum value: {filter}.");
-
-            return (Filter.Nearest, SamplerMipmapMode.Nearest);
+                MinFilter.Nearest => (Filter.Nearest, SamplerMipmapMode.Nearest),
+                MinFilter.Linear => (Filter.Linear, SamplerMipmapMode.Nearest),
+                MinFilter.NearestMipmapNearest => (Filter.Nearest, SamplerMipmapMode.Nearest),
+                MinFilter.LinearMipmapNearest => (Filter.Linear, SamplerMipmapMode.Nearest),
+                MinFilter.NearestMipmapLinear => (Filter.Nearest, SamplerMipmapMode.Linear),
+                MinFilter.LinearMipmapLinear => (Filter.Linear, SamplerMipmapMode.Linear),
+                _ => LogInvalidAndReturn(filter, nameof(MinFilter), (Filter.Nearest, SamplerMipmapMode.Nearest))
+            };
         }
 
         public static Silk.NET.Vulkan.PrimitiveTopology Convert(this GAL.PrimitiveTopology topology)
         {
-            switch (topology)
+            return topology switch
             {
-                case GAL.PrimitiveTopology.Points:
-                    return Silk.NET.Vulkan.PrimitiveTopology.PointList;
-                case GAL.PrimitiveTopology.Lines:
-                    return Silk.NET.Vulkan.PrimitiveTopology.LineList;
-                case GAL.PrimitiveTopology.LineStrip:
-                    return Silk.NET.Vulkan.PrimitiveTopology.LineStrip;
-                case GAL.PrimitiveTopology.Triangles:
-                    return Silk.NET.Vulkan.PrimitiveTopology.TriangleList;
-                case GAL.PrimitiveTopology.TriangleStrip:
-                    return Silk.NET.Vulkan.PrimitiveTopology.TriangleStrip;
-                case GAL.PrimitiveTopology.TriangleFan:
-                    return Silk.NET.Vulkan.PrimitiveTopology.TriangleFan;
-                case GAL.PrimitiveTopology.LinesAdjacency:
-                    return Silk.NET.Vulkan.PrimitiveTopology.LineListWithAdjacency;
-                case GAL.PrimitiveTopology.LineStripAdjacency:
-                    return Silk.NET.Vulkan.PrimitiveTopology.LineStripWithAdjacency;
-                case GAL.PrimitiveTopology.TrianglesAdjacency:
-                    return Silk.NET.Vulkan.PrimitiveTopology.TriangleListWithAdjacency;
-                case GAL.PrimitiveTopology.TriangleStripAdjacency:
-                    return Silk.NET.Vulkan.PrimitiveTopology.TriangleStripWithAdjacency;
-                case GAL.PrimitiveTopology.Patches:
-                    return Silk.NET.Vulkan.PrimitiveTopology.PatchList;
-                case GAL.PrimitiveTopology.Quads: // Emulated with triangle fans.
-                    return Silk.NET.Vulkan.PrimitiveTopology.TriangleFan;
-                case GAL.PrimitiveTopology.QuadStrip: // Emulated with triangle strips.
-                    return Silk.NET.Vulkan.PrimitiveTopology.TriangleStrip;
-            }
-
-            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(GAL.PrimitiveTopology)} enum value: {topology}.");
-
-            return Silk.NET.Vulkan.PrimitiveTopology.TriangleList;
+                GAL.PrimitiveTopology.Points => Silk.NET.Vulkan.PrimitiveTopology.PointList,
+                GAL.PrimitiveTopology.Lines => Silk.NET.Vulkan.PrimitiveTopology.LineList,
+                GAL.PrimitiveTopology.LineStrip => Silk.NET.Vulkan.PrimitiveTopology.LineStrip,
+                GAL.PrimitiveTopology.Triangles => Silk.NET.Vulkan.PrimitiveTopology.TriangleList,
+                GAL.PrimitiveTopology.TriangleStrip => Silk.NET.Vulkan.PrimitiveTopology.TriangleStrip,
+                GAL.PrimitiveTopology.TriangleFan => Silk.NET.Vulkan.PrimitiveTopology.TriangleFan,
+                GAL.PrimitiveTopology.LinesAdjacency => Silk.NET.Vulkan.PrimitiveTopology.LineListWithAdjacency,
+                GAL.PrimitiveTopology.LineStripAdjacency => Silk.NET.Vulkan.PrimitiveTopology.LineStripWithAdjacency,
+                GAL.PrimitiveTopology.TrianglesAdjacency => Silk.NET.Vulkan.PrimitiveTopology.TriangleListWithAdjacency,
+                GAL.PrimitiveTopology.TriangleStripAdjacency => Silk.NET.Vulkan.PrimitiveTopology.TriangleStripWithAdjacency,
+                GAL.PrimitiveTopology.Patches => Silk.NET.Vulkan.PrimitiveTopology.PatchList,
+                GAL.PrimitiveTopology.Quads => Silk.NET.Vulkan.PrimitiveTopology.TriangleFan, // Emulated with triangle fans
+                GAL.PrimitiveTopology.QuadStrip => Silk.NET.Vulkan.PrimitiveTopology.TriangleStrip, // Emulated with triangle strips
+                _ => LogInvalidAndReturn(topology, nameof(GAL.PrimitiveTopology), Silk.NET.Vulkan.PrimitiveTopology.TriangleList)
+            };
         }
 
         public static Silk.NET.Vulkan.StencilOp Convert(this GAL.StencilOp op)
         {
-            switch (op)
+            return op switch
             {
-                case GAL.StencilOp.Keep:
-                case GAL.StencilOp.KeepGl:
-                    return Silk.NET.Vulkan.StencilOp.Keep;
-                case GAL.StencilOp.Zero:
-                case GAL.StencilOp.ZeroGl:
-                    return Silk.NET.Vulkan.StencilOp.Zero;
-                case GAL.StencilOp.Replace:
-                case GAL.StencilOp.ReplaceGl:
-                    return Silk.NET.Vulkan.StencilOp.Replace;
-                case GAL.StencilOp.IncrementAndClamp:
-                case GAL.StencilOp.IncrementAndClampGl:
-                    return Silk.NET.Vulkan.StencilOp.IncrementAndClamp;
-                case GAL.StencilOp.DecrementAndClamp:
-                case GAL.StencilOp.DecrementAndClampGl:
-                    return Silk.NET.Vulkan.StencilOp.DecrementAndClamp;
-                case GAL.StencilOp.Invert:
-                case GAL.StencilOp.InvertGl:
-                    return Silk.NET.Vulkan.StencilOp.Invert;
-                case GAL.StencilOp.IncrementAndWrap:
-                case GAL.StencilOp.IncrementAndWrapGl:
-                    return Silk.NET.Vulkan.StencilOp.IncrementAndWrap;
-                case GAL.StencilOp.DecrementAndWrap:
-                case GAL.StencilOp.DecrementAndWrapGl:
-                    return Silk.NET.Vulkan.StencilOp.DecrementAndWrap;
-            }
-
-            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(GAL.StencilOp)} enum value: {op}.");
-
-            return Silk.NET.Vulkan.StencilOp.Keep;
+                GAL.StencilOp.Keep or GAL.StencilOp.KeepGl => Silk.NET.Vulkan.StencilOp.Keep,
+                GAL.StencilOp.Zero or GAL.StencilOp.ZeroGl => Silk.NET.Vulkan.StencilOp.Zero,
+                GAL.StencilOp.Replace or GAL.StencilOp.ReplaceGl => Silk.NET.Vulkan.StencilOp.Replace,
+                GAL.StencilOp.IncrementAndClamp or GAL.StencilOp.IncrementAndClampGl => Silk.NET.Vulkan.StencilOp.IncrementAndClamp,
+                GAL.StencilOp.DecrementAndClamp or GAL.StencilOp.DecrementAndClampGl => Silk.NET.Vulkan.StencilOp.DecrementAndClamp,
+                GAL.StencilOp.Invert or GAL.StencilOp.InvertGl => Silk.NET.Vulkan.StencilOp.Invert,
+                GAL.StencilOp.IncrementAndWrap or GAL.StencilOp.IncrementAndWrapGl => Silk.NET.Vulkan.StencilOp.IncrementAndWrap,
+                GAL.StencilOp.DecrementAndWrap or GAL.StencilOp.DecrementAndWrapGl => Silk.NET.Vulkan.StencilOp.DecrementAndWrap,
+                _ => LogInvalidAndReturn(op, nameof(GAL.StencilOp), Silk.NET.Vulkan.StencilOp.Keep)
+            };
         }
 
         public static ComponentSwizzle Convert(this SwizzleComponent swizzleComponent)
         {
-            switch (swizzleComponent)
+            return swizzleComponent switch
             {
-                case SwizzleComponent.Zero:
-                    return ComponentSwizzle.Zero;
-                case SwizzleComponent.One:
-                    return ComponentSwizzle.One;
-                case SwizzleComponent.Red:
-                    return ComponentSwizzle.R;
-                case SwizzleComponent.Green:
-                    return ComponentSwizzle.G;
-                case SwizzleComponent.Blue:
-                    return ComponentSwizzle.B;
-                case SwizzleComponent.Alpha:
-                    return ComponentSwizzle.A;
-            }
-
-            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(SwizzleComponent)} enum value: {swizzleComponent}.");
-
-            return ComponentSwizzle.Zero;
+                SwizzleComponent.Zero => ComponentSwizzle.Zero,
+                SwizzleComponent.One => ComponentSwizzle.One,
+                SwizzleComponent.Red => ComponentSwizzle.R,
+                SwizzleComponent.Green => ComponentSwizzle.G,
+                SwizzleComponent.Blue => ComponentSwizzle.B,
+                SwizzleComponent.Alpha => ComponentSwizzle.A,
+                _ => LogInvalidAndReturn(swizzleComponent, nameof(SwizzleComponent), ComponentSwizzle.Zero)
+            };
         }
 
         public static ImageType Convert(this Target target)
         {
-            switch (target)
+            return target switch
             {
-                case Target.Texture1D:
-                case Target.Texture1DArray:
-                case Target.TextureBuffer:
-                    return ImageType.ImageType1D;
-                case Target.Texture2D:
-                case Target.Texture2DArray:
-                case Target.Texture2DMultisample:
-                case Target.Cubemap:
-                case Target.CubemapArray:
-                    return ImageType.ImageType2D;
-                case Target.Texture3D:
-                    return ImageType.ImageType3D;
-            }
-
-            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(Target)} enum value: {target}.");
-
-            return ImageType.ImageType2D;
+                Target.Texture1D or
+                Target.Texture1DArray or
+                Target.TextureBuffer => ImageType.ImageType1D,
+                Target.Texture2D or
+                Target.Texture2DArray or
+                Target.Texture2DMultisample or
+                Target.Cubemap or
+                Target.CubemapArray => ImageType.ImageType2D,
+                Target.Texture3D => ImageType.ImageType3D,
+                _ => LogInvalidAndReturn(target, nameof(Target), ImageType.ImageType2D)
+            };
         }
 
         public static ImageViewType ConvertView(this Target target)
         {
-            switch (target)
+            return target switch
             {
-                case Target.Texture1D:
-                    return ImageViewType.ImageViewType1D;
-                case Target.Texture2D:
-                case Target.Texture2DMultisample:
-                    return ImageViewType.ImageViewType2D;
-                case Target.Texture3D:
-                    return ImageViewType.ImageViewType3D;
-                case Target.Texture1DArray:
-                    return ImageViewType.ImageViewType1DArray;
-                case Target.Texture2DArray:
-                    return ImageViewType.ImageViewType2DArray;
-                case Target.Cubemap:
-                    return ImageViewType.Cube;
-                case Target.CubemapArray:
-                    return ImageViewType.CubeArray;
-            }
-
-            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(Target)} enum value: {target}.");
-
-            return ImageViewType.ImageViewType2D;
+                Target.Texture1D => ImageViewType.ImageViewType1D,
+                Target.Texture2D or Target.Texture2DMultisample => ImageViewType.ImageViewType2D,
+                Target.Texture3D => ImageViewType.ImageViewType3D,
+                Target.Texture1DArray => ImageViewType.ImageViewType1DArray,
+                Target.Texture2DArray => ImageViewType.ImageViewType2DArray,
+                Target.Cubemap => ImageViewType.Cube,
+                Target.CubemapArray => ImageViewType.CubeArray,
+                _ => LogInvalidAndReturn(target, nameof(Target), ImageViewType.ImageViewType2D)
+            };
         }
 
         public static ImageAspectFlags ConvertAspectFlags(this GAL.Format format)
         {
-            switch (format)
+            return format switch
             {
-                case GAL.Format.D16Unorm:
-                case GAL.Format.D32Float:
-                    return ImageAspectFlags.ImageAspectDepthBit;
-                case GAL.Format.S8Uint:
-
-                    return ImageAspectFlags.ImageAspectStencilBit;
-                case GAL.Format.D24UnormS8Uint:
-                case GAL.Format.D32FloatS8Uint:
-                case GAL.Format.S8UintD24Unorm:
-                    return ImageAspectFlags.ImageAspectDepthBit | ImageAspectFlags.ImageAspectStencilBit;
-                default:
-                    return ImageAspectFlags.ImageAspectColorBit;
-            }
+                GAL.Format.D16Unorm or GAL.Format.D32Float => ImageAspectFlags.ImageAspectDepthBit,
+                GAL.Format.S8Uint => ImageAspectFlags.ImageAspectStencilBit,
+                GAL.Format.D24UnormS8Uint or
+                GAL.Format.D32FloatS8Uint or
+                GAL.Format.S8UintD24Unorm    => ImageAspectFlags.ImageAspectDepthBit | ImageAspectFlags.ImageAspectStencilBit,
+                _ => ImageAspectFlags.ImageAspectColorBit
+            };
         }
 
         public static ImageAspectFlags ConvertAspectFlags(this GAL.Format format, DepthStencilMode depthStencilMode)
         {
-            switch (format)
+            return format switch
             {
-                case GAL.Format.D16Unorm:
-                case GAL.Format.D32Float:
-                    return ImageAspectFlags.ImageAspectDepthBit;
-                case GAL.Format.S8Uint:
-                    return ImageAspectFlags.ImageAspectStencilBit;
-                case GAL.Format.D24UnormS8Uint:
-                case GAL.Format.D32FloatS8Uint:
-                case GAL.Format.S8UintD24Unorm:
-                    return depthStencilMode == DepthStencilMode.Stencil ? ImageAspectFlags.ImageAspectStencilBit : ImageAspectFlags.ImageAspectDepthBit;
-                default:
-                    return ImageAspectFlags.ImageAspectColorBit;
-            }
+                GAL.Format.D16Unorm or GAL.Format.D32Float => ImageAspectFlags.ImageAspectDepthBit,
+                GAL.Format.S8Uint => ImageAspectFlags.ImageAspectStencilBit,
+                GAL.Format.D24UnormS8Uint or
+                GAL.Format.D32FloatS8Uint or
+                GAL.Format.S8UintD24Unorm => depthStencilMode == DepthStencilMode.Stencil ? ImageAspectFlags.ImageAspectStencilBit : ImageAspectFlags.ImageAspectDepthBit,
+                _ => ImageAspectFlags.ImageAspectColorBit
+            };
         }
 
         public static LogicOp Convert(this LogicalOp op)
         {
-            switch (op)
+            return op switch
             {
-                case LogicalOp.Clear:
-                    return LogicOp.Clear;
-                case LogicalOp.And:
-                    return LogicOp.And;
-                case LogicalOp.AndReverse:
-                    return LogicOp.AndReverse;
-                case LogicalOp.Copy:
-                    return LogicOp.Copy;
-                case LogicalOp.AndInverted:
-                    return LogicOp.AndInverted;
-                case LogicalOp.Noop:
-                    return LogicOp.NoOp;
-                case LogicalOp.Xor:
-                    return LogicOp.Xor;
-                case LogicalOp.Or:
-                    return LogicOp.Or;
-                case LogicalOp.Nor:
-                    return LogicOp.Nor;
-                case LogicalOp.Equiv:
-                    return LogicOp.Equivalent;
-                case LogicalOp.Invert:
-                    return LogicOp.Invert;
-                case LogicalOp.OrReverse:
-                    return LogicOp.OrReverse;
-                case LogicalOp.CopyInverted:
-                    return LogicOp.CopyInverted;
-                case LogicalOp.OrInverted:
-                    return LogicOp.OrInverted;
-                case LogicalOp.Nand:
-                    return LogicOp.Nand;
-                case LogicalOp.Set:
-                    return LogicOp.Set;
-            }
+                LogicalOp.Clear => LogicOp.Clear,
+                LogicalOp.And => LogicOp.And,
+                LogicalOp.AndReverse => LogicOp.AndReverse,
+                LogicalOp.Copy => LogicOp.Copy,
+                LogicalOp.AndInverted => LogicOp.AndInverted,
+                LogicalOp.Noop => LogicOp.NoOp,
+                LogicalOp.Xor => LogicOp.Xor,
+                LogicalOp.Or => LogicOp.Or,
+                LogicalOp.Nor => LogicOp.Nor,
+                LogicalOp.Equiv => LogicOp.Equivalent,
+                LogicalOp.Invert => LogicOp.Invert,
+                LogicalOp.OrReverse => LogicOp.OrReverse,
+                LogicalOp.CopyInverted => LogicOp.CopyInverted,
+                LogicalOp.OrInverted => LogicOp.OrInverted,
+                LogicalOp.Nand => LogicOp.Nand,
+                LogicalOp.Set => LogicOp.Set,
+                _ => LogInvalidAndReturn(op, nameof(LogicalOp), LogicOp.Copy)
+            };
+        }
 
-            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(LogicalOp)} enum value: {op}.");
+        private static T2 LogInvalidAndReturn<T1, T2>(T1 value, string name, T2 defaultValue = default)
+        {
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {name} enum value: {value}.");
 
-            return LogicOp.Copy;
+            return defaultValue;
         }
     }
 }
