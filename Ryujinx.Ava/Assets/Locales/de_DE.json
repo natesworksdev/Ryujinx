@@ -281,7 +281,7 @@
   "MenuBarFileToolsHideUi": "Verstecke UI",
   "GameListContextMenuToggleFavorite": "Als Favoriten hinzufügen/entfernen",
   "GameListContextMenuToggleFavoriteToolTip": "Aktiviert den Favoriten-Status des Spiels",
-  "SettingsTabGeneralTheme": "UI Design",
+  "SettingsTabGeneralTheme": "UI-Design",
   "SettingsTabGeneralThemeCustomTheme": "Verzeichnis für das Design",
   "SettingsTabGeneralThemeBaseStyle": "Farbschema",
   "SettingsTabGeneralThemeBaseStyleDark": "Dunkel",
