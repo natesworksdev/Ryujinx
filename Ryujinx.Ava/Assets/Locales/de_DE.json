@@ -379,7 +379,7 @@
   "DialogSettingsBackendThreadingWarningTitle": "Warnung - Render Threading",
   "DialogSettingsBackendThreadingWarningMessage": "Ryujinx muss muss neu gestartet werden, damit die Änderungen wirksam werden. Abhängig von dem Betriebssystem muss möglicherweise das Multithreading des Treibers manuell deaktiviert werden, wenn Ryujinx verwendet wird.",
   "SettingsTabGraphicsFeaturesOptions": "Erweiterungen",
-  "SettingsTabGraphicsBackendMultithreading": "Grafikbackend Multithreading:",
+  "SettingsTabGraphicsBackendMultithreading": "Grafik-Backend Multithreading:",
   "CommonAuto": "Auto",
   "CommonOff": "Aus",
   "CommonOn": "An",
@@ -433,7 +433,7 @@
   "TimezoneTooltip": "Ändert die Systemzeitzone",
   "TimeTooltip": "Ändert die Systemzeit",
   "VSyncToggleTooltip": "Vertikale Synchronisierung der emulierten Konsole. Im Wesentlichen ist diese Option ein Frame-Limiter für die meisten Spiele; die Deaktivierung kann dazu führen, dass Spiele mit höherer Geschwindigkeit laufen oder Ladebildschirme länger benötigen oder hängen bleiben.\n\nKann im Spiel mit einem frei wählbaren Hotkey ein- und ausgeschaltet werden.\n\nAN lassen, wenn Unsicherheiten bestehen.",
-  "PptcToggleTooltip": "Speichert übersetzte JIT-Funktionen, so dass sie nicht jedes Mal übersetzt werden müssen, wenn das Spiel geladen wird.\n\nVerringert Stottern und beschleunigt die Bootzeiten nach dem ersten Start eines Spiels erheblich.\n\nAN lassen, wenn Unsicherheiten bestehen.",
+  "PptcToggleTooltip": "Speichert übersetzte JIT-Funktionen, so dass jene nicht jedes Mal übersetzt werden müssen, wenn das Spiel geladen wird.\n\nVerringert Stottern und beschleunigt die Bootzeiten nach dem ersten Start eines Spiels erheblich.\n\nAN lassen, wenn Unsicherheiten bestehen.",
   "FsIntegrityToggleTooltip": "Prüft beim Boot-Vorgang auf beschädigte Dateien und zeigt bei beschädigten Dateien einen Hash-Fehler (Hash Error) im Log an.\n\nDiese Einstellung hat keinen Einfluss auf die Leistung und soll bei der Fehlersuche helfen.\n\nAN lassen, wenn Unsicherheiten bestehen.",
   "AudioBackendTooltip": "Ändert das Backend, das zum Rendern von Audio verwendet wird.\n\nSDL2 ist das bevorzugte Audio-Backend, während OpenAL und SoundIO als Fallback verwendet werden. Dummy wird keinen Audio-Output haben.\n\nSDL2 wählen, wenn Unsicherheiten bestehen.",
   "MemoryManagerTooltip": "Ändert wie der Gastspeicher abgebildet wird und wie auf ihn zugegriffen wird. Beinflusst die Leistung der emulierten CPU erheblich.\n\nHost ungeprüft wählen, wenn Unsicherheiten bestehen.",
@@ -579,5 +579,14 @@
   "SettingsTabHotkeysResScaleUpHotkey": "Auflösung erhöhen:",
   "SettingsTabHotkeysResScaleDownHotkey": "Auflösung verringern:",
   "UserProfilesName": "Name:",
-  "UserProfilesUserId" : "Benutzer Id:"
+  "UserProfilesUserId" : "Benutzer Id:",
+  "SettingsTabGraphicsBackend": "Grafik-Backend:",
+  "SettingsTabGraphicsBackendTooltip": "Verwendendetes Grafik-Backend",
+ "SettingsEnableTextureRecompression": "Textur-Rekompression",
+  "SettingsEnableTextureRecompressionTooltip": "Komprimiert bestimmte Texturen, um den VRAM-Verbrauch zu reduzieren.\n\nEmpfohlen für die Verwendung von GPUs, die weniger als 4 GB VRAM haben.\n\nAUS lassen, wenn Unsicherheiten bestehen.",
+  "SettingsTabGraphicsPreferredGpu": "Bevorzugte GPU:",
+  "SettingsTabGraphicsPreferredGpuTooltip": "Wähle die Grafikkarte aus, die mit dem Vulkan-Grafik-Backend verwendet werden soll.\n\nDies hat keinen Einfluss auf die GPU, die OpenGL verwendet.\n\nIm Zweifelsfall die als \"dGPU\" gekennzeichnete GPU nutzen. Diese Einstellung unberührt lassen, wenn keine zur Auswahl steht.",
+  "SettingsAppRequiredRestartMessage": "Ein Neustart von Ryujinx ist erforderlich",
+  "SettingsGpuBackendRestartMessage": "Das Grafik-Backend oder die Grafikkarteneinstellungen wurden geändert. Ein Neustart ist erforderlich um diese Einstellungen anzuwenden.",
+  "SettingsGpuBackendRestartSubMessage": "Den Emulator jetzt neu starten?"
 }
