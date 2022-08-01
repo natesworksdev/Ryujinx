@@ -182,6 +182,18 @@ namespace Ryujinx.Ava
 
             if (UseVulkan)
             {
+                if (VulkanRenderer.GetPhysicalDevices().Length == 0)
+                {
+                    UseVulkan = false;
+
+                    ConfigurationState.Instance.Graphics.GraphicsBackend.Value = GraphicsBackend.OpenGl;
+
+                    Logger.Warning?.PrintMsg(LogClass.Application, $"A suitable vulkan physical device is not available. Falling back to OpenGl");
+                }
+            }
+
+            if (UseVulkan)
+            {
                 // With a custom gpu backend, avalonia doesn't enable dpi awareness, so the backend must handle it. This isn't so for the opengl backed,
                 // as that uses avalonia's gpu backend and it's enabled there.
                 ForceDpiAware.Windows();
