@@ -78,8 +78,6 @@ namespace Ryujinx.Ava
         private bool _isActive;
         private long _lastCursorMoveTime;
 
-        private string _gpuVendorName;
-
         private KeyboardHotkeyState _prevHotkeyState;
 
         private IRenderer _renderer;
@@ -895,7 +893,6 @@ namespace Ryujinx.Ava
             // Run a status update only when a frame is to be drawn. This prevents from updating the ui and wasting a render when no frame is queued
             string dockedMode = ConfigurationState.Instance.System.EnableDockedMode ? LocaleManager.Instance["Docked"] : LocaleManager.Instance["Handheld"];
             float scale = GraphicsConfig.ResScale;
-            _gpuVendorName = GetGpuVendorName();
 
             if (scale != 1)
             {
@@ -910,7 +907,7 @@ namespace Ryujinx.Ava
                 ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
                 LocaleManager.Instance["Game"] + $": {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
                 $"FIFO: {Device.Statistics.GetFifoPercent():00.00} %",
-                $"GPU: {_gpuVendorName}"));
+                $"GPU: {GetGpuVendorName()}"));
 
             Renderer.Present(image);
         }

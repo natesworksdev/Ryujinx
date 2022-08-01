@@ -77,7 +77,6 @@ namespace Ryujinx.Ui
         private IKeyboard _keyboardInterface;
         private GraphicsDebugLevel _glLogLevel;
         private string _gpuBackendName;
-        private string _gpuVendorName;
         private bool _isMouseInClient;
 
         public RendererWidgetBase(InputManager inputManager, GraphicsDebugLevel glLogLevel)
@@ -410,7 +409,6 @@ namespace Ryujinx.Ui
             Device.Gpu.Renderer.Initialize(_glLogLevel);
 
             _gpuBackendName = GetGpuBackendName();
-            _gpuVendorName = GetGpuVendorName();
 
             Device.Gpu.Renderer.RunLoop(() =>
             {
@@ -460,7 +458,7 @@ namespace Ryujinx.Ui
                             ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
                             $"Game: {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
                             $"FIFO: {Device.Statistics.GetFifoPercent():0.00} %",
-                            $"GPU: {_gpuVendorName}"));
+                            $"GPU: {GetGpuVendorName()}"));
 
                         _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);
                     }
