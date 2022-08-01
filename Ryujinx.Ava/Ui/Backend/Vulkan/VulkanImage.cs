@@ -148,13 +148,13 @@ namespace Ryujinx.Ava.Ui.Vulkan
             _currentAccessFlags = destinationAccessFlags;
         }
 
-        public unsafe void Dispose()
+        public void Dispose()
         {
             if (InternalHandle != null)
             {
-                _device.Api.DestroyImageView(_device.InternalHandle, _imageView.Value, null);
-                _device.Api.DestroyImage(_device.InternalHandle, InternalHandle.Value, null);
-                _device.Api.FreeMemory(_device.InternalHandle, _imageMemory, null);
+                _device.Api.DestroyImageView(_device.InternalHandle, _imageView.Value, Span<AllocationCallbacks>.Empty);
+                _device.Api.DestroyImage(_device.InternalHandle, InternalHandle.Value, Span<AllocationCallbacks>.Empty);
+                _device.Api.FreeMemory(_device.InternalHandle, _imageMemory, Span<AllocationCallbacks>.Empty);
 
                 _imageView = default;
                 InternalHandle = null;

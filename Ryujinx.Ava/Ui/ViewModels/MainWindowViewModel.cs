@@ -38,6 +38,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
 {
     internal class MainWindowViewModel : BaseModel
     {
+        private const int HotKeyPressDelayMs = 500;
+
         private readonly MainWindow _owner;
         private ObservableCollection<ApplicationData> _applications;
         private string _aspectStatusText;
@@ -930,7 +932,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public void ToggleFullscreen()
         {
-            if (Environment.TickCount64 - _lastFullscreenToggle < 500)
+            if (Environment.TickCount64 - _lastFullscreenToggle < HotKeyPressDelayMs)
             {
                 return;
             }

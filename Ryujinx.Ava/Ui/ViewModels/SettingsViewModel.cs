@@ -254,7 +254,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                     foreach (var device in devices)
                     {
                         _gpuIds.Add(device.Id);
-                        names.Add($"{device.Name} {(device.IsDiscrete ? "(dGpu)" : "")}");
+                        names.Add($"{device.Name} {(device.IsDiscrete ? "(dGPU)" : "")}");
                     }
                 }
             }
@@ -267,7 +267,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                     var value = device.Value;
                     var name = value.DeviceName;
                     names.Add(
-                        $"{Marshal.PtrToStringAnsi((IntPtr)name)} {(device.Value.DeviceType == PhysicalDeviceType.DiscreteGpu ? "(dGpu)" : "")}");
+                        $"{Marshal.PtrToStringAnsi((IntPtr)name)} {(device.Value.DeviceType == PhysicalDeviceType.DiscreteGpu ? "(dGPU)" : "")}");
                 }
             }
 

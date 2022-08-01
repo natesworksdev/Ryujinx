@@ -91,15 +91,12 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.ImageCreateInfo,
                 ImageType = ImageType.ImageType2D,
                 Format = Format,
-                Extent =
-                    new Extent3D((uint?)_width,
-                        (uint?)_height, 1),
+                Extent = new Extent3D((uint?)_width, (uint?)_height, 1),
                 MipLevels = 1,
                 ArrayLayers = 1,
                 Samples = SampleCountFlags.SampleCount1Bit,
                 Tiling = ImageTiling.Optimal,
-                Usage =
-                    ImageUsageFlags.ImageUsageColorAttachmentBit | ImageUsageFlags.ImageUsageTransferSrcBit |
+                Usage = ImageUsageFlags.ImageUsageColorAttachmentBit | ImageUsageFlags.ImageUsageTransferSrcBit |
                     ImageUsageFlags.ImageUsageTransferDstBit,
                 SharingMode = SharingMode.Exclusive,
                 InitialLayout = ImageLayout.Undefined,
@@ -272,8 +269,6 @@ namespace Ryujinx.Graphics.Vulkan
                 null,
                 stackalloc[] { PipelineStageFlags.PipelineStageColorAttachmentOutputBit },
                 null);
-
-            var j = _nextImage;
 
             _fences[_nextImage]?.Put();
             _fences[_nextImage] = cbs.GetFence();

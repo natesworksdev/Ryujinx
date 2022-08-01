@@ -88,14 +88,11 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             Image = image;
 
-            lock (_imagesInFlight)
-            {
-                _imagesInFlight.Enqueue((PresentImageInfo)image);
+            _imagesInFlight.Enqueue((PresentImageInfo)image);
 
-                if (_imagesInFlight.Count > MaxImagesInFlight)
-                {
-                    _imagesInFlight.TryDequeue(out _);
-                }
+            if (_imagesInFlight.Count > MaxImagesInFlight)
+            {
+                _imagesInFlight.TryDequeue(out _);
             }
 
             Dispatcher.UIThread.Post(InvalidateVisual);

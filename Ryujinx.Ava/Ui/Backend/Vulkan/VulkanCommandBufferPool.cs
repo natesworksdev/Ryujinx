@@ -112,14 +112,16 @@ namespace Ryujinx.Ava.Ui.Vulkan
 
             public void WaitForFence()
             {
-                if (!_isDisposed)
+                if (_isDisposed)
                 {
-                    lock (_lock)
+                    return;
+                }
+
+                lock (_lock)
+                {
+                    if (!_isDisposed)
                     {
-                        if (!_isDisposed)
-                        {
-                            _device.Api.WaitForFences(_device.InternalHandle, 1, _fence, true, ulong.MaxValue);
-                        }
+                        _device.Api.WaitForFences(_device.InternalHandle, 1, _fence, true, ulong.MaxValue);
                     }
                 }
             }
@@ -194,7 +196,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
                 _commandBufferPool.DisposeCommandBuffer(this);
             }
 
-            public unsafe void Dispose()
+            public void Dispose()
             {
                 lock (_lock)
                 {
@@ -204,7 +206,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
 
                         _device.Api.WaitForFences(_device.InternalHandle, 1, _fence, true, ulong.MaxValue);
                         _device.Api.FreeCommandBuffers(_device.InternalHandle, _commandBufferPool._commandPool, 1, InternalHandle);
-                        _device.Api.DestroyFence(_device.InternalHandle, _fence, null);
+                        _device.Api.DestroyFence(_device.InternalHandle, _fence, Span<AllocationCallbacks>.Empty);
                     }
                 }
             }
