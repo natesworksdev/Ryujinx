@@ -35,6 +35,8 @@ namespace Ryujinx.Ui
         private const int SwitchPanelHeight = 720;
         private const int TargetFps = 60;
         private const float MaxResolutionScale = 4.0f; // Max resolution hotkeys can scale to before wrapping.
+        private const string NvidiaVendor = "NVIDIA";
+        private const string AmdVendor = "AMD";
 
         public ManualResetEvent WaitEvent { get; set; }
         public NpadManager NpadManager { get; }
@@ -125,7 +127,21 @@ namespace Ryujinx.Ui
 
         private string GetGpuVendorName()
         {
-            return Renderer.GetHardwareInfo().GpuVendor;
+            string vendor = Renderer.GetHardwareInfo().GpuVendor;
+
+            switch (vendor.ToLower())
+            {
+                case ("nvidia corporation"):
+                return (NvidiaVendor);
+
+                case ("ati technologies inc."):
+                case ("advanced micro devices, inc."):
+                return (AmdVendor);
+
+                default:
+                return Renderer.GetHardwareInfo().GpuVendor;
+            }
+
         }
 
         private void HideCursorStateChanged(object sender, ReactiveEventArgs<bool> state)
