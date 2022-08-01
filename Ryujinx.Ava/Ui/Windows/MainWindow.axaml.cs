@@ -2,10 +2,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
-using Avalonia.Win32;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
@@ -14,6 +12,7 @@ using Ryujinx.Ava.Ui.Applet;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Ava.Ui.ViewModels;
+using Ryujinx.Ava.Ui.Vulkan;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gpu;
@@ -33,7 +32,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using InputManager = Ryujinx.Input.HLE.InputManager;
-using ProgressBar = Avalonia.Controls.ProgressBar;
+
 namespace Ryujinx.Ava.Ui.Windows
 {
     public partial class MainWindow : StyleableWindow
@@ -61,7 +60,7 @@ namespace Ryujinx.Ava.Ui.Windows
         internal AppHost AppHost { get; private set; }
         public InputManager InputManager { get; private set; }
 
-        internal RendererControl GlRenderer { get; private set; }
+        internal RendererControl RendererControl { get; private set; }
         internal MainWindowViewModel ViewModel { get; private set; }
         public SettingsWindow SettingsWindow { get; set; }
 
@@ -87,7 +86,6 @@ namespace Ryujinx.Ava.Ui.Windows
 
             InitializeComponent();
             Load();
-            AttachDebugDevTools();
 
             UiHandler = new AvaHostUiHandler(this);
 
@@ -108,12 +106,6 @@ namespace Ryujinx.Ava.Ui.Windows
             }
 
             _rendererWaitEvent = new AutoResetEvent(false);
-        }
-
-        [Conditional("DEBUG")]
-        private void AttachDebugDevTools()
-        {
-            this.AttachDevTools();
         }
 
         public void LoadGameList()
@@ -149,7 +141,8 @@ namespace Ryujinx.Ava.Ui.Windows
                     ViewModel.AspectRatioStatusText = args.AspectRatio;
                     ViewModel.GameStatusText = args.GameStatus;
                     ViewModel.FifoStatusText = args.FifoStatus;
-                    ViewModel.GpuStatusText = args.GpuName;
+                    ViewModel.GpuNameText = args.GpuName;
+                    ViewModel.BackendText = args.GpuBackend;
 
                     ViewModel.ShowStatusSeparator = true;
                 });
@@ -244,10 +237,10 @@ namespace Ryujinx.Ava.Ui.Windows
 
             PrepareLoadScreen();
 
-            _mainViewContent = Content.Content as Control;
+            _mainViewContent = MainContent.Content as Control;
 
-            GlRenderer = new RendererControl(3, 3, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
-            AppHost = new AppHost(GlRenderer, InputManager, path, VirtualFileSystem, ContentManager, AccountManager, _userChannelPersistence, this);
+            RendererControl = Program.UseVulkan ? new VulkanRendererControl(ConfigurationState.Instance.Logger.GraphicsDebugLevel) : new OpenGLRendererControl(3, 3, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
+            AppHost = new AppHost(RendererControl, InputManager, path, VirtualFileSystem, ContentManager, AccountManager, _userChannelPersistence, this);
 
             if (!AppHost.LoadGuestApplication().Result)
             {
@@ -271,7 +264,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
         private void InitializeGame()
         {
-            GlRenderer.GlInitialized += GlRenderer_Created;
+            RendererControl.RendererInitialized += GlRenderer_Created;
 
             AppHost.StatusUpdatedEvent += Update_StatusBar;
             AppHost.AppExit += AppHost_AppExit;
@@ -311,14 +304,14 @@ namespace Ryujinx.Ava.Ui.Windows
 
             Dispatcher.UIThread.InvokeAsync(() =>
             {
-                Content.Content = GlRenderer;
+                MainContent.Content = RendererControl;
 
                 if (startFullscreen && WindowState != WindowState.FullScreen)
                 {
                     ViewModel.ToggleFullscreen();
                 }
 
-                GlRenderer.Focus();
+                RendererControl.Focus();
             });
         }
 
@@ -355,9 +348,9 @@ namespace Ryujinx.Ava.Ui.Windows
 
             Dispatcher.UIThread.InvokeAsync(() =>
             {
-                if (Content.Content != _mainViewContent)
+                if (MainContent.Content != _mainViewContent)
                 {
-                    Content.Content = _mainViewContent;
+                    MainContent.Content = _mainViewContent;
                 }
 
                 ViewModel.ShowMenuAndStatusBar = true;
@@ -370,8 +363,9 @@ namespace Ryujinx.Ava.Ui.Windows
 
                 HandleRelaunch();
             });
-            GlRenderer.GlInitialized -= GlRenderer_Created;
-            GlRenderer = null;
+
+            RendererControl.RendererInitialized -= GlRenderer_Created;
+            RendererControl = null;
 
             ViewModel.SelectedIcon = null;
 
@@ -522,6 +516,7 @@ namespace Ryujinx.Ava.Ui.Windows
             GraphicsConfig.MaxAnisotropy = ConfigurationState.Instance.Graphics.MaxAnisotropy;
             GraphicsConfig.ShadersDumpPath = ConfigurationState.Instance.Graphics.ShadersDumpPath;
             GraphicsConfig.EnableShaderCache = ConfigurationState.Instance.Graphics.EnableShaderCache;
+            GraphicsConfig.EnableTextureRecompression = ConfigurationState.Instance.Graphics.EnableTextureRecompression;
         }
 
         public void LoadHotKeys()

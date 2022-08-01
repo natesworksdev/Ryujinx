@@ -1,29 +1,21 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.LogicalTree;
-using Avalonia.Markup.Xaml;
-using Avalonia.Threading;
 using FluentAvalonia.Core;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
-using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Ava.Ui.ViewModels;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.Input;
 using Ryujinx.Input.Assigner;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using TimeZone = Ryujinx.Ava.Ui.Models.TimeZone;
 
@@ -44,7 +36,6 @@ namespace Ryujinx.Ava.Ui.Windows
 
             InitializeComponent();
             Load();
-            AttachDebugDevTools();
 
             FuncMultiValueConverter<string, string> converter = new(parts => string.Format("{0}  {1}   {2}", parts.ToArray()));
             MultiBinding tzMultiBinding = new() { Converter = converter };
@@ -62,13 +53,6 @@ namespace Ryujinx.Ava.Ui.Windows
 
             InitializeComponent();
             Load();
-            AttachDebugDevTools();
-        }
-
-        [Conditional("DEBUG")]
-        private void AttachDebugDevTools()
-        {
-            this.AttachDevTools();
         }
 
         private void Load()
@@ -112,7 +96,7 @@ namespace Ryujinx.Ava.Ui.Windows
                     }
                 }
             }
-        }        
+        }
 
         private void Button_Unchecked(object sender, RoutedEventArgs e)
         {
@@ -224,9 +208,9 @@ namespace Ryujinx.Ava.Ui.Windows
             }
         }
 
-        private void SaveButton_Clicked(object sender, RoutedEventArgs e)
+        private async void SaveButton_Clicked(object sender, RoutedEventArgs e)
         {
-            SaveSettings();
+            await SaveSettings();
 
             Close();
         }
@@ -237,14 +221,14 @@ namespace Ryujinx.Ava.Ui.Windows
             Close();
         }
 
-        private void ApplyButton_Clicked(object sender, RoutedEventArgs e)
+        private async void ApplyButton_Clicked(object sender, RoutedEventArgs e)
         {
-            SaveSettings();
+            await SaveSettings();
         }
 
-        private void SaveSettings()
+        private async Task SaveSettings()
         {
-            ViewModel.SaveSettings();
+            await ViewModel.SaveSettings();
 
             ControllerSettings?.SaveCurrentProfile();
 
