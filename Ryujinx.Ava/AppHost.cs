@@ -57,6 +57,8 @@ namespace Ryujinx.Ava
     {
         private const int CursorHideIdleTime = 8; // Hide Cursor seconds
         private const float MaxResolutionScale = 4.0f; // Max resolution hotkeys can scale to before wrapping.
+        private const string NvidiaVendor = "NVIDIA";
+        private const string AmdVendor = "AMD";
 
         private static readonly Cursor InvisibleCursor = new Cursor(StandardCursorType.None);
 
@@ -177,6 +179,24 @@ namespace Ryujinx.Ava
             {
                 double scale = _parent.PlatformImpl.RenderScaling;
                 _renderer.Window.SetSize((int)(size.Width * scale), (int)(size.Height * scale));
+            }
+        }
+
+        private string GetGpuVendorName()
+        {
+            string vendor = _renderer.GetHardwareInfo().GpuVendor;
+
+            switch (vendor.ToLower())
+            {
+                case ("nvidia corporation"):
+                return (NvidiaVendor);
+
+                case ("ati technologies inc."):
+                case ("advanced micro devices, inc."):
+                return (AmdVendor);
+
+                default:
+                return _renderer.GetHardwareInfo().GpuVendor;
             }
         }
 
@@ -887,7 +907,7 @@ namespace Ryujinx.Ava
                 ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
                 LocaleManager.Instance["Game"] + $": {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
                 $"FIFO: {Device.Statistics.GetFifoPercent():00.00} %",
-                $"GPU: {_renderer.GetHardwareInfo().GpuVendor}"));
+                $"GPU: {GetGpuVendorName()}"));
 
             Renderer.Present(image);
         }
