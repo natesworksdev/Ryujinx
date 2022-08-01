@@ -49,7 +49,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
             _platformInterface.MainSurface.Display.Presented -= Window_Presented;
             
-            _currentImage?.Dispose();
+            _currentImage?.Put();
             _currentImage = null;
         }
 
@@ -63,7 +63,7 @@ namespace Ryujinx.Ava.Ui.Controls
         private void Window_Presented(object sender, EventArgs e)
         {
             _platformInterface.Device.QueueWaitIdle();
-            _currentImage?.Dispose();
+            _currentImage?.Put();
             _currentImage = null;
         }
 
@@ -158,10 +158,14 @@ namespace Ryujinx.Ava.Ui.Controls
 
                 if (!image.State.IsValid)
                 {
+                    _control._currentImage = null;
+
                     return;
                 }
 
                 var gpu = AvaloniaLocator.Current.GetService<VulkanSkiaGpu>();
+
+                image.Get();
 
                 var imageInfo = new GRVkImageInfo()
                 {

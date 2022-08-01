@@ -398,9 +398,8 @@ namespace Ryujinx.Graphics.Vulkan
         public event EventHandler<bool> StateChanged;
     }
 
-    public class PresentImageInfo : IDisposable
+    public class PresentImageInfo
     {
-        private bool _isActive;
         private readonly Auto<DisposableImage> _image;
         private readonly Auto<MemoryAllocation> _memory;
 
@@ -408,8 +407,6 @@ namespace Ryujinx.Graphics.Vulkan
         {
             get
             {
-                _isActive = true;
-                _image.IncrementReferenceCount();
                 return _image.GetUnsafe().Value;
             }
         }
@@ -418,7 +415,6 @@ namespace Ryujinx.Graphics.Vulkan
         {
             get
             {
-                _memory.IncrementReferenceCount();
                 return _memory.GetUnsafe().Memory;
             }
         }
@@ -455,14 +451,16 @@ namespace Ryujinx.Graphics.Vulkan
             State = state;
         }
 
-        public void Dispose()
+        public void Get()
         {
-            if (_isActive)
-            {
-                _isActive = false;
-                _memory.DecrementReferenceCount();
-                _image.DecrementReferenceCount();
-            }
+            _memory.IncrementReferenceCount();
+            _image.IncrementReferenceCount();
+        }
+
+        public void Put()
+        {
+            _memory.DecrementReferenceCount();
+            _image.DecrementReferenceCount();
         }
     }
 }
