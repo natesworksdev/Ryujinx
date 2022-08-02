@@ -71,6 +71,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
             if (MainSurface == null && surface != null)
             {
                 MainSurface = renderTarget;
+                MainSurface.Display.ChangeVSyncMode(false);
             }
 
             return renderTarget;

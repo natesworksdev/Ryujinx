@@ -22,6 +22,8 @@ namespace Ryujinx.Ava.Ui.Vulkan
         private Image[] _swapchainImages;
         private VulkanDevice _device { get; }
         private ImageView[] _swapchainImageViews = Array.Empty<ImageView>();
+        private bool _vsyncStateChanged;
+        private bool _vsyncEnabled;
         private bool _surfaceChanged;
 
         public event EventHandler Presented;
@@ -86,7 +88,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
 
         private static unsafe SwapchainKHR CreateSwapchain(VulkanInstance instance, VulkanDevice device,
             VulkanPhysicalDevice physicalDevice, VulkanSurface surface, out Extent2D swapchainExtent,
-            SwapchainKHR? oldswapchain = null)
+            SwapchainKHR? oldswapchain = null, bool vsyncEnabled = true)
         {
             if (_swapchainExtension == null)
             {
@@ -117,7 +119,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
 
             CompositeAlphaFlagsKHR compositeAlphaFlags = GetSuitableCompositeAlphaFlags(capabilities);
 
-            PresentModeKHR presentMode = GetSuitablePresentMode(physicalDevice, surface);
+            PresentModeKHR presentMode = GetSuitablePresentMode(physicalDevice, surface, vsyncEnabled);
 
             var swapchainCreateInfo = new SwapchainCreateInfoKHR
             {
@@ -187,7 +189,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
             return compositeAlphaFlags;
         }
 
-        private static unsafe PresentModeKHR GetSuitablePresentMode(VulkanPhysicalDevice physicalDevice, VulkanSurface surface)
+        private static unsafe PresentModeKHR GetSuitablePresentMode(VulkanPhysicalDevice physicalDevice, VulkanSurface surface, bool vsyncEnabled)
         {
             uint presentModesCount;
 
@@ -204,24 +206,29 @@ namespace Ryujinx.Ava.Ui.Vulkan
             }
 
             var modes = presentModes.ToList();
-            var presentMode = PresentModeKHR.PresentModeFifoKhr;
 
-            if (modes.Contains(PresentModeKHR.PresentModeImmediateKhr))
+            if (!vsyncEnabled && modes.Contains(PresentModeKHR.PresentModeImmediateKhr))
             {
-                presentMode = PresentModeKHR.PresentModeImmediateKhr;
+                return PresentModeKHR.PresentModeImmediateKhr;
             }
             else if (modes.Contains(PresentModeKHR.PresentModeMailboxKhr))
             {
-                presentMode = PresentModeKHR.PresentModeMailboxKhr;
+                return PresentModeKHR.PresentModeMailboxKhr;
             }
-
-            return presentMode;
+            else if (modes.Contains(PresentModeKHR.PresentModeFifoKhr))
+            {
+                return PresentModeKHR.PresentModeFifoKhr;
+            }
+            else
+            {
+                return PresentModeKHR.PresentModeImmediateKhr;
+            }
         }
 
         internal static VulkanDisplay CreateDisplay(VulkanInstance instance, VulkanDevice device,
             VulkanPhysicalDevice physicalDevice, VulkanSurface surface)
         {
-            var swapchain = CreateSwapchain(instance, device, physicalDevice, surface, out var extent, null);
+            var swapchain = CreateSwapchain(instance, device, physicalDevice, surface, out var extent, null, true);
 
             return new VulkanDisplay(instance, device, physicalDevice, surface, swapchain, extent);
         }
@@ -261,11 +268,16 @@ namespace Ryujinx.Ava.Ui.Vulkan
             }
         }
 
+        internal void ChangeVSyncMode(bool vsyncEnabled)
+        {
+            _vsyncStateChanged = true;
+            _vsyncEnabled = vsyncEnabled;
+        }
+
         private void Recreate()
         {
             _device.WaitIdle();
-
-            _swapchain = CreateSwapchain(_instance, _device, _physicalDevice, _surface, out _swapchainExtent, _swapchain);
+            _swapchain = CreateSwapchain(_instance, _device, _physicalDevice, _surface, out _swapchainExtent, _swapchain, _vsyncEnabled);
 
             CreateSwapchainImages();
 
@@ -298,8 +310,10 @@ namespace Ryujinx.Ava.Ui.Vulkan
 
         public bool EnsureSwapchainAvailable()
         {
-            if (Size != _surface.SurfaceSize)
+            if (Size != _surface.SurfaceSize || _vsyncStateChanged)
             {
+                _vsyncStateChanged = false;
+
                 Recreate();
 
                 return false;

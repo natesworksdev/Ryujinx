@@ -335,6 +335,8 @@ namespace Ryujinx.Ava
                 return;
             }
 
+            AvaloniaLocator.Current.GetService<VulkanPlatformInterface>()?.MainSurface.Display.ChangeVSyncMode(true);
+
             _isStopped = true;
             _isActive = false;
         }
@@ -820,12 +822,11 @@ namespace Ryujinx.Ava
 
             _renderer.ScreenCaptured += Renderer_ScreenCaptured;
 
-            if (!Program.UseVulkan)
-            {
-                (_renderer as OpenGLRenderer).InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext((Renderer as OpenGLRendererControl).GameContext));
+            (_renderer as OpenGLRenderer)?.InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext((Renderer as OpenGLRendererControl).GameContext));
 
-                Renderer.MakeCurrent();
-            }
+            Renderer.MakeCurrent();
+
+            AvaloniaLocator.Current.GetService<VulkanPlatformInterface>()?.MainSurface?.Display?.ChangeVSyncMode(Device.EnableDeviceVsync);
 
             Device.Gpu.Renderer.Initialize(_glLogLevel);
 
@@ -985,6 +986,9 @@ namespace Ryujinx.Ava
                     {
                         case KeyboardHotkeyState.ToggleVSync:
                             Device.EnableDeviceVsync = !Device.EnableDeviceVsync;
+
+                            AvaloniaLocator.Current.GetService<VulkanPlatformInterface>()?.MainSurface?.Display?.ChangeVSyncMode(Device.EnableDeviceVsync);
+
                             break;
                         case KeyboardHotkeyState.Screenshot:
                             ScreenshotRequested = true;
