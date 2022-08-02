@@ -12,6 +12,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
     /// </summary>
     class MacroHLE : IMacroEE
     {
+        private const int ColorLayerCountOffset = 0x818;
+        private const int ColorStructSize = 0x40;
+        private const int ZetaLayerCountOffset = 0x1230;
+
         private readonly GPFifoProcessor _processor;
         private readonly MacroHLEFunctionName _functionName;
 
@@ -67,7 +71,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
         private void ClearColor(IDeviceState state, int arg0)
         {
             int index = (arg0 >> 6) & 0xf;
-            int layerCount = state.Read(0x818 + index * 0x40);
+            int layerCount = state.Read(ColorLayerCountOffset + index * ColorStructSize);
 
             _processor.ThreedClass.Clear(arg0, layerCount);
         }
@@ -79,7 +83,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
         /// <param name="arg0">First argument of the call</param>
         private void ClearDepthStencil(IDeviceState state, int arg0)
         {
-            int layerCount = state.Read(0x1230);
+            int layerCount = state.Read(ZetaLayerCountOffset);
 
             _processor.ThreedClass.Clear(arg0, layerCount);
         }
