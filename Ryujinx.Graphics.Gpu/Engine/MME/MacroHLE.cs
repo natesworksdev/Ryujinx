@@ -45,12 +45,43 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
         {
             switch (_functionName)
             {
+                case MacroHLEFunctionName.ClearColor:
+                    ClearColor(state, arg0);
+                    break;
+                case MacroHLEFunctionName.ClearDepthStencil:
+                    ClearDepthStencil(state, arg0);
+                    break;
                 case MacroHLEFunctionName.MultiDrawElementsIndirectCount:
                     MultiDrawElementsIndirectCount(state, arg0);
                     break;
                 default:
                     throw new NotImplementedException(_functionName.ToString());
             }
+        }
+
+        /// <summary>
+        /// Clears one bound color target.
+        /// </summary>
+        /// <param name="state">GPU state at the time of the call</param>
+        /// <param name="arg0">First argument of the call</param>
+        private void ClearColor(IDeviceState state, int arg0)
+        {
+            int index = (arg0 >> 6) & 0xf;
+            int layerCount = state.Read(0x818 + index * 0x40);
+
+            _processor.ThreedClass.Clear(arg0, layerCount);
+        }
+
+        /// <summary>
+        /// Clears the current depth-stencil target.
+        /// </summary>
+        /// <param name="state">GPU state at the time of the call</param>
+        /// <param name="arg0">First argument of the call</param>
+        private void ClearDepthStencil(IDeviceState state, int arg0)
+        {
+            int layerCount = state.Read(0x1230);
+
+            _processor.ThreedClass.Clear(arg0, layerCount);
         }
 
         /// <summary>
