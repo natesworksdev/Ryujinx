@@ -20,11 +20,11 @@ namespace Ryujinx.Graphics.Vulkan
             _table = new FormatFeatureFlags[Enum.GetNames(typeof(GAL.Format)).Length];
         }
 
-        public bool FormatsSupports(FormatFeatureFlags flags, params GAL.Format[] formats)
+        public bool BufferFormatsSupport(FormatFeatureFlags flags, params GAL.Format[] formats)
         {
             foreach (GAL.Format format in formats)
             {
-                if (!FormatSupports(flags, format))
+                if (!BufferFormatSupports(flags, format))
                 {
                     return false;
                 }
@@ -33,7 +33,27 @@ namespace Ryujinx.Graphics.Vulkan
             return true;
         }
 
-        public bool FormatSupports(FormatFeatureFlags flags, GAL.Format format)
+        public bool OptimalFormatsSupport(FormatFeatureFlags flags, params GAL.Format[] formats)
+        {
+            foreach (GAL.Format format in formats)
+            {
+                if (!OptimalFormatSupports(flags, format))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public bool BufferFormatSupports(FormatFeatureFlags flags, GAL.Format format)
+        {
+            _api.GetPhysicalDeviceFormatProperties(_physicalDevice, FormatTable.GetFormat(format), out var fp);
+
+            return (fp.BufferFeatures & flags) == flags;
+        }
+
+        public bool OptimalFormatSupports(FormatFeatureFlags flags, GAL.Format format)
         {
             var formatFeatureFlags = _table[(int)format];
 
@@ -69,7 +89,7 @@ namespace Ryujinx.Graphics.Vulkan
                 requiredFeatures |= FormatFeatureFlags.FormatFeatureStorageImageBit;
             }
 
-            if (!FormatSupports(requiredFeatures, srcFormat) || (IsD24S8(srcFormat) && VulkanConfiguration.ForceD24S8Unsupported))
+            if (!OptimalFormatSupports(requiredFeatures, srcFormat) || (IsD24S8(srcFormat) && VulkanConfiguration.ForceD24S8Unsupported))
             {
                 // The format is not supported. Can we convert it to a higher precision format?
                 if (IsD24S8(srcFormat))

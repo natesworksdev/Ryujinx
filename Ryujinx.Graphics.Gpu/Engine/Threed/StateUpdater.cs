@@ -835,6 +835,22 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                     format = Format.R32G32B32A32Float;
                 }
+                else if (!_context.Capabilities.SupportsR16G16B16FloatIntVertexFormat)
+                {
+                    // If the format is not supported, assume that the scaled variants are supported
+                    // and do the conversion on the shader.
+
+                    switch (format)
+                    {
+                        case Format.R16G16B16Sint:
+                            format = Format.R16G16B16Sscaled;
+                            break;
+                        case Format.R16G16B16Uint:
+                        case Format.R16G16B16Float:
+                            format = Format.R16G16B16Uscaled;
+                            break;
+                    }
+                }
 
                 vertexAttribs[index] = new VertexAttribDescriptor(
                     vertexAttrib.UnpackBufferIndex(),
@@ -1262,12 +1278,31 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             for (int location = 0; location < attributeTypes.Length; location++)
             {
-                attributeTypes[location] = vertexAttribState[location].UnpackType() switch
+                VertexAttribType type = vertexAttribState[location].UnpackType();
+
+                attributeTypes[location] = type switch
                 {
-                    3 => AttributeType.Sint,
-                    4 => AttributeType.Uint,
+                    VertexAttribType.Sint => AttributeType.Sint,
+                    VertexAttribType.Uint => AttributeType.Uint,
                     _ => AttributeType.Float
                 };
+
+                if (!_context.Capabilities.SupportsR16G16B16FloatIntVertexFormat &&
+                    vertexAttribState[location].UnpackSize() == VertexAttribSize.Size16x3)
+                {
+                    switch (type)
+                    {
+                        case VertexAttribType.Sint:
+                            attributeTypes[location] = AttributeType.Rgb16Si;
+                            break;
+                        case VertexAttribType.Uint:
+                            attributeTypes[location] = AttributeType.Rgb16Ui;
+                            break;
+                        case VertexAttribType.Float:
+                            attributeTypes[location] = AttributeType.Rgb16f;
+                            break;
+                    }
+                }
             }
 
             return new GpuChannelGraphicsState(

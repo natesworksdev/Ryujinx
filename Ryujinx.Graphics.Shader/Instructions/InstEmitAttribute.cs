@@ -51,7 +51,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                         offset |= AttributeConsts.LoadOutputMask;
                     }
 
-                    Operand src = op.P ? AttributePerPatch(offset) : Attribute(offset);
+                    Operand src = ConvertInputIfNeeded(context, op.P ? AttributePerPatch(offset) : Attribute(offset));
 
                     context.Copy(Register(rd), src);
                 }
@@ -71,6 +71,39 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     context.Copy(Register(rd), context.LoadAttribute(src, Const(0), primVertex));
                 }
             }
+        }
+
+        private static Operand ConvertInputIfNeeded(EmitterContext context, Operand input)
+        {
+            int offset = input.Value;
+            if (offset >= AttributeConsts.UserAttributeBase && offset < AttributeConsts.UserAttributeEnd)
+            {
+                int location = (offset - AttributeConsts.UserAttributeBase) / 16;
+
+                AttributeType type = context.Config.GpuAccessor.QueryAttributeType(location);
+
+                if (type.HasFormatForConversion())
+                {
+                    // This is a case where the vertex attribute format is not supported on the host,
+                    // we assume that a similar format is supported and then do the conversion to the
+                    // appropriate format.
+
+                    // RGB16 UNorm/SNorm and UScaled/SScaled are usually supported,
+                    // We can convert UScaled/SScaled to UInt/SInt with a simple conversion
+                    // from float to integer, and we can support Float with a conversion to integer
+                    // and then re-interpreting the value as float.
+
+                    input = type switch
+                    {
+                        AttributeType.Rgb16f => context.UnpackHalf2x16Low(context.FP32ConvertToU32(input)),
+                        AttributeType.Rgb16Si => context.FP32ConvertToS32(input),
+                        AttributeType.Rgb16Ui => context.FP32ConvertToU32(input),
+                        _ => input
+                    };
+                }
+            }
+
+            return input;
         }
 
         public static void Ast(EmitterContext context)

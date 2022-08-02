@@ -377,7 +377,7 @@ namespace Ryujinx.Graphics.Vulkan
                 FormatFeatureFlags.FormatFeatureTransferSrcBit |
                 FormatFeatureFlags.FormatFeatureTransferDstBit;
 
-            bool supportsBc123CompressionFormat = FormatCapabilities.FormatsSupports(compressedFormatFeatureFlags,
+            bool supportsBc123CompressionFormat = FormatCapabilities.OptimalFormatsSupport(compressedFormatFeatureFlags,
                 GAL.Format.Bc1RgbaSrgb,
                 GAL.Format.Bc1RgbaUnorm,
                 GAL.Format.Bc2Srgb,
@@ -385,17 +385,22 @@ namespace Ryujinx.Graphics.Vulkan
                 GAL.Format.Bc3Srgb,
                 GAL.Format.Bc3Unorm);
 
-            bool supportsBc45CompressionFormat = FormatCapabilities.FormatsSupports(compressedFormatFeatureFlags,
+            bool supportsBc45CompressionFormat = FormatCapabilities.OptimalFormatsSupport(compressedFormatFeatureFlags,
                 GAL.Format.Bc4Snorm,
                 GAL.Format.Bc4Unorm,
                 GAL.Format.Bc5Snorm,
                 GAL.Format.Bc5Unorm);
 
-            bool supportsBc67CompressionFormat = FormatCapabilities.FormatsSupports(compressedFormatFeatureFlags,
+            bool supportsBc67CompressionFormat = FormatCapabilities.OptimalFormatsSupport(compressedFormatFeatureFlags,
                 GAL.Format.Bc6HSfloat,
                 GAL.Format.Bc6HUfloat,
                 GAL.Format.Bc7Srgb,
                 GAL.Format.Bc7Unorm);
+
+            bool supportsRgb16FloatIntVertexFormat = FormatCapabilities.BufferFormatsSupport(FormatFeatureFlags.FormatFeatureVertexBufferBit,
+                GAL.Format.R16G16B16Float,
+                GAL.Format.R16G16B16Sint,
+                GAL.Format.R16G16B16Uint);
 
             Api.GetPhysicalDeviceFeatures(_physicalDevice, out var features);
             Api.GetPhysicalDeviceProperties(_physicalDevice, out var properties);
@@ -414,6 +419,7 @@ namespace Ryujinx.Graphics.Vulkan
                 supports3DTextureCompression: true,
                 supportsBgraFormat: true,
                 supportsR4G4Format: false,
+                supportsR16G16B16FloatIntVertexFormat: supportsRgb16FloatIntVertexFormat,
                 supportsFragmentShaderInterlock: Capabilities.SupportsFragmentShaderInterlock,
                 supportsFragmentShaderOrderingIntel: false,
                 supportsGeometryShaderPassthrough: Capabilities.SupportsGeometryShaderPassthrough,
