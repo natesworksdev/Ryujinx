@@ -1095,6 +1095,11 @@ namespace Ryujinx.Ava.Ui.ViewModels
             {
                 selection.Favorite = !selection.Favorite;
 
+                _owner.ApplicationLibrary.LoadAndSaveMetaData(selection.TitleId, appMetadata =>
+                {
+                    appMetadata.Favorite = selection.Favorite;
+                });
+
                 RefreshView();
             }
         }
