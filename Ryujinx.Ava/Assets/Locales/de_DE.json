@@ -450,7 +450,7 @@
   "AnisotropyTooltip": "Stufe der Anisotropen Filterung (Auf Auto setzen, um den vom Spiel geforderten Wert zu verwenden)",
   "AspectRatioTooltip": "Auf das Renderer-Fenster angewandtes Seitenverhältnis.",
   "ShaderDumpPathTooltip": "Grafik-Shader-Dump-Pfad",
-  "FileLogTooltip": "Speichert die Konsolenprotokollierung in einem Log auf der Festplatte. Hat keinen Einfluss auf die Leistung.",
+  "FileLogTooltip": "Speichert die Konsolenausgabe in einer Log-Datei auf der Festplatte. Hat keinen Einfluss auf die Leistung.",
   "StubLogTooltip": "Ausgabe von Stub-Logs in der Konsole. Hat keinen Einfluss auf die Leistung.",
   "InfoLogTooltip": "Ausgabe von Info-Logs in der Konsole. Hat keinen Einfluss auf die Leistung.",
   "WarnLogTooltip": "Ausgabe von Warn-Logs in der Konsole. Hat keinen Einfluss auf die Leistung.",
