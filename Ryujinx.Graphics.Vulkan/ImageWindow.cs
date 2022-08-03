@@ -35,8 +35,6 @@ namespace Ryujinx.Graphics.Vulkan
         private bool _recreateImages;
         private int _nextImage;
 
-        internal new bool ScreenCaptureRequested { get; set; }
-
         public unsafe ImageWindow(VulkanRenderer gd, PhysicalDevice physicalDevice, Device device)
         {
             _gd = gd;
