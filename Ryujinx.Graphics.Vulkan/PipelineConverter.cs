@@ -208,6 +208,13 @@ namespace Ryujinx.Graphics.Vulkan
                 var attribute = state.VertexAttribs[i];
                 var bufferIndex = attribute.IsZero ? 0 : attribute.BufferIndex + 1;
 
+                if (!gd.FormatCapabilities.BufferFormatSupports(FormatFeatureFlags.FormatFeatureVertexBufferBit, attribute.Format))
+                {
+                    // Not really a Vulkan exception, but we want to stop pipeline creation as attempting to create
+                    // a pipeline with an unsupported format might crash the driver.
+                    throw new VulkanException($"Attribute format \"{attribute.Format}\" is not supported by the host.");
+                }
+
                 pipeline.Internal.VertexAttributeDescriptions[i] = new VertexInputAttributeDescription(
                     (uint)i,
                     (uint)bufferIndex,

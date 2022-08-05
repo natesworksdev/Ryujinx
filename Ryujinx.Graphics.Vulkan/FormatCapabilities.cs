@@ -8,7 +8,8 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class FormatCapabilities
     {
-        private readonly FormatFeatureFlags[] _table;
+        private readonly FormatFeatureFlags[] _bufferTable;
+        private readonly FormatFeatureFlags[] _optimalTable;
 
         private readonly Vk _api;
         private readonly PhysicalDevice _physicalDevice;
@@ -17,7 +18,11 @@ namespace Ryujinx.Graphics.Vulkan
         {
             _api = api;
             _physicalDevice = physicalDevice;
-            _table = new FormatFeatureFlags[Enum.GetNames(typeof(GAL.Format)).Length];
+
+            int totalFormats = Enum.GetNames(typeof(GAL.Format)).Length;
+
+            _bufferTable = new FormatFeatureFlags[totalFormats];
+            _optimalTable = new FormatFeatureFlags[totalFormats];
         }
 
         public bool BufferFormatsSupport(FormatFeatureFlags flags, params GAL.Format[] formats)
@@ -48,20 +53,27 @@ namespace Ryujinx.Graphics.Vulkan
 
         public bool BufferFormatSupports(FormatFeatureFlags flags, GAL.Format format)
         {
-            _api.GetPhysicalDeviceFormatProperties(_physicalDevice, FormatTable.GetFormat(format), out var fp);
+            var formatFeatureFlags = _bufferTable[(int)format];
 
-            return (fp.BufferFeatures & flags) == flags;
+            if (formatFeatureFlags == 0)
+            {
+                _api.GetPhysicalDeviceFormatProperties(_physicalDevice, FormatTable.GetFormat(format), out var fp);
+                formatFeatureFlags = fp.BufferFeatures;
+                _bufferTable[(int)format] = formatFeatureFlags;
+            }
+
+            return (formatFeatureFlags & flags) == flags;
         }
 
         public bool OptimalFormatSupports(FormatFeatureFlags flags, GAL.Format format)
         {
-            var formatFeatureFlags = _table[(int)format];
+            var formatFeatureFlags = _optimalTable[(int)format];
 
             if (formatFeatureFlags == 0)
             {
                 _api.GetPhysicalDeviceFormatProperties(_physicalDevice, FormatTable.GetFormat(format), out var fp);
                 formatFeatureFlags = fp.OptimalTilingFeatures;
-                _table[(int)format] = formatFeatureFlags;
+                _optimalTable[(int)format] = formatFeatureFlags;
             }
 
             return (formatFeatureFlags & flags) == flags;
