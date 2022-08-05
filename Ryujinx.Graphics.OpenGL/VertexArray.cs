@@ -171,7 +171,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void LimitVertexBuffers(int vertexCount)
         {
-            // Is it possible for the draw to fetch outisde the bounds of any vertex buffer currently bound?
+            // Is it possible for the draw to fetch outside the bounds of any vertex buffer currently bound?
 
             if (vertexCount <= _minVertexCount)
             {
