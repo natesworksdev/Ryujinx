@@ -68,7 +68,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
             _fence = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
 
-            QueueRender();
+            InvalidateVisual();
 
             _gameBackgroundWindow.SwapBuffers();
         }

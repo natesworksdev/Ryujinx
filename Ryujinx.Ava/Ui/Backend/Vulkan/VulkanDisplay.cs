@@ -14,13 +14,13 @@ namespace Ryujinx.Ava.Ui.Vulkan
         private readonly VulkanInstance _instance;
         private readonly VulkanPhysicalDevice _physicalDevice;
         private readonly VulkanSemaphorePair _semaphorePair;
+        private readonly VulkanDevice _device;
         private uint _nextImage;
         private readonly VulkanSurface _surface;
         private SurfaceFormatKHR _surfaceFormat;
         private SwapchainKHR _swapchain;
         private Extent2D _swapchainExtent;
         private Image[] _swapchainImages;
-        private VulkanDevice _device { get; }
         private ImageView[] _swapchainImageViews = Array.Empty<ImageView>();
         private bool _vsyncStateChanged;
         private bool _vsyncEnabled;
@@ -322,7 +322,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
             return true;
         }
 
-        internal VulkanCommandBufferPool.VulkanCommandBuffer StartPresentation(VulkanSurfaceRenderTarget renderTarget)
+        internal VulkanCommandBufferPool.VulkanCommandBuffer StartPresentation()
         {
             _nextImage = 0;
             while (true)
@@ -362,8 +362,10 @@ namespace Ryujinx.Ava.Ui.Vulkan
 
         internal void BlitImageToCurrentImage(VulkanSurfaceRenderTarget renderTarget, CommandBuffer commandBuffer)
         {
+            var image = renderTarget.GetImage();
+
             VulkanMemoryHelper.TransitionLayout(_device, commandBuffer,
-                renderTarget.Image.InternalHandle.Value, (ImageLayout)renderTarget.Image.CurrentLayout,
+                image.InternalHandle.Value, (ImageLayout)image.CurrentLayout,
                 AccessFlags.AccessNoneKhr,
                 ImageLayout.TransferSrcOptimal,
                 AccessFlags.AccessTransferReadBit,
@@ -397,7 +399,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
                 }
             };
 
-            _device.Api.CmdBlitImage(commandBuffer, renderTarget.Image.InternalHandle.Value,
+            _device.Api.CmdBlitImage(commandBuffer, image.InternalHandle.Value,
                 ImageLayout.TransferSrcOptimal,
                 _swapchainImages[_nextImage],
                 ImageLayout.TransferDstOptimal,
@@ -406,9 +408,9 @@ namespace Ryujinx.Ava.Ui.Vulkan
                 Filter.Linear);
 
             VulkanMemoryHelper.TransitionLayout(_device, commandBuffer,
-                renderTarget.Image.InternalHandle.Value, ImageLayout.TransferSrcOptimal,
+                image.InternalHandle.Value, ImageLayout.TransferSrcOptimal,
                 AccessFlags.AccessTransferReadBit,
-                (ImageLayout)renderTarget.Image.CurrentLayout,
+                (ImageLayout)image.CurrentLayout,
                 AccessFlags.AccessNoneKhr,
                 renderTarget.MipLevels);
         }

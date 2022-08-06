@@ -843,8 +843,6 @@ namespace Ryujinx.Ava
 
                 Renderer.Start();
 
-                Renderer.QueueRender();
-
                 while (_isActive)
                 {
                     if (Device.WaitFifo())

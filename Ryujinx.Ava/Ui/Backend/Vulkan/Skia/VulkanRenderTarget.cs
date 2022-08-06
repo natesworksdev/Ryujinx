@@ -53,20 +53,22 @@ namespace Ryujinx.Ava.Ui.Backend.Vulkan
                 {
                     GrContext.ResetContext();
 
+                    var image = _surface.GetImage();
+
                     var imageInfo = new GRVkImageInfo()
                     {
                         CurrentQueueFamily = disp.QueueFamilyIndex,
-                        Format = _surface.ImageFormat,
-                        Image = _surface.Image.Handle,
-                        ImageLayout = (uint)_surface.Image.CurrentLayout,
-                        ImageTiling = (uint)_surface.Image.Tiling,
+                        Format = (uint)image.Format,
+                        Image = image.Handle,
+                        ImageLayout = (uint)image.CurrentLayout,
+                        ImageTiling = (uint)image.Tiling,
                         ImageUsageFlags = _surface.UsageFlags,
                         LevelCount = _surface.MipLevels,
                         SampleCount = 1,
                         Protected = false,
                         Alloc = new GRVkAlloc()
                         {
-                            Memory = _surface.Image.MemoryHandle,
+                            Memory = image.MemoryHandle,
                             Flags = 0,
                             Offset = 0,
                             Size = _surface.MemorySize

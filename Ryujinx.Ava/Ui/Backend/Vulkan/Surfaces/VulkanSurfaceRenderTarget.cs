@@ -7,11 +7,11 @@ namespace Ryujinx.Ava.Ui.Vulkan.Surfaces
     internal class VulkanSurfaceRenderTarget : IDisposable
     {
         private readonly VulkanPlatformInterface _platformInterface;
-
         private readonly Format _format;
 
-        public VulkanImage Image { get; private set; }
-        public bool IsCorrupted { get; private set; } = true;
+        private VulkanCommandBufferPool.VulkanCommandBuffer _commandBuffer;
+        private VulkanImage Image { get; set; }
+        private object _lock = new object();
 
         public uint MipLevels => Image.MipLevels;
 
@@ -32,13 +32,13 @@ namespace Ryujinx.Ava.Ui.Vulkan.Surfaces
 
         public bool IsRgba { get; }
 
-        public uint ImageFormat => (uint) _format;
+        public uint ImageFormat => (uint)_format;
 
         public ulong MemorySize => Image.MemorySize;
 
-        public VulkanDisplay Display { get; }
+        public VulkanDisplay Display { get; private set; }
 
-        public VulkanSurface Surface { get; }
+        public VulkanSurface Surface { get; private set; }
 
         public uint UsageFlags => Image.UsageFlags;
 
@@ -46,47 +46,75 @@ namespace Ryujinx.Ava.Ui.Vulkan.Surfaces
 
         public void Dispose()
         {
-            _platformInterface.Device.WaitIdle();
-            DestroyImage();
-            Display?.Dispose();
-            Surface?.Dispose();
+            lock (_lock)
+            {
+                DestroyImage();
+                Display?.Dispose();
+                Surface?.Dispose();
+
+                Display = null;
+                Surface = null;
+            }
         }
 
         public VulkanSurfaceRenderingSession BeginDraw(float scaling)
         {
+            if (Image == null)
+            {
+                RecreateImage();
+            }
+
+            _commandBuffer?.WaitForFence();
+            _commandBuffer = null;
+
             var session = new VulkanSurfaceRenderingSession(Display, _platformInterface.Device, this, scaling);
 
-            if (IsCorrupted)
-            {
-                IsCorrupted = false;
-                DestroyImage();
-                CreateImage();
-            }
-            else
-            {
-                Image.TransitionLayout(ImageLayout.ColorAttachmentOptimal, AccessFlags.AccessNoneKhr);
-            }
+            Image.TransitionLayout(ImageLayout.ColorAttachmentOptimal, AccessFlags.AccessNoneKhr);
 
             return session;
         }
 
-        public void Invalidate()
+        public void RecreateImage()
         {
-            IsCorrupted = true;
+            DestroyImage();
+            CreateImage();
         }
 
         private void CreateImage()
         {
             Size = Display.Size;
 
-            Image = new VulkanImage(_platformInterface.Device, _platformInterface.PhysicalDevice, _platformInterface.Device.CommandBufferPool, ImageFormat, Size);
+            Image = new VulkanImage(_platformInterface.Device, _platformInterface.PhysicalDevice, Display.CommandBufferPool, ImageFormat, Size);
         }
 
         private void DestroyImage()
         {
-            _platformInterface.Device.WaitIdle();
+            _commandBuffer?.WaitForFence();
+            _commandBuffer = null;
             Image?.Dispose();
             Image = null;
+        }
+
+        public VulkanImage GetImage()
+        {
+            return Image;
+        }
+
+        public void EndDraw()
+        {
+            lock (_lock)
+            {
+                if (Display == null)
+                {
+                    return;
+                }
+
+                _commandBuffer = Display.StartPresentation();
+
+                Display.BlitImageToCurrentImage(this, _commandBuffer.InternalHandle);
+
+                Display.EndPresentation(_commandBuffer);
+            }
         }
     }
 }

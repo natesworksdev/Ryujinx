@@ -96,8 +96,6 @@ namespace Ryujinx.Ava.Ui.Controls
             }
 
             Dispatcher.UIThread.Post(InvalidateVisual);
-
-            QueueRender();
         }
 
         private PresentImageInfo GetImage()

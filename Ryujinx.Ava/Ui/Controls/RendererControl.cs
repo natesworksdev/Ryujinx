@@ -83,17 +83,11 @@ namespace Ryujinx.Ava.Ui.Controls
             RendererInitialized?.Invoke(this, EventArgs.Empty);
         }
 
-        public void QueueRender()
-        {
-            Program.RenderTimer.TickNow();
-        }
-
         internal abstract void Present(object image);
 
         internal void Start()
         {
             IsStarted = true;
-            QueueRender();
         }
 
         internal void Stop()

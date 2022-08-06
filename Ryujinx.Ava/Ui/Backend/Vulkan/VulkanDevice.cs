@@ -17,8 +17,6 @@ namespace Ryujinx.Ava.Ui.Vulkan
             Queue = new VulkanQueue(this, queue);
 
             PresentQueue = Queue;
-
-            CommandBufferPool = new VulkanCommandBufferPool(this, physicalDevice);
         }
 
         public IntPtr Handle => InternalHandle.Handle;
@@ -28,12 +26,10 @@ namespace Ryujinx.Ava.Ui.Vulkan
 
         public VulkanQueue Queue { get; private set; }
         public VulkanQueue PresentQueue { get; }
-        public VulkanCommandBufferPool CommandBufferPool { get; }
 
         public void Dispose()
         {
             WaitIdle();
-            CommandBufferPool?.Dispose();
             Queue = null;
         }
 
