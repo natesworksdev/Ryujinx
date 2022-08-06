@@ -28,17 +28,6 @@ namespace Ryujinx.Ava.Ui.Vulkan
 
         public event EventHandler Presented;
 
-        public bool NotifySurfaceChanged
-        {
-            get
-            {
-                var changed = _surfaceChanged;
-                _surfaceChanged = false;
-
-                return changed;
-            }
-        }
-
         public VulkanCommandBufferPool CommandBufferPool { get; set; }
 
         public object Lock => _device.Lock;
@@ -84,6 +73,14 @@ namespace Ryujinx.Ava.Ui.Vulkan
             DestroyCurrentImageViews();
             _swapchainExtension.DestroySwapchain(_device.InternalHandle, _swapchain, Span<AllocationCallbacks>.Empty);
             CommandBufferPool.Dispose();
+        }
+
+        public bool IsSurfaceChanged()
+        {
+            var changed = _surfaceChanged;
+            _surfaceChanged = false;
+
+            return changed;
         }
 
         private static unsafe SwapchainKHR CreateSwapchain(VulkanInstance instance, VulkanDevice device,

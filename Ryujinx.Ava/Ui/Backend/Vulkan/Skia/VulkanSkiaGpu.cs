@@ -13,14 +13,13 @@ namespace Ryujinx.Ava.Ui.Backend.Vulkan
     public class VulkanSkiaGpu : ISkiaGpu
     {
         private readonly VulkanPlatformInterface _vulkan;
+        public long? MaxResourceBytes { get; }
 
         public VulkanSkiaGpu(long? maxResourceBytes)
         {
             _vulkan = AvaloniaLocator.Current.GetService<VulkanPlatformInterface>();
             MaxResourceBytes = maxResourceBytes;
         }
-
-        public long? MaxResourceBytes { get; }
 
         public ISkiaGpuRenderTarget TryCreateRenderTarget(IEnumerable<object> surfaces)
         {

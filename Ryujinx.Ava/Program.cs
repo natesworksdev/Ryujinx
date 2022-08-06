@@ -188,7 +188,7 @@ namespace Ryujinx.Ava
 
                     ConfigurationState.Instance.Graphics.GraphicsBackend.Value = GraphicsBackend.OpenGl;
 
-                    Logger.Warning?.PrintMsg(LogClass.Application, $"A suitable Vulkan physical device is not available. Falling back to OpenGL");
+                    Logger.Warning?.PrintMsg(LogClass.Application, "A suitable Vulkan physical device is not available. Falling back to OpenGL");
                 }
             }
 

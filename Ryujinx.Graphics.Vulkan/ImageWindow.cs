@@ -363,6 +363,8 @@ namespace Ryujinx.Graphics.Vulkan
         {
             Dispose(true);
         }
+
+        public override void ChangeVSyncMode(bool vsyncEnabled) { }
     }
 
     public class ImageState
@@ -388,21 +390,9 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Auto<DisposableImage> _image;
         private readonly Auto<MemoryAllocation> _memory;
 
-        public Image Image
-        {
-            get
-            {
-                return _image.GetUnsafe().Value;
-            }
-        }
+        public Image Image => _image.GetUnsafe().Value;
 
-        public DeviceMemory Memory
-        {
-            get
-            {
-                return _memory.GetUnsafe().Memory;
-            }
-        }
+        public DeviceMemory Memory => _memory.GetUnsafe().Memory;
 
         public Device Device { get; }
         public PhysicalDevice PhysicalDevice { get; }

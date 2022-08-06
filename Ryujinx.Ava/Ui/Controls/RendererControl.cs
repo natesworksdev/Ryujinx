@@ -11,13 +11,7 @@ namespace Ryujinx.Ava.Ui.Controls
 {
     internal abstract class RendererControl : Control
     {
-        protected object _image;
-
-        protected object Image
-        {
-            get => _image;
-            set => _image = value;
-        }
+        protected object Image { get; set; }
 
         public event EventHandler<EventArgs> RendererInitialized;
         public event EventHandler<Size> SizeChanged;

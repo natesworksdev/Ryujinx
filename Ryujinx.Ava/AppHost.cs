@@ -896,7 +896,7 @@ namespace Ryujinx.Ava
             if (Program.UseVulkan)
             {
                 var platformInterface = AvaloniaLocator.Current.GetService<VulkanPlatformInterface>();
-                if (platformInterface.MainSurface.Display.NotifySurfaceChanged)
+                if (platformInterface.MainSurface.Display.IsSurfaceChanged())
                 {
                     SetRendererWindowSize(new Size(Width, Height));
                     return;

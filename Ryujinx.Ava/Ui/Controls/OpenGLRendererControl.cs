@@ -37,7 +37,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
         public override void DestroyBackgroundContext()
         {
-            _image = null;
+            Image = null;
 
             if (_fence != IntPtr.Zero)
             {

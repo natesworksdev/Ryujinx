@@ -28,7 +28,31 @@ namespace Ryujinx.Ava.Ui.Backend.Vulkan
 
         private void Initialize()
         {
-            GRVkGetProcedureAddressDelegate getProc = (string name, IntPtr instanceHandle, IntPtr deviceHandle) =>
+            GRVkGetProcedureAddressDelegate getProc = GetVulkanProcAddress();
+
+            _grVkBackend = new GRVkBackendContext()
+            {
+                VkInstance = _surface.Device.Handle,
+                VkPhysicalDevice = _vulkanPlatformInterface.PhysicalDevice.Handle,
+                VkDevice = _surface.Device.Handle,
+                VkQueue = _surface.Device.Queue.Handle,
+                GraphicsQueueIndex = _vulkanPlatformInterface.PhysicalDevice.QueueFamilyIndex,
+                GetProcedureAddress = getProc
+            };
+
+            GrContext = GRContext.CreateVulkan(_grVkBackend);
+
+            var gpu = AvaloniaLocator.Current.GetService<VulkanSkiaGpu>();
+
+            if (gpu.MaxResourceBytes.HasValue)
+            {
+                GrContext.SetResourceCacheLimit(gpu.MaxResourceBytes.Value);
+            }
+        }
+
+        private GRVkGetProcedureAddressDelegate GetVulkanProcAddress()
+        {
+            return (string name, IntPtr instanceHandle, IntPtr deviceHandle) =>
             {
                 IntPtr addr = IntPtr.Zero;
 
@@ -58,25 +82,6 @@ namespace Ryujinx.Ava.Ui.Backend.Vulkan
 
                 return addr;
             };
-
-            _grVkBackend = new GRVkBackendContext()
-            {
-                VkInstance = _surface.Device.Handle,
-                VkPhysicalDevice = _vulkanPlatformInterface.PhysicalDevice.Handle,
-                VkDevice = _surface.Device.Handle,
-                VkQueue = _surface.Device.Queue.Handle,
-                GraphicsQueueIndex = _vulkanPlatformInterface.PhysicalDevice.QueueFamilyIndex,
-                GetProcedureAddress = getProc
-            };
-
-            GrContext = GRContext.CreateVulkan(_grVkBackend);
-
-            var gpu = AvaloniaLocator.Current.GetService<VulkanSkiaGpu>();
-
-            if (gpu.MaxResourceBytes.HasValue)
-            {
-                GrContext.SetResourceCacheLimit(gpu.MaxResourceBytes.Value);
-            }
         }
 
         public void Dispose()

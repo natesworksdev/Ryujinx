@@ -402,7 +402,7 @@ namespace Ryujinx.Ui
                 Device.Gpu.InitializeShaderCache(_gpuCancellationTokenSource.Token);
                 Translator.IsReadyForTranslation.Set();
 
-                Renderer?.Window?.ChangeVSyncMode(Device.EnableDeviceVsync);
+                Renderer.Window.ChangeVSyncMode(Device.EnableDeviceVsync);
 
                 (Toplevel as MainWindow)?.ActivatePauseMenu();
 
