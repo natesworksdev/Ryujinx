@@ -601,11 +601,11 @@ namespace Ryujinx.Ava
                 var vulkan = AvaloniaLocator.Current.GetService<VulkanPlatformInterface>();
                 
                 renderer = new VulkanRenderer(vulkan.Instance.InternalHandle,
-                    vulkan.Device.InternalHandle,
+                    vulkan.MainSurface.Device.InternalHandle,
                     vulkan.PhysicalDevice.InternalHandle,
-                    vulkan.Device.Queue.InternalHandle,
+                    vulkan.MainSurface.Device.Queue.InternalHandle,
                     vulkan.PhysicalDevice.QueueFamilyIndex,
-                    vulkan.Device.Lock);
+                    vulkan.MainSurface.Device.Lock);
             }
             else
             {

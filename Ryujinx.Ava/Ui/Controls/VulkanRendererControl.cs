@@ -62,7 +62,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
         private void Window_Presented(object sender, EventArgs e)
         {
-            _platformInterface.Device.QueueWaitIdle();
+            _platformInterface.MainSurface.Device.QueueWaitIdle();
             _currentImage?.Put();
             _currentImage = null;
         }
@@ -192,9 +192,11 @@ namespace Ryujinx.Ava.Ui.Controls
                     (int)image.Extent.Height,
                     1,
                     imageInfo);
+                
+                var vulkan = AvaloniaLocator.Current.GetService<VulkanPlatformInterface>();
 
                 using var surface = SKSurface.Create(
-                    gpu.GrContext,
+                    skiaDrawingContextImpl.GrContext,
                     backendTexture,
                     GRSurfaceOrigin.TopLeft,
                     SKColorType.Rgba8888);

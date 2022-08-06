@@ -31,6 +31,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
         {
             WaitIdle();
             Queue = null;
+            Api.DestroyDevice(InternalHandle, Span<AllocationCallbacks>.Empty);
         }
 
         internal void Submit(SubmitInfo submitInfo, Fence fence = default)

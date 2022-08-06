@@ -1,5 +1,6 @@
 using System;
 using Avalonia;
+using Ryujinx.Graphics.Vulkan;
 using Silk.NET.Vulkan;
 
 namespace Ryujinx.Ava.Ui.Vulkan.Surfaces
@@ -14,12 +15,21 @@ namespace Ryujinx.Ava.Ui.Vulkan.Surfaces
         private object _lock = new object();
 
         public uint MipLevels => Image.MipLevels;
+        public VulkanDevice Device { get; }
 
         public VulkanSurfaceRenderTarget(VulkanPlatformInterface platformInterface, VulkanSurface surface)
         {
             _platformInterface = platformInterface;
 
-            Display = VulkanDisplay.CreateDisplay(platformInterface.Instance, platformInterface.Device,
+            var device = VulkanInitialization.CreateDevice(platformInterface.Api,
+                                                           platformInterface.PhysicalDevice.InternalHandle,
+                                                           platformInterface.PhysicalDevice.QueueFamilyIndex,
+                                                           VulkanInitialization.GetSupportedExtensions(platformInterface.Api, platformInterface.PhysicalDevice.InternalHandle),
+                                                           platformInterface.PhysicalDevice.QueueCount);
+
+            Device = new VulkanDevice(device, platformInterface.PhysicalDevice, platformInterface.Api);
+
+            Display = VulkanDisplay.CreateDisplay(platformInterface.Instance, Device,
                 platformInterface.PhysicalDevice, surface);
             Surface = surface;
 
@@ -51,6 +61,7 @@ namespace Ryujinx.Ava.Ui.Vulkan.Surfaces
                 DestroyImage();
                 Display?.Dispose();
                 Surface?.Dispose();
+                Device?.Dispose();
 
                 Display = null;
                 Surface = null;
@@ -67,7 +78,7 @@ namespace Ryujinx.Ava.Ui.Vulkan.Surfaces
             _commandBuffer?.WaitForFence();
             _commandBuffer = null;
 
-            var session = new VulkanSurfaceRenderingSession(Display, _platformInterface.Device, this, scaling);
+            var session = new VulkanSurfaceRenderingSession(Display, Device, this, scaling);
 
             Image.TransitionLayout(ImageLayout.ColorAttachmentOptimal, AccessFlags.AccessNoneKhr);
 
@@ -84,7 +95,7 @@ namespace Ryujinx.Ava.Ui.Vulkan.Surfaces
         {
             Size = Display.Size;
 
-            Image = new VulkanImage(_platformInterface.Device, _platformInterface.PhysicalDevice, Display.CommandBufferPool, ImageFormat, Size);
+            Image = new VulkanImage(Device, _platformInterface.PhysicalDevice, Display.CommandBufferPool, ImageFormat, Size);
         }
 
         private void DestroyImage()

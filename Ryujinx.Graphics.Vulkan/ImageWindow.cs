@@ -27,9 +27,6 @@ namespace Ryujinx.Graphics.Vulkan
         private ulong[] _imageSizes;
         private ulong[] _imageOffsets;
 
-        private Semaphore _imageAvailableSemaphore;
-        private Semaphore _renderFinishedSemaphore;
-
         private int _width = SurfaceWidth;
         private int _height = SurfaceHeight;
         private bool _recreateImages;
@@ -49,11 +46,6 @@ namespace Ryujinx.Graphics.Vulkan
             _presentedImages = new PresentImageInfo[ImageCount];
 
             CreateImages();
-
-            var semaphoreCreateInfo = new SemaphoreCreateInfo() { SType = StructureType.SemaphoreCreateInfo };
-
-            gd.Api.CreateSemaphore(device, semaphoreCreateInfo, null, out _imageAvailableSemaphore).ThrowOnError();
-            gd.Api.CreateSemaphore(device, semaphoreCreateInfo, null, out _renderFinishedSemaphore).ThrowOnError();
         }
 
         private void RecreateImages()
@@ -283,8 +275,6 @@ namespace Ryujinx.Graphics.Vulkan
                     _physicalDevice,
                     _imageSizes[_nextImage],
                     _imageOffsets[_nextImage],
-                    _renderFinishedSemaphore,
-                    _imageAvailableSemaphore,
                     new Extent2D((uint)_width, (uint)_height),
                     _states[_nextImage]);
 
@@ -356,9 +346,6 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 unsafe
                 {
-                    _gd.Api.DestroySemaphore(_device, _renderFinishedSemaphore, null);
-                    _gd.Api.DestroySemaphore(_device, _imageAvailableSemaphore, null);
-
                     for (int i = 0; i < ImageCount; i++)
                     {
                         _states[i].IsValid = false;
@@ -421,8 +408,6 @@ namespace Ryujinx.Graphics.Vulkan
         public PhysicalDevice PhysicalDevice { get; }
         public ulong MemorySize { get; }
         public ulong MemoryOffset { get; }
-        public Semaphore ReadySemaphore { get; }
-        public Semaphore AvailableSemaphore { get; }
         public Extent2D Extent { get; }
         public ImageState State { get; internal set; }
         internal PresentImageInfo(
@@ -432,8 +417,6 @@ namespace Ryujinx.Graphics.Vulkan
             PhysicalDevice physicalDevice,
             ulong memorySize,
             ulong memoryOffset,
-            Semaphore readySemaphore,
-            Semaphore availableSemaphore,
             Extent2D extent2D,
             ImageState state)
         {
@@ -443,8 +426,6 @@ namespace Ryujinx.Graphics.Vulkan
             PhysicalDevice = physicalDevice;
             MemorySize = memorySize;
             MemoryOffset = memoryOffset;
-            ReadySemaphore = readySemaphore;
-            AvailableSemaphore = availableSemaphore;
             Extent = extent2D;
             State = state;
         }
