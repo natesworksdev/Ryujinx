@@ -28,7 +28,7 @@ namespace Ryujinx.Ava.Ui.Backend.Vulkan
 
         private void Initialize()
         {
-            GRVkGetProcedureAddressDelegate getProc = GetVulkanProcAddress();
+            GRVkGetProcedureAddressDelegate getProc = GetVulkanProcAddress;
 
             _grVkBackend = new GRVkBackendContext()
             {
@@ -50,38 +50,35 @@ namespace Ryujinx.Ava.Ui.Backend.Vulkan
             }
         }
 
-        private GRVkGetProcedureAddressDelegate GetVulkanProcAddress()
+        private IntPtr GetVulkanProcAddress(string name, IntPtr instanceHandle, IntPtr deviceHandle)
         {
-            return (string name, IntPtr instanceHandle, IntPtr deviceHandle) =>
+            IntPtr addr;
+
+            if (deviceHandle != IntPtr.Zero)
             {
-                IntPtr addr = IntPtr.Zero;
+                addr = _vulkanPlatformInterface.Api.GetDeviceProcAddr(new Device(deviceHandle), name);
 
-                if (deviceHandle != IntPtr.Zero)
+                if (addr != IntPtr.Zero)
                 {
-                    addr = _vulkanPlatformInterface.Api.GetDeviceProcAddr(new Device(deviceHandle), name);
-
-                    if (addr != IntPtr.Zero)
-                    {
-                        return addr;
-                    }
-
-                    addr = _vulkanPlatformInterface.Api.GetDeviceProcAddr(new Device(_surface.Device.Handle), name);
-
-                    if (addr != IntPtr.Zero)
-                    {
-                        return addr;
-                    }
+                    return addr;
                 }
 
-                addr = _vulkanPlatformInterface.Api.GetInstanceProcAddr(new Instance(_vulkanPlatformInterface.Instance.Handle), name);
+                addr = _vulkanPlatformInterface.Api.GetDeviceProcAddr(new Device(_surface.Device.Handle), name);
 
-                if (addr == IntPtr.Zero)
+                if (addr != IntPtr.Zero)
                 {
-                    addr = _vulkanPlatformInterface.Api.GetInstanceProcAddr(new Instance(instanceHandle), name);
+                    return addr;
                 }
+            }
 
-                return addr;
-            };
+            addr = _vulkanPlatformInterface.Api.GetInstanceProcAddr(new Instance(_vulkanPlatformInterface.Instance.Handle), name);
+
+            if (addr == IntPtr.Zero)
+            {
+                addr = _vulkanPlatformInterface.Api.GetInstanceProcAddr(new Instance(instanceHandle), name);
+            }
+
+            return addr;
         }
 
         public void Dispose()
