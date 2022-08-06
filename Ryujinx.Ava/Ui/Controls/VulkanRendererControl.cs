@@ -47,7 +47,10 @@ namespace Ryujinx.Ava.Ui.Controls
 
             _imagesInFlight.Clear();
 
-            _platformInterface.MainSurface.Display.Presented -= Window_Presented;
+            if (_platformInterface.MainSurface.Display != null)
+            {
+                _platformInterface.MainSurface.Display.Presented -= Window_Presented;
+            }
             
             _currentImage?.Put();
             _currentImage = null;
