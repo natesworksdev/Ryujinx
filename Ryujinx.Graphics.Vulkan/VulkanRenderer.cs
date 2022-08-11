@@ -232,7 +232,8 @@ namespace Ryujinx.Graphics.Vulkan
                 propertiesSubgroupSizeControl.MinSubgroupSize,
                 propertiesSubgroupSizeControl.MaxSubgroupSize,
                 propertiesSubgroupSizeControl.RequiredSubgroupSizeStages,
-                supportedSampleCounts);
+                supportedSampleCounts,
+                OperatingSystem.IsMacOS() ? PortabilitySubsetFlags.MoltenVK : PortabilitySubsetFlags.None);
 
             MemoryAllocator = new MemoryAllocator(Api, _device, properties.Limits.MaxMemoryAllocationCount);
 

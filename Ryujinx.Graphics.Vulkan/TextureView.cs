@@ -94,8 +94,14 @@ namespace Ryujinx.Graphics.Vulkan
             var subresourceRange = new ImageSubresourceRange(aspectFlags, (uint)firstLevel, levels, (uint)firstLayer, layers);
             var subresourceRangeDepth = new ImageSubresourceRange(aspectFlagsDepth, (uint)firstLevel, levels, (uint)firstLayer, layers);
 
-            unsafe Auto<DisposableImageView> CreateImageView(ComponentMapping cm, ImageSubresourceRange sr, ImageViewType viewType)
+            unsafe Auto<DisposableImageView> CreateImageView(ComponentMapping cm, ImageSubresourceRange sr, ImageViewType viewType, ImageUsageFlags usageFlags = 0)
             {
+                var usage = new ImageViewUsageCreateInfo()
+                {
+                    SType = StructureType.ImageViewUsageCreateInfo,
+                    Usage = usageFlags
+                };
+
                 var imageCreateInfo = new ImageViewCreateInfo()
                 {
                     SType = StructureType.ImageViewCreateInfo,
@@ -103,7 +109,8 @@ namespace Ryujinx.Graphics.Vulkan
                     ViewType = viewType,
                     Format = format,
                     Components = cm,
-                    SubresourceRange = sr
+                    SubresourceRange = sr,
+                    PNext = usageFlags == 0 ? null : &usage
                 };
 
                 gd.Api.CreateImageView(device, imageCreateInfo, null, out var imageView).ThrowOnError();
@@ -124,9 +131,18 @@ namespace Ryujinx.Graphics.Vulkan
             // Framebuffer attachments also require 3D textures to be bound as 2D array.
             if (info.Target == Target.Texture3D)
             {
-                subresourceRange = new ImageSubresourceRange(aspectFlags, (uint)firstLevel, levels, (uint)firstLayer, (uint)info.Depth);
+                if (gd.Capabilities.PortabilitySubset.HasFlag(PortabilitySubsetFlags.No3DImageView))
+                {
+                    subresourceRange = new ImageSubresourceRange(aspectFlags, (uint)firstLevel, levels, (uint)firstLayer, 1);
 
-                _imageView2dArray = CreateImageView(identityComponentMapping, subresourceRange, ImageViewType.Type2DArray);
+                    _imageView2dArray = CreateImageView(identityComponentMapping, subresourceRange, ImageViewType.Type2D, ImageUsageFlags.ColorAttachmentBit);
+                }
+                else
+                {
+                    subresourceRange = new ImageSubresourceRange(aspectFlags, (uint)firstLevel, levels, (uint)firstLayer, (uint)info.Depth);
+
+                    _imageView2dArray = CreateImageView(identityComponentMapping, subresourceRange, ImageViewType.Type2DArray);
+                }
             }
 
             Valid = true;
@@ -1047,7 +1063,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Release()
         {
-            Dispose();
+            // TODO: Properly fix this.
+            if (!OperatingSystem.IsMacOS())
+            {
+                Dispose();
+            }
         }
     }
 }

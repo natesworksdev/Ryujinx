@@ -32,7 +32,11 @@ namespace Ryujinx.Graphics.Vulkan
             "VK_KHR_shader_float16_int8",
             "VK_EXT_shader_subgroup_ballot",
             "VK_EXT_subgroup_size_control",
-            "VK_NV_geometry_shader_passthrough"
+            "VK_NV_geometry_shader_passthrough",
+
+            // These two extensions are required for certain games, but not all.
+            "VK_EXT_shader_subgroup_vote",
+            ExtTransformFeedback.ExtensionName
         };
 
         public static string[] RequiredExtensions { get; } = new string[]

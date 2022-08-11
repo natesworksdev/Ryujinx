@@ -1,7 +1,23 @@
 ﻿using Silk.NET.Vulkan;
+using System;
 
 namespace Ryujinx.Graphics.Vulkan
 {
+    [Flags]
+    enum PortabilitySubsetFlags
+    {
+        None = 0,
+
+        VertexBufferAlignment4B = 1,
+        NoTriangleFans = 1 << 1,
+        NoPointMode = 1 << 2,
+        No3DImageView = 1 << 3,
+        NoCompressedView = 1 << 4,
+        NoLodBias = 1 << 5,
+
+        MoltenVK = VertexBufferAlignment4B | NoTriangleFans | NoPointMode | No3DImageView | NoCompressedView | NoLodBias
+    }
+
     readonly struct HardwareCapabilities
     {
         public readonly bool SupportsIndexTypeUint8;
@@ -23,6 +39,7 @@ namespace Ryujinx.Graphics.Vulkan
         public readonly uint MaxSubgroupSize;
         public readonly ShaderStageFlags RequiredSubgroupSizeStages;
         public readonly SampleCountFlags SupportedSampleCounts;
+        public readonly PortabilitySubsetFlags PortabilitySubset;
 
         public HardwareCapabilities(
             bool supportsIndexTypeUint8,
@@ -43,7 +60,8 @@ namespace Ryujinx.Graphics.Vulkan
             uint minSubgroupSize,
             uint maxSubgroupSize,
             ShaderStageFlags requiredSubgroupSizeStages,
-            SampleCountFlags supportedSampleCounts)
+            SampleCountFlags supportedSampleCounts,
+            PortabilitySubsetFlags portabilitySubset)
         {
             SupportsIndexTypeUint8 = supportsIndexTypeUint8;
             SupportsCustomBorderColor = supportsCustomBorderColor;
@@ -64,6 +82,7 @@ namespace Ryujinx.Graphics.Vulkan
             MaxSubgroupSize = maxSubgroupSize;
             RequiredSubgroupSizeStages = requiredSubgroupSizeStages;
             SupportedSampleCounts = supportedSampleCounts;
+            PortabilitySubset = portabilitySubset;
         }
     }
 }
