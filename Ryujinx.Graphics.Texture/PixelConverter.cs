@@ -35,5 +35,53 @@ namespace Ryujinx.Graphics.Texture
 
             return output;
         }
+
+        public unsafe static byte[] ConvertR5G6B5ToRGBA8(ReadOnlySpan<byte> data)
+        {
+            byte[] output = new byte[data.Length * 2];
+            int start = 0;
+
+            ReadOnlySpan<ushort> inputSpan = MemoryMarshal.Cast<byte, ushort>(data);
+            Span<uint> outputSpan = MemoryMarshal.Cast<byte, uint>(output);
+
+            float factor5Bit = 255.499f/31f;
+            float factor6Bit = 255.499f/63f;
+
+            for (int i = start; i < inputSpan.Length; i++)
+            {
+                ushort packed = inputSpan[i];
+                uint r = (uint)((packed & 31) * factor5Bit);
+                uint g = (uint)(((packed >> 5) & 63) * factor6Bit);
+                uint b = (uint)(((packed >> 11) & 31) * factor5Bit);
+
+                outputSpan[i] = r | (g << 8) | (b << 16) | 0xFF000000;
+            }
+
+            return output;
+        }
+
+        public unsafe static byte[] ConvertR5G5B5ToRGBA8(ReadOnlySpan<byte> data, bool forceAlpha)
+        {
+            byte[] output = new byte[data.Length * 2];
+            int start = 0;
+
+            ReadOnlySpan<ushort> inputSpan = MemoryMarshal.Cast<byte, ushort>(data);
+            Span<uint> outputSpan = MemoryMarshal.Cast<byte, uint>(output);
+
+            float factor5Bit = 255.499f/31f;
+
+            for (int i = start; i < inputSpan.Length; i++)
+            {
+                ushort packed = inputSpan[i];
+                uint a = (uint)(forceAlpha ? 1 : (packed >> 15)) * 255u;
+                uint r = (uint)((packed & 31) * factor5Bit) & a;
+                uint g = (uint)(((packed >> 5) & 31) * factor5Bit) & a;
+                uint b = (uint)(((packed >> 10) & 31) * factor5Bit) & a;
+
+                outputSpan[i] = r | (g << 8) | (b << 16) | (a << 24);
+            }
+
+            return output;
+        }
     }
 }

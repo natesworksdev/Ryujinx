@@ -875,11 +875,26 @@ namespace Ryujinx.Graphics.Gpu.Image
                         break;
                 }
             }
+            else if (!_context.Capabilities.Supports16BitRGBAFormat && Format.Is16BitRGBA())
+            {
+                switch (Format)
+                {
+                    case Format.B5G6R5Unorm:
+                    case Format.R5G6B5Unorm:
+                        data = PixelConverter.ConvertR5G6B5ToRGBA8(data);
+                        break;
+                    case Format.B5G5R5A1Unorm:
+                    case Format.B5G5R5X1Unorm:
+                    case Format.R5G5B5X1Unorm:
+                    case Format.R5G5B5A1Unorm:
+                        data = PixelConverter.ConvertR5G5B5ToRGBA8(data, Format == Format.B5G5R5X1Unorm);
+                        break;
+                }
+            }
             else if (!TextureCompatibility.HostSupportsBcFormat(Format, Target, _context.Capabilities))
             {
                 switch (Format)
                 {
-                    case Format.Bc1RgbaSrgb:
                     case Format.Bc1RgbaUnorm:
                         result = BCnDecoder.DecodeBC1(result, width, height, depth, levels, layers);
                         break;

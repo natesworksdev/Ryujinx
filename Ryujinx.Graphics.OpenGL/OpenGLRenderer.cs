@@ -115,6 +115,7 @@ namespace Ryujinx.Graphics.OpenGL
                 supportsBgraFormat: false,
                 supportsR4G4Format: false,
                 supportsSnormBufferTextureFormat: false,
+                supports16BitRGBAFormat: true,
                 supportsFragmentShaderInterlock: HwCapabilities.SupportsFragmentShaderInterlock,
                 supportsFragmentShaderOrderingIntel: HwCapabilities.SupportsFragmentShaderOrdering,
                 supportsGeometryShaderPassthrough: HwCapabilities.SupportsGeometryShaderPassthrough,
