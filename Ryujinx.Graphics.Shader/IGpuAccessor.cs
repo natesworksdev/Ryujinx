@@ -115,6 +115,15 @@ namespace Ryujinx.Graphics.Shader
         }
 
         /// <summary>
+        /// Queries output attribute type for fragment shaders.
+        /// </summary>
+        /// <returns>Output location</returns>
+        AttributeType QueryOutputAttributeType(int location)
+        {
+            return AttributeType.Float;
+        }
+
+        /// <summary>
         /// Queries Local Size X for compute shaders.
         /// </summary>
         /// <returns>Local Size X</returns>

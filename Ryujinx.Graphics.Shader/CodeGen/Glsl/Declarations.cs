@@ -666,7 +666,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
             else
             {
-                context.AppendLine($"layout (location = {attr}) out vec4 {name};");
+                string type = context.Config.Stage != ShaderStage.Fragment ? "vec4" :
+                    context.Config.GpuAccessor.QueryOutputAttributeType(attr) switch
+                    {
+                        AttributeType.Sint => "ivec4",
+                        AttributeType.Uint => "uvec4",
+                        _ => "vec4"
+                    };
+
+                context.AppendLine($"layout (location = {attr}) out {type} {name};");
             }
         }
 

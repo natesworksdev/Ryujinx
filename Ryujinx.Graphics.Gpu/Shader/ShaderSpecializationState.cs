@@ -520,6 +520,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 return false;
             }
 
+            if (!graphicsState.OutputAttributeTypes.ToSpan().SequenceEqual(GraphicsState.OutputAttributeTypes.ToSpan()))
+            {
+                return false;
+            }
+
             if (usesDrawParameters && graphicsState.HasConstantBufferDrawParameters != GraphicsState.HasConstantBufferDrawParameters)
             {
                 return false;

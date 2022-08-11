@@ -114,6 +114,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <inheritdoc/>
+        public AttributeType QueryOutputAttributeType(int location)
+        {
+            return _state.GraphicsState.OutputAttributeTypes[location];
+        }
+
+        /// <inheritdoc/>
         public int QueryComputeLocalSizeX() => _state.ComputeState.LocalSizeX;
 
         /// <inheritdoc/>
