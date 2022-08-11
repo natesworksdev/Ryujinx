@@ -434,11 +434,25 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (supportedExtensions.Contains("VK_EXT_robustness2"))
             {
+                PhysicalDeviceFeatures2 features2 = new PhysicalDeviceFeatures2()
+                {
+                    SType = StructureType.PhysicalDeviceFeatures2
+                };
+
+                PhysicalDeviceRobustness2FeaturesEXT supportedFeaturesRobustness2 = new PhysicalDeviceRobustness2FeaturesEXT()
+                {
+                    SType = StructureType.PhysicalDeviceRobustness2FeaturesExt
+                };
+
+                features2.PNext = &supportedFeaturesRobustness2;
+
+                api.GetPhysicalDeviceFeatures2(physicalDevice, &features2);
+
                 var featuresRobustness2 = new PhysicalDeviceRobustness2FeaturesEXT()
                 {
                     SType = StructureType.PhysicalDeviceRobustness2FeaturesExt,
                     PNext = pExtendedFeatures,
-                    NullDescriptor = true
+                    NullDescriptor = supportedFeaturesRobustness2.NullDescriptor
                 };
 
                 pExtendedFeatures = &featuresRobustness2;
