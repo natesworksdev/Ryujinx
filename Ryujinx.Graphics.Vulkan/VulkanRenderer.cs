@@ -435,6 +435,7 @@ namespace Ryujinx.Graphics.Vulkan
                 GpuVendor,
                 hasFrontFacingBug: IsIntelWindows,
                 hasVectorIndexingBug: Vendor == Vendor.Qualcomm,
+                reduceShaderPrecision: Vendor == Vendor.MoltenVK,
                 supportsAstcCompression: features2.Features.TextureCompressionAstcLdr,
                 supportsBc123Compression: supportsBc123CompressionFormat,
                 supportsBc45Compression: supportsBc45CompressionFormat,

@@ -346,12 +346,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             {
                 string name = context.OperandManager.DeclareLocal(decl);
 
-                context.AppendLine(GetVarTypeName(decl.VarType) + " " + name + ";");
+                context.AppendLine(GetVarTypeName(context, decl.VarType) + " " + name + ";");
             }
         }
 
-        public static string GetVarTypeName(AggregateType type, bool precise = true)
+        public static string GetVarTypeName(CodeGenContext context, AggregateType type, bool precise = true)
         {
+            if (context.Config.GpuAccessor.QueryHostReducedPrecision())
+            {
+                precise = false;
+            }
+
             return type switch
             {
                 AggregateType.Void => "void",
@@ -674,7 +679,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                         _ => "vec4"
                     };
 
-                context.AppendLine($"layout (location = {attr}) out {type} {name};");
+                if (context.Config.GpuAccessor.QueryHostReducedPrecision() && context.Config.Stage == ShaderStage.Vertex && attr == 0)
+                {
+                    context.AppendLine($"layout (location = {attr}) invariant out {type} {name};");
+                }
+                else
+                {
+                    context.AppendLine($"layout (location = {attr}) out {type} {name};");
+                }
             }
         }
 

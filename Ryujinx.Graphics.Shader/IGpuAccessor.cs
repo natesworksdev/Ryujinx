@@ -196,6 +196,15 @@ namespace Ryujinx.Graphics.Shader
         }
 
         /// <summary>
+        /// Queries host about whether to reduce precision to improve performance.
+        /// </summary>
+        /// <returns>True if precision is limited to vertex position, false otherwise</returns>
+        bool QueryHostReducedPrecision()
+        {
+            return false;
+        }
+
+        /// <summary>
         /// Queries host about the presence of the FrontFacing built-in variable bug.
         /// </summary>
         /// <returns>True if the bug is present on the host device used, false otherwise</returns>
