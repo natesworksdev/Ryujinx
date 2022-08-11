@@ -793,11 +793,28 @@ namespace Ryujinx.Graphics.Vulkan
                         }
 
                         _vertexBuffers[binding].Dispose();
-                        _vertexBuffers[binding] = new BufferState(
-                            vb,
-                            vertexBuffer.Buffer.Offset,
-                            vbSize,
-                            (ulong)vertexBuffer.Stride);
+
+                        if (Gd.NeedsVertexBufferAlignment(vertexBuffer.Divisor, out int alignment) && (vertexBuffer.Stride % alignment) != 0)
+                        {
+                            vb = Gd.BufferManager.GetAlignedVertexBuffer(Cbs, vertexBuffer.Buffer.Handle, vertexBuffer.Buffer.Offset, vbSize, vertexBuffer.Stride, alignment);
+                            int alignedStride = (vertexBuffer.Stride + (alignment - 1)) & -alignment;
+
+                            _vertexBuffers[binding] = new BufferState(
+                                vb,
+                                0,
+                                (vbSize / vertexBuffer.Stride) * alignedStride,
+                                (ulong)alignedStride);
+
+                            _newState.Internal.VertexBindingDescriptions[descriptorIndex].Stride = (uint)alignedStride;
+                        }
+                        else
+                        {
+                            _vertexBuffers[binding] = new BufferState(
+                                vb,
+                                vertexBuffer.Buffer.Offset,
+                                vbSize,
+                                (ulong)vertexBuffer.Stride);
+                        }
 
                         _vertexBuffers[binding].BindVertexBuffer(Gd, Cbs, (uint)binding);
                     }

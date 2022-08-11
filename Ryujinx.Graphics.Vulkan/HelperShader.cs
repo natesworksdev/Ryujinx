@@ -332,6 +332,51 @@ namespace Ryujinx.Graphics.Vulkan
                 size * 2);
         }
 
+        public unsafe void ChangeStride(VulkanRenderer gd, CommandBufferScoped cbs, BufferHolder src, BufferHolder dst, int srcOffset, int size, int stride, int newStride)
+        {
+            int elems = size / stride;
+            int newSize = elems * newStride;
+            // TODO: Do this with a compute shader?
+            var srcBuffer = src.GetBuffer().Get(cbs, srcOffset, size).Value;
+            var dstBuffer = dst.GetBuffer().Get(cbs, 0, newSize).Value;
+
+            gd.Api.CmdFillBuffer(cbs.CommandBuffer, dstBuffer, 0, Vk.WholeSize, 0);
+
+            var bufferCopy = new BufferCopy[elems];
+
+            for (ulong i = 0; i < (ulong)elems; i++)
+            {
+                bufferCopy[i] = new BufferCopy((ulong)srcOffset + i * (ulong)stride, i * (ulong)newStride, (ulong)stride);
+            }
+
+            BufferHolder.InsertBufferBarrier(
+                gd,
+                cbs.CommandBuffer,
+                dstBuffer,
+                BufferHolder.DefaultAccessFlags,
+                AccessFlags.AccessTransferWriteBit,
+                PipelineStageFlags.PipelineStageAllCommandsBit,
+                PipelineStageFlags.PipelineStageTransferBit,
+                0,
+                newSize);
+
+            fixed (BufferCopy* pBufferCopy = bufferCopy)
+            {
+                gd.Api.CmdCopyBuffer(cbs.CommandBuffer, srcBuffer, dstBuffer, (uint)elems, pBufferCopy);
+            }
+
+            BufferHolder.InsertBufferBarrier(
+                gd,
+                cbs.CommandBuffer,
+                dstBuffer,
+                AccessFlags.AccessTransferWriteBit,
+                BufferHolder.DefaultAccessFlags,
+                PipelineStageFlags.PipelineStageTransferBit,
+                PipelineStageFlags.PipelineStageAllCommandsBit,
+                0,
+                newSize);
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)

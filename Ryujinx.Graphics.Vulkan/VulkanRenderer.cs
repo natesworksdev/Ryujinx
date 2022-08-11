@@ -506,6 +506,13 @@ namespace Ryujinx.Graphics.Vulkan
             PrintGpuInformation();
         }
 
+        public bool NeedsVertexBufferAlignment(int divisor, out int alignment)
+        {
+            alignment = 4;
+
+            return true;
+        }
+
         public void PreFrame()
         {
             _syncManager.Cleanup();

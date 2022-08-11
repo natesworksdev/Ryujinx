@@ -28,6 +28,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly ulong _bufferHandle;
 
         private CacheByRange<BufferHolder> _cachedConvertedIndexBuffers;
+        private CacheByRange<BufferHolder> _cachedAlignedVertexBuffers;
 
         public int Size { get; }
 
@@ -110,6 +111,7 @@ namespace Ryujinx.Graphics.Vulkan
             if (isWrite)
             {
                 _cachedConvertedIndexBuffers.Clear();
+                _cachedAlignedVertexBuffers.Clear();
             }
 
             return _buffer;
@@ -376,6 +378,23 @@ namespace Ryujinx.Graphics.Vulkan
             return holder.GetBuffer();
         }
 
+        public Auto<DisposableBuffer> GetAlignedVertexBuffer(CommandBufferScoped cbs, int offset, int size, int stride, int alignment)
+        {
+            // TODO: stride (and alignment?) as key?
+            if (!_cachedAlignedVertexBuffers.TryGetValue(offset, size, out var holder))
+            {
+                int alignedStride = (stride + (alignment - 1)) & -alignment;
+
+                holder = _gd.BufferManager.Create(_gd, (size / stride) * alignedStride);
+
+                _gd.HelperShader.ChangeStride(_gd, cbs, this, holder, offset, size, stride, alignedStride);
+
+                _cachedAlignedVertexBuffers.Add(offset, size, holder);
+            }
+
+            return holder.GetBuffer();
+        }
+
         public void Dispose()
         {
             _gd.PipelineInternal?.FlushCommandsIfWeightExceeding(_buffer, (ulong)Size);
@@ -383,6 +402,7 @@ namespace Ryujinx.Graphics.Vulkan
             _buffer.Dispose();
             _allocationAuto.Dispose();
             _cachedConvertedIndexBuffers.Dispose();
+            _cachedAlignedVertexBuffers.Dispose();
         }
     }
 }

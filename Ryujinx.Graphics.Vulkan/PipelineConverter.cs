@@ -228,10 +228,17 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     var inputRate = vertexBuffer.Divisor != 0 ? VertexInputRate.Instance : VertexInputRate.Vertex;
 
+                    int alignedStride = vertexBuffer.Stride;
+
+                    if (gd.NeedsVertexBufferAlignment(vertexBuffer.Divisor, out int alignment))
+                    {
+                        alignedStride = (vertexBuffer.Stride + (alignment - 1)) & -alignment;
+                    }
+
                     // TODO: Support divisor > 1
                     pipeline.Internal.VertexBindingDescriptions[descriptorIndex++] = new VertexInputBindingDescription(
                         (uint)i + 1,
-                        (uint)vertexBuffer.Stride,
+                        (uint)alignedStride,
                         inputRate);
                 }
             }
