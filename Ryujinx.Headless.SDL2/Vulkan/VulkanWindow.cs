@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Input.HLE;
+using Ryujinx.SDL2.Common;
 using System;
 using System.Runtime.InteropServices;
 using static SDL2.SDL;
@@ -28,14 +29,19 @@ namespace Ryujinx.Headless.SDL2.Vulkan
 
         public unsafe IntPtr CreateWindowSurface(IntPtr instance)
         {
-            if (SDL_Vulkan_CreateSurface(WindowHandle, instance, out ulong surfaceHandle) == SDL_bool.SDL_FALSE)
+            ulong surfaceHandle = 0;
+
+            SDL2Driver.MainThreadDispatcher(() =>
             {
-                string errorMessage = $"SDL_Vulkan_CreateSurface failed with error \"{SDL_GetError()}\"";
+                if (SDL_Vulkan_CreateSurface(WindowHandle, instance, out surfaceHandle) == SDL_bool.SDL_FALSE)
+                {
+                    string errorMessage = $"SDL_Vulkan_CreateSurface failed with error \"{SDL_GetError()}\"";
 
-                Logger.Error?.Print(LogClass.Application, errorMessage);
+                    Logger.Error?.Print(LogClass.Application, errorMessage);
 
-                throw new Exception(errorMessage);
-            }
+                    throw new Exception(errorMessage);
+                }
+            });
 
             return (IntPtr)surfaceHandle;
         }
