@@ -86,8 +86,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ArrayLayers = 1,
                 Samples = SampleCountFlags.SampleCount1Bit,
                 Tiling = ImageTiling.Optimal,
-                Usage = ImageUsageFlags.ImageUsageColorAttachmentBit | ImageUsageFlags.ImageUsageTransferSrcBit |
-                    ImageUsageFlags.ImageUsageTransferDstBit,
+                Usage = ImageUsageFlags.ImageUsageColorAttachmentBit | ImageUsageFlags.ImageUsageTransferSrcBit | ImageUsageFlags.ImageUsageTransferDstBit,
                 SharingMode = SharingMode.Exclusive,
                 InitialLayout = ImageLayout.Undefined,
                 Flags = ImageCreateFlags.ImageCreateMutableFormatBit
@@ -208,18 +207,13 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (ScreenCaptureRequested)
             {
-                CaptureFrame(view, srcX0, srcY0, srcX1 - srcX0, srcY1 - srcY0, view.Info.Format.IsBgr(), crop.FlipX,
-                    crop.FlipY);
+                CaptureFrame(view, srcX0, srcY0, srcX1 - srcX0, srcY1 - srcY0, view.Info.Format.IsBgr(), crop.FlipX, crop.FlipY);
 
                 ScreenCaptureRequested = false;
             }
 
-            float ratioX = crop.IsStretched
-                ? 1.0f
-                : MathF.Min(1.0f, _height * crop.AspectRatioX / (_width * crop.AspectRatioY));
-            float ratioY = crop.IsStretched
-                ? 1.0f
-                : MathF.Min(1.0f, _width * crop.AspectRatioY / (_height * crop.AspectRatioX));
+            float ratioX = crop.IsStretched ? 1.0f : MathF.Min(1.0f, _height * crop.AspectRatioX / (_width * crop.AspectRatioY));
+            float ratioY = crop.IsStretched ? 1.0f : MathF.Min(1.0f, _width * crop.AspectRatioY / (_height * crop.AspectRatioX));
 
             int dstWidth = (int)(_width * ratioX);
             int dstHeight = (int)(_height * ratioY);

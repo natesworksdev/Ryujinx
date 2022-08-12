@@ -22,15 +22,18 @@ namespace Ryujinx.Ava.Ui.Vulkan.Surfaces
             _platformInterface = platformInterface;
 
             var device = VulkanInitialization.CreateDevice(platformInterface.Api,
-                                                           platformInterface.PhysicalDevice.InternalHandle,
-                                                           platformInterface.PhysicalDevice.QueueFamilyIndex,
-                                                           VulkanInitialization.GetSupportedExtensions(platformInterface.Api, platformInterface.PhysicalDevice.InternalHandle),
-                                                           platformInterface.PhysicalDevice.QueueCount);
+                platformInterface.PhysicalDevice.InternalHandle,
+                platformInterface.PhysicalDevice.QueueFamilyIndex,
+                VulkanInitialization.GetSupportedExtensions(platformInterface.Api, platformInterface.PhysicalDevice.InternalHandle),
+                platformInterface.PhysicalDevice.QueueCount);
 
             Device = new VulkanDevice(device, platformInterface.PhysicalDevice, platformInterface.Api);
 
-            Display = VulkanDisplay.CreateDisplay(platformInterface.Instance, Device,
-                platformInterface.PhysicalDevice, surface);
+            Display = VulkanDisplay.CreateDisplay(
+                platformInterface.Instance,
+                Device,
+                platformInterface.PhysicalDevice,
+                surface);
             Surface = surface;
 
             // Skia seems to only create surfaces from images with unorm format
