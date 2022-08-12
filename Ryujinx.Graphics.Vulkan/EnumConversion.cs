@@ -179,7 +179,7 @@ namespace Ryujinx.Graphics.Vulkan
                 GAL.PrimitiveTopology.TrianglesAdjacency => Silk.NET.Vulkan.PrimitiveTopology.TriangleListWithAdjacency,
                 GAL.PrimitiveTopology.TriangleStripAdjacency => Silk.NET.Vulkan.PrimitiveTopology.TriangleStripWithAdjacency,
                 GAL.PrimitiveTopology.Patches => Silk.NET.Vulkan.PrimitiveTopology.PatchList,
-                GAL.PrimitiveTopology.Quads => Silk.NET.Vulkan.PrimitiveTopology.TriangleFan, // Emulated with triangle fans
+                GAL.PrimitiveTopology.Quads => Silk.NET.Vulkan.PrimitiveTopology.TriangleList, // Emulated with triangle list
                 GAL.PrimitiveTopology.QuadStrip => Silk.NET.Vulkan.PrimitiveTopology.TriangleStrip, // Emulated with triangle strips
                 _ => LogInvalidAndReturn(topology, nameof(GAL.PrimitiveTopology), Silk.NET.Vulkan.PrimitiveTopology.TriangleList)
             };

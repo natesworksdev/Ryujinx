@@ -398,6 +398,28 @@ namespace Ryujinx.Graphics.Vulkan
             return holder.GetBuffer();
         }
 
+        public Auto<DisposableBuffer> GetBufferTopologyConversion(CommandBufferScoped cbs, int offset, int size, IndexBufferPattern pattern, int indexSize)
+        {
+            var key = new TopologyConversionCacheKey(_gd, pattern, indexSize);
+
+            if (!_cachedConvertedBuffers.TryGetValue(offset, size, key, out var holder))
+            {
+                // The index size is the same between the source and destination index buffers.
+
+                int indexCount = size / indexSize;
+
+                int convertedCount = pattern.GetConvertedCount(indexCount);
+
+                holder = _gd.BufferManager.Create(_gd, convertedCount * indexSize);
+
+                _gd.HelperShader.ConvertIndexBuffer(_gd, cbs, this, holder, pattern, indexSize, offset, indexCount);
+
+                _cachedConvertedBuffers.Add(offset, size, key, holder);
+            }
+
+            return holder.GetBuffer();
+        }
+
         public void Dispose()
         {
             _gd.PipelineInternal?.FlushCommandsIfWeightExceeding(_buffer, (ulong)Size);
