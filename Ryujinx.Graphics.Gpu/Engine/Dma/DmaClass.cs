@@ -147,6 +147,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
             int xCount = (int)_state.State.LineLengthIn;
             int yCount = (int)_state.State.LineCount;
 
+            _3dEngine.CreatePendingSyncs();
             _3dEngine.FlushUboDirty();
 
             if (copy2D)
@@ -216,13 +217,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                 {
                     var target = memoryManager.Physical.TextureCache.FindTexture(
                         memoryManager,
-                        dst,
                         dstGpuVa,
                         dstBpp,
                         dstStride,
+                        dst.Height,
                         xCount,
                         yCount,
-                        dstLinear);
+                        dstLinear,
+                        dst.MemoryLayout);
 
                     if (target != null)
                     {

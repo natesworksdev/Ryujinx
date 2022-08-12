@@ -1,3 +1,4 @@
+using Ryujinx.Graphics.Shader;
 using System;
 
 namespace Ryujinx.Graphics.GAL
@@ -10,10 +11,11 @@ namespace Ryujinx.Graphics.GAL
 
         void ClearBuffer(BufferHandle destination, int offset, int size, uint value);
 
-        void ClearRenderTargetColor(int index, int layer, uint componentMask, ColorF color);
+        void ClearRenderTargetColor(int index, int layer, int layerCount, uint componentMask, ColorF color);
 
         void ClearRenderTargetDepthStencil(
             int layer,
+            int layerCount,
             float depthValue,
             bool depthMask,
             int stencilValue,
@@ -79,15 +81,13 @@ namespace Ryujinx.Graphics.GAL
         void SetRenderTargetColorMasks(ReadOnlySpan<uint> componentMask);
         void SetRenderTargets(ITexture[] colors, ITexture depthStencil);
 
-        void SetSampler(int binding, ISampler sampler);
-
-        void SetScissor(int index, bool enable, int x, int y, int width, int height);
+        void SetScissors(ReadOnlySpan<Rectangle<int>> regions);
 
         void SetStencilTest(StencilTestDescriptor stencilTest);
 
         void SetStorageBuffers(int first, ReadOnlySpan<BufferRange> buffers);
 
-        void SetTexture(int binding, ITexture texture);
+        void SetTextureAndSampler(ShaderStage stage, int binding, ITexture texture, ISampler sampler);
 
         void SetTransformFeedbackBuffers(ReadOnlySpan<BufferRange> buffers);
         void SetUniformBuffers(int first, ReadOnlySpan<BufferRange> buffers);
@@ -97,7 +97,7 @@ namespace Ryujinx.Graphics.GAL
         void SetVertexAttribs(ReadOnlySpan<VertexAttribDescriptor> vertexAttribs);
         void SetVertexBuffers(ReadOnlySpan<VertexBufferDescriptor> vertexBuffers);
 
-        void SetViewports(int first, ReadOnlySpan<Viewport> viewports, bool disableTransform);
+        void SetViewports(ReadOnlySpan<Viewport> viewports, bool disableTransform);
 
         void TextureBarrier();
         void TextureBarrierTiled();

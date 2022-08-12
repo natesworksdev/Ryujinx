@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Graphics.Device;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Gpu.Engine.GPFifo;
 using Ryujinx.Graphics.Gpu.Engine.InlineToMemory;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     class ThreedClass : IDeviceState
     {
         private readonly GpuContext _context;
+        private readonly GPFifoClass _fifoClass;
         private readonly DeviceStateWithShadow<ThreedClassState> _state;
 
         private readonly InlineToMemoryClass _i2mClass;
@@ -26,9 +28,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         /// <param name="context">GPU context</param>
         /// <param name="channel">GPU channel</param>
-        public ThreedClass(GpuContext context, GpuChannel channel)
+        public ThreedClass(GpuContext context, GpuChannel channel, GPFifoClass fifoClass)
         {
             _context = context;
+            _fifoClass = fifoClass;
             _state = new DeviceStateWithShadow<ThreedClassState>(new Dictionary<string, RwCallback>
             {
                 { nameof(ThreedClassState.LaunchDma), new RwCallback(LaunchDma, null) },
@@ -114,6 +117,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         public void UpdateState()
         {
+            _fifoClass.CreatePendingSyncs();
             _cbUpdater.FlushUboDirty();
             _stateUpdater.Update();
         }
@@ -170,6 +174,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public void ForceShaderUpdate()
         {
             _stateUpdater.ForceShaderUpdate();
+        }
+
+        /// <summary>
+        /// Create any syncs from WaitForIdle command that are currently pending.
+        /// </summary>
+        public void CreatePendingSyncs()
+        {
+            _fifoClass.CreatePendingSyncs();
         }
 
         /// <summary>
@@ -483,6 +495,17 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private static int Zero()
         {
             return 0;
+        }
+
+        /// <summary>
+        /// Clears the current color and depth-stencil buffers.
+        /// Which buffers should be cleared can also specified with the arguments.
+        /// </summary>
+        /// <param name="argument">Method call argument</param>
+        /// <param name="layerCount">For array and 3D textures, indicates how many layers should be cleared</param>
+        public void Clear(int argument, int layerCount)
+        {
+            _drawManager.Clear(this, argument, layerCount);
         }
 
         /// <summary>
