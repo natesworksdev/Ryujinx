@@ -884,10 +884,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                         data = PixelConverter.ConvertR5G6B5ToRGBA8(data);
                         break;
                     case Format.B5G5R5A1Unorm:
-                    case Format.B5G5R5X1Unorm:
                     case Format.R5G5B5X1Unorm:
                     case Format.R5G5B5A1Unorm:
-                        data = PixelConverter.ConvertR5G5B5ToRGBA8(data, Format == Format.B5G5R5X1Unorm);
+                        data = PixelConverter.ConvertR5G5B5ToRGBA8(data, Format == Format.R5G5B5X1Unorm);
                         break;
                 }
             }

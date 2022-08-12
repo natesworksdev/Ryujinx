@@ -401,8 +401,7 @@ namespace Ryujinx.Graphics.Vulkan
                 GAL.Format.R5G5B5A1Unorm,
                 GAL.Format.R5G5B5X1Unorm,
                 GAL.Format.B5G6R5Unorm,
-                GAL.Format.B5G5R5A1Unorm,
-                GAL.Format.B5G5R5X1Unorm);
+                GAL.Format.B5G5R5A1Unorm);
 
             PhysicalDeviceVulkan12Features featuresVk12 = new PhysicalDeviceVulkan12Features()
             {
