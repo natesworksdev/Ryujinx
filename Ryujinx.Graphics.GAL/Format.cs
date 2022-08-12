@@ -459,7 +459,6 @@ namespace Ryujinx.Graphics.GAL
             {
                 case Format.B5G6R5Unorm:
                 case Format.B5G5R5A1Unorm:
-                case Format.B5G5R5X1Unorm:
                 case Format.R5G5B5X1Unorm:
                 case Format.R5G5B5A1Unorm:
                 case Format.R5G6B5Unorm:
