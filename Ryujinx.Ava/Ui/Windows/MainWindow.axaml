@@ -173,6 +173,10 @@
                                     Command="{ReflectionBinding ChangeLanguage}"
                                     CommandParameter="zh_TW"
                                     Header="繁體中文" />
+                                <MenuItem                                    
+                                    Command="{ReflectionBinding ChangeLanguage}"
+                                    CommandParameter="ja_JP"
+                                    Header="日本語" />
                                 <MenuItem
                                     Command="{ReflectionBinding ChangeLanguage}"
                                     CommandParameter="ko_KR"
