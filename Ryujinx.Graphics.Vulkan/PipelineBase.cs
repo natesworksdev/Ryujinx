@@ -301,6 +301,8 @@ namespace Ryujinx.Graphics.Vulkan
 
                 Gd.Api.CmdBindIndexBuffer(CommandBuffer, buffer.Get(Cbs, 0, indexCount * sizeof(int)).Value, 0, Silk.NET.Vulkan.IndexType.Uint32);
 
+                BeginRenderPass(); // May have been interrupted to set buffer data.
+
                 Gd.Api.CmdDrawIndexed(CommandBuffer, (uint)indexCount, (uint)instanceCount, 0, firstVertex, (uint)firstInstance);
             }
             else
@@ -357,6 +359,8 @@ namespace Ryujinx.Graphics.Vulkan
 
                     _needsIndexBufferRebind = false;
                 }
+
+                BeginRenderPass(); // May have been interrupted to set buffer data.
 
                 Gd.Api.CmdDrawIndexed(CommandBuffer, (uint)convertedCount, (uint)instanceCount, 0, firstVertex, (uint)firstInstance);
             }
