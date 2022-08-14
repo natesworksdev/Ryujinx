@@ -27,5 +27,30 @@ namespace ARMeilleure.Instructions
             String method = part2 ? nameof(SoftFallback.HashUpper) : nameof(SoftFallback.HashLower);
             return context.Call(typeof(SoftFallback).GetMethod(method), x, y, w);
         }
+
+        public static Operand EmitSha256su0(ArmEmitterContext context, Operand x, Operand y)
+        {
+            if (Optimizations.UseSha)
+            {
+                return context.AddIntrinsic(Intrinsic.X86Sha256Msg1, x, y);
+            }
+
+            return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Sha256SchedulePart1)), x, y);
+        }
+
+        public static Operand EmitSha256su1(ArmEmitterContext context, Operand x, Operand y, Operand z)
+        {
+            if (Optimizations.UseSha && Optimizations.UseSsse3)
+            {
+                Operand extr = context.AddIntrinsic(Intrinsic.X86Palignr, z, y, Const(4));
+                Operand tmp = context.AddIntrinsic(Intrinsic.X86Paddd, extr, x);
+
+                Operand res = context.AddIntrinsic(Intrinsic.X86Sha256Msg2, tmp, z);
+
+                return res;
+            }
+
+            return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Sha256SchedulePart2)), x, y, z);
+        }
     }
 }
