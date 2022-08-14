@@ -151,6 +151,8 @@ namespace ARMeilleure.CodeGen.X86
             Add(Intrinsic.X86Roundss,      new IntrinsicInfo(X86Instruction.Roundss,      IntrinsicType.BinaryImm));
             Add(Intrinsic.X86Rsqrtps,      new IntrinsicInfo(X86Instruction.Rsqrtps,      IntrinsicType.Unary));
             Add(Intrinsic.X86Rsqrtss,      new IntrinsicInfo(X86Instruction.Rsqrtss,      IntrinsicType.Unary));
+            Add(Intrinsic.X86Sha256Msg1,   new IntrinsicInfo(X86Instruction.Sha256Msg1,   IntrinsicType.Binary));
+            Add(Intrinsic.X86Sha256Msg2,   new IntrinsicInfo(X86Instruction.Sha256Msg2,   IntrinsicType.Binary));
             Add(Intrinsic.X86Sha256Rnds2,  new IntrinsicInfo(X86Instruction.Sha256Rnds2,  IntrinsicType.Ternary));
             Add(Intrinsic.X86Shufpd,       new IntrinsicInfo(X86Instruction.Shufpd,       IntrinsicType.TernaryImm));
             Add(Intrinsic.X86Shufps,       new IntrinsicInfo(X86Instruction.Shufps,       IntrinsicType.TernaryImm));

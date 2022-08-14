@@ -140,6 +140,8 @@ namespace ARMeilleure.IntermediateRepresentation
         X86Roundss,
         X86Rsqrtps,
         X86Rsqrtss,
+        X86Sha256Msg1,
+        X86Sha256Msg2,
         X86Sha256Rnds2,
         X86Shufpd,
         X86Shufps,

@@ -180,6 +180,8 @@ namespace ARMeilleure.CodeGen.X86
         Rsqrtss,
         Sar,
         Setcc,
+        Sha256Msg1,
+        Sha256Msg2,
         Sha256Rnds2,
         Shl,
         Shr,
