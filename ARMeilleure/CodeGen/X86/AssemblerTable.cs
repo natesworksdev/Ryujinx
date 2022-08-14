@@ -157,6 +157,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Paddd,        new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000ffe, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Paddq,        new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fd4, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Paddw,        new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000ffd, InstructionFlags.Vex | InstructionFlags.Prefix66));
+            Add(X86Instruction.Palignr,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3a0f, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Pand,         new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fdb, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Pandn,        new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fdf, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Pavgb,        new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fe0, InstructionFlags.Vex | InstructionFlags.Prefix66));

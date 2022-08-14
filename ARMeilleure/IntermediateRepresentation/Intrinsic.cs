@@ -71,6 +71,7 @@ namespace ARMeilleure.IntermediateRepresentation
         X86Paddd,
         X86Paddq,
         X86Paddw,
+        X86Palignr,
         X86Pand,
         X86Pandn,
         X86Pavgb,

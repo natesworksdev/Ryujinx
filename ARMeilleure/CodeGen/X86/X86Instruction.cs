@@ -98,6 +98,7 @@ namespace ARMeilleure.CodeGen.X86
         Paddd,
         Paddq,
         Paddw,
+        Palignr,
         Pand,
         Pandn,
         Pavgb,
