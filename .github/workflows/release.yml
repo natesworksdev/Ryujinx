@@ -46,6 +46,7 @@ jobs:
           sed -r --in-place 's/\%\%RYUJINX_TARGET_RELEASE_CHANNEL_NAME\%\%/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_NAME }}/g;' Ryujinx.Common/ReleaseInformations.cs
           sed -r --in-place 's/\%\%RYUJINX_TARGET_RELEASE_CHANNEL_OWNER\%\%/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/g;' Ryujinx.Common/ReleaseInformations.cs
           sed -r --in-place 's/\%\%RYUJINX_TARGET_RELEASE_CHANNEL_REPO\%\%/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/g;' Ryujinx.Common/ReleaseInformations.cs
+          sed -r --in-place "s/\1.1\b/&${{ steps.version_info.outputs.build_version }}/" AppImageBuilder.yml
         shell: bash
       - name: Create output dir
         run: "mkdir release_output"
@@ -77,10 +78,17 @@ jobs:
 
       - name: Packing Linux builds
         run: |
-          pushd publish_linux
-          tar -czvf ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
-          popd
+         sudo wget -O appimage-builder-x86_64.AppImage https://github.com/AppImageCrafters/appimage-builder/releases/download/v1.1.0/appimage-builder-1.1.0-x86_64.AppImage
+         sudo chmod +x appimage-builder-x86_64.AppImage
+         sudo mv appimage-builder-x86_64.AppImage /usr/bin/appimage-builder
+         
+         sudo appimage-builder --recipe AppImageBuilder.yml --skip-test
+         
+         # pushd publish_linux
+         # tar -czvf ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
+         # popd
 
+         # Most users won't need this and these are mainly for debug so not packaging as an appimage
           pushd publish_linux_sdl2_headless
           tar -czvf ../release_output/sdl2-ryujinx-headless-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
           popd
