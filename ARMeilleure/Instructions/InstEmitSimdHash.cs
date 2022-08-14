@@ -100,7 +100,7 @@ namespace ARMeilleure.Instructions
             Operand n = GetVec(op.Rn);
             Operand m = GetVec(op.Rm);
 
-            Operand res = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.HashLower)), d, n, m);
+            Operand res = InstEmitSimdHashHelper.EmitSha256h(context, d, n, m, part2: false);
 
             context.Copy(GetVec(op.Rd), res);
         }
@@ -113,7 +113,7 @@ namespace ARMeilleure.Instructions
             Operand n = GetVec(op.Rn);
             Operand m = GetVec(op.Rm);
 
-            Operand res = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.HashUpper)), d, n, m);
+            Operand res = InstEmitSimdHashHelper.EmitSha256h(context, n, d, m, part2: true);
 
             context.Copy(GetVec(op.Rd), res);
         }
