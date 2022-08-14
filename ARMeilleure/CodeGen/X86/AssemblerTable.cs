@@ -239,6 +239,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Rsqrtss,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f52, InstructionFlags.Vex | InstructionFlags.PrefixF3));
             Add(X86Instruction.Sar,          new InstructionInfo(0x070000d3, 0x070000c1, BadOp,      BadOp,      BadOp,      InstructionFlags.None));
             Add(X86Instruction.Setcc,        new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f90, InstructionFlags.Reg8Dest));
+            Add(X86Instruction.Sha256Rnds2,  new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f38cb, InstructionFlags.None));
             Add(X86Instruction.Shl,          new InstructionInfo(0x040000d3, 0x040000c1, BadOp,      BadOp,      BadOp,      InstructionFlags.None));
             Add(X86Instruction.Shr,          new InstructionInfo(0x050000d3, 0x050000c1, BadOp,      BadOp,      BadOp,      InstructionFlags.None));
             Add(X86Instruction.Shufpd,       new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc6, InstructionFlags.Vex | InstructionFlags.Prefix66));
