@@ -1,0 +1,39 @@
+version: 1
+script:
+  # Remove any previous build
+  - rm -rf AppDir | true
+  - rm -rf build  | true
+
+  - true # TODO: add the install script
+    #Make Directories and link them together
+
+AppDir:
+  path: ./AppDir
+
+  app_info:
+    id: org.ryujinx.Ryujinx
+    name: Ryujinx
+    icon: ryujinx-logo
+    version: 1
+    
+    exec: usr/bin/ryujinx
+    
+    # Set the application main executable as argument. Use '$@' to forward CLI parameters
+    exec_args: "$@"
+
+  apt:
+    arch: [amd64, i386]
+    sources:
+      - sourceline: 'deb http://archive.ubuntu.com/ubuntu/ kinetic main restricted universe multiverse'
+        key_url: 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x871920D1991BC93C'
+
+    include:
+    - bash
+    - coreutils
+    #- 
+
+    exclude:
+    - humanity-icon-theme
+
+  after_runtime: |
+    # rm -f $APPDIR/.bundle.yml
