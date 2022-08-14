@@ -412,6 +412,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 holder = _gd.BufferManager.Create(_gd, convertedCount * indexSize);
 
+                _gd.PipelineInternal.EndRenderPass();
                 _gd.HelperShader.ConvertIndexBuffer(_gd, cbs, this, holder, pattern, indexSize, offset, indexCount);
 
                 _cachedConvertedBuffers.Add(offset, size, key, holder);
