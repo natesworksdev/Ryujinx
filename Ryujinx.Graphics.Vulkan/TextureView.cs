@@ -339,7 +339,8 @@ namespace Ryujinx.Graphics.Vulkan
                     return;
                 }
                 else if (_gd.FormatCapabilities.OptimalFormatSupports(FormatFeatureFlags.BlitSrcBit, srcFormat) &&
-                         _gd.FormatCapabilities.OptimalFormatSupports(FormatFeatureFlags.BlitDstBit, dstFormat))
+                         _gd.FormatCapabilities.OptimalFormatSupports(FormatFeatureFlags.BlitDstBit, dstFormat) &&
+                         !(_gd.Vendor == Vendor.MoltenVK && !src.Info.Format.IsDepthOrStencil() && !dst.Info.Format.IsDepthOrStencil()))
                 {
                     TextureCopy.Blit(
                         _gd.Api,
@@ -369,7 +370,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             if (VulkanConfiguration.UseSlowSafeBlitOnAmd &&
-                _gd.Vendor == Vendor.Amd &&
+                (_gd.Vendor == Vendor.Amd || _gd.Vendor == Vendor.MoltenVK) &&
                 src.Info.Target == Target.Texture2D &&
                 dst.Info.Target == Target.Texture2D &&
                 !dst.Info.Format.IsDepthOrStencil())
