@@ -107,7 +107,7 @@ jobs:
           args: "--skip-test"
 
       - name: Pushing new release
-        uses: ncipollo/release-action@v1.10.0
+        uses: ncipollo/release-action@v1
         with:
           name: ${{ steps.version_info.outputs.build_version }}
           artifacts: "release_output/*.tar.gz,release_output/*.zip"
