@@ -4,7 +4,11 @@ script:
   - rm -rf AppDir | true
   - rm -rf build  | true
 
-  - true # TODO: add the install script
+  - mkdir -p AppDir/usr/local/share/ryujinx AppDir/usr/bin AppDir/usr/share/glib-2.0/schemas AppDir/usr/share/applications AppDir/usr/share/metainfo AppDir/usr/share/icons AppDir/usr/lib AppDir/usr/lib64 AppDir/usr/sbin
+  - cp -r publish_linux/publish/* AppDir/usr/local/share/ryujinx
+  - cd AppDir || exit
+  - ln -s usr/local/share/ryujinx/Ryujinx usr/bin/ryujinx
+  - cd ../
     #Make Directories and link them together
 
 AppDir:
@@ -14,11 +18,9 @@ AppDir:
     id: org.ryujinx.Ryujinx
     name: Ryujinx
     icon: ryujinx-logo
-    version: 1.1
-    
+    version: "1.1"
+
     exec: usr/bin/ryujinx
-    
-    # Set the application main executable as argument. Use '$@' to forward CLI parameters
     exec_args: "$@"
 
   apt:
@@ -28,9 +30,8 @@ AppDir:
         key_url: 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x871920D1991BC93C'
 
     include:
-    - bash
     - coreutils
-    #- 
+    - libx11-dev
 
     exclude:
     - humanity-icon-theme
