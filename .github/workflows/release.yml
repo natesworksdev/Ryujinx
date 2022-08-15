@@ -26,7 +26,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-dotnet@v1
+      - uses: actions/setup-dotnet@v2.1.0
         with:
           dotnet-version: 6.0.x
       - name: Ensure NuGet Source
@@ -82,7 +82,8 @@ jobs:
          sudo chmod +x appimage-builder-x86_64.AppImage
          sudo mv appimage-builder-x86_64.AppImage /usr/bin/appimage-builder
          
-         sudo appimage-builder --recipe AppImageBuilder.yml --skip-test
+         appimage-builder --recipe AppImageBuilder.yml --skip-test
+         mv /home/runner/work/Ryujinx/Ryujinx/Ryujinx-*-x86_64.AppImage publish
          
          # pushd publish_linux
          # tar -czvf ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
@@ -99,7 +100,7 @@ jobs:
         shell: bash
 
       - name: Pushing new release
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@v1.10.0
         with:
           name: ${{ steps.version_info.outputs.build_version }}
           artifacts: "release_output/*.tar.gz,release_output/*.zip"

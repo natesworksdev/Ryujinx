@@ -14,7 +14,7 @@ AppDir:
     id: org.ryujinx.Ryujinx
     name: Ryujinx
     icon: ryujinx-logo
-    version: 1
+    version: 1.1
     
     exec: usr/bin/ryujinx
     
@@ -37,3 +37,19 @@ AppDir:
 
   after_runtime: |
     # rm -f $APPDIR/.bundle.yml
+    
+  runtime:
+    arch: [ x86_64, i386 ]
+    env:
+      GDK_BACKEND: x11
+
+  test:
+    debian:
+      image: appimagecrafters/tests-env:debian-stable
+      command: ./AppRun
+      use_host_x: true
+
+AppImage:
+  update-information: 'gh-releases-zsync|AppImage-*x86_64.AppImage.zsync'
+  sign-key: None
+  arch: x86_64
