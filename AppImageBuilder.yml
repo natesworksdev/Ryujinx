@@ -24,9 +24,9 @@ AppDir:
     exec_args: "$@"
 
   apt:
-    arch: [amd64, i386]
+    arch: amd64
     sources:
-      - sourceline: 'deb http://archive.ubuntu.com/ubuntu/ kinetic main restricted universe multiverse'
+      - sourceline: 'deb http://archive.ubuntu.com/ubuntu/ bionic main restricted universe multiverse'
         key_url: 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x871920D1991BC93C'
 
     include:
@@ -40,7 +40,7 @@ AppDir:
     # rm -f $APPDIR/.bundle.yml
     
   runtime:
-    arch: [ x86_64, i386 ]
+    arch: x86_64
     env:
       GDK_BACKEND: x11
 
