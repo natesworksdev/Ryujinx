@@ -78,11 +78,12 @@ jobs:
 
       - name: Packing Linux builds
         run: |
-         sudo wget -O appimage-builder-x86_64.AppImage https://github.com/AppImageCrafters/appimage-builder/releases/download/v1.1.0/appimage-builder-1.1.0-x86_64.AppImage
-         sudo chmod +x appimage-builder-x86_64.AppImage
-         sudo mv appimage-builder-x86_64.AppImage /usr/bin/appimage-builder
+         #Sadly windows does not support libfuse!
+         #sudo wget -O appimage-builder-x86_64.AppImage https://github.com/AppImageCrafters/appimage-builder/releases/download/v1.1.0/appimage-builder-1.1.0-x86_64.AppImage
+         #sudo chmod +x appimage-builder-x86_64.AppImage
+         #sudo mv appimage-builder-x86_64.AppImage /usr/bin/appimage-builder
          
-         appimage-builder --recipe AppImageBuilder.yml --skip-test
+         #appimage-builder --recipe AppImageBuilder.yml --skip-test
          mv /home/runner/work/Ryujinx/Ryujinx/Ryujinx-*-x86_64.AppImage publish
          
          # pushd publish_linux
@@ -97,7 +98,13 @@ jobs:
           pushd publish_linux_ava
           tar -czvf ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
           popd
+          cd ./publish
         shell: bash
+      
+      - uses: AppImageCrafters/build-appimage@master
+        with:
+          recipe: "../AppImageBuilder.yml"
+          args: "--skip-test"
 
       - name: Pushing new release
         uses: ncipollo/release-action@v1.10.0
