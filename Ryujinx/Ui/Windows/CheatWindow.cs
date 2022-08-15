@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 
 using GUI        = Gtk.Builder.ObjectAttribute;
-using JsonHelper = Ryujinx.Common.Utilities.JsonHelper;
 
 namespace Ryujinx.Ui.Windows
 {
