@@ -90,7 +90,6 @@ jobs:
          # tar -czvf ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
          # popd
 
-         # Most users won't need this and these are mainly for debug so not packaging as an appimage
           pushd publish_linux_sdl2_headless
           tar -czvf ../release_output/sdl2-ryujinx-headless-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
           popd
@@ -98,13 +97,7 @@ jobs:
           pushd publish_linux_ava
           tar -czvf ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
           popd
-          cd ./publish
         shell: bash
-      
-      - uses: AppImageCrafters/build-appimage@master
-        with:
-          recipe: "../AppImageBuilder.yml"
-          args: "--skip-test"
 
       - name: Pushing new release
         uses: ncipollo/release-action@v1
