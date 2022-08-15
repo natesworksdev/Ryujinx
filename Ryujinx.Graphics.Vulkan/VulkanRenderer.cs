@@ -224,7 +224,7 @@ namespace Ryujinx.Graphics.Vulkan
                 supportedExtensions.Contains(ExtConditionalRendering.ExtensionName),
                 supportedExtensions.Contains(ExtExtendedDynamicState.ExtensionName),
                 features2.Features.MultiViewport,
-                featuresRobustness2.NullDescriptor,
+                featuresRobustness2.NullDescriptor || OperatingSystem.IsMacOS(),
                 supportedExtensions.Contains(KhrPushDescriptor.ExtensionName),
                 supportsTransformFeedback,
                 propertiesTransformFeedback.TransformFeedbackQueries,
