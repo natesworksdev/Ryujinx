@@ -5,51 +5,35 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 {
-    class LdnProxyTcpClient : NetCoreServer.TcpClient, ILdnTcpSocket
+    internal class LdnProxyTcpClient : NetCoreServer.TcpClient, ILdnTcpSocket
     {
-        //private bool _stop;
         private LanProtocol _protocol;
-
+        private IPAddress _serverAddress;
         private byte[] _buffer;
         private int _bufferEnd;
-        private IPAddress _serverAddress;
 
-        public LdnProxyTcpClient(LanProtocol protocol, IPAddress address, int port) :
-            base(address, port)
+        public LdnProxyTcpClient(LanProtocol protocol, IPAddress address, int port) : base(address, port)
         {
             OptionReceiveBufferSize = LanProtocol.BufferSize;
             OptionSendBufferSize = LanProtocol.BufferSize;
-            //OptionKeepAlive = true;
-            //OptionDualMode = true;
             OptionNoDelay = true;
             _serverAddress = address;
             _protocol = protocol;
             _buffer = new byte[LanProtocol.BufferSize];
         }
 
-        //protected override Socket CreateSocket()
-        //{
-        //    return new Socket(Endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp)
-        //    {
-        //        EnableBroadcast = true
-        //    };
-        //}
-
         protected override void OnConnected()
         {
-            //ReceiveAsync();
             Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPClient connected!");
         }
 
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
             _protocol.Read(ref _buffer, ref _bufferEnd, buffer, (int)offset, (int)size);
-            //ReceiveAsync();
         }
 
         public void DisconnectAndStop()
         {
-            //_stop = true;
             DisconnectAsync();
             while (IsConnected)
             {
@@ -80,7 +64,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 
         protected override void OnError(SocketError error)
         {
-            Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPClient caught an error with code {error}");
+            Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPClient caught an error with code {error}");
         }
 
         protected override void Dispose(bool disposingManagedResources)
@@ -91,11 +75,13 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 
         public bool Start()
         {
+            Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPClient Start was called.");
             return false;
         }
 
         public bool Stop()
         {
+            Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPClient Stop was called.");
             return false;
         }
     }

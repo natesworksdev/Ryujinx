@@ -1058,7 +1058,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                         switch (mode)
                         {
                             case MultiplayerMode.Spacemeowx2Ldn:
-                                NetworkClient = new Spacemeowx2LdnClient(this, context.Device.Configuration);
+                                NetworkClient = new Spacemeowx2LdnClient(context.Device.Configuration);
                                 break;
                             case MultiplayerMode.Disabled:
                                 NetworkClient = new DisabledLdnClient();

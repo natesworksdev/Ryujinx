@@ -11,6 +11,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.Spacemeowx2Ldn.Types
         public ushort Length;
         public ushort DecompressLength;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
-        public byte[] _reserved;
+        public byte[] Reserved;
     }
 }

@@ -5,49 +5,27 @@ using System.Net.Sockets;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 {
-    class LdnProxyTcpSession : NetCoreServer.TcpSession
+    internal class LdnProxyTcpSession : NetCoreServer.TcpSession
     {
         private LdnProxyTcpServer _parent;
         private LanProtocol _protocol;
 
+        internal int nodeId;
+
+        internal NodeInfo nodeInfo;
+
         private byte[] _buffer;
         private int _bufferEnd;
 
-        protected NodeInfo nodeInfo;
-        private int nodeId;
-
-        public LdnProxyTcpSession(LdnProxyTcpServer server, LanProtocol protocol) :
-            base(server)
+        public LdnProxyTcpSession(LdnProxyTcpServer server, LanProtocol protocol) : base(server)
         {
-            OptionReceiveBufferSize = LanProtocol.BufferSize;
-            OptionSendBufferSize = LanProtocol.BufferSize;
             _parent = server;
             _protocol = protocol;
             _protocol.Connect += OnConnect;
             _buffer = new byte[LanProtocol.BufferSize];
+            OptionReceiveBufferSize = LanProtocol.BufferSize;
+            OptionSendBufferSize = LanProtocol.BufferSize;
             Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPSession created!");
-        }
-
-        public void SetNodeId(int id)
-        {
-            if (nodeId == 0)
-            {
-                nodeId = id;
-            }
-            else
-            {
-                Logger.Warning?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPSession SetNodeId was called, but nodeId is already set.");
-            }
-        }
-
-        public int GetNodeId()
-        {
-            return nodeId;
-        }
-
-        public NodeInfo GetNodeInfo()
-        {
-            return nodeInfo;
         }
 
         public void OverrideInfo()
@@ -61,7 +39,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
         {
             Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPSession connected!");
             _protocol.InvokeAccept(this);
-            //ReceiveAsync();
         }
 
         protected override void OnDisconnected()
@@ -74,7 +51,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
         {
             // Done via LANDiscovery::loopPoll()
             _protocol.Read(ref _buffer, ref _bufferEnd, buffer, (int)offset, (int)size, this.Socket.RemoteEndPoint);
-            //ReceiveAsync();
         }
 
         protected override void OnError(SocketError error)

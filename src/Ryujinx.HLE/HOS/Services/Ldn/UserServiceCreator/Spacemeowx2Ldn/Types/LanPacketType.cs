@@ -3,7 +3,7 @@
     internal enum LanPacketType : byte
     {
         Scan,
-        ScanResp,
+        ScanResponse,
         Connect,
         SyncNetwork
     }
