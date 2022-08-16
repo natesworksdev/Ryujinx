@@ -25,9 +25,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         private readonly int _headerSize = Marshal.SizeOf<LanPacketHeader>();
 
-        private readonly LanDiscovery discovery;
+        private readonly LanDiscovery _discovery;
 
-        private readonly IPAddress localBroadcastAddr;
+        private readonly IPAddress _localBroadcastAddr;
 
         public event Action<LdnProxyTcpSession> Accept;
         public event Action<EndPoint, LanPacketType, byte[]> Scan;
@@ -35,7 +35,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         public event Action<NetworkInfo> SyncNetwork;
         public event Action<NodeInfo, EndPoint> Connect;
         public event Action<LdnProxyTcpSession> DisconnectStation;
-
 
         // Source: https://stackoverflow.com/a/39338188
         private static IPAddress GetBroadcastAddress(IPAddress address, IPAddress mask)
@@ -49,8 +48,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         public LanProtocol(LanDiscovery parent)
         {
-            discovery = parent;
-            localBroadcastAddr = GetBroadcastAddress(discovery.localAddr, discovery.localAddrMask);
+            _discovery = parent;
+            _localBroadcastAddr = GetBroadcastAddress(_discovery.localAddr, _discovery.localAddrMask);
         }
 
         public void InvokeAccept(LdnProxyTcpSession session)
@@ -70,7 +69,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                 case LanPacketType.Scan:
                     // UDP
                     Logger.Info?.PrintMsg(LogClass.ServiceLdn, "Sending ScanResponse...");
-                    Scan?.Invoke(endPoint, LanPacketType.ScanResponse, LdnHelper.StructureToByteArray(discovery.networkInfo));
+                    Scan?.Invoke(endPoint, LanPacketType.ScanResponse, LdnHelper.StructureToByteArray(_discovery.networkInfo));
                     break;
                 case LanPacketType.ScanResponse:
                     // UDP
@@ -95,7 +94,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         public void Read(ref byte[] _buffer, ref int _bufferEnd, byte[] data, int offset, int size, EndPoint endPoint = null)
         {
-            if (endPoint != null && discovery.localAddr.Equals(((IPEndPoint)endPoint).Address))
+            if (endPoint != null && _discovery.localAddr.Equals(((IPEndPoint)endPoint).Address))
             {
                 return;
             }
@@ -174,7 +173,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         public int SendBroadcast(ILdnSocket s, LanPacketType type, int port)
         {
-            return SendPacket(s, type, Array.Empty<byte>(), new IPEndPoint(localBroadcastAddr, port));
+            return SendPacket(s, type, Array.Empty<byte>(), new IPEndPoint(_localBroadcastAddr, port));
         }
 
         public int SendPacket(ILdnSocket s, LanPacketType type, byte[] data, EndPoint endPoint = null)
@@ -191,7 +190,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             return s.SendAsync(buf) ? 0 : -1;
         }
 
-        protected LanPacketHeader PrepareHeader(LanPacketHeader header, LanPacketType type)
+        private LanPacketHeader PrepareHeader(LanPacketHeader header, LanPacketType type)
         {
             header.Magic = LanMagic;
             header.Type = type;
@@ -203,7 +202,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             return header;
         }
 
-        protected byte[] PreparePacket(LanPacketType type, byte[] data)
+        private byte[] PreparePacket(LanPacketType type, byte[] data)
         {
             LanPacketHeader header = PrepareHeader(new LanPacketHeader(), type);
             header.Length = (ushort)data.Length;
@@ -233,7 +232,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             return buf;
         }
 
-        protected int Compress(byte[] input, out byte[] output)
+        private int Compress(byte[] input, out byte[] output)
         {
             List<byte> outputList = new List<byte>();
             int i = 0;
@@ -275,7 +274,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             return i == input.Length ? 0 : -1;
         }
 
-        protected int Decompress(byte[] input, out byte[] output)
+        private int Decompress(byte[] input, out byte[] output)
         {
             List<byte> outputList = new List<byte>();
             int i = 0;

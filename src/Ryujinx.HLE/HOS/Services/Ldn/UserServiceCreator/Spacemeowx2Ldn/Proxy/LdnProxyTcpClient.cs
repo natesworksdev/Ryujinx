@@ -14,12 +14,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 
         public LdnProxyTcpClient(LanProtocol protocol, IPAddress address, int port) : base(address, port)
         {
+            _protocol = protocol;
+            _serverAddress = address;
+            _buffer = new byte[LanProtocol.BufferSize];
             OptionReceiveBufferSize = LanProtocol.BufferSize;
             OptionSendBufferSize = LanProtocol.BufferSize;
             OptionNoDelay = true;
-            _serverAddress = address;
-            _protocol = protocol;
-            _buffer = new byte[LanProtocol.BufferSize];
         }
 
         protected override void OnConnected()

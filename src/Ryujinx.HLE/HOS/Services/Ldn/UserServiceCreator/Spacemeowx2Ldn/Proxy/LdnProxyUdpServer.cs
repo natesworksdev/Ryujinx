@@ -53,7 +53,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 
         protected override void OnError(SocketError error)
         {
-            Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyUdpServer caught an error with code {error}");
+            Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyUdpServer caught an error with code {error}");
         }
 
         protected override void Dispose(bool disposingManagedResources)

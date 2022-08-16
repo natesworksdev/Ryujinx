@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         private bool _initialized;
         private readonly Ssid _fakeSsid;
         private ILdnTcpSocket _tcp;
-        // NOTE: Type may need to be changed to ILdnUdpSocket in the future
+        // NOTE: This type may need to be changed to ILdnUdpSocket in the future
         private LdnProxyUdpServer _udp;
         private List<LdnProxyTcpSession> _stations = new List<LdnProxyTcpSession>();
 

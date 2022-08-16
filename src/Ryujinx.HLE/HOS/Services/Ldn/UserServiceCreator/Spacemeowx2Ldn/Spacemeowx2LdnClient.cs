@@ -5,7 +5,6 @@ using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Network.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn.Types;
 using System;
-using System.Net;
 using System.Net.NetworkInformation;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
