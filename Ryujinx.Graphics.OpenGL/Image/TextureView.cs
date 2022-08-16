@@ -148,7 +148,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
         {
             TextureView destinationView = (TextureView)destination;
 
-            if (destinationView.Target.IsMultisample() || Target.IsMultisample())
+            if (!destinationView.Target.IsMultisample() && Target.IsMultisample())
             {
                 Extents2D srcRegion = new Extents2D(0, 0, Width, Height);
                 Extents2D dstRegion = new Extents2D(0, 0, destinationView.Width, destinationView.Height);
@@ -171,6 +171,29 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
                 GL.Enable(EnableCap.FramebufferSrgb);
             }
+            else if (destinationView.Target.IsMultisample() && !Target.IsMultisample())
+            {
+                Extents2D srcRegion = new Extents2D(0, 0, Width, Height);
+                Extents2D dstRegion = new Extents2D(0, 0, destinationView.Width, destinationView.Height);
+
+                TextureView intermmediate = _renderer.TextureCopy.IntermmediatePool.GetOrCreateWithAtLeast(
+                    GetIntermmediateTarget(Target),
+                    Info.BlockWidth,
+                    Info.BlockHeight,
+                    Info.BytesPerPixel,
+                    Format,
+                    Math.Max(1, destinationView.Width >> srcLevel),
+                    Math.Max(1, destinationView.Height >> srcLevel),
+                    1,
+                    1);
+
+                GL.Disable(EnableCap.FramebufferSrgb);
+
+                _renderer.TextureCopy.Copy(this, intermmediate, srcRegion, dstRegion, true, srcLayer, 0, srcLevel, 0, 1, 1);
+                _renderer.TextureCopy.Copy(intermmediate, destinationView, dstRegion, dstRegion, true, 0, dstLayer, 0, dstLevel, 1, 1);
+
+                GL.Enable(EnableCap.FramebufferSrgb);
+            }
             else
             {
                 _renderer.TextureCopy.CopyUnscaled(this, destinationView, srcLayer, dstLayer, srcLevel, dstLevel, 1, 1);
@@ -179,13 +202,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
         private static Target GetIntermmediateTarget(Target srcTarget)
         {
-            return srcTarget switch
-            {
-                Target.Texture2D => Target.Texture2DMultisample,
-                Target.Texture2DArray => Target.Texture2DMultisampleArray,
-                Target.Texture2DMultisampleArray => Target.Texture2DArray,
-                _ => Target.Texture2D
-            };
+            return srcTarget == Target.Texture2DMultisampleArray ? Target.Texture2DArray : Target.Texture2D;
         }
 
         public void CopyTo(ITexture destination, Extents2D srcRegion, Extents2D dstRegion, bool linearFilter)
