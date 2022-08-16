@@ -235,8 +235,8 @@ namespace Spv.Generator
             var operandLabels = new Dictionary<Specification.Op, string[]>
             {
                 { Specification.Op.OpConstant, new [] { "Value" } },
-                {Specification.Op.OpTypeInt, new []{"Width", "Signed"}},
-                {Specification.Op.OpTypeFloat, new []{"Width"}}
+                { Specification.Op.OpTypeInt, new [] { "Width", "Signed" } },
+                { Specification.Op.OpTypeFloat, new [] { "Width" } }
             };
             var labels = operandLabels.ContainsKey(Opcode) ? operandLabels[Opcode] : Array.Empty<string>();
             var result = _resultType == null ? string.Empty : $"{_resultType} ";
