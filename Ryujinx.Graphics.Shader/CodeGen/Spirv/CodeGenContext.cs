@@ -244,7 +244,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private Instruction GetUndefined(AggregateType type)
         {
-            return type switch {
+            return type switch
+            {
                 AggregateType.Bool => ConstantFalse(TypeBool()),
                 AggregateType.FP32 => Constant(TypeFP32(), 0f),
                 _ => Constant(GetType(type), 0)
