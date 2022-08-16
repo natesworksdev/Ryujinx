@@ -248,6 +248,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 AggregateType.Bool => ConstantFalse(TypeBool()),
                 AggregateType.FP32 => Constant(TypeFP32(), 0f),
+                AggregateType.FP64 => Constant(TypeFP64(), 0d),
                 _ => Constant(GetType(type), 0)
             };
         }
