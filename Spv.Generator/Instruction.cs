@@ -234,7 +234,7 @@ namespace Spv.Generator
         {
             var operandLabels = new Dictionary<Specification.Op, string[]>
             {
-                {Specification.Op.OpConstant, new []{"Value"}},
+                { Specification.Op.OpConstant, new [] { "Value" } },
                 {Specification.Op.OpTypeInt, new []{"Width", "Signed"}},
                 {Specification.Op.OpTypeFloat, new []{"Width"}}
             };
