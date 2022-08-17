@@ -32,6 +32,7 @@ AppDir:
 
     include:
     - coreutils
+    - gtk-update-icon-cache
     - libx11-dev
     - libc6
     - libgcc1
@@ -40,6 +41,13 @@ AppDir:
     - libssl1.1
     - libstdc++6
     - zlib1g
+    - libgtk-3-0
+    - libnotify4
+    - libnss3
+    - libxss1
+    - libxtst6
+    - xdg-utils
+    - libgdiplus
 
     exclude:
     - humanity-icon-theme
