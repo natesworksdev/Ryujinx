@@ -86,9 +86,9 @@ jobs:
          #appimage-builder --recipe AppImageBuilder.yml --skip-test
          mv /home/runner/work/Ryujinx/Ryujinx/Ryujinx-*-x86_64.AppImage publish
          
-         # pushd publish_linux
-         # tar -czvf ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
-         # popd
+          pushd publish_linux
+          tar -czvf ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
+          popd
 
           pushd publish_linux_sdl2_headless
           tar -czvf ../release_output/sdl2-ryujinx-headless-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
