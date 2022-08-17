@@ -55,6 +55,7 @@ namespace Spv.Generator
         private IEnumerable<Operand> AllOperands => new[] { Operand1, Operand2, Operand3, Operand4, Operand5 }
             .Concat(Overflow ?? Array.Empty<Operand>())
             .Take(Count);
+
         public override string ToString()
         {
             return $"({string.Join(", ", AllOperands)})";
