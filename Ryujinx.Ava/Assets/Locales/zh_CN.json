@@ -433,7 +433,7 @@
   "TimezoneTooltip": "更改系统时区",
   "TimeTooltip": "更改系统时钟",
   "VSyncToggleTooltip": "关闭后，小部分游戏可以超过60FPS帧率，以获得高帧率体验。\n但是可能出现软锁或读盘时间增加。\n如不确定或没有需求，请保持选项开启",
-  "PptcToggleTooltip": "缓存编译好的游戏CPU指令。减少启动时间和卡顿，提高游戏响应速度",
+  "PptcToggleTooltip": "缓存编译完成的游戏CPU指令。减少启动时间和卡顿，提高游戏响应速度",
   "FsIntegrityToggleTooltip": "检查游戏文件内容的完整性。\n遇到损坏的文件则记录到日志文件，有助于排查错误。\n对性能没有影响。",
   "AudioBackendTooltip": "默认推荐SDL，但每种音频后端对各类游戏兼容性不同，遇到音频问题可以尝试切换后端",
   "MemoryManagerTooltip": "改变 Switch 内存映射到电脑内存的方式，会影响CPU性能消耗",
