@@ -42,7 +42,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         private IVirtualMemoryManager _clientMemory;
         private ulong _owner;
 
-        private bool _transferMemInitialized = false;
+        private bool _transferMemInitialized;
 
         public INvDrvServices(ServiceCtx context) : base(context.Device.System.NvDrvServer)
         {

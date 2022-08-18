@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
     {
         private static Dictionary<int, IBinder> _registeredBinderObjects = new Dictionary<int, IBinder>();
 
-        private static int _lastBinderId = 0;
+        private static int _lastBinderId;
 
         private static object _lock = new object();
 

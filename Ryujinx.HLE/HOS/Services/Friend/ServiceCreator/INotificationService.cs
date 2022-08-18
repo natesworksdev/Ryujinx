@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
         private readonly object _lock = new object();
 
         private KEvent _notificationEvent;
-        private int    _notificationEventHandle = 0;
+        private int    _notificationEventHandle;
 
         private LinkedList<NotificationInfo> _notifications;
 

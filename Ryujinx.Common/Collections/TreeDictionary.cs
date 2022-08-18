@@ -14,8 +14,8 @@ namespace Ryujinx.Common.Collections
     {
         private const bool Black = true;
         private const bool Red = false;
-        private Node<K, V> _root = null;
-        private int _count = 0;
+        private Node<K, V> _root;
+        private int _count;
         public TreeDictionary() { }
 
         #region Public Methods
@@ -970,9 +970,9 @@ namespace Ryujinx.Common.Collections
     class Node<K, V>
     {
         public bool Color = true;
-        public Node<K, V> Left = null;
-        public Node<K, V> Right = null;
-        public Node<K, V> Parent = null;
+        public Node<K, V> Left;
+        public Node<K, V> Right;
+        public Node<K, V> Parent;
         public K Key;
         public V Value;
 

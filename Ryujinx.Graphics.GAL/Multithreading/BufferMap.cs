@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
     /// </summary>
     class BufferMap
     {
-        private ulong _bufferHandle = 0;
+        private ulong _bufferHandle;
 
         private Dictionary<BufferHandle, BufferHandle> _bufferMap = new Dictionary<BufferHandle, BufferHandle>();
         private HashSet<BufferHandle> _inFlight = new HashSet<BufferHandle>();

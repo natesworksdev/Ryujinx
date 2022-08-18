@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Vulkan
             public MultiFenceHolder Waitable;
         }
 
-        private ulong _firstHandle = 0;
+        private ulong _firstHandle;
 
         private readonly VulkanRenderer _gd;
         private readonly Device _device;

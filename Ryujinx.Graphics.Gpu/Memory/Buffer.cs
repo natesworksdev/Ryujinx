@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <remarks>
         /// This is null until at least one modification occurs.
         /// </remarks>
-        private BufferModifiedRangeList _modifiedRanges = null;
+        private BufferModifiedRangeList _modifiedRanges;
 
         private readonly CpuMultiRegionHandle _memoryTrackingGranular;
         private readonly CpuRegionHandle _memoryTracking;

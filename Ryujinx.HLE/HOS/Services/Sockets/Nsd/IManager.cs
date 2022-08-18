@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
         public static readonly NsdSettings NsdSettings;
         private readonly FqdnResolver _fqdnResolver;
 
-        private bool _isInitialized = false;
+        private bool _isInitialized;
 
         public IManager(ServiceCtx context)
         {

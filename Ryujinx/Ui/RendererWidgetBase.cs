@@ -56,7 +56,7 @@ namespace Ryujinx.Ui
 
         private readonly long _ticksPerFrame;
 
-        private long _ticks = 0;
+        private long _ticks;
 
         private readonly Stopwatch _chrono;
 

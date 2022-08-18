@@ -73,10 +73,10 @@ namespace Ryujinx.Ui
         private bool _gameLoaded;
         private bool _ending;
 
-        private string _currentEmulatedGamePath = null;
+        private string _currentEmulatedGamePath;
 
         private string _lastScannedAmiiboId = "";
-        private bool   _lastScannedAmiiboShowAll = false;
+        private bool   _lastScannedAmiiboShowAll;
 
         public RendererWidgetBase RendererWidget;
         public InputManager InputManager;

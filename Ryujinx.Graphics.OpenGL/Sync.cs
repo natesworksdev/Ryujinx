@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.OpenGL
             public IntPtr Handle;
         }
 
-        private ulong _firstHandle = 0;
+        private ulong _firstHandle;
         private ClientWaitSyncFlags _syncFlags => HwCapabilities.RequiresSyncFlush ? ClientWaitSyncFlags.None : ClientWaitSyncFlags.SyncFlushCommandsBit;
 
         private List<SyncHandle> _handles = new List<SyncHandle>();

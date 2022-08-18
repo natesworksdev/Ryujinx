@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         private NetworkInterface _networkInterface;
 
-        private int _stateChangeEventHandle = 0;
+        private int _stateChangeEventHandle;
 
         public IUserLocalCommunicationService(ServiceCtx context)
         {

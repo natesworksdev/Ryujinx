@@ -12,7 +12,7 @@ namespace Ryujinx.Input
         public Vector3 Rotation      { get; set; }
 
         private readonly MotionSensorFilter _filter;
-        private int _calibrationFrame = 0;
+        private int _calibrationFrame;
 
         public MotionInput()
         {

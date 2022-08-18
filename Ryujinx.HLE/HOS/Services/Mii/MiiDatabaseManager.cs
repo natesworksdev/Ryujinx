@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
     class MiiDatabaseManager
     {
         private static bool IsTestModeEnabled = false;
-        private static uint MountCounter      = 0;
+        private static uint MountCounter;
 
         private const ulong  DatabaseTestSaveDataId = 0x8000000000000031;
         private const ulong  DatabaseSaveDataId     = 0x8000000000000030;

@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.FileSystem
         public ModLoader        ModLoader { get; private set; }
         public Stream           RomFs     { get; private set; }
 
-        private static bool _isInitialized = false;
+        private static bool _isInitialized;
 
         public static VirtualFileSystem CreateInstance()
         {

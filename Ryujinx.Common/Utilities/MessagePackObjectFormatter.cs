@@ -189,8 +189,8 @@ namespace Ryujinx.Common.Utilities
         {
             const string DefaultIndent = "    ";
 
-            private int _indentCount = 0;
-            private int _newLineIndex = 0;
+            private int _indentCount;
+            private int _newLineIndex;
             private StringBuilder _builder;
 
             public string IndentString { get; set; } = DefaultIndent;

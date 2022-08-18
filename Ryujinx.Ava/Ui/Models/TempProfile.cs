@@ -7,7 +7,7 @@ namespace Ryujinx.Ava.Ui.Models
     public class TempProfile : BaseModel
     {
         private readonly UserProfile _profile;
-        private byte[] _image = null;
+        private byte[] _image;
         private string _name = String.Empty;
         private UserId _userId;
 
