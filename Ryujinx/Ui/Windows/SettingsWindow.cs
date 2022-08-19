@@ -663,6 +663,7 @@ namespace Ryujinx.Ui.Windows
 
                 if (fileChooser.Run() == (int)ResponseType.Accept)
                 {
+                    _directoryChanged = false;
                     foreach (string directory in fileChooser.Filenames)
                     {
                         if (_gameDirsBoxStore.GetIterFirst(out TreeIter treeIter))
@@ -671,7 +672,6 @@ namespace Ryujinx.Ui.Windows
                             {
                                 if (directory.Equals((string)_gameDirsBoxStore.GetValue(treeIter, 0)))
                                 {
-                                    _directoryChanged = true;
                                     break;
                                 }
                             } while(_gameDirsBoxStore.IterNext(ref treeIter));
