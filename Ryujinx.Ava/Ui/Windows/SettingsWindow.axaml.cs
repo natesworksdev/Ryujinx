@@ -239,6 +239,8 @@ namespace Ryujinx.Ava.Ui.Windows
             {
                 window.ViewModel.LoadApplications();
             }
+
+            ViewModel.DirectoryChanged = false;
         }
 
         protected override void OnClosed(EventArgs e)

@@ -415,8 +415,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
             {
                 List<string> gameDirs = new List<string>(GameDirectories);
                 config.Ui.GameDirs.Value = gameDirs;
-
-                _directoryChanged = false;
             }
 
             if (_validTzRegions.Contains(TimeZone))
