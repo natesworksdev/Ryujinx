@@ -34,7 +34,7 @@ namespace Ryujinx.Ui.Windows
 
         private long  _systemTimeOffset;
         private float _previousVolumeLevel;
-        private bool directoryChanged = false;
+        private bool _directoryChanged = false;
 
 #pragma warning disable CS0649, IDE0044
         [GUI] CheckButton     _traceLogToggle;
@@ -502,7 +502,7 @@ namespace Ryujinx.Ui.Windows
 
         private void SaveSettings()
         {
-            if (directoryChanged)
+            if (_directoryChanged)
             {
                 List<string> gameDirs = new List<string>();
 
@@ -516,6 +516,8 @@ namespace Ryujinx.Ui.Windows
                 }
 
                 ConfigurationState.Instance.Ui.GameDirs.Value = gameDirs;
+
+                _directoryChanged = false;
             }
 
             if (!float.TryParse(_resScaleText.Buffer.Text, out float resScaleCustom) || resScaleCustom <= 0.0f)
@@ -669,18 +671,19 @@ namespace Ryujinx.Ui.Windows
                             {
                                 if (directory.Equals((string)_gameDirsBoxStore.GetValue(treeIter, 0)))
                                 {
+                                    _directoryChanged = true;
                                     break;
                                 }
                             } while(_gameDirsBoxStore.IterNext(ref treeIter));
                         }
 
-                        if (!directoryChanged)
+                        if (!_directoryChanged)
                         {
                             _gameDirsBoxStore.AppendValues(directory);
                         }
                     }
 
-                    directoryChanged = true;
+                    _directoryChanged = true;
                 }
 
                 fileChooser.Dispose();
@@ -699,7 +702,7 @@ namespace Ryujinx.Ui.Windows
             {
                 _gameDirsBoxStore.Remove(ref treeIter);
 
-                directoryChanged = true;
+                _directoryChanged = true;
             }
 
             ((ToggleButton)sender).SetStateFlags(StateFlags.Normal, true);

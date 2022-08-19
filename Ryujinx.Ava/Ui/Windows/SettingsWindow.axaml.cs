@@ -162,6 +162,7 @@ namespace Ryujinx.Ava.Ui.Windows
             if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path) && !ViewModel.GameDirectories.Contains(path))
             {
                 ViewModel.GameDirectories.Add(path);
+                ViewModel.DirectoryChanged = true;
             }
             else
             {
@@ -170,6 +171,7 @@ namespace Ryujinx.Ava.Ui.Windows
                 if (!string.IsNullOrWhiteSpace(path))
                 {
                     ViewModel.GameDirectories.Add(path);
+                    ViewModel.DirectoryChanged = true;
                 }
             }
         }
@@ -181,6 +183,7 @@ namespace Ryujinx.Ava.Ui.Windows
             foreach (string path in selected)
             {
                 ViewModel.GameDirectories.Remove(path);
+                ViewModel.DirectoryChanged = true;
             }
         }
 
@@ -232,7 +235,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
             ControllerSettings?.SaveCurrentProfile();
 
-            if (Owner is MainWindow window)
+            if (Owner is MainWindow window && ViewModel.DirectoryChanged)
             {
                 window.ViewModel.LoadApplications();
             }
