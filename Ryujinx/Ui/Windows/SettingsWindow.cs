@@ -34,9 +34,7 @@ namespace Ryujinx.Ui.Windows
 
         private long  _systemTimeOffset;
         private float _previousVolumeLevel;
-
         private bool directoryChanged = false;
-
 
 #pragma warning disable CS0649, IDE0044
         [GUI] CheckButton     _traceLogToggle;
