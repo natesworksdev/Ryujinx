@@ -414,6 +414,36 @@ namespace Ryujinx.Graphics.Vulkan
             bool supportsR4G4B4A4Format = FormatCapabilities.OptimalFormatsSupport(compressedFormatFeatureFlags,
                 GAL.Format.R4G4B4A4Unorm);
 
+            bool supportsAstcFormats = FormatCapabilities.OptimalFormatsSupport(compressedFormatFeatureFlags,
+                GAL.Format.Astc4x4Unorm,
+                GAL.Format.Astc5x4Unorm,
+                GAL.Format.Astc5x5Unorm,
+                GAL.Format.Astc6x5Unorm,
+                GAL.Format.Astc6x6Unorm,
+                GAL.Format.Astc8x5Unorm,
+                GAL.Format.Astc8x6Unorm,
+                GAL.Format.Astc8x8Unorm,
+                GAL.Format.Astc10x5Unorm,
+                GAL.Format.Astc10x6Unorm,
+                GAL.Format.Astc10x8Unorm,
+                GAL.Format.Astc10x10Unorm,
+                GAL.Format.Astc12x10Unorm,
+                GAL.Format.Astc12x12Unorm,
+                GAL.Format.Astc4x4Srgb,
+                GAL.Format.Astc5x4Srgb,
+                GAL.Format.Astc5x5Srgb,
+                GAL.Format.Astc6x5Srgb,
+                GAL.Format.Astc6x6Srgb,
+                GAL.Format.Astc8x5Srgb,
+                GAL.Format.Astc8x6Srgb,
+                GAL.Format.Astc8x8Srgb,
+                GAL.Format.Astc10x5Srgb,
+                GAL.Format.Astc10x6Srgb,
+                GAL.Format.Astc10x8Srgb,
+                GAL.Format.Astc10x10Srgb,
+                GAL.Format.Astc12x10Srgb,
+                GAL.Format.Astc12x12Srgb);
+
             PhysicalDeviceVulkan12Features featuresVk12 = new PhysicalDeviceVulkan12Features()
             {
                 SType = StructureType.PhysicalDeviceVulkan12Features
@@ -436,7 +466,7 @@ namespace Ryujinx.Graphics.Vulkan
                 hasFrontFacingBug: IsIntelWindows,
                 hasVectorIndexingBug: Vendor == Vendor.Qualcomm,
                 reduceShaderPrecision: Vendor == Vendor.MoltenVK,
-                supportsAstcCompression: Vendor != Vendor.MoltenVK && features2.Features.TextureCompressionAstcLdr,
+                supportsAstcCompression: features2.Features.TextureCompressionAstcLdr && supportsAstcFormats,
                 supportsBc123Compression: supportsBc123CompressionFormat,
                 supportsBc45Compression: supportsBc45CompressionFormat,
                 supportsBc67Compression: supportsBc67CompressionFormat,
