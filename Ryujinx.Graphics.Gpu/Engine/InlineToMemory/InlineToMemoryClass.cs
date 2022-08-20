@@ -178,23 +178,29 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
             }
             else
             {
-                var target = memoryManager.Physical.TextureCache.FindTexture(
-                    memoryManager,
-                    _dstGpuVa,
-                    1,
-                    _dstStride,
-                    _dstHeight,
-                    _lineLengthIn,
-                    _lineCount,
-                    _isLinear,
-                    _dstGobBlocksInY,
-                    _dstGobBlocksInZ);
-
-                if (target != null)
+                // TODO: Verify if the destination X/Y and width/height are taken into account
+                // for linear texture transfers. If not, we can use the fast path for that aswell.
+                // Right now the copy code at the bottom assumes that it is used on both which might be incorrect.
+                if (!_isLinear)
                 {
-                    target.SetData(data, 0, 0, new GAL.Rectangle<int>(_dstX, _dstY, _lineLengthIn / target.Info.FormatInfo.BytesPerPixel, _lineCount));
+                    var target = memoryManager.Physical.TextureCache.FindTexture(
+                        memoryManager,
+                        _dstGpuVa,
+                        1,
+                        _dstStride,
+                        _dstHeight,
+                        _lineLengthIn,
+                        _lineCount,
+                        _isLinear,
+                        _dstGobBlocksInY,
+                        _dstGobBlocksInZ);
 
-                    return;
+                    if (target != null)
+                    {
+                        target.SetData(data, 0, 0, new GAL.Rectangle<int>(_dstX, _dstY, _lineLengthIn / target.Info.FormatInfo.BytesPerPixel, _lineCount));
+
+                        return;
+                    }
                 }
 
                 var dstCalculator = new OffsetCalculator(
