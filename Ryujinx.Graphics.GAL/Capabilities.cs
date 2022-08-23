@@ -25,6 +25,7 @@ namespace Ryujinx.Graphics.GAL
         public readonly bool Supports5BitComponentFormat;
         public readonly bool SupportsFragmentShaderInterlock;
         public readonly bool SupportsFragmentShaderOrderingIntel;
+        public readonly bool SupportsGeometryShader;
         public readonly bool SupportsGeometryShaderPassthrough;
         public readonly bool SupportsImageLoadFormatted;
         public readonly bool SupportsLayerVertexTessellation;
@@ -66,6 +67,7 @@ namespace Ryujinx.Graphics.GAL
             bool supports5BitComponentFormat,
             bool supportsFragmentShaderInterlock,
             bool supportsFragmentShaderOrderingIntel,
+            bool supportsGeometryShader,
             bool supportsGeometryShaderPassthrough,
             bool supportsImageLoadFormatted,
             bool supportsLayerVertexTessellation,
@@ -104,6 +106,7 @@ namespace Ryujinx.Graphics.GAL
             Supports5BitComponentFormat = supports5BitComponentFormat;
             SupportsFragmentShaderInterlock = supportsFragmentShaderInterlock;
             SupportsFragmentShaderOrderingIntel = supportsFragmentShaderOrderingIntel;
+            SupportsGeometryShader = supportsGeometryShader;
             SupportsGeometryShaderPassthrough = supportsGeometryShaderPassthrough;
             SupportsImageLoadFormatted = supportsImageLoadFormatted;
             SupportsLayerVertexTessellation = supportsLayerVertexTessellation;
