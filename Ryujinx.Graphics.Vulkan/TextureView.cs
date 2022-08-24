@@ -133,9 +133,12 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 if (gd.Capabilities.PortabilitySubset.HasFlag(PortabilitySubsetFlags.No3DImageView))
                 {
-                    subresourceRange = new ImageSubresourceRange(aspectFlags, (uint)firstLevel, levels, (uint)firstLayer, 1);
+                    if (levels == 1)
+                    {
+                        subresourceRange = new ImageSubresourceRange(aspectFlags, (uint)firstLevel, levels, (uint)firstLayer, 1);
 
-                    _imageView2dArray = CreateImageView(identityComponentMapping, subresourceRange, ImageViewType.Type2D, ImageUsageFlags.ColorAttachmentBit);
+                        _imageView2dArray = CreateImageView(identityComponentMapping, subresourceRange, ImageViewType.Type2D, ImageUsageFlags.ColorAttachmentBit);
+                    }
                 }
                 else
                 {
