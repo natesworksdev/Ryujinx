@@ -52,7 +52,7 @@
   "GameListContextMenuOpenModsDirectory": "Mod-Verzeichnis öffnen",
   "GameListContextMenuOpenModsDirectoryToolTip": "Öffnet das Verzeichnis, welches Mods für die Spiele beinhaltet",
   "GameListContextMenuCacheManagement": "Cache Verwaltung",
-  "GameListContextMenuCacheManagementPurgePptc": "Markiere PPTC als ungültig",
+  "GameListContextMenuCacheManagementPurgePptc": "PPTC als ungültig markieren",
   "GameListContextMenuCacheManagementPurgePptcToolTip": "Markiert den PPTC als ungültig, sodass dieser beim nächsten Spielstart neu erstellt wird",
   "GameListContextMenuCacheManagementPurgeShaderCache": "Shader Cache löschen",
   "GameListContextMenuCacheManagementPurgeShaderCacheToolTip": "Löscht den Shader Cache der Anwendung",
