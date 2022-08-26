@@ -189,13 +189,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             return true;
         }
 
-        public bool InitNetworkInfo()
+        public void InitNetworkInfo()
         {
-            if (!GetFakeMac(out networkInfo.Common.MacAddress))
-            {
-                return false;
-            }
-
+            networkInfo.Common.MacAddress = GetFakeMac();
             networkInfo.Common.Channel = COMMON_CHANNEL;
             networkInfo.Common.LinkLevel = COMMON_LINK_LEVEL;
             networkInfo.Common.NetworkType = COMMON_NETWORK_TYPE;
@@ -208,11 +204,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                 networkInfo.Ldn.Nodes[i].NodeId = (byte)i;
                 networkInfo.Ldn.Nodes[i].IsConnected = 0;
             }
-
-            return true;
         }
 
-        protected bool GetFakeMac(out Array6<byte> macAddress, IPAddress address = null)
+        protected Array6<byte> GetFakeMac(IPAddress address = null)
         {
             if (address == null)
             {
@@ -221,9 +215,10 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
             byte[] ip = address.GetAddressBytes();
 
-            macAddress = new Array6<byte>();
+            var macAddress = new Array6<byte>();
             new byte[] { 0x02, 0x00, ip[0], ip[1], ip[2], ip[3] }.CopyTo(macAddress.AsSpan());
-            return true;
+
+            return macAddress;
         }
 
         public bool InitTcp(bool listening, IPAddress address = null, int port = DEFAULT_PORT)
@@ -418,11 +413,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         {
             uint ipAddress = NetworkHelpers.ConvertIpv4Address(localAddr);
 
-            if (GetFakeMac(out Array6<byte> macAddress, localAddr))
-            {
-                node.MacAddress = macAddress;
-            }
-
+            node.MacAddress = GetFakeMac();
             node.IsConnected = 1;
             node.UserName = userConfig.UserName;
             node.LocalCommunicationVersion = localCommunicationVersion;
@@ -433,10 +424,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         public bool CreateNetwork(SecurityConfig securityConfig, UserConfig userConfig, NetworkConfig networkConfig)
         {
-            if (!InitTcp(true) || !InitNetworkInfo())
+            if (!InitTcp(true))
             {
                 return false;
             }
+
+            InitNetworkInfo();
 
             networkInfo.Ldn.NodeCountMax = networkConfig.NodeCountMax;
             networkInfo.Ldn.SecurityMode = (ushort)securityConfig.SecurityMode;
