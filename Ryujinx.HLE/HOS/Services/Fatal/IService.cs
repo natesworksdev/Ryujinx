@@ -56,7 +56,7 @@ namespace Ryujinx.HLE.HOS.Services.Fatal
             errorReport.AppendLine("ErrorReport log:");
 
             errorReport.AppendLine($"\tTitleId: {context.Device.Application.TitleId:x16}");
-            errorReport.AppendLine($"\tPId: {pid}");
+            errorReport.AppendLine($"\tPid: {pid}");
             errorReport.AppendLine($"\tResultCode: {((int)resultCode & 0x1FF) + 2000}-{((int)resultCode >> 9) & 0x3FFF:d4}");
             errorReport.AppendLine($"\tFatalPolicy: {fatalPolicy}");
 
@@ -68,7 +68,7 @@ namespace Ryujinx.HLE.HOS.Services.Fatal
                 {
                     CpuContext64 cpuContext64 = MemoryMarshal.Cast<byte, CpuContext64>(cpuContext)[0];
 
-                    errorReport.AppendLine($"\tStartAddress: 0x{cpuContext64.StartAddress:16}");
+                    errorReport.AppendLine($"\tStartAddress: 0x{cpuContext64.StartAddress:x16}");
                     errorReport.AppendLine($"\tRegisterSetFlags: {cpuContext64.RegisterSetFlags}");
 
                     if (cpuContext64.StackTraceSize > 0)
@@ -85,19 +85,19 @@ namespace Ryujinx.HLE.HOS.Services.Fatal
 
                     for (int i = 0; i < cpuContext64.X.Length; i++)
                     {
-                        errorReport.AppendLine($"\t\tX[{i:d2}]:\t{cpuContext64.X[i]:x16}");
+                        errorReport.AppendLine($"\t\tX[{i:d2}]:\t0x{cpuContext64.X[i]:x16}");
                     }
 
                     errorReport.AppendLine();
-                    errorReport.AppendLine($"\t\tFP:\t{cpuContext64.FP:x16}");
-                    errorReport.AppendLine($"\t\tLR:\t{cpuContext64.LR:x16}");
-                    errorReport.AppendLine($"\t\tSP:\t{cpuContext64.SP:x16}");
-                    errorReport.AppendLine($"\t\tPC:\t{cpuContext64.PC:x16}");
-                    errorReport.AppendLine($"\t\tPState:\t{cpuContext64.PState:x16}");
-                    errorReport.AppendLine($"\t\tAfsr0:\t{cpuContext64.Afsr0:x16}");
-                    errorReport.AppendLine($"\t\tAfsr1:\t{cpuContext64.Afsr1:x16}");
-                    errorReport.AppendLine($"\t\tEsr:\t{cpuContext64.Esr:x16}");
-                    errorReport.AppendLine($"\t\tFar:\t{cpuContext64.Far:x16}");
+                    errorReport.AppendLine($"\t\tFP:\t0x{cpuContext64.FP:x16}");
+                    errorReport.AppendLine($"\t\tLR:\t0x{cpuContext64.LR:x16}");
+                    errorReport.AppendLine($"\t\tSP:\t0x{cpuContext64.SP:x16}");
+                    errorReport.AppendLine($"\t\tPC:\t0x{cpuContext64.PC:x16}");
+                    errorReport.AppendLine($"\t\tPState:\t0x{cpuContext64.PState:x16}");
+                    errorReport.AppendLine($"\t\tAfsr0:\t0x{cpuContext64.Afsr0:x16}");
+                    errorReport.AppendLine($"\t\tAfsr1:\t0x{cpuContext64.Afsr1:x16}");
+                    errorReport.AppendLine($"\t\tEsr:\t0x{cpuContext64.Esr:x16}");
+                    errorReport.AppendLine($"\t\tFar:\t0x{cpuContext64.Far:x16}");
                 }
                 else
                 {
@@ -120,20 +120,20 @@ namespace Ryujinx.HLE.HOS.Services.Fatal
 
                     for (int i = 0; i < cpuContext32.X.Length; i++)
                     {
-                        errorReport.AppendLine($"\t\tX[{i:d2}]:\t{cpuContext32.X[i]:x16}");
+                        errorReport.AppendLine($"\t\tX[{i:d2}]:\t0x{cpuContext32.X[i]:x16}");
                     }
 
                     errorReport.AppendLine();
-                    errorReport.AppendLine($"\t\tFP:\t{cpuContext32.FP:x16}");
-                    errorReport.AppendLine($"\t\tFP:\t{cpuContext32.IP:x16}");
-                    errorReport.AppendLine($"\t\tSP:\t{cpuContext32.SP:x16}");
-                    errorReport.AppendLine($"\t\tLR:\t{cpuContext32.LR:x16}");
-                    errorReport.AppendLine($"\t\tPC:\t{cpuContext32.PC:x16}");
-                    errorReport.AppendLine($"\t\tPState:\t{cpuContext32.PState:x16}");
-                    errorReport.AppendLine($"\t\tAfsr0:\t{cpuContext32.Afsr0:x16}");
-                    errorReport.AppendLine($"\t\tAfsr1:\t{cpuContext32.Afsr1:x16}");
-                    errorReport.AppendLine($"\t\tEsr:\t{cpuContext32.Esr:x16}");
-                    errorReport.AppendLine($"\t\tFar:\t{cpuContext32.Far:x16}");
+                    errorReport.AppendLine($"\t\tFP:\t0x{cpuContext32.FP:x16}");
+                    errorReport.AppendLine($"\t\tFP:\t0x{cpuContext32.IP:x16}");
+                    errorReport.AppendLine($"\t\tSP:\t0x{cpuContext32.SP:x16}");
+                    errorReport.AppendLine($"\t\tLR:\t0x{cpuContext32.LR:x16}");
+                    errorReport.AppendLine($"\t\tPC:\t0x{cpuContext32.PC:x16}");
+                    errorReport.AppendLine($"\t\tPState:\t0x{cpuContext32.PState:x16}");
+                    errorReport.AppendLine($"\t\tAfsr0:\t0x{cpuContext32.Afsr0:x16}");
+                    errorReport.AppendLine($"\t\tAfsr1:\t0x{cpuContext32.Afsr1:x16}");
+                    errorReport.AppendLine($"\t\tEsr:\t0x{cpuContext32.Esr:x16}");
+                    errorReport.AppendLine($"\t\tFar:\t0x{cpuContext32.Far:x16}");
                 }
             }
 
