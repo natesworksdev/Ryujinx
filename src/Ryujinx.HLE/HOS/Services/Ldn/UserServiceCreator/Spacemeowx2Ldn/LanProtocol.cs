@@ -36,7 +36,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         public event Action<NodeInfo, EndPoint> Connect;
         public event Action<LdnProxyTcpSession> DisconnectStation;
 
-        // Source: https://stackoverflow.com/a/39338188
+        // NOTE: Credit to https://stackoverflow.com/a/39338188
         private static IPAddress GetBroadcastAddress(IPAddress address, IPAddress mask)
         {
             uint ipAddress = BitConverter.ToUInt32(address.GetAddressBytes(), 0);
@@ -68,26 +68,22 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             {
                 case LanPacketType.Scan:
                     // UDP
-                    Logger.Info?.PrintMsg(LogClass.ServiceLdn, "Sending ScanResponse...");
                     Scan?.Invoke(endPoint, LanPacketType.ScanResponse, LdnHelper.StructureToByteArray(_discovery.networkInfo));
                     break;
                 case LanPacketType.ScanResponse:
                     // UDP
-                    Logger.Info?.PrintMsg(LogClass.ServiceLdn, "Got ScanResponse.");
                     ScanResponse?.Invoke(LdnHelper.FromBytes<NetworkInfo>(data));
                     break;
                 case LanPacketType.SyncNetwork:
                     // TCP
-                    Logger.Info?.PrintMsg(LogClass.ServiceLdn, "Got SyncNetwork.");
                     SyncNetwork?.Invoke(LdnHelper.FromBytes<NetworkInfo>(data));
                     break;
                 case LanPacketType.Connect:
                     // TCP Session / Station
-                    Logger.Info?.PrintMsg(LogClass.ServiceLdn, "Got Connect.");
                     Connect?.Invoke(LdnHelper.FromBytes<NodeInfo>(data), endPoint);
                     break;
                 default:
-                    Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"Decode error: unhandled type {header.Type}");
+                    Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"Decode error: Unhandled type {header.Type}");
                     break;
             }
         }
@@ -99,13 +95,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                 return;
             }
 
-            Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"LanProtocol Reading data: EP: {endPoint} Offset: {offset} Size: {size}");
+            Logger.Debug?.PrintMsg(LogClass.ServiceLdn, $"LanProtocol Reading data: EP: {endPoint} Offset: {offset} Size: {size}");
 
             // Scan packet
             if (size == 12)
             {
                 DecodeAndHandle(PrepareHeader(new LanPacketHeader(), LanPacketType.Scan), Array.Empty<byte>(), endPoint);
                 _bufferEnd = 0;
+
                 return;
             }
 
@@ -115,18 +112,22 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                 if (_bufferEnd < _headerSize)
                 {
                     int copyable2 = Math.Min(size - index, Math.Min(size, _headerSize - _bufferEnd));
+
                     Array.Copy(data, index + offset, _buffer, _bufferEnd, copyable2);
+
                     index += copyable2;
                     _bufferEnd += copyable2;
                 }
+
                 if (_bufferEnd >= _headerSize)
                 {
                     LanPacketHeader header = LdnHelper.FromBytes<LanPacketHeader>(_buffer);
-                    Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"Received packet info: [length: {_bufferEnd}] [Header size: {header.Length}]");
+                    Logger.Debug?.PrintMsg(LogClass.ServiceLdn, $"Received packet info: [length: {_bufferEnd}] [Header size: {header.Length}]");
                     if (header.Magic != LanMagic)
                     {
                         _bufferEnd = 0;
                         Logger.Warning?.PrintMsg(LogClass.ServiceLdn, $"Invalid magic number in received packet. [magic: {header.Magic}] [EP: {endPoint}]");
+
                         return;
                     }
                     int totalSize = _headerSize + header.Length;
@@ -134,17 +135,19 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                     {
                         _bufferEnd = 0;
                         Logger.Warning?.PrintMsg(LogClass.ServiceLdn, $"Max packet size {BufferSize} exceeded.");
+
                         return;
                     }
 
                     int copyable = Math.Min(size - index, Math.Min(size, totalSize - _bufferEnd));
+
                     Array.Copy(data, index + offset, _buffer, _bufferEnd, copyable);
+
                     index += copyable;
                     _bufferEnd += copyable;
+
                     if (totalSize == _bufferEnd)
                     {
-                        Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"Packet received from: {endPoint}");
-
                         byte[] ldnData = new byte[totalSize - _headerSize];
                         Array.Copy(_buffer, _headerSize, ldnData, 0, ldnData.Length);
 
@@ -153,18 +156,21 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                             if (Decompress(ldnData, out byte[] decompressedLdnData) != 0)
                             {
                                 Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"Decompress error:\n {header}, {_headerSize}\n {ldnData}, {ldnData.Length}");
+
                                 return;
                             }
                             if (decompressedLdnData.Length != header.DecompressLength)
                             {
                                 Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"Decompress error: length does not match. ({decompressedLdnData.Length} != {header.DecompressLength})");
                                 Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"Decompress error data: '{string.Join("", decompressedLdnData.Select(x => (int)x).ToArray())}'");
+
                                 return;
                             }
                             ldnData = decompressedLdnData;
                         }
 
                         DecodeAndHandle(header, ldnData, endPoint);
+
                         _bufferEnd = 0;
                     }
                 }
@@ -179,14 +185,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         public int SendPacket(ILdnSocket s, LanPacketType type, byte[] data, EndPoint endPoint = null)
         {
             byte[] buf = PreparePacket(type, data);
-            Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"Sending '{type}' packet... [size: {buf.Length}]");
+
             return s.SendPacketAsync(endPoint, buf) ? 0 : -1;
         }
 
         public int SendPacket(LdnProxyTcpSession s, LanPacketType type, byte[] data)
         {
             byte[] buf = PreparePacket(type, data);
-            Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"Sending packet [size: {buf.Length}] to LdnProxyTcpSession: {s.Socket.RemoteEndPoint}");
+
             return s.SendAsync(buf) ? 0 : -1;
         }
 
@@ -204,7 +210,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         private byte[] PreparePacket(LanPacketType type, byte[] data)
         {
-            LanPacketHeader header = PrepareHeader(new LanPacketHeader(), type);
+            LanPacketHeader header = PrepareHeader(new(), type);
             header.Length = (ushort)data.Length;
             byte[] buf = new byte[data.Length + _headerSize];
             if (data.Length > 0)
@@ -240,11 +246,11 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
             while (i < input.Length)
             {
-                byte c = input[i];
+                byte inputByte = input[i];
                 i++;
                 int count = 0;
 
-                if (c == 0)
+                if (inputByte == 0)
                 {
                     while (i < input.Length && input[i] == 0 && count < maxCount)
                     {
@@ -253,24 +259,26 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                     }
                 }
 
-                if (c == 0)
+                if (inputByte == 0)
                 {
                     outputList.Add(0);
 
                     if (outputList.Count == BufferSize)
                     {
                         output = null;
+
                         return -1;
                     }
                     outputList.Add((byte)count);
                 }
                 else
                 {
-                    outputList.Add(c);
+                    outputList.Add(inputByte);
                 }
             }
 
             output = outputList.ToArray();
+
             return i == input.Length ? 0 : -1;
         }
 
@@ -278,34 +286,40 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         {
             List<byte> outputList = new List<byte>();
             int i = 0;
+
             while (i < input.Length && outputList.Count < BufferSize)
             {
-                byte c = input[i];
+                byte inputByte = input[i];
                 i++;
 
-                outputList.Add(c);
-                if (c == 0)
+                outputList.Add(inputByte);
+
+                if (inputByte == 0)
                 {
                     if (i == input.Length)
                     {
                         output = null;
+
                         return -1;
                     }
 
                     int count = input[i];
                     i++;
+
                     for (int j = 0; j < count; j++)
                     {
                         if (outputList.Count == BufferSize)
                         {
                             break;
                         }
-                        outputList.Add(c);
+
+                        outputList.Add(inputByte);
                     }
                 }
             }
 
             output = outputList.ToArray();
+
             return i == input.Length ? 0 : -1;
         }
     }

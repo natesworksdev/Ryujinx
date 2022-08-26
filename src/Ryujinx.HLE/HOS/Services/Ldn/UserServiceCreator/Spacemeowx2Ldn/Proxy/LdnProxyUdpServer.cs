@@ -31,13 +31,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 
         protected override Socket CreateSocket()
         {
-            Socket s = new Socket(Endpoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp)
+            Socket socket = new Socket(Endpoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp)
             {
                 EnableBroadcast = true
             };
-            s.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.PacketInformation, true);
 
-            return s;
+            socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.PacketInformation, true);
+
+            return socket;
         }
 
         protected override void OnStarted()
@@ -65,7 +66,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 
         public bool SendPacketAsync(EndPoint endpoint, byte[] data)
         {
-            Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"Sending packet to: {endpoint}");
             return SendAsync(endpoint, data);
         }
 

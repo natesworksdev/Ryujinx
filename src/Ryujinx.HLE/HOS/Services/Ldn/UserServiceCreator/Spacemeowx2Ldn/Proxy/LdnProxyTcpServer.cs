@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
             OptionReuseAddress = true;
             OptionNoDelay = true;
 
-            Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPServer created a server for this address: {address}:{port}");
+            Logger.Debug?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPServer created a server for this address: {address}:{port}");
         }
 
         protected override TcpSession CreateSession()
@@ -39,6 +39,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
         public bool ConnectAsync()
         {
             Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPServer ConnectAsync was called.");
+
             return false;
         }
 
@@ -49,7 +50,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 
         public bool SendPacketAsync(EndPoint endpoint, byte[] buffer)
         {
-            Logger.Warning?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPServer SendPacketAsync was called.");
+            Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPServer SendPacketAsync was called.");
+
             return false;
         }
     }

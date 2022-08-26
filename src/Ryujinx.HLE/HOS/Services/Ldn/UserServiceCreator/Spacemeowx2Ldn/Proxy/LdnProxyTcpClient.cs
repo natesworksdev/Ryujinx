@@ -35,6 +35,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
         public void DisconnectAndStop()
         {
             DisconnectAsync();
+
             while (IsConnected)
             {
                 Thread.Yield();
@@ -51,13 +52,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
             if (IsConnecting && !IsConnected)
             {
                 Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPClient needs to connect before sending packets. Waiting...");
+
                 while (IsConnecting && !IsConnected)
                 {
                     Thread.Yield();
                 }
             }
 
-            Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"Sending packet to: {_serverAddress}");
+            Logger.Debug?.PrintMsg(LogClass.ServiceLdn, $"Sending packet to: {_serverAddress}");
 
             return SendAsync(data);
         }
@@ -76,12 +78,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
         public bool Start()
         {
             Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPClient Start was called.");
+
             return false;
         }
 
         public bool Stop()
         {
             Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPClient Stop was called.");
+
             return false;
         }
     }

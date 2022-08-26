@@ -25,12 +25,10 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
             _buffer = new byte[LanProtocol.BufferSize];
             OptionReceiveBufferSize = LanProtocol.BufferSize;
             OptionSendBufferSize = LanProtocol.BufferSize;
-            Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPSession created!");
         }
 
         public void OverrideInfo()
         {
-            Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPSession overriding info!");
             nodeInfo.NodeId = (byte)nodeId;
             nodeInfo.IsConnected = (byte)(IsConnected ? 1 : 0);
         }
@@ -43,13 +41,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 
         protected override void OnDisconnected()
         {
-            Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPSession connected!");
+            Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPSession disconnected!");
             _protocol.InvokeDisconnectStation(this);
         }
 
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
-            // Done via LANDiscovery::loopPoll()
             _protocol.Read(ref _buffer, ref _bufferEnd, buffer, (int)offset, (int)size, this.Socket.RemoteEndPoint);
         }
 
