@@ -73,20 +73,20 @@ namespace Ryujinx.Graphics.Gpu.Image
             X8Z24X16V8S8Cov8R24V = 0x3c,
             Zf32X16V8X8Cov8R24V = 0x3d,
             Zf32X16V8S8Cov8R24V = 0x3e,
-            Astc2D4X4 = 0x40,
-            Astc2D5X4 = 0x50,
-            Astc2D5X5 = 0x41,
-            Astc2D6X5 = 0x51,
-            Astc2D6X6 = 0x42,
-            Astc2D8X5 = 0x55,
-            Astc2D8X6 = 0x52,
-            Astc2D8X8 = 0x44,
-            Astc2D10X5 = 0x56,
-            Astc2D10X6 = 0x57,
-            Astc2D10X8 = 0x53,
-            Astc2D10X10 = 0x45,
-            Astc2D12X10 = 0x54,
-            Astc2D12X12 = 0x46,
+            Astc2D4x4 = 0x40,
+            Astc2D5x4 = 0x50,
+            Astc2D5x5 = 0x41,
+            Astc2D6x5 = 0x51,
+            Astc2D6x6 = 0x42,
+            Astc2D8x5 = 0x55,
+            Astc2D8x6 = 0x52,
+            Astc2D8x8 = 0x44,
+            Astc2D10x5 = 0x56,
+            Astc2D10x6 = 0x57,
+            Astc2D10x8 = 0x53,
+            Astc2D10x10 = 0x45,
+            Astc2D12x10 = 0x54,
+            Astc2D12x12 = 0x46,
 
             // Types
             Snorm = 0x1,
@@ -211,34 +211,34 @@ namespace Ryujinx.Graphics.Gpu.Image
             Etc2RgbaUnorm                    = Etc2Rgba          | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x2490b
             Etc2RgbUnormSrgb                 = Etc2Rgb           | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4906
             Etc2RgbaUnormSrgb                = Etc2Rgba          | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa490b
-            Astc2D4X4Unorm                   = Astc2D4X4         | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24940
-            Astc2D5X4Unorm                   = Astc2D5X4         | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24950
-            Astc2D5X5Unorm                   = Astc2D5X5         | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24941
-            Astc2D6X5Unorm                   = Astc2D6X5         | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24951
-            Astc2D6X6Unorm                   = Astc2D6X6         | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24942
-            Astc2D8X5Unorm                   = Astc2D8X5         | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24955
-            Astc2D8X6Unorm                   = Astc2D8X6         | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24952
-            Astc2D8X8Unorm                   = Astc2D8X8         | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24944
-            Astc2D10X5Unorm                  = Astc2D10X5        | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24956
-            Astc2D10X6Unorm                  = Astc2D10X6        | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24957
-            Astc2D10X8Unorm                  = Astc2D10X8        | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24953
-            Astc2D10X10Unorm                 = Astc2D10X10       | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24945
-            Astc2D12X10Unorm                 = Astc2D12X10       | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24954
-            Astc2D12X12Unorm                 = Astc2D12X12       | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24946
-            Astc2D4X4UnormSrgb               = Astc2D4X4         | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4940
-            Astc2D5X4UnormSrgb               = Astc2D5X4         | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4950
-            Astc2D5X5UnormSrgb               = Astc2D5X5         | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4941
-            Astc2D6X5UnormSrgb               = Astc2D6X5         | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4951
-            Astc2D6X6UnormSrgb               = Astc2D6X6         | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4942
-            Astc2D8X5UnormSrgb               = Astc2D8X5         | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4955
-            Astc2D8X6UnormSrgb               = Astc2D8X6         | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4952
-            Astc2D8X8UnormSrgb               = Astc2D8X8         | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4944
-            Astc2D10X5UnormSrgb              = Astc2D10X5        | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4956
-            Astc2D10X6UnormSrgb              = Astc2D10X6        | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4957
-            Astc2D10X8UnormSrgb              = Astc2D10X8        | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4953
-            Astc2D10X10UnormSrgb             = Astc2D10X10       | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4945
-            Astc2D12X10UnormSrgb             = Astc2D12X10       | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4954
-            Astc2D12X12UnormSrgb             = Astc2D12X12       | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4946
+            Astc2D4x4Unorm                   = Astc2D4x4         | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24940
+            Astc2D5x4Unorm                   = Astc2D5x4         | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24950
+            Astc2D5x5Unorm                   = Astc2D5x5         | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24941
+            Astc2D6x5Unorm                   = Astc2D6x5         | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24951
+            Astc2D6x6Unorm                   = Astc2D6x6         | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24942
+            Astc2D8x5Unorm                   = Astc2D8x5         | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24955
+            Astc2D8x6Unorm                   = Astc2D8x6         | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24952
+            Astc2D8x8Unorm                   = Astc2D8x8         | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24944
+            Astc2D10x5Unorm                  = Astc2D10x5        | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24956
+            Astc2D10x6Unorm                  = Astc2D10x6        | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24957
+            Astc2D10x8Unorm                  = Astc2D10x8        | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24953
+            Astc2D10x10Unorm                 = Astc2D10x10       | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24945
+            Astc2D12x10Unorm                 = Astc2D12x10       | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24954
+            Astc2D12x12Unorm                 = Astc2D12x12       | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24946
+            Astc2D4x4UnormSrgb               = Astc2D4x4         | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4940
+            Astc2D5x4UnormSrgb               = Astc2D5x4         | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4950
+            Astc2D5x5UnormSrgb               = Astc2D5x5         | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4941
+            Astc2D6x5UnormSrgb               = Astc2D6x5         | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4951
+            Astc2D6x6UnormSrgb               = Astc2D6x6         | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4942
+            Astc2D8x5UnormSrgb               = Astc2D8x5         | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4955
+            Astc2D8x6UnormSrgb               = Astc2D8x6         | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4952
+            Astc2D8x8UnormSrgb               = Astc2D8x8         | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4944
+            Astc2D10x5UnormSrgb              = Astc2D10x5        | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4956
+            Astc2D10x6UnormSrgb              = Astc2D10x6        | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4957
+            Astc2D10x8UnormSrgb              = Astc2D10x8        | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4953
+            Astc2D10x10UnormSrgb             = Astc2D10x10       | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4945
+            Astc2D12x10UnormSrgb             = Astc2D12x10       | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4954
+            Astc2D12x12UnormSrgb             = Astc2D12x12       | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4946
             A5B5G5R1Unorm                    = A5B5G5R1          | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24913
         }
 
@@ -432,34 +432,34 @@ namespace Ryujinx.Graphics.Gpu.Image
             { TextureFormat.Etc2RgbaUnorm,                    new FormatInfo(Format.Etc2RgbaUnorm,     4,  4,  16, 4) },
             { TextureFormat.Etc2RgbUnormSrgb,                 new FormatInfo(Format.Etc2RgbSrgb,       4,  4,  8,  3) },
             { TextureFormat.Etc2RgbaUnormSrgb,                new FormatInfo(Format.Etc2RgbaSrgb,      4,  4,  16, 4) },
-            { TextureFormat.Astc2D4X4Unorm,                   new FormatInfo(Format.Astc4x4Unorm,      4,  4,  16, 4) },
-            { TextureFormat.Astc2D5X4Unorm,                   new FormatInfo(Format.Astc5x4Unorm,      5,  4,  16, 4) },
-            { TextureFormat.Astc2D5X5Unorm,                   new FormatInfo(Format.Astc5x5Unorm,      5,  5,  16, 4) },
-            { TextureFormat.Astc2D6X5Unorm,                   new FormatInfo(Format.Astc6x5Unorm,      6,  5,  16, 4) },
-            { TextureFormat.Astc2D6X6Unorm,                   new FormatInfo(Format.Astc6x6Unorm,      6,  6,  16, 4) },
-            { TextureFormat.Astc2D8X5Unorm,                   new FormatInfo(Format.Astc8x5Unorm,      8,  5,  16, 4) },
-            { TextureFormat.Astc2D8X6Unorm,                   new FormatInfo(Format.Astc8x6Unorm,      8,  6,  16, 4) },
-            { TextureFormat.Astc2D8X8Unorm,                   new FormatInfo(Format.Astc8x8Unorm,      8,  8,  16, 4) },
-            { TextureFormat.Astc2D10X5Unorm,                  new FormatInfo(Format.Astc10x5Unorm,     10, 5,  16, 4) },
-            { TextureFormat.Astc2D10X6Unorm,                  new FormatInfo(Format.Astc10x6Unorm,     10, 6,  16, 4) },
-            { TextureFormat.Astc2D10X8Unorm,                  new FormatInfo(Format.Astc10x8Unorm,     10, 8,  16, 4) },
-            { TextureFormat.Astc2D10X10Unorm,                 new FormatInfo(Format.Astc10x10Unorm,    10, 10, 16, 4) },
-            { TextureFormat.Astc2D12X10Unorm,                 new FormatInfo(Format.Astc12x10Unorm,    12, 10, 16, 4) },
-            { TextureFormat.Astc2D12X12Unorm,                 new FormatInfo(Format.Astc12x12Unorm,    12, 12, 16, 4) },
-            { TextureFormat.Astc2D4X4UnormSrgb,               new FormatInfo(Format.Astc4x4Srgb,       4,  4,  16, 4) },
-            { TextureFormat.Astc2D5X4UnormSrgb,               new FormatInfo(Format.Astc5x4Srgb,       5,  4,  16, 4) },
-            { TextureFormat.Astc2D5X5UnormSrgb,               new FormatInfo(Format.Astc5x5Srgb,       5,  5,  16, 4) },
-            { TextureFormat.Astc2D6X5UnormSrgb,               new FormatInfo(Format.Astc6x5Srgb,       6,  5,  16, 4) },
-            { TextureFormat.Astc2D6X6UnormSrgb,               new FormatInfo(Format.Astc6x6Srgb,       6,  6,  16, 4) },
-            { TextureFormat.Astc2D8X5UnormSrgb,               new FormatInfo(Format.Astc8x5Srgb,       8,  5,  16, 4) },
-            { TextureFormat.Astc2D8X6UnormSrgb,               new FormatInfo(Format.Astc8x6Srgb,       8,  6,  16, 4) },
-            { TextureFormat.Astc2D8X8UnormSrgb,               new FormatInfo(Format.Astc8x8Srgb,       8,  8,  16, 4) },
-            { TextureFormat.Astc2D10X5UnormSrgb,              new FormatInfo(Format.Astc10x5Srgb,      10, 5,  16, 4) },
-            { TextureFormat.Astc2D10X6UnormSrgb,              new FormatInfo(Format.Astc10x6Srgb,      10, 6,  16, 4) },
-            { TextureFormat.Astc2D10X8UnormSrgb,              new FormatInfo(Format.Astc10x8Srgb,      10, 8,  16, 4) },
-            { TextureFormat.Astc2D10X10UnormSrgb,             new FormatInfo(Format.Astc10x10Srgb,     10, 10, 16, 4) },
-            { TextureFormat.Astc2D12X10UnormSrgb,             new FormatInfo(Format.Astc12x10Srgb,     12, 10, 16, 4) },
-            { TextureFormat.Astc2D12X12UnormSrgb,             new FormatInfo(Format.Astc12x12Srgb,     12, 12, 16, 4) },
+            { TextureFormat.Astc2D4x4Unorm,                   new FormatInfo(Format.Astc4x4Unorm,      4,  4,  16, 4) },
+            { TextureFormat.Astc2D5x4Unorm,                   new FormatInfo(Format.Astc5x4Unorm,      5,  4,  16, 4) },
+            { TextureFormat.Astc2D5x5Unorm,                   new FormatInfo(Format.Astc5x5Unorm,      5,  5,  16, 4) },
+            { TextureFormat.Astc2D6x5Unorm,                   new FormatInfo(Format.Astc6x5Unorm,      6,  5,  16, 4) },
+            { TextureFormat.Astc2D6x6Unorm,                   new FormatInfo(Format.Astc6x6Unorm,      6,  6,  16, 4) },
+            { TextureFormat.Astc2D8x5Unorm,                   new FormatInfo(Format.Astc8x5Unorm,      8,  5,  16, 4) },
+            { TextureFormat.Astc2D8x6Unorm,                   new FormatInfo(Format.Astc8x6Unorm,      8,  6,  16, 4) },
+            { TextureFormat.Astc2D8x8Unorm,                   new FormatInfo(Format.Astc8x8Unorm,      8,  8,  16, 4) },
+            { TextureFormat.Astc2D10x5Unorm,                  new FormatInfo(Format.Astc10x5Unorm,     10, 5,  16, 4) },
+            { TextureFormat.Astc2D10x6Unorm,                  new FormatInfo(Format.Astc10x6Unorm,     10, 6,  16, 4) },
+            { TextureFormat.Astc2D10x8Unorm,                  new FormatInfo(Format.Astc10x8Unorm,     10, 8,  16, 4) },
+            { TextureFormat.Astc2D10x10Unorm,                 new FormatInfo(Format.Astc10x10Unorm,    10, 10, 16, 4) },
+            { TextureFormat.Astc2D12x10Unorm,                 new FormatInfo(Format.Astc12x10Unorm,    12, 10, 16, 4) },
+            { TextureFormat.Astc2D12x12Unorm,                 new FormatInfo(Format.Astc12x12Unorm,    12, 12, 16, 4) },
+            { TextureFormat.Astc2D4x4UnormSrgb,               new FormatInfo(Format.Astc4x4Srgb,       4,  4,  16, 4) },
+            { TextureFormat.Astc2D5x4UnormSrgb,               new FormatInfo(Format.Astc5x4Srgb,       5,  4,  16, 4) },
+            { TextureFormat.Astc2D5x5UnormSrgb,               new FormatInfo(Format.Astc5x5Srgb,       5,  5,  16, 4) },
+            { TextureFormat.Astc2D6x5UnormSrgb,               new FormatInfo(Format.Astc6x5Srgb,       6,  5,  16, 4) },
+            { TextureFormat.Astc2D6x6UnormSrgb,               new FormatInfo(Format.Astc6x6Srgb,       6,  6,  16, 4) },
+            { TextureFormat.Astc2D8x5UnormSrgb,               new FormatInfo(Format.Astc8x5Srgb,       8,  5,  16, 4) },
+            { TextureFormat.Astc2D8x6UnormSrgb,               new FormatInfo(Format.Astc8x6Srgb,       8,  6,  16, 4) },
+            { TextureFormat.Astc2D8x8UnormSrgb,               new FormatInfo(Format.Astc8x8Srgb,       8,  8,  16, 4) },
+            { TextureFormat.Astc2D10x5UnormSrgb,              new FormatInfo(Format.Astc10x5Srgb,      10, 5,  16, 4) },
+            { TextureFormat.Astc2D10x6UnormSrgb,              new FormatInfo(Format.Astc10x6Srgb,      10, 6,  16, 4) },
+            { TextureFormat.Astc2D10x8UnormSrgb,              new FormatInfo(Format.Astc10x8Srgb,      10, 8,  16, 4) },
+            { TextureFormat.Astc2D10x10UnormSrgb,             new FormatInfo(Format.Astc10x10Srgb,     10, 10, 16, 4) },
+            { TextureFormat.Astc2D12x10UnormSrgb,             new FormatInfo(Format.Astc12x10Srgb,     12, 10, 16, 4) },
+            { TextureFormat.Astc2D12x12UnormSrgb,             new FormatInfo(Format.Astc12x12Srgb,     12, 12, 16, 4) },
             { TextureFormat.A5B5G5R1Unorm,                    new FormatInfo(Format.A1B5G5R5Unorm,     1,  1,  2,  4) }
         };
 
