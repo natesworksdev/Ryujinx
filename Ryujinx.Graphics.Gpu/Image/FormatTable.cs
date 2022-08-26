@@ -242,7 +242,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             A5B5G5R1Unorm                    = A5B5G5R1          | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24913
         }
 
-        private enum VertexAttributeFormat : ulong
+        private enum VertexAttributeFormat : uint
         {
             // Width
             R32G32B32A32 = 0x01,
