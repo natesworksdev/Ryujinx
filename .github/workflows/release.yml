@@ -77,7 +77,7 @@ jobs:
 
       - name: Package libX11.so in Linux builds
         run: |
-          wget -q "https://mirrors.kernel.org/ubuntu/pool/main/libx/libx11/libx11-6_1.6.4-3ubuntu0.4_amd64.deb" -o libx11.deb
+          wget -q "https://mirrors.kernel.org/ubuntu/pool/main/libx/libx11/libx11-6_1.6.4-3ubuntu0.4_amd64.deb" -O libx11.deb
           ar x libx11.deb
           tar xf data.tar.xz
           rm -f libx11.deb debian-binary data.tar.xz control.tar.xz
