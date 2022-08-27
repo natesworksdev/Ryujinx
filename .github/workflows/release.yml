@@ -75,6 +75,28 @@ jobs:
           dotnet publish -c Release -r linux-x64 -o ./publish_linux_sdl2_headless/publish /p:Version="${{ steps.version_info.outputs.build_version }}" /p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" /p:DebugType=embedded Ryujinx.Headless.SDL2 --self-contained
           dotnet publish -c Release -r linux-x64 -o ./publish_linux_ava/publish /p:Version="${{ steps.version_info.outputs.build_version }}" /p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" /p:DebugType=embedded Ryujinx.Ava --self-contained
 
+      - name: Package libX11.so in Linux builds
+        run: |
+          wget -q "https://mirrors.kernel.org/ubuntu/pool/main/libx/libx11/libx11-6_1.6.4-3ubuntu0.4_amd64.deb" -o libx11.deb
+          ar x libx11.deb
+          tar xf data.tar.xz
+          rm -f libx11.deb debian-binary data.tar.xz control.tar.xz
+          
+          pushd publish_linux
+          cp ../usr/lib/x86_64-linux-gnu/libX11.so.6 ./publish/libX11.so
+          popd
+
+          pushd publish_linux_sdl2_headless
+          cp ../usr/lib/x86_64-linux-gnu/libX11.so.6 ./publish/libX11.so
+          popd
+
+          pushd publish_linux_ava
+          cp ../usr/lib/x86_64-linux-gnu/libX11.so.6 ./publish/libX11.so
+          popd
+          
+          rm -rf ./usr
+        shell: bash
+
       - name: Packing Linux builds
         run: |
           pushd publish_linux
