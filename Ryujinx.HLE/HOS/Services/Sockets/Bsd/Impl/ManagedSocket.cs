@@ -323,10 +323,10 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
                 int value = optionValue.Length >= 4 ? MemoryMarshal.Read<int>(optionValue) : MemoryMarshal.Read<byte>(optionValue);
 
-                if (option == BsdSocketOption.SoLinger)
+                if (level == SocketOptionLevel.Socket && option == BsdSocketOption.SoLinger)
                 {
                     int value2 = 0;
-                    
+
                     if (optionValue.Length >= 8)
                     {
                         value2 = MemoryMarshal.Read<int>(optionValue[4..]);
