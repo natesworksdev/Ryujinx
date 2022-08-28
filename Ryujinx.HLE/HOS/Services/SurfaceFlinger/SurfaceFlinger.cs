@@ -328,7 +328,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                             Compose();
 
                             // When a frame is presented, delay the next one by its swap interval value.
-                            _swapIntervalDelay = _swapInterval - 1;
+                            _swapIntervalDelay = Math.Max(0, _swapInterval - 1);
                         }
 
                         _device.System?.SignalVsync();
