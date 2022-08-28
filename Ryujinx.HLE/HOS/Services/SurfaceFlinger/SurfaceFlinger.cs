@@ -92,7 +92,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             }
             else
             {
-                _ticksPerFrame = Stopwatch.Frequency / (TargetFps);
+                _ticksPerFrame = Stopwatch.Frequency / TargetFps;
             }
         }
 
