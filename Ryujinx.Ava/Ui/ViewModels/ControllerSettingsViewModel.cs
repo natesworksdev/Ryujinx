@@ -43,6 +43,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         private PlayerIndex _playerId;
         private int _controller;
+        private int _controllerNumber;
         private string _controllerImage;
         private int _device;
         private object _configuration;
@@ -439,6 +440,14 @@ namespace Ryujinx.Ava.Ui.ViewModels
             return str;
         }
 
+        private static string GetShortGamepadId(string str)
+        {
+            const string Hyphen = "-";
+            const int Offset = 1;
+
+            return str.Substring(str.IndexOf(Hyphen) + Offset);
+        }
+
         public void LoadDevices()
         {
             lock (Devices)
@@ -453,7 +462,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                     if (gamepad != null)
                     {
-                        Devices.Add((DeviceType.Keyboard, id, $"{GetShortGamepadName(gamepad.Name)} ({id})"));
+                        Devices.Add((DeviceType.Keyboard, id, $"{GetShortGamepadName(gamepad.Name)}"));
                     }
                 }
 
@@ -463,9 +472,16 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                     if (gamepad != null)
                     {
-                        Devices.Add((DeviceType.Controller, id, $"{GetShortGamepadName(gamepad.Name)} ({id})"));
+                        if (Devices.Any(controller => GetShortGamepadId(controller.Id) == GetShortGamepadId(gamepad.Id)))
+                        {
+                            _controllerNumber++;
+                        }
+
+                        Devices.Add((DeviceType.Controller, id, $"{GetShortGamepadName(gamepad.Name)} ({_controllerNumber})"));
                     }
                 }
+
+                _controllerNumber = 0;
 
                 DeviceList.AddRange(Devices.Select(x => x.Name));
                 Device = Math.Min(Device, DeviceList.Count);

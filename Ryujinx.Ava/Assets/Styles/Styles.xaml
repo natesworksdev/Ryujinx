@@ -193,6 +193,7 @@
         <Setter Property="Margin" Value="{DynamicResource TextMargin}" />
         <Setter Property="FontSize" Value="{DynamicResource FontSize}" />
         <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="TextWrapping" Value="WrapWithOverflow" />
     </Style>
     <Style Selector="Separator">
         <Setter Property="Background" Value="{DynamicResource ThemeControlBorderColor}" />

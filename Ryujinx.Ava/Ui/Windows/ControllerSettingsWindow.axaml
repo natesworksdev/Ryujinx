@@ -522,7 +522,7 @@
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
-                            
+
                             <!--  Left DPad Down  -->
                             <StackPanel Margin="0,0,0,4" Background="{DynamicResource ThemeDarkColor}" Orientation="Horizontal">
                                 <TextBlock
@@ -583,7 +583,7 @@
                     </StackPanel>
                 </Border>
             </Grid>
-            
+
             <!--  Triggers And Side Buttons-->
             <StackPanel Grid.Column="1" HorizontalAlignment="Stretch">
                 <Border
@@ -717,7 +717,7 @@
                                 MinWidth="0"
                                 Grid.Column="0"
                                 IsChecked="{Binding Configuration.EnableMotion, Mode=TwoWay}">
-                                <TextBlock Text="{locale:Locale ControllerSettingsMotion}" TextWrapping="WrapWithOverflow" />
+                                <TextBlock Text="{locale:Locale ControllerSettingsMotion}" />
                             </CheckBox>
                             <Button Margin="10" Grid.Column="1" Command="{Binding ShowMotionConfig}">
                                 <TextBlock Text="{locale:Locale ControllerSettingsConfigureGeneral}" />
@@ -739,7 +739,7 @@
                                 MinWidth="0"
                                 Grid.Column="0"
                                 IsChecked="{Binding Configuration.EnableRumble, Mode=TwoWay}">
-                                <TextBlock Text="{locale:Locale ControllerSettingsRumble}" TextWrapping="WrapWithOverflow" />
+                                <TextBlock Text="{locale:Locale ControllerSettingsRumble}" />
                             </CheckBox>
                             <Button Margin="10" Grid.Column="1" Command="{Binding ShowRumbleConfig}">
                                 <TextBlock Text="{locale:Locale ControllerSettingsConfigureGeneral}" />
@@ -1139,7 +1139,7 @@
                                         Text="{Binding Configuration.DeadzoneRight, StringFormat=\{0:0.00\}}" />
                                 </StackPanel>
                                 <TextBlock Text="{locale:Locale ControllerSettingsStickRange}" />
-                                <StackPanel 
+                                <StackPanel
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     Orientation="Horizontal">
