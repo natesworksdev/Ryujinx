@@ -55,7 +55,7 @@
         <Setter Property="Width" Value="200" />
     </Style>
     <Style Selector="Border.settings">
-        <Setter Property="Background" Value="{DynamicResource ThemeContentBackgroundColor}" />
+        <Setter Property="Background" Value="{DynamicResource ThemeDarkColor}" />
         <Setter Property="BorderBrush" Value="{DynamicResource MenuFlyoutPresenterBorderColor}" />
         <Setter Property="BorderThickness" Value="2" />
         <Setter Property="CornerRadius" Value="3" />
@@ -203,7 +203,6 @@
     </Style>
     <Style Selector="TextBlock.h1">
         <Setter Property="Margin" Value="{DynamicResource TextMargin}" />
-        <Setter Property="FontSize" Value="{DynamicResource FontSize}" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="FontSize" Value="16" />

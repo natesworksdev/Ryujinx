@@ -784,8 +784,6 @@
                                 Margin="0,0,0,4"
                                 Grid.Column="1"
                                 Grid.Row="0"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
                                 Background="{DynamicResource ThemeDarkColor}"
                                 Orientation="Horizontal">
                                 <TextBlock
@@ -826,7 +824,7 @@
                                 </ToggleButton>
                             </StackPanel>
                             <StackPanel
-                                Margin="0,0,0,4"
+                                Margin="0,0,8,4"
                                 Grid.Column="0"
                                 Grid.Row="0"
                                 HorizontalAlignment="Right"
