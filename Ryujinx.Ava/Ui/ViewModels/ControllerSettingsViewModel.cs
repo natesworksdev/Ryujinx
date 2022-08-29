@@ -43,7 +43,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         private PlayerIndex _playerId;
         private int _controller;
-        private int _controllerNumber;
+        private int _controllerNumber = 0;
         private string _controllerImage;
         private int _device;
         private object _configuration;
@@ -460,6 +460,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 {
                     using IGamepad gamepad = _mainWindow.InputManager.KeyboardDriver.GetGamepad(id);
 
+                    Logger.Info?.Print(LogClass.Configuration, $"{GetShortGamepadName(gamepad.Name)} has been connected with ID: {gamepad.Id}");
+
                     if (gamepad != null)
                     {
                         Devices.Add((DeviceType.Keyboard, id, $"{GetShortGamepadName(gamepad.Name)}"));
@@ -469,6 +471,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 foreach (string id in _mainWindow.InputManager.GamepadDriver.GamepadsIds)
                 {
                     using IGamepad gamepad = _mainWindow.InputManager.GamepadDriver.GetGamepad(id);
+
+                    Logger.Info?.Print(LogClass.Configuration, $"{GetShortGamepadName(gamepad.Name)} has been connected with ID: {gamepad.Id}");
 
                     if (gamepad != null)
                     {
