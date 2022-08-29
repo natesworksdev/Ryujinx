@@ -35,7 +35,8 @@
                 Grid.Column="0"
                 Margin="0,0,2,0"
                 BorderBrush="{DynamicResource ThemeControlBorderColor}"
-                BorderThickness="1">
+                BorderThickness="1"
+                Padding="2,0">
                 <StackPanel
                     Margin="2"
                     HorizontalAlignment="Center"
@@ -65,7 +66,8 @@
                 Grid.Column="1"
                 Margin="0,0,2,0"
                 BorderBrush="{DynamicResource ThemeControlBorderColor}"
-                BorderThickness="1">
+                BorderThickness="1"
+                Padding="2,0">
                 <StackPanel
                     Margin="2"
                     HorizontalAlignment="Stretch"
@@ -103,7 +105,8 @@
                 Grid.Column="2"
                 Margin="0,0,2,0"
                 BorderBrush="{DynamicResource ThemeControlBorderColor}"
-                BorderThickness="1">
+                BorderThickness="1"
+                Padding="2,0">
                 <Grid
                     Margin="2"
                     HorizontalAlignment="Stretch"
@@ -132,7 +135,8 @@
             <Border
                 Grid.Column="3"
                 BorderBrush="{DynamicResource ThemeControlBorderColor}"
-                BorderThickness="1">
+                BorderThickness="1"
+                Padding="2,0" >
                 <StackPanel
                     Margin="2"
                     HorizontalAlignment="Center"
@@ -151,7 +155,7 @@
                             Items="{Binding ProfilesList}"
                             Text="{Binding ProfileName}" />
                         <Button
-                            MinWidth="60"
+                            MinWidth="0"
                             Margin="5,0,0,0"
                             VerticalAlignment="Center"
                             ToolTip.Tip="{locale:Locale ControllerSettingsLoadProfileToolTip}"
@@ -162,7 +166,7 @@
                                 Height="20" />
                         </Button>
                         <Button
-                            MinWidth="60"
+                            MinWidth="0"
                             Margin="5,0,0,0"
                             VerticalAlignment="Center"
                             ToolTip.Tip="{locale:Locale ControllerSettingsSaveProfileToolTip}"
@@ -173,7 +177,7 @@
                                 Height="20" />
                         </Button>
                         <Button
-                            MinWidth="60"
+                            MinWidth="0"
                             Margin="5,0,0,0"
                             VerticalAlignment="Center"
                             ToolTip.Tip="{locale:Locale ControllerSettingsRemoveProfileToolTip}"
