@@ -554,13 +554,13 @@
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock VerticalAlignment="Center"
-                                            ToolTip.Tip="{locale:Locale ResolutionScaleTooltip}"
-                                            Text="{locale:Locale SettingsTabGraphicsResolutionScale}"
-                                            Width="250" />
+                                           ToolTip.Tip="{locale:Locale ResolutionScaleTooltip}"
+                                           Text="{locale:Locale SettingsTabGraphicsResolutionScale}"
+                                           Width="250" />
                                 <ComboBox SelectedIndex="{Binding ResolutionScale}"
-                                            Width="350"
-                                            HorizontalContentAlignment="Left"
-                                            ToolTip.Tip="{locale:Locale ResolutionScaleTooltip}">
+                                          Width="350"
+                                          HorizontalContentAlignment="Left"
+                                          ToolTip.Tip="{locale:Locale ResolutionScaleTooltip}">
                                     <ComboBoxItem>
                                         <TextBlock Text="{locale:Locale SettingsTabGraphicsResolutionScaleCustom}" />
                                     </ComboBoxItem>
@@ -592,13 +592,13 @@
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock VerticalAlignment="Center"
-                                            ToolTip.Tip="{locale:Locale AnisotropyTooltip}"
-                                            Text="{locale:Locale SettingsTabGraphicsAnisotropicFiltering}"
-                                            Width="250" />
+                                           ToolTip.Tip="{locale:Locale AnisotropyTooltip}"
+                                           Text="{locale:Locale SettingsTabGraphicsAnisotropicFiltering}"
+                                           Width="250" />
                                 <ComboBox SelectedIndex="{Binding MaxAnisotropy}"
-                                            Width="350"
-                                            HorizontalContentAlignment="Left"
-                                            ToolTip.Tip="{locale:Locale AnisotropyTooltip}">
+                                          Width="350"
+                                          HorizontalContentAlignment="Left"
+                                          ToolTip.Tip="{locale:Locale AnisotropyTooltip}">
                                     <ComboBoxItem>
                                         <TextBlock
                                             Text="{locale:Locale SettingsTabGraphicsAnisotropicFilteringAuto}" />
@@ -620,13 +620,13 @@
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock VerticalAlignment="Center"
-                                            ToolTip.Tip="{locale:Locale AspectRatioTooltip}"
-                                            Text="{locale:Locale SettingsTabGraphicsAspectRatio}"
-                                            Width="250" />
+                                           ToolTip.Tip="{locale:Locale AspectRatioTooltip}"
+                                           Text="{locale:Locale SettingsTabGraphicsAspectRatio}"
+                                           Width="250" />
                                 <ComboBox SelectedIndex="{Binding AspectRatio}"
-                                            Width="350"
-                                            HorizontalContentAlignment="Left"
-                                            ToolTip.Tip="{locale:Locale AspectRatioTooltip}">
+                                          Width="350"
+                                          HorizontalContentAlignment="Left"
+                                          ToolTip.Tip="{locale:Locale AspectRatioTooltip}">
                                     <ComboBoxItem>
                                         <TextBlock Text="{locale:Locale SettingsTabGraphicsAspectRatio4x3}" />
                                     </ComboBoxItem>
@@ -655,13 +655,13 @@
                             Spacing="10">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock VerticalAlignment="Center"
-                                            ToolTip.Tip="{locale:Locale GraphicsBackendThreadingTooltip}"
-                                            Text="{locale:Locale SettingsTabGraphicsBackendMultithreading}"
-                                            Width="250" />
+                                           ToolTip.Tip="{locale:Locale GraphicsBackendThreadingTooltip}"
+                                           Text="{locale:Locale SettingsTabGraphicsBackendMultithreading}"
+                                           Width="250" />
                                 <ComboBox Width="350"
-                                            HorizontalContentAlignment="Left"
-                                            ToolTip.Tip="{locale:Locale GalThreadingTooltip}"
-                                            SelectedIndex="{Binding GraphicsBackendMultithreadingIndex}">
+                                          HorizontalContentAlignment="Left"
+                                          ToolTip.Tip="{locale:Locale GalThreadingTooltip}"
+                                          SelectedIndex="{Binding GraphicsBackendMultithreadingIndex}">
                                     <ComboBoxItem>
                                         <TextBlock Text="{locale:Locale CommonAuto}" />
                                     </ComboBoxItem>
@@ -683,12 +683,12 @@
                             Spacing="10">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock VerticalAlignment="Center"
-                                            ToolTip.Tip="{locale:Locale ShaderDumpPathTooltip}"
-                                            Text="{locale:Locale SettingsTabGraphicsShaderDumpPath}"
-                                            Width="250" />
+                                           ToolTip.Tip="{locale:Locale ShaderDumpPathTooltip}"
+                                           Text="{locale:Locale SettingsTabGraphicsShaderDumpPath}"
+                                           Width="250" />
                                 <TextBox Text="{Binding ShaderDumpPath}"
-                                            Width="350"
-                                            ToolTip.Tip="{locale:Locale ShaderDumpPathTooltip}" />
+                                         Width="350"
+                                         ToolTip.Tip="{locale:Locale ShaderDumpPathTooltip}" />
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
