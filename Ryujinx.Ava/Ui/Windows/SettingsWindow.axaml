@@ -880,10 +880,6 @@
                 </Border>
             </ScrollViewer>
         </Grid>
-        <ui:NavigationView Grid.Row="1" IsSettingsVisible="False" Name="NavPanel" IsBackEnabled="False"
-                           PaneDisplayMode="LeftCompact"
-                           Margin="2,10,10,0"
-                           VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         <ui:NavigationView Grid.Row="1"
                            IsSettingsVisible="False"
                            Name="NavPanel"
