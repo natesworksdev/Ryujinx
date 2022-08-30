@@ -1,3 +1,5 @@
+using Ryujinx.Common;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Common;
@@ -41,12 +43,18 @@ namespace Ryujinx.HLE.HOS.Services
         public string Name { get; }
         public Func<IpcService> SmObjectFactory { get; }
 
-        public ServerBase(KernelContext context, string name, Func<IpcService> smObjectFactory = null)
+        private int _threadCount;
+        private ulong _heapBaseAddress;
+        private ulong _heapSize;
+
+        public ServerBase(KernelContext context, string name, Func<IpcService> smObjectFactory = null, int threadCount = 1)
         {
             InitDone = new ManualResetEvent(false);
             _context = context;
             Name = name;
             SmObjectFactory = smObjectFactory;
+            _threadCount = threadCount;
+            _heapSize = BitUtils.AlignUp((ulong)_threadCount * PointerBufferSize, 0x200000);
 
             const ProcessCreationFlags flags =
                 ProcessCreationFlags.EnableAslr |
@@ -82,10 +90,33 @@ namespace Ryujinx.HLE.HOS.Services
 
         private void Main()
         {
-            ServerLoop();
+            _context.Syscall.SetHeapSize(out _heapBaseAddress, _heapSize);
+
+            for (int i = 1; i < _threadCount; i++)
+            {
+                KernelResult result = _context.Syscall.CreateThread(out int threadHandle, 0UL, 0UL, 0UL, 44, 3, () => ServerLoop(i));
+
+                if (result == KernelResult.Success)
+                {
+                    result = _context.Syscall.StartThread(threadHandle);
+
+                    if (result != KernelResult.Success)
+                    {
+                        Logger.Error?.Print(LogClass.Service, $"Failed to start thread on {Name}: {result}");
+                    }
+
+                    _context.Syscall.CloseHandle(threadHandle);
+                }
+                else
+                {
+                    Logger.Error?.Print(LogClass.Service, $"Failed to create thread on {Name}: {result}");
+                }
+            }
+
+            ServerLoop(0);
         }
 
-        private void ServerLoop()
+        private void ServerLoop(int threadIndex)
         {
             _selfProcess = KernelStatic.GetCurrentProcess();
 
@@ -100,7 +131,7 @@ namespace Ryujinx.HLE.HOS.Services
 
             KThread thread = KernelStatic.GetCurrentThread();
             ulong messagePtr = thread.TlsAddress;
-            _context.Syscall.SetHeapSize(out ulong heapAddr, 0x200000);
+            ulong heapAddr = (_heapBaseAddress + ((ulong)threadIndex * PointerBufferSize));
 
             _selfProcess.CpuMemory.Write(messagePtr + 0x0, 0);
             _selfProcess.CpuMemory.Write(messagePtr + 0x4, 2 << 10);
