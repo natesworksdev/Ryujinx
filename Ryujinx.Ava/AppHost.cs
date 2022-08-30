@@ -196,7 +196,7 @@ namespace Ryujinx.Ava
                 return (AmdVendor);
 
                 default:
-                return _renderer.GetHardwareInfo().GpuVendor;
+                return vendor;
             }
         }
 

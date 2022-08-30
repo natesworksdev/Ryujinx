@@ -138,7 +138,7 @@ namespace Ryujinx.Ui
                 return (AmdVendor);
 
                 default:
-                return Renderer.GetHardwareInfo().GpuVendor;
+                return vendor;
             }
 
         }
