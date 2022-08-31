@@ -73,12 +73,10 @@ namespace Ryujinx.HLE.HOS.Services
 
         private void AddPort(int serverPortHandle, Func<IpcService> objectFactory)
         {
-            {
-                using var registryScopedLock = new ServerManagedScopedLock(_context, _registryLock);
+            using var registryScopedLock = new ServerManagedScopedLock(_context, _registryLock);
 
-                RegisterPortHandleForProcessingLocked(serverPortHandle);
-                _ports.Add(serverPortHandle, objectFactory);
-            }
+            RegisterPortHandleForProcessingLocked(serverPortHandle);
+            _ports.Add(serverPortHandle, objectFactory);
         }
 
         public void AddSessionObj(KServerSession serverSession, IpcService obj)
@@ -92,12 +90,10 @@ namespace Ryujinx.HLE.HOS.Services
 
         public void AddSessionObj(int serverSessionHandle, IpcService obj)
         {
-            {
-                using var registryScopedLock = new ServerManagedScopedLock(_context, _registryLock);
+            using var registryScopedLock = new ServerManagedScopedLock(_context, _registryLock);
 
-                RegisterSessionHandleForProcessingLocked(serverSessionHandle);
-                _sessions.Add(serverSessionHandle, obj);
-            }
+            RegisterSessionHandleForProcessingLocked(serverSessionHandle);
+            _sessions.Add(serverSessionHandle, obj);
         }
 
         private void RegisterSessionHandleForProcessingLocked(int serverSessionHandle)
