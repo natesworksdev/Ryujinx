@@ -567,7 +567,6 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
             LinuxError errno  = LinuxError.EBADF;
             ISocket    socket = _context.RetrieveSocket(socketFd);
-            
             if (socket != null)
             {
                 errno = LinuxError.ENOTCONN;
