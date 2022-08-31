@@ -197,7 +197,7 @@ namespace Ryujinx.HLE.HOS.Services
                 int signaledHandle = -1;
                 IpcService service = null;
 
-                // We ensure that only one ReplyAndReceive can go at a time to avoid an handle being processed by two different threads.
+                // We ensure that only one ReplyAndReceive can go at a time to prevent a handle from being processed by two different threads.
                 {
                     using var waitRequestScopedLock = new ServerManagedScopedLock(_context, _waitRequestLock);
 
