@@ -1,5 +1,4 @@
-﻿using Ryujinx.Common.Logging;
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -50,13 +49,11 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         {
             if (_value > 0)
             {
-                Logger.Info?.Print(LogClass.Application, "Can read eventfd!");
                 ReadEvent.Set();
             }
 
             if (_value != uint.MaxValue - 1)
             {
-                Logger.Info?.Print(LogClass.Application, "Can write eventfd!");
                 WriteEvent.Set();
             }
         }
