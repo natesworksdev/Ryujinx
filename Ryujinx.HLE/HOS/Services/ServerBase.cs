@@ -205,16 +205,16 @@ namespace Ryujinx.HLE.HOS.Services
                 {
                     using var waitRequestScopedLock = new ServerManagedScopedLock(_context, _waitRequestLock);
 
-                    if (replyTargetHandle != 0)
-                    {
-                        RegisterSessionHandleForProcessingLocked(replyTargetHandle);
-                    }
-
                     int portHandlesLength;
                     int[] handles;
 
                     {
                         using var registryScopedLock = new ServerManagedScopedLock(_context, _registryLock);
+
+                        if (replyTargetHandle != 0)
+                        {
+                            RegisterSessionHandleForProcessingLocked(replyTargetHandle);
+                        }
 
                         int[] portHandles = _portHandles.ToArray();
                         int[] sessionHandles = _sessionHandles.ToArray();
