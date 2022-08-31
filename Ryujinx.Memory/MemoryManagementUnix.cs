@@ -177,12 +177,7 @@ namespace Ryujinx.Memory
 
         public static void UnmapView(IntPtr location, ulong size)
         {
-            IntPtr ptr = mmap(location, size, MmapProts.PROT_NONE, MmapFlags.MAP_FIXED | MmapFlags.MAP_PRIVATE | MmapFlags.MAP_ANONYMOUS | MmapFlags.MAP_NORESERVE, -1, 0);
-
-            if (ptr == new IntPtr(-1L))
-            {
-                throw new Exception("UnmapView failed");
-            }
+            mmap(location, size, MmapProts.PROT_NONE, MmapFlags.MAP_FIXED | MmapFlags.MAP_PRIVATE | MmapFlags.MAP_ANONYMOUS | MmapFlags.MAP_NORESERVE, -1, 0);
         }
     }
 }
