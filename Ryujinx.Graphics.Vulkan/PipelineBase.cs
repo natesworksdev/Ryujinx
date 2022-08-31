@@ -345,6 +345,11 @@ namespace Ryujinx.Graphics.Vulkan
             _tfEnabled = false;
         }
 
+        public bool IsCommandBufferActive(CommandBuffer cb)
+        {
+            return CommandBuffer.Handle == cb.Handle;
+        }
+
         public void MultiDrawIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
         {
             if (!Gd.Capabilities.SupportsIndirectParameters)
@@ -685,6 +690,11 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         public void SetStorageBuffers(int first, ReadOnlySpan<BufferRange> buffers)
+        {
+            _descriptorSetUpdater.SetStorageBuffers(CommandBuffer, first, buffers);
+        }
+
+        public void SetStorageBuffers(int first, ReadOnlySpan<Auto<DisposableBuffer>> buffers)
         {
             _descriptorSetUpdater.SetStorageBuffers(CommandBuffer, first, buffers);
         }

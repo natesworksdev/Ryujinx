@@ -16,6 +16,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly IProgram _programColorBlit;
         private readonly IProgram _programColorBlitClearAlpha;
         private readonly IProgram _programColorClear;
+        private readonly IProgram _programStrideChange;
 
         public HelperShader(VulkanRenderer gd, Device device)
         {
@@ -59,6 +60,17 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 new ShaderSource(ShaderBinaries.ColorClearVertexShaderSource, vertexBindings, ShaderStage.Vertex, TargetLanguage.Glsl),
                 new ShaderSource(ShaderBinaries.ColorClearFragmentShaderSource, fragmentBindings2, ShaderStage.Fragment, TargetLanguage.Glsl),
+            });
+
+            var strideChangeBindings = new ShaderBindings(
+                new[] { 0 },
+                new[] { 1, 2 },
+                Array.Empty<int>(),
+                Array.Empty<int>());
+
+            _programStrideChange = gd.CreateProgramWithMinimalLayout(new[]
+            {
+                new ShaderSource(ShaderBinaries.ChangeBufferStrideShaderSource, strideChangeBindings, ShaderStage.Compute, TargetLanguage.Glsl),
             });
         }
 
@@ -163,7 +175,7 @@ namespace Ryujinx.Graphics.Vulkan
             _pipeline.SetViewports(viewports, false);
             _pipeline.SetPrimitiveTopology(GAL.PrimitiveTopology.TriangleStrip);
             _pipeline.Draw(4, 1, 0, 0);
-            _pipeline.Finish();
+            _pipeline.Finish(gd, cbs);
 
             gd.BufferManager.Delete(bufferHandle);
         }
@@ -291,87 +303,97 @@ namespace Ryujinx.Graphics.Vulkan
 
         public unsafe void ConvertI8ToI16(VulkanRenderer gd, CommandBufferScoped cbs, BufferHolder src, BufferHolder dst, int srcOffset, int size)
         {
-            // TODO: Do this with a compute shader?
-            var srcBuffer = src.GetBuffer().Get(cbs, srcOffset, size).Value;
-            var dstBuffer = dst.GetBuffer().Get(cbs, 0, size * 2).Value;
-
-            gd.Api.CmdFillBuffer(cbs.CommandBuffer, dstBuffer, 0, Vk.WholeSize, 0);
-
-            var bufferCopy = new BufferCopy[size];
-
-            for (ulong i = 0; i < (ulong)size; i++)
-            {
-                bufferCopy[i] = new BufferCopy((ulong)srcOffset + i, i * 2, 1);
-            }
-
-            BufferHolder.InsertBufferBarrier(
-                gd,
-                cbs.CommandBuffer,
-                dstBuffer,
-                BufferHolder.DefaultAccessFlags,
-                AccessFlags.AccessTransferWriteBit,
-                PipelineStageFlags.PipelineStageAllCommandsBit,
-                PipelineStageFlags.PipelineStageTransferBit,
-                0,
-                size * 2);
-
-            fixed (BufferCopy* pBufferCopy = bufferCopy)
-            {
-                gd.Api.CmdCopyBuffer(cbs.CommandBuffer, srcBuffer, dstBuffer, (uint)size, pBufferCopy);
-            }
-
-            BufferHolder.InsertBufferBarrier(
-                gd,
-                cbs.CommandBuffer,
-                dstBuffer,
-                AccessFlags.AccessTransferWriteBit,
-                BufferHolder.DefaultAccessFlags,
-                PipelineStageFlags.PipelineStageTransferBit,
-                PipelineStageFlags.PipelineStageAllCommandsBit,
-                0,
-                size * 2);
+            ChangeStride(gd, cbs, src, dst, srcOffset, size, 1, 2);
         }
 
         public unsafe void ChangeStride(VulkanRenderer gd, CommandBufferScoped cbs, BufferHolder src, BufferHolder dst, int srcOffset, int size, int stride, int newStride)
         {
+            bool supportsUint8 = gd.Capabilities.SupportsShaderInt8;
+
             int elems = size / stride;
             int newSize = elems * newStride;
-            // TODO: Do this with a compute shader?
-            var srcBuffer = src.GetBuffer().Get(cbs, srcOffset, size).Value;
-            var dstBuffer = dst.GetBuffer().Get(cbs, 0, newSize).Value;
 
-            gd.Api.CmdFillBuffer(cbs.CommandBuffer, dstBuffer, 0, Vk.WholeSize, 0);
+            var srcBufferAuto = src.GetBuffer();
+            var dstBufferAuto = dst.GetBuffer();
 
-            var bufferCopy = new BufferCopy[elems];
+            var srcBuffer = srcBufferAuto.Get(cbs, srcOffset, size).Value;
+            var dstBuffer = dstBufferAuto.Get(cbs, 0, newSize).Value;
 
-            for (ulong i = 0; i < (ulong)elems; i++)
-            {
-                bufferCopy[i] = new BufferCopy((ulong)srcOffset + i * (ulong)stride, i * (ulong)newStride, (ulong)stride);
-            }
+            var access = supportsUint8 ? AccessFlags.AccessShaderWriteBit : AccessFlags.AccessTransferWriteBit;
+            var stage = supportsUint8 ? PipelineStageFlags.PipelineStageComputeShaderBit : PipelineStageFlags.PipelineStageTransferBit;
 
             BufferHolder.InsertBufferBarrier(
                 gd,
                 cbs.CommandBuffer,
                 dstBuffer,
                 BufferHolder.DefaultAccessFlags,
-                AccessFlags.AccessTransferWriteBit,
+                access,
                 PipelineStageFlags.PipelineStageAllCommandsBit,
-                PipelineStageFlags.PipelineStageTransferBit,
+                stage,
                 0,
                 newSize);
 
-            fixed (BufferCopy* pBufferCopy = bufferCopy)
+            if (supportsUint8)
             {
-                gd.Api.CmdCopyBuffer(cbs.CommandBuffer, srcBuffer, dstBuffer, (uint)elems, pBufferCopy);
+                const int ParamsBufferSize = 16;
+
+                Span<int> shaderParams = stackalloc int[ParamsBufferSize / sizeof(int)];
+
+                shaderParams[0] = stride;
+                shaderParams[1] = newStride;
+                shaderParams[2] = size;
+                shaderParams[3] = srcOffset;
+
+                var bufferHandle = gd.BufferManager.CreateWithHandle(gd, ParamsBufferSize, false);
+
+                gd.BufferManager.SetData<int>(bufferHandle, 0, shaderParams);
+
+                _pipeline.SetCommandBuffer(cbs);
+
+                Span<BufferRange> cbRanges = stackalloc BufferRange[1];
+
+                cbRanges[0] = new BufferRange(bufferHandle, 0, ParamsBufferSize);
+
+                _pipeline.SetUniformBuffers(0, cbRanges);
+
+                Span<Auto<DisposableBuffer>> sbRanges = new Auto<DisposableBuffer>[2];
+
+                sbRanges[0] = srcBufferAuto;
+                sbRanges[1] = dstBufferAuto;
+
+                _pipeline.SetStorageBuffers(1, sbRanges);
+
+                _pipeline.SetProgram(_programStrideChange);
+                _pipeline.DispatchCompute(1, 1, 1);
+
+                gd.BufferManager.Delete(bufferHandle);
+
+                _pipeline.Finish(gd, cbs);
+            }
+            else
+            {
+                gd.Api.CmdFillBuffer(cbs.CommandBuffer, dstBuffer, 0, Vk.WholeSize, 0);
+
+                var bufferCopy = new BufferCopy[elems];
+
+                for (ulong i = 0; i < (ulong)elems; i++)
+                {
+                    bufferCopy[i] = new BufferCopy((ulong)srcOffset + i * (ulong)stride, i * (ulong)newStride, (ulong)stride);
+                }
+
+                fixed (BufferCopy* pBufferCopy = bufferCopy)
+                {
+                    gd.Api.CmdCopyBuffer(cbs.CommandBuffer, srcBuffer, dstBuffer, (uint)elems, pBufferCopy);
+                }
             }
 
             BufferHolder.InsertBufferBarrier(
                 gd,
                 cbs.CommandBuffer,
                 dstBuffer,
-                AccessFlags.AccessTransferWriteBit,
+                access,
                 BufferHolder.DefaultAccessFlags,
-                PipelineStageFlags.PipelineStageTransferBit,
+                stage,
                 PipelineStageFlags.PipelineStageAllCommandsBit,
                 0,
                 newSize);
