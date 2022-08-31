@@ -81,7 +81,6 @@ namespace Ryujinx.Audio.Renderer.Dsp
 
             byte predScale = (byte)loopContext.PredScale;
             byte scale = (byte)(predScale & 0xF);
-            // byte coefficientIndex = (byte)((predScale >> 4) & 0xF);
             byte coefficientIndex = (byte)((predScale >> 4) & 0x7);
             short history0 = loopContext.History0;
             short history1 = loopContext.History1;
