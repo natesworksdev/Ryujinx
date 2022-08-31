@@ -5,10 +5,12 @@ using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Process;
+using Ryujinx.HLE.HOS.Kernel.SupervisorCall;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 
@@ -71,8 +73,9 @@ namespace Ryujinx.HLE.HOS.Services
 
         private void AddPort(int serverPortHandle, Func<IpcService> objectFactory)
         {
-            lock (_registryLock)
             {
+                using var registryScopedLock = new ServerManagedScopedLock(_context, _registryLock);
+
                 RegisterPortHandleForProcessingLocked(serverPortHandle);
                 _ports.Add(serverPortHandle, objectFactory);
             }
@@ -89,8 +92,9 @@ namespace Ryujinx.HLE.HOS.Services
 
         public void AddSessionObj(int serverSessionHandle, IpcService obj)
         {
-            lock (_registryLock)
             {
+                using var registryScopedLock = new ServerManagedScopedLock(_context, _registryLock);
+
                 RegisterSessionHandleForProcessingLocked(serverSessionHandle);
                 _sessions.Add(serverSessionHandle, obj);
             }
@@ -144,6 +148,29 @@ namespace Ryujinx.HLE.HOS.Services
             ServerLoop(0);
         }
 
+        // TODO: This would be better if we had a proper kernel lock primitive here
+        private class ServerManagedScopedLock : IDisposable
+        {
+            private object _obj;
+
+            public ServerManagedScopedLock(KernelContext context, object obj)
+            {
+                while (!Monitor.TryEnter(obj))
+                {
+                    context.Syscall.SleepThread(0);
+                }
+
+                _obj = obj;
+            }
+
+            public void Dispose()
+            {
+                Debug.Assert(Monitor.IsEntered(_obj));
+
+                Monitor.Exit(_obj);
+            }
+        }
+
         private void ServerLoop(int threadIndex)
         {
             _selfProcess = KernelStatic.GetCurrentProcess();
@@ -175,13 +202,20 @@ namespace Ryujinx.HLE.HOS.Services
                 IpcService service = null;
 
                 // We ensure that only one ReplyAndReceive can go at a time to avoid an handle being processed by two different threads.
-                lock (_waitRequestLock)
                 {
+                    using var waitRequestScopedLock = new ServerManagedScopedLock(_context, _waitRequestLock);
+
+                    if (replyTargetHandle != 0)
+                    {
+                        RegisterSessionHandleForProcessingLocked(replyTargetHandle);
+                    }
+
                     int portHandlesLength;
                     int[] handles;
 
-                    lock (_registryLock)
                     {
+                        using var registryScopedLock = new ServerManagedScopedLock(_context, _registryLock);
+
                         int[] portHandles = _portHandles.ToArray();
                         int[] sessionHandles = _sessionHandles.ToArray();
 
@@ -203,12 +237,8 @@ namespace Ryujinx.HLE.HOS.Services
 
                         isSession = signaledIndex >= portHandlesLength;
 
-                        lock (_registryLock)
                         {
-                            if (replyTargetHandle != 0)
-                            {
-                                RegisterSessionHandleForProcessingLocked(replyTargetHandle);
-                            }
+                            using var registryScopedLock = new ServerManagedScopedLock(_context, _registryLock);
 
                             if (isSession)
                             {
@@ -219,13 +249,6 @@ namespace Ryujinx.HLE.HOS.Services
                             {
                                 UnregisterPortHandleForProcessingLocked(signaledHandle);
                             }
-                        }
-                    }
-                    else if (replyTargetHandle != 0)
-                    {
-                        lock (_registryLock)
-                        {
-                            RegisterSessionHandleForProcessingLocked(replyTargetHandle);
                         }
                     }
                 }
@@ -258,8 +281,9 @@ namespace Ryujinx.HLE.HOS.Services
                             AddSessionObj(serverSessionHandle, obj);
                         }
 
-                        lock (_registryLock)
                         {
+                            using var registryScopedLock = new ServerManagedScopedLock(_context, _registryLock);
+
                             RegisterPortHandleForProcessingLocked(signaledHandle);
                         }
                     }
@@ -384,9 +408,9 @@ namespace Ryujinx.HLE.HOS.Services
                         disposableObj.Dispose();
                     }
 
-                    lock (_registryLock)
                     {
-                        _sessionHandles.Remove(serverSessionHandle);
+                        using var registryScopedLock = new ServerManagedScopedLock(_context, _registryLock);
+
                         _sessions.Remove(serverSessionHandle);
                     }
 
