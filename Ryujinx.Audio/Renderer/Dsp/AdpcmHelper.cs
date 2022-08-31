@@ -1,4 +1,5 @@
 using Ryujinx.Audio.Renderer.Dsp.State;
+using Ryujinx.Common.Logging;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -108,9 +109,24 @@ namespace Ryujinx.Audio.Renderer.Dsp
                     scale = (byte)(predScale & 0xF);
 
                     coefficientIndex = (byte)((predScale >> 4) & 0xF);
+                    int multiplyTwo = (coefficientIndex * 2);
+                    int plusOne = (multiplyTwo + 1);
 
-                    coefficient0 = coefficients[coefficientIndex * 2 + 0];
-                    coefficient1 = coefficients[coefficientIndex * 2 + 1];
+                    try
+                    {
+                        coefficient0 = coefficients[multiplyTwo]; // Somehow out of bounds?
+                        coefficient1 = coefficients[plusOne]; // Will also be out of bounds if 115 is out of bounds.
+                    }
+                    catch (System.IndexOutOfRangeException ex)
+                    {
+
+                        Logger.Info?.Print(LogClass.AudioRenderer, $"Coefficients Length: " + coefficients.Length);
+                        Logger.Info?.Print(LogClass.AudioRenderer, $"Coefficients Index: " + coefficientIndex);
+                        Logger.Info?.Print(LogClass.AudioRenderer, $"Coefficients Multiply Two: " + multiplyTwo);
+                        Logger.Info?.Print(LogClass.AudioRenderer, $"Coefficients Multiply Two Add One: " + plusOne);
+                        Logger.Error?.Print(LogClass.AudioRenderer, $"Index error in audio decode " + ex.ToString());
+                        return 0;
+                    }
 
                     nibbles += 2;
 

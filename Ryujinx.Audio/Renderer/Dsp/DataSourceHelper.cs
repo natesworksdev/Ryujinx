@@ -139,15 +139,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
                                 }
 
                                 ReadOnlySpan<short> coefficients = MemoryMarshal.Cast<byte, short>(memoryManager.GetSpan(info.ExtraParameter, (int)info.ExtraParameterSize));
-                                try
-                                {
-                                    decodedSampleCount = AdpcmHelper.Decode(tempSpan, waveBufferAdpcm, targetSampleStartOffset, targetSampleEndOffset, offset, sampleCountToDecode - y, coefficients, ref voiceState.LoopContext);
-                                }
-                                catch (System.IndexOutOfRangeException ex)
-                                {
-                                    Logger.Error?.Print(LogClass.AudioRenderer, $"Index error in audio decode " + ex.ToString());
-                                    decodedSampleCount = 0;
-                                }
+                                decodedSampleCount = AdpcmHelper.Decode(tempSpan, waveBufferAdpcm, targetSampleStartOffset, targetSampleEndOffset, offset, sampleCountToDecode - y, coefficients, ref voiceState.LoopContext);
                                 break;
                             case SampleFormat.PcmInt16:
                                 ReadOnlySpan<short> waveBufferPcm16 = ReadOnlySpan<short>.Empty;
