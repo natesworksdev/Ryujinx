@@ -423,7 +423,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
                 int storedBytes;
 
-                if (bytesLeft >= possiblyTransferedBytes)
+                if (bytesLeft > possiblyTransferedBytes)
                 {
                     storedBytes = possiblyTransferedBytes;
                     index++;
@@ -439,7 +439,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
             Debug.Assert(bytesLeft == 0);
 
-            vlen = index;
+            vlen = index + 1;
         }
 
         // TODO: Find a way to support passing the timeout somehow without changing the socket ReceiveTimeout.
