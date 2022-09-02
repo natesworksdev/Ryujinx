@@ -52,7 +52,11 @@ namespace ARMeilleure.CodeGen.X86
         public enum FeatureFlags7Ebx
         {
             Avx2 = 1 << 5,
-            Sha = 1 << 29
+            Avx512f = 1 << 16,
+            Avx512dq = 1 << 17,
+            Sha = 1 << 29,
+            Avx512bw = 1 << 30,
+            Avx512vl = 1 << 31
         }
 
         [Flags]
@@ -78,6 +82,10 @@ namespace ARMeilleure.CodeGen.X86
         public static bool SupportsAesni => FeatureInfo1Ecx.HasFlag(FeatureFlags1Ecx.Aes);
         public static bool SupportsAvx => FeatureInfo1Ecx.HasFlag(FeatureFlags1Ecx.Avx);
         public static bool SupportsAvx2 => FeatureInfo7Ebx.HasFlag(FeatureFlags7Ebx.Avx2) && SupportsAvx;
+        public static bool SupportsAvx512F => FeatureInfo7Ebx.HasFlag(FeatureFlags7Ebx.Avx512f);
+        public static bool SupportsAvx512Vl => FeatureInfo7Ebx.HasFlag(FeatureFlags7Ebx.Avx512vl);
+        public static bool SupportsAvx512Bw => FeatureInfo7Ebx.HasFlag(FeatureFlags7Ebx.Avx512bw);
+        public static bool SupportsAvx512Dq => FeatureInfo7Ebx.HasFlag(FeatureFlags7Ebx.Avx512dq);
         public static bool SupportsF16c => FeatureInfo1Ecx.HasFlag(FeatureFlags1Ecx.F16c);
         public static bool SupportsSha => FeatureInfo7Ebx.HasFlag(FeatureFlags7Ebx.Sha);
         public static bool SupportsGfni => FeatureInfo7Ecx.HasFlag(FeatureFlags7Ecx.Gfni);
@@ -85,5 +93,6 @@ namespace ARMeilleure.CodeGen.X86
         public static bool ForceLegacySse { get; set; }
 
         public static bool SupportsVexEncoding => SupportsAvx && !ForceLegacySse;
+        public static bool SupportsEvexEncoding => SupportsAvx512F && !ForceLegacySse;
     }
 }
