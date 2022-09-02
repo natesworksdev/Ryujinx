@@ -20,6 +20,7 @@ namespace ARMeilleure.CodeGen.X86
             Reg8Dest = 1 << 2,
             RexW     = 1 << 3,
             Vex      = 1 << 4,
+            Evex     = 1 << 5,
 
             PrefixBit  = 16,
             PrefixMask = 7 << PrefixBit,
