@@ -522,7 +522,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (IsAmdWindows && divisor != 0)
             {
-                // AMD on windows has a bug where vertex buffers with a divisor seem to completely break if it is not aligned.
+                // AMD on windows has a bug where vertex buffers with a divisor seem to break if they are not aligned.
 
                 alignment = 4;
 
