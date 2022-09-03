@@ -336,6 +336,12 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 context.Memory.Write(outputBufferPosition + (ulong)(i * Unsafe.SizeOf<PollEventData>()), events[i].Data);
             }
 
+            // In case of non blocking call timeout should not be returned.
+            if (timeout == 0 && errno == LinuxError.ETIMEDOUT)
+            {
+                errno = LinuxError.SUCCESS;
+            }
+
             return WriteBsdResult(context, updateCount, errno);
         }
 
@@ -567,14 +573,18 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
             LinuxError errno  = LinuxError.EBADF;
             ISocket    socket = _context.RetrieveSocket(socketFd);
-
             if (socket != null)
             {
-                errno = LinuxError.SUCCESS;
+                errno = LinuxError.ENOTCONN;
 
-                WriteSockAddr(context, bufferPosition, socket, true);
-                WriteBsdResult(context, 0, errno);
-                context.ResponseData.Write(Unsafe.SizeOf<BsdSockAddr>());
+                if (socket.RemoteEndPoint != null)
+                {
+                    errno = LinuxError.SUCCESS;
+
+                    WriteSockAddr(context, bufferPosition, socket, true);
+                    WriteBsdResult(context, 0, errno);
+                    context.ResponseData.Write(Unsafe.SizeOf<BsdSockAddr>());
+                }
             }
 
             return WriteBsdResult(context, 0, errno);
