@@ -520,9 +520,18 @@ namespace Ryujinx.Graphics.Vulkan
 
         public bool NeedsVertexBufferAlignment(int divisor, out int alignment)
         {
-            alignment = 4;
+            if (IsAmdWindows && divisor != 0)
+            {
+                // AMD on windows has a bug where vertex buffers with a divisor seem to completely break if it is not aligned.
 
-            return true;
+                alignment = 4;
+
+                return true;
+            }
+
+            alignment = 1;
+
+            return false;
         }
 
         public void PreFrame()
