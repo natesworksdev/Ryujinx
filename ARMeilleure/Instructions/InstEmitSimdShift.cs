@@ -929,10 +929,54 @@ namespace ARMeilleure.Instructions
             OpCodeSimdShImm op = (OpCodeSimdShImm)context.CurrOp;
 
             int shift = GetImmShl(op);
+            int eSize = 8 << op.Size;
 
             ulong mask = shift != 0 ? ulong.MaxValue >> (64 - shift) : 0UL;
 
-            if (Optimizations.UseSse2 && op.Size > 0)
+            if (shift >= eSize)
+            {
+                if ((op.RegisterSize == RegisterSize.Simd64) || scalar)
+                {
+                    Operand res = context.VectorZeroUpper64(GetVec(op.Rd));
+
+                    context.Copy(GetVec(op.Rd), res);
+                }
+            }
+            else if (Optimizations.UseGfni && Optimizations.UseSse2 && op.Size == 0)
+            {
+                Operand d = GetVec(op.Rd);
+                Operand n = GetVec(op.Rn);
+
+                ulong bitMatrix = (
+                    (0b00000001UL << 56) |
+                    (0b00000010UL << 48) |
+                    (0b00000100UL << 40) |
+                    (0b00001000UL << 32) |
+                    (0b00010000UL << 24) |
+                    (0b00100000UL << 16) |
+                    (0b01000000UL <<  8) |
+                    (0b10000000UL <<  0)
+                    ) >> (shift * 8);
+
+
+                Operand vBitMatrix = X86GetElements(context, bitMatrix, bitMatrix);
+
+                Operand nShifted = context.AddIntrinsic(Intrinsic.X86Gf2p8affineqb, n, vBitMatrix, Const(0));
+
+                Operand dMask = X86GetAllElements(context, (long)mask * _masks_SliSri[op.Size]);
+
+                Operand dMasked = context.AddIntrinsic(Intrinsic.X86Pand, d, dMask);
+
+                Operand res = context.AddIntrinsic(Intrinsic.X86Por, nShifted, dMasked);
+
+                if ((op.RegisterSize == RegisterSize.Simd64) || scalar)
+                {
+                    res = context.VectorZeroUpper64(res);
+                }
+
+                context.Copy(d, res);
+            }
+            else if (Optimizations.UseSse2 && op.Size > 0)
             {
                 Operand d = GetVec(op.Rd);
                 Operand n = GetVec(op.Rn);
@@ -988,7 +1032,49 @@ namespace ARMeilleure.Instructions
 
             ulong mask = (ulong.MaxValue << (eSize - shift)) & (ulong.MaxValue >> (64 - eSize));
 
-            if (Optimizations.UseSse2 && op.Size > 0)
+            if (shift >= eSize)
+            {
+                if ((op.RegisterSize == RegisterSize.Simd64) || scalar)
+                {
+                    Operand res = context.VectorZeroUpper64(GetVec(op.Rd));
+
+                    context.Copy(GetVec(op.Rd), res);
+                }
+            }
+            else if (Optimizations.UseGfni && Optimizations.UseSse2 && op.Size == 0)
+            {
+                Operand d = GetVec(op.Rd);
+                Operand n = GetVec(op.Rn);
+
+                ulong bitMatrix = (
+                    (0b00000001UL << 56) |
+                    (0b00000010UL << 48) |
+                    (0b00000100UL << 40) |
+                    (0b00001000UL << 32) |
+                    (0b00010000UL << 24) |
+                    (0b00100000UL << 16) |
+                    (0b01000000UL <<  8) |
+                    (0b10000000UL <<  0)
+                    ) << (shift * 8);
+
+                Operand vBitMatrix = X86GetElements(context, bitMatrix, bitMatrix);
+
+                Operand nShifted = context.AddIntrinsic(Intrinsic.X86Gf2p8affineqb, n, vBitMatrix, Const(0));
+
+                Operand dMask = X86GetAllElements(context, (long)mask * _masks_SliSri[op.Size]);
+
+                Operand dMasked = context.AddIntrinsic(Intrinsic.X86Pand, d, dMask);
+
+                Operand res = context.AddIntrinsic(Intrinsic.X86Por, nShifted, dMasked);
+
+                if ((op.RegisterSize == RegisterSize.Simd64) || scalar)
+                {
+                    res = context.VectorZeroUpper64(res);
+                }
+
+                context.Copy(d, res);
+            }
+            else if (Optimizations.UseSse2 && op.Size > 0)
             {
                 Operand d = GetVec(op.Rd);
                 Operand n = GetVec(op.Rn);
