@@ -27,8 +27,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Auto<MemoryAllocation> _allocationAuto;
         private readonly ulong _bufferHandle;
 
-        private CacheByRange<BufferHolder> _cachedConvertedIndexBuffers;
-        private CacheByRange<BufferHolder> _cachedAlignedVertexBuffers;
+        private CacheByRange<BufferHolder> _cachedConvertedBuffers;
 
         public int Size { get; }
 
@@ -110,8 +109,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (isWrite)
             {
-                _cachedConvertedIndexBuffers.Clear();
-                _cachedAlignedVertexBuffers.Clear();
+                _cachedConvertedBuffers.Clear();
             }
 
             return _buffer;
@@ -366,13 +364,15 @@ namespace Ryujinx.Graphics.Vulkan
 
         public Auto<DisposableBuffer> GetBufferI8ToI16(CommandBufferScoped cbs, int offset, int size)
         {
-            if (!_cachedConvertedIndexBuffers.TryGetValue(offset, size, out var holder))
+            var key = new I8ToI16CacheKey();
+
+            if (!_cachedConvertedBuffers.TryGetValue(offset, size, key, out var holder))
             {
                 holder = _gd.BufferManager.Create(_gd, (size * 2 + 3) & ~3);
 
                 _gd.HelperShader.ConvertI8ToI16(_gd, cbs, this, holder, offset, size);
 
-                _cachedConvertedIndexBuffers.Add(offset, size, holder);
+                _cachedConvertedBuffers.Add(offset, size, key, holder);
             }
 
             return holder.GetBuffer();
@@ -380,8 +380,9 @@ namespace Ryujinx.Graphics.Vulkan
 
         public Auto<DisposableBuffer> GetAlignedVertexBuffer(CommandBufferScoped cbs, int offset, int size, int stride, int alignment)
         {
-            // TODO: stride (and alignment?) as key?
-            if (!_cachedAlignedVertexBuffers.TryGetValue(offset, size, out var holder))
+            var key = new AlignedVertexBufferCacheKey(stride, alignment);
+
+            if (!_cachedConvertedBuffers.TryGetValue(offset, size, key, out var holder))
             {
                 int alignedStride = (stride + (alignment - 1)) & -alignment;
 
@@ -389,7 +390,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 _gd.HelperShader.ChangeStride(_gd, cbs, this, holder, offset, size, stride, alignedStride);
 
-                _cachedAlignedVertexBuffers.Add(offset, size, holder);
+                _cachedConvertedBuffers.Add(offset, size, key, holder);
             }
 
             return holder.GetBuffer();
@@ -401,8 +402,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _buffer.Dispose();
             _allocationAuto.Dispose();
-            _cachedConvertedIndexBuffers.Dispose();
-            _cachedAlignedVertexBuffers.Dispose();
+            _cachedConvertedBuffers.Dispose();
         }
     }
 }
