@@ -113,6 +113,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Divps,        new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5e, InstructionFlags.Vex));
             Add(X86Instruction.Divsd,        new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5e, InstructionFlags.Vex | InstructionFlags.PrefixF2));
             Add(X86Instruction.Divss,        new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5e, InstructionFlags.Vex | InstructionFlags.PrefixF3));
+            Add(X86Instruction.Gf2p8affineqb,new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3ace, InstructionFlags.Prefix66));
             Add(X86Instruction.Haddpd,       new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f7c, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Haddps,       new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f7c, InstructionFlags.Vex | InstructionFlags.PrefixF2));
             Add(X86Instruction.Idiv,         new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x070000f7, InstructionFlags.None));
