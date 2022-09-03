@@ -1650,7 +1650,6 @@ namespace ARMeilleure.Instructions
             Operand res = context.Copy(context.AllocateLocal(OperandType.I64), context.Add(op1, op2));
 
             context.BranchIf(lblEnd, res, op1, Comparison.GreaterOrEqualUI);
-            context.BranchIf(lblEnd, res, op2, Comparison.GreaterOrEqualUI);
             context.Copy(res, maxUL);
             context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.SetFpsrQc)));
             context.Branch(lblEnd);
@@ -1762,7 +1761,6 @@ namespace ARMeilleure.Instructions
 
             context.BranchIf(lbl1, op1, zero, Comparison.Less);
             context.BranchIf(lblEnd, res, op1, Comparison.GreaterOrEqualUI);
-            context.BranchIf(lblEnd, res, op2, Comparison.GreaterOrEqualUI);
             context.Copy(res, maxUL);
             context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.SetFpsrQc)));
             context.Branch(lblEnd);
