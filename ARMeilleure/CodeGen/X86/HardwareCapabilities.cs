@@ -44,6 +44,7 @@ namespace ARMeilleure.CodeGen.X86
             Sse42 = 1 << 20,
             Popcnt = 1 << 23,
             Aes = 1 << 25,
+            Osxsave = 1 << 27,
             Avx = 1 << 28,
             F16c = 1 << 29
         }
@@ -80,12 +81,12 @@ namespace ARMeilleure.CodeGen.X86
         public static bool SupportsSse42 => FeatureInfo1Ecx.HasFlag(FeatureFlags1Ecx.Sse42);
         public static bool SupportsPopcnt => FeatureInfo1Ecx.HasFlag(FeatureFlags1Ecx.Popcnt);
         public static bool SupportsAesni => FeatureInfo1Ecx.HasFlag(FeatureFlags1Ecx.Aes);
-        public static bool SupportsAvx => FeatureInfo1Ecx.HasFlag(FeatureFlags1Ecx.Avx);
+        public static bool SupportsAvx => FeatureInfo1Ecx.HasFlag(FeatureFlags1Ecx.Avx | FeatureFlags1Ecx.Osxsave);
         public static bool SupportsAvx2 => FeatureInfo7Ebx.HasFlag(FeatureFlags7Ebx.Avx2) && SupportsAvx;
-        public static bool SupportsAvx512F => FeatureInfo7Ebx.HasFlag(FeatureFlags7Ebx.Avx512f);
-        public static bool SupportsAvx512Vl => FeatureInfo7Ebx.HasFlag(FeatureFlags7Ebx.Avx512vl);
-        public static bool SupportsAvx512Bw => FeatureInfo7Ebx.HasFlag(FeatureFlags7Ebx.Avx512bw);
-        public static bool SupportsAvx512Dq => FeatureInfo7Ebx.HasFlag(FeatureFlags7Ebx.Avx512dq);
+        public static bool SupportsAvx512F => FeatureInfo7Ebx.HasFlag(FeatureFlags7Ebx.Avx512f) && FeatureInfo1Ecx.HasFlag(FeatureFlags1Ecx.Osxsave);
+        public static bool SupportsAvx512Vl => FeatureInfo7Ebx.HasFlag(FeatureFlags7Ebx.Avx512vl) && SupportsAvx512F;
+        public static bool SupportsAvx512Bw => FeatureInfo7Ebx.HasFlag(FeatureFlags7Ebx.Avx512bw) && SupportsAvx512F;
+        public static bool SupportsAvx512Dq => FeatureInfo7Ebx.HasFlag(FeatureFlags7Ebx.Avx512dq) && SupportsAvx512F;
         public static bool SupportsF16c => FeatureInfo1Ecx.HasFlag(FeatureFlags1Ecx.F16c);
         public static bool SupportsSha => FeatureInfo7Ebx.HasFlag(FeatureFlags7Ebx.Sha);
         public static bool SupportsGfni => FeatureInfo7Ecx.HasFlag(FeatureFlags7Ecx.Gfni);
