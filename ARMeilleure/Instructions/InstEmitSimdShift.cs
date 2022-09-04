@@ -88,8 +88,44 @@ namespace ARMeilleure.Instructions
             OpCodeSimdShImm op = (OpCodeSimdShImm)context.CurrOp;
 
             int shift = GetImmShl(op);
+            int eSize = 8 << op.Size;
 
-            if (Optimizations.UseSse2 && op.Size > 0)
+            if (shift >= eSize)
+            {
+                if ((op.RegisterSize == RegisterSize.Simd64))
+                {
+                    Operand res = context.VectorZeroUpper64(GetVec(op.Rd));
+
+                    context.Copy(GetVec(op.Rd), res);
+                }
+            }
+            else if (Optimizations.UseGfni && op.Size == 0)
+            {
+                Operand n = GetVec(op.Rn);
+
+                ulong bitMatrix = (
+                    (0b00000001UL << 56) |
+                    (0b00000010UL << 48) |
+                    (0b00000100UL << 40) |
+                    (0b00001000UL << 32) |
+                    (0b00010000UL << 24) |
+                    (0b00100000UL << 16) |
+                    (0b01000000UL <<  8) |
+                    (0b10000000UL <<  0)
+                    ) >> (shift * 8);
+
+                Operand vBitMatrix = X86GetElements(context, bitMatrix, bitMatrix);
+
+                Operand res = context.AddIntrinsic(Intrinsic.X86Gf2p8affineqb, n, vBitMatrix, Const(0));
+
+                if (op.RegisterSize == RegisterSize.Simd64)
+                {
+                    res = context.VectorZeroUpper64(res);
+                }
+
+                context.Copy(GetVec(op.Rd), res);
+            }
+            else if (Optimizations.UseSse2 && op.Size > 0)
             {
                 Operand n = GetVec(op.Rn);
 
@@ -396,10 +432,47 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimdShImm op = (OpCodeSimdShImm)context.CurrOp;
 
-            if (Optimizations.UseSse2 && op.Size > 0 && op.Size < 3)
-            {
-                int shift = GetImmShr(op);
+            int shift = GetImmShr(op);
 
+            if (Optimizations.UseGfni && op.Size == 0)
+            {
+                Operand n = GetVec(op.Rn);
+
+                ulong bitMatrix;
+
+                if (shift < 8)
+                {
+                    bitMatrix = (
+                        (0b00000001UL << 56) |
+                        (0b00000010UL << 48) |
+                        (0b00000100UL << 40) |
+                        (0b00001000UL << 32) |
+                        (0b00010000UL << 24) |
+                        (0b00100000UL << 16) |
+                        (0b01000000UL <<  8) |
+                        (0b10000000UL <<  0)
+                        ) << (shift * 8);
+
+                    bitMatrix |= 0x8080808080808080UL >> (64 - shift * 8);
+                }
+                else
+                {
+                    bitMatrix = 0x8080808080808080UL;
+                }
+
+                Operand vBitMatrix = X86GetElements(context, bitMatrix, bitMatrix);
+
+                Operand res = context.AddIntrinsic(Intrinsic.X86Gf2p8affineqb, n, vBitMatrix, Const(0));
+
+                if (op.RegisterSize == RegisterSize.Simd64)
+                {
+                    res = context.VectorZeroUpper64(res);
+                }
+
+                context.Copy(GetVec(op.Rd), res);
+            }
+            else if (Optimizations.UseSse2 && op.Size > 0 && op.Size < 3)
+            {
                 Operand n = GetVec(op.Rn);
 
                 Intrinsic sraInst = X86PsraInstruction[op.Size];
