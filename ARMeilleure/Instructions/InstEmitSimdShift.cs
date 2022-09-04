@@ -103,16 +103,7 @@ namespace ARMeilleure.Instructions
             {
                 Operand n = GetVec(op.Rn);
 
-                ulong bitMatrix = (
-                    (0b00000001UL << 56) |
-                    (0b00000010UL << 48) |
-                    (0b00000100UL << 40) |
-                    (0b00001000UL << 32) |
-                    (0b00010000UL << 24) |
-                    (0b00100000UL << 16) |
-                    (0b01000000UL <<  8) |
-                    (0b10000000UL <<  0)
-                    ) >> (shift * 8);
+                ulong bitMatrix = X86GetGf2p8LogicalShiftLeft(shift);
 
                 Operand vBitMatrix = X86GetElements(context, bitMatrix, bitMatrix);
 
@@ -442,21 +433,14 @@ namespace ARMeilleure.Instructions
 
                 if (shift < 8)
                 {
-                    bitMatrix = (
-                        (0b00000001UL << 56) |
-                        (0b00000010UL << 48) |
-                        (0b00000100UL << 40) |
-                        (0b00001000UL << 32) |
-                        (0b00010000UL << 24) |
-                        (0b00100000UL << 16) |
-                        (0b01000000UL <<  8) |
-                        (0b10000000UL <<  0)
-                        ) << (shift * 8);
+                    bitMatrix = X86GetGf2p8LogicalShiftLeft(-shift);
 
+                    // Extend sign-bit
                     bitMatrix |= 0x8080808080808080UL >> (64 - shift * 8);
                 }
                 else
                 {
+                    // Replicate sign-bit into all bits
                     bitMatrix = 0x8080808080808080UL;
                 }
 
@@ -1020,17 +1004,7 @@ namespace ARMeilleure.Instructions
                 Operand d = GetVec(op.Rd);
                 Operand n = GetVec(op.Rn);
 
-                ulong bitMatrix = (
-                    (0b00000001UL << 56) |
-                    (0b00000010UL << 48) |
-                    (0b00000100UL << 40) |
-                    (0b00001000UL << 32) |
-                    (0b00010000UL << 24) |
-                    (0b00100000UL << 16) |
-                    (0b01000000UL <<  8) |
-                    (0b10000000UL <<  0)
-                    ) >> (shift * 8);
-
+                ulong bitMatrix = X86GetGf2p8LogicalShiftLeft(shift);
 
                 Operand vBitMatrix = X86GetElements(context, bitMatrix, bitMatrix);
 
@@ -1119,16 +1093,7 @@ namespace ARMeilleure.Instructions
                 Operand d = GetVec(op.Rd);
                 Operand n = GetVec(op.Rn);
 
-                ulong bitMatrix = (
-                    (0b00000001UL << 56) |
-                    (0b00000010UL << 48) |
-                    (0b00000100UL << 40) |
-                    (0b00001000UL << 32) |
-                    (0b00010000UL << 24) |
-                    (0b00100000UL << 16) |
-                    (0b01000000UL <<  8) |
-                    (0b10000000UL <<  0)
-                    ) << (shift * 8);
+                ulong bitMatrix = X86GetGf2p8LogicalShiftLeft(-shift);
 
                 Operand vBitMatrix = X86GetElements(context, bitMatrix, bitMatrix);
 
