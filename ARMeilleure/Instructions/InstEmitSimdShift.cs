@@ -1015,7 +1015,7 @@ namespace ARMeilleure.Instructions
                     context.Copy(GetVec(op.Rd), res);
                 }
             }
-            else if (Optimizations.UseGfni && Optimizations.UseSse2 && op.Size == 0)
+            else if (Optimizations.UseGfni && op.Size == 0)
             {
                 Operand d = GetVec(op.Rd);
                 Operand n = GetVec(op.Rn);
@@ -1114,7 +1114,7 @@ namespace ARMeilleure.Instructions
                     context.Copy(GetVec(op.Rd), res);
                 }
             }
-            else if (Optimizations.UseGfni && Optimizations.UseSse2 && op.Size == 0)
+            else if (Optimizations.UseGfni && op.Size == 0)
             {
                 Operand d = GetVec(op.Rd);
                 Operand n = GetVec(op.Rn);

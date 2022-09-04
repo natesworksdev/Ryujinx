@@ -43,6 +43,6 @@ namespace ARMeilleure
         internal static bool UseAesni     => UseAesniIfAvailable     && HardwareCapabilities.SupportsAesni;
         internal static bool UsePclmulqdq => UsePclmulqdqIfAvailable && HardwareCapabilities.SupportsPclmulqdq;
         internal static bool UseSha       => UseShaIfAvailable       && HardwareCapabilities.SupportsSha;
-        internal static bool UseGfni      => UseShaIfAvailable       && HardwareCapabilities.SupportsGfni;
+        internal static bool UseGfni      => UseGfniIfAvailable      && HardwareCapabilities.SupportsGfni;
     }
 }
