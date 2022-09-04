@@ -202,6 +202,9 @@ namespace Ryujinx.Graphics.Vulkan
             pipeline.Topology = state.Topology.Convert();
 
             int vaCount = Math.Min(Constants.MaxVertexAttributes, state.VertexAttribCount);
+            int vbCount = Math.Min(Constants.MaxVertexBuffers, state.VertexBufferCount);
+
+            Span<int> vbScalarSizes = stackalloc int[vbCount];
 
             for (int i = 0; i < vaCount; i++)
             {
@@ -213,12 +216,15 @@ namespace Ryujinx.Graphics.Vulkan
                     (uint)bufferIndex,
                     gd.FormatCapabilities.ConvertToVertexVkFormat(attribute.Format),
                     (uint)attribute.Offset);
+
+                if (bufferIndex < vbCount)
+                {
+                    vbScalarSizes[bufferIndex] = Math.Max(attribute.Format.GetScalarSize(), vbScalarSizes[bufferIndex]);
+                }
             }
 
             int descriptorIndex = 1;
             pipeline.Internal.VertexBindingDescriptions[0] = new VertexInputBindingDescription(0, 0, VertexInputRate.Vertex);
-
-            int vbCount = Math.Min(Constants.MaxVertexBuffers, state.VertexBufferCount);
 
             for (int i = 0; i < vbCount; i++)
             {
@@ -230,7 +236,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                     int alignedStride = vertexBuffer.Stride;
 
-                    if (gd.NeedsVertexBufferAlignment(vertexBuffer.Divisor, out int alignment))
+                    if (gd.NeedsVertexBufferAlignment(vbScalarSizes[i], out int alignment))
                     {
                         alignedStride = (vertexBuffer.Stride + (alignment - 1)) & -alignment;
                     }
