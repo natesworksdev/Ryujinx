@@ -384,6 +384,7 @@
                                 <AutoCompleteBox
                                     Name="TimeZoneBox"
                                     Width="350"
+                                    MaxDropDownHeight="500"
                                     FilterMode="Contains"
                                     Items="{Binding TimeZones}"
                                     SelectionChanged="TimeZoneBox_OnSelectionChanged"
