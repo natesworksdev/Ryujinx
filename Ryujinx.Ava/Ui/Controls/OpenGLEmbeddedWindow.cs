@@ -9,6 +9,7 @@ using SPB.Platform.GLX;
 using SPB.Platform.WGL;
 using SPB.Platform.Win32;
 using SPB.Windowing;
+using System;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.Ava.Ui.Controls
@@ -45,10 +46,14 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             base.OnWindowCreated();
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
+            {
                 _window = new WGLWindow(new NativeHandle(WindowHandle));
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                _window = new GLXWindow(new NativeHandle(X11Display),new NativeHandle(WindowHandle));
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                _window = new GLXWindow(new NativeHandle(X11Display), new NativeHandle(WindowHandle));
+            }
             
             var flags = OpenGLContextFlags.Compat;
             if (_graphicsDebugLevel != GraphicsDebugLevel.None)
@@ -64,7 +69,7 @@ namespace Ryujinx.Ava.Ui.Controls
             var bindingsContext = new OpenToolkitBindingsContext(Context.GetProcAddress);
 
             GL.LoadBindings(bindingsContext);
-            OpenTK.Graphics.OpenGL.GL.LoadBindings(bindingsContext);
+            Context.MakeCurrent(null);
         }
 
         public void MakeCurrent()

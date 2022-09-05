@@ -180,7 +180,7 @@ namespace Ryujinx.Ava
             if (_renderer != null)
             {
                 double scale = _parent.PlatformImpl.RenderScaling;
-                _renderer.Window.SetSize((int)(size.Width * scale), (int)(size.Height * scale));
+                _renderer.Window?.SetSize((int)(size.Width * scale), (int)(size.Height * scale));
             }
         }
 

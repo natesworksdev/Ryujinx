@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform;
+using SPB.Platform.Win32;
 using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -103,8 +104,6 @@ namespace Ryujinx.Ava.Ui.Controls
         IPlatformHandle CreateWin32(IPlatformHandle parent)
         {
             WindowHandle = parent.Handle;
-
-            WindowCreated?.Invoke(this, WindowHandle);
 
             return new PlatformHandle(WindowHandle, "HWND");
         }
