@@ -39,6 +39,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using SPB.Graphics.Vulkan;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -58,24 +59,25 @@ namespace Ryujinx.Ava
     {
         private const int CursorHideIdleTime = 8; // Hide Cursor seconds
         private const float MaxResolutionScale = 4.0f; // Max resolution hotkeys can scale to before wrapping.
+        private const int TargetFps = 60;
 
         private static readonly Cursor InvisibleCursor = new Cursor(StandardCursorType.None);
+        
 
+        private readonly long _ticksPerFrame;
+        private readonly Stopwatch _chrono;
         private readonly AccountManager _accountManager;
         private readonly UserChannelPersistence _userChannelPersistence;
-
         private readonly InputManager _inputManager;
-
-        private readonly IKeyboard _keyboardInterface;
-
         private readonly MainWindow _parent;
-
+        private readonly IKeyboard _keyboardInterface;
         private readonly GraphicsDebugLevel _glLogLevel;
 
         private bool _hideCursorOnIdle;
         private bool _isStopped;
         private bool _isActive;
         private long _lastCursorMoveTime;
+        private long _ticks = 0;
 
         private KeyboardHotkeyState _prevHotkeyState;
 
@@ -93,7 +95,7 @@ namespace Ryujinx.Ava
         public event EventHandler AppExit;
         public event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
 
-        public RendererControl Renderer { get; }
+        public RendererHost Renderer { get; }
         public VirtualFileSystem VirtualFileSystem { get; }
         public ContentManager ContentManager { get; }
         public Switch Device { get; set; }
@@ -111,7 +113,7 @@ namespace Ryujinx.Ava
         private object _lockObject = new();
 
         public AppHost(
-            RendererControl renderer,
+            RendererHost renderer,
             InputManager inputManager,
             string applicationPath,
             VirtualFileSystem virtualFileSystem,
@@ -128,7 +130,7 @@ namespace Ryujinx.Ava
             _hideCursorOnIdle = ConfigurationState.Instance.HideCursorOnIdle;
             _lastCursorMoveTime = Stopwatch.GetTimestamp();
             _glLogLevel = ConfigurationState.Instance.Logger.GraphicsDebugLevel;
-            _inputManager.SetMouseDriver(new AvaloniaMouseDriver(renderer));
+            _inputManager.SetMouseDriver(new AvaloniaMouseDriver(_parent, renderer));
             _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad("0");
 
             NpadManager = _inputManager.CreateNpadManager();
@@ -137,6 +139,9 @@ namespace Ryujinx.Ava
             ApplicationPath = applicationPath;
             VirtualFileSystem = virtualFileSystem;
             ContentManager = contentManager;
+
+            _chrono = new Stopwatch();
+            _ticksPerFrame = Stopwatch.Frequency / TargetFps;
 
             if (ApplicationPath.StartsWith("@SystemContent"))
             {
@@ -376,6 +381,8 @@ namespace Ryujinx.Ava
 
             _gpuCancellationTokenSource.Cancel();
             _gpuCancellationTokenSource.Dispose();
+            
+            _chrono?.Stop();
         }
 
         public void DisposeGpu()
@@ -389,8 +396,7 @@ namespace Ryujinx.Ava
             Renderer?.MakeCurrent();
 
             Device.DisposeGpu();
-
-            Renderer?.DestroyBackgroundContext();
+            
             Renderer?.MakeCurrent(null);
         }
 
@@ -596,16 +602,11 @@ namespace Ryujinx.Ava
 
             IRenderer renderer;
 
-            if (Program.UseVulkan)
+            if (Renderer.IsVulkan)
             {
-                var vulkan = AvaloniaLocator.Current.GetService<VulkanPlatformInterface>();
+                string preferredGpu = ConfigurationState.Instance.Graphics.PreferredGpu.Value;
                 
-                renderer = new VulkanRenderer(vulkan.Instance.InternalHandle,
-                    vulkan.MainSurface.Device.InternalHandle,
-                    vulkan.PhysicalDevice.InternalHandle,
-                    vulkan.MainSurface.Device.Queue.InternalHandle,
-                    vulkan.PhysicalDevice.QueueFamilyIndex,
-                    vulkan.MainSurface.Device.Lock);
+                renderer = new VulkanRenderer(Renderer.CreateVulkanSurface, VulkanHelper.GetRequiredInstanceExtensions, preferredGpu);
             }
             else
             {
@@ -778,11 +779,7 @@ namespace Ryujinx.Ava
         {
             Width = (int)e.Width;
             Height = (int)e.Height;
-
-            if (!Program.UseVulkan)
-            {
-                SetRendererWindowSize(e);
-            }
+            SetRendererWindowSize(e);
         }
 
         private void MainLoop()
@@ -822,7 +819,7 @@ namespace Ryujinx.Ava
 
             _renderer.ScreenCaptured += Renderer_ScreenCaptured;
 
-            (_renderer as OpenGLRenderer)?.InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext((Renderer as OpenGLRendererControl).GameContext));
+            (_renderer as OpenGLRenderer)?.InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext(Renderer.GetContext()));
 
             Renderer.MakeCurrent();
 
@@ -834,6 +831,8 @@ namespace Ryujinx.Ava
             Height = (int)Renderer.Bounds.Height;
 
             _renderer.Window.SetSize((int)(Width * _parent.PlatformImpl.RenderScaling), (int)(Height * _parent.PlatformImpl.RenderScaling));
+            
+            _chrono.Start();
 
             Device.Gpu.Renderer.RunLoop(() =>
             {
@@ -841,10 +840,12 @@ namespace Ryujinx.Ava
                 Device.Gpu.InitializeShaderCache(_gpuCancellationTokenSource.Token);
                 Translator.IsReadyForTranslation.Set();
 
-                Renderer.Start();
-
                 while (_isActive)
                 {
+                    _ticks += _chrono.ElapsedTicks;
+
+                    _chrono.Restart();
+
                     if (Device.WaitFifo())
                     {
                         Device.Statistics.RecordFifoStart();
@@ -859,20 +860,21 @@ namespace Ryujinx.Ava
                             _renderingStarted = true;
                             _parent.SwitchToGameControl();
                         }
+                        
+                        Device.PresentFrame(() => { Renderer?.SwapBuffers();});
+                    }
 
-                        Device.PresentFrame(Present);
+                    if (_ticks >= _ticksPerFrame)
+                    {
+                        UpdateStatus();
                     }
                 }
-
-                Renderer.Stop();
             });
 
             Renderer?.MakeCurrent(null);
-
-            Renderer.SizeChanged -= Window_SizeChanged;
         }
 
-        private void Present(object image)
+        public void UpdateStatus()
         {
             // Run a status update only when a frame is to be drawn. This prevents from updating the ui and wasting a render when no frame is queued
             string dockedMode = ConfigurationState.Instance.System.EnableDockedMode ? LocaleManager.Instance["Docked"] : LocaleManager.Instance["Handheld"];
@@ -886,24 +888,12 @@ namespace Ryujinx.Ava
             StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
                 Device.EnableDeviceVsync,
                 Device.GetVolume(),
-                Program.UseVulkan ? "Vulkan" : "OpenGL",
+                Renderer.IsVulkan ? "Vulkan" : "OpenGL",
                 dockedMode,
                 ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
                 LocaleManager.Instance["Game"] + $": {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
                 $"FIFO: {Device.Statistics.GetFifoPercent():00.00} %",
                 $"GPU: {_renderer.GetHardwareInfo().GpuVendor}"));
-
-            if (Program.UseVulkan)
-            {
-                var platformInterface = AvaloniaLocator.Current.GetService<VulkanPlatformInterface>();
-                if (platformInterface.MainSurface.Display.IsSurfaceChanged())
-                {
-                    SetRendererWindowSize(new Size(Width, Height));
-                    return;
-                }
-            }
-
-            Renderer.Present(image);
         }
 
         public async Task ShowExitPrompt()

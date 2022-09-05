@@ -252,39 +252,24 @@ namespace Ryujinx.Ava.Ui.ViewModels
         {
             _gpuIds = new List<string>();
             List<string> names = new List<string>();
-            if (!Program.UseVulkan)
-            {
-                var devices = VulkanRenderer.GetPhysicalDevices();
+            var devices = VulkanRenderer.GetPhysicalDevices();
 
-                if (devices.Length == 0)
-                {
-                    IsVulkanAvailable = false;
-                    GraphicsBackendIndex = 1;
-                }
-                else
-                {
-                    foreach (var device in devices)
-                    {
-                        _gpuIds.Add(device.Id);
-                        names.Add($"{device.Name} {(device.IsDiscrete ? "(dGPU)" : "")}");
-                    }
-                }
+            if (devices.Length == 0)
+            {
+                IsVulkanAvailable = false;
+                GraphicsBackendIndex = 1;
             }
             else
             {
-                foreach (var device in VulkanPhysicalDevice.SuitableDevices)
+                foreach (var device in devices)
                 {
-                    _gpuIds.Add(
-                        VulkanInitialization.StringFromIdPair(device.Value.VendorID, device.Value.DeviceID));
-                    var value = device.Value;
-                    var name = value.DeviceName;
-                    names.Add(
-                        $"{Marshal.PtrToStringAnsi((IntPtr)name)} {(device.Value.DeviceType == PhysicalDeviceType.DiscreteGpu ? "(dGPU)" : "")}");
+                    _gpuIds.Add(device.Id);
+                    names.Add($"{device.Name} {(device.IsDiscrete ? "(dGPU)" : "")}");
                 }
             }
 
             AvailableGpus.Clear();
-            AvailableGpus.AddRange(names.Select(x => new ComboBoxItem() { Content = x }));
+            AvailableGpus.AddRange(names.Select(x => new ComboBoxItem() {Content = x}));
         }
 
         public void LoadTimeZones()
@@ -422,8 +407,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 config.System.TimeZone.Value = TimeZone;
             }
 
-            bool requiresRestart = config.Graphics.GraphicsBackend.Value != (GraphicsBackend)GraphicsBackendIndex;
-
             config.Logger.EnableError.Value = EnableError;
             config.Logger.EnableTrace.Value = EnableTrace;
             config.Logger.EnableWarn.Value = EnableWarn;
@@ -456,19 +439,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             config.System.Language.Value = (Language)Language;
             config.System.Region.Value = (Region)Region;
 
-            var selectedGpu = _gpuIds.ElementAtOrDefault(PreferredGpuIndex);
-            if (!requiresRestart)
-            {
-                var platform = AvaloniaLocator.Current.GetService<VulkanPlatformInterface>();
-                if (platform != null)
-                {
-                    var physicalDevice = platform.PhysicalDevice;
-
-                    requiresRestart = physicalDevice.DeviceId != selectedGpu;
-                }
-            }
-
-            config.Graphics.PreferredGpu.Value = selectedGpu;
+            config.Graphics.PreferredGpu.Value = _gpuIds.ElementAtOrDefault(PreferredGpuIndex);
 
             if (ConfigurationState.Instance.Graphics.BackendThreading != (BackendThreading)GraphicsBackendMultithreadingIndex)
             {
@@ -507,20 +478,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
             MainWindow.UpdateGraphicsConfig();
 
             _previousVolumeLevel = Volume;
-
-            if (requiresRestart)
-            {
-                var choice = await ContentDialogHelper.CreateChoiceDialog(
-                    LocaleManager.Instance["SettingsAppRequiredRestartMessage"],
-                    LocaleManager.Instance["SettingsGpuBackendRestartMessage"],
-                    LocaleManager.Instance["SettingsGpuBackendRestartSubMessage"]);
-
-                if (choice)
-                {
-                    Process.Start(Environment.ProcessPath);
-                    Environment.Exit(0);
-                }
-            }
         }
 
         public void RevertIfNotSaved()

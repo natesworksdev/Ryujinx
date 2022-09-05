@@ -1,4 +1,5 @@
-﻿using Avalonia;
+﻿/*
+using Avalonia;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
@@ -218,3 +219,4 @@ namespace Ryujinx.Ava.Ui.Controls
         }
     }
 }
+*/

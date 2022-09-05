@@ -34,7 +34,6 @@ namespace Ryujinx.Ava
         public static bool PreviewerDetached { get; private set; }
 
         public static RenderTimer RenderTimer { get; private set; }
-        public static bool UseVulkan { get; private set; }
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern int MessageBoxA(IntPtr hWnd, string text, string caption, uint type);
@@ -71,36 +70,16 @@ namespace Ryujinx.Ava
                     EnableMultiTouch = true,
                     EnableIme = true,
                     UseEGL = false,
-                    UseGpu = !UseVulkan,
-                    GlProfiles = new List<GlVersion>()
-                    {
-                        new GlVersion(GlProfileType.OpenGL, 4, 3)
-                    }
+                    UseGpu = false,
                 })
                 .With(new Win32PlatformOptions
                 {
                     EnableMultitouch = true,
-                    UseWgl = !UseVulkan,
-                    WglProfiles = new List<GlVersion>()
-                    {
-                        new GlVersion(GlProfileType.OpenGL, 4, 3)
-                    },
+                    UseWgl = false,
                     AllowEglInitialization = false,
                     CompositionBackdropCornerRadius = 8f,
                 })
                 .UseSkia()
-                .With(new Ui.Vulkan.VulkanOptions()
-                {
-                    ApplicationName = "Ryujinx.Graphics.Vulkan",
-                    MaxQueueCount = 2,
-                    PreferDiscreteGpu = true,
-                    PreferredDevice = !PreviewerDetached ? "" : ConfigurationState.Instance.Graphics.PreferredGpu.Value,
-                    UseDebug = !PreviewerDetached ? false : ConfigurationState.Instance.Logger.GraphicsDebugLevel.Value != GraphicsDebugLevel.None,
-                })
-                .With(new SkiaOptions()
-                {
-                    CustomGpuFactory = UseVulkan ? SkiaGpuFactory.CreateVulkanGpu : null
-                })
                 .AfterSetup(_ =>
                 {
                     AvaloniaLocator.CurrentMutable
@@ -176,26 +155,7 @@ namespace Ryujinx.Ava
 
             ReloadConfig();
 
-            UseVulkan = PreviewerDetached ? ConfigurationState.Instance.Graphics.GraphicsBackend.Value == GraphicsBackend.Vulkan : false;
-
-            if (UseVulkan)
-            {
-                if (VulkanRenderer.GetPhysicalDevices().Length == 0)
-                {
-                    UseVulkan = false;
-
-                    ConfigurationState.Instance.Graphics.GraphicsBackend.Value = GraphicsBackend.OpenGl;
-
-                    Logger.Warning?.PrintMsg(LogClass.Application, "A suitable Vulkan physical device is not available. Falling back to OpenGL");
-                }
-            }
-
-            if (UseVulkan)
-            {
-                // With a custom gpu backend, avalonia doesn't enable dpi awareness, so the backend must handle it. This isn't so for the opengl backed,
-                // as that uses avalonia's gpu backend and it's enabled there.
-                ForceDpiAware.Windows();
-            }
+            ForceDpiAware.Windows();
 
             WindowScaleFactor = ForceDpiAware.GetWindowScaleFactor();
             ActualScaleFactor = ForceDpiAware.GetActualScaleFactor() / BaseDpi;
