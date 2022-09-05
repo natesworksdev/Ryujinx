@@ -94,13 +94,13 @@ namespace Ryujinx.Graphics.Vulkan
                             binding,
                             1,
                             buffer,
+                            0,
                             (ulong)(_size / _stride) * (ulong)stride,
-                            (ulong)_size,
                             (ulong)stride);
                     }
                     else
                     {
-                        gd.Api.CmdBindVertexBuffers(cbs.CommandBuffer, binding, 1, buffer, (ulong)_offset);
+                        gd.Api.CmdBindVertexBuffers(cbs.CommandBuffer, binding, 1, buffer, 0);
                     }
 
                     return;
