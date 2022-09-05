@@ -217,9 +217,9 @@ namespace Ryujinx.Graphics.Vulkan
                     gd.FormatCapabilities.ConvertToVertexVkFormat(attribute.Format),
                     (uint)attribute.Offset);
 
-                if (bufferIndex < vbCount)
+                if (!attribute.IsZero && bufferIndex < vbCount)
                 {
-                    vbScalarSizes[bufferIndex] = Math.Max(attribute.Format.GetScalarSize(), vbScalarSizes[bufferIndex]);
+                    vbScalarSizes[bufferIndex - 1] = Math.Max(attribute.Format.GetScalarSize(), vbScalarSizes[bufferIndex - 1]);
                 }
             }
 
