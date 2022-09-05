@@ -3,7 +3,6 @@ using Avalonia;
 using Avalonia.OpenGL;
 using Avalonia.Rendering;
 using Avalonia.Threading;
-using Ryujinx.Ava.Ui.Backend;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common;

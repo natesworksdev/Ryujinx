@@ -1,3 +1,5 @@
+using Avalonia;
+using Avalonia.OpenGL;
 using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Configuration;
 using SPB.Graphics;
@@ -20,6 +22,10 @@ namespace Ryujinx.Ava.Ui.Controls
 
         public bool IsSecond { get; set; }
         public OpenGLContextBase Context { get; set; }
+
+        public static OpenGLContextBase PrimaryContext =>
+            AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>()
+                .PrimaryContext.AsOpenGLContextBase();
 
         public OpenGLEmbeddedWindow(int major, int minor, GraphicsDebugLevel graphicsDebugLevel)
         {

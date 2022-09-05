@@ -12,10 +12,8 @@ using Ryujinx.Audio.Integration;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Input;
-using Ryujinx.Ava.Ui.Backend.Vulkan;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Models;
-using Ryujinx.Ava.Ui.Vulkan;
 using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
@@ -339,8 +337,6 @@ namespace Ryujinx.Ava
             {
                 return;
             }
-
-            AvaloniaLocator.Current.GetService<VulkanPlatformInterface>()?.MainSurface.Display.ChangeVSyncMode(true);
 
             _isStopped = true;
             _isActive = false;
@@ -823,8 +819,6 @@ namespace Ryujinx.Ava
 
             Renderer.MakeCurrent();
 
-            AvaloniaLocator.Current.GetService<VulkanPlatformInterface>()?.MainSurface?.Display?.ChangeVSyncMode(Device.EnableDeviceVsync);
-
             Device.Gpu.Renderer.Initialize(_glLogLevel);
 
             Width = (int)Renderer.Bounds.Width;
@@ -974,8 +968,6 @@ namespace Ryujinx.Ava
                     {
                         case KeyboardHotkeyState.ToggleVSync:
                             Device.EnableDeviceVsync = !Device.EnableDeviceVsync;
-
-                            AvaloniaLocator.Current.GetService<VulkanPlatformInterface>()?.MainSurface?.Display?.ChangeVSyncMode(Device.EnableDeviceVsync);
 
                             break;
                         case KeyboardHotkeyState.Screenshot:
