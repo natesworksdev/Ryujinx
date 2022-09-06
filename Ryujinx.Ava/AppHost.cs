@@ -1,6 +1,5 @@
 ﻿using ARMeilleure.Translation;
 using ARMeilleure.Translation.PTC;
-using Avalonia;
 using Avalonia.Input;
 using Avalonia.Threading;
 using LibHac.Tools.FsSystem;

@@ -1,6 +1,5 @@
 using ARMeilleure.Translation.PTC;
 using Avalonia;
-using Avalonia.OpenGL;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Ryujinx.Ava.Ui.Controls;
@@ -11,12 +10,10 @@ using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.System;
 using Ryujinx.Common.SystemInfo;
-using Ryujinx.Graphics.Vulkan;
 using Ryujinx.Modules;
 using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -69,7 +66,7 @@ namespace Ryujinx.Ava
                     EnableMultiTouch = true,
                     EnableIme = true,
                     UseEGL = false,
-                    UseGpu = false,
+                    UseGpu = false
                 })
                 .With(new Win32PlatformOptions
                 {

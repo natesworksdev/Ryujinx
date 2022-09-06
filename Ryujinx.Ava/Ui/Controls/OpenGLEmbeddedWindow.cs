@@ -7,10 +7,8 @@ using SPB.Graphics.OpenGL;
 using SPB.Platform;
 using SPB.Platform.GLX;
 using SPB.Platform.WGL;
-using SPB.Platform.Win32;
 using SPB.Windowing;
 using System;
-using System.Runtime.InteropServices;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
@@ -37,9 +35,9 @@ namespace Ryujinx.Ava.Ui.Controls
 
         protected override void OnWindowDestroying()
         {
-            base.OnWindowDestroying();
-
             Context.Dispose();
+            _window?.Dispose();
+            base.OnWindowDestroying();
         }
 
         public override void OnWindowCreated()

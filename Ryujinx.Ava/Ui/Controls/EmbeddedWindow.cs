@@ -1,16 +1,21 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform;
-using SPB.Platform.Win32;
+using SPB.Graphics;
+using SPB.Platform;
+using SPB.Platform.GLX;
 using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
     public class EmbeddedWindow : NativeControlHost
     {
+        protected GLXWindow _bwindow;
+
         protected IntPtr WindowHandle { get; set; }
 
         protected IntPtr X11Display{ get; set; }
@@ -41,10 +46,10 @@ namespace Ryujinx.Ava.Ui.Controls
 
         private void NativeEmbeddedWindow_Initialized(object sender, EventArgs e)
         {
+            OnWindowCreated();
+
             Task.Run(() =>
             {
-                OnWindowCreated();
-
                 WindowCreated?.Invoke(this, WindowHandle);
             });
         }
@@ -57,11 +62,17 @@ namespace Ryujinx.Ava.Ui.Controls
         protected override IPlatformHandle CreateNativeControlCore(IPlatformHandle parent)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
                 return CreateLinux(parent);
+            }
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
                 return CreateWin32(parent);
+            }
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
                 return CreateOSX(parent);
+            }
             return base.CreateNativeControlCore(parent);
         }
 
@@ -70,30 +81,52 @@ namespace Ryujinx.Ava.Ui.Controls
             OnWindowDestroying();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
                 DestroyLinux(control);
+            }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
                 DestroyWin32(control);
+            }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
                 DestroyOSX(control);
+            }
             else
+            {
                 base.DestroyNativeControlCore(control);
+            }
 
             OnWindowDestroyed();
         }
 
+        [SupportedOSPlatform("linux")]
         IPlatformHandle CreateLinux(IPlatformHandle parent)
         {
-            var window = base.CreateNativeControlCore(parent);
+            if (this is OpenGLEmbeddedWindow)
+            {
+                var window = PlatformHelper.CreateOpenGLWindow(FramebufferFormat.Default, 0, 0, 100, 100) as GLXWindow;
 
-            WindowHandle = window.Handle;
+                WindowHandle = window.WindowHandle.RawHandle;
 
-            BindingFlags bindFlags = BindingFlags.Instance | BindingFlags.NonPublic;
-            FieldInfo field = window.GetType().GetField("_display", bindFlags);
-            var display = field.GetValue(window);
+                X11Display = window.DisplayHandle.RawHandle;
 
-            X11Display = (IntPtr)display;
+                return new PlatformHandle(WindowHandle, "X11");
+            }
+            else 
+            {
+                var window = base.CreateNativeControlCore(parent);
 
-            return window;
+                WindowHandle = window.Handle;
+
+                BindingFlags bindFlags = BindingFlags.Instance | BindingFlags.NonPublic;
+                FieldInfo field = window.GetType().GetField("_display", bindFlags);
+                var display = field.GetValue(window);
+
+                X11Display = (IntPtr)display;
+
+                return window;
+            }
         }
 
         IPlatformHandle CreateOSX(IPlatformHandle parent)
@@ -110,7 +143,10 @@ namespace Ryujinx.Ava.Ui.Controls
 
         void DestroyLinux(IPlatformHandle handle)
         {
-            base.DestroyNativeControlCore(handle);
+            if (this is not OpenGLEmbeddedWindow)
+            {
+                base.DestroyNativeControlCore(handle);
+            }
         }
 
         void DestroyOSX(IPlatformHandle handle)
