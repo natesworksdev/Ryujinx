@@ -54,7 +54,6 @@ namespace Ryujinx.Ava.Input
 
         private void Parent_PointerReleaseEvent(object o, PointerReleasedEventArgs args)
         {
-            var pointerProperties = args.GetCurrentPoint(_widget).Properties;
             PressedButtons[(int)args.InitialPressMouseButton - 1] = false;
         }
 
