@@ -51,10 +51,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         private BufferState _indexBuffer;
         private readonly BufferState[] _transformFeedbackBuffers;
-        private readonly BufferState[] _vertexBuffers;
-        private readonly int[] _vbDescriptors;
-        private readonly int[] _vbScalarSizes;
-        private uint _vertexBuffersDirty;
+        private readonly VertexBufferState[] _vertexBuffers;
+        private ulong _vertexBuffersDirty;
         protected Rectangle<int> ClearScissor;
 
         public SupportBufferUpdater SupportBufferUpdater;
@@ -83,16 +81,14 @@ namespace Ryujinx.Graphics.Vulkan
             _descriptorSetUpdater = new DescriptorSetUpdater(gd, this);
 
             _transformFeedbackBuffers = new BufferState[Constants.MaxTransformFeedbackBuffers];
-            _vertexBuffers = new BufferState[Constants.MaxVertexBuffers + 1];
-            _vbDescriptors = new int[Constants.MaxVertexBuffers];
-            _vbScalarSizes = new int[Constants.MaxVertexBuffers];
+            _vertexBuffers = new VertexBufferState[Constants.MaxVertexBuffers + 1];
 
             const int EmptyVbSize = 16;
 
             using var emptyVb = gd.BufferManager.Create(gd, EmptyVbSize);
             emptyVb.SetData(0, new byte[EmptyVbSize]);
-            _vertexBuffers[0] = new BufferState(emptyVb.GetBuffer(), 0, EmptyVbSize, 0UL);
-            _vertexBuffersDirty = uint.MaxValue;
+            _vertexBuffers[0] = new VertexBufferState(emptyVb.GetBuffer(), 0, EmptyVbSize, 0);
+            _vertexBuffersDirty = ulong.MaxValue >> (64 - _vertexBuffers.Length);
 
             ClearScissor = new Rectangle<int>(0, 0, 0xffff, 0xffff);
 
@@ -233,6 +229,17 @@ namespace Ryujinx.Graphics.Vulkan
             var dst = Gd.BufferManager.GetBuffer(CommandBuffer, destination, true);
 
             BufferHolder.Copy(Gd, Cbs, src, dst, srcOffset, dstOffset, size);
+        }
+
+        public void DirtyVertexBuffer(Auto<DisposableBuffer> buffer)
+        {
+            for (int i = 0; i < _vertexBuffers.Length; i++)
+            {
+                if (_vertexBuffers[i].BoundEquals(buffer))
+                {
+                    _vertexBuffersDirty |= 1UL << i;
+                }
+            }
         }
 
         public void DispatchCompute(int groupsX, int groupsY, int groupsZ)
@@ -776,10 +783,12 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 int dirtyBit = BitOperations.TrailingZeroCount(dirtyVbSizes);
 
-                if (_vbScalarSizes[dirtyBit] != newVbScalarSizes[dirtyBit])
+                ref var buffer = ref _vertexBuffers[dirtyBit + 1];
+
+                if (buffer.AttributeScalarAlignment != newVbScalarSizes[dirtyBit])
                 {
-                    _vertexBuffersDirty |= 1u << dirtyBit;
-                    _vbScalarSizes[dirtyBit] = newVbScalarSizes[dirtyBit];
+                    _vertexBuffersDirty |= 1UL << (dirtyBit + 1);
+                    buffer.AttributeScalarAlignment = newVbScalarSizes[dirtyBit];
                 }
 
                 dirtyVbSizes &= ~(1u << dirtyBit);
@@ -831,31 +840,37 @@ namespace Ryujinx.Graphics.Vulkan
                             }
                         }
 
-                        _vertexBuffers[binding].Dispose();
+                        ref var buffer = ref _vertexBuffers[binding];
+                        int oldScalarAlign = buffer.AttributeScalarAlignment;
+
+                        buffer.Dispose();
 
                         if ((vertexBuffer.Stride % FormatExtensions.MaxBufferFormatScalarSize) == 0)
                         {
-                            _vertexBuffers[binding] = new BufferState(
+                            buffer = new VertexBufferState(
                                 vb,
+                                descriptorIndex,
                                 vertexBuffer.Buffer.Offset,
                                 vbSize,
                                 vertexBuffer.Stride);
 
-                            _vertexBuffers[binding].BindVertexBuffer(Gd, Cbs, (uint)binding, FormatExtensions.MaxBufferFormatScalarSize, out int _);
+                            buffer.BindVertexBuffer(Gd, Cbs, (uint)binding, ref _newState);
                         }
                         else
                         {
                             // May need to be rewritten. Bind this buffer before draw.
 
-                            _vertexBuffers[binding] = new BufferState(
+                            buffer = new VertexBufferState(
                                 vertexBuffer.Buffer.Handle,
+                                descriptorIndex,
                                 vertexBuffer.Buffer.Offset,
                                 vbSize,
                                 vertexBuffer.Stride);
 
-                            _vbDescriptors[binding] = descriptorIndex;
-                            _vertexBuffersDirty |= 1u << (binding - 1);
+                            _vertexBuffersDirty |= 1UL << binding;
                         }
+
+                        buffer.AttributeScalarAlignment = oldScalarAlign;
                     }
                 }
             }
@@ -963,7 +978,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             _needsIndexBufferRebind = true;
             _needsTransformFeedbackBuffersRebind = true;
-            _vertexBuffersDirty = uint.MaxValue;
+            _vertexBuffersDirty = ulong.MaxValue >> (64 - _vertexBuffers.Length);
 
             _descriptorSetUpdater.SignalCommandBufferChange();
             _dynamicState.ForceAllDirty();
@@ -1129,18 +1144,13 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_vertexBuffersDirty != 0)
             {
-                _vertexBuffers[0].BindVertexBuffer(Gd, Cbs, 0, 1, out int _);
-
                 while (_vertexBuffersDirty != 0)
                 {
-                    int dirtyBit = BitOperations.TrailingZeroCount(_vertexBuffersDirty);
+                    int i = BitOperations.TrailingZeroCount(_vertexBuffersDirty);
 
-                    int i = dirtyBit + 1;
-                    _vertexBuffers[i].BindVertexBuffer(Gd, Cbs, (uint)i, _vbScalarSizes[dirtyBit], out int newStride);
+                    _vertexBuffers[i].BindVertexBuffer(Gd, Cbs, (uint)i, ref _newState);
 
-                    _newState.Internal.VertexBindingDescriptions[_vbDescriptors[dirtyBit]].Stride = (uint)newStride;
-
-                    _vertexBuffersDirty &= ~(1u << dirtyBit);
+                    _vertexBuffersDirty &= ~(1u << i);
                 }
             }
 

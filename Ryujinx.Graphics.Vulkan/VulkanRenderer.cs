@@ -520,11 +520,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         public bool NeedsVertexBufferAlignment(int attrScalarAlignment, out int alignment)
         {
-            if (IsAmdWindows)
+            if (Vendor != Vendor.Nvidia)
             {
                 // Vulkan requires that vertex attributes are globally aligned by their component size,
                 // so buffer strides that don't divide by the largest scalar element are invalid.
-                // Guest applications do this, most GPUs are OK with it, but AMD specifically is not.
+                // Guest applications do this, NVIDIA GPUs are OK with it, others are not.
 
                 alignment = attrScalarAlignment;
 

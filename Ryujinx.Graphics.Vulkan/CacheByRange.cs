@@ -3,28 +3,38 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    interface ICacheKey
+    interface ICacheKey : IDisposable
     {
         bool KeyEqual(ICacheKey other);
     }
 
     struct I8ToI16CacheKey : ICacheKey
     {
+        public I8ToI16CacheKey() { }
+
         public bool KeyEqual(ICacheKey other)
         {
             return other is I8ToI16CacheKey;
         }
+
+        public void Dispose() { }
     }
 
     struct AlignedVertexBufferCacheKey : ICacheKey
     {
-        private int _stride;
-        private int _alignment;
+        private readonly int _stride;
+        private readonly int _alignment;
 
-        public AlignedVertexBufferCacheKey(int stride, int alignment)
+        // Used to notify the pipeline that bindings have invalidated on dispose.
+        private readonly VulkanRenderer _gd;
+        private Auto<DisposableBuffer> _buffer;
+
+        public AlignedVertexBufferCacheKey(VulkanRenderer gd, int stride, int alignment)
         {
+            _gd = gd;
             _stride = stride;
             _alignment = alignment;
+            _buffer = null;
         }
 
         public bool KeyEqual(ICacheKey other)
@@ -32,6 +42,16 @@ namespace Ryujinx.Graphics.Vulkan
             return other is AlignedVertexBufferCacheKey entry &&
                 entry._stride == _stride &&
                 entry._alignment == _alignment;
+        }
+
+        public void SetBuffer(Auto<DisposableBuffer> buffer)
+        {
+            _buffer = buffer;
+        }
+
+        public void Dispose()
+        {
+            _gd.PipelineInternal.DirtyVertexBuffer(_buffer);
         }
     }
 
@@ -84,6 +104,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     foreach (Entry<T> entry in entries)
                     {
+                        entry.Key.Dispose();
                         entry.Value.Dispose();
                     }
                 }
