@@ -1473,7 +1473,7 @@ namespace ARMeilleure.Instructions
 
                     Operand res = add ? context.Add(ne, me) : context.Subtract(ne, me);
 
-                    res = EmitSatQ(context, res, 8 << op.Size, signed, signed);
+                    res = EmitSatQ(context, res, 8 << op.Size, signedSrc: true, signed);
 
                     if (op.Size == 2)
                     {
