@@ -190,7 +190,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             PhysicalDeviceShaderFloat16Int8FeaturesKHR featuresShaderInt8 = new PhysicalDeviceShaderFloat16Int8FeaturesKHR()
             {
-                SType = StructureType.PhysicalDeviceShaderFloat16Int8Features,
+                SType = StructureType.PhysicalDeviceShaderFloat16Int8Features
             };
 
             if (supportedExtensions.Contains("VK_EXT_robustness2"))

@@ -59,7 +59,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         private bool _needsIndexBufferRebind;
         private bool _needsTransformFeedbackBuffersRebind;
-        private bool _needsVertexBuffersRebind;
 
         private bool _tfEnabled;
         private bool _tfActive;

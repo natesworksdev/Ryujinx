@@ -57,7 +57,7 @@ namespace Ryujinx.Graphics.Vulkan
 
     struct CacheByRange<T> where T : IDisposable
     {
-        private struct Entry<T> where T : IDisposable
+        private struct Entry
         {
             public ICacheKey Key;
             public T Value;
@@ -69,20 +69,20 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        private Dictionary<ulong, List<Entry<T>>> _ranges;
+        private Dictionary<ulong, List<Entry>> _ranges;
 
         public void Add(int offset, int size, ICacheKey key, T value)
         {
-            List<Entry<T>> entries = GetEntries(offset, size);
+            List<Entry> entries = GetEntries(offset, size);
 
-            entries.Add(new Entry<T>(key, value));
+            entries.Add(new Entry(key, value));
         }
 
         public bool TryGetValue(int offset, int size, ICacheKey key, out T value)
         {
-            List<Entry<T>> entries = GetEntries(offset, size);
+            List<Entry> entries = GetEntries(offset, size);
 
-            foreach (Entry<T> entry in entries)
+            foreach (Entry entry in entries)
             {
                 if (entry.Key.KeyEqual(key))
                 {
@@ -100,9 +100,9 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (_ranges != null)
             {
-                foreach (List<Entry<T>> entries in _ranges.Values)
+                foreach (List<Entry> entries in _ranges.Values)
                 {
-                    foreach (Entry<T> entry in entries)
+                    foreach (Entry entry in entries)
                     {
                         entry.Key.Dispose();
                         entry.Value.Dispose();
@@ -114,19 +114,19 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        private List<Entry<T>> GetEntries(int offset, int size)
+        private List<Entry> GetEntries(int offset, int size)
         {
             if (_ranges == null)
             {
-                _ranges = new Dictionary<ulong, List<Entry<T>>>();
+                _ranges = new Dictionary<ulong, List<Entry>>();
             }
 
             ulong key = PackRange(offset, size);
 
-            List<Entry<T>> value;
+            List<Entry> value;
             if (!_ranges.TryGetValue(key, out value))
             {
-                value = new List<Entry<T>>();
+                value = new List<Entry>();
                 _ranges.Add(key, value);
             }
 
