@@ -164,7 +164,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             {
                 if (divisor != 1f)
                 {
-                    result = (ulong)Math.Ceiling(result / divisor);
+                    result = (ulong)MathF.Ceiling(result / divisor);
                 }
 
                 CounterData counterData = new CounterData
