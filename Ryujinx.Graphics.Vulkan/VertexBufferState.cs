@@ -120,7 +120,12 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Dispose()
         {
-            _buffer?.DecrementReferenceCount();
+            // Only dispose if this buffer is not refetched on each bind.
+
+            if (_handle == BufferHandle.Null)
+            {
+                _buffer?.DecrementReferenceCount();
+            }
         }
     }
 }
