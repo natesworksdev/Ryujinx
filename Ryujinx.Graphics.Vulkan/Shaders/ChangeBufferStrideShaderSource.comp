@@ -29,7 +29,7 @@ void main()
     int sourceOffset = stride_arguments_data.w;
 
     int strideRemainder = targetStride - sourceStride;
-    int invocations = 64;
+    int invocations = int(gl_WorkGroupSize.x);
 
     int copiesRequired = bufferSize / sourceStride;
 
