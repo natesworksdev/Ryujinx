@@ -131,7 +131,14 @@ namespace Ryujinx.Ui.Windows
 
                 if (await NeedsUpdate(JsonHelper.Deserialize<AmiiboJson>(amiiboJsonString).LastUpdated))
                 {
-                    amiiboJsonString = await DownloadAmiiboJson();
+                    try
+                    {
+                        amiiboJsonString = await DownloadAmiiboJson();
+                    }
+                    catch
+                    {
+                        ShowInfoDialog();
+                    }
                 }
             }
             else
