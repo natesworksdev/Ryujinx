@@ -282,7 +282,7 @@ namespace Ryujinx.Modules
 
                     if (!OperatingSystem.IsWindows())
                     {
-                        chmod(ryuExe, 0777);
+                        chmod(ryuExe, Convert.ToUInt32("0777", 8));
                     }
 
                     Process.Start(ryuExe, ryuArg);
