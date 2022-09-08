@@ -80,21 +80,22 @@ namespace Ryujinx.HLE.HOS
                 _device.Configuration.VirtualFileSystem.LoadRomFs(romFsFile);
             }
 
-            LocalFileSystem codeFs = new LocalFileSystem(exeFsDir);
-
-            MetaLoader metaData = ReadNpdm(codeFs);
-
-            _device.Configuration.VirtualFileSystem.ModLoader.CollectMods(
-                new[] { TitleId },
-                _device.Configuration.VirtualFileSystem.ModLoader.GetModsBasePath(),
-                _device.Configuration.VirtualFileSystem.ModLoader.GetSdModsBasePath());
-
-            if (TitleId != 0)
+            using (LocalFileSystem codeFs = new LocalFileSystem(exeFsDir))
             {
-                EnsureSaveData(new ApplicationId(TitleId));
-            }
+                MetaLoader metaData = ReadNpdm(codeFs);
 
-            LoadExeFs(codeFs, metaData);
+                _device.Configuration.VirtualFileSystem.ModLoader.CollectMods(
+                    new[] { TitleId },
+                    _device.Configuration.VirtualFileSystem.ModLoader.GetModsBasePath(),
+                    _device.Configuration.VirtualFileSystem.ModLoader.GetSdModsBasePath());
+
+                if (TitleId != 0)
+                {
+                    EnsureSaveData(new ApplicationId(TitleId));
+                }
+
+                LoadExeFs(codeFs, metaData);
+            }
         }
 
         public static (Nca main, Nca patch, Nca control) GetGameData(VirtualFileSystem fileSystem, PartitionFileSystem pfs, int programIndex)
@@ -200,8 +201,8 @@ namespace Ryujinx.HLE.HOS
 
                     if (File.Exists(updatePath))
                     {
-                        FileStream file = new FileStream(updatePath, FileMode.Open, FileAccess.Read);
-                        PartitionFileSystem nsp = new PartitionFileSystem(file.AsStorage());
+                        using FileStream file = new FileStream(updatePath, FileMode.Open, FileAccess.Read);
+                        using PartitionFileSystem nsp = new PartitionFileSystem(file.AsStorage());
 
                         return GetGameUpdateDataFromPartition(fileSystem, nsp, titleIdBase.ToString("x16"), programIndex);
                     }
@@ -213,53 +214,54 @@ namespace Ryujinx.HLE.HOS
 
         public void LoadXci(string xciFile)
         {
-            FileStream file = new FileStream(xciFile, FileMode.Open, FileAccess.Read);
-            Xci xci = new Xci(_device.Configuration.VirtualFileSystem.KeySet, file.AsStorage());
+            using (FileStream file = new FileStream(xciFile, FileMode.Open, FileAccess.Read)) {
+                Xci xci = new Xci(_device.Configuration.VirtualFileSystem.KeySet, file.AsStorage());
 
-            if (!xci.HasPartition(XciPartitionType.Secure))
-            {
-                Logger.Error?.Print(LogClass.Loader, "Unable to load XCI: Could not find XCI secure partition");
+                if (!xci.HasPartition(XciPartitionType.Secure))
+                {
+                    Logger.Error?.Print(LogClass.Loader, "Unable to load XCI: Could not find XCI secure partition");
 
-                return;
+                    return;
+                }
+
+                PartitionFileSystem securePartition = xci.OpenPartition(XciPartitionType.Secure);
+
+                Nca mainNca;
+                Nca patchNca;
+                Nca controlNca;
+
+                try
+                {
+                    (mainNca, patchNca, controlNca) = GetGameData(_device.Configuration.VirtualFileSystem, securePartition, _device.Configuration.UserChannelPersistence.Index);
+
+                    RegisterProgramMapInfo(securePartition).ThrowIfFailure();
+                }
+                catch (Exception e)
+                {
+                    Logger.Error?.Print(LogClass.Loader, $"Unable to load XCI: {e.Message}");
+
+                    return;
+                }
+
+                if (mainNca == null)
+                {
+                    Logger.Error?.Print(LogClass.Loader, "Unable to load XCI: Could not find Main NCA");
+
+                    return;
+                }
+
+                _device.Configuration.ContentManager.LoadEntries(_device);
+                _device.Configuration.ContentManager.ClearAocData();
+                _device.Configuration.ContentManager.AddAocData(securePartition, xciFile, mainNca.Header.TitleId, _device.Configuration.FsIntegrityCheckLevel);
+
+                LoadNca(mainNca, patchNca, controlNca);
             }
-
-            PartitionFileSystem securePartition = xci.OpenPartition(XciPartitionType.Secure);
-
-            Nca mainNca;
-            Nca patchNca;
-            Nca controlNca;
-
-            try
-            {
-                (mainNca, patchNca, controlNca) = GetGameData(_device.Configuration.VirtualFileSystem, securePartition, _device.Configuration.UserChannelPersistence.Index);
-
-                RegisterProgramMapInfo(securePartition).ThrowIfFailure();
-            }
-            catch (Exception e)
-            {
-                Logger.Error?.Print(LogClass.Loader, $"Unable to load XCI: {e.Message}");
-
-                return;
-            }
-
-            if (mainNca == null)
-            {
-                Logger.Error?.Print(LogClass.Loader, "Unable to load XCI: Could not find Main NCA");
-
-                return;
-            }
-
-            _device.Configuration.ContentManager.LoadEntries(_device);
-            _device.Configuration.ContentManager.ClearAocData();
-            _device.Configuration.ContentManager.AddAocData(securePartition, xciFile, mainNca.Header.TitleId, _device.Configuration.FsIntegrityCheckLevel);
-
-            LoadNca(mainNca, patchNca, controlNca);
         }
 
         public void LoadNsp(string nspFile)
         {
-            FileStream file = new FileStream(nspFile, FileMode.Open, FileAccess.Read);
-            PartitionFileSystem nsp = new PartitionFileSystem(file.AsStorage());
+            using FileStream file = new FileStream(nspFile, FileMode.Open, FileAccess.Read);
+            using PartitionFileSystem nsp = new PartitionFileSystem(file.AsStorage());
 
             Nca mainNca;
             Nca patchNca;
@@ -294,7 +296,7 @@ namespace Ryujinx.HLE.HOS
 
         public void LoadNca(string ncaFile)
         {
-            FileStream file = new FileStream(ncaFile, FileMode.Open, FileAccess.Read);
+            using FileStream file = new FileStream(ncaFile, FileMode.Open, FileAccess.Read);
             Nca nca = new Nca(_device.Configuration.VirtualFileSystem.KeySet, file.AsStorage(false));
 
             LoadNca(nca, null, null);
@@ -308,7 +310,7 @@ namespace Ryujinx.HLE.HOS
             Ptc.Close();
             PtcProfiler.Stop();
 
-            FileStream file = new FileStream(ncaFile, FileMode.Open, FileAccess.Read);
+            using FileStream file = new FileStream(ncaFile, FileMode.Open, FileAccess.Read);
             Nca mainNca = new Nca(_device.Configuration.VirtualFileSystem.KeySet, file.AsStorage(false));
 
             if (mainNca.Header.ContentType != NcaContentType.Program)
@@ -673,7 +675,7 @@ namespace Ryujinx.HLE.HOS
 
             if (isNro)
             {
-                FileStream input = new FileStream(filePath, FileMode.Open);
+                using FileStream input = new FileStream(filePath, FileMode.Open);
                 NroExecutable obj = new NroExecutable(input.AsStorage());
 
                 executable = obj;
@@ -683,71 +685,73 @@ namespace Ryujinx.HLE.HOS
                 {
                     input.Position = obj.FileSize;
 
-                    BinaryReader reader = new BinaryReader(input);
-
-                    uint asetMagic = reader.ReadUInt32();
-                    if (asetMagic == 0x54455341)
+                    using (BinaryReader reader = new BinaryReader(input))
                     {
-                        uint asetVersion = reader.ReadUInt32();
-                        if (asetVersion == 0)
+                        uint asetMagic = reader.ReadUInt32();
+                        if (asetMagic == 0x54455341)
                         {
-                            ulong iconOffset = reader.ReadUInt64();
-                            ulong iconSize = reader.ReadUInt64();
-
-                            ulong nacpOffset = reader.ReadUInt64();
-                            ulong nacpSize = reader.ReadUInt64();
-
-                            ulong romfsOffset = reader.ReadUInt64();
-                            ulong romfsSize = reader.ReadUInt64();
-
-                            if (romfsSize != 0)
+                            uint asetVersion = reader.ReadUInt32();
+                            if (asetVersion == 0)
                             {
-                                _device.Configuration.VirtualFileSystem.SetRomFs(new HomebrewRomFsStream(input, obj.FileSize + (long)romfsOffset));
-                            }
+                                ulong iconOffset = reader.ReadUInt64();
+                                ulong iconSize = reader.ReadUInt64();
 
-                            if (nacpSize != 0)
+                                ulong nacpOffset = reader.ReadUInt64();
+                                ulong nacpSize = reader.ReadUInt64();
+
+                                ulong romfsOffset = reader.ReadUInt64();
+                                ulong romfsSize = reader.ReadUInt64();
+
+                                if (romfsSize != 0)
+                                {
+                                    _device.Configuration.VirtualFileSystem.SetRomFs(new HomebrewRomFsStream(input, obj.FileSize + (long)romfsOffset));
+                                }
+
+                                if (nacpSize != 0)
+                                {
+                                    input.Seek(obj.FileSize + (long)nacpOffset, SeekOrigin.Begin);
+
+                                    reader.Read(ControlData.ByteSpan);
+
+                                    ref ApplicationControlProperty nacp = ref ControlData.Value;
+
+                                    programInfo.Name = nacp.Title[(int)_device.System.State.DesiredTitleLanguage].NameString.ToString();
+
+                                    if (string.IsNullOrWhiteSpace(programInfo.Name))
+                                    {
+                                        programInfo.Name = nacp.Title.ItemsRo.ToArray().FirstOrDefault(x => x.Name[0] != 0).NameString.ToString();
+                                    }
+
+                                    if (nacp.PresenceGroupId != 0)
+                                    {
+                                        programInfo.ProgramId = nacp.PresenceGroupId;
+                                    }
+                                    else if (nacp.SaveDataOwnerId != 0)
+                                    {
+                                        programInfo.ProgramId = nacp.SaveDataOwnerId;
+                                    }
+                                    else if (nacp.AddOnContentBaseId != 0)
+                                    {
+                                        programInfo.ProgramId = nacp.AddOnContentBaseId - 0x1000;
+                                    }
+                                    else
+                                    {
+                                        programInfo.ProgramId = 0000000000000000;
+                                    }
+                                }
+                            }
+                            else
                             {
-                                input.Seek(obj.FileSize + (long)nacpOffset, SeekOrigin.Begin);
-
-                                reader.Read(ControlData.ByteSpan);
-
-                                ref ApplicationControlProperty nacp = ref ControlData.Value;
-
-                                programInfo.Name = nacp.Title[(int)_device.System.State.DesiredTitleLanguage].NameString.ToString();
-
-                                if (string.IsNullOrWhiteSpace(programInfo.Name))
-                                {
-                                    programInfo.Name = nacp.Title.ItemsRo.ToArray().FirstOrDefault(x => x.Name[0] != 0).NameString.ToString();
-                                }
-
-                                if (nacp.PresenceGroupId != 0)
-                                {
-                                    programInfo.ProgramId = nacp.PresenceGroupId;
-                                }
-                                else if (nacp.SaveDataOwnerId != 0)
-                                {
-                                    programInfo.ProgramId = nacp.SaveDataOwnerId;
-                                }
-                                else if (nacp.AddOnContentBaseId != 0)
-                                {
-                                    programInfo.ProgramId = nacp.AddOnContentBaseId - 0x1000;
-                                }
-                                else
-                                {
-                                    programInfo.ProgramId = 0000000000000000;
-                                }
+                                Logger.Warning?.Print(LogClass.Loader, $"Unsupported ASET header version found \"{asetVersion}\"");
                             }
-                        }
-                        else
-                        {
-                            Logger.Warning?.Print(LogClass.Loader, $"Unsupported ASET header version found \"{asetVersion}\"");
                         }
                     }
                 }
             }
             else
             {
-                executable = new NsoExecutable(new LocalStorage(filePath, FileAccess.Read), Path.GetFileNameWithoutExtension(filePath));
+                using var localStorage = new LocalStorage(filePath, fileAccess.Read) 
+                executable = new NsoExecutable(localStorage, Path.GetFileNameWithoutExtension(filePath));
             }
 
             _device.Configuration.ContentManager.LoadEntries(_device);

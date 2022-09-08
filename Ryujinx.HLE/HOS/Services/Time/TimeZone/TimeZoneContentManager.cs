@@ -99,7 +99,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
                     romfs.OpenFile(ref binaryListFile.Ref(), "/binaryList.txt".ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
-                    StreamReader reader = new StreamReader(binaryListFile.Get.AsStream());
+                    using StreamReader reader = new StreamReader(binaryListFile.Get.AsStream());
 
                     List<string> locationNameList = new List<string>();
 

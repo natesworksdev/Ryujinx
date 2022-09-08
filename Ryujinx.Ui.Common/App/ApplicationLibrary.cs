@@ -212,41 +212,42 @@ namespace Ryujinx.Ui.App.Common
                                     }
                                     else
                                     {
-                                        pfs = new PartitionFileSystem(file.AsStorage());
-
-                                        // If the NSP doesn't have a main NCA, decrement the number of applications found and then continue to the next application.
-                                        bool hasMainNca = false;
-
-                                        foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*"))
+                                        using (pfs = new PartitionFileSystem(file.AsStorage()))
                                         {
-                                            if (Path.GetExtension(fileEntry.FullPath).ToLower() == ".nca")
+                                            // If the NSP doesn't have a main NCA, decrement the number of applications found and then continue to the next application.
+                                            bool hasMainNca = false;
+
+                                            foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*"))
                                             {
-                                                using var ncaFile = new UniqueRef<IFile>();
-
-                                                pfs.OpenFile(ref ncaFile.Ref(), fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-
-                                                Nca nca = new Nca(_virtualFileSystem.KeySet, ncaFile.Get.AsStorage());
-                                                int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
-
-                                                // Some main NCAs don't have a data partition, so check if the partition exists before opening it
-                                                if (nca.Header.ContentType == NcaContentType.Program && !(nca.SectionExists(NcaSectionType.Data) && nca.Header.GetFsHeader(dataIndex).IsPatchSection()))
+                                                if (Path.GetExtension(fileEntry.FullPath).ToLower() == ".nca")
                                                 {
-                                                    hasMainNca = true;
+                                                    using var ncaFile = new UniqueRef<IFile>();
 
-                                                    break;
+                                                    pfs.OpenFile(ref ncaFile.Ref(), fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+
+                                                    Nca nca = new Nca(_virtualFileSystem.KeySet, ncaFile.Get.AsStorage());
+                                                    int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
+
+                                                    // Some main NCAs don't have a data partition, so check if the partition exists before opening it
+                                                    if (nca.Header.ContentType == NcaContentType.Program && !(nca.SectionExists(NcaSectionType.Data) && nca.Header.GetFsHeader(dataIndex).IsPatchSection()))
+                                                    {
+                                                        hasMainNca = true;
+
+                                                        break;
+                                                    }
+                                                }
+                                                else if (Path.GetFileNameWithoutExtension(fileEntry.FullPath) == "main")
+                                                {
+                                                    isExeFs = true;
                                                 }
                                             }
-                                            else if (Path.GetFileNameWithoutExtension(fileEntry.FullPath) == "main")
+
+                                            if (!hasMainNca && !isExeFs)
                                             {
-                                                isExeFs = true;
+                                                numApplicationsFound--;
+
+                                                continue;
                                             }
-                                        }
-
-                                        if (!hasMainNca && !isExeFs)
-                                        {
-                                            numApplicationsFound--;
-
-                                            continue;
                                         }
                                     }
 
@@ -349,46 +350,46 @@ namespace Ryujinx.Ui.App.Common
                             }
                             else if (extension == ".nro")
                             {
-                                BinaryReader reader = new BinaryReader(file);
-
-                                byte[] Read(long position, int size)
+                                using (BinaryReader reader = new BinaryReader(file))
                                 {
-                                    file.Seek(position, SeekOrigin.Begin);
-
-                                    return reader.ReadBytes(size);
-                                }
-
-                                try
-                                {
-                                    file.Seek(24, SeekOrigin.Begin);
-
-                                    int assetOffset = reader.ReadInt32();
-
-                                    if (Encoding.ASCII.GetString(Read(assetOffset, 4)) == "ASET")
+                                    byte[] Read(long position, int size)
                                     {
-                                        byte[] iconSectionInfo = Read(assetOffset + 8, 0x10);
+                                        file.Seek(position, SeekOrigin.Begin);
 
-                                        long iconOffset = BitConverter.ToInt64(iconSectionInfo, 0);
-                                        long iconSize = BitConverter.ToInt64(iconSectionInfo, 8);
-
-                                        ulong nacpOffset = reader.ReadUInt64();
-                                        ulong nacpSize = reader.ReadUInt64();
-
-                                        // Reads and stores game icon as byte array
-                                        applicationIcon = Read(assetOffset + iconOffset, (int)iconSize);
-
-                                        // Read the NACP data
-                                        Read(assetOffset + (int)nacpOffset, (int)nacpSize).AsSpan().CopyTo(controlHolder.ByteSpan);
-
-                                        GetGameInformation(ref controlHolder.Value, out titleName, out titleId, out developer, out version);
+                                        return reader.ReadBytes(size);
                                     }
-                                    else
+
+                                    try
                                     {
-                                        applicationIcon = _nroIcon;
-                                        titleName = Path.GetFileNameWithoutExtension(applicationPath);
+                                        file.Seek(24, SeekOrigin.Begin);
+
+                                        int assetOffset = reader.ReadInt32();
+
+                                        if (Encoding.ASCII.GetString(Read(assetOffset, 4)) == "ASET")
+                                        {
+                                            byte[] iconSectionInfo = Read(assetOffset + 8, 0x10);
+
+                                            long iconOffset = BitConverter.ToInt64(iconSectionInfo, 0);
+                                            long iconSize = BitConverter.ToInt64(iconSectionInfo, 8);
+
+                                            ulong nacpOffset = reader.ReadUInt64();
+                                            ulong nacpSize = reader.ReadUInt64();
+
+                                            // Reads and stores game icon as byte array
+                                            applicationIcon = Read(assetOffset + iconOffset, (int)iconSize);
+
+                                            // Read the NACP data
+                                            Read(assetOffset + (int)nacpOffset, (int)nacpSize).AsSpan().CopyTo(controlHolder.ByteSpan);
+
+                                            GetGameInformation(ref controlHolder.Value, out titleName, out titleId, out developer, out version);
+                                        }
+                                        else
+                                        {
+                                            applicationIcon = _nroIcon;
+                                            titleName = Path.GetFileNameWithoutExtension(applicationPath);
+                                        }
                                     }
-                                }
-                                catch
+                                    catch
                                 {
                                     Logger.Warning?.Print(LogClass.Application, $"The file encountered was not of a valid type. Errored File: {applicationPath}");
 
@@ -396,19 +397,25 @@ namespace Ryujinx.Ui.App.Common
 
                                     continue;
                                 }
+                                }
+
+                                
                             }
                             else if (extension == ".nca")
                             {
                                 try
                                 {
-                                    Nca nca = new Nca(_virtualFileSystem.KeySet, new FileStream(applicationPath, FileMode.Open, FileAccess.Read).AsStorage());
-                                    int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
-
-                                    if (nca.Header.ContentType != NcaContentType.Program || (nca.SectionExists(NcaSectionType.Data) && nca.Header.GetFsHeader(dataIndex).IsPatchSection()))
+                                    using (var fileStream = new FileStream(applicationPath, FileMode.Open, FileAccess.Read))
                                     {
-                                        numApplicationsFound--;
+                                        Nca nca = new Nca(_virtualFileSystem.KeySet, fileStream.AsStorage());
+                                        int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
 
-                                        continue;
+                                        if (nca.Header.ContentType != NcaContentType.Program || (nca.SectionExists(NcaSectionType.Data) && nca.Header.GetFsHeader(dataIndex).IsPatchSection()))
+                                        {
+                                            numApplicationsFound--;
+
+                                            continue;
+                                        }
                                     }
                                 }
                                 catch (InvalidDataException)
@@ -587,13 +594,14 @@ namespace Ryujinx.Ui.App.Common
                                 }
                                 else
                                 {
-                                    pfs = new PartitionFileSystem(file.AsStorage());
-
-                                    foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*"))
+                                    using (pfs = new PartitionFileSystem(file.AsStorage()))
                                     {
-                                        if (Path.GetFileNameWithoutExtension(fileEntry.FullPath) == "main")
+                                        foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*"))
                                         {
-                                            isExeFs = true;
+                                            if (Path.GetFileNameWithoutExtension(fileEntry.FullPath) == "main")
+                                            {
+                                                isExeFs = true;
+                                            }
                                         }
                                     }
                                 }
@@ -672,40 +680,41 @@ namespace Ryujinx.Ui.App.Common
                         }
                         else if (extension == ".nro")
                         {
-                            BinaryReader reader = new(file);
-
-                            byte[] Read(long position, int size)
+                            using (BinaryReader reader = new(file))
                             {
-                                file.Seek(position, SeekOrigin.Begin);
-
-                                return reader.ReadBytes(size);
-                            }
-
-                            try
-                            {
-                                file.Seek(24, SeekOrigin.Begin);
-
-                                int assetOffset = reader.ReadInt32();
-
-                                if (Encoding.ASCII.GetString(Read(assetOffset, 4)) == "ASET")
+                                byte[] Read(long position, int size)
                                 {
-                                    byte[] iconSectionInfo = Read(assetOffset + 8, 0x10);
+                                    file.Seek(position, SeekOrigin.Begin);
 
-                                    long iconOffset = BitConverter.ToInt64(iconSectionInfo, 0);
-                                    long iconSize = BitConverter.ToInt64(iconSectionInfo, 8);
-
-                                    // Reads and stores game icon as byte array
-                                    applicationIcon = Read(assetOffset + iconOffset, (int)iconSize);
+                                    return reader.ReadBytes(size);
                                 }
-                                else
+
+                                try
                                 {
-                                    applicationIcon = _nroIcon;
+                                    file.Seek(24, SeekOrigin.Begin);
+
+                                    int assetOffset = reader.ReadInt32();
+
+                                    if (Encoding.ASCII.GetString(Read(assetOffset, 4)) == "ASET")
+                                    {
+                                        byte[] iconSectionInfo = Read(assetOffset + 8, 0x10);
+
+                                        long iconOffset = BitConverter.ToInt64(iconSectionInfo, 0);
+                                        long iconSize = BitConverter.ToInt64(iconSectionInfo, 8);
+
+                                        // Reads and stores game icon as byte array
+                                        applicationIcon = Read(assetOffset + iconOffset, (int)iconSize);
+                                    }
+                                    else
+                                    {
+                                        applicationIcon = _nroIcon;
+                                    }
                                 }
-                            }
-                            catch
-                            {
-                                Logger.Warning?.Print(LogClass.Application,
-                                    $"The file encountered was not of a valid type. Errored File: {applicationPath}");
+                                catch
+                                {
+                                    Logger.Warning?.Print(LogClass.Application,
+                                        $"The file encountered was not of a valid type. Errored File: {applicationPath}");
+                                }
                             }
                         }
                         else if (extension == ".nca")

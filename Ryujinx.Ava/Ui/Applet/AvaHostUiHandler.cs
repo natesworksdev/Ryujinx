@@ -45,7 +45,7 @@ namespace Ryujinx.Ava.Ui.Applet
 
         public bool DisplayMessageDialog(string title, string message)
         {
-            ManualResetEvent dialogCloseEvent = new(false);
+            using ManualResetEvent dialogCloseEvent = new(false);
 
             bool okPressed = false;
 
@@ -53,7 +53,7 @@ namespace Ryujinx.Ava.Ui.Applet
             {
                 try
                 {
-                    ManualResetEvent deferEvent = new(false);
+                    using ManualResetEvent deferEvent = new(false);
 
                     bool opened = false;
 

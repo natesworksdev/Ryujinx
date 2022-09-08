@@ -51,20 +51,21 @@ namespace Ryujinx.Ava.Ui.Windows
                 return;
             }
 
-            HttpClient httpClient = new();
-
-            try
+            using (HttpClient httpClient = new())
             {
-                string patreonJsonString = await httpClient.GetStringAsync("https://patreon.ryujinx.org/");
+                try
+                {
+                    string patreonJsonString = await httpClient.GetStringAsync("https://patreon.ryujinx.org/");
 
-                Supporters = string.Join(", ", JsonHelper.Deserialize<string[]>(patreonJsonString));
-            }
-            catch
-            {
-                Supporters = LocaleManager.Instance["ApiError"];
-            }
+                    Supporters = string.Join(", ", JsonHelper.Deserialize<string[]>(patreonJsonString));
+                }
+                catch
+                {
+                    Supporters = LocaleManager.Instance["ApiError"];
+                }
 
-            await Dispatcher.UIThread.InvokeAsync(() => SupportersTextBlock.Text = Supporters);
+                await Dispatcher.UIThread.InvokeAsync(() => SupportersTextBlock.Text = Supporters);
+            }
         }
 
         private void AmiiboLabel_OnPointerPressed(object sender, PointerPressedEventArgs e)

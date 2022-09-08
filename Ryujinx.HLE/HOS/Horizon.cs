@@ -323,7 +323,8 @@ namespace Ryujinx.HLE.HOS
 
         public void LoadKip(string kipPath)
         {
-            using var kipFile = new SharedRef<IStorage>(new LocalStorage(kipPath, FileAccess.Read));
+            using var localStorage = new LocalStorage(kipPath, FileAccess.Read)
+            using var kipFile = new SharedRef<IStorage>(localStorage);
 
             ProgramLoader.LoadKip(KernelContext, new KipExecutable(in kipFile));
         }
