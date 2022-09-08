@@ -19,6 +19,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.NetworkInformation;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -209,9 +210,9 @@ namespace Ryujinx.Modules
                 // Show a message asking the user if they want to update
                 var shouldUpdate = await ContentDialogHelper.CreateChoiceDialog(LocaleManager.Instance["RyujinxUpdater"],
                     LocaleManager.Instance["RyujinxUpdaterMessage"],
-                     $"{Program.Version} -> {newVersion}");
+                    $"{Program.Version} -> {newVersion}");
 
-                if(shouldUpdate)
+                if (shouldUpdate)
                 {
                     UpdateRyujinx(mainWindow, _buildUrl);
                 }
@@ -269,16 +270,15 @@ namespace Ryujinx.Modules
 
             if (UpdateSuccessful)
             {
-
                 var shouldRestart = await ContentDialogHelper.CreateChoiceDialog(LocaleManager.Instance["RyujinxUpdater"],
                     LocaleManager.Instance["DialogUpdaterCompleteMessage"],
                     LocaleManager.Instance["DialogUpdaterRestartMessage"]);
 
                 if (shouldRestart)
                 {
-                    string ryuName = OperatingSystem.IsWindows() ? "Ryujinx.Ava.exe" : "Ryujinx.Ava";
+                    string ryuName = Path.GetFileName(Environment.ProcessPath);
                     string ryuExe = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ryuName);
-                    string ryuArg = string.Join(" ", Environment.GetCommandLineArgs().AsEnumerable().Skip(1).ToArray());
+                    string ryuArg = string.Join(" ", Environment.GetCommandLineArgs().Skip(1).ToArray());
 
                     if (!OperatingSystem.IsWindows())
                     {
@@ -432,7 +432,7 @@ namespace Ryujinx.Modules
 
                             byteWritten += readSize;
 
-                            taskDialog.SetProgressBarState((double)byteWritten / totalBytes * 100, TaskDialogProgressState.Normal);
+                            taskDialog.SetProgressBarState(GetPercentage(byteWritten, totalBytes), TaskDialogProgressState.Normal);
 
                             updateFileStream.Write(buffer, 0, readSize);
                         }
@@ -443,9 +443,15 @@ namespace Ryujinx.Modules
             }
         }
 
-        private static void DoUpdateWithSingleThread(TaskDialog taskDIalog, string downloadUrl, string updateFile)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double GetPercentage(double value, double max)
         {
-            Thread worker = new Thread(() => DoUpdateWithSingleThreadWorker(taskDIalog, downloadUrl, updateFile));
+            return max == 0 ? 0 : value / max * 100;
+        }
+
+        private static void DoUpdateWithSingleThread(TaskDialog taskDialog, string downloadUrl, string updateFile)
+        {
+            Thread worker = new Thread(() => DoUpdateWithSingleThreadWorker(taskDialog, downloadUrl, updateFile));
             worker.Name = "Updater.SingleThreadWorker";
             worker.Start();
         }
@@ -497,7 +503,7 @@ namespace Ryujinx.Modules
 
                             Dispatcher.UIThread.Post(() =>
                             {
-                                taskDialog.SetProgressBarState((double)entry.Size / inStream.Length * 100, TaskDialogProgressState.Normal);
+                                taskDialog.SetProgressBarState(GetPercentage(entry.Size, inStream.Length), TaskDialogProgressState.Normal);
                             });
                         }
                     });
@@ -532,7 +538,7 @@ namespace Ryujinx.Modules
 
                             Dispatcher.UIThread.Post(() =>
                             {
-                                taskDialog.SetProgressBarState(count / zipFile.Count * 100, TaskDialogProgressState.Normal);
+                                taskDialog.SetProgressBarState(GetPercentage(count, zipFile.Count), TaskDialogProgressState.Normal);
                             });
                         }
                     });
@@ -560,7 +566,7 @@ namespace Ryujinx.Modules
 
                         Dispatcher.UIThread.Post(() =>
                         {
-                            taskDialog.SetProgressBarState((count / allFiles.Count) * 100, TaskDialogProgressState.Normal);
+                            taskDialog.SetProgressBarState(GetPercentage(count, allFiles.Count), TaskDialogProgressState.Normal);
                         });
                     }
                     catch
@@ -686,7 +692,7 @@ namespace Ryujinx.Modules
 
                 Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    taskDialog.SetProgressBarState(count / total * 100, TaskDialogProgressState.Normal);
+                    taskDialog.SetProgressBarState(GetPercentage(count, total), TaskDialogProgressState.Normal);
                 });
             }
         }
