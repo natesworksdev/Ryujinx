@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Platform;
-using PInvoke;
 using SPB.Graphics;
 using SPB.Platform;
 using SPB.Platform.GLX;
@@ -17,16 +16,13 @@ namespace Ryujinx.Ava.Ui.Controls
 {
     public unsafe class EmbeddedWindow : NativeControlHost
     {
-        protected GLXWindow _bwindow;
         private WndProc _wndProcDelegate;
         private string _className;
 
         protected IntPtr WindowHandle { get; set; }
-
         protected IntPtr X11Display{ get; set; }
 
         public event EventHandler<IntPtr> WindowCreated;
-
         public event EventHandler<Size> SizeChanged;
 
         protected virtual void OnWindowDestroyed() { }
@@ -45,9 +41,7 @@ namespace Ryujinx.Ava.Ui.Controls
             this.Initialized += NativeEmbeddedWindow_Initialized;
         }
 
-        public virtual void OnWindowCreated()
-        {
-        }
+        public virtual void OnWindowCreated() { }
 
         private void NativeEmbeddedWindow_Initialized(object sender, EventArgs e)
         {
@@ -74,10 +68,6 @@ namespace Ryujinx.Ava.Ui.Controls
             {
                 return CreateWin32(parent);
             }
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                return CreateOSX(parent);
-            }
             return base.CreateNativeControlCore(parent);
         }
 
@@ -92,10 +82,6 @@ namespace Ryujinx.Ava.Ui.Controls
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 DestroyWin32(control);
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                DestroyOSX(control);
             }
             else
             {
@@ -132,11 +118,6 @@ namespace Ryujinx.Ava.Ui.Controls
 
                 return window;
             }
-        }
-
-        IPlatformHandle CreateOSX(IPlatformHandle parent)
-        {
-            return null;
         }
 
         unsafe IPlatformHandle CreateWin32(IPlatformHandle parent)
@@ -234,15 +215,8 @@ namespace Ryujinx.Ava.Ui.Controls
             }
         }
 
-        void DestroyOSX(IPlatformHandle handle)
-        {
-        }
-
         [DllImport("kernel32.dll")]
         public static extern IntPtr GetModuleHandle(string lpModuleName);
-
-        [DllImport("user32.dll")]
-        public static extern IntPtr SetLayeredWindowAttributes(IntPtr hwnd, long crKey, long bAlpha, long dwFlags);
 
         void DestroyWin32(IPlatformHandle handle)
         {

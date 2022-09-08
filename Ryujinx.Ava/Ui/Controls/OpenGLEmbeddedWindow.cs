@@ -18,13 +18,7 @@ namespace Ryujinx.Ava.Ui.Controls
         private readonly int _minor;
         private readonly GraphicsDebugLevel _graphicsDebugLevel;
         private SwappableNativeWindowBase _window;
-
-        public bool IsSecond { get; set; }
         public OpenGLContextBase Context { get; set; }
-
-        public static OpenGLContextBase PrimaryContext =>
-            AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>()
-                .PrimaryContext.AsOpenGLContextBase();
 
         public OpenGLEmbeddedWindow(int major, int minor, GraphicsDebugLevel graphicsDebugLevel)
         {
