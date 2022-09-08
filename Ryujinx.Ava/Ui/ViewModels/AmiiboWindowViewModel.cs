@@ -191,7 +191,14 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                 if (await NeedsUpdate(JsonSerializer.Deserialize<Amiibo.AmiiboJson>(amiiboJsonString).LastUpdated))
                 {
-                    amiiboJsonString = await DownloadAmiiboJson();
+                    try
+                    {
+                        amiiboJsonString = await DownloadAmiiboJson();
+                    }
+                    catch
+                    {
+                        ShowInfoDialog();
+                    }
                 }
             }
             else
@@ -361,7 +368,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return response.Content.Headers.LastModified != oldLastModified;
+                    return response.Content.Headers.LastModified?.TimeOfDay != oldLastModified.AddTicks(-oldLastModified.Ticks % TimeSpan.TicksPerSecond).TimeOfDay;
                 }
 
                 return false;
