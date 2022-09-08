@@ -10,9 +10,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
         private LdnProxyTcpServer _parent;
         private LanProtocol _protocol;
 
-        internal int nodeId;
+        internal int NodeId;
 
-        internal NodeInfo nodeInfo;
+        internal NodeInfo NodeInfo;
 
         private byte[] _buffer;
         private int _bufferEnd;
@@ -29,8 +29,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 
         public void OverrideInfo()
         {
-            nodeInfo.NodeId = (byte)nodeId;
-            nodeInfo.IsConnected = (byte)(IsConnected ? 1 : 0);
+            NodeInfo.NodeId = (byte)NodeId;
+            NodeInfo.IsConnected = (byte)(IsConnected ? 1 : 0);
         }
 
         protected override void OnConnected()
@@ -68,12 +68,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
             {
                 if (endPoint.Equals(this.Socket.RemoteEndPoint))
                 {
-                    nodeInfo = info;
+                    NodeInfo = info;
                 }
             }
             catch (System.ObjectDisposedException)
             {
-                Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPSession was disposed. [IP: {nodeInfo.Ipv4Address}]");
+                Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPSession was disposed. [IP: {NodeInfo.Ipv4Address}]");
                 _protocol.InvokeDisconnectStation(this);
             }
         }

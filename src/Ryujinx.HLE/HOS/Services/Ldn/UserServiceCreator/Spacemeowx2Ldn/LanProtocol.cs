@@ -49,7 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         public LanProtocol(LanDiscovery parent)
         {
             _discovery = parent;
-            _localBroadcastAddr = GetBroadcastAddress(_discovery.localAddr, _discovery.localAddrMask);
+            _localBroadcastAddr = GetBroadcastAddress(_discovery.LocalAddr, _discovery.LocalAddrMask);
         }
 
         public void InvokeAccept(LdnProxyTcpSession session)
@@ -68,7 +68,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             {
                 case LanPacketType.Scan:
                     // UDP
-                    Scan?.Invoke(endPoint, LanPacketType.ScanResponse, LdnHelper.StructureToByteArray(_discovery.networkInfo));
+                    Scan?.Invoke(endPoint, LanPacketType.ScanResponse, LdnHelper.StructureToByteArray(_discovery.NetworkInfo));
                     break;
                 case LanPacketType.ScanResponse:
                     // UDP
@@ -90,7 +90,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         public void Read(ref byte[] _buffer, ref int _bufferEnd, byte[] data, int offset, int size, EndPoint endPoint = null)
         {
-            if (endPoint != null && _discovery.localAddr.Equals(((IPEndPoint)endPoint).Address))
+            if (endPoint != null && _discovery.LocalAddr.Equals(((IPEndPoint)endPoint).Address))
             {
                 return;
             }
@@ -246,8 +246,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
             while (i < input.Length)
             {
-                byte inputByte = input[i];
-                i++;
+                byte inputByte = input[i++];
                 int count = 0;
 
                 if (inputByte == 0)
@@ -269,6 +268,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
                         return -1;
                     }
+
                     outputList.Add((byte)count);
                 }
                 else
@@ -289,8 +289,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
             while (i < input.Length && outputList.Count < BufferSize)
             {
-                byte inputByte = input[i];
-                i++;
+                byte inputByte = input[i++];
 
                 outputList.Add(inputByte);
 
@@ -303,8 +302,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                         return -1;
                     }
 
-                    int count = input[i];
-                    i++;
+                    int count = input[i++];
 
                     for (int j = 0; j < count; j++)
                     {
