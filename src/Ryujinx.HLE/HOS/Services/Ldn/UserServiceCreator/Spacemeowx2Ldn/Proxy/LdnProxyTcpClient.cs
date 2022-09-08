@@ -1,4 +1,5 @@
-﻿using Ryujinx.Common.Logging;
+﻿using System;
+using Ryujinx.Common.Logging;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -77,16 +78,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 
         public bool Start()
         {
-            Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPClient Start was called.");
-
-            return false;
+            throw new InvalidOperationException("Start was called.");
         }
 
         public bool Stop()
         {
-            Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPClient Stop was called.");
-
-            return false;
+            throw new InvalidOperationException("Stop was called.");
         }
     }
 }

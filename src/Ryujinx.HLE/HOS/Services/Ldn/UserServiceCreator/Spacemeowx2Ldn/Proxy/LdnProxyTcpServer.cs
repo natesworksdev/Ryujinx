@@ -1,4 +1,5 @@
-﻿using NetCoreServer;
+﻿using System;
+using NetCoreServer;
 using Ryujinx.Common.Logging;
 using System.Net;
 using System.Net.Sockets;
@@ -38,9 +39,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 
         public bool ConnectAsync()
         {
-            Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPServer ConnectAsync was called.");
-
-            return false;
+            throw new InvalidOperationException("ConnectAsync was called.");
         }
 
         public void DisconnectAndStop()
@@ -50,9 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 
         public bool SendPacketAsync(EndPoint endpoint, byte[] buffer)
         {
-            Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPServer SendPacketAsync was called.");
-
-            return false;
+            throw new InvalidOperationException("SendPacketAsync was called.");
         }
     }
 }
