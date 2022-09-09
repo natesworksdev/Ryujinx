@@ -25,7 +25,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         private bool _initialized;
         private readonly Ssid _fakeSsid;
         private ILdnTcpSocket _tcp;
-        // NOTE: This type may need to be changed to ILdnUdpSocket in the future
         private LdnProxyUdpServer _udp;
         private List<LdnProxyTcpSession> _stations = new List<LdnProxyTcpSession>();
 
@@ -82,12 +81,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             return networkInfo;
         }
 
-        public LanDiscovery(Spacemeowx2LdnClient parent, IPAddress ipAddress, IPAddress ipv4mask, bool listening = true)
+        public LanDiscovery(Spacemeowx2LdnClient parent, IPAddress ipAddress, IPAddress ipv4mask)
         {
             Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"Initialize LanDiscovery using IP: {ipAddress}");
 
-            _parent            = parent;
-            LocalAddr          = ipAddress;
+            _parent = parent;
+            LocalAddr = ipAddress;
             LocalBroadcastAddr = GetBroadcastAddress(ipAddress, ipv4mask);
 
             _fakeSsid = new()
@@ -103,14 +102,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
             NetworkInfo = GetEmptyNetworkInfo();
 
-            Initialize(listening);
-        }
-
-        public void Initialize(bool listening)
-        {
             ResetStations();
 
-            if (!InitUdp(listening))
+            if (!InitUdp())
             {
                 Logger.Error?.PrintMsg(LogClass.ServiceLdn, "LanDiscovery Initialize: InitUdp failed.");
 
@@ -289,35 +283,28 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             return true;
         }
 
-        public bool InitUdp(bool listening)
+        public bool InitUdp()
         {
             if (_udp != null)
             {
                 _udp.Stop();
             }
 
-            if (listening)
+            try
             {
-                try
-                {
-                    // NOTE: Linux won't receive any broadcast packets if the socket is not bound to the broadcast address.
-                    //       Windows only works if bound to localhost or the local address.
-                    //       See this discussion: https://stackoverflow.com/questions/13666789/receiving-udp-broadcast-packets-on-linux
-                    _udp = new LdnProxyUdpServer(_protocol, OperatingSystem.IsLinux() ? LocalBroadcastAddr : LocalAddr, DEFAULT_PORT);
+                // NOTE: Linux won't receive any broadcast packets if the socket is not bound to the broadcast address.
+                //       Windows only works if bound to localhost or the local address.
+                //       See this discussion: https://stackoverflow.com/questions/13666789/receiving-udp-broadcast-packets-on-linux
+                _udp = new LdnProxyUdpServer(_protocol, OperatingSystem.IsLinux() ? LocalBroadcastAddr : LocalAddr, DEFAULT_PORT);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"Failed to create LdnProxyUdpServer: {ex}");
 
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"Failed to create LdnProxyUdpServer: {ex}");
-
-                    return false;
-                }
+                return false;
             }
 
-            Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"Failed to create a udp client socket.");
-
-            return false;
+            return true;
         }
 
         public NetworkInfo[] Scan(ushort channel, ScanFilter filter)

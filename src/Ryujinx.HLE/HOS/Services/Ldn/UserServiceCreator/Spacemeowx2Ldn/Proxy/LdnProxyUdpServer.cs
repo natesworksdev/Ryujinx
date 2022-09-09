@@ -8,7 +8,7 @@ using System.Net.Sockets;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 {
-    internal class LdnProxyUdpServer : NetCoreServer.UdpServer, ILdnUdpSocket
+    internal class LdnProxyUdpServer : NetCoreServer.UdpServer, ILdnSocket
     {
         private LanProtocol _protocol;
         private byte[] _buffer;
