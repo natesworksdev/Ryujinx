@@ -30,8 +30,18 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         private List<LdnProxyTcpSession> _stations = new List<LdnProxyTcpSession>();
 
         internal readonly IPAddress LocalAddr;
-        internal readonly IPAddress LocalAddrMask;
+        internal readonly IPAddress LocalBroadcastAddr;
         internal NetworkInfo NetworkInfo;
+
+        // NOTE: Credit to https://stackoverflow.com/a/39338188
+        private static IPAddress GetBroadcastAddress(IPAddress address, IPAddress mask)
+        {
+            uint ipAddress = BitConverter.ToUInt32(address.GetAddressBytes(), 0);
+            uint ipMaskV4 = BitConverter.ToUInt32(mask.GetAddressBytes(), 0);
+            uint broadCastIpAddress = ipAddress | ~ipMaskV4;
+
+            return new IPAddress(BitConverter.GetBytes(broadCastIpAddress));
+        }
 
         private static NetworkInfo GetEmptyNetworkInfo()
         {
@@ -76,9 +86,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         {
             Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"Initialize LanDiscovery using IP: {ipAddress}");
 
-            _parent = parent;
-            LocalAddr = ipAddress;
-            LocalAddrMask = ipv4mask;
+            _parent            = parent;
+            LocalAddr          = ipAddress;
+            LocalBroadcastAddr = GetBroadcastAddress(ipAddress, ipv4mask);
 
             _fakeSsid = new()
             {
@@ -290,7 +300,10 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             {
                 try
                 {
-                    _udp = new LdnProxyUdpServer(_protocol, LocalAddr, DEFAULT_PORT);
+                    // NOTE: Linux won't receive any broadcast packets if the socket is not bound to the broadcast address.
+                    //       Windows only works if bound to localhost or the local address.
+                    //       See this discussion: https://stackoverflow.com/questions/13666789/receiving-udp-broadcast-packets-on-linux
+                    _udp = new LdnProxyUdpServer(_protocol, OperatingSystem.IsLinux() ? LocalBroadcastAddr : LocalAddr, DEFAULT_PORT);
 
                     return true;
                 }

@@ -27,8 +27,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         private readonly LanDiscovery _discovery;
 
-        private readonly IPAddress _localBroadcastAddr;
-
         public event Action<LdnProxyTcpSession> Accept;
         public event Action<EndPoint, LanPacketType, byte[]> Scan;
         public event Action<NetworkInfo> ScanResponse;
@@ -36,20 +34,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         public event Action<NodeInfo, EndPoint> Connect;
         public event Action<LdnProxyTcpSession> DisconnectStation;
 
-        // NOTE: Credit to https://stackoverflow.com/a/39338188
-        private static IPAddress GetBroadcastAddress(IPAddress address, IPAddress mask)
-        {
-            uint ipAddress = BitConverter.ToUInt32(address.GetAddressBytes(), 0);
-            uint ipMaskV4 = BitConverter.ToUInt32(mask.GetAddressBytes(), 0);
-            uint broadCastIpAddress = ipAddress | ~ipMaskV4;
-
-            return new IPAddress(BitConverter.GetBytes(broadCastIpAddress));
-        }
-
         public LanProtocol(LanDiscovery parent)
         {
             _discovery = parent;
-            _localBroadcastAddr = GetBroadcastAddress(_discovery.LocalAddr, _discovery.LocalAddrMask);
         }
 
         public void InvokeAccept(LdnProxyTcpSession session)
@@ -96,15 +83,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             }
 
             Logger.Debug?.PrintMsg(LogClass.ServiceLdn, $"LanProtocol Reading data: EP: {endPoint} Offset: {offset} Size: {size}");
-
-            // Scan packet
-            if (size == 12)
-            {
-                DecodeAndHandle(PrepareHeader(new LanPacketHeader(), LanPacketType.Scan), Array.Empty<byte>(), endPoint);
-                _bufferEnd = 0;
-
-                return;
-            }
 
             int index = 0;
             while (index < size)
@@ -179,7 +157,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         public int SendBroadcast(ILdnSocket s, LanPacketType type, int port)
         {
-            return SendPacket(s, type, Array.Empty<byte>(), new IPEndPoint(_localBroadcastAddr, port));
+            return SendPacket(s, type, Array.Empty<byte>(), new IPEndPoint(_discovery.LocalBroadcastAddr, port));
         }
 
         public int SendPacket(ILdnSocket s, LanPacketType type, byte[] data, EndPoint endPoint = null)
