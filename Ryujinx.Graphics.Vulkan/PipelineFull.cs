@@ -158,9 +158,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         private void FlushPendingQuery()
         {
-            if (_hasPendingQuery)
+            if (AutoFlush.ShouldFlushQuery())
             {
-                _hasPendingQuery = false;
                 FlushCommandsImpl();
             }
         }
@@ -211,6 +210,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void FlushCommandsImpl()
         {
+            AutoFlush.RegisterFlush(DrawCount);
             EndRenderPass();
 
             foreach (var queryPool in _activeQueries)
@@ -277,12 +277,15 @@ namespace Ryujinx.Graphics.Vulkan
         {
             _pendingQueryCopies.Add(query);
 
-            _hasPendingQuery = true;
+            AutoFlush.RegisterPendingQuery();
         }
 
         protected override void SignalAttachmentChange()
         {
-            FlushPendingQuery();
+            if (AutoFlush.ShouldFlush(DrawCount))
+            {
+                FlushCommandsImpl();
+            }
         }
 
         protected override void SignalRenderPassEnd()

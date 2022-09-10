@@ -19,6 +19,8 @@ namespace Ryujinx.Graphics.Vulkan
         protected readonly Device Device;
         public readonly PipelineCache PipelineCache;
 
+        protected readonly AutoFlushCounter AutoFlush;
+
         private PipelineDynamicState _dynamicState;
         private PipelineState _newState;
         private bool _stateDirty;
@@ -69,6 +71,8 @@ namespace Ryujinx.Graphics.Vulkan
         {
             Gd = gd;
             Device = device;
+
+            AutoFlush = new AutoFlushCounter();
 
             var pipelineCacheCreateInfo = new PipelineCacheCreateInfo()
             {
@@ -1118,6 +1122,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         private void RecreatePipelineIfNeeded(PipelineBindPoint pbp)
         {
+            if (AutoFlush.ShouldFlushDraw())
+            {
+                Gd.FlushAllCommands();
+            }
+
             _dynamicState.ReplayIfDirty(Gd.Api, CommandBuffer);
 
             // Commit changes to the support buffer before drawing.
