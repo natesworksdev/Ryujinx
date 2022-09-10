@@ -10,8 +10,6 @@ namespace Ryujinx.Graphics.Vulkan
     {
         private const ulong MinByteWeightForFlush = 256 * 1024 * 1024; // MB
 
-        private bool _hasPendingQuery;
-
         private readonly List<QueryPool> _activeQueries;
         private CounterQueueEvent _activeConditionalRender;
 
