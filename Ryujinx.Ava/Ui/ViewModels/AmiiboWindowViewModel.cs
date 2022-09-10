@@ -8,6 +8,7 @@ using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -181,40 +182,62 @@ namespace Ryujinx.Ava.Ui.ViewModels
             _httpClient.Dispose();
         }
 
-        private async Task LoadContentAsync()
+        private bool TryGetAmiiboJson(string json, out Amiibo.AmiiboJson amiiboJson)
         {
-            string amiiboJsonString = DefaultJson;
-
-            if (File.Exists(_amiiboJsonPath))
+            try
             {
-                amiiboJsonString = File.ReadAllText(_amiiboJsonPath);
+                amiiboJson = JsonHelper.Deserialize<Amiibo.AmiiboJson>(json);
+                return true;
+            }
+            catch
+            {
+                amiiboJson = JsonHelper.Deserialize<Amiibo.AmiiboJson>(DefaultJson);
+                return false;
+            }
+        }
 
-                if (await NeedsUpdate(JsonSerializer.Deserialize<Amiibo.AmiiboJson>(amiiboJsonString).LastUpdated))
+        private async Task<Amiibo.AmiiboJson> GetMostRecentAmiiboListOrDefaultJson()
+        {
+            bool localIsValid = false;
+            bool remoteIsValid = false;
+            Amiibo.AmiiboJson amiiboJson = JsonHelper.Deserialize<Amiibo.AmiiboJson>(DefaultJson);
+
+            try
+            {
+                localIsValid = TryGetAmiiboJson(File.ReadAllText(_amiiboJsonPath), out amiiboJson);
+
+                if (!localIsValid || await NeedsUpdate(amiiboJson.LastUpdated))
                 {
-                    try
-                    {
-                        amiiboJsonString = await DownloadAmiiboJson();
-                    }
-                    catch
-                    {
-                        ShowInfoDialog();
-                    }
+                    remoteIsValid = TryGetAmiiboJson(await DownloadAmiiboJson(), out amiiboJson);
                 }
             }
-            else
+            catch
             {
-                try
+                if (!(localIsValid || remoteIsValid))
                 {
-                    amiiboJsonString = await DownloadAmiiboJson();
+                    // Neither local or remote files are valid JSON, close window.
+                    ShowInfoDialog();
+                    Close();
                 }
-                catch
+                else if (!remoteIsValid)
                 {
+                    // Only the local file is valid, the local one should be used
+                    // but the user should be warned.
                     ShowInfoDialog();
                 }
             }
 
-            _amiiboList = JsonSerializer.Deserialize<Amiibo.AmiiboJson>(amiiboJsonString).Amiibo;
-            _amiiboList = _amiiboList.OrderBy(amiibo => amiibo.AmiiboSeries).ToList();
+            return amiiboJson;
+        }
+
+        private async Task LoadContentAsync()
+        {
+            Amiibo.AmiiboJson amiiboJson = await GetMostRecentAmiiboListOrDefaultJson();
+
+            _amiiboList = amiiboJson
+                .Amiibo
+                .OrderBy(amiibo => amiibo.AmiiboSeries)
+                .ToList();
 
             ParseAmiiboData();
         }
@@ -361,24 +384,15 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         private async Task<bool> NeedsUpdate(DateTime oldLastModified)
         {
-            try
-            {
-                HttpResponseMessage response =
-                    await _httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, "https://amiibo.ryujinx.org/"));
+           HttpResponseMessage response =
+               await _httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, "https://amiibo.ryujinx.org/"));
 
-                if (response.IsSuccessStatusCode)
-                {
-                    return response.Content.Headers.LastModified?.TimeOfDay != oldLastModified.AddTicks(-oldLastModified.Ticks % TimeSpan.TicksPerSecond).TimeOfDay;
-                }
+           if (response.IsSuccessStatusCode)
+           {
+               return response.Content.Headers.LastModified?.TimeOfDay != oldLastModified.AddTicks(-oldLastModified.Ticks % TimeSpan.TicksPerSecond).TimeOfDay;
+           }
 
-                return false;
-            }
-            catch
-            {
-                ShowInfoDialog();
-
-                return false;
-            }
+           return false;
         }
 
         private async Task<string> DownloadAmiiboJson()
