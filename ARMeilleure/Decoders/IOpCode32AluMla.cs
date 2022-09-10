@@ -2,10 +2,10 @@ namespace ARMeilleure.Decoders
 {
     interface IOpCode32AluMla : IOpCode32AluReg
     {
-        public int Ra { get; }
+        int Ra { get; }
 
-        public bool NHigh { get; }
-        public bool MHigh { get; }
-        public bool R { get; }
+        bool NHigh { get; }
+        bool MHigh { get; }
+        bool R { get; }
     }
 }
