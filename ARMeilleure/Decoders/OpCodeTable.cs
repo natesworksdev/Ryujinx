@@ -1175,6 +1175,9 @@ namespace ARMeilleure.Decoders
             SetT32("111110000010<<<<xxxx000000xxxxxx", InstName.Strh,     InstEmit32.Strh,     OpCodeT32MemRsImm.Create);
             SetT32("11101011101<xxxx0xxx<<<<xxxxxxxx", InstName.Sub,      InstEmit32.Sub,      OpCodeT32AluRsImm.Create);
             SetT32("11110x01101<xxxx0xxx<<<<xxxxxxxx", InstName.Sub,      InstEmit32.Sub,      OpCodeT32AluImm.Create);
+            SetT32("111110100100xxxx1111xxxx10xxxxxx", InstName.Sxtb,     InstEmit32.Sxtb,     OpCodeT32AluUx.Create);
+            SetT32("111110100010xxxx1111xxxx10xxxxxx", InstName.Sxtb16,   InstEmit32.Sxtb16,   OpCodeT32AluUx.Create);
+            SetT32("111110100000xxxx1111xxxx10xxxxxx", InstName.Sxth,     InstEmit32.Sxth,     OpCodeT32AluUx.Create);
             SetT32("111010001101xxxx111100000000xxxx", InstName.Tbb,      InstEmit32.Tbb,      OpCodeT32Tb.Create);
             SetT32("111010001101xxxx111100000001xxxx", InstName.Tbh,      InstEmit32.Tbh,      OpCodeT32Tb.Create);
             SetT32("111010101001xxxx0xxx1111xxxxxxxx", InstName.Teq,      InstEmit32.Teq,      OpCodeT32AluRsImm.Create);
@@ -1186,6 +1189,9 @@ namespace ARMeilleure.Decoders
             SetT32("111110111110xxxxxxxxxxxx0110xxxx", InstName.Umaal,    InstEmit32.Umaal,    OpCodeT32AluUmull.Create);
             SetT32("111110111110xxxxxxxxxxxx0000xxxx", InstName.Umlal,    InstEmit32.Umlal,    OpCodeT32AluUmull.Create);
             SetT32("111110111010xxxxxxxxxxxx0000xxxx", InstName.Umull,    InstEmit32.Umull,    OpCodeT32AluUmull.Create);
+            SetT32("111110100101xxxx1111xxxx10xxxxxx", InstName.Uxtb,     InstEmit32.Uxtb,     OpCodeT32AluUx.Create);
+            SetT32("111110100011xxxx1111xxxx10xxxxxx", InstName.Uxtb16,   InstEmit32.Uxtb16,   OpCodeT32AluUx.Create);
+            SetT32("111110100001xxxx1111xxxx10xxxxxx", InstName.Uxth,     InstEmit32.Uxth,     OpCodeT32AluUx.Create);
 #endregion
 
             FillFastLookupTable(InstA32FastLookup, AllInstA32, ToFastLookupIndexA);
