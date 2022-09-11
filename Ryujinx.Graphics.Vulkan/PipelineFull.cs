@@ -275,7 +275,10 @@ namespace Ryujinx.Graphics.Vulkan
         {
             _pendingQueryCopies.Add(query);
 
-            AutoFlush.RegisterPendingQuery();
+            if (AutoFlush.RegisterPendingQuery())
+            {
+                FlushCommandsImpl();
+            }
         }
 
         protected override void SignalAttachmentChange()

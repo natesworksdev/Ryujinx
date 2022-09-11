@@ -1122,11 +1122,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         private void RecreatePipelineIfNeeded(PipelineBindPoint pbp)
         {
-            if (AutoFlush.ShouldFlushDraw())
-            {
-                Gd.FlushAllCommands();
-            }
-
             _dynamicState.ReplayIfDirty(Gd.Api, CommandBuffer);
 
             // Commit changes to the support buffer before drawing.

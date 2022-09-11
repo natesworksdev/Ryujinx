@@ -1,10 +1,11 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 
 namespace Ryujinx.Graphics.Vulkan
 {
     internal class AutoFlushCounter
     {
-        /** How often to flush on framebuffer change. */
+        // How often to flush on framebuffer change.
         private readonly static long FramebufferFlushTimer = Stopwatch.Frequency / 1000;
 
         private const int MinDrawCountForFlush = 10;
@@ -23,28 +24,22 @@ namespace Ryujinx.Graphics.Vulkan
             _hasPendingQuery = false;
         }
 
-        public void RegisterPendingQuery()
+        public bool RegisterPendingQuery()
         {
             _hasPendingQuery = true;
+
+            // Interrupt render passes to flush queries, so that early results arrive sooner.
+            if (++_queryCount == InitialQueryCountForFlush)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public bool ShouldFlushQuery()
         {
             return _hasPendingQuery;
-        }
-
-        public bool ShouldFlushDraw()
-        {
-            // Interrupt render passes to flush queries, so that early results arrive sooner.
-            if (_hasPendingQuery)
-            {
-                if (++_queryCount == InitialQueryCountForFlush)
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         public bool ShouldFlush(ulong drawCount)
