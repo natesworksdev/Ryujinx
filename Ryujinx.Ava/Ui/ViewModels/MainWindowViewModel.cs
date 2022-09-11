@@ -73,6 +73,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         private bool _showAll;
         private string _lastScannedAmiiboId;
         private ReadOnlyObservableCollection<ApplicationData> _appsObservableList;
+        public ApplicationLibrary ApplicationLibrary => _owner.ApplicationLibrary;
 
         public string TitleName { get; internal set; }
 
@@ -100,8 +101,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public void Initialize()
         {
-            _owner.ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
-            _owner.ApplicationLibrary.ApplicationAdded += ApplicationLibrary_ApplicationAdded;
+            ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
+            ApplicationLibrary.ApplicationAdded += ApplicationLibrary_ApplicationAdded;
 
             Ptc.PtcStateChanged -= ProgressHandler;
             Ptc.PtcStateChanged += ProgressHandler;
@@ -810,7 +811,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
             Thread thread = new(() =>
             {
-                _owner.ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs.Value, ConfigurationState.Instance.System.Language);
+                ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs.Value, ConfigurationState.Instance.System.Language);
 
                 _isLoading = false;
             })
@@ -1095,7 +1096,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             {
                 selection.Favorite = !selection.Favorite;
 
-                _owner.ApplicationLibrary.LoadAndSaveMetaData(selection.TitleId, appMetadata =>
+                ApplicationLibrary.LoadAndSaveMetaData(selection.TitleId, appMetadata =>
                 {
                     appMetadata.Favorite = selection.Favorite;
                 });

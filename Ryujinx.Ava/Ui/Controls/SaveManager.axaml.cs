@@ -87,7 +87,7 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             Saves.Clear();
             var saveDataFilter = SaveDataFilter.Make(programId: default, saveType: SaveDataType.Account,
-                new LibHac.Fs.UserId((ulong)_userProfile.UserId.High, (ulong)_userProfile.UserId.Low), saveDataId: default, index: default);
+                new UserId((ulong)_userProfile.UserId.High, (ulong)_userProfile.UserId.Low), saveDataId: default, index: default);
 
             using var saveDataIterator = new UniqueRef<SaveDataIterator>();
 
