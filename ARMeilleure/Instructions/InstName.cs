@@ -82,6 +82,8 @@ namespace ARMeilleure.Instructions
         Sbfm,
         Sdiv,
         Sel,
+        Sev,
+        Sevl,
         Shsub8,
         Smaddl,
         Smsubl,
@@ -111,6 +113,9 @@ namespace ARMeilleure.Instructions
         Umsubl,
         Umulh,
         Und,
+        Wfe,
+        Wfi,
+        Yield,
 
         // FP & SIMD (AArch64)
         Abs_S,
