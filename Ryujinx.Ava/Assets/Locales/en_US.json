@@ -596,5 +596,8 @@
   "SaveManagerTitle": "Save Manager",
   "Name": "Name",
   "Size": "Size",
-  "Search": "Search"
+  "Search": "Search",
+  "UserProfilesRecoverLostAccounts": "Recover Lost Accounts",
+  "Recover": "Recover",
+  "UserProfilesRecoverHeading" : "Saves were found for the following accounts"
 }
