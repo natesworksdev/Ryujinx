@@ -108,6 +108,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
                         return;
                     }
+
                     int totalSize = _headerSize + header.Length;
                     if (totalSize > BufferSize)
                     {
@@ -137,6 +138,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
                                 return;
                             }
+
                             if (decompressedLdnData.Length != header.DecompressLength)
                             {
                                 Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"Decompress error: length does not match. ({decompressedLdnData.Length} != {header.DecompressLength})");
@@ -144,6 +146,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
                                 return;
                             }
+                            
                             ldnData = decompressedLdnData;
                         }
 

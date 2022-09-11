@@ -179,6 +179,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
             data.CopyTo(NetworkInfo.Ldn.AdvertiseData.AsSpan());
             NetworkInfo.Ldn.AdvertiseDataSize = (ushort)data.Length;
+
             Logger.Debug?.PrintMsg(LogClass.ServiceLdn, $"AdvertiseData: {BitConverter.ToString(data)}");
             // Logger.Debug?.PrintMsg(LogClass.ServiceLdn, $"NetworkInfo:\n{JsonHelper.Serialize(NetworkInfo, true)}");
 
