@@ -67,7 +67,7 @@ namespace ARMeilleure.Instructions
 
                 for (int i = 0; i < count; i++)
                 {
-                    // Read an element from a double simd register.
+                    // Accesses an element from a double simd register.
                     Operand address = context.Add(n, Const(offset));
                     if (eBytes == 8)
                     {
@@ -145,7 +145,7 @@ namespace ARMeilleure.Instructions
                         int elemD = d + reg;
                         for (int i = 0; i < count; i++)
                         {
-                            // Write an element from a double simd register,
+                            // Accesses an element from a double simd register,
                             // add ebytes for each element.
                             Operand address = context.Add(n, Const(offset));
                             int index = ((elemD & 1) << (3 - op.Size)) + elem;
