@@ -8,6 +8,7 @@ namespace ARMeilleure.CodeGen.X86
     static class HardwareCapabilities
     {
         private delegate uint GetXcr0();
+
         static HardwareCapabilities()
         {
             if (!X86Base.IsSupported)
@@ -34,9 +35,7 @@ namespace ARMeilleure.CodeGen.X86
                 0xc3, // ret
             };
 
-            MemoryBlock memGetXcr0 = new MemoryBlock((ulong)asmGetXcr0.Length);
-
-            memGetXcr0.Reprotect(0, (ulong)asmGetXcr0.Length, MemoryPermission.ReadWriteExecute);
+            using MemoryBlock memGetXcr0 = new MemoryBlock((ulong)asmGetXcr0.Length);
 
             memGetXcr0.Write(0, asmGetXcr0);
 
@@ -45,8 +44,6 @@ namespace ARMeilleure.CodeGen.X86
             var fGetXcr0 = Marshal.GetDelegateForFunctionPointer<GetXcr0>(memGetXcr0.Pointer);
 
             Xcr0InfoEax = (Xcr0FlagsEax)fGetXcr0();
-
-            memGetXcr0.Dispose();
         }
 
         [Flags]
