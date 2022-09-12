@@ -274,7 +274,8 @@ namespace Ryujinx.Cpu.Jit
         /// <inheritdoc/>
         public void Write(ulong va, ReadOnlySpan<byte> data)
         {
-            try {
+            try
+            {
                 SignalMemoryTracking(va, (ulong)data.Length, write: true);
 
                 _addressSpaceMirror.Write(va, data);
