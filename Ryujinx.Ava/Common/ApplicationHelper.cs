@@ -151,7 +151,6 @@ namespace Ryujinx.Ava.Common
 
             using (var cancellationToken = new CancellationTokenSource())
             {
-
                 if (!string.IsNullOrWhiteSpace(destination))
                 {
                     Thread extractorThread = new(() =>
