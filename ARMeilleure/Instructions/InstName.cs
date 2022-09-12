@@ -46,7 +46,6 @@ namespace ARMeilleure.Instructions
         Eon,
         Eor,
         Extr,
-        Hint,
         Isb,
         It,
         Ldar,
