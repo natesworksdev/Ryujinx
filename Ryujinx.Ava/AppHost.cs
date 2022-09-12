@@ -58,8 +58,7 @@ namespace Ryujinx.Ava
         private const float MaxResolutionScale = 4.0f; // Max resolution hotkeys can scale to before wrapping.
         private const int TargetFps = 60;
 
-        private static readonly Cursor InvisibleCursor = new Cursor(StandardCursorType.None);
-        
+        private static readonly Cursor InvisibleCursor = new Cursor(StandardCursorType.None);        
 
         private readonly long _ticksPerFrame;
         private readonly Stopwatch _chrono;
@@ -377,7 +376,7 @@ namespace Ryujinx.Ava
             _gpuCancellationTokenSource.Cancel();
             _gpuCancellationTokenSource.Dispose();
             
-            _chrono?.Stop();
+            _chrono.Stop();
         }
 
         public void DisposeGpu()
@@ -824,7 +823,7 @@ namespace Ryujinx.Ava
             Height = (int)Renderer.Bounds.Height;
 
             _renderer.Window.SetSize((int)(Width * _parent.PlatformImpl.RenderScaling), (int)(Height * _parent.PlatformImpl.RenderScaling));
-            
+
             _chrono.Start();
 
             Device.Gpu.Renderer.RunLoop(() =>
@@ -853,8 +852,8 @@ namespace Ryujinx.Ava
                             _renderingStarted = true;
                             _parent.SwitchToGameControl();
                         }
-                        
-                        Device.PresentFrame(() => { Renderer?.SwapBuffers();});
+
+                        Device.PresentFrame(() => Renderer?.SwapBuffers());
                     }
 
                     if (_ticks >= _ticksPerFrame)

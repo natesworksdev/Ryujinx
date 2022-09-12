@@ -20,7 +20,6 @@ namespace Ryujinx.Graphics.Vulkan
         private SurfaceKHR _surface;
         private PhysicalDevice _physicalDevice;
         private Device _device;
-        private uint _queueFamilyIndex;
         private WindowBase _window;
 
         internal FormatCapabilities FormatCapabilities { get; private set; }

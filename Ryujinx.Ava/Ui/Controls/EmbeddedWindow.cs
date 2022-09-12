@@ -5,28 +5,30 @@ using Avalonia.Platform;
 using SPB.Graphics;
 using SPB.Platform;
 using SPB.Platform.GLX;
+using SPB.Platform.X11;
 using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
-using static PInvoke.User32;
+using static Ryujinx.Ava.Ui.Controls.Win32NativeInterop;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
     public unsafe class EmbeddedWindow : NativeControlHost
     {
-        private WndProc _wndProcDelegate;
+        private WindowProc _wndProcDelegate;
         private string _className;
 
+        protected GLXWindow X11Window { get; private set; }
         protected IntPtr WindowHandle { get; set; }
-        protected IntPtr X11Display{ get; set; }
+        protected IntPtr X11Display { get; set; }
 
         public event EventHandler<IntPtr> WindowCreated;
         public event EventHandler<Size> SizeChanged;
 
         protected virtual void OnWindowDestroyed() { }
-        protected virtual void OnWindowDestroying() 
+        protected virtual void OnWindowDestroying()
         {
             WindowHandle = IntPtr.Zero;
             X11Display = IntPtr.Zero;
@@ -60,11 +62,11 @@ namespace Ryujinx.Ava.Ui.Controls
 
         protected override IPlatformHandle CreateNativeControlCore(IPlatformHandle parent)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            if (OperatingSystem.IsLinux())
             {
                 return CreateLinux(parent);
             }
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            else if (OperatingSystem.IsWindows())
             {
                 return CreateWin32(parent);
             }
@@ -75,11 +77,11 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             OnWindowDestroying();
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            if (OperatingSystem.IsLinux())
             {
                 DestroyLinux(control);
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            else if (OperatingSystem.IsWindows())
             {
                 DestroyWin32(control);
             }
@@ -94,32 +96,16 @@ namespace Ryujinx.Ava.Ui.Controls
         [SupportedOSPlatform("linux")]
         IPlatformHandle CreateLinux(IPlatformHandle parent)
         {
-            if (this is OpenGLEmbeddedWindow)
-            {
-                var window = PlatformHelper.CreateOpenGLWindow(FramebufferFormat.Default, 0, 0, 100, 100) as GLXWindow;
+            X11Window = PlatformHelper.CreateOpenGLWindow(FramebufferFormat.Default, 0, 0, 100, 100) as GLXWindow;
 
-                WindowHandle = window.WindowHandle.RawHandle;
+            WindowHandle = X11Window.WindowHandle.RawHandle;
 
-                X11Display = window.DisplayHandle.RawHandle;
+            X11Display = X11Window.DisplayHandle.RawHandle;
 
-                return new PlatformHandle(WindowHandle, "X11");
-            }
-            else 
-            {
-                var window = base.CreateNativeControlCore(parent);
-
-                WindowHandle = window.Handle;
-
-                BindingFlags bindFlags = BindingFlags.Instance | BindingFlags.NonPublic;
-                FieldInfo field = window.GetType().GetField("_display", bindFlags);
-                var display = field.GetValue(window);
-
-                X11Display = (IntPtr)display;
-
-                return window;
-            }
+            return new PlatformHandle(WindowHandle, "X11");
         }
 
+        [SupportedOSPlatform("windows")]
         unsafe IPlatformHandle CreateWin32(IPlatformHandle parent)
         {
             _className = "NativeWindow-" + Guid.NewGuid();
@@ -129,19 +115,15 @@ namespace Ryujinx.Ava.Ui.Controls
                 cbSize = Marshal.SizeOf<WNDCLASSEX>(),
                 hInstance = GetModuleHandle(null),
                 lpfnWndProc = _wndProcDelegate,
-                style = ClassStyles.CS_OWNDC
+                style = ClassStyles.CS_OWNDC,
+                lpszClassName = _className,
+                hCursor = LoadCursor(IntPtr.Zero, (IntPtr)Cursors.IDC_ARROW)
             };
 
-            short atom = 0;
-
-            fixed (char* c = _className)
-            {
-                wndClassEx.lpszClassName = c;
-                atom = RegisterClassEx(ref wndClassEx);
-            }
+            var atom = RegisterClassEx(ref wndClassEx);
 
             var handle = CreateWindowEx(
-                (WindowStylesEx)0,
+                0,
                 _className,
                 "NativeWindow",
                 WindowStyles.WS_CHILD,
@@ -159,16 +141,17 @@ namespace Ryujinx.Ava.Ui.Controls
             return new PlatformHandle(WindowHandle, "HWND");
         }
 
-        protected IntPtr WndProc(IntPtr hWnd, WindowMessage msg, void* wParam, void* lParam)
+        [SupportedOSPlatform("windows")]
+        internal IntPtr WndProc(IntPtr hWnd, WindowsMessages msg, IntPtr wParam, IntPtr lParam)
         {
-            var point = new Point((int)lParam & 0xFFFF, ((int)lParam >> 16) & 0xFFFF);
-            var root = this.VisualRoot as Window;
+            var point = new Point((long)lParam & 0xFFFF, ((long)lParam >> 16) & 0xFFFF);
+            var root = VisualRoot as Window;
             bool isLeft = false;
             switch (msg)
             {
-                case WindowMessage.WM_LBUTTONDOWN:
-                case WindowMessage.WM_RBUTTONDOWN:
-                    isLeft = msg == WindowMessage.WM_LBUTTONDOWN;
+                case WindowsMessages.LBUTTONDOWN:
+                case WindowsMessages.RBUTTONDOWN:
+                    isLeft = msg == WindowsMessages.LBUTTONDOWN;
                     this.RaiseEvent(new PointerPressedEventArgs(
                         this,
                         new Avalonia.Input.Pointer(0, PointerType.Mouse, true),
@@ -178,9 +161,9 @@ namespace Ryujinx.Ava.Ui.Controls
                         new PointerPointProperties(isLeft ? RawInputModifiers.LeftMouseButton : RawInputModifiers.RightMouseButton, isLeft ? PointerUpdateKind.LeftButtonPressed : PointerUpdateKind.RightButtonPressed),
                         KeyModifiers.None));
                     break;
-                case WindowMessage.WM_LBUTTONUP:
-                case WindowMessage.WM_RBUTTONUP:
-                    isLeft = msg == WindowMessage.WM_LBUTTONUP;
+                case WindowsMessages.LBUTTONUP:
+                case WindowsMessages.RBUTTONUP:
+                    isLeft = msg == WindowsMessages.LBUTTONUP;
                     this.RaiseEvent(new PointerReleasedEventArgs(
                         this,
                         new Avalonia.Input.Pointer(0, PointerType.Mouse, true),
@@ -191,9 +174,9 @@ namespace Ryujinx.Ava.Ui.Controls
                         KeyModifiers.None,
                         isLeft ? MouseButton.Left : MouseButton.Right));
                     break;
-                case WindowMessage.WM_MOUSEMOVE:
+                case WindowsMessages.MOUSEMOVE:
                     this.RaiseEvent(new PointerEventArgs(
-                        UserControl.PointerMovedEvent,
+                        PointerMovedEvent,
                         this,
                         new Avalonia.Input.Pointer(0, PointerType.Mouse, true),
                         root,
@@ -201,7 +184,6 @@ namespace Ryujinx.Ava.Ui.Controls
                         (ulong)Environment.TickCount64,
                         new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.Other),
                         KeyModifiers.None));
-                    SetCursor(LoadCursor(IntPtr.Zero, (IntPtr)Cursors.IDC_ARROW));
                     break;
             }
             return DefWindowProc(hWnd, msg, (IntPtr)wParam, (IntPtr)lParam);
@@ -209,15 +191,13 @@ namespace Ryujinx.Ava.Ui.Controls
 
         void DestroyLinux(IPlatformHandle handle)
         {
-            if (this is not OpenGLEmbeddedWindow)
-            {
-                base.DestroyNativeControlCore(handle);
-            }
+            X11Window?.Dispose();
         }
 
         [DllImport("kernel32.dll")]
         public static extern IntPtr GetModuleHandle(string lpModuleName);
 
+        [SupportedOSPlatform("windows")]
         void DestroyWin32(IPlatformHandle handle)
         {
             DestroyWindow(handle.Handle);

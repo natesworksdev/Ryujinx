@@ -20,16 +20,14 @@ namespace Ryujinx.Ava.Ui
             }
             else if (OperatingSystem.IsLinux())
             {
-                _window = new SimpleX11Window(new NativeHandle(X11Display), new NativeHandle(WindowHandle));
+                _window = X11Window;
+            }
+            else
+            {
+                throw new PlatformNotSupportedException();
             }
 
             return new SurfaceKHR((ulong?)VulkanHelper.CreateWindowSurface(instance.Handle, _window));
-        }
-
-        protected override void OnWindowDestroying()
-        {
-            _window?.Dispose();
-            base.OnWindowDestroying();
         }
     }
 }

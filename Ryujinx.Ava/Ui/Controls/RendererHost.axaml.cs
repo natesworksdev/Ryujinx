@@ -13,15 +13,15 @@ namespace Ryujinx.Ava.Ui.Controls
     {
         private readonly GraphicsDebugLevel _graphicsDebugLevel;
         private EmbeddedWindow _currentWindow;
-        
+
         public bool IsVulkan { get; private set; }
-        
+
         public RendererHost(GraphicsDebugLevel graphicsDebugLevel)
         {
             _graphicsDebugLevel = graphicsDebugLevel;
             InitializeComponent();
         }
-        
+
         public RendererHost()
         {
             InitializeComponent();
@@ -30,8 +30,8 @@ namespace Ryujinx.Ava.Ui.Controls
         public void CreateOpenGL()
         {
             Dispose();
-            
-            _currentWindow = new OpenGLEmbeddedWindow(3, 3 , _graphicsDebugLevel);
+
+            _currentWindow = new OpenGLEmbeddedWindow(3, 3, _graphicsDebugLevel);
             Initialize();
 
             IsVulkan = false;
@@ -67,7 +67,7 @@ namespace Ryujinx.Ava.Ui.Controls
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
-            
+
             Dispose();
         }
 

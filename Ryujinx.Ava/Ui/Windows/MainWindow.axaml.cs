@@ -237,7 +237,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
             _mainViewContent = MainContent.Content as Control;
 
-            RendererControl = new RendererHost(ConfigurationState.Instance.Logger.GraphicsDebugLevel);//Program.UseVulkan ? new VulkanRendererControl(ConfigurationState.Instance.Logger.GraphicsDebugLevel) : new OpenGLRendererControl(3, 3, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
+            RendererControl = new RendererHost(ConfigurationState.Instance.Logger.GraphicsDebugLevel);
             if (ConfigurationState.Instance.Graphics.GraphicsBackend.Value == GraphicsBackend.OpenGl)
             {
                 RendererControl.CreateOpenGL();

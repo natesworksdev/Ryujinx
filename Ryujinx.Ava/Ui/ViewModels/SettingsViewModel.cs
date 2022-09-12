@@ -268,7 +268,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
 
             AvailableGpus.Clear();
-            AvailableGpus.AddRange(names.Select(x => new ComboBoxItem() {Content = x}));
+            AvailableGpus.AddRange(names.Select(x => new ComboBoxItem() { Content = x }));
         }
 
         public void LoadTimeZones()
@@ -391,7 +391,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             _previousVolumeLevel = Volume;
         }
 
-        public async Task SaveSettings()
+        public void SaveSettings()
         {
             ConfigurationState config = ConfigurationState.Instance;
 

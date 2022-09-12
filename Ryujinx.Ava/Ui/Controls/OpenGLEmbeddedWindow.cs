@@ -30,7 +30,6 @@ namespace Ryujinx.Ava.Ui.Controls
         protected override void OnWindowDestroying()
         {
             Context.Dispose();
-            _window?.Dispose();
             base.OnWindowDestroying();
         }
 
@@ -44,7 +43,11 @@ namespace Ryujinx.Ava.Ui.Controls
             }
             else if (OperatingSystem.IsLinux())
             {
-                _window = new GLXWindow(new NativeHandle(X11Display), new NativeHandle(WindowHandle));
+                _window = X11Window;
+            }
+            else
+            {
+                throw new PlatformNotSupportedException();
             }
             
             var flags = OpenGLContextFlags.Compat;

@@ -231,7 +231,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
         private async Task SaveSettings()
         {
-            await ViewModel.SaveSettings();
+            ViewModel.SaveSettings();
 
             ControllerSettings?.SaveCurrentProfile();
 

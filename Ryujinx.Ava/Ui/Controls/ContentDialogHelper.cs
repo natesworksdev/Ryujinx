@@ -33,7 +33,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
             bool useOverlay = false;
             Window mainWindow = null;
-            
+
             if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime al)
             {
                 foreach (var item in al.Windows)
@@ -59,42 +59,40 @@ namespace Ryujinx.Ava.Ui.Controls
                     WindowStartupLocation = WindowStartupLocation.Manual,
                     SystemDecorations = SystemDecorations.None,
                     ExtendClientAreaTitleBarHeightHint = 0,
-                    Background = new SolidColorBrush(Colors.Transparent, 0),
+                    Background = Brushes.Transparent,
                     Height = mainWindow.Bounds.Height,
                     Width = mainWindow.Bounds.Width,
                     CanResize = false,
                     Position = mainWindow.PointToScreen(new Point())
                 };
-                
+
                 mainWindow.PositionChanged += OverlayOnPositionChanged;
-                
-                void OverlayOnPositionChanged(object? sender, PixelPointEventArgs e)
+
+                void OverlayOnPositionChanged(object sender, PixelPointEventArgs e)
                 {
-                    overlay.Position = mainWindow.PointToScreen(new Point());;
+                    overlay.Position = mainWindow.PointToScreen(new Point()); ;
                 }
 
                 contentDialog = overlay.ContentDialog;
 
                 bool opened = false;
 
-                overlay.Activated += OverlayOnActivated;
-                
-                async void OverlayOnActivated(object? sender, EventArgs e)
+                overlay.Opened += OverlayOnActivated;
+
+                async void OverlayOnActivated(object sender, EventArgs e)
                 {
-                    if(opened)
+                    if (opened)
                     {
                         return;
                     }
 
                     opened = true;
 
-                    await Task.Delay(100);
-
                     overlay.Position = mainWindow.PointToScreen(new Point());
-                    
+
                     await ShowDialog();
                 }
-                
+
                 await overlay.ShowDialog(mainWindow);
             }
             else
@@ -126,11 +124,11 @@ namespace Ryujinx.Ava.Ui.Controls
                 });
 
                 await contentDialog.ShowAsync(ContentDialogPlacement.Popup);
-                
+
                 overlay?.Close();
             }
 
-            if(useOverlay)
+            if (useOverlay)
             {
                 overlay.Content = null;
                 overlay.Close();
