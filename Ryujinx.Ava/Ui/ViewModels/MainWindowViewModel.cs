@@ -387,9 +387,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         {
             get
             {
-                string icon = Volume == 0 ? "🔇" : "🔊";
-
-                return $"{icon} {(int)(Volume * 100)}%";
+                return $"Vol: {(int)(Volume * 100)}%";
             }
         }
 
