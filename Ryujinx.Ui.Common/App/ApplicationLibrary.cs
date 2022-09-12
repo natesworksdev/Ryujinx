@@ -390,15 +390,14 @@ namespace Ryujinx.Ui.App.Common
                                         }
                                     }
                                     catch
-                                {
-                                    Logger.Warning?.Print(LogClass.Application, $"The file encountered was not of a valid type. Errored File: {applicationPath}");
+                                    {
+                                        Logger.Warning?.Print(LogClass.Application, $"The file encountered was not of a valid type. Errored File: {applicationPath}");
 
-                                    numApplicationsFound--;
+                                        numApplicationsFound--;
 
-                                    continue;
+                                        continue;
+                                    }
                                 }
-                                }
-
                                 
                             }
                             else if (extension == ".nca")
