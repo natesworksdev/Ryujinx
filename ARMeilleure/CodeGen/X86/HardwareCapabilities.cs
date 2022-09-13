@@ -29,6 +29,11 @@ namespace ARMeilleure.CodeGen.X86
                 FeatureInfo7Ecx = (FeatureFlags7Ecx)ecx7;
             }
 
+            Xcr0InfoEax = (Xcr0FlagsEax)GetXcr0Eax();
+        }
+
+        private static uint GetXcr0Eax()
+        {
             byte[] asmGetXcr0 = {
                 0x31, 0xc9, // xor ecx, ecx
                 0xf, 0x01, 0xd0, // xgetbv
@@ -43,7 +48,7 @@ namespace ARMeilleure.CodeGen.X86
 
             var fGetXcr0 = Marshal.GetDelegateForFunctionPointer<GetXcr0>(memGetXcr0.Pointer);
 
-            Xcr0InfoEax = (Xcr0FlagsEax)fGetXcr0();
+            return fGetXcr0();
         }
 
         [Flags]
