@@ -1101,6 +1101,8 @@ namespace ARMeilleure.Decoders
             SetT16("1011111100110000", InstName.Wfi,    InstEmit32.Nop,     OpCodeT16.Create);
             SetT16("1011111101000000", InstName.Sev,    InstEmit32.Nop,     OpCodeT16.Create);
             SetT16("1011111101010000", InstName.Sevl,   InstEmit32.Nop,     OpCodeT16.Create);
+            SetT16("10111111011x0000", InstName.Hint,   InstEmit32.Nop,     OpCodeT16.Create); // Hint instruction
+            SetT16("101111111xxx0000", InstName.Hint,   InstEmit32.Nop,     OpCodeT16.Create); // Hint instruction
             SetT16("10111111xxxx>>>>", InstName.It,     InstEmit32.It,      OpCodeT16IfThen.Create);
             SetT16("11000xxxxxxxxxxx", InstName.Stm,    InstEmit32.Stm,     OpCodeT16MemMult.Create);
             SetT16("11001xxxxxxxxxxx", InstName.Ldm,    InstEmit32.Ldm,     OpCodeT16MemMult.Create);
