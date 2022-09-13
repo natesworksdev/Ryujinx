@@ -674,6 +674,17 @@ namespace ARMeilleure.Decoders
             SetA32("<<<<0010001xxxxxxxxxxxxxxxxxxxxx", InstName.Eor,     InstEmit32.Eor,     OpCode32AluImm.Create);
             SetA32("<<<<0000001xxxxxxxxxxxxxxxx0xxxx", InstName.Eor,     InstEmit32.Eor,     OpCode32AluRsImm.Create);
             SetA32("<<<<0000001xxxxxxxxxxxxx0xx1xxxx", InstName.Eor,     InstEmit32.Eor,     OpCode32AluRsReg.Create);
+            SetA32("<<<<0011001000001111000000010000", InstName.Esb,     InstEmit32.Nop,     OpCode32.Create); // Error Synchronization Barrier (FEAT_RAS)
+            SetA32("<<<<001100100000111100000000011x", InstName.Hint,    InstEmit32.Nop,     OpCode32.Create); // Reserved Hint
+            SetA32("<<<<0011001000001111000000001xxx", InstName.Hint,    InstEmit32.Nop,     OpCode32.Create); // Reserved Hint
+            SetA32("<<<<0011001000001111000000010001", InstName.Hint,    InstEmit32.Nop,     OpCode32.Create); // Reserved Hint
+            SetA32("<<<<0011001000001111000000010011", InstName.Hint,    InstEmit32.Nop,     OpCode32.Create); // Reserved Hint
+            SetA32("<<<<0011001000001111000000010101", InstName.Hint,    InstEmit32.Nop,     OpCode32.Create); // Reserved Hint
+            SetA32("<<<<001100100000111100000001011x", InstName.Hint,    InstEmit32.Nop,     OpCode32.Create); // Reserved Hint
+            SetA32("<<<<0011001000001111000000011xxx", InstName.Hint,    InstEmit32.Nop,     OpCode32.Create); // Reserved Hint
+            SetA32("<<<<00110010000011110000001xxxxx", InstName.Hint,    InstEmit32.Nop,     OpCode32.Create); // Reserved Hint
+            SetA32("<<<<0011001000001111000001xxxxxx", InstName.Hint,    InstEmit32.Nop,     OpCode32.Create); // Reserved Hint
+            SetA32("<<<<001100100000111100001xxxxxxx", InstName.Hint,    InstEmit32.Nop,     OpCode32.Create); // Reserved Hint
             SetA32("1111010101111111111100000110xxxx", InstName.Isb,     InstEmit32.Nop,     OpCode32.Create);
             SetA32("<<<<00011001xxxxxxxx110010011111", InstName.Lda,     InstEmit32.Lda,     OpCode32MemLdEx.Create);
             SetA32("<<<<00011101xxxxxxxx110010011111", InstName.Ldab,    InstEmit32.Ldab,    OpCode32MemLdEx.Create);
@@ -786,6 +797,7 @@ namespace ARMeilleure.Decoders
             SetA32("<<<<00010011xxxx0000xxxxxxx0xxxx", InstName.Teq,     InstEmit32.Teq,     OpCode32AluRsImm.Create);
             SetA32("<<<<00010011xxxx0000xxxx0xx1xxxx", InstName.Teq,     InstEmit32.Teq,     OpCode32AluRsReg.Create);
             SetA32("<<<<0111111111111101111011111110", InstName.Trap,    InstEmit32.Trap,    OpCode32Exception.Create);
+            SetA32("<<<<0011001000001111000000010010", InstName.Tsb,     InstEmit32.Nop,     OpCode32.Create); // Trace Synchronization Barrier (FEAT_TRF)
             SetA32("<<<<00110001xxxx0000xxxxxxxxxxxx", InstName.Tst,     InstEmit32.Tst,     OpCode32AluImm.Create);
             SetA32("<<<<00010001xxxx0000xxxxxxx0xxxx", InstName.Tst,     InstEmit32.Tst,     OpCode32AluRsImm.Create);
             SetA32("<<<<00010001xxxx0000xxxx0xx1xxxx", InstName.Tst,     InstEmit32.Tst,     OpCode32AluRsReg.Create);
