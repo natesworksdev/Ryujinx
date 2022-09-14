@@ -211,7 +211,7 @@ namespace Ryujinx.Ava.Ui.Windows
             }
         }
 
-        private async void SaveButton_Clicked(object sender, RoutedEventArgs e)
+        private void SaveButton_Clicked(object sender, RoutedEventArgs e)
         {
             SaveSettings();
 
@@ -224,7 +224,7 @@ namespace Ryujinx.Ava.Ui.Windows
             Close();
         }
 
-        private async void ApplyButton_Clicked(object sender, RoutedEventArgs e)
+        private void ApplyButton_Clicked(object sender, RoutedEventArgs e)
         {
             SaveSettings();
         }
