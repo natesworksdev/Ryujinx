@@ -305,8 +305,8 @@ namespace Ryujinx.Ava.Ui.Windows
 
         public void SwitchToGameControl(bool startFullscreen = false)
         {
-            ViewModel.ShowContent = true;
             ViewModel.ShowLoadProgress = false;
+            ViewModel.ShowContent = true;
             ViewModel.IsLoadingIndeterminate = false;
 
             Dispatcher.UIThread.InvokeAsync(() =>
@@ -355,16 +355,16 @@ namespace Ryujinx.Ava.Ui.Windows
 
             Dispatcher.UIThread.InvokeAsync(() =>
             {
-                if (MainContent.Content != _mainViewContent)
-                {
-                    MainContent.Content = _mainViewContent;
-                }
-
                 ViewModel.ShowMenuAndStatusBar = true;
                 ViewModel.ShowContent = true;
                 ViewModel.ShowLoadProgress = false;
                 ViewModel.IsLoadingIndeterminate = false;
                 Cursor = Cursor.Default;
+
+                if (MainContent.Content != _mainViewContent)
+                {
+                    MainContent.Content = _mainViewContent;
+                }
 
                 AppHost = null;
 

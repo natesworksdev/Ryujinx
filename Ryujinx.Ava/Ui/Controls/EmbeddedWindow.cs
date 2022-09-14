@@ -79,7 +79,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
             if (OperatingSystem.IsLinux())
             {
-                DestroyLinux(control);
+                DestroyLinux();
             }
             else if (OperatingSystem.IsWindows())
             {
@@ -189,13 +189,10 @@ namespace Ryujinx.Ava.Ui.Controls
             return DefWindowProc(hWnd, msg, (IntPtr)wParam, (IntPtr)lParam);
         }
 
-        void DestroyLinux(IPlatformHandle handle)
+        void DestroyLinux()
         {
             X11Window?.Dispose();
         }
-
-        [DllImport("kernel32.dll")]
-        public static extern IntPtr GetModuleHandle(string lpModuleName);
 
         [SupportedOSPlatform("windows")]
         void DestroyWin32(IPlatformHandle handle)

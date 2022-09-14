@@ -213,7 +213,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
         private async void SaveButton_Clicked(object sender, RoutedEventArgs e)
         {
-            await SaveSettings();
+            SaveSettings();
 
             Close();
         }
@@ -226,10 +226,10 @@ namespace Ryujinx.Ava.Ui.Windows
 
         private async void ApplyButton_Clicked(object sender, RoutedEventArgs e)
         {
-            await SaveSettings();
+            SaveSettings();
         }
 
-        private async Task SaveSettings()
+        private void SaveSettings()
         {
             ViewModel.SaveSettings();
 
