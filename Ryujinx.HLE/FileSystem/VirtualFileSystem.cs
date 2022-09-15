@@ -85,7 +85,7 @@ namespace Ryujinx.HLE.FileSystem
 
             string fullPath = Path.GetFullPath(Path.Combine(basePath, fileName));
 
-            if (!fullPath.StartsWith(AppDataManager.BaseDirPath))
+            if (!fullPath.StartsWith(AppDataManager.BaseDirPath) && !fullPath.StartsWith(AppDataManager.GetNandPath()))
             {
                 return null;
             }
@@ -94,7 +94,7 @@ namespace Ryujinx.HLE.FileSystem
         }
 
         internal string GetSdCardPath() => MakeFullPath(AppDataManager.DefaultSdcardDir);
-        public string GetNandPath() => MakeFullPath(AppDataManager.DefaultNandDir);
+        public string GetNandPath() => AppDataManager.GetNandPath();
 
         public string SwitchPathToSystemPath(string switchPath)
         {
@@ -139,20 +139,40 @@ namespace Ryujinx.HLE.FileSystem
                     path = AppDataManager.DefaultSdcardDir;
                     break;
                 case ContentPath.User:
-                    path = UserNandPath;
-                    break;
+                    path = Path.Combine(AppDataManager.GetNandPath(), "user");
+                    if (isDirectory && !Directory.Exists(path))
+                    {
+                        Directory.CreateDirectory(path);
+                    }
+
+                    return path;
                 case ContentPath.System:
-                    path = SystemNandPath;
-                    break;
+                    path = Path.Combine(AppDataManager.GetNandPath(), "system");
+                    if (isDirectory && !Directory.Exists(path))
+                    {
+                        Directory.CreateDirectory(path);
+                    }
+
+                    return path;
                 case ContentPath.SdCardContent:
                     path = Path.Combine(AppDataManager.DefaultSdcardDir, "Nintendo", "Contents");
                     break;
                 case ContentPath.UserContent:
-                    path = Path.Combine(UserNandPath, "Contents");
-                    break;
+                    path = Path.Combine(AppDataManager.GetNandPath(), "user", "Contents");
+                    if (isDirectory && !Directory.Exists(path))
+                    {
+                        Directory.CreateDirectory(path);
+                    }
+
+                    return path;
                 case ContentPath.SystemContent:
-                    path = Path.Combine(SystemNandPath, "Contents");
-                    break;
+                    path = Path.Combine(AppDataManager.GetNandPath(), "system", "Contents");
+                    if (isDirectory && !Directory.Exists(path))
+                    {
+                        Directory.CreateDirectory(path);
+                    }
+
+                    return path;
             }
 
             string fullPath = Path.Combine(AppDataManager.BaseDirPath, path);

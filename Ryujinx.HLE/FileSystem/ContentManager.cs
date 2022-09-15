@@ -1026,22 +1026,28 @@ namespace Ryujinx.HLE.FileSystem
                     {
                         var path = _virtualFileSystem.SwitchPathToSystemPath(entry.ContentPath);
 
-                        using (FileStream fileStream = File.OpenRead(path))
+                        try
                         {
-                            Nca nca = new Nca(_virtualFileSystem.KeySet, fileStream.AsStorage());
-
-                            if (nca.Header.TitleId == SystemVersionTitleId && nca.Header.ContentType == NcaContentType.Data)
+                            using (FileStream fileStream = File.OpenRead(path))
                             {
-                                var romfs = nca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.ErrorOnInvalid);
+                                Nca nca = new Nca(_virtualFileSystem.KeySet, fileStream.AsStorage());
 
-                                using var systemVersionFile = new UniqueRef<IFile>();
-
-                                if (romfs.OpenFile(ref systemVersionFile.Ref(), "/file".ToU8Span(), OpenMode.Read).IsSuccess())
+                                if (nca.Header.TitleId == SystemVersionTitleId && nca.Header.ContentType == NcaContentType.Data)
                                 {
-                                    return new SystemVersion(systemVersionFile.Get.AsStream());
+                                    var romfs = nca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.ErrorOnInvalid);
+
+                                    using var systemVersionFile = new UniqueRef<IFile>();
+
+                                    if (romfs.OpenFile(ref systemVersionFile.Ref(), "/file".ToU8Span(), OpenMode.Read).IsSuccess())
+                                    {
+                                        return new SystemVersion(systemVersionFile.Get.AsStream());
+                                    }
                                 }
                             }
-
+                        }
+                        catch (Exception e)
+                        {
+                            e.GetHashCode();
                         }
                     }
                 }
