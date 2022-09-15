@@ -146,7 +146,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
                                 return;
                             }
-                            
+
                             ldnData = decompressedLdnData;
                         }
 

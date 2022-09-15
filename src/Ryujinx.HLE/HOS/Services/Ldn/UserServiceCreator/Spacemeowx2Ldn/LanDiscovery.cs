@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         private bool _initialized;
         private readonly Ssid _fakeSsid;
         private ILdnTcpSocket _tcp;
-        private LdnProxyUdpServer _udp;
+        private LdnProxyUdpServer _udp, _udp2;
         private List<LdnProxyTcpSession> _stations = new List<LdnProxyTcpSession>();
 
         internal readonly IPAddress LocalAddr;
@@ -296,7 +296,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                 // NOTE: Linux won't receive any broadcast packets if the socket is not bound to the broadcast address.
                 //       Windows only works if bound to localhost or the local address.
                 //       See this discussion: https://stackoverflow.com/questions/13666789/receiving-udp-broadcast-packets-on-linux
-                _udp = new LdnProxyUdpServer(_protocol, OperatingSystem.IsLinux() ? LocalBroadcastAddr : LocalAddr, DEFAULT_PORT);
+                if (OperatingSystem.IsLinux())
+                {
+                    _udp2 = new LdnProxyUdpServer(_protocol, LocalBroadcastAddr, DEFAULT_PORT);
+                }
+
+                _udp = new LdnProxyUdpServer(_protocol, LocalAddr, DEFAULT_PORT);
             }
             catch (Exception ex)
             {
@@ -544,6 +549,19 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                 {
                     _udp.Dispose();
                     _udp = null;
+                }
+            }
+
+            if (_udp2 != null)
+            {
+                try
+                {
+                    _udp2.Stop();
+                }
+                finally
+                {
+                    _udp2.Dispose();
+                    _udp2 = null;
                 }
             }
 
