@@ -1,6 +1,5 @@
 using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.GAL;
-using Ryujinx.Graphics.OpenGL.Helper;
 using Ryujinx.Graphics.OpenGL.Image;
 using System;
 
@@ -57,6 +56,8 @@ namespace Ryujinx.Graphics.OpenGL
             // Restore unpack alignment to 4, as performance overlays such as RTSS may change this to load their resources.
             GL.PixelStore(PixelStoreParameter.UnpackAlignment, 4);
         }
+
+        public void ChangeVSyncMode(bool vsyncEnabled) { }
 
         private void CreateStagingFramebuffer()
         {

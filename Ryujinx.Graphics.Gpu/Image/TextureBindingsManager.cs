@@ -47,11 +47,10 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             public int TextureHandle;
             public int SamplerHandle;
+            public Format ImageFormat;
             public int InvalidatedSequence;
             public Texture CachedTexture;
             public Sampler CachedSampler;
-            public int ScaleIndex;
-            public TextureUsageFlags UsageFlags;
         }
 
         private TextureState[] _textureState;
@@ -535,14 +534,12 @@ namespace Ryujinx.Graphics.Gpu.Image
                     // The texture is already bound.
                     state.CachedTexture.SynchronizeMemory();
 
-                    if ((state.ScaleIndex != index || state.UsageFlags != usageFlags) &&
+                    if ((usageFlags & TextureUsageFlags.NeedsScaleValue) != 0 &&
                         UpdateScale(state.CachedTexture, usageFlags, index, stage))
                     {
                         ITexture hostTextureRebind = state.CachedTexture.GetTargetTexture(bindingInfo.Target);
 
                         state.Texture = hostTextureRebind;
-                        state.ScaleIndex = index;
-                        state.UsageFlags = usageFlags;
 
                         _context.Renderer.Pipeline.SetTextureAndSampler(stage, bindingInfo.Binding, hostTextureRebind, state.Sampler);
                     }
@@ -557,7 +554,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 specStateMatches &= specState.MatchesTexture(stage, index, descriptor);
 
-                Sampler sampler = _samplerPool?.Get(samplerId);
+                Sampler sampler = samplerPool?.Get(samplerId);
 
                 ITexture hostTexture = texture?.GetTargetTexture(bindingInfo.Target);
                 ISampler hostSampler = sampler?.GetHostSampler(texture);
@@ -568,12 +565,15 @@ namespace Ryujinx.Graphics.Gpu.Image
                     // Buffers are frequently re-created to accomodate larger data, so we need to re-bind
                     // to ensure we're not using a old buffer that was already deleted.
                     _channel.BufferManager.SetBufferTextureStorage(stage, hostTexture, texture.Range.GetSubRange(0).Address, texture.Size, bindingInfo, bindingInfo.Format, false);
+
+                    // Cache is not used for buffer texture, it must always rebind.
+                    state.CachedTexture = null;
                 }
                 else
                 {
                     bool textureOrSamplerChanged = state.Texture != hostTexture || state.Sampler != hostSampler;
 
-                    if ((state.ScaleIndex != index || state.UsageFlags != usageFlags || textureOrSamplerChanged) &&
+                    if ((usageFlags & TextureUsageFlags.NeedsScaleValue) != 0 &&
                         UpdateScale(texture, usageFlags, index, stage))
                     {
                         hostTexture = texture?.GetTargetTexture(bindingInfo.Target);
@@ -583,9 +583,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                     if (textureOrSamplerChanged)
                     {
                         state.Texture = hostTexture;
-                        state.ScaleIndex = index;
-                        state.UsageFlags = usageFlags;
-
                         state.Sampler = hostSampler;
 
                         _context.Renderer.Pipeline.SetTextureAndSampler(stage, bindingInfo.Binding, hostTexture, hostSampler);
@@ -666,16 +663,16 @@ namespace Ryujinx.Graphics.Gpu.Image
                         cachedTexture?.SignalModified();
                     }
 
-                    if ((state.ScaleIndex != scaleIndex || state.UsageFlags != usageFlags) &&
-                        UpdateScale(state.CachedTexture, usageFlags, scaleIndex, stage))
+                    Format format = bindingInfo.Format == 0 ? cachedTexture.Format : bindingInfo.Format;
+
+                    if (state.ImageFormat != format ||
+                        ((usageFlags & TextureUsageFlags.NeedsScaleValue) != 0 &&
+                        UpdateScale(state.CachedTexture, usageFlags, scaleIndex, stage)))
                     {
                         ITexture hostTextureRebind = state.CachedTexture.GetTargetTexture(bindingInfo.Target);
 
-                        Format format = bindingInfo.Format == 0 ? cachedTexture.Format : bindingInfo.Format;
-
                         state.Texture = hostTextureRebind;
-                        state.ScaleIndex = scaleIndex;
-                        state.UsageFlags = usageFlags;
+                        state.ImageFormat = format;
 
                         _context.Renderer.Pipeline.SetImage(bindingInfo.Binding, hostTextureRebind, format);
                     }
@@ -705,6 +702,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                     }
 
                     _channel.BufferManager.SetBufferTextureStorage(stage, hostTexture, texture.Range.GetSubRange(0).Address, texture.Size, bindingInfo, format, true);
+
+                    // Cache is not used for buffer texture, it must always rebind.
+                    state.CachedTexture = null;
                 }
                 else
                 {
@@ -713,7 +713,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         texture?.SignalModified();
                     }
 
-                    if ((state.ScaleIndex != scaleIndex || state.UsageFlags != usageFlags || state.Texture != hostTexture) &&
+                    if ((usageFlags & TextureUsageFlags.NeedsScaleValue) != 0 &&
                         UpdateScale(texture, usageFlags, scaleIndex, stage))
                     {
                         hostTexture = texture?.GetTargetTexture(bindingInfo.Target);
@@ -722,8 +722,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                     if (state.Texture != hostTexture)
                     {
                         state.Texture = hostTexture;
-                        state.ScaleIndex = scaleIndex;
-                        state.UsageFlags = usageFlags;
 
                         Format format = bindingInfo.Format;
 
@@ -731,6 +729,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                         {
                             format = texture.Format;
                         }
+
+                        state.ImageFormat = format;
 
                         _context.Renderer.Pipeline.SetImage(bindingInfo.Binding, hostTexture, format);
                     }

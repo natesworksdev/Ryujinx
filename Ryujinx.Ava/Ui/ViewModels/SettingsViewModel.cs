@@ -48,6 +48,11 @@ namespace Ryujinx.Ava.Ui.ViewModels
         private int _graphicsBackendMultithreadingIndex;
         private float _previousVolumeLevel;
         private float _volume;
+        private bool _isVulkanAvailable = true;
+        private bool _directoryChanged = false;
+        private List<string> _gpuIds = new List<string>();
+        private KeyboardHotkeys _keyboardHotkeys;
+        private int _graphicsBackendIndex;
 
         public int ResolutionScale
         {
@@ -92,6 +97,28 @@ namespace Ryujinx.Ava.Ui.ViewModels
             set
             {
                 _customResolutionScale = MathF.Round(value, 1);
+
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsVulkanAvailable
+        {
+            get => _isVulkanAvailable;
+            set
+            {
+                _isVulkanAvailable = value;
+
+                OnPropertyChanged();
+            }
+        }
+
+        public bool DirectoryChanged
+        {
+            get => _directoryChanged;
+            set
+            {
+                _directoryChanged = value;
 
                 OnPropertyChanged();
             }
@@ -143,10 +170,10 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public int BaseStyleIndex { get; set; }
         public int GraphicsBackendIndex
         {
-            get => graphicsBackendIndex;
+            get => _graphicsBackendIndex;
             set
             {
-                graphicsBackendIndex = value;
+                _graphicsBackendIndex = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsVulkanSelected));
             }
@@ -170,13 +197,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public DateTimeOffset DateOffset { get; set; }
         public TimeSpan TimeOffset { get; set; }
         public AvaloniaList<TimeZone> TimeZones { get; set; }
-
         public AvaloniaList<string> GameDirectories { get; set; }
         public ObservableCollection<ComboBoxItem> AvailableGpus { get; set; }
-
-        private KeyboardHotkeys _keyboardHotkeys;
-        private int graphicsBackendIndex;
-        private List<string> _gpuIds = new List<string>();
 
         public KeyboardHotkeys KeyboardHotkeys
         {
@@ -233,20 +255,31 @@ namespace Ryujinx.Ava.Ui.ViewModels
             if (!Program.UseVulkan)
             {
                 var devices = VulkanRenderer.GetPhysicalDevices();
-                foreach (var device in devices)
+
+                if (devices.Length == 0)
                 {
-                    _gpuIds.Add(device.Id);
-                    names.Add($"{device.Name} {(device.IsDiscrete ? "(dGpu)" : "")}");
+                    IsVulkanAvailable = false;
+                    GraphicsBackendIndex = 1;
+                }
+                else
+                {
+                    foreach (var device in devices)
+                    {
+                        _gpuIds.Add(device.Id);
+                        names.Add($"{device.Name} {(device.IsDiscrete ? "(dGPU)" : "")}");
+                    }
                 }
             }
             else
             {
                 foreach (var device in VulkanPhysicalDevice.SuitableDevices)
                 {
-                    _gpuIds.Add(VulkanInitialization.StringFromIdPair(device.Value.VendorID, device.Value.DeviceID));
+                    _gpuIds.Add(
+                        VulkanInitialization.StringFromIdPair(device.Value.VendorID, device.Value.DeviceID));
                     var value = device.Value;
                     var name = value.DeviceName;
-                    names.Add($"{Marshal.PtrToStringAnsi((IntPtr)name)} {(device.Value.DeviceType == PhysicalDeviceType.DiscreteGpu ? "(dGpu)" : "")}");
+                    names.Add(
+                        $"{Marshal.PtrToStringAnsi((IntPtr)name)} {(device.Value.DeviceType == PhysicalDeviceType.DiscreteGpu ? "(dGPU)" : "")}");
                 }
             }
 
@@ -376,9 +409,13 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public async Task SaveSettings()
         {
-            List<string> gameDirs = new List<string>(GameDirectories);
-
             ConfigurationState config = ConfigurationState.Instance;
+
+            if (_directoryChanged)
+            {
+                List<string> gameDirs = new List<string>(GameDirectories);
+                config.Ui.GameDirs.Value = gameDirs;
+            }
 
             if (_validTzRegions.Contains(TimeZone))
             {
@@ -444,7 +481,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
             config.System.SystemTimeOffset.Value = systemTimeOffset.Seconds;
             config.Graphics.ShadersDumpPath.Value = ShaderDumpPath;
-            config.Ui.GameDirs.Value = gameDirs;
             config.System.FsGlobalAccessLogMode.Value = FsGlobalAccessLogMode;
             config.System.MemoryManagerMode.Value = (MemoryManagerMode)MemoryMode;
 

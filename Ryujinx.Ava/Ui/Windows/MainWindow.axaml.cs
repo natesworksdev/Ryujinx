@@ -12,7 +12,6 @@ using Ryujinx.Ava.Ui.Applet;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Ava.Ui.ViewModels;
-using Ryujinx.Ava.Ui.Vulkan;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gpu;
@@ -27,7 +26,6 @@ using Ryujinx.Ui.Common.Configuration;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -656,7 +654,12 @@ namespace Ryujinx.Ava.Ui.Windows
                 {
                     AppHost = null;
 
-                    Dispatcher.UIThread.Post(Close);
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        MainContent = null;
+
+                        Close();
+                    });
                 };
                 AppHost?.Stop();
 

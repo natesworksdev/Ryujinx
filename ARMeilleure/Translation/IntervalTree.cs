@@ -19,8 +19,6 @@ namespace ARMeilleure.Translation
 
         public int Count => _count;
 
-        public IntervalTree() { }
-
         #region Public Methods
 
         /// <summary>
@@ -344,7 +342,7 @@ namespace ARMeilleure.Translation
         }
 
         /// <summary>
-        /// Removes the value from the dictionary after searching for it with <paramref name="key">.
+        /// Removes the value from the dictionary after searching for it with <paramref name="key"/>.
         /// </summary>
         /// <param name="key">Key to search for</param>
         /// <returns>Number of deleted values</returns>

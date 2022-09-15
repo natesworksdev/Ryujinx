@@ -188,9 +188,20 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PhysicalDeviceRobustness2FeaturesExt
             };
 
+            PhysicalDeviceShaderFloat16Int8FeaturesKHR featuresShaderInt8 = new PhysicalDeviceShaderFloat16Int8FeaturesKHR()
+            {
+                SType = StructureType.PhysicalDeviceShaderFloat16Int8Features
+            };
+
             if (supportedExtensions.Contains("VK_EXT_robustness2"))
             {
                 features2.PNext = &featuresRobustness2;
+            }
+
+            if (supportedExtensions.Contains("VK_KHR_shader_float16_int8"))
+            {
+                featuresShaderInt8.PNext = features2.PNext;
+                features2.PNext = &featuresShaderInt8;
             }
 
             Api.GetPhysicalDeviceFeatures2(_physicalDevice, &features2);
@@ -202,6 +213,7 @@ namespace Ryujinx.Graphics.Vulkan
                 supportedExtensions.Contains("VK_EXT_fragment_shader_interlock"),
                 supportedExtensions.Contains("VK_NV_geometry_shader_passthrough"),
                 supportedExtensions.Contains("VK_EXT_subgroup_size_control"),
+                featuresShaderInt8.ShaderInt8,
                 supportedExtensions.Contains(ExtConditionalRendering.ExtensionName),
                 supportedExtensions.Contains(ExtExtendedDynamicState.ExtensionName),
                 features2.Features.MultiViewport,
@@ -368,7 +380,7 @@ namespace Ryujinx.Graphics.Vulkan
             return BufferManager.GetData(buffer, offset, size);
         }
 
-        public Capabilities GetCapabilities()
+        public unsafe Capabilities GetCapabilities()
         {
             FormatFeatureFlags compressedFormatFeatureFlags =
                 FormatFeatureFlags.FormatFeatureSampledImageBit |
@@ -377,7 +389,7 @@ namespace Ryujinx.Graphics.Vulkan
                 FormatFeatureFlags.FormatFeatureTransferSrcBit |
                 FormatFeatureFlags.FormatFeatureTransferDstBit;
 
-            bool supportsBc123CompressionFormat = FormatCapabilities.FormatsSupports(compressedFormatFeatureFlags,
+            bool supportsBc123CompressionFormat = FormatCapabilities.OptimalFormatsSupport(compressedFormatFeatureFlags,
                 GAL.Format.Bc1RgbaSrgb,
                 GAL.Format.Bc1RgbaUnorm,
                 GAL.Format.Bc2Srgb,
@@ -385,19 +397,31 @@ namespace Ryujinx.Graphics.Vulkan
                 GAL.Format.Bc3Srgb,
                 GAL.Format.Bc3Unorm);
 
-            bool supportsBc45CompressionFormat = FormatCapabilities.FormatsSupports(compressedFormatFeatureFlags,
+            bool supportsBc45CompressionFormat = FormatCapabilities.OptimalFormatsSupport(compressedFormatFeatureFlags,
                 GAL.Format.Bc4Snorm,
                 GAL.Format.Bc4Unorm,
                 GAL.Format.Bc5Snorm,
                 GAL.Format.Bc5Unorm);
 
-            bool supportsBc67CompressionFormat = FormatCapabilities.FormatsSupports(compressedFormatFeatureFlags,
+            bool supportsBc67CompressionFormat = FormatCapabilities.OptimalFormatsSupport(compressedFormatFeatureFlags,
                 GAL.Format.Bc6HSfloat,
                 GAL.Format.Bc6HUfloat,
                 GAL.Format.Bc7Srgb,
                 GAL.Format.Bc7Unorm);
 
-            Api.GetPhysicalDeviceFeatures(_physicalDevice, out var features);
+
+            PhysicalDeviceVulkan12Features featuresVk12 = new PhysicalDeviceVulkan12Features()
+            {
+                SType = StructureType.PhysicalDeviceVulkan12Features
+            };
+
+            PhysicalDeviceFeatures2 features2 = new PhysicalDeviceFeatures2()
+            {
+                SType = StructureType.PhysicalDeviceFeatures2,
+                PNext = &featuresVk12
+            };
+
+            Api.GetPhysicalDeviceFeatures2(_physicalDevice, &features2);
             Api.GetPhysicalDeviceProperties(_physicalDevice, out var properties);
 
             var limits = properties.Limits;
@@ -407,7 +431,7 @@ namespace Ryujinx.Graphics.Vulkan
                 GpuVendor,
                 hasFrontFacingBug: IsIntelWindows,
                 hasVectorIndexingBug: Vendor == Vendor.Qualcomm,
-                supportsAstcCompression: features.TextureCompressionAstcLdr,
+                supportsAstcCompression: features2.Features.TextureCompressionAstcLdr,
                 supportsBc123Compression: supportsBc123CompressionFormat,
                 supportsBc45Compression: supportsBc45CompressionFormat,
                 supportsBc67Compression: supportsBc67CompressionFormat,
@@ -417,12 +441,13 @@ namespace Ryujinx.Graphics.Vulkan
                 supportsFragmentShaderInterlock: Capabilities.SupportsFragmentShaderInterlock,
                 supportsFragmentShaderOrderingIntel: false,
                 supportsGeometryShaderPassthrough: Capabilities.SupportsGeometryShaderPassthrough,
-                supportsImageLoadFormatted: features.ShaderStorageImageReadWithoutFormat,
+                supportsImageLoadFormatted: features2.Features.ShaderStorageImageReadWithoutFormat,
                 supportsMismatchingViewFormat: true,
                 supportsCubemapView: !IsAmdGcn,
                 supportsNonConstantTextureOffset: false,
                 supportsShaderBallot: false,
                 supportsTextureShadowLod: false,
+                supportsViewportIndex: featuresVk12.ShaderOutputViewportIndex,
                 supportsViewportSwizzle: false,
                 supportsIndirectParameters: Capabilities.SupportsIndirectParameters,
                 maximumUniformBuffersPerStage: Constants.MaxUniformBuffersPerStage,
@@ -504,6 +529,24 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             PrintGpuInformation();
+        }
+
+        public bool NeedsVertexBufferAlignment(int attrScalarAlignment, out int alignment)
+        {
+            if (Vendor != Vendor.Nvidia)
+            {
+                // Vulkan requires that vertex attributes are globally aligned by their component size,
+                // so buffer strides that don't divide by the largest scalar element are invalid.
+                // Guest applications do this, NVIDIA GPUs are OK with it, others are not.
+
+                alignment = attrScalarAlignment;
+
+                return true;
+            }
+
+            alignment = 1;
+
+            return false;
         }
 
         public void PreFrame()

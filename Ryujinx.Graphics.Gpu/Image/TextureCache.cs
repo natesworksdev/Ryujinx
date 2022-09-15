@@ -1,10 +1,8 @@
 using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
-using Ryujinx.Graphics.Gpu.Engine.Dma;
 using Ryujinx.Graphics.Gpu.Engine.Threed;
 using Ryujinx.Graphics.Gpu.Engine.Twod;
 using Ryujinx.Graphics.Gpu.Engine.Types;
-using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Texture;
 using Ryujinx.Memory.Range;
@@ -907,7 +905,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="xCount">Number of pixels to be copied per line</param>
         /// <param name="yCount">Number of lines to be copied</param>
         /// <param name="linear">True if the texture has a linear layout, false otherwise</param>
-        /// <param name="memoryLayout">If <paramref name="linear"/> is false, should have the memory layout, otherwise ignored</param>
+        /// <param name="gobBlocksInY">If <paramref name="linear"/> is false, the amount of GOB blocks in the Y axis</param>
+        /// <param name="gobBlocksInZ">If <paramref name="linear"/> is false, the amount of GOB blocks in the Z axis</param>
         /// <returns>A matching texture, or null if there is no match</returns>
         public Texture FindTexture(
             MemoryManager memoryManager,
@@ -918,7 +917,8 @@ namespace Ryujinx.Graphics.Gpu.Image
             int xCount,
             int yCount,
             bool linear,
-            MemoryLayout memoryLayout)
+            int gobBlocksInY,
+            int gobBlocksInZ)
         {
             ulong address = memoryManager.Translate(gpuVa);
 
@@ -957,8 +957,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     bool sizeMatch = xCount * bpp == texture.Info.Width * format.BytesPerPixel && height == texture.Info.Height;
                     bool formatMatch = !texture.Info.IsLinear &&
-                                        texture.Info.GobBlocksInY == memoryLayout.UnpackGobBlocksInY() &&
-                                        texture.Info.GobBlocksInZ == memoryLayout.UnpackGobBlocksInZ();
+                                        texture.Info.GobBlocksInY == gobBlocksInY &&
+                                        texture.Info.GobBlocksInZ == gobBlocksInZ;
 
                     match = sizeMatch && formatMatch;
                 }
