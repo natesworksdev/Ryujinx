@@ -139,7 +139,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
             _stations.Add(station);
 
-            station.NodeId = _stations.Count + 1;
+            station.NodeId = _stations.Count;
 
             UpdateNodes();
         }
@@ -391,7 +391,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                     countConnected++;
                     station.OverrideInfo();
                     // NOTE: This is not part of the original implementation.
-                    NetworkInfo.Ldn.Nodes[station.NodeId - 1] = station.NodeInfo;
+                    NetworkInfo.Ldn.Nodes[station.NodeId] = station.NodeInfo;
                 }
             }
 
