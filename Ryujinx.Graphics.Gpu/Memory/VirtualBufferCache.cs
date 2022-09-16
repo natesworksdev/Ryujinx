@@ -541,7 +541,22 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     MultiRange left = newRange.Slice(0, offsetWithinNew);
                     MultiRange right = newRange.Slice(rightOffset, size - rightOffset);
 
-                    newRange = left.Append(existingSlice).Append(right);
+                    if (offsetWithinNew != 0 && size != rightOffset)
+                    {
+                        newRange = left.Append(existingSlice).Append(right);
+                    }
+                    else if (offsetWithinNew != 0)
+                    {
+                        newRange = left.Append(existingSlice);
+                    }
+                    else if (size != rightOffset)
+                    {
+                        newRange = existingSlice.Append(right);
+                    }
+                    else
+                    {
+                        newRange = existingSlice;
+                    }
                 }
             }
 
