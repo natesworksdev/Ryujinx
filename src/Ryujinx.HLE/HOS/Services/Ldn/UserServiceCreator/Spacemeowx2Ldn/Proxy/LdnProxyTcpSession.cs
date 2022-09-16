@@ -36,7 +36,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
         protected override void OnConnected()
         {
             Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPSession connected!");
-            _protocol.InvokeAccept(this);
         }
 
         protected override void OnDisconnected()
@@ -69,6 +68,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
                 if (endPoint.Equals(this.Socket.RemoteEndPoint))
                 {
                     NodeInfo = info;
+                    _protocol.InvokeAccept(this);
                 }
             }
             catch (System.ObjectDisposedException)
