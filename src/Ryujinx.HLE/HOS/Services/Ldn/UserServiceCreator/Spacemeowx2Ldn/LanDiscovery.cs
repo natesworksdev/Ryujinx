@@ -129,7 +129,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         protected void OnConnect(LdnProxyTcpSession station)
         {
-            if (_stations.Count > LanProtocol.StationCountMax)
+            station.NodeId = LocateEmptyNode();
+
+            if (_stations.Count > LanProtocol.StationCountMax || station.NodeId == -1)
             {
                 station.Disconnect();
                 station.Dispose();
@@ -138,8 +140,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             }
 
             _stations.Add(station);
-
-            station.NodeId = _stations.Count;
 
             UpdateNodes();
         }
@@ -156,7 +156,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                 station.Dispose();
             }
 
-            NetworkInfo.Ldn.Nodes[_stations.IndexOf(station) + 1] = new NodeInfo()
+            NetworkInfo.Ldn.Nodes[station.NodeId] = new NodeInfo()
             {
                 MacAddress = new Array6<byte>(),
                 UserName = new Array33<byte>(),
@@ -380,6 +380,21 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             _stations.Clear();
         }
 
+        private int LocateEmptyNode()
+        {
+            NodeInfo[] nodes = NetworkInfo.Ldn.Nodes;
+
+            for (int i = 0; i < nodes.Length; i++)
+            {
+                if (nodes[i].IsConnected == 0)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
         protected void UpdateNodes()
         {
             int countConnected = 1;
@@ -388,14 +403,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             {
                 if (station.IsConnected)
                 {
-                    station.NodeId = countConnected++;
+                    countConnected++;
                     station.OverrideInfo();
                     // NOTE: This is not part of the original implementation.
                     NetworkInfo.Ldn.Nodes[station.NodeId] = station.NodeInfo;
                 }
             }
 
-            byte nodeCount = (byte)(countConnected);
+            byte nodeCount = (byte)countConnected;
 
             Logger.Debug?.PrintMsg(LogClass.ServiceLdn, $"NetworkInfoNodeCount: {NetworkInfo.Ldn.NodeCount} | new NodeCount: {nodeCount}");
 
