@@ -54,15 +54,8 @@ namespace Ryujinx.Ava.Ui.Controls
             {
                 overlay = new ContentDialogOverlayWindow()
                 {
-                    ExtendClientAreaToDecorationsHint = true,
-                    TransparencyLevelHint = WindowTransparencyLevel.Transparent,
-                    WindowStartupLocation = WindowStartupLocation.Manual,
-                    SystemDecorations = SystemDecorations.None,
-                    ExtendClientAreaTitleBarHeightHint = 0,
-                    Background = Brushes.Transparent,
                     Height = mainWindow.Bounds.Height,
                     Width = mainWindow.Bounds.Width,
-                    CanResize = false,
                     Position = mainWindow.PointToScreen(new Point())
                 };
 
