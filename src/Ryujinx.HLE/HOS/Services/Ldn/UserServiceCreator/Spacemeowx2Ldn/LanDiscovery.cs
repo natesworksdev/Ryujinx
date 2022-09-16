@@ -156,7 +156,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                 station.Dispose();
             }
 
-            NetworkInfo.Ldn.Nodes[_stations.IndexOf(station)] = new NodeInfo()
+            NetworkInfo.Ldn.Nodes[_stations.IndexOf(station) + 1] = new NodeInfo()
             {
                 MacAddress = new Array6<byte>(),
                 UserName = new Array33<byte>(),
@@ -382,20 +382,20 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         protected void UpdateNodes()
         {
-            int countConnected = 0;
+            int countConnected = 1;
 
             foreach (LdnProxyTcpSession station in _stations)
             {
                 if (station.IsConnected)
                 {
-                    countConnected++;
+                    station.NodeId = countConnected++;
                     station.OverrideInfo();
                     // NOTE: This is not part of the original implementation.
                     NetworkInfo.Ldn.Nodes[station.NodeId] = station.NodeInfo;
                 }
             }
 
-            byte nodeCount = (byte)(countConnected + 1);
+            byte nodeCount = (byte)(countConnected);
 
             Logger.Debug?.PrintMsg(LogClass.ServiceLdn, $"NetworkInfoNodeCount: {NetworkInfo.Ldn.NodeCount} | new NodeCount: {nodeCount}");
 
