@@ -71,7 +71,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
             void OverlayOnPositionChanged(object sender, PixelPointEventArgs e)
             {
-                overlay.Position = window.PointToScreen(new Point()); ;
+                overlay.Position = window.PointToScreen(new Point());
             }
 
             contentDialog = overlay.ContentDialog;
