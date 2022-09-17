@@ -2,6 +2,8 @@
 {
     internal interface ILdnTcpSocket : ILdnSocket
     {
+        bool Connect();
+
         bool ConnectAsync();
 
         void DisconnectAndStop();

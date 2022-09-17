@@ -42,6 +42,11 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
             throw new InvalidOperationException("ConnectAsync was called.");
         }
 
+        public bool Connect()
+        {
+            throw new InvalidOperationException("Connect was called.");
+        }
+
         public void DisconnectAndStop()
         {
             Stop();

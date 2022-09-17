@@ -76,6 +76,18 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
             base.Dispose(disposingManagedResources);
         }
 
+        public override bool Connect()
+        {
+            base.ConnectAsync();
+
+            while (IsConnecting)
+            {
+                Thread.Sleep(1);
+            }
+
+            return IsConnected;
+        }
+
         public bool Start()
         {
             throw new InvalidOperationException("Start was called.");

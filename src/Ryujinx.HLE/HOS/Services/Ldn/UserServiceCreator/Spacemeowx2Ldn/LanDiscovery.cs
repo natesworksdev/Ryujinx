@@ -527,7 +527,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                 return NetworkError.ConnectNotFound;
             }
 
-            if (!_tcp.ConnectAsync())
+            if (!_tcp.Connect())
             {
                 Logger.Error?.PrintMsg(LogClass.ServiceLdn, "Failed to connect.");
 
