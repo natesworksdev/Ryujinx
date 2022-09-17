@@ -1,7 +1,8 @@
-﻿using Ryujinx.Common.Logging;
+using Ryujinx.Common.Logging;
 using Ryujinx.Common.Memory;
 using Ryujinx.HLE.HOS.Services.Ldn.Spacemeowx2Ldn;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -14,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
         private byte[] _buffer;
         private int _bufferEnd;
 
-        internal Dictionary<Array6<byte>, NetworkInfo> scanResults = new Dictionary<Array6<byte>, NetworkInfo>();
+        internal Dictionary<ulong, NetworkInfo> scanResults = new Dictionary<ulong, NetworkInfo>();
 
         public LdnProxyUdpServer(LanProtocol protocol, IPAddress address, int port) : base(address, port)
         {
@@ -76,7 +77,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 
         private void HandleScanResponse(NetworkInfo info)
         {
-            scanResults.Add(info.Common.MacAddress, info);
+            scanResults.Add(BitConverter.ToUInt64(info.Common.MacAddress.AsSpan()), info);
         }
     }
 }
