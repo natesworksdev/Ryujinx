@@ -55,7 +55,10 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             {
                 case LanPacketType.Scan:
                     // UDP
-                    Scan?.Invoke(endPoint, LanPacketType.ScanResponse, LdnHelper.StructureToByteArray(_discovery.NetworkInfo));
+                    if (_discovery.IsHost)
+                    {
+                        Scan?.Invoke(endPoint, LanPacketType.ScanResponse, LdnHelper.StructureToByteArray(_discovery.NetworkInfo));
+                    }
                     break;
                 case LanPacketType.ScanResponse:
                     // UDP

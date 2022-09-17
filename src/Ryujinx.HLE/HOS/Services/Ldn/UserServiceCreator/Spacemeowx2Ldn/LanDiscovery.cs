@@ -36,6 +36,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         internal readonly IPAddress LocalBroadcastAddr;
         internal NetworkInfo NetworkInfo;
 
+        public bool IsHost => _tcp is LdnProxyTcpServer;
+
         // NOTE: Credit to https://stackoverflow.com/a/39338188
         private static IPAddress GetBroadcastAddress(IPAddress address, IPAddress mask)
         {
