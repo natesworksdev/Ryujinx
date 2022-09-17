@@ -78,6 +78,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 
         public override bool Connect()
         {
+            // TODO: NetCoreServer has a Connect() method, but it currently leads to weird issues.
             base.ConnectAsync();
 
             while (IsConnecting)

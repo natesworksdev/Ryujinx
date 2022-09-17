@@ -4,8 +4,6 @@
     {
         bool Connect();
 
-        bool ConnectAsync();
-
         void DisconnectAndStop();
     }
 }

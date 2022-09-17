@@ -37,11 +37,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
             base.Dispose(disposingManagedResources);
         }
 
-        public bool ConnectAsync()
-        {
-            throw new InvalidOperationException("ConnectAsync was called.");
-        }
-
         public bool Connect()
         {
             throw new InvalidOperationException("Connect was called.");
