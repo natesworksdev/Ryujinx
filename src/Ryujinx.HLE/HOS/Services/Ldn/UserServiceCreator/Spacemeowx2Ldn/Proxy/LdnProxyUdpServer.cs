@@ -77,7 +77,11 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 
         private void HandleScanResponse(NetworkInfo info)
         {
-            scanResults.Add(BitConverter.ToUInt64(info.Common.MacAddress.AsSpan()), info);
+            Span<byte> mac = stackalloc byte[8];
+
+            info.Common.MacAddress.AsSpan().CopyTo(mac);
+
+            scanResults.Add(BitConverter.ToUInt64(mac), info);
         }
     }
 }
