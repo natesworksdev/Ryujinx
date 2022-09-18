@@ -1617,18 +1617,32 @@ namespace ARMeilleure.Instructions
 
         public static void Frinta_S(ArmEmitterContext context)
         {
-            EmitScalarUnaryOpF(context, (op1) =>
+            if (Optimizations.UseSse41)
             {
-                return EmitRoundMathCall(context, MidpointRounding.AwayFromZero, op1);
-            });
+                EmitSse41ScalarRoundOpF(context, FPRoundingMode.ToNearestAway);
+            }
+            else
+            {
+                EmitScalarUnaryOpF(context, (op1) =>
+                {
+                    return EmitRoundMathCall(context, MidpointRounding.AwayFromZero, op1);
+                });
+            }
         }
 
         public static void Frinta_V(ArmEmitterContext context)
         {
-            EmitVectorUnaryOpF(context, (op1) =>
+            if (Optimizations.UseSse41)
             {
-                return EmitRoundMathCall(context, MidpointRounding.AwayFromZero, op1);
-            });
+                EmitSse41VectorRoundOpF(context, FPRoundingMode.ToNearestAway);
+            }
+            else
+            {
+                EmitVectorUnaryOpF(context, (op1) =>
+                {
+                    return EmitRoundMathCall(context, MidpointRounding.AwayFromZero, op1);
+                });
+            }
         }
 
         public static void Frinti_S(ArmEmitterContext context)
@@ -3558,7 +3572,16 @@ namespace ARMeilleure.Instructions
 
             Intrinsic inst = (op.Size & 1) != 0 ? Intrinsic.X86Roundsd : Intrinsic.X86Roundss;
 
-            Operand res = context.AddIntrinsic(inst, n, Const(X86GetRoundControl(roundMode)));
+            Operand res;
+
+            if (roundMode != FPRoundingMode.ToNearestAway)
+            {
+                res = context.AddIntrinsic(inst, n, Const(X86GetRoundControl(roundMode)));
+            }
+            else
+            {
+                res = EmitRoundToNearestWithTiesToAway(context, n, scalar: true);
+            }
 
             if ((op.Size & 1) != 0)
             {
@@ -3580,7 +3603,16 @@ namespace ARMeilleure.Instructions
 
             Intrinsic inst = (op.Size & 1) != 0 ? Intrinsic.X86Roundpd : Intrinsic.X86Roundps;
 
-            Operand res = context.AddIntrinsic(inst, n, Const(X86GetRoundControl(roundMode)));
+            Operand res;
+
+            if (roundMode != FPRoundingMode.ToNearestAway)
+            {
+                res = context.AddIntrinsic(inst, n, Const(X86GetRoundControl(roundMode)));
+            }
+            else
+            {
+                res = EmitRoundToNearestWithTiesToAway(context, n, scalar: false);
+            }
 
             if (op.RegisterSize == RegisterSize.Simd64)
             {
