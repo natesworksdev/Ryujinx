@@ -344,16 +344,16 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         public NetworkInfo[] Scan(ushort channel, ScanFilter filter)
         {
+            _udp.ClearScanResults();
+
             if (_protocol.SendBroadcast(_udp, LanPacketType.Scan, DEFAULT_PORT) < 0)
             {
                 return Array.Empty<NetworkInfo>();
             }
 
-            Thread.Sleep(1000);
-
             List<NetworkInfo> outNetworkInfo = new();
 
-            foreach (KeyValuePair<ulong, NetworkInfo> item in _udp.scanResults)
+            foreach (KeyValuePair<ulong, NetworkInfo> item in _udp.GetScanResults())
             {
                 bool copy = true;
 
