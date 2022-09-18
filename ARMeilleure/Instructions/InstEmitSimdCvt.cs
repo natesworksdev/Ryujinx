@@ -1259,7 +1259,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    nRes = EmitRoundToNearestWithTiesToAway(context, nRes, scalar);
+                    nRes = EmitSse41RoundToNearestWithTiesToAwayOpF(context, nRes, scalar);
                 }
 
                 Operand nInt = context.AddIntrinsic(Intrinsic.X86Cvtps2dq, nRes);
@@ -1308,7 +1308,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    nRes = EmitRoundToNearestWithTiesToAway(context, nRes, scalar);
+                    nRes = EmitSse41RoundToNearestWithTiesToAwayOpF(context, nRes, scalar);
                 }
 
                 Operand nLong = EmitSse2CvtDoubleToInt64OpF(context, nRes, scalar);
@@ -1364,7 +1364,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    nRes = EmitRoundToNearestWithTiesToAway(context, nRes, scalar);
+                    nRes = EmitSse41RoundToNearestWithTiesToAwayOpF(context, nRes, scalar);
                 }
 
                 Operand zero = context.VectorZero();
@@ -1426,7 +1426,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    nRes = EmitRoundToNearestWithTiesToAway(context, nRes, scalar);
+                    nRes = EmitSse41RoundToNearestWithTiesToAwayOpF(context, nRes, scalar);
                 }
 
                 Operand zero = context.VectorZero();
@@ -1488,7 +1488,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    nRes = EmitRoundToNearestWithTiesToAway(context, nRes, scalar: true);
+                    nRes = EmitSse41RoundToNearestWithTiesToAwayOpF(context, nRes, scalar: true);
                 }
 
                 Operand nIntOrLong = op.RegisterSize == RegisterSize.Int32
@@ -1535,7 +1535,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    nRes = EmitRoundToNearestWithTiesToAway(context, nRes, scalar: true);
+                    nRes = EmitSse41RoundToNearestWithTiesToAwayOpF(context, nRes, scalar: true);
                 }
 
                 Operand nIntOrLong = op.RegisterSize == RegisterSize.Int32
@@ -1590,7 +1590,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    nRes = EmitRoundToNearestWithTiesToAway(context, nRes, scalar: true);
+                    nRes = EmitSse41RoundToNearestWithTiesToAwayOpF(context, nRes, scalar: true);
                 }
 
                 Operand zero = context.VectorZero();
@@ -1652,7 +1652,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    nRes = EmitRoundToNearestWithTiesToAway(context, nRes, scalar: true);
+                    nRes = EmitSse41RoundToNearestWithTiesToAwayOpF(context, nRes, scalar: true);
                 }
 
                 Operand zero = context.VectorZero();

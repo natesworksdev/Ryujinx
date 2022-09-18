@@ -243,7 +243,7 @@ namespace ARMeilleure.Instructions
             throw new ArgumentException($"Invalid rounding mode \"{roundMode}\".");
         }
 
-        public static Operand EmitRoundToNearestWithTiesToAway(ArmEmitterContext context, Operand n, bool scalar)
+        public static Operand EmitSse41RoundToNearestWithTiesToAwayOpF(ArmEmitterContext context, Operand n, bool scalar)
         {
             Debug.Assert(n.Type == OperandType.V128);
 

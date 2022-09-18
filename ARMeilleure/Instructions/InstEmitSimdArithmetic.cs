@@ -3570,17 +3570,17 @@ namespace ARMeilleure.Instructions
 
             Operand n = GetVec(op.Rn);
 
-            Intrinsic inst = (op.Size & 1) != 0 ? Intrinsic.X86Roundsd : Intrinsic.X86Roundss;
-
             Operand res;
 
             if (roundMode != FPRoundingMode.ToNearestAway)
             {
+                Intrinsic inst = (op.Size & 1) != 0 ? Intrinsic.X86Roundsd : Intrinsic.X86Roundss;
+
                 res = context.AddIntrinsic(inst, n, Const(X86GetRoundControl(roundMode)));
             }
             else
             {
-                res = EmitRoundToNearestWithTiesToAway(context, n, scalar: true);
+                res = EmitSse41RoundToNearestWithTiesToAwayOpF(context, n, scalar: true);
             }
 
             if ((op.Size & 1) != 0)
@@ -3601,17 +3601,17 @@ namespace ARMeilleure.Instructions
 
             Operand n = GetVec(op.Rn);
 
-            Intrinsic inst = (op.Size & 1) != 0 ? Intrinsic.X86Roundpd : Intrinsic.X86Roundps;
-
             Operand res;
 
             if (roundMode != FPRoundingMode.ToNearestAway)
             {
+                Intrinsic inst = (op.Size & 1) != 0 ? Intrinsic.X86Roundpd : Intrinsic.X86Roundps;
+
                 res = context.AddIntrinsic(inst, n, Const(X86GetRoundControl(roundMode)));
             }
             else
             {
-                res = EmitRoundToNearestWithTiesToAway(context, n, scalar: false);
+                res = EmitSse41RoundToNearestWithTiesToAwayOpF(context, n, scalar: false);
             }
 
             if (op.RegisterSize == RegisterSize.Simd64)
