@@ -93,9 +93,5 @@ namespace Ryujinx.Graphics.Vulkan
         {
             return _buffer == buffer;
         }
-
-        public void Dispose()
-        {
-        }
     }
 }

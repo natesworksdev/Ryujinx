@@ -562,12 +562,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetIndexBuffer(BufferRange buffer, GAL.IndexType type)
         {
-            _indexBuffer.Dispose();
-
             if (buffer.Handle != BufferHandle.Null)
             {
-                Auto<DisposableBuffer> ib = null;
-
                 _indexBuffer = new IndexBufferState(buffer.Handle, buffer.Offset, buffer.Size, type.Convert());
             }
             else
@@ -1313,7 +1309,6 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 _renderPass?.Dispose();
                 _framebuffer?.Dispose();
-                _indexBuffer.Dispose();
                 _newState.Dispose();
                 _descriptorSetUpdater.Dispose();
 
