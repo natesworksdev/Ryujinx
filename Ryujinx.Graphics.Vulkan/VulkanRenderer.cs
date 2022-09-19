@@ -522,6 +522,7 @@ namespace Ryujinx.Graphics.Vulkan
             return topology switch
             {
                 GAL.PrimitiveTopology.Quads => GAL.PrimitiveTopology.Triangles,
+                GAL.PrimitiveTopology.QuadStrip => GAL.PrimitiveTopology.TriangleStrip,
                 _ => topology
             };
         }
