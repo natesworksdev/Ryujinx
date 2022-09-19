@@ -79,13 +79,13 @@ namespace Ryujinx.Graphics.Vulkan
 
             autoBuffer = gd.BufferManager.GetBufferTopologyConversion(cbs, _handle, _offset + firstIndexOffset, indexCount * indexSize, pattern, indexSize);
 
-            int size = convertedCount * indexSize;
+            int size = convertedCount * 4;
 
             _buffer = autoBuffer;
 
             if (autoBuffer != null)
             {
-                gd.Api.CmdBindIndexBuffer(cbs.CommandBuffer, autoBuffer.Get(cbs, 0, size).Value, 0, _type);
+                gd.Api.CmdBindIndexBuffer(cbs.CommandBuffer, autoBuffer.Get(cbs, 0, size).Value, 0, IndexType.Uint32);
             }
         }
 

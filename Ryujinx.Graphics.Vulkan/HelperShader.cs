@@ -410,10 +410,13 @@ namespace Ryujinx.Graphics.Vulkan
             int indexCount)
         {
             int convertedCount = pattern.GetConvertedCount(indexCount);
+            int outputIndexSize = 4;
 
             // TODO: Do this with a compute shader?
             var srcBuffer = src.GetBuffer().Get(cbs, srcOffset, indexCount * indexSize).Value;
-            var dstBuffer = dst.GetBuffer().Get(cbs, 0, convertedCount * indexSize).Value;
+            var dstBuffer = dst.GetBuffer().Get(cbs, 0, convertedCount * outputIndexSize).Value;
+
+            gd.Api.CmdFillBuffer(cbs.CommandBuffer, dstBuffer, 0, Vk.WholeSize, 0);
 
             var bufferCopy = new List<BufferCopy>();
             int outputOffset = 0;
@@ -426,7 +429,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 if (sequenceLength > 0)
                 {
-                    if (index == sequenceStart + sequenceLength)
+                    if (index == sequenceStart + sequenceLength && indexSize == outputIndexSize)
                     {
                         sequenceLength++;
                         continue;
@@ -434,7 +437,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                     // Commit the copy so far.
                     bufferCopy.Add(new BufferCopy((ulong)(srcOffset + sequenceStart * indexSize), (ulong)outputOffset, (ulong)(indexSize * sequenceLength)));
-                    outputOffset += indexSize * sequenceLength;
+                    outputOffset += outputIndexSize * sequenceLength;
                 }
 
                 sequenceStart = index;
@@ -458,7 +461,7 @@ namespace Ryujinx.Graphics.Vulkan
                 PipelineStageFlags.PipelineStageAllCommandsBit,
                 PipelineStageFlags.PipelineStageTransferBit,
                 0,
-                convertedCount * indexSize);
+                convertedCount * outputIndexSize);
 
             fixed (BufferCopy* pBufferCopy = bufferCopyArray)
             {
@@ -474,7 +477,7 @@ namespace Ryujinx.Graphics.Vulkan
                 PipelineStageFlags.PipelineStageTransferBit,
                 PipelineStageFlags.PipelineStageAllCommandsBit,
                 0,
-                convertedCount * indexSize);
+                convertedCount * outputIndexSize);
         }
 
         protected virtual void Dispose(bool disposing)
