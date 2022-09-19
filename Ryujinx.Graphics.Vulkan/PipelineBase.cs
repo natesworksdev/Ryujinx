@@ -346,7 +346,6 @@ namespace Ryujinx.Graphics.Vulkan
             BeginRenderPass();
             DrawCount++;
 
-
             if (_indexBufferPattern != null)
             {
                 // Convert the index buffer into a supported topology.
