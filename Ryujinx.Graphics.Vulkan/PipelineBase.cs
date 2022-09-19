@@ -281,7 +281,6 @@ namespace Ryujinx.Graphics.Vulkan
 
             RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
             BeginRenderPass();
-            ResumeTransformFeedbackInternal();
             DrawCount++;
 
             if (Gd.TopologyUnsupported(_topology))
@@ -302,11 +301,14 @@ namespace Ryujinx.Graphics.Vulkan
                 Gd.Api.CmdBindIndexBuffer(CommandBuffer, buffer.Get(Cbs, 0, indexCount * sizeof(int)).Value, 0, Silk.NET.Vulkan.IndexType.Uint32);
 
                 BeginRenderPass(); // May have been interrupted to set buffer data.
+                ResumeTransformFeedbackInternal();
 
                 Gd.Api.CmdDrawIndexed(CommandBuffer, (uint)indexCount, (uint)instanceCount, 0, firstVertex, (uint)firstInstance);
             }
             else
             {
+                ResumeTransformFeedbackInternal();
+
                 Gd.Api.CmdDraw(CommandBuffer, (uint)vertexCount, (uint)instanceCount, (uint)firstVertex, (uint)firstInstance);
             }
         }
@@ -342,7 +344,6 @@ namespace Ryujinx.Graphics.Vulkan
             UpdateIndexBufferPattern();
             RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
             BeginRenderPass();
-            ResumeTransformFeedbackInternal();
             DrawCount++;
 
 
@@ -361,11 +362,14 @@ namespace Ryujinx.Graphics.Vulkan
                 }
 
                 BeginRenderPass(); // May have been interrupted to set buffer data.
+                ResumeTransformFeedbackInternal();
 
                 Gd.Api.CmdDrawIndexed(CommandBuffer, (uint)convertedCount, (uint)instanceCount, 0, firstVertex, (uint)firstInstance);
             }
             else
             {
+                ResumeTransformFeedbackInternal();
+
                 Gd.Api.CmdDrawIndexed(CommandBuffer, (uint)indexCount, (uint)instanceCount, (uint)firstIndex, firstVertex, (uint)firstInstance);
             }
         }
