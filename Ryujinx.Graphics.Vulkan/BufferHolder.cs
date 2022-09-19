@@ -370,6 +370,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 holder = _gd.BufferManager.Create(_gd, (size * 2 + 3) & ~3);
 
+                _gd.PipelineInternal.EndRenderPass();
                 _gd.HelperShader.ConvertI8ToI16(_gd, cbs, this, holder, offset, size);
 
                 _cachedConvertedBuffers.Add(offset, size, key, holder);
@@ -388,6 +389,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 holder = _gd.BufferManager.Create(_gd, (size / stride) * alignedStride);
 
+                _gd.PipelineInternal.EndRenderPass();
                 _gd.HelperShader.ChangeStride(_gd, cbs, this, holder, offset, size, stride, alignedStride);
 
                 key.SetBuffer(holder.GetBuffer());
