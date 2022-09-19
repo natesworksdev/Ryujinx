@@ -404,7 +404,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (!_cachedConvertedBuffers.TryGetValue(offset, size, key, out var holder))
             {
-                // The index size is the same between the source and destination index buffers.
+                // The destination index size is always I32.
 
                 int indexCount = size / indexSize;
 
