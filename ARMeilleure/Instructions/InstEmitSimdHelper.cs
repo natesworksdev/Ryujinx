@@ -381,9 +381,8 @@ namespace ARMeilleure.Instructions
             Operand rN = Const((int)FPRoundingMode.ToNearest);
             Operand rP = Const((int)FPRoundingMode.TowardsPlusInfinity);
             Operand rM = Const((int)FPRoundingMode.TowardsMinusInfinity);
-            Operand rZ = Const((int)FPRoundingMode.TowardsZero);
 
-            Operand res = context.Copy(context.AllocateLocal(op.Type), op);
+            Operand res = context.AllocateLocal(op.Type);
 
             Operand rMode = EmitGetRoundingMode(context);
 
@@ -402,7 +401,6 @@ namespace ARMeilleure.Instructions
             context.Branch(lblEnd);
 
             context.MarkLabel(lbl3);
-            context.BranchIf(lblEnd, rMode, rZ, Comparison.NotEqual);
             context.Copy(res, EmitUnaryMathCall(context, nameof(Math.Truncate), op));
             context.Branch(lblEnd);
 
