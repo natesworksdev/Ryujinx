@@ -512,16 +512,17 @@ namespace Ryujinx.Graphics.Vulkan
                 vkBlend.DstAlphaBlendFactor = blend.AlphaDstFactor.Convert();
                 vkBlend.AlphaBlendOp = blend.AlphaOp.Convert();
             }
-
-            if (vkBlend.ColorWriteMask == 0 || !blend.Enable)
+            else
             {
-                if (vkBlend.ColorWriteMask == 0)
-                {
-                    _storedBlend[index] = vkBlend;
-                }
-
                 vkBlend = new PipelineColorBlendAttachmentState(
                     colorWriteMask: vkBlend.ColorWriteMask);
+            }
+
+            if (vkBlend.ColorWriteMask == 0)
+            {
+                _storedBlend[index] = vkBlend;
+
+                vkBlend = new PipelineColorBlendAttachmentState();
             }
 
             _newState.BlendConstantR = blend.BlendConstant.Red;
