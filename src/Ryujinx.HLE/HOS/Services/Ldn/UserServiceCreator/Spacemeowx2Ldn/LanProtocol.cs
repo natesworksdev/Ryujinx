@@ -195,7 +195,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         {
             LanPacketHeader header = PrepareHeader(new(), type);
             header.Length = (ushort)data.Length;
-            byte[] buf = new byte[data.Length + _headerSize];
+
+            byte[] buf;
             if (data.Length > 0)
             {
                 if (Compress(data, out byte[] compressed) == 0)
@@ -204,11 +205,15 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                     header.Length = (ushort)compressed.Length;
                     header.Compressed = 1;
 
+                    buf = new byte[compressed.Length + _headerSize];
+
                     LdnHelper.StructureToByteArray(header).CopyTo(buf, 0);
                     compressed.CopyTo(buf, _headerSize);
                 }
                 else
                 {
+                    buf = new byte[data.Length + _headerSize];
+
                     Logger.Warning?.PrintMsg(LogClass.ServiceLdn, "Compressing packet data failed.");
                     LdnHelper.StructureToByteArray(header).CopyTo(buf, 0);
                     data.CopyTo(buf, _headerSize);
@@ -216,6 +221,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             }
             else
             {
+                buf = new byte[_headerSize];
                 LdnHelper.StructureToByteArray(header).CopyTo(buf, 0);
             }
 
