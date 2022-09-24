@@ -27,7 +27,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Auto<MemoryAllocation> _allocationAuto;
         private readonly ulong _bufferHandle;
 
-        private CacheByRange<BufferHolder> _cachedConvertedIndexBuffers;
+        private CacheByRange<BufferHolder> _cachedConvertedBuffers;
 
         public int Size { get; }
 
@@ -109,7 +109,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (isWrite)
             {
-                _cachedConvertedIndexBuffers.Clear();
+                _cachedConvertedBuffers.Clear();
             }
 
             return _buffer;
@@ -364,13 +364,60 @@ namespace Ryujinx.Graphics.Vulkan
 
         public Auto<DisposableBuffer> GetBufferI8ToI16(CommandBufferScoped cbs, int offset, int size)
         {
-            if (!_cachedConvertedIndexBuffers.TryGetValue(offset, size, out var holder))
+            var key = new I8ToI16CacheKey();
+
+            if (!_cachedConvertedBuffers.TryGetValue(offset, size, key, out var holder))
             {
                 holder = _gd.BufferManager.Create(_gd, (size * 2 + 3) & ~3);
 
+                _gd.PipelineInternal.EndRenderPass();
                 _gd.HelperShader.ConvertI8ToI16(_gd, cbs, this, holder, offset, size);
 
-                _cachedConvertedIndexBuffers.Add(offset, size, holder);
+                _cachedConvertedBuffers.Add(offset, size, key, holder);
+            }
+
+            return holder.GetBuffer();
+        }
+
+        public Auto<DisposableBuffer> GetAlignedVertexBuffer(CommandBufferScoped cbs, int offset, int size, int stride, int alignment)
+        {
+            var key = new AlignedVertexBufferCacheKey(_gd, stride, alignment);
+
+            if (!_cachedConvertedBuffers.TryGetValue(offset, size, key, out var holder))
+            {
+                int alignedStride = (stride + (alignment - 1)) & -alignment;
+
+                holder = _gd.BufferManager.Create(_gd, (size / stride) * alignedStride);
+
+                _gd.PipelineInternal.EndRenderPass();
+                _gd.HelperShader.ChangeStride(_gd, cbs, this, holder, offset, size, stride, alignedStride);
+
+                key.SetBuffer(holder.GetBuffer());
+
+                _cachedConvertedBuffers.Add(offset, size, key, holder);
+            }
+
+            return holder.GetBuffer();
+        }
+
+        public Auto<DisposableBuffer> GetBufferTopologyConversion(CommandBufferScoped cbs, int offset, int size, IndexBufferPattern pattern, int indexSize)
+        {
+            var key = new TopologyConversionCacheKey(_gd, pattern, indexSize);
+
+            if (!_cachedConvertedBuffers.TryGetValue(offset, size, key, out var holder))
+            {
+                // The destination index size is always I32.
+
+                int indexCount = size / indexSize;
+
+                int convertedCount = pattern.GetConvertedCount(indexCount);
+
+                holder = _gd.BufferManager.Create(_gd, convertedCount * 4);
+
+                _gd.PipelineInternal.EndRenderPass();
+                _gd.HelperShader.ConvertIndexBuffer(_gd, cbs, this, holder, pattern, indexSize, offset, indexCount);
+
+                _cachedConvertedBuffers.Add(offset, size, key, holder);
             }
 
             return holder.GetBuffer();
@@ -382,7 +429,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _buffer.Dispose();
             _allocationAuto.Dispose();
-            _cachedConvertedIndexBuffers.Dispose();
+            _cachedConvertedBuffers.Dispose();
         }
     }
 }

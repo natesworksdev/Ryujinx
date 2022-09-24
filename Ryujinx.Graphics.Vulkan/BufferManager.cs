@@ -130,6 +130,26 @@ namespace Ryujinx.Graphics.Vulkan
             return null;
         }
 
+        public Auto<DisposableBuffer> GetAlignedVertexBuffer(CommandBufferScoped cbs, BufferHandle handle, int offset, int size, int stride, int alignment)
+        {
+            if (TryGetBuffer(handle, out var holder))
+            {
+                return holder.GetAlignedVertexBuffer(cbs, offset, size, stride, alignment);
+            }
+
+            return null;
+        }
+
+        public Auto<DisposableBuffer> GetBufferTopologyConversion(CommandBufferScoped cbs, BufferHandle handle, int offset, int size, IndexBufferPattern pattern, int indexSize)
+        {
+            if (TryGetBuffer(handle, out var holder))
+            {
+                return holder.GetBufferTopologyConversion(cbs, offset, size, pattern, indexSize);
+            }
+
+            return null;
+        }
+
         public Auto<DisposableBuffer> GetBuffer(CommandBuffer commandBuffer, BufferHandle handle, bool isWrite, out int size)
         {
             if (TryGetBuffer(handle, out var holder))
