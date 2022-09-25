@@ -1124,14 +1124,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            var subpassDependency = new SubpassDependency(
-                0,
-                0,
-                PipelineStageFlags.PipelineStageAllGraphicsBit,
-                PipelineStageFlags.PipelineStageAllGraphicsBit,
-                AccessFlags.AccessMemoryReadBit | AccessFlags.AccessMemoryWriteBit | AccessFlags.AccessColorAttachmentWriteBit,
-                AccessFlags.AccessMemoryReadBit | AccessFlags.AccessMemoryWriteBit | AccessFlags.AccessShaderReadBit,
-                0);
+            var subpassDependency = PipelineConverter.CreateSubpassDependency();
 
             fixed (AttachmentDescription* pAttachmentDescs = attachmentDescs)
             {

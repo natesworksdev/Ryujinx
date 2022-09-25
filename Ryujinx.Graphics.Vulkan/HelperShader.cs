@@ -18,6 +18,16 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly IProgram _programColorBlitClearAlpha;
         private readonly IProgram _programColorClear;
         private readonly IProgram _programStrideChange;
+        private readonly IProgram _programColorCopyMSToNonMSR16;
+        private readonly IProgram _programColorCopyMSToNonMSR32;
+        private readonly IProgram _programColorCopyMSToNonMSR8;
+        private readonly IProgram _programColorCopyMSToNonMSRG32;
+        private readonly IProgram _programColorCopyMSToNonMSRGBA32;
+        private readonly IProgram _programColorCopyNonMSToMSR16;
+        private readonly IProgram _programColorCopyNonMSToMSR32;
+        private readonly IProgram _programColorCopyNonMSToMSR8;
+        private readonly IProgram _programColorCopyNonMSToMSRG32;
+        private readonly IProgram _programColorCopyNonMSToMSRGBA32;
 
         public HelperShader(VulkanRenderer gd, Device device)
         {
@@ -72,6 +82,62 @@ namespace Ryujinx.Graphics.Vulkan
             _programStrideChange = gd.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(ShaderBinaries.ChangeBufferStrideShaderSource, strideChangeBindings, ShaderStage.Compute, TargetLanguage.Spirv),
+            });
+
+            var colorCopyMSBindings = new ShaderBindings(
+                Array.Empty<int>(),
+                Array.Empty<int>(),
+                Array.Empty<int>(),
+                new[] { 0, 1 });
+
+            _programColorCopyMSToNonMSR16 = gd.CreateProgramWithMinimalLayout(new[]
+            {
+                new ShaderSource(ShaderBinaries.ColorCopyMSToNonMSR16ShaderSource, colorCopyMSBindings, ShaderStage.Compute, TargetLanguage.Spirv),
+            });
+
+            _programColorCopyMSToNonMSR32 = gd.CreateProgramWithMinimalLayout(new[]
+            {
+                new ShaderSource(ShaderBinaries.ColorCopyMSToNonMSR32ShaderSource, colorCopyMSBindings, ShaderStage.Compute, TargetLanguage.Spirv),
+            });
+
+            _programColorCopyMSToNonMSR8 = gd.CreateProgramWithMinimalLayout(new[]
+            {
+                new ShaderSource(ShaderBinaries.ColorCopyMSToNonMSR8ShaderSource, colorCopyMSBindings, ShaderStage.Compute, TargetLanguage.Spirv),
+            });
+
+            _programColorCopyMSToNonMSRG32 = gd.CreateProgramWithMinimalLayout(new[]
+            {
+                new ShaderSource(ShaderBinaries.ColorCopyMSToNonMSRG32ShaderSource, colorCopyMSBindings, ShaderStage.Compute, TargetLanguage.Spirv),
+            });
+
+            _programColorCopyMSToNonMSRGBA32 = gd.CreateProgramWithMinimalLayout(new[]
+            {
+                new ShaderSource(ShaderBinaries.ColorCopyMSToNonMSRGBA32ShaderSource, colorCopyMSBindings, ShaderStage.Compute, TargetLanguage.Spirv),
+            });
+
+            _programColorCopyNonMSToMSR16 = gd.CreateProgramWithMinimalLayout(new[]
+            {
+                new ShaderSource(ShaderBinaries.ColorCopyNonMSToMSR16ShaderSource, colorCopyMSBindings, ShaderStage.Compute, TargetLanguage.Spirv),
+            });
+
+            _programColorCopyNonMSToMSR32 = gd.CreateProgramWithMinimalLayout(new[]
+            {
+                new ShaderSource(ShaderBinaries.ColorCopyNonMSToMSR32ShaderSource, colorCopyMSBindings, ShaderStage.Compute, TargetLanguage.Spirv),
+            });
+
+            _programColorCopyNonMSToMSR8 = gd.CreateProgramWithMinimalLayout(new[]
+            {
+                new ShaderSource(ShaderBinaries.ColorCopyNonMSToMSR8ShaderSource, colorCopyMSBindings, ShaderStage.Compute, TargetLanguage.Spirv),
+            });
+
+            _programColorCopyNonMSToMSRG32 = gd.CreateProgramWithMinimalLayout(new[]
+            {
+                new ShaderSource(ShaderBinaries.ColorCopyNonMSToMSRG32ShaderSource, colorCopyMSBindings, ShaderStage.Compute, TargetLanguage.Spirv),
+            });
+
+            _programColorCopyNonMSToMSRGBA32 = gd.CreateProgramWithMinimalLayout(new[]
+            {
+                new ShaderSource(ShaderBinaries.ColorCopyNonMSToMSRGBA32ShaderSource, colorCopyMSBindings, ShaderStage.Compute, TargetLanguage.Spirv),
             });
         }
 
@@ -480,12 +546,180 @@ namespace Ryujinx.Graphics.Vulkan
                 convertedCount * outputIndexSize);
         }
 
+        public void CopyMSToNonMS(VulkanRenderer gd, CommandBufferScoped cbs, TextureView src, TextureView dst, int srcLayer, int dstLayer, int depth)
+        {
+            CopyMS(gd, cbs, src, dst, srcLayer, dstLayer, depth, dst.Info.Width, dst.Info.Height, GetMSToNonMSShader(src.Info.BytesPerPixel));
+        }
+
+        public void CopyNonMSToMS(VulkanRenderer gd, CommandBufferScoped cbs, TextureView src, TextureView dst, int srcLayer, int dstLayer, int depth)
+        {
+            CopyMS(gd, cbs, src, dst, srcLayer, dstLayer, depth, src.Info.Width, src.Info.Height, GetNonMSToMSShader(src.Info.BytesPerPixel));
+        }
+
+        private void CopyMS(
+            VulkanRenderer gd,
+            CommandBufferScoped cbs,
+            TextureView src,
+            TextureView dst,
+            int srcLayer,
+            int dstLayer,
+            int depth,
+            int nonMSWidth,
+            int nonMSHeight,
+            IProgram program)
+        {
+            TextureView.InsertImageBarrier(
+                gd.Api,
+                cbs.CommandBuffer,
+                src.GetImage().Get(cbs).Value,
+                TextureStorage.DefaultAccessMask,
+                AccessFlags.AccessShaderReadBit,
+                PipelineStageFlags.PipelineStageAllCommandsBit,
+                PipelineStageFlags.PipelineStageComputeShaderBit,
+                ImageAspectFlags.ImageAspectColorBit,
+                src.FirstLayer + srcLayer,
+                src.FirstLevel,
+                depth,
+                1);
+
+            _pipeline.SetCommandBuffer(cbs);
+
+            _pipeline.SetProgram(program);
+
+            var format = GetFormat(src.Info.BytesPerPixel);
+
+            int dispatchX = (nonMSWidth + 31) / 32;
+            int dispatchY = (nonMSHeight + 31) / 32;
+
+            if (src.Info.Target == Target.Texture2DMultisampleArray ||
+                dst.Info.Target == Target.Texture2DMultisampleArray)
+            {
+                for (int z = 0; z < depth; z++)
+                {
+                    var srcView = Create2DLayerView(src, srcLayer + z);
+                    var dstView = Create2DLayerView(dst, dstLayer + z);
+
+                    _pipeline.SetImage(0, srcView, format);
+                    _pipeline.SetImage(1, dstView, format);
+
+                    _pipeline.DispatchCompute(dispatchX, dispatchY, 1);
+
+                    srcView.Release();
+                    dstView.Release();
+                }
+            }
+            else
+            {
+                _pipeline.SetImage(0, src, format);
+                _pipeline.SetImage(1, dst, format);
+
+                _pipeline.DispatchCompute(dispatchX, dispatchY, 1);
+            }
+
+            _pipeline.Finish(gd, cbs);
+
+            TextureView.InsertImageBarrier(
+                gd.Api,
+                cbs.CommandBuffer,
+                dst.GetImage().Get(cbs).Value,
+                AccessFlags.AccessShaderWriteBit,
+                TextureStorage.DefaultAccessMask,
+                PipelineStageFlags.PipelineStageComputeShaderBit,
+                PipelineStageFlags.PipelineStageAllCommandsBit,
+                ImageAspectFlags.ImageAspectColorBit,
+                dst.FirstLayer + dstLayer,
+                dst.FirstLevel,
+                depth,
+                1);
+        }
+
+        private static ITexture Create2DLayerView(TextureView from, int layer)
+        {
+            var target = from.Info.Target switch
+            {
+                Target.Texture1DArray => Target.Texture1D,
+                Target.Texture2DArray => Target.Texture2D,
+                Target.Texture2DMultisampleArray => Target.Texture2DMultisample,
+                _ => from.Info.Target
+            };
+
+            var info = new TextureCreateInfo(
+                from.Info.Width,
+                from.Info.Height,
+                from.Info.Depth,
+                1,
+                from.Info.Samples,
+                from.Info.BlockWidth,
+                from.Info.BlockHeight,
+                from.Info.BytesPerPixel,
+                from.Info.Format,
+                from.Info.DepthStencilMode,
+                target,
+                from.Info.SwizzleR,
+                from.Info.SwizzleG,
+                from.Info.SwizzleB,
+                from.Info.SwizzleA);
+
+            return from.CreateView(from.Info, layer, 0);
+        }
+
+        private IProgram GetMSToNonMSShader(int bytesPerPixel)
+        {
+            return bytesPerPixel switch
+            {
+                1 => _programColorCopyMSToNonMSR8,
+                2 => _programColorCopyMSToNonMSR16,
+                4 => _programColorCopyMSToNonMSR32,
+                8 => _programColorCopyMSToNonMSRG32,
+                16 => _programColorCopyMSToNonMSRGBA32,
+                _ => throw new ArgumentException($"Invalid bytes per pixel {bytesPerPixel}.")
+            };
+        }
+
+        private IProgram GetNonMSToMSShader(int bytesPerPixel)
+        {
+            return bytesPerPixel switch
+            {
+                1 => _programColorCopyNonMSToMSR8,
+                2 => _programColorCopyNonMSToMSR16,
+                4 => _programColorCopyNonMSToMSR32,
+                8 => _programColorCopyNonMSToMSRG32,
+                16 => _programColorCopyNonMSToMSRGBA32,
+                _ => throw new ArgumentException($"Invalid bytes per pixel {bytesPerPixel}.")
+            };
+        }
+
+        private static GAL.Format GetFormat(int bytesPerPixel)
+        {
+            return bytesPerPixel switch
+            {
+                1 => GAL.Format.R8Uint,
+                2 => GAL.Format.R16Uint,
+                4 => GAL.Format.R32Uint,
+                8 => GAL.Format.R32G32Uint,
+                16 => GAL.Format.R32G32B32A32Uint,
+                _ => throw new ArgumentException($"Invalid bytes per pixel {bytesPerPixel}.")
+            };
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {
                 _programColorBlitClearAlpha.Dispose();
                 _programColorBlit.Dispose();
+                _programColorClear.Dispose();
+                _programStrideChange.Dispose();
+                _programColorCopyMSToNonMSR16.Dispose();
+                _programColorCopyMSToNonMSR32.Dispose();
+                _programColorCopyMSToNonMSR8.Dispose();
+                _programColorCopyMSToNonMSRG32.Dispose();
+                _programColorCopyMSToNonMSRGBA32.Dispose();
+                _programColorCopyNonMSToMSR16.Dispose();
+                _programColorCopyNonMSToMSR32.Dispose();
+                _programColorCopyNonMSToMSR8.Dispose();
+                _programColorCopyNonMSToMSRG32.Dispose();
+                _programColorCopyNonMSToMSRGBA32.Dispose();
                 _samplerNearest.Dispose();
                 _samplerLinear.Dispose();
                 _pipeline.Dispose();
