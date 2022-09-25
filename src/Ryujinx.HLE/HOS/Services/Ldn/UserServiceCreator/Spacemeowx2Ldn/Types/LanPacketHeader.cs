@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Ryujinx.HLE.HOS.Services.Ldn.Spacemeowx2Ldn.Types
+namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Types
 {
     [StructLayout(LayoutKind.Sequential, Size = 12)]
     internal struct LanPacketHeader

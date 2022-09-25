@@ -7,8 +7,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 {
     internal class LdnProxyTcpSession : NetCoreServer.TcpSession
     {
-        private LdnProxyTcpServer _parent;
-        private LanProtocol _protocol;
+        private readonly LanProtocol _protocol;
 
         internal int NodeId;
 
@@ -19,7 +18,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 
         public LdnProxyTcpSession(LdnProxyTcpServer server, LanProtocol protocol) : base(server)
         {
-            _parent = server;
             _protocol = protocol;
             _protocol.Connect += OnConnect;
             _buffer = new byte[LanProtocol.BufferSize];
@@ -35,12 +33,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 
         protected override void OnConnected()
         {
-            Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPSession connected!");
+            Logger.Info?.PrintMsg(LogClass.ServiceLdn, "LdnProxyTCPSession connected!");
         }
 
         protected override void OnDisconnected()
         {
-            Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPSession disconnected!");
+            Logger.Info?.PrintMsg(LogClass.ServiceLdn, "LdnProxyTCPSession disconnected!");
             _protocol.InvokeDisconnectStation(this);
         }
 

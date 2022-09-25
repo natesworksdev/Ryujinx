@@ -1,12 +1,13 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.Common.Memory;
 using Ryujinx.Common.Utilities;
-using Ryujinx.HLE.HOS.Services.Ldn.Spacemeowx2Ldn;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy;
+using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Types;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -28,10 +29,10 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         private readonly Ssid _fakeSsid;
         private ILdnTcpSocket _tcp;
         private LdnProxyUdpServer _udp, _udp2;
-        private List<LdnProxyTcpSession> _stations = new List<LdnProxyTcpSession>();
-        private object _lock = new object();
+        private List<LdnProxyTcpSession> _stations = new();
+        private object _lock = new();
 
-        private AutoResetEvent _apConnected = new AutoResetEvent(false);
+        private AutoResetEvent _apConnected = new(false);
 
         internal readonly IPAddress LocalAddr;
         internal readonly IPAddress LocalBroadcastAddr;
@@ -51,7 +52,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         private static NetworkInfo GetEmptyNetworkInfo()
         {
-            NetworkInfo networkInfo = new NetworkInfo()
+            NetworkInfo networkInfo = new()
             {
                 NetworkId = new()
                 {
@@ -317,10 +318,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         public bool InitUdp()
         {
-            if (_udp != null)
-            {
-                _udp.Stop();
-            }
+            _udp?.Stop();
 
             try
             {
@@ -353,7 +351,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
             Thread.Sleep(1000);
 
-            List<NetworkInfo> outNetworkInfo = new List<NetworkInfo>();
+            List<NetworkInfo> outNetworkInfo = new();
 
             foreach (KeyValuePair<ulong, NetworkInfo> item in _udp.scanResults)
             {
@@ -394,7 +392,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                     }
                     else
                     {
-                        Logger.Warning?.PrintMsg(LogClass.ServiceLdn, $"LanDiscovery Scan: Got empty Username. There might be a timing issue somewhere...");
+                        Logger.Warning?.PrintMsg(LogClass.ServiceLdn, "LanDiscovery Scan: Got empty Username. There might be a timing issue somewhere...");
                     }
                 }
             }
@@ -435,15 +433,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         {
             int countConnected = 1;
 
-            foreach (LdnProxyTcpSession station in _stations)
+            foreach (LdnProxyTcpSession station in _stations.Where(station => station.IsConnected))
             {
-                if (station.IsConnected)
-                {
-                    countConnected++;
-                    station.OverrideInfo();
-                    // NOTE: This is not part of the original implementation.
-                    NetworkInfo.Ldn.Nodes[station.NodeId] = station.NodeInfo;
-                }
+                countConnected++;
+                station.OverrideInfo();
+                // NOTE: This is not part of the original implementation.
+                NetworkInfo.Ldn.Nodes[station.NodeId] = station.NodeInfo;
             }
 
             byte nodeCount = (byte)countConnected;
@@ -496,14 +491,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             NetworkInfo.Ldn.NodeCountMax = networkConfig.NodeCountMax;
             NetworkInfo.Ldn.SecurityMode = (ushort)securityConfig.SecurityMode;
 
-            if (networkConfig.Channel == 0)
-            {
-                NetworkInfo.Common.Channel = 6;
-            }
-            else
-            {
-                NetworkInfo.Common.Channel = networkConfig.Channel;
-            }
+            NetworkInfo.Common.Channel = networkConfig.Channel == 0 ? (ushort)6 : networkConfig.Channel;
 
             NetworkInfo.NetworkId.SessionId = new Array16<byte>();
             new Random().NextBytes(NetworkInfo.NetworkId.SessionId.AsSpan());

@@ -1,7 +1,6 @@
 using Ryujinx.Common.Logging;
-using Ryujinx.Common.Memory;
-using Ryujinx.HLE.HOS.Services.Ldn.Spacemeowx2Ldn;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
+using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Types;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -15,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
         private byte[] _buffer;
         private int _bufferEnd;
 
-        internal Dictionary<ulong, NetworkInfo> scanResults = new Dictionary<ulong, NetworkInfo>();
+        internal Dictionary<ulong, NetworkInfo> scanResults = new();
 
         public LdnProxyUdpServer(LanProtocol protocol, IPAddress address, int port) : base(address, port)
         {
@@ -32,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 
         protected override Socket CreateSocket()
         {
-            Socket socket = new Socket(Endpoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp)
+            Socket socket = new(Endpoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp)
             {
                 EnableBroadcast = true
             };

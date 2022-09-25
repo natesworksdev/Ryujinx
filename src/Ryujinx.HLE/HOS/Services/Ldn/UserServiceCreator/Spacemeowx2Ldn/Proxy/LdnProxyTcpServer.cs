@@ -6,9 +6,9 @@ using System.Net.Sockets;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 {
-    internal class LdnProxyTcpServer : NetCoreServer.TcpServer, ILdnTcpSocket
+    internal class LdnProxyTcpServer : TcpServer, ILdnTcpSocket
     {
-        private LanProtocol _protocol;
+        private readonly LanProtocol _protocol;
 
         public LdnProxyTcpServer(LanProtocol protocol, IPAddress address, int port) : base(address, port)
         {

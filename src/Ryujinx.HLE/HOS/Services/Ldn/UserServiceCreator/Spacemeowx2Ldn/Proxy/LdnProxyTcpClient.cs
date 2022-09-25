@@ -8,8 +8,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 {
     internal class LdnProxyTcpClient : NetCoreServer.TcpClient, ILdnTcpSocket
     {
-        private LanProtocol _protocol;
-        private IPAddress _serverAddress;
+        private readonly LanProtocol _protocol;
+        private readonly IPAddress _serverAddress;
         private byte[] _buffer;
         private int _bufferEnd;
 
@@ -47,12 +47,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
         {
             if (endPoint != null)
             {
-                Logger.Warning?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTcpClient is sending a packet but endpoint is not null.");
+                Logger.Warning?.PrintMsg(LogClass.ServiceLdn, "LdnProxyTcpClient is sending a packet but endpoint is not null.");
             }
 
             if (IsConnecting && !IsConnected)
             {
-                Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPClient needs to connect before sending packets. Waiting...");
+                Logger.Info?.PrintMsg(LogClass.ServiceLdn, "LdnProxyTCPClient needs to connect before sending packets. Waiting...");
 
                 while (IsConnecting && !IsConnected)
                 {

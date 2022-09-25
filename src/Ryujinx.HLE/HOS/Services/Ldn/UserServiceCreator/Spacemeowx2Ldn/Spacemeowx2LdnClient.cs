@@ -9,11 +9,11 @@ using System.Net.NetworkInformation;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 {
-    internal class Spacemeowx2LdnClient : INetworkClient, IDisposable
+    internal class Spacemeowx2LdnClient : INetworkClient
     {
         public event EventHandler<NetworkChangeEventArgs> NetworkChange;
 
-        private LanDiscovery _lanDiscovery;
+        private readonly LanDiscovery _lanDiscovery;
 
         public Spacemeowx2LdnClient(HLEConfiguration config)
         {
