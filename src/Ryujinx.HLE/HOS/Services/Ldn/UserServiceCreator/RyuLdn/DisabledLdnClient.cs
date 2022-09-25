@@ -7,6 +7,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn
 {
     class DisabledLdnClient : INetworkClient
     {
+        public bool NeedsRealId => true;
+
         public event EventHandler<NetworkChangeEventArgs> NetworkChange;
 
         public NetworkError Connect(ConnectRequest request)

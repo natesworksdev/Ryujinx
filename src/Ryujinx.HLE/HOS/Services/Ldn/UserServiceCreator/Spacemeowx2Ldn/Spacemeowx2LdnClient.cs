@@ -11,6 +11,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 {
     internal class Spacemeowx2LdnClient : INetworkClient
     {
+        public bool NeedsRealId => false;
+
         public event EventHandler<NetworkChangeEventArgs> NetworkChange;
 
         private readonly LanDiscovery _lanDiscovery;

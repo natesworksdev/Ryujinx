@@ -7,6 +7,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn
 {
     interface INetworkClient : IDisposable
     {
+        bool NeedsRealId { get; }
+
         event EventHandler<NetworkChangeEventArgs> NetworkChange;
 
         void DisconnectNetwork();
