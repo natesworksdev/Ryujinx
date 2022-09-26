@@ -451,9 +451,7 @@ namespace Ryujinx.Graphics.Vulkan
                 gd.Api.CreateFramebuffer(device, framebufferCreateInfo, null, out var framebuffer).ThrowOnError();
                 using var fb = new Auto<DisposableFramebuffer>(new DisposableFramebuffer(gd.Api, device, framebuffer), null, new[] { srcView, dstView });
 
-                var framebufferParams = new FramebufferParams(device, src.GetImageViewForAttachment(), (uint)src.Info.Width, (uint)src.Info.Height, true, src.VkFormat);
-
-                var renderArea = new Rect2D(null, new Extent2D(framebufferParams.Width, framebufferParams.Height));
+                var renderArea = new Rect2D(null, new Extent2D((uint)src.Info.Width, (uint)src.Info.Height));
                 var clearValue = new ClearValue();
 
                 var renderPassBeginInfo = new RenderPassBeginInfo()
