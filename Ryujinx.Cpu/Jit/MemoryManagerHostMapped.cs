@@ -56,7 +56,7 @@ namespace Ryujinx.Cpu.Jit
 
         public MemoryTracking Tracking { get; }
 
-        public event Action<ulong, ulong> UnmapEvent;
+        public event Action<ulong, ulong, bool> UnmapEvent;
 
         /// <summary>
         /// Creates a new instance of the host mapped memory manager.
@@ -158,11 +158,11 @@ namespace Ryujinx.Cpu.Jit
         }
 
         /// <inheritdoc/>
-        public void Unmap(ulong va, ulong size)
+        public void Unmap(ulong va, ulong size, bool clearRejitQueueOnly = false)
         {
             AssertValidAddressAndSize(va, size);
 
-            UnmapEvent?.Invoke(va, size);
+            UnmapEvent?.Invoke(va, size, clearRejitQueueOnly);
             Tracking.Unmap(va, size);
 
             RemoveMapping(va, size);
