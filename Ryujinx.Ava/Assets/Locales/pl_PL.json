@@ -589,5 +589,5 @@
   "SettingsAppRequiredRestartMessage": "Wymagane Zrestartowanie Ryujinx",
   "SettingsGpuBackendRestartMessage": "Zmieniono ustawienia Backendu Graficznego lub GPU. Będzie to wymagało ponownego uruchomienia",
   "SettingsGpuBackendRestartSubMessage": "Czy chcesz zrestartować teraz?",
-  "VolumeShort": "Głoś."
+  "VolumeShort": "Głoś"
 }
