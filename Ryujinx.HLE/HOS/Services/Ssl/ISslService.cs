@@ -82,7 +82,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
                     infos[entries.Length] = new BuiltInCertificateInfo
                     {
                         Id = CaCertificateId.All,
-                        Status = TrustedCertStatus.Removed,
+                        Status = TrustedCertStatus.Invalid,
                         CertificateDataSize = 0,
                         CertificateDataOffset = 0
                     };
