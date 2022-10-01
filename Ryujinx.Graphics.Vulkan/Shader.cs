@@ -21,7 +21,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Device _device;
         private readonly ShaderStageFlags _stage;
 
-        private bool _active;
+        private bool _disposed;
         private ShaderModule _module;
 
         public ShaderStageFlags StageFlags => _stage;
@@ -41,7 +41,6 @@ namespace Ryujinx.Graphics.Vulkan
             CompileStatus = ProgramLinkStatus.Incomplete;
 
             _stage = shaderSource.Stage.Convert();
-            _active = true;
 
             CompileTask = Task.Run(() =>
             {
@@ -158,10 +157,10 @@ namespace Ryujinx.Graphics.Vulkan
 
         public unsafe void Dispose()
         {
-            if (_active)
+            if (!_disposed)
             {
                 _api.DestroyShaderModule(_device, _module, null);
-                _active = false;
+                _disposed = true;
             }
         }
     }
