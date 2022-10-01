@@ -15,16 +15,7 @@ namespace Ryujinx.Graphics.Vulkan
         // Take this lock when using them.
         private static object _shaderOptionsLock = new object();
 
-        private static ReadOnlySpan<byte> MainEntryPointName => new byte[] { (byte)'m', (byte)'a', (byte)'i', (byte)'n', 0 };
-        private static readonly IntPtr PtrMainEntryPointName;
-
-        unsafe static Shader()
-        {
-            fixed (byte* ptr = MainEntryPointName)
-            {
-                PtrMainEntryPointName = (IntPtr)ptr;
-            }
-        }
+        private static readonly IntPtr _ptrMainEntryPointName = Marshal.StringToHGlobalAnsi("main");
 
         private readonly Vk _api;
         private readonly Device _device;
@@ -156,7 +147,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PipelineShaderStageCreateInfo,
                 Stage = _stage,
                 Module = _module,
-                PName = (byte*)PtrMainEntryPointName
+                PName = (byte*)_ptrMainEntryPointName
             };
         }
 
