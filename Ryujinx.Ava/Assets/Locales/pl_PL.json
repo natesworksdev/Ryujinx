@@ -589,5 +589,7 @@
   "SettingsAppRequiredRestartMessage": "Wymagane Zrestartowanie Ryujinx",
   "SettingsGpuBackendRestartMessage": "Zmieniono ustawienia Backendu Graficznego lub GPU. Będzie to wymagało ponownego uruchomienia",
   "SettingsGpuBackendRestartSubMessage": "Czy chcesz zrestartować teraz?",
+  "SettingsTabHotkeysVolumeUpHotkey": "Zwiększ Głośność:",
+  "SettingsTabHotkeysVolumeDownHotkey": "Zmniejsz Głośność:",
   "VolumeShort": "Głoś"
 }
