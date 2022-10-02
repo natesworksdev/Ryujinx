@@ -968,6 +968,7 @@ namespace ARMeilleure.Translation.PTC
                     (ulong)Arm64HardwareCapabilities.LinuxFeatureInfoHwCap,
                     (ulong)Arm64HardwareCapabilities.LinuxFeatureInfoHwCap2,
                     (ulong)Arm64HardwareCapabilities.MacOsFeatureInfo,
+                    0,
                     0);
             }
             else if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
@@ -976,11 +977,12 @@ namespace ARMeilleure.Translation.PTC
                     (ulong)X86HardwareCapabilities.FeatureInfo1Ecx,
                     (ulong)X86HardwareCapabilities.FeatureInfo1Edx,
                     (ulong)X86HardwareCapabilities.FeatureInfo7Ebx,
-                    (ulong)X86HardwareCapabilities.FeatureInfo7Ecx);
+                    (ulong)X86HardwareCapabilities.FeatureInfo7Ecx,
+                    (ulong)X86HardwareCapabilities.Xcr0InfoEax);
             }
             else
             {
-                return new FeatureInfo(0, 0, 0, 0);
+                return new FeatureInfo(0, 0, 0, 0, 0);
             }
         }
 
@@ -1001,7 +1003,7 @@ namespace ARMeilleure.Translation.PTC
             return osPlatform;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1/*, Size = 78*/)]
+        [StructLayout(LayoutKind.Sequential, Pack = 1/*, Size = 86*/)]
         private struct OuterHeader
         {
             public ulong Magic;
@@ -1033,8 +1035,8 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1/*, Size = 32*/)]
-        private record struct FeatureInfo(ulong FeatureInfo0, ulong FeatureInfo1, ulong FeatureInfo2, ulong FeatureInfo3);
+        [StructLayout(LayoutKind.Sequential, Pack = 1/*, Size = 40*/)]
+        private record struct FeatureInfo(ulong FeatureInfo0, ulong FeatureInfo1, ulong FeatureInfo2, ulong FeatureInfo3, ulong FeatureInfo4);
 
         [StructLayout(LayoutKind.Sequential, Pack = 1/*, Size = 128*/)]
         private struct InnerHeader
