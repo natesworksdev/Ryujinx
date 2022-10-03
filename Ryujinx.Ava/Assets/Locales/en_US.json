@@ -590,5 +590,7 @@
   "SettingsGpuBackendRestartMessage": "Graphics Backend or Gpu settings have been modified. This will require a restart to be applied",
   "SettingsGpuBackendRestartSubMessage": "Do you want to restart now?",
   "RyujinxUpdaterMessage": "Do you want to update Ryujinx to the latest version?",
+  "SettingsTabHotkeysVolumeUpHotkey": "Increase Volume:",
+  "SettingsTabHotkeysVolumeDownHotkey": "Decrease Volume:",
   "VolumeShort": "Vol"
 }
