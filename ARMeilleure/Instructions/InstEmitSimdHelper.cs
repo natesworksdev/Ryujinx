@@ -33,6 +33,14 @@ namespace ARMeilleure.Instructions
         };
 
         public static readonly long ZeroMask = 128L << 56 | 128L << 48 | 128L << 40 | 128L << 32 | 128L << 24 | 128L << 16 | 128L << 8 | 128L << 0;
+
+        public static ulong X86GetGf2p8LogicalShiftLeft(int shift)
+        {
+            ulong identity = (0b00000001UL << 56) | (0b00000010UL << 48) | (0b00000100UL << 40) | (0b00001000UL << 32) |
+                             (0b00010000UL << 24) | (0b00100000UL << 16) | (0b01000000UL <<  8) | (0b10000000UL <<  0);
+
+            return shift >= 0 ? identity >> (shift * 8) : identity << (-shift * 8);
+        }
 #endregion
 
 #region "X86 SSE Intrinsics"
