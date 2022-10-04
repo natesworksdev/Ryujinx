@@ -19,16 +19,16 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
         // Read(u32 readOption, u64 offset, u64 size) -> (u64 out_size, buffer<u8, 0x46, 0> out_buf)
         public ResultCode Read(ServiceCtx context)
         {
-            ulong bufferAddress = context.Request.ReceiveBuff[0].Position;
-            ulong bufferLen = context.Request.ReceiveBuff[0].Size;
-
             ReadOption readOption = context.RequestData.ReadStruct<ReadOption>();
             context.RequestData.BaseStream.Position += 4;
 
             long offset = context.RequestData.ReadInt64();
             long size   = context.RequestData.ReadInt64();
 
-            using (var region = context.Memory.GetWritableRegion(bufferAddress, (int)bufferLen))
+            ulong bufferAddress = context.Request.ReceiveBuff[0].Position;
+            ulong bufferLen = context.Request.ReceiveBuff[0].Size;
+
+            using (var region = context.Memory.GetWritableRegion(bufferAddress, (int)bufferLen, true))
             {
                 Result result = _baseFile.Get.Read(out long bytesRead, offset, new OutBuffer(region.Memory.Span), size, readOption);
 
