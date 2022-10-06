@@ -171,15 +171,17 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 int end = offset + size;
 
-                foreach (ulong range in _ranges.Keys)
+                List<ulong> toRemove = null;
+
+                foreach (KeyValuePair<ulong, List<Entry>> range in _ranges)
                 {
-                    (int rOffset, int rSize) = UnpackRange(range);
+                    (int rOffset, int rSize) = UnpackRange(range.Key);
 
                     int rEnd = rOffset + rSize;
 
                     if (rEnd > offset && rOffset < end)
                     {
-                        var entries = _ranges[range];
+                        List<Entry> entries = range.Value;
 
                         foreach (Entry entry in entries)
                         {
@@ -187,6 +189,14 @@ namespace Ryujinx.Graphics.Vulkan
                             entry.Value.Dispose();
                         }
 
+                        (toRemove ??= new List<ulong>()).Add(range.Key);
+                    }
+                }
+
+                if (toRemove != null)
+                {
+                    foreach (ulong range in toRemove)
+                    {
                         _ranges.Remove(range);
                     }
                 }
