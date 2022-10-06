@@ -443,6 +443,8 @@ namespace Ryujinx.Graphics.Vulkan
                 _gd.PipelineInternal.EndRenderPass();
                 _gd.HelperShader.ConvertIndexBuffer(_gd, cbs, this, holder, pattern, indexSize, offset, indexCount);
 
+                key.SetBuffer(holder.GetBuffer());
+
                 _cachedConvertedBuffers.Add(offset, size, key, holder);
             }
 
