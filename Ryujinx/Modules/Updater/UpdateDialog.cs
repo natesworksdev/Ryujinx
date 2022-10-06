@@ -48,7 +48,7 @@ namespace Ryujinx.Modules
             {
                 string ryuName = OperatingSystem.IsWindows() ? "Ryujinx.exe" : "Ryujinx";
                 string ryuExe  = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ryuName);
-                string ryuArg  = string.Join(" ", Environment.GetCommandLineArgs().AsEnumerable().Skip(1).ToArray());
+                string ryuArg  = string.Join(" ", Environment.GetCommandLineArgs().AsEnumerable().Skip(1).Select(s => '"' + s + '"'));
 
                 Process.Start(ryuExe, ryuArg);
 
