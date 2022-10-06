@@ -592,5 +592,5 @@
     "RyujinxUpdaterMessage": "Vuoi aggiornare Ryujinx all'ultima versione?",
     "SettingsTabHotkeysVolumeUpHotkey": "Aumentare il volume:",
     "SettingsTabHotkeysVolumeDownHotkey": "Diminuire il volume:",
-    "VolumeShort"; "Vol"
+    "VolumeShort": "Vol"
 }
