@@ -388,7 +388,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public Auto<DisposableBuffer> GetBufferI8ToI16(CommandBufferScoped cbs, int offset, int size)
         {
-            var key = new I8ToI16CacheKey();
+            var key = new I8ToI16CacheKey(_gd);
 
             if (!_cachedConvertedBuffers.TryGetValue(offset, size, key, out var holder))
             {
