@@ -83,6 +83,9 @@ namespace Ryujinx.Ava
             AppDomain.CurrentDomain.UnhandledException += (object sender, UnhandledExceptionEventArgs e) => ProcessUnhandledException(e.ExceptionObject as Exception, e.IsTerminating);
             AppDomain.CurrentDomain.ProcessExit        += (object sender, EventArgs e)                   => Exit();
 
+            // Delete backup files after updating.
+            Task.Run(Updater.CleanupUpdate);
+
             // Perform common initialization steps
             ProgramHelper.Initialize(args);
 

@@ -14,7 +14,6 @@ using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 
 namespace Ryujinx.Ava
 {
