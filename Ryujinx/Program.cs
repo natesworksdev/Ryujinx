@@ -5,7 +5,6 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.System;
-using Ryujinx.Common.SystemInfo;
 using Ryujinx.Modules;
 using Ryujinx.Ui;
 using Ryujinx.Ui.Common;
