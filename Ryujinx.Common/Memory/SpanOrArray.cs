@@ -78,15 +78,6 @@ namespace Ryujinx.Common.Memory
         }
 
         /// <summary>
-        /// Cast a SpanOrArray to an array.
-        /// </summary>
-        /// <param name="spanOrArray">Source SpanOrArray</param>
-        public static implicit operator T[](SpanOrArray<T> spanOrArray)
-        {
-            return spanOrArray.ToArray();
-        }
-
-        /// <summary>
         /// Cast a SpanOrArray to a ReadOnlySpan
         /// </summary>
         /// <param name="spanOrArray">Source SpanOrArray</param>
