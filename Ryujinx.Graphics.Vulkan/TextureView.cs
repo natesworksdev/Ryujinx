@@ -133,7 +133,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 if (gd.Capabilities.PortabilitySubset.HasFlag(PortabilitySubsetFlags.No3DImageView))
                 {
-                    if (levels == 1)
+                    if (levels == 1 && (info.Format.IsRtColorCompatible() || info.Format.IsDepthOrStencil()))
                     {
                         subresourceRange = new ImageSubresourceRange(aspectFlags, (uint)firstLevel, levels, (uint)firstLayer, 1);
 
