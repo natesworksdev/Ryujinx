@@ -138,9 +138,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         public LinkedListNode<Texture> CacheNode { get; set; }
 
         /// <summary>
-        /// Event to fire when texture data is disposed.
+        /// True if the texture is disposed, false otherwise.
         /// </summary>
-        public event Action<Texture> Disposed;
+        public bool IsDisposed { get; private set; }
 
         /// <summary>
         /// Physical memory ranges where the texture data is located.
@@ -1635,9 +1635,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void Dispose()
         {
-            DisposeTextures();
+            IsDisposed = true;
 
-            Disposed?.Invoke(this);
+            DisposeTextures();
 
             if (Group.Storage == this)
             {
