@@ -142,6 +142,8 @@ namespace Ryujinx.Graphics.Vulkan
                         currentBuffer.Dispose();
                         currentAllocation.Dispose();
 
+                        _gd.PipelineInternal.SwapBuffer(currentBuffer, _buffer);
+
                         _flushLock.ReleaseWriterLock();
                     }
                 }
