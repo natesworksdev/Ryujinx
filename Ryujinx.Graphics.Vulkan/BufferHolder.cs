@@ -39,7 +39,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private IntPtr _map;
 
-        private readonly MultiFenceHolder _waitable;
+        private MultiFenceHolder _waitable;
 
         private bool _lastAccessIsWrite;
 
@@ -95,6 +95,8 @@ namespace Ryujinx.Graphics.Vulkan
                         _flushLock.AcquireWriterLock(Timeout.Infinite);
 
                         ClearFlushFence();
+
+                        _waitable = new MultiFenceHolder(Size);
 
                         _allocation = allocation;
                         _allocationAuto = new Auto<MemoryAllocation>(allocation);
