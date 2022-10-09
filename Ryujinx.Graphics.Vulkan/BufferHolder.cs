@@ -51,6 +51,8 @@ namespace Ryujinx.Graphics.Vulkan
         private int _flushCount;
 
         private ReaderWriterLock _flushLock;
+        private FenceHolder _flushFence;
+        private int _flushWaiting;
 
         private List<Action> _swapActions;
 
@@ -82,8 +84,6 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (!isRented && _gd.CommandBufferPool.OwnedByCurrentThread)
                 {
-                    CommandBufferScoped cbs = _gd.PipelineInternal.GetPreloadCommandBuffer();
-
                     var currentAllocation = _allocationAuto;
                     var currentBuffer = _buffer;
                     IntPtr currentMap = _map;
@@ -94,6 +94,8 @@ namespace Ryujinx.Graphics.Vulkan
                     {
                         _flushLock.AcquireWriterLock(Timeout.Infinite);
 
+                        ClearFlushFence();
+
                         _allocation = allocation;
                         _allocationAuto = new Auto<MemoryAllocation>(allocation);
                         _buffer = new Auto<DisposableBuffer>(new DisposableBuffer(_gd.Api, _device, buffer), _waitable, _allocationAuto);
@@ -102,7 +104,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                         if (_map != IntPtr.Zero && currentMap != IntPtr.Zero)
                         {
-                            // Copy data directly.
+                            // Copy data directly. Readbacks don't have to wait if this is done.
 
                             unsafe
                             {
@@ -111,13 +113,14 @@ namespace Ryujinx.Graphics.Vulkan
                         }
                         else
                         {
+                            using var cbs = _gd.CommandBufferPool.Rent();
+
                             Copy(_gd, cbs, currentBuffer, _buffer, 0, 0, Size);
 
-                            if (_map != IntPtr.Zero)
-                            {
-                                // Need to wait for the data to reach the new buffer before data can be flushed (we can't release the lock)
-                                // TODO: actually make this work - should only release lock when the current cbs completes.
-                            }
+                            // Need to wait for the data to reach the new buffer before data can be flushed.
+
+                            _flushFence = _gd.CommandBufferPool.GetFence(cbs.CommandBufferIndex);
+                            _flushFence.Get();
                         }
 
                         Common.Logging.Logger.Error?.PrintMsg(Common.Logging.LogClass.Gpu, $"Converted {Size} buffer {_currentType} to {resultType}");
@@ -288,11 +291,67 @@ namespace Ryujinx.Graphics.Vulkan
             return _map;
         }
 
+        private void ClearFlushFence()
+        {
+            // Asusmes _flushLock is held as writer.
+
+            if (_flushFence != null)
+            {
+                if (_flushWaiting == 0)
+                {
+                    _flushFence.Put();
+                }
+
+                _flushFence = null;
+            }
+        }
+
+        private void WaitForFlushFence()
+        {
+            // Assumes the _flushLock is held as reader, returns in same state.
+
+            if (_flushFence != null)
+            {
+                // If storage has changed, make sure the fence has been reached so that the data is in place.
+
+                var cookie = _flushLock.UpgradeToWriterLock(Timeout.Infinite);
+
+                if (_flushFence != null)
+                {
+                    var fence = _flushFence;
+                    Interlocked.Increment(ref _flushWaiting);
+
+                    // Don't wait in the lock.
+
+                    var restoreCookie = _flushLock.ReleaseLock();
+
+                    fence.Wait();
+
+                    _flushLock.RestoreLock(ref restoreCookie);
+
+                    if (Interlocked.Decrement(ref _flushWaiting) == 0)
+                    {
+                        fence.Put();
+                    }
+
+                    _flushFence = null;
+
+                    _flushLock.DowngradeFromWriterLock(ref cookie);
+                }
+                else
+                {
+                    _flushLock.DowngradeFromWriterLock(ref cookie);
+                }
+            }
+        }
+
         public unsafe ReadOnlySpan<byte> GetData(int offset, int size)
         {
             //Common.Logging.Logger.Error?.PrintMsg(Common.Logging.LogClass.Gpu, $"Flush type {_currentType}");
 
             _flushLock.AcquireReaderLock(Timeout.Infinite);
+
+            WaitForFlushFence();
 
             _flushCount++;
 
@@ -671,6 +730,12 @@ namespace Ryujinx.Graphics.Vulkan
             _buffer.Dispose();
             _allocationAuto.Dispose();
             _cachedConvertedBuffers.Dispose();
+
+            _flushLock.AcquireWriterLock(Timeout.Infinite);
+
+            ClearFlushFence();
+
+            _flushLock.ReleaseWriterLock();
         }
     }
 }
