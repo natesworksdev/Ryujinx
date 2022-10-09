@@ -250,7 +250,7 @@ namespace Ryujinx.Ui.Windows
 
             if (response.IsSuccessStatusCode)
             {
-                return response.Content.Headers.LastModified.Value.TimeOfDay != oldLastModified.AddTicks(-oldLastModified.Ticks % TimeSpan.TicksPerSecond).TimeOfDay;
+                return response.Content.Headers.LastModified != oldLastModified;
             }
 
             return false;
