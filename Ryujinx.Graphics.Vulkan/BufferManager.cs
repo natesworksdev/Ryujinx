@@ -131,7 +131,14 @@ namespace Ryujinx.Graphics.Vulkan
                 };
 
                 // If an allocation with this memory type fails, fall back to the previous one.
-                allocation = gd.MemoryAllocator.AllocateDeviceMemory(requirements, allocateFlags, allocateFlagsAlt);
+                try
+                {
+                    allocation = gd.MemoryAllocator.AllocateDeviceMemory(requirements, allocateFlags, allocateFlagsAlt);
+                }
+                catch (VulkanException)
+                {
+                    allocation = default;
+                }
             }
             while (allocation.Memory.Handle == 0 && (--type != fallbackType));
 
@@ -152,7 +159,15 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (baseType == BufferAllocationType.Auto)
             {
-                type = size >= BufferSizeDeviceLocalThreshold ? BufferAllocationType.DeviceLocal : BufferAllocationType.HostMapped;
+                if (gd.IsSharedMemory)
+                {
+                    baseType = BufferAllocationType.HostMapped;
+                    type = baseType;
+                }
+                else
+                {
+                    type = size >= BufferSizeDeviceLocalThreshold ? BufferAllocationType.DeviceLocal : BufferAllocationType.HostMapped;
+                }
             }
 
             (Silk.NET.Vulkan.Buffer buffer, MemoryAllocation allocation, BufferAllocationType resultType) =

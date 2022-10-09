@@ -80,6 +80,7 @@ namespace Ryujinx.Graphics.Vulkan
         internal bool IsAmdGcn { get; private set; }
         internal bool IsMoltenVk { get; private set; }
         internal bool IsTBDR { get; private set; }
+        internal bool IsSharedMemory { get; private set; }
         public string GpuVendor { get; private set; }
         public string GpuRenderer { get; private set; }
         public string GpuVersion { get; private set; }
@@ -312,6 +313,8 @@ namespace Ryujinx.Graphics.Vulkan
                 supportedSampleCounts,
                 portabilityFlags,
                 vertexBufferAlignment);
+
+            IsSharedMemory = MemoryAllocator.IsDeviceMemoryShared(Api, _physicalDevice);
 
             MemoryAllocator = new MemoryAllocator(Api, _physicalDevice, _device, properties.Limits.MaxMemoryAllocationCount);
 
