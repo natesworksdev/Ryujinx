@@ -1,4 +1,4 @@
-﻿using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
@@ -403,6 +403,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ShaderClipDistance = true,
                 ShaderFloat64 = supportedFeatures.ShaderFloat64,
                 ShaderImageGatherExtended = true,
+                ShaderStorageImageMultisample = supportedFeatures.ShaderStorageImageMultisample,
                 // ShaderStorageImageReadWithoutFormat = true,
                 // ShaderStorageImageWriteWithoutFormat = true,
                 TessellationShader = true,
