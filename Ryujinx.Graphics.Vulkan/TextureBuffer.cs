@@ -1,4 +1,5 @@
-﻿using Ryujinx.Graphics.GAL;
+﻿using Ryujinx.Common.Memory;
+using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,8 @@ namespace Ryujinx.Graphics.Vulkan
         private int _size;
         private Auto<DisposableBufferView> _bufferView;
         private Dictionary<GAL.Format, Auto<DisposableBufferView>> _selfManagedViews;
+
+        private int _bufferCount;
 
         public int Width { get; }
         public int Height { get; }
@@ -88,17 +91,17 @@ namespace Ryujinx.Graphics.Vulkan
             _bufferView = null;
         }
 
-        public void SetData(ReadOnlySpan<byte> data)
+        public void SetData(SpanOrArray<byte> data)
         {
             _gd.SetBufferData(_bufferHandle, _offset, data);
         }
 
-        public void SetData(ReadOnlySpan<byte> data, int layer, int level)
+        public void SetData(SpanOrArray<byte> data, int layer, int level)
         {
             throw new NotSupportedException();
         }
 
-        public void SetData(ReadOnlySpan<byte> data, int layer, int level, Rectangle<int> region)
+        public void SetData(SpanOrArray<byte> data, int layer, int level, Rectangle<int> region)
         {
             throw new NotSupportedException();
         }
@@ -107,7 +110,8 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (_bufferHandle == buffer.Handle &&
                 _offset == buffer.Offset &&
-                _size == buffer.Size)
+                _size == buffer.Size &&
+                _bufferCount == _gd.BufferManager.BufferCount)
             {
                 return;
             }
@@ -115,6 +119,7 @@ namespace Ryujinx.Graphics.Vulkan
             _bufferHandle = buffer.Handle;
             _offset = buffer.Offset;
             _size = buffer.Size;
+            _bufferCount = _gd.BufferManager.BufferCount;
 
             ReleaseImpl();
         }

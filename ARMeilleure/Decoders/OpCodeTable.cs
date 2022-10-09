@@ -93,6 +93,7 @@ namespace ARMeilleure.Decoders
             SetA64("00011010110xxxxx010101xxxxxxxxxx", InstName.Crc32ch,         InstEmit.Crc32ch,         OpCodeAluBinary.Create);
             SetA64("00011010110xxxxx010110xxxxxxxxxx", InstName.Crc32cw,         InstEmit.Crc32cw,         OpCodeAluBinary.Create);
             SetA64("10011010110xxxxx010111xxxxxxxxxx", InstName.Crc32cx,         InstEmit.Crc32cx,         OpCodeAluBinary.Create);
+            SetA64("11010101000000110010001010011111", InstName.Csdb,            InstEmit.Csdb,            OpCodeSystem.Create);
             SetA64("x0011010100xxxxxxxxx00xxxxxxxxxx", InstName.Csel,            InstEmit.Csel,            OpCodeCsel.Create);
             SetA64("x0011010100xxxxxxxxx01xxxxxxxxxx", InstName.Csinc,           InstEmit.Csinc,           OpCodeCsel.Create);
             SetA64("x1011010100xxxxxxxxx00xxxxxxxxxx", InstName.Csinv,           InstEmit.Csinv,           OpCodeCsel.Create);
@@ -107,7 +108,6 @@ namespace ARMeilleure.Decoders
             SetA64("11001010xx0xxxxxxxxxxxxxxxxxxxxx", InstName.Eor,             InstEmit.Eor,             OpCodeAluRs.Create);
             SetA64("00010011100xxxxx0xxxxxxxxxxxxxxx", InstName.Extr,            InstEmit.Extr,            OpCodeAluRs.Create);
             SetA64("10010011110xxxxxxxxxxxxxxxxxxxxx", InstName.Extr,            InstEmit.Extr,            OpCodeAluRs.Create);
-            SetA64("11010101000000110010xxxxxxx11111", InstName.Hint,            InstEmit.Hint,            OpCodeSystem.Create);
             SetA64("11010101000000110011xxxx11011111", InstName.Isb,             InstEmit.Isb,             OpCodeSystem.Create);
             SetA64("xx001000110xxxxx1xxxxxxxxxxxxxxx", InstName.Ldar,            InstEmit.Ldar,            OpCodeMemEx.Create);
             SetA64("1x001000011xxxxx1xxxxxxxxxxxxxxx", InstName.Ldaxp,           InstEmit.Ldaxp,           OpCodeMemEx.Create);
@@ -159,6 +159,8 @@ namespace ARMeilleure.Decoders
             SetA64("00010011000xxxxx0xxxxxxxxxxxxxxx", InstName.Sbfm,            InstEmit.Sbfm,            OpCodeBfm.Create);
             SetA64("1001001101xxxxxxxxxxxxxxxxxxxxxx", InstName.Sbfm,            InstEmit.Sbfm,            OpCodeBfm.Create);
             SetA64("x0011010110xxxxx000011xxxxxxxxxx", InstName.Sdiv,            InstEmit.Sdiv,            OpCodeAluBinary.Create);
+            SetA64("11010101000000110010000010011111", InstName.Sev,             InstEmit.Nop,             OpCodeSystem.Create);
+            SetA64("11010101000000110010000010111111", InstName.Sevl,            InstEmit.Nop,             OpCodeSystem.Create);
             SetA64("10011011001xxxxx0xxxxxxxxxxxxxxx", InstName.Smaddl,          InstEmit.Smaddl,          OpCodeMul.Create);
             SetA64("10011011001xxxxx1xxxxxxxxxxxxxxx", InstName.Smsubl,          InstEmit.Smsubl,          OpCodeMul.Create);
             SetA64("10011011010xxxxx0xxxxxxxxxxxxxxx", InstName.Smulh,           InstEmit.Smulh,           OpCodeMul.Create);
@@ -191,6 +193,9 @@ namespace ARMeilleure.Decoders
             SetA64("10011011101xxxxx0xxxxxxxxxxxxxxx", InstName.Umaddl,          InstEmit.Umaddl,          OpCodeMul.Create);
             SetA64("10011011101xxxxx1xxxxxxxxxxxxxxx", InstName.Umsubl,          InstEmit.Umsubl,          OpCodeMul.Create);
             SetA64("10011011110xxxxx0xxxxxxxxxxxxxxx", InstName.Umulh,           InstEmit.Umulh,           OpCodeMul.Create);
+            SetA64("11010101000000110010000001011111", InstName.Wfe,             InstEmit.Nop,             OpCodeSystem.Create);
+            SetA64("11010101000000110010000001111111", InstName.Wfi,             InstEmit.Nop,             OpCodeSystem.Create);
+            SetA64("11010101000000110010000000111111", InstName.Yield,           InstEmit.Nop,             OpCodeSystem.Create);
 
             // FP & SIMD
             SetA64("0101111011100000101110xxxxxxxxxx", InstName.Abs_S,           InstEmit.Abs_S,           OpCodeSimd.Create);
@@ -669,6 +674,17 @@ namespace ARMeilleure.Decoders
             SetA32("<<<<0010001xxxxxxxxxxxxxxxxxxxxx", InstName.Eor,     InstEmit32.Eor,     OpCode32AluImm.Create);
             SetA32("<<<<0000001xxxxxxxxxxxxxxxx0xxxx", InstName.Eor,     InstEmit32.Eor,     OpCode32AluRsImm.Create);
             SetA32("<<<<0000001xxxxxxxxxxxxx0xx1xxxx", InstName.Eor,     InstEmit32.Eor,     OpCode32AluRsReg.Create);
+            SetA32("<<<<0011001000001111000000010000", InstName.Esb,     InstEmit32.Nop,     OpCode32.Create); // Error Synchronization Barrier (FEAT_RAS)
+            SetA32("<<<<001100100000111100000000011x", InstName.Hint,    InstEmit32.Nop,     OpCode32.Create); // Reserved Hint
+            SetA32("<<<<0011001000001111000000001xxx", InstName.Hint,    InstEmit32.Nop,     OpCode32.Create); // Reserved Hint
+            SetA32("<<<<0011001000001111000000010001", InstName.Hint,    InstEmit32.Nop,     OpCode32.Create); // Reserved Hint
+            SetA32("<<<<0011001000001111000000010011", InstName.Hint,    InstEmit32.Nop,     OpCode32.Create); // Reserved Hint
+            SetA32("<<<<0011001000001111000000010101", InstName.Hint,    InstEmit32.Nop,     OpCode32.Create); // Reserved Hint
+            SetA32("<<<<001100100000111100000001011x", InstName.Hint,    InstEmit32.Nop,     OpCode32.Create); // Reserved Hint
+            SetA32("<<<<0011001000001111000000011xxx", InstName.Hint,    InstEmit32.Nop,     OpCode32.Create); // Reserved Hint
+            SetA32("<<<<00110010000011110000001xxxxx", InstName.Hint,    InstEmit32.Nop,     OpCode32.Create); // Reserved Hint
+            SetA32("<<<<0011001000001111000001xxxxxx", InstName.Hint,    InstEmit32.Nop,     OpCode32.Create); // Reserved Hint
+            SetA32("<<<<001100100000111100001xxxxxxx", InstName.Hint,    InstEmit32.Nop,     OpCode32.Create); // Reserved Hint
             SetA32("1111010101111111111100000110xxxx", InstName.Isb,     InstEmit32.Nop,     OpCode32.Create);
             SetA32("<<<<00011001xxxxxxxx110010011111", InstName.Lda,     InstEmit32.Lda,     OpCode32MemLdEx.Create);
             SetA32("<<<<00011101xxxxxxxx110010011111", InstName.Ldab,    InstEmit32.Ldab,    OpCode32MemLdEx.Create);
@@ -727,11 +743,15 @@ namespace ARMeilleure.Decoders
             SetA32("<<<<0010111xxxxxxxxxxxxxxxxxxxxx", InstName.Rsc,     InstEmit32.Rsc,     OpCode32AluImm.Create);
             SetA32("<<<<0000111xxxxxxxxxxxxxxxx0xxxx", InstName.Rsc,     InstEmit32.Rsc,     OpCode32AluRsImm.Create);
             SetA32("<<<<0000111xxxxxxxxxxxxx0xx1xxxx", InstName.Rsc,     InstEmit32.Rsc,     OpCode32AluRsReg.Create);
+            SetA32("<<<<01100001xxxxxxxx11111001xxxx", InstName.Sadd8,   InstEmit32.Sadd8,   OpCode32AluReg.Create);
             SetA32("<<<<0010110xxxxxxxxxxxxxxxxxxxxx", InstName.Sbc,     InstEmit32.Sbc,     OpCode32AluImm.Create);
             SetA32("<<<<0000110xxxxxxxxxxxxxxxx0xxxx", InstName.Sbc,     InstEmit32.Sbc,     OpCode32AluRsImm.Create);
             SetA32("<<<<0000110xxxxxxxxxxxxx0xx1xxxx", InstName.Sbc,     InstEmit32.Sbc,     OpCode32AluRsReg.Create);
             SetA32("<<<<0111101xxxxxxxxxxxxxx101xxxx", InstName.Sbfx,    InstEmit32.Sbfx,    OpCode32AluBf.Create);
             SetA32("<<<<01110001xxxx1111xxxx0001xxxx", InstName.Sdiv,    InstEmit32.Sdiv,    OpCode32AluMla.Create);
+            SetA32("<<<<01101000xxxxxxxx11111011xxxx", InstName.Sel,     InstEmit32.Sel,     OpCode32AluReg.Create);
+            SetA32("<<<<0011001000001111000000000100", InstName.Sev,     InstEmit32.Nop,     OpCode32.Create);
+            SetA32("<<<<0011001000001111000000000101", InstName.Sevl,    InstEmit32.Nop,     OpCode32.Create);
             SetA32("<<<<01100011xxxxxxxx11111001xxxx", InstName.Shadd8,  InstEmit32.Shadd8,  OpCode32AluReg.Create);
             SetA32("<<<<01100011xxxxxxxx11111111xxxx", InstName.Shsub8,  InstEmit32.Shsub8,  OpCode32AluReg.Create);
             SetA32("<<<<00010000xxxxxxxxxxxx1xx0xxxx", InstName.Smla__,  InstEmit32.Smla__,  OpCode32AluMla.Create);
@@ -745,6 +765,7 @@ namespace ARMeilleure.Decoders
             SetA32("<<<<00010010xxxx0000xxxx1x10xxxx", InstName.Smulw_,  InstEmit32.Smulw_,  OpCode32AluMla.Create);
             SetA32("<<<<0110101xxxxxxxxxxxxxxx01xxxx", InstName.Ssat,    InstEmit32.Ssat,    OpCode32Sat.Create);
             SetA32("<<<<01101010xxxxxxxx11110011xxxx", InstName.Ssat16,  InstEmit32.Ssat16,  OpCode32Sat16.Create);
+            SetA32("<<<<01100001xxxxxxxx11111111xxxx", InstName.Ssub8,   InstEmit32.Ssub8,   OpCode32AluReg.Create);
             SetA32("<<<<00011000xxxx111111001001xxxx", InstName.Stl,     InstEmit32.Stl,     OpCode32MemStEx.Create);
             SetA32("<<<<00011100xxxx111111001001xxxx", InstName.Stlb,    InstEmit32.Stlb,    OpCode32MemStEx.Create);
             SetA32("<<<<00011000xxxxxxxx11101001xxxx", InstName.Stlex,   InstEmit32.Stlex,   OpCode32MemStEx.Create);
@@ -776,9 +797,11 @@ namespace ARMeilleure.Decoders
             SetA32("<<<<00010011xxxx0000xxxxxxx0xxxx", InstName.Teq,     InstEmit32.Teq,     OpCode32AluRsImm.Create);
             SetA32("<<<<00010011xxxx0000xxxx0xx1xxxx", InstName.Teq,     InstEmit32.Teq,     OpCode32AluRsReg.Create);
             SetA32("<<<<0111111111111101111011111110", InstName.Trap,    InstEmit32.Trap,    OpCode32Exception.Create);
+            SetA32("<<<<0011001000001111000000010010", InstName.Tsb,     InstEmit32.Nop,     OpCode32.Create); // Trace Synchronization Barrier (FEAT_TRF)
             SetA32("<<<<00110001xxxx0000xxxxxxxxxxxx", InstName.Tst,     InstEmit32.Tst,     OpCode32AluImm.Create);
             SetA32("<<<<00010001xxxx0000xxxxxxx0xxxx", InstName.Tst,     InstEmit32.Tst,     OpCode32AluRsImm.Create);
             SetA32("<<<<00010001xxxx0000xxxx0xx1xxxx", InstName.Tst,     InstEmit32.Tst,     OpCode32AluRsReg.Create);
+            SetA32("<<<<01100101xxxxxxxx11111001xxxx", InstName.Uadd8,   InstEmit32.Uadd8,   OpCode32AluReg.Create);
             SetA32("<<<<0111111xxxxxxxxxxxxxx101xxxx", InstName.Ubfx,    InstEmit32.Ubfx,    OpCode32AluBf.Create);
             SetA32("<<<<01110011xxxx1111xxxx0001xxxx", InstName.Udiv,    InstEmit32.Udiv,    OpCode32AluMla.Create);
             SetA32("<<<<01100111xxxxxxxx11111001xxxx", InstName.Uhadd8,  InstEmit32.Uhadd8,  OpCode32AluReg.Create);
@@ -788,9 +811,13 @@ namespace ARMeilleure.Decoders
             SetA32("<<<<0000100xxxxxxxxxxxxx1001xxxx", InstName.Umull,   InstEmit32.Umull,   OpCode32AluUmull.Create);
             SetA32("<<<<0110111xxxxxxxxxxxxxxx01xxxx", InstName.Usat,    InstEmit32.Usat,    OpCode32Sat.Create);
             SetA32("<<<<01101110xxxxxxxx11110011xxxx", InstName.Usat16,  InstEmit32.Usat16,  OpCode32Sat16.Create);
+            SetA32("<<<<01100101xxxxxxxx11111111xxxx", InstName.Usub8,   InstEmit32.Usub8,   OpCode32AluReg.Create);
             SetA32("<<<<01101110xxxxxxxxxx000111xxxx", InstName.Uxtb,    InstEmit32.Uxtb,    OpCode32AluUx.Create);
             SetA32("<<<<01101100xxxxxxxxxx000111xxxx", InstName.Uxtb16,  InstEmit32.Uxtb16,  OpCode32AluUx.Create);
             SetA32("<<<<01101111xxxxxxxxxx000111xxxx", InstName.Uxth,    InstEmit32.Uxth,    OpCode32AluUx.Create);
+            SetA32("<<<<0011001000001111000000000010", InstName.Wfe,     InstEmit32.Nop,     OpCode32.Create);
+            SetA32("<<<<0011001000001111000000000011", InstName.Wfi,     InstEmit32.Nop,     OpCode32.Create);
+            SetA32("<<<<0011001000001111000000000001", InstName.Yield,   InstEmit32.Nop,     OpCode32.Create);
 
             // VFP
             SetVfp("<<<<11101x110000xxxx101x11x0xxxx", InstName.Vabs,   InstEmit32.Vabs_S,   OpCode32SimdS.Create,           OpCode32SimdS.CreateT32);
@@ -1080,7 +1107,14 @@ namespace ARMeilleure.Decoders
             SetT16("1011101011xxxxxx", InstName.Revsh,  InstEmit32.Revsh,   OpCodeT16AluRegLow.Create);
             SetT16("101110x1xxxxxxxx", InstName.Cbnz,   InstEmit32.Cbnz,    OpCodeT16BImmCmp.Create);
             SetT16("1011110xxxxxxxxx", InstName.Pop,    InstEmit32.Ldm,     OpCodeT16MemStack.Create);
-            SetT16("10111111xxxx0000", InstName.Nop,    InstEmit32.Nop,     OpCodeT16.Create);
+            SetT16("1011111100000000", InstName.Nop,    InstEmit32.Nop,     OpCodeT16.Create);
+            SetT16("1011111100010000", InstName.Yield,  InstEmit32.Nop,     OpCodeT16.Create);
+            SetT16("1011111100100000", InstName.Wfe,    InstEmit32.Nop,     OpCodeT16.Create);
+            SetT16("1011111100110000", InstName.Wfi,    InstEmit32.Nop,     OpCodeT16.Create);
+            SetT16("1011111101000000", InstName.Sev,    InstEmit32.Nop,     OpCodeT16.Create);
+            SetT16("1011111101010000", InstName.Sevl,   InstEmit32.Nop,     OpCodeT16.Create);
+            SetT16("10111111011x0000", InstName.Hint,   InstEmit32.Nop,     OpCodeT16.Create); // Hint instruction
+            SetT16("101111111xxx0000", InstName.Hint,   InstEmit32.Nop,     OpCodeT16.Create); // Hint instruction
             SetT16("10111111xxxx>>>>", InstName.It,     InstEmit32.It,      OpCodeT16IfThen.Create);
             SetT16("11000xxxxxxxxxxx", InstName.Stm,    InstEmit32.Stm,     OpCodeT16MemMult.Create);
             SetT16("11001xxxxxxxxxxx", InstName.Ldm,    InstEmit32.Ldm,     OpCodeT16MemMult.Create);
@@ -1111,8 +1145,20 @@ namespace ARMeilleure.Decoders
             SetT32("11110x010001xxxx0xxx1111xxxxxxxx", InstName.Cmn,      InstEmit32.Cmn,      OpCodeT32AluImm.Create);
             SetT32("111010111011xxxx0xxx1111xxxxxxxx", InstName.Cmp,      InstEmit32.Cmp,      OpCodeT32AluRsImm.Create);
             SetT32("11110x011011xxxx0xxx1111xxxxxxxx", InstName.Cmp,      InstEmit32.Cmp,      OpCodeT32AluImm.Create);
+            SetT32("11110011101011111000000000010100", InstName.Csdb,     InstEmit32.Csdb,     OpCodeT32.Create);
             SetT32("11101010100<xxxx0xxx<<<<xxxxxxxx", InstName.Eor,      InstEmit32.Eor,      OpCodeT32AluRsImm.Create);
             SetT32("11110x00100<xxxx0xxx<<<<xxxxxxxx", InstName.Eor,      InstEmit32.Eor,      OpCodeT32AluImm.Create);
+            SetT32("11110011101011111000000000010000", InstName.Esb,      InstEmit32.Nop,      OpCodeT32.Create); // Error Synchronization Barrier (FEAT_RAS)
+            SetT32("1111001110101111100000000000011x", InstName.Hint,     InstEmit32.Nop,      OpCodeT32.Create); // Reserved Hint
+            SetT32("11110011101011111000000000001xxx", InstName.Hint,     InstEmit32.Nop,      OpCodeT32.Create); // Reserved Hint
+            SetT32("11110011101011111000000000010001", InstName.Hint,     InstEmit32.Nop,      OpCodeT32.Create); // Reserved Hint
+            SetT32("11110011101011111000000000010011", InstName.Hint,     InstEmit32.Nop,      OpCodeT32.Create); // Reserved Hint
+            SetT32("11110011101011111000000000010101", InstName.Hint,     InstEmit32.Nop,      OpCodeT32.Create); // Reserved Hint
+            SetT32("1111001110101111100000000001011x", InstName.Hint,     InstEmit32.Nop,      OpCodeT32.Create); // Reserved Hint
+            SetT32("11110011101011111000000000011xxx", InstName.Hint,     InstEmit32.Nop,      OpCodeT32.Create); // Reserved Hint
+            SetT32("111100111010111110000000001xxxxx", InstName.Hint,     InstEmit32.Nop,      OpCodeT32.Create); // Reserved Hint
+            SetT32("11110011101011111000000001xxxxxx", InstName.Hint,     InstEmit32.Nop,      OpCodeT32.Create); // Reserved Hint
+            SetT32("1111001110101111100000001xxxxxxx", InstName.Hint,     InstEmit32.Nop,      OpCodeT32.Create); // Reserved Hint
             SetT32("111010001101xxxxxxxx111110101111", InstName.Lda,      InstEmit32.Lda,      OpCodeT32MemLdEx.Create);
             SetT32("111010001101xxxxxxxx111110001111", InstName.Ldab,     InstEmit32.Ldab,     OpCodeT32MemLdEx.Create);
             SetT32("111010001101xxxxxxxx111111101111", InstName.Ldaex,    InstEmit32.Ldaex,    OpCodeT32MemLdEx.Create);
@@ -1128,26 +1174,26 @@ namespace ARMeilleure.Decoders
             SetT32("111110001101xxxxxxxxxxxxxxxxxxxx", InstName.Ldr,      InstEmit32.Ldr,      OpCodeT32MemImm12.Create);
             SetT32("111110000101<<<<xxxx000000xxxxxx", InstName.Ldr,      InstEmit32.Ldr,      OpCodeT32MemRsImm.Create);
             SetT32("111110000001xxxxxxxx10x1xxxxxxxx", InstName.Ldrb,     InstEmit32.Ldrb,     OpCodeT32MemImm8.Create);
-            SetT32("111110000001xxxxxxxx1100xxxxxxxx", InstName.Ldrb,     InstEmit32.Ldrb,     OpCodeT32MemImm8.Create);
+            SetT32("111110000001xxxx<<<<1100xxxxxxxx", InstName.Ldrb,     InstEmit32.Ldrb,     OpCodeT32MemImm8.Create);
             SetT32("111110000001xxxxxxxx11x1xxxxxxxx", InstName.Ldrb,     InstEmit32.Ldrb,     OpCodeT32MemImm8.Create);
-            SetT32("111110001001xxxxxxxxxxxxxxxxxxxx", InstName.Ldrb,     InstEmit32.Ldrb,     OpCodeT32MemImm12.Create);
+            SetT32("111110001001xxxx<<<<xxxxxxxxxxxx", InstName.Ldrb,     InstEmit32.Ldrb,     OpCodeT32MemImm12.Create);
             SetT32("111110000001xxxx<<<<000000xxxxxx", InstName.Ldrb,     InstEmit32.Ldrb,     OpCodeT32MemRsImm.Create);
             SetT32("11101000x111<<<<xxxxxxxxxxxxxxxx", InstName.Ldrd,     InstEmit32.Ldrd,     OpCodeT32MemImm8D.Create);
             SetT32("11101001x1x1<<<<xxxxxxxxxxxxxxxx", InstName.Ldrd,     InstEmit32.Ldrd,     OpCodeT32MemImm8D.Create);
             SetT32("111110000011xxxxxxxx10x1xxxxxxxx", InstName.Ldrh,     InstEmit32.Ldrh,     OpCodeT32MemImm8.Create);
-            SetT32("111110000011xxxxxxxx1100xxxxxxxx", InstName.Ldrh,     InstEmit32.Ldrh,     OpCodeT32MemImm8.Create);
+            SetT32("111110000011xxxx<<<<1100xxxxxxxx", InstName.Ldrh,     InstEmit32.Ldrh,     OpCodeT32MemImm8.Create);
             SetT32("111110000011xxxxxxxx11x1xxxxxxxx", InstName.Ldrh,     InstEmit32.Ldrh,     OpCodeT32MemImm8.Create);
-            SetT32("111110001011xxxxxxxxxxxxxxxxxxxx", InstName.Ldrh,     InstEmit32.Ldrh,     OpCodeT32MemImm12.Create);
+            SetT32("111110001011xxxx<<<<xxxxxxxxxxxx", InstName.Ldrh,     InstEmit32.Ldrh,     OpCodeT32MemImm12.Create);
             SetT32("111110000011xxxx<<<<000000xxxxxx", InstName.Ldrh,     InstEmit32.Ldrh,     OpCodeT32MemRsImm.Create);
             SetT32("111110010001xxxxxxxx10x1xxxxxxxx", InstName.Ldrsb,    InstEmit32.Ldrsb,    OpCodeT32MemImm8.Create);
-            SetT32("111110010001xxxxxxxx1100xxxxxxxx", InstName.Ldrsb,    InstEmit32.Ldrsb,    OpCodeT32MemImm8.Create);
+            SetT32("111110010001xxxx<<<<1100xxxxxxxx", InstName.Ldrsb,    InstEmit32.Ldrsb,    OpCodeT32MemImm8.Create);
             SetT32("111110010001xxxxxxxx11x1xxxxxxxx", InstName.Ldrsb,    InstEmit32.Ldrsb,    OpCodeT32MemImm8.Create);
-            SetT32("111110011001xxxxxxxxxxxxxxxxxxxx", InstName.Ldrsb,    InstEmit32.Ldrsb,    OpCodeT32MemImm12.Create);
+            SetT32("111110011001xxxx<<<<xxxxxxxxxxxx", InstName.Ldrsb,    InstEmit32.Ldrsb,    OpCodeT32MemImm12.Create);
             SetT32("111110010001xxxx<<<<000000xxxxxx", InstName.Ldrsb,    InstEmit32.Ldrsb,    OpCodeT32MemRsImm.Create);
             SetT32("111110010011xxxxxxxx10x1xxxxxxxx", InstName.Ldrsh,    InstEmit32.Ldrsh,    OpCodeT32MemImm8.Create);
-            SetT32("111110010011xxxxxxxx1100xxxxxxxx", InstName.Ldrsh,    InstEmit32.Ldrsh,    OpCodeT32MemImm8.Create);
+            SetT32("111110010011xxxx<<<<1100xxxxxxxx", InstName.Ldrsh,    InstEmit32.Ldrsh,    OpCodeT32MemImm8.Create);
             SetT32("111110010011xxxxxxxx11x1xxxxxxxx", InstName.Ldrsh,    InstEmit32.Ldrsh,    OpCodeT32MemImm8.Create);
-            SetT32("111110011011xxxxxxxxxxxxxxxxxxxx", InstName.Ldrsh,    InstEmit32.Ldrsh,    OpCodeT32MemImm12.Create);
+            SetT32("111110011011xxxx<<<<xxxxxxxxxxxx", InstName.Ldrsh,    InstEmit32.Ldrsh,    OpCodeT32MemImm12.Create);
             SetT32("111110010011xxxx<<<<000000xxxxxx", InstName.Ldrsh,    InstEmit32.Ldrsh,    OpCodeT32MemRsImm.Create);
             SetT32("111110110000xxxx<<<<xxxx0000xxxx", InstName.Mla,      InstEmit32.Mla,      OpCodeT32AluMla.Create);
             SetT32("111110110000xxxxxxxxxxxx0001xxxx", InstName.Mls,      InstEmit32.Mls,      OpCodeT32AluMla.Create);
@@ -1164,12 +1210,21 @@ namespace ARMeilleure.Decoders
             SetT32("11110x00011x<<<<0xxxxxxxxxxxxxxx", InstName.Orn,      InstEmit32.Orn,      OpCodeT32AluImm.Create);
             SetT32("11101010010x<<<<0xxxxxxxxxxxxxxx", InstName.Orr,      InstEmit32.Orr,      OpCodeT32AluRsImm.Create);
             SetT32("11110x00010x<<<<0xxxxxxxxxxxxxxx", InstName.Orr,      InstEmit32.Orr,      OpCodeT32AluImm.Create);
+            SetT32("1111100010x1xxxx1111xxxxxxxxxxxx", InstName.Pld,      InstEmit32.Nop,      OpCodeT32.Create);
+            SetT32("1111100000x1xxxx11111100xxxxxxxx", InstName.Pld,      InstEmit32.Nop,      OpCodeT32.Create);
+            SetT32("1111100000x1xxxx1111000000xxxxxx", InstName.Pld,      InstEmit32.Nop,      OpCodeT32.Create);
             SetT32("11101011110xxxxx0xxxxxxxxxxxxxxx", InstName.Rsb,      InstEmit32.Rsb,      OpCodeT32AluRsImm.Create);
             SetT32("11110x01110xxxxx0xxxxxxxxxxxxxxx", InstName.Rsb,      InstEmit32.Rsb,      OpCodeT32AluImm.Create);
+            SetT32("111110101000xxxx1111xxxx0000xxxx", InstName.Sadd8,    InstEmit32.Sadd8,    OpCodeT32AluReg.Create);
             SetT32("11101011011xxxxx0xxxxxxxxxxxxxxx", InstName.Sbc,      InstEmit32.Sbc,      OpCodeT32AluRsImm.Create);
             SetT32("11110x01011xxxxx0xxxxxxxxxxxxxxx", InstName.Sbc,      InstEmit32.Sbc,      OpCodeT32AluImm.Create);
             SetT32("111100110100xxxx0xxxxxxxxx0xxxxx", InstName.Sbfx,     InstEmit32.Sbfx,     OpCodeT32AluBf.Create);
             SetT32("111110111001xxxx1111xxxx1111xxxx", InstName.Sdiv,     InstEmit32.Sdiv,     OpCodeT32AluMla.Create);
+            SetT32("111110101010xxxx1111xxxx1000xxxx", InstName.Sel,      InstEmit32.Sel,      OpCodeT32AluReg.Create);
+            SetT32("111110101000xxxx1111xxxx0010xxxx", InstName.Shadd8,   InstEmit32.Shadd8,   OpCodeT32AluReg.Create);
+            SetT32("111110101100xxxx1111xxxx0010xxxx", InstName.Shsub8,   InstEmit32.Shsub8,   OpCodeT32AluReg.Create);
+            SetT32("11110011101011111000000000000100", InstName.Sev,      InstEmit32.Nop,      OpCodeT32.Create);
+            SetT32("11110011101011111000000000000101", InstName.Sevl,     InstEmit32.Nop,      OpCodeT32.Create);
             SetT32("111110110001xxxx<<<<xxxx00xxxxxx", InstName.Smla__,   InstEmit32.Smla__,   OpCodeT32AluMla.Create);
             SetT32("111110111100xxxxxxxxxxxx0000xxxx", InstName.Smlal,    InstEmit32.Smlal,    OpCodeT32AluUmull.Create);
             SetT32("111110111100xxxxxxxxxxxx10xxxxxx", InstName.Smlal__,  InstEmit32.Smlal__,  OpCodeT32AluUmull.Create);
@@ -1179,6 +1234,7 @@ namespace ARMeilleure.Decoders
             SetT32("111110110001xxxx1111xxxx00xxxxxx", InstName.Smul__,   InstEmit32.Smul__,   OpCodeT32AluMla.Create);
             SetT32("111110111000xxxxxxxxxxxx0000xxxx", InstName.Smull,    InstEmit32.Smull,    OpCodeT32AluUmull.Create);
             SetT32("111110110011xxxx1111xxxx000xxxxx", InstName.Smulw_,   InstEmit32.Smulw_,   OpCodeT32AluMla.Create);
+            SetT32("111110101100xxxx1111xxxx0000xxxx", InstName.Ssub8,    InstEmit32.Ssub8,    OpCodeT32AluReg.Create);
             SetT32("111010001100xxxxxxxx111110101111", InstName.Stl,      InstEmit32.Stl,      OpCodeT32MemStEx.Create);
             SetT32("111010001100xxxxxxxx111110001111", InstName.Stlb,     InstEmit32.Stlb,     OpCodeT32MemStEx.Create);
             SetT32("111010001100xxxxxxxx11111110xxxx", InstName.Stlex,    InstEmit32.Stlex,    OpCodeT32MemStEx.Create);
@@ -1188,19 +1244,26 @@ namespace ARMeilleure.Decoders
             SetT32("111010001100xxxxxxxx111110011111", InstName.Stlh,     InstEmit32.Stlh,     OpCodeT32MemStEx.Create);
             SetT32("1110100010x0xxxx0xxxxxxxxxxxxxxx", InstName.Stm,      InstEmit32.Stm,      OpCodeT32MemMult.Create);
             SetT32("1110100100x0xxxx0xxxxxxxxxxxxxxx", InstName.Stm,      InstEmit32.Stm,      OpCodeT32MemMult.Create);
-            SetT32("111110000100xxxxxxxx1<<>xxxxxxxx", InstName.Str,      InstEmit32.Str,      OpCodeT32MemImm8.Create);
-            SetT32("111110001100xxxxxxxxxxxxxxxxxxxx", InstName.Str,      InstEmit32.Str,      OpCodeT32MemImm12.Create);
+            SetT32("111110000100<<<<xxxx10x1xxxxxxxx", InstName.Str,      InstEmit32.Str,      OpCodeT32MemImm8.Create);
+            SetT32("111110000100<<<<xxxx1100xxxxxxxx", InstName.Str,      InstEmit32.Str,      OpCodeT32MemImm8.Create);
+            SetT32("111110000100<<<<xxxx11x1xxxxxxxx", InstName.Str,      InstEmit32.Str,      OpCodeT32MemImm8.Create);
+            SetT32("111110001100<<<<xxxxxxxxxxxxxxxx", InstName.Str,      InstEmit32.Str,      OpCodeT32MemImm12.Create);
             SetT32("111110000100<<<<xxxx000000xxxxxx", InstName.Str,      InstEmit32.Str,      OpCodeT32MemRsImm.Create);
-            SetT32("111110000000xxxxxxxx1<<>xxxxxxxx", InstName.Strb,     InstEmit32.Strb,     OpCodeT32MemImm8.Create);
-            SetT32("111110001000xxxxxxxxxxxxxxxxxxxx", InstName.Strb,     InstEmit32.Strb,     OpCodeT32MemImm12.Create);
+            SetT32("111110000000<<<<xxxx10x1xxxxxxxx", InstName.Strb,     InstEmit32.Strb,     OpCodeT32MemImm8.Create);
+            SetT32("111110000000<<<<xxxx1100xxxxxxxx", InstName.Strb,     InstEmit32.Strb,     OpCodeT32MemImm8.Create);
+            SetT32("111110000000<<<<xxxx11x1xxxxxxxx", InstName.Strb,     InstEmit32.Strb,     OpCodeT32MemImm8.Create);
+            SetT32("111110001000<<<<xxxxxxxxxxxxxxxx", InstName.Strb,     InstEmit32.Strb,     OpCodeT32MemImm12.Create);
             SetT32("111110000000<<<<xxxx000000xxxxxx", InstName.Strb,     InstEmit32.Strb,     OpCodeT32MemRsImm.Create);
             SetT32("11101000x110<<<<xxxxxxxxxxxxxxxx", InstName.Strd,     InstEmit32.Strd,     OpCodeT32MemImm8D.Create);
             SetT32("11101001x1x0<<<<xxxxxxxxxxxxxxxx", InstName.Strd,     InstEmit32.Strd,     OpCodeT32MemImm8D.Create);
-            SetT32("111110000010xxxxxxxx1<<>xxxxxxxx", InstName.Strh,     InstEmit32.Strh,     OpCodeT32MemImm8.Create);
-            SetT32("111110001010xxxxxxxxxxxxxxxxxxxx", InstName.Strh,     InstEmit32.Strh,     OpCodeT32MemImm12.Create);
+            SetT32("111110000010<<<<xxxx10x1xxxxxxxx", InstName.Strh,     InstEmit32.Strh,     OpCodeT32MemImm8.Create);
+            SetT32("111110000010<<<<xxxx1100xxxxxxxx", InstName.Strh,     InstEmit32.Strh,     OpCodeT32MemImm8.Create);
+            SetT32("111110000010<<<<xxxx11x1xxxxxxxx", InstName.Strh,     InstEmit32.Strh,     OpCodeT32MemImm8.Create);
+            SetT32("111110001010<<<<xxxxxxxxxxxxxxxx", InstName.Strh,     InstEmit32.Strh,     OpCodeT32MemImm12.Create);
             SetT32("111110000010<<<<xxxx000000xxxxxx", InstName.Strh,     InstEmit32.Strh,     OpCodeT32MemRsImm.Create);
             SetT32("11101011101<xxxx0xxx<<<<xxxxxxxx", InstName.Sub,      InstEmit32.Sub,      OpCodeT32AluRsImm.Create);
             SetT32("11110x01101<xxxx0xxx<<<<xxxxxxxx", InstName.Sub,      InstEmit32.Sub,      OpCodeT32AluImm.Create);
+            SetT32("11110x101010xxxx0xxxxxxxxxxxxxxx", InstName.Sub,      InstEmit32.Sub,      OpCodeT32AluImm12.Create);
             SetT32("111110100100xxxx1111xxxx10xxxxxx", InstName.Sxtb,     InstEmit32.Sxtb,     OpCodeT32AluUx.Create);
             SetT32("111110100010xxxx1111xxxx10xxxxxx", InstName.Sxtb16,   InstEmit32.Sxtb16,   OpCodeT32AluUx.Create);
             SetT32("111110100000xxxx1111xxxx10xxxxxx", InstName.Sxth,     InstEmit32.Sxth,     OpCodeT32AluUx.Create);
@@ -1208,16 +1271,24 @@ namespace ARMeilleure.Decoders
             SetT32("111010001101xxxx111100000001xxxx", InstName.Tbh,      InstEmit32.Tbh,      OpCodeT32Tb.Create);
             SetT32("111010101001xxxx0xxx1111xxxxxxxx", InstName.Teq,      InstEmit32.Teq,      OpCodeT32AluRsImm.Create);
             SetT32("11110x001001xxxx0xxx1111xxxxxxxx", InstName.Teq,      InstEmit32.Teq,      OpCodeT32AluImm.Create);
+            SetT32("11110011101011111000000000010010", InstName.Tsb,      InstEmit32.Nop,      OpCodeT32.Create); // Trace Synchronization Barrier (FEAT_TRF)
             SetT32("111010100001xxxx0xxx1111xxxxxxxx", InstName.Tst,      InstEmit32.Tst,      OpCodeT32AluRsImm.Create);
             SetT32("11110x000001xxxx0xxx1111xxxxxxxx", InstName.Tst,      InstEmit32.Tst,      OpCodeT32AluImm.Create);
+            SetT32("111110101000xxxx1111xxxx0100xxxx", InstName.Uadd8,    InstEmit32.Uadd8,    OpCodeT32AluReg.Create);
             SetT32("111100111100xxxx0xxxxxxxxx0xxxxx", InstName.Ubfx,     InstEmit32.Ubfx,     OpCodeT32AluBf.Create);
             SetT32("111110111011xxxx1111xxxx1111xxxx", InstName.Udiv,     InstEmit32.Udiv,     OpCodeT32AluMla.Create);
+            SetT32("111110101000xxxx1111xxxx0110xxxx", InstName.Uhadd8,   InstEmit32.Uhadd8,   OpCodeT32AluReg.Create);
+            SetT32("111110101100xxxx1111xxxx0110xxxx", InstName.Uhsub8,   InstEmit32.Uhsub8,   OpCodeT32AluReg.Create);
             SetT32("111110111110xxxxxxxxxxxx0110xxxx", InstName.Umaal,    InstEmit32.Umaal,    OpCodeT32AluUmull.Create);
             SetT32("111110111110xxxxxxxxxxxx0000xxxx", InstName.Umlal,    InstEmit32.Umlal,    OpCodeT32AluUmull.Create);
             SetT32("111110111010xxxxxxxxxxxx0000xxxx", InstName.Umull,    InstEmit32.Umull,    OpCodeT32AluUmull.Create);
+            SetT32("111110101100xxxx1111xxxx0100xxxx", InstName.Usub8,    InstEmit32.Usub8,    OpCodeT32AluReg.Create);
             SetT32("111110100101xxxx1111xxxx10xxxxxx", InstName.Uxtb,     InstEmit32.Uxtb,     OpCodeT32AluUx.Create);
             SetT32("111110100011xxxx1111xxxx10xxxxxx", InstName.Uxtb16,   InstEmit32.Uxtb16,   OpCodeT32AluUx.Create);
             SetT32("111110100001xxxx1111xxxx10xxxxxx", InstName.Uxth,     InstEmit32.Uxth,     OpCodeT32AluUx.Create);
+            SetT32("11110011101011111000000000000010", InstName.Wfe,      InstEmit32.Nop,      OpCodeT32.Create);
+            SetT32("11110011101011111000000000000011", InstName.Wfi,      InstEmit32.Nop,      OpCodeT32.Create);
+            SetT32("11110011101011111000000000000001", InstName.Yield,    InstEmit32.Nop,      OpCodeT32.Create);
 #endregion
 
             FillFastLookupTable(InstA32FastLookup, AllInstA32, ToFastLookupIndexA);
