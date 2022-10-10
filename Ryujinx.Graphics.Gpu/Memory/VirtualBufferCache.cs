@@ -487,8 +487,13 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     }
 
                     overlap.CopyTo(buffer, overlapView.BaseOffset, (int)offsetWithinOverlap, (int)overlapView.Size);
+                }
 
-                    DeleteViewBuffer(ref overlapView, dataOnly: true);
+                // We can only dispose after all copies are done, as the same (physical) buffer
+                // might be used in more than one overlap view.
+                for (int index = 0; index < overlapCount; index++)
+                {
+                    DeleteViewBuffer(ref overlaps[index], dataOnly: true);
                 }
 
                 if (overlapCount != 0)

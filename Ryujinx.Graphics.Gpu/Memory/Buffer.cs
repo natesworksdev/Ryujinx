@@ -15,6 +15,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     {
         private readonly GpuContext _context;
         private readonly BufferRegion[] _regions;
+        private bool _disposed;
 
         /// <summary>
         /// Host buffer handle.
@@ -565,13 +566,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 region.ClearModified();
             }
 
-            _context.Renderer.DeleteBuffer(Handle);
-
-            UnmappedSequence++;
+            DisposeHostBuffer();
         }
 
         /// <summary>
-        /// Disposes the host buffer.
+        /// Disposes the host buffer and the tracking handles.
         /// </summary>
         public void Dispose()
         {
@@ -580,9 +579,21 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 region.Dispose();
             }
 
-            _context.Renderer.DeleteBuffer(Handle);
+            DisposeHostBuffer();
+        }
 
-            UnmappedSequence++;
+        /// <summary>
+        /// Disposes the host buffer.
+        /// </summary>
+        private void DisposeHostBuffer()
+        {
+            if (!_disposed)
+            {
+                _context.Renderer.DeleteBuffer(Handle);
+
+                UnmappedSequence++;
+                _disposed = true;
+            }
         }
     }
 }
