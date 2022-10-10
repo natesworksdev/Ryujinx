@@ -907,7 +907,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 {
                     Logger.Debug?.Print(LogClass.Gpu, $"Invalid attribute format 0x{vertexAttrib.UnpackFormat():X}.");
 
-                    format = Format.R32G32B32A32Float;
+                    format = vertexAttrib.UnpackType() switch
+                    {
+                        3 => Format.R32G32B32A32Sint,
+                        4 => Format.R32G32B32A32Uint,
+                        _ => Format.R32G32B32A32Float
+                    };
                 }
 
                 vertexAttribs[index] = new VertexAttribDescriptor(
