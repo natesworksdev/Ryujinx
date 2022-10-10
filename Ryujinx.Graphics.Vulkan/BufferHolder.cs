@@ -349,7 +349,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public unsafe ReadOnlySpan<byte> GetData(int offset, int size)
+        public unsafe PinnedSpan<byte> GetData(int offset, int size)
         {
             //Common.Logging.Logger.Error?.PrintMsg(Common.Logging.LogClass.Gpu, $"Flush type {_currentType}");
 
@@ -363,14 +363,14 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_map != IntPtr.Zero)
             {
-                // TODO: Return some kind of scoped container that lets us keep track of when the mapping is no longer used
-                // For safety with dispose and backing memory swap.
-
                 result = GetDataStorage(offset, size);
+
+                // Need to be careful here, the buffer can't be unmapped while the data is being used.
+                _buffer.IncrementReferenceCount();
 
                 _flushLock.ReleaseReaderLock();
 
-                return result;
+                return new PinnedSpan<byte>(result, () => { _buffer.DecrementReferenceCount(); });
             }
             else
             {
@@ -389,7 +389,8 @@ namespace Ryujinx.Graphics.Vulkan
 
                 _flushLock.ReleaseReaderLock();
 
-                return result;
+                // Flush buffer is pinned until the next GetBufferData on the thread, which is fine for current uses.
+                return new PinnedSpan<byte>(result);
             }
         }
 

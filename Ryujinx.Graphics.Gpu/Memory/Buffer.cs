@@ -415,10 +415,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             int offset = (int)(address - Address);
 
-            ReadOnlySpan<byte> data = _context.Renderer.GetBufferData(Handle, offset, (int)size);
+            using PinnedSpan<byte> data = _context.Renderer.GetBufferData(Handle, offset, (int)size);
 
             // TODO: When write tracking shaders, they will need to be aware of changes in overlapping buffers.
-            _physicalMemory.WriteUntracked(address, data);
+            _physicalMemory.WriteUntracked(address, data.Get());
         }
 
         /// <summary>

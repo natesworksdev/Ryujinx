@@ -388,14 +388,14 @@ namespace Ryujinx.Graphics.Vulkan
             return null;
         }
 
-        public ReadOnlySpan<byte> GetData(BufferHandle handle, int offset, int size)
+        public PinnedSpan<byte> GetData(BufferHandle handle, int offset, int size)
         {
             if (TryGetBuffer(handle, out var holder))
             {
                 return holder.GetData(offset, size);
             }
 
-            return ReadOnlySpan<byte>.Empty;
+            return new PinnedSpan<byte>();
         }
 
         public void SetData<T>(BufferHandle handle, int offset, ReadOnlySpan<T> data) where T : unmanaged

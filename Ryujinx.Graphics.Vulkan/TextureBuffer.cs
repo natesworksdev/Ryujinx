@@ -57,12 +57,12 @@ namespace Ryujinx.Graphics.Vulkan
             throw new NotSupportedException();
         }
 
-        public ReadOnlySpan<byte> GetData()
+        public PinnedSpan<byte> GetData()
         {
             return _gd.GetBufferData(_bufferHandle, _offset, _size);
         }
 
-        public ReadOnlySpan<byte> GetData(int layer, int level)
+        public PinnedSpan<byte> GetData(int layer, int level)
         {
             return GetData();
         }
