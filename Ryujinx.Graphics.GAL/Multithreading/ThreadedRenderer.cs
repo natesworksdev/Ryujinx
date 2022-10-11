@@ -265,10 +265,10 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             }
         }
 
-        public BufferHandle CreateBuffer(int size)
+        public BufferHandle CreateBuffer(int size, BufferHandle storageHint)
         {
             BufferHandle handle = Buffers.CreateBufferHandle();
-            New<CreateBufferCommand>().Set(handle, size);
+            New<CreateBufferCommand>().Set(handle, size, storageHint);
             QueueCommand();
 
             return handle;

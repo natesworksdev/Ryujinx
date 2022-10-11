@@ -44,8 +44,10 @@ namespace Ryujinx.Graphics.Vulkan
         private bool _lastAccessIsWrite;
 
         private BufferAllocationType _baseType;
-        private BufferAllocationType _desiredType;
         private BufferAllocationType _currentType;
+
+        public BufferAllocationType DesiredType { get; private set; }
+
         private int _setCount;
         private int _writeCount;
         private int _flushCount;
@@ -70,14 +72,14 @@ namespace Ryujinx.Graphics.Vulkan
 
             _baseType = type;
             _currentType = currentType;
-            _desiredType = currentType;
+            DesiredType = currentType;
 
             _flushLock = new ReaderWriterLock();
         }
 
         private void TrySwapBacking()
         {
-            if (_desiredType != _currentType)
+            if (DesiredType != _currentType)
             {
                 // Only swap if the buffer is not used in any queued command buffer.
                 bool isRented = _buffer.HasRentedCommandBufferDependency(_gd.CommandBufferPool);
@@ -88,7 +90,7 @@ namespace Ryujinx.Graphics.Vulkan
                     var currentBuffer = _buffer;
                     IntPtr currentMap = _map;
 
-                    (VkBuffer buffer, MemoryAllocation allocation, BufferAllocationType resultType) = _gd.BufferManager.CreateBacking(_gd, Size, _desiredType, false, _currentType);
+                    (VkBuffer buffer, MemoryAllocation allocation, BufferAllocationType resultType) = _gd.BufferManager.CreateBacking(_gd, Size, DesiredType, false, _currentType);
 
                     if (buffer.Handle != 0)
                     {
@@ -159,17 +161,17 @@ namespace Ryujinx.Graphics.Vulkan
                     if (_flushCount > 0 || _currentType == BufferAllocationType.DeviceLocalMapped)
                     {
                         // Buffers that flush often should ideally be in the locally mapped heap.
-                        _desiredType = BufferAllocationType.DeviceLocalMapped;
+                        DesiredType = BufferAllocationType.DeviceLocalMapped;
                     }
                     else if (_writeCount >= WriteCountThreshold)
                     {
                         // Buffers that are written often should ideally be in the device local heap. (Storage buffers)
-                        _desiredType = BufferAllocationType.DeviceLocal;
+                        DesiredType = BufferAllocationType.DeviceLocal;
                     }
                     else if (_setCount > SetCountThreshold)
                     {
                         // Buffers that have their data set often should ideally be host mapped. (Constant buffers)
-                        _desiredType = BufferAllocationType.HostMapped;
+                        DesiredType = BufferAllocationType.HostMapped;
                     }
 
                     _writeCount = 0;
@@ -351,8 +353,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         public unsafe PinnedSpan<byte> GetData(int offset, int size)
         {
-            //Common.Logging.Logger.Error?.PrintMsg(Common.Logging.LogClass.Gpu, $"Flush type {_currentType}");
-
             _flushLock.AcquireReaderLock(Timeout.Infinite);
 
             WaitForFlushFence();

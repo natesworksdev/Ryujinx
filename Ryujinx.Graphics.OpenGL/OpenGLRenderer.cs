@@ -57,7 +57,7 @@ namespace Ryujinx.Graphics.OpenGL
             ResourcePool = new ResourcePool();
         }
 
-        public BufferHandle CreateBuffer(int size)
+        public BufferHandle CreateBuffer(int size, BufferHandle storageHint)
         {
             BufferCount++;
 
