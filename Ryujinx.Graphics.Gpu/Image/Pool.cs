@@ -95,6 +95,16 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Gets a reference to the descriptor for a given address.
+        /// </summary>
+        /// <param name="address">Address of the descriptor</param>
+        /// <returns>A reference to the descriptor</returns>
+        public ref readonly T2 GetDescriptorRefAddress(ulong address)
+        {
+            return ref MemoryMarshal.Cast<byte, T2>(PhysicalMemory.GetSpan(address, DescriptorSize))[0];
+        }
+
+        /// <summary>
         /// Gets the GPU resource with the given ID.
         /// </summary>
         /// <param name="id">ID of the resource. This is effectively a zero-based index</param>
