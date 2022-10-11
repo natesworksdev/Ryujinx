@@ -2603,7 +2603,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             ulong totalNeededSize = reservedSize + neededPagesCount * PageSize;
 
-            ulong regionEndAddr = regionStart + regionPagesCount * PageSize;
+            ulong regionEndAddr = (regionStart + regionPagesCount * PageSize) - 1;
 
             KMemoryBlock currBlock = _blockManager.FindBlock(regionStart);
 
