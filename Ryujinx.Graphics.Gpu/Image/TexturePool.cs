@@ -217,6 +217,11 @@ namespace Ryujinx.Graphics.Gpu.Image
                         continue;
                     }
 
+                    if (texture.HasOneReference())
+                    {
+                        _channel.MemoryManager.Physical.TextureCache.AddShortCache(texture);
+                    }
+
                     texture.DecrementReferenceCount(this, id);
 
                     Items[id] = null;

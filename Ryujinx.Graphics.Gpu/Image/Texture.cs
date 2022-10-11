@@ -138,6 +138,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         public LinkedListNode<Texture> CacheNode { get; set; }
 
         /// <summary>
+        /// Indicator that this texture exists on the short cache.
+        /// </summary>
+        public bool IsShortCached { get; set; }
+
         /// Physical memory ranges where the texture data is located.
         /// </summary>
         public MultiRange Range { get; private set; }
@@ -1555,6 +1559,20 @@ namespace Ryujinx.Graphics.Gpu.Image
                 _poolOwners.Add(new TexturePoolOwner { Pool = pool, ID = id });
             }
             _referenceCount++;
+
+            if (IsShortCached)
+            {
+                _physicalMemory.TextureCache.RemoveShortCache(this);
+            }
+        }
+
+        /// <summary>
+        /// Indicates that the texture has one reference left, and will delete on reference decrement.
+        /// </summary>
+        /// <returns>True if there is one reference remaining, false otherwise</returns>
+        public bool HasOneReference()
+        {
+            return _referenceCount == 1;
         }
 
         /// <summary>
@@ -1622,6 +1640,14 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
 
                 _poolOwners.Clear();
+            }
+
+            if (IsShortCached && _context.IsGpuThread())
+            {
+                // If this is called from another thread (unmapped), the short cache will
+                // have to remove this texture on a future tick.
+
+                _physicalMemory.TextureCache.RemoveShortCache(this);
             }
 
             InvalidatedSequence++;
