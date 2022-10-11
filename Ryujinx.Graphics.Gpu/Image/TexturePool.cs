@@ -208,11 +208,12 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 if (texture != null)
                 {
-                    TextureDescriptor descriptor = PhysicalMemory.Read<TextureDescriptor>(address);
+                    ref TextureDescriptor cachedDescriptor = ref DescriptorCache[id];
+                    ref readonly TextureDescriptor descriptor = ref GetDescriptorRefAddress(address);
 
                     // If the descriptors are the same, the texture is the same,
                     // we don't need to remove as it was not modified. Just continue.
-                    if (descriptor.Equals(ref DescriptorCache[id]))
+                    if (descriptor.Equals(cachedDescriptor))
                     {
                         continue;
                     }
