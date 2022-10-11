@@ -1167,6 +1167,32 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Adds a texture to the short duration cache. This typically keeps it alive for two ticks.
+        /// </summary>
+        /// <param name="texture">Texture to add to the short cache</param>
+        public void AddShortCache(Texture texture)
+        {
+            _cache.AddShortCache(texture);
+        }
+
+        /// <summary>
+        /// Removes a texture from the short duration cache.
+        /// </summary>
+        /// <param name="texture">Texture to remove from the short cache</param>
+        public void RemoveShortCache(Texture texture)
+        {
+            _cache.RemoveShortCache(texture);
+        }
+
+        /// <summary>
+        /// Ticks periodic elements of the texture cache.
+        /// </summary>
+        public void Tick()
+        {
+            _cache.ProcessShortCache();
+        }
+
+        /// <summary>
         /// Disposes all textures and samplers in the cache.
         /// It's an error to use the texture cache after disposal.
         /// </summary>

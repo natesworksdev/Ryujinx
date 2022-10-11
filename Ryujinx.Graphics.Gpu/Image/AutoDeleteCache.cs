@@ -14,12 +14,18 @@ namespace Ryujinx.Graphics.Gpu.Image
 
         private readonly LinkedList<Texture> _textures;
 
+        private HashSet<Texture> _shortCacheBuilder;
+        private HashSet<Texture> _shortCache;
+
         /// <summary>
         /// Creates a new instance of the automatic deletion cache.
         /// </summary>
         public AutoDeleteCache()
         {
             _textures = new LinkedList<Texture>();
+
+            _shortCacheBuilder = new HashSet<Texture>();
+            _shortCache = new HashSet<Texture>();
         }
 
         /// <summary>
@@ -102,6 +108,57 @@ namespace Ryujinx.Graphics.Gpu.Image
             texture.CacheNode = null;
 
             return texture.DecrementReferenceCount();
+        }
+
+        /// <summary>
+        /// Removes a texture from the short duration cache.
+        /// </summary>
+        /// <param name="texture">Texture to remove from the short cache</param>
+        public void RemoveShortCache(Texture texture)
+        {
+            bool removed = _shortCache.Remove(texture);
+            removed |= _shortCacheBuilder.Remove(texture);
+
+            if (removed)
+            {
+                texture.DecrementReferenceCount();
+
+                texture.IsShortCached = false;
+            }
+        }
+
+        /// <summary>
+        /// Adds a texture to the short duration cache.
+        /// It starts in the builder set, and it is moved into the deletion set on next process.
+        /// </summary>
+        /// <param name="texture">Texture to add to the short cache</param>
+        public void AddShortCache(Texture texture)
+        {
+            _shortCacheBuilder.Add(texture);
+
+            texture.IsShortCached = true;
+
+            texture.IncrementReferenceCount();
+        }
+
+        /// <summary>
+        /// Delete textures from the short duration cache.
+        /// Moves the builder set to be deleted on next process.
+        /// </summary>
+        public void ProcessShortCache()
+        {
+            HashSet<Texture> toRemove = _shortCache;
+
+            foreach (var texture in toRemove)
+            {
+                texture.DecrementReferenceCount();
+
+                texture.IsShortCached = false;
+            }
+
+            toRemove.Clear();
+            _shortCache = _shortCacheBuilder;
+            _shortCacheBuilder = toRemove;
         }
 
         public IEnumerator<Texture> GetEnumerator()
