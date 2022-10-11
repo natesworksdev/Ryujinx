@@ -554,7 +554,13 @@ namespace Ryujinx.Graphics.Vulkan
 
         public bool NeedsVertexBufferAlignment(int attrScalarAlignment, out int alignment)
         {
-            if (Vendor != Vendor.Nvidia)
+            if (Capabilities.PortabilitySubset.HasFlag(PortabilitySubsetFlags.VertexBufferAlignment4B))
+            {
+                alignment = 4;
+
+                return true;
+            }
+            else if (Vendor != Vendor.Nvidia)
             {
                 // Vulkan requires that vertex attributes are globally aligned by their component size,
                 // so buffer strides that don't divide by the largest scalar element are invalid.

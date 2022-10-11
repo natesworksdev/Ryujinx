@@ -1119,7 +1119,8 @@ namespace Ryujinx.Graphics.Vulkan
 
                         buffer.Dispose();
 
-                        if ((vertexBuffer.Stride % FormatExtensions.MaxBufferFormatScalarSize) == 0)
+                        if (Gd.Capabilities.PortabilitySubset.HasFlag(PortabilitySubsetFlags.VertexBufferAlignment4B) ||
+                            (vertexBuffer.Stride % FormatExtensions.MaxBufferFormatScalarSize) == 0)
                         {
                             buffer = new VertexBufferState(
                                 vb,
