@@ -213,7 +213,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     // If the descriptors are the same, the texture is the same,
                     // we don't need to remove as it was not modified. Just continue.
-                    if (descriptor.Equals(cachedDescriptor))
+                    if (descriptor.Equals(ref cachedDescriptor))
                     {
                         continue;
                     }
