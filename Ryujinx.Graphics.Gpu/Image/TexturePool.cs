@@ -52,6 +52,20 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (texture == null)
             {
+                texture = PhysicalMemory.TextureCache.FindShortCache(descriptor);
+
+                if (texture != null)
+                {
+                    texture.IncrementReferenceCount(this, id);
+
+                    Items[id] = texture;
+
+                    DescriptorCache[id] = descriptor;
+                }
+            }
+
+            if (texture == null)
+            {
                 TextureInfo info = GetInfo(descriptor, out int layerSize);
 
                 ProcessDereferenceQueue();
@@ -220,7 +234,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     if (texture.HasOneReference())
                     {
-                        _channel.MemoryManager.Physical.TextureCache.AddShortCache(texture);
+                        _channel.MemoryManager.Physical.TextureCache.AddShortCache(texture, ref cachedDescriptor);
                     }
 
                     texture.DecrementReferenceCount(this, id);
