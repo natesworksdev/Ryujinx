@@ -45,7 +45,6 @@ namespace Ryujinx.Common.Configuration
 
         public static void Initialize(string baseDirPath)
         {
-            CustomNandPath = @"D:\fakenand";
             string userProfilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), DefaultBaseDir);
             string portablePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultPortableDir);
 
@@ -88,6 +87,17 @@ namespace Ryujinx.Common.Configuration
 
         public static string GetModsPath()   => CustomModsPath ?? Directory.CreateDirectory(Path.Combine(BaseDirPath, DefaultModsDir)).FullName;
         public static string GetSdModsPath() => CustomSdModsPath ?? Directory.CreateDirectory(Path.Combine(BaseDirPath, DefaultSdcardDir, "atmosphere")).FullName;
-        public static string GetNandPath() => CustomNandPath ?? Directory.CreateDirectory(Path.Combine(BaseDirPath, DefaultNandDir)).FullName;
+        public static string GetNandPath()
+        {
+            string returnVal = CustomNandPath ?? Directory.CreateDirectory(Path.Combine(BaseDirPath, DefaultNandDir)).FullName;
+            Logger.Info?.Print(LogClass.Application, $"Accessing NAND path '{returnVal}'");
+            return returnVal;
+        }
+
+        public static void SetCustomNandPath(string newNandPath)
+        {
+            Logger.Info?.Print(LogClass.Application, $"SETTING NAND PATH TO '{newNandPath}'");
+            CustomNandPath = newNandPath;
+        }
     }
 }

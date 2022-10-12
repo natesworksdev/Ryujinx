@@ -27,9 +27,9 @@ namespace Ryujinx.HLE.FileSystem
 {
     public class VirtualFileSystem : IDisposable
     {
-        public static string SafeNandPath   = Path.Combine(AppDataManager.DefaultNandDir, "safe");
-        public static string SystemNandPath = Path.Combine(AppDataManager.DefaultNandDir, "system");
-        public static string UserNandPath   = Path.Combine(AppDataManager.DefaultNandDir, "user");
+        public static string SafeNandPath   = "safe";
+        public static string SystemNandPath = "system";
+        public static string UserNandPath   = "user";
 
         public KeySet           KeySet    { get; private set; }
         public EmulatedGameCard GameCard  { get; private set; }
@@ -145,6 +145,8 @@ namespace Ryujinx.HLE.FileSystem
                         Directory.CreateDirectory(path);
                     }
 
+                    Logger.Info?.Print(LogClass.Application, $"Accessing /user data using path '{path}'");
+
                     return path;
                 case ContentPath.System:
                     path = Path.Combine(AppDataManager.GetNandPath(), "system");
@@ -152,6 +154,8 @@ namespace Ryujinx.HLE.FileSystem
                     {
                         Directory.CreateDirectory(path);
                     }
+
+                    Logger.Info?.Print(LogClass.Application, $"Accessing /system data using path '{path}'");
 
                     return path;
                 case ContentPath.SdCardContent:
@@ -164,6 +168,8 @@ namespace Ryujinx.HLE.FileSystem
                         Directory.CreateDirectory(path);
                     }
 
+                    Logger.Info?.Print(LogClass.Application, $"Accessing /user/Contents data using path '{path}'");
+
                     return path;
                 case ContentPath.SystemContent:
                     path = Path.Combine(AppDataManager.GetNandPath(), "system", "Contents");
@@ -171,6 +177,8 @@ namespace Ryujinx.HLE.FileSystem
                     {
                         Directory.CreateDirectory(path);
                     }
+
+                    Logger.Info?.Print(LogClass.Application, $"Accessing /system/Contents data using path '{path}'");
 
                     return path;
             }

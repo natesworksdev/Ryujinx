@@ -281,6 +281,7 @@
   "MenuBarFileToolsHideUi": "隐藏UI",
   "GameListContextMenuToggleFavorite": "收藏",
   "GameListContextMenuToggleFavoriteToolTip": "启用或取消收藏标记",
+  "SettingsTabGeneralCustomNandPath": "(TRANSLATE ME!!!)",
   "SettingsTabGeneralTheme": "主题",
   "SettingsTabGeneralThemeCustomTheme": "自选主题路径",
   "SettingsTabGeneralThemeBaseStyle": "主题色调",

@@ -430,6 +430,8 @@ namespace Ryujinx.Ava.Ui.Windows
 
             ApplicationHelper.Initialize(VirtualFileSystem, AccountManager, LibHacHorizonManager.RyujinxClient, this);
 
+            // Pick up changes to system NAND path and use it to refresh firmware status
+            ConfigurationState.Instance.Ui.CustomNandPath.Event += (s, e) => { RefreshFirmwareStatus(); };
             RefreshFirmwareStatus();
         }
 

@@ -179,6 +179,8 @@ namespace Ryujinx.Ava
 
             ReloadConfig();
 
+            AppDataManager.SetCustomNandPath(ConfigurationState.Instance.Ui.CustomNandPath.Value);
+
             UseVulkan = PreviewerDetached ? ConfigurationState.Instance.Graphics.GraphicsBackend.Value == GraphicsBackend.Vulkan : false;
 
             if (UseVulkan)
