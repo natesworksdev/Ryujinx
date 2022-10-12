@@ -308,11 +308,13 @@ namespace ARMeilleure.CodeGen.X86
 
                 case Instruction.Extended:
                 {
+                    bool isBlend = node.Intrinsic == Intrinsic.X86Blendvpd ||
+                                   node.Intrinsic == Intrinsic.X86Blendvps ||
+                                   node.Intrinsic == Intrinsic.X86Pblendvb;
+
                     // BLENDVPD, BLENDVPS, PBLENDVB last operand is always implied to be XMM0 when VEX is not supported.
-                    if ((node.Intrinsic == Intrinsic.X86Blendvpd ||
-                         node.Intrinsic == Intrinsic.X86Blendvps ||
-                         node.Intrinsic == Intrinsic.X86Pblendvb) &&
-                         !HardwareCapabilities.SupportsVexEncoding)
+                    // SHA256RNDS2 always has an implied XMM0 as a last operand.
+                    if ((isBlend && !HardwareCapabilities.SupportsVexEncoding) || node.Intrinsic == Intrinsic.X86Sha256Rnds2)
                     {
                         Operand xmm0 = Xmm(X86Register.Xmm0, OperandType.V128);
 
@@ -1297,11 +1299,15 @@ namespace ARMeilleure.CodeGen.X86
         {
             if (IsIntrinsic(operation.Instruction))
             {
+                IntrinsicInfo info = IntrinsicTable.GetInfo(operation.Intrinsic);
+
+                bool hasVex = HardwareCapabilities.SupportsVexEncoding && Assembler.SupportsVexPrefix(info.Inst);
+
                 bool isUnary = operation.SourcesCount < 2;
 
                 bool hasVecDest = operation.Destination != default && operation.Destination.Type == OperandType.V128;
 
-                return !HardwareCapabilities.SupportsVexEncoding && !isUnary && hasVecDest;
+                return !hasVex && !isUnary && hasVecDest;
             }
 
             return false;

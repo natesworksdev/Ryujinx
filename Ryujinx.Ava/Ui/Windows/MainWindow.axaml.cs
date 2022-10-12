@@ -12,7 +12,6 @@ using Ryujinx.Ava.Ui.Applet;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Ava.Ui.ViewModels;
-using Ryujinx.Ava.Ui.Vulkan;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gpu;
@@ -27,7 +26,6 @@ using Ryujinx.Ui.Common.Configuration;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -60,7 +58,7 @@ namespace Ryujinx.Ava.Ui.Windows
         internal AppHost AppHost { get; private set; }
         public InputManager InputManager { get; private set; }
 
-        internal RendererControl RendererControl { get; private set; }
+        internal RendererHost RendererControl { get; private set; }
         internal MainWindowViewModel ViewModel { get; private set; }
         public SettingsWindow SettingsWindow { get; set; }
 
@@ -140,6 +138,7 @@ namespace Ryujinx.Ava.Ui.Windows
                     ViewModel.DockedStatusText = args.DockedMode;
                     ViewModel.AspectRatioStatusText = args.AspectRatio;
                     ViewModel.GameStatusText = args.GameStatus;
+                    ViewModel.VolumeStatusText = args.VolumeStatus;
                     ViewModel.FifoStatusText = args.FifoStatus;
                     ViewModel.GpuNameText = args.GpuName;
                     ViewModel.BackendText = args.GpuBackend;
@@ -239,7 +238,16 @@ namespace Ryujinx.Ava.Ui.Windows
 
             _mainViewContent = MainContent.Content as Control;
 
-            RendererControl = Program.UseVulkan ? new VulkanRendererControl(ConfigurationState.Instance.Logger.GraphicsDebugLevel) : new OpenGLRendererControl(3, 3, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
+            RendererControl = new RendererHost(ConfigurationState.Instance.Logger.GraphicsDebugLevel);
+            if (ConfigurationState.Instance.Graphics.GraphicsBackend.Value == GraphicsBackend.OpenGl)
+            {
+                RendererControl.CreateOpenGL();
+            }
+            else
+            {
+                RendererControl.CreateVulkan();
+            }
+            
             AppHost = new AppHost(RendererControl, InputManager, path, VirtualFileSystem, ContentManager, AccountManager, _userChannelPersistence, this);
 
             if (!AppHost.LoadGuestApplication().Result)
@@ -298,8 +306,8 @@ namespace Ryujinx.Ava.Ui.Windows
 
         public void SwitchToGameControl(bool startFullscreen = false)
         {
-            ViewModel.ShowContent = true;
             ViewModel.ShowLoadProgress = false;
+            ViewModel.ShowContent = true;
             ViewModel.IsLoadingIndeterminate = false;
 
             Dispatcher.UIThread.InvokeAsync(() =>
@@ -348,16 +356,16 @@ namespace Ryujinx.Ava.Ui.Windows
 
             Dispatcher.UIThread.InvokeAsync(() =>
             {
-                if (MainContent.Content != _mainViewContent)
-                {
-                    MainContent.Content = _mainViewContent;
-                }
-
                 ViewModel.ShowMenuAndStatusBar = true;
                 ViewModel.ShowContent = true;
                 ViewModel.ShowLoadProgress = false;
                 ViewModel.IsLoadingIndeterminate = false;
                 Cursor = Cursor.Default;
+
+                if (MainContent.Content != _mainViewContent)
+                {
+                    MainContent.Content = _mainViewContent;
+                }
 
                 AppHost = null;
 
@@ -658,7 +666,12 @@ namespace Ryujinx.Ava.Ui.Windows
                 {
                     AppHost = null;
 
-                    Dispatcher.UIThread.Post(Close);
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        MainContent = null;
+
+                        Close();
+                    });
                 };
                 AppHost?.Stop();
 

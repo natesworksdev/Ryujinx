@@ -686,7 +686,9 @@ namespace Ryujinx.Ui.Common.Configuration
                 ShowUi = Key.F4,
                 Pause = Key.F5,
                 ResScaleUp = Key.Unbound,
-                ResScaleDown = Key.Unbound
+                ResScaleDown = Key.Unbound,
+                VolumeUp = Key.Unbound,
+                VolumeDown = Key.Unbound
             };
             Hid.InputConfig.Value = new List<InputConfig>
             {
@@ -1168,6 +1170,24 @@ namespace Ryujinx.Ui.Common.Configuration
             if (configurationFileFormat.Version < 41)
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 41.");
+
+                configurationFileFormat.Hotkeys = new KeyboardHotkeys
+                {
+                    ToggleVsync = configurationFileFormat.Hotkeys.ToggleVsync,
+                    Screenshot = configurationFileFormat.Hotkeys.Screenshot,
+                    ShowUi = configurationFileFormat.Hotkeys.ShowUi,
+                    Pause = configurationFileFormat.Hotkeys.Pause,
+                    ToggleMute = configurationFileFormat.Hotkeys.ToggleMute,
+                    ResScaleUp = configurationFileFormat.Hotkeys.ResScaleUp,
+                    ResScaleDown = configurationFileFormat.Hotkeys.ResScaleDown,
+                    VolumeUp = Key.Unbound,
+                    VolumeDown = Key.Unbound
+                };
+            }
+
+            if (configurationFileFormat.Version < 42)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 42.");
 
                 configurationFileFormat.CustomNandPath = string.Empty;
 

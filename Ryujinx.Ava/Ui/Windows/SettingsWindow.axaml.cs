@@ -162,6 +162,7 @@ namespace Ryujinx.Ava.Ui.Windows
             if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path) && !ViewModel.GameDirectories.Contains(path))
             {
                 ViewModel.GameDirectories.Add(path);
+                ViewModel.DirectoryChanged = true;
             }
             else
             {
@@ -170,6 +171,7 @@ namespace Ryujinx.Ava.Ui.Windows
                 if (!string.IsNullOrWhiteSpace(path))
                 {
                     ViewModel.GameDirectories.Add(path);
+                    ViewModel.DirectoryChanged = true;
                 }
             }
         }
@@ -181,6 +183,7 @@ namespace Ryujinx.Ava.Ui.Windows
             foreach (string path in selected)
             {
                 ViewModel.GameDirectories.Remove(path);
+                ViewModel.DirectoryChanged = true;
             }
         }
 
@@ -208,9 +211,9 @@ namespace Ryujinx.Ava.Ui.Windows
             }
         }
 
-        private async void SaveButton_Clicked(object sender, RoutedEventArgs e)
+        private void SaveButton_Clicked(object sender, RoutedEventArgs e)
         {
-            await SaveSettings();
+            SaveSettings();
 
             Close();
         }
@@ -221,21 +224,23 @@ namespace Ryujinx.Ava.Ui.Windows
             Close();
         }
 
-        private async void ApplyButton_Clicked(object sender, RoutedEventArgs e)
+        private void ApplyButton_Clicked(object sender, RoutedEventArgs e)
         {
-            await SaveSettings();
+            SaveSettings();
         }
 
-        private async Task SaveSettings()
+        private void SaveSettings()
         {
-            await ViewModel.SaveSettings();
+            ViewModel.SaveSettings();
 
             ControllerSettings?.SaveCurrentProfile();
 
-            if (Owner is MainWindow window)
+            if (Owner is MainWindow window && ViewModel.DirectoryChanged)
             {
                 window.ViewModel.LoadApplications();
             }
+
+            ViewModel.DirectoryChanged = false;
         }
 
         protected override void OnClosed(EventArgs e)

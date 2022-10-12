@@ -1,9 +1,7 @@
 using ARMeilleure.Translation.PTC;
 using Avalonia;
-using Avalonia.OpenGL;
 using Avalonia.Rendering;
 using Avalonia.Threading;
-using Ryujinx.Ava.Ui.Backend;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common;
@@ -12,14 +10,10 @@ using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.System;
 using Ryujinx.Common.SystemInfo;
-using Ryujinx.Graphics.Vulkan;
 using Ryujinx.Modules;
 using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
-using Silk.NET.Vulkan.Extensions.EXT;
-using Silk.NET.Vulkan.Extensions.KHR;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -36,7 +30,6 @@ namespace Ryujinx.Ava
         public static bool PreviewerDetached { get; private set; }
 
         public static RenderTimer RenderTimer { get; private set; }
-        public static bool UseVulkan { get; private set; }
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern int MessageBoxA(IntPtr hWnd, string text, string caption, uint type);
@@ -73,37 +66,16 @@ namespace Ryujinx.Ava
                     EnableMultiTouch = true,
                     EnableIme = true,
                     UseEGL = false,
-                    UseGpu = !UseVulkan,
-                    GlProfiles = new List<GlVersion>()
-                    {
-                        new GlVersion(GlProfileType.OpenGL, 4, 3)
-                    }
+                    UseGpu = false
                 })
                 .With(new Win32PlatformOptions
                 {
                     EnableMultitouch = true,
-                    UseWgl = !UseVulkan,
-                    WglProfiles = new List<GlVersion>()
-                    {
-                        new GlVersion(GlProfileType.OpenGL, 4, 3)
-                    },
+                    UseWgl = false,
                     AllowEglInitialization = false,
                     CompositionBackdropCornerRadius = 8f,
                 })
                 .UseSkia()
-                .With(new Ui.Vulkan.VulkanOptions()
-                {
-                    ApplicationName = "Ryujinx.Graphics.Vulkan",
-                    VulkanVersion = new Version(1, 2),
-                    MaxQueueCount = 2,
-                    PreferDiscreteGpu = true,
-                    PreferredDevice = !PreviewerDetached ? "" : ConfigurationState.Instance.Graphics.PreferredGpu.Value,
-                    UseDebug = !PreviewerDetached ? false : ConfigurationState.Instance.Logger.GraphicsDebugLevel.Value != GraphicsDebugLevel.None,
-                })
-                .With(new SkiaOptions()
-                {
-                    CustomGpuFactory = UseVulkan ? SkiaGpuFactory.CreateVulkanGpu : null
-                })
                 .AfterSetup(_ =>
                 {
                     AvaloniaLocator.CurrentMutable
@@ -181,14 +153,7 @@ namespace Ryujinx.Ava
 
             AppDataManager.SetCustomNandPath(ConfigurationState.Instance.Ui.CustomNandPath.Value);
 
-            UseVulkan = PreviewerDetached ? ConfigurationState.Instance.Graphics.GraphicsBackend.Value == GraphicsBackend.Vulkan : false;
-
-            if (UseVulkan)
-            {
-                // With a custom gpu backend, avalonia doesn't enable dpi awareness, so the backend must handle it. This isn't so for the opengl backed,
-                // as that uses avalonia's gpu backend and it's enabled there.
-                ForceDpiAware.Windows();
-            }
+            ForceDpiAware.Windows();
 
             WindowScaleFactor = ForceDpiAware.GetWindowScaleFactor();
             ActualScaleFactor = ForceDpiAware.GetActualScaleFactor() / BaseDpi;

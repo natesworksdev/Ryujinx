@@ -224,11 +224,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                         xCount,
                         yCount,
                         dstLinear,
-                        dst.MemoryLayout);
+                        dst.MemoryLayout.UnpackGobBlocksInY(),
+                        dst.MemoryLayout.UnpackGobBlocksInZ());
 
                     if (target != null)
                     {
-                        ReadOnlySpan<byte> data;
+                        byte[] data;
                         if (srcLinear)
                         {
                             data = LayoutConverter.ConvertLinearStridedToLinear(

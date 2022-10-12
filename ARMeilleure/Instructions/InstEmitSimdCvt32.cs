@@ -161,33 +161,14 @@ namespace ARMeilleure.Instructions
                 {
                     Operand toConvert = ExtractScalar(context, floatSize, op.Vm);
 
-                    Operand asInteger;
-
                     // TODO: Fast Path.
                     if (roundWithFpscr)
                     {
-                        MethodInfo info;
-
-                        if (floatSize == OperandType.FP64)
-                        {
-                            info = unsigned
-                                ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.DoubleToUInt32))
-                                : typeof(SoftFallback).GetMethod(nameof(SoftFallback.DoubleToInt32));
-                        }
-                        else
-                        {
-                            info = unsigned
-                                ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.FloatToUInt32))
-                                : typeof(SoftFallback).GetMethod(nameof(SoftFallback.FloatToInt32));
-                        }
-
-                        asInteger = context.Call(info, toConvert);
+                        toConvert = EmitRoundByRMode(context, toConvert);
                     }
-                    else
-                    {
-                        // Round towards zero.
-                        asInteger = EmitSaturateFloatToInt(context, toConvert, unsigned);
-                    }
+
+                    // Round towards zero.
+                    Operand asInteger = EmitSaturateFloatToInt(context, toConvert, unsigned);
 
                     InsertScalar(context, op.Vd, asInteger);
                 }
@@ -271,9 +252,7 @@ namespace ARMeilleure.Instructions
                         break;
                 }
 
-                Operand asInteger;
-
-                asInteger = EmitSaturateFloatToInt(context, toConvert, unsigned);
+                Operand asInteger = EmitSaturateFloatToInt(context, toConvert, unsigned);
 
                 InsertScalar(context, op.Vd, asInteger);
             }
@@ -323,6 +302,60 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        // VRINTA (vector).
+        public static void Vrinta_V(ArmEmitterContext context)
+        {
+            EmitVectorUnaryOpF32(context, (m) => EmitRoundMathCall(context, MidpointRounding.AwayFromZero, m));
+        }
+
+        // VRINTM (vector).
+        public static void Vrintm_V(ArmEmitterContext context)
+        {
+            if (Optimizations.UseSse2)
+            {
+                EmitVectorUnaryOpSimd32(context, (m) =>
+                {
+                    return context.AddIntrinsic(Intrinsic.X86Roundps, m, Const(X86GetRoundControl(FPRoundingMode.TowardsMinusInfinity)));
+                });
+            }
+            else
+            {
+                EmitVectorUnaryOpF32(context, (m) => EmitUnaryMathCall(context, nameof(Math.Floor), m));
+            }
+        }
+
+        // VRINTN (vector).
+        public static void Vrintn_V(ArmEmitterContext context)
+        {
+            if (Optimizations.UseSse2)
+            {
+                EmitVectorUnaryOpSimd32(context, (m) =>
+                {
+                    return context.AddIntrinsic(Intrinsic.X86Roundps, m, Const(X86GetRoundControl(FPRoundingMode.ToNearest)));
+                });
+            }
+            else
+            {
+                EmitVectorUnaryOpF32(context, (m) => EmitRoundMathCall(context, MidpointRounding.ToEven, m));
+            }
+        }
+
+        // VRINTP (vector).
+        public static void Vrintp_V(ArmEmitterContext context)
+        {
+            if (Optimizations.UseSse2)
+            {
+                EmitVectorUnaryOpSimd32(context, (m) =>
+                {
+                    return context.AddIntrinsic(Intrinsic.X86Roundps, m, Const(X86GetRoundControl(FPRoundingMode.TowardsPlusInfinity)));
+                });
+            }
+            else
+            {
+                EmitVectorUnaryOpF32(context, (m) => EmitUnaryMathCall(context, nameof(Math.Ceiling), m));
+            }
+        }
+
         // VRINTZ (floating-point).
         public static void Vrint_Z(ArmEmitterContext context)
         {
@@ -345,15 +378,9 @@ namespace ARMeilleure.Instructions
         // VRINTX (floating-point).
         public static void Vrintx_S(ArmEmitterContext context)
         {
-            OpCode32SimdS op = (OpCode32SimdS)context.CurrOp;
-
-            bool doubleSize = (op.Size & 1) == 1;
-            string methodName = doubleSize ? nameof(SoftFallback.Round) : nameof(SoftFallback.RoundF);
-
             EmitScalarUnaryOpF32(context, (op1) =>
             {
-                MethodInfo info = typeof(SoftFallback).GetMethod(methodName);
-                return context.Call(info, op1);
+                return EmitRoundByRMode(context, op1);
             });
         }
 

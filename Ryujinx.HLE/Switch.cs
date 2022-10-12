@@ -117,14 +117,14 @@ namespace Ryujinx.HLE
             return Gpu.Window.ConsumeFrameAvailable();
         }
 
-        public void PresentFrame(Action<object> swapBuffersCallback)
+        public void PresentFrame(Action swapBuffersCallback)
         {
             Gpu.Window.Present(swapBuffersCallback);
         }
 
         public void SetVolume(float volume)
         {
-            System.SetVolume(volume);
+            System.SetVolume(Math.Clamp(volume, 0, 1));
         }
 
         public float GetVolume()

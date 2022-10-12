@@ -34,7 +34,7 @@
     <PackageReference Include="Silk.NET.Vulkan" Version="2.10.1" />
     <PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.10.1" />
     <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.10.1" />
-    <PackageReference Include="SPB" Version="0.0.4-build17" />
+    <PackageReference Include="SPB" Version="0.0.4-build24" />
     <PackageReference Include="SharpZipLib" Version="1.3.3" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
   </ItemGroup>
@@ -118,7 +118,9 @@
     <None Remove="Assets\Locales\fr_FR.json" />
     <None Remove="Assets\Locales\de_DE.json" />
     <None Remove="Assets\Locales\it_IT.json" />
+    <None Remove="Assets\Locales\ja_JP.json" />
     <None Remove="Assets\Locales\ko_KR.json" />
+    <None Remove="Assets\Locales\pl_PL.json" />
     <None Remove="Assets\Locales\pt_BR.json" />
     <None Remove="Assets\Locales\ru_RU.json" />
     <None Remove="Assets\Locales\tr_TR.json" />
@@ -136,7 +138,9 @@
     <EmbeddedResource Include="Assets\Locales\fr_FR.json" />
     <EmbeddedResource Include="Assets\Locales\de_DE.json" />
     <EmbeddedResource Include="Assets\Locales\it_IT.json" />
+    <EmbeddedResource Include="Assets\Locales\ja_JP.json" />
     <EmbeddedResource Include="Assets\Locales\ko_KR.json" />
+    <EmbeddedResource Include="Assets\Locales\pl_PL.json" />
     <EmbeddedResource Include="Assets\Locales\pt_BR.json" />
     <EmbeddedResource Include="Assets\Locales\ru_RU.json" />
     <EmbeddedResource Include="Assets\Locales\tr_TR.json" />
