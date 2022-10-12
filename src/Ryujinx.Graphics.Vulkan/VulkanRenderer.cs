@@ -48,6 +48,7 @@ namespace Ryujinx.Graphics.Vulkan
         internal DescriptorSetManager DescriptorSetManager { get; private set; }
         internal PipelineLayoutCache PipelineLayoutCache { get; private set; }
         internal BackgroundResources BackgroundResources { get; private set; }
+        internal ShaderCompilationQueue ShaderCompilationQueue { get; private set; }
         internal Action<Action> InterruptAction { get; private set; }
         internal SyncManager SyncManager { get; private set; }
 
@@ -104,6 +105,12 @@ namespace Ryujinx.Graphics.Vulkan
 
                 // Any device running on MacOS is using MoltenVK, even Intel and AMD vendors.
                 IsMoltenVk = true;
+
+                // The default thread stack size on MacOS is low, and can cause stack overflow
+                // on SPIR-V Cross during shader compilation.
+                // As a workaround, we use this custom queue which allows us to specify the stack
+                // size of the threads used for compilation.
+                ShaderCompilationQueue = new ShaderCompilationQueue();
             }
         }
 
@@ -858,6 +865,8 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             SurfaceApi.DestroySurface(_instance.Instance, _surface, null);
+
+            ShaderCompilationQueue?.Dispose();
 
             Api.DestroyDevice(_device, null);
 

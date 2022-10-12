@@ -53,7 +53,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private ProgramPipelineState _state;
         private DisposableRenderPass _dummyRenderPass;
-        private Task _compileTask;
+        private ShaderCompilationRequest _compileRequest;
         private bool _firstBackgroundUse;
 
         public ShaderCollection(
@@ -119,7 +119,7 @@ namespace Ryujinx.Graphics.Vulkan
             ClearSegments = BuildClearSegments(resourceLayout.Sets);
             BindingSegments = BuildBindingSegments(resourceLayout.SetUsages);
 
-            _compileTask = Task.CompletedTask;
+            _compileRequest = new ShaderCompilationRequest(Task.CompletedTask);
             _firstBackgroundUse = false;
         }
 
@@ -133,7 +133,9 @@ namespace Ryujinx.Graphics.Vulkan
         {
             _state = state;
 
-            _compileTask = BackgroundCompilation();
+            _compileRequest = gd.ShaderCompilationQueue != null
+                ? gd.ShaderCompilationQueue.Add(BackgroundCompilation)
+                : new ShaderCompilationRequest(BackgroundCompilationAsync());
             _firstBackgroundUse = !fromCache;
         }
 
@@ -252,10 +254,25 @@ namespace Ryujinx.Graphics.Vulkan
             return segments;
         }
 
-        private async Task BackgroundCompilation()
+        private async Task BackgroundCompilationAsync()
         {
             await Task.WhenAll(_shaders.Select(shader => shader.CompileTask));
 
+            BackgroundCompilationImpl();
+        }
+
+        private void BackgroundCompilation()
+        {
+            foreach (var shader in _shaders)
+            {
+                shader.CompileTask.Wait();
+            }
+
+            BackgroundCompilationImpl();
+        }
+
+        private void BackgroundCompilationImpl()
+        {
             if (_shaders.Any(shader => shader.CompileStatus == ProgramLinkStatus.Failure))
             {
                 LinkStatus = ProgramLinkStatus.Failure;
@@ -397,11 +414,11 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                 }
 
-                if (!_compileTask.IsCompleted)
+                if (!_compileRequest.IsCompleted)
                 {
                     if (blocking)
                     {
-                        _compileTask.Wait();
+                        _compileRequest.Wait();
 
                         if (LinkStatus == ProgramLinkStatus.Failure)
                         {
