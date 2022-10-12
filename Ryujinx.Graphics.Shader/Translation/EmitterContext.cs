@@ -188,7 +188,9 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public void SetBrxTarget(ulong address, Operand selector, int targetValue, ulong nextTargetAddress)
         {
-            EnsureBlockLabel(address).BrxTarget = new BrxTarget(selector, targetValue, nextTargetAddress);
+            BlockLabel blockLabel = EnsureBlockLabel(address);
+            Debug.Assert(blockLabel.BrxTarget.Selector == null);
+            blockLabel.BrxTarget = new BrxTarget(selector, targetValue, nextTargetAddress);
         }
 
         public void EnterBlock(ulong address)

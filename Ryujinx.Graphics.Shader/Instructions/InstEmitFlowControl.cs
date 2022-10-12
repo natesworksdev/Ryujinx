@@ -58,6 +58,14 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             if (allTargetsSinglePred)
             {
+                // Chain blocks, each target block will check if the BRX target address
+                // matches its own address, if not, it jumps to the next target which will do the same check,
+                // until it reaches the last possible target, which executed unconditionally.
+                // We can only do this if the BRX block is the only predecessor of all target blocks.
+                // Additionally, this is not supported for blocks located before the current block,
+                // since it will be too late to insert a label, but this is something that can be improved
+                // in the future if necessary.
+
                 var sortedTargets = targets.OrderBy(x => x.Address);
 
                 Block currentTarget = null;
@@ -84,6 +92,9 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
             else
             {
+                // Emit the branches sequentially.
+                // This generates slightly worse code, but should work for all cases.
+
                 var sortedTargets = targets.OrderByDescending(x => x.Address);
                 ulong lastTargetAddress = ulong.MaxValue;
 
