@@ -533,6 +533,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 GAL.PrimitiveTopology.Quads => GAL.PrimitiveTopology.Triangles,
                 GAL.PrimitiveTopology.QuadStrip => GAL.PrimitiveTopology.TriangleStrip,
+                GAL.PrimitiveTopology.TriangleFan => Capabilities.PortabilitySubset.HasFlag(PortabilitySubsetFlags.NoTriangleFans) ? GAL.PrimitiveTopology.Triangles : topology,
                 _ => topology
             };
         }
@@ -542,6 +543,7 @@ namespace Ryujinx.Graphics.Vulkan
             return topology switch
             {
                 GAL.PrimitiveTopology.Quads => true,
+                GAL.PrimitiveTopology.TriangleFan => Capabilities.PortabilitySubset.HasFlag(PortabilitySubsetFlags.NoTriangleFans),
                 _ => false
             };
         }
