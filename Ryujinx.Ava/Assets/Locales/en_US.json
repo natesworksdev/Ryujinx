@@ -574,12 +574,12 @@
   "Discard": "Discard",
   "UserProfilesSetProfileImage": "Set Profile Image",
   "UserProfileEmptyNameError": "Name is required",
-  "UserProfileNoImageError":  "Profile image must be set",
+  "UserProfileNoImageError": "Profile image must be set",
   "GameUpdateWindowHeading": "Updates Available for {0} [{1}]",
   "SettingsTabHotkeysResScaleUpHotkey": "Increase resolution:",
   "SettingsTabHotkeysResScaleDownHotkey": "Decrease resolution:",
   "UserProfilesName": "Name:",
-  "UserProfilesUserId" : "User Id:",
+  "UserProfilesUserId": "User Id:",
   "SettingsTabGraphicsBackend": "Graphics Backend",
   "SettingsTabGraphicsBackendTooltip": "Graphics Backend to use",
   "SettingsEnableTextureRecompression": "Enable Texture Recompression",
@@ -588,5 +588,9 @@
   "SettingsTabGraphicsPreferredGpuTooltip": "Select the graphics card that will be used with the Vulkan graphics backend.\n\nDoes not affect the GPU that OpenGL will use.\n\nSet to the GPU flagged as \"dGPU\" if unsure. If there isn't one, leave untouched.",
   "SettingsAppRequiredRestartMessage": "Ryujinx Restart Required",
   "SettingsGpuBackendRestartMessage": "Graphics Backend or Gpu settings have been modified. This will require a restart to be applied",
-  "SettingsGpuBackendRestartSubMessage": "Do you want to restart now?"
+  "SettingsGpuBackendRestartSubMessage": "Do you want to restart now?",
+  "RyujinxUpdaterMessage": "Do you want to update Ryujinx to the latest version?",
+  "SettingsTabHotkeysVolumeUpHotkey": "Increase Volume:",
+  "SettingsTabHotkeysVolumeDownHotkey": "Decrease Volume:",
+  "VolumeShort": "Vol"
 }
