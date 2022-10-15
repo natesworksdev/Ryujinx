@@ -226,6 +226,7 @@ namespace Ryujinx.Graphics.Vulkan
         public unsafe override void Present(ITexture texture, ImageCrop crop, Action swapBuffersCallback)
         {
             uint nextImage = 0;
+            _gd.PipelineInternal.AutoFlush.Present();
 
             while (true)
             {
