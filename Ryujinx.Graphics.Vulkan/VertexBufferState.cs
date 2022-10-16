@@ -63,7 +63,7 @@ namespace Ryujinx.Graphics.Vulkan
                         int stride = (_stride + (alignment - 1)) & -alignment;
                         int newSize = (_size / _stride) * stride;
 
-                        var buffer = autoBuffer.Get(cbs, _offset, newSize).Value;
+                        var buffer = autoBuffer.Get(cbs, 0, newSize).Value;
 
                         if (gd.Capabilities.SupportsExtendedDynamicState)
                         {
