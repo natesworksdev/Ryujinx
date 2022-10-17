@@ -16,7 +16,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
             OptionReceiveBufferSize = LanProtocol.BufferSize;
             OptionSendBufferSize = LanProtocol.BufferSize;
             OptionReuseAddress = true;
-            OptionNoDelay = true;
 
             Logger.Debug?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPServer created a server for this address: {address}:{port}");
         }
