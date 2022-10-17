@@ -789,14 +789,14 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         }
 
         [CommandHipc(205)]
-        // OpenDataStorageWithProgramIndex(u8) -> object<nn::fssrv::sf::IStorage>
+        // OpenDataStorageWithProgramIndex(u8 program_index) -> object<nn::fssrv::sf::IStorage>
         public ResultCode OpenDataStorageWithProgramIndex(ServiceCtx context)
         {
             byte programIndex = context.RequestData.ReadByte();
 
             if ((context.Device.Application.TitleId & 0xf) != programIndex)
             {
-                throw new NotImplementedException($"Reading storage from other programs is not supported (program index = {programIndex}).");
+                throw new NotImplementedException($"Accessing storage from other programs is not supported (program index = {programIndex}).");
             }
 
             var storage = context.Device.FileSystem.RomFs.AsStorage(true);
