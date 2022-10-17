@@ -550,7 +550,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandHipc(123)] // 5.0.0+
         // GetPreviousProgramIndex() -> s32 program_index
-        public ResultCode GetPreviousProgramIndex(ServiceCtx context)
+        public ResultCode GetPrevious(ServiceCtx context)
         {
             int previousProgramIndex = context.Device.Configuration.UserChannelPersistence.PreviousIndex;
 
