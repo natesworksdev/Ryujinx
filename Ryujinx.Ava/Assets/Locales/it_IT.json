@@ -156,7 +156,7 @@
     "SettingsTabLoggingEnableGuestLogs": "Attiva Guest Logs",
     "SettingsTabLoggingEnableFsAccessLogs": "Attiva Fs Access Logs",
     "SettingsTabLoggingFsGlobalAccessLogMode": "Modalità log accesso globale Fs:",
-    "SettingsTabLoggingDeveloperOptions": "Opzioni degli sviluppatore (AVVISO: Ridurrà le prestazioni)",
+    "SettingsTabLoggingDeveloperOptions": "Opzioni da sviluppatore (AVVISO: Ridurrà le prestazioni)",
     "SettingsTabLoggingOpenglLogLevel": "Livello di log OpenGL:",
     "SettingsTabLoggingOpenglLogLevelNone": "Nessuno",
     "SettingsTabLoggingOpenglLogLevelError": "Errore",
