@@ -355,7 +355,7 @@
     "DialogShaderDeletionMessage": "Stai per eliminare la Shader cache per :\n\n{0}\n\nSei sicuro di voler proseguire?",
     "DialogShaderDeletionErrorMessage": "Errore nell'eliminazione della Shader cache a {0}: {1}",
     "DialogRyujinxErrorMessage": "Ryujinx ha incontrato un errore",
-    "DialogInvalidTitleIdErrorMessage": "Errore UI: Il gioco selezionato non ha un titolo ID valido",
+    "DialogInvalidTitleIdErrorMessage": "Errore UI: Il gioco selezionato non ha un ID titolo valido",
     "DialogFirmwareInstallerFirmwareNotFoundErrorMessage": "Un firmware del sistema valido non è stato trovato in {0}.",
     "DialogFirmwareInstallerFirmwareInstallTitle": "Installa firmware {0}",
     "DialogFirmwareInstallerFirmwareInstallMessage": "La versione del sistema {0} sarà installata.",
