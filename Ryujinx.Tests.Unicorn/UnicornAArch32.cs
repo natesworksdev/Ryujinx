@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Tests.Unicorn.Native;
+using Ryujinx.Tests.Unicorn.Native.Const;
 using System;
 
 namespace Ryujinx.Tests.Unicorn
@@ -30,32 +31,32 @@ namespace Ryujinx.Tests.Unicorn
 
         public uint LR
         {
-            get => GetRegister(Arm32Register.LR);
-            set => SetRegister(Arm32Register.LR, value);
+            get => GetRegister(Arm.ARM_REG_LR);
+            set => SetRegister(Arm.ARM_REG_LR, value);
         }
 
         public uint SP
         {
-            get => GetRegister(Arm32Register.SP);
-            set => SetRegister(Arm32Register.SP, value);
+            get => GetRegister(Arm.ARM_REG_SP);
+            set => SetRegister(Arm.ARM_REG_SP, value);
         }
 
         public uint PC
         {
-            get => GetRegister(Arm32Register.PC) & 0xfffffffeu;
-            set => SetRegister(Arm32Register.PC, (value & 0xfffffffeu) | (ThumbFlag ? 1u : 0u));
+            get => GetRegister(Arm.ARM_REG_PC) & 0xfffffffeu;
+            set => SetRegister(Arm.ARM_REG_PC, (value & 0xfffffffeu) | (ThumbFlag ? 1u : 0u));
         }
 
         public uint CPSR
         {
-            get => (uint)GetRegister(Arm32Register.CPSR);
-            set => SetRegister(Arm32Register.CPSR, (uint)value);
+            get => GetRegister(Arm.ARM_REG_CPSR);
+            set => SetRegister(Arm.ARM_REG_CPSR, value);
         }
 
         public int Fpscr
         {
-            get => (int)GetRegister(Arm32Register.FPSCR) | ((int)GetRegister(Arm32Register.FPSCR_NZCV));
-            set => SetRegister(Arm32Register.FPSCR, (uint)value);
+            get => (int)GetRegister(Arm.ARM_REG_FPSCR) | ((int)GetRegister(Arm.ARM_REG_FPSCR_NZCV));
+            set => SetRegister(Arm.ARM_REG_FPSCR, (uint)value);
         }
 
         public bool QFlag
@@ -94,7 +95,7 @@ namespace Ryujinx.Tests.Unicorn
             set
             {
                 CPSR = (CPSR & ~0x00000020u) | (value ? 0x00000020u : 0u);
-                SetRegister(Arm32Register.PC, (GetRegister(Arm32Register.PC) & 0xfffffffeu) | (value ? 1u : 0u));
+                SetRegister(Arm.ARM_REG_PC, (GetRegister(Arm.ARM_REG_PC) & 0xfffffffeu) | (value ? 1u : 0u));
             }
         }
 
@@ -102,8 +103,8 @@ namespace Ryujinx.Tests.Unicorn
         {
             Interface.Checked(Interface.uc_open(UnicornArch.UC_ARCH_ARM, UnicornMode.UC_MODE_LITTLE_ENDIAN, out uc));
 
-            SetRegister(Arm32Register.C1_C0_2, GetRegister(Arm32Register.C1_C0_2) | 0xf00000);
-            SetRegister(Arm32Register.FPEXC, 0x40000000);
+            SetRegister(Arm.ARM_REG_C1_C0_2, GetRegister(Arm.ARM_REG_C1_C0_2) | 0xf00000);
+            SetRegister(Arm.ARM_REG_FPEXC, 0x40000000);
         }
 
         ~UnicornAArch32()
@@ -136,44 +137,44 @@ namespace Ryujinx.Tests.Unicorn
             RunForCount(1);
         }
 
-        private static Arm32Register[] XRegisters = new Arm32Register[16]
+        private static Arm[] XRegisters = new Arm[16]
         {
-            Arm32Register.R0,
-            Arm32Register.R1,
-            Arm32Register.R2,
-            Arm32Register.R3,
-            Arm32Register.R4,
-            Arm32Register.R5,
-            Arm32Register.R6,
-            Arm32Register.R7,
-            Arm32Register.R8,
-            Arm32Register.R9,
-            Arm32Register.R10,
-            Arm32Register.R11,
-            Arm32Register.R12,
-            Arm32Register.R13,
-            Arm32Register.R14,
-            Arm32Register.R15,
+            Arm.ARM_REG_R0,
+            Arm.ARM_REG_R1,
+            Arm.ARM_REG_R2,
+            Arm.ARM_REG_R3,
+            Arm.ARM_REG_R4,
+            Arm.ARM_REG_R5,
+            Arm.ARM_REG_R6,
+            Arm.ARM_REG_R7,
+            Arm.ARM_REG_R8,
+            Arm.ARM_REG_R9,
+            Arm.ARM_REG_R10,
+            Arm.ARM_REG_R11,
+            Arm.ARM_REG_R12,
+            Arm.ARM_REG_R13,
+            Arm.ARM_REG_R14,
+            Arm.ARM_REG_R15,
         };
 
-        private static Arm32Register[] QRegisters = new Arm32Register[16]
+        private static Arm[] QRegisters = new Arm[16]
         {
-            Arm32Register.Q0,
-            Arm32Register.Q1,
-            Arm32Register.Q2,
-            Arm32Register.Q3,
-            Arm32Register.Q4,
-            Arm32Register.Q5,
-            Arm32Register.Q6,
-            Arm32Register.Q7,
-            Arm32Register.Q8,
-            Arm32Register.Q9,
-            Arm32Register.Q10,
-            Arm32Register.Q11,
-            Arm32Register.Q12,
-            Arm32Register.Q13,
-            Arm32Register.Q14,
-            Arm32Register.Q15
+            Arm.ARM_REG_Q0,
+            Arm.ARM_REG_Q1,
+            Arm.ARM_REG_Q2,
+            Arm.ARM_REG_Q3,
+            Arm.ARM_REG_Q4,
+            Arm.ARM_REG_Q5,
+            Arm.ARM_REG_Q6,
+            Arm.ARM_REG_Q7,
+            Arm.ARM_REG_Q8,
+            Arm.ARM_REG_Q9,
+            Arm.ARM_REG_Q10,
+            Arm.ARM_REG_Q11,
+            Arm.ARM_REG_Q12,
+            Arm.ARM_REG_Q13,
+            Arm.ARM_REG_Q14,
+            Arm.ARM_REG_Q15
         };
 
         public uint GetX(int index)
@@ -204,7 +205,7 @@ namespace Ryujinx.Tests.Unicorn
             }
 
             // Getting quadword registers from Unicorn A32 seems to be broken, so we combine its 2 doubleword registers instead.
-            return GetVector((Arm32Register)((int)Arm32Register.D0 + index * 2));
+            return GetVector((Arm)((int)Arm.ARM_REG_D0 + index * 2));
         }
 
         public void SetQ(int index, SimdValue value)
@@ -214,10 +215,10 @@ namespace Ryujinx.Tests.Unicorn
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
 
-            SetVector((Arm32Register)((int)Arm32Register.D0 + index * 2), value);
+            SetVector((Arm)((int)Arm.ARM_REG_D0 + index * 2), value);
         }
 
-        public uint GetRegister(Arm32Register register)
+        public uint GetRegister(Arm register)
         {
             byte[] data = new byte[4];
 
@@ -226,14 +227,14 @@ namespace Ryujinx.Tests.Unicorn
             return (uint)BitConverter.ToInt32(data, 0);
         }
 
-        public void SetRegister(Arm32Register register, uint value)
+        public void SetRegister(Arm register, uint value)
         {
             byte[] data = BitConverter.GetBytes(value);
 
             Interface.Checked(Interface.uc_reg_write(uc, (int)register, data));
         }
 
-        public SimdValue GetVector(Arm32Register register)
+        public SimdValue GetVector(Arm register)
         {
             byte[] data = new byte[8];
 
@@ -245,7 +246,7 @@ namespace Ryujinx.Tests.Unicorn
             return new SimdValue(lo, hi);
         }
 
-        private void SetVector(Arm32Register register, SimdValue value)
+        private void SetVector(Arm register, SimdValue value)
         {
             byte[] data = BitConverter.GetBytes(value.GetUInt64(0));
             Interface.Checked(Interface.uc_reg_write(uc, (int)register, data));
