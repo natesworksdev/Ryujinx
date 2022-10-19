@@ -20,7 +20,7 @@ namespace Ryujinx.Memory.Tracking
 
         private int _sequenceNumber;
         private BitMap _sequenceNumberBitmap;
-        private bool _sequenceNumberSet;
+        private int _uncheckedHandles;
 
         public bool Dirty { get; private set; } = true;
 
@@ -97,6 +97,8 @@ namespace Ryujinx.Memory.Tracking
                 _handles[i++] = handle;
             }
 
+            _uncheckedHandles = _handles.Length;
+
             Address = address;
             Size = size;
         }
@@ -122,7 +124,11 @@ namespace Ryujinx.Memory.Tracking
 
             for (int i = startHandle; i <= lastHandle; i++)
             {
-                _sequenceNumberBitmap.Clear(i);
+                if (_sequenceNumberBitmap.Clear(i))
+                {
+                    _uncheckedHandles++;
+                }
+
                 _handles[i].ForceDirty();
             }
         }
@@ -239,7 +245,8 @@ namespace Ryujinx.Memory.Tracking
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ParseDirtyBits(long dirtyBits, long mask, int index, long[] seqMasks, ref int baseBit, ref int prevHandle, ref ulong rgStart, ref ulong rgSize, Action<ulong, ulong> modifiedAction)
         {
-            dirtyBits &= mask & ~seqMasks[index];
+            long seqMask = mask & ~seqMasks[index];
+            dirtyBits &= seqMask;
 
             while (dirtyBits != 0)
             {
@@ -269,7 +276,7 @@ namespace Ryujinx.Memory.Tracking
             }
 
             seqMasks[index] |= mask;
-            _sequenceNumberSet = true;
+            _uncheckedHandles -= BitOperations.PopCount((ulong)seqMask);
 
             baseBit += MultithreadedBitmap.IntSize;
         }
@@ -283,11 +290,10 @@ namespace Ryujinx.Memory.Tracking
 
             if (sequenceNumber != _sequenceNumber)
             {
-                if (_sequenceNumberSet)
+                if (_uncheckedHandles != _handles.Length)
                 {
                     _sequenceNumberBitmap.Clear();
-
-                    _sequenceNumberSet = false;
+                    _uncheckedHandles = _handles.Length;
                 }
 
                 _sequenceNumber = sequenceNumber;
@@ -296,18 +302,23 @@ namespace Ryujinx.Memory.Tracking
             if (startHandle == lastHandle)
             {
                 var handle = _handles[startHandle];
-                if (!_sequenceNumberBitmap.IsSet(startHandle))
+                if (_sequenceNumberBitmap.Set(startHandle))
                 {
+                    _uncheckedHandles--;
+
                     if (handle.DirtyOrVolatile())
                     {
-                        _sequenceNumberBitmap.Set(startHandle);
-                        _sequenceNumberSet = true;
                         handle.Reprotect();
 
                         modifiedAction(rgStart, handle.Size);
                     }
                 }
 
+                return;
+            }
+
+            if (_uncheckedHandles == 0)
+            {
                 return;
             }
 

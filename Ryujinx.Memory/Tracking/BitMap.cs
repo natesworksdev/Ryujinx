@@ -131,14 +131,18 @@ namespace Ryujinx.Memory.Tracking
             }
         }
 
-        public void Clear(int bit)
+        public bool Clear(int bit)
         {
             int wordIndex = bit >> IntShift;
             int wordBit = bit & IntMask;
 
             long wordMask = 1L << wordBit;
 
+            bool wasSet = (Masks[wordIndex] & wordMask) != 0;
+
             Masks[wordIndex] &= ~wordMask;
+
+            return wasSet;
         }
 
         public void Clear()
