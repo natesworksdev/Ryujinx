@@ -1,4 +1,5 @@
-﻿using Ryujinx.Graphics.GAL;
+﻿using Ryujinx.Common.Memory;
+using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
@@ -514,10 +515,10 @@ namespace Ryujinx.Graphics.Vulkan
                 dst.Info,
                 srcRegion,
                 dstRegion,
-                src.FirstLevel,
-                dst.FirstLevel,
                 src.FirstLayer,
                 dst.FirstLayer,
+                src.FirstLevel,
+                dst.FirstLevel,
                 layers,
                 levels,
                 linearFilter,
@@ -873,17 +874,17 @@ namespace Ryujinx.Graphics.Vulkan
             return GetDataFromBuffer(result, size, result);
         }
 
-        public void SetData(ReadOnlySpan<byte> data)
+        public void SetData(SpanOrArray<byte> data)
         {
             SetData(data, 0, 0, Info.GetLayers(), Info.Levels, singleSlice: false);
         }
 
-        public void SetData(ReadOnlySpan<byte> data, int layer, int level)
+        public void SetData(SpanOrArray<byte> data, int layer, int level)
         {
             SetData(data, layer, level, 1, 1, singleSlice: true);
         }
 
-        public void SetData(ReadOnlySpan<byte> data, int layer, int level, Rectangle<int> region)
+        public void SetData(SpanOrArray<byte> data, int layer, int level, Rectangle<int> region)
         {
             SetData(data, layer, level, 1, 1, singleSlice: true, region);
         }
