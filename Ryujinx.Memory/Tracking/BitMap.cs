@@ -1,4 +1,6 @@
-﻿namespace Ryujinx.Memory.Tracking
+﻿using System.Runtime.CompilerServices;
+
+namespace Ryujinx.Memory.Tracking
 {
     struct BitMap
     {
@@ -27,6 +29,7 @@
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsSet(int bit)
         {
             int wordIndex = bit >> IntShift;

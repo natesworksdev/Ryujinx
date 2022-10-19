@@ -27,7 +27,7 @@
 
         internal void ReplaceBitmap(MultithreadedBitmap bitmap, int bit)
         {
-            // TODO: thread safe
+            // Assumes the tracking lock is held, so nothing else can signal right now.
 
             var oldBitmap = Bitmap;
             var oldBit = DirtyBit;

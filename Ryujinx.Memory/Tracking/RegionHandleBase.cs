@@ -193,6 +193,8 @@ namespace Ryujinx.Memory.Tracking
         /// </summary>
         public void ForceDirty()
         {
+            _checkCount++;
+
             Dirty = true;
         }
 
