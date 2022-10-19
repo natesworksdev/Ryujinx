@@ -106,7 +106,7 @@ namespace Ryujinx.Memory.Tracking
         public bool DirtyOrVolatile()
         {
             _checkCount++;
-            return Dirty || _volatile;
+            return _volatile || Dirty;
         }
 
         /// <summary>
