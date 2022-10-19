@@ -101,7 +101,7 @@ namespace Ryujinx.Tests.Unicorn
 
         public UnicornAArch32()
         {
-            Interface.Checked(Interface.uc_open(UnicornArch.UC_ARCH_ARM, UnicornMode.UC_MODE_LITTLE_ENDIAN, out uc));
+            Interface.Checked(Interface.uc_open(Arch.ARM, Mode.LITTLE_ENDIAN, out uc));
 
             SetRegister(Arm.ARM_REG_C1_C0_2, GetRegister(Arm.ARM_REG_C1_C0_2) | 0xf00000);
             SetRegister(Arm.ARM_REG_FPEXC, 0x40000000);

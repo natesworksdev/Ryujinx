@@ -91,7 +91,7 @@ namespace Ryujinx.Tests.Unicorn
 
         public UnicornAArch64()
         {
-            Interface.Checked(Interface.uc_open(UnicornArch.UC_ARCH_ARM64, UnicornMode.UC_MODE_LITTLE_ENDIAN, out uc));
+            Interface.Checked(Interface.uc_open(Arch.ARM64, Mode.LITTLE_ENDIAN, out uc));
 
             SetRegister(Arm64.ARM64_REG_CPACR_EL1, 0x00300000);
         }

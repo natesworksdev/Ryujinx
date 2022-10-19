@@ -5,7 +5,8 @@
 from __future__ import print_function
 import sys, re, os
 
-include = [ 'arm.h', 'arm64.h' ]
+include = [ 'arm.h', 'arm64.h', 'unicorn.h' ]
+split_common = [ 'ARCH', 'MODE', 'ERR', 'MEM', 'TCG', 'HOOK', 'PROT' ]
 
 template = {
     'dotnet': {
@@ -17,6 +18,14 @@ template = {
             'arm.h': 'Arm',
             'arm64.h': 'Arm64',
             'unicorn.h': 'Common',
+            # prefixes for filenames of split_common values - case sensitive
+            'ARCH': 'Arch',
+            'MODE': 'Mode',
+            'ERR': 'Error',
+            'MEM': 'Memory',
+            'TCG': 'TCG',
+            'HOOK': 'Hook',
+            'PROT': 'Permission',
             'comment_open': '        //',
             'comment_close': '',
         }
@@ -35,6 +44,9 @@ def gen(unicorn_repo_path):
         outfile.write((templ['header'] % (prefix)).encode("utf-8"))
         if target == 'unicorn.h':
             prefix = ''
+            for cat in split_common:
+                with open(templ['out_file'] %(templ[cat]), 'wb') as file:
+                    file.write((templ['header'] %(templ[cat])).encode("utf-8"))
         with open(os.path.join(include_dir, target)) as f:
             lines = f.readlines()
 
@@ -141,6 +153,23 @@ def gen(unicorn_repo_path):
 
                     lhs_strip = re.sub(r'^UC_', '', lhs)
                     count = int(rhs) + 1
+
+                    if target == "unicorn.h":
+                        matched_cat = False
+                        for cat in split_common:
+                            if lhs_strip.startswith(f"{cat}_"):
+                                with open(templ['out_file'] %(templ[cat]), 'ab') as cat_file:
+                                    cat_lhs_strip = lhs_strip
+                                    if not lhs_strip.lstrip(f"{cat}_").isnumeric():
+                                        cat_lhs_strip = lhs_strip.replace(f"{cat}_", "", 1)
+                                    cat_file.write(
+                                        (templ['line_format'] % (cat_lhs_strip, rhs)).encode("utf-8"))
+                                    matched_cat = True
+                                    break
+                        if matched_cat:
+                            previous[lhs] = str(rhs)
+                            continue
+
                     if (count == 1):
                         outfile.write(("\n").encode("utf-8"))
 
@@ -149,6 +178,11 @@ def gen(unicorn_repo_path):
 
         outfile.write((templ['footer']).encode("utf-8"))
         outfile.close()
+
+        if target == "unicorn.h":
+            for cat in split_common:
+                with open(templ['out_file'] %(templ[cat]), 'ab') as cat_file:
+                    cat_file.write(templ['footer'].encode('utf-8'))
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
