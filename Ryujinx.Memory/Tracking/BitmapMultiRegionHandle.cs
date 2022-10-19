@@ -6,6 +6,11 @@ using System.Threading;
 
 namespace Ryujinx.Memory.Tracking
 {
+    /// <summary>
+    /// A region handle that tracks a large region using many smaller handles, to provide
+    /// granular tracking that can be used to track partial updates. Backed by a bitmap
+    /// to improve performance when scanning large regions.
+    /// </summary>
     public class BitmapMultiRegionHandle : IMultiRegionHandle
     {
         /// <summary>
