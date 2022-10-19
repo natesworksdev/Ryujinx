@@ -31,38 +31,38 @@ namespace Ryujinx.Tests.Unicorn
 
         public ulong LR
         {
-            get => GetRegister(Arm64.ARM64_REG_LR);
-            set => SetRegister(Arm64.ARM64_REG_LR, value);
+            get => GetRegister(Arm64.REG_LR);
+            set => SetRegister(Arm64.REG_LR, value);
         }
 
         public ulong SP
         {
-            get => GetRegister(Arm64.ARM64_REG_SP);
-            set => SetRegister(Arm64.ARM64_REG_SP, value);
+            get => GetRegister(Arm64.REG_SP);
+            set => SetRegister(Arm64.REG_SP, value);
         }
 
         public ulong PC
         {
-            get => GetRegister(Arm64.ARM64_REG_PC);
-            set => SetRegister(Arm64.ARM64_REG_PC, value);
+            get => GetRegister(Arm64.REG_PC);
+            set => SetRegister(Arm64.REG_PC, value);
         }
 
         public uint Pstate
         {
-            get => (uint)GetRegister(Arm64.ARM64_REG_PSTATE);
-            set =>       SetRegister(Arm64.ARM64_REG_PSTATE, (uint)value);
+            get => (uint)GetRegister(Arm64.REG_PSTATE);
+            set =>       SetRegister(Arm64.REG_PSTATE, (uint)value);
         }
 
         public int Fpcr
         {
-            get => (int)GetRegister(Arm64.ARM64_REG_FPCR);
-            set =>      SetRegister(Arm64.ARM64_REG_FPCR, (uint)value);
+            get => (int)GetRegister(Arm64.REG_FPCR);
+            set =>      SetRegister(Arm64.REG_FPCR, (uint)value);
         }
 
         public int Fpsr
         {
-            get => (int)GetRegister(Arm64.ARM64_REG_FPSR);
-            set =>      SetRegister(Arm64.ARM64_REG_FPSR, (uint)value);
+            get => (int)GetRegister(Arm64.REG_FPSR);
+            set =>      SetRegister(Arm64.REG_FPSR, (uint)value);
         }
 
         public bool OverflowFlag
@@ -93,7 +93,7 @@ namespace Ryujinx.Tests.Unicorn
         {
             Interface.Checked(Interface.uc_open(Arch.ARM64, Mode.LITTLE_ENDIAN, out uc));
 
-            SetRegister(Arm64.ARM64_REG_CPACR_EL1, 0x00300000);
+            SetRegister(Arm64.REG_CPACR_EL1, 0x00300000);
         }
 
         ~UnicornAArch64()
@@ -128,73 +128,73 @@ namespace Ryujinx.Tests.Unicorn
 
         private static Arm64[] XRegisters = new Arm64[31]
         {
-            Arm64.ARM64_REG_X0,
-            Arm64.ARM64_REG_X1,
-            Arm64.ARM64_REG_X2,
-            Arm64.ARM64_REG_X3,
-            Arm64.ARM64_REG_X4,
-            Arm64.ARM64_REG_X5,
-            Arm64.ARM64_REG_X6,
-            Arm64.ARM64_REG_X7,
-            Arm64.ARM64_REG_X8,
-            Arm64.ARM64_REG_X9,
-            Arm64.ARM64_REG_X10,
-            Arm64.ARM64_REG_X11,
-            Arm64.ARM64_REG_X12,
-            Arm64.ARM64_REG_X13,
-            Arm64.ARM64_REG_X14,
-            Arm64.ARM64_REG_X15,
-            Arm64.ARM64_REG_X16,
-            Arm64.ARM64_REG_X17,
-            Arm64.ARM64_REG_X18,
-            Arm64.ARM64_REG_X19,
-            Arm64.ARM64_REG_X20,
-            Arm64.ARM64_REG_X21,
-            Arm64.ARM64_REG_X22,
-            Arm64.ARM64_REG_X23,
-            Arm64.ARM64_REG_X24,
-            Arm64.ARM64_REG_X25,
-            Arm64.ARM64_REG_X26,
-            Arm64.ARM64_REG_X27,
-            Arm64.ARM64_REG_X28,
-            Arm64.ARM64_REG_X29,
-            Arm64.ARM64_REG_X30,
+            Arm64.REG_X0,
+            Arm64.REG_X1,
+            Arm64.REG_X2,
+            Arm64.REG_X3,
+            Arm64.REG_X4,
+            Arm64.REG_X5,
+            Arm64.REG_X6,
+            Arm64.REG_X7,
+            Arm64.REG_X8,
+            Arm64.REG_X9,
+            Arm64.REG_X10,
+            Arm64.REG_X11,
+            Arm64.REG_X12,
+            Arm64.REG_X13,
+            Arm64.REG_X14,
+            Arm64.REG_X15,
+            Arm64.REG_X16,
+            Arm64.REG_X17,
+            Arm64.REG_X18,
+            Arm64.REG_X19,
+            Arm64.REG_X20,
+            Arm64.REG_X21,
+            Arm64.REG_X22,
+            Arm64.REG_X23,
+            Arm64.REG_X24,
+            Arm64.REG_X25,
+            Arm64.REG_X26,
+            Arm64.REG_X27,
+            Arm64.REG_X28,
+            Arm64.REG_X29,
+            Arm64.REG_X30,
         };
 
         private static Arm64[] QRegisters = new Arm64[32]
         {
-            Arm64.ARM64_REG_Q0,
-            Arm64.ARM64_REG_Q1,
-            Arm64.ARM64_REG_Q2,
-            Arm64.ARM64_REG_Q3,
-            Arm64.ARM64_REG_Q4,
-            Arm64.ARM64_REG_Q5,
-            Arm64.ARM64_REG_Q6,
-            Arm64.ARM64_REG_Q7,
-            Arm64.ARM64_REG_Q8,
-            Arm64.ARM64_REG_Q9,
-            Arm64.ARM64_REG_Q10,
-            Arm64.ARM64_REG_Q11,
-            Arm64.ARM64_REG_Q12,
-            Arm64.ARM64_REG_Q13,
-            Arm64.ARM64_REG_Q14,
-            Arm64.ARM64_REG_Q15,
-            Arm64.ARM64_REG_Q16,
-            Arm64.ARM64_REG_Q17,
-            Arm64.ARM64_REG_Q18,
-            Arm64.ARM64_REG_Q19,
-            Arm64.ARM64_REG_Q20,
-            Arm64.ARM64_REG_Q21,
-            Arm64.ARM64_REG_Q22,
-            Arm64.ARM64_REG_Q23,
-            Arm64.ARM64_REG_Q24,
-            Arm64.ARM64_REG_Q25,
-            Arm64.ARM64_REG_Q26,
-            Arm64.ARM64_REG_Q27,
-            Arm64.ARM64_REG_Q28,
-            Arm64.ARM64_REG_Q29,
-            Arm64.ARM64_REG_Q30,
-            Arm64.ARM64_REG_Q31,
+            Arm64.REG_Q0,
+            Arm64.REG_Q1,
+            Arm64.REG_Q2,
+            Arm64.REG_Q3,
+            Arm64.REG_Q4,
+            Arm64.REG_Q5,
+            Arm64.REG_Q6,
+            Arm64.REG_Q7,
+            Arm64.REG_Q8,
+            Arm64.REG_Q9,
+            Arm64.REG_Q10,
+            Arm64.REG_Q11,
+            Arm64.REG_Q12,
+            Arm64.REG_Q13,
+            Arm64.REG_Q14,
+            Arm64.REG_Q15,
+            Arm64.REG_Q16,
+            Arm64.REG_Q17,
+            Arm64.REG_Q18,
+            Arm64.REG_Q19,
+            Arm64.REG_Q20,
+            Arm64.REG_Q21,
+            Arm64.REG_Q22,
+            Arm64.REG_Q23,
+            Arm64.REG_Q24,
+            Arm64.REG_Q25,
+            Arm64.REG_Q26,
+            Arm64.REG_Q27,
+            Arm64.REG_Q28,
+            Arm64.REG_Q29,
+            Arm64.REG_Q30,
+            Arm64.REG_Q31,
         };
 
         public ulong GetX(int index)

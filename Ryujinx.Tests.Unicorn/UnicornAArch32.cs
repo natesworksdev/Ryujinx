@@ -31,32 +31,32 @@ namespace Ryujinx.Tests.Unicorn
 
         public uint LR
         {
-            get => GetRegister(Arm.ARM_REG_LR);
-            set => SetRegister(Arm.ARM_REG_LR, value);
+            get => GetRegister(Arm.REG_LR);
+            set => SetRegister(Arm.REG_LR, value);
         }
 
         public uint SP
         {
-            get => GetRegister(Arm.ARM_REG_SP);
-            set => SetRegister(Arm.ARM_REG_SP, value);
+            get => GetRegister(Arm.REG_SP);
+            set => SetRegister(Arm.REG_SP, value);
         }
 
         public uint PC
         {
-            get => GetRegister(Arm.ARM_REG_PC) & 0xfffffffeu;
-            set => SetRegister(Arm.ARM_REG_PC, (value & 0xfffffffeu) | (ThumbFlag ? 1u : 0u));
+            get => GetRegister(Arm.REG_PC) & 0xfffffffeu;
+            set => SetRegister(Arm.REG_PC, (value & 0xfffffffeu) | (ThumbFlag ? 1u : 0u));
         }
 
         public uint CPSR
         {
-            get => GetRegister(Arm.ARM_REG_CPSR);
-            set => SetRegister(Arm.ARM_REG_CPSR, value);
+            get => GetRegister(Arm.REG_CPSR);
+            set => SetRegister(Arm.REG_CPSR, value);
         }
 
         public int Fpscr
         {
-            get => (int)GetRegister(Arm.ARM_REG_FPSCR) | ((int)GetRegister(Arm.ARM_REG_FPSCR_NZCV));
-            set => SetRegister(Arm.ARM_REG_FPSCR, (uint)value);
+            get => (int)GetRegister(Arm.REG_FPSCR) | ((int)GetRegister(Arm.REG_FPSCR_NZCV));
+            set => SetRegister(Arm.REG_FPSCR, (uint)value);
         }
 
         public bool QFlag
@@ -95,7 +95,7 @@ namespace Ryujinx.Tests.Unicorn
             set
             {
                 CPSR = (CPSR & ~0x00000020u) | (value ? 0x00000020u : 0u);
-                SetRegister(Arm.ARM_REG_PC, (GetRegister(Arm.ARM_REG_PC) & 0xfffffffeu) | (value ? 1u : 0u));
+                SetRegister(Arm.REG_PC, (GetRegister(Arm.REG_PC) & 0xfffffffeu) | (value ? 1u : 0u));
             }
         }
 
@@ -103,8 +103,8 @@ namespace Ryujinx.Tests.Unicorn
         {
             Interface.Checked(Interface.uc_open(Arch.ARM, Mode.LITTLE_ENDIAN, out uc));
 
-            SetRegister(Arm.ARM_REG_C1_C0_2, GetRegister(Arm.ARM_REG_C1_C0_2) | 0xf00000);
-            SetRegister(Arm.ARM_REG_FPEXC, 0x40000000);
+            SetRegister(Arm.REG_C1_C0_2, GetRegister(Arm.REG_C1_C0_2) | 0xf00000);
+            SetRegister(Arm.REG_FPEXC, 0x40000000);
         }
 
         ~UnicornAArch32()
@@ -139,42 +139,42 @@ namespace Ryujinx.Tests.Unicorn
 
         private static Arm[] XRegisters = new Arm[16]
         {
-            Arm.ARM_REG_R0,
-            Arm.ARM_REG_R1,
-            Arm.ARM_REG_R2,
-            Arm.ARM_REG_R3,
-            Arm.ARM_REG_R4,
-            Arm.ARM_REG_R5,
-            Arm.ARM_REG_R6,
-            Arm.ARM_REG_R7,
-            Arm.ARM_REG_R8,
-            Arm.ARM_REG_R9,
-            Arm.ARM_REG_R10,
-            Arm.ARM_REG_R11,
-            Arm.ARM_REG_R12,
-            Arm.ARM_REG_R13,
-            Arm.ARM_REG_R14,
-            Arm.ARM_REG_R15,
+            Arm.REG_R0,
+            Arm.REG_R1,
+            Arm.REG_R2,
+            Arm.REG_R3,
+            Arm.REG_R4,
+            Arm.REG_R5,
+            Arm.REG_R6,
+            Arm.REG_R7,
+            Arm.REG_R8,
+            Arm.REG_R9,
+            Arm.REG_R10,
+            Arm.REG_R11,
+            Arm.REG_R12,
+            Arm.REG_R13,
+            Arm.REG_R14,
+            Arm.REG_R15,
         };
 
         private static Arm[] QRegisters = new Arm[16]
         {
-            Arm.ARM_REG_Q0,
-            Arm.ARM_REG_Q1,
-            Arm.ARM_REG_Q2,
-            Arm.ARM_REG_Q3,
-            Arm.ARM_REG_Q4,
-            Arm.ARM_REG_Q5,
-            Arm.ARM_REG_Q6,
-            Arm.ARM_REG_Q7,
-            Arm.ARM_REG_Q8,
-            Arm.ARM_REG_Q9,
-            Arm.ARM_REG_Q10,
-            Arm.ARM_REG_Q11,
-            Arm.ARM_REG_Q12,
-            Arm.ARM_REG_Q13,
-            Arm.ARM_REG_Q14,
-            Arm.ARM_REG_Q15
+            Arm.REG_Q0,
+            Arm.REG_Q1,
+            Arm.REG_Q2,
+            Arm.REG_Q3,
+            Arm.REG_Q4,
+            Arm.REG_Q5,
+            Arm.REG_Q6,
+            Arm.REG_Q7,
+            Arm.REG_Q8,
+            Arm.REG_Q9,
+            Arm.REG_Q10,
+            Arm.REG_Q11,
+            Arm.REG_Q12,
+            Arm.REG_Q13,
+            Arm.REG_Q14,
+            Arm.REG_Q15
         };
 
         public uint GetX(int index)
@@ -205,7 +205,7 @@ namespace Ryujinx.Tests.Unicorn
             }
 
             // Getting quadword registers from Unicorn A32 seems to be broken, so we combine its 2 doubleword registers instead.
-            return GetVector((Arm)((int)Arm.ARM_REG_D0 + index * 2));
+            return GetVector((Arm)((int)Arm.REG_D0 + index * 2));
         }
 
         public void SetQ(int index, SimdValue value)
@@ -215,7 +215,7 @@ namespace Ryujinx.Tests.Unicorn
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
 
-            SetVector((Arm)((int)Arm.ARM_REG_D0 + index * 2), value);
+            SetVector((Arm)((int)Arm.REG_D0 + index * 2), value);
         }
 
         public uint GetRegister(Arm register)

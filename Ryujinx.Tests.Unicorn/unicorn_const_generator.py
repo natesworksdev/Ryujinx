@@ -173,6 +173,9 @@ def gen(unicorn_repo_path):
                     if (count == 1):
                         outfile.write(("\n").encode("utf-8"))
 
+                    if lhs_strip.startswith(f"{prefix.upper()}_") and not lhs_strip.replace(f"{prefix.upper()}_", "", 1).isnumeric():
+                        lhs_strip = lhs_strip.replace(f"{prefix.upper()}_", "", 1)
+
                     outfile.write((templ['line_format'] % (lhs_strip, rhs)).encode("utf-8"))
                     previous[lhs] = str(rhs)
 
