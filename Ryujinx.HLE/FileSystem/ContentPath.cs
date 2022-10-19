@@ -31,11 +31,11 @@ namespace Ryujinx.HLE.FileSystem
         {
             return switchContentPath switch
             {
-                SystemContent => Path.Combine(AppDataManager.BaseDirPath, SystemNandPath, Contents),
-                UserContent   => Path.Combine(AppDataManager.BaseDirPath, UserNandPath,   Contents),
+                SystemContent => Path.Combine(AppDataManager.GetNandPath(), SystemNandPath, Contents),
+                UserContent   => Path.Combine(AppDataManager.GetNandPath(), UserNandPath,   Contents),
                 SdCardContent => Path.Combine(fileSystem.GetSdCardPath(), Nintendo,       Contents),
-                System        => Path.Combine(AppDataManager.BaseDirPath, SystemNandPath),
-                User          => Path.Combine(AppDataManager.BaseDirPath, UserNandPath),
+                System        => Path.Combine(AppDataManager.GetNandPath(), SystemNandPath),
+                User          => Path.Combine(AppDataManager.GetNandPath(), UserNandPath),
                 _ => throw new NotSupportedException($"Content Path \"`{switchContentPath}`\" is not supported.")
             };
         }

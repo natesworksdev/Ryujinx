@@ -197,6 +197,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public TimeSpan TimeOffset { get; set; }
         public AvaloniaList<TimeZone> TimeZones { get; set; }
         public AvaloniaList<string> GameDirectories { get; set; }
+        public string CustomNandPath { get; set; }
         public ObservableCollection<ComboBoxItem> AvailableGpus { get; set; }
 
         public KeyboardHotkeys KeyboardHotkeys
@@ -323,6 +324,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
             GameDirectories.Clear();
             GameDirectories.AddRange(config.Ui.GameDirs.Value);
+            CustomNandPath = config.Ui.CustomNandPath;
 
             EnableDiscordIntegration = config.EnableDiscordIntegration;
             CheckUpdatesOnStart = config.CheckUpdatesOnStart;
@@ -430,6 +432,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             config.System.ExpandRam.Value = ExpandDramSize;
             config.Hid.EnableKeyboard.Value = EnableKeyboard;
             config.Hid.EnableMouse.Value = EnableMouse;
+            config.Ui.CustomNandPath.Value = CustomNandPath;
             config.Ui.CustomThemePath.Value = CustomThemePath;
             config.Ui.EnableCustomTheme.Value = EnableCustomTheme;
             config.Ui.BaseStyle.Value = BaseStyleIndex == 0 ? "Light" : "Dark";

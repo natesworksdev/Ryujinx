@@ -151,6 +151,8 @@ namespace Ryujinx.Ava
 
             ReloadConfig();
 
+            AppDataManager.SetCustomNandPath(ConfigurationState.Instance.Ui.CustomNandPath.Value);
+
             ForceDpiAware.Windows();
 
             WindowScaleFactor = ForceDpiAware.GetWindowScaleFactor();

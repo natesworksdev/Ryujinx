@@ -281,6 +281,7 @@
   "MenuBarFileToolsHideUi": "Esconder interface gráfica",
   "GameListContextMenuToggleFavorite": "Alternar favorito",
   "GameListContextMenuToggleFavoriteToolTip": "Marca ou desmarca jogo como favorito",
+  "SettingsTabGeneralCustomNandPath": "(TRANSLATE ME!!!)",
   "SettingsTabGeneralTheme": "Tema",
   "SettingsTabGeneralThemeCustomTheme": "Diretório de tema customizado",
   "SettingsTabGeneralThemeBaseStyle": "Estilo base",
@@ -553,8 +554,8 @@
   "SettingsTabHotkeysToggleMuteHotkey": "Mudo:",
   "ControllerMotionTitle": "Configurações do controle de movimento",
   "ControllerRumbleTitle": "Configurações de vibração",
-  "SettingsSelectThemeFileDialogTitle" : "Selecionar arquivo do tema",
-  "SettingsXamlThemeFile" : "Arquivo de tema Xaml",
+  "SettingsSelectThemeFileDialogTitle": "Selecionar arquivo do tema",
+  "SettingsXamlThemeFile": "Arquivo de tema Xaml",
   "SettingsTabHotkeysResScaleUpHotkey": "Aumentar a resolução:",
   "SettingsTabHotkeysResScaleDownHotkey": "Diminuir a resolução:"
 }

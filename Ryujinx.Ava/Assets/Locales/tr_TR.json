@@ -281,6 +281,7 @@
   "MenuBarFileToolsHideUi": "Arayüzü Gizle",
   "GameListContextMenuToggleFavorite": "Favori Ayarla",
   "GameListContextMenuToggleFavoriteToolTip": "Oyunun favorilere eklenmesini veya kaldırmasını sağlar",
+  "SettingsTabGeneralCustomNandPath": "(TRANSLATE ME!!!)",
   "SettingsTabGeneralTheme": "Tema",
   "SettingsTabGeneralThemeCustomTheme": "Özel Tema Yolu",
   "SettingsTabGeneralThemeBaseStyle": "Temel Stil",

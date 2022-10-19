@@ -75,6 +75,11 @@ namespace Ryujinx.Ui.Common.Configuration
             public ReactiveObject<List<string>> GameDirs { get; private set; }
 
             /// <summary>
+            /// Path to system NAND, or empty to use default path
+            /// </summary>
+            public ReactiveObject<string> CustomNandPath { get; private set; }
+
+            /// <summary>
             /// Language Code for the UI
             /// </summary>
             public ReactiveObject<string> LanguageCode { get; private set; }
@@ -134,6 +139,8 @@ namespace Ryujinx.Ui.Common.Configuration
                 GuiColumns        = new Columns();
                 ColumnSort        = new ColumnSortSettings();
                 GameDirs          = new ReactiveObject<List<string>>();
+                CustomNandPath    = new ReactiveObject<string>();
+                CustomNandPath.Event += static (s, e) => { AppDataManager.SetCustomNandPath(e.NewValue); };
                 EnableCustomTheme = new ReactiveObject<bool>();
                 CustomThemePath   = new ReactiveObject<string>();
                 BaseStyle         = new ReactiveObject<string>();
@@ -577,6 +584,7 @@ namespace Ryujinx.Ui.Common.Configuration
                     SortAscending = Ui.ColumnSort.SortAscending
                 },
                 GameDirs                   = Ui.GameDirs,
+                CustomNandPath             = Ui.CustomNandPath,
                 LanguageCode               = Ui.LanguageCode,
                 EnableCustomTheme          = Ui.EnableCustomTheme,
                 CustomThemePath            = Ui.CustomThemePath,
@@ -656,6 +664,7 @@ namespace Ryujinx.Ui.Common.Configuration
             Ui.ColumnSort.SortColumnId.Value          = 0;
             Ui.ColumnSort.SortAscending.Value         = false;
             Ui.GameDirs.Value                         = new List<string>();
+            Ui.CustomNandPath.Value                   = "";
             Ui.EnableCustomTheme.Value                = false;
             Ui.LanguageCode.Value                     = "en_US";
             Ui.CustomThemePath.Value                  = "";
@@ -1176,6 +1185,15 @@ namespace Ryujinx.Ui.Common.Configuration
                 };
             }
 
+            if (configurationFileFormat.Version < 42)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 42.");
+
+                configurationFileFormat.CustomNandPath = string.Empty;
+
+                configurationFileUpdated = true;
+            }
+
             Logger.EnableFileLog.Value                = configurationFileFormat.EnableFileLog;
             Graphics.ResScale.Value                   = configurationFileFormat.ResScale;
             Graphics.ResScaleCustom.Value             = configurationFileFormat.ResScaleCustom;
@@ -1229,6 +1247,7 @@ namespace Ryujinx.Ui.Common.Configuration
             Ui.ColumnSort.SortColumnId.Value          = configurationFileFormat.ColumnSort.SortColumnId;
             Ui.ColumnSort.SortAscending.Value         = configurationFileFormat.ColumnSort.SortAscending;
             Ui.GameDirs.Value                         = configurationFileFormat.GameDirs;
+            Ui.CustomNandPath.Value                   = configurationFileFormat.CustomNandPath;
             Ui.EnableCustomTheme.Value                = configurationFileFormat.EnableCustomTheme;
             Ui.LanguageCode.Value                     = configurationFileFormat.LanguageCode;
             Ui.CustomThemePath.Value                  = configurationFileFormat.CustomThemePath;
