@@ -306,18 +306,36 @@ namespace Ryujinx.Graphics.Shader.Decoders
                 for (int elemIndex = 0; elemIndex < count; elemIndex++)
                 {
                     int attr = offset + elemIndex * 4;
-                    if (attr >= AttributeConsts.UserAttributeBase && attr < AttributeConsts.UserAttributeEnd)
+
+                    if (perPatch)
+                    {
+                        if (attr >= AttributeConsts.UserAttributePerPatchBase && attr < AttributeConsts.UserAttributePerPatchEnd)
+                        {
+                            int userAttr = attr - AttributeConsts.UserAttributePerPatchBase;
+                            int index = userAttr / 16;
+
+                            if (isStore)
+                            {
+                                config.SetOutputUserAttributePerPatch(index);
+                            }
+                            else
+                            {
+                                config.SetInputUserAttributePerPatch(index);
+                            }
+                        }
+                    }
+                    else if (attr >= AttributeConsts.UserAttributeBase && attr < AttributeConsts.UserAttributeEnd)
                     {
                         int userAttr = attr - AttributeConsts.UserAttributeBase;
                         int index = userAttr / 16;
 
                         if (isStore)
                         {
-                            config.SetOutputUserAttribute(index, perPatch);
+                            config.SetOutputUserAttribute(index);
                         }
                         else
                         {
-                            config.SetInputUserAttribute(index, (userAttr >> 2) & 3, perPatch);
+                            config.SetInputUserAttribute(index, (userAttr >> 2) & 3);
                         }
                     }
 
@@ -359,6 +377,8 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
                 if (lastOp.Name == InstName.Brx && block.Successors.Count == (hasNext ? 1 : 0))
                 {
+                    HashSet<ulong> visited = new HashSet<ulong>();
+
                     InstBrx opBrx = new InstBrx(lastOp.RawOpCode);
                     ulong baseOffset = lastOp.GetAbsoluteAddress();
 
@@ -374,9 +394,14 @@ namespace Ryujinx.Graphics.Shader.Decoders
                     for (int i = 0; i < cbOffsetsCount; i++)
                     {
                         uint targetOffset = config.ConstantBuffer1Read(cbBaseOffset + i * 4);
-                        Block target = getBlock(baseOffset + targetOffset);
-                        target.Predecessors.Add(block);
-                        block.Successors.Add(target);
+                        ulong targetAddress = baseOffset + targetOffset;
+
+                        if (visited.Add(targetAddress))
+                        {
+                            Block target = getBlock(targetAddress);
+                            target.Predecessors.Add(block);
+                            block.Successors.Add(target);
+                        }
                     }
                 }
             }

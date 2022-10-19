@@ -27,7 +27,7 @@
     </a>
     <br>
     <br>
-    <img src="https://raw.githubusercontent.com/Ryujinx/Ryujinx-Website/master/static/public/shell_fullsize.png">
+    <img src="https://raw.githubusercontent.com/Ryujinx/Ryujinx-Website/master/public/assets/images/shell.png">
 </p>
 
 <h5 align="center">
@@ -36,7 +36,7 @@
 
 ## Compatibility
 
-As of September 2022, Ryujinx has been tested on approximately 3,600 titles; over 3,400 boot past menus and into gameplay, with roughly 2,700 of those being considered playable. You can check out the compatibility list [here](https://github.com/Ryujinx/Ryujinx-Games-List/issues).  
+As of October 2022, Ryujinx has been tested on approximately 3,600 titles; over 3,500 boot past menus and into gameplay, with roughly 3,000 of those being considered playable. You can check out the compatibility list [here](https://github.com/Ryujinx/Ryujinx-Games-List/issues).  
 Anyone is free to submit a new game test or update an existing game test entry; simply follow the new issue template and testing guidelines, or post as a reply to the applicable game issue. Use the search function to see if a game has been tested already!
 
 ## Usage

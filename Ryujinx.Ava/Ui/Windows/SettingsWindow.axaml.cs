@@ -37,7 +37,7 @@ namespace Ryujinx.Ava.Ui.Windows
             InitializeComponent();
             Load();
 
-            FuncMultiValueConverter<string, string> converter = new(parts => string.Format("{0}  {1}   {2}", parts.ToArray()));
+            FuncMultiValueConverter<string, string> converter = new(parts => string.Format("{0}  {1}   {2}", parts.ToArray()).Trim());
             MultiBinding tzMultiBinding = new() { Converter = converter };
             tzMultiBinding.Bindings.Add(new Binding("UtcDifference"));
             tzMultiBinding.Bindings.Add(new Binding("Location"));
@@ -211,9 +211,9 @@ namespace Ryujinx.Ava.Ui.Windows
             }
         }
 
-        private async void SaveButton_Clicked(object sender, RoutedEventArgs e)
+        private void SaveButton_Clicked(object sender, RoutedEventArgs e)
         {
-            await SaveSettings();
+            SaveSettings();
 
             Close();
         }
@@ -224,14 +224,14 @@ namespace Ryujinx.Ava.Ui.Windows
             Close();
         }
 
-        private async void ApplyButton_Clicked(object sender, RoutedEventArgs e)
+        private void ApplyButton_Clicked(object sender, RoutedEventArgs e)
         {
-            await SaveSettings();
+            SaveSettings();
         }
 
-        private async Task SaveSettings()
+        private void SaveSettings()
         {
-            await ViewModel.SaveSettings();
+            ViewModel.SaveSettings();
 
             ControllerSettings?.SaveCurrentProfile();
 

@@ -70,6 +70,22 @@ namespace ARMeilleure.Instructions
             context.Copy(vec, insert);
         }
 
+        public static Operand ExtractScalar16(ArmEmitterContext context, int reg, bool top)
+        {
+            return context.VectorExtract16(GetVecA32(reg >> 2), ((reg & 3) << 1) | (top ? 1 : 0));
+        }
+
+        public static void InsertScalar16(ArmEmitterContext context, int reg, bool top, Operand value)
+        {
+            Debug.Assert(value.Type == OperandType.FP32 || value.Type == OperandType.I32);
+
+            Operand vec, insert;
+            vec = GetVecA32(reg >> 2);
+            insert = context.VectorInsert16(vec, value, ((reg & 3) << 1) | (top ? 1 : 0));
+
+            context.Copy(vec, insert);
+        }
+
         public static Operand ExtractElement(ArmEmitterContext context, int reg, int size, bool signed)
         {
             return EmitVectorExtract32(context, reg >> (4 - size), reg & ((16 >> size) - 1), size, signed);
@@ -1181,7 +1197,11 @@ namespace ARMeilleure.Instructions
             Array.Resize(ref callArgs, callArgs.Length + 1);
             callArgs[callArgs.Length - 1] = Const(1);
 
-            return context.Call(info, callArgs);
+            context.StoreToContext();
+            Operand res = context.Call(info, callArgs);
+            context.LoadFromContext();
+
+            return res;
         }
 
         public static Operand EmitVectorExtractSx32(ArmEmitterContext context, int reg, int index, int size)
