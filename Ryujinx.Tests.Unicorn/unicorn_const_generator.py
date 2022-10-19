@@ -13,7 +13,7 @@ template = {
             'header': "// Constants for Unicorn Engine. AUTO-GENERATED FILE, DO NOT EDIT\n\n// ReSharper disable InconsistentNaming\nnamespace Ryujinx.Tests.Unicorn.Native.Const\n{\n    public enum %s\n    {\n",
             'footer': "    }\n}\n",
             'line_format': '        %s = %s,\n',
-            'out_file': os.path.join('Native', 'Const', '%s.cs'),
+            'out_file': os.path.join(os.path.dirname(__file__), 'Native', 'Const', '%s.cs'),
             # prefixes for constant filenames of all archs - case sensitive
             'arm.h': 'Arm',
             'arm64.h': 'Arm64',
