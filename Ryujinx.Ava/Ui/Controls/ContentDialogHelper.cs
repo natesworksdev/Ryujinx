@@ -122,7 +122,7 @@ namespace Ryujinx.Ava.Ui.Controls
                     contentDialog.PrimaryButtonClick -= deferCloseAction;
                 });
 
-                if(deferResetEvent != null)
+                if (deferResetEvent != null)
                 {
                     contentDialog.PrimaryButtonClick += deferCloseAction;
                 }
