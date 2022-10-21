@@ -9,18 +9,23 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
     internal class LdnProxyTcpClient : NetCoreServer.TcpClient, ILdnTcpSocket
     {
         private readonly LanProtocol _protocol;
-        private readonly IPAddress _serverAddress;
         private byte[] _buffer;
         private int _bufferEnd;
 
         public LdnProxyTcpClient(LanProtocol protocol, IPAddress address, int port) : base(address, port)
         {
             _protocol = protocol;
-            _serverAddress = address;
             _buffer = new byte[LanProtocol.BufferSize];
             OptionReceiveBufferSize = LanProtocol.BufferSize;
             OptionSendBufferSize = LanProtocol.BufferSize;
-            OptionNoDelay = true;
+        }
+
+        protected override Socket CreateSocket()
+        {
+            return new Socket(Endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp)
+            {
+                EnableBroadcast = true
+            };
         }
 
         protected override void OnConnected()
@@ -60,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
                 }
             }
 
-            Logger.Debug?.PrintMsg(LogClass.ServiceLdn, $"Sending packet to: {_serverAddress}");
+            Logger.Debug?.PrintMsg(LogClass.ServiceLdn, $"Sending packet to: {Endpoint.Address}");
 
             return SendAsync(data);
         }

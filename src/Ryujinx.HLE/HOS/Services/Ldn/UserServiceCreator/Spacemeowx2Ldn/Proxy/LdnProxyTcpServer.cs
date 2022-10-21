@@ -13,11 +13,19 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
         public LdnProxyTcpServer(LanProtocol protocol, IPAddress address, int port) : base(address, port)
         {
             _protocol = protocol;
-            OptionReceiveBufferSize = LanProtocol.BufferSize;
-            OptionSendBufferSize = LanProtocol.BufferSize;
             OptionReuseAddress = true;
+            OptionSendBufferSize = LanProtocol.TcpTxBufferSize;
+            OptionReceiveBufferSize = LanProtocol.TcpRxBufferSize;
 
             Logger.Debug?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPServer created a server for this address: {address}:{port}");
+        }
+
+        protected override Socket CreateSocket()
+        {
+            return new Socket(Endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp)
+            {
+                EnableBroadcast = true,
+            };
         }
 
         protected override TcpSession CreateSession()

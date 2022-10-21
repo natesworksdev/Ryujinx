@@ -22,6 +22,11 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         public const int BufferSize = 2048;
         private const uint LanMagic = 0x11451400;
 
+        public const int TcpTxBufferSize = 0x800;
+        public const int TcpRxBufferSize = 0x1000;
+        public const int TcpTxBufferSizeMax = 0x2000;
+        public const int TcpRxBufferSizeMax = 0x2000;
+
         private readonly int _headerSize = Marshal.SizeOf<LanPacketHeader>();
 
         private readonly LanDiscovery _discovery;

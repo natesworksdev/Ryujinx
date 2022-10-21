@@ -21,8 +21,10 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
             _protocol = protocol;
             _protocol.Connect += OnConnect;
             _buffer = new byte[LanProtocol.BufferSize];
-            OptionReceiveBufferSize = LanProtocol.BufferSize;
-            OptionSendBufferSize = LanProtocol.BufferSize;
+            OptionSendBufferSize = LanProtocol.TcpTxBufferSize;
+            OptionReceiveBufferSize = LanProtocol.TcpRxBufferSize;
+            OptionSendBufferLimit = LanProtocol.TcpTxBufferSizeMax;
+            OptionReceiveBufferLimit = LanProtocol.TcpRxBufferSizeMax;
         }
 
         public void OverrideInfo()

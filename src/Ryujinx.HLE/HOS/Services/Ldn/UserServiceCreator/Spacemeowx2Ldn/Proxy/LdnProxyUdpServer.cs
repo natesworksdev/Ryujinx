@@ -1,4 +1,4 @@
-using Ryujinx.Common.Logging;
+﻿using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Types;
 using System;
@@ -32,22 +32,18 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
             _protocol.ScanResponse += HandleScanResponse;
             _buffer = new byte[LanProtocol.BufferSize];
             OptionReuseAddress = true;
-            OptionReceiveBufferSize = LanProtocol.BufferSize;
-            OptionSendBufferSize = LanProtocol.BufferSize;
+            OptionReceiveBufferSize = 0x2000;
+            OptionSendBufferSize = 0x2000;
 
             Start();
         }
 
         protected override Socket CreateSocket()
         {
-            Socket socket = new(Endpoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp)
+            return new Socket(Endpoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp)
             {
                 EnableBroadcast = true
             };
-
-            socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.PacketInformation, true);
-
-            return socket;
         }
 
         protected override void OnStarted()
