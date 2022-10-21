@@ -20,14 +20,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
             Logger.Debug?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPServer created a server for this address: {address}:{port}");
         }
 
-        protected override Socket CreateSocket()
-        {
-            return new Socket(Endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp)
-            {
-                EnableBroadcast = true,
-            };
-        }
-
         protected override TcpSession CreateSession()
         {
             return new LdnProxyTcpSession(this, _protocol);

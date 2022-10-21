@@ -20,14 +20,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
             OptionSendBufferSize = LanProtocol.BufferSize;
         }
 
-        protected override Socket CreateSocket()
-        {
-            return new Socket(Endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp)
-            {
-                EnableBroadcast = true
-            };
-        }
-
         protected override void OnConnected()
         {
             Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPClient connected!");
