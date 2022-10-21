@@ -20,7 +20,7 @@
     <PackageReference Include="Avalonia.Desktop" Version="0.10.15" />
     <PackageReference Include="Avalonia.Diagnostics" Version="0.10.15" />
     <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.15" />
-    <PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="0.10.15" />
+    <PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="0.10.18" />
     <PackageReference Include="Avalonia.Svg" Version="0.10.14" />
     <PackageReference Include="Avalonia.Svg.Skia" Version="0.10.14" />
     <PackageReference Include="jp2masa.Avalonia.Flexbox" Version="0.2.0" />
