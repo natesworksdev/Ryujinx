@@ -130,9 +130,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 
             // ldn-mitm does not do this, but this improves latency for games that expect it to be low (it is on console).
 
-            bool signalled = _scanResponse.WaitOne(1000);
-
-            if (signalled)
+            if (_scanResponse.WaitOne(1000))
             {
                 // Wait a short while longer in case there are some other responses.
                 Thread.Sleep(33);

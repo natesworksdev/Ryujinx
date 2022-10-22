@@ -555,9 +555,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                 return NetworkError.Unknown;
             }
 
-            bool signalled = _apConnected.WaitOne(FailureTimeout);
-
-            return signalled ? NetworkError.None : NetworkError.ConnectTimeout;
+            return _apConnected.WaitOne(FailureTimeout) ? NetworkError.None : NetworkError.ConnectTimeout;
         }
 
         public void Dispose()
