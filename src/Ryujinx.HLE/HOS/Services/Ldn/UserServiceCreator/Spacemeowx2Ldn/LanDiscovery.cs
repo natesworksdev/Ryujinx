@@ -40,6 +40,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         public bool IsHost => _tcp is LdnProxyTcpServer;
 
+        private Random _random = new();
+
         // NOTE: Credit to https://stackoverflow.com/a/39338188
         private static IPAddress GetBroadcastAddress(IPAddress address, IPAddress mask)
         {
@@ -494,7 +496,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             NetworkInfo.Common.Channel = networkConfig.Channel == 0 ? (ushort)6 : networkConfig.Channel;
 
             NetworkInfo.NetworkId.SessionId = new Array16<byte>();
-            new Random().NextBytes(NetworkInfo.NetworkId.SessionId.AsSpan());
+            _random.NextBytes(NetworkInfo.NetworkId.SessionId.AsSpan());
             NetworkInfo.NetworkId.IntentId = networkConfig.IntentId;
 
             NetworkInfo.Ldn.Nodes[0] = GetNodeInfo(NetworkInfo.Ldn.Nodes[0], userConfig, networkConfig.LocalCommunicationVersion);
