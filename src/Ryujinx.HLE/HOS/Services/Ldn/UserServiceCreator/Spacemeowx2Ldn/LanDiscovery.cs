@@ -70,7 +70,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                 },
                 Ldn = new()
                 {
-                    NodeCountMax = LanProtocol.NodeCountMax,
+                    NodeCountMax = (byte)LdnConst.NodeCountMax,
                     SecurityParameter = new Array16<byte>(),
                     Nodes = new Array8<NodeInfo>(),
                     AdvertiseData = new Array384<byte>(),
@@ -78,7 +78,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                 }
             };
 
-            for (int i = 0; i < LanProtocol.NodeCountMax; i++)
+            for (int i = 0; i < LdnConst.NodeCountMax; i++)
             {
                 networkInfo.Ldn.Nodes[i] = new()
                 {
@@ -101,9 +101,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
             _fakeSsid = new()
             {
-                Length = (byte)LanProtocol.SsidLengthMax,
+                Length = (byte)LdnConst.SsidLengthMax,
             };
-            Encoding.ASCII.GetBytes("12345678123456781234567812345678").CopyTo(_fakeSsid.Name.AsSpan());
+            _random.NextBytes(_fakeSsid.Name.AsSpan()[..32]);
 
             _protocol = new LanProtocol(this);
             _protocol.Accept += OnConnect;
@@ -154,7 +154,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             {
                 station.NodeId = LocateEmptyNode();
 
-                if (_stations.Count > LanProtocol.StationCountMax || station.NodeId == -1)
+                if (_stations.Count > LdnConst.StationCountMax || station.NodeId == -1)
                 {
                     station.Disconnect();
                     station.Dispose();
@@ -198,7 +198,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         public bool SetAdvertiseData(byte[] data)
         {
-            if (data.Length > (int)LanProtocol.AdvertiseDataSizeMax)
+            if (data.Length > (int)LdnConst.AdvertiseDataSizeMax)
             {
                 Logger.Error?.PrintMsg(LogClass.ServiceLdn, "AdvertiseData exceeds size limit.");
 
@@ -232,7 +232,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
                 NetworkInfo.Ldn.Nodes = new Array8<NodeInfo>();
 
-                for (int i = 0; i < LanProtocol.NodeCountMax; i++)
+                for (int i = 0; i < LdnConst.NodeCountMax; i++)
                 {
                     NetworkInfo.Ldn.Nodes[i].NodeId = (byte)i;
                     NetworkInfo.Ldn.Nodes[i].IsConnected = 0;

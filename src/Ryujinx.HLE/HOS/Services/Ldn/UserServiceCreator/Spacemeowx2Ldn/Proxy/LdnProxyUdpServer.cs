@@ -32,8 +32,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
             _protocol.ScanResponse += HandleScanResponse;
             _buffer = new byte[LanProtocol.BufferSize];
             OptionReuseAddress = true;
-            OptionReceiveBufferSize = 0x2000;
-            OptionSendBufferSize = 0x2000;
+            OptionReceiveBufferSize = LanProtocol.RxBufferSizeMax;
+            OptionSendBufferSize = LanProtocol.TxBufferSizeMax;
 
             Start();
         }
