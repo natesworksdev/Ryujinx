@@ -2993,7 +2993,7 @@
                                         <property name="active-id">Disabled</property>
                                         <items>
                                           <item id="Disabled" translatable="yes">Disabled</item>
-                                          <item id="Spacemeowx2Ldn" translatable="yes">Spacemeowx2 Ldn</item>
+                                          <item id="LdnMitm" translatable="yes">ldn_mitm</item>
                                         </items>
                                       </object>
                                       <packing>

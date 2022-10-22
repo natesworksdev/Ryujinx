@@ -1057,7 +1057,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                         MultiplayerMode mode = context.Device.Configuration.MultiplayerMode;
                         switch (mode)
                         {
-                            case MultiplayerMode.Spacemeowx2Ldn:
+                            case MultiplayerMode.LdnMitm:
                                 NetworkClient = new Spacemeowx2LdnClient(context.Device.Configuration);
                                 break;
                             case MultiplayerMode.Disabled:

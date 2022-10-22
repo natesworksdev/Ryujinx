@@ -3,6 +3,6 @@
     public enum MultiplayerMode
     {
         Disabled,
-        Spacemeowx2Ldn,
+        LdnMitm,
     }
 }
