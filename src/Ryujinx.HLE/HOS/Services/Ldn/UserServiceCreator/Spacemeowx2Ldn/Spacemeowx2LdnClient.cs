@@ -36,6 +36,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         public NetworkError ConnectPrivate(ConnectPrivateRequest request)
         {
+            // NOTE: This method is not implemented in ldn_mitm
             Logger.Stub?.PrintMsg(LogClass.ServiceLdn, "Spacemeowx2LdnClient ConnectPrivate");
 
             return NetworkError.None;
@@ -48,6 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         public bool CreateNetworkPrivate(CreateAccessPointPrivateRequest request, byte[] advertiseData)
         {
+            // NOTE: This method is not implemented in ldn_mitm
             Logger.Stub?.PrintMsg(LogClass.ServiceLdn, "Spacemeowx2LdnClient CreateNetworkPrivate");
 
             return true;
@@ -65,6 +67,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         public ResultCode Reject(DisconnectReason disconnectReason, uint nodeId)
         {
+            // NOTE: This method is not implemented in ldn_mitm
             Logger.Stub?.PrintMsg(LogClass.ServiceLdn, "Spacemeowx2LdnClient Reject");
 
             return ResultCode.Success;
@@ -82,11 +85,13 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         public void SetGameVersion(byte[] versionString)
         {
+            // NOTE: This method is not implemented in ldn_mitm
             Logger.Stub?.PrintMsg(LogClass.ServiceLdn, "Spacemeowx2LdnClient SetGameVersion");
         }
 
         public void SetStationAcceptPolicy(AcceptPolicy acceptPolicy)
         {
+            // NOTE: This method is not implemented in ldn_mitm
             Logger.Stub?.PrintMsg(LogClass.ServiceLdn, "Spacemeowx2LdnClient SetStationAcceptPolicy");
         }
 

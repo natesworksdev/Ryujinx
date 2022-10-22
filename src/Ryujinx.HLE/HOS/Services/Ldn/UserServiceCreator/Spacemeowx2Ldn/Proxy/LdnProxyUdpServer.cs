@@ -124,11 +124,11 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
 
         public Dictionary<ulong, NetworkInfo> GetScanResults()
         {
-            // Try to minimize waiting time for scan results.
+            // NOTE: Try to minimize waiting time for scan results.
             // After we recieve a first response, wait a short time for follow-ups and return.
             // Responses that were too late to catch will appear in the next scan.
 
-            // ldn-mitm does not do this, but this improves latency for games that expect it to be low (it is on console).
+            // ldn_mitm does not do this, but this improves latency for games that expect it to be low (it is on console).
 
             if (_scanResponse.WaitOne(1000))
             {
