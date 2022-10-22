@@ -318,6 +318,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         public bool InitUdp()
         {
             _udp?.Stop();
+            _udp2?.Stop();
 
             try
             {
