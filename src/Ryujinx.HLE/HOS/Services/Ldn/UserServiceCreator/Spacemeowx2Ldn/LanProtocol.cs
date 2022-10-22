@@ -89,8 +89,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                 return;
             }
 
-            Logger.Debug?.PrintMsg(LogClass.ServiceLdn, $"LanProtocol Reading data: EP: {endPoint} Offset: {offset} Size: {size}");
-
             int index = 0;
             while (index < size)
             {
@@ -107,7 +105,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                 if (bufferEnd >= _headerSize)
                 {
                     LanPacketHeader header = LdnHelper.FromBytes<LanPacketHeader>(buffer);
-                    Logger.Debug?.PrintMsg(LogClass.ServiceLdn, $"Received packet info: [length: {bufferEnd}] [Header size: {header.Length}]");
                     if (header.Magic != LanMagic)
                     {
                         bufferEnd = 0;
@@ -120,7 +117,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                     if (totalSize > BufferSize)
                     {
                         bufferEnd = 0;
-                        Logger.Warning?.PrintMsg(LogClass.ServiceLdn, $"Max packet size {BufferSize} exceeded.");
+                        Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"Max packet size {BufferSize} exceeded.");
 
                         return;
                     }
@@ -219,7 +216,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                 {
                     buf = new byte[data.Length + _headerSize];
 
-                    Logger.Warning?.PrintMsg(LogClass.ServiceLdn, "Compressing packet data failed.");
+                    Logger.Error?.PrintMsg(LogClass.ServiceLdn, "Compressing packet data failed.");
+
                     LdnHelper.StructureToByteArray(header).CopyTo(buf, 0);
                     data.CopyTo(buf, _headerSize);
                 }

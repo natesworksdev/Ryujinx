@@ -41,6 +41,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
         protected override void OnDisconnected()
         {
             Logger.Info?.PrintMsg(LogClass.ServiceLdn, "LdnProxyTCPSession disconnected!");
+
             _protocol.InvokeDisconnectStation(this);
         }
 
@@ -52,6 +53,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
         protected override void OnError(SocketError error)
         {
             Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPSession caught an error with code {error}");
+
             Dispose();
         }
 
@@ -74,6 +76,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
             catch (System.ObjectDisposedException)
             {
                 Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPSession was disposed. [IP: {NodeInfo.Ipv4Address}]");
+
                 _protocol.InvokeDisconnectStation(this);
             }
         }

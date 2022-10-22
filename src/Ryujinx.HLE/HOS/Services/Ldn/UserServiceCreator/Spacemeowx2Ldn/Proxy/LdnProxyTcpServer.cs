@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
             OptionSendBufferSize = LanProtocol.TcpTxBufferSize;
             OptionReceiveBufferSize = LanProtocol.TcpRxBufferSize;
 
-            Logger.Debug?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPServer created a server for this address: {address}:{port}");
+            Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"LdnProxyTCPServer created a server for this address: {address}:{port}");
         }
 
         protected override TcpSession CreateSession()
