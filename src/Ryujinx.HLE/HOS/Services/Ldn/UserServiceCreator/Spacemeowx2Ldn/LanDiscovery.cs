@@ -70,7 +70,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                 },
                 Ldn = new()
                 {
-                    NodeCountMax = (byte)LdnConst.NodeCountMax,
+                    NodeCountMax = LdnConst.NodeCountMax,
                     SecurityParameter = new Array16<byte>(),
                     Nodes = new Array8<NodeInfo>(),
                     AdvertiseData = new Array384<byte>(),
@@ -101,7 +101,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
             _fakeSsid = new()
             {
-                Length = (byte)LdnConst.SsidLengthMax,
+                Length = LdnConst.SsidLengthMax,
             };
             _random.NextBytes(_fakeSsid.Name.AsSpan()[..32]);
 
@@ -198,7 +198,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         public bool SetAdvertiseData(byte[] data)
         {
-            if (data.Length > (int)LdnConst.AdvertiseDataSizeMax)
+            if (data.Length > LdnConst.AdvertiseDataSizeMax)
             {
                 Logger.Error?.PrintMsg(LogClass.ServiceLdn, "AdvertiseData exceeds size limit.");
 

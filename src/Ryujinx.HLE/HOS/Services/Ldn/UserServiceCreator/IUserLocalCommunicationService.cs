@@ -568,13 +568,13 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             networkConfig.Channel = CheckDevelopmentChannel(networkConfig.Channel);
             securityConfig.SecurityMode = CheckDevelopmentSecurityMode(securityConfig.SecurityMode);
 
-            if (networkConfig.NodeCountMax <= 8)
+            if (networkConfig.NodeCountMax <= LdnConst.NodeCountMax)
             {
                 if ((((ulong)networkConfig.LocalCommunicationVersion) & 0x80000000) == 0)
                 {
                     if (securityConfig.SecurityMode <= SecurityMode.Retail)
                     {
-                        if (securityConfig.Passphrase.Length <= 0x40)
+                        if (securityConfig.Passphrase.Length <= LdnConst.PassphraseLengthMax)
                         {
                             if (_state == NetworkState.AccessPoint)
                             {
@@ -678,7 +678,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 return _nifmResultCode;
             }
 
-            if (bufferSize == 0 || bufferSize > 0x180)
+            if (bufferSize == 0 || bufferSize > LdnConst.AdvertiseDataSizeMax)
             {
                 return ResultCode.InvalidArgument;
             }
