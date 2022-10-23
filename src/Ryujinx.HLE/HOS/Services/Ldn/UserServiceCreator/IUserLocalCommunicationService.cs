@@ -9,7 +9,7 @@ using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm;
-using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn;
+using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnRyu;
 using Ryujinx.Horizon.Common;
 using Ryujinx.Memory;
 using System;

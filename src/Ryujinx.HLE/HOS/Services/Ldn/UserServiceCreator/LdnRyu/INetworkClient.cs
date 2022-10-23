@@ -3,7 +3,7 @@ using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Network.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn.Types;
 using System;
 
-namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn
+namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnRyu
 {
     interface INetworkClient : IDisposable
     {

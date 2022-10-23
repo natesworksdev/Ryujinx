@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             _parent.NetworkClient.NetworkChange += NetworkChanged;
         }
 
-        private void NetworkChanged(object sender, RyuLdn.NetworkChangeEventArgs e)
+        private void NetworkChanged(object sender, LdnRyu.NetworkChangeEventArgs e)
         {
             LatestUpdates.CalculateLatestUpdate(NetworkInfo.Ldn.Nodes, e.Info.Ldn.Nodes);
 
