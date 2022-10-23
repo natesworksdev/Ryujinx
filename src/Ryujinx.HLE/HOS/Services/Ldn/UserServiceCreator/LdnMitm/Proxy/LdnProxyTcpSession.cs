@@ -10,7 +10,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm.Proxy
         private readonly LanProtocol _protocol;
 
         internal int NodeId;
-
         internal NodeInfo NodeInfo;
 
         private byte[] _buffer;
