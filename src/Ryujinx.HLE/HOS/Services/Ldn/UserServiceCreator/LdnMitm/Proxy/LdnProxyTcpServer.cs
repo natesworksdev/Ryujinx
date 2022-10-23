@@ -1,10 +1,10 @@
-﻿using System;
-using NetCoreServer;
+﻿using NetCoreServer;
 using Ryujinx.Common.Logging;
+using System;
 using System.Net;
 using System.Net.Sockets;
 
-namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
+namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm.Proxy
 {
     internal class LdnProxyTcpServer : TcpServer, ILdnTcpSocket
     {

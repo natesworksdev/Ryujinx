@@ -7,9 +7,12 @@ using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn.Types;
 using System;
 using System.Net.NetworkInformation;
 
-namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
+namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
 {
-    internal class Spacemeowx2LdnClient : INetworkClient
+    /// <summary>
+    /// Client implementation for <a href="https://github.com/spacemeowx2/ldn_mitm">ldn_mitm</a>
+    /// </summary>
+    internal class LdnMitmClient : INetworkClient
     {
         public bool NeedsRealId => false;
 
@@ -17,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         private readonly LanDiscovery _lanDiscovery;
 
-        public Spacemeowx2LdnClient(HLEConfiguration config)
+        public LdnMitmClient(HLEConfiguration config)
         {
             UnicastIPAddressInformation localIpInterface = NetworkHelpers.GetLocalInterface(config.MultiplayerLanInterfaceId).Item2;
 
@@ -37,7 +40,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         public NetworkError ConnectPrivate(ConnectPrivateRequest request)
         {
             // NOTE: This method is not implemented in ldn_mitm
-            Logger.Stub?.PrintMsg(LogClass.ServiceLdn, "Spacemeowx2LdnClient ConnectPrivate");
+            Logger.Stub?.PrintMsg(LogClass.ServiceLdn, "LdnMitmClient ConnectPrivate");
 
             return NetworkError.None;
         }
@@ -50,7 +53,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         public bool CreateNetworkPrivate(CreateAccessPointPrivateRequest request, byte[] advertiseData)
         {
             // NOTE: This method is not implemented in ldn_mitm
-            Logger.Stub?.PrintMsg(LogClass.ServiceLdn, "Spacemeowx2LdnClient CreateNetworkPrivate");
+            Logger.Stub?.PrintMsg(LogClass.ServiceLdn, "LdnMitmClient CreateNetworkPrivate");
 
             return true;
         }
@@ -68,7 +71,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         public ResultCode Reject(DisconnectReason disconnectReason, uint nodeId)
         {
             // NOTE: This method is not implemented in ldn_mitm
-            Logger.Stub?.PrintMsg(LogClass.ServiceLdn, "Spacemeowx2LdnClient Reject");
+            Logger.Stub?.PrintMsg(LogClass.ServiceLdn, "LdnMitmClient Reject");
 
             return ResultCode.Success;
         }
@@ -86,13 +89,13 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         public void SetGameVersion(byte[] versionString)
         {
             // NOTE: This method is not implemented in ldn_mitm
-            Logger.Stub?.PrintMsg(LogClass.ServiceLdn, "Spacemeowx2LdnClient SetGameVersion");
+            Logger.Stub?.PrintMsg(LogClass.ServiceLdn, "LdnMitmClient SetGameVersion");
         }
 
         public void SetStationAcceptPolicy(AcceptPolicy acceptPolicy)
         {
             // NOTE: This method is not implemented in ldn_mitm
-            Logger.Stub?.PrintMsg(LogClass.ServiceLdn, "Spacemeowx2LdnClient SetStationAcceptPolicy");
+            Logger.Stub?.PrintMsg(LogClass.ServiceLdn, "LdnMitmClient SetStationAcceptPolicy");
         }
 
         public void Dispose()

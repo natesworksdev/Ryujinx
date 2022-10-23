@@ -2,17 +2,16 @@
 using Ryujinx.Common.Memory;
 using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
+using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm.Proxy;
+using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn.Types;
-using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy;
-using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
 
-namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
+namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
 {
     internal class LanDiscovery : IDisposable
     {
@@ -23,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         private const int FailureTimeout = 4000;
 
-        private Spacemeowx2LdnClient _parent;
+        private LdnMitmClient _parent;
         private LanProtocol _protocol;
         private bool _initialized;
         private readonly Ssid _fakeSsid;
@@ -91,7 +90,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             return networkInfo;
         }
 
-        public LanDiscovery(Spacemeowx2LdnClient parent, IPAddress ipAddress, IPAddress ipv4mask)
+        public LanDiscovery(LdnMitmClient parent, IPAddress ipAddress, IPAddress ipv4mask)
         {
             Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"Initialize LanDiscovery using IP: {ipAddress}");
 

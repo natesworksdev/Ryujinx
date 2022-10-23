@@ -3,7 +3,7 @@ using Ryujinx.HLE.HOS.Services.Ldn.Types;
 using System.Net;
 using System.Net.Sockets;
 
-namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
+namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm.Proxy
 {
     internal class LdnProxyTcpSession : NetCoreServer.TcpSession
     {

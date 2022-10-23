@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
+namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm.Proxy
 {
     internal interface ILdnSocket : IDisposable
     {

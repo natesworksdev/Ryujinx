@@ -8,8 +8,8 @@ using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
+using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn;
-using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn;
 using Ryujinx.Horizon.Common;
 using Ryujinx.Memory;
 using System;
@@ -1058,10 +1058,10 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                         switch (mode)
                         {
                             case MultiplayerMode.LdnMitm:
-                                NetworkClient = new Spacemeowx2LdnClient(context.Device.Configuration);
+                                NetworkClient = new LdnMitmClient(context.Device.Configuration);
                                 break;
                             case MultiplayerMode.Disabled:
-                                NetworkClient = new DisabledLdnClient();
+                                NetworkClient = new LdnDisabledClient();
                                 break;
                         }
 

@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Types
+﻿namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm.Types
 {
     internal enum LanPacketType : byte
     {
