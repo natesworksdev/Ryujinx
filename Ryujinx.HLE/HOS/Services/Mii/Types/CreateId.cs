@@ -1,5 +1,4 @@
-﻿using Ryujinx.HLE.Utilities;
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Mii.Types
@@ -9,12 +8,12 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
     {
         public UInt128 Raw;
 
-        public bool IsNull => Raw.IsNull;
-        public bool IsValid => !IsNull && (Raw.High & 0xC0) == 0x80;
+        public bool IsNull => Raw == UInt128.Zero;
+        public bool IsValid => !IsNull && ((Raw >> 64) & 0xC0) == 0x80;
 
-        public CreateId(byte[] data)
+        public CreateId(UInt128 raw)
         {
-            Raw = new UInt128(data);
+            Raw = raw;
         }
 
         public static bool operator ==(CreateId x, CreateId y)

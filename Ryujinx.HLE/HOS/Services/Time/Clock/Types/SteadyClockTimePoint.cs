@@ -36,7 +36,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             return new SteadyClockTimePoint
             {
                 TimePoint     = 0,
-                ClockSourceId = new UInt128(Guid.NewGuid().ToByteArray())
+                ClockSourceId = UInt128Utils.CreateRandom()
             };
         }
     }

@@ -293,7 +293,7 @@ namespace Ryujinx.HLE.FileSystem
                 }
 
                 aocStorage = new Nca(_virtualFileSystem.KeySet, ncaFile.Get.AsStorage()).OpenStorage(NcaSectionType.Data, integrityCheckLevel);
-                
+
                 return true;
             }
 
@@ -354,7 +354,7 @@ namespace Ryujinx.HLE.FileSystem
             {
                 if (_contentDictionary.ContainsKey((titleId, contentType)))
                 {
-                    return new UInt128(_contentDictionary[(titleId, contentType)]);
+                    return UInt128Utils.FromHex(_contentDictionary[(titleId, contentType)]);
                 }
             }
 
@@ -407,7 +407,7 @@ namespace Ryujinx.HLE.FileSystem
             {
                 return false;
             }
-            
+
             string installedPath = _virtualFileSystem.SwitchPathToSystemPath(locationEntry.ContentPath);
 
             if (!string.IsNullOrWhiteSpace(installedPath))

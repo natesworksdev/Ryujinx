@@ -201,7 +201,7 @@ namespace Ryujinx.HLE.HOS
 
             // TODO: use set:sys (and get external clock source id from settings)
             // TODO: use "time!standard_steady_clock_rtc_update_interval_minutes" and implement a worker thread to be accurate.
-            UInt128 clockSourceId = new UInt128(Guid.NewGuid().ToByteArray());
+            UInt128 clockSourceId = UInt128Utils.CreateRandom();
             IRtcManager.GetExternalRtcValue(out ulong rtcValue);
 
             // We assume the rtc is system time.

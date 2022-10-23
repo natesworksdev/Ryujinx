@@ -78,7 +78,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
             NetworkProfileData networkProfile = new NetworkProfileData
             {
-                Uuid = new UInt128(Guid.NewGuid().ToByteArray())
+                Uuid = UInt128Utils.CreateRandom()
             };
 
             networkProfile.IpSettingData.IpAddressSetting = new IpAddressSetting(interfaceProperties, unicastAddress);

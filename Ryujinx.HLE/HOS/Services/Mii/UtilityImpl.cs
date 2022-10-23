@@ -2,7 +2,7 @@
 using Ryujinx.HLE.HOS.Services.Mii.Types;
 using Ryujinx.HLE.HOS.Services.Time;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
-using System;
+using Ryujinx.HLE.Utilities;
 
 namespace Ryujinx.HLE.HOS.Services.Mii
 {
@@ -62,7 +62,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
         public CreateId MakeCreateId()
         {
-            return new CreateId(Guid.NewGuid().ToByteArray());
+            return new CreateId(UInt128Utils.CreateRandom());
         }
     }
 }
