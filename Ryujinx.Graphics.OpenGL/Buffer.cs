@@ -73,6 +73,14 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
+        public static ulong GetGpuAddress(BufferHandle handle)
+        {
+            GL.BindBuffer(BufferTarget.CopyWriteBuffer, handle.ToInt32());
+            GL.NV.MakeBufferResident((NvShaderBufferLoad)BufferTarget.CopyWriteBuffer, (NvShaderBufferLoad)All.ReadWrite);
+            GL.NV.GetBufferParameter(BufferTargetArb.CopyWriteBuffer, NvShaderBufferLoad.BufferGpuAddressNv, out ulong gpuAddress);
+            return gpuAddress;
+        }
+
         public static void Resize(BufferHandle handle, int size)
         {
             GL.BindBuffer(BufferTarget.CopyWriteBuffer, handle.ToInt32());

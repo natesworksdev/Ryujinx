@@ -27,6 +27,7 @@ namespace Ryujinx.Graphics.GAL
         void DeleteBuffer(BufferHandle buffer);
 
         ReadOnlySpan<byte> GetBufferData(BufferHandle buffer, int offset, int size);
+        ulong GetBufferGpuAddress(BufferHandle buffer);
 
         Capabilities GetCapabilities();
         ulong GetCurrentSync();

@@ -36,6 +36,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
         private ProgramPipelineState _pipeline;
 
+        private uint _globalMemoryUseMask;
+        private uint _globalMemoryWriteMask;
         private bool _vsUsesDrawParameters;
         private bool _vtgWritesRtLayer;
         private byte _vsClipDistancesWritten;
@@ -309,6 +311,13 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             UpdateStorageBuffers();
 
+            bool usesGlobalMemory = _globalMemoryUseMask != 0;
+
+            if (usesGlobalMemory)
+            {
+                _channel.BufferManager.SynchronizeGraphicsStorageBuffers(_globalMemoryUseMask, _globalMemoryWriteMask);
+            }
+
             if (!_channel.TextureManager.CommitGraphicsBindings(_shaderSpecState) || (buffers.HasUnalignedStorageBuffers != hasUnaligned))
             {
                 _currentSpecState.SetHasUnalignedStorageBuffer(buffers.HasUnalignedStorageBuffers);
@@ -317,6 +326,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             }
 
             _channel.BufferManager.CommitGraphicsBindings();
+
+            if (usesGlobalMemory)
+            {
+                _channel.BufferManager.UpdatePageTable();
+            }
         }
 
         /// <summary>
@@ -1295,9 +1309,27 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             UpdateShaderBindings(gs.Bindings);
 
+            _globalMemoryUseMask = 0;
+            _globalMemoryWriteMask = 0;
+
             for (int stageIndex = 0; stageIndex < Constants.ShaderStages; stageIndex++)
             {
-                _currentProgramInfo[stageIndex] = gs.Shaders[stageIndex + 1]?.Info;
+                ShaderProgramInfo info = gs.Shaders[stageIndex + 1]?.Info;
+
+                _currentProgramInfo[stageIndex] = info;
+
+                if (info != null)
+                {
+                    if (info.UsesGlobalMemory)
+                    {
+                        _globalMemoryUseMask |= 1u << stageIndex;
+                    }
+
+                    if (info.UsesGlobalMemoryWrite)
+                    {
+                        _globalMemoryWriteMask |= 1u << stageIndex;
+                    }
+                }
             }
 
             _context.Renderer.Pipeline.SetProgram(gs.HostProgram);

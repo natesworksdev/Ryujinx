@@ -101,7 +101,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 DeclareLocalMemory(context, localMemorySize);
             }
 
-            DeclareSupportBuffer(context);
+            DeclareSupportBuffer(context, info);
             DeclareUniformBuffers(context, context.Config.GetConstantBufferDescriptors());
             DeclareStorageBuffers(context, context.Config.GetStorageBufferDescriptors());
             DeclareSamplers(context, context.Config.GetTextureDescriptors());
@@ -133,9 +133,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             return variable;
         }
 
-        private static void DeclareSupportBuffer(CodeGenContext context)
+        private static void DeclareSupportBuffer(CodeGenContext context, StructuredProgramInfo info)
         {
-            if (!context.Config.Stage.SupportsRenderScale() && !(context.Config.LastInVertexPipeline && context.Config.GpuAccessor.QueryViewportTransformDisable()))
+            if (!context.Config.Stage.SupportsRenderScale() &&
+                (info.HelperFunctionsMask & HelperFunctionsMask.GlobalMemory) == 0 &&
+                !(context.Config.LastInVertexPipeline && context.Config.GpuAccessor.QueryViewportTransformDisable()))
             {
                 return;
             }
@@ -143,17 +145,26 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var isBgraArrayType = context.TypeArray(context.TypeU32(), context.Constant(context.TypeU32(), SupportBuffer.FragmentIsBgraCount));
             var viewportInverseVectorType = context.TypeVector(context.TypeFP32(), 4);
             var renderScaleArrayType = context.TypeArray(context.TypeFP32(), context.Constant(context.TypeU32(), SupportBuffer.RenderScaleMaxCount));
+            var pageTablePointerVectorType = context.TypeVector(context.TypeU32(), 4);
 
             context.Decorate(isBgraArrayType, Decoration.ArrayStride, (LiteralInteger)SupportBuffer.FieldSize);
             context.Decorate(renderScaleArrayType, Decoration.ArrayStride, (LiteralInteger)SupportBuffer.FieldSize);
 
-            var supportBufferStructType = context.TypeStruct(false, context.TypeU32(), isBgraArrayType, viewportInverseVectorType, context.TypeS32(), renderScaleArrayType);
+            var supportBufferStructType = context.TypeStruct(
+                false,
+                context.TypeU32(),
+                isBgraArrayType,
+                viewportInverseVectorType,
+                context.TypeS32(),
+                renderScaleArrayType,
+                pageTablePointerVectorType);
 
             context.MemberDecorate(supportBufferStructType, 0, Decoration.Offset, (LiteralInteger)SupportBuffer.FragmentAlphaTestOffset);
             context.MemberDecorate(supportBufferStructType, 1, Decoration.Offset, (LiteralInteger)SupportBuffer.FragmentIsBgraOffset);
             context.MemberDecorate(supportBufferStructType, 2, Decoration.Offset, (LiteralInteger)SupportBuffer.ViewportInverseOffset);
             context.MemberDecorate(supportBufferStructType, 3, Decoration.Offset, (LiteralInteger)SupportBuffer.FragmentRenderScaleCountOffset);
             context.MemberDecorate(supportBufferStructType, 4, Decoration.Offset, (LiteralInteger)SupportBuffer.GraphicsRenderScaleOffset);
+            context.MemberDecorate(supportBufferStructType, 5, Decoration.Offset, (LiteralInteger)SupportBuffer.PageTableBasePointerOffset);
             context.Decorate(supportBufferStructType, Decoration.Block);
 
             var supportBufferPointerType = context.TypePointer(StorageClass.Uniform, supportBufferStructType);
@@ -165,6 +176,23 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             context.AddGlobalVariable(supportBufferVariable);
 
             context.SupportBuffer = supportBufferVariable;
+
+            if ((info.HelperFunctionsMask & HelperFunctionsMask.GlobalMemory) != 0)
+            {
+                var blockArrayType = context.TypeArray(context.TypeU32(), context.Constant(context.TypeU32(), 1 << 14));
+                var pointerArrayType = context.TypeRuntimeArray(context.TypeVector(context.TypeU32(), 2));
+
+                context.Decorate(blockArrayType, Decoration.ArrayStride, (LiteralInteger)4);
+                context.Decorate(pointerArrayType, Decoration.ArrayStride, (LiteralInteger)8);
+
+                var ptStructType = context.TypeStruct(false, blockArrayType, pointerArrayType);
+
+                context.MemberDecorate(ptStructType, 0, Decoration.Offset, (LiteralInteger)0);
+                context.MemberDecorate(ptStructType, 1, Decoration.Offset, (LiteralInteger)((1 << 14) * sizeof(uint)));
+                context.Decorate(ptStructType, Decoration.Block);
+
+                context.PageTablePointerType = context.TypePointer(StorageClass.PhysicalStorageBuffer, ptStructType);
+            }
         }
 
         private static void DeclareUniformBuffers(CodeGenContext context, BufferDescriptor[] descriptors)

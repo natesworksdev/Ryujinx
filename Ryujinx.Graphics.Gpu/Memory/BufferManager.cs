@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Gpu.Engine.Types;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Gpu.Shader;
 using Ryujinx.Graphics.Shader;
@@ -107,6 +108,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private bool _transformFeedbackBuffersDirty;
 
         private bool _rebind;
+        private bool _rebindPageTable;
+
+        private BufferPageTable _bufferPageTable;
 
         /// <summary>
         /// Creates a new instance of the buffer manager.
@@ -137,6 +141,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _bufferTextures = new List<BufferTextureBinding>();
 
             _ranges = new BufferAssignment[Constants.TotalGpUniformBuffers * Constants.ShaderStages];
+
+            _bufferPageTable = new BufferPageTable(context);
         }
 
 
@@ -438,7 +444,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             CommitBufferTextureBindings();
 
             // Force rebind after doing compute work.
-            Rebind();
+            Rebind(rebindPageTable: false);
         }
 
         /// <summary>
@@ -748,7 +754,89 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         public void Rebind()
         {
+            Rebind(rebindPageTable: true);
+        }
+
+        /// <summary>
+        /// Force all bound textures and images to be rebound the next time CommitBindings is called.
+        /// </summary>
+        /// <param name="rebindPageTable">Indicates that the page table needs to also be rebound</param>
+        public void Rebind(bool rebindPageTable)
+        {
             _rebind = true;
+
+            if (rebindPageTable)
+            {
+                _rebindPageTable = true;
+            }
+        }
+
+        public void SynchronizeComputeStorageBuffers(bool write)
+        {
+            MemoryManager memoryManager = _channel.MemoryManager;
+
+            var bufferCache = memoryManager.Physical.BufferCache;
+
+            for (int index = 0; index < 16; index++)
+            {
+                ulong sbDescAddress = GetComputeUniformBufferAddress(0);
+
+                int sbDescOffset = 0x310 + index * 0x10;
+
+                sbDescAddress += (ulong)sbDescOffset;
+
+                SbDescriptor sbDescriptor = _channel.MemoryManager.Physical.Read<SbDescriptor>(sbDescAddress);
+
+                ulong address = bufferCache.TranslateAndCreateBuffer(memoryManager, sbDescriptor.PackAddress(), (ulong)sbDescriptor.Size);
+
+                if (address != 0)
+                {
+                    bufferCache.SynchronizeBufferRange(address, (ulong)sbDescriptor.Size, write);
+                }
+            }
+        }
+
+        public void SynchronizeGraphicsStorageBuffers(uint globalMemoryUseMask, uint globalMemoryWriteMask)
+        {
+            MemoryManager memoryManager = _channel.MemoryManager;
+
+            var bufferCache = memoryManager.Physical.BufferCache;
+
+            for (int stage = 0; stage < Constants.ShaderStages; stage++)
+            {
+                if ((globalMemoryUseMask & (1u << stage)) == 0)
+                {
+                    continue;
+                }
+
+                bool write = (globalMemoryWriteMask & (1u << stage)) != 0;
+
+                for (int index = 0; index < 16; index++)
+                {
+                    ulong sbDescAddress = GetGraphicsUniformBufferAddress(stage, 0);
+
+                    int sbDescOffset = 0x110 + stage * 0x100 + index * 0x10;
+
+                    sbDescAddress += (ulong)sbDescOffset;
+
+                    SbDescriptor sbDescriptor = memoryManager.Physical.Read<SbDescriptor>(sbDescAddress);
+
+                    ulong address = bufferCache.TranslateAndCreateBuffer(memoryManager, sbDescriptor.PackAddress(), (ulong)sbDescriptor.Size);
+
+                    if (address != 0)
+                    {
+                        bufferCache.SynchronizeBufferRange(address, (ulong)sbDescriptor.Size, write);
+                    }
+                }
+            }
+        }
+
+        public void UpdatePageTable()
+        {
+            MemoryManager memoryManager = _channel.MemoryManager;
+
+            _bufferPageTable.Update(memoryManager, _rebindPageTable);
+            _rebindPageTable = false;
         }
     }
 }

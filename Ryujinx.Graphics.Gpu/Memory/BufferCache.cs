@@ -27,7 +27,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// Must lock for any access from other threads.
         /// </remarks>
         private readonly RangeList<Buffer> _buffers;
-
         private Buffer[] _bufferOverlaps;
 
         private readonly Dictionary<ulong, BufferCacheEntry> _dirtyCache;
@@ -395,6 +394,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
             return GetBuffer(address, size, write).GetRange(address, size);
         }
 
+        public ulong GetBufferHostGpuAddress(ulong address, ulong size, bool write = false)
+        {
+            return GetBuffer(address, size, write).GetHostGpuAddress(address);
+        }
+
         /// <summary>
         /// Gets a buffer for a given memory range.
         /// A buffer overlapping with the specified range is assumed to already exist on the cache.
@@ -431,13 +435,19 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="address">Start address of the memory range</param>
         /// <param name="size">Size in bytes of the memory range</param>
-        public void SynchronizeBufferRange(ulong address, ulong size)
+        /// <param name="write">Whether the buffer will be written to by this use</param>
+        public void SynchronizeBufferRange(ulong address, ulong size, bool write = false)
         {
             if (size != 0)
             {
                 Buffer buffer = _buffers.FindFirstOverlap(address, size);
 
                 buffer.SynchronizeMemory(address, size);
+
+                if (write)
+                {
+                    buffer.SignalModified(address, size);
+                }
             }
         }
 

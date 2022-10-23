@@ -78,9 +78,17 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 usage |= BufferUsageFlags.ConditionalRenderingBitExt;
             }
-            else if (gd.Capabilities.SupportsIndirectParameters)
+            else
             {
-                usage |= BufferUsageFlags.IndirectBufferBit;
+                if (gd.Capabilities.SupportsIndirectParameters)
+                {
+                    usage |= BufferUsageFlags.IndirectBufferBit;
+                }
+
+                if (gd.Capabilities.SupportsBufferDeviceAddress)
+                {
+                    usage |= BufferUsageFlags.ShaderDeviceAddressBitExt;
+                }
             }
 
             var bufferCreateInfo = new BufferCreateInfo()
@@ -324,6 +332,16 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             return ReadOnlySpan<byte>.Empty;
+        }
+
+        public ulong GetBufferGpuAddress(BufferHandle handle)
+        {
+            if (TryGetBuffer(handle, out var holder))
+            {
+                return holder.GetGpuAddress();
+            }
+
+            return 0;
         }
 
         public void SetData<T>(BufferHandle handle, int offset, ReadOnlySpan<T> data) where T : unmanaged

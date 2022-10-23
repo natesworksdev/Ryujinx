@@ -141,6 +141,16 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             public ShaderStage Stage;
 
             /// <summary>
+            /// Indicates if the shader uses instructions that access global memory, such as LDG, STG and ATOM.
+            /// </summary>
+            public bool UsesGlobalMemory;
+
+            /// <summary>
+            /// Indicates if the shader uses instructions that modify global memory, such as STG and ATOM.
+            /// </summary>
+            public bool UsesGlobalMemoryWrite;
+
+            /// <summary>
             /// Indicates if the shader accesses the Instance ID built-in variable.
             /// </summary>
             public bool UsesInstanceId;
@@ -775,6 +785,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 textures,
                 images,
                 dataInfo.Stage,
+                dataInfo.UsesGlobalMemory,
+                dataInfo.UsesGlobalMemoryWrite,
                 dataInfo.UsesInstanceId,
                 dataInfo.UsesDrawParameters,
                 dataInfo.UsesRtLayer,
@@ -801,6 +813,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             dataInfo.TexturesCount = (ushort)info.Textures.Count;
             dataInfo.ImagesCount = (ushort)info.Images.Count;
             dataInfo.Stage = info.Stage;
+            dataInfo.UsesGlobalMemory = info.UsesGlobalMemory;
+            dataInfo.UsesGlobalMemoryWrite = info.UsesGlobalMemoryWrite;
             dataInfo.UsesInstanceId = info.UsesInstanceId;
             dataInfo.UsesDrawParameters = info.UsesDrawParameters;
             dataInfo.UsesRtLayer = info.UsesRtLayer;

@@ -1537,6 +1537,11 @@ namespace Ryujinx.Graphics.OpenGL
             return (_boundDrawFramebuffer, _boundReadFramebuffer);
         }
 
+        public void UpdatePageTableGpuAddress(ulong address)
+        {
+            _supportBuffer.UpdatePageTableBasePointer(address);
+        }
+
         public void UpdateRenderScale(ReadOnlySpan<float> scales, int totalCount, int fragmentCount)
         {
             bool changed = false;

@@ -44,6 +44,20 @@ namespace Ryujinx.Graphics.GAL
             }
         }
 
+        public void UpdatePageTableBasePointer(ulong address)
+        {
+            uint addrLow = (uint)address;
+            uint addrHigh = (uint)(address >> 32);
+
+            if (Data.PageTableBasePointer.X != addrLow || Data.PageTableBasePointer.Y != addrHigh)
+            {
+                Data.PageTableBasePointer.X = addrLow;
+                Data.PageTableBasePointer.Y = addrHigh;
+
+                MarkDirty(SupportBuffer.PageTableBasePointerOffset, sizeof(ulong));
+            }
+        }
+
         public void UpdateFragmentRenderScaleCount(int count)
         {
             if (Data.FragmentRenderScaleCount.X != count)

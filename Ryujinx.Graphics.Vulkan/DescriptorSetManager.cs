@@ -26,7 +26,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 var poolSizes = new DescriptorPoolSize[]
                 {
-                    new DescriptorPoolSize(DescriptorType.UniformBuffer, (1 + Constants.MaxUniformBufferBindings) * DescriptorPoolMultiplier),
+                    new DescriptorPoolSize(DescriptorType.UniformBuffer, Constants.MaxUniformBufferBindings * DescriptorPoolMultiplier),
                     new DescriptorPoolSize(DescriptorType.StorageBuffer, Constants.MaxStorageBufferBindings * DescriptorPoolMultiplier),
                     new DescriptorPoolSize(DescriptorType.CombinedImageSampler, Constants.MaxTextureBindings * DescriptorPoolMultiplier),
                     new DescriptorPoolSize(DescriptorType.StorageImage, Constants.MaxImageBindings * DescriptorPoolMultiplier),

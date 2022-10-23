@@ -21,6 +21,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         public const string SupportBlockViewportInverse = "s_viewport_inverse";
         public const string SupportBlockFragmentScaleCount = "s_frag_scale_count";
         public const string SupportBlockRenderScaleName = "s_render_scale";
+        public const string SupportBlockPageTableBasePointerName = "s_page_table";
 
         public const string BlockSuffix = "block";
 

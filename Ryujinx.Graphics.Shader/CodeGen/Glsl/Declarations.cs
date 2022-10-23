@@ -59,6 +59,22 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 context.AppendLine("#extension GL_NV_geometry_shader_passthrough : enable");
             }
 
+            if ((info.HelperFunctionsMask & HelperFunctionsMask.GlobalMemory) != 0)
+            {
+                context.AppendLine("#extension GL_EXT_shader_16bit_storage : enable");
+                context.AppendLine("#extension GL_EXT_shader_8bit_storage : enable");
+
+                if (context.Config.Options.TargetApi == TargetApi.Vulkan)
+                {
+                    context.AppendLine("#extension GL_EXT_buffer_reference : enable");
+                    context.AppendLine("#extension GL_EXT_buffer_reference_uvec2 : enable");
+                }
+                else
+                {
+                    context.AppendLine("#extension GL_NV_shader_buffer_load : enable");
+                }
+            }
+
             context.AppendLine("#pragma optionNV(fastmath off)");
             context.AppendLine();
 
@@ -241,37 +257,34 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
             bool isFragment = context.Config.Stage == ShaderStage.Fragment;
 
-            if (isFragment || context.Config.Stage == ShaderStage.Compute || context.Config.Stage == ShaderStage.Vertex)
+            if (isFragment && context.Config.GpuAccessor.QueryEarlyZForce())
             {
-                if (isFragment && context.Config.GpuAccessor.QueryEarlyZForce())
+                context.AppendLine("layout(early_fragment_tests) in;");
+                context.AppendLine();
+            }
+
+            if ((context.Config.UsedFeatures & (FeatureFlags.FragCoordXY | FeatureFlags.IntegerSampling)) != 0)
+            {
+                string stage = OperandManager.GetShaderStagePrefix(context.Config.Stage);
+
+                int scaleElements = context.Config.GetTextureDescriptors().Length + context.Config.GetImageDescriptors().Length;
+
+                if (isFragment)
                 {
-                    context.AppendLine("layout(early_fragment_tests) in;");
+                    scaleElements++; // Also includes render target scale, for gl_FragCoord.
+                }
+
+                DeclareSupportUniformBlock(context, info, context.Config.Stage, scaleElements);
+
+                if (context.Config.UsedFeatures.HasFlag(FeatureFlags.IntegerSampling) && scaleElements != 0)
+                {
+                    AppendHelperFunction(context, $"Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/TexelFetchScale_{stage}.glsl");
                     context.AppendLine();
                 }
-
-                if ((context.Config.UsedFeatures & (FeatureFlags.FragCoordXY | FeatureFlags.IntegerSampling)) != 0)
-                {
-                    string stage = OperandManager.GetShaderStagePrefix(context.Config.Stage);
-
-                    int scaleElements = context.Config.GetTextureDescriptors().Length + context.Config.GetImageDescriptors().Length;
-
-                    if (isFragment)
-                    {
-                        scaleElements++; // Also includes render target scale, for gl_FragCoord.
-                    }
-
-                    DeclareSupportUniformBlock(context, context.Config.Stage, scaleElements);
-
-                    if (context.Config.UsedFeatures.HasFlag(FeatureFlags.IntegerSampling) && scaleElements != 0)
-                    {
-                        AppendHelperFunction(context, $"Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/TexelFetchScale_{stage}.glsl");
-                        context.AppendLine();
-                    }
-                }
-                else if (isFragment || context.Config.Stage == ShaderStage.Vertex)
-                {
-                    DeclareSupportUniformBlock(context, context.Config.Stage, 0);
-                }
+            }
+            else
+            {
+                DeclareSupportUniformBlock(context, info, context.Config.Stage, 0);
             }
 
             if ((info.HelperFunctionsMask & HelperFunctionsMask.AtomicMinMaxS32Shared) != 0)
@@ -282,6 +295,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             if ((info.HelperFunctionsMask & HelperFunctionsMask.AtomicMinMaxS32Storage) != 0)
             {
                 AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/AtomicMinMaxS32Storage.glsl");
+            }
+
+            if ((info.HelperFunctionsMask & HelperFunctionsMask.GlobalMemory) != 0)
+            {
+                AppendHelperFunction(context, context.Config.Options.TargetApi == TargetApi.Vulkan
+                    ? "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/GlobalMemoryVk.glsl"
+                    : "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/GlobalMemory.glsl");
             }
 
             if ((info.HelperFunctionsMask & HelperFunctionsMask.MultiplyHighS32) != 0)
@@ -672,9 +692,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             context.AppendLine($"layout (location = {location}) patch out vec4 {name};");
         }
 
-        private static void DeclareSupportUniformBlock(CodeGenContext context, ShaderStage stage, int scaleElements)
+        private static void DeclareSupportUniformBlock(CodeGenContext context, StructuredProgramInfo info, ShaderStage stage, int scaleElements)
         {
             bool needsSupportBlock = stage == ShaderStage.Fragment ||
+                (info.HelperFunctionsMask & HelperFunctionsMask.GlobalMemory) != 0 ||
                 (context.Config.LastInVertexPipeline && context.Config.GpuAccessor.QueryViewportTransformDisable());
 
             if (!needsSupportBlock && scaleElements == 0)
@@ -700,6 +721,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
 
             context.AppendLine($"float {DefaultNames.SupportBlockRenderScaleName}[{SupportBuffer.RenderScaleMaxCount}];");
+            context.AppendLine($"uvec4 {DefaultNames.SupportBlockPageTableBasePointerName};");
 
             context.LeaveScope(";");
             context.AppendLine();

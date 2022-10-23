@@ -1222,6 +1222,11 @@ namespace Ryujinx.Graphics.Vulkan
             TextureBarrier();
         }
 
+        public void UpdatePageTableGpuAddress(ulong address)
+        {
+            SupportBufferUpdater.UpdatePageTableBasePointer(address);
+        }
+
         public void UpdateRenderScale(ReadOnlySpan<float> scales, int totalCount, int fragmentCount)
         {
             bool changed = false;

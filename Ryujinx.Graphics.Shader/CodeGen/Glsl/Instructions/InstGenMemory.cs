@@ -1,5 +1,6 @@
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
+using Ryujinx.Graphics.Shader.Translation;
 using System;
 
 using static Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions.InstGenHelper;
@@ -238,6 +239,24 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             }
         }
 
+        public static string LoadGlobal(CodeGenContext context, AstOperation operation)
+        {
+            IAstNode src1 = operation.GetSource(0);
+            IAstNode src2 = operation.GetSource(1);
+
+            string addressLowExpr  = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
+            string addressHighExpr = GetSoureExpr(context, src2, GetSrcVarType(operation.Inst, 1));
+
+            if (context.Config.Options.TargetApi == TargetApi.Vulkan)
+            {
+                return $"uint_ptr({HelperFunctionNames.TranslateAddress}(uvec2({addressLowExpr}, {addressHighExpr}))).value";
+            }
+            else
+            {
+                return $"*(uint*)packPtr({HelperFunctionNames.TranslateAddress}(uvec2({addressLowExpr}, {addressHighExpr})))";
+            }
+        }
+
         public static string LoadLocal(CodeGenContext context, AstOperation operation)
         {
             return LoadLocalOrShared(context, operation, DefaultNames.LocalMemoryName);
@@ -343,6 +362,44 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             string value = GetSoureExpr(context, src3, GetSrcVarType(operation.Inst, 2));
             return $"{attrName} = {value}";
+        }
+
+        public static string StoreGlobal(CodeGenContext context, AstOperation operation)
+        {
+            return StoreGlobal(context, operation, "uint");
+        }
+
+        public static string StoreGlobal16(CodeGenContext context, AstOperation operation)
+        {
+            return StoreGlobal(context, operation, "uint16_t");
+        }
+
+        public static string StoreGlobal8(CodeGenContext context, AstOperation operation)
+        {
+            return StoreGlobal(context, operation, "uint8_t");
+        }
+
+        private static string StoreGlobal(CodeGenContext context, AstOperation operation, string type)
+        {
+            IAstNode src1 = operation.GetSource(0);
+            IAstNode src2 = operation.GetSource(1);
+            IAstNode src3 = operation.GetSource(2);
+
+            string addressLowExpr  = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
+            string addressHighExpr = GetSoureExpr(context, src2, GetSrcVarType(operation.Inst, 1));
+
+            VariableType srcType = OperandManager.GetNodeDestType(context, src3);
+
+            string src = TypeConversion.ReinterpretCast(context, src3, srcType, VariableType.U32);
+
+            if (context.Config.Options.TargetApi == TargetApi.Vulkan)
+            {
+                return $"{type}_ptr({HelperFunctionNames.TranslateAddress}(uvec2({addressLowExpr}, {addressHighExpr}))).value = {src}";
+            }
+            else
+            {
+                return $"*({type}*)packPtr({HelperFunctionNames.TranslateAddress}(uvec2({addressLowExpr}, {addressHighExpr}))) = {src}";
+            }
         }
 
         public static string StoreLocal(CodeGenContext context, AstOperation operation)

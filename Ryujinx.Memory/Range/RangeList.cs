@@ -427,6 +427,18 @@ namespace Ryujinx.Memory.Range
             return ~left;
         }
 
+        public T[] ToArray()
+        {
+            T[] output = new T[Count];
+
+            for (int i = 0; i < output.Length; i++)
+            {
+                output[i] = _items[i].Value;
+            }
+
+            return output;
+        }
+
         public IEnumerator<T> GetEnumerator()
         {
             for (int i = 0; i < Count; i++)

@@ -17,6 +17,7 @@
 
         BufferDispose,
         BufferGetData,
+        BufferGetGpuAddress,
         BufferSetData,
 
         CounterEventDispose,
@@ -96,6 +97,7 @@
         TextureBarrierTiled,
         TryHostConditionalRendering,
         TryHostConditionalRenderingFlush,
+        UpdatePageTableGpuAddress,
         UpdateRenderScale
     }
 }
