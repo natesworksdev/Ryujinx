@@ -1,8 +1,8 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.HOS.Services.Nifm.StaticService.GeneralService;
 using Ryujinx.HLE.HOS.Services.Nifm.StaticService.Types;
-using Ryujinx.HLE.Utilities;
 using System;
 using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;

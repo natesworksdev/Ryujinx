@@ -1,8 +1,8 @@
-﻿using Ryujinx.Cpu;
+﻿using Ryujinx.Common.Utilities;
+using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Services.Mii.Types;
 using Ryujinx.HLE.HOS.Services.Time;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
-using Ryujinx.HLE.Utilities;
 
 namespace Ryujinx.HLE.HOS.Services.Mii
 {

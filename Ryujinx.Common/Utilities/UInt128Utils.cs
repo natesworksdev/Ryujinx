@@ -1,8 +1,8 @@
 using System;
 
-namespace Ryujinx.HLE.Utilities
+namespace Ryujinx.Common.Utilities
 {
-    static class UInt128Utils
+    public static class UInt128Utils
     {
         public static UInt128 FromHex(string hex)
         {
