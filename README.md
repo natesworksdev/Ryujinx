@@ -90,7 +90,7 @@ Ryujinx system files are stored in the `Ryujinx` folder. This folder is located 
 
 - **GPU**
 
-  The GPU emulator emulates the Switch's Maxwell GPU using either the OpenGL (version 4.5 minimum) or Vulkan APIs through a custom build of OpenTK or Silk.NET respectively. There are currently five graphics enhancements available to the end user in Ryujinx: Disk Shader Caching, Resolution Scaling, Aspect Ratio Adjustment, and Anisotropic Filtering. These enhancements can be adjusted or toggled as desired in the GUI.
+  The GPU emulator emulates the Switch's Maxwell GPU using either the OpenGL (version 4.5 minimum) or Vulkan APIs through a custom build of OpenTK or Silk.NET respectively. There are currently four graphics enhancements available to the end user in Ryujinx: Disk Shader Caching, Resolution Scaling, Aspect Ratio Adjustment, and Anisotropic Filtering. These enhancements can be adjusted or toggled as desired in the GUI.
 
 - **Input**
 
