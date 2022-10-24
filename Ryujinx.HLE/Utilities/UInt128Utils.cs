@@ -11,8 +11,7 @@ namespace Ryujinx.HLE.Utilities
 
         public static UInt128 CreateRandom()
         {
-            Random random = new Random();
-            return new UInt128((ulong)random.NextInt64(), (ulong)random.NextInt64());
+            return new UInt128((ulong)Random.Shared.NextInt64(), (ulong)Random.Shared.NextInt64());
         }
     }
 }
