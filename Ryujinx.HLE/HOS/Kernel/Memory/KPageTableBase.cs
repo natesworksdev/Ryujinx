@@ -2447,9 +2447,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         {
             ulong endAddr = address + size;
 
-            LinkedListNode<KMemoryBlock> node = _blockManager.FindBlockNode(address);
+            KMemoryBlock currBlock = _blockManager.FindBlock(address);
 
-            KMemoryInfo info = node.Value.GetInfo();
+            KMemoryInfo info = currBlock.GetInfo();
 
             MemoryState firstState = info.State;
             KMemoryPermission firstPermission = info.Permission;
@@ -2457,7 +2457,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             do
             {
-                info = node.Value.GetInfo();
+                info = currBlock.GetInfo();
 
                 // Check if the block state matches what we expect.
                 if (firstState != info.State ||
@@ -2474,7 +2474,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     return false;
                 }
             }
-            while (info.Address + info.Size - 1 < endAddr - 1 && (node = node.Next) != null);
+            while (info.Address + info.Size - 1 < endAddr - 1 && (currBlock = currBlock.Successor) != null);
 
             outState = firstState;
             outPermission = firstPermission;
@@ -2509,17 +2509,17 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
         private IEnumerable<KMemoryInfo> IterateOverRange(ulong start, ulong end)
         {
-            LinkedListNode<KMemoryBlock> node = _blockManager.FindBlockNode(start);
+            KMemoryBlock currBlock = _blockManager.FindBlock(start);
 
             KMemoryInfo info;
 
             do
             {
-                info = node.Value.GetInfo();
+                info = currBlock.GetInfo();
 
                 yield return info;
             }
-            while (info.Address + info.Size - 1 < end - 1 && (node = node.Next) != null);
+            while (info.Address + info.Size - 1 < end - 1 && (currBlock = currBlock.Successor) != null);
         }
 
         private ulong AllocateVa(ulong regionStart, ulong regionPagesCount, ulong neededPagesCount, int alignment)
@@ -2540,11 +2540,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 for (int attempt = 0; attempt < 8; attempt++)
                 {
-                    address = BitUtils.AlignDown(regionStart + GetRandomValue(0, aslrMaxOffset) * (ulong)alignment, alignment);
+                    ulong aslrAddress = BitUtils.AlignDown(regionStart + GetRandomValue(0, aslrMaxOffset) * (ulong)alignment, alignment);
+                    ulong aslrEndAddr = aslrAddress + totalNeededSize;
 
-                    ulong endAddr = address + totalNeededSize;
-
-                    KMemoryInfo info = _blockManager.FindBlock(address).GetInfo();
+                    KMemoryInfo info = _blockManager.FindBlock(aslrAddress).GetInfo();
 
                     if (info.State != MemoryState.Unmapped)
                     {
@@ -2554,11 +2553,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     ulong currBaseAddr = info.Address + reservedPagesCount * PageSize;
                     ulong currEndAddr = info.Address + info.Size;
 
-                    if (address >= regionStart &&
-                        address >= currBaseAddr &&
-                        endAddr - 1 <= regionEndAddr - 1 &&
-                        endAddr - 1 <= currEndAddr - 1)
+                    if (aslrAddress >= regionStart &&
+                        aslrAddress >= currBaseAddr &&
+                        aslrEndAddr - 1 <= regionEndAddr - 1 &&
+                        aslrEndAddr - 1 <= currEndAddr - 1)
                     {
+                        address = aslrAddress;
                         break;
                     }
                 }
@@ -2603,11 +2603,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             ulong totalNeededSize = reservedSize + neededPagesCount * PageSize;
 
-            ulong regionEndAddr = regionStart + regionPagesCount * PageSize;
+            ulong regionEndAddr = (regionStart + regionPagesCount * PageSize) - 1;
 
-            LinkedListNode<KMemoryBlock> node = _blockManager.FindBlockNode(regionStart);
+            KMemoryBlock currBlock = _blockManager.FindBlock(regionStart);
 
-            KMemoryInfo info = node.Value.GetInfo();
+            KMemoryInfo info = currBlock.GetInfo();
 
             while (regionEndAddr >= info.Address)
             {
@@ -2636,14 +2636,14 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     }
                 }
 
-                node = node.Next;
+                currBlock = currBlock.Successor;
 
-                if (node == null)
+                if (currBlock == null)
                 {
                     break;
                 }
 
-                info = node.Value.GetInfo();
+                info = currBlock.GetInfo();
             }
 
             return 0;

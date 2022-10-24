@@ -726,7 +726,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorAcrossVectorOpF(context, (op1, op2) =>
                 {
-                    return context.Call(typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FPMaxNum)), op1, op2);
+                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMaxNum), op1, op2);
                 });
             }
         }
@@ -774,7 +774,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorAcrossVectorOpF(context, (op1, op2) =>
                 {
-                    return context.Call(typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FPMax)), op1, op2);
+                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMax), op1, op2);
                 });
             }
         }
@@ -900,7 +900,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorAcrossVectorOpF(context, (op1, op2) =>
                 {
-                    return context.Call(typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FPMinNum)), op1, op2);
+                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMinNum), op1, op2);
                 });
             }
         }
@@ -948,7 +948,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorAcrossVectorOpF(context, (op1, op2) =>
                 {
-                    return context.Call(typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FPMin)), op1, op2);
+                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMin), op1, op2);
                 });
             }
         }
@@ -1617,53 +1617,47 @@ namespace ARMeilleure.Instructions
 
         public static void Frinta_S(ArmEmitterContext context)
         {
-            EmitScalarUnaryOpF(context, (op1) =>
+            if (Optimizations.UseSse41)
             {
-                return EmitRoundMathCall(context, MidpointRounding.AwayFromZero, op1);
-            });
+                EmitSse41ScalarRoundOpF(context, FPRoundingMode.ToNearestAway);
+            }
+            else
+            {
+                EmitScalarUnaryOpF(context, (op1) =>
+                {
+                    return EmitRoundMathCall(context, MidpointRounding.AwayFromZero, op1);
+                });
+            }
         }
 
         public static void Frinta_V(ArmEmitterContext context)
         {
-            EmitVectorUnaryOpF(context, (op1) =>
+            if (Optimizations.UseSse41)
             {
-                return EmitRoundMathCall(context, MidpointRounding.AwayFromZero, op1);
-            });
+                EmitSse41VectorRoundOpF(context, FPRoundingMode.ToNearestAway);
+            }
+            else
+            {
+                EmitVectorUnaryOpF(context, (op1) =>
+                {
+                    return EmitRoundMathCall(context, MidpointRounding.AwayFromZero, op1);
+                });
+            }
         }
 
         public static void Frinti_S(ArmEmitterContext context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
-
             EmitScalarUnaryOpF(context, (op1) =>
             {
-                if (op.Size == 0)
-                {
-                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.RoundF)), op1);
-                }
-                else /* if (op.Size == 1) */
-                {
-                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Round)), op1);
-                }
+                return EmitRoundByRMode(context, op1);
             });
         }
 
         public static void Frinti_V(ArmEmitterContext context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
-
-            int sizeF = op.Size & 1;
-
             EmitVectorUnaryOpF(context, (op1) =>
             {
-                if (sizeF == 0)
-                {
-                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.RoundF)), op1);
-                }
-                else /* if (sizeF == 1) */
-                {
-                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Round)), op1);
-                }
+                return EmitRoundByRMode(context, op1);
             });
         }
 
@@ -1759,37 +1753,17 @@ namespace ARMeilleure.Instructions
 
         public static void Frintx_S(ArmEmitterContext context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
-
             EmitScalarUnaryOpF(context, (op1) =>
             {
-                if (op.Size == 0)
-                {
-                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.RoundF)), op1);
-                }
-                else /* if (op.Size == 1) */
-                {
-                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Round)), op1);
-                }
+                return EmitRoundByRMode(context, op1);
             });
         }
 
         public static void Frintx_V(ArmEmitterContext context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
-
-            int sizeF = op.Size & 1;
-
             EmitVectorUnaryOpF(context, (op1) =>
             {
-                if (sizeF == 0)
-                {
-                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.RoundF)), op1);
-                }
-                else /* if (sizeF == 1) */
-                {
-                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Round)), op1);
-                }
+                return EmitRoundByRMode(context, op1);
             });
         }
 
@@ -3556,9 +3530,18 @@ namespace ARMeilleure.Instructions
 
             Operand n = GetVec(op.Rn);
 
-            Intrinsic inst = (op.Size & 1) != 0 ? Intrinsic.X86Roundsd : Intrinsic.X86Roundss;
+            Operand res;
 
-            Operand res = context.AddIntrinsic(inst, n, Const(X86GetRoundControl(roundMode)));
+            if (roundMode != FPRoundingMode.ToNearestAway)
+            {
+                Intrinsic inst = (op.Size & 1) != 0 ? Intrinsic.X86Roundsd : Intrinsic.X86Roundss;
+
+                res = context.AddIntrinsic(inst, n, Const(X86GetRoundControl(roundMode)));
+            }
+            else
+            {
+                res = EmitSse41RoundToNearestWithTiesToAwayOpF(context, n, scalar: true);
+            }
 
             if ((op.Size & 1) != 0)
             {
@@ -3578,9 +3561,18 @@ namespace ARMeilleure.Instructions
 
             Operand n = GetVec(op.Rn);
 
-            Intrinsic inst = (op.Size & 1) != 0 ? Intrinsic.X86Roundpd : Intrinsic.X86Roundps;
+            Operand res;
 
-            Operand res = context.AddIntrinsic(inst, n, Const(X86GetRoundControl(roundMode)));
+            if (roundMode != FPRoundingMode.ToNearestAway)
+            {
+                Intrinsic inst = (op.Size & 1) != 0 ? Intrinsic.X86Roundpd : Intrinsic.X86Roundps;
+
+                res = context.AddIntrinsic(inst, n, Const(X86GetRoundControl(roundMode)));
+            }
+            else
+            {
+                res = EmitSse41RoundToNearestWithTiesToAwayOpF(context, n, scalar: false);
+            }
 
             if (op.RegisterSize == RegisterSize.Simd64)
             {

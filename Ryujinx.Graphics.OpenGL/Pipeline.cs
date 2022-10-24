@@ -11,6 +11,8 @@ namespace Ryujinx.Graphics.OpenGL
 {
     class Pipeline : IPipeline, IDisposable
     {
+        private const int SavedImages = 2;
+
         private readonly DrawTextureEmulation _drawTexture;
 
         internal ulong DrawCount { get; private set; }
@@ -46,6 +48,7 @@ namespace Ryujinx.Graphics.OpenGL
         private Vector4<float>[] _renderScale = new Vector4<float>[73];
         private int _fragmentScaleCount;
 
+        private (TextureBase, Format)[] _images;
         private TextureBase _unit0Texture;
         private Sampler _unit0Sampler;
 
@@ -77,6 +80,8 @@ namespace Ryujinx.Graphics.OpenGL
 
             _fragmentOutputMap = uint.MaxValue;
             _componentMasks = uint.MaxValue;
+
+            _images = new (TextureBase, Format)[SavedImages];
 
             var defaultScale = new Vector4<float> { X = 1f, Y = 0f, Z = 0f, W = 0f };
             new Span<Vector4<float>>(_renderScale).Fill(defaultScale);
@@ -236,7 +241,7 @@ namespace Ryujinx.Graphics.OpenGL
                 return;
             }
 
-            PreDraw();
+            PreDraw(vertexCount);
 
             if (_primitiveType == PrimitiveType.Quads && !HwCapabilities.SupportsQuads)
             {
@@ -354,7 +359,7 @@ namespace Ryujinx.Graphics.OpenGL
                 return;
             }
 
-            PreDraw();
+            PreDrawVbUnbounded();
 
             int indexElemSize = 1;
 
@@ -686,7 +691,7 @@ namespace Ryujinx.Graphics.OpenGL
                 return;
             }
 
-            PreDraw();
+            PreDrawVbUnbounded();
 
             GL.BindBuffer((BufferTarget)All.DrawIndirectBuffer, indirectBuffer.Handle.ToInt32());
             GL.BindBuffer((BufferTarget)All.ParameterBuffer, parameterBuffer.Handle.ToInt32());
@@ -709,7 +714,7 @@ namespace Ryujinx.Graphics.OpenGL
                 return;
             }
 
-            PreDraw();
+            PreDrawVbUnbounded();
 
             _vertexArray.SetRangeOfIndexBuffer();
 
@@ -907,6 +912,11 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void SetImage(int binding, ITexture texture, Format imageFormat)
         {
+            if ((uint)binding < SavedImages)
+            {
+                _images[binding] = (texture as TextureBase, imageFormat);
+            }
+
             if (texture == null)
             {
                 return;
@@ -1515,11 +1525,22 @@ namespace Ryujinx.Graphics.OpenGL
             _supportBuffer.Commit();
         }
 
+        private void PreDraw(int vertexCount)
+        {
+            _vertexArray.PreDraw(vertexCount);
+            PreDraw();
+        }
+
+        private void PreDrawVbUnbounded()
+        {
+            _vertexArray.PreDrawVbUnbounded();
+            PreDraw();
+        }
+
         private void PreDraw()
         {
             DrawCount++;
 
-            _vertexArray.Validate();
             _unit0Texture?.Bind(0);
             _supportBuffer.Commit();
         }
@@ -1594,6 +1615,32 @@ namespace Ryujinx.Graphics.OpenGL
             if (_viewportArray.Length > 0)
             {
                 GL.ViewportArray(0, 1, _viewportArray);
+            }
+        }
+
+        public void RestoreProgram()
+        {
+            _program?.Bind();
+        }
+
+        public void RestoreImages1And2()
+        {
+            for (int i = 0; i < SavedImages; i++)
+            {
+                (TextureBase texBase, Format imageFormat) = _images[i];
+
+                if (texBase != null)
+                {
+                    SizedInternalFormat format = FormatTable.GetImageFormat(imageFormat);
+
+                    if (format != 0)
+                    {
+                        GL.BindImageTexture(i, texBase.Handle, 0, true, 0, TextureAccess.ReadWrite, format);
+                        continue;
+                    }
+                }
+
+                GL.BindImageTexture(i, 0, 0, true, 0, TextureAccess.ReadWrite, SizedInternalFormat.Rgba8);
             }
         }
 

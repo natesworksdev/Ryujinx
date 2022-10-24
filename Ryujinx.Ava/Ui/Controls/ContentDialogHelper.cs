@@ -1,5 +1,10 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Primitives;
+using Avalonia.Media;
 using Avalonia.Threading;
+using FluentAvalonia.Core;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Models;
@@ -23,13 +28,76 @@ namespace Ryujinx.Ava.Ui.Controls
             string secondaryButton,
             string closeButton,
             int iconSymbol,
-            UserResult primaryButtonResult = UserResult.Ok)
+            UserResult primaryButtonResult = UserResult.Ok,
+            ManualResetEvent deferResetEvent = null,
+            Func<Window, Task> doWhileDeferred = null,
+            TypedEventHandler<ContentDialog, ContentDialogButtonClickEventArgs> deferCloseAction = null)
         {
             UserResult result = UserResult.None;
 
-            ContentDialog contentDialog = new ContentDialog();
+            bool useOverlay = false;
+            Window mainWindow = null;
 
-            await ShowDialog();
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime al)
+            {
+                foreach (var item in al.Windows)
+                {
+                    if (item.IsActive && item is MainWindow window && window.ViewModel.IsGameRunning)
+                    {
+                        mainWindow = window;
+                        useOverlay = true;
+                        break;
+                    }
+                }
+            }
+
+            ContentDialog contentDialog = null;
+            ContentDialogOverlayWindow overlay = null;
+
+            if (useOverlay)
+            {
+                overlay = new ContentDialogOverlayWindow()
+                {
+                    Height = mainWindow.Bounds.Height,
+                    Width = mainWindow.Bounds.Width,
+                    Position = mainWindow.PointToScreen(new Point())
+                };
+
+                mainWindow.PositionChanged += OverlayOnPositionChanged;
+
+                void OverlayOnPositionChanged(object sender, PixelPointEventArgs e)
+                {
+                    overlay.Position = mainWindow.PointToScreen(new Point());
+                }
+
+                contentDialog = overlay.ContentDialog;
+
+                bool opened = false;
+
+                overlay.Opened += OverlayOnActivated;
+
+                async void OverlayOnActivated(object sender, EventArgs e)
+                {
+                    if (opened)
+                    {
+                        return;
+                    }
+
+                    opened = true;
+
+                    overlay.Position = mainWindow.PointToScreen(new Point());
+
+                    await ShowDialog();
+                }
+
+                await overlay.ShowDialog(mainWindow);
+            }
+            else
+            {
+                contentDialog = new ContentDialog();
+
+                await ShowDialog();
+            }
 
             async Task ShowDialog()
             {
@@ -46,13 +114,28 @@ namespace Ryujinx.Ava.Ui.Controls
                 contentDialog.SecondaryButtonCommand = MiniCommand.Create(() =>
                 {
                     result = UserResult.No;
+                    contentDialog.PrimaryButtonClick -= deferCloseAction;
                 });
                 contentDialog.CloseButtonCommand = MiniCommand.Create(() =>
                 {
                     result = UserResult.Cancel;
+                    contentDialog.PrimaryButtonClick -= deferCloseAction;
                 });
 
+                if (deferResetEvent != null)
+                {
+                    contentDialog.PrimaryButtonClick += deferCloseAction;
+                }
+
                 await contentDialog.ShowAsync(ContentDialogPlacement.Popup);
+
+                overlay?.Close();
+            }
+
+            if (useOverlay)
+            {
+                overlay.Content = null;
+                overlay.Close();
             }
 
             return result;
@@ -71,35 +154,20 @@ namespace Ryujinx.Ava.Ui.Controls
             Func<Window, Task> doWhileDeferred = null)
         {
             bool startedDeferring = false;
-
             UserResult result = UserResult.None;
 
-            ContentDialog contentDialog = new ContentDialog
-            {
-                Title = title,
-                PrimaryButtonText = primaryButton,
-                SecondaryButtonText = secondaryButton,
-                CloseButtonText = closeButton,
-                Content = CreateDialogTextContent(primaryText, secondaryText, iconSymbol),
-                PrimaryButtonCommand = MiniCommand.Create(() =>
-                {
-                    result = primaryButton == LocaleManager.Instance["InputDialogYes"] ? UserResult.Yes : UserResult.Ok;
-                }),
-            };
-            contentDialog.SecondaryButtonCommand = MiniCommand.Create(() =>
-            {
-                contentDialog.PrimaryButtonClick -= DeferClose;
-                result = UserResult.No;
-            });
-            contentDialog.CloseButtonCommand = MiniCommand.Create(() =>
-            {
-                contentDialog.PrimaryButtonClick -= DeferClose;
-                result = UserResult.Cancel;
-            });
-            contentDialog.PrimaryButtonClick += DeferClose;
-            await contentDialog.ShowAsync(ContentDialogPlacement.Popup);
-
-            return result;
+            return await ShowContentDialog(
+                title,
+                primaryText,
+                secondaryText,
+                primaryButton,
+                secondaryButton,
+                closeButton,
+                iconSymbol,
+                primaryButton == LocaleManager.Instance["InputDialogYes"] ? UserResult.Yes : UserResult.Ok,
+                deferResetEvent,
+                doWhileDeferred,
+                DeferClose);
 
             async void DeferClose(ContentDialog sender, ContentDialogButtonClickEventArgs args)
             {
@@ -108,7 +176,7 @@ namespace Ryujinx.Ava.Ui.Controls
                     return;
                 }
 
-                contentDialog.PrimaryButtonClick -= DeferClose;
+                sender.PrimaryButtonClick -= DeferClose;
 
                 startedDeferring = true;
 
@@ -116,7 +184,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
                 result = primaryButton == LocaleManager.Instance["InputDialogYes"] ? UserResult.Yes : UserResult.Ok;
 
-                contentDialog.PrimaryButtonClick -= DeferClose;
+                sender.PrimaryButtonClick -= DeferClose;
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                 Task.Run(() =>

@@ -1,4 +1,4 @@
-﻿using Ryujinx.Common;
+﻿using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
@@ -75,17 +75,7 @@ namespace Ryujinx.Graphics.Vulkan
                 swizzleR = swizzleB;
                 swizzleB = temp;
             }
-            else if (info.Format == GAL.Format.R4G4B4A4Unorm)
-            {
-                var tempG = swizzleG;
-                var tempB = swizzleB;
-
-                swizzleB = swizzleA;
-                swizzleG = swizzleR;
-                swizzleR = tempG;
-                swizzleA = tempB;
-            }
-            else if (info.Format == GAL.Format.A1B5G5R5Unorm)
+            else if (VkFormat == VkFormat.R4G4B4A4UnormPack16 || info.Format == GAL.Format.A1B5G5R5Unorm)
             {
                 var tempB = swizzleB;
                 var tempA = swizzleA;
@@ -452,8 +442,8 @@ namespace Ryujinx.Graphics.Vulkan
 
                     return;
                 }
-                else if (_gd.FormatCapabilities.FormatSupports(FormatFeatureFlags.FormatFeatureBlitSrcBit, srcFormat) &&
-                         _gd.FormatCapabilities.FormatSupports(FormatFeatureFlags.FormatFeatureBlitDstBit, dstFormat))
+                else if (_gd.FormatCapabilities.OptimalFormatSupports(FormatFeatureFlags.FormatFeatureBlitSrcBit, srcFormat) &&
+                         _gd.FormatCapabilities.OptimalFormatSupports(FormatFeatureFlags.FormatFeatureBlitDstBit, dstFormat))
                 {
                     TextureCopy.Blit(
                         _gd.Api,
@@ -525,10 +515,10 @@ namespace Ryujinx.Graphics.Vulkan
                 dst.Info,
                 srcRegion,
                 dstRegion,
-                src.FirstLevel,
-                dst.FirstLevel,
                 src.FirstLayer,
                 dst.FirstLayer,
+                src.FirstLevel,
+                dst.FirstLevel,
                 layers,
                 levels,
                 linearFilter,
@@ -762,8 +752,8 @@ namespace Ryujinx.Graphics.Vulkan
         private bool SupportsBlitFromD32FS8ToD32FAndS8()
         {
             var formatFeatureFlags = FormatFeatureFlags.FormatFeatureBlitSrcBit | FormatFeatureFlags.FormatFeatureBlitDstBit;
-            return _gd.FormatCapabilities.FormatSupports(formatFeatureFlags, GAL.Format.D32Float)  &&
-                   _gd.FormatCapabilities.FormatSupports(formatFeatureFlags, GAL.Format.S8Uint);
+            return _gd.FormatCapabilities.OptimalFormatSupports(formatFeatureFlags, GAL.Format.D32Float)  &&
+                   _gd.FormatCapabilities.OptimalFormatSupports(formatFeatureFlags, GAL.Format.S8Uint);
         }
 
         public TextureView GetView(GAL.Format format)
@@ -820,7 +810,7 @@ namespace Ryujinx.Graphics.Vulkan
                 var buffer = bufferHolder.GetBuffer(cbs.CommandBuffer).Get(cbs).Value;
                 var image = GetImage().Get(cbs).Value;
 
-                CopyFromOrToBuffer(cbs.CommandBuffer, buffer, image, size, true, x, y, width, height);
+                CopyFromOrToBuffer(cbs.CommandBuffer, buffer, image, size, true, 0, 0, x, y, width, height);
             }
 
             bufferHolder.WaitForFences();
@@ -884,17 +874,22 @@ namespace Ryujinx.Graphics.Vulkan
             return GetDataFromBuffer(result, size, result);
         }
 
-        public void SetData(ReadOnlySpan<byte> data)
+        public void SetData(SpanOrArray<byte> data)
         {
             SetData(data, 0, 0, Info.GetLayers(), Info.Levels, singleSlice: false);
         }
 
-        public void SetData(ReadOnlySpan<byte> data, int layer, int level)
+        public void SetData(SpanOrArray<byte> data, int layer, int level)
         {
             SetData(data, layer, level, 1, 1, singleSlice: true);
         }
 
-        private void SetData(ReadOnlySpan<byte> data, int layer, int level, int layers, int levels, bool singleSlice)
+        public void SetData(SpanOrArray<byte> data, int layer, int level, Rectangle<int> region)
+        {
+            SetData(data, layer, level, 1, 1, singleSlice: true, region);
+        }
+
+        private void SetData(ReadOnlySpan<byte> data, int layer, int level, int layers, int levels, bool singleSlice, Rectangle<int>? region = null)
         {
             int bufferDataLength = GetBufferDataLength(data.Length);
 
@@ -918,7 +913,25 @@ namespace Ryujinx.Graphics.Vulkan
             var buffer = bufferHolder.GetBuffer(cbs.CommandBuffer).Get(cbs).Value;
             var image = imageAuto.Get(cbs).Value;
 
-            CopyFromOrToBuffer(cbs.CommandBuffer, buffer, image, bufferDataLength, false, layer, level, layers, levels, singleSlice);
+            if (region.HasValue)
+            {
+                CopyFromOrToBuffer(
+                    cbs.CommandBuffer,
+                    buffer,
+                    image,
+                    bufferDataLength,
+                    false,
+                    layer,
+                    level,
+                    region.Value.X,
+                    region.Value.Y,
+                    region.Value.Width,
+                    region.Value.Height);
+            }
+            else
+            {
+                CopyFromOrToBuffer(cbs.CommandBuffer, buffer, image, bufferDataLength, false, layer, level, layers, levels, singleSlice);
+            }
         }
 
         private int GetBufferDataLength(int length)
@@ -1060,6 +1073,8 @@ namespace Ryujinx.Graphics.Vulkan
             Image image,
             int size,
             bool to,
+            int dstLayer,
+            int dstLevel,
             int x,
             int y,
             int width,
@@ -1072,13 +1087,21 @@ namespace Ryujinx.Graphics.Vulkan
                 aspectFlags = ImageAspectFlags.ImageAspectDepthBit;
             }
 
-            var sl = new ImageSubresourceLayers(aspectFlags, (uint)FirstLevel, (uint)FirstLayer, 1);
+            var sl = new ImageSubresourceLayers(aspectFlags, (uint)(FirstLevel + dstLevel), (uint)(FirstLayer + dstLayer), 1);
 
             var extent = new Extent3D((uint)width, (uint)height, 1);
 
+            int rowLengthAlignment = Info.BlockWidth;
+
+            // We expect all data being written into the texture to have a stride aligned by 4.
+            if (!to && Info.BytesPerPixel < 4)
+            {
+                rowLengthAlignment = 4 / Info.BytesPerPixel;
+            }
+
             var region = new BufferImageCopy(
                 0,
-                (uint)AlignUpNpot(width, Info.BlockWidth),
+                (uint)AlignUpNpot(width, rowLengthAlignment),
                 (uint)AlignUpNpot(height, Info.BlockHeight),
                 sl,
                 new Offset3D(x, y, 0),

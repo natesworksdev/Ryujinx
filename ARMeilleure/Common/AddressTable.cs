@@ -1,4 +1,4 @@
-﻿using ARMeilleure.Diagnostics.EventSources;
+﻿using ARMeilleure.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -206,7 +206,7 @@ namespace ARMeilleure.Common
         /// <typeparam name="T">Type of elements</typeparam>
         /// <param name="length">Number of elements</param>
         /// <param name="fill">Fill value</param>
-        /// <param name="leaf"><see langword="true"/> if leaf; otherwise <see langword=""="false"/></param>
+        /// <param name="leaf"><see langword="true"/> if leaf; otherwise <see langword="false"/></param>
         /// <returns>Allocated block</returns>
         private IntPtr Allocate<T>(int length, T fill, bool leaf) where T : unmanaged
         {
@@ -218,7 +218,7 @@ namespace ARMeilleure.Common
 
             _pages.Add(page);
 
-            AddressTableEventSource.Log.Allocated(size, leaf);
+            TranslatorEventSource.Log.AddressTableAllocated(size, leaf);
 
             return page;
         }

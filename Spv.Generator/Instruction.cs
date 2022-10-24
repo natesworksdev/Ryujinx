@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
@@ -46,7 +47,7 @@ namespace Spv.Generator
                 result += _resultType.WordCount;
             }
 
-            Span<Operand> operands = _operands.ToSpan();
+            Span<Operand> operands = _operands.AsSpan();
             for (int i = 0; i < operands.Length; i++)
             {
                 result += operands[i].WordCount;
@@ -120,7 +121,7 @@ namespace Spv.Generator
                 writer.Write(Id);
             }
 
-            Span<Operand> operands = _operands.ToSpan();
+            Span<Operand> operands = _operands.AsSpan();
             for (int i = 0; i < operands.Length; i++)
             {
                 operands[i].WriteOperand(writer);
@@ -185,8 +186,8 @@ namespace Spv.Generator
 
         public bool EqualsContent(Instruction cmpObj)
         {
-            Span<Operand> thisOperands = _operands.ToSpan();
-            Span<Operand> cmpOperands = cmpObj._operands.ToSpan();
+            Span<Operand> thisOperands = _operands.AsSpan();
+            Span<Operand> cmpOperands = cmpObj._operands.AsSpan();
 
             if (thisOperands.Length != cmpOperands.Length)
             {
@@ -211,7 +212,7 @@ namespace Spv.Generator
 
         public int GetHashCodeContent()
         {
-            return DeterministicHashCode.Combine<Operand>(_operands.ToSpan());
+            return DeterministicHashCode.Combine<Operand>(_operands.AsSpan());
         }
 
         public int GetHashCodeResultType()
@@ -221,12 +222,26 @@ namespace Spv.Generator
 
         public override int GetHashCode()
         {
-            return DeterministicHashCode.Combine(Opcode, Id, _resultType, DeterministicHashCode.Combine<Operand>(_operands.ToSpan()));
+            return DeterministicHashCode.Combine(Opcode, Id, _resultType, DeterministicHashCode.Combine<Operand>(_operands.AsSpan()));
         }
 
         public bool Equals(Operand obj)
         {
             return obj is Instruction instruction && Equals(instruction);
+        }
+        
+        private static readonly Dictionary<Specification.Op, string[]> _operandLabels = new()
+        {
+            { Specification.Op.OpConstant, new [] { "Value" } },
+            { Specification.Op.OpTypeInt, new [] { "Width", "Signed" } },
+            { Specification.Op.OpTypeFloat, new [] { "Width" } }
+        };
+
+        public override string ToString()
+        {
+            var labels = _operandLabels.TryGetValue(Opcode, out var opLabels) ? opLabels : Array.Empty<string>();
+            var result = _resultType == null ? string.Empty : $"{_resultType} ";
+            return $"{result}{Opcode}{_operands.ToString(labels)}";
         }
     }
 }

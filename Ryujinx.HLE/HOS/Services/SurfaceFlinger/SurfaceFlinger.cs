@@ -35,6 +35,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         private long _1msTicks;
 
         private int _swapInterval;
+        private int _swapIntervalDelay;
 
         private readonly object Lock = new object();
 
@@ -91,7 +92,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             }
             else
             {
-                _ticksPerFrame = Stopwatch.Frequency / (TargetFps / _swapInterval);
+                _ticksPerFrame = Stopwatch.Frequency / TargetFps;
             }
         }
 
@@ -322,7 +323,13 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
                     if (_ticks >= _ticksPerFrame)
                     {
-                        Compose();
+                        if (_swapIntervalDelay-- == 0)
+                        {
+                            Compose();
+
+                            // When a frame is presented, delay the next one by its swap interval value.
+                            _swapIntervalDelay = Math.Max(0, _swapInterval - 1);
+                        }
 
                         _device.System?.SignalVsync();
 
@@ -446,7 +453,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 Item  = item
             };
 
-            _device.Gpu.Window.EnqueueFrameThreadSafe(
+            if (_device.Gpu.Window.EnqueueFrameThreadSafe(
                 layer.Owner,
                 frameBufferAddress,
                 frameBufferWidth,
@@ -459,20 +466,25 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 crop,
                 AcquireBuffer,
                 ReleaseBuffer,
-                textureCallbackInformation);
-
-            if (item.Fence.FenceCount == 0)
+                textureCallbackInformation))
             {
-                _device.Gpu.Window.SignalFrameReady();
-                _device.Gpu.GPFifo.Interrupt();
-            }
-            else
-            {
-                item.Fence.RegisterCallback(_device.Gpu, (x) =>
+                if (item.Fence.FenceCount == 0)
                 {
                     _device.Gpu.Window.SignalFrameReady();
                     _device.Gpu.GPFifo.Interrupt();
-                });
+                }
+                else
+                {
+                    item.Fence.RegisterCallback(_device.Gpu, (x) =>
+                    {
+                        _device.Gpu.Window.SignalFrameReady();
+                        _device.Gpu.GPFifo.Interrupt();
+                    });
+                }
+            }
+            else
+            {
+                ReleaseBuffer(textureCallbackInformation);
             }
         }
 

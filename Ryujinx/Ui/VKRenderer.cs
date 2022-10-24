@@ -1,5 +1,4 @@
 ﻿using Gdk;
-using Gtk;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Input.HLE;
 using SPB.Graphics.Vulkan;
@@ -64,7 +63,7 @@ namespace Ryujinx.Ui
 
         public override void InitializeRenderer() { }
 
-        public override void SwapBuffers(object image) { }
+        public override void SwapBuffers() { }
 
         protected override string GetGpuBackendName()
         {
