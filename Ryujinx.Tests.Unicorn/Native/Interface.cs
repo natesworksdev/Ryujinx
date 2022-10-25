@@ -1,11 +1,35 @@
 using Ryujinx.Tests.Unicorn.Native.Const;
 using System;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.Tests.Unicorn.Native
 {
     public class Interface
     {
+        private static IntPtr ImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
+        {
+            if (libraryName == "unicorn")
+            {
+                searchPath = DllImportSearchPath.ApplicationDirectory;
+
+                if (!NativeLibrary.TryLoad("unicorn", assembly, searchPath, out IntPtr libraryPtr))
+                {
+                    Console.WriteLine("ERROR: Could not find Unicorn.");
+                }
+
+                return libraryPtr;
+            }
+
+            // Otherwise, fallback to default import resolver.
+            return IntPtr.Zero;
+        }
+
+        static Interface()
+        {
+            NativeLibrary.SetDllImportResolver(Assembly.GetExecutingAssembly(), ImportResolver);
+        }
+
         public static void Checked(Error error)
         {
             if (error != Error.OK)
