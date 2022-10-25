@@ -13,8 +13,8 @@ The source code for `windows/unicorn.dll` is available at: https://github.com/un
 
 ## Linux
 
-On Linux, you will first need to clone Unicorn from https://github.com/unicorn-engine/unicorn.
+On Windows, Unicorn is shipped as a pre-compiled shared object (`.so`), licenced under the GPLv2.
 
-Then you need to switch to the dev branch. After that you can follow the [build docs](https://github.com/unicorn-engine/unicorn/blob/dev/docs/COMPILE.md) for unicorn.
+The source code for `linux/unicorn.so` is available at: https://github.com/unicorn-engine/unicorn/tree/df3aa0fccbce9e1420e82110cbae5951755a0698
 
 See https://github.com/Ryujinx/Ryujinx/pull/1433 for details.
