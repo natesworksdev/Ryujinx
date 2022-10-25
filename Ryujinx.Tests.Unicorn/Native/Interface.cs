@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Tests.Unicorn.Native
 {
-    public class Interface
+    public static class Interface
     {
         public static bool IsUnicornAvailable { get; private set; } = true;
 
