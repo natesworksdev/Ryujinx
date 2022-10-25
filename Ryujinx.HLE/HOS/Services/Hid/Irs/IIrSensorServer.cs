@@ -210,7 +210,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
             int  irCameraHandle       = context.RequestData.ReadInt32();
             long appletResourceUserId = context.RequestData.ReadInt64();
 
-            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { irCameraHandle, appletResourceUserId });
+            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId, irCameraHandle });
 
             return ResultCode.Success;
         }
