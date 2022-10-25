@@ -8,6 +8,8 @@ namespace Ryujinx.Tests.Unicorn.Native
 {
     public class Interface
     {
+        public static bool IsUnicornAvailable { get; private set; } = true;
+
         private static IntPtr ImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
         {
             if (libraryName == "unicorn")
@@ -17,6 +19,7 @@ namespace Ryujinx.Tests.Unicorn.Native
 
                 if (!NativeLibrary.TryLoad(loadPath, out IntPtr libraryPtr))
                 {
+                    IsUnicornAvailable = false;
                     Console.WriteLine($"ERROR: Could not find unicorn at: {loadPath}");
                 }
 

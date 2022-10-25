@@ -301,13 +301,10 @@ namespace Ryujinx.Tests.Unicorn
             try
             {
                 Interface.uc_version(out _, out _);
+            }
+            catch (DllNotFoundException) {  }
 
-                return true;
-            }
-            catch (DllNotFoundException)
-            {
-                return false;
-            }
+            return Interface.IsUnicornAvailable;
         }
     }
 }
