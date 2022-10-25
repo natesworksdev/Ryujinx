@@ -1,5 +1,6 @@
 using Ryujinx.Tests.Unicorn.Native.Const;
 using System;
+using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
@@ -11,11 +12,12 @@ namespace Ryujinx.Tests.Unicorn.Native
         {
             if (libraryName == "unicorn")
             {
-                searchPath = DllImportSearchPath.ApplicationDirectory;
+                string loadPath = $"{Path.GetDirectoryName(assembly.Location)}/unicorn";
+                loadPath += OperatingSystem.IsWindows() ? ".dll" : ".so";
 
-                if (!NativeLibrary.TryLoad("unicorn", assembly, searchPath, out IntPtr libraryPtr))
+                if (!NativeLibrary.TryLoad(loadPath, out IntPtr libraryPtr))
                 {
-                    Console.WriteLine("ERROR: Could not find Unicorn.");
+                    Console.WriteLine($"ERROR: Could not find unicorn at: {loadPath}");
                 }
 
                 return libraryPtr;
