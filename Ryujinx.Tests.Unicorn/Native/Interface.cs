@@ -20,7 +20,7 @@ namespace Ryujinx.Tests.Unicorn.Native
                 if (!NativeLibrary.TryLoad(loadPath, out IntPtr libraryPtr))
                 {
                     IsUnicornAvailable = false;
-                    Console.WriteLine($"ERROR: Could not find unicorn at: {loadPath}");
+                    Console.Error.WriteLine($"ERROR: Could not find unicorn at: {loadPath}");
                 }
 
                 return libraryPtr;
