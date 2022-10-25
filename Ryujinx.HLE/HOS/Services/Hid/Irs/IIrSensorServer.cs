@@ -204,10 +204,10 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
         }
 
         [CommandHipc(318)] // 4.0.0+
-        //StopImageProcessorAsync(nn::irsensor::IrCameraHandle, nn::applet::AppletResourceUserId, pid)
+        // StopImageProcessorAsync(nn::irsensor::IrCameraHandle, nn::applet::AppletResourceUserId, pid)
         public ResultCode StopImageProcessorAsync(ServiceCtx context)
         {
-            int irCameraHandle        = context.RequestData.ReadInt32();
+            int  irCameraHandle       = context.RequestData.ReadInt32();
             long appletResourceUserId = context.RequestData.ReadInt64();
 
             Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { irCameraHandle, appletResourceUserId });
