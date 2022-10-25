@@ -40,4 +40,11 @@
     <Copy SourceFiles="@(UnicornLib)" DestinationFolder="$(OutputPath)" ContinueOnError="true" />
   </Target>
 
+  <Target Name="CleanUnicorn" BeforeTargets="Clean">
+    <ItemGroup>
+      <UnicornLib Include="$(OutputPath)/unicorn.*"/>
+    </ItemGroup>
+    <Delete Files="@(UnicornLib)" />
+  </Target>
+
 </Project>
