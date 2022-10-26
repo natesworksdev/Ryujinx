@@ -14,8 +14,8 @@ namespace Ryujinx.Tests.Unicorn.Native
         {
             if (libraryName == "unicorn")
             {
-                string loadPath = $"{Path.GetDirectoryName(assembly.Location)}/unicorn";
-                loadPath += OperatingSystem.IsWindows() ? ".dll" : ".so";
+                string loadPath = $"{Path.GetDirectoryName(assembly.Location)}/";
+                loadPath += OperatingSystem.IsWindows() ? $"{libraryName}.dll" : $"lib{libraryName}.so";
 
                 if (!NativeLibrary.TryLoad(loadPath, out IntPtr libraryPtr))
                 {
