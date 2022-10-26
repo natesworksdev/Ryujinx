@@ -34,7 +34,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static uint GetXcr0Eax()
         {
-            byte[] asmGetXcr0 = {
+            ReadOnlySpan<byte> asmGetXcr0 = new byte[]{
                 0x31, 0xc9, // xor ecx, ecx
                 0xf, 0x01, 0xd0, // xgetbv
                 0xc3, // ret
