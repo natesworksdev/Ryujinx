@@ -35,7 +35,7 @@
 
   <Target Name="CopyUnicorn" AfterTargets="Build">
     <ItemGroup>
-      <UnicornLib Include="..\Ryujinx.Tests.Unicorn\libs\$(TargetOS)\unicorn.*"/>
+      <UnicornLib Include="..\Ryujinx.Tests.Unicorn\libs\$(TargetOS)\*unicorn.*"/>
     </ItemGroup>
     <Copy SourceFiles="@(UnicornLib)" DestinationFolder="$(OutputPath)" ContinueOnError="true" />
   </Target>
