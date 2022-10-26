@@ -195,7 +195,7 @@ namespace Ryujinx.HLE.FileSystem
 
         public void InitializeFsServer(LibHac.Horizon horizon, out HorizonClient fsServerClient)
         {
-            LocalFileSystem serverBaseFs = new LocalFileSystem(AppDataManager.BaseDirPath);
+            LocalFileSystem serverBaseFs = new LocalFileSystem(AppDataManager.GetNandPath());
 
             fsServerClient = horizon.CreatePrivilegedHorizonClient();
             var fsServer = new FileSystemServer(fsServerClient);
