@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     struct SteadyClockTimePoint
     {
         public long    TimePoint;
