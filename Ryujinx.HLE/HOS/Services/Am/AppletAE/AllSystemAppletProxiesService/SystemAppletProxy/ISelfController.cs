@@ -392,7 +392,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         }
 
         [CommandHipc(130)] // 13.0.0+
-        // SetRecordVolumeMuted(u8)
+        // SetRecordVolumeMuted(b8)
         public ResultCode SetRecordVolumeMuted(ServiceCtx context)
         {
             bool recordVolumeMuted = context.RequestData.ReadBoolean();
