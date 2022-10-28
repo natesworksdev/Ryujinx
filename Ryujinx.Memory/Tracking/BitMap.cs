@@ -2,6 +2,9 @@
 
 namespace Ryujinx.Memory.Tracking
 {
+    /// <summary>
+    /// A bitmap that can check or set large ranges of true/false values at once.
+    /// </summary>
     struct BitMap
     {
         public const int IntSize = 64;
@@ -9,13 +12,24 @@ namespace Ryujinx.Memory.Tracking
         private const int IntShift = 6;
         private const int IntMask = IntSize - 1;
 
+        /// <summary>
+        /// Masks representing the bitmap. Least significant bit first, 64-bits per mask.
+        /// </summary>
         public readonly long[] Masks;
 
+        /// <summary>
+        /// Create a new bitmap.
+        /// </summary>
+        /// <param name="count">The number of bits to reserve</param>
         public BitMap(int count)
         {
             Masks = new long[(count + IntMask) / IntSize];
         }
 
+        /// <summary>
+        /// Check if any bit in the bitmap is set.
+        /// </summary>
+        /// <returns>True if any bits are set, false otherwise</returns>
         public bool AnySet()
         {
             for (int i = 0; i < Masks.Length; i++)
@@ -29,6 +43,11 @@ namespace Ryujinx.Memory.Tracking
             return false;
         }
 
+        /// <summary>
+        /// Check if a bit in the bitmap is set.
+        /// </summary>
+        /// <param name="bit">The bit index to check</param>
+        /// <returns>True if the bit is set, false otherwise</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsSet(int bit)
         {
@@ -40,6 +59,12 @@ namespace Ryujinx.Memory.Tracking
             return (Masks[wordIndex] & wordMask) != 0;
         }
 
+        /// <summary>
+        /// Check if any bit in a range of bits in the bitmap are set. (inclusive)
+        /// </summary>
+        /// <param name="start">The first bit index to check</param>
+        /// <param name="end">The last bit index to check</param>
+        /// <returns>True if a bit is set, false otherwise</returns>
         public bool IsSet(int start, int end)
         {
             if (start == end)
@@ -81,6 +106,11 @@ namespace Ryujinx.Memory.Tracking
             return false;
         }
 
+        /// <summary>
+        /// Set a bit at a specific index to 1.
+        /// </summary>
+        /// <param name="bit">The bit index to set</param>
+        /// <returns>True if the bit is set, false if it was already set</returns>
         public bool Set(int bit)
         {
             int wordIndex = bit >> IntShift;
@@ -98,6 +128,11 @@ namespace Ryujinx.Memory.Tracking
             return true;
         }
 
+        /// <summary>
+        /// Set a range of bits in the bitmap to 1.
+        /// </summary>
+        /// <param name="start">The first bit index to set</param>
+        /// <param name="end">The last bit index to set</param>
         public void SetRange(int start, int end)
         {
             if (start == end)
@@ -131,6 +166,11 @@ namespace Ryujinx.Memory.Tracking
             }
         }
 
+        /// <summary>
+        /// Clear a bit at a specific index to 0.
+        /// </summary>
+        /// <param name="bit">The bit index to clear</param>
+        /// <returns>True if the bit was set, false if it was not</returns>
         public bool Clear(int bit)
         {
             int wordIndex = bit >> IntShift;
@@ -145,17 +185,12 @@ namespace Ryujinx.Memory.Tracking
             return wasSet;
         }
 
+        /// <summary>
+        /// Clear the bitmap entirely, setting all bits to 0.
+        /// </summary>
         public void Clear()
         {
             for (int i = 0; i < Masks.Length; i++)
-            {
-                Masks[i] = 0;
-            }
-        }
-
-        public void ClearInt(int start, int end)
-        {
-            for (int i = start; i <= end; i++)
             {
                 Masks[i] = 0;
             }

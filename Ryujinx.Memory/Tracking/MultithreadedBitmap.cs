@@ -3,6 +3,9 @@ using System.Threading;
 
 namespace Ryujinx.Memory.Tracking
 {
+    /// <summary>
+    /// A bitmap that can be safely modified from other threads.
+    /// </summary>
     internal class MultithreadedBitmap
     {
         public const int IntSize = 64;
@@ -10,8 +13,16 @@ namespace Ryujinx.Memory.Tracking
         public const int IntShift = 6;
         public const int IntMask = IntSize - 1;
 
+        /// <summary>
+        /// Masks representing the bitmap. Least significant bit first, 64-bits per mask.
+        /// </summary>
         public readonly long[] Masks;
 
+        /// <summary>
+        /// Create a new multithreaded bitmap.
+        /// </summary>
+        /// <param name="count">The number of bits to reserve</param>
+        /// <param name="set">Whether the bits should be initially set or not</param>
         public MultithreadedBitmap(int count, bool set)
         {
             Masks = new long[(count + IntMask) / IntSize];
@@ -22,6 +33,10 @@ namespace Ryujinx.Memory.Tracking
             }
         }
 
+        /// <summary>
+        /// Check if any bit in the bitmap is set.
+        /// </summary>
+        /// <returns>True if any bits are set, false otherwise</returns>
         public bool AnySet()
         {
             for (int i = 0; i < Masks.Length; i++)
@@ -35,6 +50,11 @@ namespace Ryujinx.Memory.Tracking
             return false;
         }
 
+        /// <summary>
+        /// Check if a bit in the bitmap is set.
+        /// </summary>
+        /// <param name="bit">The bit index to check</param>
+        /// <returns>True if the bit is set, false otherwise</returns>
         public bool IsSet(int bit)
         {
             int wordIndex = bit >> IntShift;
@@ -45,6 +65,12 @@ namespace Ryujinx.Memory.Tracking
             return (Volatile.Read(ref Masks[wordIndex]) & wordMask) != 0;
         }
 
+        /// <summary>
+        /// Check if any bit in a range of bits in the bitmap are set. (inclusive)
+        /// </summary>
+        /// <param name="start">The first bit index to check</param>
+        /// <param name="end">The last bit index to check</param>
+        /// <returns>True if a bit is set, false otherwise</returns>
         public bool IsSet(int start, int end)
         {
             if (start == end)
@@ -90,6 +116,11 @@ namespace Ryujinx.Memory.Tracking
             return false;
         }
 
+        /// <summary>
+        /// Set a bit at a specific index to either true or false.
+        /// </summary>
+        /// <param name="bit">The bit index to set</param>
+        /// <param name="value">Whether the bit should be set or not</param>
         public void Set(int bit, bool value)
         {
             int wordIndex = bit >> IntShift;
@@ -116,17 +147,12 @@ namespace Ryujinx.Memory.Tracking
             while (Interlocked.CompareExchange(ref Masks[wordIndex], newValue, existing) != existing);
         }
 
+        /// <summary>
+        /// Clear the bitmap entirely, setting all bits to 0.
+        /// </summary>
         public void Clear()
         {
             for (int i = 0; i < Masks.Length; i++)
-            {
-                Volatile.Write(ref Masks[i], 0);
-            }
-        }
-
-        public void ClearInt(int start, int end)
-        {
-            for (int i = start; i <= end; i++)
             {
                 Volatile.Write(ref Masks[i], 0);
             }
