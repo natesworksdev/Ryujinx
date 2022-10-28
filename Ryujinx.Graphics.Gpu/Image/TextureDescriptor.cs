@@ -258,7 +258,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>True if they are equal, false otherwise</returns>
         public bool Equals(TextureDescriptor other)
         {
-            return Unsafe.As<TextureDescriptor, Vector256<byte>>(ref this).Equals(Unsafe.As<TextureDescriptor, Vector256<byte>>(ref other));
+            return Equals(ref other);
         }
 
         /// <summary>
