@@ -9,6 +9,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Time
 {
@@ -372,12 +373,9 @@ namespace Ryujinx.HLE.HOS.Services.Time
                 return result;
             }
 
-            char[] tzName       = deviceLocationName.ToCharArray();
-            char[] locationName = new char[0x24];
+            ReadOnlySpan<byte> tzName = Encoding.ASCII.GetBytes(deviceLocationName);
 
-            Array.Copy(tzName, locationName, tzName.Length);
-
-            clockSnapshot.LocationName = locationName;
+            tzName.CopyTo(clockSnapshot.LocationName);
 
             result = ClockSnapshot.GetCurrentTime(out clockSnapshot.UserTime, currentTimePoint, clockSnapshot.UserContext);
 
