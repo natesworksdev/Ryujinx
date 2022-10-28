@@ -16,7 +16,7 @@ namespace Ryujinx.Memory.Tracking
         /// <summary>
         /// A list of region handles for each granularity sized chunk of the whole region.
         /// </summary>
-        private readonly BitmapRegionHandle[] _handles;
+        private readonly RegionHandle[] _handles;
         private readonly ulong Address;
         private readonly ulong Granularity;
         private readonly ulong Size;
@@ -31,7 +31,7 @@ namespace Ryujinx.Memory.Tracking
 
         internal BitmapMultiRegionHandle(MemoryTracking tracking, ulong address, ulong size, IEnumerable<IRegionHandle> handles, ulong granularity)
         {
-            _handles = new BitmapRegionHandle[size / granularity];
+            _handles = new RegionHandle[size / granularity];
             Granularity = granularity;
 
             _dirtyBitmap = new MultithreadedBitmap(_handles.Length, true);
@@ -46,21 +46,21 @@ namespace Ryujinx.Memory.Tracking
                 // It is assumed that the provided handles do not overlap, in order, are on page boundaries,
                 // and don't extend past the requested range.
 
-                foreach (RegionHandleBase handle in handles)
+                foreach (RegionHandle handle in handles)
                 {
                     int startIndex = (int)((handle.Address - address) / granularity);
 
                     // Fill any gap left before this handle.
                     while (i < startIndex)
                     {
-                        BitmapRegionHandle fillHandle = tracking.BeginTrackingBitmap(address + (ulong)i * granularity, granularity, _dirtyBitmap, i);
+                        RegionHandle fillHandle = tracking.BeginTrackingBitmap(address + (ulong)i * granularity, granularity, _dirtyBitmap, i);
                         fillHandle.Parent = this;
                         _handles[i++] = fillHandle;
                     }
 
                     lock (tracking.TrackingLock)
                     {
-                        if (handle is BitmapRegionHandle bitHandle && handle.Size == granularity)
+                        if (handle is RegionHandle bitHandle && handle.Size == granularity)
                         {
                             handle.Parent = this;
 
@@ -74,7 +74,7 @@ namespace Ryujinx.Memory.Tracking
 
                             while (i < endIndex)
                             {
-                                BitmapRegionHandle splitHandle = tracking.BeginTrackingBitmap(address + (ulong)i * granularity, granularity, _dirtyBitmap, i);
+                                RegionHandle splitHandle = tracking.BeginTrackingBitmap(address + (ulong)i * granularity, granularity, _dirtyBitmap, i);
                                 splitHandle.Parent = this;
 
                                 splitHandle.Reprotect(handle.Dirty);
@@ -97,7 +97,7 @@ namespace Ryujinx.Memory.Tracking
             // Fill any remaining space with new handles.
             while (i < _handles.Length)
             {
-                BitmapRegionHandle handle = tracking.BeginTrackingBitmap(address + (ulong)i * granularity, granularity, _dirtyBitmap, i);
+                RegionHandle handle = tracking.BeginTrackingBitmap(address + (ulong)i * granularity, granularity, _dirtyBitmap, i);
                 handle.Parent = this;
                 _handles[i++] = handle;
             }
@@ -113,7 +113,7 @@ namespace Ryujinx.Memory.Tracking
             Dirty = true;
         }
 
-        public IEnumerable<BitmapRegionHandle> GetHandles()
+        public IEnumerable<RegionHandle> GetHandles()
         {
             return _handles;
         }
@@ -161,7 +161,7 @@ namespace Ryujinx.Memory.Tracking
 
                 int handleIndex = baseBit + bit;
 
-                BitmapRegionHandle handle = _handles[handleIndex];
+                RegionHandle handle = _handles[handleIndex];
 
                 if (handleIndex != prevHandle + 1)
                 {
@@ -195,7 +195,7 @@ namespace Ryujinx.Memory.Tracking
 
             if (startHandle == lastHandle)
             {
-                BitmapRegionHandle handle = _handles[startHandle];
+                RegionHandle handle = _handles[startHandle];
 
                 if (handle.Dirty)
                 {
@@ -261,7 +261,7 @@ namespace Ryujinx.Memory.Tracking
 
                 int handleIndex = baseBit + bit;
 
-                BitmapRegionHandle handle = _handles[handleIndex];
+                RegionHandle handle = _handles[handleIndex];
 
                 if (handleIndex != prevHandle + 1)
                 {
