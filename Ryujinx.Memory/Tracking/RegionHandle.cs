@@ -79,7 +79,7 @@ namespace Ryujinx.Memory.Tracking
 
         internal RegionSignal PreAction => _preAction;
 
-        internal MultithreadedBitmap Bitmap;
+        internal ConcurrentBitmap Bitmap;
         internal int DirtyBit;
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Ryujinx.Memory.Tracking
         /// <param name="bitmap">The bitmap the dirty flag for this handle is stored in</param>
         /// <param name="bit">The bit index representing the dirty flag for this handle</param>
         /// <param name="mapped">True if the region handle starts mapped</param>
-        internal RegionHandle(MemoryTracking tracking, ulong address, ulong size, MultithreadedBitmap bitmap, int bit, bool mapped = true)
+        internal RegionHandle(MemoryTracking tracking, ulong address, ulong size, ConcurrentBitmap bitmap, int bit, bool mapped = true)
         {
             Bitmap = bitmap;
             DirtyBit = bit;
@@ -122,7 +122,7 @@ namespace Ryujinx.Memory.Tracking
         /// <param name="mapped">True if the region handle starts mapped</param>
         internal RegionHandle(MemoryTracking tracking, ulong address, ulong size, bool mapped = true)
         {
-            Bitmap = new MultithreadedBitmap(1, mapped);
+            Bitmap = new ConcurrentBitmap(1, mapped);
 
             Unmapped = !mapped;
             Address = address;
@@ -145,7 +145,7 @@ namespace Ryujinx.Memory.Tracking
         /// </remarks>
         /// <param name="bitmap">The bitmap the dirty flag for this handle is stored in</param>
         /// <param name="bit">The bit index representing the dirty flag for this handle</param>
-        internal void ReplaceBitmap(MultithreadedBitmap bitmap, int bit)
+        internal void ReplaceBitmap(ConcurrentBitmap bitmap, int bit)
         {
             // Assumes the tracking lock is held, so nothing else can signal right now.
 

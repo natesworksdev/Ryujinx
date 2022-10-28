@@ -21,7 +21,7 @@ namespace Ryujinx.Memory.Tracking
         private readonly ulong Granularity;
         private readonly ulong Size;
 
-        private MultithreadedBitmap _dirtyBitmap;
+        private ConcurrentBitmap _dirtyBitmap;
 
         private int _sequenceNumber;
         private BitMap _sequenceNumberBitmap;
@@ -34,7 +34,7 @@ namespace Ryujinx.Memory.Tracking
             _handles = new RegionHandle[size / granularity];
             Granularity = granularity;
 
-            _dirtyBitmap = new MultithreadedBitmap(_handles.Length, true);
+            _dirtyBitmap = new ConcurrentBitmap(_handles.Length, true);
             _sequenceNumberBitmap = new BitMap(_handles.Length);
 
             int i = 0;
@@ -125,8 +125,6 @@ namespace Ryujinx.Memory.Tracking
             int startHandle = (int)((address - Address) / Granularity);
             int lastHandle = (int)((address + (size - 1) - Address) / Granularity);
 
-            // TODO: speed up
-
             for (int i = startHandle; i <= lastHandle; i++)
             {
                 if (_sequenceNumberBitmap.Clear(i))
@@ -183,7 +181,7 @@ namespace Ryujinx.Memory.Tracking
                 prevHandle = handleIndex;
             }
 
-            baseBit += MultithreadedBitmap.IntSize;
+            baseBit += ConcurrentBitmap.IntSize;
         }
 
         public void QueryModified(ulong address, ulong size, Action<ulong, ulong> modifiedAction)
@@ -210,17 +208,17 @@ namespace Ryujinx.Memory.Tracking
 
             long[] masks = _dirtyBitmap.Masks;
 
-            int startIndex = startHandle >> MultithreadedBitmap.IntShift;
-            int startBit = startHandle & MultithreadedBitmap.IntMask;
+            int startIndex = startHandle >> ConcurrentBitmap.IntShift;
+            int startBit = startHandle & ConcurrentBitmap.IntMask;
             long startMask = -1L << startBit;
 
-            int endIndex = lastHandle >> MultithreadedBitmap.IntShift;
-            int endBit = lastHandle & MultithreadedBitmap.IntMask;
-            long endMask = (long)(ulong.MaxValue >> (MultithreadedBitmap.IntMask - endBit));
+            int endIndex = lastHandle >> ConcurrentBitmap.IntShift;
+            int endBit = lastHandle & ConcurrentBitmap.IntMask;
+            long endMask = (long)(ulong.MaxValue >> (ConcurrentBitmap.IntMask - endBit));
 
             long startValue = Volatile.Read(ref masks[startIndex]);
 
-            int baseBit = startIndex << MultithreadedBitmap.IntShift;
+            int baseBit = startIndex << ConcurrentBitmap.IntShift;
             int prevHandle = startHandle - 1;
 
             if (startIndex == endIndex)
@@ -283,7 +281,7 @@ namespace Ryujinx.Memory.Tracking
             seqMasks[index] |= mask;
             _uncheckedHandles -= BitOperations.PopCount((ulong)seqMask);
 
-            baseBit += MultithreadedBitmap.IntSize;
+            baseBit += ConcurrentBitmap.IntSize;
         }
 
         public void QueryModified(ulong address, ulong size, Action<ulong, ulong> modifiedAction, int sequenceNumber)
@@ -332,17 +330,17 @@ namespace Ryujinx.Memory.Tracking
             long[] seqMasks = _sequenceNumberBitmap.Masks;
             long[] masks = _dirtyBitmap.Masks;
 
-            int startIndex = startHandle >> MultithreadedBitmap.IntShift;
-            int startBit = startHandle & MultithreadedBitmap.IntMask;
+            int startIndex = startHandle >> ConcurrentBitmap.IntShift;
+            int startBit = startHandle & ConcurrentBitmap.IntMask;
             long startMask = -1L << startBit;
 
-            int endIndex = lastHandle >> MultithreadedBitmap.IntShift;
-            int endBit = lastHandle & MultithreadedBitmap.IntMask;
-            long endMask = (long)(ulong.MaxValue >> (MultithreadedBitmap.IntMask - endBit));
+            int endIndex = lastHandle >> ConcurrentBitmap.IntShift;
+            int endBit = lastHandle & ConcurrentBitmap.IntMask;
+            long endMask = (long)(ulong.MaxValue >> (ConcurrentBitmap.IntMask - endBit));
 
             long startValue = Volatile.Read(ref masks[startIndex]);
 
-            int baseBit = startIndex << MultithreadedBitmap.IntShift;
+            int baseBit = startIndex << ConcurrentBitmap.IntShift;
             int prevHandle = startHandle - 1;
 
             if (startIndex == endIndex)

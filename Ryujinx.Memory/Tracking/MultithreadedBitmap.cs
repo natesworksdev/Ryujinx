@@ -4,9 +4,9 @@ using System.Threading;
 namespace Ryujinx.Memory.Tracking
 {
     /// <summary>
-    /// A bitmap that can be safely modified from other threads.
+    /// A bitmap that can be safely modified from multiple threads.
     /// </summary>
-    internal class MultithreadedBitmap
+    internal class ConcurrentBitmap
     {
         public const int IntSize = 64;
 
@@ -23,7 +23,7 @@ namespace Ryujinx.Memory.Tracking
         /// </summary>
         /// <param name="count">The number of bits to reserve</param>
         /// <param name="set">Whether the bits should be initially set or not</param>
-        public MultithreadedBitmap(int count, bool set)
+        public ConcurrentBitmap(int count, bool set)
         {
             Masks = new long[(count + IntMask) / IntSize];
 

@@ -184,7 +184,7 @@ namespace Ryujinx.Memory.Tracking
         /// <param name="bitmap">The bitmap owning the dirty flag for this handle</param>
         /// <param name="bit">The bit of this handle within the dirty flag</param>
         /// <returns>The memory tracking handle</returns>
-        internal RegionHandle BeginTrackingBitmap(ulong address, ulong size, MultithreadedBitmap bitmap, int bit)
+        internal RegionHandle BeginTrackingBitmap(ulong address, ulong size, ConcurrentBitmap bitmap, int bit)
         {
             (address, size) = PageAlign(address, size);
 
