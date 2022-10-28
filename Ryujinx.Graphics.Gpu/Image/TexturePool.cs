@@ -54,28 +54,19 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 texture = PhysicalMemory.TextureCache.FindShortCache(descriptor);
 
-                if (texture != null)
-                {
-                    texture.IncrementReferenceCount(this, id);
-
-                    Items[id] = texture;
-
-                    DescriptorCache[id] = descriptor;
-                }
-            }
-
-            if (texture == null)
-            {
-                TextureInfo info = GetInfo(descriptor, out int layerSize);
-
-                ProcessDereferenceQueue();
-
-                texture = PhysicalMemory.TextureCache.FindOrCreateTexture(_channel.MemoryManager, TextureSearchFlags.ForSampler, info, layerSize);
-
-                // If this happens, then the texture address is invalid, we can't add it to the cache.
                 if (texture == null)
                 {
-                    return ref descriptor;
+                    TextureInfo info = GetInfo(descriptor, out int layerSize);
+
+                    ProcessDereferenceQueue();
+
+                    texture = PhysicalMemory.TextureCache.FindOrCreateTexture(_channel.MemoryManager, TextureSearchFlags.ForSampler, info, layerSize);
+
+                    // If this happens, then the texture address is invalid, we can't add it to the cache.
+                    if (texture == null)
+                    {
+                        return ref descriptor;
+                    }
                 }
 
                 texture.IncrementReferenceCount(this, id);
