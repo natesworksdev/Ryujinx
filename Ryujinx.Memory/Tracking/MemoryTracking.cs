@@ -145,21 +145,6 @@ namespace Ryujinx.Memory.Tracking
         }
 
         /// <summary>
-        /// Obtains a memory tracking handle for the given virtual region, with a specified granularity. This should be disposed when finished with.
-        /// </summary>
-        /// <param name="address">CPU virtual address of the region</param>
-        /// <param name="size">Size of the region</param>
-        /// <param name="handles">Handles to inherit state from or reuse. When none are present, provide null</param>
-        /// <param name="granularity">Desired granularity of write tracking</param>
-        /// <returns>The memory tracking handle</returns>
-        public BitmapMultiRegionHandle BeginBitmapGranularTracking(ulong address, ulong size, IEnumerable<IRegionHandle> handles, ulong granularity)
-        {
-            (address, size) = PageAlign(address, size);
-
-            return new BitmapMultiRegionHandle(this, address, size, handles, granularity);
-        }
-
-        /// <summary>
         /// Obtains a smart memory tracking handle for the given virtual region, with a specified granularity. This should be disposed when finished with.
         /// </summary>
         /// <param name="address">CPU virtual address of the region</param>

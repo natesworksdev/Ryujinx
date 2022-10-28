@@ -6,11 +6,11 @@ namespace Ryujinx.Cpu.Tracking
 {
     public class CpuMultiRegionHandle : IMultiRegionHandle
     {
-        private readonly BitmapMultiRegionHandle _impl;
+        private readonly MultiRegionHandle _impl;
 
         public bool Dirty => _impl.Dirty;
 
-        internal CpuMultiRegionHandle(BitmapMultiRegionHandle impl)
+        internal CpuMultiRegionHandle(MultiRegionHandle impl)
         {
             _impl = impl;
         }
