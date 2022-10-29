@@ -169,11 +169,11 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 Logger.Warning?.Print(LogClass.Gpu, msg);
             }
-            else if (messageSeverity.HasFlag(DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityVerboseBitExt))
+            else if (messageSeverity.HasFlag(DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityInfoBitExt))
             {
                 Logger.Info?.Print(LogClass.Gpu, msg);
             }
-            else // if (messageSeverity.HasFlag(DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityInfoBitExt))
+            else // if (messageSeverity.HasFlag(DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityVerboseBitExt))
             {
                 Logger.Debug?.Print(LogClass.Gpu, msg);
             }
