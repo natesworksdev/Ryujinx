@@ -8,6 +8,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     /// </summary>
     class ConstantBufferUpdater
     {
+        private const int UniformDataCacheSize = 512;
+
         private readonly GpuChannel _channel;
         private readonly DeviceStateWithShadow<ThreedClassState> _state;
 
@@ -16,6 +18,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private ulong _ubBeginCpuAddress = 0;
         private ulong _ubFollowUpAddress = 0;
         private ulong _ubByteCount = 0;
+        private int _ubIndex = 0;
+        private int[] _ubData = new int[UniformDataCacheSize];
 
         /// <summary>
         /// Creates a new instance of the constant buffer updater.
@@ -110,7 +114,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 var memoryManager = _channel.MemoryManager;
                 memoryManager.Physical.BufferCache.ForceDirty(memoryManager, _ubFollowUpAddress - _ubByteCount, _ubByteCount);
 
+                memoryManager.Physical.Write(_ubBeginCpuAddress, MemoryMarshal.Cast<int, byte>(_ubData.AsSpan(0, (int)(_ubByteCount / 4))));
+
                 _ubFollowUpAddress = 0;
+                _ubIndex = 0;
             }
         }
 
@@ -124,7 +131,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             ulong address = uniformBuffer.Address.Pack() + (uint)uniformBuffer.Offset;
 
-            if (_ubFollowUpAddress != address)
+            if (_ubFollowUpAddress != address || _ubIndex == _ubData.Length)
             {
                 FlushUboDirty();
 
@@ -132,8 +139,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _ubBeginCpuAddress = _channel.MemoryManager.Translate(address);
             }
 
-            var byteData = MemoryMarshal.Cast<int, byte>(MemoryMarshal.CreateSpan(ref argument, 1));
-            _channel.MemoryManager.Physical.WriteUntracked(_ubBeginCpuAddress + _ubByteCount, byteData);
+            _ubData[_ubIndex++] = argument;
 
             _ubFollowUpAddress = address + 4;
             _ubByteCount += 4;
@@ -153,7 +159,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             ulong size = (ulong)data.Length * 4;
 
-            if (_ubFollowUpAddress != address)
+            if (_ubFollowUpAddress != address || _ubIndex + data.Length > _ubData.Length)
             {
                 FlushUboDirty();
 
@@ -161,8 +167,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _ubBeginCpuAddress = _channel.MemoryManager.Translate(address);
             }
 
-            var byteData = MemoryMarshal.Cast<int, byte>(data);
-            _channel.MemoryManager.Physical.WriteUntracked(_ubBeginCpuAddress + _ubByteCount, byteData);
+            data.CopyTo(_ubData.AsSpan(_ubIndex));
+            _ubIndex += data.Length;
 
             _ubFollowUpAddress = address + size;
             _ubByteCount += size;
