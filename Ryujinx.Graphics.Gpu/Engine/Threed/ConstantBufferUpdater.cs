@@ -112,9 +112,13 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             if (_ubFollowUpAddress != 0)
             {
                 var memoryManager = _channel.MemoryManager;
-                memoryManager.Physical.BufferCache.ForceDirty(memoryManager, _ubFollowUpAddress - _ubByteCount, _ubByteCount);
 
-                memoryManager.Physical.Write(_ubBeginCpuAddress, MemoryMarshal.Cast<int, byte>(_ubData.AsSpan(0, (int)(_ubByteCount / 4))));
+                Span<byte> data = MemoryMarshal.Cast<int, byte>(_ubData.AsSpan(0, (int)(_ubByteCount / 4)));
+
+                if (memoryManager.Physical.WriteWithRedundancyCheck(_ubBeginCpuAddress, data))
+                {
+                    memoryManager.Physical.BufferCache.ForceDirty(memoryManager, _ubFollowUpAddress - _ubByteCount, _ubByteCount);
+                }
 
                 _ubFollowUpAddress = 0;
                 _ubIndex = 0;
