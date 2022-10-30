@@ -8,6 +8,7 @@ using Ryujinx.Common.System;
 using Ryujinx.Common.SystemInfo;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Modules;
+using Ryujinx.SDL2.Common;
 using Ryujinx.Ui;
 using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Widgets;
@@ -194,6 +195,9 @@ namespace Ryujinx
             // Show the main window UI.
             MainWindow mainWindow = new MainWindow();
             mainWindow.Show();
+
+            // Start pumping SDL2 (timer terminates when Pump returns false)
+            GLib.Timeout.Add(SDL2Driver.WaitTimeMs, SDL2Driver.Instance.Pump);
 
             if (launchPathArg != null)
             {

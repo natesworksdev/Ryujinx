@@ -27,6 +27,7 @@ using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.Input;
 using Ryujinx.Input.HLE;
 using Ryujinx.Input.SDL2;
+using Ryujinx.SDL2.Common;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
@@ -647,6 +648,10 @@ namespace Ryujinx.Headless.SDL2
             };
 
             windowThread.Start();
+            while (SDL2Driver.Instance.Pump())
+            {
+                Thread.Sleep(SDL2Driver.WaitTimeMs);
+            }
             windowThread.Join();
 
             return true;

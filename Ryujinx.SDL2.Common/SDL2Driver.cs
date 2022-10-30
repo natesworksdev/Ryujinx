@@ -13,6 +13,8 @@ namespace Ryujinx.SDL2.Common
     {
         private static SDL2Driver _instance;
 
+        public const int WaitTimeMs = 10;
+
         public static bool IsInitialized => _instance != null;
 
         public static SDL2Driver Instance
@@ -32,7 +34,6 @@ namespace Ryujinx.SDL2.Common
 
         private bool _isRunning;
         private uint _refereceCount;
-        private Thread _worker;
 
         public event Action<int, int> OnJoyStickConnected;
         public event Action<int> OnJoystickDisconnected;
@@ -90,9 +91,7 @@ namespace Ryujinx.SDL2.Common
                 }
 
                 _registeredWindowHandlers = new ConcurrentDictionary<uint, Action<SDL_Event>>();
-                _worker = new Thread(EventWorker);
                 _isRunning = true;
-                _worker.Start();
             }
         }
 
@@ -139,20 +138,19 @@ namespace Ryujinx.SDL2.Common
             }
         }
 
-        private void EventWorker()
+        public bool Pump()
         {
-            const int WaitTimeMs = 10;
-
-            using ManualResetEventSlim waitHandle = new ManualResetEventSlim(false);
-
-            while (_isRunning)
+            lock (_lock)
             {
-                while (SDL_PollEvent(out SDL_Event evnt) != 0)
+                if (_isRunning)
                 {
-                    HandleSDLEvent(ref evnt);
+                    while (SDL_PollEvent(out SDL_Event evnt) != 0)
+                    {
+                        HandleSDLEvent(ref evnt);
+                    }
                 }
 
-                waitHandle.Wait(WaitTimeMs);
+                return _isRunning;
             }
         }
 
@@ -172,8 +170,6 @@ namespace Ryujinx.SDL2.Common
                     if (_refereceCount == 0)
                     {
                         _isRunning = false;
-
-                        _worker?.Join();
 
                         SDL_Quit();
 

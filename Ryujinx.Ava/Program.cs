@@ -11,6 +11,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Common.System;
 using Ryujinx.Common.SystemInfo;
 using Ryujinx.Modules;
+using Ryujinx.SDL2.Common;
 using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
 using System;
@@ -148,6 +149,15 @@ namespace Ryujinx.Ava
 
             // Initialize Discord integration.
             DiscordIntegrationModule.Initialize();
+
+            // Start pumping SDL2
+            Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                while (SDL2Driver.Instance.Pump())
+                {
+                    await Task.Delay(SDL2Driver.WaitTimeMs);
+                }
+            }, DispatcherPriority.Input);
 
             ReloadConfig();
 
