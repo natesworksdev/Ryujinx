@@ -22,6 +22,10 @@ namespace Ryujinx.Graphics.Vulkan.MoltenVK
 
             config.UseMetalArgumentBuffers = true;
 
+            config.SemaphoreUseMTLEvent = false;
+            config.SemaphoreUseMTLFence = false;
+            config.SynchronousQueueSubmits = false;
+
             vkSetMoltenVKConfigurationMVK(IntPtr.Zero, config, configSize);
         }
     }
