@@ -5,6 +5,7 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.System;
+using Ryujinx.Common.SystemInfo;
 using Ryujinx.Modules;
 using Ryujinx.Ui;
 using Ryujinx.Ui.Common;
@@ -39,7 +40,14 @@ namespace Ryujinx
         static void Main(string[] args)
         {
             Version = ReleaseInformations.GetVersion();
-            Console.Title = $"Ryujinx Console {Version}";
+
+            if (OperatingSystem.IsWindows() && !OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17134))
+            {
+                MessageBoxA(IntPtr.Zero, "You are running an outdated version of Windows.\n\nStarting on June 1st 2022, Ryujinx will only support Windows 10 1803 and newer.\n", $"Ryujinx {Version}", MB_ICONWARNING);
+            }
+
+            // Parse arguments
+            CommandLineState.ParseArguments(args);
 
             // Hook unhandled exception and process exit events.
             GLib.ExceptionManager.UnhandledException   += (GLib.UnhandledExceptionArgs e)                => ProcessUnhandledException(e.ExceptionObject as Exception, e.IsTerminating);
@@ -53,9 +61,6 @@ namespace Ryujinx
             // Delete backup files after updating.
             Task.Run(Updater.CleanupUpdate);
 
-            // Perform common initialization steps
-            ProgramHelper.Initialize(args);
-
             // NOTE: GTK3 doesn't init X11 in a multi threaded way.
             // This ends up causing race condition and abort of XCB when a context is created by SPB (even if SPB do call XInitThreads).
             if (OperatingSystem.IsLinux())
@@ -66,17 +71,84 @@ namespace Ryujinx
             string systemPath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine);
             Environment.SetEnvironmentVariable("Path", $"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin")};{systemPath}");
 
+            // Setup base data directory.
+            AppDataManager.Initialize(CommandLineState.BaseDirPathArg);
+
+            // Initialize the configuration.
+            ConfigurationState.Initialize();
+
+            // Initialize the logger system.
+            LoggerModule.Initialize();
+
+            // Initialize Discord integration.
+            DiscordIntegrationModule.Initialize();
+
             // Sets ImageSharp Jpeg Encoder Quality.
             SixLabors.ImageSharp.Configuration.Default.ImageFormatsManager.SetEncoder(JpegFormat.Instance, new JpegEncoder()
             {
                 Quality = 100
             });
 
+            string localConfigurationPath   = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json");
+            string appDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath,            "Config.json");
+
             // Now load the configuration as the other subsystems are now registered
-            ConfigurationPath = ProgramHelper.LoadConfig();
+            ConfigurationPath = File.Exists(localConfigurationPath)
+                ? localConfigurationPath
+                : File.Exists(appDataConfigurationPath)
+                    ? appDataConfigurationPath
+                    : null;
+
+            bool showVulkanPrompt = false;
+
+            if (ConfigurationPath == null)
+            {
+                // No configuration, we load the default values and save it to disk
+                ConfigurationPath = appDataConfigurationPath;
+
+                ConfigurationState.Instance.LoadDefault();
+                ConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
+
+                showVulkanPrompt = true;
+            }
+            else
+            {
+                if (ConfigurationFileFormat.TryLoad(ConfigurationPath, out ConfigurationFileFormat configurationFileFormat))
+                {
+                    ConfigurationLoadResult result = ConfigurationState.Instance.Load(configurationFileFormat, ConfigurationPath);
+
+                    if ((result & ConfigurationLoadResult.MigratedFromPreVulkan) != 0)
+                    {
+                        showVulkanPrompt = true;
+                    }
+                }
+                else
+                {
+                    ConfigurationState.Instance.LoadDefault();
+
+                    showVulkanPrompt = true;
+
+                    Logger.Warning?.PrintMsg(LogClass.Application, $"Failed to load config! Loading the default config instead.\nFailed config location {ConfigurationPath}");
+                }
+            }
+
+            // Check if graphics backend was overridden
+            if (CommandLineState.OverrideGraphicsBackend != null)
+            {
+                if (CommandLineState.OverrideGraphicsBackend.ToLower() == "opengl")
+                {
+                    ConfigurationState.Instance.Graphics.GraphicsBackend.Value = GraphicsBackend.OpenGl;
+                    showVulkanPrompt = false;
+                }
+                else if (CommandLineState.OverrideGraphicsBackend.ToLower() == "vulkan")
+                {
+                    ConfigurationState.Instance.Graphics.GraphicsBackend.Value = GraphicsBackend.Vulkan;
+                    showVulkanPrompt = false;
+                }
+            }
 
             // Logging system information.
-            ProgramHelper.PrintSystemInfo();
+            PrintSystemInfo();
 
             // Enable OGL multithreading on the driver, when available.
             BackendThreading threadingMode = ConfigurationState.Instance.Graphics.BackendThreading;
@@ -97,9 +169,9 @@ namespace Ryujinx
             MainWindow mainWindow = new MainWindow();
             mainWindow.Show();
 
-            if (ProgramHelper.LaunchPathArg != null)
+            if (CommandLineState.LaunchPathArg != null)
             {
-                mainWindow.LoadApplication(ProgramHelper.LaunchPathArg, ProgramHelper.StartFullscreenArg);
+                mainWindow.LoadApplication(CommandLineState.LaunchPathArg, CommandLineState.StartFullscreenArg);
             }
 
             if (ConfigurationState.Instance.CheckUpdatesOnStart.Value && Updater.CanUpdate(false))
@@ -110,7 +182,7 @@ namespace Ryujinx
                 }, TaskContinuationOptions.OnlyOnFaulted);
             }
 
-            if (ProgramHelper.ShowVulkanPrompt)
+            if (showVulkanPrompt)
             {
                 var buttonTexts = new Dictionary<int, string>()
                 {
@@ -140,6 +212,24 @@ namespace Ryujinx
             }
 
             Application.Run();
+        }
+
+        private static void PrintSystemInfo()
+        {
+            Logger.Notice.Print(LogClass.Application, $"Ryujinx Version: {Version}");
+            SystemInfo.Gather().Print();
+
+            var enabledLogs = Logger.GetEnabledLevels();
+            Logger.Notice.Print(LogClass.Application, $"Logs Enabled: {(enabledLogs.Count == 0 ? "<None>" : string.Join(", ", enabledLogs))}");
+
+            if (AppDataManager.Mode == AppDataManager.LaunchMode.Custom)
+            {
+                Logger.Notice.Print(LogClass.Application, $"Launch Mode: Custom Path {AppDataManager.BaseDirPath}");
+            }
+            else
+            {
+                Logger.Notice.Print(LogClass.Application, $"Launch Mode: {AppDataManager.Mode}");
+            }
         }
 
         private static void ProcessUnhandledException(Exception ex, bool isTerminating)

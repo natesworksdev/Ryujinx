@@ -21,15 +21,10 @@ using Ryujinx.HLE.HOS.Services.Time.TimeZone;
 using Ryujinx.Input;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Configuration.System;
-using Ryujinx.Ui.Common.Helper;
-using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using TimeZone = Ryujinx.Ava.Ui.Models.TimeZone;
 
 namespace Ryujinx.Ava.Ui.ViewModels
@@ -480,7 +475,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public void RevertIfNotSaved()
         {
-            ProgramHelper.LoadConfig();
+            Program.ReloadConfig();
         }
     }
 }

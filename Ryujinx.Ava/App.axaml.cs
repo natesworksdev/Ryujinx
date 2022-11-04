@@ -65,7 +65,7 @@ namespace Ryujinx.Ava
                     if (result == UserResult.Yes)
                     {
                         var path = Process.GetCurrentProcess().MainModule.FileName;
-                        var proc = Process.Start(path, ProgramHelper.GetCommandLineArgs());
+                        var proc = Process.Start(path, CommandLineState.Arguments);
                         desktop.Shutdown();
                         Environment.Exit(0);
                     }
