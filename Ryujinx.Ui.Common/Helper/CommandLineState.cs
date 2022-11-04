@@ -10,7 +10,7 @@ namespace Ryujinx.Ui.Common.Helper
 
         public static string OverrideGraphicsBackend { get; private set; }
         public static string BaseDirPathArg          { get; private set; }
-        public static string CommandLineProfile      { get; private set; }
+        public static string Profile                 { get; private set; }
         public static string LaunchPathArg           { get; private set; }
         public static bool   StartFullscreenArg      { get; private set; }
 
@@ -48,7 +48,7 @@ namespace Ryujinx.Ui.Common.Helper
                             continue;
                         }
 
-                        CommandLineProfile = args[++i];
+                        Profile = args[++i];
 
                         arguments.Add(arg);
                         arguments.Add(args[i]);
