@@ -1,6 +1,5 @@
 using Ryujinx.Common.Logging;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Ryujinx.Ui.Common.Helper
 {
@@ -76,7 +75,7 @@ namespace Ryujinx.Ui.Common.Helper
                 }
             }
 
-            Arguments = args.ToArray();
+            Arguments = arguments.ToArray();
         }
     }
 }
