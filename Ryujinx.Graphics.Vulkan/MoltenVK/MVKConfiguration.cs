@@ -36,6 +36,15 @@ namespace Ryujinx.Graphics.Vulkan.MoltenVK
         Portability = 0x00000008
     }
 
+    enum MVKVkSemaphoreSupportStyle : int
+    {
+        MVK_CONFIG_VK_SEMAPHORE_SUPPORT_STYLE_SINGLE_QUEUE = 0,
+        MVK_CONFIG_VK_SEMAPHORE_SUPPORT_STYLE_METAL_EVENTS_WHERE_SAFE = 1,
+        MVK_CONFIG_VK_SEMAPHORE_SUPPORT_STYLE_METAL_EVENTS = 2,
+        MVK_CONFIG_VK_SEMAPHORE_SUPPORT_STYLE_CALLBACK = 3,
+        MVK_CONFIG_VK_SEMAPHORE_SUPPORT_STYLE_MAX_ENUM = 0x7FFFFFFF
+    }
+
     struct MVKConfiguration
     {
         public Bool32 DebugMode;
@@ -60,7 +69,7 @@ namespace Ryujinx.Graphics.Vulkan.MoltenVK
         public MVKConfigTraceVulkanCalls TraceVulkanCalls;
         public Bool32 ForceLowPowerGPU;
         public Bool32 SemaphoreUseMTLFence;
-        public Bool32 SemaphoreUseMTLEvent;
+        public MVKVkSemaphoreSupportStyle SemaphoreSupportStyle;
         public MVKConfigAutoGPUCaptureScope AutoGPUCaptureScope;
         public IntPtr AutoGPUCaptureOutputFilepath;
         public Bool32 Texture1DAs2D;
