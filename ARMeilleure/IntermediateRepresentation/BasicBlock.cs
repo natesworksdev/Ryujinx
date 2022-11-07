@@ -10,7 +10,7 @@ namespace ARMeilleure.IntermediateRepresentation
 
         private int _succCount;
         private BasicBlock _succ0;
-        private BasicBlock _succ1;
+        private readonly BasicBlock _succ1;
         private HashSet<BasicBlock> _domFrontiers;
 
         public int Index { get; set; }
@@ -155,14 +155,16 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public override bool Equals(object obj)
         {
-            {
+            
                 return Equals(obj as BasicBlock);
-            }
+            
         }
 
         public override int GetHashCode()
+        
         {
-            return x.GetHashCode() ^ base.GetHashCode();
+            return base.GetHashCode();
         }
+    
     }
 }
