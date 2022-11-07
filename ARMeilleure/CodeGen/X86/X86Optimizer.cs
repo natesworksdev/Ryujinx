@@ -35,7 +35,6 @@ namespace ARMeilleure.CodeGen.X86
 
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                //var strings = new List<string>();
 
                 Operation nextNode;
 
