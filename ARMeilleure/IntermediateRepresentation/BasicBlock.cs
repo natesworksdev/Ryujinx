@@ -155,12 +155,14 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as BasicBlock);
+            {
+                return Equals(obj as BasicBlock);
+            }
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return x.GetHashCode() ^ base.GetHashCode();
         }
     }
 }
