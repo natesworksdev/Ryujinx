@@ -14,8 +14,8 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
         public ISocket Socket { get; }
 
-        private BsdContext _bsdContext;
-        private SslVersion _sslVersion;
+        private readonly BsdContext _bsdContext;
+        private readonly SslVersion _sslVersion;
         private SslStream _stream;
         private bool _isBlockingSocket;
         private int _previousReadTimeout;
@@ -68,21 +68,15 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
         private static SslProtocols TranslateSslVersion(SslVersion version)
         {
-            switch (version & SslVersion.VersionMask)
+            return (version & SslVersion.VersionMask) switch
             {
-                case SslVersion.Auto:
-                    return SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12 | SslProtocols.Tls13;
-                case SslVersion.TlsV10:
-                    return SslProtocols.Tls;
-                case SslVersion.TlsV11:
-                    return SslProtocols.Tls11;
-                case SslVersion.TlsV12:
-                    return SslProtocols.Tls12;
-                case SslVersion.TlsV13:
-                    return SslProtocols.Tls13;
-                default:
-                    throw new NotImplementedException(version.ToString());
-            }
+                SslVersion.Auto => ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls,
+                SslVersion.TlsV10 => SslProtocols.Tls,
+                SslVersion.TlsV11 => SslProtocols.Tls11,
+                SslVersion.TlsV12 => SslProtocols.Tls12,
+                SslVersion.TlsV13 => SslProtocols.Tls13,
+                _ => throw new NotImplementedException(version.ToString()),
+            };
         }
 
         public ResultCode Handshake(string hostName)
