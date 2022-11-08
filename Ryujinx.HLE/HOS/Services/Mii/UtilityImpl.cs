@@ -3,6 +3,7 @@ using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Services.Mii.Types;
 using Ryujinx.HLE.HOS.Services.Time;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
+using System;
 
 namespace Ryujinx.HLE.HOS.Services.Mii
 {
@@ -62,7 +63,13 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
         public CreateId MakeCreateId()
         {
-            return new CreateId(UInt128Utils.CreateRandom());
+            UInt128 value = UInt128Utils.CreateRandom();
+
+            // Ensure the random ID generated is valid as a create id.
+            value &= ~new UInt128(0xC0, 0);
+            value |= new UInt128(0x80, 0);
+
+            return new CreateId(value);
         }
     }
 }
