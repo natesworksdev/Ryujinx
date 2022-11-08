@@ -8,6 +8,7 @@
     <DefineConstants Condition=" '$(ExtraDefineConstants)' != '' ">$(DefineConstants);$(ExtraDefineConstants)</DefineConstants>
     <RootNamespace>Ryujinx.Ava</RootNamespace>
     <ApplicationIcon>Ryujinx.ico</ApplicationIcon>
+    <TieredPGO>true</TieredPGO>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
