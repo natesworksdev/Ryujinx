@@ -75,7 +75,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
             }
         }
 
-        public void Read(ref byte[] buffer, ref int bufferEnd, byte[] data, int offset, int size, EndPoint endPoint = null)
+        public void Read(scoped ref byte[] buffer, scoped ref int bufferEnd, byte[] data, int offset, int size, EndPoint endPoint = null)
         {
             if (endPoint != null && _discovery.LocalAddr.Equals(((IPEndPoint)endPoint).Address))
             {
