@@ -62,6 +62,7 @@ namespace Ryujinx.Memory
         /// Writes data to the application process, returning false if the data was not changed.
         /// This triggers read memory tracking, as a redundancy check would be useless if the data is not up to date.
         /// </summary>
+        /// <remarks>The memory manager can return that memory has changed when it hasn't to avoid expensive data copies.</remarks>
         /// <param name="va">Virtual address to write the data into</param>
         /// <param name="data">Data to be written</param>
         /// <exception cref="InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
