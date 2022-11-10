@@ -38,18 +38,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
         public static void ClearBinding(int unit)
         {
             GL.ActiveTexture(TextureUnit.Texture0 + unit);
-
-            // Clear all possible targets since we don't know which one the shader will access.
-            GL.BindTexture(TextureTarget.Texture1D, 0);
-            GL.BindTexture(TextureTarget.Texture2D, 0);
-            GL.BindTexture(TextureTarget.Texture3D, 0);
-            GL.BindTexture(TextureTarget.Texture1DArray, 0);
-            GL.BindTexture(TextureTarget.Texture2DArray, 0);
-            GL.BindTexture(TextureTarget.Texture2DMultisample, 0);
-            GL.BindTexture(TextureTarget.Texture2DMultisampleArray, 0);
-            GL.BindTexture(TextureTarget.TextureCubeMap, 0);
-            GL.BindTexture(TextureTarget.TextureCubeMapArray, 0);
-            GL.BindTexture(TextureTarget.TextureBuffer, 0);
+            GL.BindTextureUnit(unit, 0);
         }
     }
 }
