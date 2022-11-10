@@ -150,6 +150,8 @@ namespace Ryujinx.Graphics.Vulkan
             else
             {
                 _imageRefs[binding] = null;
+                _bufferImageRefs[binding] = null;
+                _bufferImageFormats[binding] = default;
             }
 
             SignalDirty(DirtyFlags.Image);
@@ -229,6 +231,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 _textureRefs[binding] = null;
                 _samplerRefs[binding] = null;
+                _bufferTextureRefs[binding] = null;
             }
 
             SignalDirty(DirtyFlags.Texture);
