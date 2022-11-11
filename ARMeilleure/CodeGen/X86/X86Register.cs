@@ -22,7 +22,6 @@ namespace ARMeilleure.CodeGen.X86
         R15 = 15,
 
         Xmm0  = 0,
-        Xmm1  = 1,
         Xmm2  = 2,
         Xmm3  = 3,
         Xmm4  = 4,
