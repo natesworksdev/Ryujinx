@@ -1341,7 +1341,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _state.State.AlphaTestFunc,
                 _state.State.AlphaTestRef,
                 ref attributeTypes,
-                _drawState.HasConstantBufferBaseIds);
+                _drawState.HasConstantBufferDrawParameters);
         }
 
         /// <summary>

@@ -172,7 +172,7 @@ namespace Ryujinx.Graphics.Shader
         /// Queries whenever the current draw has written the base vertex and base instance into Constant Buffer 0.
         /// </summary>
         /// <returns>True if the shader translator can assume that the constant buffer contains the base IDs, false otherwise</returns>
-        bool QueryHasConstantBufferBaseIds()
+        bool QueryHasConstantBufferDrawParameters()
         {
             return false;
         }
