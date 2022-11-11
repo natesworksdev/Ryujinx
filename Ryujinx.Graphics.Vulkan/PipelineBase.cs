@@ -3,6 +3,8 @@ using Ryujinx.Graphics.Shader;
 using Silk.NET.Vulkan;
 using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -95,7 +97,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             using var emptyVb = gd.BufferManager.Create(gd, EmptyVbSize);
             emptyVb.SetData(0, new byte[EmptyVbSize]);
-            _vertexBuffers[0] = new VertexBufferState(emptyVb.GetBuffer(), 0, EmptyVbSize, 0);
+            _vertexBuffers[0] = new VertexBufferState(emptyVb.GetBuffer(), 0, 0, EmptyVbSize, 0);
             _vertexBuffersDirty = ulong.MaxValue >> (64 - _vertexBuffers.Length);
 
             ClearScissor = new Rectangle<int>(0, 0, 0xffff, 0xffff);
@@ -228,10 +230,26 @@ namespace Ryujinx.Graphics.Vulkan
             Gd.Api.CmdClearAttachments(CommandBuffer, 1, &attachment, 1, &clearRect);
         }
 
-        public void CommandBufferBarrier()
+        public unsafe void CommandBufferBarrier()
         {
-            // TODO: More specific barrier?
-            Barrier();
+            MemoryBarrier memoryBarrier = new MemoryBarrier()
+            {
+                SType = StructureType.MemoryBarrier,
+                SrcAccessMask = BufferHolder.DefaultAccessFlags,
+                DstAccessMask = AccessFlags.AccessIndirectCommandReadBit
+            };
+
+            Gd.Api.CmdPipelineBarrier(
+                CommandBuffer,
+                PipelineStageFlags.PipelineStageAllCommandsBit,
+                PipelineStageFlags.PipelineStageDrawIndirectBit,
+                0,
+                1,
+                memoryBarrier,
+                0,
+                null,
+                0,
+                null);
         }
 
         public void CopyBuffer(BufferHandle source, BufferHandle destination, int srcOffset, int dstOffset, int size)
@@ -535,10 +553,11 @@ namespace Ryujinx.Graphics.Vulkan
                 vkBlend = new PipelineColorBlendAttachmentState();
             }
 
-            _newState.BlendConstantR = blend.BlendConstant.Red;
-            _newState.BlendConstantG = blend.BlendConstant.Green;
-            _newState.BlendConstantB = blend.BlendConstant.Blue;
-            _newState.BlendConstantA = blend.BlendConstant.Alpha;
+            DynamicState.SetBlendConstants(
+                blend.BlendConstant.Red,
+                blend.BlendConstant.Green,
+                blend.BlendConstant.Blue,
+                blend.BlendConstant.Alpha);
 
             SignalStateChange();
         }
@@ -678,6 +697,18 @@ namespace Ryujinx.Graphics.Vulkan
             stages.CopyTo(_newState.Stages.AsSpan().Slice(0, stages.Length));
 
             SignalStateChange();
+        }
+
+        public void Specialize<T>(in T data) where T : unmanaged
+        {
+            var dataSpan = MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(in data), 1));
+
+            if (!dataSpan.SequenceEqual(_newState.SpecializationData.Span))
+            {
+                _newState.SpecializationData = new SpecData(dataSpan);
+                
+                SignalStateChange();
+            }
         }
 
         protected virtual void SignalAttachmentChange()
@@ -823,7 +854,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (range.Handle != BufferHandle.Null)
                 {
-                    _transformFeedbackBuffers[i] = 
+                    _transformFeedbackBuffers[i] =
                         new BufferState(Gd.BufferManager.GetBuffer(CommandBuffer, range.Handle, range.Offset, range.Size, true), range.Offset, range.Size);
                     _transformFeedbackBuffers[i].BindTransformFeedbackBuffer(Gd, Cbs, (uint)i);
                 }
@@ -1171,14 +1202,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            var subpassDependency = new SubpassDependency(
-                0,
-                0,
-                PipelineStageFlags.PipelineStageAllGraphicsBit,
-                PipelineStageFlags.PipelineStageAllGraphicsBit,
-                AccessFlags.AccessMemoryReadBit | AccessFlags.AccessMemoryWriteBit | AccessFlags.AccessColorAttachmentWriteBit,
-                AccessFlags.AccessMemoryReadBit | AccessFlags.AccessMemoryWriteBit | AccessFlags.AccessShaderReadBit,
-                0);
+            var subpassDependency = PipelineConverter.CreateSubpassDependency();
 
             fixed (AttachmentDescription* pAttachmentDescs = attachmentDescs)
             {
@@ -1243,7 +1267,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                     _vertexBuffers[i].BindVertexBuffer(Gd, Cbs, (uint)i, ref _newState);
 
-                    _vertexBuffersDirty &= ~(1u << i);
+                    _vertexBuffersDirty &= ~(1UL << i);
                 }
             }
 
