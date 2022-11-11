@@ -140,6 +140,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <inheritdoc/>
+        public bool QueryHasConstantBufferBaseIds()
+        {
+            return _state.GraphicsState.HasConstantBufferBaseIds;
+        }
+
+        /// <inheritdoc/>
         public InputTopology QueryPrimitiveTopology()
         {
             _state.SpecializationState?.RecordPrimitiveTopology();

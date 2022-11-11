@@ -498,6 +498,28 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         }
 
         /// <summary>
+        /// Performs a indirect draw, with parameters from a GPU buffer.
+        /// </summary>
+        /// <param name="topology">Primitive topology</param>
+        /// <param name="indirectBufferAddress">Address of the buffer with the draw parameters, such as count, first index, etc</param>
+        /// <param name="parameterBufferAddress">Address of the buffer with the draw count</param>
+        /// <param name="maxDrawCount">Maximum number of draws that can be made</param>
+        /// <param name="stride">Distance in bytes between each entry on the data pointed to by <paramref name="indirectBufferAddress"/></param>
+        /// <param name="indexCount">Maximum number of indices that the draw can consume</param>
+        /// <param name="drawType">Type of the indirect draw, which can be indexed or non-indexed, with or without a draw count</param>
+        public void DrawIndirect(
+            PrimitiveTopology topology,
+            ulong indirectBufferAddress,
+            ulong parameterBufferAddress,
+            int maxDrawCount,
+            int stride,
+            int indexCount,
+            IndirectDrawType drawType)
+        {
+            _drawManager.DrawIndirect(this, topology, indirectBufferAddress, parameterBufferAddress, maxDrawCount, stride, indexCount, drawType);
+        }
+
+        /// <summary>
         /// Clears the current color and depth-stencil buffers.
         /// Which buffers should be cleared can also specified with the arguments.
         /// </summary>
@@ -506,26 +528,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public void Clear(int argument, int layerCount)
         {
             _drawManager.Clear(this, argument, layerCount);
-        }
-
-        /// <summary>
-        /// Performs a indirect multi-draw, with parameters from a GPU buffer.
-        /// </summary>
-        /// <param name="indexCount">Index Buffer Count</param>
-        /// <param name="topology">Primitive topology</param>
-        /// <param name="indirectBuffer">GPU buffer with the draw parameters, such as count, first index, etc</param>
-        /// <param name="parameterBuffer">GPU buffer with the draw count</param>
-        /// <param name="maxDrawCount">Maximum number of draws that can be made</param>
-        /// <param name="stride">Distance in bytes between each element on the <paramref name="indirectBuffer"/> array</param>
-        public void MultiDrawIndirectCount(
-            int indexCount,
-            PrimitiveTopology topology,
-            BufferRange indirectBuffer,
-            BufferRange parameterBuffer,
-            int maxDrawCount,
-            int stride)
-        {
-            _drawManager.MultiDrawIndirectCount(this, indexCount, topology, indirectBuffer, parameterBuffer, maxDrawCount, stride);
         }
     }
 }

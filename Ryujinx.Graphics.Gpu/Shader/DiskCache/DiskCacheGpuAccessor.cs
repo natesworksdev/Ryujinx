@@ -130,6 +130,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         }
 
         /// <inheritdoc/>
+        public bool QueryHasConstantBufferBaseIds()
+        {
+            return _oldSpecState.GraphicsState.HasConstantBufferBaseIds;
+        }
+
+        /// <inheritdoc/>
         public InputTopology QueryPrimitiveTopology()
         {
             _newSpecState.RecordPrimitiveTopology();

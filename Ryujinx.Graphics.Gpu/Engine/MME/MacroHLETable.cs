@@ -48,13 +48,15 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
         {
             new TableEntry(MacroHLEFunctionName.ClearColor, new Hash128(0xA9FB28D1DC43645A, 0xB177E5D2EAE67FB0), 0x28),
             new TableEntry(MacroHLEFunctionName.ClearDepthStencil, new Hash128(0x1B96CB77D4879F4F, 0x8557032FE0C965FB), 0x24),
+            new TableEntry(MacroHLEFunctionName.DrawElementsIndirect, new Hash128(0x86A3E8E903AF8F45, 0xD35BBA07C23860A4), 0x7c),
             new TableEntry(MacroHLEFunctionName.MultiDrawElementsIndirectCount, new Hash128(0x890AF57ED3FB1C37, 0x35D0C95C61F5386F), 0x19C)
         };
 
         private static bool IsMacroHLESupported(Capabilities caps, MacroHLEFunctionName name)
         {
             if (name == MacroHLEFunctionName.ClearColor ||
-                name == MacroHLEFunctionName.ClearDepthStencil)
+                name == MacroHLEFunctionName.ClearDepthStencil ||
+                name == MacroHLEFunctionName.DrawElementsIndirect)
             {
                 return true;
             }
@@ -84,8 +86,13 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
                 var hash = XXHash128.ComputeHash(mc.Slice(0, entry.Length));
                 if (hash == entry.Hash)
                 {
-                    name = entry.Name;
-                    return IsMacroHLESupported(caps, name);
+                    if (IsMacroHLESupported(caps, entry.Name))
+                    {
+                        name = entry.Name;
+                        return true;
+                    }
+
+                    break;
                 }
             }
 

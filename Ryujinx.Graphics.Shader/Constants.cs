@@ -6,5 +6,8 @@ namespace Ryujinx.Graphics.Shader
 
         public const int MaxAttributes = 16;
         public const int AllAttributesMask = (int)(uint.MaxValue >> (32 - MaxAttributes));
+
+        public const int NvnBaseVertexByteOffset = 0x640;
+        public const int NvnBaseInstanceByteOffset = 0x644;
     }
 }
