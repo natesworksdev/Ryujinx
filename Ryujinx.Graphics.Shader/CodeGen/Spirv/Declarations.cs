@@ -473,6 +473,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         var attrType = context.TypeVector(context.TypeFP32(), (LiteralInteger)4);
                         attrType = context.TypeArray(attrType, context.Constant(context.TypeU32(), (LiteralInteger)MaxAttributes));
 
+                        if (context.Config.Stage == ShaderStage.TessellationControl)
+                        {
+                            attrType = context.TypeArray(attrType, context.Constant(context.TypeU32(), context.Config.ThreadsPerInputPrimitive));
+                        }
+
                         var spvType = context.TypePointer(StorageClass.Output, attrType);
                         var spvVar = context.Variable(spvType, StorageClass.Output);
 
@@ -541,6 +546,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 {
                     builtInPassthrough = true;
                 }
+            }
+
+            if (context.Config.Stage == ShaderStage.TessellationControl && isOutAttr && !perPatch)
+            {
+                attrType = context.TypeArray(attrType, context.Constant(context.TypeU32(), context.Config.ThreadsPerInputPrimitive));
             }
 
             var spvType = context.TypePointer(storageClass, attrType);
@@ -634,6 +644,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 attrType = context.TypeArray(attrType, context.Constant(context.TypeU32(), (LiteralInteger)arraySize));
             }
 
+            if (context.Config.Stage == ShaderStage.TessellationControl && isOutAttr)
+            {
+                attrType = context.TypeArray(attrType, context.Constant(context.TypeU32(), context.Config.ThreadsPerInputPrimitive));
+            }
+
             var spvType = context.TypePointer(storageClass, attrType);
             var spvVar = context.Variable(spvType, storageClass);
 
@@ -689,8 +704,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 AttributeConsts.ClipDistance0 => BuiltIn.ClipDistance,
                 AttributeConsts.PointCoordX => BuiltIn.PointCoord,
                 AttributeConsts.TessCoordX => BuiltIn.TessCoord,
-                AttributeConsts.InstanceId => BuiltIn.InstanceId, // FIXME: Invalid
-                AttributeConsts.VertexId => BuiltIn.VertexId, // FIXME: Invalid
+                AttributeConsts.InstanceId => BuiltIn.InstanceId,
+                AttributeConsts.VertexId => BuiltIn.VertexId,
+                AttributeConsts.BaseInstance => BuiltIn.BaseInstance,
+                AttributeConsts.BaseVertex => BuiltIn.BaseVertex,
+                AttributeConsts.InstanceIndex => BuiltIn.InstanceIndex,
+                AttributeConsts.VertexIndex => BuiltIn.VertexIndex,
                 AttributeConsts.FrontFacing => BuiltIn.FrontFacing,
                 AttributeConsts.FragmentOutputDepth => BuiltIn.FragDepth,
                 AttributeConsts.ThreadKill => BuiltIn.HelperInvocation,
