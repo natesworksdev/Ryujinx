@@ -520,6 +520,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 return false;
             }
 
+            if (graphicsState.HasConstantBufferBaseIds != GraphicsState.HasConstantBufferBaseIds)
+            {
+                return false;
+            }
+
             return Matches(channel, poolState, checkTextures, isCompute: false);
         }
 
