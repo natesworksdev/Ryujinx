@@ -130,9 +130,9 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         }
 
         /// <inheritdoc/>
-        public bool QueryHasConstantBufferBaseIds()
+        public bool QueryHasConstantBufferDrawParameters()
         {
-            return _oldSpecState.GraphicsState.HasConstantBufferBaseIds;
+            return _oldSpecState.GraphicsState.HasConstantBufferDrawParameters;
         }
 
         /// <inheritdoc/>

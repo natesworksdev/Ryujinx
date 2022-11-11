@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.Shader.Translation
     {
         public static void RunPass(BasicBlock[] blocks, ShaderConfig config)
         {
-            bool hasConstantBufferBaseIds = config.GpuAccessor.QueryHasConstantBufferBaseIds();
+            bool hasConstantBufferDrawParameters = config.GpuAccessor.QueryHasConstantBufferDrawParameters();
 
             for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
             {
@@ -25,7 +25,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                         continue;
                     }
 
-                    if (hasConstantBufferBaseIds)
+                    if (hasConstantBufferDrawParameters)
                     {
                         ReplaceConstantBufferWithBaseId(operation);
                     }

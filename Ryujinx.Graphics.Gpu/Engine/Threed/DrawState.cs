@@ -33,9 +33,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public bool IsAnyVbInstanced;
 
         /// <summary>
-        /// Indicates that the draw is writing the base vertex and base instance to Constant Buffer 0.
+        /// Indicates that the draw is writing the base vertex, base instance and draw index to Constant Buffer 0.
         /// </summary>
-        public bool HasConstantBufferBaseIds;
+        public bool HasConstantBufferDrawParameters;
 
         /// <summary>
         /// Primitive topology for the next draw.

@@ -140,9 +140,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <inheritdoc/>
-        public bool QueryHasConstantBufferBaseIds()
+        public bool QueryHasConstantBufferDrawParameters()
         {
-            return _state.GraphicsState.HasConstantBufferBaseIds;
+            return _state.GraphicsState.HasConstantBufferDrawParameters;
         }
 
         /// <inheritdoc/>

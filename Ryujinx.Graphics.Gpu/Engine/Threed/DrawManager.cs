@@ -430,7 +430,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             }
 
             _drawState.DrawIndexed = indexed;
-            _drawState.HasConstantBufferBaseIds = true;
+            _drawState.HasConstantBufferDrawParameters = true;
 
             engine.UpdateState();
 
@@ -463,7 +463,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             }
 
             _drawState.DrawIndexed = false;
-            _drawState.HasConstantBufferBaseIds = false;
+            _drawState.HasConstantBufferDrawParameters = false;
 
             if (renderEnable == ConditionalRenderEnabled.Host)
             {
