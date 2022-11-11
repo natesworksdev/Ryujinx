@@ -515,7 +515,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
 
             }
-            else if (Gd.Capabilities.SupportsIndirectParameters)
+            else
             {
                 var buffer = Gd.BufferManager
                     .GetBuffer(CommandBuffer, indirectBuffer.Handle, indirectBuffer.Offset, indirectBuffer.Size, false)
@@ -847,7 +847,7 @@ namespace Ryujinx.Graphics.Vulkan
             if (!dataSpan.SequenceEqual(_newState.SpecializationData.Span))
             {
                 _newState.SpecializationData = new SpecData(dataSpan);
-                
+
                 SignalStateChange();
             }
         }
