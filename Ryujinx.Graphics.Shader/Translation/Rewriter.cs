@@ -552,6 +552,9 @@ namespace Ryujinx.Graphics.Shader.Translation
                         case Constants.NvnBaseInstanceByteOffset / 4:
                             operation.SetSource(srcIndex, Attribute(AttributeConsts.BaseInstance));
                             break;
+                        case Constants.NvnDrawIndexByteOffset / 4:
+                            operation.SetSource(srcIndex, Attribute(AttributeConsts.DrawIndex));
+                            break;
                     }
                 }
             }
