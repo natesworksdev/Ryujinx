@@ -32,13 +32,39 @@ namespace Ryujinx
 
         public static string CommandLineProfile { get; set; }
 
-        [DllImport("libX11")]
+        private const string X11LibraryName = "libX11";
+
+        [DllImport(X11LibraryName)]
         private extern static int XInitThreads();
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern int MessageBoxA(IntPtr hWnd, string text, string caption, uint type);
 
         private const uint MB_ICONWARNING = 0x30;
+
+        static Program()
+        {
+            if (OperatingSystem.IsLinux())
+            {
+                NativeLibrary.SetDllImportResolver(typeof(Program).Assembly, (name, assembly, path) =>
+                {
+                    if (name != X11LibraryName)
+                    {
+                        return IntPtr.Zero;
+                    }
+
+                    if (!NativeLibrary.TryLoad("libX11.so.6", assembly, path, out IntPtr result))
+                    {
+                        if (!NativeLibrary.TryLoad("libX11.so", assembly, path, out result))
+                        {
+                            return IntPtr.Zero;
+                        }
+                    }
+
+                    return result;
+                });
+            }
+        }
 
         static void Main(string[] args)
         {
