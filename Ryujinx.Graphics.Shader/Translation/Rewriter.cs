@@ -12,6 +12,8 @@ namespace Ryujinx.Graphics.Shader.Translation
     {
         public static void RunPass(BasicBlock[] blocks, ShaderConfig config)
         {
+            bool hasConstantBufferDrawParameters = config.GpuAccessor.QueryHasConstantBufferDrawParameters();
+
             for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
             {
                 BasicBlock block = blocks[blkIndex];
@@ -21,6 +23,11 @@ namespace Ryujinx.Graphics.Shader.Translation
                     if (node.Value is not Operation operation)
                     {
                         continue;
+                    }
+
+                    if (hasConstantBufferDrawParameters)
+                    {
+                        ReplaceConstantBufferWithBaseId(operation);
                     }
 
                     if (UsesGlobalMemory(operation.Inst))
@@ -527,6 +534,30 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
 
             return node;
+        }
+
+        private static void ReplaceConstantBufferWithBaseId(Operation operation)
+        {
+            for (int srcIndex = 0; srcIndex < operation.SourcesCount; srcIndex++)
+            {
+                Operand src = operation.GetSource(srcIndex);
+
+                if (src.Type == OperandType.ConstantBuffer && src.GetCbufSlot() == 0)
+                {
+                    switch (src.GetCbufOffset())
+                    {
+                        case Constants.NvnBaseVertexByteOffset / 4:
+                            operation.SetSource(srcIndex, Attribute(AttributeConsts.BaseVertex));
+                            break;
+                        case Constants.NvnBaseInstanceByteOffset / 4:
+                            operation.SetSource(srcIndex, Attribute(AttributeConsts.BaseInstance));
+                            break;
+                        case Constants.NvnDrawIndexByteOffset / 4:
+                            operation.SetSource(srcIndex, Attribute(AttributeConsts.DrawIndex));
+                            break;
+                    }
+                }
+            }
         }
     }
 }
