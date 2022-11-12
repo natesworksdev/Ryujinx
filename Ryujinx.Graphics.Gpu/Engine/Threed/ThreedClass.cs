@@ -529,6 +529,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// <param name="stride">Distance in bytes between each entry on the data pointed to by <paramref name="indirectBufferAddress"/></param>
         /// <param name="indexCount">Maximum number of indices that the draw can consume</param>
         /// <param name="drawType">Type of the indirect draw, which can be indexed or non-indexed, with or without a draw count</param>
+        /// <param name="bufferModified">Whether the indirect buffer was modified</param>
         public void DrawIndirect(
             PrimitiveTopology topology,
             ulong indirectBufferAddress,
@@ -536,9 +537,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             int maxDrawCount,
             int stride,
             int indexCount,
-            IndirectDrawType drawType)
+            IndirectDrawType drawType,
+            bool bufferModified)
         {
-            _drawManager.DrawIndirect(this, topology, indirectBufferAddress, parameterBufferAddress, maxDrawCount, stride, indexCount, drawType);
+            _drawManager.DrawIndirect(this, topology, indirectBufferAddress, parameterBufferAddress, maxDrawCount, stride, indexCount, drawType, bufferModified);
         }
 
         /// <summary>

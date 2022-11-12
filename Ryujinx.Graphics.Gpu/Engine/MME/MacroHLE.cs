@@ -180,10 +180,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
 
             var bufferCache = _processor.MemoryManager.Physical.BufferCache;
 
-            ulong indirectBufferAddress = bufferCache.TranslateAndCreateBuffer(
-                _processor.MemoryManager,
-                indirectBufferGpuVa,
-                IndirectIndexedDataEntrySize);
+            bool useBuffer = bufferCache.CheckModified(_processor.MemoryManager, indirectBufferGpuVa, IndirectIndexedDataEntrySize, out ulong indirectBufferAddress);
 
             _processor.ThreedClass.DrawIndirect(
                 topology,
@@ -192,7 +189,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
                 1,
                 IndirectIndexedDataEntrySize,
                 indexCount,
-                Threed.IndirectDrawType.DrawIndexedIndirect);
+                Threed.IndirectDrawType.DrawIndexedIndirect,
+                useBuffer);
         }
 
         /// <summary>
@@ -280,7 +278,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
                 maxDrawCount,
                 stride,
                 indexCount,
-                Threed.IndirectDrawType.DrawIndexedIndirectCount);
+                Threed.IndirectDrawType.DrawIndexedIndirectCount,
+                true);
         }
 
         /// <summary>
