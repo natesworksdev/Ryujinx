@@ -43,6 +43,14 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
             return ResultCode.Success;
         }
 
+        [CommandHipc(1)]
+        // nn::friends::Cancel()
+        public ResultCode Cancel(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceFriend, "Cancel");
+            return ResultCode.Success;
+        }
+
         [CommandHipc(10100)]
         // nn::friends::GetFriendListIds(int offset, nn::account::Uid userId, nn::friends::detail::ipc::SizedFriendFilter friendFilter, ulong pidPlaceHolder, pid)
         // -> int outCount, array<nn::account::NetworkServiceAccountId, 0xa>
