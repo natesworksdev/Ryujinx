@@ -23,6 +23,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public bool DrawIndexed;
 
         /// <summary>
+        /// Indicates if the next draw will be a indirect draw.
+        /// </summary>
+        public bool DrawIndirect;
+
+        /// <summary>
         /// Indicates if any of the currently used vertex shaders reads the instance ID.
         /// </summary>
         public bool VsUsesInstanceId;

@@ -9,6 +9,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     /// </summary>
     class DrawManager
     {
+        // Since we don't know the index buffer size for indirect draws,
+        // we must assume a minimum and maximum size and use that for buffer data update purposes.
+        private const int MinIndirectIndexCount = 0x10000;
+        private const int MaxIndirectIndexCount = 0x4000000;
+
         private readonly GpuContext _context;
         private readonly GpuChannel _channel;
         private readonly DeviceStateWithShadow<ThreedClassState> _state;
@@ -424,12 +429,17 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             if (indexed)
             {
+                // Ensure that we have a sane index count, for cases where it is supposed to be
+                // written by GPU and the CPU visible data is just garbage.
+                indexCount = Math.Clamp(indexCount, MinIndirectIndexCount, MaxIndirectIndexCount);
+
                 _drawState.FirstIndex = 0;
                 _drawState.IndexCount = indexCount;
                 engine.ForceStateDirty(IndexBufferCountMethodOffset * 4);
             }
 
             _drawState.DrawIndexed = indexed;
+            _drawState.DrawIndirect = true;
             _drawState.HasConstantBufferDrawParameters = true;
 
             engine.UpdateState();
@@ -463,6 +473,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             }
 
             _drawState.DrawIndexed = false;
+            _drawState.DrawIndirect = false;
             _drawState.HasConstantBufferDrawParameters = false;
 
             if (renderEnable == ConditionalRenderEnabled.Host)
