@@ -47,7 +47,8 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
         // nn::friends::Cancel()
         public ResultCode Cancel(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceFriend, "Cancel");
+            Logger.Stub?.PrintStub(LogClass.ServiceFriend);
+
             return ResultCode.Success;
         }
 
