@@ -205,11 +205,14 @@ namespace Ryujinx.HLE.HOS.Applets
             {
                 // Call the configured GUI handler to get user's input.
 
+                Logger.Info?.Print(LogClass.Application, $"Software keyboard initializing, header {_keyboardForegroundConfig.HeaderText}, sub {_keyboardForegroundConfig.SubtitleText}, guide {_keyboardForegroundConfig.GuideText}");
+                byte[] unicode = Encoding.Unicode.GetBytes(_keyboardForegroundConfig.HeaderText);
+                
                 var args = new SoftwareKeyboardUiArgs
                 {
-                    HeaderText = _keyboardForegroundConfig.HeaderText,
-                    SubtitleText = _keyboardForegroundConfig.SubtitleText,
-                    GuideText = _keyboardForegroundConfig.GuideText,
+                    HeaderText = StripUnicodeControlCodes(_keyboardForegroundConfig.HeaderText),
+                    SubtitleText = StripUnicodeControlCodes(_keyboardForegroundConfig.SubtitleText),
+                    GuideText = StripUnicodeControlCodes(_keyboardForegroundConfig.GuideText),
                     SubmitText = (!string.IsNullOrWhiteSpace(_keyboardForegroundConfig.SubmitText) ?
                     _keyboardForegroundConfig.SubmitText : "OK"),
                     StringLengthMin = _keyboardForegroundConfig.StringLengthMin,
@@ -762,6 +765,37 @@ namespace Ryujinx.HLE.HOS.Applets
                     _interactiveSession.Push(stream.ToArray());
                 }
             }
+        }
+
+        /// <summary>
+        /// Some games send special control codes (such as 0x13) as part of the string (as a special formatting protocol with the keyboard?).
+        /// Our UI currently can't handle these properly, so strip all control codes from the input string and return.
+        /// This function will also strip tabs, CR/LF, null characters, escape chars, etc.
+        /// </summary>
+        /// <param name="input">The input string to sanitize (may be null).</param>
+        /// <returns>The sanitized string.</returns>
+        internal static string StripUnicodeControlCodes(string input)
+        {
+            if (input is null)
+            {
+                return null;
+            }
+            
+            if (input.Length == 0)
+            {
+                return string.Empty;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            foreach (char c in input)
+            {
+                if (!char.IsControl(c))
+                {
+                    sb.Append(c);
+                }
+            }
+
+            return sb.ToString();
         }
 
         private static T ReadStruct<T>(byte[] data)
