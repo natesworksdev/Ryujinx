@@ -17,6 +17,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private readonly GpuContext _context;
         private readonly GpuChannel _channel;
 
+        public bool HasUnalignedStorageBuffer { get; private set; }
+
         private IndexBuffer _indexBuffer;
         private readonly VertexBuffer[] _vertexBuffers;
         private readonly BufferBounds[] _transformFeedbackBuffers;
@@ -216,6 +218,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             gpuVa = BitUtils.AlignDown(gpuVa, _context.Capabilities.StorageBufferOffsetAlignment);
 
+            if ((gpuVa & 15) != 0)
+            {
+                HasUnalignedStorageBuffer = true;
+            }
+
             ulong address = _channel.MemoryManager.Physical.BufferCache.TranslateAndCreateBuffer(_channel.MemoryManager, gpuVa, size);
 
             _cpStorageBuffers.SetBounds(index, address, size, flags);
@@ -235,6 +242,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
             size += gpuVa & ((ulong)_context.Capabilities.StorageBufferOffsetAlignment - 1);
 
             gpuVa = BitUtils.AlignDown(gpuVa, _context.Capabilities.StorageBufferOffsetAlignment);
+
+            if ((gpuVa & 15) != 0)
+            {
+                HasUnalignedStorageBuffer = true;
+            }
 
             ulong address = _channel.MemoryManager.Physical.BufferCache.TranslateAndCreateBuffer(_channel.MemoryManager, gpuVa, size);
 

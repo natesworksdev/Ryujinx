@@ -138,7 +138,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
                 qmd.CtaThreadDimension1,
                 qmd.CtaThreadDimension2,
                 localMemorySize,
-                sharedMemorySize);
+                sharedMemorySize,
+                _channel.BufferManager.HasUnalignedStorageBuffer);
 
             CachedShaderProgram cs = memoryManager.Physical.ShaderCache.GetComputeShader(_channel, poolState, computeState, shaderGpuVa);
 
