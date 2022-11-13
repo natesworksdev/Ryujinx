@@ -7,14 +7,14 @@ namespace Ryujinx.HLE.HOS.Services.Hid
     {
         public IHidbusServer(ServiceCtx context) { }
 
-        [CommandHipc(1)]
-        // GetBusHandle(nn::hidbus::IHidbusServer, nn::applet::AppletResourceUserId) 5.0.0+ 
+        [CommandHipc(1)] // 5.0.0+
+        // GetBusHandle(nn::hidbus::IHidbusServer, nn::applet::AppletResourceUserId)
         public ResultCode GetBusHandle(ServiceCtx context)
         {
             NpadIdType npadIdType        = (NpadIdType)context.RequestData.ReadInt32();
             context.RequestData.BaseStream.Position += 4; // Padding
             BusType busType              = (BusType)context.RequestData.ReadInt64();
-            long appletResourceUserId = context.RequestData.ReadInt64();
+            long appletResourceUserId    = context.RequestData.ReadInt64();
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new {npadIdType, busType, appletResourceUserId});
 
