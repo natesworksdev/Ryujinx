@@ -48,6 +48,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             { AttributeConsts.TessCoordY,    new BuiltInAttribute("gl_TessCoord.y",     VariableType.F32)  },
             { AttributeConsts.InstanceId,    new BuiltInAttribute("gl_InstanceID",      VariableType.S32)  },
             { AttributeConsts.VertexId,      new BuiltInAttribute("gl_VertexID",        VariableType.S32)  },
+            { AttributeConsts.BaseInstance,  new BuiltInAttribute("gl_BaseInstance",    VariableType.S32)  },
+            { AttributeConsts.BaseVertex,    new BuiltInAttribute("gl_BaseVertex",      VariableType.S32)  },
+            { AttributeConsts.InstanceIndex, new BuiltInAttribute("gl_InstanceIndex",   VariableType.S32)  },
+            { AttributeConsts.VertexIndex,   new BuiltInAttribute("gl_VertexIndex",     VariableType.S32)  },
             { AttributeConsts.FrontFacing,   new BuiltInAttribute("gl_FrontFacing",     VariableType.Bool) },
 
             // Special.
@@ -99,15 +103,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             return name;
         }
 
-        public string GetExpression(AstOperand operand, ShaderConfig config)
+        public string GetExpression(CodeGenContext context, AstOperand operand)
         {
             return operand.Type switch
             {
                 OperandType.Argument => GetArgumentName(operand.Value),
-                OperandType.Attribute => GetAttributeName(operand.Value, config, perPatch: false),
-                OperandType.AttributePerPatch => GetAttributeName(operand.Value, config, perPatch: true),
+                OperandType.Attribute => GetAttributeName(context, operand.Value, perPatch: false),
+                OperandType.AttributePerPatch => GetAttributeName(context, operand.Value, perPatch: true),
                 OperandType.Constant => NumberFormatter.FormatInt(operand.Value),
-                OperandType.ConstantBuffer => GetConstantBufferName(operand, config),
+                OperandType.ConstantBuffer => GetConstantBufferName(operand, context.Config),
                 OperandType.LocalVariable => _locals[operand],
                 OperandType.Undefined => DefaultNames.UndefinedName,
                 _ => throw new ArgumentException($"Invalid operand type \"{operand.Type}\".")
@@ -149,13 +153,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             return GetVec4Indexed(GetUbName(stage, slotExpr) + $"[{offsetExpr} >> 2]", offsetExpr + " & 3", indexElement);
         }
 
-        public static string GetOutAttributeName(int value, ShaderConfig config, bool perPatch)
+        public static string GetOutAttributeName(CodeGenContext context, int value, bool perPatch)
         {
-            return GetAttributeName(value, config, perPatch, isOutAttr: true);
+            return GetAttributeName(context, value, perPatch, isOutAttr: true);
         }
 
-        public static string GetAttributeName(int value, ShaderConfig config, bool perPatch, bool isOutAttr = false, string indexExpr = "0")
+        public static string GetAttributeName(CodeGenContext context, int value, bool perPatch, bool isOutAttr = false, string indexExpr = "0")
         {
+            ShaderConfig config = context.Config;
+
             if ((value & AttributeConsts.LoadOutputMask) != 0)
             {
                 isOutAttr = true;
@@ -188,6 +194,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
             else if (value >= AttributeConsts.UserAttributeBase && value < AttributeConsts.UserAttributeEnd)
             {
+                int attrOffset = value;
                 value -= AttributeConsts.UserAttributeBase;
 
                 string prefix = isOutAttr
@@ -211,14 +218,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     ((config.LastInVertexPipeline && isOutAttr) ||
                     (config.Stage == ShaderStage.Fragment && !isOutAttr)))
                 {
-                    string name = $"{prefix}{(value >> 4)}_{swzMask}";
+                    int components = config.LastInPipeline ? context.Info.GetTransformFeedbackOutputComponents(attrOffset) : 1;
+                    string name = components > 1 ? $"{prefix}{(value >> 4)}" : $"{prefix}{(value >> 4)}_{swzMask}";
 
                     if (AttributeInfo.IsArrayAttributeGlsl(config.Stage, isOutAttr))
                     {
                         name += isOutAttr ? "[gl_InvocationID]" : $"[{indexExpr}]";
                     }
 
-                    return name;
+                    return components > 1 ? name + '.' + swzMask : name;
                 }
                 else
                 {
