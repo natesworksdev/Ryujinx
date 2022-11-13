@@ -204,10 +204,6 @@ namespace Ryujinx.HLE.HOS.Applets
             else
             {
                 // Call the configured GUI handler to get user's input.
-
-                Logger.Info?.Print(LogClass.Application, $"Software keyboard initializing, header {_keyboardForegroundConfig.HeaderText}, sub {_keyboardForegroundConfig.SubtitleText}, guide {_keyboardForegroundConfig.GuideText}");
-                byte[] unicode = Encoding.Unicode.GetBytes(_keyboardForegroundConfig.HeaderText);
-                
                 var args = new SoftwareKeyboardUiArgs
                 {
                     HeaderText = StripUnicodeControlCodes(_keyboardForegroundConfig.HeaderText),
