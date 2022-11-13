@@ -782,7 +782,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 return string.Empty;
             }
 
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder(capacity: input.Length);
             foreach (char c in input)
             {
                 if (!char.IsControl(c))
