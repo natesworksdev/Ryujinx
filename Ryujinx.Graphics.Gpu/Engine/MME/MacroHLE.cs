@@ -30,9 +30,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
         /// <summary>
         /// Creates a new instance of the HLE macro handler.
         /// </summary>
-        /// <param name="context">GPU context the macro is being executed on</param>
-        /// <param name="memoryManager">GPU memory manager</param>
-        /// <param name="engine">3D engine where this macro is being called</param>
+        /// <param name="processor">GPU GP FIFO command processor</param>
         /// <param name="functionName">Name of the HLE macro function to be called</param>
         public MacroHLE(GPFifoProcessor processor, MacroHLEFunctionName functionName)
         {
@@ -58,6 +56,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
                 case MacroHLEFunctionName.ClearDepthStencil:
                     ClearDepthStencil(state, arg0);
                     break;
+                case MacroHLEFunctionName.DrawArraysInstanced:
+                    DrawArraysInstanced(state, arg0);
+                    break;
+                case MacroHLEFunctionName.DrawElementsInstanced:
+                    DrawElementsInstanced(state, arg0);
+                    break;
                 case MacroHLEFunctionName.DrawElementsIndirect:
                     DrawElementsIndirect(state, arg0);
                     break;
@@ -67,6 +71,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
                 default:
                     throw new NotImplementedException(_functionName.ToString());
             }
+
+            // It should be empty at this point, but clear it just to be safe.
+            Fifo.Clear();
         }
 
         /// <summary>
@@ -95,6 +102,65 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
         }
 
         /// <summary>
+        /// Performs a draw.
+        /// </summary>
+        /// <param name="state">GPU state at the time of the call</param>
+        /// <param name="arg0">First argument of the call</param>
+        private void DrawArraysInstanced(IDeviceState state, int arg0)
+        {
+            var topology = (PrimitiveTopology)arg0;
+
+            var count = FetchParam();
+            var instanceCount = FetchParam();
+            var firstVertex = FetchParam();
+            var firstInstance = FetchParam();
+
+            if (ShouldSkipDraw(state, instanceCount.Word))
+            {
+                return;
+            }
+
+            _processor.ThreedClass.Draw(
+                topology,
+                count.Word,
+                instanceCount.Word,
+                0,
+                firstVertex.Word,
+                firstInstance.Word,
+                indexed: false);
+        }
+
+        /// <summary>
+        /// Performs a indexed draw.
+        /// </summary>
+        /// <param name="state">GPU state at the time of the call</param>
+        /// <param name="arg0">First argument of the call</param>
+        private void DrawElementsInstanced(IDeviceState state, int arg0)
+        {
+            var topology = (PrimitiveTopology)arg0;
+
+            var count = FetchParam();
+            var instanceCount = FetchParam();
+            var firstIndex = FetchParam();
+            var firstVertex = FetchParam();
+            var firstInstance = FetchParam();
+
+            if (ShouldSkipDraw(state, instanceCount.Word))
+            {
+                return;
+            }
+
+            _processor.ThreedClass.Draw(
+                topology,
+                count.Word,
+                instanceCount.Word,
+                firstIndex.Word,
+                firstVertex.Word,
+                firstInstance.Word,
+                indexed: true);
+        }
+
+        /// <summary>
         /// Performs a indirect indexed draw, with parameters from a GPU buffer.
         /// </summary>
         /// <param name="state">GPU state at the time of the call</param>
@@ -106,14 +172,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
             var count = FetchParam();
             var instanceCount = FetchParam();
             var firstIndex = FetchParam();
-            var baseVertex = FetchParam();
-            var baseInstance = FetchParam();
+            var firstVertex = FetchParam();
+            var firstInstance = FetchParam();
 
             ulong indirectBufferGpuVa = count.GpuVa;
             int indexCount = firstIndex.Word + count.Word;
-
-            // It should be empty at this point, but clear it just to be safe.
-            Fifo.Clear();
 
             var bufferCache = _processor.MemoryManager.Physical.BufferCache;
 
@@ -184,8 +247,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
                 var count = FetchParam();
                 var instanceCount = FetchParam();
                 var firstIndex = FetchParam();
-                var baseVertex = FetchParam();
-                var baseInstance = FetchParam();
+                var firstVertex = FetchParam();
+                var firstInstance = FetchParam();
 
                 if (i == 0)
                 {
@@ -202,9 +265,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
                     }
                 }
             }
-
-            // It should be empty at this point, but clear it just to be safe.
-            Fifo.Clear();
 
             var bufferCache = _processor.MemoryManager.Physical.BufferCache;
 
@@ -224,6 +284,17 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
         }
 
         /// <summary>
+        /// Checks if the draw should be skipped, because the masked instance count is zero.
+        /// </summary>
+        /// <param name="state">Current GPU state</param>
+        /// <param name="instanceCount">Draw instance count</param>
+        /// <returns>True if the draw should be skipped, false otherwise</returns>
+        private static bool ShouldSkipDraw(IDeviceState state, int instanceCount)
+        {
+            return (Read(state, 0xd1b) & instanceCount) == 0;
+        }
+
+        /// <summary>
         /// Fetches a arguments from the arguments FIFO.
         /// </summary>
         /// <returns>The call argument, or a 0 value with null address if the FIFO is empty</returns>
@@ -237,6 +308,17 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
             }
 
             return value;
+        }
+
+        /// <summary>
+        /// Reads data from a GPU register.
+        /// </summary>
+        /// <param name="state">Current GPU state</param>
+        /// <param name="reg">Register offset to read</param>
+        /// <returns>GPU register value</returns>
+        private static int Read(IDeviceState state, int reg)
+        {
+            return state.Read(reg * 4);
         }
     }
 }

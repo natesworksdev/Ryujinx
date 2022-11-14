@@ -498,6 +498,28 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         }
 
         /// <summary>
+        /// Performs a indexed or non-indexed draw.
+        /// </summary>
+        /// <param name="topology">Primitive topology</param>
+        /// <param name="count">Index count for indexed draws, vertex count for non-indexed draws</param>
+        /// <param name="instanceCount">Instance count</param>
+        /// <param name="firstIndex">First index on the index buffer for indexed draws, ignored for non-indexed draws</param>
+        /// <param name="firstVertex">First vertex on the vertex buffer</param>
+        /// <param name="firstInstance">First instance</param>
+        /// <param name="indexed">True if the draw is indexed, false otherwise</param>
+        public void Draw(
+            PrimitiveTopology topology,
+            int count,
+            int instanceCount,
+            int firstIndex,
+            int firstVertex,
+            int firstInstance,
+            bool indexed)
+        {
+            _drawManager.Draw(this, topology, count, instanceCount, firstIndex, firstVertex, firstInstance, indexed);
+        }
+
+        /// <summary>
         /// Performs a indirect draw, with parameters from a GPU buffer.
         /// </summary>
         /// <param name="topology">Primitive topology</param>

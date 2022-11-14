@@ -33,6 +33,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
         private int _instanceIndex;
 
+        private const int VertexBufferFirstMethodOffset = 0x35d;
         private const int IndexBufferCountMethodOffset = 0x5f8;
 
         /// <summary>
@@ -242,6 +243,15 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _instanceIndex = 0;
             }
 
+            UpdateTopology(topology);
+        }
+
+        /// <summary>
+        /// Updates the current primitive topology if needed.
+        /// </summary>
+        /// <param name="topology">New primitive topology</param>
+        private void UpdateTopology(PrimitiveTopology topology)
+        {
             if (_drawState.Topology != topology || !_topologySet)
             {
                 _context.Renderer.Pipeline.SetPrimitiveTopology(topology);
@@ -388,6 +398,80 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         }
 
         /// <summary>
+        /// Performs a indexed or non-indexed draw.
+        /// </summary>
+        /// <param name="engine">3D engine where this method is being called</param>
+        /// <param name="topology">Primitive topology</param>
+        /// <param name="count">Index count for indexed draws, vertex count for non-indexed draws</param>
+        /// <param name="instanceCount">Instance count</param>
+        /// <param name="firstIndex">First index on the index buffer for indexed draws, ignored for non-indexed draws</param>
+        /// <param name="firstVertex">First vertex on the vertex buffer</param>
+        /// <param name="firstInstance">First instance</param>
+        /// <param name="indexed">True if the draw is indexed, false otherwise</param>
+        public void Draw(
+            ThreedClass engine,
+            PrimitiveTopology topology,
+            int count,
+            int instanceCount,
+            int firstIndex,
+            int firstVertex,
+            int firstInstance,
+            bool indexed)
+        {
+            UpdateTopology(topology);
+
+            ConditionalRenderEnabled renderEnable = ConditionalRendering.GetRenderEnable(
+                _context,
+                _channel.MemoryManager,
+                _state.State.RenderEnableAddress,
+                _state.State.RenderEnableCondition);
+
+            if (renderEnable == ConditionalRenderEnabled.False)
+            {
+                _drawState.DrawIndexed = false;
+                return;
+            }
+
+            if (indexed)
+            {
+                _drawState.FirstIndex = firstIndex;
+                _drawState.IndexCount = count;
+                _state.State.FirstVertex = (uint)firstVertex;
+                engine.ForceStateDirty(IndexBufferCountMethodOffset * 4);
+            }
+            else
+            {
+                _state.State.VertexBufferDrawState.First = firstVertex;
+                _state.State.VertexBufferDrawState.Count = count;
+                engine.ForceStateDirty(VertexBufferFirstMethodOffset * 4);
+            }
+
+            _state.State.FirstInstance = (uint)firstInstance;
+
+            _drawState.DrawIndexed = indexed;
+            _drawState.HasConstantBufferDrawParameters = true;
+
+            engine.UpdateState();
+
+            if (indexed)
+            {
+                _context.Renderer.Pipeline.DrawIndexed(count, instanceCount, firstIndex, firstVertex, firstInstance);
+            }
+            else
+            {
+                _context.Renderer.Pipeline.Draw(count, instanceCount, firstVertex, firstInstance);
+            }
+
+            _drawState.DrawIndexed = false;
+            _drawState.HasConstantBufferDrawParameters = false;
+
+            if (renderEnable == ConditionalRenderEnabled.Host)
+            {
+                _context.Renderer.Pipeline.EndHostConditionalRendering();
+            }
+        }
+
+        /// <summary>
         /// Performs a indirect draw, with parameters from a GPU buffer.
         /// </summary>
         /// <param name="engine">3D engine where this method is being called</param>
@@ -408,9 +492,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             int indexCount,
             IndirectDrawType drawType)
         {
-            _context.Renderer.Pipeline.SetPrimitiveTopology(topology);
-            _drawState.Topology = topology;
-            _topologySet = true;
+            UpdateTopology(topology);
 
             ConditionalRenderEnabled renderEnable = ConditionalRendering.GetRenderEnable(
                 _context,
