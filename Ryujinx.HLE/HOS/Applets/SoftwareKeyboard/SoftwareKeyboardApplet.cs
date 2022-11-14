@@ -764,10 +764,14 @@ namespace Ryujinx.HLE.HOS.Applets
         }
 
         /// <summary>
-        /// Some games send special control codes (such as 0x13) as part of the string (as a special formatting protocol with the keyboard?).
-        /// Our UI currently can't handle these properly, so strip all control codes from the input string and return.
-        /// This function will also strip tabs, CR/LF, null characters, escape chars, etc.
+        /// Removes all Unicode control code characters from the input string.
+        /// This includes CR/LF, tabs, null characters, escape characters,
+        /// and special control codes which are used for formatting by the real keyboard applet.
         /// </summary>
+        /// <remarks>
+        /// Some games send special control codes (such as 0x13 "Device Control 3") as part of the string.
+        /// Future implementations of the emulated keyboard applet will need to handle these as well.
+        /// </remarks>
         /// <param name="input">The input string to sanitize (may be null).</param>
         /// <returns>The sanitized string.</returns>
         internal static string StripUnicodeControlCodes(string input)

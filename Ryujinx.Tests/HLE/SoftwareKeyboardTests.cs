@@ -1,10 +1,6 @@
 ﻿using NUnit.Framework;
 using Ryujinx.HLE.HOS.Applets;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Ryujinx.Tests.HLE
 {
