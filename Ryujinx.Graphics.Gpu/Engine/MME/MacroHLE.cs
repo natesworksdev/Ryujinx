@@ -176,21 +176,40 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
             var firstInstance = FetchParam();
 
             ulong indirectBufferGpuVa = count.GpuVa;
-            int indexCount = firstIndex.Word + count.Word;
 
             var bufferCache = _processor.MemoryManager.Physical.BufferCache;
 
             bool useBuffer = bufferCache.CheckModified(_processor.MemoryManager, indirectBufferGpuVa, IndirectIndexedDataEntrySize, out ulong indirectBufferAddress);
 
-            _processor.ThreedClass.DrawIndirect(
-                topology,
-                indirectBufferAddress,
-                0,
-                1,
-                IndirectIndexedDataEntrySize,
-                indexCount,
-                Threed.IndirectDrawType.DrawIndexedIndirect,
-                useBuffer);
+            if (useBuffer)
+            {
+                int indexCount = firstIndex.Word + count.Word;
+
+                _processor.ThreedClass.DrawIndirect(
+                    topology,
+                    indirectBufferAddress,
+                    0,
+                    1,
+                    IndirectIndexedDataEntrySize,
+                    indexCount,
+                    Threed.IndirectDrawType.DrawIndexedIndirect);
+            }
+            else
+            {
+                if (ShouldSkipDraw(state, instanceCount.Word))
+                {
+                    return;
+                }
+
+                _processor.ThreedClass.Draw(
+                    topology,
+                    count.Word,
+                    instanceCount.Word,
+                    firstIndex.Word,
+                    firstVertex.Word,
+                    firstInstance.Word,
+                    indexed: true);
+            }
         }
 
         /// <summary>
@@ -278,8 +297,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
                 maxDrawCount,
                 stride,
                 indexCount,
-                Threed.IndirectDrawType.DrawIndexedIndirectCount,
-                true);
+                Threed.IndirectDrawType.DrawIndexedIndirectCount);
         }
 
         /// <summary>

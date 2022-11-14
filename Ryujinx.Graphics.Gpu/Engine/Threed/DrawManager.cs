@@ -2,7 +2,6 @@
 using Ryujinx.Graphics.Gpu.Engine.Types;
 using Ryujinx.Graphics.Gpu.Memory;
 using System;
-using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed
 {
@@ -11,23 +10,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     /// </summary>
     class DrawManager
     {
-        private struct DrawIndexedIndirectArgs
-        {
-            public readonly int IndexCount;
-            public readonly int InstanceCount;
-            public readonly int FirstIndex;
-            public readonly int VertexOffset;
-            public readonly int FirstInstance;
-        }
-
-        private struct DrawIndirectArgs
-        {
-            public readonly int VertexCount;
-            public readonly int InstanceCount;
-            public readonly int FirstVertex;
-            public readonly int FirstInstance;
-        }
-
         // Since we don't know the index buffer size for indirect draws,
         // we must assume a minimum and maximum size and use that for buffer data update purposes.
         private const int MinIndirectIndexCount = 0x10000;
@@ -501,7 +483,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// <param name="stride">Distance in bytes between each entry on the data pointed to by <paramref name="indirectBufferAddress"/></param>
         /// <param name="indexCount">Maximum number of indices that the draw can consume</param>
         /// <param name="drawType">Type of the indirect draw, which can be indexed or non-indexed, with or without a draw count</param>
-        /// <param name="bufferModified">Whether the indirect buffer was modified</param>
         public void DrawIndirect(
             ThreedClass engine,
             PrimitiveTopology topology,
@@ -510,8 +491,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             int maxDrawCount,
             int stride,
             int indexCount,
-            IndirectDrawType drawType,
-            bool bufferModified)
+            IndirectDrawType drawType)
         {
             UpdateTopology(topology);
 
@@ -534,24 +514,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             if (indexed)
             {
-                if (bufferModified)
-                {
-                    // Ensure that we have a sane index count, for cases where it is supposed to be
-                    // written by GPU and the CPU visible data is just garbage.
-                    indexCount = Math.Clamp(indexCount, MinIndirectIndexCount, MaxIndirectIndexCount);
-                    _drawState.FirstIndex = 0;
-                }
-                else
-                {
-                    _drawState.FirstIndex = memory.Read<int>(indirectBufferAddress + 2 * sizeof(int));
-                }
-
+                indexCount = Math.Clamp(indexCount, MinIndirectIndexCount, MaxIndirectIndexCount);
+                _drawState.FirstIndex = 0;
                 _drawState.IndexCount = indexCount;
                 engine.ForceStateDirty(IndexBufferCountMethodOffset * 4);
             }
 
             _drawState.DrawIndexed = indexed;
-            _drawState.DrawIndirect = bufferModified;
+            _drawState.DrawIndirect = true;
             _drawState.HasConstantBufferDrawParameters = true;
 
             engine.UpdateState();
@@ -572,33 +542,15 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             }
             else
             {
-                if (bufferModified)
-                {
-                    var indirectBuffer = memory.BufferCache.GetBufferRange(indirectBufferAddress, (ulong)stride);
+                var indirectBuffer = memory.BufferCache.GetBufferRange(indirectBufferAddress, (ulong)stride);
 
-                    if (indexed)
-                    {
-                        _context.Renderer.Pipeline.DrawIndexedIndirect(indirectBuffer);
-                    }
-                    else
-                    {
-                        _context.Renderer.Pipeline.DrawIndirect(indirectBuffer);
-                    }
+                if (indexed)
+                {
+                    _context.Renderer.Pipeline.DrawIndexedIndirect(indirectBuffer);
                 }
                 else
                 {
-                    // If the buffer wasn't modified, use the data directly and do a regular draw.
-
-                    if (indexed)
-                    {
-                        var args = memory.Read<DrawIndexedIndirectArgs>(indirectBufferAddress);
-                        _context.Renderer.Pipeline.DrawIndexed(args.IndexCount, args.InstanceCount, args.FirstIndex, args.VertexOffset, args.FirstInstance);
-                    }
-                    else
-                    {
-                        var args = memory.Read<DrawIndirectArgs>(indirectBufferAddress);
-                        _context.Renderer.Pipeline.Draw(args.VertexCount, args.InstanceCount, args.FirstVertex, args.FirstInstance);
-                    }
+                    _context.Renderer.Pipeline.DrawIndirect(indirectBuffer);
                 }
             }
 
