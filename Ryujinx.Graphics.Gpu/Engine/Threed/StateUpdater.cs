@@ -34,6 +34,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
         private ProgramPipelineState _pipeline;
 
+        private bool _vsUsesDrawParameters;
         private bool _vtgWritesRtLayer;
         private byte _vsClipDistancesWritten;
 
@@ -211,7 +212,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             // of the shader for the new state.
             if (_shaderSpecState != null)
             {
-                if (!_shaderSpecState.MatchesGraphics(_channel, GetPoolState(), GetGraphicsState(), false))
+                if (!_shaderSpecState.MatchesGraphics(_channel, GetPoolState(), GetGraphicsState(), _vsUsesDrawParameters, false))
                 {
                     ForceShaderUpdate();
                 }
@@ -1220,6 +1221,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             byte oldVsClipDistancesWritten = _vsClipDistancesWritten;
 
             _drawState.VsUsesInstanceId = gs.Shaders[1]?.Info.UsesInstanceId ?? false;
+            _vsUsesDrawParameters = gs.Shaders[1]?.Info.UsesDrawParameters ?? false;
             _vsClipDistancesWritten = gs.Shaders[1]?.Info.ClipDistancesWritten ?? 0;
 
             if (oldVsClipDistancesWritten != _vsClipDistancesWritten)
@@ -1235,6 +1237,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             _context.Renderer.Pipeline.SetProgram(gs.HostProgram);
         }
 
+        /// <summary>
+        /// Updates bindings consumed by the shader stage on the texture and buffer managers.
+        /// </summary>
+        /// <param name="stage">Shader stage to have the bindings updated</param>
+        /// <param name="info">Shader stage bindings info</param>
         private void UpdateStageBindings(int stage, ShaderProgramInfo info)
         {
             _currentProgramInfo[stage] = info;
