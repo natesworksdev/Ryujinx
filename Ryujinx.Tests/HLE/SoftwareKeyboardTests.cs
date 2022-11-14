@@ -67,13 +67,5 @@ namespace Ryujinx.Tests.HLE
             string specialInput = "♀ 🐢 🐢 ♂ ";
             Assert.AreEqual(specialInput, SoftwareKeyboardApplet.StripUnicodeControlCodes(specialInput));
         }
-
-        [Test]
-        public void StripUnicodeControlCodes_PreservesNonVisiblePadding()
-        {
-            // Pokemon uses this string for formatting genders on the nickname prompt. Ends up just looking like "(♂)"
-            string specialInput = Encoding.UTF8.GetString(new byte[] { 0x28, 0xE2, 0x99, 0x80, 0x29, 0xE2, 0x80, 0x99 });
-            Assert.AreEqual(specialInput, SoftwareKeyboardApplet.StripUnicodeControlCodes(specialInput));
-        }
     }
 }
