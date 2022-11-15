@@ -520,7 +520,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareInputAttributesPerPatch(CodeGenContext context, HashSet<int> attrs)
         {
-            foreach (int attr in attrs.OrderBy(x => x))
+            foreach (int attr in attrs.Order())
             {
                 DeclareInputAttributePerPatch(context, attr);
             }
@@ -653,7 +653,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareUsedOutputAttributesPerPatch(CodeGenContext context, HashSet<int> attrs)
         {
-            foreach (int attr in attrs.OrderBy(x => x))
+            foreach (int attr in attrs.Order())
             {
                 DeclareOutputAttributePerPatch(context, attr);
             }
