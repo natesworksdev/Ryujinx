@@ -457,11 +457,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             if (indexed)
             {
                 _context.Renderer.Pipeline.DrawIndexed(count, instanceCount, firstIndex, firstVertex, firstInstance);
+                _state.State.FirstVertex = 0;
             }
             else
             {
                 _context.Renderer.Pipeline.Draw(count, instanceCount, firstVertex, firstInstance);
             }
+
+            _state.State.FirstInstance = 0;
 
             _drawState.DrawIndexed = false;
             _drawState.HasConstantBufferDrawParameters = false;
