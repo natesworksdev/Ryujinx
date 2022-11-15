@@ -83,7 +83,7 @@ void main()
             int inOffset = indirect_data_offset + offset;
 
             indirect_data_out[offset] = GetConvertedCount(indirect_data_in[inOffset]); // Index count
-            indirect_data_out[offset + 1] = indirect_data_in[inOffset + 1]; // Instance counnt
+            indirect_data_out[offset + 1] = indirect_data_in[inOffset + 1]; // Instance count
             indirect_data_out[offset + 2] = GetConvertedCount(indirect_data_in[inOffset + 2] - firstIndex); // First index
             indirect_data_out[offset + 3] = indirect_data_in[inOffset + 3]; // Vertex offset
             indirect_data_out[offset + 4] = indirect_data_in[inOffset + 4]; // First instance

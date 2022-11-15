@@ -456,7 +456,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void DrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
         {
-            if (_program.LinkStatus != ProgramLinkStatus.Success)
+            if (!_program.IsLinked)
             {
                 return;
             }
