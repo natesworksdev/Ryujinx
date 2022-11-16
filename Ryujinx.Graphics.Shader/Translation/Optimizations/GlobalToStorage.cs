@@ -122,7 +122,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
         {
             int baseAddressCbOffset = GetStorageCbOffset(config.Stage, storageIndex);
 
-            bool storageAligned = (!(config.GpuAccessor.QueryHasUnalignedStorageBuffer() || config.GpuAccessor.QueryHostStorageBufferOffsetAlignment() > 16));
+            bool storageAligned = (!(config.GpuAccessor.QueryHasUnalignedStorageBuffer() || config.GpuAccessor.QueryHostStorageBufferOffsetAlignment() > Constants.StorageAlignment));
 
             (Operand byteOffset, int constantOffset) = storageAligned ?
                 GetStorageOffset(block, Utils.FindLastOperation(addrLow, block), baseAddressCbOffset) :
