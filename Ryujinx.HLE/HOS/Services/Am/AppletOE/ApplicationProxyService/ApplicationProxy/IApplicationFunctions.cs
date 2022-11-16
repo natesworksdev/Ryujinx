@@ -268,6 +268,20 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             return ResultCode.Success;
         }
 
+        [CommandHipc(28)] // 11.0.0+
+        // TODO: This is currently just a guess and needs to be confirmed
+        // GetSaveDataSizeMax() -> (s64 save_size_max, s64 journal_size_max)
+        public ResultCode GetSaveDataSizeMax(ServiceCtx context)
+        {
+
+            context.ResponseData.Write((long)_defaultSaveDataSize);
+            context.ResponseData.Write((long)_defaultJournalSaveDataSize);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return ResultCode.Success;
+        }
+
         [CommandHipc(30)]
         // BeginBlockingHomeButtonShortAndLongPressed()
         public ResultCode BeginBlockingHomeButtonShortAndLongPressed(ServiceCtx context)
