@@ -139,7 +139,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
                 qmd.CtaThreadDimension2,
                 localMemorySize,
                 sharedMemorySize,
-                _channel.BufferManager.UnalignedStorageBuffers > 0);
+                _channel.BufferManager.HasUnalignedStorageBuffers);
 
             CachedShaderProgram cs = memoryManager.Physical.ShaderCache.GetComputeShader(_channel, poolState, computeState, shaderGpuVa);
 
@@ -151,7 +151,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
 
             ShaderProgramInfo info = cs.Shaders[0].Info;
 
-            bool hasUnaligned = _channel.BufferManager.UnalignedStorageBuffers > 0;
+            bool hasUnaligned = _channel.BufferManager.HasUnalignedStorageBuffers;
 
             for (int index = 0; index < info.SBuffers.Count; index++)
             {
@@ -168,7 +168,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
                 _channel.BufferManager.SetComputeStorageBuffer(sb.Slot, sbDescriptor.PackAddress(), (uint)sbDescriptor.Size, sb.Flags);
             }
 
-            if ((_channel.BufferManager.UnalignedStorageBuffers > 0) != hasUnaligned)
+            if ((_channel.BufferManager.HasUnalignedStorageBuffers) != hasUnaligned)
             {
                 // Refetch the shader, as assumptions about storage buffer alignment have changed.
                 cs = memoryManager.Physical.ShaderCache.GetComputeShader(_channel, poolState, computeState, shaderGpuVa);

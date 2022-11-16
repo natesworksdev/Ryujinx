@@ -294,11 +294,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private void CommitBindings()
         {
             var buffers = _channel.BufferManager;
-            var hasUnaligned = buffers.UnalignedStorageBuffers > 0;
+            var hasUnaligned = buffers.HasUnalignedStorageBuffers;
 
             UpdateStorageBuffers();
 
-            if (!_channel.TextureManager.CommitGraphicsBindings(_shaderSpecState) || (buffers.UnalignedStorageBuffers > 0 != hasUnaligned))
+            if (!_channel.TextureManager.CommitGraphicsBindings(_shaderSpecState) || (buffers.HasUnalignedStorageBuffers != hasUnaligned))
             {
                 // Shader must be reloaded.
                 UpdateShaderState();
@@ -1365,7 +1365,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _state.State.AlphaTestRef,
                 ref attributeTypes,
                 _drawState.HasConstantBufferDrawParameters,
-                _channel.BufferManager.HasUnalignedStorageBuffer);
+                _channel.BufferManager.HasUnalignedStorageBuffers);
         }
 
         /// <summary>
