@@ -272,6 +272,11 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // GetSaveDataSizeMax() -> (s64 save_size_max, s64 journal_size_max)
         public ResultCode GetSaveDataSizeMax(ServiceCtx context)
         {
+            // NOTE: We are currently using a stub for GetSaveDataSize() which returns the default values.
+            //       For this method we shouldn't return anything lower than that, but since we aren't interacting
+            //       with fs to get the actual sizes, we return the default values here as well.
+            //       This also helps in case ExtendSaveData() has been executed and the default values were modified.
+
             context.ResponseData.Write(_defaultSaveDataSize);
             context.ResponseData.Write(_defaultJournalSaveDataSize);
 
