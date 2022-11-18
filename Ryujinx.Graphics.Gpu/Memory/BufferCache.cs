@@ -493,6 +493,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _pruneCaches = false;
         }
 
+        /// <summary>
+        /// Queues a prune of invalid entries the next time a dictionary cache is accessed.
+        /// </summary>
         public void QueuePrune()
         {
             _pruneCaches = true;
