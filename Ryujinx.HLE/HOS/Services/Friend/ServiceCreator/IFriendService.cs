@@ -47,6 +47,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
         // nn::friends::Cancel()
         public ResultCode Cancel(ServiceCtx context)
         {
+            // AcK77: After some reverse-engineering, this sets an internal field to 1.
             Logger.Stub?.PrintStub(LogClass.ServiceFriend);
 
             return ResultCode.Success;
