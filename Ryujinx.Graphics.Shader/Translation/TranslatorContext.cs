@@ -235,17 +235,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             var sInfo = StructuredProgram.MakeStructuredProgram(new[] { function }, config);
 
-            var info = new ShaderProgramInfo(
-                config.GetConstantBufferDescriptors(),
-                config.GetStorageBufferDescriptors(),
-                config.GetTextureDescriptors(),
-                config.GetImageDescriptors(),
-                config.Stage,
-                config.UsedFeatures.HasFlag(FeatureFlags.InstanceId),
-                config.UsedFeatures.HasFlag(FeatureFlags.DrawParameters),
-                config.UsedFeatures.HasFlag(FeatureFlags.RtLayer),
-                config.ClipDistancesWritten,
-                config.OmapTargets);
+            var info = config.CreateProgramInfo();
 
             return config.Options.TargetLanguage switch
             {

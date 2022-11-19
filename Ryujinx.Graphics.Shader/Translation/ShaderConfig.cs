@@ -717,5 +717,20 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             return FindDescriptorIndex(GetImageDescriptors(), texOp);
         }
+
+        public ShaderProgramInfo CreateProgramInfo()
+        {
+            return new ShaderProgramInfo(
+                GetConstantBufferDescriptors(),
+                GetStorageBufferDescriptors(),
+                GetTextureDescriptors(),
+                GetImageDescriptors(),
+                Stage,
+                UsedFeatures.HasFlag(FeatureFlags.InstanceId),
+                UsedFeatures.HasFlag(FeatureFlags.DrawParameters),
+                UsedFeatures.HasFlag(FeatureFlags.RtLayer),
+                ClipDistancesWritten,
+                OmapTargets);
+        }
     }
 }
