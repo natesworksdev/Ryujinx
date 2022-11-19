@@ -199,6 +199,23 @@ namespace Ryujinx.Ava.Ui.Windows
                     SaveConfig();
                 }
             }
+
+            if (ConfigurationState.Instance.System.ExpandRam.Value)
+            {
+                string mainMessage = LocaleManager.Instance["DialogPerformanceCheckExpandDramEnabledMessage"];
+                string secondaryMessage = LocaleManager.Instance["DialogPerformanceCheckExpandDramEnabledConfirmMessage"];
+
+                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(mainMessage, secondaryMessage,
+                    LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"],
+                    LocaleManager.Instance["RyujinxConfirm"]);
+
+                if (result != UserResult.No)
+                {
+                    ConfigurationState.Instance.System.ExpandRam.Value = false;
+
+                    SaveConfig();
+                }
+            }
         }
 
         internal static void DeferLoadApplication(string launchPathArg, bool startFullscreenArg)

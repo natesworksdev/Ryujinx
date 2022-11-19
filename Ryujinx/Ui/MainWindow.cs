@@ -683,6 +683,24 @@ namespace Ryujinx.Ui
 
                 shadersDumpWarningDialog.Dispose();
             }
+
+            if (ConfigurationState.Instance.System.ExpandRam.Value)
+            {
+                MessageDialog dramWarningDialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
+                {
+                    Title         = "Ryujinx - Warning",
+                    Text          = "You have DRAM expansion enabled, which is designed to be used for 4K game-mods ONLY.",
+                    SecondaryText = "This setting is known to cause crashes and instability. If you are unsure if you need this, then you don't. Would you like to disable DRAM expansion now?"
+                };
+
+                if (dramWarningDialog.Run() == (int)ResponseType.Yes)
+                {
+                    ConfigurationState.Instance.System.ExpandRam.Value = false;
+                    SaveConfig();
+                }
+
+                dramWarningDialog.Dispose();
+            }
         }
 
         public void LoadApplication(string path, bool startFullscreen = false)
