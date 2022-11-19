@@ -1,4 +1,5 @@
-﻿using Ryujinx.HLE.HOS.Services.Sockets.Bsd.Types;
+using Ryujinx.HLE.HOS.Services.Sockets.Bsd.Types;
+﻿using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 
@@ -90,6 +91,54 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
             {0, 0}
         };
 
+        private static readonly Dictionary<int, LinuxError> _errorMapMacOs = new()
+        {
+            {35, LinuxError.EAGAIN},
+            {11, LinuxError.EDEADLOCK},
+            {91, LinuxError.ENOMSG},
+            {90, LinuxError.EIDRM},
+            {77, LinuxError.ENOLCK},
+            {70, LinuxError.ESTALE},
+            {36, LinuxError.EINPROGRESS},
+            {37, LinuxError.EALREADY},
+            {38, LinuxError.ENOTSOCK},
+            {39, LinuxError.EDESTADDRREQ},
+            {40, LinuxError.EMSGSIZE},
+            {41, LinuxError.EPROTOTYPE},
+            {42, LinuxError.ENOPROTOOPT},
+            {43, LinuxError.EPROTONOSUPPORT},
+            {44, LinuxError.ESOCKTNOSUPPORT},
+            {45, LinuxError.EOPNOTSUPP},
+            {46, LinuxError.EPFNOSUPPORT},
+            {47, LinuxError.EAFNOSUPPORT},
+            {48, LinuxError.EADDRINUSE},
+            {49, LinuxError.EADDRNOTAVAIL},
+            {50, LinuxError.ENETDOWN},
+            {51, LinuxError.ENETUNREACH},
+            {52, LinuxError.ENETRESET},
+            {53, LinuxError.ECONNABORTED},
+            {54, LinuxError.ECONNRESET},
+            {55, LinuxError.ENOBUFS},
+            {56, LinuxError.EISCONN},
+            {57, LinuxError.ENOTCONN},
+            {58, LinuxError.ESHUTDOWN},
+            {60, LinuxError.ETIMEDOUT},
+            {61, LinuxError.ECONNREFUSED},
+            {64, LinuxError.EHOSTDOWN},
+            {65, LinuxError.EHOSTUNREACH},
+            {68, LinuxError.EUSERS},
+            {62, LinuxError.ELOOP},
+            {63, LinuxError.ENAMETOOLONG},
+            {66, LinuxError.ENOTEMPTY},
+            {69, LinuxError.EDQUOT},
+            {71, LinuxError.EREMOTE},
+            {78, LinuxError.ENOSYS},
+            {59, LinuxError.ETOOMANYREFS},
+            {92, LinuxError.EILSEQ},
+            {89, LinuxError.ECANCELED},
+            {84, LinuxError.EOVERFLOW}
+        };
+
         private static readonly Dictionary<BsdSocketOption, SocketOptionName> _soSocketOptionMap = new()
         {
             { BsdSocketOption.SoDebug,       SocketOptionName.Debug },
@@ -136,12 +185,22 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
 
         public static LinuxError ConvertError(WsaError errorCode)
         {
-            if (!_errorMap.TryGetValue(errorCode, out LinuxError errno))
+            if (OperatingSystem.IsMacOS())
             {
-                errno = (LinuxError)errorCode;
+                if (_errorMapMacOs.TryGetValue((int)errorCode, out LinuxError errno))
+                {
+                    return errno;
+                }
+            }
+            else
+            {
+                if (_errorMap.TryGetValue(errorCode, out LinuxError errno))
+                {
+                    return errno;
+                }
             }
 
-            return errno;
+            return (LinuxError)errorCode;
         }
 
         public static bool TryConvertSocketOption(BsdSocketOption option, SocketOptionLevel level, out SocketOptionName name)
