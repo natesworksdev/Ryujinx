@@ -119,7 +119,7 @@
   "SettingsTabSystemAudioBackendSDL2": "SDL2",
   "SettingsTabSystemHacks": "Hacks",
   "SettingsTabSystemHacksNote": " (may cause instability)",
-  "SettingsTabSystemExpandDramSize": "Use alternative MemoryMode layout (specific 4k mods only)",
+  "SettingsTabSystemExpandDramSize": "Use alternative memory layout (Developers)",
   "SettingsTabSystemIgnoreMissingServices": "Ignore Missing Services",
   "SettingsTabGraphics": "Graphics",
   "SettingsTabGraphicsAPI": "Graphics API",

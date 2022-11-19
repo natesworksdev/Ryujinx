@@ -1749,7 +1749,7 @@
                                 <property name="orientation">vertical</property>
                                 <child>
                                   <object class="GtkCheckButton" id="_expandRamToggle">
-                                    <property name="label" translatable="yes">Use alternative MemoryMode layout (specific 4K mods only - causes crashes otherwise)</property>
+                                    <property name="label" translatable="yes">Use alternative memory layout (Developers)</property>
                                     <property name="visible">True</property>
                                     <property name="can-focus">True</property>
                                     <property name="receives-default">False</property>
