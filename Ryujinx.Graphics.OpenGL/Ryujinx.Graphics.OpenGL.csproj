@@ -6,7 +6,31 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Effects\Textures\smaa_area_texture" />
+    <None Remove="Effects\Textures\smaa_search_texture" />
+    <None Remove="Shaders\fsr_sharpening.glsl" />
+    <None Remove="Shaders\smaa.hlsl" />
+    <None Remove="Shaders\smaa_blend.glsl" />
+    <None Remove="Shaders\smaa_edge.glsl" />
+    <None Remove="Shaders\smaa_neighbour.glsl" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="OpenTK.Graphics" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Effects\Textures\smaa_area_texture" />
+    <EmbeddedResource Include="Effects\Textures\smaa_search_texture" />
+    <EmbeddedResource Include="Shaders\fsr_sharpening.glsl" />
+    <EmbeddedResource Include="Shaders\fxaa.glsl" />
+    <EmbeddedResource Include="Shaders\smaa.hlsl" />
+    <EmbeddedResource Include="Shaders\smaa_blend.glsl" />
+    <EmbeddedResource Include="Shaders\smaa_edge.glsl" />
+    <EmbeddedResource Include="Shaders\smaa_neighbour.glsl" />
+    <EmbeddedResource Include="Shaders\ffx_fsr1.h" />
+    <EmbeddedResource Include="Shaders\ffx_a.h" />
+    <EmbeddedResource Include="Shaders\fsr_scaling.glsl" />
   </ItemGroup>
 
   <ItemGroup>

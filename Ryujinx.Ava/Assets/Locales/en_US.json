@@ -626,6 +626,16 @@
   "Recover": "Recover",
   "UserProfilesRecoverHeading" : "Saves were found for the following accounts",
   "UserProfilesRecoverEmptyList": "No profiles to recover",
+  "GraphicsAATooltip": "Applies anti-aliasing to the game render",
+  "GraphicsAALabel": "Anti-Aliasing:",
+  "GraphicsUpscalingLabel": "Upscaling:",
+  "GraphicsUpscalingTooltip": "Enables Framebuffer Upscaling",
+  "GraphicsUpscalingLevelLabel": "Level",
+  "GraphicsUpscalingLevelTooltip": "Set Upscaling Level",
+  "SmaaLow": "SMAA Low",
+  "SmaaMedium": "SMAA Medium",
+  "SmaaHigh": "SMAA High",
+  "SmaaUltra": "SMAA Ultra",
   "UserEditorTitle" : "Edit User",
   "UserEditorTitleCreate" : "Create User"
 }

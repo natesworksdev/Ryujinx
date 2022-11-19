@@ -13,6 +13,28 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Effects\smaa_area_texture" />
+    <None Remove="Effects\smaa_search_texture" />
+    <None Remove="Shaders\fsr_scaling.spirv" />
+    <None Remove="Shaders\fsr_sharpening.spirv" />
+    <None Remove="Shaders\fxaa.spirv" />
+    <None Remove="Shaders\smaa_blend.spirv" />
+    <None Remove="Shaders\smaa_edge.spirv" />
+    <None Remove="Shaders\smaa_neighbour.spirv" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Effects\Textures\smaa_area_texture" />
+    <EmbeddedResource Include="Effects\Textures\smaa_search_texture" />
+    <EmbeddedResource Include="Shaders\fsr_scaling.spirv" />
+    <EmbeddedResource Include="Shaders\fsr_sharpening.spirv" />
+    <EmbeddedResource Include="Shaders\fxaa.spirv" />
+    <EmbeddedResource Include="Shaders\smaa_blend.spirv" />
+    <EmbeddedResource Include="Shaders\smaa_edge.spirv" />
+    <EmbeddedResource Include="Shaders\smaa_neighbour.spirv" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="OpenTK.Windowing.GraphicsLibraryFramework" />
     <PackageReference Include="shaderc.net" />
     <PackageReference Include="Silk.NET.Vulkan" />
