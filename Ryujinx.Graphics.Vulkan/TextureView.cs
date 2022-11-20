@@ -373,7 +373,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             if (VulkanConfiguration.UseSlowSafeBlitOnAmd &&
-                (_gd.Vendor == Vendor.Amd || _gd.Vendor == Vendor.MoltenVK) &&
+                (_gd.Vendor == Vendor.Amd || _gd.IsMoltenVk) &&
                 src.Info.Target == Target.Texture2D &&
                 dst.Info.Target == Target.Texture2D &&
                 !dst.Info.Format.IsDepthOrStencil())
