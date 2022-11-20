@@ -690,7 +690,7 @@ namespace Ryujinx.Ui
                 {
                     Title         = "Ryujinx - Warning",
                     Text          = "You have DRAM expansion enabled, which is designed to be used for 4K game-mods ONLY.",
-                    SecondaryText = "This setting is known to cause crashes and instability. If you are unsure if you need this, then you don't. Would you like to disable DRAM expansion now?"
+                    SecondaryText = "This setting, when enabled, is currently known to cause crashes and instability in some games. If you are unsure whether you need this option, leave it disabled. Disable DRAM expansion now?"
                 };
 
                 if (dramWarningDialog.Run() == (int)ResponseType.Yes)
