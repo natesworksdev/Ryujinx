@@ -132,6 +132,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public bool EnableFsIntegrityChecks { get; set; }
         public bool IgnoreMissingServices { get; set; }
         public bool ExpandDramSize { get; set; }
+        public bool ConfirmedDramWarning { get; set; }
         public bool EnableShaderCache { get; set; }
         public bool EnableTextureRecompression { get; set; }
         public bool EnableMacroHLE { get; set; }
@@ -334,6 +335,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             EnableFsIntegrityChecks = config.System.EnableFsIntegrityChecks;
             IgnoreMissingServices = config.System.IgnoreMissingServices;
             ExpandDramSize = config.System.ExpandRam;
+            ConfirmedDramWarning = config.System.ConfirmedDramWarning;
             EnableShaderCache = config.Graphics.EnableShaderCache;
             EnableTextureRecompression = config.Graphics.EnableTextureRecompression;
             EnableMacroHLE = config.Graphics.EnableMacroHLE;
@@ -427,6 +429,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             config.System.EnableFsIntegrityChecks.Value = EnableFsIntegrityChecks;
             config.System.IgnoreMissingServices.Value = IgnoreMissingServices;
             config.System.ExpandRam.Value = ExpandDramSize;
+            config.System.ConfirmedDramWarning.Value = ConfirmedDramWarning;
             config.Hid.EnableKeyboard.Value = EnableKeyboard;
             config.Hid.EnableMouse.Value = EnableMouse;
             config.Ui.CustomThemePath.Value = CustomThemePath;

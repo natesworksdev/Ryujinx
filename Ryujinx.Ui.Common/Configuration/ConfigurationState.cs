@@ -297,6 +297,11 @@ namespace Ryujinx.Ui.Common.Configuration
             public ReactiveObject<bool> ExpandRam { get; private set; }
 
             /// <summary>
+            /// Used to check if the user has previously ignored the DRAM warning
+            /// </summary>
+            public ReactiveObject<bool> ConfirmedDramWarning { get; private set; }
+
+            /// <summary>
             /// Enable or disable ignoring missing services
             /// </summary>
             public ReactiveObject<bool> IgnoreMissingServices { get; private set; }
@@ -323,6 +328,8 @@ namespace Ryujinx.Ui.Common.Configuration
                 MemoryManagerMode.Event       += static (sender, e) => LogValueChange(sender, e, nameof(MemoryManagerMode));
                 ExpandRam                     = new ReactiveObject<bool>();
                 ExpandRam.Event               += static (sender, e) => LogValueChange(sender, e, nameof(ExpandRam));
+                ConfirmedDramWarning          = new ReactiveObject<bool>();
+                ConfirmedDramWarning.Event    += static (sender, e) => LogValueChange(sender, e, nameof(ConfirmedDramWarning));
                 IgnoreMissingServices         = new ReactiveObject<bool>();
                 IgnoreMissingServices.Event   += static (sender, e) => LogValueChange(sender, e, nameof(IgnoreMissingServices));
                 AudioVolume                   = new ReactiveObject<float>();
@@ -565,6 +572,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 AudioVolume                = System.AudioVolume,
                 MemoryManagerMode          = System.MemoryManagerMode,
                 ExpandRam                  = System.ExpandRam,
+                ConfirmedDramWarning       = System.ConfirmedDramWarning,
                 IgnoreMissingServices      = System.IgnoreMissingServices,
                 GuiColumns                 = new GuiColumns
                 {
@@ -651,6 +659,7 @@ namespace Ryujinx.Ui.Common.Configuration
             System.AudioVolume.Value                  = 1;
             System.MemoryManagerMode.Value            = MemoryManagerMode.HostMappedUnsafe;
             System.ExpandRam.Value                    = false;
+            System.ConfirmedDramWarning.Value         = false;
             System.IgnoreMissingServices.Value        = false;
             Ui.GuiColumns.FavColumn.Value             = true;
             Ui.GuiColumns.IconColumn.Value            = true;
@@ -1192,6 +1201,14 @@ namespace Ryujinx.Ui.Common.Configuration
                 configurationFileFormat.EnableMacroHLE = true;
             }
 
+            if (configurationFileFormat.Version < 43)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 43.");
+
+                configurationFileFormat.ExpandRam = false;
+                configurationFileFormat.ConfirmedDramWarning = false;
+            }
+
             Logger.EnableFileLog.Value                = configurationFileFormat.EnableFileLog;
             Graphics.ResScale.Value                   = configurationFileFormat.ResScale;
             Graphics.ResScaleCustom.Value             = configurationFileFormat.ResScaleCustom;
@@ -1232,6 +1249,7 @@ namespace Ryujinx.Ui.Common.Configuration
             System.AudioVolume.Value                  = configurationFileFormat.AudioVolume;
             System.MemoryManagerMode.Value            = configurationFileFormat.MemoryManagerMode;
             System.ExpandRam.Value                    = configurationFileFormat.ExpandRam;
+            System.ConfirmedDramWarning.Value         = configurationFileFormat.ConfirmedDramWarning;
             System.IgnoreMissingServices.Value        = configurationFileFormat.IgnoreMissingServices;
             Ui.GuiColumns.FavColumn.Value             = configurationFileFormat.GuiColumns.FavColumn;
             Ui.GuiColumns.IconColumn.Value            = configurationFileFormat.GuiColumns.IconColumn;

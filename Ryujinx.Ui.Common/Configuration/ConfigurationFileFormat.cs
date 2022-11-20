@@ -14,7 +14,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 42;
+        public const int CurrentVersion = 43;
 
         /// <summary>
         /// Version of the configuration file format
@@ -210,6 +210,11 @@ namespace Ryujinx.Ui.Common.Configuration
         /// Expands the RAM amount on the emulated system from 4GiB to 6GiB
         /// </summary>
         public bool ExpandRam { get; set; }
+
+        /// <summary>
+        /// Used to check if the user has previously ignored the DRAM warning
+        /// </summary>
+        public bool ConfirmedDramWarning { get; set; }
 
         /// <summary>
         /// Enable or disable ignoring missing services

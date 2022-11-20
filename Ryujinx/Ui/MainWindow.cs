@@ -684,7 +684,7 @@ namespace Ryujinx.Ui
                 shadersDumpWarningDialog.Dispose();
             }
 
-            if (ConfigurationState.Instance.System.ExpandRam.Value)
+            if (ConfigurationState.Instance.System.ExpandRam.Value && !ConfigurationState.Instance.System.ConfirmedDramWarning.Value)
             {
                 MessageDialog dramWarningDialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
                 {
@@ -696,6 +696,11 @@ namespace Ryujinx.Ui
                 if (dramWarningDialog.Run() == (int)ResponseType.Yes)
                 {
                     ConfigurationState.Instance.System.ExpandRam.Value = false;
+                    SaveConfig();
+                }
+                else
+                {
+                    ConfigurationState.Instance.System.ConfirmedDramWarning.Value = true;
                     SaveConfig();
                 }
 

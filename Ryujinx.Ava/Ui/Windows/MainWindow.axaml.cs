@@ -200,7 +200,7 @@ namespace Ryujinx.Ava.Ui.Windows
                 }
             }
 
-            if (ConfigurationState.Instance.System.ExpandRam.Value)
+            if (ConfigurationState.Instance.System.ExpandRam.Value && !ConfigurationState.Instance.System.ConfirmedDramWarning.Value)
             {
                 string mainMessage = LocaleManager.Instance["DialogPerformanceCheckExpandDramEnabledMessage"];
                 string secondaryMessage = LocaleManager.Instance["DialogPerformanceCheckExpandDramEnabledConfirmMessage"];
@@ -212,6 +212,12 @@ namespace Ryujinx.Ava.Ui.Windows
                 if (result != UserResult.No)
                 {
                     ConfigurationState.Instance.System.ExpandRam.Value = false;
+
+                    SaveConfig();
+                }
+                else
+                {
+                    ConfigurationState.Instance.System.ConfirmedDramWarning.Value = true;
 
                     SaveConfig();
                 }
