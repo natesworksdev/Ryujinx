@@ -14,7 +14,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 41;
+        public const int CurrentVersion = 42;
 
         /// <summary>
         /// Version of the configuration file format
@@ -167,6 +167,11 @@ namespace Ryujinx.Ui.Common.Configuration
         public bool EnableTextureRecompression { get; set; }
 
         /// <summary>
+        /// Enables or disables Macro high-level emulation
+        /// </summary>
+        public bool EnableMacroHLE { get; set; }
+
+        /// <summary>
         /// Enables or disables profiled translation cache persistency
         /// </summary>
         public bool EnablePtc { get; set; }
@@ -202,7 +207,7 @@ namespace Ryujinx.Ui.Common.Configuration
         public MemoryManagerMode MemoryManagerMode { get; set; }
 
         /// <summary>
-        /// Expands the RAM amount on the emulated system from 4GB to 6GB
+        /// Expands the RAM amount on the emulated system from 4GiB to 6GiB
         /// </summary>
         public bool ExpandRam { get; set; }
 

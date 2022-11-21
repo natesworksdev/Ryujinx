@@ -46,6 +46,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
             else
             {
+                if (context.Config.Stage == ShaderStage.Vertex)
+                {
+                    context.AppendLine("#extension GL_ARB_shader_draw_parameters : enable");
+                }
+
                 context.AppendLine("#extension GL_ARB_shader_viewport_layer_array : enable");
             }
 
@@ -520,7 +525,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareInputAttributesPerPatch(CodeGenContext context, HashSet<int> attrs)
         {
-            foreach (int attr in attrs.OrderBy(x => x))
+            foreach (int attr in attrs.Order())
             {
                 DeclareInputAttributePerPatch(context, attr);
             }
@@ -653,7 +658,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareUsedOutputAttributesPerPatch(CodeGenContext context, HashSet<int> attrs)
         {
-            foreach (int attr in attrs.OrderBy(x => x))
+            foreach (int attr in attrs.Order())
             {
                 DeclareOutputAttributePerPatch(context, attr);
             }

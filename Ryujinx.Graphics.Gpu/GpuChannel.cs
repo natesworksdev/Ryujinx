@@ -67,6 +67,7 @@ namespace Ryujinx.Graphics.Gpu
 
             // Since the memory manager changed, make sure we will get pools from addresses of the new memory manager.
             TextureManager.ReloadPools();
+            MemoryManager.Physical.BufferCache.QueuePrune();
         }
 
         /// <summary>
@@ -77,6 +78,7 @@ namespace Ryujinx.Graphics.Gpu
         private void MemoryUnmappedHandler(object sender, UnmapEventArgs e)
         {
             TextureManager.ReloadPools();
+            MemoryManager.Physical.BufferCache.QueuePrune();
         }
 
         /// <summary>
@@ -131,6 +133,7 @@ namespace Ryujinx.Graphics.Gpu
             {
                 oldMemoryManager.Physical.BufferCache.NotifyBuffersModified -= BufferManager.Rebind;
                 oldMemoryManager.Physical.DecrementReferenceCount();
+                oldMemoryManager.MemoryUnmapped -= MemoryUnmappedHandler;
             }
         }
     }

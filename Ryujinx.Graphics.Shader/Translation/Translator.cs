@@ -79,16 +79,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             var sInfo = StructuredProgram.MakeStructuredProgram(funcs, config);
 
-            var info = new ShaderProgramInfo(
-                config.GetConstantBufferDescriptors(),
-                config.GetStorageBufferDescriptors(),
-                config.GetTextureDescriptors(),
-                config.GetImageDescriptors(),
-                config.Stage,
-                config.UsedFeatures.HasFlag(FeatureFlags.InstanceId),
-                config.UsedFeatures.HasFlag(FeatureFlags.RtLayer),
-                config.ClipDistancesWritten,
-                config.OmapTargets);
+            var info = config.CreateProgramInfo();
 
             return config.Options.TargetLanguage switch
             {
@@ -206,7 +197,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             if (context.Config.NextUsedInputAttributesPerPatch != null)
             {
-                foreach (int vecIndex in context.Config.NextUsedInputAttributesPerPatch.OrderBy(x => x))
+                foreach (int vecIndex in context.Config.NextUsedInputAttributesPerPatch.Order())
                 {
                     InitializeOutput(context, AttributeConsts.UserAttributePerPatchBase + vecIndex * 16, perPatch: true);
                 }

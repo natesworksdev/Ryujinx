@@ -148,10 +148,10 @@ namespace Ryujinx.Ui
 
             // Apply custom theme if needed.
             ThemeHelper.ApplyTheme();
-
+            Gdk.Monitor monitor = Display.GetMonitor(0);
             // Sets overridden fields.
-            int monitorWidth  = Display.PrimaryMonitor.Geometry.Width  * Display.PrimaryMonitor.ScaleFactor;
-            int monitorHeight = Display.PrimaryMonitor.Geometry.Height * Display.PrimaryMonitor.ScaleFactor;
+            int monitorWidth  = monitor.Geometry.Width  * monitor.ScaleFactor;
+            int monitorHeight = monitor.Geometry.Height * monitor.ScaleFactor;
 
             DefaultWidth  = monitorWidth  < 1280 ? monitorWidth  : 1280;
             DefaultHeight = monitorHeight < 760  ? monitorHeight : 760;
@@ -549,8 +549,8 @@ namespace Ryujinx.Ui
             }
 
             var memoryConfiguration = ConfigurationState.Instance.System.ExpandRam.Value
-                ? HLE.MemoryConfiguration.MemoryConfiguration6GB
-                : HLE.MemoryConfiguration.MemoryConfiguration4GB;
+                ? HLE.MemoryConfiguration.MemoryConfiguration6GiB
+                : HLE.MemoryConfiguration.MemoryConfiguration4GiB;
 
             IntegrityCheckLevel fsIntegrityCheckLevel = ConfigurationState.Instance.System.EnableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None;
 
@@ -1039,6 +1039,7 @@ namespace Ryujinx.Ui
             Graphics.Gpu.GraphicsConfig.ShadersDumpPath            = ConfigurationState.Instance.Graphics.ShadersDumpPath;
             Graphics.Gpu.GraphicsConfig.EnableShaderCache          = ConfigurationState.Instance.Graphics.EnableShaderCache;
             Graphics.Gpu.GraphicsConfig.EnableTextureRecompression = ConfigurationState.Instance.Graphics.EnableTextureRecompression;
+            Graphics.Gpu.GraphicsConfig.EnableMacroHLE             = ConfigurationState.Instance.Graphics.EnableMacroHLE;
         }
 
         public void SaveConfig()

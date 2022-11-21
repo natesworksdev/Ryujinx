@@ -40,7 +40,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
         {
             byte[] uuid = new byte[9];
 
-            new Random().NextBytes(uuid);
+            Random.Shared.NextBytes(uuid);
 
             uuid[3] = (byte)(0x88    ^ uuid[0] ^ uuid[1] ^ uuid[2]);
             uuid[8] = (byte)(uuid[3] ^ uuid[4] ^ uuid[5] ^ uuid[6]);
@@ -85,7 +85,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                 Reserved1       = new Array64<byte>(),
                 Reserved2       = new Array58<byte>()
             };
-            Encoding.ASCII.GetBytes("Ryujinx").CopyTo(registerInfo.Nickname.AsSpan());
+            "Ryujinx"u8.CopyTo(registerInfo.Nickname.AsSpan());
 
             return registerInfo;
         }
