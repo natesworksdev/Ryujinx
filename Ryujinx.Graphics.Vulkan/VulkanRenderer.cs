@@ -552,6 +552,11 @@ namespace Ryujinx.Graphics.Vulkan
 
             Vendor = VendorUtils.FromId(properties.VendorID);
 
+            if (IsMoltenVk)
+            {
+                Vendor = Vendor.MoltenVK;
+            }
+
             IsAmdWindows = Vendor == Vendor.Amd && RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             IsIntelWindows = Vendor == Vendor.Intel && RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             IsTBDR = IsMoltenVk || Vendor == Vendor.Qualcomm;
