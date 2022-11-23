@@ -431,27 +431,35 @@ namespace Ryujinx.Ava
                 {
                     if (userError == UserError.NoFirmware)
                     {
-                        string message = string.Format(LocaleManager.Instance["DialogFirmwareInstallEmbeddedMessage"],
-                            firmwareVersion.VersionString);
+                        UserResult result = UserResult.None;
 
-                        UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
-                            LocaleManager.Instance["DialogFirmwareNoFirmwareInstalledMessage"], message,
-                            LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"], "");
+                        Dispatcher.UIThread.Post(async () =>
+                        {
+                            string message = string.Format(LocaleManager.Instance["DialogFirmwareInstallEmbeddedMessage"], firmwareVersion.VersionString);
+
+                            UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
+                                LocaleManager.Instance["DialogFirmwareNoFirmwareInstalledMessage"],
+                                message,
+                                LocaleManager.Instance["InputDialogYes"],
+                                LocaleManager.Instance["InputDialogNo"],
+                                "");
+
+                            if (result != UserResult.Yes)
+                            {
+                                await UserErrorDialog.ShowUserErrorDialog(userError, _parent);
+                                Device.Dispose();
+                            }
+                        });
 
                         if (result != UserResult.Yes)
                         {
-                            Dispatcher.UIThread.Post(async () => await
-                                UserErrorDialog.ShowUserErrorDialog(userError, _parent));
-                            Device.Dispose();
-
                             return false;
                         }
                     }
 
                     if (!SetupValidator.TryFixStartApplication(ContentManager, ApplicationPath, userError, out _))
                     {
-                        Dispatcher.UIThread.Post(async () => await
-                            UserErrorDialog.ShowUserErrorDialog(userError, _parent));
+                        Dispatcher.UIThread.Post(async () => await UserErrorDialog.ShowUserErrorDialog(userError, _parent));
                         Device.Dispose();
 
                         return false;
