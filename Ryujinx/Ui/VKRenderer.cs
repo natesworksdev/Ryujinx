@@ -72,7 +72,11 @@ namespace Ryujinx.Ui
 
         protected override void Dispose(bool disposing)
         {
-            Device.DisposeGpu();
+            if (Device != null)
+            {
+                Device.DisposeGpu();
+            }
+
             NpadManager.Dispose();
         }
     }
