@@ -223,7 +223,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
                 }
 
                 _currentCommandBuffer = entry;
-                ReadOnlySpan<int> words = _currentCommandBuffer.Fetch(entry.Processor.MemoryManager, flushCommandBuffer);
+                ReadOnlySpan<int> words = entry.Fetch(entry.Processor.MemoryManager, flushCommandBuffer);
 
                 // If we are changing the current channel,
                 // we need to force all the host state to be updated.
