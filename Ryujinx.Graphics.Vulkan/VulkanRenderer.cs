@@ -573,17 +573,17 @@ namespace Ryujinx.Graphics.Vulkan
 
         public unsafe void Dispose()
         {
-            CommandBufferPool.Dispose();
-            BackgroundResources.Dispose();
-            _counters.Dispose();
-            _window.Dispose();
-            HelperShader.Dispose();
-            _pipeline.Dispose();
-            BufferManager.Dispose();
-            DescriptorSetManager.Dispose();
-            PipelineLayoutCache.Dispose();
+            CommandBufferPool?.Dispose();
+            BackgroundResources?.Dispose();
+            _counters?.Dispose();
+            _window?.Dispose();
+            HelperShader?.Dispose();
+            _pipeline?.Dispose();
+            BufferManager?.Dispose();
+            DescriptorSetManager?.Dispose();
+            PipelineLayoutCache?.Dispose();
 
-            MemoryAllocator.Dispose();
+            MemoryAllocator?.Dispose();
 
             if (_debugUtilsMessenger.Handle != 0)
             {
@@ -605,12 +605,12 @@ namespace Ryujinx.Graphics.Vulkan
                 sampler.Dispose();
             }
 
-            SurfaceApi.DestroySurface(_instance, _surface, null);
+            SurfaceApi?.DestroySurface(_instance, _surface, null);
 
-            Api.DestroyDevice(_device, null);
+            Api?.DestroyDevice(_device, null);
 
             // Last step destroy the instance
-            Api.DestroyInstance(_instance, null);
+            Api?.DestroyInstance(_instance, null);
         }
     }
 }

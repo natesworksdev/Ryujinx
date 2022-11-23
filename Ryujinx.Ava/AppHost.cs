@@ -60,7 +60,7 @@ namespace Ryujinx.Ava
 
         private const float VolumeDelta = 0.05f;
 
-        private static readonly Cursor InvisibleCursor = new Cursor(StandardCursorType.None);        
+        private static readonly Cursor InvisibleCursor = new Cursor(StandardCursorType.None);
 
         private readonly long _ticksPerFrame;
         private readonly Stopwatch _chrono;
@@ -349,7 +349,10 @@ namespace Ryujinx.Ava
 
             _isActive = false;
 
-            _renderingThread.Join();
+            if (_renderingThread.IsAlive)
+            {
+                _renderingThread.Join();
+            }
 
             DisplaySleep.Restore();
 
@@ -378,7 +381,7 @@ namespace Ryujinx.Ava
 
             _gpuCancellationTokenSource.Cancel();
             _gpuCancellationTokenSource.Dispose();
-            
+
             _chrono.Stop();
         }
 
@@ -393,7 +396,7 @@ namespace Ryujinx.Ava
             Renderer?.MakeCurrent();
 
             Device.DisposeGpu();
-            
+
             Renderer?.MakeCurrent(null);
         }
 
@@ -602,7 +605,7 @@ namespace Ryujinx.Ava
             if (Renderer.IsVulkan)
             {
                 string preferredGpu = ConfigurationState.Instance.Graphics.PreferredGpu.Value;
-                
+
                 renderer = new VulkanRenderer(Renderer.CreateVulkanSurface, VulkanHelper.GetRequiredInstanceExtensions, preferredGpu);
             }
             else

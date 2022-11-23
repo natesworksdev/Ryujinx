@@ -254,6 +254,7 @@ namespace Ryujinx.Ava.Ui.Windows
             if (!AppHost.LoadGuestApplication().Result)
             {
                 AppHost.DisposeContext();
+                AppHost = null;
 
                 return;
             }
@@ -546,10 +547,12 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             ApplicationLibrary.LoadAndSaveMetaData(titleId, appMetadata =>
             {
-                DateTime lastPlayedDateTime = DateTime.Parse(appMetadata.LastPlayed);
-                double sessionTimePlayed = DateTime.UtcNow.Subtract(lastPlayedDateTime).TotalSeconds;
+                if (DateTime.TryParse(appMetadata.LastPlayed, out DateTime lastPlayedDateTime))
+                {
+                    double sessionTimePlayed = DateTime.UtcNow.Subtract(lastPlayedDateTime).TotalSeconds;
 
-                appMetadata.TimePlayed += Math.Round(sessionTimePlayed, MidpointRounding.AwayFromZero);
+                    appMetadata.TimePlayed += Math.Round(sessionTimePlayed, MidpointRounding.AwayFromZero);
+                }
             });
         }
 
