@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Common.Memory;
 using Silk.NET.Vulkan;
 using System;
+using System.Numerics;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -523,6 +524,19 @@ namespace Ryujinx.Graphics.Vulkan
                     MinDepthBounds = MinDepthBounds,
                     MaxDepthBounds = MaxDepthBounds
                 };
+
+                if (gd.IsMoltenVk && Internal.AttachmentIntegerFormatMask != 0)
+                {
+                    // Blend can't be enabled for integer formats, so let's make sure it is disabled.
+                    uint attachmentIntegerFormatMask = Internal.AttachmentIntegerFormatMask;
+
+                    while (attachmentIntegerFormatMask != 0)
+                    {
+                        int i = BitOperations.TrailingZeroCount(attachmentIntegerFormatMask);
+                        Internal.ColorBlendAttachmentState[i].BlendEnable = false;
+                        attachmentIntegerFormatMask &= ~(1u << i);
+                    }
+                }
 
                 var colorBlendState = new PipelineColorBlendStateCreateInfo()
                 {

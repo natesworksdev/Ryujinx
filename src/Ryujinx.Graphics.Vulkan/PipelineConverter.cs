@@ -272,11 +272,12 @@ namespace Ryujinx.Graphics.Vulkan
             for (int i = 0; i < Constants.MaxRenderTargets; i++)
             {
                 var blend = state.BlendDescriptors[i];
+                bool blendEnable = blend.Enable && !state.AttachmentFormats[i].IsInteger();
 
-                if (blend.Enable && state.ColorWriteMask[i] != 0)
+                if (blendEnable && state.ColorWriteMask[i] != 0)
                 {
                     pipeline.Internal.ColorBlendAttachmentState[i] = new PipelineColorBlendAttachmentState(
-                        blend.Enable,
+                        blendEnable,
                         blend.ColorSrcFactor.Convert(),
                         blend.ColorDstFactor.Convert(),
                         blend.ColorOp.Convert(),
