@@ -420,7 +420,6 @@ namespace Ryujinx.Ava
         public async Task<bool> LoadGuestApplication()
         {
             InitializeSwitchInstance();
-
             MainWindow.UpdateGraphicsConfig();
 
             SystemVersion firmwareVersion = ContentManager.GetCurrentFirmwareVersion();
@@ -431,35 +430,25 @@ namespace Ryujinx.Ava
                 {
                     if (userError == UserError.NoFirmware)
                     {
-                        UserResult result = UserResult.None;
-
-                        Dispatcher.UIThread.Post(async () =>
-                        {
-                            string message = string.Format(LocaleManager.Instance["DialogFirmwareInstallEmbeddedMessage"], firmwareVersion.VersionString);
-
-                            UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
-                                LocaleManager.Instance["DialogFirmwareNoFirmwareInstalledMessage"],
-                                message,
-                                LocaleManager.Instance["InputDialogYes"],
-                                LocaleManager.Instance["InputDialogNo"],
-                                "");
-
-                            if (result != UserResult.Yes)
-                            {
-                                await UserErrorDialog.ShowUserErrorDialog(userError, _parent);
-                                Device.Dispose();
-                            }
-                        });
+                        UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
+                            LocaleManager.Instance["DialogFirmwareNoFirmwareInstalledMessage"],
+                            string.Format(LocaleManager.Instance["DialogFirmwareInstallEmbeddedMessage"], firmwareVersion.VersionString),
+                            LocaleManager.Instance["InputDialogYes"],
+                            LocaleManager.Instance["InputDialogNo"],
+                            "");
 
                         if (result != UserResult.Yes)
                         {
+                            await UserErrorDialog.ShowUserErrorDialog(userError, _parent);
+                            Device.Dispose();
+
                             return false;
                         }
                     }
 
                     if (!SetupValidator.TryFixStartApplication(ContentManager, ApplicationPath, userError, out _))
                     {
-                        Dispatcher.UIThread.Post(async () => await UserErrorDialog.ShowUserErrorDialog(userError, _parent));
+                        await UserErrorDialog.ShowUserErrorDialog(userError, _parent);
                         Device.Dispose();
 
                         return false;
@@ -472,11 +461,9 @@ namespace Ryujinx.Ava
 
                         _parent.RefreshFirmwareStatus();
 
-                        string message = string.Format(LocaleManager.Instance["DialogFirmwareInstallEmbeddedSuccessMessage"], firmwareVersion.VersionString);
-
                         await ContentDialogHelper.CreateInfoDialog(
                             string.Format(LocaleManager.Instance["DialogFirmwareInstalledMessage"], firmwareVersion.VersionString),
-                            message,
+                            string.Format(LocaleManager.Instance["DialogFirmwareInstallEmbeddedSuccessMessage"], firmwareVersion.VersionString),
                             LocaleManager.Instance["InputDialogOk"],
                             "",
                             LocaleManager.Instance["RyujinxInfo"]);
@@ -484,9 +471,7 @@ namespace Ryujinx.Ava
                 }
                 else
                 {
-                    Dispatcher.UIThread.Post(async () => await
-                        UserErrorDialog.ShowUserErrorDialog(userError, _parent));
-
+                    await UserErrorDialog.ShowUserErrorDialog(userError, _parent);
                     Device.Dispose();
 
                     return false;
@@ -525,7 +510,7 @@ namespace Ryujinx.Ava
             }
             else if (File.Exists(ApplicationPath))
             {
-                switch (System.IO.Path.GetExtension(ApplicationPath).ToLowerInvariant())
+                switch (Path.GetExtension(ApplicationPath).ToLowerInvariant())
                 {
                     case ".xci":
                         {

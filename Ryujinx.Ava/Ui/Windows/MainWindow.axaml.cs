@@ -251,25 +251,29 @@ namespace Ryujinx.Ava.Ui.Windows
 
             AppHost = new AppHost(RendererControl, InputManager, path, VirtualFileSystem, ContentManager, AccountManager, _userChannelPersistence, this);
 
-            if (!AppHost.LoadGuestApplication().Result)
+            Dispatcher.UIThread.Post(async () =>
             {
-                AppHost.DisposeContext();
-                AppHost = null;
+                if (!await AppHost.LoadGuestApplication())
+                {
+                    AppHost.DisposeContext();
+                    AppHost = null;
 
-                return;
-            }
+                    return;
+                }
 
-            ViewModel.LoadHeading = string.IsNullOrWhiteSpace(titleName) ? string.Format(LocaleManager.Instance["LoadingHeading"], AppHost.Device.Application.TitleName) : titleName;
-            ViewModel.TitleName = string.IsNullOrWhiteSpace(titleName) ? AppHost.Device.Application.TitleName : titleName;
+                ViewModel.LoadHeading = string.IsNullOrWhiteSpace(titleName) ? string.Format(LocaleManager.Instance["LoadingHeading"], AppHost.Device.Application.TitleName) : titleName;
+                ViewModel.TitleName   = string.IsNullOrWhiteSpace(titleName) ? AppHost.Device.Application.TitleName : titleName;
 
-            SwitchToGameControl(startFullscreen);
+                SwitchToGameControl(startFullscreen);
 
-            _currentEmulatedGamePath = path;
-            Thread gameThread = new Thread(InitializeGame)
-            {
-                Name = "GUI.WindowThread"
-            };
-            gameThread.Start();
+                _currentEmulatedGamePath = path;
+
+                Thread gameThread = new(InitializeGame)
+                {
+                    Name = "GUI.WindowThread"
+                };
+                gameThread.Start();
+            });
         }
 
         private void InitializeGame()
