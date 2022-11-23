@@ -22,6 +22,8 @@ namespace Ryujinx.Graphics.Vulkan
         private Device _device;
         private WindowBase _window;
 
+        private bool _initialized;
+
         internal FormatCapabilities FormatCapabilities { get; private set; }
         internal HardwareCapabilities Capabilities;
 
@@ -266,6 +268,8 @@ namespace Ryujinx.Graphics.Vulkan
             LoadFeatures(supportedExtensions, maxQueueCount, queueFamilyIndex);
 
             _window = new Window(this, _surface, _physicalDevice, _device);
+
+            _initialized = true;
         }
 
         public BufferHandle CreateBuffer(int size)
@@ -573,17 +577,22 @@ namespace Ryujinx.Graphics.Vulkan
 
         public unsafe void Dispose()
         {
-            CommandBufferPool?.Dispose();
-            BackgroundResources?.Dispose();
-            _counters?.Dispose();
-            _window?.Dispose();
-            HelperShader?.Dispose();
-            _pipeline?.Dispose();
-            BufferManager?.Dispose();
-            DescriptorSetManager?.Dispose();
-            PipelineLayoutCache?.Dispose();
+            if (!_initialized)
+            {
+                return;
+            }
 
-            MemoryAllocator?.Dispose();
+            CommandBufferPool.Dispose();
+            BackgroundResources.Dispose();
+            _counters.Dispose();
+            _window.Dispose();
+            HelperShader.Dispose();
+            _pipeline.Dispose();
+            BufferManager.Dispose();
+            DescriptorSetManager.Dispose();
+            PipelineLayoutCache.Dispose();
+
+            MemoryAllocator.Dispose();
 
             if (_debugUtilsMessenger.Handle != 0)
             {
@@ -605,12 +614,12 @@ namespace Ryujinx.Graphics.Vulkan
                 sampler.Dispose();
             }
 
-            SurfaceApi?.DestroySurface(_instance, _surface, null);
+            SurfaceApi.DestroySurface(_instance, _surface, null);
 
-            Api?.DestroyDevice(_device, null);
+            Api.DestroyDevice(_device, null);
 
             // Last step destroy the instance
-            Api?.DestroyInstance(_instance, null);
+            Api.DestroyInstance(_instance, null);
         }
     }
 }

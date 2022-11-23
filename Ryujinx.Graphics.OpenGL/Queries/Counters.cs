@@ -50,7 +50,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
         {
             foreach (var queue in _counterQueues)
             {
-                queue?.Dispose();
+                queue.Dispose();
             }
         }
     }
