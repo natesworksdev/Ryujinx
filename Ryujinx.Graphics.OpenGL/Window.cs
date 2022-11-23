@@ -193,7 +193,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void Dispose()
         {
-            BackgroundContext.Dispose();
+            BackgroundContext?.Dispose();
 
             if (_copyFramebufferHandle != 0)
             {
