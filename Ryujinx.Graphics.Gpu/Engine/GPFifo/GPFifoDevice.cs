@@ -79,12 +79,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
             /// <returns>The command buffer words</returns>
             public ReadOnlySpan<int> Fetch(MemoryManager memoryManager, bool flush)
             {
-                if (Words == null)
-                {
-                    return GetWords(memoryManager, flush);
-                }
-
-                return Words;
+                return Words ?? GetWords(memoryManager, flush);
             }
         }
 
