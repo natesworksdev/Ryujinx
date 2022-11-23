@@ -1013,18 +1013,6 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void SetUniformBuffers(int first, ReadOnlySpan<BufferRange> buffers)
-        {
-            Span<BufferAssignment> assignments = stackalloc BufferAssignment[buffers.Length];
-
-            for (int i = 0; i < buffers.Length; i++)
-            {
-                assignments[i] = new BufferAssignment(first + i, buffers[i]);
-            }
-
-            _descriptorSetUpdater.SetUniformBuffers(CommandBuffer, assignments);
-        }
-
         public void SetUniformBuffers(ReadOnlySpan<BufferAssignment> buffers)
         {
             _descriptorSetUpdater.SetUniformBuffers(CommandBuffer, buffers);
