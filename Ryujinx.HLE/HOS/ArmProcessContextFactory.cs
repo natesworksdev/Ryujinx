@@ -43,7 +43,7 @@ namespace Ryujinx.HLE.HOS
 
         public IProcessContext Create(KernelContext context, ulong pid, ulong addressSpaceSize, InvalidAccessHandler invalidAccessHandler, bool for64Bit)
         {
-            if (OperatingSystem.IsMacOS() && RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+            if (OperatingSystem.IsMacOS() && RuntimeInformation.ProcessArchitecture == Architecture.Arm64 && for64Bit && context.Device.Configuration.UseHypervisor)
             {
                 var memoryManager = new HvMemoryManager(context.Memory, addressSpaceSize, invalidAccessHandler);
                 return new ArmProcessContext<HvMemoryManager>(pid, _cpuEngine, _gpu, memoryManager, for64Bit);
