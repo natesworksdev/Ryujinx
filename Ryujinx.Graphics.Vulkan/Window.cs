@@ -49,6 +49,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private void RecreateSwapchain()
         {
+            var oldSwapchain = _swapchain;
             _vsyncModeChanged = false;
 
             for (int i = 0; i < _swapchainImageViews.Length; i++)
@@ -57,6 +58,12 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             CreateSwapchain();
+
+            unsafe
+            {
+                //Destroy old Swapchain
+                _gd.SwapchainApi.DestroySwapchain(_device, oldSwapchain, null);
+            }
         }
 
         private unsafe void CreateSwapchain()
