@@ -20,9 +20,19 @@ namespace Ryujinx.Input
         Rumble,
 
         /// <summary>
-        /// Motion
+        /// Motion (Unified)
         /// <remarks>Also named sixaxis</remarks>
         /// </summary>
-        Motion
+        Motion,
+
+        /// <summary>
+        /// Motion (Left)
+        /// </summary>
+        MotionLeft,
+
+        /// <summary>
+        /// Motion (Right)
+        /// </summary>
+        MotionRight,
     }
 }
