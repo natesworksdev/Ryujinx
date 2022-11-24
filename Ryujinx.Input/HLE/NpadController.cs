@@ -279,12 +279,8 @@ namespace Ryujinx.Input.HLE
             if (motionConfig.MotionBackend != MotionInputBackendType.CemuHook)
             {
                 _leftMotionInput = new MotionInput();
-
-                if (_gamepad.Features.HasFlag(GamepadFeaturesFlag.MotionRight))
-                {
-                    _rightMotionInput = new MotionInput();
-                }
-             }
+                _rightMotionInput = new MotionInput();
+            }
             else
             {
                 _leftMotionInput = null;
@@ -319,7 +315,11 @@ namespace Ryujinx.Input.HLE
                         if (_gamepad.Features.HasFlag(GamepadFeaturesFlag.MotionLeft) && _gamepad.Features.HasFlag(GamepadFeaturesFlag.MotionRight))
                         {
                             UpdateMotionInputData(_gamepad, _leftMotionInput, controllerConfig, MotionInputId.AccelerometerLeft, MotionInputId.GyroscopeLeft);
-                            UpdateMotionInputData(_gamepad, _rightMotionInput, controllerConfig, MotionInputId.AccelerometerRight, MotionInputId.GyroscopeRight);
+
+                            if (controllerConfig.ControllerType == ConfigControllerType.JoyconPair)
+                            {
+                                UpdateMotionInputData(_gamepad, _rightMotionInput, controllerConfig, MotionInputId.AccelerometerRight, MotionInputId.GyroscopeRight);
+                            }
                         }
                         else if (_gamepad.Features.HasFlag(GamepadFeaturesFlag.Motion))
                         {
