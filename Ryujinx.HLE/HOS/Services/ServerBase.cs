@@ -1,16 +1,12 @@
-using Ryujinx.Common;
-using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Process;
-using Ryujinx.HLE.HOS.Kernel.SupervisorCall;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 
@@ -36,8 +32,6 @@ namespace Ryujinx.HLE.HOS.Services
         private readonly KernelContext _context;
         private KProcess _selfProcess;
 
-        private object _registryLock = new object();
-        private object _waitRequestLock = new object();
         private readonly List<int> _sessionHandles = new List<int>();
         private readonly List<int> _portHandles = new List<int>();
         private readonly Dictionary<int, IpcService> _sessions = new Dictionary<int, IpcService>();
@@ -47,18 +41,12 @@ namespace Ryujinx.HLE.HOS.Services
         public string Name { get; }
         public Func<IpcService> SmObjectFactory { get; }
 
-        private int _threadCount;
-        private ulong _heapBaseAddress;
-        private ulong _heapSize;
-
-        public ServerBase(KernelContext context, string name, Func<IpcService> smObjectFactory = null, int threadCount = 1)
+        public ServerBase(KernelContext context, string name, Func<IpcService> smObjectFactory = null)
         {
             InitDone = new ManualResetEvent(false);
             _context = context;
             Name = name;
             SmObjectFactory = smObjectFactory;
-            _threadCount = threadCount;
-            _heapSize = BitUtils.AlignUp((ulong)_threadCount * PointerBufferSize, 0x200000);
 
             const ProcessCreationFlags flags =
                 ProcessCreationFlags.EnableAslr |
@@ -73,9 +61,7 @@ namespace Ryujinx.HLE.HOS.Services
 
         private void AddPort(int serverPortHandle, Func<IpcService> objectFactory)
         {
-            using var registryScopedLock = new ServerManagedScopedLock(_context, _registryLock);
-
-            RegisterPortHandleForProcessingLocked(serverPortHandle);
+            _portHandles.Add(serverPortHandle);
             _ports.Add(serverPortHandle, objectFactory);
         }
 
@@ -90,84 +76,16 @@ namespace Ryujinx.HLE.HOS.Services
 
         public void AddSessionObj(int serverSessionHandle, IpcService obj)
         {
-            using var registryScopedLock = new ServerManagedScopedLock(_context, _registryLock);
-
-            RegisterSessionHandleForProcessingLocked(serverSessionHandle);
-            _sessions.Add(serverSessionHandle, obj);
-        }
-
-        private void RegisterSessionHandleForProcessingLocked(int serverSessionHandle)
-        {
             _sessionHandles.Add(serverSessionHandle);
-        }
-
-        private void UnregisterSessionHandleForProcessingLocked(int serverSessionHandle)
-        {
-            _sessionHandles.Remove(serverSessionHandle);
-        }
-
-        private void RegisterPortHandleForProcessingLocked(int serverPortHandle)
-        {
-            _portHandles.Add(serverPortHandle);
-        }
-
-        private void UnregisterPortHandleForProcessingLocked(int serverPortHandle)
-        {
-            _portHandles.Remove(serverPortHandle);
+            _sessions.Add(serverSessionHandle, obj);
         }
 
         private void Main()
         {
-            _context.Syscall.SetHeapSize(out _heapBaseAddress, _heapSize);
-
-            for (int i = 1; i < _threadCount; i++)
-            {
-                KernelResult result = _context.Syscall.CreateThread(out int threadHandle, 0UL, 0UL, 0UL, 44, 3, () => ServerLoop(i));
-
-                if (result == KernelResult.Success)
-                {
-                    result = _context.Syscall.StartThread(threadHandle);
-
-                    if (result != KernelResult.Success)
-                    {
-                        Logger.Error?.Print(LogClass.Service, $"Failed to start thread on {Name}: {result}");
-                    }
-
-                    _context.Syscall.CloseHandle(threadHandle);
-                }
-                else
-                {
-                    Logger.Error?.Print(LogClass.Service, $"Failed to create thread on {Name}: {result}");
-                }
-            }
-
-            ServerLoop(0);
+            ServerLoop();
         }
 
-        // TODO: This would be better if we had a proper kernel lock primitive here
-        private class ServerManagedScopedLock : IDisposable
-        {
-            private object _obj;
-
-            public ServerManagedScopedLock(KernelContext context, object obj)
-            {
-                while (!Monitor.TryEnter(obj))
-                {
-                    context.Syscall.SleepThread(0);
-                }
-
-                _obj = obj;
-            }
-
-            public void Dispose()
-            {
-                Debug.Assert(Monitor.IsEntered(_obj));
-
-                Monitor.Exit(_obj);
-            }
-        }
-
-        private void ServerLoop(int threadIndex)
+        private void ServerLoop()
         {
             _selfProcess = KernelStatic.GetCurrentProcess();
 
@@ -182,7 +100,7 @@ namespace Ryujinx.HLE.HOS.Services
 
             KThread thread = KernelStatic.GetCurrentThread();
             ulong messagePtr = thread.TlsAddress;
-            ulong heapAddr = (_heapBaseAddress + ((ulong)threadIndex * PointerBufferSize));
+            _context.Syscall.SetHeapSize(out ulong heapAddr, 0x200000);
 
             _selfProcess.CpuMemory.Write(messagePtr + 0x0, 0);
             _selfProcess.CpuMemory.Write(messagePtr + 0x4, 2 << 10);
@@ -192,62 +110,15 @@ namespace Ryujinx.HLE.HOS.Services
 
             while (true)
             {
-                KernelResult rc;
-                bool isSession = false;
-                int signaledHandle = -1;
-                IpcService service = null;
+                int[] portHandles = _portHandles.ToArray();
+                int[] sessionHandles = _sessionHandles.ToArray();
+                int[] handles = new int[portHandles.Length + sessionHandles.Length];
 
-                // We ensure that only one ReplyAndReceive can go at a time to prevent a handle from being processed by two different threads.
-                {
-                    using var waitRequestScopedLock = new ServerManagedScopedLock(_context, _waitRequestLock);
+                portHandles.CopyTo(handles, 0);
+                sessionHandles.CopyTo(handles, portHandles.Length);
 
-                    int portHandlesLength;
-                    int[] handles;
-
-                    {
-                        using var registryScopedLock = new ServerManagedScopedLock(_context, _registryLock);
-
-                        if (replyTargetHandle != 0)
-                        {
-                            RegisterSessionHandleForProcessingLocked(replyTargetHandle);
-                        }
-
-                        int[] portHandles = _portHandles.ToArray();
-                        int[] sessionHandles = _sessionHandles.ToArray();
-
-                        portHandlesLength = portHandles.Length;
-
-                        handles = new int[portHandlesLength + sessionHandles.Length];
-
-                        portHandles.CopyTo(handles, 0);
-                        sessionHandles.CopyTo(handles, portHandles.Length);
-                    }
-
-                    // We still need a timeout here to allow the service to pick up and listen new sessions...
-                    rc = _context.Syscall.ReplyAndReceive(out int signaledIndex, handles, replyTargetHandle, 1000000L);
-
-                    // Unregister the handle we just got and register a possible one that we just replied to.
-                    if (rc == KernelResult.Success)
-                    {
-                        signaledHandle = handles[signaledIndex];
-
-                        isSession = signaledIndex >= portHandlesLength;
-
-                        {
-                            using var registryScopedLock = new ServerManagedScopedLock(_context, _registryLock);
-
-                            if (isSession)
-                            {
-                                UnregisterSessionHandleForProcessingLocked(signaledHandle);
-                                service = _sessions[signaledHandle];
-                            }
-                            else
-                            {
-                                UnregisterPortHandleForProcessingLocked(signaledHandle);
-                            }
-                        }
-                    }
-                }
+                // We still need a timeout here to allow the service to pick up and listen new sessions...
+                var rc = _context.Syscall.ReplyAndReceive(out int signaledIndex, handles, replyTargetHandle, 1000000L);
 
                 thread.HandlePostSyscall();
 
@@ -258,9 +129,12 @@ namespace Ryujinx.HLE.HOS.Services
 
                 replyTargetHandle = 0;
 
-                if (rc == KernelResult.Success && isSession)
+                if (rc == KernelResult.Success && signaledIndex >= portHandles.Length)
                 {
-                    if (Process(signaledHandle, service, heapAddr))
+                    // We got a IPC request, process it, pass to the appropriate service if needed.
+                    int signaledHandle = handles[signaledIndex];
+
+                    if (Process(signaledHandle, heapAddr))
                     {
                         replyTargetHandle = signaledHandle;
                     }
@@ -270,17 +144,11 @@ namespace Ryujinx.HLE.HOS.Services
                     if (rc == KernelResult.Success)
                     {
                         // We got a new connection, accept the session to allow servicing future requests.
-                        if (_context.Syscall.AcceptSession(out int serverSessionHandle, signaledHandle) == KernelResult.Success)
+                        if (_context.Syscall.AcceptSession(out int serverSessionHandle, handles[signaledIndex]) == KernelResult.Success)
                         {
-                            IpcService obj = _ports[signaledHandle].Invoke();
+                            IpcService obj = _ports[handles[signaledIndex]].Invoke();
 
                             AddSessionObj(serverSessionHandle, obj);
-                        }
-
-                        {
-                            using var registryScopedLock = new ServerManagedScopedLock(_context, _registryLock);
-
-                            RegisterPortHandleForProcessingLocked(signaledHandle);
                         }
                     }
 
@@ -293,7 +161,7 @@ namespace Ryujinx.HLE.HOS.Services
             Dispose();
         }
 
-        private bool Process(int serverSessionHandle, IpcService service, ulong recvListAddr)
+        private bool Process(int serverSessionHandle, ulong recvListAddr)
         {
             KProcess process = KernelStatic.GetCurrentProcess();
             KThread thread = KernelStatic.GetCurrentThread();
@@ -357,7 +225,7 @@ namespace Ryujinx.HLE.HOS.Services
                             reqReader,
                             resWriter);
 
-                        service.CallHipcMethod(context);
+                        _sessions[serverSessionHandle].CallHipcMethod(context);
 
                         response.RawData = resMs.ToArray();
                     }
@@ -371,7 +239,7 @@ namespace Ryujinx.HLE.HOS.Services
                     switch (cmdId)
                     {
                         case 0:
-                            request = FillResponse(response, 0, service.ConvertToDomain());
+                            request = FillResponse(response, 0, _sessions[serverSessionHandle].ConvertToDomain());
                             break;
 
                         case 3:
@@ -385,7 +253,7 @@ namespace Ryujinx.HLE.HOS.Services
 
                             _context.Syscall.CreateSession(out int dupServerSessionHandle, out int dupClientSessionHandle, false, 0);
 
-                            AddSessionObj(dupServerSessionHandle, service);
+                            AddSessionObj(dupServerSessionHandle, _sessions[serverSessionHandle]);
 
                             response.HandleDesc = IpcHandleDesc.MakeMove(dupClientSessionHandle);
 
@@ -399,17 +267,13 @@ namespace Ryujinx.HLE.HOS.Services
                 else if (request.Type == IpcMessageType.HipcCloseSession || request.Type == IpcMessageType.TipcCloseSession)
                 {
                     _context.Syscall.CloseHandle(serverSessionHandle);
+                    _sessionHandles.Remove(serverSessionHandle);
+                    IpcService service = _sessions[serverSessionHandle];
                     if (service is IDisposable disposableObj)
                     {
                         disposableObj.Dispose();
                     }
-
-                    {
-                        using var registryScopedLock = new ServerManagedScopedLock(_context, _registryLock);
-
-                        _sessions.Remove(serverSessionHandle);
-                    }
-
+                    _sessions.Remove(serverSessionHandle);
                     shouldReply = false;
                 }
                 // If the type is past 0xF, we are using TIPC
@@ -434,7 +298,7 @@ namespace Ryujinx.HLE.HOS.Services
                             reqReader,
                             resWriter);
 
-                        service.CallTipcMethod(context);
+                        _sessions[serverSessionHandle].CallTipcMethod(context);
 
                         response.RawData = resMs.ToArray();
                     }
@@ -496,20 +360,17 @@ namespace Ryujinx.HLE.HOS.Services
         {
             if (disposing)
             {
-                lock (_registryLock)
+                foreach (IpcService service in _sessions.Values)
                 {
-                    foreach (IpcService service in _sessions.Values)
+                    if (service is IDisposable disposableObj)
                     {
-                        if (service is IDisposable disposableObj)
-                        {
-                            disposableObj.Dispose();
-                        }
-
-                        service.DestroyAtExit();
+                        disposableObj.Dispose();
                     }
 
-                    _sessions.Clear();
+                    service.DestroyAtExit();
                 }
+
+                _sessions.Clear();
 
                 InitDone.Dispose();
             }
