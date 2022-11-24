@@ -62,6 +62,7 @@ namespace Ryujinx.Graphics.Vulkan
             unsafe
             {
                 //Destroy old Swapchain
+                _gd.Api.DeviceWaitIdle(_device);
                 _gd.SwapchainApi.DestroySwapchain(_device, oldSwapchain, null);
             }
         }
