@@ -62,10 +62,18 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 context.AddCapability(Capability.TransformFeedback);
             }
 
-            if (config.Stage == ShaderStage.Fragment && context.Config.GpuAccessor.QueryHostSupportsFragmentShaderInterlock())
+            if (config.Stage == ShaderStage.Fragment)
             {
-                context.AddCapability(Capability.FragmentShaderPixelInterlockEXT);
-                context.AddExtension("SPV_EXT_fragment_shader_interlock");
+                if (context.Info.Inputs.Contains(AttributeConsts.Layer))
+                {
+                    context.AddCapability(Capability.Geometry);
+                }
+
+                if (context.Config.GpuAccessor.QueryHostSupportsFragmentShaderInterlock())
+                {
+                    context.AddCapability(Capability.FragmentShaderPixelInterlockEXT);
+                    context.AddExtension("SPV_EXT_fragment_shader_interlock");
+                }
             }
             else if (config.Stage == ShaderStage.Geometry)
             {
@@ -80,6 +88,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             else if (config.Stage == ShaderStage.TessellationControl || config.Stage == ShaderStage.TessellationEvaluation)
             {
                 context.AddCapability(Capability.Tessellation);
+            }
+            else if (config.Stage == ShaderStage.Vertex)
+            {
+                context.AddCapability(Capability.DrawParameters);
             }
 
             context.AddExtension("SPV_KHR_shader_ballot");

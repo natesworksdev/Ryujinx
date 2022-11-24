@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <RuntimeIdentifiers>win10-x64;osx-x64;linux-x64</RuntimeIdentifiers>
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -8,15 +8,17 @@
     <DefineConstants Condition=" '$(ExtraDefineConstants)' != '' ">$(DefineConstants);$(ExtraDefineConstants)</DefineConstants>
     <RootNamespace>Ryujinx.Ava</RootNamespace>
     <ApplicationIcon>Ryujinx.ico</ApplicationIcon>
+    <TieredPGO>true</TieredPGO>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
     <PublishSingleFile>true</PublishSingleFile>
     <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.15" />
+    <PackageReference Include="Avalonia" Version="0.10.18" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.15" />
     <PackageReference Include="Avalonia.Diagnostics" Version="0.10.15" />
     <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.15" />
@@ -34,7 +36,7 @@
     <PackageReference Include="Silk.NET.Vulkan" Version="2.10.1" />
     <PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.10.1" />
     <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.10.1" />
-    <PackageReference Include="SPB" Version="0.0.4-build24" />
+    <PackageReference Include="SPB" Version="0.0.4-build28" />
     <PackageReference Include="SharpZipLib" Version="1.3.3" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
   </ItemGroup>

@@ -12,13 +12,12 @@ namespace Ryujinx.Graphics.Vulkan
         private const int MaxUpdateBufferSize = 0x10000;
 
         public const AccessFlags DefaultAccessFlags =
+            AccessFlags.AccessIndirectCommandReadBit |
             AccessFlags.AccessShaderReadBit |
             AccessFlags.AccessShaderWriteBit |
             AccessFlags.AccessTransferReadBit |
             AccessFlags.AccessTransferWriteBit |
-            AccessFlags.AccessUniformReadBit |
-            AccessFlags.AccessShaderReadBit |
-            AccessFlags.AccessShaderWriteBit;
+            AccessFlags.AccessUniformReadBit;
 
         private readonly VulkanRenderer _gd;
         private readonly Device _device;
@@ -211,7 +210,10 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            if (cbs != null && !(_buffer.HasCommandBufferDependency(cbs.Value) && _waitable.IsBufferRangeInUse(cbs.Value.CommandBufferIndex, offset, dataSize)))
+            if (cbs != null &&
+                _gd.PipelineInternal.RenderPassActive &&
+                !(_buffer.HasCommandBufferDependency(cbs.Value) &&
+                _waitable.IsBufferRangeInUse(cbs.Value.CommandBufferIndex, offset, dataSize)))
             {
                 // If the buffer hasn't been used on the command buffer yet, try to preload the data.
                 // This avoids ending and beginning render passes on each buffer data upload.
@@ -476,6 +478,26 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             return holder.GetBuffer();
+        }
+
+        public bool TryGetCachedConvertedBuffer(int offset, int size, ICacheKey key, out BufferHolder holder)
+        {
+            return _cachedConvertedBuffers.TryGetValue(offset, size, key, out holder);
+        }
+
+        public void AddCachedConvertedBuffer(int offset, int size, ICacheKey key, BufferHolder holder)
+        {
+            _cachedConvertedBuffers.Add(offset, size, key, holder);
+        }
+
+        public void AddCachedConvertedBufferDependency(int offset, int size, ICacheKey key, Dependency dependency)
+        {
+            _cachedConvertedBuffers.AddDependency(offset, size, key, dependency);
+        }
+
+        public void RemoveCachedConvertedBuffer(int offset, int size, ICacheKey key)
+        {
+            _cachedConvertedBuffers.Remove(offset, size, key);
         }
 
         public void Dispose()

@@ -36,12 +36,12 @@
 
 ## Compatibility
 
-As of October 2022, Ryujinx has been tested on approximately 3,600 titles; over 3,500 boot past menus and into gameplay, with roughly 3,000 of those being considered playable. You can check out the compatibility list [here](https://github.com/Ryujinx/Ryujinx-Games-List/issues).  
-Anyone is free to submit a new game test or update an existing game test entry; simply follow the new issue template and testing guidelines, or post as a reply to the applicable game issue. Use the search function to see if a game has been tested already!
+As of October 2022, Ryujinx has been tested on approximately 3,700 titles; over 3,500 boot past menus and into gameplay, with roughly 3,000 of those being considered playable.
+You can check out the compatibility list [here](https://github.com/Ryujinx/Ryujinx-Games-List/issues). Anyone is free to submit a new game test or update an existing game test entry; simply follow the new issue template and testing guidelines, or post as a reply to the applicable game issue. Use the search function to see if a game has been tested already!
 
 ## Usage
 
-To run this emulator, your PC must be equipped with at least 8GB of RAM; failing to meet this requirement may result in a poor gameplay experience or unexpected crashes.
+To run this emulator, your PC must be equipped with at least 8GiB of RAM; failing to meet this requirement may result in a poor gameplay experience or unexpected crashes.
 
 See our [Setup & Configuration Guide](https://github.com/Ryujinx/Ryujinx/wiki/Ryujinx-Setup-&-Configuration-Guide) on how to set up the emulator.
 
@@ -62,7 +62,7 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
 If you wish to build the emulator yourself, follow these steps:
 
 ### Step 1
-Install the X64 version of [.NET 6.0 (or higher) SDK](https://dotnet.microsoft.com/download/dotnet/6.0).
+Install the X64 version of [.NET 7.0 (or higher) SDK](https://dotnet.microsoft.com/download/dotnet/7.0).
 
 ### Step 2
 Either use `git clone https://github.com/Ryujinx/Ryujinx` on the command line to clone the repository or use Code --> Download zip button to get the files.
@@ -90,7 +90,7 @@ Ryujinx system files are stored in the `Ryujinx` folder. This folder is located 
 
 - **GPU**
 
-  The GPU emulator emulates the Switch's Maxwell GPU using the OpenGL API (version 4.5 minimum) through a custom build of OpenTK. There are currently four graphics enhancements available to the end user in Ryujinx: disk shader caching, resolution scaling, aspect ratio adjustment and anisotropic filtering. These enhancements can be adjusted or toggled as desired in the GUI.
+  The GPU emulator emulates the Switch's Maxwell GPU using either the OpenGL (version 4.5 minimum) or Vulkan APIs through a custom build of OpenTK or Silk.NET respectively. There are currently four graphics enhancements available to the end user in Ryujinx: Disk Shader Caching, Resolution Scaling, Aspect Ratio Adjustment, and Anisotropic Filtering. These enhancements can be adjusted or toggled as desired in the GUI.
 
 - **Input**
 

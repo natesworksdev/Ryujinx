@@ -79,16 +79,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             var sInfo = StructuredProgram.MakeStructuredProgram(funcs, config);
 
-            var info = new ShaderProgramInfo(
-                config.GetConstantBufferDescriptors(),
-                config.GetStorageBufferDescriptors(),
-                config.GetTextureDescriptors(),
-                config.GetImageDescriptors(),
-                config.Stage,
-                config.UsedFeatures.HasFlag(FeatureFlags.InstanceId),
-                config.UsedFeatures.HasFlag(FeatureFlags.RtLayer),
-                config.ClipDistancesWritten,
-                config.OmapTargets);
+            var info = config.CreateProgramInfo();
 
             return config.Options.TargetLanguage switch
             {
@@ -190,10 +181,10 @@ namespace Ryujinx.Graphics.Shader.Translation
             UInt128 usedAttributes = context.Config.NextInputAttributesComponents;
             while (usedAttributes != UInt128.Zero)
             {
-                int index = usedAttributes.TrailingZeroCount();
+                int index = (int)UInt128.TrailingZeroCount(usedAttributes);
                 int vecIndex = index / 4;
 
-                usedAttributes &= ~UInt128.Pow2(index);
+                usedAttributes &= ~(UInt128.One << index);
 
                 // We don't need to initialize passthrough attributes.
                 if ((context.Config.PassthroughAttributes & (1 << vecIndex)) != 0)
@@ -206,7 +197,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             if (context.Config.NextUsedInputAttributesPerPatch != null)
             {
-                foreach (int vecIndex in context.Config.NextUsedInputAttributesPerPatch.OrderBy(x => x))
+                foreach (int vecIndex in context.Config.NextUsedInputAttributesPerPatch.Order())
                 {
                     InitializeOutput(context, AttributeConsts.UserAttributePerPatchBase + vecIndex * 16, perPatch: true);
                 }

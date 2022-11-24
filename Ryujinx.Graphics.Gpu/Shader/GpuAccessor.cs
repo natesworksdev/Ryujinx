@@ -140,6 +140,18 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <inheritdoc/>
+        public bool QueryHasConstantBufferDrawParameters()
+        {
+            return _state.GraphicsState.HasConstantBufferDrawParameters;
+        }
+
+        /// <inheritdoc/>
+        public bool QueryHasUnalignedStorageBuffer()
+        {
+            return _state.GraphicsState.HasUnalignedStorageBuffer || _state.ComputeState.HasUnalignedStorageBuffer;
+        }
+
+        /// <inheritdoc/>
         public InputTopology QueryPrimitiveTopology()
         {
             _state.SpecializationState?.RecordPrimitiveTopology();

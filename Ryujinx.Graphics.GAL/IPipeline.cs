@@ -34,12 +34,13 @@ namespace Ryujinx.Graphics.GAL
             int firstIndex,
             int firstVertex,
             int firstInstance);
+        void DrawIndexedIndirect(BufferRange indirectBuffer);
+        void DrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride);
+        void DrawIndirect(BufferRange indirectBuffer);
+        void DrawIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride);
         void DrawTexture(ITexture texture, ISampler sampler, Extents2DF srcRegion, Extents2DF dstRegion);
 
         void EndTransformFeedback();
-
-        void MultiDrawIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride);
-        void MultiDrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride);
 
         void SetAlphaTest(bool enable, float reference, CompareOp op);
 
@@ -85,12 +86,12 @@ namespace Ryujinx.Graphics.GAL
 
         void SetStencilTest(StencilTestDescriptor stencilTest);
 
-        void SetStorageBuffers(int first, ReadOnlySpan<BufferRange> buffers);
+        void SetStorageBuffers(ReadOnlySpan<BufferAssignment> buffers);
 
         void SetTextureAndSampler(ShaderStage stage, int binding, ITexture texture, ISampler sampler);
 
         void SetTransformFeedbackBuffers(ReadOnlySpan<BufferRange> buffers);
-        void SetUniformBuffers(int first, ReadOnlySpan<BufferRange> buffers);
+        void SetUniformBuffers(ReadOnlySpan<BufferAssignment> buffers);
 
         void SetUserClipDistance(int index, bool enableClip);
 

@@ -33,7 +33,7 @@ namespace Ryujinx.Graphics.Vulkan
         internal KhrPushDescriptor PushDescriptorApi { get; private set; }
         internal ExtTransformFeedback TransformFeedbackApi { get; private set; }
         internal KhrDrawIndirectCount DrawIndirectCountApi { get; private set; }
-        internal ExtDebugReport DebugReportApi { get; private set; }
+        internal ExtDebugUtils DebugUtilsApi { get; private set; }
 
         internal uint QueueFamilyIndex { get; private set; }
         internal Queue Queue { get; private set; }
@@ -57,7 +57,7 @@ namespace Ryujinx.Graphics.Vulkan
         private SyncManager _syncManager;
 
         private PipelineFull _pipeline;
-        private DebugReportCallbackEXT _debugReportCallback;
+        private DebugUtilsMessengerEXT _debugUtilsMessenger;
 
         internal HelperShader HelperShader { get; private set; }
         internal PipelineFull PipelineInternal => _pipeline;
@@ -237,9 +237,9 @@ namespace Ryujinx.Graphics.Vulkan
 
             Api = api;
 
-            _instance = VulkanInitialization.CreateInstance(api, logLevel, _getRequiredExtensions(), out ExtDebugReport debugReport, out _debugReportCallback);
+            _instance = VulkanInitialization.CreateInstance(api, logLevel, _getRequiredExtensions(), out ExtDebugUtils debugUtils, out _debugUtilsMessenger);
 
-            DebugReportApi = debugReport;
+            DebugUtilsApi = debugUtils;
 
             if (api.TryGetInstanceExtension(_instance, out KhrSurface surfaceApi))
             {
@@ -287,9 +287,9 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        internal ShaderCollection CreateProgramWithMinimalLayout(ShaderSource[] sources)
+        internal ShaderCollection CreateProgramWithMinimalLayout(ShaderSource[] sources, SpecDescription[] specDescription = null)
         {
-            return new ShaderCollection(this, _device, sources, isMinimal: true);
+            return new ShaderCollection(this, _device, sources, specDescription: specDescription, isMinimal: true);
         }
 
         public ISampler CreateSampler(GAL.SamplerCreateInfo info)
@@ -396,6 +396,7 @@ namespace Ryujinx.Graphics.Vulkan
                 supportsFragmentShaderOrderingIntel: false,
                 supportsGeometryShaderPassthrough: Capabilities.SupportsGeometryShaderPassthrough,
                 supportsImageLoadFormatted: features2.Features.ShaderStorageImageReadWithoutFormat,
+                supportsLayerVertexTessellation: featuresVk12.ShaderOutputLayer,
                 supportsMismatchingViewFormat: true,
                 supportsCubemapView: !IsAmdGcn,
                 supportsNonConstantTextureOffset: false,
@@ -403,7 +404,7 @@ namespace Ryujinx.Graphics.Vulkan
                 supportsTextureShadowLod: false,
                 supportsViewportIndex: featuresVk12.ShaderOutputViewportIndex,
                 supportsViewportSwizzle: false,
-                supportsIndirectParameters: Capabilities.SupportsIndirectParameters,
+                supportsIndirectParameters: true,
                 maximumUniformBuffersPerStage: Constants.MaxUniformBuffersPerStage,
                 maximumStorageBuffersPerStage: Constants.MaxStorageBuffersPerStage,
                 maximumTexturesPerStage: Constants.MaxTexturesPerStage,
@@ -584,9 +585,9 @@ namespace Ryujinx.Graphics.Vulkan
 
             MemoryAllocator.Dispose();
 
-            if (_debugReportCallback.Handle != 0)
+            if (_debugUtilsMessenger.Handle != 0)
             {
-                DebugReportApi.DestroyDebugReportCallback(_instance, _debugReportCallback, null);
+                DebugUtilsApi.DestroyDebugUtilsMessenger(_instance, _debugUtilsMessenger, null);
             }
 
             foreach (var shader in Shaders)

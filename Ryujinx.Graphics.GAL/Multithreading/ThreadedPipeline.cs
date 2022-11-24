@@ -83,6 +83,30 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _renderer.QueueCommand();
         }
 
+        public void DrawIndexedIndirect(BufferRange indirectBuffer)
+        {
+            _renderer.New<DrawIndexedIndirectCommand>().Set(indirectBuffer);
+            _renderer.QueueCommand();
+        }
+
+        public void DrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
+        {
+            _renderer.New<DrawIndexedIndirectCountCommand>().Set(indirectBuffer, parameterBuffer, maxDrawCount, stride);
+            _renderer.QueueCommand();
+        }
+
+        public void DrawIndirect(BufferRange indirectBuffer)
+        {
+            _renderer.New<DrawIndirectCommand>().Set(indirectBuffer);
+            _renderer.QueueCommand();
+        }
+
+        public void DrawIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
+        {
+            _renderer.New<DrawIndirectCountCommand>().Set(indirectBuffer, parameterBuffer, maxDrawCount, stride);
+            _renderer.QueueCommand();
+        }
+
         public void DrawTexture(ITexture texture, ISampler sampler, Extents2DF srcRegion, Extents2DF dstRegion)
         {
             _renderer.New<DrawTextureCommand>().Set(Ref(texture), Ref(sampler), srcRegion, dstRegion);
@@ -98,18 +122,6 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         public void EndTransformFeedback()
         {
             _renderer.New<EndTransformFeedbackCommand>();
-            _renderer.QueueCommand();
-        }
-
-        public void MultiDrawIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
-        {
-            _renderer.New<MultiDrawIndirectCountCommand>().Set(indirectBuffer, parameterBuffer, maxDrawCount, stride);
-            _renderer.QueueCommand();
-        }
-
-        public void MultiDrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
-        {
-            _renderer.New<MultiDrawIndexedIndirectCountCommand>().Set(indirectBuffer, parameterBuffer, maxDrawCount, stride);
             _renderer.QueueCommand();
         }
 
@@ -263,9 +275,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _renderer.QueueCommand();
         }
 
-        public void SetStorageBuffers(int first, ReadOnlySpan<BufferRange> buffers)
+        public void SetStorageBuffers(ReadOnlySpan<BufferAssignment> buffers)
         {
-            _renderer.New<SetStorageBuffersCommand>().Set(first, _renderer.CopySpan(buffers));
+            _renderer.New<SetStorageBuffersCommand>().Set(_renderer.CopySpan(buffers));
             _renderer.QueueCommand();
         }
 
@@ -281,9 +293,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _renderer.QueueCommand();
         }
 
-        public void SetUniformBuffers(int first, ReadOnlySpan<BufferRange> buffers)
+        public void SetUniformBuffers(ReadOnlySpan<BufferAssignment> buffers)
         {
-            _renderer.New<SetUniformBuffersCommand>().Set(first, _renderer.CopySpan(buffers));
+            _renderer.New<SetUniformBuffersCommand>().Set(_renderer.CopySpan(buffers));
             _renderer.QueueCommand();
         }
 

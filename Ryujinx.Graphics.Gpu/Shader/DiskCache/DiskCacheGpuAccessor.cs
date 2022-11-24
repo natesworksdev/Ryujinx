@@ -130,6 +130,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         }
 
         /// <inheritdoc/>
+        public bool QueryHasConstantBufferDrawParameters()
+        {
+            return _oldSpecState.GraphicsState.HasConstantBufferDrawParameters;
+        }
+
+        /// <inheritdoc/>
         public InputTopology QueryPrimitiveTopology()
         {
             _newSpecState.RecordPrimitiveTopology();
@@ -217,6 +223,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         {
             _newSpecState.RecordEarlyZForce();
             return _oldSpecState.GraphicsState.EarlyZForce;
+        }
+
+        /// <inheritdoc/>
+        public bool QueryHasUnalignedStorageBuffer()
+        {
+            return _oldSpecState.GraphicsState.HasUnalignedStorageBuffer || _oldSpecState.ComputeState.HasUnalignedStorageBuffer;
         }
 
         /// <inheritdoc/>

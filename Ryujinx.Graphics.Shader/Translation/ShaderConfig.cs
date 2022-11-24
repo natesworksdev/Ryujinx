@@ -17,6 +17,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         public ShaderStage Stage { get; }
 
         public bool GpPassthrough { get; }
+        public bool LastInPipeline { get; private set; }
         public bool LastInVertexPipeline { get; private set; }
 
         public int ThreadsPerInputPrimitive { get; }
@@ -46,6 +47,9 @@ namespace Ryujinx.Graphics.Shader.Translation
         public FeatureFlags UsedFeatures { get; private set; }
 
         public int Cb1DataSize { get; private set; }
+
+        public bool LayerOutputWritten { get; private set; }
+        public int LayerOutputAttribute { get; private set; }
 
         public bool NextUsesFixedFuncAttributes { get; private set; }
         public int UsedInputAttributes { get; private set; }
@@ -130,6 +134,20 @@ namespace Ryujinx.Graphics.Shader.Translation
             _usedImages   = new Dictionary<TextureInfo, TextureMeta>();
         }
 
+        public ShaderConfig(
+            ShaderStage stage,
+            OutputTopology outputTopology,
+            int maxOutputVertices,
+            IGpuAccessor gpuAccessor,
+            TranslationOptions options) : this(gpuAccessor, options)
+        {
+            Stage                    = stage;
+            ThreadsPerInputPrimitive = 1;
+            OutputTopology           = outputTopology;
+            MaxOutputVertices        = maxOutputVertices;
+            TransformFeedbackEnabled = gpuAccessor.QueryTransformFeedbackEnabled();
+        }
+
         public ShaderConfig(ShaderHeader header, IGpuAccessor gpuAccessor, TranslationOptions options) : this(gpuAccessor, options)
         {
             Stage                    = header.Stage;
@@ -143,6 +161,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             OmapSampleMask           = header.OmapSampleMask;
             OmapDepth                = header.OmapDepth;
             TransformFeedbackEnabled = gpuAccessor.QueryTransformFeedbackEnabled();
+            LastInPipeline           = true;
             LastInVertexPipeline     = header.Stage < ShaderStage.Fragment;
         }
 
@@ -238,6 +257,12 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
         }
 
+        public void SetLayerOutputAttribute(int attr)
+        {
+            LayerOutputWritten = true;
+            LayerOutputAttribute = attr;
+        }
+
         public void SetInputUserAttributeFixedFunc(int index)
         {
             UsedInputAttributes |= 1 << index;
@@ -254,7 +279,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             UsedInputAttributes |= mask;
             _thisUsedInputAttributes |= mask;
-            ThisInputAttributesComponents |= UInt128.Pow2(index * 4 + component);
+            ThisInputAttributesComponents |= UInt128.One << (index * 4 + component);
         }
 
         public void SetInputUserAttributePerPatch(int index)
@@ -306,7 +331,12 @@ namespace Ryujinx.Graphics.Shader.Translation
                 config._perPatchAttributeLocations = locationsMap;
             }
 
-            if (config.Stage != ShaderStage.Fragment)
+            LastInPipeline = false;
+
+            // We don't consider geometry shaders using the geometry shader passthrough feature
+            // as being the last because when this feature is used, it can't actually modify any of the outputs,
+            // so the stage that comes before it is the last one that can do modifications.
+            if (config.Stage != ShaderStage.Fragment && (config.Stage != ShaderStage.Geometry || !config.GpPassthrough))
             {
                 LastInVertexPipeline = false;
             }
@@ -686,6 +716,21 @@ namespace Ryujinx.Graphics.Shader.Translation
         public int FindImageDescriptorIndex(AstTextureOperation texOp)
         {
             return FindDescriptorIndex(GetImageDescriptors(), texOp);
+        }
+
+        public ShaderProgramInfo CreateProgramInfo()
+        {
+            return new ShaderProgramInfo(
+                GetConstantBufferDescriptors(),
+                GetStorageBufferDescriptors(),
+                GetTextureDescriptors(),
+                GetImageDescriptors(),
+                Stage,
+                UsedFeatures.HasFlag(FeatureFlags.InstanceId),
+                UsedFeatures.HasFlag(FeatureFlags.DrawParameters),
+                UsedFeatures.HasFlag(FeatureFlags.RtLayer),
+                ClipDistancesWritten,
+                OmapTargets);
         }
     }
 }

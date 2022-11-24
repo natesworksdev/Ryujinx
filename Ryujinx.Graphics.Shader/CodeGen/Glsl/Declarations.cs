@@ -46,6 +46,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
             else
             {
+                if (context.Config.Stage == ShaderStage.Vertex)
+                {
+                    context.AppendLine("#extension GL_ARB_shader_draw_parameters : enable");
+                }
+
                 context.AppendLine("#extension GL_ARB_shader_viewport_layer_array : enable");
             }
 
@@ -210,7 +215,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                 if (context.Config.TransformFeedbackEnabled && context.Config.LastInVertexPipeline)
                 {
-                    var tfOutput = context.GetTransformFeedbackOutput(AttributeConsts.PositionX);
+                    var tfOutput = context.Info.GetTransformFeedbackOutput(AttributeConsts.PositionX);
                     if (tfOutput.Valid)
                     {
                         context.AppendLine($"layout (xfb_buffer = {tfOutput.Buffer}, xfb_offset = {tfOutput.Offset}, xfb_stride = {tfOutput.Stride}) out gl_PerVertex");
@@ -520,7 +525,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareInputAttributesPerPatch(CodeGenContext context, HashSet<int> attrs)
         {
-            foreach (int attr in attrs.OrderBy(x => x))
+            foreach (int attr in attrs.Order())
             {
                 DeclareInputAttributePerPatch(context, attr);
             }
@@ -604,19 +609,45 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
             if (context.Config.TransformFeedbackEnabled && context.Config.LastInVertexPipeline)
             {
-                for (int c = 0; c < 4; c++)
+                int attrOffset = AttributeConsts.UserAttributeBase + attr * 16;
+                int components = context.Config.LastInPipeline ? context.Info.GetTransformFeedbackOutputComponents(attrOffset) : 1;
+
+                if (components > 1)
                 {
-                    char swzMask = "xyzw"[c];
+                    string type = components switch
+                    {
+                        2 => "vec2",
+                        3 => "vec3",
+                        4 => "vec4",
+                        _ => "float"
+                    };
 
                     string xfb = string.Empty;
 
-                    var tfOutput = context.GetTransformFeedbackOutput(attr, c);
+                    var tfOutput = context.Info.GetTransformFeedbackOutput(attrOffset);
                     if (tfOutput.Valid)
                     {
                         xfb = $", xfb_buffer = {tfOutput.Buffer}, xfb_offset = {tfOutput.Offset}, xfb_stride = {tfOutput.Stride}";
                     }
 
-                    context.AppendLine($"layout (location = {attr}, component = {c}{xfb}) out float {name}_{swzMask};");
+                    context.AppendLine($"layout (location = {attr}{xfb}) out {type} {name};");
+                }
+                else
+                {
+                    for (int c = 0; c < 4; c++)
+                    {
+                        char swzMask = "xyzw"[c];
+
+                        string xfb = string.Empty;
+
+                        var tfOutput = context.Info.GetTransformFeedbackOutput(attrOffset + c * 4);
+                        if (tfOutput.Valid)
+                        {
+                            xfb = $", xfb_buffer = {tfOutput.Buffer}, xfb_offset = {tfOutput.Offset}, xfb_stride = {tfOutput.Stride}";
+                        }
+
+                        context.AppendLine($"layout (location = {attr}, component = {c}{xfb}) out float {name}_{swzMask};");
+                    }
                 }
             }
             else
@@ -627,7 +658,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareUsedOutputAttributesPerPatch(CodeGenContext context, HashSet<int> attrs)
         {
-            foreach (int attr in attrs.OrderBy(x => x))
+            foreach (int attr in attrs.Order())
             {
                 DeclareOutputAttributePerPatch(context, attr);
             }

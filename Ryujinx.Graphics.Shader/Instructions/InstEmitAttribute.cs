@@ -51,7 +51,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                         offset |= AttributeConsts.LoadOutputMask;
                     }
 
-                    Operand src = op.P ? AttributePerPatch(offset) : Attribute(offset);
+                    Operand src = op.P ? AttributePerPatch(offset) : CreateInputAttribute(context, offset);
 
                     context.Copy(Register(rd), src);
                 }
@@ -278,13 +278,21 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
         private static int FixedFuncToUserAttribute(ShaderConfig config, int attr, bool isOutput)
         {
-            if (attr >= AttributeConsts.FrontColorDiffuseR && attr < AttributeConsts.ClipDistance0)
+            bool supportsLayerFromVertexOrTess = config.GpuAccessor.QueryHostSupportsLayerVertexTessellation();
+            int fixedStartAttr = supportsLayerFromVertexOrTess ? 0 : 1;
+
+            if (attr == AttributeConsts.Layer && config.Stage != ShaderStage.Geometry && !supportsLayerFromVertexOrTess)
             {
-                attr = FixedFuncToUserAttribute(config, attr, AttributeConsts.FrontColorDiffuseR, 0, isOutput);
+                attr = FixedFuncToUserAttribute(config, attr, AttributeConsts.Layer, 0, isOutput);
+                config.SetLayerOutputAttribute(attr);
+            }
+            else if (attr >= AttributeConsts.FrontColorDiffuseR && attr < AttributeConsts.ClipDistance0)
+            {
+                attr = FixedFuncToUserAttribute(config, attr, AttributeConsts.FrontColorDiffuseR, fixedStartAttr, isOutput);
             }
             else if (attr >= AttributeConsts.TexCoordBase && attr < AttributeConsts.TexCoordEnd)
             {
-                attr = FixedFuncToUserAttribute(config, attr, AttributeConsts.TexCoordBase, 4, isOutput);
+                attr = FixedFuncToUserAttribute(config, attr, AttributeConsts.TexCoordBase, fixedStartAttr + 4, isOutput);
             }
 
             return attr;
@@ -311,6 +319,23 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
 
             return attr;
+        }
+
+        private static Operand CreateInputAttribute(EmitterContext context, int attr)
+        {
+            if (context.Config.Options.TargetApi == TargetApi.Vulkan)
+            {
+                if (attr == AttributeConsts.InstanceId)
+                {
+                    return context.ISubtract(Attribute(AttributeConsts.InstanceIndex), Attribute(AttributeConsts.BaseInstance));
+                }
+                else if (attr == AttributeConsts.VertexId)
+                {
+                    return Attribute(AttributeConsts.VertexIndex);
+                }
+            }
+
+            return Attribute(attr);
         }
     }
 }
