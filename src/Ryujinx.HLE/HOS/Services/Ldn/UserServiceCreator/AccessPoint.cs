@@ -1,3 +1,4 @@
+using Ryujinx.Common.Memory;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Network.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn.Types;
@@ -12,8 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         private IUserLocalCommunicationService _parent;
 
         public NetworkInfo NetworkInfo;
-        public NodeLatestUpdate[] LatestUpdates = new NodeLatestUpdate[8];
-
+        public Array8<NodeLatestUpdate> LatestUpdates = new();
         public bool Connected { get; private set; }
 
         public AccessPoint(IUserLocalCommunicationService parent)
@@ -76,8 +76,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             CreateAccessPointRequest request = new CreateAccessPointRequest
             {
                 SecurityConfig = securityConfig,
-                UserConfig     = userConfig,
-                NetworkConfig  = networkConfig
+                UserConfig = userConfig,
+                NetworkConfig = networkConfig
             };
 
             bool success = _parent.NetworkClient.CreateNetwork(request, _advertiseData ?? new byte[0]);
