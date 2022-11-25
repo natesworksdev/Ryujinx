@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Common.Logging;
+using Ryujinx.Common.Memory;
 using Ryujinx.HLE.HOS.Services.Ldn.Spacemeowx2Ldn;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
         private byte[] _buffer;
         private int _bufferEnd;
 
-        public Dictionary<byte[], NetworkInfo> scanResults = new Dictionary<byte[], NetworkInfo>();
+        public Dictionary<Array6<byte>, NetworkInfo> scanResults = new Dictionary<Array6<byte>, NetworkInfo>();
         private void LogMsg(string msg)
         {
             Logger.Info?.PrintMsg(LogClass.ServiceLdn, msg);
