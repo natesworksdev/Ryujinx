@@ -577,7 +577,7 @@
   "UserProfilesSetProfileImage": "Set Profile Image",
   "UserProfileEmptyNameError": "Name is required",
   "UserProfileNoImageError": "Profile image must be set",
-  "GameUpdateWindowHeading": "Updates Available for {0} [{1}]",
+  "GameUpdateWindowHeading": "{0} Update(s) available for {1} ({2})",
   "SettingsTabHotkeysResScaleUpHotkey": "Increase resolution:",
   "SettingsTabHotkeysResScaleDownHotkey": "Decrease resolution:",
   "UserProfilesName": "Name:",
