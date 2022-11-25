@@ -68,7 +68,7 @@
                     VerticalAlignment="Stretch"
                     CanUserReorderColumns="False"
                     CanUserResizeColumns="True"
-                    CanUserSortColumns="False"
+                    CanUserSortColumns="True"
                     HorizontalScrollBarVisibility="Auto"
                     Items="{Binding _downloadableContents}"
                     SelectionMode="Extended"

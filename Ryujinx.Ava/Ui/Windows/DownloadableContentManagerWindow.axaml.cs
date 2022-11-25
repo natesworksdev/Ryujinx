@@ -33,8 +33,8 @@ namespace Ryujinx.Ava.Ui.Windows
         private readonly List<DownloadableContentContainer> _downloadableContentContainerList;
         private readonly string                             _downloadableContentJsonPath;
 
-        private VirtualFileSystem                              _virtualFileSystem { get; }
-        private ObservableCollection<DownloadableContentModel> _downloadableContents { get; set; }
+        private VirtualFileSystem                      _virtualFileSystem    { get; }
+        private AvaloniaList<DownloadableContentModel> _downloadableContents { get; set; }
 
         private ulong  TitleId   { get; }
         private string TitleName { get; }
@@ -51,7 +51,7 @@ namespace Ryujinx.Ava.Ui.Windows
         public DownloadableContentManagerWindow(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
         {
             _virtualFileSystem    = virtualFileSystem;
-            _downloadableContents = new ObservableCollection<DownloadableContentModel>();
+            _downloadableContents = new AvaloniaList<DownloadableContentModel>();
             TitleId               = titleId;
             TitleName             = titleName;
 
@@ -77,6 +77,7 @@ namespace Ryujinx.Ava.Ui.Windows
             Title = $"Ryujinx {Program.Version} - {LocaleManager.Instance["DlcWindowTitle"]} - {TitleName} ({TitleId:X16})";
 
             LoadDownloadableContents();
+            PrintHeading();
         }
 
         private void DlcDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -121,9 +122,6 @@ namespace Ryujinx.Ava.Ui.Windows
 
             // NOTE: Save the list again to remove leftovers.
             Save();
-
-            DlcDataGrid.Columns[1].Sort(ListSortDirection.Ascending);
-            PrintHeading();
         }
 
         private Nca TryOpenNca(IStorage ncaStorage, string containerPath)
@@ -192,15 +190,26 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             if (removeSelectedOnly)
             {
-                foreach (var item in _downloadableContents.Where(x => x.Enabled))
+                AvaloniaList<DownloadableContentModel> removedItems = new();
+
+                foreach (var item in DlcDataGrid.SelectedItems)
                 {
-                    _downloadableContents.Remove(item);
+                    removedItems.Add(item as DownloadableContentModel);
+                }
+
+                DlcDataGrid.SelectedItems.Clear();
+
+                foreach (var item in removedItems)
+                {
+                    _downloadableContents.RemoveAll(_downloadableContents.Where(x => x.TitleId == item.TitleId).ToList());
                 }
             }
             else
             {
                 _downloadableContents.Clear();
             }
+
+            PrintHeading();
         }
 
         public void RemoveSelected()
@@ -253,7 +262,6 @@ namespace Ryujinx.Ava.Ui.Windows
                 }
             }
 
-            DlcDataGrid.Columns[1].Sort(ListSortDirection.Ascending);
             PrintHeading();
         }
 
