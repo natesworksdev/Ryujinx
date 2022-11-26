@@ -864,7 +864,7 @@ namespace Ryujinx.Audio.Renderer.Server
 
         public void SetVoiceDropParameter(float voiceDropParameter)
         {
-            _voiceDropParameter = Math.Min(Math.Max(voiceDropParameter, 0.0f), 2.0f);
+            _voiceDropParameter = Math.Clamp(voiceDropParameter, 0.0f, 2.0f);
         }
 
         public float GetVoiceDropParameter()
@@ -876,7 +876,7 @@ namespace Ryujinx.Audio.Renderer.Server
         {
             if (_executionMode == AudioRendererExecutionMode.Manual && _renderingDevice == AudioRendererRenderingDevice.Cpu)
             {
-                // NOTE: Here Nintendo abort with this error code, we don't want that.
+                // NOTE: Here Nintendo aborts with this error code, we don't want that.
                 return ResultCode.InvalidExecutionContextOperation;
             }
 
