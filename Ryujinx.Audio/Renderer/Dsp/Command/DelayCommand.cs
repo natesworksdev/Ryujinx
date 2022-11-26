@@ -17,7 +17,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
         public CommandType CommandType => CommandType.Delay;
 
-        public ulong EstimatedProcessingTime { get; set; }
+        public uint EstimatedProcessingTime { get; set; }
 
         public DelayParameter Parameter => _parameter;
         public Memory<DelayState> State { get; }
