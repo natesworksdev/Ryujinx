@@ -49,10 +49,8 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                 OutputBufferIndices[i] = (ushort)(bufferOffset + Parameter.Output[i]);
             }
 
-            // NOTE: We do the opposite as Nintendo here for now to restore previous behaviour
-            // TODO: Update delay processing and remove this to use RemapLegacyChannelEffectMappingToChannelResourceMapping.
-            DataSourceHelper.RemapChannelResourceMappingToLegacy(newEffectChannelMappingSupported, InputBufferIndices);
-            DataSourceHelper.RemapChannelResourceMappingToLegacy(newEffectChannelMappingSupported, OutputBufferIndices);
+            DataSourceHelper.RemapLegacyChannelEffectMappingToChannelResourceMapping(newEffectChannelMappingSupported, InputBufferIndices);
+            DataSourceHelper.RemapLegacyChannelEffectMappingToChannelResourceMapping(newEffectChannelMappingSupported, OutputBufferIndices);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -173,12 +171,12 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
             float dryGain = FixedPointHelper.ToFloat(Parameter.DryGain, FixedPointPrecision);
             float outGain = FixedPointHelper.ToFloat(Parameter.OutGain, FixedPointPrecision);
 
-            Matrix6x6 delayFeedback = new Matrix6x6(delayFeedbackBaseGain, 0.0f, 0.0f, 0.0f, delayFeedbackCrossGain, delayFeedbackCrossGain,
-                                                    0.0f, delayFeedbackBaseGain, 0.0f, delayFeedbackCrossGain, delayFeedbackCrossGain, 0.0f,
-                                                    delayFeedbackCrossGain, 0.0f, delayFeedbackBaseGain, delayFeedbackCrossGain, 0.0f, 0.0f,
-                                                    0.0f, delayFeedbackCrossGain, delayFeedbackCrossGain, delayFeedbackBaseGain, 0.0f, 0.0f,
-                                                    delayFeedbackCrossGain, delayFeedbackCrossGain, 0.0f, 0.0f, delayFeedbackBaseGain, 0.0f,
-                                                    0.0f, 0.0f, 0.0f, 0.0f, 0.0f, feedbackGain);
+            Matrix6x6 delayFeedback = new Matrix6x6(delayFeedbackBaseGain, 0.0f, delayFeedbackCrossGain, 0.0f, delayFeedbackCrossGain, 0.0f,
+                                                    0.0f, delayFeedbackBaseGain, delayFeedbackCrossGain, 0.0f, 0.0f, delayFeedbackCrossGain,
+                                                    delayFeedbackCrossGain, delayFeedbackCrossGain, delayFeedbackBaseGain, 0.0f, 0.0f, 0.0f,
+                                                    0.0f, 0.0f, 0.0f, feedbackGain, 0.0f, 0.0f,
+                                                    delayFeedbackCrossGain, 0.0f, 0.0f, 0.0f, delayFeedbackBaseGain, delayFeedbackCrossGain,
+                                                    0.0f, delayFeedbackCrossGain, 0.0f, 0.0f, delayFeedbackCrossGain, delayFeedbackBaseGain);
 
             for (int i = 0; i < sampleCount; i++)
             {
