@@ -96,11 +96,9 @@ namespace Ryujinx.Ava.Ui.Controls
         [SupportedOSPlatform("linux")]
         protected virtual IPlatformHandle CreateLinux(IPlatformHandle parent)
         {
-            X11Window = PlatformHelper.CreateOpenGLWindow(FramebufferFormat.Default, 0, 0, 100, 100) as GLXWindow;
-
+            X11Window    = PlatformHelper.CreateOpenGLWindow(FramebufferFormat.Default, 0, 0, 100, 100) as GLXWindow;
             WindowHandle = X11Window.WindowHandle.RawHandle;
-
-            X11Display = X11Window.DisplayHandle.RawHandle;
+            X11Display   = X11Window.DisplayHandle.RawHandle;
 
             return new PlatformHandle(WindowHandle, "X11");
         }

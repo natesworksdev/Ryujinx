@@ -18,11 +18,9 @@ namespace Ryujinx.Ava.Ui
         [SupportedOSPlatform("linux")]
         protected override IPlatformHandle CreateLinux(IPlatformHandle parent)
         {
-            X11Window = new GLXWindow(new NativeHandle(X11.DefaultDisplay), new NativeHandle(parent.Handle));
-
+            X11Window    = new GLXWindow(new NativeHandle(X11.DefaultDisplay), new NativeHandle(parent.Handle));
             WindowHandle = X11Window.WindowHandle.RawHandle;
-
-            X11Display = X11Window.DisplayHandle.RawHandle;
+            X11Display   = X11Window.DisplayHandle.RawHandle;
 
             X11Window.Hide();
 
