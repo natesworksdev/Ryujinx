@@ -58,6 +58,8 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         private unsafe void ProcessDelayMono(ref DelayState state, float* outputBuffer, float* inputBuffer, uint sampleCount)
         {
+            const ushort channelCount = 1;
+
             float feedbackGain = FixedPointHelper.ToFloat(Parameter.FeedbackGain, FixedPointPrecision);
             float inGain = FixedPointHelper.ToFloat(Parameter.InGain, FixedPointPrecision);
             float dryGain = FixedPointHelper.ToFloat(Parameter.DryGain, FixedPointPrecision);
@@ -70,7 +72,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
                 float temp = input * inGain + delayLineValue * feedbackGain;
 
-                state.UpdateLowPassFilter(ref temp, 1);
+                state.UpdateLowPassFilter(ref temp, channelCount);
 
                 outputBuffer[i] = (input * dryGain + delayLineValue * outGain) / 64;
             }
@@ -104,7 +106,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                     Y = state.DelayLines[1].Read(),
                 };
 
-                Vector2 temp = MatrixHelper.Transform(ref channelInput, ref delayFeedback) + channelInput * inGain;
+                Vector2 temp = MatrixHelper.Transform(ref delayLineValues, ref delayFeedback) + channelInput * inGain;
 
                 state.UpdateLowPassFilter(ref Unsafe.As<Vector2, float>(ref temp), channelCount);
 
@@ -148,7 +150,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                     W = state.DelayLines[3].Read()
                 };
 
-                Vector4 temp = MatrixHelper.Transform(ref channelInput, ref delayFeedback) + channelInput * inGain;
+                Vector4 temp = MatrixHelper.Transform(ref delayLineValues, ref delayFeedback) + channelInput * inGain;
 
                 state.UpdateLowPassFilter(ref Unsafe.As<Vector4, float>(ref temp), channelCount);
 
@@ -200,7 +202,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                     U = state.DelayLines[5].Read()
                 };
 
-                Vector6 temp = MatrixHelper.Transform(ref channelInput, ref delayFeedback) + channelInput * inGain;
+                Vector6 temp = MatrixHelper.Transform(ref delayLineValues, ref delayFeedback) + channelInput * inGain;
 
                 state.UpdateLowPassFilter(ref Unsafe.As<Vector6, float>(ref temp), channelCount);
 
