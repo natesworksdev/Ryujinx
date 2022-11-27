@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -147,6 +148,14 @@ namespace Ryujinx.Ava
                 Logger.Warning?.Print(LogClass.Application, "Failed to Apply Theme. A restart is needed to apply the selected theme");
 
                 ShowRestartDialog();
+            }
+        }
+
+        private async void About_OnClick(object sender, EventArgs e)
+        {
+            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                await new AboutWindow().ShowDialog(desktop.MainWindow);
             }
         }
     }
