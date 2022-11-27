@@ -45,6 +45,36 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
+        public ulong GetCurrent()
+        {
+            lock (_handles)
+            {
+                ulong lastHandle = _firstHandle;
+
+                foreach (SyncHandle handle in _handles)
+                {
+                    lock (handle)
+                    {
+                        if (handle.Waitable == null)
+                        {
+                            continue;
+                        }
+
+                        if (handle.ID > lastHandle)
+                        {
+                            bool signaled = handle.Waitable.WaitForFences(_gd.Api, _device, 0);
+                            if (signaled)
+                            {
+                                lastHandle = handle.ID;
+                            }
+                        }
+                    }
+                }
+
+                return lastHandle;
+            }
+        }
+
         public void Wait(ulong id)
         {
             SyncHandle result = null;
