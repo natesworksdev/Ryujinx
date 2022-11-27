@@ -119,7 +119,7 @@
   "SettingsTabSystemAudioBackendSDL2": "SDL2",
   "SettingsTabSystemHacks": "修正",
   "SettingsTabSystemHacksNote": " (会引起模拟器不稳定)",
-  "SettingsTabSystemExpandDramSize": "使用另一种模拟内存布局(开发者)",
+  "SettingsTabSystemExpandDramSize": "模拟开发机内存布局",
   "SettingsTabSystemIgnoreMissingServices": "忽略缺少的服务",
   "SettingsTabGraphics": "图形",
   "SettingsTabGraphicsAPI": "图形 API",
