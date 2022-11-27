@@ -589,4 +589,10 @@
   "SettingsAppRequiredRestartMessage": "Ryujinx 需要重启",
   "SettingsGpuBackendRestartMessage": "您修改了图形 API 或显卡设置。需要重新启动才能生效",
   "SettingsGpuBackendRestartSubMessage": "是否重启模拟器？"
+  "RyujinxUpdaterMessage": "是否更新Ryujinx至最新的版本？",
+  "SettingsTabHotkeysVolumeUpHotkey": "升高音量：",
+  "SettingsTabHotkeysVolumeDownHotkey": "降低音量：",
+  "VolumeShort": "音量",
+  "SettingsEnableMacroHLE": "启用HLE宏",
+  "SettingsEnableMacroHLETooltip": "GPU宏代码的高级模拟。\n提高性能表现，但可能在某些游戏中引起图形错误。\n如果您不确定，请保持此项为开启。"
 }
