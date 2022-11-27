@@ -17,19 +17,19 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
                 BasicBlock[] blocks = function.Blocks;
 
-                VariableType returnType = function.ReturnsValue ? VariableType.S32 : VariableType.None;
+                AggregateType returnType = function.ReturnsValue ? AggregateType.S32 : AggregateType.Void;
 
-                VariableType[] inArguments  = new VariableType[function.InArgumentsCount];
-                VariableType[] outArguments = new VariableType[function.OutArgumentsCount];
+                AggregateType[] inArguments  = new AggregateType[function.InArgumentsCount];
+                AggregateType[] outArguments = new AggregateType[function.OutArgumentsCount];
 
                 for (int i = 0; i < inArguments.Length; i++)
                 {
-                    inArguments[i] = VariableType.S32;
+                    inArguments[i] = AggregateType.S32;
                 }
 
                 for (int i = 0; i < outArguments.Length; i++)
                 {
-                    outArguments[i] = VariableType.S32;
+                    outArguments[i] = AggregateType.S32;
                 }
 
                 context.EnterFunction(blocks.Length, function.Name, returnType, inArguments, outArguments);
@@ -149,7 +149,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 // logical operations, rather than forcing a cast to int and doing
                 // a bitwise operation with the value, as it is likely to be used as
                 // a bool in the end.
-                if (IsBitwiseInst(inst) && AreAllSourceTypesEqual(sources, VariableType.Bool))
+                if (IsBitwiseInst(inst) && AreAllSourceTypesEqual(sources, AggregateType.Bool))
                 {
                     inst = GetLogicalFromBitwiseInst(inst);
                 }
@@ -159,9 +159,9 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
                 if (isCondSel || isCopy)
                 {
-                    VariableType type = GetVarTypeFromUses(operation.Dest);
+                    AggregateType type = GetVarTypeFromUses(operation.Dest);
 
-                    if (isCondSel && type == VariableType.F32)
+                    if (isCondSel && type == AggregateType.FP32)
                     {
                         inst |= Instruction.FP32;
                     }
@@ -259,7 +259,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             }
         }
 
-        private static VariableType GetVarTypeFromUses(Operand dest)
+        private static AggregateType GetVarTypeFromUses(Operand dest)
         {
             HashSet<Operand> visited = new HashSet<Operand>();
 
@@ -315,10 +315,10 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 }
             }
 
-            return VariableType.S32;
+            return AggregateType.S32;
         }
 
-        private static bool AreAllSourceTypesEqual(IAstNode[] sources, VariableType type)
+        private static bool AreAllSourceTypesEqual(IAstNode[] sources, AggregateType type)
         {
             foreach (IAstNode node in sources)
             {

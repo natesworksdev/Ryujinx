@@ -1,5 +1,6 @@
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
+using Ryujinx.Graphics.Shader.Translation;
 using System;
 
 using static Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions.InstGenBallot;
@@ -32,12 +33,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
         {
             IAstNode src = operation.GetSource(0);
 
-            VariableType type = GetSrcVarType(operation.Inst, 0);
+            AggregateType type = GetSrcVarType(operation.Inst, 0);
 
             string srcExpr = GetSoureExpr(context, src, type);
             string zero;
 
-            if (type == VariableType.F64)
+            if (type == AggregateType.FP64)
             {
                 zero = "0.0";
             }
@@ -95,7 +96,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     }
                     else
                     {
-                        VariableType dstType = GetSrcVarType(inst, argIndex);
+                        AggregateType dstType = GetSrcVarType(inst, argIndex);
 
                         args += GetSoureExpr(context, operation.GetSource(argIndex), dstType);
                     }

@@ -1,5 +1,6 @@
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
+using Ryujinx.Graphics.Shader.Translation;
 
 using static Ryujinx.Graphics.Shader.CodeGen.Glsl.TypeConversion;
 
@@ -7,11 +8,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 {
     static class InstGenHelper
     {
-        private static readonly InstInfo[] InfoTable;
+        private static readonly InstInfo[] _infoTable;
 
         static InstGenHelper()
         {
-            InfoTable = new InstInfo[(int)Instruction.Count];
+            _infoTable = new InstInfo[(int)Instruction.Count];
 
             Add(Instruction.AtomicAdd,                InstType.AtomicBinary,   "atomicAdd");
             Add(Instruction.AtomicAnd,                InstType.AtomicBinary,   "atomicAnd");
@@ -139,15 +140,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
         private static void Add(Instruction inst, InstType flags, string opName = null, int precedence = 0)
         {
-            InfoTable[(int)inst] = new InstInfo(flags, opName, precedence);
+            _infoTable[(int)inst] = new InstInfo(flags, opName, precedence);
         }
 
         public static InstInfo GetInstructionInfo(Instruction inst)
         {
-            return InfoTable[(int)(inst & Instruction.Mask)];
+            return _infoTable[(int)(inst & Instruction.Mask)];
         }
 
-        public static string GetSoureExpr(CodeGenContext context, IAstNode node, VariableType dstType)
+        public static string GetSoureExpr(CodeGenContext context, IAstNode node, AggregateType dstType)
         {
             return ReinterpretCast(context, node, OperandManager.GetNodeDestType(context, node), dstType);
         }
@@ -191,7 +192,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 return false;
             }
 
-            InstInfo info = InfoTable[(int)(operation.Inst & Instruction.Mask)];
+            InstInfo info = _infoTable[(int)(operation.Inst & Instruction.Mask)];
 
             if ((info.Type & (InstType.Call | InstType.Special)) != 0)
             {

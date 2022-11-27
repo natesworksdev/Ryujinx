@@ -350,16 +350,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
         }
 
-        public static string GetVarTypeName(VariableType type)
+        public static string GetVarTypeName(AggregateType type)
         {
             switch (type)
             {
-                case VariableType.Bool: return "bool";
-                case VariableType.F32: return "precise float";
-                case VariableType.F64: return "double";
-                case VariableType.None: return "void";
-                case VariableType.S32: return "int";
-                case VariableType.U32: return "uint";
+                case AggregateType.Bool: return "bool";
+                case AggregateType.FP32: return "precise float";
+                case AggregateType.FP64: return "double";
+                case AggregateType.Void: return "void";
+                case AggregateType.S32: return "int";
+                case AggregateType.U32: return "uint";
             }
 
             throw new ArgumentException($"Invalid variable type \"{type}\".");

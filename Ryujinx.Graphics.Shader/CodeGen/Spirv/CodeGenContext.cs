@@ -540,13 +540,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public Instruction GetLocal(AggregateType dstType, AstOperand local)
         {
-            var srcType = local.VarType.Convert();
+            var srcType = local.VarType;
             return BitcastIfNeeded(dstType, srcType, Load(GetType(srcType), GetLocalPointer(local)));
         }
 
         public Instruction GetArgument(AggregateType dstType, AstOperand funcArg)
         {
-            var srcType = funcArg.VarType.Convert();
+            var srcType = funcArg.VarType;
             return BitcastIfNeeded(dstType, srcType, Load(GetType(srcType), GetArgumentPointer(funcArg)));
         }
 

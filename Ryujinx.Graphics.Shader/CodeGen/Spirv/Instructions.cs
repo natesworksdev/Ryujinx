@@ -317,7 +317,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 }
                 else
                 {
-                    var type = function.GetArgumentType(i).Convert();
+                    var type = function.GetArgumentType(i);
                     var value = context.Get(type, operand);
                     var spvLocal = spvLocals[i];
 
@@ -327,7 +327,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 }
             }
 
-            var retType = function.ReturnType.Convert();
+            var retType = function.ReturnType;
             var result = context.FunctionCall(context.GetType(retType), spvFunc, args);
             return new OperationResult(retType, result);
         }
@@ -604,10 +604,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             // TODO: Bindless texture support. For now we just return 0/do nothing.
             if (isBindless)
             {
-                return new OperationResult(componentType.Convert(), componentType switch
+                return new OperationResult(componentType, componentType switch
                 {
-                    VariableType.S32 => context.Constant(context.TypeS32(), 0),
-                    VariableType.U32 => context.Constant(context.TypeU32(), 0u),
+                    AggregateType.S32 => context.Constant(context.TypeS32(), 0),
+                    AggregateType.U32 => context.Constant(context.TypeU32(), 0u),
                     _ => context.Constant(context.TypeFP32(), 0f),
                 });
             }
@@ -652,13 +652,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 pCoords = Src(AggregateType.S32);
             }
 
-            SpvInstruction value = Src(componentType.Convert());
+            SpvInstruction value = Src(componentType);
 
             (var imageType, var imageVariable) = context.Images[new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format)];
 
             var image = context.Load(imageType, imageVariable);
 
-            SpvInstruction resultType = context.GetType(componentType.Convert());
+            SpvInstruction resultType = context.GetType(componentType);
             SpvInstruction imagePointerType = context.TypePointer(StorageClass.Image, resultType);
 
             var pointer = context.ImageTexelPointer(imagePointerType, imageVariable, pCoords, context.Constant(context.TypeU32(), 0));
@@ -668,10 +668,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var result = (texOp.Flags & TextureFlags.AtomicMask) switch
             {
                 TextureFlags.Add        => context.AtomicIAdd(resultType, pointer, one, zero, value),
-                TextureFlags.Minimum    => componentType == VariableType.S32
+                TextureFlags.Minimum    => componentType == AggregateType.S32
                     ? context.AtomicSMin(resultType, pointer, one, zero, value)
                     : context.AtomicUMin(resultType, pointer, one, zero, value),
-                TextureFlags.Maximum    => componentType == VariableType.S32
+                TextureFlags.Maximum    => componentType == AggregateType.S32
                     ? context.AtomicSMax(resultType, pointer, one, zero, value)
                     : context.AtomicUMax(resultType, pointer, one, zero, value),
                 TextureFlags.Increment  => context.AtomicIIncrement(resultType, pointer, one, zero),
@@ -680,11 +680,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 TextureFlags.BitwiseOr  => context.AtomicOr(resultType, pointer, one, zero, value),
                 TextureFlags.BitwiseXor => context.AtomicXor(resultType, pointer, one, zero, value),
                 TextureFlags.Swap       => context.AtomicExchange(resultType, pointer, one, zero, value),
-                TextureFlags.CAS        => context.AtomicCompareExchange(resultType, pointer, one, zero, zero, Src(componentType.Convert()), value),
+                TextureFlags.CAS        => context.AtomicCompareExchange(resultType, pointer, one, zero, zero, Src(componentType), value),
                 _                       => context.AtomicIAdd(resultType, pointer, one, zero, value),
             };
 
-            return new OperationResult(componentType.Convert(), result);
+            return new OperationResult(componentType, result);
         }
 
         private static OperationResult GenerateImageLoad(CodeGenContext context, AstOperation operation)
@@ -700,12 +700,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 var zero = componentType switch
                 {
-                    VariableType.S32 => context.Constant(context.TypeS32(), 0),
-                    VariableType.U32 => context.Constant(context.TypeU32(), 0u),
+                    AggregateType.S32 => context.Constant(context.TypeS32(), 0),
+                    AggregateType.U32 => context.Constant(context.TypeU32(), 0u),
                     _ => context.Constant(context.TypeFP32(), 0f),
                 };
 
-                return new OperationResult(componentType.Convert(), zero);
+                return new OperationResult(componentType, zero);
             }
 
             bool isArray   = (texOp.Type & SamplerType.Array) != 0;
@@ -753,12 +753,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             (var imageType, var imageVariable) = context.Images[new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format)];
 
             var image = context.Load(imageType, imageVariable);
-            var imageComponentType = context.GetType(componentType.Convert());
+            var imageComponentType = context.GetType(componentType);
 
             var texel = context.ImageRead(context.TypeVector(imageComponentType, 4), image, pCoords, ImageOperandsMask.MaskNone);
             var result = context.CompositeExtract(imageComponentType, texel, (SpvLiteralInteger)texOp.Index);
 
-            return new OperationResult(componentType.Convert(), result);
+            return new OperationResult(componentType, result);
         }
 
         private static OperationResult GenerateImageStore(CodeGenContext context, AstOperation operation)
@@ -823,20 +823,20 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 if (srcIndex < texOp.SourcesCount)
                 {
-                    cElems[i] = Src(componentType.Convert());
+                    cElems[i] = Src(componentType);
                 }
                 else
                 {
                     cElems[i] = componentType switch
                     {
-                        VariableType.S32 => context.Constant(context.TypeS32(), 0),
-                        VariableType.U32 => context.Constant(context.TypeU32(), 0u),
+                        AggregateType.S32 => context.Constant(context.TypeS32(), 0),
+                        AggregateType.U32 => context.Constant(context.TypeU32(), 0u),
                         _ => context.Constant(context.TypeFP32(), 0f),
                     };
                 }
             }
 
-            var texel = context.CompositeConstruct(context.TypeVector(context.GetType(componentType.Convert()), ComponentsCount), cElems);
+            var texel = context.CompositeConstruct(context.TypeVector(context.GetType(componentType), ComponentsCount), cElems);
 
             (var imageType, var imageVariable) = context.Images[new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format)];
 
@@ -1238,7 +1238,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             var validLocal = (AstOperand)operation.GetSource(3);
 
-            context.Store(context.GetLocalPointer(validLocal), context.BitcastIfNeeded(validLocal.VarType.Convert(), AggregateType.Bool, valid));
+            context.Store(context.GetLocalPointer(validLocal), context.BitcastIfNeeded(validLocal.VarType, AggregateType.Bool, valid));
 
             return new OperationResult(AggregateType.FP32, result);
         }
@@ -1268,7 +1268,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             var validLocal = (AstOperand)operation.GetSource(3);
 
-            context.Store(context.GetLocalPointer(validLocal), context.BitcastIfNeeded(validLocal.VarType.Convert(), AggregateType.Bool, valid));
+            context.Store(context.GetLocalPointer(validLocal), context.BitcastIfNeeded(validLocal.VarType, AggregateType.Bool, valid));
 
             return new OperationResult(AggregateType.FP32, result);
         }
@@ -1294,7 +1294,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             var validLocal = (AstOperand)operation.GetSource(3);
 
-            context.Store(context.GetLocalPointer(validLocal), context.BitcastIfNeeded(validLocal.VarType.Convert(), AggregateType.Bool, valid));
+            context.Store(context.GetLocalPointer(validLocal), context.BitcastIfNeeded(validLocal.VarType, AggregateType.Bool, valid));
 
             return new OperationResult(AggregateType.FP32, result);
         }
@@ -1324,7 +1324,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             var validLocal = (AstOperand)operation.GetSource(3);
 
-            context.Store(context.GetLocalPointer(validLocal), context.BitcastIfNeeded(validLocal.VarType.Convert(), AggregateType.Bool, valid));
+            context.Store(context.GetLocalPointer(validLocal), context.BitcastIfNeeded(validLocal.VarType, AggregateType.Bool, valid));
 
             return new OperationResult(AggregateType.FP32, result);
         }
