@@ -569,6 +569,11 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 OnPropertyChanged();
             }
         }
+      
+        public void ToggleShowConsole()
+        {
+            ShowConsole = !ShowConsole;
+        }
 
         public bool ShowConsoleVisible
         {
