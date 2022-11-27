@@ -10,6 +10,7 @@ using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
+using Ryujinx.Modules;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
 using System;
@@ -156,6 +157,17 @@ namespace Ryujinx.Ava
             if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 await new AboutWindow().ShowDialog(desktop.MainWindow);
+            }
+        }
+
+        private async void Updates_OnClick(object sender, EventArgs e)
+        {
+            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                if (Updater.CanUpdate(true, desktop.MainWindow as MainWindow))
+                {
+                    await Updater.BeginParse(desktop.MainWindow as MainWindow, true);
+                }
             }
         }
     }

@@ -13,7 +13,7 @@
                 Click="About_OnClick"
                 Header="{locale:Locale NativeMenuBarHelpAbout}" />
             <NativeMenuItem
-                Command="{ReflectionBinding CheckForUpdates}"
+                Click="Updates_OnClick"
                 Header="{locale:Locale NativeMenuBarHelpCheckForUpdates}" />
         </NativeMenu>
     </NativeMenu.Menu>
