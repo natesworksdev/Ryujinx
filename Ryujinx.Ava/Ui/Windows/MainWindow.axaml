@@ -244,7 +244,8 @@
                         Name="Menu"
                         Height="35"
                         Margin="0"
-                        HorizontalAlignment="Left">
+                        HorizontalAlignment="Left"
+                        IsVisible="{Binding !IsMacOS}">
                         <Menu.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <DockPanel Margin="0" HorizontalAlignment="Stretch" />

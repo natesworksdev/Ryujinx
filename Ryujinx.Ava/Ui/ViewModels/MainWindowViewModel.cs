@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using DynamicData;
 using DynamicData.Binding;
@@ -140,6 +141,12 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                 OnPropertyChanged();
             }
+        }
+
+        public bool IsMacOS
+        {
+            get => AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().OperatingSystem ==
+                   OperatingSystemType.OSX;
         }
 
         public bool IsPaused
