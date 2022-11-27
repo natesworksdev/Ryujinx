@@ -597,7 +597,7 @@ namespace Ryujinx.Modules
         public static bool CanUpdate(bool showWarnings, StyleableWindow parent)
         {
 #if !DISABLE_UPDATER
-            if (RuntimeInformation.OSArchitecture != Architecture.X64)
+            if (RuntimeInformation.OSArchitecture is not (Architecture.X64 or Architecture.Arm64))
             {
                 if (showWarnings)
                 {
