@@ -588,6 +588,14 @@ namespace Ryujinx.Ava.Ui.Windows
                 await AppHost.ShowExitPrompt();
             }
         }
+        
+        private async void StopEmulation_ClickNative(object sender, EventArgs e)
+        {
+            if (AppHost != null)
+            {
+                await AppHost.ShowExitPrompt();
+            }
+        }
 
         private async void PauseEmulation_Click(object sender, RoutedEventArgs e)
         {
@@ -597,7 +605,23 @@ namespace Ryujinx.Ava.Ui.Windows
             });
         }
 
+        private async void PauseEmulation_ClickNative(object sender, EventArgs e)
+        {
+            await Task.Run((() =>
+            {
+                AppHost?.Pause();
+            }));
+        }
+
         private async void ResumeEmulation_Click(object sender, RoutedEventArgs e)
+        {
+            await Task.Run(() =>
+            {
+                AppHost?.Resume();
+            });
+        }
+        
+        private async void ResumeEmulation_ClickNative(object sender, EventArgs e)
         {
             await Task.Run(() =>
             {
