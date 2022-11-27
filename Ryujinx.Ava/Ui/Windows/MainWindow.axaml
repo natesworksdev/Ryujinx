@@ -149,6 +149,31 @@
                         IsEnabled="{Binding EnableNonGameRunningControls}" />
                 </NativeMenu>
             </NativeMenuItem>
+            <NativeMenuItem 
+                Header="{locale:Locale MenuBarActions}"
+                IsEnabled="{Binding IsGameRunning}">
+                <NativeMenu>
+                    <NativeMenuItem
+                        Click="PauseEmulation_ClickNative"
+                        Header="{locale:Locale MenuBarOptionsPauseEmulation}"
+                        Gesture="{Binding PauseKey}"
+                        IsEnabled="{Binding !IsPaused}" />
+                    <NativeMenuItem
+                        Click="ResumeEmulation_ClickNative"
+                        Header="{locale:Locale MenuBarOptionsResumeEmulation}"
+                        Gesture="{Binding PauseKey}"
+                        IsEnabled="{Binding IsPaused}" />
+                    <NativeMenuItem
+                        Click="StopEmulation_ClickNative"
+                        Header="{locale:Locale MenuBarOptionsStopEmulation}"
+                        Gesture="Escape"
+                        IsEnabled="{Binding IsGameRunning}" />
+                    <NativeMenuItem
+                        Command="{ReflectionBinding SimulateWakeUpMessage}"
+                        Header="{locale:Locale MenuBarOptionsSimulateWakeUpMessage}" />
+                    <NativeMenuItemSeparator />
+                </NativeMenu>
+            </NativeMenuItem>
         </NativeMenu>
     </NativeMenu.Menu>
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">

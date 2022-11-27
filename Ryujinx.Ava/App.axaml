@@ -2,8 +2,24 @@
     x:Class="Ryujinx.Ava.App"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:sty="using:FluentAvalonia.Styling">
+    xmlns:sty="using:FluentAvalonia.Styling"
+    xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
+    xmlns:viewModels="clr-namespace:Ryujinx.Ava.Ui.ViewModels"
+    x:CompileBindings="True">
+    <Design.DataContext>
+        <viewModels:MainWindowViewModel />
+    </Design.DataContext>
     <Application.Styles>
         <sty:FluentAvaloniaTheme UseSystemThemeOnWindows="False" />
     </Application.Styles>
+    <NativeMenu.Menu>
+        <NativeMenu>
+            <NativeMenuItem
+                Command="{ReflectionBinding OpenAboutWindow}"
+                Header="{locale:Locale MenuBarHelpAbout}" />
+            <NativeMenuItem
+                Command="{ReflectionBinding CheckForUpdates}"
+                Header="{locale:Locale MenuBarHelpCheckForUpdates}" />
+        </NativeMenu>
+    </NativeMenu.Menu>
 </Application>
