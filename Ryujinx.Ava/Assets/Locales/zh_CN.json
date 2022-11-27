@@ -110,7 +110,7 @@
   "SettingsTabSystemSystemTimeZone": "系统时区:",
   "SettingsTabSystemSystemTime": "系统时钟:",
   "SettingsTabSystemEnableVsync": "启用 VSync 垂直同步",
-  "SettingsTabSystemEnablePptc": "开启 PPTC 缓存",
+  "SettingsTabSystemEnablePptc": "启用 PPTC 缓存",
   "SettingsTabSystemEnableFsIntegrityChecks": "文件系统完整性检查",
   "SettingsTabSystemAudioBackend": "音频后端:",
   "SettingsTabSystemAudioBackendDummy": "无",
