@@ -551,6 +551,11 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 OnPropertyChanged();
             }
         }
+        
+        public void ToggleStartGamesInFullscreen()
+        {
+            StartGamesInFullscreen = !StartGamesInFullscreen;
+        }
 
         public bool ShowConsole
         {
@@ -563,6 +568,11 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                 OnPropertyChanged();
             }
+        }
+      
+        public void ToggleShowConsole()
+        {
+            ShowConsole = !ShowConsole;
         }
 
         public bool ShowConsoleVisible
