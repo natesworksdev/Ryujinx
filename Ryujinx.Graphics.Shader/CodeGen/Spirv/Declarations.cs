@@ -654,7 +654,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 if (components > 1)
                 {
                     attr &= ~0xf;
-                    type = AggregateType.Vector | AggregateType.FP32;
+                    type = components switch
+                    {
+                        2 => AggregateType.Vector2 | AggregateType.FP32,
+                        3 => AggregateType.Vector3 | AggregateType.FP32,
+                        4 => AggregateType.Vector4 | AggregateType.FP32,
+                        _ => AggregateType.FP32
+                    };
+
                     hasComponent = false;
                 }
             }
