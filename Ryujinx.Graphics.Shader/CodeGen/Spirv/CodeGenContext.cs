@@ -563,7 +563,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
             else if ((type & AggregateType.ElementCountMask) != 0)
             {
-                return TypeVector(GetType(type & ~AggregateType.ElementCountMask), length);
+                int vectorLength = (type & AggregateType.ElementCountMask) switch
+                {
+                    AggregateType.Vector2 => 2,
+                    AggregateType.Vector3 => 3,
+                    AggregateType.Vector4 => 4,
+                    _ => 1
+                };
+
+                return TypeVector(GetType(type & ~AggregateType.ElementCountMask), vectorLength);
             }
 
             return type switch
