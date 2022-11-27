@@ -72,7 +72,8 @@
                         Gesture="F11" />
                     <NativeMenuItem 
                         ToggleType="CheckBox"
-                        IsChecked="{Binding StartGamesInFullscreen, Mode=TwoWay}"
+                        IsChecked="{Binding StartGamesInFullscreen}"
+                        Command="{ReflectionBinding ToggleStartGamesInFullscreen}"
                         Header="{locale:Locale MenuBarOptionsStartGamesInFullscreen}" />
                     <NativeMenuItem
                         ToggleType="CheckBox"
