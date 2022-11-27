@@ -243,7 +243,7 @@
                     <Menu
                         Name="Menu"
                         Height="35"
-                        Margin="0"
+                        Margin="0,0,0,-5"
                         HorizontalAlignment="Left"
                         IsVisible="{Binding !IsMacOS}">
                         <Menu.ItemsPanel>
@@ -458,7 +458,7 @@
                     </Grid.RowDefinitions>
                     <DockPanel
                         Grid.Row="0"
-                        Margin="0,0,0,5"
+                        Margin="0,5,0,5"
                         HorizontalAlignment="Stretch">
                         <Button
                             Width="40"
