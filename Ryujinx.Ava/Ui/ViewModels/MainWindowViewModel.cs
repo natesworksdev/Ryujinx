@@ -30,7 +30,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Path = System.IO.Path;
@@ -145,7 +144,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public bool IsMacOS
         {
-            get => RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+            get => OperatingSystem.IsMacOS();
         }
 
         public bool IsPaused
