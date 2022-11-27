@@ -1,7 +1,9 @@
-﻿using Ryujinx.Graphics.GAL;
+﻿using Ryujinx.Common.Logging;
+using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using VkFormat = Silk.NET.Vulkan.Format;
 
@@ -29,9 +31,13 @@ namespace Ryujinx.Graphics.Vulkan
         private bool _vsyncEnabled;
         private bool _vsyncModeChanged;
         private VkFormat _format;
-
+        private readonly Queue<KeyValuePair<ulong, SwapchainKHR>> _queueDeleteSwapchains;
+        private ulong _frameIDX;
         public unsafe Window(VulkanRenderer gd, SurfaceKHR surface, PhysicalDevice physicalDevice, Device device)
         {
+            _frameIDX = 0;
+            _queueDeleteSwapchains = new Queue<KeyValuePair<ulong, SwapchainKHR>>();
+    
             _gd = gd;
             _physicalDevice = physicalDevice;
             _device = device;
@@ -51,18 +57,23 @@ namespace Ryujinx.Graphics.Vulkan
         private void RecreateSwapchain()
         {
             var oldSwapchain = _swapchain;
+            int imageCount = _swapchainImageViews.Length;
             _vsyncModeChanged = false;
 
-            for (int i = 0; i < _swapchainImageViews.Length; i++)
+            for (int i = 0; i < imageCount; i++)
             {
                 _swapchainImageViews[i].Dispose();
             }
 
             CreateSwapchain();
 
-            // Destroy old Swapchain.
-            _gd.Api.DeviceWaitIdle(_device);
-            _gd.SwapchainApi.DestroySwapchain(_device, oldSwapchain, Span<AllocationCallbacks>.Empty);
+            // Queue old Swapchain for deletion.
+            lock (_gd.QueueLock)
+            {
+                ulong SafeIDX = _frameIDX + (ulong)imageCount + 10;
+                KeyValuePair<ulong, SwapchainKHR> item = new KeyValuePair<ulong, SwapchainKHR>(SafeIDX, oldSwapchain);
+                _queueDeleteSwapchains.Enqueue(item);
+            }
         }
 
         private unsafe void CreateSwapchain()
@@ -225,6 +236,18 @@ namespace Ryujinx.Graphics.Vulkan
 
         public unsafe override void Present(ITexture texture, ImageCrop crop, Action swapBuffersCallback)
         {
+
+            lock (_gd.QueueLock)
+            {
+                KeyValuePair<ulong, SwapchainKHR> oldSwapchain;
+                if (_queueDeleteSwapchains.TryPeek(out oldSwapchain) && _frameIDX > oldSwapchain.Key)
+                {
+                    oldSwapchain =  _queueDeleteSwapchains.Dequeue();
+                    Logger.Debug?.Print(LogClass.Gpu, $"Destroying old Swapchain.");
+                    _gd.SwapchainApi.DestroySwapchain(_device, oldSwapchain.Value, Span<AllocationCallbacks>.Empty);
+                }
+            }
+
             uint nextImage = 0;
 
             while (true)
@@ -368,6 +391,7 @@ namespace Ryujinx.Graphics.Vulkan
             lock (_gd.QueueLock)
             {
                 _gd.SwapchainApi.QueuePresent(_gd.Queue, presentInfo);
+                _frameIDX++;
             }
         }
 
