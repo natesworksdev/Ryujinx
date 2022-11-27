@@ -16,10 +16,10 @@
         <NativeMenu>
             <NativeMenuItem
                 Command="{ReflectionBinding OpenAboutWindow}"
-                Header="{locale:Locale MenuBarHelpAbout}" />
+                Header="{locale:Locale NativeMenuBarHelpAbout}" />
             <NativeMenuItem
                 Command="{ReflectionBinding CheckForUpdates}"
-                Header="{locale:Locale MenuBarHelpCheckForUpdates}" />
+                Header="{locale:Locale NativeMenuBarHelpCheckForUpdates}" />
         </NativeMenu>
     </NativeMenu.Menu>
 </Application>
