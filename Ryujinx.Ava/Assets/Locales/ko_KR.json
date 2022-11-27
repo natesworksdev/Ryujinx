@@ -591,7 +591,7 @@
   "SettingsAppRequiredRestartMessage": "Ryujinx 재시작 필요",
   "SettingsGpuBackendRestartMessage": "그래픽 백엔드 또는 GPU 설정이 수정되었습니다. 적용하려면 다시 시작해야 함",
   "SettingsGpuBackendRestartSubMessage": "지금 다시 시작하겠습니까?",
-  "RyujinxUpdaterMessage": "Ryujinx를 최신 버전으로 업데이트하겠습니까?,
+  "RyujinxUpdaterMessage": "Ryujinx를 최신 버전으로 업데이트하겠습니까?",
   "SettingsTabHotkeysVolumeUpHotkey": "볼륨 증가:",
   "SettingsTabHotkeysVolumeDownHotkey": "볼륨 감소:",
   "VolumeShort": "볼륨",
