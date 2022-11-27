@@ -34,15 +34,15 @@
     </Window.Resources>
     <NativeMenu.Menu>
         <NativeMenu>
-            <NativeMenuItem Header="{locale:Locale MenuBarFile}">
+            <NativeMenuItem Header="{locale:Locale NativeMenuBarFile}">
                 <NativeMenu>
                     <NativeMenuItem 
                         Command="{ReflectionBinding OpenFile}"
-                        Header="{locale:Locale MenuBarFileOpenFromFile}"
+                        Header="{locale:Locale NativeMenuBarFileOpenFromFile}"
                         IsEnabled="{Binding EnableNonGameRunningControls}" />
                     <NativeMenuItem
                         Command="{ReflectionBinding OpenFolder}"
-                        Header="{locale:Locale MenuBarFileOpenUnpacked}"
+                        Header="{locale:Locale NativeMenuBarFileOpenUnpacked}"
                         IsEnabled="{Binding EnableNonGameRunningControls}" />
                     <NativeMenuItem Header="{locale:Locale MenuBarFileOpenApplet}" IsEnabled="{Binding IsAppletMenuActive}">
                         <NativeMenu>
@@ -61,7 +61,7 @@
                     <NativeMenuItemSeparator />
                     <NativeMenuItem
                         Command="{ReflectionBinding CloseWindow}"
-                        Header="{locale:Locale MenuBarFileExit}" />
+                        Header="{locale:Locale NativeMenuBarFileExit}" />
                 </NativeMenu>
             </NativeMenuItem>
             <NativeMenuItem Header="{locale:Locale MenuBarOptions}">
@@ -142,15 +142,15 @@
                     <NativeMenuItemSeparator />
                     <NativeMenuItem
                         Command="{ReflectionBinding OpenSettings}"
-                        Header="{locale:Locale MenuBarOptionsSettings}" />
+                        Header="{locale:Locale NativeMenuBarOptionsSettings}" />
                     <NativeMenuItem
                         Command="{ReflectionBinding ManageProfiles}"
-                        Header="{locale:Locale MenuBarOptionsManageUserProfiles}"
+                        Header="{locale:Locale NativeMenuBarOptionsManageUserProfiles}"
                         IsEnabled="{Binding EnableNonGameRunningControls}" />
                 </NativeMenu>
             </NativeMenuItem>
             <NativeMenuItem 
-                Header="{locale:Locale MenuBarActions}"
+                Header="{locale:Locale NativeMenuBarActions}"
                 IsEnabled="{Binding IsGameRunning}">
                 <NativeMenu>
                     <NativeMenuItem
@@ -172,6 +172,38 @@
                         Command="{ReflectionBinding SimulateWakeUpMessage}"
                         Header="{locale:Locale MenuBarOptionsSimulateWakeUpMessage}" />
                     <NativeMenuItemSeparator />
+                    <NativeMenuItem
+                        Command="{ReflectionBinding OpenAmiiboWindow}"
+                        Header="{locale:Locale MenuBarActionsScanAmiibo}"
+                        IsEnabled="{Binding IsAmiiboRequested}" />
+                    <NativeMenuItem
+                        Command="{ReflectionBinding TakeScreenshot}"
+                        Header="{locale:Locale MenuBarFileToolsTakeScreenshot}"
+                        Gesture="{Binding ScreenshotKey}"
+                        IsEnabled="{Binding IsGameRunning}" />
+                    <NativeMenuItem
+                        Command="{ReflectionBinding HideUi}"
+                        Header="{locale:Locale MenuBarFileToolsHideUi}"
+                        Gesture="{Binding ShowUiKey}"
+                        IsEnabled="{Binding IsGameRunning}" />
+                    <NativeMenuItem
+                        Command="{ReflectionBinding OpenCheatManagerForCurrentApp}"
+                        Header="{locale:Locale GameListContextMenuManageCheat}"
+                        IsEnabled="{Binding IsGameRunning}" />
+                </NativeMenu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="{locale:Locale NativeMenuBarTools}">
+                <NativeMenu>
+                    <NativeMenuItem Header="{locale:Locale MenuBarToolsInstallFirmware}" IsEnabled="{Binding EnableNonGameRunningControls}">
+                        <NativeMenu>
+                            <NativeMenuItem
+                                Command="{ReflectionBinding InstallFirmwareFromFile}"
+                                Header="{locale:Locale MenuBarFileToolsInstallFirmwareFromFile}" />
+                            <NativeMenuItem
+                                Command="{ReflectionBinding InstallFirmwareFromFolder}"
+                                Header="{locale:Locale MenuBarFileToolsInstallFirmwareFromDirectory}" />
+                        </NativeMenu>
+                    </NativeMenuItem>
                 </NativeMenu>
             </NativeMenuItem>
         </NativeMenu>
