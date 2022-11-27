@@ -590,7 +590,7 @@
   "SettingsTabGraphicsPreferredGpuTooltip": "选择Vulkan API使用的显卡。\n此选项不会影响OpenGL API。\n如果您不确定，建议选择\"dGPU(独立显卡)\"。如果没有独立显卡，则无需改动此选项",
   "SettingsAppRequiredRestartMessage": "Ryujinx 需要重启",
   "SettingsGpuBackendRestartMessage": "您修改了图形 API 或显卡设置。需要重新启动才能生效",
-  "SettingsGpuBackendRestartSubMessage": "是否重启模拟器？"
+  "SettingsGpuBackendRestartSubMessage": "是否重启模拟器？",
   "RyujinxUpdaterMessage": "是否更新Ryujinx至最新的版本？",
   "SettingsTabHotkeysVolumeUpHotkey": "升高音量：",
   "SettingsTabHotkeysVolumeDownHotkey": "降低音量：",
