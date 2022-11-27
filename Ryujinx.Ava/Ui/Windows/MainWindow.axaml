@@ -75,11 +75,6 @@
                         IsChecked="{Binding StartGamesInFullscreen}"
                         Command="{ReflectionBinding ToggleStartGamesInFullscreen}"
                         Header="{locale:Locale MenuBarOptionsStartGamesInFullscreen}" />
-                    <NativeMenuItem
-                        ToggleType="CheckBox"
-                        IsChecked="{Binding ShowConsole}"
-                        Command="{ReflectionBinding ToggleShowConsole}"
-                        Header="{locale:Locale MenuBarOptionsShowConsole}" />
                     <NativeMenuItemSeparator />
                     <NativeMenuItem Header="{locale:Locale MenuBarOptionsChangeLanguage}">
                         <NativeMenu>
