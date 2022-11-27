@@ -4,6 +4,7 @@ using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Numerics;
 using static Spv.Specification;
 
 namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
@@ -146,6 +147,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.Truncate,                 GenerateTruncate);
             Add(Instruction.UnpackDouble2x32,         GenerateUnpackDouble2x32);
             Add(Instruction.UnpackHalf2x16,           GenerateUnpackHalf2x16);
+            Add(Instruction.VectorExtract,            GenerateVectorExtract);
             Add(Instruction.VoteAll,                  GenerateVoteAll);
             Add(Instruction.VoteAllEqual,             GenerateVoteAllEqual);
             Add(Instruction.VoteAny,                  GenerateVoteAny);
@@ -1482,10 +1484,30 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             bool isMultisample = (texOp.Type & SamplerType.Multisample) != 0;
             bool isShadow      = (texOp.Type & SamplerType.Shadow)      != 0;
 
+            bool colorIsVector = isGather || !isShadow;
+
             // TODO: Bindless texture support. For now we just return 0.
             if (isBindless)
             {
-                return new OperationResult(AggregateType.FP32, context.Constant(context.TypeFP32(), 0f));
+                var constant0 = context.Constant(context.TypeFP32(), 0f);
+
+                if (colorIsVector)
+                {
+                    AggregateType outputType = texOp.GetVectorType(AggregateType.FP32);
+
+                    if ((outputType & AggregateType.ElementCountMask) != 0)
+                    {
+                        int componentsCount = BitOperations.PopCount((uint)texOp.Index);
+
+                        SpvInstruction[] values = new SpvInstruction[componentsCount];
+
+                        values.AsSpan().Fill(constant0);
+
+                        return new OperationResult(outputType, context.ConstantComposite(context.GetType(outputType), values));
+                    }
+                }
+
+                return new OperationResult(AggregateType.FP32, constant0);
             }
 
             // This combination is valid, but not available on GLSL.
@@ -1702,7 +1724,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 operandsList.Add(sample);
             }
 
-            bool colorIsVector = isGather || !isShadow;
             var resultType = colorIsVector ? context.TypeVector(context.TypeFP32(), 4) : context.TypeFP32();
 
             var meta = new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format);
@@ -1755,12 +1776,37 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 result = context.ImageSampleImplicitLod(resultType, image, pCoords, operandsMask, operands);
             }
 
+            var swizzledResultType = AggregateType.FP32;
+
             if (colorIsVector)
             {
-                result = context.CompositeExtract(context.TypeFP32(), result, (SpvLiteralInteger)texOp.Index);
+                swizzledResultType = texOp.GetVectorType(swizzledResultType);
+
+                if ((swizzledResultType & AggregateType.ElementCountMask) != 0)
+                {
+                    SpvLiteralInteger[] components = new SpvLiteralInteger[BitOperations.PopCount((uint)texOp.Index)];
+
+                    int componentIndex = 0;
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        if ((texOp.Index & (1 << i)) != 0)
+                        {
+                            components[componentIndex++] = i;
+                        }
+                    }
+
+                    result = context.VectorShuffle(context.GetType(swizzledResultType), result, result, components);
+                }
+                else
+                {
+                    int componentIndex = (int)BitOperations.TrailingZeroCount(texOp.Index);
+
+                    result = context.CompositeExtract(context.GetType(swizzledResultType), result, (SpvLiteralInteger)componentIndex);
+                }
             }
 
-            return new OperationResult(AggregateType.FP32, result);
+            return new OperationResult(swizzledResultType, result);
         }
 
         private static OperationResult GenerateTextureSize(CodeGenContext context, AstOperation operation)
@@ -1857,6 +1903,26 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var result = context.CompositeExtract(context.TypeFP32(), vector, operation.Index);
 
             return new OperationResult(AggregateType.FP32, result);
+        }
+
+        private static OperationResult GenerateVectorExtract(CodeGenContext context, AstOperation operation)
+        {
+            var vector = context.GetWithType(operation.GetSource(0), out AggregateType vectorType);
+            var scalarType = vectorType & ~AggregateType.ElementCountMask;
+            var resultType = context.GetType(scalarType);
+            SpvInstruction result;
+
+            if (operation.GetSource(1) is AstOperand indexOperand && indexOperand.Type == OperandType.Constant)
+            {
+                result = context.CompositeExtract(resultType, vector, (SpvLiteralInteger)indexOperand.Value);
+            }
+            else
+            {
+                var index = context.Get(AggregateType.S32, operation.GetSource(1));
+                result = context.VectorExtractDynamic(resultType, vector, index);
+            }
+
+            return new OperationResult(scalarType, result);
         }
 
         private static OperationResult GenerateVoteAll(CodeGenContext context, AstOperation operation)

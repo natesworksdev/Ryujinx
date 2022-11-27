@@ -306,7 +306,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             return _gotos.ToArray();
         }
 
-        private AstOperand NewTemp(AggregateType type)
+        public AstOperand NewTemp(AggregateType type)
         {
             AstOperand newTemp = Local(type);
 

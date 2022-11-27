@@ -241,6 +241,29 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             throw new NotImplementedException(node.GetType().Name);
         }
 
+        public Instruction GetWithType(IAstNode node, out AggregateType type)
+        {
+            if (node is AstOperation operation)
+            {
+                var opResult = Instructions.Generate(this, operation);
+                type = opResult.Type;
+                return opResult.Value;
+            }
+            else if (node is AstOperand operand)
+            {
+                switch (operand.Type)
+                {
+                    case IrOperandType.LocalVariable:
+                        type = operand.VarType;
+                        return GetLocal(type, operand);
+                    default:
+                        throw new ArgumentException($"Invalid operand type \"{operand.Type}\".");
+                }
+            }
+
+            throw new NotImplementedException(node.GetType().Name);
+        }
+
         private Instruction GetUndefined(AggregateType type)
         {
             return type switch

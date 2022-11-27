@@ -34,6 +34,36 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
             SamplerType type,
             TextureFormat format,
             TextureFlags flags,
+            int cbufSlot,
+            int handle,
+            int compIndex,
+            Operand[] dests,
+            Operand[] sources) : base(inst, compIndex, dests, sources)
+        {
+            Type = type;
+            Format = format;
+            Flags = flags;
+            CbufSlot = cbufSlot;
+            Handle = handle;
+        }
+
+        public TextureOperation(
+            Instruction inst,
+            SamplerType type,
+            TextureFormat format,
+            TextureFlags flags,
+            int handle,
+            int compIndex,
+            Operand[] dests,
+            Operand[] sources) : this(inst, type, format, flags, DefaultCbufSlot, handle, compIndex, dests, sources)
+        {
+        }
+
+        public TextureOperation(
+            Instruction inst,
+            SamplerType type,
+            TextureFormat format,
+            TextureFlags flags,
             int handle,
             int compIndex,
             Operand dest,

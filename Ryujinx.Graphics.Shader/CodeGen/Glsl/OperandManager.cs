@@ -4,6 +4,7 @@ using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Numerics;
 
 using static Ryujinx.Graphics.Shader.StructuredIr.InstructionInfo;
 
@@ -431,12 +432,22 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                     return context.GetFunction(funcId.Value).ReturnType;
                 }
-                else if (operation is AstTextureOperation texOp &&
-                         (texOp.Inst == Instruction.ImageLoad ||
-                          texOp.Inst == Instruction.ImageStore ||
-                          texOp.Inst == Instruction.ImageAtomic))
+                else if (operation.Inst == Instruction.VectorExtract)
                 {
-                    return texOp.Format.GetComponentType();
+                    return GetNodeDestType(context, operation.GetSource(0)) & ~AggregateType.ElementCountMask;
+                }
+                else if (operation is AstTextureOperation texOp)
+                {
+                    if (texOp.Inst == Instruction.ImageLoad ||
+                        texOp.Inst == Instruction.ImageStore ||
+                        texOp.Inst == Instruction.ImageAtomic)
+                    {
+                        return texOp.Format.GetComponentType();
+                    }
+                    else if (texOp.Inst == Instruction.TextureSample)
+                    {
+                        return texOp.GetVectorType(GetDestVarType(operation.Inst));
+                    }
                 }
 
                 return GetDestVarType(operation.Inst);

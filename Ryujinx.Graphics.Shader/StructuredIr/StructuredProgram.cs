@@ -2,6 +2,7 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
@@ -109,8 +110,10 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 }
             }
 
+            bool vectorDest = IsVectorDestInst(inst);
+
             int sourcesCount = operation.SourcesCount;
-            int outDestsCount = operation.DestsCount != 0 ? operation.DestsCount - 1 : 0;
+            int outDestsCount = operation.DestsCount != 0 && !vectorDest ? operation.DestsCount - 1 : 0;
 
             IAstNode[] sources = new IAstNode[sourcesCount + outDestsCount];
 
@@ -141,7 +144,52 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                     sources);
             }
 
-            if (operation.Dest != null)
+            int componentsCount = BitOperations.PopCount((uint)operation.Index);
+
+            if (vectorDest && componentsCount > 1)
+            {
+                AggregateType destType = InstructionInfo.GetDestVarType(inst);
+
+                IAstNode source;
+
+                if (operation is TextureOperation texOp)
+                {
+                    if (texOp.Inst == Instruction.ImageLoad)
+                    {
+                        destType = texOp.Format.GetComponentType();
+                    }
+
+                    source = GetAstTextureOperation(texOp);
+                }
+                else
+                {
+                    source = new AstOperation(inst, operation.Index, sources, operation.SourcesCount);
+                }
+
+                AggregateType destElemType = destType;
+
+                switch (componentsCount)
+                {
+                    case 2: destType |= AggregateType.Vector2; break;
+                    case 3: destType |= AggregateType.Vector3; break;
+                    case 4: destType |= AggregateType.Vector4; break;
+                }
+
+                AstOperand destVec = context.NewTemp(destType);
+
+                context.AddNode(new AstAssignment(destVec, source));
+
+                for (int i = 0; i < operation.DestsCount; i++)
+                {
+                    AstOperand dest = context.GetOperandDef(operation.GetDest(i));
+                    AstOperand index = new AstOperand(OperandType.Constant, i);
+
+                    dest.VarType = destElemType;
+
+                    context.AddNode(new AstAssignment(dest, new AstOperation(Instruction.VectorExtract, new[] { destVec, index }, 2)));
+                }
+            }
+            else if (operation.Dest != null)
             {
                 AstOperand dest = context.GetOperandDef(operation.Dest);
 
@@ -334,6 +382,15 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             }
 
             return true;
+        }
+
+        private static bool IsVectorDestInst(Instruction inst)
+        {
+            return inst switch
+            {
+                Instruction.TextureSample => true,
+                _ => false
+            };
         }
 
         private static bool IsBranchInst(Instruction inst)

@@ -457,8 +457,15 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                     Debug.Assert(gatherComponent.Type == OperandType.Constant);
 
-                    componentIndex = gatherComponent.Value;
+                    componentIndex = 1 << gatherComponent.Value;
                 }
+            }
+
+            Operand[] dests = new Operand[texOp.DestsCount];
+
+            for (int i = 0; i < texOp.DestsCount; i++)
+            {
+                dests[i] = texOp.GetDest(i);
             }
 
             TextureOperation newTexOp = new TextureOperation(
@@ -469,7 +476,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 texOp.CbufSlot,
                 texOp.Handle,
                 componentIndex,
-                texOp.Dest,
+                dests,
                 sources);
 
             for (int index = 0; index < texOp.SourcesCount; index++)

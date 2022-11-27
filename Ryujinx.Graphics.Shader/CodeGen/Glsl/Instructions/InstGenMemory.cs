@@ -470,6 +470,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             bool isMultisample = (texOp.Type & SamplerType.Multisample) != 0;
             bool isShadow      = (texOp.Type & SamplerType.Shadow)      != 0;
 
+            bool colorIsVector = isGather || !isShadow;
+
             SamplerType type = texOp.Type & SamplerType.Mask;
 
             bool is2D   = type == SamplerType.Texture2D;
@@ -493,7 +495,19 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             // TODO: Bindless texture support. For now we just return 0.
             if (isBindless)
             {
-                return NumberFormatter.FormatFloat(0);
+                string scalarValue = NumberFormatter.FormatFloat(0);
+
+                if (colorIsVector)
+                {
+                    AggregateType outputType = texOp.GetVectorType(AggregateType.FP32);
+
+                    if ((outputType & AggregateType.ElementCountMask) != 0)
+                    {
+                        return $"{Declarations.GetVarTypeName(outputType)}({scalarValue})";
+                    }
+                }
+
+                return scalarValue;
             }
 
             string texCall = intCoords ? "texelFetch" : "texture";
@@ -729,7 +743,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                Append(Src(AggregateType.S32));
             }
 
-            texCall += ")" + (isGather || !isShadow ? GetMask(texOp.Index) : "");
+            texCall += ")" + (colorIsVector ? GetMaskMultiDest(texOp.Index) : "");
 
             return texCall;
         }
@@ -804,6 +818,21 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
         private static string GetMask(int index)
         {
             return '.' + "rgba".Substring(index, 1);
+        }
+
+        private static string GetMaskMultiDest(int mask)
+        {
+            string swizzle = ".";
+
+            for (int i = 0; i < 4; i++)
+            {
+                if ((mask & (1 << i)) != 0)
+                {
+                    swizzle += "xyzw"[i];
+                }
+            }
+
+            return swizzle;
         }
     }
 }

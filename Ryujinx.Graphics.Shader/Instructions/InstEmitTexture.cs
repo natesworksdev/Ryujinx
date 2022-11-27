@@ -3,6 +3,7 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
@@ -332,7 +333,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                         type,
                         flags,
                         handle,
-                        compIndex,
+                        1 << compIndex,
                         dest,
                         sources);
 
@@ -624,18 +625,21 @@ namespace Ryujinx.Graphics.Shader.Instructions
             Operand[] rd0 = new Operand[2] { ConstF(0), ConstF(0) };
             Operand[] rd1 = new Operand[2] { ConstF(0), ConstF(0) };
 
-            int destIncrement = 0;
+            int handle = imm;
+            int componentMask = _maskLut[dest2 == RegisterConsts.RegisterZeroIndex ? 0 : 1, writeMask];
 
-            Operand GetDest()
+            int componentsCount = BitOperations.PopCount((uint)componentMask);
+
+            Operand[] dests = new Operand[componentsCount];
+
+            for (int i = 0; i < componentsCount; i++)
             {
-                int high = destIncrement >> 1;
-                int low = destIncrement & 1;
-
-                destIncrement++;
+                int high = i >> 1;
+                int low = i & 1;
 
                 if (isF16)
                 {
-                    return high != 0
+                    dests[i] = high != 0
                         ? (rd1[low] = Local())
                         : (rd0[low] = Local());
                 }
@@ -648,29 +652,20 @@ namespace Ryujinx.Graphics.Shader.Instructions
                         rdIndex += low;
                     }
 
-                    return Register(rdIndex, RegisterType.Gpr);
+                    dests[i] = Register(rdIndex, RegisterType.Gpr);
                 }
             }
 
-            int handle = imm;
-            int componentMask = _maskLut[dest2 == RegisterConsts.RegisterZeroIndex ? 0 : 1, writeMask];
+            TextureOperation operation = context.CreateTextureOperationMultiDest(
+                Instruction.TextureSample,
+                type,
+                flags,
+                handle,
+                componentMask,
+                dests,
+                sources);
 
-            for (int compMask = componentMask, compIndex = 0; compMask != 0; compMask >>= 1, compIndex++)
-            {
-                if ((compMask & 1) != 0)
-                {
-                    TextureOperation operation = context.CreateTextureOperation(
-                        Instruction.TextureSample,
-                        type,
-                        flags,
-                        handle,
-                        compIndex,
-                        GetDest(),
-                        sources);
-
-                    context.Add(operation);
-                }
-            }
+            context.Add(operation);
 
             if (isF16)
             {
@@ -826,7 +821,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                         type,
                         flags,
                         handle,
-                        compIndex,
+                        1 << compIndex,
                         destOperand,
                         sources);
 
@@ -1100,7 +1095,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                         type,
                         flags,
                         handle,
-                        compIndex,
+                        1 << compIndex,
                         destOperand,
                         sources);
 

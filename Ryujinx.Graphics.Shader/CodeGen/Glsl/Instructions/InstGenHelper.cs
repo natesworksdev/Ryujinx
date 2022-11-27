@@ -133,6 +133,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             Add(Instruction.Truncate,                 InstType.CallUnary,      "trunc");
             Add(Instruction.UnpackDouble2x32,         InstType.Special);
             Add(Instruction.UnpackHalf2x16,           InstType.Special);
+            Add(Instruction.VectorExtract,            InstType.Special);
             Add(Instruction.VoteAll,                  InstType.CallUnary,      "allInvocationsARB");
             Add(Instruction.VoteAllEqual,             InstType.CallUnary,      "allInvocationsEqualARB");
             Add(Instruction.VoteAny,                  InstType.CallUnary,      "anyInvocationARB");
