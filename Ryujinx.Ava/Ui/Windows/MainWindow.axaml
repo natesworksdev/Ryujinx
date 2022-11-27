@@ -32,6 +32,52 @@
     <Window.Resources>
         <controls:BitmapArrayValueConverter x:Key="ByteImage" />
     </Window.Resources>
+    <NativeMenu.Menu>
+        <NativeMenu>
+            <NativeMenuItem Header="{locale:Locale MenuBarFile}">
+                <NativeMenu>
+                    <NativeMenuItem 
+                        Command="{ReflectionBinding OpenFile}"
+                        Header="{locale:Locale MenuBarFileOpenFromFile}"
+                        IsEnabled="{Binding EnableNonGameRunningControls}" />
+                    <NativeMenuItem
+                        Command="{ReflectionBinding OpenFolder}"
+                        Header="{locale:Locale MenuBarFileOpenUnpacked}"
+                        IsEnabled="{Binding EnableNonGameRunningControls}" />
+                    <NativeMenuItem Header="{locale:Locale MenuBarFileOpenApplet}" IsEnabled="{Binding IsAppletMenuActive}">
+                        <NativeMenu>
+                            <NativeMenuItem 
+                                Command="{ReflectionBinding OpenMiiApplet}"
+                                Header="Mii Edit Applet" />  
+                        </NativeMenu>
+                    </NativeMenuItem>
+                    <NativeMenuItemSeparator />
+                    <NativeMenuItem
+                        Command="{ReflectionBinding OpenRyujinxFolder}"
+                        Header="{locale:Locale MenuBarFileOpenEmuFolder}" />
+                    <NativeMenuItem
+                        Command="{ReflectionBinding OpenLogsFolder}"
+                        Header="{locale:Locale MenuBarFileOpenLogsFolder}" />
+                    <NativeMenuItemSeparator />
+                    <NativeMenuItem
+                        Command="{ReflectionBinding CloseWindow}"
+                        Header="{locale:Locale MenuBarFileExit}" />
+                </NativeMenu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="{locale:Locale MenuBarOptions}">
+                <NativeMenu>
+                    <NativeMenuItem
+                        Command="{ReflectionBinding ToggleFullscreen}"
+                        Header="{locale:Locale MenuBarOptionsToggleFullscreen}" 
+                        Gesture="F11" />
+                    <NativeMenuItem 
+                        ToggleType="CheckBox"
+                        IsChecked="{Binding StartGamesInFullscreen, Mode=TwoWay}"
+                        Header="{locale:Locale MenuBarOptionsStartGamesInFullscreen}" />
+                </NativeMenu>
+            </NativeMenuItem>
+        </NativeMenu>
+    </NativeMenu.Menu>
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
