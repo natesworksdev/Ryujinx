@@ -410,6 +410,8 @@
   "DlcManagerTableHeadingContainerPathLabel": "文件夹路径",
   "DlcManagerTableHeadingFullPathLabel": "完整路径",
   "DlcManagerRemoveAllButton": "全部删除",
+  "DlcManagerEnableAllButton": "全部启用",
+  "DlcManagerDisableAllButton": "全部禁用",
   "MenuBarOptionsChangeLanguage": "更改语言",
   "CommonSort": "排序",
   "CommonShowNames": "显示名称",
