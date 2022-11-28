@@ -9,9 +9,8 @@ namespace Ryujinx.Input.HLE
 {
     public class TouchScreenManager : IDisposable
     {
-        private static readonly TimeSpan _invalidTouchWarningInterval = TimeSpan.FromSeconds(5);
         private readonly IMouse _mouse;
-        private DateTimeOffset _lastInvalidTouchWarningTime = DateTimeOffset.MinValue;
+        private bool _hasWarnedAboutInvalidTouchInput = false;
         private Switch _device;
         private bool _wasClicking;
 
@@ -64,10 +63,10 @@ namespace Ryujinx.Input.HLE
                 MouseStateSnapshot snapshot = IMouse.GetMouseStateSnapshot(_mouse);
                 var touchPosition = IMouse.GetScreenPosition(snapshot.Position, _mouse.ClientSize, aspectRatio);
 
-                if ((_device?.System?.State?.DockedMode).GetValueOrDefault(false) &&
-                    _lastInvalidTouchWarningTime + _invalidTouchWarningInterval < DateTimeOffset.UtcNow)
+                if (!_hasWarnedAboutInvalidTouchInput &&
+                    (_device?.System?.State?.DockedMode).GetValueOrDefault(false))
                 {
-                    _lastInvalidTouchWarningTime = DateTimeOffset.UtcNow;
+                    _hasWarnedAboutInvalidTouchInput = true;
                     Logger.Warning?.PrintMsg(LogClass.Hid, "Touch input registered while console is in docked mode. This is impossible on real hardware and games may not handle it correctly");
                 }
 
