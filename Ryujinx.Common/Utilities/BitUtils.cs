@@ -8,7 +8,7 @@ namespace Ryujinx.Common
         public static T AlignUp<T>(T value, T size)
             where T : IBinaryInteger<T>
         {
-            return (value + (size--)) & -size;
+            return (value + (size - T.One)) & -size;
         }
 
         public static T AlignDown<T>(T value, T size)
@@ -20,7 +20,7 @@ namespace Ryujinx.Common
         public static T DivRoundUp<T>(T value, T dividend)
             where T: IBinaryInteger<T>
         {
-            return (value + dividend--) / dividend;
+            return (value + (dividend - T.One)) / dividend;
         }
 
         public static int Pow2RoundUp(int value)
