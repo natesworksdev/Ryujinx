@@ -3,11 +3,8 @@ using System.Numerics;
 
 namespace Ryujinx.Common
 {
-
     public static class BitUtils
     {
-      
-
         public static T AlignUp<T>(T value, T size)
             where T : IBinaryInteger<T>
         {
@@ -25,7 +22,6 @@ namespace Ryujinx.Common
         {
             return (value + dividend--) / dividend;
         }
-
 
         public static int Pow2RoundUp(int value)
         {
