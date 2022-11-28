@@ -55,7 +55,7 @@ namespace Ryujinx.Ava
                     EnableMultiTouch = true,
                     EnableIme        = true,
                     UseEGL           = false,
-                    UseGpu           = false
+                    UseGpu           = true
                 })
                 .With(new Win32PlatformOptions
                 {
