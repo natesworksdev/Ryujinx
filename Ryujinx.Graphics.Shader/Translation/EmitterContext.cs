@@ -109,43 +109,13 @@ namespace Ryujinx.Graphics.Shader.Translation
             TextureFlags flags,
             int handle,
             int compIndex,
-            Operand dest,
-            params Operand[] sources)
-        {
-            return CreateTextureOperation(inst, type, TextureFormat.Unknown, flags, handle, compIndex, dest, sources);
-        }
-
-        public TextureOperation CreateTextureOperation(
-            Instruction inst,
-            SamplerType type,
-            TextureFormat format,
-            TextureFlags flags,
-            int handle,
-            int compIndex,
-            Operand dest,
-            params Operand[] sources)
-        {
-            if (!flags.HasFlag(TextureFlags.Bindless))
-            {
-                Config.SetUsedTexture(inst, type, format, flags, TextureOperation.DefaultCbufSlot, handle);
-            }
-
-            return new TextureOperation(inst, type, format, flags, handle, compIndex, dest, sources);
-        }
-
-        public TextureOperation CreateTextureOperationMultiDest(
-            Instruction inst,
-            SamplerType type,
-            TextureFlags flags,
-            int handle,
-            int compIndex,
             Operand[] dests,
             params Operand[] sources)
         {
-            return CreateTextureOperationMultiDest(inst, type, TextureFormat.Unknown, flags, handle, compIndex, dests, sources);
+            return CreateTextureOperation(inst, type, TextureFormat.Unknown, flags, handle, compIndex, dests, sources);
         }
 
-        public TextureOperation CreateTextureOperationMultiDest(
+        public TextureOperation CreateTextureOperation(
             Instruction inst,
             SamplerType type,
             TextureFormat format,

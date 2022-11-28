@@ -285,7 +285,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 flags,
                 imm,
                 0,
-                destOperand,
+                new[] { destOperand },
                 sources);
 
             context.Add(operation);
@@ -384,7 +384,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     Array.Resize(ref dests, outputIndex);
                 }
 
-                TextureOperation operation = context.CreateTextureOperationMultiDest(
+                TextureOperation operation = context.CreateTextureOperation(
                     Instruction.ImageLoad,
                     type,
                     flags,
@@ -431,7 +431,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     Array.Resize(ref dests, outputIndex);
                 }
 
-                TextureOperation operation = context.CreateTextureOperationMultiDest(
+                TextureOperation operation = context.CreateTextureOperation(
                     Instruction.ImageLoad,
                     type,
                     GetTextureFormat(size),

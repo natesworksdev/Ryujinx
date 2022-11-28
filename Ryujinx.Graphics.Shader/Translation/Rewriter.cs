@@ -351,7 +351,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                         texOp.CbufSlot,
                         texOp.Handle,
                         index,
-                        coordSize,
+                        new[] { coordSize },
                         texSizeSources));
 
                     config.SetUsedTexture(Instruction.TextureSize, texOp.Type, texOp.Format, texOp.Flags, texOp.CbufSlot, texOp.Handle);
@@ -404,7 +404,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                         texOp.CbufSlot,
                         texOp.Handle,
                         0,
-                        lod,
+                        new[] { lod },
                         lodSources));
 
                     for (int index = 0; index < coordsCount; index++)
@@ -430,7 +430,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                             texOp.CbufSlot,
                             texOp.Handle,
                             index,
-                            coordSize,
+                            new[] { coordSize },
                             texSizeSources));
 
                         config.SetUsedTexture(Instruction.TextureSize, texOp.Type, texOp.Format, texOp.Flags, texOp.CbufSlot, texOp.Handle);

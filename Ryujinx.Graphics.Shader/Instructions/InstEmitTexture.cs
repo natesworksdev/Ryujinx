@@ -325,7 +325,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             int handle = !isBindless ? imm : 0;
 
-            TextureOperation operation = context.CreateTextureOperationMultiDest(
+            TextureOperation operation = context.CreateTextureOperation(
                 Instruction.TextureSample,
                 type,
                 flags,
@@ -658,7 +658,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 Array.Resize(ref dests, outputIndex);
             }
 
-            TextureOperation operation = context.CreateTextureOperationMultiDest(
+            TextureOperation operation = context.CreateTextureOperation(
                 Instruction.TextureSample,
                 type,
                 flags,
@@ -815,7 +815,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             int handle = imm;
 
-            TextureOperation operation = context.CreateTextureOperationMultiDest(
+            TextureOperation operation = context.CreateTextureOperation(
                 Instruction.TextureSample,
                 type,
                 flags,
@@ -943,7 +943,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                             flags,
                             handle,
                             compIndex ^ 1, // The instruction component order is the inverse of GLSL's.
-                            tempDest,
+                            new[] { tempDest },
                             sources);
 
                         context.Add(operation);
@@ -1084,7 +1084,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             int handle = imm;
 
-            TextureOperation operation = context.CreateTextureOperationMultiDest(
+            TextureOperation operation = context.CreateTextureOperation(
                 Instruction.TextureSample,
                 type,
                 flags,
@@ -1175,7 +1175,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                         flags,
                         imm,
                         compIndex,
-                        destOperand,
+                        new[] { destOperand },
                         sources);
 
                     context.Add(operation);
