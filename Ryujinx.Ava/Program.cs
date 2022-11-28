@@ -21,7 +21,6 @@ namespace Ryujinx.Ava
     internal class Program
     {
         public static double      WindowScaleFactor { get; set; }
-        public static double      ActualScaleFactor { get; set; }
         public static string      Version           { get; private set; }
         public static string      ConfigurationPath { get; private set; }
         public static bool        PreviewerDetached { get; private set; }
@@ -30,7 +29,6 @@ namespace Ryujinx.Ava
         public static extern int MessageBoxA(IntPtr hWnd, string text, string caption, uint type);
 
         private const uint MB_ICONWARNING = 0x30;
-        private const int  BaseDpi        = 96;
 
         public static void Main(string[] args)
         {
@@ -101,7 +99,6 @@ namespace Ryujinx.Ava
             ForceDpiAware.Windows();
 
             WindowScaleFactor = ForceDpiAware.GetWindowScaleFactor();
-            ActualScaleFactor = ForceDpiAware.GetActualScaleFactor() / BaseDpi;
 
             // Logging system information.
             PrintSystemInfo();
