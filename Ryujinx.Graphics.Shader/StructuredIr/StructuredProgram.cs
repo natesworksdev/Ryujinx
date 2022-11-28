@@ -388,6 +388,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         {
             return inst switch
             {
+                Instruction.ImageLoad or
                 Instruction.TextureSample => true,
                 _ => false
             };

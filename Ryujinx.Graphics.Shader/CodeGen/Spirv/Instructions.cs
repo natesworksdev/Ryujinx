@@ -700,14 +700,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             // TODO: Bindless texture support. For now we just return 0/do nothing.
             if (isBindless)
             {
-                var zero = componentType switch
-                {
-                    AggregateType.S32 => context.Constant(context.TypeS32(), 0),
-                    AggregateType.U32 => context.Constant(context.TypeU32(), 0u),
-                    _ => context.Constant(context.TypeFP32(), 0f),
-                };
-
-                return new OperationResult(componentType, zero);
+                return GetZeroOperationResult(context, texOp, componentType, isVector: true);
             }
 
             bool isArray   = (texOp.Type & SamplerType.Array) != 0;
@@ -756,9 +749,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             var image = context.Load(imageType, imageVariable);
             var imageComponentType = context.GetType(componentType);
+            var swizzledResultType = texOp.GetVectorType(componentType);
 
             var texel = context.ImageRead(context.TypeVector(imageComponentType, 4), image, pCoords, ImageOperandsMask.MaskNone);
-            var result = context.CompositeExtract(imageComponentType, texel, (SpvLiteralInteger)texOp.Index);
+            var result = GetSwizzledResult(context, texel, swizzledResultType, texOp.Index);
 
             return new OperationResult(componentType, result);
         }
@@ -1489,25 +1483,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             // TODO: Bindless texture support. For now we just return 0.
             if (isBindless)
             {
-                var constant0 = context.Constant(context.TypeFP32(), 0f);
-
-                if (colorIsVector)
-                {
-                    AggregateType outputType = texOp.GetVectorType(AggregateType.FP32);
-
-                    if ((outputType & AggregateType.ElementCountMask) != 0)
-                    {
-                        int componentsCount = BitOperations.PopCount((uint)texOp.Index);
-
-                        SpvInstruction[] values = new SpvInstruction[componentsCount];
-
-                        values.AsSpan().Fill(constant0);
-
-                        return new OperationResult(outputType, context.ConstantComposite(context.GetType(outputType), values));
-                    }
-                }
-
-                return new OperationResult(AggregateType.FP32, constant0);
+                return GetZeroOperationResult(context, texOp, AggregateType.FP32, colorIsVector);
             }
 
             // This combination is valid, but not available on GLSL.
@@ -1782,28 +1758,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 swizzledResultType = texOp.GetVectorType(swizzledResultType);
 
-                if ((swizzledResultType & AggregateType.ElementCountMask) != 0)
-                {
-                    SpvLiteralInteger[] components = new SpvLiteralInteger[BitOperations.PopCount((uint)texOp.Index)];
-
-                    int componentIndex = 0;
-
-                    for (int i = 0; i < 4; i++)
-                    {
-                        if ((texOp.Index & (1 << i)) != 0)
-                        {
-                            components[componentIndex++] = i;
-                        }
-                    }
-
-                    result = context.VectorShuffle(context.GetType(swizzledResultType), result, result, components);
-                }
-                else
-                {
-                    int componentIndex = (int)BitOperations.TrailingZeroCount(texOp.Index);
-
-                    result = context.CompositeExtract(context.GetType(swizzledResultType), result, (SpvLiteralInteger)componentIndex);
-                }
+                result = GetSwizzledResult(context, result, swizzledResultType, texOp.Index);
             }
 
             return new OperationResult(swizzledResultType, result);
@@ -2102,6 +2057,64 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             context.BranchConditional(failed, loopStart, loopEnd);
 
             context.AddLabel(loopEnd);
+        }
+
+        private static OperationResult GetZeroOperationResult(
+            CodeGenContext context,
+            AstTextureOperation texOp,
+            AggregateType scalarType,
+            bool isVector)
+        {
+            var zero = scalarType switch
+            {
+                AggregateType.S32 => context.Constant(context.TypeS32(), 0),
+                AggregateType.U32 => context.Constant(context.TypeU32(), 0u),
+                _ => context.Constant(context.TypeFP32(), 0f),
+            };
+
+            if (isVector)
+            {
+                AggregateType outputType = texOp.GetVectorType(scalarType);
+
+                if ((outputType & AggregateType.ElementCountMask) != 0)
+                {
+                    int componentsCount = BitOperations.PopCount((uint)texOp.Index);
+
+                    SpvInstruction[] values = new SpvInstruction[componentsCount];
+
+                    values.AsSpan().Fill(zero);
+
+                    return new OperationResult(outputType, context.ConstantComposite(context.GetType(outputType), values));
+                }
+            }
+
+            return new OperationResult(scalarType, zero);
+        }
+
+        private static SpvInstruction GetSwizzledResult(CodeGenContext context, SpvInstruction vector, AggregateType swizzledResultType, int mask)
+        {
+            if ((swizzledResultType & AggregateType.ElementCountMask) != 0)
+            {
+                SpvLiteralInteger[] components = new SpvLiteralInteger[BitOperations.PopCount((uint)mask)];
+
+                int componentIndex = 0;
+
+                for (int i = 0; i < 4; i++)
+                {
+                    if ((mask & (1 << i)) != 0)
+                    {
+                        components[componentIndex++] = i;
+                    }
+                }
+
+                return context.VectorShuffle(context.GetType(swizzledResultType), vector, vector, components);
+            }
+            else
+            {
+                int componentIndex = (int)BitOperations.TrailingZeroCount(mask);
+
+                return context.CompositeExtract(context.GetType(swizzledResultType), vector, (SpvLiteralInteger)componentIndex);
+            }
         }
 
         private static SpvInstruction GetStorageElemPointer(CodeGenContext context, AstOperation operation)

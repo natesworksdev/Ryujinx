@@ -442,7 +442,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                         texOp.Inst == Instruction.ImageStore ||
                         texOp.Inst == Instruction.ImageAtomic)
                     {
-                        return texOp.Format.GetComponentType();
+                        return texOp.GetVectorType(texOp.Format.GetComponentType());
                     }
                     else if (texOp.Inst == Instruction.TextureSample)
                     {

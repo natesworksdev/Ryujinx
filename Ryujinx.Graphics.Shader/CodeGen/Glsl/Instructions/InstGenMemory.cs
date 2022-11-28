@@ -24,7 +24,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     case Instruction.ImageStore:
                         return "// imageStore(bindless)";
                     case Instruction.ImageLoad:
-                        NumberFormatter.TryFormat(0, texOp.Format.GetComponentType(), out string imageConst);
+                        AggregateType componentType = texOp.Format.GetComponentType();
+
+                        NumberFormatter.TryFormat(0, componentType, out string imageConst);
+
+                        AggregateType outputType = texOp.GetVectorType(componentType);
+
+                        if ((outputType & AggregateType.ElementCountMask) != 0)
+                        {
+                            return $"{Declarations.GetVarTypeName(outputType, precise: false)}({imageConst})";
+                        }
+
                         return imageConst;
                     default:
                         return NumberFormatter.FormatInt(0);
@@ -184,7 +194,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             }
             else
             {
-                texCall += ")" + (texOp.Inst == Instruction.ImageLoad ? GetMask(texOp.Index) : "");
+                texCall += ")" + (texOp.Inst == Instruction.ImageLoad ? GetMaskMultiDest(texOp.Index) : "");
             }
 
             return texCall;
@@ -503,7 +513,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                     if ((outputType & AggregateType.ElementCountMask) != 0)
                     {
-                        return $"{Declarations.GetVarTypeName(outputType)}({scalarValue})";
+                        return $"{Declarations.GetVarTypeName(outputType, precise: false)}({scalarValue})";
                     }
                 }
 
