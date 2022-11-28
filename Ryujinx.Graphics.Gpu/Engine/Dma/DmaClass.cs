@@ -122,8 +122,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
         /// <summary>
         /// Performs a buffer to buffer, or buffer to texture copy.
         /// </summary>
-        /// <param name="argument">Method call argument</param>
-        private void LaunchDma(int argument)
+        /// <param name="argument">The LaunchDma call argument</param>
+        private void DmaCopy(int argument)
         {
             var memoryManager = _channel.MemoryManager;
 
