@@ -1,8 +1,5 @@
 using ARMeilleure.Translation.PTC;
 using Avalonia;
-using Avalonia.Rendering;
-using Avalonia.Threading;
-using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
@@ -28,7 +25,6 @@ namespace Ryujinx.Ava
         public static string      Version           { get; private set; }
         public static string      ConfigurationPath { get; private set; }
         public static bool        PreviewerDetached { get; private set; }
-        public static RenderTimer RenderTimer       { get; private set; }
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern int MessageBoxA(IntPtr hWnd, string text, string caption, uint type);
@@ -49,11 +45,7 @@ namespace Ryujinx.Ava
 
             Initialize(args);
 
-            RenderTimer = new RenderTimer();
-
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
-
-            RenderTimer.Dispose();
         }
 
         public static AppBuilder BuildAvaloniaApp()
@@ -75,12 +67,6 @@ namespace Ryujinx.Ava
                     CompositionBackdropCornerRadius = 8.0f,
                 })
                 .UseSkia()
-                .AfterSetup(_ =>
-                {
-                    AvaloniaLocator.CurrentMutable
-                        .Bind<IRenderTimer>().ToConstant(RenderTimer)
-                        .Bind<IRenderLoop>().ToConstant(new RenderLoop(RenderTimer, Dispatcher.UIThread));
-                })
                 .LogToTrace();
         }
 
