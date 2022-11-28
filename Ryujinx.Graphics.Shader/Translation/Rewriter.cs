@@ -526,27 +526,32 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             // Do normalization. We assume SINT formats are being used
             // as replacement for SNORM (which is not supported).
-            INode[] uses = texOp.Dest.UseOps.ToArray();
-
-            Operation convOp = new Operation(Instruction.ConvertS32ToFP32, Local(), texOp.Dest);
-            Operation normOp = new Operation(Instruction.FP32 | Instruction.Multiply, Local(), convOp.Dest, ConstF(1f / maxPositive));
-
-            node = node.List.AddAfter(node, convOp);
-            node = node.List.AddAfter(node, normOp);
-
-            foreach (INode useOp in uses)
+            for (int i = 0; i < texOp.DestsCount; i++)
             {
-                if (useOp is not Operation op)
-                {
-                    continue;
-                }
+                Operand dest = texOp.GetDest(i);
 
-                // Replace all uses of the texture pixel value with the normalized value.
-                for (int index = 0; index < op.SourcesCount; index++)
+                INode[] uses = dest.UseOps.ToArray();
+
+                Operation convOp = new Operation(Instruction.ConvertS32ToFP32, Local(), dest);
+                Operation normOp = new Operation(Instruction.FP32 | Instruction.Multiply, Local(), convOp.Dest, ConstF(1f / maxPositive));
+
+                node = node.List.AddAfter(node, convOp);
+                node = node.List.AddAfter(node, normOp);
+
+                foreach (INode useOp in uses)
                 {
-                    if (op.GetSource(index) == texOp.Dest)
+                    if (useOp is not Operation op)
                     {
-                        op.SetSource(index, normOp.Dest);
+                        continue;
+                    }
+
+                    // Replace all uses of the texture pixel value with the normalized value.
+                    for (int index = 0; index < op.SourcesCount; index++)
+                    {
+                        if (op.GetSource(index) == dest)
+                        {
+                            op.SetSource(index, normOp.Dest);
+                        }
                     }
                 }
             }
