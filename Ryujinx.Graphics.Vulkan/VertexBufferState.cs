@@ -63,23 +63,7 @@ namespace Ryujinx.Graphics.Vulkan
                         int stride = (_stride + (alignment - 1)) & -alignment;
                         int newSize = (_size / _stride) * stride;
 
-                        var buffer = autoBuffer.Get(cbs, 0, newSize).Value;
-
-                        if (gd.Capabilities.SupportsExtendedDynamicState)
-                        {
-                            gd.ExtendedDynamicStateApi.CmdBindVertexBuffers2(
-                                cbs.CommandBuffer,
-                                binding,
-                                1,
-                                buffer,
-                                0,
-                                (ulong)newSize,
-                                (ulong)stride);
-                        }
-                        else
-                        {
-                            gd.Api.CmdBindVertexBuffers(cbs.CommandBuffer, binding, 1, buffer, 0);
-                        }
+                        BindVertexBuffers(gd, cbs, binding, autoBuffer, newSize, stride, 0);
 
                         _buffer = autoBuffer;
                     }
@@ -104,23 +88,30 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (autoBuffer != null)
             {
-                var buffer = autoBuffer.Get(cbs, _offset, _size).Value;
+                BindVertexBuffers(gd, cbs, binding, autoBuffer, _size, _stride, _offset);
+            }
+        }
 
-                if (gd.Capabilities.SupportsExtendedDynamicState)
-                {
-                    gd.ExtendedDynamicStateApi.CmdBindVertexBuffers2(
-                        cbs.CommandBuffer,
-                        binding,
-                        1,
-                        buffer,
-                        (ulong)_offset,
-                        (ulong)_size,
-                        (ulong)_stride);
-                }
-                else
-                {
-                    gd.Api.CmdBindVertexBuffers(cbs.CommandBuffer, binding, 1, buffer, (ulong)_offset);
-                }
+        private static void BindVertexBuffers(
+            VulkanRenderer gd, CommandBufferScoped cbs, uint binding, Auto<DisposableBuffer> autoBuffer, int size,
+            int stride, int offset)
+        {
+            var buffer = autoBuffer.Get(cbs, offset, size).Value;
+
+            if (gd.Capabilities.SupportsExtendedDynamicState)
+            {
+                gd.ExtendedDynamicStateApi.CmdBindVertexBuffers2(
+                    cbs.CommandBuffer,
+                    binding,
+                    1,
+                    buffer,
+                    (ulong)offset,
+                    (ulong)size,
+                    (ulong)stride);
+            }
+            else
+            {
+                gd.Api.CmdBindVertexBuffers(cbs.CommandBuffer, binding, 1, buffer, (ulong)offset);
             }
         }
 
