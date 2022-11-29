@@ -58,10 +58,6 @@
                     <NativeMenuItem
                         Command="{ReflectionBinding OpenLogsFolder}"
                         Header="{locale:Locale MenuBarFileOpenLogsFolder}" />
-                    <NativeMenuItemSeparator />
-                    <NativeMenuItem
-                        Command="{ReflectionBinding CloseWindow}"
-                        Header="{locale:Locale NativeMenuBarFileExit}" />
                 </NativeMenu>
             </NativeMenuItem>
             <NativeMenuItem Header="{locale:Locale MenuBarOptions}">
