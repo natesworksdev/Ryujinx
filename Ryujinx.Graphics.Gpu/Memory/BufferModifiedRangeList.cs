@@ -284,7 +284,22 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
-        private void RemoveRangesAndFlush(BufferModifiedRange[] overlaps, int rangeCount, long highestDiff, ulong currentSync, ulong address, ulong endAddress)
+        /// <summary>
+        /// Removes modified ranges ready by the sync number from the list, and flushes their buffer data within a given address range.
+        /// </summary>
+        /// <param name="overlaps">Overlapping ranges to check</param>
+        /// <param name="rangeCount">Number of overlapping ranges</param>
+        /// <param name="highestDiff">The highest difference between an overlapping range's sync number and the current one</param>
+        /// <param name="currentSync">The current sync number</param>
+        /// <param name="address">The start address of the flush range</param>
+        /// <param name="endAddress">The end address of the flush range</param>
+        private void RemoveRangesAndFlush(
+            BufferModifiedRange[] overlaps,
+            int rangeCount,
+            long highestDiff,
+            ulong currentSync,
+            ulong address,
+            ulong endAddress)
         {
             lock (_lock)
             {
@@ -401,7 +416,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             lock (ranges._lock)
             {
-                BufferMigration migration = new (ranges._parent, ranges._flushAction, ranges, this, _context.SyncNumber);
+                BufferMigration migration = new(ranges._parent, ranges._flushAction, ranges, this, _context.SyncNumber);
 
                 ranges._parent.IncrementReferenceCount();
                 ranges._migrationTarget = migration;
@@ -412,10 +427,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 lock (_lock)
                 {
-                    if (_sources == null)
-                    {
-                        _sources = new List<BufferMigration>();
-                    }
+                    (_sources ??= new List<BufferMigration>()).Add(migration);
 
                     _sources.Add(migration);
 
@@ -444,7 +456,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             lock (_lock)
             {
-                bool removed = _sources.Remove(migration);
+                _sources.Remove(migration);
             }
         }
 

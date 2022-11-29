@@ -51,7 +51,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="source">The modified range list for the source buffer</param>
         /// <param name="dest">The modified range list for the destination buffer</param>
         /// <param name="syncNumber">The sync number for when the migration is complete</param>
-        public BufferMigration(Buffer buffer, Action<ulong, ulong> sourceRangeAction, BufferModifiedRangeList source, BufferModifiedRangeList dest, ulong syncNumber)
+        public BufferMigration(
+            Buffer buffer,
+            Action<ulong, ulong> sourceRangeAction,
+            BufferModifiedRangeList source,
+            BufferModifiedRangeList dest,
+            ulong syncNumber)
         {
             _offset = buffer.Address;
             _size = buffer.Size;
