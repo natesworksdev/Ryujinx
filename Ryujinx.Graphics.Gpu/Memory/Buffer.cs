@@ -292,7 +292,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="from">The buffer to inherit from</param>
         public void InheritModifiedRanges(Buffer from)
         {
-            if (from._modifiedRanges != null)
+            if (from._modifiedRanges != null && from._modifiedRanges.HasRanges)
             {
                 if (from._syncActionRegistered && !_syncActionRegistered)
                 {

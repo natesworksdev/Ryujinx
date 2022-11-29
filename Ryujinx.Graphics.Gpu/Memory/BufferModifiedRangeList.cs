@@ -81,6 +81,20 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private object _lock = new object();
 
         /// <summary>
+        /// Whether the modified range list has any entries or not.
+        /// </summary>
+        public bool HasRanges
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return Count > 0;
+                }
+            }
+        }
+
+        /// <summary>
         /// Creates a new instance of a modified range list.
         /// </summary>
         /// <param name="context">GPU context that the buffer range list belongs to</param>
