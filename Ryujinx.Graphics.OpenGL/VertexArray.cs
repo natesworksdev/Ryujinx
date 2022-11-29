@@ -160,13 +160,11 @@ namespace Ryujinx.Graphics.OpenGL
         public void PreDraw(int vertexCount)
         {
             LimitVertexBuffers(vertexCount);
-            Validate();
         }
 
         public void PreDrawVbUnbounded()
         {
             UnlimitVertexBuffers();
-            Validate();
         }
 
         public void LimitVertexBuffers(int vertexCount)
@@ -250,36 +248,6 @@ namespace Ryujinx.Graphics.OpenGL
             }
 
             _vertexBuffersLimited = 0;
-        }
-
-        public void Validate()
-        {
-            for (int attribIndex = 0; attribIndex < _vertexAttribsCount; attribIndex++)
-            {
-                VertexAttribDescriptor attrib = _vertexAttribs[attribIndex];
-
-                if (!attrib.IsZero)
-                {
-                    if ((uint)attrib.BufferIndex >= _vertexBuffersCount)
-                    {
-                        DisableVertexAttrib(attribIndex);
-                        continue;
-                    }
-
-                    if (_vertexBuffers[attrib.BufferIndex].Buffer.Handle == BufferHandle.Null)
-                    {
-                        DisableVertexAttrib(attribIndex);
-                        continue;
-                    }
-
-                    if (_needsAttribsUpdate)
-                    {
-                        EnableVertexAttrib(attribIndex);
-                    }
-                }
-            }
-
-            _needsAttribsUpdate = false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
