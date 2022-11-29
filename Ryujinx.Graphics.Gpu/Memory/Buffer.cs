@@ -315,20 +315,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 EnsureRangeList();
 
                 _modifiedRanges.InheritRanges(from._modifiedRanges, registerRangeAction);
-
-                /* This may be incompatible with the new way of recording buffer migrations.
-                if (_modifiedRanges == null)
-                {
-                    _modifiedRanges = from._modifiedRanges;
-                    _modifiedRanges.ReregisterRanges(registerRangeAction);
-
-                    from._modifiedRanges = null;
-                }
-                else
-                {
-                    _modifiedRanges.InheritRanges(from._modifiedRanges, registerRangeAction);
-                }
-                */
             }
         }
 

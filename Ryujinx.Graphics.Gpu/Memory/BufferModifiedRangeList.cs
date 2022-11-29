@@ -254,7 +254,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
                                     rangeAction(offset, size);
                                 }
 
-                                Logger.Error?.PrintMsg(LogClass.Gpu, $"Flushing from migration source");
                                 source.RangeActionWithMigration(offset, size, syncNumber, parent);
 
                                 firstSource = false;
@@ -302,7 +301,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             // There is a migration target to call instead. This can't be changed after set so accessing it outside the lock is fine.
 
-            Logger.Error?.PrintMsg(LogClass.Gpu, $"Notifying migration target");
             _migrationTarget.Destination.RemoveRangesAndFlush(overlaps, rangeCount, highestDiff, currentSync, address, endAddress);
         }
 
@@ -433,48 +431,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
             lock (_lock)
             {
                 bool removed = _sources.Remove(migration);
-
-                Logger.Warning?.PrintMsg(LogClass.Gpu, $"Removed buffer migration {removed}");
-            }
-        }
-
-        /// <summary>
-        /// Calls the given action for modified ranges that aren't from the current sync number.
-        /// 
-        /// TODO: unused?
-        /// </summary>
-        /// <param name="rangeAction">The action to call for each modified range</param>
-        public void ReregisterRanges(Action<ulong, ulong> rangeAction)
-        {
-            ref var ranges = ref ThreadStaticArray<BufferModifiedRange>.Get();
-            int count;
-
-            // Range list must be consistent for this operation.
-            lock (_lock)
-            {
-                count = Count;
-                if (ranges.Length < count)
-                {
-                    Array.Resize(ref ranges, count);
-                }
-
-                int i = 0;
-                foreach (BufferModifiedRange range in this)
-                {
-                    ranges[i++] = range;
-                }
-
-                // TODO: either remove, or somehow do recursive migrations within the same range list
-            }
-
-            ulong currentSync = _context.SyncNumber;
-            for (int i = 0; i < count; i++)
-            {
-                BufferModifiedRange range = ranges[i];
-                if (range.SyncNumber != currentSync)
-                {
-                    rangeAction(range.Address, range.Size);
-                }
             }
         }
 
