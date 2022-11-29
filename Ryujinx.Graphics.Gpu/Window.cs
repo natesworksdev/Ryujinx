@@ -197,6 +197,7 @@ namespace Ryujinx.Graphics.Gpu
         public void Present(Action swapBuffersCallback)
         {
             _context.AdvanceSequence();
+            _context.AdvanceFrame();
 
             if (_frameQueue.TryDequeue(out PresentationTexture pt))
             {

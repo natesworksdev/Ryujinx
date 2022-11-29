@@ -14,6 +14,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     class Buffer : IRange, IDisposable
     {
         private const ulong GranularBufferThreshold = 4096;
+        private const ulong VolatileClearFrames = 30;
 
         private readonly GpuContext _context;
         private readonly PhysicalMemory _physicalMemory;
@@ -61,6 +62,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private readonly Action<ulong, ulong> _modifiedDelegate;
 
         private int _sequenceNumber;
+        private ulong _volatileFrameNumber;
 
         private bool _useGranular;
         private bool _syncActionRegistered;
@@ -132,6 +134,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _externalFlushDelegate = new RegionSignal(ExternalFlush);
             _loadDelegate = new Action<ulong, ulong>(LoadRegion);
             _modifiedDelegate = new Action<ulong, ulong>(RegionModified);
+
+            _volatileFrameNumber = _context.FrameNumber;
         }
 
         /// <summary>
@@ -262,6 +266,44 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Clears volatile flags on a rotation based on frame number.
+        /// </summary>
+        public void ClearVolatile()
+        {
+            ulong lastClear = _volatileFrameNumber / VolatileClearFrames;
+            ulong newClear = _context.FrameNumber / VolatileClearFrames;
+            ulong clearCount = newClear - lastClear;
+
+            int bits = clearCount > 64 ? 64 : (int)clearCount;
+
+            ulong mask = ulong.MaxValue >> (64 - bits);
+
+            ClearVolatile(mask, (int)lastClear & 63);
+
+            _volatileFrameNumber = _context.FrameNumber;
+            
+        }
+
+        /// <summary>
+        /// Clears volatile flags on this buffer's tracking handles, when they match the mask.
+        /// </summary>
+        /// <param name="mask">A mask indicating pages to clear volatile from</param>
+        /// <param name="offset">An offset to rotate the mask left by</param>
+        private void ClearVolatile(ulong mask, int offset)
+        {
+            int pageNum = ((int)(Address >> MemoryManager.PtPageBits) + (64 - offset)) & 63;
+
+            if (_useGranular)
+            {
+                _memoryTrackingGranular.ClearVolatile((mask >> pageNum) | (mask << (64 - pageNum)));
+            }
+            else if (((mask >> pageNum) & 1) == 1)
+            {
+                _memoryTracking.ClearVolatile();
+            }
+        }
+
+        /// <summary>
         /// Action to be performed when a syncpoint is reached after modification.
         /// This will register read/write tracking to flush the buffer from GPU when its memory is used.
         /// </summary>
@@ -376,6 +418,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="mSize">Size of the modified region</param>
         private void LoadRegion(ulong mAddress, ulong mSize)
         {
+            if (_context.FrameNumber - _volatileFrameNumber >= VolatileClearFrames)
+            {
+                ClearVolatile();
+            }
+
             int offset = (int)(mAddress - Address);
 
             _context.Renderer.SetBufferData(Handle, offset, _physicalMemory.GetSpan(mAddress, (int)mSize));

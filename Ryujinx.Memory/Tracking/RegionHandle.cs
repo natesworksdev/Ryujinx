@@ -163,7 +163,7 @@ namespace Ryujinx.Memory.Tracking
         /// <summary>
         /// Clear the volatile state of this handle.
         /// </summary>
-        private void ClearVolatile()
+        public void ClearVolatile()
         {
             _volatileCount = 0;
             _volatile = false;
