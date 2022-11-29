@@ -57,9 +57,9 @@ namespace Ryujinx.Graphics.OpenGL
 
                         if (handle.ID > lastHandle)
                         {
-                            WaitSyncStatus syncResult = GL.ClientWaitSync(handle.Handle, _syncFlags, 1000000000);
+                            WaitSyncStatus syncResult = GL.ClientWaitSync(handle.Handle, _syncFlags, 0);
 
-                            if (syncResult != WaitSyncStatus.TimeoutExpired)
+                            if (syncResult == WaitSyncStatus.AlreadySignaled)
                             {
                                 lastHandle = handle.ID;
                             }
