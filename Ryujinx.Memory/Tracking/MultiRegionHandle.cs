@@ -399,16 +399,31 @@ namespace Ryujinx.Memory.Tracking
 
         public void ClearVolatile(ulong mask)
         {
-            while (mask != 0)
-            {
-                int bit = BitOperations.TrailingZeroCount(mask);
+            long[] dirtyMasks = _dirtyBitmap.Masks;
+            int maskEnd = dirtyMasks.Length - 1;
+            int baseIndex = 0;
 
-                for (int i = bit; i < _handles.Length; i += 64)
+            ulong end = ulong.MaxValue >> (64 - (_handles.Length % 64));
+
+            for (int i = 0; i <= maskEnd; i++)
+            {
+                ulong volatileMask = mask & (ulong)dirtyMasks[i];
+
+                if (i == maskEnd)
                 {
-                    _handles[i].ClearVolatile();
+                    volatileMask &= end;
                 }
 
-                mask &= ~(1UL << bit);
+                while (volatileMask != 0)
+                {
+                    int bit = BitOperations.TrailingZeroCount(volatileMask);
+
+                    _handles[baseIndex + bit].ClearVolatile();
+
+                    volatileMask &= ~(1UL << bit);
+                }
+
+                baseIndex += 64;
             }
         }
 
