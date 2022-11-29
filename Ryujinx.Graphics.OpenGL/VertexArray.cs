@@ -10,13 +10,9 @@ namespace Ryujinx.Graphics.OpenGL
     {
         public int Handle { get; private set; }
 
-        private bool _needsAttribsUpdate;
-
         private readonly VertexAttribDescriptor[] _vertexAttribs;
         private readonly VertexBufferDescriptor[] _vertexBuffers;
 
-        private int _vertexAttribsCount;
-        private int _vertexBuffersCount;
         private int _minVertexCount;
 
         private uint _vertexAttribsInUse;
@@ -76,9 +72,7 @@ namespace Ryujinx.Graphics.OpenGL
                 _vertexBuffers[bindingIndex] = vb;
             }
 
-            _vertexBuffersCount = bindingIndex;
             _minVertexCount = minVertexCount;
-            _needsAttribsUpdate = true;
         }
 
         public void SetVertexAttributes(ReadOnlySpan<VertexAttribDescriptor> vertexAttribs)
@@ -130,8 +124,6 @@ namespace Ryujinx.Graphics.OpenGL
 
                 _vertexAttribs[index] = attrib;
             }
-
-            _vertexAttribsCount = index;
 
             for (; index < Constants.MaxVertexAttribs; index++)
             {
