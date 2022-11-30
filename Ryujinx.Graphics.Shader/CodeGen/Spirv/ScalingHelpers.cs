@@ -13,13 +13,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             CodeGenContext context,
             AstTextureOperation texOp,
             SpvInstruction vector,
-            bool isBindless,
             bool isIndexed,
             bool isArray,
             int pCount)
         {
             if (context.Config.Stage.SupportsRenderScale() &&
-                !isBindless &&
                 !isIndexed)
             {
                 int index = texOp.Inst == Instruction.ImageLoad ?
