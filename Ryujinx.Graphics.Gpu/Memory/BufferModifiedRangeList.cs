@@ -429,8 +429,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 {
                     (_sources ??= new List<BufferMigration>()).Add(migration);
 
-                    _sources.Add(migration);
-
                     foreach (BufferModifiedRange range in inheritRanges)
                     {
                         Add(range);
