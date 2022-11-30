@@ -964,7 +964,7 @@
             ReverseOrder="{ReflectionBinding IsMacOS}">
             <Button 
                 HotKey="Enter" 
-                Background="{DynamicResource SystemAccentColor}" 
+                Classes="accent"
                 Content="{locale:Locale SettingsButtonOk}" 
                 Command="{ReflectionBinding OkButton}" />
             <Button 
