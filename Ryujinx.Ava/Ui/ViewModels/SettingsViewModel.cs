@@ -118,7 +118,12 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 OnPropertyChanged();
             }
         }
-
+        
+        public bool IsMacOS
+        {
+            get => OperatingSystem.IsMacOS();
+        }
+        
         public bool EnableDiscordIntegration { get; set; }
         public bool CheckUpdatesOnStart { get; set; }
         public bool ShowConfirmExit { get; set; }
