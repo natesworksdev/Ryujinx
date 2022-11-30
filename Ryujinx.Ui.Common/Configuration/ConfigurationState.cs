@@ -1195,7 +1195,7 @@ namespace Ryujinx.Ui.Common.Configuration
             if (OperatingSystem.IsMacOS() && configurationFileFormat.GraphicsBackend == GraphicsBackend.OpenGl)
             {
                 configurationFileFormat.GraphicsBackend = GraphicsBackend.Vulkan;
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, "OpenGL is not supported on macOS changing configuration file to Vulkan");
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, "OpenGL is not supported on macOS changing configuration file graphics backend to Vulkan");
                 configurationFileUpdated = true;
             }
 
