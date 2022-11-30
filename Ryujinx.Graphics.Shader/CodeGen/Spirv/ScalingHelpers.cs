@@ -13,12 +13,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             CodeGenContext context,
             AstTextureOperation texOp,
             SpvInstruction vector,
-            bool isIndexed,
             bool isArray,
             int pCount)
         {
-            if (context.Config.Stage.SupportsRenderScale() &&
-                !isIndexed)
+            if (context.Config.Stage.SupportsRenderScale())
             {
                 int index = texOp.Inst == Instruction.ImageLoad ?
                     context.Config.GetTextureDescriptors().Length +

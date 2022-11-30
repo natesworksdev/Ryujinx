@@ -748,9 +748,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 pCoords = Src(AggregateType.S32);
             }
 
-            if (!isBindless)
-                pCoords = ScalingHelpers.ApplyScaling(
-                    context, texOp, pCoords, isIndexed, isArray, pCount);
+            if (!isBindless && !isIndexed)
+                pCoords = ScalingHelpers.ApplyScaling(context, texOp, pCoords, isArray, pCount);
 
             (var imageType, var imageVariable) = context.Images[new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format)];
 
@@ -1558,10 +1557,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
 
             SpvInstruction pCoords = AssemblePVector(pCount);
-            if (intCoords && !isBindless)
+            if (intCoords && !isBindless && !isIndexed)
             {
                 pCoords = ScalingHelpers.ApplyScaling(
-                    context, texOp, pCoords, isIndexed, isArray, pCount);
+                    context, texOp, pCoords, isArray, pCount);
             }
 
             SpvInstruction AssembleDerivativesVector(int count)
