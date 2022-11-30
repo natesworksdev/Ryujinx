@@ -617,7 +617,7 @@ namespace Ryujinx.Ui.Common.Configuration
             Graphics.ResScaleCustom.Value             = 1.0f;
             Graphics.MaxAnisotropy.Value              = -1.0f;
             Graphics.AspectRatio.Value                = AspectRatio.Fixed16x9;
-            Graphics.GraphicsBackend.Value            = GraphicsBackend.OpenGl;
+            Graphics.GraphicsBackend.Value            = OperatingSystem.IsMacOS() ? GraphicsBackend.Vulkan : GraphicsBackend.OpenGl;
             Graphics.PreferredGpu.Value               = "";
             Graphics.ShadersDumpPath.Value            = "";
             Logger.EnableDebug.Value                  = false;
@@ -1190,6 +1190,13 @@ namespace Ryujinx.Ui.Common.Configuration
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 42.");
 
                 configurationFileFormat.EnableMacroHLE = true;
+            }
+            
+            if (OperatingSystem.IsMacOS() && configurationFileFormat.GraphicsBackend == GraphicsBackend.OpenGl)
+            {
+                configurationFileFormat.GraphicsBackend = GraphicsBackend.Vulkan;
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, "OpenGL is not supported on macOS changing configuration file to Vulkan");
+                configurationFileUpdated = true;
             }
 
             Logger.EnableFileLog.Value                = configurationFileFormat.EnableFileLog;
