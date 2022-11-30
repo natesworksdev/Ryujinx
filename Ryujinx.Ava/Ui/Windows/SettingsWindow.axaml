@@ -961,7 +961,7 @@
             Spacing="10"
             Orientation="Horizontal"
             HorizontalAlignment="Right"
-            ReverseOrder="{ReflectionBinding !IsMacOS}">
+            ReverseOrder="{ReflectionBinding IsMacOS}">
             <Button 
                 HotKey="Enter" 
                 Background="{DynamicResource SystemAccentColor}" 
