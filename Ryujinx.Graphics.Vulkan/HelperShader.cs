@@ -20,7 +20,6 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly IProgram _programColorBlitClearAlpha;
         private readonly IProgram _programColorClear;
         private readonly IProgram _programStrideChange;
-        private readonly IProgram _programColorCopyBetweenMsNonMs;
         private readonly IProgram _programConvertIndexBuffer;
         private readonly IProgram _programConvertIndirectData;
         private readonly IProgram _programColorCopyToNonMs;
@@ -951,7 +950,6 @@ namespace Ryujinx.Graphics.Vulkan
                 _programColorBlit.Dispose();
                 _programColorClear.Dispose();
                 _programStrideChange.Dispose();
-                _programColorCopyBetweenMsNonMs.Dispose();
                 _programConvertIndexBuffer.Dispose();
                 _programConvertIndirectData.Dispose();
                 _programColorCopyToNonMs.Dispose();
