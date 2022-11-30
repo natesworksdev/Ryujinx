@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Audio.Common;
 using Ryujinx.Audio.Integration;
+using Ryujinx.Common.Logging;
 using Ryujinx.Memory;
 using Ryujinx.SDL2.Common;
 using System;
@@ -112,6 +113,8 @@ namespace Ryujinx.Audio.Backends.SDL2
 
             if (device == 0)
             {
+                string errorMessage = $"SDL2 open audio device initialization failed with error \"{SDL_GetError()}\"";
+                Logger.Error?.Print(LogClass.Application, errorMessage);
                 return 0;
             }
 
@@ -119,6 +122,8 @@ namespace Ryujinx.Audio.Backends.SDL2
 
             if (!isValid)
             {
+                string errorMessage = $"SDL2 open audio device is not valid";
+                Logger.Error?.Print(LogClass.Application, errorMessage);
                 SDL_CloseAudioDevice(device);
 
                 return 0;
