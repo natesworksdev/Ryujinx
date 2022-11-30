@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Applets
         public string InitialText;
         public string GuideText;
         public string SubmitText;
-        public int StringLengthMin;
-        public int StringLengthMax;
+        public int    StringLengthMin;
+        public int    StringLengthMax;
     }
 }

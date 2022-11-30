@@ -147,10 +147,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         {
             ulong endAddr = address + size;
 
-            Region aliasRegion = new Region();
-            Region heapRegion = new Region();
-            Region stackRegion = new Region();
-            Region tlsIoRegion = new Region();
+            Region aliasRegion = new();
+            Region heapRegion = new();
+            Region stackRegion = new();
+            Region tlsIoRegion = new();
 
             ulong codeRegionSize;
             ulong stackAndTlsIoStart;
@@ -320,10 +320,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
         private long GetRandomValue(long min, long max)
         {
-            if (_randomNumberGenerator == null)
-            {
-                _randomNumberGenerator = new MersenneTwister(0);
-            }
+            _randomNumberGenerator ??= new MersenneTwister(0);
 
             return _randomNumberGenerator.GenRandomNumber(min, max);
         }
@@ -402,7 +399,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             lock (_blockManager)
             {
-                KPageList currentPageList = new KPageList();
+                KPageList currentPageList = new();
 
                 GetPhysicalRegions(address, size, currentPageList);
 
@@ -1134,8 +1131,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         return KernelResult.InvalidMemState;
                     }
 
-                    KPageList srcPageList = new KPageList();
-                    KPageList dstPageList = new KPageList();
+                    KPageList srcPageList = new();
+                    KPageList dstPageList = new();
 
                     srcPageTable.GetPhysicalRegions(src, size, srcPageList);
                     GetPhysicalRegions(dst, size, dstPageList);
@@ -1893,7 +1890,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             {
                 ulong alignedSize = endAddrTruncated - addressRounded;
 
-                KPageList pageList = new KPageList();
+                KPageList pageList = new();
                 srcPageTable.GetPhysicalRegions(addressRounded, alignedSize, pageList);
 
                 KernelResult result = MapPages(currentVa, pageList, permission);
@@ -2343,7 +2340,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                     if (pageList != null)
                     {
-                        KPageList currentPageList = new KPageList();
+                        KPageList currentPageList = new();
 
                         GetPhysicalRegions(address, pagesCount * PageSize, currentPageList);
 
@@ -2673,115 +2670,83 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 return endAddr <= AliasRegionStart || address >= AliasRegionEnd;
             }
 
-            switch (state)
+            return state switch
             {
-                case MemoryState.Io:
-                case MemoryState.Normal:
-                case MemoryState.CodeStatic:
-                case MemoryState.CodeMutable:
-                case MemoryState.SharedMemory:
-                case MemoryState.ModCodeStatic:
-                case MemoryState.ModCodeMutable:
-                case MemoryState.Stack:
-                case MemoryState.ThreadLocal:
-                case MemoryState.TransferMemoryIsolated:
-                case MemoryState.TransferMemory:
-                case MemoryState.ProcessMemory:
-                case MemoryState.CodeReadOnly:
-                case MemoryState.CodeWritable:
-                    return InsideRegion() && OutsideHeapRegion() && OutsideAliasRegion();
-
-                case MemoryState.Heap:
-                    return InsideRegion() && OutsideAliasRegion();
-
-                case MemoryState.IpcBuffer0:
-                case MemoryState.IpcBuffer1:
-                case MemoryState.IpcBuffer3:
-                    return InsideRegion() && OutsideHeapRegion();
-
-                case MemoryState.KernelStack:
-                    return InsideRegion();
-            }
-
-            throw new ArgumentException($"Invalid state value \"{state}\".");
+                MemoryState.Io or
+                MemoryState.Normal or
+                MemoryState.CodeStatic or
+                MemoryState.CodeMutable or
+                MemoryState.SharedMemory or
+                MemoryState.ModCodeStatic or
+                MemoryState.ModCodeMutable or
+                MemoryState.Stack or
+                MemoryState.ThreadLocal or
+                MemoryState.TransferMemoryIsolated or
+                MemoryState.TransferMemory or
+                MemoryState.ProcessMemory or
+                MemoryState.CodeReadOnly or
+                MemoryState.CodeWritable => InsideRegion() && OutsideHeapRegion() && OutsideAliasRegion(),
+                MemoryState.Heap => InsideRegion() && OutsideAliasRegion(),
+                MemoryState.IpcBuffer0 or
+                MemoryState.IpcBuffer1 or
+                MemoryState.IpcBuffer3 => InsideRegion() && OutsideHeapRegion(),
+                MemoryState.KernelStack => InsideRegion(),
+                _ => throw new ArgumentException($"Invalid state value \"{state}\"."),
+            };
         }
 
         private ulong GetBaseAddress(MemoryState state)
         {
-            switch (state)
+            return state switch
             {
-                case MemoryState.Io:
-                case MemoryState.Normal:
-                case MemoryState.ThreadLocal:
-                    return TlsIoRegionStart;
-
-                case MemoryState.CodeStatic:
-                case MemoryState.CodeMutable:
-                case MemoryState.SharedMemory:
-                case MemoryState.ModCodeStatic:
-                case MemoryState.ModCodeMutable:
-                case MemoryState.TransferMemoryIsolated:
-                case MemoryState.TransferMemory:
-                case MemoryState.ProcessMemory:
-                case MemoryState.CodeReadOnly:
-                case MemoryState.CodeWritable:
-                    return GetAddrSpaceBaseAddr();
-
-                case MemoryState.Heap:
-                    return HeapRegionStart;
-
-                case MemoryState.IpcBuffer0:
-                case MemoryState.IpcBuffer1:
-                case MemoryState.IpcBuffer3:
-                    return AliasRegionStart;
-
-                case MemoryState.Stack:
-                    return StackRegionStart;
-
-                case MemoryState.KernelStack:
-                    return AddrSpaceStart;
-            }
-
-            throw new ArgumentException($"Invalid state value \"{state}\".");
+                MemoryState.Io or
+                MemoryState.Normal or
+                MemoryState.ThreadLocal => TlsIoRegionStart,
+                MemoryState.CodeStatic or
+                MemoryState.CodeMutable or
+                MemoryState.SharedMemory or
+                MemoryState.ModCodeStatic or
+                MemoryState.ModCodeMutable or
+                MemoryState.TransferMemoryIsolated or
+                MemoryState.TransferMemory or
+                MemoryState.ProcessMemory or
+                MemoryState.CodeReadOnly or
+                MemoryState.CodeWritable => GetAddrSpaceBaseAddr(),
+                MemoryState.Heap => HeapRegionStart,
+                MemoryState.IpcBuffer0 or
+                MemoryState.IpcBuffer1 or
+                MemoryState.IpcBuffer3 => AliasRegionStart,
+                MemoryState.Stack => StackRegionStart,
+                MemoryState.KernelStack => AddrSpaceStart,
+                _ => throw new ArgumentException($"Invalid state value \"{state}\"."),
+            };
         }
 
         private ulong GetSize(MemoryState state)
         {
-            switch (state)
+            return state switch
             {
-                case MemoryState.Io:
-                case MemoryState.Normal:
-                case MemoryState.ThreadLocal:
-                    return TlsIoRegionEnd - TlsIoRegionStart;
-
-                case MemoryState.CodeStatic:
-                case MemoryState.CodeMutable:
-                case MemoryState.SharedMemory:
-                case MemoryState.ModCodeStatic:
-                case MemoryState.ModCodeMutable:
-                case MemoryState.TransferMemoryIsolated:
-                case MemoryState.TransferMemory:
-                case MemoryState.ProcessMemory:
-                case MemoryState.CodeReadOnly:
-                case MemoryState.CodeWritable:
-                    return GetAddrSpaceSize();
-
-                case MemoryState.Heap:
-                    return HeapRegionEnd - HeapRegionStart;
-
-                case MemoryState.IpcBuffer0:
-                case MemoryState.IpcBuffer1:
-                case MemoryState.IpcBuffer3:
-                    return AliasRegionEnd - AliasRegionStart;
-
-                case MemoryState.Stack:
-                    return StackRegionEnd - StackRegionStart;
-
-                case MemoryState.KernelStack:
-                    return AddrSpaceEnd - AddrSpaceStart;
-            }
-
-            throw new ArgumentException($"Invalid state value \"{state}\".");
+                MemoryState.Io or
+                MemoryState.Normal or
+                MemoryState.ThreadLocal => TlsIoRegionEnd - TlsIoRegionStart,
+                MemoryState.CodeStatic or
+                MemoryState.CodeMutable or
+                MemoryState.SharedMemory or
+                MemoryState.ModCodeStatic or
+                MemoryState.ModCodeMutable or
+                MemoryState.TransferMemoryIsolated or
+                MemoryState.TransferMemory or
+                MemoryState.ProcessMemory or
+                MemoryState.CodeReadOnly or
+                MemoryState.CodeWritable => GetAddrSpaceSize(),
+                MemoryState.Heap => HeapRegionEnd - HeapRegionStart,
+                MemoryState.IpcBuffer0 or
+                MemoryState.IpcBuffer1 or
+                MemoryState.IpcBuffer3 => AliasRegionEnd - AliasRegionStart,
+                MemoryState.Stack => StackRegionEnd - StackRegionStart,
+                MemoryState.KernelStack => AddrSpaceEnd - AddrSpaceStart,
+                _ => throw new ArgumentException($"Invalid state value \"{state}\"."),
+            };
         }
 
         public ulong GetAddrSpaceBaseAddr()

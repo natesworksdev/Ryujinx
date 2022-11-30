@@ -40,19 +40,20 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public object Clone()
         {
-            BufferItem item = new BufferItem();
-
-            item.Transform                 = Transform;
-            item.ScalingMode               = ScalingMode;
-            item.IsAutoTimestamp           = IsAutoTimestamp;
-            item.FrameNumber               = FrameNumber;
-            item.Slot                      = Slot;
-            item.IsDroppable               = IsDroppable;
-            item.AcquireCalled             = AcquireCalled;
-            item.TransformToDisplayInverse = TransformToDisplayInverse;
-            item.SwapInterval              = SwapInterval;
-            item.Fence                     = Fence;
-            item.Crop                      = Crop;
+            BufferItem item = new()
+            {
+                Transform                 = Transform,
+                ScalingMode               = ScalingMode,
+                IsAutoTimestamp           = IsAutoTimestamp,
+                FrameNumber               = FrameNumber,
+                Slot                      = Slot,
+                IsDroppable               = IsDroppable,
+                AcquireCalled             = AcquireCalled,
+                TransformToDisplayInverse = TransformToDisplayInverse,
+                SwapInterval              = SwapInterval,
+                Fence                     = Fence,
+                Crop                      = Crop
+            };
 
             item.GraphicBuffer.Set(GraphicBuffer);
 

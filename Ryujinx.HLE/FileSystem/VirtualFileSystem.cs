@@ -72,11 +72,11 @@ namespace Ryujinx.HLE.FileSystem
         {
             if (fileName.StartsWith("//"))
             {
-                fileName = fileName.Substring(2);
+                fileName = fileName[2..];
             }
             else if (fileName.StartsWith('/'))
             {
-                fileName = fileName.Substring(1);
+                fileName = fileName[1..];
             }
             else
             {
@@ -122,8 +122,8 @@ namespace Ryujinx.HLE.FileSystem
                     return $"{rawPath}:/";
                 }
 
-                string basePath = rawPath.Substring(0, firstSeparatorOffset);
-                string fileName = rawPath.Substring(firstSeparatorOffset + 1);
+                string basePath = rawPath[..firstSeparatorOffset];
+                string fileName = rawPath[(firstSeparatorOffset + 1)..];
 
                 return $"{basePath}:/{fileName}";
             }
@@ -167,12 +167,12 @@ namespace Ryujinx.HLE.FileSystem
 
         public void InitializeFsServer(LibHac.Horizon horizon, out HorizonClient fsServerClient)
         {
-            LocalFileSystem serverBaseFs = new LocalFileSystem(AppDataManager.BaseDirPath);
+            LocalFileSystem serverBaseFs = new(AppDataManager.BaseDirPath);
 
             fsServerClient = horizon.CreatePrivilegedHorizonClient();
-            var fsServer = new FileSystemServer(fsServerClient);
+            FileSystemServer fsServer = new(fsServerClient);
 
-            RandomDataGenerator randomGenerator = buffer => Random.Shared.NextBytes(buffer);
+            static void randomGenerator(Span<byte> buffer) => Random.Shared.NextBytes(buffer);
 
             DefaultFsServerObjects fsServerObjects = DefaultFsServerObjects.GetDefaultEmulatedCreators(serverBaseFs, KeySet, fsServer, randomGenerator);
 
@@ -239,13 +239,13 @@ namespace Ryujinx.HLE.FileSystem
         {
             foreach (DirectoryEntryEx ticketEntry in fs.EnumerateEntries("/", "*.tik"))
             {
-                using var ticketFile = new UniqueRef<IFile>();
+                using UniqueRef<IFile> ticketFile = new();
 
                 Result result = fs.OpenFile(ref ticketFile.Ref(), ticketEntry.FullPath.ToU8Span(), OpenMode.Read);
 
                 if (result.IsSuccess())
                 {
-                    Ticket ticket = new Ticket(ticketFile.Get.AsStream());
+                    Ticket ticket = new(ticketFile.Get.AsStream());
 
                     if (ticket.TitleKeyType == TitleKeyType.Common)
                     {
@@ -332,7 +332,9 @@ namespace Ryujinx.HLE.FileSystem
         private static Result CreateSaveDataDirectory(HorizonClient hos, in SaveDataInfo info)
         {
             if (info.SpaceId != SaveDataSpaceId.User && info.SpaceId != SaveDataSpaceId.System)
+            {
                 return Result.Success;
+            }
 
             const string mountName = "SaveDir";
             var mountNameU8 = mountName.ToU8Span();
@@ -346,6 +348,7 @@ namespace Ryujinx.HLE.FileSystem
 
             Result rc = hos.Fs.MountBis(mountNameU8, partitionId);
             if (rc.IsFailure()) return rc;
+
             try
             {
                 var path = $"{mountName}:/save/{info.SaveDataId:x16}".ToU8Span();
@@ -372,7 +375,7 @@ namespace Ryujinx.HLE.FileSystem
 
             var mountName = "system".ToU8Span();
             DirectoryHandle handle = default;
-            List<ulong> localList = new List<ulong>();
+            List<ulong> localList = new();
 
             try
             {
@@ -382,7 +385,7 @@ namespace Ryujinx.HLE.FileSystem
                 rc = hos.Fs.OpenDirectory(out handle, "system:/save".ToU8Span(), OpenDirectoryMode.All);
                 if (rc.IsFailure()) return rc;
 
-                DirectoryEntry entry = new DirectoryEntry();
+                DirectoryEntry entry = new();
 
                 while (true)
                 {
@@ -432,13 +435,11 @@ namespace Ryujinx.HLE.FileSystem
 
                 if (rc.IsFailure())
                 {
-                    Logger.Warning?.Print(LogClass.Application,
-                        $"Error {rc.ToStringWithName()} when fixing extra data for system save data 0x{fixInfo.StaticSaveDataId:x}");
+                    Logger.Warning?.Print(LogClass.Application, $"Error {rc.ToStringWithName()} when fixing extra data for system save data 0x{fixInfo.StaticSaveDataId:x}");
                 }
                 else if (wasFixNeeded)
                 {
-                    Logger.Info?.Print(LogClass.Application,
-                        $"Tried to rebuild extra data for system save data 0x{fixInfo.StaticSaveDataId:x}");
+                    Logger.Info?.Print(LogClass.Application, $"Tried to rebuild extra data for system save data 0x{fixInfo.StaticSaveDataId:x}");
                 }
             }
 
@@ -453,26 +454,28 @@ namespace Ryujinx.HLE.FileSystem
             if (!rc.IsSuccess())
             {
                 if (!ResultFs.TargetNotFound.Includes(rc))
+                {
                     return rc;
+                }
 
                 // We'll reach this point only if the save data directory exists but it's not in the save data indexer.
                 // Creating the save will add it to the indexer while leaving its existing contents intact.
-                return hos.Fs.CreateSystemSaveData(info.StaticSaveDataId, UserId.InvalidId, info.OwnerId, info.DataSize,
-                    info.JournalSize, info.Flags);
+                return hos.Fs.CreateSystemSaveData(info.StaticSaveDataId, UserId.InvalidId, info.OwnerId, info.DataSize, info.JournalSize, info.Flags);
             }
 
             if (extraData.Attribute.StaticSaveDataId != 0 && extraData.OwnerId != 0)
             {
                 wasFixNeeded = false;
+
                 return Result.Success;
             }
 
             extraData = new SaveDataExtraData
             {
-                Attribute = { StaticSaveDataId = info.StaticSaveDataId },
-                OwnerId = info.OwnerId,
-                Flags = info.Flags,
-                DataSize = info.DataSize,
+                Attribute   = { StaticSaveDataId = info.StaticSaveDataId },
+                OwnerId     = info.OwnerId,
+                Flags       = info.Flags,
+                DataSize    = info.DataSize,
                 JournalSize = info.JournalSize
             };
 
@@ -480,30 +483,26 @@ namespace Ryujinx.HLE.FileSystem
             Unsafe.SkipInit(out SaveDataExtraData extraDataMask);
             SpanHelpers.AsByteSpan(ref extraDataMask).Fill(0xFF);
 
-            return hos.Fs.Impl.WriteSaveDataFileSystemExtraData(SaveDataSpaceId.System, info.StaticSaveDataId,
-                in extraData, in extraDataMask);
+            return hos.Fs.Impl.WriteSaveDataFileSystemExtraData(SaveDataSpaceId.System, info.StaticSaveDataId, in extraData, in extraDataMask);
         }
 
         private static Result FixExtraData(out bool wasFixNeeded, HorizonClient hos, in SaveDataInfo info)
         {
             wasFixNeeded = true;
 
-            Result rc = hos.Fs.Impl.ReadSaveDataFileSystemExtraData(out SaveDataExtraData extraData, info.SpaceId,
-                info.SaveDataId);
+            Result rc = hos.Fs.Impl.ReadSaveDataFileSystemExtraData(out SaveDataExtraData extraData, info.SpaceId, info.SaveDataId);
             if (rc.IsFailure()) return rc;
 
             // The extra data should have program ID or static save data ID set if it's valid.
             // We only try to fix the extra data if the info from the save data indexer has a program ID or static save data ID.
-            bool canFixByProgramId = extraData.Attribute.ProgramId == ProgramId.InvalidId &&
-                                       info.ProgramId != ProgramId.InvalidId;
-
+            bool canFixByProgramId  = extraData.Attribute.ProgramId == ProgramId.InvalidId && info.ProgramId != ProgramId.InvalidId;
             bool canFixBySaveDataId = extraData.Attribute.StaticSaveDataId == 0 && info.StaticSaveDataId != 0;
-
-            bool hasEmptyOwnerId = extraData.OwnerId == 0 && info.Type != SaveDataType.System;
+            bool hasEmptyOwnerId    = extraData.OwnerId == 0 && info.Type != SaveDataType.System;
 
             if (!canFixByProgramId && !canFixBySaveDataId && !hasEmptyOwnerId)
             {
                 wasFixNeeded = false;
+
                 return Result.Success;
             }
 

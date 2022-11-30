@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
 
         public Npdm(Stream stream)
         {
-            BinaryReader reader = new BinaryReader(stream);
+            BinaryReader reader = new(stream);
 
             if (reader.ReadInt32() != MetaMagic)
             {

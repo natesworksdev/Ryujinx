@@ -127,7 +127,7 @@ namespace Ryujinx.HLE.HOS
         public Horizon(Switch device)
         {
             TickSource = new TickSource(KernelConstants.CounterFrequency);
-            CpuEngine = new JitEngine(TickSource);
+            CpuEngine  = new JitEngine(TickSource);
 
             KernelContext = new KernelContext(
                 TickSource,
@@ -154,23 +154,23 @@ namespace Ryujinx.HLE.HOS
             ulong timePa                = region.Address + HidSize + FontSize + IirsSize;
             ulong appletCaptureBufferPa = region.Address + HidSize + FontSize + IirsSize + TimeSize;
 
-            KPageList hidPageList                 = new KPageList();
-            KPageList fontPageList                = new KPageList();
-            KPageList iirsPageList                = new KPageList();
-            KPageList timePageList                = new KPageList();
-            KPageList appletCaptureBufferPageList = new KPageList();
+            KPageList hidPageList                 = new();
+            KPageList fontPageList                = new();
+            KPageList iirsPageList                = new();
+            KPageList timePageList                = new();
+            KPageList appletCaptureBufferPageList = new();
 
-            hidPageList.AddRange(hidPa, HidSize / KPageTableBase.PageSize);
+            hidPageList.AddRange(hidPa,   HidSize  / KPageTableBase.PageSize);
             fontPageList.AddRange(fontPa, FontSize / KPageTableBase.PageSize);
             iirsPageList.AddRange(iirsPa, IirsSize / KPageTableBase.PageSize);
             timePageList.AddRange(timePa, TimeSize / KPageTableBase.PageSize);
             appletCaptureBufferPageList.AddRange(appletCaptureBufferPa, AppletCaptureBufferSize / KPageTableBase.PageSize);
 
-            var hidStorage = new SharedMemoryStorage(KernelContext, hidPageList);
-            var fontStorage = new SharedMemoryStorage(KernelContext, fontPageList);
-            var iirsStorage = new SharedMemoryStorage(KernelContext, iirsPageList);
-            var timeStorage = new SharedMemoryStorage(KernelContext, timePageList);
-            var appletCaptureBufferStorage = new SharedMemoryStorage(KernelContext, appletCaptureBufferPageList);
+            SharedMemoryStorage hidStorage                 = new(KernelContext, hidPageList);
+            SharedMemoryStorage fontStorage                = new(KernelContext, fontPageList);
+            SharedMemoryStorage iirsStorage                = new(KernelContext, iirsPageList);
+            SharedMemoryStorage timeStorage                = new(KernelContext, timePageList);
+            SharedMemoryStorage appletCaptureBufferStorage = new(KernelContext, appletCaptureBufferPageList);
 
             HidStorage = hidStorage;
 
@@ -178,7 +178,7 @@ namespace Ryujinx.HLE.HOS
             FontSharedMem = new KSharedMemory(KernelContext, fontStorage, 0, 0, KMemoryPermission.Read);
             IirsSharedMem = new KSharedMemory(KernelContext, iirsStorage, 0, 0, KMemoryPermission.Read);
 
-            KSharedMemory timeSharedMemory = new KSharedMemory(KernelContext, timeStorage, 0, 0, KMemoryPermission.Read);
+            KSharedMemory timeSharedMemory = new(KernelContext, timeStorage, 0, 0, KMemoryPermission.Read);
 
             TimeServiceManager.Instance.Initialize(device, this, timeSharedMemory, timeStorage, TimeSize);
 
@@ -210,7 +210,7 @@ namespace Ryujinx.HLE.HOS
             // Configure and setup internal offset
             TimeSpanType internalOffset = TimeSpanType.FromSeconds(device.Configuration.SystemTimeOffset);
 
-            TimeSpanType systemTimeOffset = new TimeSpanType(systemTime.NanoSeconds + internalOffset.NanoSeconds);
+            TimeSpanType systemTimeOffset = new(systemTime.NanoSeconds + internalOffset.NanoSeconds);
 
             if (systemTime.IsDaylightSavingTime() && !systemTimeOffset.IsDaylightSavingTime())
             {
@@ -229,7 +229,7 @@ namespace Ryujinx.HLE.HOS
 
             if (NxSettings.Settings.TryGetValue("time!standard_network_clock_sufficient_accuracy_minutes", out object standardNetworkClockSufficientAccuracyMinutes))
             {
-                TimeSpanType standardNetworkClockSufficientAccuracy = new TimeSpanType((int)standardNetworkClockSufficientAccuracyMinutes * 60000000000);
+                TimeSpanType standardNetworkClockSufficientAccuracy = new((int)standardNetworkClockSufficientAccuracyMinutes * 60000000000);
 
                 // The network system clock needs a valid system clock, as such we setup this system clock using the local system clock.
                 TimeServiceManager.Instance.StandardLocalSystemClock.GetClockContext(TickSource, out SystemClockContext localSytemClockContext);
@@ -265,7 +265,7 @@ namespace Ryujinx.HLE.HOS
 
             for (int i = 0; i < audioOutputRegisterBufferEvents.Length; i++)
             {
-                KEvent registerBufferEvent = new KEvent(KernelContext);
+                KEvent registerBufferEvent = new(KernelContext);
 
                 audioOutputRegisterBufferEvents[i] = new AudioKernelEvent(registerBufferEvent);
             }
@@ -277,7 +277,7 @@ namespace Ryujinx.HLE.HOS
 
             for (int i = 0; i < audioInputRegisterBufferEvents.Length; i++)
             {
-                KEvent registerBufferEvent = new KEvent(KernelContext);
+                KEvent registerBufferEvent = new(KernelContext);
 
                 audioInputRegisterBufferEvents[i] = new AudioKernelEvent(registerBufferEvent);
             }
@@ -288,7 +288,7 @@ namespace Ryujinx.HLE.HOS
 
             for (int i = 0; i < systemEvents.Length; i++)
             {
-                KEvent systemEvent = new KEvent(KernelContext);
+                KEvent systemEvent = new(KernelContext);
 
                 systemEvents[i] = new AudioKernelEvent(systemEvent);
             }
@@ -323,7 +323,7 @@ namespace Ryujinx.HLE.HOS
 
         public void LoadKip(string kipPath)
         {
-            using var kipFile = new SharedRef<IStorage>(new LocalStorage(kipPath, FileAccess.Read));
+            using SharedRef<IStorage> kipFile = new(new LocalStorage(kipPath, FileAccess.Read));
 
             ProgramLoader.LoadKip(KernelContext, new KipExecutable(in kipFile));
         }
@@ -425,8 +425,8 @@ namespace Ryujinx.HLE.HOS
                     AudioRendererManager.StopSendingCommands();
                 }
 
-                KProcess terminationProcess = new KProcess(KernelContext);
-                KThread terminationThread = new KThread(KernelContext);
+                KProcess terminationProcess = new(KernelContext);
+                KThread terminationThread = new(KernelContext);
 
                 terminationThread.Initialize(0, 0, 0, 3, 0, terminationProcess, ThreadType.Kernel, () =>
                 {

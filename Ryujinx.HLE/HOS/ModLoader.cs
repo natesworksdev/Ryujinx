@@ -7,15 +7,16 @@ using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.RomFs;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.Loaders.Mods;
+using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.Loaders.Executables;
+using Ryujinx.HLE.Loaders.Mods;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
-using System.IO;
-using Ryujinx.HLE.HOS.Kernel.Process;
 using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text;
 using Path = System.IO.Path;
 
 namespace Ryujinx.HLE.HOS
@@ -36,7 +37,7 @@ namespace Ryujinx.HLE.HOS
         private const string AmsNroPatchDir = "nro_patches";
         private const string AmsKipPatchDir = "kip_patches";
 
-        public struct Mod<T> where T : FileSystemInfo
+        public readonly struct Mod<T> where T : FileSystemInfo
         {
             public readonly string Name;
             public readonly T Path;
@@ -56,9 +57,9 @@ namespace Ryujinx.HLE.HOS
 
             public readonly string Name;
             public readonly FileInfo Path;
-            public readonly IEnumerable<String> Instructions;
+            public readonly IEnumerable<string> Instructions;
 
-            public Cheat(string name, FileInfo path, IEnumerable<String> instructions)
+            public Cheat(string name, FileInfo path, IEnumerable<string> instructions)
             {
                 Name = name;
                 Path = path;
@@ -173,12 +174,24 @@ namespace Ryujinx.HLE.HOS
         {
             if (cache.Initialized || !patchDir.Exists) return;
 
-            var patches = cache.KipPatches;
-            string type = null;
+            List<Mod<DirectoryInfo>> patches;
+            string type;
 
-            if (StrEquals(AmsNsoPatchDir, patchDir.Name)) { patches = cache.NsoPatches; type = "NSO"; }
-            else if (StrEquals(AmsNroPatchDir, patchDir.Name)) { patches = cache.NroPatches; type = "NRO"; }
-            else if (StrEquals(AmsKipPatchDir, patchDir.Name)) { patches = cache.KipPatches; type = "KIP"; }
+            if (StrEquals(AmsNsoPatchDir, patchDir.Name))
+            {
+                patches = cache.NsoPatches;
+                type = "NSO"; 
+            }
+            else if (StrEquals(AmsNroPatchDir, patchDir.Name))
+            {
+                patches = cache.NroPatches;
+                type = "NRO"; 
+            }
+            else if (StrEquals(AmsKipPatchDir, patchDir.Name))
+            {
+                patches = cache.KipPatches;
+                type = "KIP";
+            }
             else return;
 
             foreach (var modDir in patchDir.EnumerateDirectories())
@@ -192,7 +205,7 @@ namespace Ryujinx.HLE.HOS
         {
             if (!titleDir.Exists) return;
 
-            var fsFile = new FileInfo(Path.Combine(titleDir.FullName, RomfsContainer));
+            FileInfo fsFile = new(Path.Combine(titleDir.FullName, RomfsContainer));
             if (fsFile.Exists)
             {
                 mods.RomfsContainers.Add(new Mod<FileInfo>($"<{titleDir.Name} RomFs>", fsFile));
@@ -204,12 +217,12 @@ namespace Ryujinx.HLE.HOS
                 mods.ExefsContainers.Add(new Mod<FileInfo>($"<{titleDir.Name} ExeFs>", fsFile));
             }
 
-            System.Text.StringBuilder types = new System.Text.StringBuilder(5);
+            StringBuilder types = new(5);
 
             foreach (var modDir in titleDir.EnumerateDirectories())
             {
                 types.Clear();
-                Mod<DirectoryInfo> mod = new Mod<DirectoryInfo>("", null);
+                Mod<DirectoryInfo> mod = new("", null);
 
                 if (StrEquals(RomfsDir, modDir.Name))
                 {
@@ -312,8 +325,8 @@ namespace Ryujinx.HLE.HOS
         private static IEnumerable<Cheat> GetCheatsInFile(FileInfo cheatFile)
         {
             string cheatName = DefaultCheatName;
-            List<string> instructions = new List<string>();
-            List<Cheat> cheats = new List<Cheat>();
+            List<string> instructions = new();
+            List<Cheat> cheats = new();
 
             using (StreamReader cheatData = cheatFile.OpenText())
             {
@@ -341,7 +354,7 @@ namespace Ryujinx.HLE.HOS
                         }
 
                         // Start a new cheat section.
-                        cheatName = line.Substring(1, line.Length - 2);
+                        cheatName = line[1..^1];
                         instructions = new List<string>();
                     }
                     else if (line.Length > 0)
@@ -364,9 +377,7 @@ namespace Ryujinx.HLE.HOS
         // Assumes searchDirPaths don't overlap
         public static void CollectMods(Dictionary<ulong, ModCache> modCaches, PatchCache patches, params string[] searchDirPaths)
         {
-            static bool IsPatchesDir(string name) => StrEquals(AmsNsoPatchDir, name) ||
-                                                     StrEquals(AmsNroPatchDir, name) ||
-                                                     StrEquals(AmsKipPatchDir, name);
+            static bool IsPatchesDir(string name) => StrEquals(AmsNsoPatchDir, name) || StrEquals(AmsNroPatchDir, name) || StrEquals(AmsKipPatchDir, name);
 
             static bool IsContentsDir(string name) => StrEquals(AmsContentsDir, name);
 
@@ -393,7 +404,7 @@ namespace Ryujinx.HLE.HOS
 
             foreach (var path in searchDirPaths)
             {
-                var searchDir = new DirectoryInfo(path);
+                DirectoryInfo searchDir = new(path);
                 if (!searchDir.Exists)
                 {
                     Logger.Warning?.Print(LogClass.ModLoader, $"Mod Search Dir '{searchDir.FullName}' doesn't exist");
@@ -431,8 +442,8 @@ namespace Ryujinx.HLE.HOS
                 return baseStorage;
             }
 
-            var fileSet = new HashSet<string>();
-            var builder = new RomFsBuilder();
+            HashSet<string> fileSet = new();
+            RomFsBuilder builder = new();
             int count = 0;
 
             Logger.Info?.Print(LogClass.ModLoader, $"Applying RomFS mods for Title {titleId:X16}");
@@ -468,12 +479,12 @@ namespace Ryujinx.HLE.HOS
             Logger.Info?.Print(LogClass.ModLoader, $"Replaced {fileSet.Count} file(s) over {count} mod(s). Processing base storage...");
 
             // And finally, the base romfs
-            var baseRom = new RomFsFileSystem(baseStorage);
+            RomFsFileSystem baseRom = new(baseStorage);
             foreach (var entry in baseRom.EnumerateEntries()
                                          .Where(f => f.Type == DirectoryEntryType.File && !fileSet.Contains(f.FullPath))
                                          .OrderBy(f => f.FullPath, StringComparer.Ordinal))
             {
-                using var file = new UniqueRef<IFile>();
+                using UniqueRef<IFile> file = new();
 
                 baseRom.OpenFile(ref file.Ref(), entry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
                 builder.AddFile(entry.FullPath, file.Release());
@@ -492,7 +503,7 @@ namespace Ryujinx.HLE.HOS
                                     .Where(f => f.Type == DirectoryEntryType.File)
                                     .OrderBy(f => f.FullPath, StringComparer.Ordinal))
             {
-                using var file = new UniqueRef<IFile>();
+                using UniqueRef<IFile> file = new();
 
                 fs.OpenFile(ref file.Ref(), entry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
                 if (fileSet.Add(entry.FullPath))
@@ -536,7 +547,7 @@ namespace Ryujinx.HLE.HOS
 
         internal ModLoadResult ApplyExefsMods(ulong titleId, NsoExecutable[] nsos)
         {
-            ModLoadResult modLoadResult = new ModLoadResult
+            ModLoadResult modLoadResult = new()
             {
                 Stubs = new BitVector32(),
                 Replaces = new BitVector32()
@@ -560,7 +571,7 @@ namespace Ryujinx.HLE.HOS
                 {
                     var nsoName = ApplicationLoader.ExeFsPrefixes[i];
 
-                    FileInfo nsoFile = new FileInfo(Path.Combine(mod.Path.FullName, nsoName));
+                    FileInfo nsoFile = new(Path.Combine(mod.Path.FullName, nsoName));
                     if (nsoFile.Exists)
                     {
                         if (modLoadResult.Replaces[1 << i])
@@ -579,7 +590,7 @@ namespace Ryujinx.HLE.HOS
                     modLoadResult.Stubs[1 << i] |= File.Exists(Path.Combine(mod.Path.FullName, nsoName + StubExtension));
                 }
 
-                FileInfo npdmFile = new FileInfo(Path.Combine(mod.Path.FullName, "main.npdm"));
+                FileInfo npdmFile = new(Path.Combine(mod.Path.FullName, "main.npdm"));
                 if (npdmFile.Exists)
                 {
                     if (modLoadResult.Npdm != null)
@@ -651,7 +662,7 @@ namespace Ryujinx.HLE.HOS
 
             var cheats = mods.Cheats;
             var processExes = tamperInfo.BuildIds.Zip(tamperInfo.CodeAddresses, (k, v) => new { k, v })
-                .ToDictionary(x => x.k.Substring(0, Math.Min(Cheat.CheatIdSize, x.k.Length)), x => x.v);
+                .ToDictionary(x => x.k[..Math.Min(Cheat.CheatIdSize, x.k.Length)], x => x.v);
 
             foreach (var cheat in cheats)
             {
@@ -723,17 +734,17 @@ namespace Ryujinx.HLE.HOS
                         Logger.Info?.Print(LogClass.ModLoader, $"Matching IPS patch '{patchFile.Name}' in '{mod.Name}' bid={buildId}");
 
                         using var fs = patchFile.OpenRead();
-                        using var reader = new BinaryReader(fs);
+                        using BinaryReader reader = new(fs);
 
-                        var patcher = new IpsPatcher(reader);
+                        IpsPatcher patcher = new(reader);
                         patcher.AddPatches(patches[index]);
                     }
                     else if (StrEquals(".pchtxt", patchFile.Extension)) // IPSwitch
                     {
                         using var fs = patchFile.OpenRead();
-                        using var reader = new StreamReader(fs);
+                        using StreamReader reader = new(fs);
 
-                        var patcher = new IPSwitchPatcher(reader);
+                        IPSwitchPatcher patcher = new(reader);
 
                         int index = GetIndex(patcher.BuildId);
                         if (index == -1)

@@ -16,10 +16,5 @@ namespace Ryujinx.HLE.FileSystem
             TitleId     = titleId;
             ContentType = contentType;
         }
-
-        public void SetFlag(int flag)
-        {
-            Flag = flag;
-        }
     }
 }

@@ -77,22 +77,21 @@ namespace Ryujinx.HLE.Utilities
             ulong position = context.Request.PtrBuff[index].Position;
             ulong size     = context.Request.PtrBuff[index].Size;
 
-            using (MemoryStream ms = new MemoryStream())
+            using MemoryStream ms = new();
+
+            while (size-- > 0)
             {
-                while (size-- > 0)
+                byte value = context.Memory.Read<byte>(position++);
+
+                if (value == 0)
                 {
-                    byte value = context.Memory.Read<byte>(position++);
-
-                    if (value == 0)
-                    {
-                        break;
-                    }
-
-                    ms.WriteByte(value);
+                    break;
                 }
 
-                return Encoding.UTF8.GetString(ms.ToArray());
+                ms.WriteByte(value);
             }
+
+            return Encoding.UTF8.GetString(ms.ToArray());
         }
 
         public static U8Span ReadUtf8Span(ServiceCtx context, int index = 0)
@@ -110,22 +109,21 @@ namespace Ryujinx.HLE.Utilities
             ulong position = context.Request.SendBuff[index].Position;
             ulong size     = context.Request.SendBuff[index].Size;
 
-            using (MemoryStream ms = new MemoryStream())
+            using MemoryStream ms = new();
+
+            while (size-- > 0)
             {
-                while (size-- > 0)
+                byte value = context.Memory.Read<byte>(position++);
+
+                if (value == 0)
                 {
-                    byte value = context.Memory.Read<byte>(position++);
-
-                    if (value == 0)
-                    {
-                        break;
-                    }
-
-                    ms.WriteByte(value);
+                    break;
                 }
 
-                return Encoding.UTF8.GetString(ms.ToArray());
+                ms.WriteByte(value);
             }
+
+            return Encoding.UTF8.GetString(ms.ToArray());
         }
 
         public static int CompareCStr(ReadOnlySpan<byte> s1, ReadOnlySpan<byte> s2)

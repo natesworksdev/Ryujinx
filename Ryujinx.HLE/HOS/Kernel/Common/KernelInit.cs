@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 
         public static void InitializeResourceLimit(KResourceLimit resourceLimit, MemorySize size)
         {
-            void EnsureSuccess(KernelResult result)
+            static void EnsureSuccess(KernelResult result)
             {
                 if (result != KernelResult.Success)
                 {

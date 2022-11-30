@@ -32,13 +32,13 @@ namespace Ryujinx.HLE.HOS
             switch (mode)
             {
                 case MemoryManagerMode.SoftwarePageTable:
-                    var memoryManager = new MemoryManager(context.Memory, addressSpaceSize, invalidAccessHandler);
+                    MemoryManager memoryManager = new(context.Memory, addressSpaceSize, invalidAccessHandler);
                     return new ArmProcessContext<MemoryManager>(pid, _cpuEngine, _gpu, memoryManager, for64Bit);
 
                 case MemoryManagerMode.HostMapped:
                 case MemoryManagerMode.HostMappedUnsafe:
                     bool unsafeMode = mode == MemoryManagerMode.HostMappedUnsafe;
-                    var memoryManagerHostMapped = new MemoryManagerHostMapped(context.Memory, addressSpaceSize, unsafeMode, invalidAccessHandler);
+                    MemoryManagerHostMapped memoryManagerHostMapped = new(context.Memory, addressSpaceSize, unsafeMode, invalidAccessHandler);
                     return new ArmProcessContext<MemoryManagerHostMapped>(pid, _cpuEngine, _gpu, memoryManagerHostMapped, for64Bit);
 
                 default:

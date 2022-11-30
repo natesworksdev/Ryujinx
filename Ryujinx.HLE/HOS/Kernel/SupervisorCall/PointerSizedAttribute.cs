@@ -3,7 +3,5 @@
 namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 {
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
-    class PointerSizedAttribute : Attribute
-    {
-    }
+    class PointerSizedAttribute : Attribute { }
 }

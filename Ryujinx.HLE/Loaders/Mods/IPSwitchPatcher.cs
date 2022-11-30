@@ -31,13 +31,13 @@ namespace Ryujinx.HLE.Loaders.Mods
             }
 
             _reader = reader;
-            BuildId = header.Substring(BidHeader.Length).TrimEnd().TrimEnd('0');
+            BuildId = header[BidHeader.Length..].TrimEnd().TrimEnd('0');
         }
 
         // Uncomments line and unescapes C style strings within
         private static string PreprocessLine(string line)
         {
-            StringBuilder str = new StringBuilder();
+            StringBuilder str = new();
             Token state = Token.Normal;
 
             for (int i = 0; i < line.Length; ++i)
@@ -147,7 +147,7 @@ namespace Ryujinx.HLE.Loaders.Mods
                 return null;
             }
 
-            MemPatch patches = new MemPatch();
+            MemPatch patches = new();
 
             bool enabled     = false;
             bool printValues = false;

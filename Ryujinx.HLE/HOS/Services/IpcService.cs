@@ -4,8 +4,8 @@ using Ryujinx.HLE.HOS.Ipc;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
 
 namespace Ryujinx.HLE.HOS.Services
 {
@@ -125,9 +125,7 @@ namespace Ryujinx.HLE.HOS.Services
                 {
                     string serviceName;
 
-                    DummyService dummyService = service as DummyService;
-
-                    serviceName = (dummyService == null) ? service.GetType().FullName : dummyService.ServiceName;
+                    serviceName = (service is not DummyService dummyService) ? service.GetType().FullName : dummyService.ServiceName;
 
                     Logger.Warning?.Print(LogClass.KernelIpc, $"Missing service {serviceName}: {commandId} ignored");
                 }
@@ -179,9 +177,7 @@ namespace Ryujinx.HLE.HOS.Services
                 {
                     string serviceName;
 
-                    DummyService dummyService = this as DummyService;
-
-                    serviceName = (dummyService == null) ? GetType().FullName : dummyService.ServiceName;
+                    serviceName = (this is not DummyService dummyService) ? GetType().FullName : dummyService.ServiceName;
 
                     Logger.Warning?.Print(LogClass.KernelIpc, $"Missing service {serviceName}: {commandId} ignored");
                 }

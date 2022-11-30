@@ -1,13 +1,12 @@
 using Ryujinx.Common.Logging;
 using System;
 using System.IO;
-using System.Text;
 
 namespace Ryujinx.HLE.Loaders.Mods
 {
     class IpsPatcher
     {
-        MemPatch _patches;
+        readonly MemPatch _patches;
 
         public IpsPatcher(BinaryReader reader)
         {
@@ -25,8 +24,8 @@ namespace Ryujinx.HLE.Loaders.Mods
             ReadOnlySpan<byte> Ips32HeaderMagic = "IPS32"u8;
             ReadOnlySpan<byte> Ips32TailMagic   = "EEOF"u8;
 
-            MemPatch patches = new MemPatch();
-            var header = reader.ReadBytes(IpsHeaderMagic.Length).AsSpan();
+            MemPatch patches = new();
+            Span<byte> header = reader.ReadBytes(IpsHeaderMagic.Length).AsSpan();
 
             if (header.Length != IpsHeaderMagic.Length)
             {

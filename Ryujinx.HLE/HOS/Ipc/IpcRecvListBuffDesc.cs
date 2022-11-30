@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Ipc
         public IpcRecvListBuffDesc(ulong position, ulong size)
         {
             Position = position;
-            Size = size;
+            Size     = size;
         }
 
         public IpcRecvListBuffDesc(BinaryReader reader)
@@ -18,8 +18,7 @@ namespace Ryujinx.HLE.HOS.Ipc
             ulong value = reader.ReadUInt64();
 
             Position = value & 0xffffffffffff;
-
-            Size = (ushort)(value >> 48);
+            Size     = (ushort)(value >> 48);
         }
     }
 }

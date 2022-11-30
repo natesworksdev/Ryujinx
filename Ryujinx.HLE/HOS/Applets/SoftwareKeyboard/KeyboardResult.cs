@@ -5,8 +5,8 @@
     /// </summary>
     enum KeyboardResult
     {
-        NotSet = 0,
-        Accept = 1,
-        Cancel = 2,
+        NotSet,
+        Accept,
+        Cancel,
     }
 }

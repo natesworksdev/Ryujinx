@@ -6,5 +6,5 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         MapToOwner,
         Unmap,
         UnmapFromOwner
-    };
+    }
 }

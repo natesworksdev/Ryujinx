@@ -8,26 +8,26 @@
         /// <summary>
         /// The software keyboard has just been created or finalized and is uninitialized.
         /// </summary>
-        Uninitialized = 0x0,
+        Uninitialized,
 
         /// <summary>
         /// The software keyboard is initialized, but it is not visible and not processing input.
         /// </summary>
-        Initialized = 0x1,
+        Initialized,
 
         /// <summary>
         /// The software keyboard is transitioning to a visible state.
         /// </summary>
-        Appearing = 0x2,
+        Appearing,
 
         /// <summary>
         /// The software keyboard is visible and receiving processing input.
         /// </summary>
-        Shown = 0x3,
+        Shown,
 
         /// <summary>
         /// software keyboard is transitioning to a hidden state because the user pressed either OK or Cancel.
         /// </summary>
-        Disappearing = 0x4
+        Disappearing
     }
 }

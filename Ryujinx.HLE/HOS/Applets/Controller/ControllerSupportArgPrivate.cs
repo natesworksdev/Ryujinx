@@ -1,6 +1,5 @@
 namespace Ryujinx.HLE.HOS.Applets
 {
-#pragma warning disable CS0649
     struct ControllerSupportArgPrivate
     {
         public uint PrivateSize;
@@ -12,5 +11,4 @@ namespace Ryujinx.HLE.HOS.Applets
         public uint NpadStyleSet;
         public uint NpadJoyHoldType;
     }
-#pragma warning restore CS0649
 }

@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
         {
             stream.Seek(offset, SeekOrigin.Begin);
 
-            BinaryReader reader = new BinaryReader(stream);
+            BinaryReader reader = new(stream);
 
             Rsa2048Signature = reader.ReadBytes(0x100);
             Rsa2048Modulus   = reader.ReadBytes(0x100);
@@ -51,11 +51,9 @@ namespace Ryujinx.HLE.Loaders.Npdm
             int kernelAccessControlOffset  = reader.ReadInt32();
             int kernelAccessControlSize    = reader.ReadInt32();
 
-            FsAccessControl = new FsAccessControl(stream, offset + fsAccessControlOffset, fsAccessControlSize);
-
+            FsAccessControl      = new FsAccessControl(stream, offset + fsAccessControlOffset, fsAccessControlSize);
             ServiceAccessControl = new ServiceAccessControl(stream, offset + serviceAccessControlOffset, serviceAccessControlSize);
-
-            KernelAccessControl = new KernelAccessControl(stream, offset + kernelAccessControlOffset, kernelAccessControlSize);
+            KernelAccessControl  = new KernelAccessControl(stream, offset + kernelAccessControlOffset, kernelAccessControlSize);
         }
     }
 }

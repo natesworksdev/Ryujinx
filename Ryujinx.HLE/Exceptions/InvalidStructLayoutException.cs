@@ -9,7 +9,6 @@ namespace Ryujinx.HLE.Exceptions
 
         public InvalidStructLayoutException(string message) : base(message) { }
         
-        public InvalidStructLayoutException(int expectedSize)
-            : base($"Type {_structType.Name} has the wrong size. Expected: {expectedSize} bytes, got: {Unsafe.SizeOf<T>()} bytes") { }
+        public InvalidStructLayoutException(int expectedSize) : base($"Type {_structType.Name} has the wrong size. Expected: {expectedSize} bytes, got: {Unsafe.SizeOf<T>()} bytes") { }
     }
 }

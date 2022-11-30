@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
     {
         private class Block
         {
-            private KPageBitmap _bitmap = new KPageBitmap();
+            private KPageBitmap _bitmap = new();
             private ulong _heapAddress;
             private ulong _endOffset;
 
@@ -80,6 +80,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 ulong currBlockSize = 1UL << currBlockShift;
                 ulong nextBlockSize = 1UL << nextBlockShift;
                 ulong align = nextBlockShift != 0 ? nextBlockSize : currBlockSize;
+
                 return KPageBitmap.CalculateManagementOverheadSize((align * 2 + BitUtils.AlignUp(regionSize, align)) / currBlockSize);
             }
         }
@@ -92,9 +93,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         private readonly int _blocksCount;
         private readonly Block[] _blocks;
 
-        public KPageHeap(ulong address, ulong size) : this(address, size, _memoryBlockPageShifts)
-        {
-        }
+        public KPageHeap(ulong address, ulong size) : this(address, size, _memoryBlockPageShifts) { }
 
         public KPageHeap(ulong address, ulong size, int[] blockShifts)
         {

@@ -32,10 +32,10 @@ namespace Ryujinx.HLE.HOS.Services
         private readonly KernelContext _context;
         private KProcess _selfProcess;
 
-        private readonly List<int> _sessionHandles = new List<int>();
-        private readonly List<int> _portHandles = new List<int>();
-        private readonly Dictionary<int, IpcService> _sessions = new Dictionary<int, IpcService>();
-        private readonly Dictionary<int, Func<IpcService>> _ports = new Dictionary<int, Func<IpcService>>();
+        private readonly List<int> _sessionHandles = new();
+        private readonly List<int> _portHandles = new();
+        private readonly Dictionary<int, IpcService> _sessions = new();
+        private readonly Dictionary<int, Func<IpcService>> _ports = new();
 
         public ManualResetEvent InitDone { get; }
         public string Name { get; }
@@ -54,7 +54,7 @@ namespace Ryujinx.HLE.HOS.Services
                 ProcessCreationFlags.Is64Bit |
                 ProcessCreationFlags.PoolPartitionSystem;
 
-            ProcessCreationInfo creationInfo = new ProcessCreationInfo("Service", 1, 0, 0x8000000, 1, flags, 0, 0);
+            ProcessCreationInfo creationInfo = new("Service", 1, 0, 0x8000000, 1, flags, 0, 0);
 
             KernelStatic.StartInitialProcess(context, creationInfo, DefaultCapabilities, 44, Main);
         }
@@ -172,8 +172,8 @@ namespace Ryujinx.HLE.HOS.Services
 
             process.CpuMemory.Read(messagePtr, reqData);
 
-            IpcMessage request = new IpcMessage(reqData, (long)messagePtr);
-            IpcMessage response = new IpcMessage();
+            IpcMessage request = new(reqData, (long)messagePtr);
+            IpcMessage response = new();
 
             ulong tempAddr = recvListAddr;
             int sizesOffset = request.RawData.Length - ((request.RecvListBuff.Count * 2 + 3) & ~3);
@@ -202,145 +202,134 @@ namespace Ryujinx.HLE.HOS.Services
             bool shouldReply = true;
             bool isTipcCommunication = false;
 
-            using (MemoryStream raw = new MemoryStream(request.RawData))
+            using MemoryStream raw = new(request.RawData);
+
+            BinaryReader reqReader = new(raw);
+
+            if (request.Type == IpcMessageType.HipcRequest ||
+                request.Type == IpcMessageType.HipcRequestWithContext)
             {
-                BinaryReader reqReader = new BinaryReader(raw);
+                response.Type = IpcMessageType.HipcResponse;
 
-                if (request.Type == IpcMessageType.HipcRequest ||
-                    request.Type == IpcMessageType.HipcRequestWithContext)
-                {
-                    response.Type = IpcMessageType.HipcResponse;
+                using MemoryStream resMs = new();
 
-                    using (MemoryStream resMs = new MemoryStream())
-                    {
-                        BinaryWriter resWriter = new BinaryWriter(resMs);
+                BinaryWriter resWriter = new(resMs);
 
-                        ServiceCtx context = new ServiceCtx(
-                            _context.Device,
-                            process,
-                            process.CpuMemory,
-                            thread,
-                            request,
-                            response,
-                            reqReader,
-                            resWriter);
+                ServiceCtx context = new(
+                    _context.Device,
+                    process,
+                    process.CpuMemory,
+                    thread,
+                    request,
+                    response,
+                    reqReader,
+                    resWriter);
 
-                        _sessions[serverSessionHandle].CallHipcMethod(context);
+                _sessions[serverSessionHandle].CallHipcMethod(context);
 
-                        response.RawData = resMs.ToArray();
-                    }
-                }
-                else if (request.Type == IpcMessageType.HipcControl ||
-                         request.Type == IpcMessageType.HipcControlWithContext)
-                {
-                    uint magic = (uint)reqReader.ReadUInt64();
-                    uint cmdId = (uint)reqReader.ReadUInt64();
-
-                    switch (cmdId)
-                    {
-                        case 0:
-                            request = FillResponse(response, 0, _sessions[serverSessionHandle].ConvertToDomain());
-                            break;
-
-                        case 3:
-                            request = FillResponse(response, 0, PointerBufferSize);
-                            break;
-
-                        // TODO: Whats the difference between IpcDuplicateSession/Ex?
-                        case 2:
-                        case 4:
-                            int unknown = reqReader.ReadInt32();
-
-                            _context.Syscall.CreateSession(out int dupServerSessionHandle, out int dupClientSessionHandle, false, 0);
-
-                            AddSessionObj(dupServerSessionHandle, _sessions[serverSessionHandle]);
-
-                            response.HandleDesc = IpcHandleDesc.MakeMove(dupClientSessionHandle);
-
-                            request = FillResponse(response, 0);
-
-                            break;
-
-                        default: throw new NotImplementedException(cmdId.ToString());
-                    }
-                }
-                else if (request.Type == IpcMessageType.HipcCloseSession || request.Type == IpcMessageType.TipcCloseSession)
-                {
-                    _context.Syscall.CloseHandle(serverSessionHandle);
-                    _sessionHandles.Remove(serverSessionHandle);
-                    IpcService service = _sessions[serverSessionHandle];
-                    if (service is IDisposable disposableObj)
-                    {
-                        disposableObj.Dispose();
-                    }
-                    _sessions.Remove(serverSessionHandle);
-                    shouldReply = false;
-                }
-                // If the type is past 0xF, we are using TIPC
-                else if (request.Type > IpcMessageType.TipcCloseSession)
-                {
-                    isTipcCommunication = true;
-
-                    // Response type is always the same as request on TIPC.
-                    response.Type = request.Type;
-
-                    using (MemoryStream resMs = new MemoryStream())
-                    {
-                        BinaryWriter resWriter = new BinaryWriter(resMs);
-
-                        ServiceCtx context = new ServiceCtx(
-                            _context.Device,
-                            process,
-                            process.CpuMemory,
-                            thread,
-                            request,
-                            response,
-                            reqReader,
-                            resWriter);
-
-                        _sessions[serverSessionHandle].CallTipcMethod(context);
-
-                        response.RawData = resMs.ToArray();
-                    }
-
-                    process.CpuMemory.Write(messagePtr, response.GetBytesTipc());
-                }
-                else
-                {
-                    throw new NotImplementedException(request.Type.ToString());
-                }
-
-                if (!isTipcCommunication)
-                {
-                    process.CpuMemory.Write(messagePtr, response.GetBytes((long)messagePtr, recvListAddr | ((ulong)PointerBufferSize << 48)));
-                }
-
-                return shouldReply;
+                response.RawData = resMs.ToArray();
             }
+            else if (request.Type == IpcMessageType.HipcControl ||
+                     request.Type == IpcMessageType.HipcControlWithContext)
+            {
+                uint magic = (uint)reqReader.ReadUInt64();
+                uint cmdId = (uint)reqReader.ReadUInt64();
+
+                switch (cmdId)
+                {
+                    case 0:
+                        request = FillResponse(response, 0, _sessions[serverSessionHandle].ConvertToDomain());
+                        break;
+
+                    case 3:
+                        request = FillResponse(response, 0, PointerBufferSize);
+                        break;
+
+                    // TODO: Whats the difference between IpcDuplicateSession/Ex?
+                    case 2:
+                    case 4:
+                        int unknown = reqReader.ReadInt32();
+
+                        _context.Syscall.CreateSession(out int dupServerSessionHandle, out int dupClientSessionHandle, false, 0);
+
+                        AddSessionObj(dupServerSessionHandle, _sessions[serverSessionHandle]);
+
+                        response.HandleDesc = IpcHandleDesc.MakeMove(dupClientSessionHandle);
+
+                        request = FillResponse(response, 0);
+
+                        break;
+
+                    default: throw new NotImplementedException(cmdId.ToString());
+                }
+            }
+            else if (request.Type == IpcMessageType.HipcCloseSession || request.Type == IpcMessageType.TipcCloseSession)
+            {
+                _context.Syscall.CloseHandle(serverSessionHandle);
+                _sessionHandles.Remove(serverSessionHandle);
+                IpcService service = _sessions[serverSessionHandle];
+                if (service is IDisposable disposableObj)
+                {
+                    disposableObj.Dispose();
+                }
+                _sessions.Remove(serverSessionHandle);
+                shouldReply = false;
+            }
+            // If the type is past 0xF, we are using TIPC
+            else if (request.Type > IpcMessageType.TipcCloseSession)
+            {
+                isTipcCommunication = true;
+
+                // Response type is always the same as request on TIPC.
+                response.Type = request.Type;
+
+                using (MemoryStream resMs = new())
+                {
+                    BinaryWriter resWriter = new(resMs);
+
+                    ServiceCtx context = new(_context.Device, process, process.CpuMemory, thread, request, response, reqReader, resWriter);
+
+                    _sessions[serverSessionHandle].CallTipcMethod(context);
+
+                    response.RawData = resMs.ToArray();
+                }
+
+                process.CpuMemory.Write(messagePtr, response.GetBytesTipc());
+            }
+            else
+            {
+                throw new NotImplementedException(request.Type.ToString());
+            }
+
+            if (!isTipcCommunication)
+            {
+                process.CpuMemory.Write(messagePtr, response.GetBytes((long)messagePtr, recvListAddr | ((ulong)PointerBufferSize << 48)));
+            }
+
+            return shouldReply;
         }
 
         private static IpcMessage FillResponse(IpcMessage response, long result, params int[] values)
         {
-            using (MemoryStream ms = new MemoryStream())
+            using MemoryStream ms = new();
+
+            BinaryWriter writer = new(ms);
+
+            foreach (int value in values)
             {
-                BinaryWriter writer = new BinaryWriter(ms);
-
-                foreach (int value in values)
-                {
-                    writer.Write(value);
-                }
-
-                return FillResponse(response, result, ms.ToArray());
+                writer.Write(value);
             }
+
+            return FillResponse(response, result, ms.ToArray());
         }
 
         private static IpcMessage FillResponse(IpcMessage response, long result, byte[] data = null)
         {
             response.Type = IpcMessageType.HipcResponse;
 
-            using (MemoryStream ms = new MemoryStream())
+            using (MemoryStream ms = new())
             {
-                BinaryWriter writer = new BinaryWriter(ms);
+                BinaryWriter writer = new (ms);
 
                 writer.Write(IpcMagic.Sfco);
                 writer.Write(result);

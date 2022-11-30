@@ -37,8 +37,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             Running = false;
         }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 }

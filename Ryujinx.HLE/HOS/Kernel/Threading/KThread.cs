@@ -664,7 +664,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             const int MaxRegistersAArch32 = 15;
             const int MaxFpuRegistersAArch32 = 16;
 
-            ThreadContext context = new ThreadContext();
+            ThreadContext context = new();
 
             if (Owner.Flags.HasFlag(ProcessCreationFlags.Is64Bit))
             {

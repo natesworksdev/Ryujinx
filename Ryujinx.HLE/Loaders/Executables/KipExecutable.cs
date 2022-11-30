@@ -35,7 +35,7 @@ namespace Ryujinx.HLE.Loaders.Executables
 
         public KipExecutable(in SharedRef<IStorage> inStorage)
         {
-            KipReader reader = new KipReader();
+            KipReader reader = new();
 
             reader.Initialize(in inStorage).ThrowIfFailure();
 

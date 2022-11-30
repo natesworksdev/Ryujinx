@@ -35,7 +35,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
             Register register = context.GetRegister(instruction[DestinationRegisterIndex]);
             byte operation = instruction[OperationTypeIndex];
             ulong immediate = InstructionHelper.GetImmediate(instruction, ValueImmediateIndex, ValueImmediateSize);
-            Value<ulong> rightHandSideValue = new Value<ulong>(immediate);
+            Value<ulong> rightHandSideValue = new(immediate);
 
             void Emit(Type operationType)
             {

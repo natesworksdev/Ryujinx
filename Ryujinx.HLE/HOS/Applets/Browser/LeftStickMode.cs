@@ -2,7 +2,7 @@
 {
     enum LeftStickMode
     {
-        Pointer = 0,
+        Pointer,
         Cursor
     }
 }

@@ -31,5 +31,15 @@ namespace Ryujinx.HLE.Ui
                    Pitch       == other.Pitch       &&
                    Size        == other.Size;
         }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as RenderingSurfaceInfo);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }

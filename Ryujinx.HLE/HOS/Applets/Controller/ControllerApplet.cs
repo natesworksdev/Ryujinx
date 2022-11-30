@@ -1,19 +1,18 @@
+using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Services.Am.AppletAE;
+using Ryujinx.HLE.HOS.Services.Hid;
+using Ryujinx.HLE.HOS.Services.Hid.Types;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Services.Hid;
-using Ryujinx.HLE.HOS.Services.Hid.Types;
-using Ryujinx.HLE.HOS.Services.Am.AppletAE;
-
 using static Ryujinx.HLE.HOS.Services.Hid.HidServer.HidUtils;
 
 namespace Ryujinx.HLE.HOS.Applets
 {
     internal class ControllerApplet : IApplet
     {
-        private Horizon _system;
+        private readonly Horizon _system;
 
         private AppletSession _normalSession;
 
@@ -82,11 +81,12 @@ namespace Ryujinx.HLE.HOS.Applets
                 playerMin = playerMax = 1;
             }
 
-            int configuredCount = 0;
-            PlayerIndex primaryIndex = PlayerIndex.Unknown;
+            int configuredCount;
+            PlayerIndex primaryIndex;
+
             while (!_system.Device.Hid.Npads.Validate(playerMin, playerMax, (ControllerType)privateArg.NpadStyleSet, out configuredCount, out primaryIndex))
             {
-                ControllerAppletUiArgs uiArgs = new ControllerAppletUiArgs
+                ControllerAppletUiArgs uiArgs = new()
                 {
                     PlayerCountMin = playerMin,
                     PlayerCountMax = playerMax,
@@ -101,7 +101,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 }
             }
 
-            ControllerSupportResultInfo result = new ControllerSupportResultInfo
+            ControllerSupportResultInfo result = new()
             {
                 PlayerCount = (sbyte)configuredCount,
                 SelectedId = (uint)GetNpadIdTypeFromIndex(primaryIndex)
@@ -124,24 +124,22 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private byte[] BuildResponse(ControllerSupportResultInfo result)
         {
-            using (MemoryStream stream = new MemoryStream())
-            using (BinaryWriter writer = new BinaryWriter(stream))
-            {
-                writer.Write(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref result, Unsafe.SizeOf<ControllerSupportResultInfo>())));
+            using MemoryStream stream = new();
+            using BinaryWriter writer = new(stream);
 
-                return stream.ToArray();
-            }
+            writer.Write(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref result, Unsafe.SizeOf<ControllerSupportResultInfo>())));
+
+            return stream.ToArray();
         }
 
         private byte[] BuildResponse()
         {
-            using (MemoryStream stream = new MemoryStream())
-            using (BinaryWriter writer = new BinaryWriter(stream))
-            {
-                writer.Write((ulong)ResultCode.Success);
+            using MemoryStream stream = new();
+            using BinaryWriter writer = new(stream);
 
-                return stream.ToArray();
-            }
+            writer.Write((ulong)ResultCode.Success);
+
+            return stream.ToArray();
         }
     }
 }

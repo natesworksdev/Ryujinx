@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -33,12 +34,11 @@ namespace Ryujinx.HLE.HOS.Ipc
 
         public IpcMessage(byte[] data, long cmdPtr) : this()
         {
-            using (MemoryStream ms = new MemoryStream(data))
-            {
-                BinaryReader reader = new BinaryReader(ms);
+            using MemoryStream ms = new(data);
 
-                Initialize(reader, cmdPtr);
-            }
+            BinaryReader reader = new(ms);
+
+            Initialize(reader, cmdPtr);
         }
 
         private void Initialize(BinaryReader reader, long cmdPtr)
@@ -119,118 +119,116 @@ namespace Ryujinx.HLE.HOS.Ipc
 
         public byte[] GetBytes(long cmdPtr, ulong recvListAddr)
         {
-            using (MemoryStream ms = new MemoryStream())
+            using MemoryStream ms = new();
+
+            BinaryWriter writer = new(ms);
+
+            int word0;
+            int word1;
+
+            word0  = (int)Type;
+            word0 |= (PtrBuff.Count      & 0xf) << 16;
+            word0 |= (SendBuff.Count     & 0xf) << 20;
+            word0 |= (ReceiveBuff.Count  & 0xf) << 24;
+            word0 |= (ExchangeBuff.Count & 0xf) << 28;
+
+            byte[] handleData = Array.Empty<byte>();
+
+            if (HandleDesc != null)
             {
-                BinaryWriter writer = new BinaryWriter(ms);
-
-                int word0;
-                int word1;
-
-                word0  = (int)Type;
-                word0 |= (PtrBuff.Count      & 0xf) << 16;
-                word0 |= (SendBuff.Count     & 0xf) << 20;
-                word0 |= (ReceiveBuff.Count  & 0xf) << 24;
-                word0 |= (ExchangeBuff.Count & 0xf) << 28;
-
-                byte[] handleData = new byte[0];
-
-                if (HandleDesc != null)
-                {
-                    handleData = HandleDesc.GetBytes();
-                }
-
-                int dataLength = RawData?.Length ?? 0;
-
-                dataLength = (dataLength + 3) & ~3;
-
-                int rawLength = dataLength;
-
-                int pad0 = (int)GetPadSize16(cmdPtr + 8 + handleData.Length + PtrBuff.Count * 8);
-
-                // Apparently, padding after Raw Data is 16 bytes, however when there is
-                // padding before Raw Data too, we need to subtract the size of this padding.
-                // This is the weirdest padding I've seen so far...
-                int pad1 = 0x10 - pad0;
-
-                dataLength = (dataLength + pad0 + pad1) / 4;
-
-                word1 = (dataLength & 0x3ff) | (2 << 10);
-
-                if (HandleDesc != null)
-                {
-                    word1 |= 1 << 31;
-                }
-
-                writer.Write(word0);
-                writer.Write(word1);
-                writer.Write(handleData);
-
-                for (int index = 0; index < PtrBuff.Count; index++)
-                {
-                    writer.Write(PtrBuff[index].GetWord0());
-                    writer.Write(PtrBuff[index].GetWord1());
-                }
-
-                ms.Seek(pad0, SeekOrigin.Current);
-
-                if (RawData != null)
-                {
-                    writer.Write(RawData);
-                    ms.Seek(rawLength - RawData.Length, SeekOrigin.Current);
-                }
-
-                writer.Write(new byte[pad1]);
-                writer.Write(recvListAddr);
-
-                return ms.ToArray();
+                handleData = HandleDesc.GetBytes();
             }
+
+            int dataLength = RawData?.Length ?? 0;
+
+            dataLength = (dataLength + 3) & ~3;
+
+            int rawLength = dataLength;
+
+            int pad0 = (int)GetPadSize16(cmdPtr + 8 + handleData.Length + PtrBuff.Count * 8);
+
+            // Apparently, padding after Raw Data is 16 bytes, however when there is
+            // padding before Raw Data too, we need to subtract the size of this padding.
+            // This is the weirdest padding I've seen so far...
+            int pad1 = 0x10 - pad0;
+
+            dataLength = (dataLength + pad0 + pad1) / 4;
+
+            word1 = (dataLength & 0x3ff) | (2 << 10);
+
+            if (HandleDesc != null)
+            {
+                word1 |= 1 << 31;
+            }
+
+            writer.Write(word0);
+            writer.Write(word1);
+            writer.Write(handleData);
+
+            for (int index = 0; index < PtrBuff.Count; index++)
+            {
+                writer.Write(PtrBuff[index].GetWord0());
+                writer.Write(PtrBuff[index].GetWord1());
+            }
+
+            ms.Seek(pad0, SeekOrigin.Current);
+
+            if (RawData != null)
+            {
+                writer.Write(RawData);
+                ms.Seek(rawLength - RawData.Length, SeekOrigin.Current);
+            }
+
+            writer.Write(new byte[pad1]);
+            writer.Write(recvListAddr);
+
+            return ms.ToArray();
         }
 
         public byte[] GetBytesTipc()
         {
             Debug.Assert(PtrBuff.Count == 0);
 
-            using (MemoryStream ms = new MemoryStream())
+            using MemoryStream ms = new();
+
+            BinaryWriter writer = new(ms);
+
+            int word0;
+            int word1;
+
+            word0  = (int)Type;
+            word0 |= (SendBuff.Count     & 0xf) << 20;
+            word0 |= (ReceiveBuff.Count  & 0xf) << 24;
+            word0 |= (ExchangeBuff.Count & 0xf) << 28;
+
+            byte[] handleData = new byte[0];
+
+            if (HandleDesc != null)
             {
-                BinaryWriter writer = new BinaryWriter(ms);
-
-                int word0;
-                int word1;
-
-                word0 = (int)Type;
-                word0 |= (SendBuff.Count & 0xf) << 20;
-                word0 |= (ReceiveBuff.Count & 0xf) << 24;
-                word0 |= (ExchangeBuff.Count & 0xf) << 28;
-
-                byte[] handleData = new byte[0];
-
-                if (HandleDesc != null)
-                {
-                    handleData = HandleDesc.GetBytes();
-                }
-
-                int dataLength = RawData?.Length ?? 0;
-
-                dataLength = ((dataLength + 3) & ~3) / 4;
-
-                word1 = (dataLength & 0x3ff);
-
-                if (HandleDesc != null)
-                {
-                    word1 |= 1 << 31;
-                }
-
-                writer.Write(word0);
-                writer.Write(word1);
-                writer.Write(handleData);
-
-                if (RawData != null)
-                {
-                    writer.Write(RawData);
-                }
-
-                return ms.ToArray();
+                handleData = HandleDesc.GetBytes();
             }
+
+            int dataLength = RawData?.Length ?? 0;
+
+            dataLength = ((dataLength + 3) & ~3) / 4;
+
+            word1 = (dataLength & 0x3ff);
+
+            if (HandleDesc != null)
+            {
+                word1 |= 1 << 31;
+            }
+
+            writer.Write(word0);
+            writer.Write(word1);
+            writer.Write(handleData);
+
+            if (RawData != null)
+            {
+                writer.Write(RawData);
+            }
+
+            return ms.ToArray();
         }
 
         private long GetPadSize16(long position)

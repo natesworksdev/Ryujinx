@@ -34,7 +34,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
             _waitingObjects = new List<WaitingObject>();
             _keepRunning = true;
 
-            Thread work = new Thread(WaitAndCheckScheduledObjects)
+            Thread work = new(WaitAndCheckScheduledObjects)
             {
                 Name = "HLE.TimeManager"
             };
@@ -69,7 +69,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 
         private void WaitAndCheckScheduledObjects()
         {
-            SpinWait spinWait = new SpinWait();
+            SpinWait spinWait = new();
             WaitingObject next;
 
             using (_waitEvent = new AutoResetEvent(false))

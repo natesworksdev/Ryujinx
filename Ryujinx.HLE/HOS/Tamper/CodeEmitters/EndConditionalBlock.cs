@@ -84,7 +84,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
             // Create a conditional block with the current operations and nest it in the upper
             // block of the stack.
 
-            IfBlock block = new IfBlock(condition, operations, operationsElse);
+            IfBlock block = new(condition, operations, operationsElse);
             context.CurrentOperations.Add(block);
         }
     }

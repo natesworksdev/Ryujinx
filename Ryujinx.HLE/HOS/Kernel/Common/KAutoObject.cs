@@ -65,8 +65,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
             }
         }
 
-        protected virtual void Destroy()
-        {
-        }
+        protected virtual void Destroy() { }
     }
 }

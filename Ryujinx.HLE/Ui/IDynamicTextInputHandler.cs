@@ -5,8 +5,8 @@ namespace Ryujinx.HLE.Ui
     public interface IDynamicTextInputHandler : IDisposable
     {
         event DynamicTextChangedHandler TextChangedEvent;
-        event KeyPressedHandler KeyPressedEvent;
-        event KeyReleasedHandler KeyReleasedEvent;
+        event KeyPressedHandler         KeyPressedEvent;
+        event KeyReleasedHandler        KeyReleasedEvent;
 
         bool TextProcessingEnabled { get; set; }
 

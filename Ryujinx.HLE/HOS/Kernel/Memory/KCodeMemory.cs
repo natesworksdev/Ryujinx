@@ -42,7 +42,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             return KernelResult.Success;
         }
 
-        public KernelResult Map(ulong address, ulong size, KMemoryPermission perm)
+        public KernelResult Map(ulong address, ulong size)
         {
             if (_pageList.GetPagesCount() != BitUtils.DivRoundUp(size, KPageTableBase.PageSize))
             {

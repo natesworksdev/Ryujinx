@@ -357,24 +357,14 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             _entrypoint = creationInfo.CodeAddress;
             _imageSize = (ulong)creationInfo.CodePagesCount * KPageTableBase.PageSize;
 
-            switch (Flags & ProcessCreationFlags.AddressSpaceMask)
+            _memoryUsageCapacity = (Flags & ProcessCreationFlags.AddressSpaceMask) switch
             {
-                case ProcessCreationFlags.AddressSpace32Bit:
-                case ProcessCreationFlags.AddressSpace64BitDeprecated:
-                case ProcessCreationFlags.AddressSpace64Bit:
-                    _memoryUsageCapacity = MemoryManager.HeapRegionEnd -
-                                           MemoryManager.HeapRegionStart;
-                    break;
-
-                case ProcessCreationFlags.AddressSpace32BitWithoutAlias:
-                    _memoryUsageCapacity = MemoryManager.HeapRegionEnd -
-                                           MemoryManager.HeapRegionStart +
-                                           MemoryManager.AliasRegionEnd -
-                                           MemoryManager.AliasRegionStart;
-                    break;
-
-                default: throw new InvalidOperationException($"Invalid MMU flags value 0x{Flags:x2}.");
-            }
+                ProcessCreationFlags.AddressSpace32Bit or
+                ProcessCreationFlags.AddressSpace64BitDeprecated or
+                ProcessCreationFlags.AddressSpace64Bit => MemoryManager.HeapRegionEnd - MemoryManager.HeapRegionStart,
+                ProcessCreationFlags.AddressSpace32BitWithoutAlias => MemoryManager.HeapRegionEnd - MemoryManager.HeapRegionStart + MemoryManager.AliasRegionEnd - MemoryManager.AliasRegionStart,
+                _ => throw new InvalidOperationException($"Invalid MMU flags value 0x{Flags:x2}."),
+            };
 
             GenerateRandomEntropy();
 
@@ -1032,10 +1022,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         private void SignalExit()
         {
-            if (ResourceLimit != null)
-            {
-                ResourceLimit.Release(LimitableResource.Memory, GetMemoryUsage());
-            }
+            ResourceLimit?.Release(LimitableResource.Memory, GetMemoryUsage());
 
             KernelContext.CriticalSection.Enter();
 

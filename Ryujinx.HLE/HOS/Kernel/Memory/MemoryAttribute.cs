@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
     enum MemoryAttribute  : byte
     {
         None = 0,
-        Mask = 0xff,
+        Mask = 0xFF,
 
         Borrowed     = 1 << 0,
         IpcMapped    = 1 << 1,

@@ -49,44 +49,43 @@ namespace Ryujinx.HLE.HOS.Ipc
 
         public static IpcHandleDesc MakeCopy(params int[] handles)
         {
-            return new IpcHandleDesc(handles, new int[0]);
+            return new IpcHandleDesc(handles, Array.Empty<int>());
         }
 
         public static IpcHandleDesc MakeMove(params int[] handles)
         {
-            return new IpcHandleDesc(new int[0], handles);
+            return new IpcHandleDesc(Array.Empty<int>(), handles);
         }
 
         public byte[] GetBytes()
         {
-            using (MemoryStream ms = new MemoryStream())
+            using MemoryStream ms = new();
+
+            BinaryWriter writer = new(ms);
+
+            int word = HasPId ? 1 : 0;
+
+            word |= (ToCopy.Length & 0xf) << 1;
+            word |= (ToMove.Length & 0xf) << 5;
+
+            writer.Write(word);
+
+            if (HasPId)
             {
-                BinaryWriter writer = new BinaryWriter(ms);
-
-                int word = HasPId ? 1 : 0;
-
-                word |= (ToCopy.Length & 0xf) << 1;
-                word |= (ToMove.Length & 0xf) << 5;
-
-                writer.Write(word);
-
-                if (HasPId)
-                {
-                    writer.Write(PId);
-                }
-
-                foreach (int handle in ToCopy)
-                {
-                    writer.Write(handle);
-                }
-
-                foreach (int handle in ToMove)
-                {
-                    writer.Write(handle);
-                }
-
-                return ms.ToArray();
+                writer.Write(PId);
             }
+
+            foreach (int handle in ToCopy)
+            {
+                writer.Write(handle);
+            }
+
+            foreach (int handle in ToMove)
+            {
+                writer.Write(handle);
+            }
+
+            return ms.ToArray();
         }
     }
 }

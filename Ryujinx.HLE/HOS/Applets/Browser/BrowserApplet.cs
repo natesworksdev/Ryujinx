@@ -12,13 +12,12 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
         public event EventHandler AppletStateChanged;
 
         private AppletSession _normalSession;
-        private AppletSession _interactiveSession;
 
         private CommonArguments _commonArguments;
         private List<BrowserArgument> _arguments;
         private ShimKind _shimKind;
 
-        public BrowserApplet(Horizon system) {}
+        public BrowserApplet(Horizon system) { }
 
         public ResultCode GetResult()
         {
@@ -28,8 +27,6 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
         public ResultCode Start(AppletSession normalSession, AppletSession interactiveSession)
         {
             _normalSession = normalSession;
-            _interactiveSession = interactiveSession;
-
             _commonArguments = IApplet.ReadStruct<CommonArguments>(_normalSession.Pop());
 
             Logger.Stub?.PrintStub(LogClass.ServiceAm, $"WebApplet version: 0x{_commonArguments.AppletVersion:x8}");
@@ -47,15 +44,16 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
 
             if ((_commonArguments.AppletVersion >= 0x80000 && _shimKind == ShimKind.Web) || (_commonArguments.AppletVersion >= 0x30000 && _shimKind == ShimKind.Share))
             {
-                List<BrowserOutput> result = new List<BrowserOutput>();
-
-                result.Add(new BrowserOutput(BrowserOutputType.ExitReason, (uint)WebExitReason.ExitButton));
+                List<BrowserOutput> result = new()
+                {
+                    new BrowserOutput(BrowserOutputType.ExitReason, (uint)WebExitReason.ExitButton)
+                };
 
                 _normalSession.Push(BuildResponseNew(result));
             }
             else
             {
-                WebCommonReturnValue result = new WebCommonReturnValue()
+                WebCommonReturnValue result = new()
                 {
                     ExitReason  = WebExitReason.ExitButton,
                 };
@@ -70,34 +68,32 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
 
         private byte[] BuildResponseOld(WebCommonReturnValue result)
         {
-            using (MemoryStream stream = new MemoryStream())
-            using (BinaryWriter writer = new BinaryWriter(stream))
-            {
-                writer.WriteStruct(result);
+            using MemoryStream stream = new();
+            using BinaryWriter writer = new(stream);
 
-                return stream.ToArray();
-            }
+            writer.WriteStruct(result);
+
+            return stream.ToArray();
         }
         private byte[] BuildResponseNew(List<BrowserOutput> outputArguments)
         {
-            using (MemoryStream stream = new MemoryStream())
-            using (BinaryWriter writer = new BinaryWriter(stream))
+            using MemoryStream stream = new();
+            using BinaryWriter writer = new(stream);
+
+            writer.WriteStruct(new WebArgHeader
             {
-                writer.WriteStruct(new WebArgHeader
-                {
-                    Count    = (ushort)outputArguments.Count,
-                    ShimKind = _shimKind
-                });
+                Count = (ushort)outputArguments.Count,
+                ShimKind = _shimKind
+            });
 
-                foreach (BrowserOutput output in outputArguments)
-                {
-                    output.Write(writer);
-                }
-
-                writer.Write(new byte[0x2000 - writer.BaseStream.Position]);
-
-                return stream.ToArray();
+            foreach (BrowserOutput output in outputArguments)
+            {
+                output.Write(writer);
             }
+
+            writer.Write(new byte[0x2000 - writer.BaseStream.Position]);
+
+            return stream.ToArray();
         }
     }
 }

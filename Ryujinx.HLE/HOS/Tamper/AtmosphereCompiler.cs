@@ -57,7 +57,7 @@ namespace Ryujinx.HLE.HOS.Tamper
 
         private ITamperProgram CompileImpl(string name, IEnumerable<string> rawInstructions)
         {
-            CompilationContext context = new CompilationContext(_exeAddress, _heapAddress, _aliasAddress, _aslrAddress, _process);
+            CompilationContext context = new(_exeAddress, _heapAddress, _aliasAddress, _aslrAddress, _process);
             context.BlockStack.Push(new OperationBlock(null));
 
             // Parse the instructions.
@@ -132,7 +132,7 @@ namespace Ryujinx.HLE.HOS.Tamper
 
             // Initialize only the registers used.
 
-            Value<ulong> zero = new Value<ulong>(0UL);
+            Value<ulong> zero = new(0);
             int position = 0;
 
             foreach (Register register in context.Registers.Values)

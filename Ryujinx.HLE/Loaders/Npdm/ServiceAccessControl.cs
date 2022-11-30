@@ -13,11 +13,11 @@ namespace Ryujinx.HLE.Loaders.Npdm
         {
             stream.Seek(offset, SeekOrigin.Begin);
 
-            BinaryReader reader = new BinaryReader(stream);
+            BinaryReader reader = new(stream);
 
             int bytesRead = 0;
 
-            Dictionary<string, bool> services = new Dictionary<string, bool>();
+            Dictionary<string, bool> services = new();
 
             while (bytesRead != size)
             {

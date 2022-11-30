@@ -38,9 +38,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 return KernelResult.InvalidSize;
             }
 
-            KMemoryPermission expectedPermission = process.Pid == _ownerPid
-                ? _ownerPermission
-                : _userPermission;
+            KMemoryPermission expectedPermission = process.Pid == _ownerPid ? _ownerPermission : _userPermission;
 
             if (permission != expectedPermission)
             {
