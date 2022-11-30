@@ -955,28 +955,24 @@
                     Icon="Document" />
             </ui:NavigationView.MenuItems>
         </ui:NavigationView>
-        <DockPanel
+        <StackPanel
             Grid.Row="2"
-            Margin="5"
-            LastChildFill="False">
+            Margin="10"
+            Spacing="10"
+            Orientation="Horizontal"
+            HorizontalAlignment="Right">
             <Button 
-                DockPanel.Dock="Left" 
-                Margin="5" 
                 Content="{locale:Locale SettingsButtonApply}" 
                 Command="{ReflectionBinding ApplyButton}" />
             <Button 
-                DockPanel.Dock="Right" 
-                Margin="5" 
+                HotKey="Escape" 
+                Content="{locale:Locale SettingsButtonCancel}" 
+                Command="{ReflectionBinding CancelButton}" />
+            <Button 
                 HotKey="Enter" 
                 Background="{DynamicResource SystemAccentColor}" 
                 Content="{locale:Locale SettingsButtonOk}" 
                 Command="{ReflectionBinding OkButton}" />
-            <Button 
-                DockPanel.Dock="Right" 
-                Margin="5" 
-                HotKey="Escape" 
-                Content="{locale:Locale SettingsButtonCancel}" 
-                Command="{ReflectionBinding CancelButton}" />
-        </DockPanel>
+        </StackPanel>
     </Grid>
 </window:StyleableWindow>
