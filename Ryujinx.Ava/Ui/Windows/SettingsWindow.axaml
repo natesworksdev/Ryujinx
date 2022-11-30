@@ -959,9 +959,24 @@
             Grid.Row="2"
             Margin="5"
             LastChildFill="False">
-            <Button DockPanel.Dock="Left" Margin="5" Content="{locale:Locale SettingsButtonApply}" Click="ApplyButton_Clicked" />
-            <Button DockPanel.Dock="Right" Margin="5" Content="{locale:Locale SettingsButtonOk}" Click="OkButton_Clicked" />
-            <Button DockPanel.Dock="Right" Margin="5" Content="{locale:Locale SettingsButtonCancel}" Click="CancelButton_Clicked" />
+            <Button 
+                DockPanel.Dock="Left" 
+                Margin="5" 
+                Content="{locale:Locale SettingsButtonApply}" 
+                Command="{ReflectionBinding ApplyButton}" />
+            <Button 
+                DockPanel.Dock="Right" 
+                Margin="5" 
+                HotKey="Enter" 
+                Background="{DynamicResource SystemAccentColor}" 
+                Content="{locale:Locale SettingsButtonOk}" 
+                Command="{ReflectionBinding OkButton}" />
+            <Button 
+                DockPanel.Dock="Right" 
+                Margin="5" 
+                HotKey="Escape" 
+                Content="{locale:Locale SettingsButtonCancel}" 
+                Command="{ReflectionBinding CancelButton}" />
         </DockPanel>
     </Grid>
 </window:StyleableWindow>
