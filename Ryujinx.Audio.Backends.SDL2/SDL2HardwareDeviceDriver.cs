@@ -114,6 +114,7 @@ namespace Ryujinx.Audio.Backends.SDL2
             if (device == 0)
             {
                 string errorMessage = $"SDL2 open audio device initialization failed with error \"{SDL_GetError()}\"";
+
                 Logger.Error?.Print(LogClass.Application, errorMessage);
                 return 0;
             }
