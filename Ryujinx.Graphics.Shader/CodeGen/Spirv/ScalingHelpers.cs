@@ -13,30 +13,27 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             CodeGenContext context,
             AstTextureOperation texOp,
             SpvInstruction vector,
-            bool intCoords,
             bool isBindless,
             bool isIndexed,
             bool isArray,
             int pCount)
         {
-            if (intCoords)
+            if (context.Config.Stage.SupportsRenderScale() &&
+                !isBindless &&
+                !isIndexed)
             {
-                if (context.Config.Stage.SupportsRenderScale() &&
-                    !isBindless &&
-                    !isIndexed)
-                {
-                    int index = texOp.Inst == Instruction.ImageLoad
-                        ? context.Config.GetTextureDescriptors().Length + context.Config.FindImageDescriptorIndex(texOp)
-                        : context.Config.FindTextureDescriptorIndex(texOp);
+                int index = texOp.Inst == Instruction.ImageLoad ?
+                    context.Config.GetTextureDescriptors().Length +
+                    context.Config.FindImageDescriptorIndex(texOp) :
+                    context.Config.FindTextureDescriptorIndex(texOp);
 
-                    if (pCount == 3 && isArray)
-                    {
-                        return ApplyScaling2DArray(context, vector, index);
-                    }
-                    else if (pCount == 2 && !isArray)
-                    {
-                        return ApplyScaling2D(context, vector, index);
-                    }
+                if (pCount == 3 && isArray)
+                {
+                    return ApplyScaling2DArray(context, vector, index);
+                }
+                else if (pCount == 2 && !isArray)
+                {
+                    return ApplyScaling2D(context, vector, index);
                 }
             }
 
