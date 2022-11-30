@@ -199,13 +199,13 @@ namespace Ryujinx.Ava.Ui.Windows
             }
         }
 
-        private void SaveButton_Clicked(object sender, RoutedEventArgs e)
+        private void OkButton_Clicked(object sender, RoutedEventArgs e)
         {
             SaveSettings();
             Close();
         }
 
-        private void CloseButton_Clicked(object sender, RoutedEventArgs e)
+        private void CancelButton_Clicked(object sender, RoutedEventArgs e)
         {
             ViewModel.RevertIfNotSaved();
             Close();
