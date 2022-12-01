@@ -113,8 +113,6 @@ namespace Ryujinx.Audio.Backends.SDL2
 
             if (device == 0)
             {
-                string errorMessage = $"SDL2 open audio device initialization failed with error \"{SDL_GetError()}\"";
-
                 Logger.Error?.Print(LogClass.Application, 
                     $"SDL2 open audio device initialization failed with error \"{SDL_GetError()}\"");
 
@@ -125,8 +123,6 @@ namespace Ryujinx.Audio.Backends.SDL2
 
             if (!isValid)
             {
-                string errorMessage = $"SDL2 audio device is invalid!";
-
                 Logger.Error?.Print(LogClass.Application, "SDL2 open audio device is not valid");
                 SDL_CloseAudioDevice(device);
 
