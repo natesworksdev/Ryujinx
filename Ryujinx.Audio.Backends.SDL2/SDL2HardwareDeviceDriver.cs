@@ -125,7 +125,7 @@ namespace Ryujinx.Audio.Backends.SDL2
             {
                 string errorMessage = $"SDL2 audio device is invalid!";
 
-                Logger.Error?.Print(LogClass.Application, errorMessage);
+                Logger.Error?.Print(LogClass.Application, "SDL2 open audio device is not valid");
                 SDL_CloseAudioDevice(device);
 
                 return 0;
