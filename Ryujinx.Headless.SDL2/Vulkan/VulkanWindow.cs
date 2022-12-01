@@ -27,11 +27,16 @@ namespace Ryujinx.Headless.SDL2.Vulkan
             MouseDriver.SetClientSize(DefaultWidth, DefaultHeight);
         }
 
+        private void BasicInvoke(Action action)
+        {
+            action();
+        }
+
         public unsafe IntPtr CreateWindowSurface(IntPtr instance)
         {
             ulong surfaceHandle = 0;
 
-            SDL2Driver.MainThreadDispatcher(() =>
+            Action createSurface = () =>
             {
                 if (SDL_Vulkan_CreateSurface(WindowHandle, instance, out surfaceHandle) == SDL_bool.SDL_FALSE)
                 {
@@ -41,7 +46,16 @@ namespace Ryujinx.Headless.SDL2.Vulkan
 
                     throw new Exception(errorMessage);
                 }
-            });
+            };
+
+            if (SDL2Driver.MainThreadDispatcher != null)
+            {
+                SDL2Driver.MainThreadDispatcher(createSurface);
+            }
+            else
+            {
+                createSurface();
+            }
 
             return (IntPtr)surfaceHandle;
         }
