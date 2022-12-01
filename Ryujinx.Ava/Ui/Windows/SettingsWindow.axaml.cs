@@ -9,9 +9,12 @@ using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.ViewModels;
+using Ryujinx.Common;
+using Ryujinx.Common.Configuration;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.Input;
 using Ryujinx.Input.Assigner;
+using Ryujinx.Ui.Common.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -43,6 +46,7 @@ namespace Ryujinx.Ava.Ui.Windows
             tzMultiBinding.Bindings.Add(new Binding("Abbreviation"));
 
             TimeZoneBox.ValueMemberBinding = tzMultiBinding;
+            ConfigurationState.Instance.Graphics.GraphicsBackend.Event += GraphicsBackendChanged;
         }
 
         public SettingsWindow()
@@ -59,6 +63,11 @@ namespace Ryujinx.Ava.Ui.Windows
             Pages.Children.Clear();
             NavPanel.SelectionChanged += NavPanelOnSelectionChanged;
             NavPanel.SelectedItem = NavPanel.MenuItems.ElementAt(0);
+        }
+
+        private void GraphicsBackendChanged(object sender, ReactiveEventArgs<GraphicsBackend> e)
+        {
+            ViewModel.GraphicsBackendIndex = (int)ConfigurationState.Instance.Graphics.GraphicsBackend.Value;
         }
 
         private void Button_Checked(object sender, RoutedEventArgs e)

@@ -1287,6 +1287,14 @@ namespace Ryujinx.Ui.Common.Configuration
         private static void LogValueChange<T>(object sender, ReactiveEventArgs<T> eventArgs, string valueName)
         {
             Ryujinx.Common.Logging.Logger.Info?.Print(LogClass.Configuration, $"{valueName} set to: {eventArgs.NewValue}");
+            
+            if (eventArgs.NewValue is not GraphicsBackend newValue) { return; }
+
+            if (OperatingSystem.IsMacOS() && newValue == GraphicsBackend.OpenGl)
+            {
+                Instance.Graphics.GraphicsBackend.Value = GraphicsBackend.Vulkan;
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, "OpenGL is not supported on macOS changing configuration file graphics backend to Vulkan");
+            }
         }
 
         public static void Initialize()
