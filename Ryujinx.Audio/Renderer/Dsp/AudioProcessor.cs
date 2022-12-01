@@ -116,7 +116,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             };
         }
 
-        public bool HasRemainCommands(int sessionId)
+        public bool HasRemainingCommands(int sessionId)
         {
             return _sessionCommandList[sessionId] != null;
         }

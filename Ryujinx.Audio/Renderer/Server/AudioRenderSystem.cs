@@ -670,7 +670,7 @@ namespace Ryujinx.Audio.Renderer.Server
                 {
                     _terminationEvent.Reset();
 
-                    if (!_manager.Processor.HasRemainCommands(_sessionId))
+                    if (!_manager.Processor.HasRemainingCommands(_sessionId))
                     {
                         GenerateCommandList(out CommandList commands);
 
