@@ -780,6 +780,11 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 {
                     _owner.LoadProgressBar.IsVisible = false;
                 }
+
+                if (e.NumAppsLoaded == e.NumAppsFound)
+                {
+                    _owner.LoadProgressBar.IsVisible = false;
+                }
             });
         }
 
