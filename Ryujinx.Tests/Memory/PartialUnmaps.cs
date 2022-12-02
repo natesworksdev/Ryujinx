@@ -78,11 +78,13 @@ namespace Ryujinx.Tests.Memory
 
             ref var state = ref PartialUnmapState.GetRef();
 
+            Thread testThread = null;
+            bool shouldAccess = true;
+
             try
             {
                 // Globally reset the struct for handling partial unmap races.
                 PartialUnmapState.Reset();
-                bool shouldAccess = true;
                 bool error = false;
 
                 // Create a large mapping.
@@ -92,8 +94,6 @@ namespace Ryujinx.Tests.Memory
                 {
                     memory.Reprotect(0, vaSize, MemoryPermission.Read);
                 }
-
-                Thread testThread;
 
                 if (readOnly)
                 {
@@ -193,6 +193,10 @@ namespace Ryujinx.Tests.Memory
             }
             finally
             {
+                // In case something failed, we want to ensure the test thread is dead before disposing of the memory.
+                shouldAccess = false;
+                testThread?.Join();
+
                 exceptionHandler.Dispose();
                 unusedMainMemory.Dispose();
                 memory.Dispose();
