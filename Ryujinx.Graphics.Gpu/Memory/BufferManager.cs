@@ -80,15 +80,16 @@ namespace Ryujinx.Graphics.Gpu.Memory
             /// <param name="descriptors">Buffer binding information</param>
             public void SetBindings(BufferDescriptor[] descriptors)
             {
-                Bindings = descriptors;
-
                 if (descriptors == null)
                 {
                     Count = 0;
                     return;
                 }
 
-                Count = descriptors.Length;
+                if ((Count = descriptors.Length) != 0)
+                {
+                    Bindings = descriptors;
+                }
             }
         }
 
