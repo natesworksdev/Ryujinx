@@ -168,6 +168,8 @@
   "SettingsTabInputDirectKeyboardAccess": "Bezpośredni Dostęp do Klawiatury",
   "SettingsButtonSave": "Zapisz",
   "SettingsButtonClose": "Zamknij",
+  "SettingsButtonOk": "OK",
+  "SettingsButtonCancel": "Anuluj",
   "SettingsButtonApply": "Zastosuj",
   "ControllerSettingsPlayer": "Gracz",
   "ControllerSettingsPlayer1": "Gracz 1",

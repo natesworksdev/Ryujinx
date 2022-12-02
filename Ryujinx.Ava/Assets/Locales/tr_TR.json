@@ -168,6 +168,8 @@
   "SettingsTabInputDirectKeyboardAccess": "Doğrudan Klavye Erişimi",
   "SettingsButtonSave": "Kaydet",
   "SettingsButtonClose": "Kapat",
+  "SettingsButtonOk": "Tamam",
+  "SettingsButtonCancel": "İptal",
   "SettingsButtonApply": "Uygula",
   "ControllerSettingsPlayer": "Oyuncu",
   "ControllerSettingsPlayer1": "Oyuncu 1",
