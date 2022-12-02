@@ -115,8 +115,8 @@
                     <Setter Property="Padding" Value="0" />
                     <Setter Property="Margin" Value="0" />
                     <Setter Property="CornerRadius" Value="5" />
-                    <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorDark3}" />
-                    <Setter Property="BorderThickness" Value="2" />
+                    <Setter Property="Background" Value="#0fffffff" />
+                    <Setter Property="BorderThickness" Value="2"/>
                     <Style.Animations>
                         <Animation Duration="0:0:0.7">
                             <KeyFrame Cue="0%">
@@ -134,6 +134,12 @@
                         </Animation>
                     </Style.Animations>
                 </Style>
+                <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                    <Setter Property="Background" Value="#0fffffff" />
+                </Style>
+                <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+                    <Setter Property="Background" Value="#1effffff" />
+                </Style>
             </ListBox.Styles>
             <ListBox.ItemTemplate>
                 <DataTemplate>
@@ -144,7 +150,8 @@
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
                             ClipToBounds="True"
-                            CornerRadius="5">
+                            CornerRadius="5"
+                            BoxShadow="5 2 Black">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
@@ -152,9 +159,6 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition />
-                                </Grid.RowDefinitions>
                                 <Image
                                     Grid.RowSpan="3"
                                     Grid.Column="0"
@@ -169,7 +173,7 @@
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Top"
                                     Orientation="Vertical"
-                                    Spacing="5">
+                                    Spacing="5" >
                                     <TextBlock
                                         HorizontalAlignment="Stretch"
                                         Text="{Binding TitleName}"
@@ -214,20 +218,10 @@
                                     Margin="-5,-5,0,0"
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Top"
-                                    FontSize="20"
-                                    Foreground="Yellow"
+                                    FontSize="16"
+                                    Foreground="White"
                                     IsVisible="{Binding Favorite}"
                                     Symbol="StarFilled" />
-                                <ui:SymbolIcon
-                                    Grid.Row="0"
-                                    Grid.Column="0"
-                                    Margin="-5,-5,0,0"
-                                    HorizontalAlignment="Left"
-                                    VerticalAlignment="Top"
-                                    FontSize="20"
-                                    Foreground="Black"
-                                    IsVisible="{Binding Favorite}"
-                                    Symbol="Star" />
                             </Grid>
                         </Border>
                     </Grid>
