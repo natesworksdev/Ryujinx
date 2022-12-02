@@ -219,7 +219,7 @@
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Top"
                                     FontSize="16"
-                                    Foreground="White"
+                                    Foreground="{DynamicResource SystemAccentColor}"
                                     IsVisible="{Binding Favorite}"
                                     Symbol="StarFilled" />
                             </Grid>
