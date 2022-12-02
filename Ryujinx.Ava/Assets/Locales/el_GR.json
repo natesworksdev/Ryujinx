@@ -168,6 +168,8 @@
   "SettingsTabInputDirectKeyboardAccess": "Άμεση Πρόσβαση στο Πληκτρολόγιο",
   "SettingsButtonSave": "Αποθήκευση",
   "SettingsButtonClose": "Κλείσιμο",
+  "SettingsButtonOk": "OK",
+  "SettingsButtonCancel": "Ακύρωση",
   "SettingsButtonApply": "Εφαρμογή",
   "ControllerSettingsPlayer": "Παίχτης",
   "ControllerSettingsPlayer1": "Παίχτης 1",

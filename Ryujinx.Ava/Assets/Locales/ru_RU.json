@@ -167,6 +167,8 @@
   "SettingsTabInputDirectKeyboardAccess": "Прямой доступ с клавиатуры",
   "SettingsButtonSave": "Сохранить",
   "SettingsButtonClose": "Закрыть",
+  "SettingsButtonOk": "OK",
+  "SettingsButtonCancel": "Отмена",
   "SettingsButtonApply": "Применить",
   "ControllerSettingsPlayer": "Игрок",
   "ControllerSettingsPlayer1": "Игрок 1",
