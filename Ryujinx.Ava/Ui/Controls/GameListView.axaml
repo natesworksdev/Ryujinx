@@ -115,7 +115,7 @@
                     <Setter Property="Padding" Value="0" />
                     <Setter Property="Margin" Value="0" />
                     <Setter Property="CornerRadius" Value="5" />
-                    <Setter Property="Background" Value="#0fffffff" />
+                    <Setter Property="Background" Value="{DynamicResource AppListBackgroundColor}" />
                     <Setter Property="BorderThickness" Value="2"/>
                     <Style.Animations>
                         <Animation Duration="0:0:0.7">
@@ -135,10 +135,10 @@
                     </Style.Animations>
                 </Style>
                 <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
-                    <Setter Property="Background" Value="#0fffffff" />
+                    <Setter Property="Background" Value="{DynamicResource AppListBackgroundColor}" />
                 </Style>
                 <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
-                    <Setter Property="Background" Value="#1effffff" />
+                    <Setter Property="Background" Value="{DynamicResource AppListHoverBackgroundColor}" />
                 </Style>
             </ListBox.Styles>
             <ListBox.ItemTemplate>
@@ -150,8 +150,7 @@
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
                             ClipToBounds="True"
-                            CornerRadius="5"
-                            BoxShadow="5 2 Black">
+                            CornerRadius="5">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
