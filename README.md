@@ -52,7 +52,7 @@ See our [Setup & Configuration Guide](https://github.com/Ryujinx/Ryujinx/wiki/Ry
 For our Local Wireless and LAN builds, see our [Multiplayer: Local Play/Local Wireless Guide
 ](https://github.com/Ryujinx/Ryujinx/wiki/Multiplayer-(LDN-Local-Wireless)-Guide).
 
-Avalonia UI is available in various localized translations. See [crowdin.com/ryujinx](https://crwd.in/ryujinx) for more informations about translations.
+Avalonia UI comes with translations for various languages. See [Crowdin](https://crwd.in/ryujinx) for more information about them.
 
 ## Latest build
 
