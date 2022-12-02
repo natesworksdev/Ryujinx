@@ -1,8 +1,5 @@
 using ARMeilleure.Translation.PTC;
 using Avalonia;
-using Avalonia.Rendering;
-using Avalonia.Threading;
-using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
@@ -11,6 +8,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Common.System;
 using Ryujinx.Common.SystemInfo;
 using Ryujinx.Modules;
+using Ryujinx.SDL2.Common;
 using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
@@ -23,18 +21,15 @@ namespace Ryujinx.Ava
 {
     internal class Program
     {
-        public static double      WindowScaleFactor { get; set; }
-        public static double      ActualScaleFactor { get; set; }
-        public static string      Version           { get; private set; }
-        public static string      ConfigurationPath { get; private set; }
-        public static bool        PreviewerDetached { get; private set; }
-        public static RenderTimer RenderTimer       { get; private set; }
+        public static double WindowScaleFactor { get; set; }
+        public static string Version           { get; private set; }
+        public static string ConfigurationPath { get; private set; }
+        public static bool   PreviewerDetached { get; private set; }
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern int MessageBoxA(IntPtr hWnd, string text, string caption, uint type);
 
         private const uint MB_ICONWARNING = 0x30;
-        private const int  BaseDpi        = 96;
 
         public static void Main(string[] args)
         {
@@ -49,11 +44,7 @@ namespace Ryujinx.Ava
 
             Initialize(args);
 
-            RenderTimer = new RenderTimer();
-
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
-
-            RenderTimer.Dispose();
         }
 
         public static AppBuilder BuildAvaloniaApp()
@@ -65,7 +56,7 @@ namespace Ryujinx.Ava
                     EnableMultiTouch = true,
                     EnableIme        = true,
                     UseEGL           = false,
-                    UseGpu           = false
+                    UseGpu           = true
                 })
                 .With(new Win32PlatformOptions
                 {
@@ -75,12 +66,6 @@ namespace Ryujinx.Ava
                     CompositionBackdropCornerRadius = 8.0f,
                 })
                 .UseSkia()
-                .AfterSetup(_ =>
-                {
-                    AvaloniaLocator.CurrentMutable
-                        .Bind<IRenderTimer>().ToConstant(RenderTimer)
-                        .Bind<IRenderLoop>().ToConstant(new RenderLoop(RenderTimer, Dispatcher.UIThread));
-                })
                 .LogToTrace();
         }
 
@@ -110,12 +95,14 @@ namespace Ryujinx.Ava
             // Initialize Discord integration.
             DiscordIntegrationModule.Initialize();
 
+            // Initialize SDL2 driver
+            SDL2Driver.MainThreadDispatcher = action => Dispatcher.UIThread.InvokeAsync(action, DispatcherPriority.Input);
+
             ReloadConfig();
 
             ForceDpiAware.Windows();
 
             WindowScaleFactor = ForceDpiAware.GetWindowScaleFactor();
-            ActualScaleFactor = ForceDpiAware.GetActualScaleFactor() / BaseDpi;
 
             // Logging system information.
             PrintSystemInfo();

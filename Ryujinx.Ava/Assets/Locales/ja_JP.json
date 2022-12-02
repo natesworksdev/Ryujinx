@@ -168,6 +168,8 @@
   "SettingsTabInputDirectKeyboardAccess": "キーボード直接アクセス",
   "SettingsButtonSave": "セーブ",
   "SettingsButtonClose": "閉じる",
+  "SettingsButtonOk": "オーケー",
+  "SettingsButtonCancel": "キャンセル",
   "SettingsButtonApply": "適用",
   "ControllerSettingsPlayer": "プレイヤー",
   "ControllerSettingsPlayer1": "プレイヤー 1",

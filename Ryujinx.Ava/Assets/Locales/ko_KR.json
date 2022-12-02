@@ -168,6 +168,8 @@
   "SettingsTabInputDirectKeyboardAccess": "직접 키보드 접속",
   "SettingsButtonSave": "저장",
   "SettingsButtonClose": "닫기",
+  "SettingsButtonOk": "확인",
+  "SettingsButtonCancel": "취소",
   "SettingsButtonApply": "적용",
   "ControllerSettingsPlayer": "플레이어",
   "ControllerSettingsPlayer1": "플레이어 1",
