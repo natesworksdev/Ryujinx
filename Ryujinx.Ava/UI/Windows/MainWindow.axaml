@@ -114,22 +114,13 @@
                                 Command="{ReflectionBinding ToggleFullscreen}"
                                 Header="{locale:Locale MenuBarOptionsToggleFullscreen}"
                                 InputGesture="F11" />
-                            <MenuItem>
-                                <MenuItem.Icon>
-                                    <CheckBox IsChecked="{Binding StartGamesInFullscreen, Mode=TwoWay}"
-                                              MinWidth="250">
-                                        <TextBlock Text="{locale:Locale MenuBarOptionsStartGamesInFullscreen}"/>
-                                    </CheckBox>
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem IsVisible="{Binding ShowConsoleVisible}">
-                                <MenuItem.Icon>
-                                    <CheckBox IsChecked="{Binding ShowConsole, Mode=TwoWay}"
-                                              MinWidth="250">
-                                        <TextBlock Text="{locale:Locale MenuBarOptionsShowConsole}"/>
-                                    </CheckBox>
-                                </MenuItem.Icon>
-                            </MenuItem>
+                            <CheckBox IsChecked="{Binding StartGamesInFullscreen, Mode=TwoWay}" MinWidth="250">
+                                <TextBlock Text="{locale:Locale MenuBarOptionsStartGamesInFullscreen}"/>
+                            </CheckBox>
+                            <CheckBox IsVisible="{Binding ShowConsoleVisible}" IsChecked="{Binding ShowConsole, Mode=TwoWay}"
+                                      MinWidth="250">
+                                <TextBlock Text="{locale:Locale MenuBarOptionsShowConsole}"/>
+                            </CheckBox>
                             <Separator />
                             <MenuItem Header="{locale:Locale MenuBarOptionsChangeLanguage}">
                                 <MenuItem
