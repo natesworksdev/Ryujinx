@@ -65,7 +65,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             _cpBindingsManager.SetBindings(bindings);
         }
 
-
         /// <summary>
         /// Sets the texture and image bindings for the graphics pipeline.
         /// </summary>
