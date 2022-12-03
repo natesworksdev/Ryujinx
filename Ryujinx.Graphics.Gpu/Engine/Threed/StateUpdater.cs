@@ -268,8 +268,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             _updateTracker.Update(ulong.MaxValue);
 
-            CommitBindings();
-
             // If any state that the shader depends on changed,
             // then we may need to compile/bind a different version
             // of the shader for the new state.
@@ -281,6 +279,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     UpdateShaderState();
                 }
             }
+
+            CommitBindings();
 
             if (tfEnable && !_prevTfEnable)
             {
