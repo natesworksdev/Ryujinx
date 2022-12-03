@@ -165,19 +165,21 @@ namespace Ryujinx.Ava.UI.Helpers
                 case WindowsMessages.LBUTTONDOWN:
                 case WindowsMessages.RBUTTONDOWN:
                     isLeft = msg == WindowsMessages.LBUTTONDOWN;
-                    this.RaiseEvent(new PointerPressedEventArgs(
+                    // TODO: PointerPressedEventArgs() made internal in Avalonia #8860, alternative needed
+                    /*this.RaiseEvent(new PointerPressedEventArgs(
                         this,
                         new Pointer(0, PointerType.Mouse, true),
                         root,
                         this.TranslatePoint(point, root).Value,
                         (ulong)Environment.TickCount64,
                         new PointerPointProperties(isLeft ? RawInputModifiers.LeftMouseButton : RawInputModifiers.RightMouseButton, isLeft ? PointerUpdateKind.LeftButtonPressed : PointerUpdateKind.RightButtonPressed),
-                        KeyModifiers.None));
+                        KeyModifiers.None));*/
                     break;
                 case WindowsMessages.LBUTTONUP:
                 case WindowsMessages.RBUTTONUP:
                     isLeft = msg == WindowsMessages.LBUTTONUP;
-                    this.RaiseEvent(new PointerReleasedEventArgs(
+                    // TODO: PointerReleasedEventArgs() made internal in Avalonia #8860, alternative needed
+                    /*this.RaiseEvent(new PointerReleasedEventArgs(
                         this,
                         new Pointer(0, PointerType.Mouse, true),
                         root,
@@ -185,10 +187,11 @@ namespace Ryujinx.Ava.UI.Helpers
                         (ulong)Environment.TickCount64,
                         new PointerPointProperties(isLeft ? RawInputModifiers.LeftMouseButton : RawInputModifiers.RightMouseButton, isLeft ? PointerUpdateKind.LeftButtonReleased : PointerUpdateKind.RightButtonReleased),
                         KeyModifiers.None,
-                        isLeft ? MouseButton.Left : MouseButton.Right));
+                        isLeft ? MouseButton.Left : MouseButton.Right));*/
                     break;
                 case WindowsMessages.MOUSEMOVE:
-                    this.RaiseEvent(new PointerEventArgs(
+                    // TODO: PointerEventArgs() made internal in Avalonia #8860, alternative needed
+                    /*this.RaiseEvent(new PointerEventArgs(
                         PointerMovedEvent,
                         this,
                         new Pointer(0, PointerType.Mouse, true),
@@ -196,7 +199,7 @@ namespace Ryujinx.Ava.UI.Helpers
                         this.TranslatePoint(point, root).Value,
                         (ulong)Environment.TickCount64,
                         new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.Other),
-                        KeyModifiers.None));
+                        KeyModifiers.None));*/
                     break;
             }
             return DefWindowProc(hWnd, msg, wParam, lParam);

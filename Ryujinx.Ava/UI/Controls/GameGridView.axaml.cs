@@ -23,7 +23,7 @@ namespace Ryujinx.Ava.UI.Controls
             remove { RemoveHandler(ApplicationOpenedEvent, value); }
         }
 
-        public void GameList_DoubleTapped(object sender, RoutedEventArgs args)
+        public void GameList_DoubleTapped(object sender, TappedEventArgs args)
         {
             if (sender is ListBox listBox)
             {

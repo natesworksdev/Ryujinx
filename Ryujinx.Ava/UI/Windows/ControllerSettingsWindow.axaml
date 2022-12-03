@@ -149,12 +149,11 @@
                         Text="{locale:Locale ControllerSettingsProfile}" />
                     <StackPanel Orientation="Horizontal">
                         <ComboBox
-                            IsEditable="True"
                             Name="ProfileBox"
                             Width="100"
                             SelectedIndex="0"
                             Items="{Binding ProfilesList}"
-                            Text="{Binding ProfileName}" />
+                            PlaceholderText="{Binding ProfileName}" />
                         <Button
                             MinWidth="0"
                             Margin="5,0,0,0"

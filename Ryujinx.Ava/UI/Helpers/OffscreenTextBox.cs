@@ -28,13 +28,14 @@ namespace Ryujinx.Ava.UI.Helpers
 
         public void SendText(string text)
         {
-            OnTextInput(new TextInputEventArgs()
+            // TODO: TextInputEventArgs() made internal in Avalonia #8860, alternative needed
+            /*OnTextInput(new TextInputEventArgs()
             {
                 Text = text,
                 Device = KeyboardDevice.Instance,
                 Source = this,
                 RoutedEvent = TextInputEvent
-            });
+            });*/
         }
     }
 }
