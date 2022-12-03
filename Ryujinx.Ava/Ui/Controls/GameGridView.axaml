@@ -113,7 +113,7 @@
                 <Style Selector="ListBoxItem">
                     <Setter Property="Padding" Value="0" />
                     <Setter Property="Margin" Value="5" />
-                    <Setter Property="CornerRadius" Value="5" />
+                    <Setter Property="CornerRadius" Value="4" />
                     <Setter Property="Background" Value="{DynamicResource SystemAccentColorDark3}" />
                     <Style.Animations>
                         <Animation Duration="0:0:0.7">
@@ -160,7 +160,7 @@
                             Classes.normal="{Binding $parent[UserControl].DataContext.IsGridMedium}"
                             Classes.small="{Binding $parent[UserControl].DataContext.IsGridSmall}"
                             ClipToBounds="True"
-                            CornerRadius="5">
+                            CornerRadius="4">
                             <Grid Margin="0">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
