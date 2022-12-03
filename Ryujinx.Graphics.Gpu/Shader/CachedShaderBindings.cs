@@ -23,8 +23,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <summary>
         /// Create a new cached shader bindings collection.
         /// </summary>
-        /// <param name="isCompute"></param>
-        /// <param name="stages"></param>
+        /// <param name="isCompute">Whether the shader is for compute</param>
+        /// <param name="stages">The stages used by the shader</param>
         public CachedShaderBindings(bool isCompute, CachedShaderStage[] stages)
         {
             int stageCount = isCompute ? 1 : Constants.ShaderStages;
