@@ -142,21 +142,8 @@
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid>
-                        <Grid.Styles>
-                            <Style Selector="ui|SymbolIcon.small.icon">
-                                <Setter Property="FontSize" Value="15" />
-                            </Style>
-                            <Style Selector="ui|SymbolIcon.normal.icon">
-                                <Setter Property="FontSize" Value="19" />
-                            </Style>
-                            <Style Selector="ui|SymbolIcon.large.icon">
-                                <Setter Property="FontSize" Value="23" />
-                            </Style>
-                            <Style Selector="ui|SymbolIcon.huge.icon">
-                                <Setter Property="FontSize" Value="26" />
-                            </Style>
-                        </Grid.Styles>
                         <Border
+                            Margin="10"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
                             Classes.huge="{Binding $parent[UserControl].DataContext.IsGridHuge}"
@@ -172,9 +159,9 @@
                                 </Grid.RowDefinitions>
                                 <Image
                                     Grid.Row="0"
+                                    Margin="0 0 0 10"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Top"
-                                    Margin="5"
                                     Source="{Binding Icon, Converter={StaticResource ByteImage}}" />
                                 <Panel
                                     Grid.Row="1"
@@ -192,13 +179,10 @@
                             </Grid>
                         </Border>
                         <ui:SymbolIcon
+                            Margin="5,5,0,0"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Top"
-                            Classes.huge="{Binding $parent[UserControl].DataContext.IsGridHuge}"
-                            Classes.icon="true"
-                            Classes.large="{Binding $parent[UserControl].DataContext.IsGridLarge}"
-                            Classes.normal="{Binding $parent[UserControl].DataContext.IsGridMedium}"
-                            Classes.small="{Binding $parent[UserControl].DataContext.IsGridSmall}"
+                            FontSize="16"
                             Foreground="{DynamicResource SystemAccentColor}"
                             IsVisible="{Binding Favorite}"
                             Symbol="StarFilled" />
