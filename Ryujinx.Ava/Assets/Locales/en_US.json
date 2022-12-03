@@ -157,7 +157,7 @@
   "SettingsTabLoggingEnableFsAccessLogs": "Enable Fs Access Logs",
   "SettingsTabLoggingFsGlobalAccessLogMode": "Fs Global Access Log Mode:",
   "SettingsTabLoggingDeveloperOptions": "Developer Options (WARNING: Will reduce performance)",
-  "SettingsTabLoggingOpenglLogLevel": "OpenGL Log Level:",
+  "SettingsTabLoggingOpenglLogLevel": "Graphics Backend Log Level:",
   "SettingsTabLoggingOpenglLogLevelNone": "None",
   "SettingsTabLoggingOpenglLogLevelError": "Error",
   "SettingsTabLoggingOpenglLogLevelPerformance": "Slowdowns",
