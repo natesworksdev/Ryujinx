@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.Graphics.GAL
 {
     [StructLayout(LayoutKind.Sequential, Size = 8)]
-    public struct BufferHandle : IEquatable<BufferHandle>
+    public readonly struct BufferHandle : IEquatable<BufferHandle>
     {
         private readonly ulong _value;
 

@@ -69,7 +69,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         private int _usedStorageBuffers;
         private int _usedStorageBuffersWrite;
 
-        private struct TextureInfo : IEquatable<TextureInfo>
+        private readonly struct TextureInfo : IEquatable<TextureInfo>
         {
             public int CbufSlot { get; }
             public int Handle { get; }

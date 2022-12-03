@@ -5,7 +5,7 @@ namespace Ryujinx.Memory.Range
     /// <summary>
     /// Range of memory composed of an address and size.
     /// </summary>
-    public struct MemoryRange : IEquatable<MemoryRange>
+    public readonly struct MemoryRange : IEquatable<MemoryRange>
     {
         /// <summary>
         /// An empty memory range, with a null address and zero size.

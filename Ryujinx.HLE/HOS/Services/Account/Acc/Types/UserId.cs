@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.HLE.HOS.Services.Account.Acc
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct UserId : IEquatable<UserId>
+    public readonly struct UserId : IEquatable<UserId>
     {
         public readonly long High;
         public readonly long Low;

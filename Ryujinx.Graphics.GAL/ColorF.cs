@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.Graphics.GAL
 {
-    public struct ColorF : IEquatable<ColorF>
+    public readonly struct ColorF : IEquatable<ColorF>
     {
         public float Red   { get; }
         public float Green { get; }

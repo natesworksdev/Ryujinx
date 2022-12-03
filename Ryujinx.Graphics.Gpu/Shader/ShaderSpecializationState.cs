@@ -121,7 +121,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <summary>
         /// Texture binding information, used to identify each texture accessed by the shader.
         /// </summary>
-        private struct TextureKey : IEquatable<TextureKey>
+        private readonly struct TextureKey : IEquatable<TextureKey>
         {
             // New fields should be added to the end of the struct to keep disk shader cache compatibility.
 

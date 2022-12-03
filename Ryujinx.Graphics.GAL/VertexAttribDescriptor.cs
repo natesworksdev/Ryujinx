@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.Graphics.GAL
 {
-    public struct VertexAttribDescriptor : IEquatable<VertexAttribDescriptor>
+    public readonly struct VertexAttribDescriptor : IEquatable<VertexAttribDescriptor>
     {
         public int BufferIndex { get; }
         public int Offset      { get; }

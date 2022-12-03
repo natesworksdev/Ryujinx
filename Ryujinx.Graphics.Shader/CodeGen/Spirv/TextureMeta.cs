@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 {
-    struct TextureMeta : IEquatable<TextureMeta>
+    readonly struct TextureMeta : IEquatable<TextureMeta>
     {
         public int CbufSlot { get; }
         public int Handle { get; }

@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Ryujinx.Graphics.Video
 {
-    public struct Plane : IEquatable<Plane>
+    public readonly struct Plane : IEquatable<Plane>
     {
         public IntPtr Pointer { get; }
         public int Length { get; }
