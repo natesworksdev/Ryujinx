@@ -116,9 +116,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         }
 
         /// <summary>
-        /// Indicates whether alpha-to-coverage is enabled.
+        /// Updates alpha-to-coverage state, and sets it as changed.
         /// </summary>
-        /// <param name="value">The new value</param>
+        /// <param name="enable">Whether alpha-to-coverage is enabled</param>
+        /// <param name="ditherEnable">Whether alpha-to-coverage dithering is enabled</param>
         public void SetAlphaToCoverageEnable(bool enable, bool ditherEnable)
         {
             _graphics.AlphaToCoverageEnable = enable;

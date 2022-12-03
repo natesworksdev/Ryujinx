@@ -217,17 +217,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Update()
         {
-            // If any state that the shader depends on changed,
-            // then we may need to compile/bind a different version
-            // of the shader for the new state.
-            if (_shaderSpecState != null && _currentSpecState.HasChanged())
-            {
-                if (!_shaderSpecState.MatchesGraphics(_channel, ref _currentSpecState.GetPoolState(), ref _currentSpecState.GetGraphicsState(), _vsUsesDrawParameters, false))
-                {
-                    ForceShaderUpdate();
-                }
-            }
-
             // The vertex buffer size is calculated using a different
             // method when doing indexed draws, so we need to make sure
             // to update the vertex buffers if we are doing a regular
@@ -281,6 +270,18 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             CommitBindings();
 
+            // If any state that the shader depends on changed,
+            // then we may need to compile/bind a different version
+            // of the shader for the new state.
+            if (_shaderSpecState != null && _currentSpecState.HasChanged())
+            {
+                if (!_shaderSpecState.MatchesGraphics(_channel, ref _currentSpecState.GetPoolState(), ref _currentSpecState.GetGraphicsState(), _vsUsesDrawParameters, false))
+                {
+                    // Shader must be reloaded. _vtgWritesRtLayer should not change.
+                    UpdateShaderState();
+                }
+            }
+
             if (tfEnable && !_prevTfEnable)
             {
                 _context.Renderer.Pipeline.BeginTransformFeedback(_drawState.Topology);
@@ -311,7 +312,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             if (!_channel.TextureManager.CommitGraphicsBindings(_shaderSpecState) || (buffers.HasUnalignedStorageBuffers != hasUnaligned))
             {
                 _currentSpecState.SetHasUnalignedStorageBuffer(buffers.HasUnalignedStorageBuffers);
-                // Shader must be reloaded.
+                // Shader must be reloaded. _vtgWritesRtLayer should not change.
                 UpdateShaderState();
             }
 
@@ -1386,46 +1387,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _state.State.TexturePoolState.Address.Pack(),
                 _state.State.TexturePoolState.MaximumId,
                 (int)_state.State.TextureBufferIndex);
-        }
-
-        /// <summary>
-        /// Gets the current GPU channel state for shader creation or compatibility verification.
-        /// </summary>
-        /// <returns>Current GPU channel state</returns>
-        private GpuChannelGraphicsState GetGraphicsState()
-        {
-            ref var vertexAttribState = ref _state.State.VertexAttribState;
-
-            Array32<AttributeType> attributeTypes = new Array32<AttributeType>();
-
-            for (int location = 0; location < attributeTypes.Length; location++)
-            {
-                VertexAttribType type = vertexAttribState[location].UnpackType();
-
-                attributeTypes[location] = type switch
-                {
-                    VertexAttribType.Sint => AttributeType.Sint,
-                    VertexAttribType.Uint => AttributeType.Uint,
-                    _ => AttributeType.Float
-                };
-            }
-
-            return new GpuChannelGraphicsState(
-                _state.State.EarlyZForce,
-                _drawState.Topology,
-                _state.State.TessMode,
-                (_state.State.MultisampleControl & 1) != 0,
-                _state.State.AlphaToCoverageDitherEnable,
-                _state.State.ViewportTransformEnable == 0,
-                GetDepthMode() == DepthMode.MinusOneToOne,
-                _state.State.VertexProgramPointSize,
-                _state.State.PointSize,
-                _state.State.AlphaTestEnable,
-                _state.State.AlphaTestFunc,
-                _state.State.AlphaTestRef,
-                ref attributeTypes,
-                _drawState.HasConstantBufferDrawParameters,
-                _channel.BufferManager.HasUnalignedStorageBuffers);
         }
 
         /// <summary>
