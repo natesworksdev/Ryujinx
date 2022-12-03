@@ -148,7 +148,7 @@
                         HorizontalAlignment="Center"
                         Text="{locale:Locale ControllerSettingsProfile}" />
                     <StackPanel Orientation="Horizontal">
-                        <ui:ComboBox
+                        <ComboBox
                             IsEditable="True"
                             Name="ProfileBox"
                             Width="100"
