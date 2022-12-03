@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Gpu.Engine.GPFifo;
 using Ryujinx.Graphics.Gpu.Engine.Types;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Gpu.Shader;
@@ -16,9 +17,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     /// </summary>
     class StateUpdater
     {
-        public const int ShaderStateIndex = 16;
+        public const int ShaderStateIndex = 26;
         public const int RasterizerStateIndex = 15;
-        public const int ScissorStateIndex = 18;
+        public const int ScissorStateIndex = 16;
         public const int VertexBufferStateIndex = 0;
         public const int PrimitiveRestartStateIndex = 12;
 
@@ -31,6 +32,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
         private readonly ShaderProgramInfo[] _currentProgramInfo;
         private ShaderSpecializationState _shaderSpecState;
+        private SpecializationStateUpdater _currentSpecState;
 
         private ProgramPipelineState _pipeline;
 
@@ -54,15 +56,17 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// <param name="channel">GPU channel</param>
         /// <param name="state">3D engine state</param>
         /// <param name="drawState">Draw state</param>
-        public StateUpdater(GpuContext context, GpuChannel channel, DeviceStateWithShadow<ThreedClassState> state, DrawState drawState)
+        /// <param name="spec">Specialization state updater</param>
+        public StateUpdater(GpuContext context, GpuChannel channel, DeviceStateWithShadow<ThreedClassState> state, DrawState drawState, SpecializationStateUpdater spec)
         {
             _context = context;
             _channel = channel;
             _state = state;
             _drawState = drawState;
             _currentProgramInfo = new ShaderProgramInfo[Constants.ShaderStages];
+            _currentSpecState = spec;
 
-            // ShaderState must be updated after other state updates, as pipeline state is sent to the backend when compiling new shaders.
+            // ShaderState must be updated after other state updates, as specialization/pipeline state is used when fetching shaders.
             // Render target state must appear after shader state as it depends on information from the currently bound shader.
             // Rasterizer and scissor states are checked by render target clear, their indexes
             // must be updated on the constants "RasterizerStateIndex" and "ScissorStateIndex" if modified.
@@ -101,6 +105,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     nameof(ThreedClassState.DepthTestFunc)),
 
                 new StateUpdateCallbackEntry(UpdateTessellationState,
+                    nameof(ThreedClassState.TessMode),
                     nameof(ThreedClassState.TessOuterLevel),
                     nameof(ThreedClassState.TessInnerLevel),
                     nameof(ThreedClassState.PatchVertices)),
@@ -138,17 +143,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                 new StateUpdateCallbackEntry(UpdateRasterizerState, nameof(ThreedClassState.RasterizeEnable)),
 
-                new StateUpdateCallbackEntry(UpdateShaderState,
-                    nameof(ThreedClassState.ShaderBaseAddress),
-                    nameof(ThreedClassState.ShaderState)),
-
-                new StateUpdateCallbackEntry(UpdateRenderTargetState,
-                    nameof(ThreedClassState.RtColorState),
-                    nameof(ThreedClassState.RtDepthStencilState),
-                    nameof(ThreedClassState.RtControl),
-                    nameof(ThreedClassState.RtDepthStencilSize),
-                    nameof(ThreedClassState.RtDepthStencilEnable)),
-
                 new StateUpdateCallbackEntry(UpdateScissorState,
                     nameof(ThreedClassState.ScissorState),
                     nameof(ThreedClassState.ScreenScissorState)),
@@ -179,7 +173,21 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                 new StateUpdateCallbackEntry(UpdateMultisampleState,
                     nameof(ThreedClassState.AlphaToCoverageDitherEnable),
-                    nameof(ThreedClassState.MultisampleControl))
+                    nameof(ThreedClassState.MultisampleControl)),
+
+                new StateUpdateCallbackEntry(UpdateEarlyZState,
+                    nameof(ThreedClassState.EarlyZForce)),
+
+                new StateUpdateCallbackEntry(UpdateShaderState,
+                    nameof(ThreedClassState.ShaderBaseAddress),
+                    nameof(ThreedClassState.ShaderState)),
+
+                new StateUpdateCallbackEntry(UpdateRenderTargetState,
+                    nameof(ThreedClassState.RtColorState),
+                    nameof(ThreedClassState.RtDepthStencilState),
+                    nameof(ThreedClassState.RtControl),
+                    nameof(ThreedClassState.RtDepthStencilSize),
+                    nameof(ThreedClassState.RtDepthStencilEnable)),
             });
         }
 
@@ -212,9 +220,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             // If any state that the shader depends on changed,
             // then we may need to compile/bind a different version
             // of the shader for the new state.
-            if (_shaderSpecState != null)
+            if (_shaderSpecState != null && _currentSpecState.HasChanged())
             {
-                if (!_shaderSpecState.MatchesGraphics(_channel, GetPoolState(), GetGraphicsState(), _vsUsesDrawParameters, false))
+                if (!_shaderSpecState.MatchesGraphics(_channel, ref _currentSpecState.GetPoolState(), ref _currentSpecState.GetGraphicsState(), _vsUsesDrawParameters, false))
                 {
                     ForceShaderUpdate();
                 }
@@ -302,6 +310,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             if (!_channel.TextureManager.CommitGraphicsBindings(_shaderSpecState) || (buffers.HasUnalignedStorageBuffers != hasUnaligned))
             {
+                _currentSpecState.SetHasUnalignedStorageBuffer(buffers.HasUnalignedStorageBuffers);
                 // Shader must be reloaded.
                 UpdateShaderState();
             }
@@ -351,6 +360,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _state.State.PatchVertices,
                 _state.State.TessOuterLevel.AsSpan(),
                 _state.State.TessInnerLevel.AsSpan());
+
+            _currentSpecState.SetTessellationMode(_state.State.TessMode);
         }
 
         /// <summary>
@@ -611,6 +622,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _state.State.AlphaTestEnable,
                 _state.State.AlphaTestRef,
                 _state.State.AlphaTestFunc);
+
+            _currentSpecState.SetAlphaTest(
+                _state.State.AlphaTestEnable,
+                _state.State.AlphaTestRef,
+                _state.State.AlphaTestFunc);
         }
 
         /// <summary>
@@ -710,6 +726,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             _context.Renderer.Pipeline.SetDepthMode(GetDepthMode());
             _context.Renderer.Pipeline.SetViewports(viewports, disableTransform);
+
+            _currentSpecState.SetViewportTransformDisable(_state.State.ViewportTransformEnable == 0);
+            _currentSpecState.SetDepthMode(GetDepthMode() == DepthMode.MinusOneToOne);
         }
 
         /// <summary>
@@ -847,6 +866,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             _channel.TextureManager.SetGraphicsTexturePool(texturePool.Address.Pack(), texturePool.MaximumId);
             _channel.TextureManager.SetGraphicsTextureBufferIndex((int)_state.State.TextureBufferIndex);
+
+            _currentSpecState.SetPoolState(GetPoolState());
         }
 
         /// <summary>
@@ -887,6 +908,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             _pipeline.SetVertexAttribs(vertexAttribs);
             _context.Renderer.Pipeline.SetVertexAttribs(vertexAttribs);
+            _currentSpecState.SetAttributeTypes(ref _state.State.VertexAttribState);
         }
 
         /// <summary>
@@ -914,6 +936,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             Origin origin = (_state.State.PointCoordReplace & 4) == 0 ? Origin.LowerLeft : Origin.UpperLeft;
 
             _context.Renderer.Pipeline.SetPointParameters(size, isProgramPointSize, enablePointSprite, origin);
+
+            _currentSpecState.SetProgramPointSizeEnable(isProgramPointSize);
+            _currentSpecState.SetPointSize(size);
         }
 
         /// <summary>
@@ -1212,6 +1237,16 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 alphaToCoverageEnable,
                 _state.State.AlphaToCoverageDitherEnable,
                 alphaToOneEnable));
+
+            _currentSpecState.SetAlphaToCoverageEnable(alphaToCoverageEnable, _state.State.AlphaToCoverageDitherEnable);
+        }
+
+        /// <summary>
+        /// Updates the early z flag, based on guest state.
+        /// </summary>
+        private void UpdateEarlyZState()
+        {
+            _currentSpecState.SetEarlyZForce(_state.State.EarlyZForce);
         }
 
         /// <summary>
@@ -1239,10 +1274,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 addressesSpan[index] = baseAddress + shader.Offset;
             }
 
-            GpuChannelPoolState poolState = GetPoolState();
-            GpuChannelGraphicsState graphicsState = GetGraphicsState();
+            CachedShaderProgram gs = shaderCache.GetGraphicsShader(ref _state.State, ref _pipeline, _channel, ref _currentSpecState.GetPoolState(), ref _currentSpecState.GetGraphicsState(), addresses);
 
-            CachedShaderProgram gs = shaderCache.GetGraphicsShader(ref _state.State, ref _pipeline, _channel, poolState, graphicsState, addresses);
+            // Consume the modified flag for spec state so that it isn't checked again.
+            _currentSpecState.SetShader(gs);
 
             _shaderSpecState = gs.SpecializationState;
 
