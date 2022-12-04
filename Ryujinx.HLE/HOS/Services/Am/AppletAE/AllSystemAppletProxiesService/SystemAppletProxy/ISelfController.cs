@@ -303,7 +303,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         public ResultCode IsIlluminanceAvailable(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
-            context.ResponseData.Write(true); //this should call through to Lbl but I see no situation where we'd want false.
+            context.ResponseData.Write(true); // This should call through to Lbl, but there's no situation where we'd want false.
             return ResultCode.Success;
         }
 
@@ -331,11 +331,11 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // GetCurrentIlluminanceEx() -> (bool,f32)
         public ResultCode GetCurrentIlluminanceEx(ServiceCtx context)
         {
-            //TODO: the light value should be configurable - presumably users using software that takes advantage will want control
+            // TODO: The light value should be configurable - presumably users using software that takes advantage will want control.
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
-            context.ResponseData.Write(1); //OverLimit
-            context.ResponseData.Write(10000f); //Lux - according to google 10K lux is ambient light
+            context.ResponseData.Write(1); // OverLimit
+            context.ResponseData.Write(10000f); // Lux - 10K lux is ambient light.
 
             return ResultCode.Success;
         }
