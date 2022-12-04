@@ -2121,9 +2121,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                         KProcess currentProcess = KernelStatic.GetCurrentProcess();
                         KHandleTable handleTable = currentProcess.HandleTable;
-                        int outHandle = 0;
 
-                        KernelResult result = handleTable.GenerateHandle(currentProcess, out outHandle);
+                        KernelResult result = handleTable.GenerateHandle(currentProcess, out int outHandle);
 
                         if (result != KernelResult.Success)
                         {
