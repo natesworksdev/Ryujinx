@@ -6,7 +6,6 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
 {
     public class CompressorState
     {
-        // TODO
         public ExponentialMovingAverage InputMovingAverage;
         public float Unknown4;
         public ExponentialMovingAverage CompressionGainAverage;
