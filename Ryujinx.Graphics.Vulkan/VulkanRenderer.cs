@@ -190,6 +190,13 @@ namespace Ryujinx.Graphics.Vulkan
 
             Api.GetPhysicalDeviceFeatures2(_physicalDevice, &features2);
 
+            ref var properties = ref properties2.Properties;
+
+            SampleCountFlags supportedSampleCounts =
+                properties.Limits.FramebufferColorSampleCounts &
+                properties.Limits.FramebufferDepthSampleCounts &
+                properties.Limits.FramebufferStencilSampleCounts;
+
             Capabilities = new HardwareCapabilities(
                 supportedExtensions.Contains("VK_EXT_index_type_uint8"),
                 supportedExtensions.Contains("VK_EXT_custom_border_color"),
@@ -208,9 +215,8 @@ namespace Ryujinx.Graphics.Vulkan
                 supportedFeatures.GeometryShader,
                 propertiesSubgroupSizeControl.MinSubgroupSize,
                 propertiesSubgroupSizeControl.MaxSubgroupSize,
-                propertiesSubgroupSizeControl.RequiredSubgroupSizeStages);
-
-            ref var properties = ref properties2.Properties;
+                propertiesSubgroupSizeControl.RequiredSubgroupSizeStages,
+                supportedSampleCounts);
 
             MemoryAllocator = new MemoryAllocator(Api, _device, properties.Limits.MaxMemoryAllocationCount);
 
@@ -396,6 +402,7 @@ namespace Ryujinx.Graphics.Vulkan
                 supports3DTextureCompression: true,
                 supportsBgraFormat: true,
                 supportsR4G4Format: false,
+                supportsSnormBufferTextureFormat: true,
                 supportsFragmentShaderInterlock: Capabilities.SupportsFragmentShaderInterlock,
                 supportsFragmentShaderOrderingIntel: false,
                 supportsGeometryShaderPassthrough: Capabilities.SupportsGeometryShaderPassthrough,
@@ -471,7 +478,7 @@ namespace Ryujinx.Graphics.Vulkan
             GpuRenderer = Marshal.PtrToStringAnsi((IntPtr)properties.DeviceName);
             GpuVersion = $"Vulkan v{ParseStandardVulkanVersion(properties.ApiVersion)}, Driver v{ParseDriverVersion(ref properties)}";
 
-            IsAmdGcn = Vendor == Vendor.Amd && VendorUtils.AmdGcnRegex.IsMatch(GpuRenderer);
+            IsAmdGcn = Vendor == Vendor.Amd && VendorUtils.AmdGcnRegex().IsMatch(GpuRenderer);
 
             Logger.Notice.Print(LogClass.Gpu, $"{GpuVendor} {GpuRenderer} ({GpuVersion})");
         }
