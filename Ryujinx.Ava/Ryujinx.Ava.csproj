@@ -75,12 +75,12 @@
     </Content>
   </ItemGroup>
    
-   <ItemGroup>
-     <ContentWithTargetPath Include="..\distribution\linux\start.sh" Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
+  <ItemGroup>
+    <ContentWithTargetPath Include="..\distribution\linux\start.sh" Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         <TargetPath>Ryujinx.sh</TargetPath>
-     </ContentWithTargetPath>
-   </ItemGroup>
+    </ContentWithTargetPath>
+  </ItemGroup>
 
   <ItemGroup>
     <AvaloniaResource Include="Ui\**\*.xaml">
