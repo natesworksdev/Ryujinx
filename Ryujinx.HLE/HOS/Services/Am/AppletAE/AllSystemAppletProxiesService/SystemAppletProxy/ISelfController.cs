@@ -328,13 +328,15 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         }
 
         [CommandHipc(71)] //5.0.0+
-        // GetCurrentIlluminanceEx() -> u32,float
+        // GetCurrentIlluminanceEx() -> (bool,f32)
         public ResultCode GetCurrentIlluminanceEx(ServiceCtx context)
         {
             //TODO: the light value should be configurable - presumably users using software that takes advantage will want control
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
-            context.ResponseData.Write(1); //OverLimit, as a u32 because who knows why?
+
+            context.ResponseData.Write(1); //OverLimit
             context.ResponseData.Write(10000f); //Lux - according to google 10K lux is ambient light
+
             return ResultCode.Success;
         }
 
