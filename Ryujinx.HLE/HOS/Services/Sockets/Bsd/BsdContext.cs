@@ -102,6 +102,22 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             return false;
         }
 
+        public int RetrieveFileDescriptor(ISocket socket)
+        {
+            lock (_lock)
+            {
+                for (int i = 0; i < _fds.Count; i++)
+                {
+                    if (_fds[i] is ISocket sock && sock == socket)
+                    {
+                        return i;
+                    }
+                }
+            }
+
+            return -1;
+        }
+
         public LinuxError ShutdownAllSockets(BsdSocketShutdownFlags how)
         {
             lock (_lock)

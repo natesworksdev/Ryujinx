@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -26,6 +27,37 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         public IClient(ServiceCtx context, bool isPrivileged) : base(context.Device.System.BsdServer)
         {
             _isPrivileged = isPrivileged;
+        }
+
+        private void BuildMask(List<ISocket> sockets, Span<byte> mask)
+        {
+            foreach (ISocket socket in sockets)
+            {
+                int fd = _context.RetrieveFileDescriptor(socket);
+
+                mask[fd >> 3] |= (byte)(1 << (fd & 7));
+            }
+        }
+
+        private List<ISocket> FillFromFdMask(ReadOnlySpan<byte> mask)
+        {
+            List<ISocket> sockets = new();
+
+            for (int i = 0; i < mask.Length; i++)
+            {
+                byte current = mask[i];
+
+                while (current != 0)
+                {
+                    int bit = BitOperations.TrailingZeroCount(current);
+                    current &= (byte)~(1 << bit);
+                    int fd = i * 8 + bit;
+
+                    sockets.Add(_context.RetrieveSocket(fd));
+                }
+            }
+
+            return sockets;
         }
 
         private ResultCode WriteBsdResult(ServiceCtx context, int result, LinuxError errorCode = LinuxError.SUCCESS)
@@ -202,12 +234,43 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         }
 
         [CommandHipc(5)]
-        // Select(u32 nfds, nn::socket::timeout timeout, buffer<nn::socket::fd_set, 0x21, 0> readfds_in, buffer<nn::socket::fd_set, 0x21, 0> writefds_in, buffer<nn::socket::fd_set, 0x21, 0> errorfds_in) -> (i32 ret, u32 bsd_errno, buffer<nn::socket::fd_set, 0x22, 0> readfds_out, buffer<nn::socket::fd_set, 0x22, 0> writefds_out, buffer<nn::socket::fd_set, 0x22, 0> errorfds_out)
+        // Select(u32 nfds, nn::socket::timeval timeout, buffer<nn::socket::fd_set, 0x21, 0> readfds_in, buffer<nn::socket::fd_set, 0x21, 0> writefds_in, buffer<nn::socket::fd_set, 0x21, 0> errorfds_in)
+        // -> (i32 ret, u32 bsd_errno, buffer<nn::socket::fd_set, 0x22, 0> readfds_out, buffer<nn::socket::fd_set, 0x22, 0> writefds_out, buffer<nn::socket::fd_set, 0x22, 0> errorfds_out)
         public ResultCode Select(ServiceCtx context)
         {
-            WriteBsdResult(context, -1, LinuxError.EOPNOTSUPP);
+            int fdsCount = context.RequestData.ReadInt32();
+            int timeout  = context.RequestData.ReadInt32();
 
-            Logger.Stub?.PrintStub(LogClass.ServiceBsd);
+            (ulong readFdsInBufferPosition, ulong readFdsInBufferSize) = context.Request.GetBufferType0x21(0);
+            (ulong writeFdsInBufferPosition, ulong writeFdsInBufferSize) = context.Request.GetBufferType0x21(1);
+            (ulong errorFdsInBufferPosition, ulong errorFdsInBufferSize) = context.Request.GetBufferType0x21(2);
+
+            (ulong readFdsOutBufferPosition, ulong readFdsOutBufferSize) = context.Request.GetBufferType0x22(0);
+            (ulong writeFdsOutBufferPosition, ulong writeFdsOutBufferSize) = context.Request.GetBufferType0x22(1);
+            (ulong errorFdsOutBufferPosition, ulong errorFdsOutBufferSize) = context.Request.GetBufferType0x22(2);
+
+            List<ISocket> readSockets  = FillFromFdMask(context.Memory.GetSpan(readFdsInBufferPosition, (int)readFdsInBufferSize));
+            List<ISocket> writeSockets = FillFromFdMask(context.Memory.GetSpan(writeFdsInBufferPosition, (int)writeFdsInBufferSize));
+            List<ISocket> errorSockets = FillFromFdMask(context.Memory.GetSpan(errorFdsInBufferPosition, (int)errorFdsInBufferSize));
+
+            if (readSockets.Count == 0 && writeSockets.Count == 0 && errorSockets.Count == 0)
+            {
+                WriteBsdResult(context, 0);
+
+                return ResultCode.Success;
+            }
+
+            System.Net.Sockets.Socket.Select(readSockets, writeSockets, errorSockets, timeout);
+
+            using var readFdsOut  = context.Memory.GetWritableRegion(readFdsOutBufferPosition, (int)readFdsOutBufferSize);
+            using var writeFdsOut = context.Memory.GetWritableRegion(writeFdsOutBufferPosition, (int)writeFdsOutBufferSize);
+            using var errorFdsOut = context.Memory.GetWritableRegion(errorFdsOutBufferPosition, (int)errorFdsOutBufferSize);
+
+            BuildMask(readSockets, readFdsOut.Memory.Span);
+            BuildMask(writeSockets, writeFdsOut.Memory.Span);
+            BuildMask(errorSockets, errorFdsOut.Memory.Span);
+
+            WriteBsdResult(context, readSockets.Count + writeSockets.Count + errorSockets.Count);
 
             return ResultCode.Success;
         }
