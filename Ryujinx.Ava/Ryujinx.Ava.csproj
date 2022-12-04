@@ -76,7 +76,7 @@
   </ItemGroup>
    
   <ItemGroup>
-    <ContentWithTargetPath Include="..\distribution\linux\start.sh" Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
+    <ContentWithTargetPath Include="..\distribution\linux\Ryujinx.sh" Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         <TargetPath>Ryujinx.sh</TargetPath>
     </ContentWithTargetPath>
