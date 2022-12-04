@@ -1373,6 +1373,7 @@ namespace Ryujinx.Ui
             };
             filter.AddPattern("*.zip");
             filter.AddPattern("*.xci");
+            filter.AddPattern("*.nsp");
 
             fileChooser.AddFilter(filter);
 

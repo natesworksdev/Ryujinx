@@ -23,7 +23,7 @@
   "MenuBarActionsScanAmiibo": "Scan An Amiibo",
   "MenuBarTools": "_Tools",
   "MenuBarToolsInstallFirmware": "Install Firmware",
-  "MenuBarFileToolsInstallFirmwareFromFile": "Install a firmware from XCI or ZIP",
+  "MenuBarFileToolsInstallFirmwareFromFile": "Install a firmware from NSP, XCI, or ZIP",
   "MenuBarFileToolsInstallFirmwareFromDirectory": "Install a firmware from a directory",
   "MenuBarHelp": "Help",
   "MenuBarHelpCheckForUpdates": "Check for Updates",

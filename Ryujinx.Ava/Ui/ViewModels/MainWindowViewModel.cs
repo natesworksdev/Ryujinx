@@ -1509,7 +1509,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public async void InstallFirmwareFromFile()
         {
             OpenFileDialog dialog = new() { AllowMultiple = false };
-            dialog.Filters.Add(new FileDialogFilter { Name = LocaleManager.Instance["FileDialogAllTypes"], Extensions = { "xci", "zip" } });
+            dialog.Filters.Add(new FileDialogFilter { Name = LocaleManager.Instance["FileDialogAllTypes"], Extensions = { "nsp", "xci", "zip" } });
+            dialog.Filters.Add(new FileDialogFilter { Name = "NSP",                                        Extensions = { "nsp" } });
             dialog.Filters.Add(new FileDialogFilter { Name = "XCI",                                        Extensions = { "xci" } });
             dialog.Filters.Add(new FileDialogFilter { Name = "ZIP",                                        Extensions = { "zip" } });
 

@@ -531,6 +531,10 @@ namespace Ryujinx.HLE.FileSystem
                         Xci xci = new Xci(_virtualFileSystem.KeySet, file.AsStorage());
                         InstallFromCart(xci, temporaryDirectory);
                         break;
+                    case ".nsp":
+                        PartitionFileSystem pfs = new PartitionFileSystem(file.AsStorage());
+                        InstallFromPartition(pfs, temporaryDirectory);
+                        break;
                     default:
                         throw new InvalidFirmwarePackageException("Input file is not a valid firmware package");
                 }
@@ -700,6 +704,9 @@ namespace Ryujinx.HLE.FileSystem
                         {
                             throw new InvalidFirmwarePackageException("Update not found in xci file.");
                         }
+                    case ".nsp":
+                        PartitionFileSystem pfs = new PartitionFileSystem(file.AsStorage());
+                        return VerifyAndGetVersion(pfs);
                     default:
                         break;
                 }
