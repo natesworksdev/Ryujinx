@@ -10,11 +10,11 @@ namespace Ryujinx.Ui.Helper
             string aValue = model.GetValue(a, 5).ToString();
             string bValue = model.GetValue(b, 5).ToString();
 
-            if (aValue.Length > 4 && aValue[^4..] == "mins")
+            if (aValue.Length > 7 && aValue[^7..] == "minutes")
             {
                 aValue = (float.Parse(aValue[0..^5]) * 60).ToString();
             }
-            else if (aValue.Length > 3 && aValue[^3..] == "hrs")
+            else if (aValue.Length > 5 && aValue[^5..] == "hours")
             {
                 aValue = (float.Parse(aValue[0..^4]) * 3600).ToString();
             }
@@ -24,14 +24,14 @@ namespace Ryujinx.Ui.Helper
             }
             else
             {
-                aValue = aValue[0..^1];
+                aValue = aValue[0..^8];
             }
 
-            if (bValue.Length > 4 && bValue[^4..] == "mins")
+            if (bValue.Length > 7 && bValue[^7..] == "minutes")
             {
                 bValue = (float.Parse(bValue[0..^5]) * 60).ToString();
             }
-            else if (bValue.Length > 3 && bValue[^3..] == "hrs")
+            else if (bValue.Length > 5 && bValue[^5..] == "hours")
             {
                 bValue = (float.Parse(bValue[0..^4]) * 3600).ToString();
             }
@@ -41,7 +41,7 @@ namespace Ryujinx.Ui.Helper
             }
             else
             {
-                bValue = bValue[0..^1];
+                bValue = bValue[0..^8];
             }
 
             if (float.Parse(aValue) > float.Parse(bValue))
