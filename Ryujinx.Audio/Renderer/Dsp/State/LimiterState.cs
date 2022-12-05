@@ -6,19 +6,19 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
 {
     public class LimiterState
     {
-        public ExponentialMovingAverage[] DectectorAverage;
+        public ExponentialMovingAverage[] DetectorAverage;
         public ExponentialMovingAverage[] CompressionGainAverage;
         public float[] DelayedSampleBuffer;
         public int[] DelayedSampleBufferPosition;
 
         public LimiterState(ref LimiterParameter parameter, ulong workBuffer)
         {
-            DectectorAverage = new ExponentialMovingAverage[parameter.ChannelCount];
+            DetectorAverage = new ExponentialMovingAverage[parameter.ChannelCount];
             CompressionGainAverage = new ExponentialMovingAverage[parameter.ChannelCount];
             DelayedSampleBuffer = new float[parameter.ChannelCount * parameter.DelayBufferSampleCountMax];
             DelayedSampleBufferPosition = new int[parameter.ChannelCount];
 
-            DectectorAverage.AsSpan().Fill(new ExponentialMovingAverage(0.0f));
+            DetectorAverage.AsSpan().Fill(new ExponentialMovingAverage(0.0f));
             CompressionGainAverage.AsSpan().Fill(new ExponentialMovingAverage(1.0f));
             DelayedSampleBufferPosition.AsSpan().Fill(0);
             DelayedSampleBuffer.AsSpan().Fill(0.0f);

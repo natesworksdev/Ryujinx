@@ -1,16 +1,8 @@
-﻿using Ryujinx.Audio.Renderer.Dsp.State;
-using Ryujinx.Audio.Renderer.Parameter.Effect;
-using Ryujinx.Audio.Renderer.Parameter;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 using System.Diagnostics;
-using ARMeilleure.State;
-using System.Reflection.Metadata;
-using System.Data.Common;
 using Ryujinx.Audio.Renderer.Dsp.Effect;
+using Ryujinx.Audio.Renderer.Dsp.State;
+using Ryujinx.Audio.Renderer.Parameter.Effect;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
@@ -46,10 +38,10 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
             InputBufferIndices = new ushort[Constants.VoiceChannelCountMax];
             OutputBufferIndices = new ushort[Constants.VoiceChannelCountMax];
 
-            for (int i = 0; i < Parameter.ChannelCount; i++)
+            for (int i = 0; i < _parameter.ChannelCount; i++)
             {
-                InputBufferIndices[i] = (ushort)(bufferOffset + Parameter.Input[i]);
-                OutputBufferIndices[i] = (ushort)(bufferOffset + Parameter.Output[i]);
+                InputBufferIndices[i] = (ushort)(bufferOffset + _parameter.Input[i]);
+                OutputBufferIndices[i] = (ushort)(bufferOffset + _parameter.Output[i]);
             }
         }
 
@@ -59,11 +51,11 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
             if (IsEffectEnabled)
             {
-                if (Parameter.Status == Server.Effect.UsageState.Invalid)
+                if (_parameter.Status == Server.Effect.UsageState.Invalid)
                 {
                     state = new CompressorState(ref _parameter);
                 }
-                else if (Parameter.Status == Server.Effect.UsageState.New)
+                else if (_parameter.Status == Server.Effect.UsageState.New)
                 {
                     state.UpdateParameter(ref _parameter);
                 }
@@ -74,9 +66,9 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
         private unsafe void ProcessCompressor(CommandList context, ref CompressorState state)
         {
-            Debug.Assert(Parameter.IsChannelCountValid());
+            Debug.Assert(_parameter.IsChannelCountValid());
 
-            if (IsEffectEnabled && Parameter.IsChannelCountValid())
+            if (IsEffectEnabled && _parameter.IsChannelCountValid())
             {
                 Span<IntPtr> inputBuffers = stackalloc IntPtr[Parameter.ChannelCount];
                 Span<IntPtr> outputBuffers = stackalloc IntPtr[Parameter.ChannelCount];
@@ -86,7 +78,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                 ExponentialMovingAverage compressionGainAverage = state.CompressionGainAverage;
                 float previousCompressionEmaAlpha = state.PreviousCompressionEmaAlpha;
 
-                for (int i = 0; i < Parameter.ChannelCount; i++)
+                for (int i = 0; i < _parameter.ChannelCount; i++)
                 {
                     inputBuffers[i] = context.GetBufferPointer(InputBufferIndices[i]);
                     outputBuffers[i] = context.GetBufferPointer(OutputBufferIndices[i]);
@@ -94,12 +86,12 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
                 for (int sampleIndex = 0; sampleIndex < context.SampleCount; sampleIndex++)
                 {
-                    for (int channelIndex = 0; channelIndex < Parameter.ChannelCount; channelIndex++)
+                    for (int channelIndex = 0; channelIndex < _parameter.ChannelCount; channelIndex++)
                     {
                         channelInput[channelIndex] = *((float*)inputBuffers[channelIndex] + sampleIndex);
                     }
 
-                    float newMean = inputMovingAverage.Update(FloatingPointHelper.MeanSquare(channelInput), Parameter.InputGain);
+                    float newMean = inputMovingAverage.Update(FloatingPointHelper.MeanSquare(channelInput), _parameter.InputGain);
                     float y = FloatingPointHelper.Log10(newMean) * 10.0f;
                     float z = 0.0f;
 
@@ -125,7 +117,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                             tmpGain = (y - state.Unknown10) * ((y - state.Unknown10) * -state.CompressorGainReduction);
                         }
 
-                        z = FloatingPointHelper.DecibellToLinearExtended(tmpGain);
+                        z = FloatingPointHelper.DecibelToLinearExtended(tmpGain);
                     }
 
                     float unknown4New = z;

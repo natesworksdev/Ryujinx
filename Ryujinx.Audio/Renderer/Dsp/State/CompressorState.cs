@@ -1,6 +1,5 @@
 ﻿using Ryujinx.Audio.Renderer.Dsp.Effect;
 using Ryujinx.Audio.Renderer.Parameter.Effect;
-using System;
 
 namespace Ryujinx.Audio.Renderer.Dsp.State
 {
@@ -46,7 +45,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
             CompressorGainReduction = (1.0f - ratio) / Constants.ChannelCountMax;
             Unknown10 = threshold - 1.5f;
             Unknown14 = threshold + 1.5f;
-            OutputGain = FloatingPointHelper.DecibellToLinearExtended(parameter.OutputGain + makeupGain);
+            OutputGain = FloatingPointHelper.DecibelToLinearExtended(parameter.OutputGain + makeupGain);
         }
     }
 }

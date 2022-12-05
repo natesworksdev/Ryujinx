@@ -90,12 +90,12 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
                         float inputCoefficient = Parameter.ReleaseCoefficient;
 
-                        if (sampleInputMax > state.DectectorAverage[channelIndex].Read())
+                        if (sampleInputMax > state.DetectorAverage[channelIndex].Read())
                         {
                             inputCoefficient = Parameter.AttackCoefficient;
                         }
 
-                        float detectorValue = state.DectectorAverage[channelIndex].Update(sampleInputMax, inputCoefficient);
+                        float detectorValue = state.DetectorAverage[channelIndex].Update(sampleInputMax, inputCoefficient);
                         float attenuation = 1.0f;
 
                         if (detectorValue > Parameter.Threshold)
