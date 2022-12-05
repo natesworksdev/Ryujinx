@@ -1,5 +1,5 @@
 <Project>
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <PathMap>$(MSBuildProjectDirectory)=$(MSBuildProjectName)</PathMap>
-  </PropertyGroup>
+  <ItemGroup>
+    <SourceRoot Include="$(MSBuildThisFileDirectory)"/>
+  </ItemGroup>
 </Project>
