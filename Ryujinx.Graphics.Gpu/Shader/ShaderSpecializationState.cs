@@ -121,7 +121,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <summary>
         /// Texture binding information, used to identify each texture accessed by the shader.
         /// </summary>
-        private struct TextureKey : IEquatable<TextureKey>
+        private readonly record struct TextureKey
         {
             // New fields should be added to the end of the struct to keep disk shader cache compatibility.
 
@@ -151,21 +151,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 StageIndex = stageIndex;
                 Handle = handle;
                 CbufSlot = cbufSlot;
-            }
-
-            public override bool Equals(object obj)
-            {
-                return obj is TextureKey textureKey && Equals(textureKey);
-            }
-
-            public bool Equals(TextureKey other)
-            {
-                return StageIndex == other.StageIndex && Handle == other.Handle && CbufSlot == other.CbufSlot;
-            }
-
-            public override int GetHashCode()
-            {
-                return HashCode.Combine(StageIndex, Handle, CbufSlot);
             }
         }
 
@@ -393,6 +378,15 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <summary>
+        /// Checks if primitive topology was queried by the shader.
+        /// </summary>
+        /// <returns>True if queried, false otherwise</returns>
+        public bool IsPrimitiveTopologyQueried()
+        {
+            return _queriedState.HasFlag(QueriedStateFlags.PrimitiveTopology);
+        }
+
+        /// <summary>
         /// Checks if a given texture was registerd on this specialization state.
         /// </summary>
         /// <param name="stageIndex">Shader stage where the texture is used</param>
@@ -486,8 +480,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>True if the state matches, false otherwise</returns>
         public bool MatchesGraphics(
             GpuChannel channel,
-            GpuChannelPoolState poolState,
-            GpuChannelGraphicsState graphicsState,
+            ref GpuChannelPoolState poolState,
+            ref GpuChannelGraphicsState graphicsState,
             bool usesDrawParameters,
             bool checkTextures)
         {
@@ -536,7 +530,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 return false;
             }
 
-            return Matches(channel, poolState, checkTextures, isCompute: false);
+            return Matches(channel, ref poolState, checkTextures, isCompute: false);
         }
 
         /// <summary>
@@ -547,14 +541,14 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="computeState">Compute state</param>
         /// <param name="checkTextures">Indicates whether texture descriptors should be checked</param>
         /// <returns>True if the state matches, false otherwise</returns>
-        public bool MatchesCompute(GpuChannel channel, GpuChannelPoolState poolState, GpuChannelComputeState computeState, bool checkTextures)
+        public bool MatchesCompute(GpuChannel channel, ref GpuChannelPoolState poolState, GpuChannelComputeState computeState, bool checkTextures)
         {
             if (computeState.HasUnalignedStorageBuffer != ComputeState.HasUnalignedStorageBuffer)
             {
                 return false;
             }
 
-            return Matches(channel, poolState, checkTextures, isCompute: true);
+            return Matches(channel, ref poolState, checkTextures, isCompute: true);
         }
 
         /// <summary>
@@ -618,7 +612,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="checkTextures">Indicates whether texture descriptors should be checked</param>
         /// <param name="isCompute">Indicates whenever the check is requested by the 3D or compute engine</param>
         /// <returns>True if the state matches, false otherwise</returns>
-        private bool Matches(GpuChannel channel, GpuChannelPoolState poolState, bool checkTextures, bool isCompute)
+        private bool Matches(GpuChannel channel, ref GpuChannelPoolState poolState, bool checkTextures, bool isCompute)
         {
             int constantBufferUsePerStageMask = _constantBufferUsePerStage;
 

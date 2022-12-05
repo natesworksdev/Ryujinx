@@ -440,9 +440,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 OnPropertyChanged();
             }
         }
-
-        public Thickness GridItemPadding => ShowNames ? new Thickness() : new Thickness(5);
-
+        
         public bool ShowMenuAndStatusBar
         {
             get => _showMenuAndStatusBar;
@@ -609,7 +607,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 ConfigurationState.Instance.Ui.ShowNames.Value = value;
 
                 OnPropertyChanged();
-                OnPropertyChanged(nameof(GridItemPadding));
                 OnPropertyChanged(nameof(GridSizeScale));
 
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
@@ -726,7 +723,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 OnPropertyChanged(nameof(IsGridLarge));
                 OnPropertyChanged(nameof(IsGridHuge));
                 OnPropertyChanged(nameof(ShowNames));
-                OnPropertyChanged(nameof(GridItemPadding));
 
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             }
@@ -787,6 +783,11 @@ namespace Ryujinx.Ava.Ui.ViewModels
             Dispatcher.UIThread.Post(() =>
             {
                 if (e.NumAppsFound == 0)
+                {
+                    _owner.LoadProgressBar.IsVisible = false;
+                }
+
+                if (e.NumAppsLoaded == e.NumAppsFound)
                 {
                     _owner.LoadProgressBar.IsVisible = false;
                 }
