@@ -7,7 +7,6 @@
     <Version>1.0.0-dirty</Version>
     <DefineConstants Condition=" '$(ExtraDefineConstants)' != '' ">$(DefineConstants);$(ExtraDefineConstants)</DefineConstants>
     <RootNamespace>Ryujinx.Ava</RootNamespace>
-    <AssemblyName>Ryujinx</AssemblyName>
     <ApplicationIcon>Ryujinx.ico</ApplicationIcon>
     <TieredPGO>true</TieredPGO>
   </PropertyGroup>
