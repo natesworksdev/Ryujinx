@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Net.Sockets;
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 {
@@ -39,6 +40,22 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             }
 
             return null;
+        }
+
+        public int RetrieveFileDescriptor(Socket socket)
+        {
+            lock (_lock)
+            {
+                for (int i = 0; i < _fds.Count; i++)
+                {
+                    if (_fds[i] is ManagedSocket sock && sock.Socket == socket)
+                    {
+                        return i;
+                    }
+                }
+            }
+
+            return -1;
         }
 
         public int RegisterFileDescriptor(IFileDescriptor file)
@@ -100,22 +117,6 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             }
 
             return false;
-        }
-
-        public int RetrieveFileDescriptor(ISocket socket)
-        {
-            lock (_lock)
-            {
-                for (int i = 0; i < _fds.Count; i++)
-                {
-                    if (_fds[i] is ISocket sock && sock == socket)
-                    {
-                        return i;
-                    }
-                }
-            }
-
-            return -1;
         }
 
         public LinuxError ShutdownAllSockets(BsdSocketShutdownFlags how)

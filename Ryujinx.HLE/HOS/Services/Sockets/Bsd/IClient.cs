@@ -29,9 +29,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             _isPrivileged = isPrivileged;
         }
 
-        private void BuildMask(List<ISocket> sockets, Span<byte> mask)
+        private void BuildMask(List<Socket> sockets, Span<byte> mask)
         {
-            foreach (ISocket socket in sockets)
+            foreach (Socket socket in sockets)
             {
                 int fd = _context.RetrieveFileDescriptor(socket);
 
@@ -39,9 +39,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             }
         }
 
-        private List<ISocket> FillFromFdMask(ReadOnlySpan<byte> mask)
+        private List<Socket> FillFromFdMask(ReadOnlySpan<byte> mask)
         {
-            List<ISocket> sockets = new();
+            List<Socket> sockets = new();
 
             for (int i = 0; i < mask.Length; i++)
             {
@@ -53,7 +53,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                     current &= (byte)~(1 << bit);
                     int fd = i * 8 + bit;
 
-                    sockets.Add(_context.RetrieveSocket(fd));
+                    ISocket socket = _context.RetrieveSocket(fd);
+
+                    sockets.Add((socket as ManagedSocket)!.Socket);
                 }
             }
 
@@ -249,9 +251,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             (ulong writeFdsOutBufferPosition, ulong writeFdsOutBufferSize) = context.Request.GetBufferType0x22(1);
             (ulong errorFdsOutBufferPosition, ulong errorFdsOutBufferSize) = context.Request.GetBufferType0x22(2);
 
-            List<ISocket> readSockets  = FillFromFdMask(context.Memory.GetSpan(readFdsInBufferPosition, (int)readFdsInBufferSize));
-            List<ISocket> writeSockets = FillFromFdMask(context.Memory.GetSpan(writeFdsInBufferPosition, (int)writeFdsInBufferSize));
-            List<ISocket> errorSockets = FillFromFdMask(context.Memory.GetSpan(errorFdsInBufferPosition, (int)errorFdsInBufferSize));
+            List<Socket> readSockets  = FillFromFdMask(context.Memory.GetSpan(readFdsInBufferPosition, (int)readFdsInBufferSize));
+            List<Socket> writeSockets = FillFromFdMask(context.Memory.GetSpan(writeFdsInBufferPosition, (int)writeFdsInBufferSize));
+            List<Socket> errorSockets = FillFromFdMask(context.Memory.GetSpan(errorFdsInBufferPosition, (int)errorFdsInBufferSize));
 
             if (readSockets.Count == 0 && writeSockets.Count == 0 && errorSockets.Count == 0)
             {
