@@ -102,6 +102,7 @@ namespace Ryujinx
             if (OperatingSystem.IsLinux())
             {
                 XInitThreads();
+                Environment.SetEnvironmentVariable("GDK_BACKEND", "x11");
             }
 
             if (OperatingSystem.IsMacOS())
