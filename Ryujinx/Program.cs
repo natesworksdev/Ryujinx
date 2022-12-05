@@ -102,7 +102,7 @@ namespace Ryujinx
             if (OperatingSystem.IsLinux())
             {
                 XInitThreads();
-                setenv(GDK_BACKEND, x11, 1);
+                setenv("GDK_BACKEND", "x11", 1);
             }
 
             if (OperatingSystem.IsMacOS())
