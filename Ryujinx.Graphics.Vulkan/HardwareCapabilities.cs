@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    struct HardwareCapabilities
+    readonly struct HardwareCapabilities
     {
         public readonly bool SupportsIndexTypeUint8;
         public readonly bool SupportsCustomBorderColor;
@@ -22,6 +22,7 @@ namespace Ryujinx.Graphics.Vulkan
         public readonly uint MinSubgroupSize;
         public readonly uint MaxSubgroupSize;
         public readonly ShaderStageFlags RequiredSubgroupSizeStages;
+        public readonly SampleCountFlags SupportedSampleCounts;
 
         public HardwareCapabilities(
             bool supportsIndexTypeUint8,
@@ -41,7 +42,8 @@ namespace Ryujinx.Graphics.Vulkan
             bool supportsGeometryShader,
             uint minSubgroupSize,
             uint maxSubgroupSize,
-            ShaderStageFlags requiredSubgroupSizeStages)
+            ShaderStageFlags requiredSubgroupSizeStages,
+            SampleCountFlags supportedSampleCounts)
         {
             SupportsIndexTypeUint8 = supportsIndexTypeUint8;
             SupportsCustomBorderColor = supportsCustomBorderColor;
@@ -61,6 +63,7 @@ namespace Ryujinx.Graphics.Vulkan
             MinSubgroupSize = minSubgroupSize;
             MaxSubgroupSize = maxSubgroupSize;
             RequiredSubgroupSizeStages = requiredSubgroupSizeStages;
+            SupportedSampleCounts = supportedSampleCounts;
         }
     }
 }
