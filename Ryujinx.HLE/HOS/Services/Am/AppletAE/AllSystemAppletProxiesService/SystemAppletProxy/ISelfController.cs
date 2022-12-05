@@ -299,11 +299,13 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         }
 
         [CommandHipc(67)] //3.0.0+
-        //IsIlluminanceAvailable() -> bool
+        // IsIlluminanceAvailable() -> bool
         public ResultCode IsIlluminanceAvailable(ServiceCtx context)
         {
+            // NOTE: This should call through to Lbl, but there's no situation where we'd want false.
+            context.ResponseData.Write(true);
+            
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
-            context.ResponseData.Write(true); // This should call through to Lbl, but there's no situation where we'd want false.
             return ResultCode.Success;
         }
 
@@ -328,7 +330,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         }
 
         [CommandHipc(71)] //5.0.0+
-        // GetCurrentIlluminanceEx() -> (bool,f32)
+        // GetCurrentIlluminanceEx() -> (bool, f32)
         public ResultCode GetCurrentIlluminanceEx(ServiceCtx context)
         {
             // TODO: The light value should be configurable - presumably users using software that takes advantage will want control.
