@@ -45,7 +45,7 @@ namespace Ryujinx.Ui.Helper
             }
             else if (bValue.Length > 4 && bValue[^4..] == "days")
             {
-                bValue =  bValue.Replace("days", ""););
+                bValue =  bValue.Replace("days", "");
                 bFloat = (float.Parse(bValue) * 86400);
             }
             else
