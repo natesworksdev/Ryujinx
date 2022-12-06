@@ -204,7 +204,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     stackRegion.Size = 0x80000000;
                     tlsIoRegion.Size = 0x1000000000;
                     CodeRegionStart = BitUtils.AlignDown<ulong>(address, 0x200000);
-                    codeRegionSize = BitUtils.AlignDown<ulong>(endAddr, 0x200000) - CodeRegionStart;
+                    codeRegionSize = BitUtils.AlignUp<ulong>(endAddr, 0x200000) - CodeRegionStart;
                     stackAndTlsIoStart = 0;
                     stackAndTlsIoEnd = 0;
                     baseAddress = 0x8000000;
@@ -1584,7 +1584,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         return KernelResult.OutOfResource;
                     }
 
-                    ulong srcMapAddress = BitUtils.AlignDown<ulong>(src, PageSize);
+                    ulong srcMapAddress = BitUtils.AlignUp<ulong>(src, PageSize);
                     ulong srcMapEndAddr = BitUtils.AlignDown<ulong>(src + size, PageSize);
                     ulong srcMapSize = srcMapEndAddr - srcMapAddress;
 
@@ -1659,9 +1659,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 attributeMask |= MemoryAttribute.DeviceMapped;
             }
 
-            ulong addressRounded = BitUtils.AlignDown<ulong>(address, PageSize);
+            ulong addressRounded = BitUtils.AlignUp<ulong>(address, PageSize);
             ulong addressTruncated = BitUtils.AlignDown<ulong>(address, PageSize);
-            ulong endAddrRounded = BitUtils.AlignDown<ulong>(endAddr, PageSize);
+            ulong endAddrRounded = BitUtils.AlignUp<ulong>(endAddr, PageSize);
             ulong endAddrTruncated = BitUtils.AlignDown<ulong>(endAddr, PageSize);
 
             if (!_slabManager.CanAllocate(MaxBlocksNeededForInsertion))
@@ -1770,9 +1770,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             ulong endAddr = address + size;
 
             ulong addressTruncated = BitUtils.AlignDown<ulong>(address, PageSize);
-            ulong addressRounded = BitUtils.AlignDown<ulong>(address, PageSize);
+            ulong addressRounded = BitUtils.AlignUp<ulong>(address, PageSize);
             ulong endAddrTruncated = BitUtils.AlignDown<ulong>(endAddr, PageSize);
-            ulong endAddrRounded = BitUtils.AlignDown<ulong>(endAddr, PageSize);
+            ulong endAddrRounded = BitUtils.AlignUp<ulong>(endAddr, PageSize);
 
             ulong neededSize = endAddrRounded - addressTruncated;
 
@@ -1984,9 +1984,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     }
 
                     ulong addressTruncated = BitUtils.AlignDown<ulong>(address, PageSize);
-                    ulong addressRounded = BitUtils.AlignDown<ulong>(address, PageSize);
+                    ulong addressRounded = BitUtils.AlignUp<ulong>(address, PageSize);
                     ulong endAddrTruncated = BitUtils.AlignDown<ulong>(endAddr, PageSize);
-                    ulong endAddrRounded = BitUtils.AlignDown<ulong>(endAddr, PageSize);
+                    ulong endAddrRounded = BitUtils.AlignUp<ulong>(endAddr, PageSize);
 
                     ulong pagesCount = (endAddrRounded - addressTruncated) / PageSize;
 
@@ -2010,9 +2010,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         {
             ulong endAddr = address + size;
 
-            ulong addressRounded = BitUtils.AlignDown<ulong>(address, PageSize);
+            ulong addressRounded = BitUtils.AlignUp<ulong>(address, PageSize);
             ulong addressTruncated = BitUtils.AlignDown<ulong>(address, PageSize);
-            ulong endAddrRounded = BitUtils.AlignDown<ulong>(endAddr, PageSize);
+            ulong endAddrRounded = BitUtils.AlignUp<ulong>(endAddr, PageSize);
             ulong endAddrTruncated = BitUtils.AlignDown<ulong>(endAddr, PageSize);
 
             ulong pagesCount = addressRounded < endAddrTruncated ? (endAddrTruncated - addressRounded) / PageSize : 0;
@@ -2834,7 +2834,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         {
             lock (_blockManager)
             {
-                return BitUtils.AlignDown<ulong>(GetMmUsedSize(), PageSize);
+                return BitUtils.DivRoundUp<ulong>(GetMmUsedSize(), PageSize);
             }
         }
 

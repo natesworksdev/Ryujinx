@@ -95,7 +95,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             ulong size,
             KProcess process)
         {
-            if (_pageList.GetPagesCount() != BitUtils.AlignDown<ulong>(size, (ulong)KPageTableBase.PageSize))
+            if (_pageList.GetPagesCount() != BitUtils.DivRoundUp<ulong>(size, (ulong)KPageTableBase.PageSize))
             {
                 return KernelResult.InvalidSize;
             }

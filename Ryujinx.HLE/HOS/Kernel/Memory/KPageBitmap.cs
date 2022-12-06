@@ -101,7 +101,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             for (int depth = HighestDepthIndex; depth >= 0; depth--)
             {
                 _bitStorages[depth] = storage;
-                size = BitUtils.AlignDown<ulong>(size, (ulong)UInt64BitSize);
+                size = BitUtils.DivRoundUp<ulong>(size, (ulong)UInt64BitSize);
                 storage = storage.Slice((int)size);
             }
 
