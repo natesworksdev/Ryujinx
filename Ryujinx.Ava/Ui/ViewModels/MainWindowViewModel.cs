@@ -1374,6 +1374,33 @@ namespace Ryujinx.Ava.Ui.ViewModels
         {
             ApplicationHelper.OpenSaveDir(in filter, titleId, data.ControlHolder, data.TitleName);
         }
+        
+        private async void ExtractLogo()
+        {
+            var selection = SelectedApplication;
+            if (selection != null)
+            {
+                await ApplicationHelper.ExtractSection(NcaSectionType.Logo, selection.Path);
+            }
+        }
+
+        private async void ExtractRomFs()
+        {
+            var selection = SelectedApplication;
+            if (selection != null)
+            {
+                await ApplicationHelper.ExtractSection(NcaSectionType.Data, selection.Path);
+            }
+        }
+
+        private async void ExtractExeFs()
+        {
+            var selection = SelectedApplication;
+            if (selection != null)
+            {
+                await ApplicationHelper.ExtractSection(NcaSectionType.Code, selection.Path);
+            }
+        }
 
         public void CloseWindow()
         {
