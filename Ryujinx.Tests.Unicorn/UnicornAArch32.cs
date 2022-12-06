@@ -7,15 +7,15 @@ namespace Ryujinx.Tests.Unicorn
     public class UnicornAArch32 : IDisposable
     {
         internal readonly IntPtr uc;
-        private bool _isDisposed = false;
+        private bool _isDisposed;
 
         public IndexedProperty<int, uint> R
         {
             get
             {
                 return new IndexedProperty<int, uint>(
-                    (int i) => GetX(i),
-                    (int i, uint value) => SetX(i, value));
+                    (i) => GetX(i),
+                    (i, value) => SetX(i, value));
             }
         }
 
@@ -24,8 +24,8 @@ namespace Ryujinx.Tests.Unicorn
             get
             {
                 return new IndexedProperty<int, SimdValue>(
-                    (int i) => GetQ(i),
-                    (int i, SimdValue value) => SetQ(i, value));
+                    (i) => GetQ(i),
+                    (i, value) => SetQ(i, value));
             }
         }
 
@@ -122,14 +122,14 @@ namespace Ryujinx.Tests.Unicorn
         {
             if (!_isDisposed)
             {
-                Interface.Checked(Native.Interface.uc_close(uc));
+                Interface.Checked(Interface.uc_close(uc));
                 _isDisposed = true;
             }
         }
 
         public void RunForCount(ulong count)
         {
-            Interface.Checked(Native.Interface.uc_emu_start(uc, this.PC, 0xFFFFFFFFFFFFFFFFu, 0, count));
+            Interface.Checked(Interface.uc_emu_start(uc, this.PC, 0xFFFFFFFFFFFFFFFFu, 0, count));
         }
 
         public void Step()

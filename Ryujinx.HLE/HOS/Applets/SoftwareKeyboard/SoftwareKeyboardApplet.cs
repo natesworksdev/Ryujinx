@@ -49,14 +49,14 @@ namespace Ryujinx.HLE.HOS.Applets
         private byte[] _transferMemory;
 
         private string         _textValue   = "";
-        private int            _cursorBegin = 0;
+        private int            _cursorBegin;
         private Encoding       _encoding    = Encoding.Unicode;
         private KeyboardResult _lastResult  = KeyboardResult.NotSet;
 
-        private IDynamicTextInputHandler _dynamicTextInputHandler = null;
-        private SoftwareKeyboardRenderer _keyboardRenderer        = null;
-        private NpadReader               _npads                   = null;
-        private bool                     _canAcceptController     = false;
+        private IDynamicTextInputHandler _dynamicTextInputHandler;
+        private SoftwareKeyboardRenderer _keyboardRenderer;
+        private NpadReader               _npads;
+        private bool                     _canAcceptController;
         private KeyboardInputMode        _inputMode               = KeyboardInputMode.ControllerAndKeyboard;
 
         private object _lock = new object();

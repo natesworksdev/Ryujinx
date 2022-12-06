@@ -2,8 +2,6 @@
 {
     class PerformanceState
     {
-        public PerformanceState() { }
-
         public bool CpuOverclockEnabled = false;
 
         public PerformanceMode PerformanceMode = PerformanceMode.Default;

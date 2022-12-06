@@ -27,7 +27,7 @@ namespace ARMeilleure.CodeGen.Optimizations
                     cfg.Blocks.AddLast(block);
                 }
 
-                if (block == lastBlock)
+                if (block.Equals(lastBlock))
                 {
                     break;
                 }
@@ -48,7 +48,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 
                     // If true successor is next block in list, invert the condition. We avoid extra branching by
                     // making the true side the fallthrough (i.e, convert it to the false side).
-                    if (trueSucc == block.ListNext)
+                    if (trueSucc.Equals(block.ListNext))
                     {
                         Comparison comp = (Comparison)branchOp.GetSource(2).AsInt32();
                         Comparison compInv = comp.Invert();

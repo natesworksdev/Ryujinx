@@ -1,5 +1,8 @@
-﻿namespace Ryujinx.Graphics.Texture.Encoders
+﻿using System;
+
+namespace Ryujinx.Graphics.Texture.Encoders
 {
+    [Flags]
     enum EncodeMode
     {
         Fast,

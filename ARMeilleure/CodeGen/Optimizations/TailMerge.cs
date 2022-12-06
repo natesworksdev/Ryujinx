@@ -63,7 +63,7 @@ namespace ARMeilleure.CodeGen.Optimizations
             {
                 for (int i = 0; i < fromPred.SuccessorsCount; i++)
                 {
-                    if (fromPred.GetSuccessor(i) == from)
+                    if (fromPred.GetSuccessor(i).Equals(from))
                     {
                         fromPred.SetSuccessor(i, to);
                     }

@@ -11,7 +11,7 @@ namespace ARMeilleure.Translation
         {
             BasicBlock Intersect(BasicBlock block1, BasicBlock block2)
             {
-                while (block1 != block2)
+                while (!block1.Equals(block2))
                 {
                     while (cfg.PostOrderMap[block1.Index] < cfg.PostOrderMap[block2.Index])
                     {
@@ -29,7 +29,7 @@ namespace ARMeilleure.Translation
 
             cfg.Entry.ImmediateDominator = cfg.Entry;
 
-            Debug.Assert(cfg.Entry == cfg.PostOrderBlocks[cfg.PostOrderBlocks.Length - 1]);
+            Debug.Assert(cfg.Entry.Equals(cfg.PostOrderBlocks[cfg.PostOrderBlocks.Length - 1]));
 
             bool modified;
 
@@ -58,7 +58,7 @@ namespace ARMeilleure.Translation
                         }
                     }
 
-                    if (block.ImmediateDominator != newIDom)
+                    if (!block.ImmediateDominator.Equals(newIDom))
                     {
                         block.ImmediateDominator = newIDom;
 
@@ -82,7 +82,7 @@ namespace ARMeilleure.Translation
                 {
                     BasicBlock current = block.Predecessors[pBlkIndex];
 
-                    while (current != block.ImmediateDominator)
+                    while (!current.Equals(block.ImmediateDominator))
                     {
                         current.DominanceFrontiers.Add(block);
 

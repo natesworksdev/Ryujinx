@@ -178,7 +178,7 @@ namespace ARMeilleure.CodeGen.X86
                 {
                     BasicBlock succ = block.GetSuccessor(0);
 
-                    if (succ != block.ListNext)
+                    if (!succ.Equals(block.ListNext))
                     {
                         context.JumpTo(succ);
                     }
