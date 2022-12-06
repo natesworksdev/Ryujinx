@@ -18,14 +18,14 @@ namespace ARMeilleure.Instructions
     static class InstEmitSimdHelper
     {
 #region "Masks"
-        public static readonly long[] EvenMasks = new long[]
+        public static readonly long[] EvenMasks = new[]
         {
             14L << 56 | 12L << 48 | 10L << 40 | 08L << 32 | 06L << 24 | 04L << 16 | 02L << 8 | 00L << 0, // B
             13L << 56 | 12L << 48 | 09L << 40 | 08L << 32 | 05L << 24 | 04L << 16 | 01L << 8 | 00L << 0, // H
             11L << 56 | 10L << 48 | 09L << 40 | 08L << 32 | 03L << 24 | 02L << 16 | 01L << 8 | 00L << 0  // S
         };
 
-        public static readonly long[] OddMasks = new long[]
+        public static readonly long[] OddMasks = new[]
         {
             15L << 56 | 13L << 48 | 11L << 40 | 09L << 32 | 07L << 24 | 05L << 16 | 03L << 8 | 01L << 0, // B
             15L << 56 | 14L << 48 | 11L << 40 | 10L << 32 | 07L << 24 | 06L << 16 | 03L << 8 | 02L << 0, // H
@@ -44,7 +44,7 @@ namespace ARMeilleure.Instructions
 #endregion
 
 #region "X86 SSE Intrinsics"
-        public static readonly Intrinsic[] X86PaddInstruction = new Intrinsic[]
+        public static readonly Intrinsic[] X86PaddInstruction = new[]
         {
             Intrinsic.X86Paddb,
             Intrinsic.X86Paddw,
@@ -52,7 +52,7 @@ namespace ARMeilleure.Instructions
             Intrinsic.X86Paddq
         };
 
-        public static readonly Intrinsic[] X86PcmpeqInstruction = new Intrinsic[]
+        public static readonly Intrinsic[] X86PcmpeqInstruction = new[]
         {
             Intrinsic.X86Pcmpeqb,
             Intrinsic.X86Pcmpeqw,
@@ -60,7 +60,7 @@ namespace ARMeilleure.Instructions
             Intrinsic.X86Pcmpeqq
         };
 
-        public static readonly Intrinsic[] X86PcmpgtInstruction = new Intrinsic[]
+        public static readonly Intrinsic[] X86PcmpgtInstruction = new[]
         {
             Intrinsic.X86Pcmpgtb,
             Intrinsic.X86Pcmpgtw,
@@ -68,42 +68,42 @@ namespace ARMeilleure.Instructions
             Intrinsic.X86Pcmpgtq
         };
 
-        public static readonly Intrinsic[] X86PmaxsInstruction = new Intrinsic[]
+        public static readonly Intrinsic[] X86PmaxsInstruction = new[]
         {
             Intrinsic.X86Pmaxsb,
             Intrinsic.X86Pmaxsw,
             Intrinsic.X86Pmaxsd
         };
 
-        public static readonly Intrinsic[] X86PmaxuInstruction = new Intrinsic[]
+        public static readonly Intrinsic[] X86PmaxuInstruction = new[]
         {
             Intrinsic.X86Pmaxub,
             Intrinsic.X86Pmaxuw,
             Intrinsic.X86Pmaxud
         };
 
-        public static readonly Intrinsic[] X86PminsInstruction = new Intrinsic[]
+        public static readonly Intrinsic[] X86PminsInstruction = new[]
         {
             Intrinsic.X86Pminsb,
             Intrinsic.X86Pminsw,
             Intrinsic.X86Pminsd
         };
 
-        public static readonly Intrinsic[] X86PminuInstruction = new Intrinsic[]
+        public static readonly Intrinsic[] X86PminuInstruction = new[]
         {
             Intrinsic.X86Pminub,
             Intrinsic.X86Pminuw,
             Intrinsic.X86Pminud
         };
 
-        public static readonly Intrinsic[] X86PmovsxInstruction = new Intrinsic[]
+        public static readonly Intrinsic[] X86PmovsxInstruction = new[]
         {
             Intrinsic.X86Pmovsxbw,
             Intrinsic.X86Pmovsxwd,
             Intrinsic.X86Pmovsxdq
         };
 
-        public static readonly Intrinsic[] X86PmovzxInstruction = new Intrinsic[]
+        public static readonly Intrinsic[] X86PmovzxInstruction = new[]
         {
             Intrinsic.X86Pmovzxbw,
             Intrinsic.X86Pmovzxwd,
@@ -133,7 +133,7 @@ namespace ARMeilleure.Instructions
             Intrinsic.X86Psrlq
         };
 
-        public static readonly Intrinsic[] X86PsubInstruction = new Intrinsic[]
+        public static readonly Intrinsic[] X86PsubInstruction = new[]
         {
             Intrinsic.X86Psubb,
             Intrinsic.X86Psubw,
@@ -141,7 +141,7 @@ namespace ARMeilleure.Instructions
             Intrinsic.X86Psubq
         };
 
-        public static readonly Intrinsic[] X86PunpckhInstruction = new Intrinsic[]
+        public static readonly Intrinsic[] X86PunpckhInstruction = new[]
         {
             Intrinsic.X86Punpckhbw,
             Intrinsic.X86Punpckhwd,
@@ -149,7 +149,7 @@ namespace ARMeilleure.Instructions
             Intrinsic.X86Punpckhqdq
         };
 
-        public static readonly Intrinsic[] X86PunpcklInstruction = new Intrinsic[]
+        public static readonly Intrinsic[] X86PunpcklInstruction = new[]
         {
             Intrinsic.X86Punpcklbw,
             Intrinsic.X86Punpcklwd,
@@ -390,8 +390,8 @@ namespace ARMeilleure.Instructions
             IOpCodeSimd op = (IOpCodeSimd)context.CurrOp;
 
             MethodInfo info = (op.Size & 1) == 0
-                ? typeof(MathF).GetMethod(name, new Type[] { typeof(float) })
-                : typeof(Math). GetMethod(name, new Type[] { typeof(double) });
+                ? typeof(MathF).GetMethod(name, new[] { typeof(float) })
+                : typeof(Math). GetMethod(name, new[] { typeof(double) });
 
             return context.Call(info, n);
         }
@@ -403,8 +403,8 @@ namespace ARMeilleure.Instructions
             string name = nameof(Math.Round);
 
             MethodInfo info = (op.Size & 1) == 0
-                ? typeof(MathF).GetMethod(name, new Type[] { typeof(float),  typeof(MidpointRounding) })
-                : typeof(Math). GetMethod(name, new Type[] { typeof(double), typeof(MidpointRounding) });
+                ? typeof(MathF).GetMethod(name, new[] { typeof(float),  typeof(MidpointRounding) })
+                : typeof(Math). GetMethod(name, new[] { typeof(double), typeof(MidpointRounding) });
 
             return context.Call(info, n, Const((int)roundMode));
         }

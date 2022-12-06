@@ -111,14 +111,14 @@ namespace Ryujinx.Tests.Unicorn
         {
             if (!_isDisposed)
             {
-                Interface.Checked(Native.Interface.uc_close(uc));
+                Interface.Checked(Interface.uc_close(uc));
                 _isDisposed = true;
             }
         }
 
         public void RunForCount(ulong count)
         {
-            Interface.Checked(Native.Interface.uc_emu_start(uc, this.PC, 0xFFFFFFFFFFFFFFFFu, 0, count));
+            Interface.Checked(Interface.uc_emu_start(uc, this.PC, 0xFFFFFFFFFFFFFFFFu, 0, count));
         }
 
         public void Step()
@@ -161,7 +161,7 @@ namespace Ryujinx.Tests.Unicorn
             Arm64.REG_X30,
         };
 
-        private static Arm64[] QRegisters = new Arm64[32]
+        private static Arm64[] QRegisters =
         {
             Arm64.REG_Q0,
             Arm64.REG_Q1,
@@ -241,7 +241,7 @@ namespace Ryujinx.Tests.Unicorn
         {
             byte[] data = new byte[8];
 
-            Interface.Checked(Native.Interface.uc_reg_read(uc, (int)register, data));
+            Interface.Checked(Interface.uc_reg_read(uc, (int)register, data));
 
             return (ulong)BitConverter.ToInt64(data, 0);
         }

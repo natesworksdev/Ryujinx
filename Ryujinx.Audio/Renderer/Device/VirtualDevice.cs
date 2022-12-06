@@ -10,7 +10,7 @@ namespace Ryujinx.Audio.Renderer.Device
         /// <summary>
         /// All the defined virtual devices.
         /// </summary>
-        public static readonly VirtualDevice[] Devices = new VirtualDevice[5]
+        public static readonly VirtualDevice[] Devices =
         {
             new VirtualDevice("AudioStereoJackOutput", 2, true),
             new VirtualDevice("AudioBuiltInSpeakerOutput", 2, false),

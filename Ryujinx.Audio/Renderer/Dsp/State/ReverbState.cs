@@ -7,7 +7,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
 {
     public class ReverbState
     {
-        private static readonly float[] FdnDelayTimes = new float[20]
+        private static readonly float[] FdnDelayTimes =
         {
             // Room
             53.953247f, 79.192566f, 116.238770f, 130.615295f,
@@ -21,7 +21,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
             53.953247f, 79.192566f, 116.238770f, 170.615295f,
         };
 
-        private static readonly float[] DecayDelayTimes = new float[20]
+        private static readonly float[] DecayDelayTimes =
         {
             // Room
             7f, 9f, 13f, 17f,
@@ -35,7 +35,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
             7f, 9f, 13f, 17f,
         };
 
-        private static readonly float[] EarlyDelayTimes = new float[50]
+        private static readonly float[] EarlyDelayTimes =
         {
             // Room
             0.0f, 3.5f, 2.8f, 3.9f, 2.7f, 13.4f, 7.9f, 8.4f, 9.9f, 12.0f,
@@ -49,7 +49,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
             0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
         };
 
-        private static readonly float[] EarlyGainBase = new float[50]
+        private static readonly float[] EarlyGainBase =
         {
             // Room
             0.70f, 0.68f, 0.70f, 0.68f, 0.70f, 0.68f, 0.70f, 0.68f, 0.68f, 0.68f,
@@ -63,7 +63,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
             0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f
         };
 
-        private static readonly float[] PreDelayTimes = new float[5]
+        private static readonly float[] PreDelayTimes =
         {
             // Room
             12.5f,

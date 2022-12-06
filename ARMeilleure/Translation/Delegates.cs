@@ -89,17 +89,17 @@ namespace ARMeilleure.Translation
         {
             _delegates = new SortedList<string, DelegateInfo>();
 
-            SetDelegateInfo(typeof(Math).GetMethod(nameof(Math.Abs),      new Type[] { typeof(double) }));
-            SetDelegateInfo(typeof(Math).GetMethod(nameof(Math.Ceiling),  new Type[] { typeof(double) }));
-            SetDelegateInfo(typeof(Math).GetMethod(nameof(Math.Floor),    new Type[] { typeof(double) }));
-            SetDelegateInfo(typeof(Math).GetMethod(nameof(Math.Round),    new Type[] { typeof(double), typeof(MidpointRounding) }));
-            SetDelegateInfo(typeof(Math).GetMethod(nameof(Math.Truncate), new Type[] { typeof(double) }));
+            SetDelegateInfo(typeof(Math).GetMethod(nameof(Math.Abs),      new[] { typeof(double) }));
+            SetDelegateInfo(typeof(Math).GetMethod(nameof(Math.Ceiling),  new[] { typeof(double) }));
+            SetDelegateInfo(typeof(Math).GetMethod(nameof(Math.Floor),    new[] { typeof(double) }));
+            SetDelegateInfo(typeof(Math).GetMethod(nameof(Math.Round),    new[] { typeof(double), typeof(MidpointRounding) }));
+            SetDelegateInfo(typeof(Math).GetMethod(nameof(Math.Truncate), new[] { typeof(double) }));
 
-            SetDelegateInfo(typeof(MathF).GetMethod(nameof(MathF.Abs),      new Type[] { typeof(float) }));
-            SetDelegateInfo(typeof(MathF).GetMethod(nameof(MathF.Ceiling),  new Type[] { typeof(float) }));
-            SetDelegateInfo(typeof(MathF).GetMethod(nameof(MathF.Floor),    new Type[] { typeof(float) }));
-            SetDelegateInfo(typeof(MathF).GetMethod(nameof(MathF.Round),    new Type[] { typeof(float), typeof(MidpointRounding) }));
-            SetDelegateInfo(typeof(MathF).GetMethod(nameof(MathF.Truncate), new Type[] { typeof(float) }));
+            SetDelegateInfo(typeof(MathF).GetMethod(nameof(MathF.Abs),      new[] { typeof(float) }));
+            SetDelegateInfo(typeof(MathF).GetMethod(nameof(MathF.Ceiling),  new[] { typeof(float) }));
+            SetDelegateInfo(typeof(MathF).GetMethod(nameof(MathF.Floor),    new[] { typeof(float) }));
+            SetDelegateInfo(typeof(MathF).GetMethod(nameof(MathF.Round),    new[] { typeof(float), typeof(MidpointRounding) }));
+            SetDelegateInfo(typeof(MathF).GetMethod(nameof(MathF.Truncate), new[] { typeof(float) }));
 
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.Break)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.CheckSynchronization)));

@@ -123,7 +123,7 @@ namespace ARMeilleure.CodeGen.X86
                             {
                                 int stackOffset = stackAlloc.Allocate(OperandType.I32);
 
-                                node.SetSources(new Operand[] { Const(stackOffset), node.GetSource(0) });
+                                node.SetSources(new[] { Const(stackOffset), node.GetSource(0) });
                             }
                             break;
                     }
@@ -249,8 +249,8 @@ namespace ARMeilleure.CodeGen.X86
                         node = nodes.AddAfter(node, Operation(Instruction.VectorCreateScalar, dest, rax));
                         nodes.AddAfter(node, Operation(Instruction.VectorInsert, dest, dest, rdx, Const(1)));
 
-                        operation.SetDestinations(new Operand[] { rdx, rax });
-                        operation.SetSources(new Operand[] { operation.GetSource(0), rdx, rax, rcx, rbx });
+                        operation.SetDestinations(new[] { rdx, rax });
+                        operation.SetSources(new[] { operation.GetSource(0), rdx, rax, rcx, rbx });
                     }
                     else
                     {
@@ -270,7 +270,7 @@ namespace ARMeilleure.CodeGen.X86
 
                         nodes.AddBefore(node, Operation(Instruction.Copy, temp, newValue));
 
-                        node.SetSources(new Operand[] { node.GetSource(0), rax, temp });
+                        node.SetSources(new[] { node.GetSource(0), rax, temp });
 
                         nodes.AddAfter(node, Operation(Instruction.Copy, dest, rax));
 
@@ -299,7 +299,7 @@ namespace ARMeilleure.CodeGen.X86
 
                         nodes.AddAfter(node, Operation(Instruction.Copy, dest, rax));
 
-                        node.SetSources(new Operand[] { rdx, rax, node.GetSource(1) });
+                        node.SetSources(new[] { rdx, rax, node.GetSource(1) });
                         node.Destination = rax;
                     }
 
@@ -344,7 +344,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     nodes.AddAfter(node, Operation(Instruction.Copy, dest, rdx));
 
-                    node.SetDestinations(new Operand[] { rdx, rax });
+                    node.SetDestinations(new[] { rdx, rax });
 
                     break;
                 }
