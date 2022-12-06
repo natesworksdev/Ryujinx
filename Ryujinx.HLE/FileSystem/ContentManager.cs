@@ -231,30 +231,27 @@ namespace Ryujinx.HLE.FileSystem
 
                 string ncaId = BitConverter.ToString(cnmt.ContentEntries[0].NcaId).Replace("-", "").ToLower();
 
-                AddAocItem(cnmt.TitleId, containerPath, $"{ncaId}.nca", true, true);
+                AddAocItem(cnmt.TitleId, containerPath, $"{ncaId}.nca", true);
             }
         }
 
-        public void AddAocItem(ulong titleId, string containerPath, string ncaPath, bool enabled, bool mergedToContainer = false)
+        public void AddAocItem(ulong titleId, string containerPath, string ncaPath, bool mergedToContainer = false)
         {
-            if (enabled)
+            // TODO: Check Aoc version.
+            if (!_aocData.TryAdd(titleId, new AocItem(containerPath, ncaPath)))
             {
-                // TODO: Check Aoc version.
-                if (!_aocData.TryAdd(titleId, new AocItem(containerPath, ncaPath)))
-                {
-                    Logger.Warning?.Print(LogClass.Application, $"Duplicate AddOnContent detected. TitleId {titleId:X16}");
-                }
-                else
-                {
-                    Logger.Info?.Print(LogClass.Application, $"Found AddOnContent with TitleId {titleId:X16}");
+                Logger.Warning?.Print(LogClass.Application, $"Duplicate AddOnContent detected. TitleId {titleId:X16}");
+            }
+            else
+            {
+                Logger.Info?.Print(LogClass.Application, $"Found AddOnContent with TitleId {titleId:X16}");
 
-                    if (!mergedToContainer)
-                    {
-                        using FileStream          fileStream          = File.OpenRead(containerPath);
-                        using PartitionFileSystem partitionFileSystem = new(fileStream.AsStorage());
+                if (!mergedToContainer)
+                {
+                    using FileStream          fileStream          = File.OpenRead(containerPath);
+                    using PartitionFileSystem partitionFileSystem = new(fileStream.AsStorage());
 
-                        _virtualFileSystem.ImportTickets(partitionFileSystem);
-                    }
+                    _virtualFileSystem.ImportTickets(partitionFileSystem);
                 }
             }
         }
