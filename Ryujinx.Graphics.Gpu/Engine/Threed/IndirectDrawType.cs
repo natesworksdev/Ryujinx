@@ -1,8 +1,11 @@
+using System;
+
 namespace Ryujinx.Graphics.Gpu.Engine.Threed
 {
     /// <summary>
     /// Indirect draw type, which can be indexed or non-indexed, with or without a draw count.
     /// </summary>
+    [Flags]
     enum IndirectDrawType
     {
         /// <summary>

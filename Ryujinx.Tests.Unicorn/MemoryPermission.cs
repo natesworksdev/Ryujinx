@@ -1,5 +1,8 @@
+using System;
+
 namespace Ryujinx.Tests.Unicorn
 {
+    [Flags]
     public enum MemoryPermission
     {
         NONE = 0,

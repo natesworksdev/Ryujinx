@@ -1,7 +1,9 @@
+using System;
 using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
+    [Flags]
     public enum Cv
     {
         None,
@@ -10,6 +12,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         Restricted = 4
     }
 
+    [Flags]
     public enum Reference
     {
         None,

@@ -42,6 +42,8 @@
 // "Mask" in their name, and a parallel enum that has the shift
 // amount (1 << x) for each corresponding enumerant.
 
+using System;
+
 namespace Spv
 {
 
@@ -341,6 +343,7 @@ namespace Spv
             ZeroExtend = 13,
         }
 
+        [Flags]
         public enum ImageOperandsMask
         {
             MaskNone = 0,
@@ -717,6 +720,7 @@ namespace Spv
             Volatile = 15,
         }
 
+        [Flags]
         public enum MemorySemanticsMask
         {
             MaskNone = 0,
