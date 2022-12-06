@@ -47,8 +47,8 @@ jobs:
       POWERSHELL_TELEMETRY_OPTOUT: 1
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
       RYUJINX_BASE_VERSION: "1.1.0"
-      RYUJINX_BUILD_COMMON_ARGS: "-p:DebugType=embedded -p:ExtraDefineConstants=DISABLE_UPDATER -p:ContinuousIntegrationBuild=true"
-      RYUJINX_PUBLISH_COMMON_ARGS: "-p:DebugType=embedded -p:ExtraDefineConstants=DISABLE_UPDATER -p:ContinuousIntegrationBuild=true --self-contained true"
+      RYUJINX_BUILD_COMMON_ARGS: "-p:ExtraDefineConstants=DISABLE_UPDATER"
+      RYUJINX_PUBLISH_COMMON_ARGS: "-p:ExtraDefineConstants=DISABLE_UPDATER --self-contained true"
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-dotnet@v3

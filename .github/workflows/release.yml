@@ -23,7 +23,7 @@ jobs:
       RYUJINX_TARGET_RELEASE_CHANNEL_NAME: "master"
       RYUJINX_TARGET_RELEASE_CHANNEL_OWNER: "Ryujinx"
       RYUJINX_TARGET_RELEASE_CHANNEL_REPO: "release-channel-master"
-      RYUJINX_PUBLISH_COMMON_ARGS: "-p:DebugType=embedded -p:ContinuousIntegrationBuild=true --self-contained true"
+      RYUJINX_PUBLISH_COMMON_ARGS: "--self-contained true"
 
     steps:
       - uses: actions/checkout@v3

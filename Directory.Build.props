@@ -1,5 +1,5 @@
 <Project>
   <ItemGroup>
-    <SourceRoot Include="$(MSBuildThisFileDirectory)"/>
+    <PackageReference Include="DotNet.ReproducibleBuilds" Version="1.1.1" PrivateAssets="All"/>
   </ItemGroup>
 </Project>
