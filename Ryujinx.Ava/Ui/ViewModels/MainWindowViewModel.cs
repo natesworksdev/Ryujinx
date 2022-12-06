@@ -502,8 +502,10 @@ namespace Ryujinx.Ava.Ui.ViewModels
             return SortMode switch
             {
                 ApplicationSort.LastPlayed      => new Models.Generic.LastPlayedSortComparer(IsAscending),
-                ApplicationSort.FileSize        => new Models.Generic.FileSizeSortComparer(IsAscending),
-                ApplicationSort.TotalTimePlayed => new Models.Generic.TimePlayedSortComparer(IsAscending),
+                ApplicationSort.FileSize        => IsAscending  ? SortExpressionComparer<ApplicationData>.Ascending(app  => app.FileSizeBytes)
+                                                                : SortExpressionComparer<ApplicationData>.Descending(app => app.FileSizeBytes),
+                ApplicationSort.TotalTimePlayed => IsAscending  ? SortExpressionComparer<ApplicationData>.Ascending(app  => app.TimePlayedNum)
+                                                                : SortExpressionComparer<ApplicationData>.Descending(app => app.TimePlayedNum),
                 ApplicationSort.Title           => IsAscending  ? SortExpressionComparer<ApplicationData>.Ascending(app  => app.TitleName)
                                                                 : SortExpressionComparer<ApplicationData>.Descending(app => app.TitleName),
                 ApplicationSort.Favorite        => !IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app  => app.Favorite)
@@ -881,17 +883,17 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public void LoadConfigurableHotKeys()
         {
-            if (AvaloniaMappingHelper.TryGetAvaKey((Ryujinx.Input.Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi, out var showUiKey))
+            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Ryujinx.Input.Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi, out var showUiKey))
             {
                 ShowUiKey = new KeyGesture(showUiKey, KeyModifiers.None);
             }
 
-            if (AvaloniaMappingHelper.TryGetAvaKey((Ryujinx.Input.Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot, out var screenshotKey))
+            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Ryujinx.Input.Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot, out var screenshotKey))
             {
                 ScreenshotKey = new KeyGesture(screenshotKey, KeyModifiers.None);
             }
 
-            if (AvaloniaMappingHelper.TryGetAvaKey((Ryujinx.Input.Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Pause, out var pauseKey))
+            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Ryujinx.Input.Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Pause, out var pauseKey))
             {
                 PauseKey = new KeyGesture(pauseKey, KeyModifiers.None);
             }
