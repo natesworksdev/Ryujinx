@@ -57,14 +57,10 @@ namespace Ryujinx.Tests.Memory
         }
 
         [Test]
+        // Memory aliasing tests fail on CI at the moment.
+        [Platform(Exclude = "MacOsX")]
         public void PartialUnmap([Values] bool readOnly)
         {
-            if (OperatingSystem.IsMacOS())
-            {
-                // Memory aliasing tests fail on CI at the moment.
-                return;
-            }
-
             // Set up an address space to test partial unmapping.
             // Should register the signal handler to deal with this on Windows.
             ulong vaSize = 0x100000;
@@ -205,13 +201,10 @@ namespace Ryujinx.Tests.Memory
         }
 
         [Test]
+        // Memory aliasing tests fail on CI at the moment.
+        [Platform(Exclude = "MacOsX")]
         public unsafe void PartialUnmapNative()
         {
-            if (OperatingSystem.IsMacOS())
-            {
-                // Memory aliasing tests fail on CI at the moment.
-                return;
-            }
 
             // Set up an address space to test partial unmapping.
             // Should register the signal handler to deal with this on Windows.
@@ -288,26 +281,16 @@ namespace Ryujinx.Tests.Memory
         }
 
         [Test]
+        // Only test in Windows, as this is only used on Windows and uses Windows APIs for trimming.
+        [Platform("Win")]
         public void ThreadLocalMap()
         {
-            if (!OperatingSystem.IsWindows())
-            {
-                // Only test in Windows, as this is only used on Windows and uses Windows APIs for trimming.
-                return;
-            }
-
             PartialUnmapState.Reset();
             ref var state = ref PartialUnmapState.GetRef();
 
             bool running = true;
             var testThread = new Thread(() =>
             {
-                if (!OperatingSystem.IsWindows())
-                {
-                    // Need this here to avoid a warning.
-                    return;
-                }
-
                 PartialUnmapState.GetRef().RetryFromAccessViolation();
                 while (running)
                 {
@@ -334,14 +317,10 @@ namespace Ryujinx.Tests.Memory
         }
 
         [Test]
+        // Only test in Windows, as this is only used on Windows and uses Windows APIs for trimming.
+        [Platform("Win")]
         public unsafe void ThreadLocalMapNative()
         {
-            if (!OperatingSystem.IsWindows())
-            {
-                // Only test in Windows, as this is only used on Windows and uses Windows APIs for trimming.
-                return;
-            }
-
             EnsureTranslator();
 
             PartialUnmapState.Reset();
