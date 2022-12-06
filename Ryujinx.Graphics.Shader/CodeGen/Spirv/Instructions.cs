@@ -97,6 +97,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.IsNan,                    GenerateIsNan);
             Add(Instruction.LoadAttribute,            GenerateLoadAttribute);
             Add(Instruction.LoadConstant,             GenerateLoadConstant);
+            Add(Instruction.LoadGlobal,               GenerateLoadGlobal);
             Add(Instruction.LoadLocal,                GenerateLoadLocal);
             Add(Instruction.LoadShared,               GenerateLoadShared);
             Add(Instruction.LoadStorage,              GenerateLoadStorage);
@@ -132,6 +133,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.Sine,                     GenerateSine);
             Add(Instruction.SquareRoot,               GenerateSquareRoot);
             Add(Instruction.StoreAttribute,           GenerateStoreAttribute);
+            Add(Instruction.StoreGlobal,              GenerateStoreGlobal);
+            // Add(Instruction.StoreGlobal16,            GenerateStoreGlobal16);
+            // Add(Instruction.StoreGlobal8,             GenerateStoreGlobal8);
             Add(Instruction.StoreLocal,               GenerateStoreLocal);
             Add(Instruction.StoreShared,              GenerateStoreShared);
             Add(Instruction.StoreShared16,            GenerateStoreShared16);
@@ -954,6 +958,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             return new OperationResult(AggregateType.FP32, value);
         }
 
+        private static OperationResult GenerateLoadGlobal(CodeGenContext context, AstOperation operation)
+        {
+            var elemPointer = GetGlobalElemPointer(context, operation, context.TypeU32());
+            var value = context.Load(context.TypeU32(), elemPointer, MemoryAccessMask.Aligned, 4);
+
+            return new OperationResult(AggregateType.U32, value);
+        }
+
         private static OperationResult GenerateLoadLocal(CodeGenContext context, AstOperation operation)
         {
             return GenerateLoadLocalOrShared(context, operation, StorageClass.Private, context.LocalMemory);
@@ -1366,6 +1378,30 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             var value = context.Get(elemType, src3);
             context.Store(elemPointer, value);
+
+            return OperationResult.Invalid;
+        }
+
+        private static OperationResult GenerateStoreGlobal(CodeGenContext context, AstOperation operation)
+        {
+            var elemPointer = GetGlobalElemPointer(context, operation, context.TypeU32());
+            context.Store(elemPointer, context.Get(AggregateType.U32, operation.GetSource(2)), MemoryAccessMask.Aligned, 4);
+
+            return OperationResult.Invalid;
+        }
+
+        private static OperationResult GenerateStoreGlobal16(CodeGenContext context, AstOperation operation)
+        {
+            var elemPointer = GetGlobalElemPointer(context, operation, context.TypeInt(16, 0));
+            context.Store(elemPointer, context.Get(AggregateType.U32, operation.GetSource(2)), MemoryAccessMask.Aligned, 2);
+
+            return OperationResult.Invalid;
+        }
+
+        private static OperationResult GenerateStoreGlobal8(CodeGenContext context, AstOperation operation)
+        {
+            var elemPointer = GetGlobalElemPointer(context, operation, context.TypeInt(8, 0));
+            context.Store(elemPointer, context.Get(AggregateType.U32, operation.GetSource(2)), MemoryAccessMask.Aligned, 1);
 
             return OperationResult.Invalid;
         }
@@ -1930,7 +1966,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             SpvInstruction elemPointer;
             Instruction mr = operation.Inst & Instruction.MrMask;
 
-            if (mr == Instruction.MrStorage)
+            if (mr == Instruction.MrGlobal)
+            {
+                elemPointer = GetGlobalElemPointer(context, operation, context.TypeU32());
+            }
+            else if (mr == Instruction.MrStorage)
             {
                 elemPointer = GetStorageElemPointer(context, operation);
             }
@@ -1958,7 +1998,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             SpvInstruction elemPointer;
             Instruction mr = operation.Inst & Instruction.MrMask;
 
-            if (mr == Instruction.MrStorage)
+            if (mr == Instruction.MrGlobal)
+            {
+                elemPointer = GetGlobalElemPointer(context, operation, context.TypeU32());
+            }
+            else if (mr == Instruction.MrStorage)
             {
                 elemPointer = GetStorageElemPointer(context, operation);
             }
@@ -2039,6 +2083,60 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             context.BranchConditional(failed, loopStart, loopEnd);
 
             context.AddLabel(loopEnd);
+        }
+
+        private static SpvInstruction GetGlobalElemPointer(CodeGenContext context, AstOperation operation, SpvInstruction elemType)
+        {
+            var vec4UintType = context.TypeVector(context.TypeU32(), 4);
+            var ptBasePointer = context.AccessChain(context.TypePointer(StorageClass.Uniform, vec4UintType), context.SupportBuffer, context.Constant(context.TypeU32(), 5));
+            ptBasePointer = context.Load(vec4UintType, ptBasePointer);
+            ptBasePointer = context.VectorShuffle(context.TypeVector(context.TypeU32(), 2), ptBasePointer, ptBasePointer, 0, 1);
+            ptBasePointer = context.Bitcast(context.PageTablePointerType, ptBasePointer);
+
+            var addrLow = context.Get(AggregateType.U32, operation.GetSource(0));
+            var addrHigh = context.Get(AggregateType.U32, operation.GetSource(1));
+
+            // uint l0 = (addrLow >> 12) & 0x3fff;
+            // uint l1 = ((addrLow >> 26) & 0x3f) | ((addrHigh << 6) & 0x3fc0);
+            var l0 = ShiftRightAndMask(context, addrLow, 12, 0x3fff);
+            var l1 = context.BitwiseOr(context.TypeU32(),
+                ShiftRightAndMask(context, addrLow, 26, 0x3f),
+                ShiftLeftAndMask(context, addrHigh, 6, 0x3fc0));
+
+            var blockIndexPointerType = context.TypePointer(StorageClass.PhysicalStorageBuffer, context.TypeU32());
+            var blockIndex = context.AccessChain(blockIndexPointerType, ptBasePointer, context.Constant(context.TypeS32(), 0), l1);
+            blockIndex = context.Load(context.TypeU32(), blockIndex, MemoryAccessMask.Aligned, 4);
+
+            var offset = context.IAdd(context.TypeU32(), blockIndex, l0);
+
+            var vec2UintType = context.TypeVector(context.TypeU32(), 2);
+            var vec2UintPointerType = context.TypePointer(StorageClass.PhysicalStorageBuffer, vec2UintType);
+            var hostPointer = context.AccessChain(vec2UintPointerType, ptBasePointer, context.Constant(context.TypeS32(), 1), offset);
+            hostPointer = context.Load(vec2UintType, hostPointer, MemoryAccessMask.Aligned, 8);
+
+            var pageOffset = context.BitwiseAnd(context.TypeU32(), addrLow, context.Constant(context.TypeU32(), 0xfff));
+
+            var hostPointerLow = context.IAdd(context.TypeU32(), context.CompositeExtract(context.TypeU32(), hostPointer, 0), pageOffset);
+            var hostPointerHigh = context.CompositeExtract(context.TypeU32(), hostPointer, 1);
+
+            hostPointer = context.CompositeConstruct(vec2UintType, hostPointerLow, hostPointerHigh);
+
+            var elemStructType = context.TypeStruct(false, elemType);
+            var elemStructPointerType = context.TypePointer(StorageClass.PhysicalStorageBuffer, elemStructType);
+            var elemPointerType = context.TypePointer(StorageClass.PhysicalStorageBuffer, elemType);
+            return context.AccessChain(elemPointerType, context.Bitcast(elemStructPointerType, hostPointer), context.Constant(context.TypeS32(), 0));
+        }
+
+        private static SpvInstruction ShiftLeftAndMask(CodeGenContext context, SpvInstruction value, int shift, int mask)
+        {
+            value = context.ShiftLeftLogical(context.TypeU32(), value, context.Constant(context.TypeS32(), shift));
+            return context.BitwiseAnd(context.TypeU32(), value, context.Constant(context.TypeU32(), mask));
+        }
+
+        private static SpvInstruction ShiftRightAndMask(CodeGenContext context, SpvInstruction value, int shift, int mask)
+        {
+            value = context.ShiftRightLogical(context.TypeU32(), value, context.Constant(context.TypeS32(), shift));
+            return context.BitwiseAnd(context.TypeU32(), value, context.Constant(context.TypeU32(), mask));
         }
 
         private static SpvInstruction GetStorageElemPointer(CodeGenContext context, AstOperation operation)

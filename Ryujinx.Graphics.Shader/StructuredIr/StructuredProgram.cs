@@ -223,6 +223,35 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 case Instruction.AtomicMinS32 | Instruction.MrStorage:
                     context.Info.HelperFunctionsMask |= HelperFunctionsMask.AtomicMinMaxS32Storage;
                     break;
+                case Instruction.AtomicAdd | Instruction.MrGlobal:
+                case Instruction.AtomicAnd | Instruction.MrGlobal:
+                case Instruction.AtomicCompareAndSwap | Instruction.MrGlobal:
+                case Instruction.AtomicMaxS32 | Instruction.MrGlobal:
+                case Instruction.AtomicMaxU32 | Instruction.MrGlobal:
+                case Instruction.AtomicMinS32 | Instruction.MrGlobal:
+                case Instruction.AtomicMinU32 | Instruction.MrGlobal:
+                case Instruction.AtomicOr | Instruction.MrGlobal:
+                case Instruction.AtomicSwap | Instruction.MrGlobal:
+                case Instruction.AtomicXor | Instruction.MrGlobal:
+                    context.Config.SetUsedFeature(FeatureFlags.GlobalMemory);
+                    context.Config.SetUsedFeature(FeatureFlags.GlobalMemoryWrite);
+                    context.Info.HelperFunctionsMask |= HelperFunctionsMask.GlobalMemory;
+                    break;
+                case Instruction.LoadGlobal:
+                case Instruction.StoreGlobal:
+                case Instruction.StoreGlobal16:
+                case Instruction.StoreGlobal8:
+                    context.Config.SetUsedFeature(FeatureFlags.GlobalMemory);
+
+                    if (operation.Inst == Instruction.StoreGlobal ||
+                        operation.Inst == Instruction.StoreGlobal16 ||
+                        operation.Inst == Instruction.StoreGlobal8)
+                    {
+                        context.Config.SetUsedFeature(FeatureFlags.GlobalMemoryWrite);
+                    }
+
+                    context.Info.HelperFunctionsMask |= HelperFunctionsMask.GlobalMemory;
+                    break;
                 case Instruction.MultiplyHighS32:
                     context.Info.HelperFunctionsMask |= HelperFunctionsMask.MultiplyHighS32;
                     break;

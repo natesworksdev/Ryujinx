@@ -11,6 +11,7 @@ namespace Ryujinx.Graphics.Vulkan
         public readonly bool SupportsGeometryShaderPassthrough;
         public readonly bool SupportsSubgroupSizeControl;
         public readonly bool SupportsShaderInt8;
+        public readonly bool SupportsBufferDeviceAddress;
         public readonly bool SupportsConditionalRendering;
         public readonly bool SupportsExtendedDynamicState;
         public readonly bool SupportsMultiView;
@@ -32,6 +33,7 @@ namespace Ryujinx.Graphics.Vulkan
             bool supportsGeometryShaderPassthrough,
             bool supportsSubgroupSizeControl,
             bool supportsShaderInt8,
+            bool supportsBufferDeviceAddress,
             bool supportsConditionalRendering,
             bool supportsExtendedDynamicState,
             bool supportsMultiView,
@@ -52,6 +54,7 @@ namespace Ryujinx.Graphics.Vulkan
             SupportsGeometryShaderPassthrough = supportsGeometryShaderPassthrough;
             SupportsSubgroupSizeControl = supportsSubgroupSizeControl;
             SupportsShaderInt8 = supportsShaderInt8;
+            SupportsBufferDeviceAddress = supportsBufferDeviceAddress;
             SupportsConditionalRendering = supportsConditionalRendering;
             SupportsExtendedDynamicState = supportsExtendedDynamicState;
             SupportsMultiView = supportsMultiView;

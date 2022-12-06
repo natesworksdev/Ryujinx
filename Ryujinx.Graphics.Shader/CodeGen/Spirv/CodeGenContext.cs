@@ -24,6 +24,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         public int InputVertices { get; }
 
         public Dictionary<int, Instruction> UniformBuffers { get; } = new Dictionary<int, Instruction>();
+        public Instruction PageTablePointerType { get; set; }
         public Instruction SupportBuffer { get; set; }
         public Instruction UniformBuffersArray { get; set; }
         public Instruction StorageBuffersArray { get; set; }

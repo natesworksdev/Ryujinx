@@ -329,6 +329,22 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             }
         }
 
+        public ulong GetBufferGpuAddress(BufferHandle buffer)
+        {
+            if (IsGpuThread())
+            {
+                ResultBox<ulong> box = new ResultBox<ulong>();
+                New<BufferGetGpuAddressCommand>().Set(buffer, Ref(box));
+                InvokeCommand();
+
+                return box.Result;
+            }
+            else
+            {
+                return _baseRenderer.GetBufferGpuAddress(Buffers.MapBufferBlocking(buffer));
+            }
+        }
+
         public Capabilities GetCapabilities()
         {
             ResultBox<Capabilities> box = new ResultBox<Capabilities>();

@@ -18,5 +18,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         public static string StoreShared8   = "Helper_StoreShared8";
         public static string StoreStorage16 = "Helper_StoreStorage16";
         public static string StoreStorage8  = "Helper_StoreStorage8";
+
+        public static string TranslateAddress = "Helper_TranslateAddress";
     }
 }

@@ -87,6 +87,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                         switch (memRegion)
                         {
+                            case Instruction.MrGlobal: args += LoadGlobal(context, operation); break;
                             case Instruction.MrShared: args += LoadShared(context, operation); break;
                             case Instruction.MrStorage: args += LoadStorage(context, operation); break;
 
@@ -170,6 +171,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     case Instruction.LoadConstant:
                         return LoadConstant(context, operation);
 
+                    case Instruction.LoadGlobal:
+                        return LoadGlobal(context, operation);
+
                     case Instruction.LoadLocal:
                         return LoadLocal(context, operation);
 
@@ -193,6 +197,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                     case Instruction.StoreAttribute:
                         return StoreAttribute(context, operation);
+
+                    case Instruction.StoreGlobal:
+                        return StoreGlobal(context, operation);
+
+                    case Instruction.StoreGlobal16:
+                        return StoreGlobal16(context, operation);
+
+                    case Instruction.StoreGlobal8:
+                        return StoreGlobal8(context, operation);
 
                     case Instruction.StoreLocal:
                         return StoreLocal(context, operation);

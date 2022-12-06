@@ -203,13 +203,21 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
             }
 
             _channel.BufferManager.SetComputeBufferBindings(cs.Bindings);
-
             _channel.TextureManager.SetComputeBindings(cs.Bindings);
+
+            if (info.UsesGlobalMemory)
+            {
+                _channel.BufferManager.SynchronizeComputeStorageBuffers(info.UsesGlobalMemoryWrite);
+            }
 
             // Should never return false for mismatching spec state, since the shader was fetched above.
             _channel.TextureManager.CommitComputeBindings(cs.SpecializationState);
-
             _channel.BufferManager.CommitComputeBindings();
+
+            if (info.UsesGlobalMemory)
+            {
+                _channel.BufferManager.UpdatePageTable();
+            }
 
             _context.Renderer.Pipeline.DispatchCompute(qmd.CtaRasterWidth, qmd.CtaRasterHeight, qmd.CtaRasterDepth);
 

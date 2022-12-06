@@ -77,6 +77,8 @@ namespace Ryujinx.Graphics.GAL.Multithreading
                 BufferDisposeCommand.Run(ref GetCommand<BufferDisposeCommand>(memory), threaded, renderer);
             _lookup[(int)CommandType.BufferGetData] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
                 BufferGetDataCommand.Run(ref GetCommand<BufferGetDataCommand>(memory), threaded, renderer);
+            _lookup[(int)CommandType.BufferGetGpuAddress] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                BufferGetGpuAddressCommand.Run(ref GetCommand<BufferGetGpuAddressCommand>(memory), threaded, renderer);
             _lookup[(int)CommandType.BufferSetData] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
                 BufferSetDataCommand.Run(ref GetCommand<BufferSetDataCommand>(memory), threaded, renderer);
 
@@ -229,6 +231,8 @@ namespace Ryujinx.Graphics.GAL.Multithreading
                 TryHostConditionalRenderingCommand.Run(ref GetCommand<TryHostConditionalRenderingCommand>(memory), threaded, renderer);
             _lookup[(int)CommandType.TryHostConditionalRenderingFlush] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
                 TryHostConditionalRenderingFlushCommand.Run(ref GetCommand<TryHostConditionalRenderingFlushCommand>(memory), threaded, renderer);
+            _lookup[(int)CommandType.UpdatePageTableGpuAddress] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                UpdatePageTableGpuAddressCommand.Run(ref GetCommand<UpdatePageTableGpuAddressCommand>(memory), threaded, renderer);
             _lookup[(int)CommandType.UpdateRenderScale] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
                 UpdateRenderScaleCommand.Run(ref GetCommand<UpdateRenderScaleCommand>(memory), threaded, renderer);
         }

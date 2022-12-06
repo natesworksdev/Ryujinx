@@ -22,7 +22,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         private const ushort FileFormatVersionMajor = 1;
         private const ushort FileFormatVersionMinor = 2;
         private const uint FileFormatVersionPacked = ((uint)FileFormatVersionMajor << 16) | FileFormatVersionMinor;
-        private const uint CodeGenVersion = 4037;
+        private const uint CodeGenVersion = 4047;
 
         private const string SharedTocFileName = "shared.toc";
         private const string SharedDataFileName = "shared.data";
@@ -139,6 +139,16 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             /// Shader stage.
             /// </summary>
             public ShaderStage Stage;
+
+            /// <summary>
+            /// Indicates if the shader uses instructions that access global memory, such as LDG, STG and ATOM.
+            /// </summary>
+            public bool UsesGlobalMemory;
+
+            /// <summary>
+            /// Indicates if the shader uses instructions that modify global memory, such as STG and ATOM.
+            /// </summary>
+            public bool UsesGlobalMemoryWrite;
 
             /// <summary>
             /// Indicates if the shader accesses the Instance ID built-in variable.
@@ -775,6 +785,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 textures,
                 images,
                 dataInfo.Stage,
+                dataInfo.UsesGlobalMemory,
+                dataInfo.UsesGlobalMemoryWrite,
                 dataInfo.UsesInstanceId,
                 dataInfo.UsesDrawParameters,
                 dataInfo.UsesRtLayer,
@@ -801,6 +813,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             dataInfo.TexturesCount = (ushort)info.Textures.Count;
             dataInfo.ImagesCount = (ushort)info.Images.Count;
             dataInfo.Stage = info.Stage;
+            dataInfo.UsesGlobalMemory = info.UsesGlobalMemory;
+            dataInfo.UsesGlobalMemoryWrite = info.UsesGlobalMemoryWrite;
             dataInfo.UsesInstanceId = info.UsesInstanceId;
             dataInfo.UsesDrawParameters = info.UsesDrawParameters;
             dataInfo.UsesRtLayer = info.UsesRtLayer;

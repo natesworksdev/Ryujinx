@@ -710,7 +710,7 @@ namespace Spv.Generator
             return result;
         }
 
-        public Instruction Load(Instruction resultType, Instruction pointer, MemoryAccessMask memoryAccess = (MemoryAccessMask)int.MaxValue)
+        public Instruction Load(Instruction resultType, Instruction pointer, MemoryAccessMask memoryAccess = (MemoryAccessMask)int.MaxValue, LiteralInteger operand2 = null)
         {
             Instruction result = NewInstruction(Op.OpLoad, GetNewId(), resultType);
 
@@ -718,13 +718,17 @@ namespace Spv.Generator
             if (memoryAccess != (MemoryAccessMask)int.MaxValue)
             {
                 result.AddOperand(memoryAccess);
+                if (operand2 != null)
+                {
+                    result.AddOperand(operand2);
+                }
             }
             AddToFunctionDefinitions(result);
 
             return result;
         }
 
-        public Instruction Store(Instruction pointer, Instruction obj, MemoryAccessMask memoryAccess = (MemoryAccessMask)int.MaxValue)
+        public Instruction Store(Instruction pointer, Instruction obj, MemoryAccessMask memoryAccess = (MemoryAccessMask)int.MaxValue, LiteralInteger operand2 = null)
         {
             Instruction result = NewInstruction(Op.OpStore);
 
@@ -733,6 +737,10 @@ namespace Spv.Generator
             if (memoryAccess != (MemoryAccessMask)int.MaxValue)
             {
                 result.AddOperand(memoryAccess);
+                if (operand2 != null)
+                {
+                    result.AddOperand(operand2);
+                }
             }
             AddToFunctionDefinitions(result);
 

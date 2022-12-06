@@ -205,6 +205,7 @@ namespace Ryujinx.Graphics.Vulkan
                 supportedExtensions.Contains("VK_NV_geometry_shader_passthrough"),
                 supportedExtensions.Contains("VK_EXT_subgroup_size_control"),
                 featuresShaderInt8.ShaderInt8,
+                supportedExtensions.Contains(ExtBufferDeviceAddress.ExtensionName),
                 supportedExtensions.Contains(ExtConditionalRendering.ExtensionName),
                 supportedExtensions.Contains(ExtExtendedDynamicState.ExtensionName),
                 features2.Features.MultiViewport,
@@ -342,6 +343,11 @@ namespace Ryujinx.Graphics.Vulkan
         public ReadOnlySpan<byte> GetBufferData(BufferHandle buffer, int offset, int size)
         {
             return BufferManager.GetData(buffer, offset, size);
+        }
+
+        public ulong GetBufferGpuAddress(BufferHandle buffer)
+        {
+            return BufferManager.GetBufferGpuAddress(buffer);
         }
 
         public unsafe Capabilities GetCapabilities()

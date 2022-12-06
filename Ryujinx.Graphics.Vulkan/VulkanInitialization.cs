@@ -19,6 +19,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public static string[] DesirableExtensions { get; } = new string[]
         {
+            ExtBufferDeviceAddress.ExtensionName,
             ExtConditionalRendering.ExtensionName,
             ExtExtendedDynamicState.ExtensionName,
             ExtTransformFeedback.ExtensionName,
@@ -489,6 +490,20 @@ namespace Ryujinx.Graphics.Vulkan
                 };
 
                 pExtendedFeatures = &featuresSubgroupSizeControl;
+            }
+
+            PhysicalDeviceBufferDeviceAddressFeaturesEXT featuresBufferDeviceAddress;
+
+            if (supportedExtensions.Contains(ExtBufferDeviceAddress.ExtensionName))
+            {
+                featuresBufferDeviceAddress = new PhysicalDeviceBufferDeviceAddressFeaturesEXT()
+                {
+                    SType = StructureType.PhysicalDeviceBufferAddressFeaturesExt,
+                    PNext = pExtendedFeatures,
+                    BufferDeviceAddress = true
+                };
+
+                pExtendedFeatures = &featuresBufferDeviceAddress;
             }
 
             var enabledExtensions = RequiredExtensions.Union(DesirableExtensions.Intersect(supportedExtensions)).ToArray();

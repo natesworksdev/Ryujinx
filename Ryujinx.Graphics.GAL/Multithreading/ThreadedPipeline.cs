@@ -365,6 +365,12 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             return false;
         }
 
+        public void UpdatePageTableGpuAddress(ulong address)
+        {
+            _renderer.New<UpdatePageTableGpuAddressCommand>().Set(address);
+            _renderer.QueueCommand();
+        }
+
         public void UpdateRenderScale(ReadOnlySpan<float> scales, int totalCount, int fragmentCount)
         {
             _renderer.New<UpdateRenderScaleCommand>().Set(_renderer.CopySpan(scales.Slice(0, totalCount)), totalCount, fragmentCount);
