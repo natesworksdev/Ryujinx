@@ -35,7 +35,7 @@ namespace Ryujinx.Memory.Tests
         {
             return smart ?
                 _tracking.BeginSmartGranularTracking(address, size, granularity) :
-                (IMultiRegionHandle)_tracking.BeginGranularTracking(address, size, null, granularity);
+                _tracking.BeginGranularTracking(address, size, null, granularity);
         }
 
         private void RandomOrder(Random random, List<int> indices, Action<int> action)

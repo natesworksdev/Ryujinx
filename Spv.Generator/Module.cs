@@ -249,7 +249,7 @@ namespace Spv.Generator
             Instruction result = NewInstruction(Op.OpExtInst, GetNewId(), resultType);
 
             result.AddOperand(AddExtInstImport("OpenCL.std"));
-            result.AddOperand((LiteralInteger)184);
+            result.AddOperand(184);
             result.AddOperand(format);
             result.AddOperand(additionalarguments);
             AddToFunctionDefinitions(result);

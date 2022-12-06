@@ -116,7 +116,7 @@ namespace Ryujinx.Graphics.OpenGL
             GL.BindBuffer(BufferTarget.CopyReadBuffer, buffer.ToInt32());
             GL.BindBuffer(BufferTarget.CopyWriteBuffer, _copyBufferHandle);
 
-            GL.CopyBufferSubData(BufferTarget.CopyReadBuffer, BufferTarget.CopyWriteBuffer, (IntPtr)offset, IntPtr.Zero, size);
+            GL.CopyBufferSubData(BufferTarget.CopyReadBuffer, BufferTarget.CopyWriteBuffer, offset, IntPtr.Zero, size);
 
             GL.BindBuffer(BufferTarget.CopyWriteBuffer, 0);
 

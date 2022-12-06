@@ -7,8 +7,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 {
     internal static class ReconIntra
     {
-        public static readonly TxType[] IntraModeToTxTypeLookup = new TxType[]
-        {
+        public static readonly TxType[] IntraModeToTxTypeLookup = {
             TxType.DctDct,    // DC
             TxType.AdstDct,   // V
             TxType.DctAdst,   // H
@@ -41,8 +40,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         private unsafe delegate void IntraPredFn(byte* dst, int stride, byte* above, byte* left);
 
-        private static unsafe IntraPredFn[][] _pred = new IntraPredFn[][]
-        {
+        private static unsafe IntraPredFn[][] _pred = {
             new IntraPredFn[]
             {
                 null,
@@ -115,9 +113,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
         };
 
-        private static unsafe IntraPredFn[][][] _dcPred = new IntraPredFn[][][]
-        {
-            new IntraPredFn[][]
+        private static unsafe IntraPredFn[][][] _dcPred = {
+            new[]
             {
                 new IntraPredFn[]
                 {
@@ -134,7 +131,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     DcTopPredictor32x32
                 }
             },
-            new IntraPredFn[][]
+            new[]
             {
                 new IntraPredFn[]
                 {
@@ -155,8 +152,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         private unsafe delegate void IntraHighPredFn(ushort* dst, int stride, ushort* above, ushort* left, int bd);
 
-        private static unsafe IntraHighPredFn[][] _predHigh = new IntraHighPredFn[][]
-        {
+        private static unsafe IntraHighPredFn[][] _predHigh = {
             new IntraHighPredFn[]
             {
                 null,
@@ -229,9 +225,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
         };
 
-        private static unsafe IntraHighPredFn[][][] _dcPredHigh = new IntraHighPredFn[][][]
-        {
-            new IntraHighPredFn[][]
+        private static unsafe IntraHighPredFn[][][] _dcPredHigh = {
+            new[]
             {
                 new IntraHighPredFn[]
                 {
@@ -248,7 +243,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     HighbdDcTopPredictor32x32
                 }
             },
-            new IntraHighPredFn[][]
+            new[]
             {
                 new IntraHighPredFn[]
                 {

@@ -600,7 +600,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.BindBuffer((BufferTarget)All.DrawIndirectBuffer, indirectBuffer.Handle.ToInt32());
 
-            GL.DrawElementsIndirect(_primitiveType, _elementsType, (IntPtr)indirectBuffer.Offset);
+            GL.DrawElementsIndirect(_primitiveType, _elementsType, indirectBuffer.Offset);
 
             _vertexArray.RestoreIndexBuffer();
 
@@ -625,8 +625,8 @@ namespace Ryujinx.Graphics.OpenGL
             GL.MultiDrawElementsIndirectCount(
                 _primitiveType,
                 (All)_elementsType,
-                (IntPtr)indirectBuffer.Offset,
-                (IntPtr)parameterBuffer.Offset,
+                indirectBuffer.Offset,
+                parameterBuffer.Offset,
                 maxDrawCount,
                 stride);
 
@@ -647,7 +647,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.BindBuffer((BufferTarget)All.DrawIndirectBuffer, indirectBuffer.Handle.ToInt32());
 
-            GL.DrawArraysIndirect(_primitiveType, (IntPtr)indirectBuffer.Offset);
+            GL.DrawArraysIndirect(_primitiveType, indirectBuffer.Offset);
 
             PostDraw();
         }
@@ -667,8 +667,8 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.MultiDrawArraysIndirectCount(
                 _primitiveType,
-                (IntPtr)indirectBuffer.Offset,
-                (IntPtr)parameterBuffer.Offset,
+                indirectBuffer.Offset,
+                parameterBuffer.Offset,
                 maxDrawCount,
                 stride);
 
@@ -975,7 +975,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             _elementsType = type.Convert();
 
-            _indexBaseOffset = (IntPtr)buffer.Offset;
+            _indexBaseOffset = buffer.Offset;
 
             EnsureVertexArray();
 
@@ -1475,7 +1475,7 @@ namespace Ryujinx.Graphics.OpenGL
                     continue;
                 }
 
-                GL.BindBufferRange(target, assignment.Binding, buffer.Handle.ToInt32(), (IntPtr)buffer.Offset, buffer.Size);
+                GL.BindBufferRange(target, assignment.Binding, buffer.Handle.ToInt32(), buffer.Offset, buffer.Size);
             }
         }
 

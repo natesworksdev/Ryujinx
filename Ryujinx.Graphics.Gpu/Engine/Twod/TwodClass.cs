@@ -233,11 +233,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
             var dstCopyTexture = Unsafe.As<uint, TwodTexture>(ref _state.State.SetDstFormat);
             var srcCopyTexture = Unsafe.As<uint, TwodTexture>(ref _state.State.SetSrcFormat);
 
-            long srcX = ((long)_state.State.SetPixelsFromMemorySrcX0Int << 32) | (long)(ulong)_state.State.SetPixelsFromMemorySrcX0Frac;
-            long srcY = ((long)_state.State.PixelsFromMemorySrcY0Int << 32) | (long)(ulong)_state.State.SetPixelsFromMemorySrcY0Frac;
+            long srcX = ((long)_state.State.SetPixelsFromMemorySrcX0Int << 32) | _state.State.SetPixelsFromMemorySrcX0Frac;
+            long srcY = ((long)_state.State.PixelsFromMemorySrcY0Int << 32) | _state.State.SetPixelsFromMemorySrcY0Frac;
 
-            long duDx = ((long)_state.State.SetPixelsFromMemoryDuDxInt << 32) | (long)(ulong)_state.State.SetPixelsFromMemoryDuDxFrac;
-            long dvDy = ((long)_state.State.SetPixelsFromMemoryDvDyInt << 32) | (long)(ulong)_state.State.SetPixelsFromMemoryDvDyFrac;
+            long duDx = ((long)_state.State.SetPixelsFromMemoryDuDxInt << 32) | _state.State.SetPixelsFromMemoryDuDxFrac;
+            long dvDy = ((long)_state.State.SetPixelsFromMemoryDvDyInt << 32) | _state.State.SetPixelsFromMemoryDvDyFrac;
 
             bool originCorner = _state.State.SetPixelsFromMemorySampleModeOrigin == SetPixelsFromMemorySampleModeOrigin.Corner;
 

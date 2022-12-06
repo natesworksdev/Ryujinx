@@ -47,7 +47,7 @@ namespace ARMeilleure.Translation.PTC
 
         static PtcProfiler()
         {
-            _timer = new System.Timers.Timer((double)SaveInterval * 1000d);
+            _timer = new System.Timers.Timer(SaveInterval * 1000d);
             _timer.Elapsed += PreSave;
 
             _outerHeaderMagic = BinaryPrimitives.ReadUInt64LittleEndian(EncodingCache.UTF8NoBOM.GetBytes(OuterHeaderMagicString).AsSpan());
@@ -274,7 +274,7 @@ namespace ARMeilleure.Translation.PTC
             {
                 Debug.Assert(stream.Seek(0L, SeekOrigin.Begin) == 0L && stream.Length == 0L);
 
-                stream.Seek((long)Unsafe.SizeOf<Hash128>(), SeekOrigin.Begin);
+                stream.Seek(Unsafe.SizeOf<Hash128>(), SeekOrigin.Begin);
 
                 lock (_lock)
                 {
@@ -285,7 +285,7 @@ namespace ARMeilleure.Translation.PTC
 
                 Debug.Assert(stream.Position == stream.Length);
 
-                stream.Seek((long)Unsafe.SizeOf<Hash128>(), SeekOrigin.Begin);
+                stream.Seek(Unsafe.SizeOf<Hash128>(), SeekOrigin.Begin);
                 Hash128 hash = XXHash128.ComputeHash(GetReadOnlySpan(stream));
 
                 stream.Seek(0L, SeekOrigin.Begin);

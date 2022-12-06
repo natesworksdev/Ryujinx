@@ -8,27 +8,27 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
     {
         public static ReadOnlySpan<byte> SizeGroupLookup => new byte[] { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3 };
 
-        public static readonly BlockSize[][] SubsizeLookup = new BlockSize[][]
+        public static readonly BlockSize[][] SubsizeLookup = new[]
         {
-            new BlockSize[]
+            new[]
             { // PARTITION_NONE
                 BlockSize.Block4x4, BlockSize.Block4x8, BlockSize.Block8x4, BlockSize.Block8x8, BlockSize.Block8x16, BlockSize.Block16x8,
                 BlockSize.Block16x16, BlockSize.Block16x32, BlockSize.Block32x16, BlockSize.Block32x32, BlockSize.Block32x64,
                 BlockSize.Block64x32, BlockSize.Block64x64
             },
-            new BlockSize[]
+            new[]
             { // PARTITION_HORZ
                 BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block8x4, BlockSize.BlockInvalid,
                 BlockSize.BlockInvalid, BlockSize.Block16x8, BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block32x16,
                 BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block64x32
             },
-            new BlockSize[]
+            new[]
             { // PARTITION_VERT
                 BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block4x8, BlockSize.BlockInvalid,
                 BlockSize.BlockInvalid, BlockSize.Block8x16, BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block16x32,
                 BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block32x64
             },
-            new BlockSize[]
+            new[]
             { // PARTITION_SPLIT
                 BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block4x4, BlockSize.BlockInvalid,
                 BlockSize.BlockInvalid, BlockSize.Block8x8, BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block16x16,
@@ -36,13 +36,13 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
         };
 
-        public static readonly TxSize[] MaxTxSizeLookup = new TxSize[]
+        public static readonly TxSize[] MaxTxSizeLookup = new[]
         {
             TxSize.Tx4x4,   TxSize.Tx4x4,   TxSize.Tx4x4,   TxSize.Tx8x8,   TxSize.Tx8x8,   TxSize.Tx8x8,  TxSize.Tx16x16,
             TxSize.Tx16x16, TxSize.Tx16x16, TxSize.Tx32x32, TxSize.Tx32x32, TxSize.Tx32x32, TxSize.Tx32x32
         };
 
-        public static readonly TxSize[] TxModeToBiggestTxSize = new TxSize[]
+        public static readonly TxSize[] TxModeToBiggestTxSize = new[]
         {
             TxSize.Tx4x4,    // ONLY_4X4
             TxSize.Tx8x8,    // ALLOW_8X8
@@ -51,132 +51,132 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             TxSize.Tx32x32,  // TX_MODE_SELECT
         };
 
-        public static readonly BlockSize[][][] SsSizeLookup = new BlockSize[][][]
+        public static readonly BlockSize[][][] SsSizeLookup = new[]
         {
             //  ss_x == 0    ss_x == 0        ss_x == 1      ss_x == 1
             //  ss_y == 0    ss_y == 1        ss_y == 0      ss_y == 1
-            new BlockSize[][] { new BlockSize[] { BlockSize.Block4x4, BlockSize.BlockInvalid }, new BlockSize[] { BlockSize.BlockInvalid, BlockSize.BlockInvalid } },
-            new BlockSize[][] { new BlockSize[] { BlockSize.Block4x8, BlockSize.Block4x4 }, new BlockSize[] { BlockSize.BlockInvalid, BlockSize.BlockInvalid } },
-            new BlockSize[][] { new BlockSize[] { BlockSize.Block8x4, BlockSize.BlockInvalid }, new BlockSize[] { BlockSize.Block4x4, BlockSize.BlockInvalid } },
-            new BlockSize[][] { new BlockSize[] { BlockSize.Block8x8, BlockSize.Block8x4 }, new BlockSize[] { BlockSize.Block4x8, BlockSize.Block4x4 } },
-            new BlockSize[][] { new BlockSize[] { BlockSize.Block8x16, BlockSize.Block8x8 }, new BlockSize[] { BlockSize.BlockInvalid, BlockSize.Block4x8 } },
-            new BlockSize[][] { new BlockSize[] { BlockSize.Block16x8, BlockSize.BlockInvalid }, new BlockSize[] { BlockSize.Block8x8, BlockSize.Block8x4 } },
-            new BlockSize[][] { new BlockSize[] { BlockSize.Block16x16, BlockSize.Block16x8 }, new BlockSize[] { BlockSize.Block8x16, BlockSize.Block8x8 } },
-            new BlockSize[][] { new BlockSize[] { BlockSize.Block16x32, BlockSize.Block16x16 }, new BlockSize[] { BlockSize.BlockInvalid, BlockSize.Block8x16 } },
-            new BlockSize[][] { new BlockSize[] { BlockSize.Block32x16, BlockSize.BlockInvalid }, new BlockSize[] { BlockSize.Block16x16, BlockSize.Block16x8 } },
-            new BlockSize[][] { new BlockSize[] { BlockSize.Block32x32, BlockSize.Block32x16 }, new BlockSize[] { BlockSize.Block16x32, BlockSize.Block16x16 } },
-            new BlockSize[][] { new BlockSize[] { BlockSize.Block32x64, BlockSize.Block32x32 }, new BlockSize[] { BlockSize.BlockInvalid, BlockSize.Block16x32 } },
-            new BlockSize[][] { new BlockSize[] { BlockSize.Block64x32, BlockSize.BlockInvalid }, new BlockSize[] { BlockSize.Block32x32, BlockSize.Block32x16 } },
-            new BlockSize[][] { new BlockSize[] { BlockSize.Block64x64, BlockSize.Block64x32 }, new BlockSize[] { BlockSize.Block32x64, BlockSize.Block32x32 } },
+            new[] { new[] { BlockSize.Block4x4, BlockSize.BlockInvalid }, new[] { BlockSize.BlockInvalid, BlockSize.BlockInvalid } },
+            new[] { new[] { BlockSize.Block4x8, BlockSize.Block4x4 }, new[] { BlockSize.BlockInvalid, BlockSize.BlockInvalid } },
+            new[] { new[] { BlockSize.Block8x4, BlockSize.BlockInvalid }, new[] { BlockSize.Block4x4, BlockSize.BlockInvalid } },
+            new[] { new[] { BlockSize.Block8x8, BlockSize.Block8x4 }, new[] { BlockSize.Block4x8, BlockSize.Block4x4 } },
+            new[] { new[] { BlockSize.Block8x16, BlockSize.Block8x8 }, new[] { BlockSize.BlockInvalid, BlockSize.Block4x8 } },
+            new[] { new[] { BlockSize.Block16x8, BlockSize.BlockInvalid }, new[] { BlockSize.Block8x8, BlockSize.Block8x4 } },
+            new[] { new[] { BlockSize.Block16x16, BlockSize.Block16x8 }, new[] { BlockSize.Block8x16, BlockSize.Block8x8 } },
+            new[] { new[] { BlockSize.Block16x32, BlockSize.Block16x16 }, new[] { BlockSize.BlockInvalid, BlockSize.Block8x16 } },
+            new[] { new[] { BlockSize.Block32x16, BlockSize.BlockInvalid }, new[] { BlockSize.Block16x16, BlockSize.Block16x8 } },
+            new[] { new[] { BlockSize.Block32x32, BlockSize.Block32x16 }, new[] { BlockSize.Block16x32, BlockSize.Block16x16 } },
+            new[] { new[] { BlockSize.Block32x64, BlockSize.Block32x32 }, new[] { BlockSize.BlockInvalid, BlockSize.Block16x32 } },
+            new[] { new[] { BlockSize.Block64x32, BlockSize.BlockInvalid }, new[] { BlockSize.Block32x32, BlockSize.Block32x16 } },
+            new[] { new[] { BlockSize.Block64x64, BlockSize.Block64x32 }, new[] { BlockSize.Block32x64, BlockSize.Block32x32 } },
         };
 
-        public static readonly TxSize[][][][] UvTxsizeLookup = new TxSize[][][][]
+        public static readonly TxSize[][][][] UvTxsizeLookup = new[]
         {
           //  ss_x == 0    ss_x == 0        ss_x == 1      ss_x == 1
           //  ss_y == 0    ss_y == 1        ss_y == 0      ss_y == 1
-          new TxSize[][][]
+          new[]
           {
               // BLOCK_4X4
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
           },
-          new TxSize[][][]
+          new[]
           {
               // BLOCK_4X8
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
           },
-          new TxSize[][][]
+          new[]
           {
               // BLOCK_8X4
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
           },
-          new TxSize[][][]
+          new[]
           {
               // BLOCK_8X8
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx8x8, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx8x8, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx8x8, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx8x8, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx8x8, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx8x8, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
           },
-          new TxSize[][][]
+          new[]
           {
               // BLOCK_8X16
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx8x8, TxSize.Tx8x8 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx8x8, TxSize.Tx8x8 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx8x8, TxSize.Tx8x8 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
           },
-          new TxSize[][][]
+          new[]
           {
               // BLOCK_16X8
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx8x8, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx8x8, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx8x8, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx8x8, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx8x8, TxSize.Tx4x4 }, new[] { TxSize.Tx8x8, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx8x8, TxSize.Tx4x4 }, new[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
+              new[] { new[] { TxSize.Tx8x8, TxSize.Tx4x4 }, new[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
           },
-          new TxSize[][][]
+          new[]
           {
               // BLOCK_16X16
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 }, new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx16x16, TxSize.Tx8x8 }, new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx16x16, TxSize.Tx8x8 }, new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx8x8, TxSize.Tx8x8 }, new[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
+              new[] { new[] { TxSize.Tx16x16, TxSize.Tx8x8 }, new[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
+              new[] { new[] { TxSize.Tx16x16, TxSize.Tx8x8 }, new[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
           },
-          new TxSize[][][]
+          new[]
           {
               // BLOCK_16X32
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 }, new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx16x16, TxSize.Tx16x16 }, new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx16x16, TxSize.Tx16x16 }, new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx8x8, TxSize.Tx8x8 }, new[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
+              new[] { new[] { TxSize.Tx16x16, TxSize.Tx16x16 }, new[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
+              new[] { new[] { TxSize.Tx16x16, TxSize.Tx16x16 }, new[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
           },
-          new TxSize[][][]
+          new[]
           {
               // BLOCK_32X16
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 }, new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx16x16, TxSize.Tx8x8 }, new TxSize[] { TxSize.Tx16x16, TxSize.Tx8x8 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx16x16, TxSize.Tx8x8 }, new TxSize[] { TxSize.Tx16x16, TxSize.Tx8x8 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx8x8, TxSize.Tx8x8 }, new[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
+              new[] { new[] { TxSize.Tx16x16, TxSize.Tx8x8 }, new[] { TxSize.Tx16x16, TxSize.Tx8x8 } },
+              new[] { new[] { TxSize.Tx16x16, TxSize.Tx8x8 }, new[] { TxSize.Tx16x16, TxSize.Tx8x8 } },
           },
-          new TxSize[][][]
+          new[]
           {
               // BLOCK_32X32
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 }, new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx16x16, TxSize.Tx16x16 }, new TxSize[] { TxSize.Tx16x16, TxSize.Tx16x16 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx32x32, TxSize.Tx16x16 }, new TxSize[] { TxSize.Tx16x16, TxSize.Tx16x16 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx8x8, TxSize.Tx8x8 }, new[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
+              new[] { new[] { TxSize.Tx16x16, TxSize.Tx16x16 }, new[] { TxSize.Tx16x16, TxSize.Tx16x16 } },
+              new[] { new[] { TxSize.Tx32x32, TxSize.Tx16x16 }, new[] { TxSize.Tx16x16, TxSize.Tx16x16 } },
           },
-          new TxSize[][][]
+          new[]
           {
               // BLOCK_32X64
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 }, new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx16x16, TxSize.Tx16x16 }, new TxSize[] { TxSize.Tx16x16, TxSize.Tx16x16 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx32x32, TxSize.Tx32x32 }, new TxSize[] { TxSize.Tx16x16, TxSize.Tx16x16 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx8x8, TxSize.Tx8x8 }, new[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
+              new[] { new[] { TxSize.Tx16x16, TxSize.Tx16x16 }, new[] { TxSize.Tx16x16, TxSize.Tx16x16 } },
+              new[] { new[] { TxSize.Tx32x32, TxSize.Tx32x32 }, new[] { TxSize.Tx16x16, TxSize.Tx16x16 } },
           },
-          new TxSize[][][]
+          new[]
           {
               // BLOCK_64X32
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 }, new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx16x16, TxSize.Tx16x16 }, new TxSize[] { TxSize.Tx16x16, TxSize.Tx16x16 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx32x32, TxSize.Tx16x16 }, new TxSize[] { TxSize.Tx32x32, TxSize.Tx16x16 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx8x8, TxSize.Tx8x8 }, new[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
+              new[] { new[] { TxSize.Tx16x16, TxSize.Tx16x16 }, new[] { TxSize.Tx16x16, TxSize.Tx16x16 } },
+              new[] { new[] { TxSize.Tx32x32, TxSize.Tx16x16 }, new[] { TxSize.Tx32x32, TxSize.Tx16x16 } },
           },
-          new TxSize[][][]
+          new[]
           {
               // BLOCK_64X64
-              new TxSize[][] { new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new TxSize[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 }, new TxSize[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx16x16, TxSize.Tx16x16 }, new TxSize[] { TxSize.Tx16x16, TxSize.Tx16x16 } },
-              new TxSize[][] { new TxSize[] { TxSize.Tx32x32, TxSize.Tx32x32 }, new TxSize[] { TxSize.Tx32x32, TxSize.Tx32x32 } },
+              new[] { new[] { TxSize.Tx4x4, TxSize.Tx4x4 }, new[] { TxSize.Tx4x4, TxSize.Tx4x4 } },
+              new[] { new[] { TxSize.Tx8x8, TxSize.Tx8x8 }, new[] { TxSize.Tx8x8, TxSize.Tx8x8 } },
+              new[] { new[] { TxSize.Tx16x16, TxSize.Tx16x16 }, new[] { TxSize.Tx16x16, TxSize.Tx16x16 } },
+              new[] { new[] { TxSize.Tx32x32, TxSize.Tx32x32 }, new[] { TxSize.Tx32x32, TxSize.Tx32x32 } },
           },
         };
 
@@ -195,7 +195,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         // Generates 4 bit field in which each bit set to 1 represents
         // a blocksize partition  1111 means we split 64x64, 32x32, 16x16
         // and 8x8. 1000 means we just split the 64x64 to 32x32
-        public static readonly PartitionContextPair[] PartitionContextLookup = new PartitionContextPair[]
+        public static readonly PartitionContextPair[] PartitionContextLookup = new[]
         {
             new PartitionContextPair(15, 15),  // 4X4   - {0b1111, 0b1111}
             new PartitionContextPair(15, 14),  // 4X8   - {0b1111, 0b1110}
@@ -214,7 +214,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         // Filter
 
-        private static readonly Array8<short>[] BilinearFilters = new Array8<short>[]
+        private static readonly Array8<short>[] BilinearFilters = new[]
         {
             NewArray8Short(0, 0, 0, 128, 0, 0, 0, 0),  NewArray8Short(0, 0, 0, 120, 8, 0, 0, 0),
             NewArray8Short(0, 0, 0, 112, 16, 0, 0, 0), NewArray8Short(0, 0, 0, 104, 24, 0, 0, 0),
@@ -227,7 +227,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         };
 
         // Lagrangian interpolation filter
-        private static readonly Array8<short>[] SubPelFilters8 = new Array8<short>[]
+        private static readonly Array8<short>[] SubPelFilters8 = new[]
         {
             NewArray8Short(0, 0, 0, 128, 0, 0, 0, 0),        NewArray8Short(0, 1, -5, 126, 8, -3, 1, 0),
             NewArray8Short(-1, 3, -10, 122, 18, -6, 2, 0),   NewArray8Short(-1, 4, -13, 118, 27, -9, 3, -1),
@@ -240,7 +240,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         };
 
         // DCT based filter
-        private static readonly Array8<short>[] SubPelFilters8S = new Array8<short>[]
+        private static readonly Array8<short>[] SubPelFilters8S = new[]
         {
             NewArray8Short(0, 0, 0, 128, 0, 0, 0, 0),         NewArray8Short(-1, 3, -7, 127, 8, -3, 1, 0),
             NewArray8Short(-2, 5, -13, 125, 17, -6, 3, -1),   NewArray8Short(-3, 7, -17, 121, 27, -10, 5, -2),
@@ -253,7 +253,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         };
 
         // freqmultiplier = 0.5
-        private static readonly Array8<short>[] SubPelFilters8Lp = new Array8<short>[]
+        private static readonly Array8<short>[] SubPelFilters8Lp = new[]
         {
             NewArray8Short(0, 0, 0, 128, 0, 0, 0, 0),       NewArray8Short(-3, -1, 32, 64, 38, 1, -3, 0),
             NewArray8Short(-2, -2, 29, 63, 41, 2, -3, 0),   NewArray8Short(-2, -2, 26, 63, 43, 4, -4, 0),
@@ -281,7 +281,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             return output;
         }
 
-        public static readonly Array8<short>[][] Vp9FilterKernels = new Array8<short>[][]
+        public static readonly Array8<short>[][] Vp9FilterKernels = new[]
         {
             SubPelFilters8, SubPelFilters8Lp, SubPelFilters8S, BilinearFilters
         };
@@ -997,7 +997,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
         }
 
-        public static readonly ScanOrder[] Vp9DefaultScanOrders = new ScanOrder[]
+        public static readonly ScanOrder[] Vp9DefaultScanOrders = new[]
         {
             new ScanOrder(DefaultScan4X4, Vp9DefaultIscan4X4, DefaultScan4X4Neighbors),
             new ScanOrder(DefaultScan8X8, Vp9DefaultIscan8X8, DefaultScan8X8Neighbors),
@@ -1005,30 +1005,30 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             new ScanOrder(DefaultScan32X32, Vp9DefaultIscan32X32, DefaultScan32X32Neighbors)
         };
 
-        public static readonly ScanOrder[][] Vp9ScanOrders = new ScanOrder[][]
+        public static readonly ScanOrder[][] Vp9ScanOrders = new[]
         {
-            new ScanOrder[]
+            new[]
             { // TX_4X4
                 new ScanOrder(DefaultScan4X4, Vp9DefaultIscan4X4, DefaultScan4X4Neighbors),
                 new ScanOrder(RowScan4X4, Vp9RowIscan4X4, RowScan4X4Neighbors),
                 new ScanOrder(ColScan4X4, Vp9ColIscan4X4, ColScan4X4Neighbors),
                 new ScanOrder(DefaultScan4X4, Vp9DefaultIscan4X4, DefaultScan4X4Neighbors)
             },
-            new ScanOrder[]
+            new[]
             { // TX_8X8
                 new ScanOrder(DefaultScan8X8, Vp9DefaultIscan8X8, DefaultScan8X8Neighbors),
                 new ScanOrder(RowScan8X8, Vp9RowIscan8X8, RowScan8X8Neighbors),
                 new ScanOrder(ColScan8X8, Vp9ColIscan8X8, ColScan8X8Neighbors),
                 new ScanOrder(DefaultScan8X8, Vp9DefaultIscan8X8, DefaultScan8X8Neighbors)
             },
-            new ScanOrder[]
+            new[]
             { // TX_16X16
                 new ScanOrder(DefaultScan16X16, Vp9DefaultIscan16X16, DefaultScan16X16Neighbors),
                 new ScanOrder(RowScan16X16, Vp9RowIscan16X16, RowScan16X16Neighbors),
                 new ScanOrder(ColScan16X16, Vp9ColIscan16X16, ColScan16X16Neighbors),
                 new ScanOrder(DefaultScan16X16, Vp9DefaultIscan16X16, DefaultScan16X16Neighbors)
             },
-            new ScanOrder[]
+            new[]
             { // TX_32X32
                 new ScanOrder(DefaultScan32X32, Vp9DefaultIscan32X32, DefaultScan32X32Neighbors),
                 new ScanOrder(DefaultScan32X32, Vp9DefaultIscan32X32, DefaultScan32X32Neighbors),
@@ -1139,7 +1139,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             return txSize == TxSize.Tx4x4 ? Vp9CoefbandTrans4X4 : Vp9CoefbandTrans8X8Plus;
         }
 
-        public static readonly byte[][] Vp9Pareto8Full = new byte[][]
+        public static readonly byte[][] Vp9Pareto8Full = new[]
         {
             new byte[] { 3, 86, 128, 6, 86, 23, 88, 29 },
             new byte[] { 6, 86, 128, 11, 87, 42, 91, 52 },
@@ -1442,7 +1442,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         // adding 9 for each intra block, 3 for each zero mv and 1 for each new
         // motion vector. This single number is then converted into a context
         // with a single lookup ( CounterToContext ).
-        public static readonly int[] Mode2Counter = new int[]
+        public static readonly int[] Mode2Counter = new[]
         {
             9,  // DC_PRED
             9,  // V_PRED
@@ -1463,7 +1463,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         // There are 3^3 different combinations of 3 counts that can be either 0,1 or
         // 2. However the actual count can never be greater than 2 so the highest
         // counter we need is 18. 9 is an invalid counter that's never used.
-        public static readonly MotionVectorContext[] CounterToContext = new MotionVectorContext[]
+        public static readonly MotionVectorContext[] CounterToContext = new[]
         {
             MotionVectorContext.BothPredicted,     // 0
             MotionVectorContext.NewPlusNonIntra,   // 1
@@ -1486,10 +1486,10 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             MotionVectorContext.BothIntra          // 18
         };
 
-        public static readonly Position[][] MvRefBlocks = new Position[][]
+        public static readonly Position[][] MvRefBlocks = new[]
         {
             // 4X4
-            new Position[] { new Position( -1, 0 ),
+            new[] { new Position( -1, 0 ),
             new Position( 0, -1 ),
             new Position( -1, -1 ),
             new Position( -2, 0 ),
@@ -1498,7 +1498,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             new Position( -1, -2 ),
             new Position( -2, -2 ) },
             // 4X8
-            new Position[] { new Position( -1, 0 ),
+            new[] { new Position( -1, 0 ),
             new Position( 0, -1 ),
             new Position( -1, -1 ),
             new Position( -2, 0 ),
@@ -1507,7 +1507,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             new Position( -1, -2 ),
             new Position( -2, -2 ) },
             // 8X4
-            new Position[] { new Position( -1, 0 ),
+            new[] { new Position( -1, 0 ),
             new Position( 0, -1 ),
             new Position( -1, -1 ),
             new Position( -2, 0 ),
@@ -1516,7 +1516,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             new Position( -1, -2 ),
             new Position( -2, -2 ) },
             // 8X8
-            new Position[] { new Position( -1, 0 ),
+            new[] { new Position( -1, 0 ),
             new Position( 0, -1 ),
             new Position( -1, -1 ),
             new Position( -2, 0 ),
@@ -1525,7 +1525,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             new Position( -1, -2 ),
             new Position( -2, -2 ) },
             // 8X16
-            new Position[] { new Position( 0, -1 ),
+            new[] { new Position( 0, -1 ),
             new Position( -1, 0 ),
             new Position( 1, -1 ),
             new Position( -1, -1 ),
@@ -1534,7 +1534,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             new Position( -2, -1 ),
             new Position( -1, -2 ) },
             // 16X8
-            new Position[] { new Position( -1, 0 ),
+            new[] { new Position( -1, 0 ),
             new Position( 0, -1 ),
             new Position( -1, 1 ),
             new Position( -1, -1 ),
@@ -1543,7 +1543,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             new Position( -1, -2 ),
             new Position( -2, -1 ) },
             // 16X16
-            new Position[] { new Position( -1, 0 ),
+            new[] { new Position( -1, 0 ),
             new Position( 0, -1 ),
             new Position( -1, 1 ),
             new Position( 1, -1 ),
@@ -1552,7 +1552,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             new Position( 0, -3 ),
             new Position( -3, -3 ) },
             // 16X32
-            new Position[] { new Position( 0, -1 ),
+            new[] { new Position( 0, -1 ),
             new Position( -1, 0 ),
             new Position( 2, -1 ),
             new Position( -1, -1 ),
@@ -1561,7 +1561,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             new Position( -3, 0 ),
             new Position( -3, -3 ) },
             // 32X16
-            new Position[] { new Position( -1, 0 ),
+            new[] { new Position( -1, 0 ),
             new Position( 0, -1 ),
             new Position( -1, 2 ),
             new Position( -1, -1 ),
@@ -1570,7 +1570,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             new Position( 0, -3 ),
             new Position( -3, -3 ) },
             // 32X32
-            new Position[] { new Position( -1, 1 ),
+            new[] { new Position( -1, 1 ),
             new Position( 1, -1 ),
             new Position( -1, 2 ),
             new Position( 2, -1 ),
@@ -1579,7 +1579,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             new Position( 0, -3 ),
             new Position( -3, -3 ) },
             // 32X64
-            new Position[] { new Position( 0, -1 ),
+            new[] { new Position( 0, -1 ),
             new Position( -1, 0 ),
             new Position( 4, -1 ),
             new Position( -1, 2 ),
@@ -1588,7 +1588,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             new Position( -3, 0 ),
             new Position( 2, -1 ) },
             // 64X32
-            new Position[] { new Position( -1, 0 ),
+            new[] { new Position( -1, 0 ),
             new Position( 0, -1 ),
             new Position( -1, 4 ),
             new Position( 2, -1 ),
@@ -1597,7 +1597,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             new Position( 0, -3 ),
             new Position( -1, 2 ) },
             // 64X64
-            new Position[] { new Position( -1, 3 ),
+            new[] { new Position( -1, 3 ),
             new Position( 3, -1 ),
             new Position( -1, 4 ),
             new Position( 4, -1 ),

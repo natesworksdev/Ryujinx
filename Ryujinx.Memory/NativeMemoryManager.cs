@@ -16,7 +16,7 @@ namespace Ryujinx.Memory
 
         public override Span<T> GetSpan()
         {
-            return new Span<T>((void*)_pointer, _length);
+            return new Span<T>(_pointer, _length);
         }
 
         public override MemoryHandle Pin(int elementIndex = 0)
@@ -26,7 +26,7 @@ namespace Ryujinx.Memory
                 throw new ArgumentOutOfRangeException(nameof(elementIndex));
             }
 
-            return new MemoryHandle((void*)(_pointer + elementIndex));
+            return new MemoryHandle(_pointer + elementIndex);
         }
 
         public override void Unpin()

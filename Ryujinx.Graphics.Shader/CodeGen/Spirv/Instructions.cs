@@ -237,7 +237,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var execution = context.Constant(context.TypeU32(), Scope.Subgroup);
 
             var maskVector = context.GroupNonUniformBallot(uvec4Type, execution, context.Get(AggregateType.Bool, source));
-            var mask = context.CompositeExtract(context.TypeU32(), maskVector, (SpvLiteralInteger)0);
+            var mask = context.CompositeExtract(context.TypeU32(), maskVector, 0);
 
             return new OperationResult(AggregateType.U32, mask);
         }
@@ -756,7 +756,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var imageComponentType = context.GetType(componentType.Convert());
 
             var texel = context.ImageRead(context.TypeVector(imageComponentType, 4), image, pCoords, ImageOperandsMask.MaskNone);
-            var result = context.CompositeExtract(imageComponentType, texel, (SpvLiteralInteger)texOp.Index);
+            var result = context.CompositeExtract(imageComponentType, texel, texOp.Index);
 
             return new OperationResult(componentType.Convert(), result);
         }
@@ -1043,7 +1043,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             var resultType = context.TypeVector(context.TypeFP32(), 2);
             var packed = context.ImageQueryLod(resultType, image, pCoords);
-            var result = context.CompositeExtract(context.TypeFP32(), packed, (SpvLiteralInteger)texOp.Index);
+            var result = context.CompositeExtract(context.TypeFP32(), packed, texOp.Index);
 
             return new OperationResult(AggregateType.FP32, result);
         }
@@ -1757,7 +1757,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             if (colorIsVector)
             {
-                result = context.CompositeExtract(context.TypeFP32(), result, (SpvLiteralInteger)texOp.Index);
+                result = context.CompositeExtract(context.TypeFP32(), result, texOp.Index);
             }
 
             return new OperationResult(AggregateType.FP32, result);
@@ -1824,7 +1824,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                 if (dimensions != 1)
                 {
-                    result = context.CompositeExtract(context.TypeS32(), result, (SpvLiteralInteger)texOp.Index);
+                    result = context.CompositeExtract(context.TypeS32(), result, texOp.Index);
                 }
 
                 if (texOp.Index < 2 || (type & SamplerType.Mask) == SamplerType.Texture3D)

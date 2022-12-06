@@ -167,7 +167,7 @@ namespace Ryujinx.Audio.Renderer.Server
                 return ResultCode.WorkBufferTooSmall;
             }
 
-            _depopBuffer = workBufferAllocator.Allocate<float>((ulong)BitUtils.AlignUp(parameter.MixBufferCount, Constants.BufferAlignment), Constants.BufferAlignment);
+            _depopBuffer = workBufferAllocator.Allocate<float>(BitUtils.AlignUp(parameter.MixBufferCount, Constants.BufferAlignment), Constants.BufferAlignment);
 
             if (_depopBuffer.IsEmpty)
             {
@@ -772,7 +772,7 @@ namespace Ryujinx.Audio.Renderer.Server
             size = WorkBufferAllocator.GetTargetSize<float>(size, Constants.TargetSampleCount * (Constants.VoiceChannelCountMax + parameter.MixBufferCount) * (parameter.SinkCount + parameter.SubMixBufferCount), 0x10);
 
             // Depop buffer
-            size = WorkBufferAllocator.GetTargetSize<float>(size, (ulong)BitUtils.AlignUp(parameter.MixBufferCount, Constants.BufferAlignment), Constants.BufferAlignment);
+            size = WorkBufferAllocator.GetTargetSize<float>(size, BitUtils.AlignUp(parameter.MixBufferCount, Constants.BufferAlignment), Constants.BufferAlignment);
 
             // Voice
             size = WorkBufferAllocator.GetTargetSize<VoiceState>(size, parameter.VoiceCount, VoiceState.Alignment);

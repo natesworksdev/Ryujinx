@@ -13,25 +13,25 @@ namespace Ryujinx.Tests.Cpu
 #region "ValueSource (Types)"
         private static ulong[] _1D_()
         {
-            return new ulong[] { 0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+            return new[] { 0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
                                  0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
         }
 
         private static ulong[] _2S_()
         {
-            return new ulong[] { 0x0000000000000000ul, 0x7FFFFFFF7FFFFFFFul,
+            return new[] { 0x0000000000000000ul, 0x7FFFFFFF7FFFFFFFul,
                                  0x8000000080000000ul, 0xFFFFFFFFFFFFFFFFul };
         }
 
         private static ulong[] _4H_()
         {
-            return new ulong[] { 0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
+            return new[] { 0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
                                  0x8000800080008000ul, 0xFFFFFFFFFFFFFFFFul };
         }
 
         private static ulong[] _8B_()
         {
-            return new ulong[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
+            return new[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
                                  0x8080808080808080ul, 0xFFFFFFFFFFFFFFFFul };
         }
 #endregion
@@ -39,7 +39,7 @@ namespace Ryujinx.Tests.Cpu
 #region "ValueSource (Opcodes)"
         private static uint[] _Vshr_Imm_SU8_()
         {
-            return new uint[]
+            return new[]
             {
                 0xf2880010u, // VSHR.S8  D0, D0, #8
                 0xf2880110u, // VSRA.S8  D0, D0, #8
@@ -50,7 +50,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Vshr_Imm_SU16_()
         {
-            return new uint[]
+            return new[]
             {
                 0xf2900010u, // VSHR.S16  D0, D0, #16
                 0xf2900110u, // VSRA.S16  D0, D0, #16
@@ -61,7 +61,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Vshr_Imm_SU32_()
         {
-            return new uint[]
+            return new[]
             {
                 0xf2a00010u, // VSHR.S32  D0, D0, #32
                 0xf2a00110u, // VSRA.S32  D0, D0, #32
@@ -72,7 +72,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Vshr_Imm_SU64_()
         {
-            return new uint[]
+            return new[]
             {
                 0xf2800190u, // VSRA.S64  D0, D0, #64
                 0xf2800290u, // VRSHR.S64 D0, D0, #64
@@ -82,7 +82,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Vqshrn_Vqrshrn_Vrshrn_Imm_()
         {
-            return new uint[]
+            return new[]
             {
                 0xf2800910u, // VORR.I16 D0, #0 (immediate value changes it into QSHRN)
                 0xf2800950u, // VORR.I16 Q0, #0 (immediate value changes it into QRSHRN)
@@ -92,7 +92,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Vqshrun_Vqrshrun_Imm_()
         {
-            return new uint[]
+            return new[]
             {
                 0xf3800810u, // VMOV.I16 D0, #0x80 (immediate value changes it into QSHRUN)
                 0xf3800850u  // VMOV.I16 Q0, #0x80 (immediate value changes it into QRSHRUN)

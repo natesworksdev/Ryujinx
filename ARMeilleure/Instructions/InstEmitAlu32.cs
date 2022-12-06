@@ -549,7 +549,7 @@ namespace ARMeilleure.Instructions
         {
             OpCode32Sat op = (OpCode32Sat)context.CurrOp;
 
-            EmitSat(context, 0, op.SatImm == 32 ? (int)(~0) : (1 << op.SatImm) - 1);
+            EmitSat(context, 0, op.SatImm == 32 ? ~0 : (1 << op.SatImm) - 1);
         }
 
         public static void Usat16(ArmEmitterContext context)

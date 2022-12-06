@@ -344,7 +344,7 @@ namespace ARMeilleure.Translation.PTC
 
                         Debug.Assert(stream.Position == stream.Length);
 
-                        stream.Seek((long)Unsafe.SizeOf<InnerHeader>(), SeekOrigin.Begin);
+                        stream.Seek(Unsafe.SizeOf<InnerHeader>(), SeekOrigin.Begin);
 
                         _infosStream.Write(infosBytes);
                         stream.Seek(innerHeader.InfosLength, SeekOrigin.Current);
@@ -449,7 +449,7 @@ namespace ARMeilleure.Translation.PTC
 
                 using (UnmanagedMemoryStream stream = new((byte*)intPtr.ToPointer(), outerHeader.UncompressedStreamSize, outerHeader.UncompressedStreamSize, FileAccess.ReadWrite))
                 {
-                    stream.Seek((long)Unsafe.SizeOf<InnerHeader>(), SeekOrigin.Begin);
+                    stream.Seek(Unsafe.SizeOf<InnerHeader>(), SeekOrigin.Begin);
 
                     ReadOnlySpan<byte> infosBytes = new(stream.PositionPointer, innerHeader.InfosLength);
                     _infosStream.WriteTo(stream);

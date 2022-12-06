@@ -70,12 +70,12 @@ namespace ARMeilleure.Decoders
 
                 OpCode opCode = opCodes[middle];
 
-                if (address == (ulong)opCode.Address)
+                if (address == opCode.Address)
                 {
                     break;
                 }
 
-                if (address < (ulong)opCode.Address)
+                if (address < opCode.Address)
                 {
                     right = middle - 1;
                 }

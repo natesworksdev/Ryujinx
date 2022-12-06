@@ -36,7 +36,7 @@ namespace Ryujinx.Tests.Cpu
             //  - xor 0
             // Only includes non-C variant, as the other can be tested with unicorn.
 
-            return new CrcTest[]
+            return new[]
             {
                 new CrcTest(0x00000000u, 0x00_00_00_00_00_00_00_00u, false, 0x00000000, 0x00000000, 0x00000000, 0x00000000),
                 new CrcTest(0x00000000u, 0x7f_ff_ff_ff_ff_ff_ff_ffu, false, 0x2d02ef8d, 0xbe2612ff, 0xdebb20e3, 0xa9de8355),
@@ -88,8 +88,8 @@ namespace Ryujinx.Tests.Cpu
                            [Values(0x00000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wn,
                            [Values((ulong)0x00_00_00_00_00_00_00_00,
                                    (ulong)0x7F_FF_FF_FF_FF_FF_FF_FF,
-                                   (ulong)0x80_00_00_00_00_00_00_00,
-                                   (ulong)0xFF_FF_FF_FF_FF_FF_FF_FF)] [Random(RndCnt)] ulong xm)
+                                   0x80_00_00_00_00_00_00_00,
+                                   0xFF_FF_FF_FF_FF_FF_FF_FF)] [Random(RndCnt)] ulong xm)
         {
             uint opcode = 0x9AC04C00; // CRC32X W0, W0, X0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -107,7 +107,7 @@ namespace Ryujinx.Tests.Cpu
                            [Values(2u, 31u)] uint rm,
                            [Values(0x00000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wn,
                            [Values((uint)0x00_00_00_00, (uint)0x7F_FF_FF_FF,
-                                   (uint)0x80_00_00_00, (uint)0xFF_FF_FF_FF)] [Random(RndCnt)] uint wm)
+                                   0x80_00_00_00, 0xFF_FF_FF_FF)] [Random(RndCnt)] uint wm)
         {
             uint opcode = 0x1AC04800; // CRC32W W0, W0, W0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -162,8 +162,8 @@ namespace Ryujinx.Tests.Cpu
                             [Values(0x00000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wn,
                             [Values((ulong)0x00_00_00_00_00_00_00_00,
                                     (ulong)0x7F_FF_FF_FF_FF_FF_FF_FF,
-                                    (ulong)0x80_00_00_00_00_00_00_00,
-                                    (ulong)0xFF_FF_FF_FF_FF_FF_FF_FF)] [Random(RndCnt)] ulong xm)
+                                    0x80_00_00_00_00_00_00_00,
+                                    0xFF_FF_FF_FF_FF_FF_FF_FF)] [Random(RndCnt)] ulong xm)
         {
             uint opcode = 0x9AC05C00; // CRC32CX W0, W0, X0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -181,7 +181,7 @@ namespace Ryujinx.Tests.Cpu
                             [Values(2u, 31u)] uint rm,
                             [Values(0x00000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wn,
                             [Values((uint)0x00_00_00_00, (uint)0x7F_FF_FF_FF,
-                                    (uint)0x80_00_00_00, (uint)0xFF_FF_FF_FF)] [Random(RndCnt)] uint wm)
+                                    0x80_00_00_00, 0xFF_FF_FF_FF)] [Random(RndCnt)] uint wm)
         {
             uint opcode = 0x1AC05800; // CRC32CW W0, W0, W0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);

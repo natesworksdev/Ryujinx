@@ -49,8 +49,8 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             if (padMiddle)
             {
-                writer.Write((int)-1); // ?
-                writer.Write((int)-1); // ?
+                writer.Write(-1); // ?
+                writer.Write(-1); // ?
             }
 
             writer.Write(cursor); // Cursor position

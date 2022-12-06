@@ -317,7 +317,7 @@ namespace ARMeilleure.IntermediateRepresentation
             static void ExpandAdd(T item, ref T* data, ref uint count, ref uint capacity)
             {
                 uint newCount = checked(count + 1);
-                uint newCapacity = (uint)Math.Min(capacity * 2, int.MaxValue);
+                uint newCapacity = Math.Min(capacity * 2, int.MaxValue);
 
                 if (newCapacity <= capacity)
                 {

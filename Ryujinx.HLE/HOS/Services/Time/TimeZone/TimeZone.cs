@@ -1145,7 +1145,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                             while (i < tempRules.TimeCount && outRules.TimeCount < TzMaxTimes)
                             {
                                 outRules.Ats[outRules.TimeCount] = tempRules.Ats[i];
-                                outRules.Types[outRules.TimeCount] = (byte)(outRules.TypeCount + (byte)tempRules.Types[i]);
+                                outRules.Types[outRules.TimeCount] = (byte)(outRules.TypeCount + tempRules.Types[i]);
 
                                 outRules.TimeCount++;
                                 i++;

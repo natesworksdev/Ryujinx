@@ -58,7 +58,7 @@ namespace Ryujinx.Graphics.OpenGL
                         break;
                     case TargetLanguage.Spirv:
                         GL.ShaderBinary(1, ref shaderHandle, (BinaryFormat)All.ShaderBinaryFormatSpirVArb, shader.BinaryCode, shader.BinaryCode.Length);
-                        GL.SpecializeShader(shaderHandle, "main", 0, (int[])null, (int[])null);
+                        GL.SpecializeShader(shaderHandle, "main", 0, null, (int[])null);
                         break;
                 }
 

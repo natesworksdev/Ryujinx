@@ -152,7 +152,7 @@ namespace Ryujinx.Memory
                 throw new OutOfMemoryException();
             }
 
-            return (IntPtr)fd;
+            return fd;
         }
 
         public static void DestroySharedMemory(IntPtr handle)

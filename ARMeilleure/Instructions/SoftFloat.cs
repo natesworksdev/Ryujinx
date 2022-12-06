@@ -133,8 +133,8 @@ namespace ARMeilleure.Instructions
         {
             sign = (~(uint)valueBits & 0x8000u) == 0u;
 
-            uint exp16  = ((uint)valueBits & 0x7C00u) >> 10;
-            uint frac16 =  (uint)valueBits & 0x03FFu;
+            uint exp16  = (valueBits & 0x7C00u) >> 10;
+            uint frac16 =  valueBits & 0x03FFu;
 
             double real;
 
@@ -148,7 +148,7 @@ namespace ARMeilleure.Instructions
                 else
                 {
                     type = FPType.Nonzero; // Subnormal.
-                    real = Math.Pow(2d, -14) * ((double)frac16 * Math.Pow(2d, -10));
+                    real = Math.Pow(2d, -14) * (frac16 * Math.Pow(2d, -10));
                 }
             }
             else if (exp16 == 0x1Fu && (context.Fpcr & FPCR.Ahp) == 0)
@@ -167,7 +167,7 @@ namespace ARMeilleure.Instructions
             else
             {
                 type = FPType.Nonzero; // Normal.
-                real = Math.Pow(2d, (int)exp16 - 15) * (1d + (double)frac16 * Math.Pow(2d, -10));
+                real = Math.Pow(2d, (int)exp16 - 15) * (1d + frac16 * Math.Pow(2d, -10));
             }
 
             return sign ? -real : real;
@@ -216,7 +216,7 @@ namespace ARMeilleure.Instructions
             }
 
             uint intMant = (uint)Math.Floor(mantissa * Math.Pow(2d, f));
-            double error = mantissa * Math.Pow(2d, f) - (double)intMant;
+            double error = mantissa * Math.Pow(2d, f) - intMant;
 
             if (biasedExp == 0u && (error != 0d || (context.Fpcr & FPCR.Ufe) != 0))
             {
@@ -400,7 +400,7 @@ namespace ARMeilleure.Instructions
             }
 
             uint intMant = (uint)Math.Floor(mantissa * Math.Pow(2d, f));
-            double error = mantissa * Math.Pow(2d, f) - (double)intMant;
+            double error = mantissa * Math.Pow(2d, f) - intMant;
 
             if (biasedExp == 0u && (error != 0d || (context.Fpcr & FPCR.Ufe) != 0))
             {
@@ -477,7 +477,7 @@ namespace ARMeilleure.Instructions
         private static float FPConvertNaN(ushort valueBits)
         {
             return BitConverter.Int32BitsToSingle(
-                (int)(((uint)valueBits & 0x8000u) << 16 | 0x7FC00000u | ((uint)valueBits & 0x01FFu) << 13));
+                (int)((valueBits & 0x8000u) << 16 | 0x7FC00000u | (valueBits & 0x01FFu) << 13));
         }
     }
 
@@ -573,7 +573,7 @@ namespace ARMeilleure.Instructions
             }
 
             ulong intMant = (ulong)Math.Floor(mantissa * Math.Pow(2d, f));
-            double error = mantissa * Math.Pow(2d, f) - (double)intMant;
+            double error = mantissa * Math.Pow(2d, f) - intMant;
 
             if (biasedExp == 0u && (error != 0d || (context.Fpcr & FPCR.Ufe) != 0))
             {
@@ -650,7 +650,7 @@ namespace ARMeilleure.Instructions
         private static double FPConvertNaN(ushort valueBits)
         {
             return BitConverter.Int64BitsToDouble(
-                (long)(((ulong)valueBits & 0x8000ul) << 48 | 0x7FF8000000000000ul | ((ulong)valueBits & 0x01FFul) << 42));
+                (long)((valueBits & 0x8000ul) << 48 | 0x7FF8000000000000ul | (valueBits & 0x01FFul) << 42));
         }
     }
 
@@ -742,7 +742,7 @@ namespace ARMeilleure.Instructions
                 else
                 {
                     type = FPType.Nonzero; // Subnormal.
-                    real = Math.Pow(2d, -126) * ((double)frac32 * Math.Pow(2d, -23));
+                    real = Math.Pow(2d, -126) * (frac32 * Math.Pow(2d, -23));
                 }
             }
             else if (exp32 == 0xFFu)
@@ -761,7 +761,7 @@ namespace ARMeilleure.Instructions
             else
             {
                 type = FPType.Nonzero; // Normal.
-                real = Math.Pow(2d, (int)exp32 - 127) * (1d + (double)frac32 * Math.Pow(2d, -23));
+                real = Math.Pow(2d, (int)exp32 - 127) * (1d + frac32 * Math.Pow(2d, -23));
             }
 
             return sign ? -real : real;
@@ -1473,7 +1473,7 @@ namespace ARMeilleure.Instructions
 
                 uint resultExp = 253u - exp;
 
-                uint estimate = (uint)SoftFloat.RecipEstimateTable[scaled - 256u] + 256u;
+                uint estimate = SoftFloat.RecipEstimateTable[scaled - 256u] + 256u;
 
                 fraction = (ulong)(estimate & 0xFFu) << 44;
 
@@ -1655,7 +1655,7 @@ namespace ARMeilleure.Instructions
 
                 uint resultExp = (380u - exp) >> 1;
 
-                uint estimate = (uint)SoftFloat.RecipSqrtEstimateTable[scaled - 128u] + 256u;
+                uint estimate = SoftFloat.RecipSqrtEstimateTable[scaled - 128u] + 256u;
 
                 result = BitConverter.Int32BitsToSingle((int)((resultExp & 0xFFu) << 23 | (estimate & 0xFFu) << 15));
             }
@@ -2154,7 +2154,7 @@ namespace ARMeilleure.Instructions
                 else
                 {
                     type = FPType.Nonzero; // Subnormal.
-                    real = Math.Pow(2d, -1022) * ((double)frac64 * Math.Pow(2d, -52));
+                    real = Math.Pow(2d, -1022) * (frac64 * Math.Pow(2d, -52));
                 }
             }
             else if (exp64 == 0x7FFul)
@@ -2173,7 +2173,7 @@ namespace ARMeilleure.Instructions
             else
             {
                 type = FPType.Nonzero; // Normal.
-                real = Math.Pow(2d, (int)exp64 - 1023) * (1d + (double)frac64 * Math.Pow(2d, -52));
+                real = Math.Pow(2d, (int)exp64 - 1023) * (1d + frac64 * Math.Pow(2d, -52));
             }
 
             return sign ? -real : real;
@@ -2885,7 +2885,7 @@ namespace ARMeilleure.Instructions
 
                 uint resultExp = 2045u - exp;
 
-                uint estimate = (uint)SoftFloat.RecipEstimateTable[scaled - 256u] + 256u;
+                uint estimate = SoftFloat.RecipEstimateTable[scaled - 256u] + 256u;
 
                 fraction = (ulong)(estimate & 0xFFu) << 44;
 
@@ -3067,7 +3067,7 @@ namespace ARMeilleure.Instructions
 
                 uint resultExp = (3068u - exp) >> 1;
 
-                uint estimate = (uint)SoftFloat.RecipSqrtEstimateTable[scaled - 128u] + 256u;
+                uint estimate = SoftFloat.RecipSqrtEstimateTable[scaled - 128u] + 256u;
 
                 result = BitConverter.Int64BitsToDouble((long)((resultExp & 0x7FFul) << 52 | (estimate & 0xFFul) << 44));
             }

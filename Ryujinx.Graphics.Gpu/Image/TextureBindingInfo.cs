@@ -66,7 +66,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="cbufSlot">Constant buffer slot where the texture handle is located</param>
         /// <param name="handle">The shader texture handle (read index into the texture constant buffer)</param>
         /// <param name="flags">The texture's usage flags, indicating how it is used in the shader</param>
-        public TextureBindingInfo(Target target, int binding, int cbufSlot, int handle, TextureUsageFlags flags) : this(target, (Format)0, binding, cbufSlot, handle, flags)
+        public TextureBindingInfo(Target target, int binding, int cbufSlot, int handle, TextureUsageFlags flags) : this(target, 0, binding, cbufSlot, handle, flags)
         {
         }
     }

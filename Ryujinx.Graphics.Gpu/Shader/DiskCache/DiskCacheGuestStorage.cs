@@ -219,7 +219,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                     throw new DiskCacheLoadException(DiskCacheLoadResult.FileCorruptedGeneric);
                 }
 
-                dataFileStream.Seek((long)entry.Offset, SeekOrigin.Begin);
+                dataFileStream.Seek(entry.Offset, SeekOrigin.Begin);
                 dataFileStream.Read(cb1Data);
                 BinarySerializer.ReadCompressed(dataFileStream, guestCode);
 
@@ -276,7 +276,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                         continue;
                     }
 
-                    dataFileStream.Seek((long)entry.Offset, SeekOrigin.Begin);
+                    dataFileStream.Seek(entry.Offset, SeekOrigin.Begin);
                     byte[] cachedCode = new byte[entry.CodeSize];
                     byte[] cachedCb1Data = new byte[entry.Cb1DataSize];
                     dataFileStream.Read(cachedCb1Data);

@@ -19,7 +19,7 @@ namespace Ryujinx.Graphics.OpenGL
                 GL.ClearBufferSubData(
                     BufferTarget.CopyWriteBuffer,
                     PixelInternalFormat.Rgba8ui,
-                    (IntPtr)offset,
+                    offset,
                     (IntPtr)size,
                     PixelFormat.RgbaInteger,
                     PixelType.UnsignedByte,
@@ -50,8 +50,8 @@ namespace Ryujinx.Graphics.OpenGL
             GL.CopyBufferSubData(
                 BufferTarget.CopyReadBuffer,
                 BufferTarget.CopyWriteBuffer,
-                (IntPtr)srcOffset,
-                (IntPtr)dstOffset,
+                srcOffset,
+                dstOffset,
                 (IntPtr)size);
         }
 
@@ -67,7 +67,7 @@ namespace Ryujinx.Graphics.OpenGL
 
                 GL.BindBuffer(BufferTarget.CopyReadBuffer, buffer.ToInt32());
 
-                GL.GetBufferSubData(BufferTarget.CopyReadBuffer, (IntPtr)offset, size, target);
+                GL.GetBufferSubData(BufferTarget.CopyReadBuffer, offset, size, target);
 
                 return new ReadOnlySpan<byte>(target.ToPointer(), size);
             }
@@ -87,7 +87,7 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 fixed (byte* ptr = data)
                 {
-                    GL.BufferSubData(BufferTarget.CopyWriteBuffer, (IntPtr)offset, data.Length, (IntPtr)ptr);
+                    GL.BufferSubData(BufferTarget.CopyWriteBuffer, offset, data.Length, (IntPtr)ptr);
                 }
             }
         }

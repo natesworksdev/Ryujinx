@@ -50,10 +50,10 @@ namespace Ryujinx.Graphics.Vic.Image
             if (Sse41.IsSupported)
             {
                 Vector128<byte> shufMask = Vector128.Create(
-                    (byte)0, (byte)2, (byte)3, (byte)1,
-                    (byte)4, (byte)6, (byte)7, (byte)5,
-                    (byte)8, (byte)10, (byte)11, (byte)9,
-                    (byte)12, (byte)14, (byte)15, (byte)13);
+                    0, 2, 3, 1,
+                    4, 6, 7, 5,
+                    8, 10, 11, 9,
+                    12, 14, 15, (byte)13);
                 Vector128<short> alphaMask = Vector128.Create(0xffUL << 48).AsInt16();
 
                 int yStrideGap = yStride - width;

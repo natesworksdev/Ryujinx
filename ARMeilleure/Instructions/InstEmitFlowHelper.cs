@@ -206,8 +206,8 @@ namespace ARMeilleure.Instructions
             else
             {
                 hostAddress = !context.HasPtc ?
-                    Const((long)context.Stubs.DispatchStub) :
-                    Const((long)context.Stubs.DispatchStub, Ptc.DispatchStubSymbol);
+                    Const(context.Stubs.DispatchStub) :
+                    Const(context.Stubs.DispatchStub, Ptc.DispatchStubSymbol);
             }
 
             if (isJump)

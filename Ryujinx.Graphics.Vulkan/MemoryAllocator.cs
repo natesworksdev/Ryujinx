@@ -19,7 +19,7 @@ namespace Ryujinx.Graphics.Vulkan
             _api = api;
             _device = device;
             _blockLists = new List<MemoryAllocatorBlockList>();
-            _blockAlignment = (int)Math.Min(int.MaxValue, MaxDeviceMemoryUsageEstimate / (ulong)maxMemoryAllocationCount);
+            _blockAlignment = (int)Math.Min(int.MaxValue, MaxDeviceMemoryUsageEstimate / maxMemoryAllocationCount);
         }
 
         public MemoryAllocation AllocateDeviceMemory(

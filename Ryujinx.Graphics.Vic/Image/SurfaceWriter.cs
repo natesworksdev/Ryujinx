@@ -131,10 +131,10 @@ namespace Ryujinx.Graphics.Vic.Image
             if (Ssse3.IsSupported)
             {
                 Vector128<byte> shuffleMask = Vector128.Create(
-                    (byte)2, (byte)1, (byte)0, (byte)3,
-                    (byte)6, (byte)5, (byte)4, (byte)7,
-                    (byte)10, (byte)9, (byte)8, (byte)11,
-                    (byte)14, (byte)13, (byte)12, (byte)15);
+                    2, 1, 0, 3,
+                    6, 5, 4, 7,
+                    10, 9, 8, 11,
+                    14, 13, 12, (byte)15);
 
                 int widthTrunc = width & ~7;
                 int strideGap = stride - width * 4;

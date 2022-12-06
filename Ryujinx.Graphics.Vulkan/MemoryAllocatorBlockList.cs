@@ -236,7 +236,7 @@ namespace Ryujinx.Graphics.Vulkan
                 return IntPtr.Zero;
             }
 
-            return (IntPtr)((nuint)(nint)block.HostPointer + offset);
+            return (IntPtr)((nuint)block.HostPointer + offset);
         }
 
         public unsafe void Free(Block block, ulong offset, ulong size)

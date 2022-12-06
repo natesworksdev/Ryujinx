@@ -181,7 +181,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             }
 
             // Check the bss size match.
-            if ((ulong)nro.BssSize != bssSize)
+            if (nro.BssSize != bssSize)
             {
                 return ResultCode.InvalidNro;
             }
@@ -198,7 +198,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
                 nroSize,
                 bssAddress,
                 bssSize,
-                (ulong)totalSize);
+                totalSize);
 
             return ResultCode.Success;
         }
@@ -320,13 +320,13 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
         private KernelResult SetNroMemoryPermissions(KProcess process, IExecutable relocatableObject, ulong baseAddress)
         {
-            ulong textStart = baseAddress + (ulong)relocatableObject.TextOffset;
-            ulong roStart   = baseAddress + (ulong)relocatableObject.RoOffset;
-            ulong dataStart = baseAddress + (ulong)relocatableObject.DataOffset;
+            ulong textStart = baseAddress + relocatableObject.TextOffset;
+            ulong roStart   = baseAddress + relocatableObject.RoOffset;
+            ulong dataStart = baseAddress + relocatableObject.DataOffset;
 
             ulong bssStart = dataStart + (ulong)relocatableObject.Data.Length;
 
-            ulong bssEnd = BitUtils.AlignUp(bssStart + (ulong)relocatableObject.BssSize, KPageTableBase.PageSize);
+            ulong bssEnd = BitUtils.AlignUp(bssStart + relocatableObject.BssSize, KPageTableBase.PageSize);
 
             process.CpuMemory.Write(textStart, relocatableObject.Text);
             process.CpuMemory.Write(roStart,   relocatableObject.Ro);
@@ -388,7 +388,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             ulong textSize = (ulong)info.Executable.Text.Length;
             ulong roSize   = (ulong)info.Executable.Ro.Length;
             ulong dataSize = (ulong)info.Executable.Data.Length;
-            ulong bssSize  = (ulong)info.Executable.BssSize;
+            ulong bssSize  = info.Executable.BssSize;
 
             KernelResult result = KernelResult.Success;
 

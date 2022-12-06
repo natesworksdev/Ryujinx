@@ -53,7 +53,7 @@ namespace Ryujinx.HLE.HOS
 
             ulong codeBaseAddress = kip.Is64BitAddressSpace ? 0x8000000UL : 0x200000UL;
 
-            ulong codeAddress = codeBaseAddress + (ulong)kip.TextOffset;
+            ulong codeAddress = codeBaseAddress + kip.TextOffset;
 
             ProcessCreationFlags flags = 0;
 
@@ -197,13 +197,13 @@ namespace Ryujinx.HLE.HOS
 
                 nsoSize = BitUtils.AlignUp(nsoSize, KPageTableBase.PageSize);
 
-                nsoBase[index] = codeStart + (ulong)codeSize;
+                nsoBase[index] = codeStart + codeSize;
 
                 codeSize += nsoSize;
 
                 if (arguments != null && argsSize == 0)
                 {
-                    argsStart = (ulong)codeSize;
+                    argsStart = codeSize;
 
                     argsSize = (uint)BitUtils.AlignDown(arguments.Length * 2 + ArgsTotalSize - 1, KPageTableBase.PageSize);
 
@@ -212,7 +212,7 @@ namespace Ryujinx.HLE.HOS
             }
 
             PtcProfiler.StaticCodeStart = codeStart;
-            PtcProfiler.StaticCodeSize  = (ulong)codeSize;
+            PtcProfiler.StaticCodeSize  = codeSize;
 
             int codePagesCount = (int)(codeSize / KPageTableBase.PageSize);
 
@@ -324,16 +324,16 @@ namespace Ryujinx.HLE.HOS
 
         private static KernelResult LoadIntoMemory(KProcess process, IExecutable image, ulong baseAddress)
         {
-            ulong textStart = baseAddress + (ulong)image.TextOffset;
-            ulong roStart   = baseAddress + (ulong)image.RoOffset;
-            ulong dataStart = baseAddress + (ulong)image.DataOffset;
-            ulong bssStart  = baseAddress + (ulong)image.BssOffset;
+            ulong textStart = baseAddress + image.TextOffset;
+            ulong roStart   = baseAddress + image.RoOffset;
+            ulong dataStart = baseAddress + image.DataOffset;
+            ulong bssStart  = baseAddress + image.BssOffset;
 
             ulong end = dataStart + (ulong)image.Data.Length;
 
             if (image.BssSize != 0)
             {
-                end = bssStart + (ulong)image.BssSize;
+                end = bssStart + image.BssSize;
             }
 
             process.CpuMemory.Write(textStart, image.Text);

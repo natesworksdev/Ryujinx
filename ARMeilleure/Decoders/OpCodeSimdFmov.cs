@@ -21,7 +21,7 @@ namespace ARMeilleure.Decoders
 
             if (type == 0)
             {
-                Immediate = (long)DecoderHelper.Imm8ToFP32Table[(int)imm];
+                Immediate = DecoderHelper.Imm8ToFP32Table[(int)imm];
             }
             else /* if (type == 1) */
             {

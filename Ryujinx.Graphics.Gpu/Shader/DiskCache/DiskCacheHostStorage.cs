@@ -313,7 +313,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                     ulong dataOffset = 0;
                     tocReader.Read(ref dataOffset);
 
-                    if ((ulong)dataOffset >= (ulong)dataFileStream.Length)
+                    if (dataOffset >= (ulong)dataFileStream.Length)
                     {
                         throw new DiskCacheLoadException(DiskCacheLoadResult.FileCorruptedGeneric);
                     }

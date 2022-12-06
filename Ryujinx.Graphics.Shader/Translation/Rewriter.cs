@@ -365,11 +365,11 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                     if (isBindless || isIndexed)
                     {
-                        texSizeSources = new Operand[] { sources[0], Const(0) };
+                        texSizeSources = new[] { sources[0], Const(0) };
                     }
                     else
                     {
-                        texSizeSources = new Operand[] { Const(0) };
+                        texSizeSources = new[] { Const(0) };
                     }
 
                     node.List.AddBefore(node, new TextureOperation(
@@ -444,11 +444,11 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                         if (isBindless || isIndexed)
                         {
-                            texSizeSources = new Operand[] { sources[0], Int(lod) };
+                            texSizeSources = new[] { sources[0], Int(lod) };
                         }
                         else
                         {
-                            texSizeSources = new Operand[] { Int(lod) };
+                            texSizeSources = new[] { Int(lod) };
                         }
 
                         node.List.AddBefore(node, new TextureOperation(

@@ -118,7 +118,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
         private NvInternalResult AllocSpace(ref AllocSpaceArguments arguments)
         {
-            ulong size = (ulong)arguments.Pages * (ulong)arguments.PageSize;
+            ulong size = arguments.Pages * (ulong)arguments.PageSize;
 
             NvInternalResult result = NvInternalResult.Success;
 
@@ -173,7 +173,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
         private NvInternalResult FreeSpace(ref FreeSpaceArguments arguments)
         {
-            ulong size = (ulong)arguments.Pages * (ulong)arguments.PageSize;
+            ulong size = arguments.Pages * (ulong)arguments.PageSize;
 
             NvInternalResult result = NvInternalResult.Success;
 

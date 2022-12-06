@@ -4,14 +4,14 @@
     {
         public static readonly BC7ModeInfo[] BC7ModeInfos = new BC7ModeInfo[]
         {
-            new BC7ModeInfo(3, 4, 6, 0, 0, 3, 0, 4, 0),
-            new BC7ModeInfo(2, 6, 2, 0, 0, 3, 0, 6, 0),
-            new BC7ModeInfo(3, 6, 0, 0, 0, 2, 0, 5, 0),
-            new BC7ModeInfo(2, 6, 4, 0, 0, 2, 0, 7, 0),
-            new BC7ModeInfo(1, 0, 0, 2, 1, 2, 3, 5, 6),
-            new BC7ModeInfo(1, 0, 0, 2, 0, 2, 2, 7, 8),
-            new BC7ModeInfo(1, 0, 2, 0, 0, 4, 0, 7, 7),
-            new BC7ModeInfo(2, 6, 4, 0, 0, 2, 0, 5, 5)
+            new(3, 4, 6, 0, 0, 3, 0, 4, 0),
+            new(2, 6, 2, 0, 0, 3, 0, 6, 0),
+            new(3, 6, 0, 0, 0, 2, 0, 5, 0),
+            new(2, 6, 4, 0, 0, 2, 0, 7, 0),
+            new(1, 0, 0, 2, 1, 2, 3, 5, 6),
+            new(1, 0, 0, 2, 0, 2, 2, 7, 8),
+            new(1, 0, 2, 0, 0, 4, 0, 7, 7),
+            new(2, 6, 4, 0, 0, 2, 0, 5, 5)
         };
 
         public static readonly byte[][] Weights =
@@ -30,7 +30,7 @@
 
         public static readonly byte[][][] FixUpIndices = new byte[3][][]
         {
-            new byte[64][]
+            new byte[][]
             {
                 new byte[] {  0,  0,  0 }, new byte[] {  0,  0,  0 }, new byte[] {  0,  0,  0 }, new byte[] {  0,  0,  0 },
                 new byte[] {  0,  0,  0 }, new byte[] {  0,  0,  0 }, new byte[] {  0,  0,  0 }, new byte[] {  0,  0,  0 },
@@ -49,7 +49,7 @@
                 new byte[] {  0,  0,  0 }, new byte[] {  0,  0,  0 }, new byte[] {  0,  0,  0 }, new byte[] {  0,  0,  0 },
                 new byte[] {  0,  0,  0 }, new byte[] {  0,  0,  0 }, new byte[] {  0,  0,  0 }, new byte[] {  0,  0,  0 }
             },
-            new byte[64][]
+            new byte[][]
             {
                 new byte[] {  0, 15,  0 }, new byte[] {  0, 15,  0 }, new byte[] {  0, 15,  0 }, new byte[] {  0, 15,  0 },
                 new byte[] {  0, 15,  0 }, new byte[] {  0, 15,  0 }, new byte[] {  0, 15,  0 }, new byte[] {  0, 15,  0 },

@@ -53,7 +53,7 @@ namespace ARMeilleure.Decoders
                     case 2:
                         // 2 x 32-bits floating point Immediate.
                         Size = 0;
-                        imm = (long)DecoderHelper.Imm8ToFP32Table[(int)imm];
+                        imm = DecoderHelper.Imm8ToFP32Table[(int)imm];
                         imm |= imm << 32;
                         break;
 

@@ -30,7 +30,7 @@ namespace Ryujinx.Graphics.Texture
 
             for (int i = start; i < data.Length; i++)
             {
-                outputSpan[i] = (ushort)data[i];
+                outputSpan[i] = data[i];
             }
 
             return output;

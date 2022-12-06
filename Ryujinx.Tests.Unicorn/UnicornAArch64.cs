@@ -50,7 +50,7 @@ namespace Ryujinx.Tests.Unicorn
         public uint Pstate
         {
             get => (uint)GetRegister(Arm64.REG_PSTATE);
-            set =>       SetRegister(Arm64.REG_PSTATE, (uint)value);
+            set =>       SetRegister(Arm64.REG_PSTATE, value);
         }
 
         public int Fpcr

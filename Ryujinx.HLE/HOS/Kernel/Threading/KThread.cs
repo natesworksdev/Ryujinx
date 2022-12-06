@@ -702,8 +702,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 context.Tpidr = (uint)Context.TpidrroEl0;
             }
 
-            context.Fpcr = (uint)Context.Fpcr;
-            context.Fpsr = (uint)Context.Fpsr;
+            context.Fpcr = Context.Fpcr;
+            context.Fpsr = Context.Fpsr;
 
             return context;
         }
@@ -1377,7 +1377,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                     }
                     else
                     {
-                        ActiveCore = sizeof(ulong) * 8 - 1 - BitOperations.LeadingZeroCount((ulong)AffinityMask);
+                        ActiveCore = sizeof(ulong) * 8 - 1 - BitOperations.LeadingZeroCount(AffinityMask);
                     }
 
                     AdjustSchedulingForNewAffinity(affinityMask, activeCore);

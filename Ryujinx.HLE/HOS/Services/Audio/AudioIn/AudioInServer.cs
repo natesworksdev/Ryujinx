@@ -77,7 +77,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioIn
             ulong position = context.Request.ReceiveBuff[0].Position;
             ulong size = context.Request.ReceiveBuff[0].Size;
 
-            using (WritableRegion outputRegion = context.Memory.GetWritableRegion((ulong)position, (int)size))
+            using (WritableRegion outputRegion = context.Memory.GetWritableRegion(position, (int)size))
             {
                 ResultCode result = _impl.GetReleasedBuffers(MemoryMarshal.Cast<byte, ulong>(outputRegion.Memory.Span), out uint releasedCount);
 

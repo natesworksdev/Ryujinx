@@ -62,7 +62,7 @@ namespace Ryujinx.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ulong Mult32To64(ulong x, ulong y)
         {
-            return (ulong)(uint)x * (ulong)(uint)y;
+            return (uint)x * (ulong)(uint)y;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

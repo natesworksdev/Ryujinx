@@ -17,7 +17,7 @@ namespace Ryujinx.Tests.Cpu
                                 [Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
                                         0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCnt)] ulong xnSp,
                                 [Values((ulong)0x0000000000000000, (ulong)0x7FFFFFFFFFFFFFFF,
-                                        (ulong)0x8000000000000000, (ulong)0xFFFFFFFFFFFFFFFF)] [Random(RndCnt)] ulong xm,
+                                        0x8000000000000000, 0xFFFFFFFFFFFFFFFF)] [Random(RndCnt)] ulong xm,
                                 [Values(0b011u, 0b111u)] uint extend, // <LSL|UXTX, SXTX>
                                 [Values(0u, 1u, 2u, 3u, 4u)] uint amount)
         {
@@ -46,7 +46,7 @@ namespace Ryujinx.Tests.Cpu
                                 [Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
                                         0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCnt)] ulong xnSp,
                                 [Values((uint)0x00000000, (uint)0x7FFFFFFF,
-                                        (uint)0x80000000, (uint)0xFFFFFFFF)] [Random(RndCnt)] uint wm,
+                                        0x80000000, 0xFFFFFFFF)] [Random(RndCnt)] uint wm,
                                 [Values(0b000u, 0b001u, 0b010u,               // <UXTB, UXTH, UXTW,
                                         0b100u, 0b101u, 0b110u)] uint extend, //  SXTB, SXTH, SXTW>
                                 [Values(0u, 1u, 2u, 3u, 4u)] uint amount)
@@ -136,7 +136,7 @@ namespace Ryujinx.Tests.Cpu
                                 [Values(0x00000000u, 0x7FFFFFFFu,
                                         0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wnWsp,
                                 [Values((uint)0x00000000, (uint)0x7FFFFFFF,
-                                        (uint)0x80000000, (uint)0xFFFFFFFF)] [Random(RndCnt)] uint wm,
+                                        0x80000000, 0xFFFFFFFF)] [Random(RndCnt)] uint wm,
                                 [Values(0b000u, 0b001u, 0b010u, 0b011u,               // <UXTB, UXTH, LSL|UXTW, UXTX,
                                         0b100u, 0b101u, 0b110u, 0b111u)] uint extend, //  SXTB, SXTH, SXTW, SXTX>
                                 [Values(0u, 1u, 2u, 3u, 4u)] uint amount)
@@ -226,7 +226,7 @@ namespace Ryujinx.Tests.Cpu
                                  [Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
                                          0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCnt)] ulong xnSp,
                                  [Values((ulong)0x0000000000000000, (ulong)0x7FFFFFFFFFFFFFFF,
-                                         (ulong)0x8000000000000000, (ulong)0xFFFFFFFFFFFFFFFF)] [Random(RndCnt)] ulong xm,
+                                         0x8000000000000000, 0xFFFFFFFFFFFFFFFF)] [Random(RndCnt)] ulong xm,
                                  [Values(0b011u, 0b111u)] uint extend, // <LSL|UXTX, SXTX>
                                  [Values(0u, 1u, 2u, 3u, 4u)] uint amount)
         {
@@ -246,7 +246,7 @@ namespace Ryujinx.Tests.Cpu
                                  [Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
                                          0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCnt)] ulong xnSp,
                                  [Values((uint)0x00000000, (uint)0x7FFFFFFF,
-                                         (uint)0x80000000, (uint)0xFFFFFFFF)] [Random(RndCnt)] uint wm,
+                                         0x80000000, 0xFFFFFFFF)] [Random(RndCnt)] uint wm,
                                  [Values(0b000u, 0b001u, 0b010u,               // <UXTB, UXTH, UXTW,
                                          0b100u, 0b101u, 0b110u)] uint extend, //  SXTB, SXTH, SXTW>
                                  [Values(0u, 1u, 2u, 3u, 4u)] uint amount)
@@ -309,7 +309,7 @@ namespace Ryujinx.Tests.Cpu
                                  [Values(0x00000000u, 0x7FFFFFFFu,
                                          0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wnWsp,
                                  [Values((uint)0x00000000, (uint)0x7FFFFFFF,
-                                         (uint)0x80000000, (uint)0xFFFFFFFF)] [Random(RndCnt)] uint wm,
+                                         0x80000000, 0xFFFFFFFF)] [Random(RndCnt)] uint wm,
                                  [Values(0b000u, 0b001u, 0b010u, 0b011u,               // <UXTB, UXTH, LSL|UXTW, UXTX,
                                          0b100u, 0b101u, 0b110u, 0b111u)] uint extend, //  SXTB, SXTH, SXTW, SXTX>
                                  [Values(0u, 1u, 2u, 3u, 4u)] uint amount)
@@ -372,7 +372,7 @@ namespace Ryujinx.Tests.Cpu
                                 [Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
                                         0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCnt)] ulong xnSp,
                                 [Values((ulong)0x0000000000000000, (ulong)0x7FFFFFFFFFFFFFFF,
-                                        (ulong)0x8000000000000000, (ulong)0xFFFFFFFFFFFFFFFF)] [Random(RndCnt)] ulong xm,
+                                        0x8000000000000000, 0xFFFFFFFFFFFFFFFF)] [Random(RndCnt)] ulong xm,
                                 [Values(0b011u, 0b111u)] uint extend, // <LSL|UXTX, SXTX>
                                 [Values(0u, 1u, 2u, 3u, 4u)] uint amount)
         {
@@ -401,7 +401,7 @@ namespace Ryujinx.Tests.Cpu
                                 [Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
                                         0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCnt)] ulong xnSp,
                                 [Values((uint)0x00000000, (uint)0x7FFFFFFF,
-                                        (uint)0x80000000, (uint)0xFFFFFFFF)] [Random(RndCnt)] uint wm,
+                                        0x80000000, 0xFFFFFFFF)] [Random(RndCnt)] uint wm,
                                 [Values(0b000u, 0b001u, 0b010u,               // <UXTB, UXTH, UXTW,
                                         0b100u, 0b101u, 0b110u)] uint extend, //  SXTB, SXTH, SXTW>
                                 [Values(0u, 1u, 2u, 3u, 4u)] uint amount)
@@ -491,7 +491,7 @@ namespace Ryujinx.Tests.Cpu
                                 [Values(0x00000000u, 0x7FFFFFFFu,
                                         0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wnWsp,
                                 [Values((uint)0x00000000, (uint)0x7FFFFFFF,
-                                        (uint)0x80000000, (uint)0xFFFFFFFF)] [Random(RndCnt)] uint wm,
+                                        0x80000000, 0xFFFFFFFF)] [Random(RndCnt)] uint wm,
                                 [Values(0b000u, 0b001u, 0b010u, 0b011u,               // <UXTB, UXTH, LSL|UXTW, UXTX,
                                         0b100u, 0b101u, 0b110u, 0b111u)] uint extend, //  SXTB, SXTH, SXTW, SXTX>
                                 [Values(0u, 1u, 2u, 3u, 4u)] uint amount)
@@ -581,7 +581,7 @@ namespace Ryujinx.Tests.Cpu
                                  [Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
                                          0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCnt)] ulong xnSp,
                                  [Values((ulong)0x0000000000000000, (ulong)0x7FFFFFFFFFFFFFFF,
-                                         (ulong)0x8000000000000000, (ulong)0xFFFFFFFFFFFFFFFF)] [Random(RndCnt)] ulong xm,
+                                         0x8000000000000000, 0xFFFFFFFFFFFFFFFF)] [Random(RndCnt)] ulong xm,
                                  [Values(0b011u, 0b111u)] uint extend, // <LSL|UXTX, SXTX>
                                  [Values(0u, 1u, 2u, 3u, 4u)] uint amount)
         {
@@ -601,7 +601,7 @@ namespace Ryujinx.Tests.Cpu
                                  [Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
                                          0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCnt)] ulong xnSp,
                                  [Values((uint)0x00000000, (uint)0x7FFFFFFF,
-                                         (uint)0x80000000, (uint)0xFFFFFFFF)] [Random(RndCnt)] uint wm,
+                                         0x80000000, 0xFFFFFFFF)] [Random(RndCnt)] uint wm,
                                  [Values(0b000u, 0b001u, 0b010u,               // <UXTB, UXTH, UXTW,
                                          0b100u, 0b101u, 0b110u)] uint extend, //  SXTB, SXTH, SXTW>
                                  [Values(0u, 1u, 2u, 3u, 4u)] uint amount)
@@ -664,7 +664,7 @@ namespace Ryujinx.Tests.Cpu
                                  [Values(0x00000000u, 0x7FFFFFFFu,
                                          0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wnWsp,
                                  [Values((uint)0x00000000, (uint)0x7FFFFFFF,
-                                         (uint)0x80000000, (uint)0xFFFFFFFF)] [Random(RndCnt)] uint wm,
+                                         0x80000000, 0xFFFFFFFF)] [Random(RndCnt)] uint wm,
                                  [Values(0b000u, 0b001u, 0b010u, 0b011u,               // <UXTB, UXTH, LSL|UXTW, UXTX,
                                          0b100u, 0b101u, 0b110u, 0b111u)] uint extend, //  SXTB, SXTH, SXTW, SXTX>
                                  [Values(0u, 1u, 2u, 3u, 4u)] uint amount)
