@@ -8,7 +8,6 @@ using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.ViewModels;
 using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.HLE.FileSystem;
-using Ryujinx.Ui.App.Common;
 using System;
 using System.IO;
 using System.Linq;

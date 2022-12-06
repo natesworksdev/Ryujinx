@@ -18,7 +18,6 @@ namespace Ryujinx.Ava.Ui.Controls
         private Predicate<int> _checkLength;
         private int _inputMax;
         private int _inputMin;
-        private string _placeholder;
 
         private ContentDialog _host;
 
@@ -27,10 +26,9 @@ namespace Ryujinx.Ava.Ui.Controls
             MainText = mainText;
             SecondaryText = secondaryText;
             DataContext = this;
-            _placeholder = placeholder;
             InitializeComponent();
 
-            Input.Watermark = _placeholder;
+            Input.Watermark = placeholder;
 
             Input.AddHandler(TextInputEvent, Message_TextInput, RoutingStrategies.Tunnel, true);
 
@@ -88,7 +86,7 @@ namespace Ryujinx.Ava.Ui.Controls
             contentDialog.CloseButtonText = LocaleManager.Instance["InputDialogCancel"];
             contentDialog.Content = content;
 
-            TypedEventHandler<ContentDialog, ContentDialogClosedEventArgs> handler = (sender, eventArgs) =>
+            TypedEventHandler<ContentDialog, ContentDialogClosedEventArgs> handler = (_, eventArgs) =>
             {
                 if (eventArgs.Result == ContentDialogResult.Primary)
                 {
@@ -114,7 +112,7 @@ namespace Ryujinx.Ava.Ui.Controls
                 await contentDialog.ShowAsync();
                 contentDialog.Closed -= handler;
                 overlay.Close();
-            };
+            }
 
             await overlay.ShowDialog(window);
 
@@ -133,7 +131,7 @@ namespace Ryujinx.Ava.Ui.Controls
             {
                 Error.IsVisible = false;
 
-                _checkLength = length => true;
+                _checkLength = _ => true;
             }
             else if (_inputMin > 0 && _inputMax == int.MaxValue)
             {

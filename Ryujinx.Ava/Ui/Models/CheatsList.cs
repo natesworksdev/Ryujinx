@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Ryujinx.Ava.Ui.Models
 {
-    public class CheatsList : ObservableCollection<CheatModel>
+    public sealed class CheatsList : ObservableCollection<CheatModel>
     {
         public CheatsList(string buildId, string path)
         {

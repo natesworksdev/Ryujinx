@@ -1,10 +1,8 @@
 using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using LibHac.Common;
-using Ryujinx.Ava.Ui.ViewModels;
 using Ryujinx.Ui.App.Common;
 using System;
 
@@ -54,12 +52,7 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             AvaloniaXamlLoader.Load(this);
         }
-
-        private void SearchBox_OnKeyUp(object sender, KeyEventArgs e)
-        {
-            (DataContext as MainWindowViewModel).SearchText = (sender as TextBox).Text;
-        }
-
+        
         private void MenuBase_OnMenuOpened(object sender, EventArgs e)
         {
             var selection = SelectedApplication;

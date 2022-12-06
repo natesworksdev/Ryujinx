@@ -5,8 +5,6 @@ using Avalonia.Platform;
 using SPB.Graphics;
 using SPB.Platform;
 using SPB.Platform.GLX;
-using SPB.Platform.X11;
-using SPB.Windowing;
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -118,7 +116,7 @@ namespace Ryujinx.Ava.Ui.Controls
                 hCursor = LoadCursor(IntPtr.Zero, (IntPtr)Cursors.IDC_ARROW)
             };
 
-            var atom = RegisterClassEx(ref wndClassEx);
+            RegisterClassEx(ref wndClassEx);
 
             var handle = CreateWindowEx(
                 0,
@@ -152,7 +150,7 @@ namespace Ryujinx.Ava.Ui.Controls
                     isLeft = msg == WindowsMessages.LBUTTONDOWN;
                     this.RaiseEvent(new PointerPressedEventArgs(
                         this,
-                        new Avalonia.Input.Pointer(0, PointerType.Mouse, true),
+                        new Pointer(0, PointerType.Mouse, true),
                         root,
                         this.TranslatePoint(point, root).Value,
                         (ulong)Environment.TickCount64,
@@ -164,7 +162,7 @@ namespace Ryujinx.Ava.Ui.Controls
                     isLeft = msg == WindowsMessages.LBUTTONUP;
                     this.RaiseEvent(new PointerReleasedEventArgs(
                         this,
-                        new Avalonia.Input.Pointer(0, PointerType.Mouse, true),
+                        new Pointer(0, PointerType.Mouse, true),
                         root,
                         this.TranslatePoint(point, root).Value,
                         (ulong)Environment.TickCount64,
@@ -176,7 +174,7 @@ namespace Ryujinx.Ava.Ui.Controls
                     this.RaiseEvent(new PointerEventArgs(
                         PointerMovedEvent,
                         this,
-                        new Avalonia.Input.Pointer(0, PointerType.Mouse, true),
+                        new Pointer(0, PointerType.Mouse, true),
                         root,
                         this.TranslatePoint(point, root).Value,
                         (ulong)Environment.TickCount64,
@@ -184,7 +182,7 @@ namespace Ryujinx.Ava.Ui.Controls
                         KeyModifiers.None));
                     break;
             }
-            return DefWindowProc(hWnd, msg, (IntPtr)wParam, (IntPtr)lParam);
+            return DefWindowProc(hWnd, msg, wParam, lParam);
         }
 
         void DestroyLinux()

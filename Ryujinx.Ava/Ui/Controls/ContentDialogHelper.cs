@@ -1,8 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Controls.Primitives;
-using Avalonia.Media;
 using Avalonia.Threading;
 using FluentAvalonia.Core;
 using FluentAvalonia.UI.Controls;
@@ -30,7 +28,6 @@ namespace Ryujinx.Ava.Ui.Controls
             int iconSymbol,
             UserResult primaryButtonResult = UserResult.Ok,
             ManualResetEvent deferResetEvent = null,
-            Func<Window, Task> doWhileDeferred = null,
             TypedEventHandler<ContentDialog, ContentDialogButtonClickEventArgs> deferCloseAction = null)
         {
             UserResult result = UserResult.None;
@@ -129,13 +126,13 @@ namespace Ryujinx.Ava.Ui.Controls
 
                 if (useOverlay)
                 {
-                    await contentDialog.ShowAsync(overlay, ContentDialogPlacement.Popup);
+                    await contentDialog.ShowAsync(overlay);
 
                     overlay!.Close();
                 }
                 else
                 {
-                    await contentDialog.ShowAsync(ContentDialogPlacement.Popup);
+                    await contentDialog.ShowAsync();
                 }
             }
 
@@ -161,7 +158,6 @@ namespace Ryujinx.Ava.Ui.Controls
             Func<Window, Task> doWhileDeferred = null)
         {
             bool startedDeferring = false;
-            UserResult result = UserResult.None;
 
             return await ShowContentDialog(
                 title,
@@ -173,7 +169,6 @@ namespace Ryujinx.Ava.Ui.Controls
                 iconSymbol,
                 primaryButton == LocaleManager.Instance["InputDialogYes"] ? UserResult.Yes : UserResult.Ok,
                 deferResetEvent,
-                doWhileDeferred,
                 DeferClose);
 
             async void DeferClose(ContentDialog sender, ContentDialogButtonClickEventArgs args)
@@ -188,8 +183,6 @@ namespace Ryujinx.Ava.Ui.Controls
                 startedDeferring = true;
 
                 var deferral = args.GetDeferral();
-
-                result = primaryButton == LocaleManager.Instance["InputDialogYes"] ? UserResult.Yes : UserResult.Ok;
 
                 sender.PrimaryButtonClick -= DeferClose;
 
@@ -222,7 +215,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
             content.MinHeight = 80;
 
-            SymbolIcon icon = new SymbolIcon { Symbol = (Symbol)symbol, Margin = new Avalonia.Thickness(10) };
+            SymbolIcon icon = new SymbolIcon { Symbol = (Symbol)symbol, Margin = new Thickness(10) };
             icon.FontSize = 40;
             icon.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
             Grid.SetColumn(icon, 0);
@@ -232,14 +225,14 @@ namespace Ryujinx.Ava.Ui.Controls
             TextBlock primaryLabel = new TextBlock()
             {
                 Text = primaryText,
-                Margin = new Avalonia.Thickness(5),
+                Margin = new Thickness(5),
                 TextWrapping = Avalonia.Media.TextWrapping.Wrap,
                 MaxWidth = 450
             };
             TextBlock secondaryLabel = new TextBlock()
             {
                 Text = secondaryText,
-                Margin = new Avalonia.Thickness(5),
+                Margin = new Thickness(5),
                 TextWrapping = Avalonia.Media.TextWrapping.Wrap,
                 MaxWidth = 450
             };

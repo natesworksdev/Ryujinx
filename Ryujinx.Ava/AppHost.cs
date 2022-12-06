@@ -76,7 +76,7 @@ namespace Ryujinx.Ava
         private bool _isActive;
         private long _lastCursorMoveTime;
         private float _newVolume;
-        private long _ticks = 0;
+        private long _ticks;
 
         private KeyboardHotkeyState _prevHotkeyState;
 
@@ -167,7 +167,7 @@ namespace Ryujinx.Ava
             _lastCursorMoveTime = Stopwatch.GetTimestamp();
             var p = e.GetCurrentPoint(_parent).Position;
             var r = _parent.InputHitTest(p);
-            _isMouseInRenderer = r == Renderer;
+            _isMouseInRenderer = r.Equals(Renderer);
         }
 
         private void Parent_PointerLeft(object sender, PointerEventArgs e)
@@ -185,7 +185,7 @@ namespace Ryujinx.Ava
             }
         }
 
-        private unsafe void Renderer_ScreenCaptured(object sender, ScreenCaptureImageInfo e)
+        private void Renderer_ScreenCaptured(object sender, ScreenCaptureImageInfo e)
         {
             if (e.Data.Length > 0 && e.Height > 0 && e.Width > 0)
             {
@@ -320,7 +320,6 @@ namespace Ryujinx.Ava
             Device?.SetVolume(e.NewValue);
             Dispatcher.UIThread.Post(() =>
             {
-                var value = e.NewValue;
                 _parent.ViewModel.Volume = e.NewValue;
             });
         }
@@ -786,7 +785,7 @@ namespace Ryujinx.Ava
             }
         }
 
-        private unsafe void RenderLoop()
+        private void RenderLoop()
         {
             Dispatcher.UIThread.InvokeAsync(() =>
             {
@@ -933,13 +932,8 @@ namespace Ryujinx.Ava
             }
         }
 
-        private bool UpdateFrame()
+        private void UpdateFrame()
         {
-            if (!_isActive)
-            {
-                return false;
-            }
-
             if (_parent.IsActive)
             {
                 Dispatcher.UIThread.Post(() =>
@@ -1043,8 +1037,6 @@ namespace Ryujinx.Ava
             }
 
             Device.Hid.DebugPad.Update();
-
-            return true;
         }
 
         private KeyboardHotkeyState GetHotkeyState()

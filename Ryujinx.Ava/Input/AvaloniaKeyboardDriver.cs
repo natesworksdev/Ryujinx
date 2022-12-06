@@ -12,7 +12,7 @@ namespace Ryujinx.Ava.Input
 {
     internal class AvaloniaKeyboardDriver : IGamepadDriver
     {
-        private static readonly string[] _keyboardIdentifers = new string[1] { "0" };
+        private static readonly string[] _keyboardIdentifers = { "0" };
         private readonly Control _control;
         private readonly HashSet<AvaKey> _pressedKeys;
 
@@ -77,8 +77,6 @@ namespace Ryujinx.Ava.Input
 
         protected void OnKeyPress(object sender, KeyEventArgs args)
         {
-            AvaKey key = args.Key;
-
             _pressedKeys.Add(args.Key);
 
             KeyPressed?.Invoke(this, args);

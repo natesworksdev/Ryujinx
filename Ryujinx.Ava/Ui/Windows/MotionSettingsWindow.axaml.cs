@@ -51,7 +51,7 @@ namespace Ryujinx.Ava.Ui.Windows
                 CloseButtonText = LocaleManager.Instance["ControllerSettingsClose"],
                 Content = content
             };
-            contentDialog.PrimaryButtonClick += (sender, args) =>
+            contentDialog.PrimaryButtonClick += (_, _) =>
             {
                 var config = viewmodel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
                 config.Slot = content._viewmodel.Slot;

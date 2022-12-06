@@ -43,7 +43,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         private PlayerIndex _playerId;
         private int _controller;
-        private int _controllerNumber = 0;
+        private int _controllerNumber;
         private string _controllerImage;
         private int _device;
         private object _configuration;
@@ -344,25 +344,24 @@ namespace Ryujinx.Ava.Ui.ViewModels
             string id = GetCurrentGamepadId();
             var type = Devices[Device].Type;
 
-            if (type == DeviceType.None)
+            if (type != DeviceType.None)
             {
-                return;
-            }
-            else if (type == DeviceType.Keyboard)
-            {
-                if (_mainWindow.InputManager.KeyboardDriver is AvaloniaKeyboardDriver)
+                if (type == DeviceType.Keyboard)
                 {
-                    // NOTE: To get input in this window, we need to bind a custom keyboard driver instead of using the InputManager one as the main window isn't focused...
-                    SelectedGamepad = AvaloniaKeyboardDriver.GetGamepad(id);
+                    if (_mainWindow.InputManager.KeyboardDriver is AvaloniaKeyboardDriver)
+                    {
+                        // NOTE: To get input in this window, we need to bind a custom keyboard driver instead of using the InputManager one as the main window isn't focused...
+                        SelectedGamepad = AvaloniaKeyboardDriver.GetGamepad(id);
+                    }
+                    else
+                    {
+                        SelectedGamepad = _mainWindow.InputManager.KeyboardDriver.GetGamepad(id);
+                    }
                 }
                 else
                 {
-                    SelectedGamepad = _mainWindow.InputManager.KeyboardDriver.GetGamepad(id);
+                    SelectedGamepad = _mainWindow.InputManager.GamepadDriver.GetGamepad(id);
                 }
-            }
-            else
-            {
-                SelectedGamepad = _mainWindow.InputManager.GamepadDriver.GetGamepad(id);
             }
         }
 
@@ -545,7 +544,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                 config = new StandardKeyboardInputConfig
                 {
-                    Version = Ryujinx.Common.Configuration.Hid.InputConfig.CurrentVersion,
+                    Version = InputConfig.CurrentVersion,
                     Backend = InputBackendType.WindowKeyboard,
                     Id = id,
                     ControllerType = ControllerType.ProController,
@@ -600,7 +599,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                 config = new StandardControllerInputConfig
                 {
-                    Version = Ryujinx.Common.Configuration.Hid.InputConfig.CurrentVersion,
+                    Version = InputConfig.CurrentVersion,
                     Backend = InputBackendType.GamepadSDL2,
                     Id = id,
                     ControllerType = ControllerType.ProController,
@@ -751,8 +750,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
             if (ProfileName == LocaleManager.Instance["ControllerSettingsProfileDefault"])
             {
                 await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance["DialogProfileDefaultProfileOverwriteErrorMessage"]);
-
-                return;
             }
             else
             {

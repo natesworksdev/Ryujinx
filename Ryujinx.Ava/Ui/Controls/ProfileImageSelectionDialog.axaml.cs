@@ -25,7 +25,7 @@ namespace Ryujinx.Ava.Ui.Controls
         public ProfileImageSelectionDialog()
         {
             InitializeComponent();
-            AddHandler(Frame.NavigatedToEvent, (s, e) =>
+            AddHandler(Frame.NavigatedToEvent, (_, e) =>
             {
                 NavigatedTo(e);
             }, RoutingStrategies.Direct);

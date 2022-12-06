@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Ava.Ui.Controls
 {
-    public enum Glyph : int
+    public enum Glyph
     {
         List,
         Grid,

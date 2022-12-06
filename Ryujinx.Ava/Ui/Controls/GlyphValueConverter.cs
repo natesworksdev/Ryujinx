@@ -10,11 +10,11 @@ namespace Ryujinx.Ava.Ui.Controls
     {
         private string _key;
 
-        private static Dictionary<Glyph, string> _glyphs = new Dictionary<Glyph, string>
+        private static Dictionary<Glyph, string> _glyphs = new()
         {
-            { Glyph.List, char.ConvertFromUtf32((int)Symbol.List).ToString() },
-            { Glyph.Grid, char.ConvertFromUtf32((int)Symbol.ViewAll).ToString() },
-            { Glyph.Chip, char.ConvertFromUtf32(59748).ToString() }
+            { Glyph.List, char.ConvertFromUtf32((int)Symbol.List) },
+            { Glyph.Grid, char.ConvertFromUtf32((int)Symbol.ViewAll) },
+            { Glyph.Chip, char.ConvertFromUtf32(59748) }
         };
 
         public GlyphValueConverter(string key)

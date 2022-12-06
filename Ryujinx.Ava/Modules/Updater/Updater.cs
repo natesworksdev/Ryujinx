@@ -5,7 +5,6 @@ using ICSharpCode.SharpZipLib.GZip;
 using ICSharpCode.SharpZipLib.Tar;
 using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json.Linq;
-using Ryujinx.Ava;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Windows;
@@ -25,7 +24,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Ryujinx.Modules
+namespace Ryujinx.Ava.Modules.Updater
 {
     internal static class Updater
     {
@@ -254,7 +253,7 @@ namespace Ryujinx.Modules
 
             taskDialog.XamlRoot = parent;
 
-            taskDialog.Opened += (s, e) =>
+            taskDialog.Opened += (_, _) =>
             {
                 if (_buildSize >= 0)
                 {
@@ -376,8 +375,6 @@ namespace Ryujinx.Modules
                                 Logger.Warning?.Print(LogClass.Application, "Multi-Threaded update failed, falling back to single-threaded updater.");
 
                                 DoUpdateWithSingleThread(taskDialog, downloadUrl, updateFile);
-
-                                return;
                             }
                         }
                     };

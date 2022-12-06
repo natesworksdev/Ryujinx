@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Threading;
@@ -41,11 +40,10 @@ namespace Ryujinx.Ava.Ui.ViewModels
         private float _customResolutionScale;
         private int _resolutionScale;
         private int _graphicsBackendMultithreadingIndex;
-        private float _previousVolumeLevel;
         private float _volume;
         private bool _isVulkanAvailable = true;
-        private bool _directoryChanged = false;
-        private List<string> _gpuIds = new List<string>();
+        private bool _directoryChanged;
+        private List<string> _gpuIds = new();
         private KeyboardHotkeys _keyboardHotkeys;
         private int _graphicsBackendIndex;
 
@@ -189,7 +187,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             {
                 _volume = value;
 
-                ConfigurationState.Instance.System.AudioVolume.Value = (float)(_volume / 100);
+                ConfigurationState.Instance.System.AudioVolume.Value = _volume / 100;
 
                 OnPropertyChanged();
             }
@@ -249,10 +247,10 @@ namespace Ryujinx.Ava.Ui.ViewModels
             IsSDL2Enabled = SDL2HardwareDeviceDriver.IsSupported;
         }
 
-        private unsafe void LoadAvailableGpus()
+        private void LoadAvailableGpus()
         {
             _gpuIds = new List<string>();
-            List<string> names = new List<string>();
+            List<string> names = new();
             var devices = VulkanRenderer.GetPhysicalDevices();
 
             if (devices.Length == 0)
@@ -388,8 +386,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
             TimeOffset = dateTimeOffset.TimeOfDay;
 
             KeyboardHotkeys = config.Hid.Hotkeys.Value;
-
-            _previousVolumeLevel = Volume;
         }
 
         public void SaveSettings()
@@ -477,8 +473,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
             config.ToFileFormat().SaveConfig(Program.ConfigurationPath);
 
             MainWindow.UpdateGraphicsConfig();
-
-            _previousVolumeLevel = Volume;
 
             if (_owner is SettingsWindow owner)
             {

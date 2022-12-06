@@ -1,5 +1,4 @@
 using ARMeilleure.Translation.PTC;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -14,13 +13,13 @@ using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Input;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Windows;
+using Ryujinx.Ava.Modules.Updater;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
-using Ryujinx.Modules;
 using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
@@ -1374,33 +1373,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
         private void OpenSaveDirectory(in SaveDataFilter filter, ApplicationData data, ulong titleId)
         {
             ApplicationHelper.OpenSaveDir(in filter, titleId, data.ControlHolder, data.TitleName);
-        }
-
-        private async void ExtractLogo()
-        {
-            var selection = SelectedApplication;
-            if (selection != null)
-            {
-                await ApplicationHelper.ExtractSection(NcaSectionType.Logo, selection.Path);
-            }
-        }
-
-        private async void ExtractRomFs()
-        {
-            var selection = SelectedApplication;
-            if (selection != null)
-            {
-                await ApplicationHelper.ExtractSection(NcaSectionType.Data, selection.Path);
-            }
-        }
-
-        private async void ExtractExeFs()
-        {
-            var selection = SelectedApplication;
-            if (selection != null)
-            {
-                await ApplicationHelper.ExtractSection(NcaSectionType.Code, selection.Path);
-            }
         }
 
         public void CloseWindow()

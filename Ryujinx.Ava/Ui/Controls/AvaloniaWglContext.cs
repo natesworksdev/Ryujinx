@@ -8,7 +8,7 @@ namespace Ryujinx.Ava.Ui.Controls
     internal class AvaloniaWglContext : SPB.Platform.WGL.WGLOpenGLContext
     {
         public AvaloniaWglContext(IntPtr handle)
-            : base(FramebufferFormat.Default, 0, 0, 0, false, null)
+            : base(FramebufferFormat.Default, 0, 0, 0, false)
         {
             ContextHandle = handle;
         }
