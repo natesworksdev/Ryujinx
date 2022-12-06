@@ -18,7 +18,7 @@ namespace Ryujinx.Common
         }
 
         public static T DivRoundUp<T>(T value, T dividend)
-            where T: IBinaryInteger<T>
+            where T : IBinaryInteger<T>
         {
             return (value + (dividend - T.One)) / dividend;
         }
