@@ -11,6 +11,7 @@ using Ryujinx.Input;
 using Ryujinx.Input.HLE;
 using Ryujinx.SDL2.Common;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
@@ -26,13 +27,11 @@ namespace Ryujinx.Headless.SDL2
         private const SDL_WindowFlags DefaultFlags = SDL_WindowFlags.SDL_WINDOW_ALLOW_HIGHDPI | SDL_WindowFlags.SDL_WINDOW_RESIZABLE | SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS | SDL_WindowFlags.SDL_WINDOW_SHOWN;
         private const int TargetFps = 60;
 
-        private static Queue<Action> MainThreadActions = new Queue<Action>();
+        private static ConcurrentQueue<Action> MainThreadActions = new ConcurrentQueue<Action>();
+
         public static void QueueMainThreadAction(Action action)
         {
-            lock (MainThreadActions)
-            {
-                MainThreadActions.Enqueue(action);
-            }
+            MainThreadActions.Enqueue(action);
         }
 
         public NpadManager NpadManager { get; }
@@ -260,12 +259,9 @@ namespace Ryujinx.Headless.SDL2
 
         public void ProcessMainThreadQueue()
         {
-            lock (MainThreadActions)
+            while (MainThreadActions.TryDequeue(out Action action))
             {
-                while (MainThreadActions.TryDequeue(out Action action))
-                {
-                    action();
-                }
+                action();
             }
         }
 

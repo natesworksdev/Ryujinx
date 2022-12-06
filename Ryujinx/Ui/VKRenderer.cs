@@ -15,7 +15,7 @@ namespace Ryujinx.Ui
     public class VKRenderer : RendererWidgetBase
     {
         public NativeWindowBase NativeWindow { get; private set; }
-        private UpdateBoundsCallbackDelegate UpdateBoundsCallback;
+        private UpdateBoundsCallbackDelegate _updateBoundsCallback;
 
         public VKRenderer(InputManager inputManager, GraphicsDebugLevel glLogLevel) : base(inputManager, glLogLevel) { }
 
@@ -36,7 +36,7 @@ namespace Ryujinx.Ui
             }
             else if (OperatingSystem.IsMacOS())
             {
-                IntPtr metalLayer = MetalHelper.GetMetalLayer(Display, Window, out IntPtr nsView, out UpdateBoundsCallback);
+                IntPtr metalLayer = MetalHelper.GetMetalLayer(Display, Window, out IntPtr nsView, out _updateBoundsCallback);
 
                 return new SimpleMetalWindow(new NativeHandle(nsView), new NativeHandle(metalLayer));
             }
@@ -64,7 +64,7 @@ namespace Ryujinx.Ui
 
             bool result = base.OnConfigureEvent(evnt);
 
-            UpdateBoundsCallback?.Invoke(Window);
+            _updateBoundsCallback?.Invoke(Window);
 
             return result;
         }

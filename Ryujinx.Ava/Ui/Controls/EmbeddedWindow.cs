@@ -25,7 +25,7 @@ namespace Ryujinx.Ava.Ui.Controls
         protected IntPtr NsView { get; set; }
         protected IntPtr MetalLayer { get; set; }
 
-        private UpdateBoundsCallbackDelegate UpdateBoundsCallback;
+        private UpdateBoundsCallbackDelegate _updateBoundsCallback;
 
         public event EventHandler<IntPtr> WindowCreated;
         public event EventHandler<Size> SizeChanged;
@@ -61,7 +61,7 @@ namespace Ryujinx.Ava.Ui.Controls
         private void StateChanged(Rect rect)
         {
             SizeChanged?.Invoke(this, rect.Size);
-            UpdateBoundsCallback?.Invoke(rect);
+            _updateBoundsCallback?.Invoke(rect);
         }
 
         protected override IPlatformHandle CreateNativeControlCore(IPlatformHandle parent)
@@ -203,7 +203,7 @@ namespace Ryujinx.Ava.Ui.Controls
         [SupportedOSPlatform("macos")]
         IPlatformHandle CreateMacOs(IPlatformHandle parent)
         {
-            MetalLayer = MetalHelper.GetMetalLayer(out IntPtr nsView, out UpdateBoundsCallback);
+            MetalLayer = MetalHelper.GetMetalLayer(out IntPtr nsView, out _updateBoundsCallback);
 
             NsView = nsView;
 

@@ -37,7 +37,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public static string[] RequiredExtensions { get; } = new string[]
         {
-            KhrSwapchain.ExtensionName,
+            KhrSwapchain.ExtensionName
         };
 
         private static string[] _excludedMessages = new string[]
