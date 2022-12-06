@@ -283,7 +283,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             while (passthroughAttributes != 0)
             {
                 int bit = BitOperations.TrailingZeroCount(passthroughAttributes);
-                NextInputAttributesComponents |= new UInt128(0xf, 0) << (bit * 4);
+                NextInputAttributesComponents |= new UInt128(0, 0xf) << (bit * 4);
                 passthroughAttributes &= ~(1 << bit);
             }
 

@@ -1,36 +1,19 @@
+struct PTType
+{
+    uint blockIndices[1 << 14];
+    uvec2 pointers[1 << 28];
+};
+
 uvec2 Helper_TranslateAddress(uvec2 address)
 {
-    uvec4* buffer_regions = (uvec4*)packPtr(s_page_table.xy);
+    PTType* br = (PTType*)packPtr(s_page_table.xy);
 
-    uint64_t address64 = packUint2x32(address);
-    uint count = buffer_regions[0].x;
-    uint left = 0;
-    uint right = count;
+    uint l0 = (address.x >> 12) & 0x3fff;
+    uint l1 = ((address.x >> 26) & 0x3f) | ((address.y << 6) & 0x3fc0);
 
-    while (left != right)
-    {
-        uint middle = left + ((right - left) >> 1);
-        uint offset = middle * 2;
-        uvec4 guest_info = buffer_regions[1 + offset];
-        uvec4 host_info = buffer_regions[2 + offset];
+    uvec2 hostAddress = br->pointers[br->blockIndices[l1] + l0];
 
-        uint64_t start_address = packUint2x32(guest_info.xy);
-        uint64_t end_address = packUint2x32(guest_info.zw);
-        if (address64 >= start_address && address64 < end_address)
-        {
-            uint64_t host_address = packUint2x32(host_info.xy);
-            return unpackUint2x32((address64 - start_address) + host_address);
-        }
+    hostAddress.x += (address.x & 0xfff);
 
-        if (address64 < start_address)
-        {
-            right = middle;
-        }
-        else
-        {
-            left = middle + 1;
-        }
-    }
-
-    return uvec2(0, 0);
+    return hostAddress;
 }
