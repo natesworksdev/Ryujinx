@@ -101,9 +101,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 context.AddExtension("SPV_KHR_physical_storage_buffer");
             }
 
-            context.AddExtension("SPV_KHR_shader_ballot");
-            context.AddExtension("SPV_KHR_subgroup_vote");
-
             Declarations.DeclareAll(context, info);
 
             if ((info.HelperFunctionsMask & NeedsInvocationIdMask) != 0)
