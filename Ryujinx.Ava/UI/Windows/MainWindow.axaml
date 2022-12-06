@@ -338,7 +338,13 @@
                             DockPanel.Dock="Right"
                             KeyUp="SearchBox_OnKeyUp"
                             Text="{Binding SearchText}"
-                            Watermark="{locale:Locale MenuSearch}" />
+                            Watermark="{locale:Locale MenuSearch}">
+                            <TextBox.Styles>
+                                <Style Selector="ScrollContentPresenter#PART_ContentPresenter">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </TextBox.Styles>
+                        </TextBox>
                         <DropDownButton
                             Width="150"
                             HorizontalAlignment="Right"
