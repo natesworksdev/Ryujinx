@@ -1,6 +1,5 @@
 ﻿using Gtk;
 using Pango;
-using Ryujinx.Audio.Renderer.Utils;
 
 namespace Ryujinx.Ui.Windows
 {
