@@ -47,42 +47,32 @@ jobs:
         run: "mkdir release_output"
       - name: Publish Windows
         run: |
-          dotnet publish -c Release -r win10-x64 -o ./publish_windows/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded Ryujinx --self-contained true
-          dotnet publish -c Release -r win10-x64 -o ./publish_windows_sdl2_headless/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded Ryujinx.Headless.SDL2 --self-contained true
           dotnet publish -c Release -r win10-x64 -o ./publish_windows_ava/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded Ryujinx.Ava --self-contained true
+          dotnet publish -c Release -r win10-x64 -o ./publish_windows_sdl2_headless/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded Ryujinx.Headless.SDL2 --self-contained true
       - name: Packing Windows builds
         run: |
-          pushd publish_windows
-          7z a ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-win_x64.zip publish
+          pushd publish_windows_ava
+          7z a ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-win_x64.zip publish
           popd
 
           pushd publish_windows_sdl2_headless
           7z a ../release_output/sdl2-ryujinx-headless-${{ steps.version_info.outputs.build_version }}-win_x64.zip publish
           popd
-
-          pushd publish_windows_ava
-          7z a ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-win_x64.zip publish
-          popd
         shell: bash
 
       - name: Publish Linux
         run: |
-          dotnet publish -c Release -r linux-x64 -o ./publish_linux/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded Ryujinx --self-contained true
-          dotnet publish -c Release -r linux-x64 -o ./publish_linux_sdl2_headless/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded Ryujinx.Headless.SDL2 --self-contained true
           dotnet publish -c Release -r linux-x64 -o ./publish_linux_ava/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded Ryujinx.Ava --self-contained true
+          dotnet publish -c Release -r linux-x64 -o ./publish_linux_sdl2_headless/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded Ryujinx.Headless.SDL2 --self-contained true
 
       - name: Packing Linux builds
         run: |
-          pushd publish_linux
-          tar -czvf ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
+          pushd publish_linux_ava
+          tar -czvf ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
           popd
 
           pushd publish_linux_sdl2_headless
           tar -czvf ../release_output/sdl2-ryujinx-headless-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
-          popd
-
-          pushd publish_linux_ava
-          tar -czvf ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
           popd
         shell: bash
 
