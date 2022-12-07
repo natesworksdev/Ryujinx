@@ -92,7 +92,9 @@ namespace Ryujinx.Ui.App.Common
                 {
                     foreach (string file in content)
                     {
-                        yield return file;
+                        if (!File.GetAttributes(file).HasFlag(FileAttributes.Hidden)) {
+                            yield return file;
+                        }
                     }
                 }
 
@@ -160,13 +162,12 @@ namespace Ryujinx.Ui.App.Common
 
                         string extension = Path.GetExtension(app).ToLower();
 
-                        if (((extension == ".nsp") ||
+                        if ((extension == ".nsp")  ||
                             (extension == ".pfs0") ||
                             (extension == ".xci")  ||
                             (extension == ".nca")  ||
                             (extension == ".nro")  ||
-                            (extension == ".nso")) &&
-                            (Path.GetFileName(app).Substring(0, 2) != "._"))
+                            (extension == ".nso"))
                         {
                             applications.Add(app);
                             numApplicationsFound++;
