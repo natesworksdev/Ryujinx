@@ -160,12 +160,13 @@ namespace Ryujinx.Ui.App.Common
 
                         string extension = Path.GetExtension(app).ToLower();
 
-                        if ((extension == ".nsp")  ||
+                        if (((extension == ".nsp") ||
                             (extension == ".pfs0") ||
                             (extension == ".xci")  ||
                             (extension == ".nca")  ||
                             (extension == ".nro")  ||
-                            (extension == ".nso"))
+                            (extension == ".nso")) &&
+                            (Path.GetFileName(app).Substring(0, 2) != "._"))
                         {
                             applications.Add(app);
                             numApplicationsFound++;
