@@ -1,7 +1,9 @@
+using Ryujinx.Graphics.Shader.Decoders;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 using static Ryujinx.Graphics.Shader.Translation.GlobalMemory;
@@ -20,10 +22,11 @@ namespace Ryujinx.Graphics.Shader.Translation
             {
                 BasicBlock block = blocks[blkIndex];
 
-                for (LinkedListNode<INode> node = block.Operations.First; node != null; node = node.Next)
+                for (LinkedListNode<INode> node = block.Operations.First; node != null;)
                 {
                     if (node.Value is not Operation operation)
                     {
+                        node = node.Next;
                         continue;
                     }
 
@@ -42,10 +45,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                         }
                     }
 
-                    if (UsesGlobalMemory(operation.Inst))
-                    {
-                        node = RewriteGlobalAccess(node, config);
-                    }
+                    LinkedListNode<INode> nextNode = node.Next;
 
                     if (operation is TextureOperation texOp)
                     {
@@ -58,7 +58,15 @@ namespace Ryujinx.Graphics.Shader.Translation
                                 node = InsertSnormNormalization(node, config);
                             }
                         }
+
+                        nextNode = node.Next;
                     }
+                    else if (UsesGlobalMemory(operation.Inst))
+                    {
+                        nextNode = RewriteGlobalAccess(node, config)?.Next ?? nextNode;
+                    }
+
+                    node = nextNode;
                 }
             }
         }
@@ -71,7 +79,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             bool isStg16Or8 = operation.Inst == Instruction.StoreGlobal16 || operation.Inst == Instruction.StoreGlobal8;
             bool isWrite = isAtomic || operation.Inst == Instruction.StoreGlobal || isStg16Or8;
 
-            Operation storageOp;
+            Operation storageOp = null;
 
             Operand PrependOperation(Instruction inst, params Operand[] sources)
             {
@@ -82,23 +90,31 @@ namespace Ryujinx.Graphics.Shader.Translation
                 return local;
             }
 
+            Operand PrependExistingOperation(Operation operation)
+            {
+                Operand local = Local();
+
+                operation.Dest = local;
+                node.List.AddBefore(node, operation);
+
+                return local;
+            }
+
             Operand addrLow  = operation.GetSource(0);
             Operand addrHigh = operation.GetSource(1);
 
             Operand sbBaseAddrLow = Const(0);
             Operand sbSlot        = Const(0);
 
-            for (int slot = 0; slot < StorageMaxCount; slot++)
+            Operand alignMask = Const(-config.GpuAccessor.QueryHostStorageBufferOffsetAlignment());
+
+            Operand BindingRangeCheck(int cbOffset, out Operand baseAddrLow)
             {
-                config.SetUsedStorageBuffer(slot, isWrite);
-
-                int cbOffset = GetStorageCbOffset(config.Stage, slot);
-
-                Operand baseAddrLow  = Cbuf(0, cbOffset);
+                baseAddrLow = Cbuf(0, cbOffset);
                 Operand baseAddrHigh = Cbuf(0, cbOffset + 1);
-                Operand size         = Cbuf(0, cbOffset + 2);
+                Operand size = Cbuf(0, cbOffset + 2);
 
-                Operand offset = PrependOperation(Instruction.Subtract,       addrLow, baseAddrLow);
+                Operand offset = PrependOperation(Instruction.Subtract, addrLow, baseAddrLow);
                 Operand borrow = PrependOperation(Instruction.CompareLessU32, addrLow, baseAddrLow);
 
                 Operand inRangeLow = PrependOperation(Instruction.CompareLessU32, offset, size);
@@ -107,55 +123,115 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                 Operand inRangeHigh = PrependOperation(Instruction.CompareEqual, addrHighBorrowed, baseAddrHigh);
 
-                Operand inRange = PrependOperation(Instruction.BitwiseAnd, inRangeLow, inRangeHigh);
+                return PrependOperation(Instruction.BitwiseAnd, inRangeLow, inRangeHigh);
+            }
+
+            int sbUseMask = config.AccessibleStorageBuffersMask;
+
+            while (sbUseMask != 0)
+            {
+                int slot = BitOperations.TrailingZeroCount(sbUseMask);
+
+                sbUseMask &= ~(1 << slot);
+
+                config.SetUsedStorageBuffer(slot, isWrite);
+
+                int cbOffset = GetStorageCbOffset(config.Stage, slot);
+
+                Operand inRange = BindingRangeCheck(cbOffset, out Operand baseAddrLow);
 
                 sbBaseAddrLow = PrependOperation(Instruction.ConditionalSelect, inRange, baseAddrLow, sbBaseAddrLow);
                 sbSlot        = PrependOperation(Instruction.ConditionalSelect, inRange, Const(slot), sbSlot);
             }
 
-            Operand alignMask = Const(-config.GpuAccessor.QueryHostStorageBufferOffsetAlignment());
-
-            Operand baseAddrTrunc = PrependOperation(Instruction.BitwiseAnd, sbBaseAddrLow, alignMask);
-            Operand byteOffset    = PrependOperation(Instruction.Subtract, addrLow, baseAddrTrunc);
-
-            Operand[] sources = new Operand[operation.SourcesCount];
-
-            sources[0] = sbSlot;
-
-            if (isStg16Or8)
+            if (config.AccessibleStorageBuffersMask != 0)
             {
-                sources[1] = byteOffset;
-            }
-            else
-            {
-                sources[1] = PrependOperation(Instruction.ShiftRightU32, byteOffset, Const(2));
-            }
+                Operand baseAddrTrunc = PrependOperation(Instruction.BitwiseAnd, sbBaseAddrLow, alignMask);
+                Operand byteOffset    = PrependOperation(Instruction.Subtract, addrLow, baseAddrTrunc);
 
-            for (int index = 2; index < operation.SourcesCount; index++)
-            {
-                sources[index] = operation.GetSource(index);
-            }
+                Operand[] sources = new Operand[operation.SourcesCount];
 
-            if (isAtomic)
-            {
-                Instruction inst = (operation.Inst & ~Instruction.MrMask) | Instruction.MrStorage;
+                sources[0] = sbSlot;
 
-                storageOp = new Operation(inst, operation.Dest, sources);
-            }
-            else if (operation.Inst == Instruction.LoadGlobal)
-            {
-                storageOp = new Operation(Instruction.LoadStorage, operation.Dest, sources);
-            }
-            else
-            {
-                Instruction storeInst = operation.Inst switch
+                if (isStg16Or8)
                 {
-                    Instruction.StoreGlobal16 => Instruction.StoreStorage16,
-                    Instruction.StoreGlobal8 => Instruction.StoreStorage8,
-                    _ => Instruction.StoreStorage
-                };
+                    sources[1] = byteOffset;
+                }
+                else
+                {
+                    sources[1] = PrependOperation(Instruction.ShiftRightU32, byteOffset, Const(2));
+                }
 
-                storageOp = new Operation(storeInst, null, sources);
+                for (int index = 2; index < operation.SourcesCount; index++)
+                {
+                    sources[index] = operation.GetSource(index);
+                }
+
+                if (isAtomic)
+                {
+                    Instruction inst = (operation.Inst & ~Instruction.MrMask) | Instruction.MrStorage;
+
+                    storageOp = new Operation(inst, operation.Dest, sources);
+                }
+                else if (operation.Inst == Instruction.LoadGlobal)
+                {
+                    storageOp = new Operation(Instruction.LoadStorage, operation.Dest, sources);
+                }
+                else
+                {
+                    Instruction storeInst = operation.Inst switch
+                    {
+                        Instruction.StoreGlobal16 => Instruction.StoreStorage16,
+                        Instruction.StoreGlobal8 => Instruction.StoreStorage8,
+                        _ => Instruction.StoreStorage
+                    };
+
+                    storageOp = new Operation(storeInst, null, sources);
+                }
+            }
+            else if (operation.Dest != null)
+            {
+                storageOp = new Operation(Instruction.Copy, operation.Dest, Const(0));
+            }
+
+            if (operation.Inst == Instruction.LoadGlobal)
+            {
+                int cbeUseMask = config.AccessibleConstantBuffersMask;
+
+                while (cbeUseMask != 0)
+                {
+                    int slot = BitOperations.TrailingZeroCount(cbeUseMask);
+                    int cbSlot = UbeFirstCbuf + slot;
+
+                    cbeUseMask &= ~(1 << slot);
+
+                    config.SetUsedConstantBuffer(cbSlot);
+
+                    Operand previousResult = PrependExistingOperation(storageOp);
+
+                    int cbOffset = GetConstantUbeOffset(slot);
+
+                    Operand inRange = BindingRangeCheck(cbOffset, out Operand baseAddrLow);
+
+                    Operand baseAddrTruncConst = PrependOperation(Instruction.BitwiseAnd, baseAddrLow, alignMask);
+                    Operand byteOffsetConst = PrependOperation(Instruction.Subtract, addrLow, baseAddrTruncConst);
+
+                    Operand cbIndex = PrependOperation(Instruction.ShiftRightU32, byteOffsetConst, Const(2));
+
+                    Operand[] sourcesCb = new Operand[operation.SourcesCount];
+
+                    sourcesCb[0] = Const(cbSlot);
+                    sourcesCb[1] = cbIndex;
+
+                    for (int index = 2; index < operation.SourcesCount; index++)
+                    {
+                        sourcesCb[index] = operation.GetSource(index);
+                    }
+
+                    Operand ldcResult = PrependOperation(Instruction.LoadConstant, sourcesCb);
+
+                    storageOp = new Operation(Instruction.ConditionalSelect, operation.Dest, inRange, ldcResult, previousResult);
+                }
             }
 
             for (int index = 0; index < operation.SourcesCount; index++)
@@ -164,10 +240,18 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
 
             LinkedListNode<INode> oldNode = node;
+            LinkedList<INode> oldNodeList = oldNode.List;
 
-            node = node.List.AddBefore(node, storageOp);
+            if (storageOp != null)
+            {
+                node = node.List.AddBefore(node, storageOp);
+            }
+            else
+            {
+                node = null;
+            }
 
-            node.List.Remove(oldNode);
+            oldNodeList.Remove(oldNode);
 
             return node;
         }
