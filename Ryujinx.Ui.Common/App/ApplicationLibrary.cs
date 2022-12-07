@@ -92,7 +92,8 @@ namespace Ryujinx.Ui.App.Common
                 {
                     foreach (string file in content)
                     {
-                        if (!File.GetAttributes(file).HasFlag(FileAttributes.Hidden)) {
+                        if (!File.GetAttributes(file).HasFlag(FileAttributes.Hidden))
+                        {
                             yield return file;
                         }
                     }
