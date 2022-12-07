@@ -151,8 +151,7 @@ namespace Ryujinx.Ava.UI.Controls
                 _checkLength = length => _inputMin <= length && length <= _inputMax;
             }
 
-            // TODO: TextInputEventArgs() made internal in Avalonia #8860, alternative needed
-            // Message_TextInput(this, new TextInputEventArgs());
+            Message_TextInput(this, Activator.CreateInstance(typeof(TextInputEventArgs), true) as TextInputEventArgs);
         }
 
         private void Message_TextInput(object sender, TextInputEventArgs e)
