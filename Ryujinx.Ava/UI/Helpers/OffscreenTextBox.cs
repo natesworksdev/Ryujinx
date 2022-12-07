@@ -1,6 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using System;
+using System.Reflection;
 
 namespace Ryujinx.Ava.UI.Helpers
 {
@@ -28,14 +30,14 @@ namespace Ryujinx.Ava.UI.Helpers
 
         public void SendText(string text)
         {
-            // TODO: TextInputEventArgs() made internal in Avalonia #8860, alternative needed
-            /*OnTextInput(new TextInputEventArgs()
+            var args = Activator.CreateInstance(typeof(TextInputEventArgs), BindingFlags.NonPublic | BindingFlags.Instance, null, new object[]
             {
-                Text = text,
-                Device = KeyboardDevice.Instance,
-                Source = this,
-                RoutedEvent = TextInputEvent
-            });*/
+                text,
+                KeyboardDevice.Instance,
+                this,
+                TextInputEvent
+            }, null) as TextInputEventArgs;
+            OnTextInput(args);
         }
     }
 }
