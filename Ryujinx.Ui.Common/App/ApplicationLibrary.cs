@@ -77,43 +77,43 @@ namespace Ryujinx.Ui.App.Common
             while (stack.Count > 0)
             {
                 string   dir     = stack.Pop();
-                string[] content = Array.Empty<string>();
+                IEnumerable<string> content = Array.Empty<string>();
+                IEnumerator<string> contentEnum = content.GetEnumerator();
 
                 try
                 {
-                    content = Directory.GetFiles(dir, "*");
+                    content = Directory.EnumerateFiles(dir);
+                    contentEnum = content.GetEnumerator();
                 }
                 catch (UnauthorizedAccessException)
                 {
                     Logger.Warning?.Print(LogClass.Application, $"Failed to get access to directory: \"{dir}\"");
                 }
 
-                if (content.Length > 0)
+                while (contentEnum.MoveNext())
                 {
-                    foreach (string file in content)
+                    string file = contentEnum.Current;
+
+                    if (!File.GetAttributes(file).HasFlag(FileAttributes.Hidden))
                     {
-                        if (!File.GetAttributes(file).HasFlag(FileAttributes.Hidden))
-                        {
-                            yield return file;
-                        }
+                         yield return file;
                     }
                 }
 
                 try
                 {
-                    content = Directory.GetDirectories(dir);
+                    content = Directory.EnumerateDirectories(dir);
+                    contentEnum = content.GetEnumerator();
                 }
                 catch (UnauthorizedAccessException)
                 {
                     Logger.Warning?.Print(LogClass.Application, $"Failed to get access to directory: \"{dir}\"");
                 }
 
-                if (content.Length > 0)
+                while (contentEnum.MoveNext())
                 {
-                    foreach (string subdir in content)
-                    {
-                        stack.Push(subdir);
-                    }
+                    string subdir = contentEnum.Current;
+                    stack.Push(subdir);
                 }
             }
         }
