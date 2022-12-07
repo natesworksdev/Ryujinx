@@ -68,56 +68,6 @@ namespace Ryujinx.Ui.App.Common
             _cancellationToken?.Cancel();
         }
 
-        public IEnumerable<string> GetFilesInDirectory(string directory)
-        {
-            Stack<string> stack = new Stack<string>();
-
-            stack.Push(directory);
-
-            while (stack.Count > 0)
-            {
-                string   dir     = stack.Pop();
-                IEnumerable<string> content = Array.Empty<string>();
-                IEnumerator<string> contentEnum = content.GetEnumerator();
-
-                try
-                {
-                    content = Directory.EnumerateFiles(dir);
-                    contentEnum = content.GetEnumerator();
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    Logger.Warning?.Print(LogClass.Application, $"Failed to get access to directory: \"{dir}\"");
-                }
-
-                while (contentEnum.MoveNext())
-                {
-                    string file = contentEnum.Current;
-
-                    if (!File.GetAttributes(file).HasFlag(FileAttributes.Hidden))
-                    {
-                         yield return file;
-                    }
-                }
-
-                try
-                {
-                    content = Directory.EnumerateDirectories(dir);
-                    contentEnum = content.GetEnumerator();
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    Logger.Warning?.Print(LogClass.Application, $"Failed to get access to directory: \"{dir}\"");
-                }
-
-                while (contentEnum.MoveNext())
-                {
-                    string subdir = contentEnum.Current;
-                    stack.Push(subdir);
-                }
-            }
-        }
-
         public void ReadControlData(IFileSystem controlFs, Span<byte> outProperty)
         {
             using var controlFile = new UniqueRef<IFile>();
@@ -154,7 +104,7 @@ namespace Ryujinx.Ui.App.Common
                         continue;
                     }
 
-                    foreach (string app in GetFilesInDirectory(appDir))
+                    foreach (string app in Directory.EnumerateFiles(appDir, "*", SearchOption.AllDirectories))
                     {
                         if (_cancellationToken.Token.IsCancellationRequested)
                         {
@@ -163,7 +113,8 @@ namespace Ryujinx.Ui.App.Common
 
                         string extension = Path.GetExtension(app).ToLower();
 
-                        if (extension is ".nsp" or ".pfs0" or ".xci" or ".nca" or ".nro" or ".nso")
+                        if (!File.GetAttributes(app).HasFlag(FileAttributes.Hidden) &&
+                            extension is ".nsp" or ".pfs0" or ".xci" or ".nca" or ".nro" or ".nso")
                         {
                             applications.Add(app);
                             numApplicationsFound++;
