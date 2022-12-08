@@ -151,7 +151,7 @@ namespace Ryujinx.Ava.UI.Windows
             }
             else
             {
-                var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
                 {
                     AllowMultiple = false
                 });
