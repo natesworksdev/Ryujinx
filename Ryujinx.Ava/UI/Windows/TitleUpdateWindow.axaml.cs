@@ -199,7 +199,7 @@ namespace Ryujinx.Ava.UI.Windows
                 {
                     new("NSP")
                     {
-                        Patterns = new[] { "*.txt" }
+                        Patterns = new[] { "*.nsp" }
                     }
                 }
             });
