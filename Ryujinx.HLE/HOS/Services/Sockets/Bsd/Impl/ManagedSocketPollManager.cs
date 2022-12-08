@@ -1,8 +1,9 @@
 ﻿using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Services.Sockets.Bsd.Types;
 using System.Collections.Generic;
 using System.Net.Sockets;
 
-namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
+namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
 {
     class ManagedSocketPollManager : IPollManager
     {
