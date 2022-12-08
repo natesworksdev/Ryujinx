@@ -4,6 +4,7 @@ using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using FluentAvalonia.Core;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
@@ -150,12 +151,18 @@ namespace Ryujinx.Ava.UI.Windows
             }
             else
             {
-                path = await new OpenFolderDialog().ShowAsync(this);
-
-                if (!string.IsNullOrWhiteSpace(path))
+                var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
                 {
-                    ViewModel.GameDirectories.Add(path);
-                    ViewModel.DirectoryChanged = true;
+                    AllowMultiple = false
+                });
+
+                if (result.Count > 0)
+                {
+                    if (result[0].TryGetUri(out Uri uri))
+                    {
+                        ViewModel.GameDirectories.Add(uri.LocalPath);
+                        ViewModel.DirectoryChanged = true;
+                    }
                 }
             }
         }
