@@ -44,6 +44,24 @@
 	<array>
 		<dict>
 			<key>UTTypeDescription</key>
+			<string>Extensible Application Markup Language</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+				<string>public.content</string>
+			</array>
+			<key>UTTypeIdentifier</key>
+			<string>com.ryujinx.Ryujinx-xaml</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>xaml</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeDescription</key>
 			<string>Nintendo Submission Package</string>
 			<key>UTTypeConformsTo</key>
 			<array>

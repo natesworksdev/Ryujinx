@@ -313,8 +313,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                     new(LocaleManager.Instance["SettingsXamlThemeFile"])
                     {
                         Patterns = new[] { "*.xaml" },
-                        AppleUniformTypeIdentifiers = new[] { "public.xml" },
-                        MimeTypes = new[] { "application/xml" }
+                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.Ryujinx-xaml" },
+                        MimeTypes = new[] { "application/xaml+xml" }
                     }
                 }
             });
