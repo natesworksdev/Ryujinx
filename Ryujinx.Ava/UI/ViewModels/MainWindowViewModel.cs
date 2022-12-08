@@ -1,8 +1,8 @@
 using ARMeilleure.Translation.PTC;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using DynamicData;
 using DynamicData.Binding;
@@ -833,52 +833,42 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async void OpenFile()
         {
-            OpenFileDialog dialog = new()
+            var result = await _owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                Title = LocaleManager.Instance["OpenFileDialogTitle"]
-            };
-
-            dialog.Filters.Add(new FileDialogFilter
-            {
-                Name = LocaleManager.Instance["AllSupportedFormats"],
-                Extensions =
+                Title = LocaleManager.Instance["OpenFileDialogTitle"],
+                AllowMultiple = false,
+                FileTypeFilter = new List<FilePickerFileType>
                 {
-                    "nsp",
-                    "pfs0",
-                    "xci",
-                    "nca",
-                    "nro",
-                    "nso"
+                    new(LocaleManager.Instance["AllSupportedFormats"])
+                    {
+                        Patterns = new [] { "*.nsp", "*.pfs0", "*.xci", "*.nca", "*.nro", "*.nso"}
+                    }
                 }
             });
 
-            dialog.Filters.Add(new FileDialogFilter { Name = "NSP",  Extensions = { "nsp" } });
-            dialog.Filters.Add(new FileDialogFilter { Name = "PFS0", Extensions = { "pfs0" } });
-            dialog.Filters.Add(new FileDialogFilter { Name = "XCI",  Extensions = { "xci" } });
-            dialog.Filters.Add(new FileDialogFilter { Name = "NCA",  Extensions = { "nca" } });
-            dialog.Filters.Add(new FileDialogFilter { Name = "NRO",  Extensions = { "nro" } });
-            dialog.Filters.Add(new FileDialogFilter { Name = "NSO",  Extensions = { "nso" } });
-
-            string[] files = await dialog.ShowAsync(_owner);
-
-            if (files != null && files.Length > 0)
+            if (result.Count > 0)
             {
-                _owner.LoadApplication(files[0]);
+                if (result[0].TryGetUri(out Uri uri))
+                {
+                    _owner.LoadApplication(uri.LocalPath);
+                }
             }
         }
 
         public async void OpenFolder()
         {
-            OpenFolderDialog dialog = new()
+            var result = await _owner.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
-                Title = LocaleManager.Instance["OpenFolderDialogTitle"]
-            };
+                Title = LocaleManager.Instance["OpenFolderDialogTitle"],
+                AllowMultiple = false
+            });
 
-            string folder = await dialog.ShowAsync(_owner);
-
-            if (!string.IsNullOrWhiteSpace(folder) && Directory.Exists(folder))
+            if (result.Count > 0)
             {
-                _owner.LoadApplication(folder);
+                if (result[0].TryGetUri(out Uri uri))
+                {
+                    _owner.LoadApplication(uri.LocalPath);
+                }
             }
         }
 
@@ -1512,28 +1502,40 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async void InstallFirmwareFromFile()
         {
-            OpenFileDialog dialog = new() { AllowMultiple = false };
-            dialog.Filters.Add(new FileDialogFilter { Name = LocaleManager.Instance["FileDialogAllTypes"], Extensions = { "xci", "zip" } });
-            dialog.Filters.Add(new FileDialogFilter { Name = "XCI",                                        Extensions = { "xci" } });
-            dialog.Filters.Add(new FileDialogFilter { Name = "ZIP",                                        Extensions = { "zip" } });
-
-            string[] file = await dialog.ShowAsync(_owner);
-
-            if (file != null && file.Length > 0)
+            var result = await _owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                await HandleFirmwareInstallation(file[0]);
+                AllowMultiple = false,
+                FileTypeFilter = new List<FilePickerFileType>
+                {
+                    new(LocaleManager.Instance["FileDialogAllTypes"])
+                    {
+                        Patterns = new[] { "*.xci", "*.zip" }
+                    }
+                }
+            });
+
+            if (result.Count > 0)
+            {
+                if (result[0].TryGetUri(out Uri uri))
+                {
+                    await HandleFirmwareInstallation(uri.LocalPath);
+                }
             }
         }
 
         public async void InstallFirmwareFromFolder()
         {
-            OpenFolderDialog dialog = new();
-
-            string folder = await dialog.ShowAsync(_owner);
-
-            if (!string.IsNullOrWhiteSpace(folder))
+            var result = await _owner.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
-                await HandleFirmwareInstallation(folder);
+                AllowMultiple = false
+            });
+
+            if (result.Count > 0)
+            {
+                if (result[0].TryGetUri(out Uri uri))
+                {
+                    await HandleFirmwareInstallation(uri.LocalPath);
+                }
             }
         }
     }
