@@ -13,8 +13,6 @@ body:
     attributes:
       label: smaller details
       description: These may include specific methods of implementation etc.
-    validations:
-      required: true
   - type: textarea
     id: request
     attributes:
