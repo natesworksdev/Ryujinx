@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Navigation;
@@ -9,6 +10,8 @@ using Ryujinx.Ava.UI.Windows;
 using Ryujinx.HLE.FileSystem;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using Image = SixLabors.ImageSharp.Image;
 
@@ -52,30 +55,26 @@ namespace Ryujinx.Ava.UI.Controls
 
         private async void Import_OnClick(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog dialog = new();
-            dialog.Filters.Add(new FileDialogFilter
+            var window = this.GetVisualRoot() as Window;
+            var result = await window.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                Name = LocaleManager.Instance[LocaleKeys.AllSupportedFormats],
-                Extensions = { "jpg", "jpeg", "png", "bmp" }
-            });
-            dialog.Filters.Add(new FileDialogFilter { Name = "JPEG", Extensions = { "jpg", "jpeg" } });
-            dialog.Filters.Add(new FileDialogFilter { Name = "PNG", Extensions = { "png" } });
-            dialog.Filters.Add(new FileDialogFilter { Name = "BMP", Extensions = { "bmp" } });
-
-            dialog.AllowMultiple = false;
-
-            string[] image = await dialog.ShowAsync(((TopLevel)_parent.GetVisualRoot()) as Window);
-
-            if (image != null)
-            {
-                if (image.Length > 0)
+                AllowMultiple = false,
+                FileTypeFilter = new List<FilePickerFileType>
                 {
-                    string imageFile = image[0];
-
-                    _profile.Image = ProcessProfileImage(File.ReadAllBytes(imageFile));
+                    new(LocaleManager.Instance["AllSupportedFormats"])
+                    {
+                        Patterns = new[] { "*.jpg", "*.jpeg", "*.png", "*.bmp" }
+                    }
                 }
+            });
 
-                _parent.GoBack();
+            if (result.Count > 0)
+            {
+                if (result[0].TryGetUri(out Uri uri))
+                {
+                    _profile.Image = ProcessProfileImage(File.ReadAllBytes(uri.LocalPath));
+                    _parent.GoBack();
+                }
             }
         }
 
