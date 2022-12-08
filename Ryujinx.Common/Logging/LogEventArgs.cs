@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 
 namespace Ryujinx.Common.Logging
 {
@@ -9,23 +10,16 @@ namespace Ryujinx.Common.Logging
         public readonly string   ThreadName;
 
         public readonly string Message;
-        public readonly object Data;
+        public readonly string Data;
 
-        public LogEventArgs(LogLevel level, TimeSpan time, string threadName, string message)
+        [JsonConstructor]
+        public LogEventArgs(LogLevel level, TimeSpan time, string threadName, string message, object data = null)
         {
             Level      = level;
             Time       = time;
             ThreadName = threadName;
             Message    = message;
-        }
-
-        public LogEventArgs(LogLevel level, TimeSpan time, string threadName, string message, object data)
-        {
-            Level      = level;
-            Time       = time;
-            ThreadName = threadName;
-            Message    = message;
-            Data       = data;
+            Data       = data?.ToString();
         }
     }
 }
