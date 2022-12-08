@@ -29,39 +29,6 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             _isPrivileged = isPrivileged;
         }
 
-        private void BuildMask(List<Socket> sockets, Span<byte> mask)
-        {
-            foreach (Socket socket in sockets)
-            {
-                int fd = _context.RetrieveFileDescriptor(socket);
-
-                mask[fd >> 3] |= (byte)(1 << (fd & 7));
-            }
-        }
-
-        private List<Socket> FillFromFdMask(ReadOnlySpan<byte> mask)
-        {
-            List<Socket> sockets = new();
-
-            for (int i = 0; i < mask.Length; i++)
-            {
-                byte current = mask[i];
-
-                while (current != 0)
-                {
-                    int bit = BitOperations.TrailingZeroCount(current);
-                    current &= (byte)~(1 << bit);
-                    int fd = i * 8 + bit;
-
-                    ISocket socket = _context.RetrieveSocket(fd);
-
-                    sockets.Add((socket as ManagedSocket)!.Socket);
-                }
-            }
-
-            return sockets;
-        }
-
         private ResultCode WriteBsdResult(ServiceCtx context, int result, LinuxError errorCode = LinuxError.SUCCESS)
         {
             if (errorCode != LinuxError.SUCCESS)
@@ -251,28 +218,105 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             (ulong writeFdsOutBufferPosition, ulong writeFdsOutBufferSize) = context.Request.GetBufferType0x22(1);
             (ulong errorFdsOutBufferPosition, ulong errorFdsOutBufferSize) = context.Request.GetBufferType0x22(2);
 
-            List<Socket> readSockets  = FillFromFdMask(context.Memory.GetSpan(readFdsInBufferPosition, (int)readFdsInBufferSize));
-            List<Socket> writeSockets = FillFromFdMask(context.Memory.GetSpan(writeFdsInBufferPosition, (int)writeFdsInBufferSize));
-            List<Socket> errorSockets = FillFromFdMask(context.Memory.GetSpan(errorFdsInBufferPosition, (int)errorFdsInBufferSize));
+            List<IFileDescriptor> readFds  = _context.RetrieveFileDescriptorsFromMask(context.Memory.GetSpan(readFdsInBufferPosition, (int)readFdsInBufferSize));
+            List<IFileDescriptor> writeFds = _context.RetrieveFileDescriptorsFromMask(context.Memory.GetSpan(writeFdsInBufferPosition, (int)writeFdsInBufferSize));
+            List<IFileDescriptor> errorFds = _context.RetrieveFileDescriptorsFromMask(context.Memory.GetSpan(errorFdsInBufferPosition, (int)errorFdsInBufferSize));
 
-            if (readSockets.Count == 0 && writeSockets.Count == 0 && errorSockets.Count == 0)
+            if (fdsCount == 0)
             {
                 WriteBsdResult(context, 0);
 
                 return ResultCode.Success;
             }
 
-            System.Net.Sockets.Socket.Select(readSockets, writeSockets, errorSockets, timeout);
+            PollEvent[] events = new PollEvent[fdsCount];
+
+            int index = 0;
+
+            foreach (IFileDescriptor fd in readFds)
+            {
+                events[index] = new PollEvent(new PollEventData { InputEvents = PollEventTypeMask.Input }, fd);
+
+                index++;
+            }
+
+            foreach (IFileDescriptor fd in writeFds)
+            {
+                events[index] = new PollEvent(new PollEventData { InputEvents = PollEventTypeMask.Output }, fd);
+
+                index++;
+            }
+
+            foreach (IFileDescriptor fd in errorFds)
+            {
+                events[index] = new PollEvent(new PollEventData { InputEvents = PollEventTypeMask.Error }, fd);
+
+                index++;
+            }
+
+            List<PollEvent>[] eventsByPollManager = new List<PollEvent>[_pollManagers.Count];
+
+            for (int i = 0; i < eventsByPollManager.Length; i++)
+            {
+                eventsByPollManager[i] = new List<PollEvent>();
+
+                foreach (PollEvent evnt in events)
+                {
+                    if (_pollManagers[i].IsCompatible(evnt))
+                    {
+                        eventsByPollManager[i].Add(evnt);
+                    }
+                }
+            }
+
+            int updatedCount = 0;
+
+            for (int i = 0; i < _pollManagers.Count; i++)
+            {
+                if (eventsByPollManager[i].Count > 0)
+                {
+                    _pollManagers[i].Select(eventsByPollManager[i], timeout, out int updatedPollCount);
+                    updatedCount += updatedPollCount;
+                }
+            }
+
+            readFds.Clear();
+            writeFds.Clear();
+            errorFds.Clear();
+
+            foreach (PollEvent pollEvent in events)
+            {
+                for (int i = 0; i < _pollManagers.Count; i++)
+                {
+                    if (eventsByPollManager[i].Contains(pollEvent))
+                    {
+                        if (pollEvent.Data.OutputEvents.HasFlag(PollEventTypeMask.Input))
+                        {
+                            readFds.Add(pollEvent.FileDescriptor);
+                        }
+
+                        if (pollEvent.Data.OutputEvents.HasFlag(PollEventTypeMask.Output))
+                        {
+                            writeFds.Add(pollEvent.FileDescriptor);
+                        }
+
+                        if (pollEvent.Data.OutputEvents.HasFlag(PollEventTypeMask.Error))
+                        {
+                            errorFds.Add(pollEvent.FileDescriptor);
+                        }
+                    }
+                }
+            }
 
             using var readFdsOut  = context.Memory.GetWritableRegion(readFdsOutBufferPosition, (int)readFdsOutBufferSize);
             using var writeFdsOut = context.Memory.GetWritableRegion(writeFdsOutBufferPosition, (int)writeFdsOutBufferSize);
             using var errorFdsOut = context.Memory.GetWritableRegion(errorFdsOutBufferPosition, (int)errorFdsOutBufferSize);
 
-            BuildMask(readSockets, readFdsOut.Memory.Span);
-            BuildMask(writeSockets, writeFdsOut.Memory.Span);
-            BuildMask(errorSockets, errorFdsOut.Memory.Span);
+            _context.BuildMask(readFds, readFdsOut.Memory.Span);
+            _context.BuildMask(writeFds, writeFdsOut.Memory.Span);
+            _context.BuildMask(errorFds, errorFdsOut.Memory.Span);
 
-            WriteBsdResult(context, readSockets.Count + writeSockets.Count + errorSockets.Count);
+            WriteBsdResult(context, updatedCount);
 
             return ResultCode.Success;
         }
@@ -385,14 +429,14 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                         break;
                     }
 
-                    // If we are here, that mean nothing was availaible, sleep for 50ms
+                    // If we are here, that mean nothing was available, sleep for 50ms
                     context.Device.System.KernelContext.Syscall.SleepThread(50 * 1000000);
                 }
                 while (PerformanceCounter.ElapsedMilliseconds < budgetLeftMilliseconds);
             }
             else if (timeout == -1)
             {
-                // FIXME: If we get a timeout of -1 and there is no fds to wait on, this should kill the KProces. (need to check that with re)
+                // FIXME: If we get a timeout of -1 and there is no fds to wait on, this should kill the KProcess. (need to check that with re)
                 throw new InvalidOperationException();
             }
             else

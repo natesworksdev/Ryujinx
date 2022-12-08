@@ -109,5 +109,13 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
             return LinuxError.SUCCESS;
         }
+
+        public LinuxError Select(List<PollEvent> events, int timeout, out int updatedCount)
+        {
+            // TODO: Implement Select for event file descriptors
+            updatedCount = 0;
+
+            return LinuxError.EOPNOTSUPP;
+        }
     }
 }

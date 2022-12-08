@@ -117,5 +117,60 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
             return LinuxError.SUCCESS;
         }
+
+        public LinuxError Select(List<PollEvent> events, int timeout, out int updatedCount)
+        {
+            List<Socket> readEvents = new();
+            List<Socket> writeEvents = new();
+            List<Socket> errorEvents = new();
+
+            updatedCount = 0;
+
+            foreach (PollEvent pollEvent in events)
+            {
+                ManagedSocket socket = (ManagedSocket)pollEvent.FileDescriptor;
+
+                if (pollEvent.Data.InputEvents.HasFlag(PollEventTypeMask.Input))
+                {
+                    readEvents.Add(socket.Socket);
+                }
+
+                if (pollEvent.Data.InputEvents.HasFlag(PollEventTypeMask.Output))
+                {
+                    writeEvents.Add(socket.Socket);
+                }
+
+                if (pollEvent.Data.InputEvents.HasFlag(PollEventTypeMask.Error))
+                {
+                    errorEvents.Add(socket.Socket);
+                }
+            }
+
+            Socket.Select(readEvents, writeEvents, errorEvents, timeout);
+
+            updatedCount = readEvents.Count + writeEvents.Count + errorEvents.Count;
+
+            foreach (PollEvent pollEvent in events)
+            {
+                ManagedSocket socket = (ManagedSocket)pollEvent.FileDescriptor;
+
+                if (readEvents.Contains(socket.Socket))
+                {
+                    pollEvent.Data.OutputEvents |= PollEventTypeMask.Input;
+                }
+
+                if (writeEvents.Contains(socket.Socket))
+                {
+                    pollEvent.Data.OutputEvents |= PollEventTypeMask.Output;
+                }
+
+                if (errorEvents.Contains(socket.Socket))
+                {
+                    pollEvent.Data.OutputEvents |= PollEventTypeMask.Error;
+                }
+            }
+
+            return LinuxError.SUCCESS;
+        }
     }
 }
