@@ -243,7 +243,13 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 Title = LocaleManager.Instance["SelectDlcDialogTitle"],
                 AllowMultiple = true,
-                FileTypeFilter = new List<FilePickerFileType> { new("NSP") { Patterns = new[] { "*.nsp" } } }
+                FileTypeFilter = new List<FilePickerFileType> 
+                { 
+                    new("NSP") {
+                        Patterns = new[] { "*.nsp" },
+                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.Ryujinx-nsp" }
+                    } 
+                }
             });
 
             foreach (var file in result) {
