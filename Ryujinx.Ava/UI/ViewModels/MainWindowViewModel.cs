@@ -820,15 +820,9 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             _isLoading = true;
 
-            Thread thread = new(() =>
-            {
-                ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs.Value, ConfigurationState.Instance.System.Language);
+            ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs.Value, ConfigurationState.Instance.System.Language);
 
-                _isLoading = false;
-            })
-            { Name = "GUI.AppListLoadThread", Priority = ThreadPriority.AboveNormal };
-
-            thread.Start();
+            _isLoading = false;
         }
 
         public async void OpenFile()
