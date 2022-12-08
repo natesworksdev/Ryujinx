@@ -1,25 +1,25 @@
-name: Missing CPU Instruction
-description: CPU Instruction is missing in Ryujinx.
+name: Missing Service Call
+description: Service call is missing in Ryujinx.
 body:
   - type: checkboxes
     attributes:
       label: Is there an existing issue for this?
-      description: Please search for existing missing CPU instruction
+      description: Please search for existing missing service call
       options:
       - label: I have searched the existing issues
         required: true
   - type: textarea
     id: instruction
     attributes:
-      label: CPU instruction
-      description: What CPU instruction is missing?
+      label: Service Call
+      description: What service call is missing?
     validations:
       required: true
   - type: textarea
     id: name
     attributes:
-      label: Instruction name
-      description: Include the name from [armconverter.com](https://armconverter.com/?disasm) or [shell-storm.org](http://shell-storm.org/online/Online-Assembler-and-Disassembler/?arch=arm64&endianness=big&dis_with_raw=True&dis_with_ins=True) in the above code block
+      label: Service description
+      description: Include the description/explanation from (https://switchbrew.org/w/index.php?title=Services_API) and/or (https://reswitched.github.io/SwIPC/) in the above code block
     validations:
       required: true
   - type: textarea
