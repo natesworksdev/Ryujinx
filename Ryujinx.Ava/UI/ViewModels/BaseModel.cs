@@ -5,11 +5,15 @@ namespace Ryujinx.Ava.UI.ViewModels
 {
     public class BaseModel : INotifyPropertyChanged
     {
+        private readonly object _lock = new();
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            lock (_lock)
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            }
         }
     }
 }
