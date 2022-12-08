@@ -850,6 +850,15 @@ namespace Ryujinx.Ava.UI.ViewModels
                             "com.ryujinx.Ryujinx-nca",
                             "com.ryujinx.Ryujinx-nro",
                             "com.ryujinx.Ryujinx-nso"
+                        },
+                        MimeTypes = new[]
+                        {
+                            "application/x-nx-nsp",
+                            "application/x-nx-pfs0",
+                            "application/x-nx-xci",
+                            "application/x-nx-nca",
+                            "application/x-nx-nro",
+                            "application/x-nx-nso"
                         }
                     }
                 }
@@ -1519,7 +1528,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                     new(LocaleManager.Instance["FileDialogAllTypes"])
                     {
                         Patterns = new[] { "*.xci", "*.zip" },
-                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.Ryujinx-xci", "public.zip-archive" }
+                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.Ryujinx-xci", "public.zip-archive" },
+                        MimeTypes = new[] { "application/x-nx-xci", "application/zip" }
                     }
                 }
             });

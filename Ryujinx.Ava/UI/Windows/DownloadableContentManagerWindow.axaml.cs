@@ -247,7 +247,8 @@ namespace Ryujinx.Ava.UI.Windows
                 { 
                     new("NSP") {
                         Patterns = new[] { "*.nsp" },
-                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.Ryujinx-nsp" }
+                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.Ryujinx-nsp" },
+                        MimeTypes = new[] { "application/x-nx-nsp" }
                     } 
                 }
             });

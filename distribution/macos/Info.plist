@@ -43,6 +43,8 @@
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>
+			<key>UTTypeDescription</key>
+			<string>Nintendo Submission Package</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>
@@ -59,6 +61,8 @@
 			</dict>
 		</dict>
 		<dict>
+			<key>UTTypeDescription</key>
+			<string>Nintendo Switch Partition FS</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>
@@ -75,6 +79,8 @@
 			</dict>
 		</dict>
 		<dict>
+			<key>UTTypeDescription</key>
+			<string>Nintendo Switch Cartridge</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>
@@ -91,6 +97,8 @@
 			</dict>
 		</dict>
 		<dict>
+			<key>UTTypeDescription</key>
+			<string>Nintendo Content Archive</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>
@@ -107,6 +115,8 @@
 			</dict>
 		</dict>
 		<dict>
+			<key>UTTypeDescription</key>
+			<string>Nintendo Relocatable Object</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>
@@ -123,6 +133,8 @@
 			</dict>
 		</dict>
 		<dict>
+			<key>UTTypeDescription</key>
+			<string>Nintendo Shared Object</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>
