@@ -27,8 +27,7 @@ body:
     attributes:
       label: Log File
       description: A log file will help our developers to better diagnose and fix the issue.
-      placeholder: [ Logs files can be found under ``Logs`` folder in Ryujinx program folder. ]</br>
-      [ If you don't include a crash report in instances of crash related issues, we will ask you one to provide one. ]
+      placeholder: Logs files can be found under ``Logs`` folder in Ryujinx program folder.
     validations:
       required: true
   - type: textarea
