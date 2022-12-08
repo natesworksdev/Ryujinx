@@ -1,5 +1,6 @@
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using LibHac.Common;
 using LibHac.Fs;
@@ -19,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Path = System.IO.Path;
@@ -43,7 +43,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             InitializeComponent();
 
-            Title = $"Ryujinx {Program.Version} - {LocaleManager.Instance[LocaleKeys.DlcWindowTitle]} - {_titleName} ({_titleId:X16})";
+            Title = $"Ryujinx {Program.Version} - {LocaleManager.Instance["DlcWindowTitle"]} - {_titleName} ({_titleId:X16})";
         }
 
         public DownloadableContentManagerWindow(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
@@ -73,7 +73,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             DlcDataGrid.SelectionChanged += DlcDataGrid_SelectionChanged;
 
-            Title = $"Ryujinx {Program.Version} - {LocaleManager.Instance[LocaleKeys.DlcWindowTitle]} - {_titleName} ({_titleId:X16})";
+            Title = $"Ryujinx {Program.Version} - {LocaleManager.Instance["DlcWindowTitle"]} - {_titleName} ({_titleId:X16})";
 
             LoadDownloadableContents();
             PrintHeading();
@@ -86,7 +86,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void PrintHeading()
         {
-            Heading.Text = string.Format(LocaleManager.Instance[LocaleKeys.DlcWindowHeading], _downloadableContents.Count, _titleName, _titleId.ToString("X16"));
+            Heading.Text = string.Format(LocaleManager.Instance["DlcWindowHeading"], _downloadableContents.Count, _titleName, _titleId.ToString("X16"));
         }
 
         private void LoadDownloadableContents()
@@ -133,7 +133,7 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[LocaleKeys.DialogDlcLoadNcaErrorMessage], ex.Message, containerPath));
+                    await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance["DialogDlcLoadNcaErrorMessage"], ex.Message, containerPath));
                 });
             }
 
@@ -181,7 +181,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             if (!containsDownloadableContent)
             {
-                await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogDlcNoDlcErrorMessage]);
+                await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance["DialogDlcNoDlcErrorMessage"]);
             }
         }
 
@@ -239,25 +239,17 @@ namespace Ryujinx.Ava.UI.Windows
 
         public async void Add()
         {
-            OpenFileDialog dialog = new OpenFileDialog()
-            { 
-                Title         = LocaleManager.Instance[LocaleKeys.SelectDlcDialogTitle],
-                AllowMultiple = true
-            };
-
-            dialog.Filters.Add(new FileDialogFilter
+            var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                Name       = "NSP",
-                Extensions = { "nsp" }
+                Title = LocaleManager.Instance["SelectDlcDialogTitle"],
+                AllowMultiple = true,
+                FileTypeFilter = new List<FilePickerFileType> { new("NSP") { Patterns = new[] { "*.nsp" } } }
             });
 
-            string[] files = await dialog.ShowAsync(this);
-
-            if (files != null)
-            {
-                foreach (string file in files)
+            foreach (var file in result) {
+                if (file.TryGetUri(out Uri uri))
                 {
-                   await AddDownloadableContent(file);
+                    await AddDownloadableContent(uri.LocalPath);
                 }
             }
 
