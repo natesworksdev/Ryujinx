@@ -24,8 +24,5 @@ body:
     id: feature
     attributes:
       label: Why would this feature be useful?
-      placeholder: |
-        [ If this is a feature for an end-user, how does it benefit the end-user? ]
-        [ If this feature is for developers, what does it add to Ryujinx that did not already exist? ]
     validations:
       required: true
