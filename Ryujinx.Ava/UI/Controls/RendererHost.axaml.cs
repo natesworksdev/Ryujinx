@@ -107,7 +107,7 @@ namespace Ryujinx.Ava.UI.Controls
         }
 
         public event EventHandler<EventArgs> RendererInitialized;
-        public event Action<object, Size> SizeChanged;
+        public new event Action<object, Size> SizeChanged;
         public void Dispose()
         {
             if (_currentWindow != null)

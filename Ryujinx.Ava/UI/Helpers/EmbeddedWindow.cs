@@ -28,7 +28,7 @@ namespace Ryujinx.Ava.UI.Helpers
         private UpdateBoundsCallbackDelegate _updateBoundsCallback;
 
         public event EventHandler<IntPtr> WindowCreated;
-        public event EventHandler<Size> SizeChanged;
+        public new event EventHandler<Size> SizeChanged;
 
         protected virtual void OnWindowDestroyed() { }
         protected virtual void OnWindowDestroying()
