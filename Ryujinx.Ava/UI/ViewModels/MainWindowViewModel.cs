@@ -1518,7 +1518,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     new(LocaleManager.Instance["FileDialogAllTypes"])
                     {
-                        Patterns = new[] { "*.xci", "*.zip" }
+                        Patterns = new[] { "*.xci", "*.zip" },
+                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.Ryujinx-xci", "public.zip-archive" }
                     }
                 }
             });

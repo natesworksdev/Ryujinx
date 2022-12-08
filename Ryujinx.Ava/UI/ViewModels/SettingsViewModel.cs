@@ -310,7 +310,12 @@ namespace Ryujinx.Ava.UI.ViewModels
                 AllowMultiple = false,
                 FileTypeFilter = new List<FilePickerFileType>
                 {
-                    new(LocaleManager.Instance["SettingsXamlThemeFile"]) { Patterns = new[] { "*.xaml" } }
+                    new(LocaleManager.Instance["SettingsXamlThemeFile"])
+                    {
+                        Patterns = new[] { "*.xaml" },
+                        AppleUniformTypeIdentifiers = new[] { "public.xml" },
+                        MimeTypes = new[] { "application/xml" }
+                    }
                 }
             });
 
