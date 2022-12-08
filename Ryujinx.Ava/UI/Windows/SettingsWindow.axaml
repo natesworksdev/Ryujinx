@@ -406,6 +406,7 @@
                                     Items="{Binding TimeZones}"
                                     SelectionChanged="TimeZoneBox_OnSelectionChanged"
                                     Text="{Binding Path=TimeZone, Mode=OneWay}"
+                                    TextChanged="TimeZoneBox_OnTextChanged"
                                     ValueMemberBinding="{ReflectionBinding TzMultiBinding}"
                                     ToolTip.Tip="{locale:Locale TimezoneTooltip}" />
                             </StackPanel>
