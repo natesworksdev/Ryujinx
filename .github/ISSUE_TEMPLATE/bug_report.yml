@@ -1,0 +1,55 @@
+name: Bug Report
+description: File a bug report
+body:
+  - type: checkboxes
+    attributes:
+      label: Is there an existing issue for this?
+      description: Please search to see if an issue already exists for the bug you encountered.
+      options:
+      - label: I have searched the existing issues
+        required: true
+  - type: input
+    id: issue
+    attributes:
+      label: Description of Issue
+      description: What's the issue you encountered?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction Steps
+      description: How can the issue be reproduced?
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log file    
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log File
+      description: A log file will help our developers to better diagnose and fix the issue.
+    validations:
+      required: true
+  - type: textarea
+    id: system-config
+    attributes:
+      label: Environment?
+      placeholder: |
+        - OS: *(e.g. Windows 10)*
+        - CPU: *(e.g. i7-6700)*
+        - GPU: *(e.g. NVIDIA RTX 2070)*
+        - RAM: *(e.g. 16GiB)*
+        - Applied Mods: [ Yes (Which ones) / No ]
+      value: |
+        - OS: 
+        - CPU:
+        - GPU:
+        - RAM:
+        - Applied Mods:
+    validations:
+      required: true
