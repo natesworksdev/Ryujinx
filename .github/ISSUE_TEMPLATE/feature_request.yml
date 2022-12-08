@@ -1,8 +1,8 @@
 name: Feature Request
 description: Suggest a new feature for Ryujinx.
 body:
-  - type: input
-    id: feature
+  - type: textarea
+    id: overview
     attributes:
       label: Overview
       description: Include the basic, high-level concepts for this feature here.
