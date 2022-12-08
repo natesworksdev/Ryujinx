@@ -14,11 +14,109 @@ namespace Ryujinx.Graphics.OpenGL
         private PersistentBuffer _background = new PersistentBuffer();
 
         public PersistentBuffer Default => BackgroundContextWorker.InBackground ? _background : _main;
+        public PersistentTextureBuffer Textures = new PersistentTextureBuffer();
 
         public void Dispose()
         {
             _main?.Dispose();
             _background?.Dispose();
+
+            Textures?.Dispose();
+        }
+    }
+
+    class PersistentTextureBuffer : IDisposable
+    {
+        public const int TextureMaxSize = 16 * 1024 * 1024;
+        public const int TextureMaxNumber = 3;
+
+        private const int CopyBufferSize = TextureMaxNumber * TextureMaxSize;
+
+        private IntPtr _bufferMap;
+        private IntPtr[] _syncs;
+        private int _copyBufferHandle = 0;
+        private int _currentIndex = 0;
+        private int _currentOffset = 0;
+
+        private void Init()
+        {
+            if (_copyBufferHandle == 0)
+            {
+                _copyBufferHandle = GL.GenBuffer();
+
+                GL.BindBuffer(BufferTarget.CopyWriteBuffer, _copyBufferHandle);
+                GL.BufferStorage(BufferTarget.CopyWriteBuffer, CopyBufferSize, IntPtr.Zero, BufferStorageFlags.MapWriteBit | BufferStorageFlags.MapPersistentBit | BufferStorageFlags.MapCoherentBit | BufferStorageFlags.ClientStorageBit);
+
+                _bufferMap = GL.MapBufferRange(BufferTarget.CopyWriteBuffer, IntPtr.Zero, CopyBufferSize, BufferAccessMask.MapWriteBit | BufferAccessMask.MapPersistentBit | BufferAccessMask.MapCoherentBit);
+                _syncs = new IntPtr[TextureMaxNumber];
+
+                for (int i = 0; i < TextureMaxNumber; i++)
+                {
+                    _syncs[i] = IntPtr.Zero;
+                }
+            }
+        }
+
+        public unsafe void SetTextureData(TextureView view, ReadOnlySpan<byte> data, int size, int layer = -1, int level = -1, int width = -1, int height = -1)
+        {
+            Init();
+
+            if (_currentOffset + size > TextureMaxSize)
+            {
+                _syncs[_currentIndex] = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
+                _currentIndex = (_currentIndex + 1) % TextureMaxNumber;
+                _currentOffset = 0;
+            }
+
+            if (_syncs[_currentIndex] != IntPtr.Zero)
+            {
+                WaitSyncStatus syncResult = GL.ClientWaitSync(_syncs[_currentIndex], ClientWaitSyncFlags.SyncFlushCommandsBit, 1000000000);
+
+                if (syncResult == WaitSyncStatus.TimeoutExpired)
+                {
+                    Logger.Error?.PrintMsg(LogClass.Gpu, $"Failed to sync persistent buffer state within 1000ms. Continuing...");
+                }
+
+                GL.DeleteSync(_syncs[_currentIndex]);
+                _syncs[_currentIndex] = IntPtr.Zero;
+            }
+
+            int offset = _currentIndex * TextureMaxSize + _currentOffset;
+
+            Span<byte> buffer = new Span<byte>((_bufferMap + offset).ToPointer(), size);
+            data.CopyTo(buffer);
+
+            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, _copyBufferHandle);
+
+            if (layer == -1)
+            {
+                view.ReadFromPbo(offset, size);
+            }
+            else
+            {
+                view.ReadFromPbo2D(offset, layer, level, width, height);
+            }
+
+            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
+
+            _currentOffset += size;
+        }
+
+        public void Dispose()
+        {
+            if (_copyBufferHandle != 0)
+            {
+                GL.DeleteBuffer(_copyBufferHandle);
+            }
+
+            for (int i = 0; i < TextureMaxNumber; i++)
+            {
+                if (_syncs[i] != IntPtr.Zero)
+                {
+                    GL.ClientWaitSync(_syncs[i], ClientWaitSyncFlags.SyncFlushCommandsBit, 0);
+                    GL.DeleteSync(_syncs[i]);
+                }
+            }
         }
     }
 

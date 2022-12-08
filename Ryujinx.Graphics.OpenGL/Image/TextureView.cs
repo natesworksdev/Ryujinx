@@ -1,6 +1,4 @@
 using OpenTK.Graphics.OpenGL;
-using Ryujinx.Common;
-using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.GAL;
 using System;
 
@@ -8,7 +6,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 {
     class TextureView : TextureBase, ITexture, ITextureInfo
     {
-        private readonly OpenGLRenderer _renderer;
+        private readonly Renderer _renderer;
 
         private readonly TextureStorage _parent;
 
@@ -18,14 +16,14 @@ namespace Ryujinx.Graphics.OpenGL.Image
         public int FirstLevel { get; private set; }
 
         public TextureView(
-            OpenGLRenderer renderer,
-            TextureStorage parent,
+            Renderer          renderer,
+            TextureStorage    parent,
             TextureCreateInfo info,
-            int firstLayer,
-            int firstLevel) : base(info, parent.ScaleFactor)
+            int               firstLayer,
+            int               firstLevel) : base(info, parent.ScaleFactor)
         {
             _renderer = renderer;
-            _parent = parent;
+            _parent   = parent;
 
             FirstLayer = firstLayer;
             FirstLevel = firstLevel;
@@ -50,15 +48,13 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 pixelInternalFormat = format.PixelInternalFormat;
             }
 
-            int levels = Info.GetLevelsClamped();
-
             GL.TextureView(
                 Handle,
                 target,
                 _parent.Handle,
                 pixelInternalFormat,
                 FirstLevel,
-                levels,
+                Info.Levels,
                 FirstLayer,
                 Info.GetLayers());
 
@@ -74,16 +70,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 (int)Info.SwizzleA.Convert()
             };
 
-            if (Info.Format == Format.A1B5G5R5Unorm)
-            {
-                int temp = swizzleRgba[0];
-                int temp2 = swizzleRgba[1];
-                swizzleRgba[0] = swizzleRgba[3];
-                swizzleRgba[1] = swizzleRgba[2];
-                swizzleRgba[2] = temp2;
-                swizzleRgba[3] = temp;
-            }
-            else if (Info.Format.IsBgr())
+            if (Info.Format.IsBgr())
             {
                 // Swap B <-> R for BGRA formats, as OpenGL has no support for them
                 // and we need to manually swap the components on read/write on the GPU.
@@ -94,7 +81,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             GL.TexParameter(target, TextureParameterName.TextureSwizzleRgba, swizzleRgba);
 
-            int maxLevel = levels - 1;
+            int maxLevel = Info.Levels - 1;
 
             if (maxLevel < 0)
             {
@@ -117,38 +104,14 @@ namespace Ryujinx.Graphics.OpenGL.Image
         {
             TextureView destinationView = (TextureView)destination;
 
-            if (!destinationView.Target.IsMultisample() && Target.IsMultisample())
-            {
-                int layers = Math.Min(Info.GetLayers(), destinationView.Info.GetLayers() - firstLayer);
-                _renderer.TextureCopyMS.CopyMSToNonMS(this, destinationView, 0, firstLayer, layers);
-            }
-            else if (destinationView.Target.IsMultisample() && !Target.IsMultisample())
-            {
-                int layers = Math.Min(Info.GetLayers(), destinationView.Info.GetLayers() - firstLayer);
-                _renderer.TextureCopyMS.CopyNonMSToMS(this, destinationView, 0, firstLayer, layers);
-            }
-            else
-            {
-                _renderer.TextureCopy.CopyUnscaled(this, destinationView, 0, firstLayer, 0, firstLevel);
-            }
+            _renderer.TextureCopy.CopyUnscaled(this, destinationView, 0, firstLayer, 0, firstLevel);
         }
 
         public void CopyTo(ITexture destination, int srcLayer, int dstLayer, int srcLevel, int dstLevel)
         {
-            TextureView destinationView = (TextureView)destination;
+             TextureView destinationView = (TextureView)destination;
 
-            if (!destinationView.Target.IsMultisample() && Target.IsMultisample())
-            {
-                _renderer.TextureCopyMS.CopyMSToNonMS(this, destinationView, srcLayer, dstLayer, 1);
-            }
-            else if (destinationView.Target.IsMultisample() && !Target.IsMultisample())
-            {
-                _renderer.TextureCopyMS.CopyNonMSToMS(this, destinationView, srcLayer, dstLayer, 1);
-            }
-            else
-            {
-                _renderer.TextureCopy.CopyUnscaled(this, destinationView, srcLayer, dstLayer, srcLevel, dstLevel, 1, 1);
-            }
+            _renderer.TextureCopy.CopyUnscaled(this, destinationView, srcLayer, dstLayer, srcLevel, dstLevel, 1, 1);
         }
 
         public void CopyTo(ITexture destination, Extents2D srcRegion, Extents2D dstRegion, bool linearFilter)
@@ -159,18 +122,15 @@ namespace Ryujinx.Graphics.OpenGL.Image
         public unsafe ReadOnlySpan<byte> GetData()
         {
             int size = 0;
-            int levels = Info.GetLevelsClamped();
 
-            for (int level = 0; level < levels; level++)
+            for (int level = 0; level < Info.Levels; level++)
             {
                 size += Info.GetMipSize(level);
             }
 
-            ReadOnlySpan<byte> data;
-
             if (HwCapabilities.UsePersistentBufferForFlush)
             {
-                data = _renderer.PersistentBuffers.Default.GetTextureData(this, size);
+                return _renderer.PersistentBuffers.Default.GetTextureData(this, size);
             }
             else
             {
@@ -178,32 +138,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
                 WriteTo(target);
 
-                data = new ReadOnlySpan<byte>(target.ToPointer(), size);
-            }
-
-            if (Format == Format.S8UintD24Unorm)
-            {
-                data = FormatConverter.ConvertD24S8ToS8D24(data);
-            }
-
-            return data;
-        }
-
-        public unsafe ReadOnlySpan<byte> GetData(int layer, int level)
-        {
-            int size = Info.GetMipSize(level);
-
-            if (HwCapabilities.UsePersistentBufferForFlush)
-            {
-                return _renderer.PersistentBuffers.Default.GetTextureData(this, size, layer, level);
-            }
-            else
-            {
-                IntPtr target = _renderer.PersistentBuffers.Default.GetHostArray(size);
-
-                int offset = WriteTo2D(target, layer, level);
-
-                return new ReadOnlySpan<byte>(target.ToPointer(), size).Slice(offset);
+                return new ReadOnlySpan<byte>(target.ToPointer(), size);
             }
         }
 
@@ -235,29 +170,25 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             int mipSize = Info.GetMipSize2D(level);
 
+            // The GL function returns all layers. Must return the offset of the layer we're interested in.
+            int resultOffset = target switch
+            {
+                TextureTarget.TextureCubeMapArray => (layer / 6) * mipSize,
+                TextureTarget.Texture1DArray => layer * mipSize,
+                TextureTarget.Texture2DArray => layer * mipSize,
+                _ => 0
+            };
+
             if (format.IsCompressed)
             {
-                GL.GetCompressedTextureSubImage(Handle, level, 0, 0, layer, Math.Max(1, Info.Width >> level), Math.Max(1, Info.Height >> level), 1, mipSize, data);
-            }
-            else if (format.PixelFormat != PixelFormat.DepthStencil)
-            {
-                GL.GetTextureSubImage(Handle, level, 0, 0, layer, Math.Max(1, Info.Width >> level), Math.Max(1, Info.Height >> level), 1, pixelFormat, pixelType, mipSize, data);
+                GL.GetCompressedTexImage(target, level, data);
             }
             else
             {
                 GL.GetTexImage(target, level, pixelFormat, pixelType, data);
-
-                // The GL function returns all layers. Must return the offset of the layer we're interested in.
-                return target switch
-                {
-                    TextureTarget.TextureCubeMapArray => (layer / 6) * mipSize,
-                    TextureTarget.Texture1DArray => layer * mipSize,
-                    TextureTarget.Texture2DArray => layer * mipSize,
-                    _ => 0
-                };
             }
 
-            return 0;
+            return resultOffset;
         }
 
         private void WriteTo(IntPtr data, bool forceBgra = false)
@@ -269,7 +200,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             FormatInfo format = FormatTable.GetFormatInfo(Info.Format);
 
             PixelFormat pixelFormat = format.PixelFormat;
-            PixelType pixelType = format.PixelType;
+            PixelType   pixelType   = format.PixelType;
 
             if (forceBgra)
             {
@@ -296,9 +227,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 faces = 6;
             }
 
-            int levels = Info.GetLevelsClamped();
-
-            for (int level = 0; level < levels; level++)
+            for (int level = 0; level < Info.Levels; level++)
             {
                 for (int face = 0; face < faces; face++)
                 {
@@ -318,70 +247,42 @@ namespace Ryujinx.Graphics.OpenGL.Image
             }
         }
 
-        public void SetData(SpanOrArray<byte> data)
+        public void SetData(ReadOnlySpan<byte> data)
         {
-            var dataSpan = data.AsSpan();
-
-            if (Format == Format.S8UintD24Unorm)
+            if (HwCapabilities.UsePersistentBufferForFlush && data.Length < PersistentTextureBuffer.TextureMaxSize)
             {
-                dataSpan = FormatConverter.ConvertS8D24ToD24S8(dataSpan);
+                _renderer.PersistentBuffers.Textures.SetTextureData(this, data, data.Length);
             }
-
-            unsafe
+            else
             {
-                fixed (byte* ptr = dataSpan)
+                unsafe
                 {
-                    ReadFrom((IntPtr)ptr, dataSpan.Length);
+                    fixed (byte* ptr = data)
+                    {
+                        ReadFrom((IntPtr)ptr, data.Length);
+                    }
                 }
             }
         }
 
-        public void SetData(SpanOrArray<byte> data, int layer, int level)
+        public void SetData(ReadOnlySpan<byte> data, int layer, int level)
         {
-            var dataSpan = data.AsSpan();
+            int width = Math.Max(Info.Width >> level, 1);
+            int height = Math.Max(Info.Height >> level, 1);
+            int mipSize = Info.GetMipSize2D(level);
 
-            if (Format == Format.S8UintD24Unorm)
+            if (HwCapabilities.UsePersistentBufferForFlush && mipSize < PersistentTextureBuffer.TextureMaxSize)
             {
-                dataSpan = FormatConverter.ConvertS8D24ToD24S8(dataSpan);
+                _renderer.PersistentBuffers.Textures.SetTextureData(this, data, mipSize, layer, level, width, height);
             }
-
-            unsafe
+            else
             {
-                fixed (byte* ptr = dataSpan)
+                unsafe
                 {
-                    int width = Math.Max(Info.Width >> level, 1);
-                    int height = Math.Max(Info.Height >> level, 1);
-
-                    ReadFrom2D((IntPtr)ptr, layer, level, 0, 0, width, height);
-                }
-            }
-        }
-
-        public void SetData(SpanOrArray<byte> data, int layer, int level, Rectangle<int> region)
-        {
-            var dataSpan = data.AsSpan();
-
-            if (Format == Format.S8UintD24Unorm)
-            {
-                dataSpan = FormatConverter.ConvertS8D24ToD24S8(dataSpan);
-            }
-
-            int wInBlocks = BitUtils.DivRoundUp(region.Width, Info.BlockWidth);
-            int hInBlocks = BitUtils.DivRoundUp(region.Height, Info.BlockHeight);
-
-            unsafe
-            {
-                fixed (byte* ptr = dataSpan)
-                {
-                    ReadFrom2D(
-                        (IntPtr)ptr,
-                        layer,
-                        level,
-                        region.X,
-                        region.Y,
-                        region.Width,
-                        region.Height,
-                        BitUtils.AlignUp(wInBlocks * Info.BytesPerPixel, 4) * hInBlocks);
+                    fixed (byte* ptr = data)
+                    {
+                        ReadFrom2D((IntPtr)ptr, layer, level, width, height);
+                    }
                 }
             }
         }
@@ -393,19 +294,14 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
         public void ReadFromPbo2D(int offset, int layer, int level, int width, int height)
         {
-            ReadFrom2D(IntPtr.Zero + offset, layer, level, 0, 0, width, height);
+            ReadFrom2D(IntPtr.Zero + offset, layer, level, width, height);
         }
 
-        private void ReadFrom2D(IntPtr data, int layer, int level, int x, int y, int width, int height)
-        {
-            int mipSize = Info.GetMipSize2D(level);
-
-            ReadFrom2D(data, layer, level, x, y, width, height, mipSize);
-        }
-
-        private void ReadFrom2D(IntPtr data, int layer, int level, int x, int y, int width, int height, int mipSize)
+        private void ReadFrom2D(IntPtr data, int layer, int level, int width, int height)
         {
             TextureTarget target = Target.Convert();
+
+            int mipSize = Info.GetMipSize2D(level);
 
             Bind(target, 0);
 
@@ -419,7 +315,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         GL.CompressedTexSubImage1D(
                             target,
                             level,
-                            x,
+                            0,
                             width,
                             format.PixelFormat,
                             mipSize,
@@ -430,7 +326,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         GL.TexSubImage1D(
                             target,
                             level,
-                            x,
+                            0,
                             width,
                             format.PixelFormat,
                             format.PixelType,
@@ -444,7 +340,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         GL.CompressedTexSubImage2D(
                             target,
                             level,
-                            x,
+                            0,
                             layer,
                             width,
                             1,
@@ -457,7 +353,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         GL.TexSubImage2D(
                             target,
                             level,
-                            x,
+                            0,
                             layer,
                             width,
                             1,
@@ -473,8 +369,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         GL.CompressedTexSubImage2D(
                             target,
                             level,
-                            x,
-                            y,
+                            0,
+                            0,
                             width,
                             height,
                             format.PixelFormat,
@@ -486,8 +382,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         GL.TexSubImage2D(
                             target,
                             level,
-                            x,
-                            y,
+                            0,
+                            0,
                             width,
                             height,
                             format.PixelFormat,
@@ -504,8 +400,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         GL.CompressedTexSubImage3D(
                             target,
                             level,
-                            x,
-                            y,
+                            0,
+                            0,
                             layer,
                             width,
                             height,
@@ -519,8 +415,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         GL.TexSubImage3D(
                             target,
                             level,
-                            x,
-                            y,
+                            0,
+                            0,
                             layer,
                             width,
                             height,
@@ -537,8 +433,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         GL.CompressedTexSubImage2D(
                             TextureTarget.TextureCubeMapPositiveX + layer,
                             level,
-                            x,
-                            y,
+                            0,
+                            0,
                             width,
                             height,
                             format.PixelFormat,
@@ -550,8 +446,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         GL.TexSubImage2D(
                             TextureTarget.TextureCubeMapPositiveX + layer,
                             level,
-                            x,
-                            y,
+                            0,
+                            0,
                             width,
                             height,
                             format.PixelFormat,
@@ -581,14 +477,13 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             FormatInfo format = FormatTable.GetFormatInfo(Info.Format);
 
-            int width = Info.Width;
+            int width  = Info.Width;
             int height = Info.Height;
-            int depth = Info.Depth;
-            int levels = Info.GetLevelsClamped();
+            int depth  = Info.Depth;
 
             int offset = 0;
 
-            for (int level = 0; level < levels; level++)
+            for (int level = 0; level < Info.Levels; level++)
             {
                 int mipSize = Info.GetMipSize(level);
 
@@ -726,10 +621,10 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         break;
                 }
 
-                data += mipSize;
+                data   += mipSize;
                 offset += mipSize;
 
-                width = Math.Max(1, width >> 1);
+                width  = Math.Max(1, width  >> 1);
                 height = Math.Max(1, height >> 1);
 
                 if (Target == Target.Texture3D)
