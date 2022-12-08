@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Navigation;
@@ -39,7 +40,7 @@ namespace Ryujinx.Ava.UI.Controls
             }
         }
 
-        private void ProfilesList_DoubleTapped(object sender, RoutedEventArgs e)
+        private void ProfilesList_DoubleTapped(object sender, TappedEventArgs e)
         {
             if (sender is ListBox listBox)
             {
