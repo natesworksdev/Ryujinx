@@ -47,8 +47,7 @@
 			<string>Extensible Application Markup Language</string>
 			<key>UTTypeConformsTo</key>
 			<array>
-				<string>public.data</string>
-				<string>public.content</string>
+				<string>public.xml</string>
 			</array>
 			<key>UTTypeIdentifier</key>
 			<string>com.ryujinx.Ryujinx-xaml</string>
