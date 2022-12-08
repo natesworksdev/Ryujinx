@@ -126,6 +126,19 @@ namespace Ryujinx.Ava.UI.Helpers
                     contentDialog.PrimaryButtonClick += deferCloseAction;
                 }
                 
+                // API Changed, should be unnecessary in final release of Fluentv2 
+                // Currently, Linux dialogues are invisible
+                /*if (useOverlay)
+                {
+                    await contentDialog.ShowAsync(overlay, ContentDialogPlacement.Popup);
+
+                    overlay!.Close();
+                }
+                else
+                {
+                    await contentDialog.ShowAsync(ContentDialogPlacement.Popup);
+                }*/
+                
                 await contentDialog.ShowAsync();
             }
 
