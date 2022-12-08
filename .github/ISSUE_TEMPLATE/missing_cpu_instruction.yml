@@ -27,7 +27,6 @@ body:
     attributes:
       label: Instruction name
       description: Include the name from [armconverter.com](https://armconverter.com/?disasm) or [shell-storm.org](http://shell-storm.org/online/Online-Assembler-and-Disassembler/?arch=arm64&endianness=big&dis_with_raw=True&dis_with_ins=True) in the above code block
-      value: ``` ```
     validations:
       required: true
   - type: textarea
