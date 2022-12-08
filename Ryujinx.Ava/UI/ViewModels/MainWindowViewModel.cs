@@ -841,7 +841,16 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     new(LocaleManager.Instance["AllSupportedFormats"])
                     {
-                        Patterns = new [] { "*.nsp", "*.pfs0", "*.xci", "*.nca", "*.nro", "*.nso"}
+                        Patterns = new[] { "*.nsp", "*.pfs0", "*.xci", "*.nca", "*.nro", "*.nso"},
+                        AppleUniformTypeIdentifiers = new[]
+                        {
+                            "com.ryujinx.Ryujinx-nsp",
+                            "com.ryujinx.Ryujinx-pfs0",
+                            "com.ryujinx.Ryujinx-xci",
+                            "com.ryujinx.Ryujinx-nca",
+                            "com.ryujinx.Ryujinx-nro",
+                            "com.ryujinx.Ryujinx-nso"
+                        }
                     }
                 }
             });
