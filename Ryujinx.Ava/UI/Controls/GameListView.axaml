@@ -98,6 +98,7 @@
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             ContextFlyout="{StaticResource GameContextMenu}"
+            DoubleTapped="GameList_DoubleTapped"
             Items="{Binding AppsObservableList}"
             SelectionChanged="GameList_SelectionChanged">
             <ListBox.ItemsPanel>

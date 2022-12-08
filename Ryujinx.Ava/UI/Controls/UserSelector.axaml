@@ -29,6 +29,7 @@
             MaxHeight="300"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Center"
+            DoubleTapped="ProfilesList_DoubleTapped"
             Items="{Binding Profiles}"
             SelectionChanged="SelectingItemsControl_SelectionChanged">
             <ListBox.ItemsPanel>
