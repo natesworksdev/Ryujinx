@@ -160,8 +160,11 @@ namespace Ryujinx.Ava.UI.Windows
                 {
                     if (result[0].TryGetUri(out Uri uri))
                     {
-                        ViewModel.GameDirectories.Add(uri.LocalPath);
-                        ViewModel.DirectoryChanged = true;
+                        if (!ViewModel.GameDirectories.Contains(uri.LocalPath))
+                        {
+                            ViewModel.GameDirectories.Add(uri.LocalPath);
+                            ViewModel.DirectoryChanged = true;
+                        }
                     }
                 }
             }
