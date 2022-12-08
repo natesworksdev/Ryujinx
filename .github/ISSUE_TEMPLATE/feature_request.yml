@@ -11,7 +11,7 @@ body:
   - type: textarea
     id: details
     attributes:
-      label: smaller details
+      label: Smaller Details
       description: These may include specific methods of implementation etc.
     validations:
       required: true
