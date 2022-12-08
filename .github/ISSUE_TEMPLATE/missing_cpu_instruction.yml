@@ -26,13 +26,15 @@ body:
     id: name
     attributes:
       label: Instruction name
-      placeholder: Include the name from [armconverter.com](https://armconverter.com/?disasm) or [shell-storm.org](http://shell-storm.org/online/Online-Assembler-and-Disassembler/?arch=arm64&endianness=big&dis_with_raw=True&dis_with_ins=True) in the above code block
+      description: Include the name from [armconverter.com](https://armconverter.com/?disasm) or [shell-storm.org](http://shell-storm.org/online/Online-Assembler-and-Disassembler/?arch=arm64&endianness=big&dis_with_raw=True&dis_with_ins=True) in the above code block
+      placeholder: ``` * ```
+      value: ``` ```
     validations:
       required: true
   - type: textarea
     id: required
     attributes:
       label: Required by
-      description: Add our (games list database)[https://github.com/Ryujinx/Ryujinx-Games-List/issues] links of games who require this instruction
+      description: Add our games list database (https://github.com/Ryujinx/Ryujinx-Games-List/issues) links of games who require this instruction
     validations:
       required: true
