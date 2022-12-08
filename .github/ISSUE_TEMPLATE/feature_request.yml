@@ -1,0 +1,31 @@
+name: Feature Request
+description: Suggest a new feature for Ryujinx.
+body:
+  - type: input
+    id: feature
+    attributes:
+      label: Overview
+      description: Include the basic, high-level concepts for this feature here.
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: smaller details
+      description: These may include specific methods of implementation etc.
+    validations:
+      required: true
+  - type: textarea
+    id: request
+    attributes:
+      label: Nature of Request
+      required: true
+  - type: textarea
+    id: feature
+    attributes:
+      label: Why would this feature be useful?
+      placeholder: |
+        [ If this is a feature for an end-user, how does it benefit the end-user? ]
+        [ If this feature is for developers, what does it add to Ryujinx that did not already exist? ]
+    validations:
+      required: true
