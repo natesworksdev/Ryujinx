@@ -48,36 +48,30 @@ namespace Ryujinx.Ava.Ui.Controls
         [UnmanagedFunctionPointer(CallingConvention.Winapi)]
         internal delegate IntPtr WindowProc(IntPtr hWnd, WindowsMessages msg, IntPtr wParam, IntPtr lParam);
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct WNDCLASSEX
         {
             public int cbSize;
             public ClassStyles style;
-            [MarshalAs(UnmanagedType.FunctionPtr)]
-            public WindowProc lpfnWndProc; // not WndProc
+            public IntPtr lpfnWndProc; // not WndProc
             public int cbClsExtra;
             public int cbWndExtra;
             public IntPtr hInstance;
             public IntPtr hIcon;
             public IntPtr hCursor;
             public IntPtr hbrBackground;
-            [MarshalAs(UnmanagedType.LPWStr)]
-            public string lpszMenuName;
-            [MarshalAs(UnmanagedType.LPWStr)]
-            public string lpszClassName;
+            public IntPtr lpszMenuName;
+            public IntPtr lpszClassName;
             public IntPtr hIconSm;
 
-            public static WNDCLASSEX Create()
+            public WNDCLASSEX()
             {
-                return new WNDCLASSEX
-                {
-                    cbSize = Marshal.SizeOf<WNDCLASSEX>()
-                };
+                cbSize = Marshal.SizeOf<WNDCLASSEX>();
             }
         }
 
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern ushort RegisterClassEx(ref WNDCLASSEX param);
+        [LibraryImport("user32.dll", SetLastError = true, EntryPoint = "RegisterClassExW")]
+        public static partial ushort RegisterClassEx(ref WNDCLASSEX param);
 
         [LibraryImport("user32.dll", SetLastError = true)]
         public static partial short UnregisterClass([MarshalAs(UnmanagedType.LPWStr)] string lpClassName, IntPtr instance);
