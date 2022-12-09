@@ -73,23 +73,23 @@ namespace Ryujinx.Ava.Ui.Controls
         [LibraryImport("user32.dll", SetLastError = true, EntryPoint = "RegisterClassExW")]
         public static partial ushort RegisterClassEx(ref WNDCLASSEX param);
 
-        [LibraryImport("user32.dll", SetLastError = true)]
+        [LibraryImport("user32.dll", SetLastError = true, EntryPoint = "UnregisterClassW")]
         public static partial short UnregisterClass([MarshalAs(UnmanagedType.LPWStr)] string lpClassName, IntPtr instance);
 
-        [LibraryImport("user32.dll")]
+        [LibraryImport("user32.dll", EntryPoint = "DefWindowProcW")]
         public static partial IntPtr DefWindowProc(IntPtr hWnd, WindowsMessages msg, IntPtr wParam, IntPtr lParam);
 
-        [LibraryImport("kernel32.dll")]
+        [LibraryImport("kernel32.dll", EntryPoint = "GetModuleHandleA")]
         public static partial IntPtr GetModuleHandle([MarshalAs(UnmanagedType.LPStr)] string lpModuleName);
 
         [LibraryImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static partial bool DestroyWindow(IntPtr hwnd);
 
-        [LibraryImport("user32.dll", SetLastError = true)]
+        [LibraryImport("user32.dll", SetLastError = true, EntryPoint = "LoadCursorA")]
         public static partial IntPtr LoadCursor(IntPtr hInstance, IntPtr lpCursorName);
 
-        [LibraryImport("user32.dll", SetLastError = true)]
+        [LibraryImport("user32.dll", SetLastError = true, EntryPoint = "CreateWindowExW")]
         public static partial IntPtr CreateWindowEx(
            uint dwExStyle,
            [MarshalAs(UnmanagedType.LPTStr)] string lpClassName,
