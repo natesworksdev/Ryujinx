@@ -7,7 +7,7 @@ using Ryujinx.Common.Logging;
 namespace Ryujinx.Common.SystemInfo
 {
     [SupportedOSPlatform("windows")]
-    class WindowsSystemInfo : SystemInfo
+    partial class WindowsSystemInfo : SystemInfo
     {
         internal WindowsSystemInfo()
         {
@@ -66,7 +66,7 @@ namespace Ryujinx.Common.SystemInfo
 
         [return: MarshalAs(UnmanagedType.Bool)]
         [LibraryImport("kernel32.dll", SetLastError = true)]
-        private static extern bool GlobalMemoryStatusEx([In, Out] MemoryStatusEx lpBuffer);
+        private static partial bool GlobalMemoryStatusEx([In, Out] MemoryStatusEx lpBuffer);
 
         private static ManagementObjectCollection GetWMIObjects(string scope, string query)
         {

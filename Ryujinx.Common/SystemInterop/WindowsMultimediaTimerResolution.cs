@@ -4,13 +4,13 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
-namespace Ryujinx.Common.System
+namespace Ryujinx.Common.SystemInterop
 {
     /// <summary>
     /// Handle Windows Multimedia timer resolution.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    public class WindowsMultimediaTimerResolution : IDisposable
+    public partial class WindowsMultimediaTimerResolution : IDisposable
     {
         [StructLayout(LayoutKind.Sequential)]
         public struct TimeCaps
@@ -20,13 +20,13 @@ namespace Ryujinx.Common.System
         };
 
         [LibraryImport("winmm.dll", EntryPoint = "timeGetDevCaps", SetLastError = true)]
-        private static extern uint TimeGetDevCaps(ref TimeCaps timeCaps, uint sizeTimeCaps);
+        private static partial uint TimeGetDevCaps(ref TimeCaps timeCaps, uint sizeTimeCaps);
 
         [LibraryImport("winmm.dll", EntryPoint = "timeBeginPeriod")]
-        private static extern uint TimeBeginPeriod(uint uMilliseconds);
+        private static partial uint TimeBeginPeriod(uint uMilliseconds);
 
         [LibraryImport("winmm.dll", EntryPoint = "timeEndPeriod")]
-        private static extern uint TimeEndPeriod(uint uMilliseconds);
+        private static partial uint TimeEndPeriod(uint uMilliseconds);
 
         private uint _targetResolutionInMilliseconds;
         private bool _isActive;

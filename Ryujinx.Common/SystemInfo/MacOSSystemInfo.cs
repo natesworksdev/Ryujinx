@@ -8,7 +8,7 @@ using Ryujinx.Common.Logging;
 namespace Ryujinx.Common.SystemInfo
 {
     [SupportedOSPlatform("macos")]
-    class MacOSSystemInfo : SystemInfo
+    partial class MacOSSystemInfo : SystemInfo
     {
         internal MacOSSystemInfo()
         {
@@ -61,7 +61,7 @@ namespace Ryujinx.Common.SystemInfo
         private const string SystemLibraryName = "libSystem.dylib";
 
         [LibraryImport(SystemLibraryName, SetLastError = true)]
-        private static extern int sysctlbyname(string name, IntPtr oldValue, ref ulong oldSize, IntPtr newValue, ulong newValueSize);
+        private static partial int sysctlbyname(string name, IntPtr oldValue, ref ulong oldSize, IntPtr newValue, ulong newValueSize);
 
         private static int sysctlbyname(string name, IntPtr oldValue, ref ulong oldSize)
         {
@@ -117,10 +117,10 @@ namespace Ryujinx.Common.SystemInfo
         }
 
         [LibraryImport(SystemLibraryName, SetLastError = true)]
-        private static extern uint mach_host_self();
+        private static partial uint mach_host_self();
 
         [LibraryImport(SystemLibraryName, SetLastError = true)]
-        private static extern int host_page_size(uint host, ref uint out_page_size);
+        private static partial int host_page_size(uint host, ref uint out_page_size);
 
         [StructLayout(LayoutKind.Sequential, Pack = 8)]
         struct VMStatistics64
@@ -152,6 +152,6 @@ namespace Ryujinx.Common.SystemInfo
         }
 
         [LibraryImport(SystemLibraryName, SetLastError = true)]
-        private static extern int host_statistics64(uint host_priv, int host_flavor, ref VMStatistics64 host_info64_out, ref uint host_info64_outCnt);
+        private static partial int host_statistics64(uint host_priv, int host_flavor, ref VMStatistics64 host_info64_out, ref uint host_info64_outCnt);
     }
 }

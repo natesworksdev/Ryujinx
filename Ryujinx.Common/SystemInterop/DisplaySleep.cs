@@ -1,9 +1,9 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.Common.System
+namespace Ryujinx.Common.SystemInterop
 {
-    public class DisplaySleep
+    public partial class DisplaySleep
     {
         [Flags]
         enum EXECUTION_STATE : uint
@@ -14,7 +14,7 @@ namespace Ryujinx.Common.System
         }
 
         [LibraryImport("kernel32.dll", SetLastError = true)]
-        static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
+        private static partial EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
 
         static public void Prevent()
         {
