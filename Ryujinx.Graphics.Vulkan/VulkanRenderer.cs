@@ -83,6 +83,7 @@ namespace Ryujinx.Graphics.Vulkan
         public bool PreferThreading => true;
 
         public event EventHandler<ScreenCaptureImageInfo> ScreenCaptured;
+        public Action<Action> InterruptAction;
 
         public VulkanRenderer(Func<Instance, Vk, SurfaceKHR> surfaceFunc, Func<string[]> requiredExtensionsFunc, string preferredGpuId)
         {
@@ -354,6 +355,11 @@ namespace Ryujinx.Graphics.Vulkan
             _pipeline?.FlushCommandsImpl();
         }
 
+        internal void RegisterFlush()
+        {
+            _syncManager.RegisterFlush();
+        }
+
         public ReadOnlySpan<byte> GetBufferData(BufferHandle buffer, int offset, int size)
         {
             return BufferManager.GetData(buffer, offset, size);
@@ -572,9 +578,9 @@ namespace Ryujinx.Graphics.Vulkan
             action();
         }
 
-        public void CreateSync(ulong id)
+        public void CreateSync(ulong id, bool strict)
         {
-            _syncManager.Create(id);
+            _syncManager.Create(id, strict);
         }
 
         public IProgram LoadProgramBinary(byte[] programBinary, bool isFragment, ShaderInfo info)
@@ -590,6 +596,11 @@ namespace Ryujinx.Graphics.Vulkan
         public ulong GetCurrentSync()
         {
             return _syncManager.GetCurrent();
+        }
+
+        public void SetInterruptAction(Action<Action> interruptAction)
+        {
+            InterruptAction = interruptAction;
         }
 
         public void Screenshot()

@@ -184,7 +184,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         {
             _context.Renderer.Pipeline.CommandBufferBarrier();
 
-            _context.CreateHostSyncIfNeeded(false);
+            _context.CreateHostSyncIfNeeded(true);
         }
 
         /// <summary>

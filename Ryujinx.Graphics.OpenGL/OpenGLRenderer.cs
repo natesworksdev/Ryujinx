@@ -229,7 +229,7 @@ namespace Ryujinx.Graphics.OpenGL
             return new Program(programBinary, hasFragmentShader, info.FragmentOutputMap);
         }
 
-        public void CreateSync(ulong id)
+        public void CreateSync(ulong id, bool strict)
         {
             _sync.Create(id);
         }
@@ -242,6 +242,11 @@ namespace Ryujinx.Graphics.OpenGL
         public ulong GetCurrentSync()
         {
             return _sync.GetCurrent();
+        }
+
+        public void SetInterruptAction(Action<Action> interruptAction)
+        {
+            // Currently no need for an interrupt action.
         }
 
         public void Screenshot()

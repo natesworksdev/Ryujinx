@@ -29,6 +29,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         private int _elementSize;
         private IRenderer _baseRenderer;
         private Thread _gpuThread;
+        private Thread _backendThread;
         private bool _disposed;
         private bool _running;
 
@@ -38,6 +39,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         private CircularSpanPool _spanPool;
 
         private ManualResetEventSlim _invokeRun;
+        private ManualResetEventSlim _interruptRun;
 
         private bool _lastSampleCounterClear = true;
 
@@ -46,6 +48,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
         private int _consumerPtr;
         private int _commandCount;
+        private int _interrupted;
 
         private int _producerPtr;
         private int _lastProducedPtr;
@@ -53,6 +56,8 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
         private int _refProducerPtr;
         private int _refConsumerPtr;
+
+        private Action _interruptAction;
 
         public event EventHandler<ScreenCaptureImageInfo> ScreenCaptured;
 
@@ -73,6 +78,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _baseRenderer = renderer;
 
             renderer.ScreenCaptured += (sender, info) => ScreenCaptured?.Invoke(this, info);
+            renderer.SetInterruptAction(Interrupt);
 
             Pipeline = new ThreadedPipeline(this, renderer.Pipeline);
             Window = new ThreadedWindow(this, renderer);
@@ -82,6 +88,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
             _galWorkAvailable = new ManualResetEventSlim(false);
             _invokeRun = new ManualResetEventSlim();
+            _interruptRun = new ManualResetEventSlim();
             _spanPool = new CircularSpanPool(this, SpanPoolBytes);
             SpanPool = _spanPool;
 
@@ -94,6 +101,8 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         public void RunLoop(Action gpuLoop)
         {
             _running = true;
+
+            _backendThread = Thread.CurrentThread;
 
             _gpuThread = new Thread(() => {
                 gpuLoop();
@@ -116,10 +125,21 @@ namespace Ryujinx.Graphics.GAL.Multithreading
                 _galWorkAvailable.Wait();
                 _galWorkAvailable.Reset();
 
+                if (Volatile.Read(ref _interrupted) != 0)
+                {
+                    while (Volatile.Read(ref _interruptAction) == null) { }
+
+                    _interruptAction();
+                    _interruptRun.Set();
+
+                    Interlocked.Exchange(ref _interruptAction, null);
+                    Interlocked.Exchange(ref _interrupted, 0);
+                }
+
                 // The other thread can only increase the command count.
                 // We can assume that if it is above 0, it will stay there or get higher.
 
-                while (_commandCount > 0)
+                while (_commandCount > 0 && Volatile.Read(ref _interrupted) == 0)
                 {
                     int commandPtr = _consumerPtr;
 
@@ -281,10 +301,10 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             return sampler;
         }
 
-        public void CreateSync(ulong id)
+        public void CreateSync(ulong id, bool strict)
         {
             Sync.CreateSyncHandle(id);
-            New<CreateSyncCommand>().Set(id);
+            New<CreateSyncCommand>().Set(id, strict);
             QueueCommand();
         }
 
@@ -419,6 +439,32 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             Sync.WaitSyncAvailability(id);
 
             _baseRenderer.WaitSync(id);
+        }
+
+        private void Interrupt(Action action)
+        {
+            // Interrupt the backend thread from any external thread and invoke the given action.
+
+            if (Thread.CurrentThread == _backendThread)
+            {
+                // If this is called from the backend thread, the action can run immediately.
+                action();
+            }
+            else
+            {
+                while (Interlocked.CompareExchange(ref _interrupted, 1, 0) != 0) { }
+
+                Interlocked.Exchange(ref _interruptAction, action);
+
+                _galWorkAvailable.Set();
+
+                _interruptRun.Wait();
+            }
+        }
+
+        public void SetInterruptAction(Action<Action> interruptAction)
+        {
+            // Threaded renderer ignores given interrupt action, as it provides its own to the child renderer.
         }
 
         public void Dispose()
