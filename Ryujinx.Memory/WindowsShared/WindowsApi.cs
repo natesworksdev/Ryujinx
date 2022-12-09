@@ -37,7 +37,7 @@ namespace Ryujinx.Memory.WindowsShared
         [return: MarshalAs(UnmanagedType.Bool)]
         public static partial bool VirtualFree(IntPtr lpAddress, IntPtr dwSize, AllocationType dwFreeType);
 
-        [LibraryImport("kernel32.dll", SetLastError = true)]
+        [LibraryImport("kernel32.dll", SetLastError = true, EntryPoint = "CreateFileMappingW")]
         public static partial IntPtr CreateFileMapping(
             IntPtr hFile,
             IntPtr lpFileMappingAttributes,
