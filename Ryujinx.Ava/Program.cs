@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Ava
 {
-    internal class Program
+    internal partial class Program
     {
         public static double WindowScaleFactor  { get; set; }
         public static double DesktopScaleFactor { get; set; } = 1.0;
@@ -29,7 +29,7 @@ namespace Ryujinx.Ava
         public static bool   PreviewerDetached {  get; private set; }
 
         [LibraryImport("user32.dll", SetLastError = true)]
-        public static extern int MessageBoxA(IntPtr hWnd, string text, string caption, uint type);
+        public static partial int MessageBoxA(IntPtr hWnd, [MarshalAs(UnmanagedType.LPStr)] string text, [MarshalAs(UnmanagedType.LPStr)] string caption, uint type);
 
         private const uint MB_ICONWARNING = 0x30;
 

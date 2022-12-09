@@ -5,7 +5,7 @@ using System.Runtime.Versioning;
 namespace Ryujinx.Ava.Ui.Controls
 {
     [SupportedOSPlatform("windows")]
-    internal class Win32NativeInterop
+    internal partial class Win32NativeInterop
     {
         [Flags]
         public enum ClassStyles : uint
@@ -76,30 +76,30 @@ namespace Ryujinx.Ava.Ui.Controls
             }
         }
 
-        [LibraryImport("user32.dll", SetLastError = true)]
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern ushort RegisterClassEx(ref WNDCLASSEX param);
 
         [LibraryImport("user32.dll", SetLastError = true)]
-        public static extern short UnregisterClass([MarshalAs(UnmanagedType.LPWStr)] string lpClassName, IntPtr instance);
+        public static partial short UnregisterClass([MarshalAs(UnmanagedType.LPWStr)] string lpClassName, IntPtr instance);
 
         [LibraryImport("user32.dll")]
-        public static extern IntPtr DefWindowProc(IntPtr hWnd, WindowsMessages msg, IntPtr wParam, IntPtr lParam);
+        public static partial IntPtr DefWindowProc(IntPtr hWnd, WindowsMessages msg, IntPtr wParam, IntPtr lParam);
 
         [LibraryImport("kernel32.dll")]
-        public static extern IntPtr GetModuleHandle(string lpModuleName);
+        public static partial IntPtr GetModuleHandle([MarshalAs(UnmanagedType.LPStr)] string lpModuleName);
 
         [LibraryImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool DestroyWindow(IntPtr hwnd);
+        public static partial bool DestroyWindow(IntPtr hwnd);
 
         [LibraryImport("user32.dll", SetLastError = true)]
-        public static extern IntPtr LoadCursor(IntPtr hInstance, IntPtr lpCursorName);
+        public static partial IntPtr LoadCursor(IntPtr hInstance, IntPtr lpCursorName);
 
         [LibraryImport("user32.dll", SetLastError = true)]
-        public static extern IntPtr CreateWindowEx(
+        public static partial IntPtr CreateWindowEx(
            uint dwExStyle,
-           string lpClassName,
-           string lpWindowName,
+           [MarshalAs(UnmanagedType.LPTStr)] string lpClassName,
+           [MarshalAs(UnmanagedType.LPTStr)] string lpWindowName,
            WindowStyles dwStyle,
            int x,
            int y,
