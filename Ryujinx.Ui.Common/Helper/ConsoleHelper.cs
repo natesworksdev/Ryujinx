@@ -5,7 +5,7 @@ using System.Runtime.Versioning;
 
 namespace Ryujinx.Ui.Common.Helper
 {
-    public static class ConsoleHelper
+    public static partial class ConsoleHelper
     {
         public static bool SetConsoleWindowStateSupported => OperatingSystem.IsWindows();
 
@@ -40,10 +40,11 @@ namespace Ryujinx.Ui.Common.Helper
 
         [SupportedOSPlatform("windows")]
         [LibraryImport("kernel32")]
-        static extern IntPtr GetConsoleWindow();
+        private static partial IntPtr GetConsoleWindow();
 
         [SupportedOSPlatform("windows")]
         [LibraryImport("user32")]
-        static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool ShowWindow(IntPtr hWnd, int nCmdShow);
     }
 }

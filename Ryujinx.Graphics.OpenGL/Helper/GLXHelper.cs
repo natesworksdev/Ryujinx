@@ -5,7 +5,7 @@ using System.Runtime.Versioning;
 namespace Ryujinx.Graphics.OpenGL.Helper
 {
     [SupportedOSPlatform("linux")]
-    internal static class GLXHelper
+    internal static partial class GLXHelper
     {
         private const string LibraryName = "glx.dll";
 
@@ -31,6 +31,6 @@ namespace Ryujinx.Graphics.OpenGL.Helper
         }
 
         [LibraryImport(LibraryName, EntryPoint = "glXGetCurrentContext")]
-        public static extern IntPtr GetCurrentContext();
+        public static partial IntPtr GetCurrentContext();
     }
 }
