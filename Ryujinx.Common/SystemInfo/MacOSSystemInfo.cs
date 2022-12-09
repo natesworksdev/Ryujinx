@@ -61,7 +61,7 @@ namespace Ryujinx.Common.SystemInfo
         private const string SystemLibraryName = "libSystem.dylib";
 
         [LibraryImport(SystemLibraryName, SetLastError = true)]
-        private static partial int sysctlbyname(string name, IntPtr oldValue, ref ulong oldSize, IntPtr newValue, ulong newValueSize);
+        private static partial int sysctlbyname([MarshalAs(UnmanagedType.LPStr)] string name, IntPtr oldValue, ref ulong oldSize, IntPtr newValue, ulong newValueSize);
 
         private static int sysctlbyname(string name, IntPtr oldValue, ref ulong oldSize)
         {

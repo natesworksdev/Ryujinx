@@ -8,15 +8,16 @@ namespace Ryujinx.Common.SystemInterop
     public static partial class ForceDpiAware
     {
         [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
         private static partial bool SetProcessDPIAware();
 
         private const string X11LibraryName = "libX11.so.6";
 
         [LibraryImport(X11LibraryName)]
-        private static partial IntPtr XOpenDisplay(string display);
+        private static partial IntPtr XOpenDisplay([MarshalAs(UnmanagedType.LPStr)] string display);
 
         [LibraryImport(X11LibraryName)]
-        private static partial IntPtr XGetDefault(IntPtr display, string program, string option);
+        private static partial IntPtr XGetDefault(IntPtr display, [MarshalAs(UnmanagedType.LPStr)] string program, [MarshalAs(UnmanagedType.LPStr)] string option);
 
         [LibraryImport(X11LibraryName)]
         private static partial int XDisplayWidth(IntPtr display, int screenNumber);

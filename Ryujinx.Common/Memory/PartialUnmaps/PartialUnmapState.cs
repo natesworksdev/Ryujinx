@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 using System.Runtime.Versioning;
 using System.Threading;
 
@@ -30,14 +31,16 @@ namespace Ryujinx.Common.Memory.PartialUnmaps
 
         [SupportedOSPlatform("windows")]
         [LibraryImport("kernel32.dll", SetLastError = true)]
-        private static partial IntPtr OpenThread(int dwDesiredAccess, bool bInheritHandle, uint dwThreadId);
+        private static partial IntPtr OpenThread(int dwDesiredAccess, [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle, uint dwThreadId);
 
         [SupportedOSPlatform("windows")]
         [LibraryImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs (UnmanagedType.Bool)]
         public static partial bool CloseHandle(IntPtr hObject);
 
         [SupportedOSPlatform("windows")]
         [LibraryImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         private static partial bool GetExitCodeThread(IntPtr hThread, out uint lpExitCode);
 
         /// <summary>
