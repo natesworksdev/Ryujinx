@@ -19,13 +19,13 @@ namespace Ryujinx.Common.System
             public uint wPeriodMax;
         };
 
-        [DllImport("winmm.dll", EntryPoint = "timeGetDevCaps", SetLastError = true)]
+        [LibraryImport("winmm.dll", EntryPoint = "timeGetDevCaps", SetLastError = true)]
         private static extern uint TimeGetDevCaps(ref TimeCaps timeCaps, uint sizeTimeCaps);
 
-        [DllImport("winmm.dll", EntryPoint = "timeBeginPeriod")]
+        [LibraryImport("winmm.dll", EntryPoint = "timeBeginPeriod")]
         private static extern uint TimeBeginPeriod(uint uMilliseconds);
 
-        [DllImport("winmm.dll", EntryPoint = "timeEndPeriod")]
+        [LibraryImport("winmm.dll", EntryPoint = "timeEndPeriod")]
         private static extern uint TimeEndPeriod(uint uMilliseconds);
 
         private uint _targetResolutionInMilliseconds;

@@ -51,37 +51,37 @@ namespace Ryujinx.Memory
         public const int MADV_DONTNEED = 4;
         public const int MADV_REMOVE = 9;
 
-        [DllImport("libc", EntryPoint = "mmap", SetLastError = true)]
+        [LibraryImport("libc", EntryPoint = "mmap", SetLastError = true)]
         private static extern IntPtr Internal_mmap(IntPtr address, ulong length, MmapProts prot, int flags, int fd, long offset);
 
-        [DllImport("libc", SetLastError = true)]
+        [LibraryImport("libc", SetLastError = true)]
         public static extern int mprotect(IntPtr address, ulong length, MmapProts prot);
 
-        [DllImport("libc", SetLastError = true)]
+        [LibraryImport("libc", SetLastError = true)]
         public static extern int munmap(IntPtr address, ulong length);
 
-        [DllImport("libc", SetLastError = true)]
+        [LibraryImport("libc", SetLastError = true)]
         public static extern IntPtr mremap(IntPtr old_address, ulong old_size, ulong new_size, int flags, IntPtr new_address);
 
-        [DllImport("libc", SetLastError = true)]
+        [LibraryImport("libc", SetLastError = true)]
         public static extern int madvise(IntPtr address, ulong size, int advice);
 
-        [DllImport("libc", SetLastError = true)]
+        [LibraryImport("libc", SetLastError = true)]
         public static extern int mkstemp(IntPtr template);
 
-        [DllImport("libc", SetLastError = true)]
+        [LibraryImport("libc", SetLastError = true)]
         public static extern int unlink(IntPtr pathname);
 
-        [DllImport("libc", SetLastError = true)]
+        [LibraryImport("libc", SetLastError = true)]
         public static extern int ftruncate(int fildes, IntPtr length);
 
-        [DllImport("libc", SetLastError = true)]
+        [LibraryImport("libc", SetLastError = true)]
         public static extern int close(int fd);
 
-        [DllImport("libc", SetLastError = true)]
+        [LibraryImport("libc", SetLastError = true)]
         public static extern int shm_open(IntPtr name, int oflag, uint mode);
 
-        [DllImport("libc", SetLastError = true)]
+        [LibraryImport("libc", SetLastError = true)]
         public static extern int shm_unlink(IntPtr name);
 
         private static int MmapFlagsToSystemFlags(MmapFlags flags)

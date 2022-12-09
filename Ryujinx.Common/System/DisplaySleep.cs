@@ -13,7 +13,7 @@ namespace Ryujinx.Common.System
             ES_SYSTEM_REQUIRED = 0x00000001
         }
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [LibraryImport("kernel32.dll", SetLastError = true)]
         static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
 
         static public void Prevent()

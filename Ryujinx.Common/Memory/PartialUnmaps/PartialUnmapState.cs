@@ -25,19 +25,19 @@ namespace Ryujinx.Common.Memory.PartialUnmaps
         public readonly static IntPtr GlobalState;
 
         [SupportedOSPlatform("windows")]
-        [DllImport("kernel32.dll")]
+        [LibraryImport("kernel32.dll")]
         public static extern int GetCurrentThreadId();
 
         [SupportedOSPlatform("windows")]
-        [DllImport("kernel32.dll", SetLastError = true)]
+        [LibraryImport("kernel32.dll", SetLastError = true)]
         static extern IntPtr OpenThread(int dwDesiredAccess, bool bInheritHandle, uint dwThreadId);
 
         [SupportedOSPlatform("windows")]
-        [DllImport("kernel32.dll", SetLastError = true)]
+        [LibraryImport("kernel32.dll", SetLastError = true)]
         public static extern bool CloseHandle(IntPtr hObject);
 
         [SupportedOSPlatform("windows")]
-        [DllImport("kernel32.dll", SetLastError = true)]
+        [LibraryImport("kernel32.dll", SetLastError = true)]
         static extern bool GetExitCodeThread(IntPtr hThread, out uint lpExitCode);
 
         /// <summary>

@@ -19,7 +19,7 @@ namespace Ryujinx.Common.GraphicsDriver
         private const uint NvAPI_DRS_SaveSettings_ID = 0xFCBC7E14;
         private const uint NvAPI_DRS_DestroySession_ID = 0x0DAD9CFF8;
 
-        [DllImport("nvapi64")]
+        [LibraryImport("nvapi64")]
         private static extern IntPtr nvapi_QueryInterface(uint id);
 
         private delegate int NvAPI_InitializeDelegate();

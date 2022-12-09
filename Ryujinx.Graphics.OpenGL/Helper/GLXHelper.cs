@@ -30,7 +30,7 @@ namespace Ryujinx.Graphics.OpenGL.Helper
             });
         }
 
-        [DllImport(LibraryName, EntryPoint = "glXGetCurrentContext")]
+        [LibraryImport(LibraryName, EntryPoint = "glXGetCurrentContext")]
         public static extern IntPtr GetCurrentContext();
     }
 }

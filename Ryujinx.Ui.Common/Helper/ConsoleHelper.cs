@@ -39,11 +39,11 @@ namespace Ryujinx.Ui.Common.Helper
         }
 
         [SupportedOSPlatform("windows")]
-        [DllImport("kernel32")]
+        [LibraryImport("kernel32")]
         static extern IntPtr GetConsoleWindow();
 
         [SupportedOSPlatform("windows")]
-        [DllImport("user32")]
+        [LibraryImport("user32")]
         static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
     }
 }

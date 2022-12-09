@@ -7,24 +7,24 @@ namespace Ryujinx.Common.System
 {
     public static class ForceDpiAware
     {
-        [DllImport("user32.dll")]
+        [LibraryImport("user32.dll")]
         private static extern bool SetProcessDPIAware();
 
         private const string X11LibraryName = "libX11.so.6";
 
-        [DllImport(X11LibraryName)]
+        [LibraryImport(X11LibraryName)]
         private static extern IntPtr XOpenDisplay(string display);
 
-        [DllImport(X11LibraryName)]
+        [LibraryImport(X11LibraryName)]
         private static extern IntPtr XGetDefault(IntPtr display, string program, string option);
 
-        [DllImport(X11LibraryName)]
+        [LibraryImport(X11LibraryName)]
         private static extern int XDisplayWidth(IntPtr display, int screenNumber);
 
-        [DllImport(X11LibraryName)]
+        [LibraryImport(X11LibraryName)]
         private static extern int XDisplayWidthMM(IntPtr display, int screenNumber);
 
-        [DllImport(X11LibraryName)]
+        [LibraryImport(X11LibraryName)]
         private static extern int XCloseDisplay(IntPtr display);
 
         private static readonly double _standardDpiScale = 96.0;

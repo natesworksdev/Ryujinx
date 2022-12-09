@@ -42,7 +42,7 @@ namespace ARMeilleure.Translation.Cache
 
         private unsafe delegate RuntimeFunction* GetRuntimeFunctionCallback(ulong controlPc, IntPtr context);
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+        [LibraryImport("kernel32.dll")]
         private static unsafe extern bool RtlInstallFunctionTableCallback(
             ulong tableIdentifier,
             ulong baseAddress,

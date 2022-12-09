@@ -100,28 +100,28 @@ namespace Ryujinx.Ava.Ui.Helper
             // TODO
         }
 
-        [DllImport(LibObjCImport)]
+        [LibraryImport(LibObjCImport)]
         private static unsafe extern IntPtr sel_registerName(byte* data);
 
-        [DllImport(LibObjCImport)]
+        [LibraryImport(LibObjCImport)]
         private static unsafe extern IntPtr objc_getClass(byte* data);
 
-        [DllImport(LibObjCImport)]
+        [LibraryImport(LibObjCImport)]
         private static extern void objc_msgSend(IntPtr receiver, Selector selector);
 
-        [DllImport(LibObjCImport)]
+        [LibraryImport(LibObjCImport)]
         private static extern void objc_msgSend(IntPtr receiver, Selector selector, byte value);
 
-        [DllImport(LibObjCImport)]
+        [LibraryImport(LibObjCImport)]
         private static extern void objc_msgSend(IntPtr receiver, Selector selector, IntPtr value);
 
-        [DllImport(LibObjCImport)]
+        [LibraryImport(LibObjCImport)]
         private static extern void objc_msgSend(IntPtr receiver, Selector selector, NSRect point);
 
-        [DllImport(LibObjCImport)]
+        [LibraryImport(LibObjCImport)]
         private static extern void objc_msgSend(IntPtr receiver, Selector selector, double value);
 
-        [DllImport(LibObjCImport, EntryPoint = "objc_msgSend")]
+        [LibraryImport(LibObjCImport, EntryPoint = "objc_msgSend")]
         private static extern IntPtr IntPtr_objc_msgSend(IntPtr receiver, Selector selector);
     }
 }

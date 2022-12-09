@@ -24,10 +24,10 @@ namespace ARMeilleure.Signal
         private const int SIGBUS = 10;
         private const int SA_SIGINFO = 0x00000004;
 
-        [DllImport("libc", SetLastError = true)]
+        [LibraryImport("libc", SetLastError = true)]
         private static extern int sigaction(int signum, ref SigAction sigAction, out SigAction oldAction);
 
-        [DllImport("libc", SetLastError = true)]
+        [LibraryImport("libc", SetLastError = true)]
         private static extern int sigemptyset(ref SigSet set);
 
         public static SigAction RegisterExceptionHandler(IntPtr action)

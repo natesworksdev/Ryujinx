@@ -44,13 +44,13 @@ namespace Ryujinx.Ui
             throw new NotImplementedException();
         }
 
-        [DllImport("libgdk-3-0.dll")]
+        [LibraryImport("libgdk-3-0.dll")]
         private static extern IntPtr gdk_win32_window_get_handle(IntPtr d);
 
-        [DllImport("libgdk-3.so.0")]
+        [LibraryImport("libgdk-3.so.0")]
         private static extern IntPtr gdk_x11_display_get_xdisplay(IntPtr gdkDisplay);
 
-        [DllImport("libgdk-3.so.0")]
+        [LibraryImport("libgdk-3.so.0")]
         private static extern IntPtr gdk_x11_window_get_xid(IntPtr gdkWindow);
 
         protected override bool OnConfigureEvent(EventConfigure evnt)

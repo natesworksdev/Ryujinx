@@ -28,7 +28,7 @@ namespace Ryujinx.Ava
         public static string ConfigurationPath  { get; private set; }
         public static bool   PreviewerDetached {  get; private set; }
 
-        [DllImport("user32.dll", SetLastError = true)]
+        [LibraryImport("user32.dll", SetLastError = true)]
         public static extern int MessageBoxA(IntPtr hWnd, string text, string caption, uint type);
 
         private const uint MB_ICONWARNING = 0x30;

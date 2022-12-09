@@ -387,7 +387,7 @@ namespace Ryujinx.Modules
             worker.Start();
         }
 
-        [DllImport("libc", SetLastError = true)]
+        [LibraryImport("libc", SetLastError = true)]
         private static extern int chmod(string path, uint mode);
 
         private static void SetUnixPermissions()

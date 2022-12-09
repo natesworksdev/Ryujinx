@@ -35,16 +35,16 @@ namespace Ryujinx
 
         private const string X11LibraryName = "libX11";
 
-        [DllImport(X11LibraryName)]
+        [LibraryImport(X11LibraryName)]
         private extern static int XInitThreads();
 
-        [DllImport("user32.dll", SetLastError = true)]
+        [LibraryImport("user32.dll", SetLastError = true)]
         public static extern int MessageBoxA(IntPtr hWnd, string text, string caption, uint type);
 
-        [DllImport("libc", SetLastError = true)]
+        [LibraryImport("libc", SetLastError = true)]
         static extern int setenv(string name, string value, int overwrite);
 
-        [DllImport("libc")]
+        [LibraryImport("libc")]
         static extern IntPtr getenv(string name);
 
         private const uint MB_ICONWARNING = 0x30;

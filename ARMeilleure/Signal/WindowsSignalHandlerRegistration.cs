@@ -5,16 +5,16 @@ namespace ARMeilleure.Signal
 {
     unsafe class WindowsSignalHandlerRegistration
     {
-        [DllImport("kernel32.dll")]
+        [LibraryImport("kernel32.dll")]
         private static extern IntPtr AddVectoredExceptionHandler(uint first, IntPtr handler);
 
-        [DllImport("kernel32.dll")]
+        [LibraryImport("kernel32.dll")]
         private static extern ulong RemoveVectoredExceptionHandler(IntPtr handle);
 
-        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi)]
+        [LibraryImport("kernel32.dll", SetLastError = true)]
         static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)] string lpFileName);
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
+        [LibraryImport("kernel32.dll", SetLastError = true)]
         private static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
 
         private static IntPtr _getCurrentThreadIdPtr;

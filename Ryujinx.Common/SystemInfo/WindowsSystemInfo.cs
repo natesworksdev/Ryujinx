@@ -65,7 +65,7 @@ namespace Ryujinx.Common.SystemInfo
         }
 
         [return: MarshalAs(UnmanagedType.Bool)]
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [LibraryImport("kernel32.dll", SetLastError = true)]
         private static extern bool GlobalMemoryStatusEx([In, Out] MemoryStatusEx lpBuffer);
 
         private static ManagementObjectCollection GetWMIObjects(string scope, string query)
