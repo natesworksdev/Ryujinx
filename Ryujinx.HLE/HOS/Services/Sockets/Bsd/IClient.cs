@@ -224,14 +224,16 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             List<IFileDescriptor> writeFds = _context.RetrieveFileDescriptorsFromMask(context.Memory.GetSpan(writeFdsInBufferPosition, (int)writeFdsInBufferSize));
             List<IFileDescriptor> errorFds = _context.RetrieveFileDescriptorsFromMask(context.Memory.GetSpan(errorFdsInBufferPosition, (int)errorFdsInBufferSize));
 
-            if (fdsCount == 0)
+            int actualFdsCount = readFds.Count + writeFds.Count + errorFds.Count;
+
+            if (fdsCount == 0 || actualFdsCount == 0)
             {
                 WriteBsdResult(context, 0);
 
                 return ResultCode.Success;
             }
 
-            PollEvent[] events = new PollEvent[fdsCount];
+            PollEvent[] events = new PollEvent[actualFdsCount];
 
             int index = 0;
 
