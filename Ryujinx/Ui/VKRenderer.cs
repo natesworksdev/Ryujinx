@@ -12,7 +12,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Ui
 {
-    public class VKRenderer : RendererWidgetBase
+    public partial class VKRenderer : RendererWidgetBase
     {
         public NativeWindowBase NativeWindow { get; private set; }
         private UpdateBoundsCallbackDelegate _updateBoundsCallback;
@@ -45,13 +45,13 @@ namespace Ryujinx.Ui
         }
 
         [LibraryImport("libgdk-3-0.dll")]
-        private static extern IntPtr gdk_win32_window_get_handle(IntPtr d);
+        private static partial IntPtr gdk_win32_window_get_handle(IntPtr d);
 
         [LibraryImport("libgdk-3.so.0")]
-        private static extern IntPtr gdk_x11_display_get_xdisplay(IntPtr gdkDisplay);
+        private static partial IntPtr gdk_x11_display_get_xdisplay(IntPtr gdkDisplay);
 
         [LibraryImport("libgdk-3.so.0")]
-        private static extern IntPtr gdk_x11_window_get_xid(IntPtr gdkWindow);
+        private static partial IntPtr gdk_x11_window_get_xid(IntPtr gdkWindow);
 
         protected override bool OnConfigureEvent(EventConfigure evnt)
         {

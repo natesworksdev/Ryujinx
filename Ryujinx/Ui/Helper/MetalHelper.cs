@@ -8,7 +8,7 @@ namespace Ryujinx.Ui.Helper
     public delegate void UpdateBoundsCallbackDelegate(Window window);
 
     [SupportedOSPlatform("macos")]
-    static class MetalHelper
+    static partial class MetalHelper
     {
         private const string LibObjCImport = "/usr/lib/libobjc.A.dylib";
 
@@ -105,30 +105,30 @@ namespace Ryujinx.Ui.Helper
         }
 
         [LibraryImport(LibObjCImport)]
-        private static unsafe extern IntPtr sel_registerName(byte* data);
+        private static unsafe partial IntPtr sel_registerName(byte* data);
 
         [LibraryImport(LibObjCImport)]
-        private static unsafe extern IntPtr objc_getClass(byte* data);
+        private static unsafe partial IntPtr objc_getClass(byte* data);
 
         [LibraryImport(LibObjCImport)]
-        private static extern void objc_msgSend(IntPtr receiver, Selector selector);
+        private static partial void objc_msgSend(IntPtr receiver, Selector selector);
 
         [LibraryImport(LibObjCImport)]
-        private static extern void objc_msgSend(IntPtr receiver, Selector selector, byte value);
+        private static partial void objc_msgSend(IntPtr receiver, Selector selector, byte value);
 
         [LibraryImport(LibObjCImport)]
-        private static extern void objc_msgSend(IntPtr receiver, Selector selector, IntPtr value);
+        private static partial void objc_msgSend(IntPtr receiver, Selector selector, IntPtr value);
 
         [LibraryImport(LibObjCImport)]
-        private static extern void objc_msgSend(IntPtr receiver, Selector selector, NSRect point);
+        private static partial void objc_msgSend(IntPtr receiver, Selector selector, NSRect point);
 
         [LibraryImport(LibObjCImport)]
-        private static extern void objc_msgSend(IntPtr receiver, Selector selector, double value);
+        private static partial void objc_msgSend(IntPtr receiver, Selector selector, double value);
 
         [LibraryImport(LibObjCImport, EntryPoint = "objc_msgSend")]
-        private static extern IntPtr IntPtr_objc_msgSend(IntPtr receiver, Selector selector);
+        private static partial IntPtr IntPtr_objc_msgSend(IntPtr receiver, Selector selector);
 
         [LibraryImport("libgdk-3.0.dylib")]
-        private static extern IntPtr gdk_quartz_window_get_nsview(IntPtr gdkWindow);
+        private static partial IntPtr gdk_quartz_window_get_nsview(IntPtr gdkWindow);
     }
 }

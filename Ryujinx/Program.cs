@@ -23,7 +23,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx
 {
-    class Program
+    partial class Program
     {
         public static double WindowScaleFactor { get; private set; }
 
@@ -36,16 +36,16 @@ namespace Ryujinx
         private const string X11LibraryName = "libX11";
 
         [LibraryImport(X11LibraryName)]
-        private extern static int XInitThreads();
+        private static partial int XInitThreads();
 
         [LibraryImport("user32.dll", SetLastError = true)]
-        public static extern int MessageBoxA(IntPtr hWnd, string text, string caption, uint type);
+        public static partial int MessageBoxA(IntPtr hWnd, string text, string caption, uint type);
 
         [LibraryImport("libc", SetLastError = true)]
-        static extern int setenv(string name, string value, int overwrite);
+        private static partial int setenv(string name, string value, int overwrite);
 
         [LibraryImport("libc")]
-        static extern IntPtr getenv(string name);
+        private static partial IntPtr getenv(string name);
 
         private const uint MB_ICONWARNING = 0x30;
 
