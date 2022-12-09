@@ -750,7 +750,7 @@ namespace Ryujinx.Ui.Common.Configuration
         {
             bool configurationFileUpdated = false;
 
-            if (configurationFileFormat.Version < 0 || configurationFileFormat.Version > ConfigurationFileFormat.CurrentVersion)
+            if (configurationFileFormat.Version is < 0 or > ConfigurationFileFormat.CurrentVersion)
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Unsupported configuration version {configurationFileFormat.Version}, loading default.");
 
