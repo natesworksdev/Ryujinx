@@ -11,7 +11,7 @@ namespace ARMeilleure.Signal
         [LibraryImport("kernel32.dll")]
         private static partial ulong RemoveVectoredExceptionHandler(IntPtr handle);
 
-        [LibraryImport("kernel32.dll", SetLastError = true)]
+        [LibraryImport("kernel32.dll", SetLastError = true, EntryPoint = "LoadLibraryA")]
         private static partial IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)] string lpFileName);
 
         [LibraryImport("kernel32.dll", SetLastError = true)]
