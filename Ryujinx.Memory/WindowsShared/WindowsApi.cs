@@ -3,20 +3,20 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Memory.WindowsShared
 {
-    static class WindowsApi
+    static partial class WindowsApi
     {
         public static readonly IntPtr InvalidHandleValue = new IntPtr(-1);
         public static readonly IntPtr CurrentProcessHandle = new IntPtr(-1);
 
         [LibraryImport("kernel32.dll", SetLastError = true)]
-        public static extern IntPtr VirtualAlloc(
+        public static partial IntPtr VirtualAlloc(
             IntPtr lpAddress,
             IntPtr dwSize,
             AllocationType flAllocationType,
             MemoryProtection flProtect);
 
         [LibraryImport("KernelBase.dll", SetLastError = true)]
-        public static extern IntPtr VirtualAlloc2(
+        public static partial IntPtr VirtualAlloc2(
             IntPtr process,
             IntPtr lpAddress,
             IntPtr dwSize,
@@ -26,17 +26,19 @@ namespace Ryujinx.Memory.WindowsShared
             ulong parameterCount);
 
         [LibraryImport("kernel32.dll", SetLastError = true)]
-        public static extern bool VirtualProtect(
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool VirtualProtect(
             IntPtr lpAddress,
             IntPtr dwSize,
             MemoryProtection flNewProtect,
             out MemoryProtection lpflOldProtect);
 
         [LibraryImport("kernel32.dll", SetLastError = true)]
-        public static extern bool VirtualFree(IntPtr lpAddress, IntPtr dwSize, AllocationType dwFreeType);
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool VirtualFree(IntPtr lpAddress, IntPtr dwSize, AllocationType dwFreeType);
 
         [LibraryImport("kernel32.dll", SetLastError = true)]
-        public static extern IntPtr CreateFileMapping(
+        public static partial IntPtr CreateFileMapping(
             IntPtr hFile,
             IntPtr lpFileMappingAttributes,
             FileMapProtection flProtect,
@@ -45,10 +47,11 @@ namespace Ryujinx.Memory.WindowsShared
             [MarshalAs(UnmanagedType.LPWStr)] string lpName);
 
         [LibraryImport("kernel32.dll", SetLastError = true)]
-        public static extern bool CloseHandle(IntPtr hObject);
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool CloseHandle(IntPtr hObject);
 
         [LibraryImport("kernel32.dll", SetLastError = true)]
-        public static extern IntPtr MapViewOfFile(
+        public static partial IntPtr MapViewOfFile(
             IntPtr hFileMappingObject,
             uint dwDesiredAccess,
             uint dwFileOffsetHigh,
@@ -56,7 +59,7 @@ namespace Ryujinx.Memory.WindowsShared
             IntPtr dwNumberOfBytesToMap);
 
         [LibraryImport("KernelBase.dll", SetLastError = true)]
-        public static extern IntPtr MapViewOfFile3(
+        public static partial IntPtr MapViewOfFile3(
             IntPtr hFileMappingObject,
             IntPtr process,
             IntPtr baseAddress,
@@ -68,16 +71,18 @@ namespace Ryujinx.Memory.WindowsShared
             ulong parameterCount);
 
         [LibraryImport("kernel32.dll", SetLastError = true)]
-        public static extern bool UnmapViewOfFile(IntPtr lpBaseAddress);
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool UnmapViewOfFile(IntPtr lpBaseAddress);
 
         [LibraryImport("KernelBase.dll", SetLastError = true)]
-        public static extern bool UnmapViewOfFile2(IntPtr process, IntPtr lpBaseAddress, ulong unmapFlags);
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool UnmapViewOfFile2(IntPtr process, IntPtr lpBaseAddress, ulong unmapFlags);
 
         [LibraryImport("kernel32.dll")]
-        public static extern uint GetLastError();
+        public static partial uint GetLastError();
 
         [LibraryImport("kernel32.dll")]
-        public static extern int GetCurrentThreadId();
+        public static partial int GetCurrentThreadId();
 
         public static MemoryProtection GetProtection(MemoryPermission permission)
         {

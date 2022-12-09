@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Memory
 {
-    public static class MemoryManagerUnixHelper
+    public static partial class MemoryManagerUnixHelper
     {
         [Flags]
         public enum MmapProts : uint
@@ -52,37 +52,37 @@ namespace Ryujinx.Memory
         public const int MADV_REMOVE = 9;
 
         [LibraryImport("libc", EntryPoint = "mmap", SetLastError = true)]
-        private static extern IntPtr Internal_mmap(IntPtr address, ulong length, MmapProts prot, int flags, int fd, long offset);
+        private static partial IntPtr Internal_mmap(IntPtr address, ulong length, MmapProts prot, int flags, int fd, long offset);
 
         [LibraryImport("libc", SetLastError = true)]
-        public static extern int mprotect(IntPtr address, ulong length, MmapProts prot);
+        public static partial int mprotect(IntPtr address, ulong length, MmapProts prot);
 
         [LibraryImport("libc", SetLastError = true)]
-        public static extern int munmap(IntPtr address, ulong length);
+        public static partial int munmap(IntPtr address, ulong length);
 
         [LibraryImport("libc", SetLastError = true)]
-        public static extern IntPtr mremap(IntPtr old_address, ulong old_size, ulong new_size, int flags, IntPtr new_address);
+        public static partial IntPtr mremap(IntPtr old_address, ulong old_size, ulong new_size, int flags, IntPtr new_address);
 
         [LibraryImport("libc", SetLastError = true)]
-        public static extern int madvise(IntPtr address, ulong size, int advice);
+        public static partial int madvise(IntPtr address, ulong size, int advice);
 
         [LibraryImport("libc", SetLastError = true)]
-        public static extern int mkstemp(IntPtr template);
+        public static partial int mkstemp(IntPtr template);
 
         [LibraryImport("libc", SetLastError = true)]
-        public static extern int unlink(IntPtr pathname);
+        public static partial int unlink(IntPtr pathname);
 
         [LibraryImport("libc", SetLastError = true)]
-        public static extern int ftruncate(int fildes, IntPtr length);
+        public static partial int ftruncate(int fildes, IntPtr length);
 
         [LibraryImport("libc", SetLastError = true)]
-        public static extern int close(int fd);
+        public static partial int close(int fd);
 
         [LibraryImport("libc", SetLastError = true)]
-        public static extern int shm_open(IntPtr name, int oflag, uint mode);
+        public static partial int shm_open(IntPtr name, int oflag, uint mode);
 
         [LibraryImport("libc", SetLastError = true)]
-        public static extern int shm_unlink(IntPtr name);
+        public static partial int shm_unlink(IntPtr name);
 
         private static int MmapFlagsToSystemFlags(MmapFlags flags)
         {

@@ -3,19 +3,19 @@ using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Signal
 {
-    unsafe class WindowsSignalHandlerRegistration
+    unsafe partial class WindowsSignalHandlerRegistration
     {
         [LibraryImport("kernel32.dll")]
-        private static extern IntPtr AddVectoredExceptionHandler(uint first, IntPtr handler);
+        private static partial IntPtr AddVectoredExceptionHandler(uint first, IntPtr handler);
 
         [LibraryImport("kernel32.dll")]
-        private static extern ulong RemoveVectoredExceptionHandler(IntPtr handle);
+        private static partial ulong RemoveVectoredExceptionHandler(IntPtr handle);
 
         [LibraryImport("kernel32.dll", SetLastError = true)]
-        static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)] string lpFileName);
+        private static partial IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)] string lpFileName);
 
         [LibraryImport("kernel32.dll", SetLastError = true)]
-        private static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
+        private static partial IntPtr GetProcAddress(IntPtr hModule, [MarshalAs(UnmanagedType.LPStr)] string procName);
 
         private static IntPtr _getCurrentThreadIdPtr;
 
