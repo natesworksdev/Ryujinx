@@ -2,6 +2,7 @@
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
 using static Ryujinx.Audio.Backends.SoundIo.Native.SoundIo;
 
 namespace Ryujinx.Audio.Backends.SoundIo.Native
@@ -84,11 +85,11 @@ namespace Ryujinx.Audio.Backends.SoundIo.Native
 
         protected virtual void Dispose(bool disposing)
         {
-            if (_context != IntPtr.Zero)
-            {
-                soundio_destroy(_context);
-                _context = IntPtr.Zero;
+            IntPtr currentContext = Interlocked.Exchange(ref _context, IntPtr.Zero);
 
+            if (currentContext != IntPtr.Zero)
+            {
+                soundio_destroy(currentContext);
             }
         }
 
