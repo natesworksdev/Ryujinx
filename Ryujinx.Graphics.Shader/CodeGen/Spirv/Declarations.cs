@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         // At least 16 attributes are guaranteed by the spec.
         public const int MaxAttributes = 16;
 
-        private static readonly string[] StagePrefixes = new string[] { "cp", "vp", "tcp", "tep", "gp", "fp" };
+        private static readonly string[] StagePrefixes = { "cp", "vp", "tcp", "tep", "gp", "fp" };
 
         public static void DeclareParameters(CodeGenContext context, StructuredFunction function)
         {

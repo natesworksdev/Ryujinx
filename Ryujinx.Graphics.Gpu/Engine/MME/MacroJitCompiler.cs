@@ -22,7 +22,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
         /// </summary>
         public MacroJitCompiler()
         {
-            _meth = new DynamicMethod("Macro", typeof(void), new Type[] { typeof(MacroJitContext), typeof(IDeviceState), typeof(int) });
+            _meth = new DynamicMethod("Macro", typeof(void), new[] { typeof(MacroJitContext), typeof(IDeviceState), typeof(int) });
             _ilGen = _meth.GetILGenerator();
             _gprs = new LocalBuilder[8];
 

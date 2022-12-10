@@ -9,8 +9,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
     abstract class KPageTableBase
     {
-        private static readonly int[] MappingUnitSizes = new int[]
-        {
+        private static readonly int[] MappingUnitSizes = {
             0x1000,
             0x10000,
             0x200000,
@@ -86,7 +85,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             _ipcFillValue = MemoryFillValue.Zero;
         }
 
-        private static readonly int[] AddrSpaceSizes = new int[] { 32, 36, 32, 39 };
+        private static readonly int[] AddrSpaceSizes = { 32, 36, 32, 39 };
 
         public KernelResult InitializeForProcess(
             AddressSpaceType addrSpaceType,

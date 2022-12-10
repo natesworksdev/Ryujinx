@@ -12,7 +12,7 @@ namespace Ryujinx.Tests.Cpu
 #region "ValueSource (Opcodes)"
         private static uint[] _SU_H_AddSub_8_()
         {
-            return new uint[]
+            return new[]
             {
                 0xe6100f90u, // SADD8  R0, R0, R0
                 0xe6100ff0u, // SSUB8  R0, R0, R0
@@ -27,7 +27,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Ssat_Usat_()
         {
-            return new uint[]
+            return new[]
             {
                 0xe6a00010u, // SSAT R0, #1, R0, LSL #0
                 0xe6a00050u, // SSAT R0, #1, R0, ASR #32
@@ -38,7 +38,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Ssat16_Usat16_()
         {
-            return new uint[]
+            return new[]
             {
                 0xe6a00f30u, // SSAT16 R0, #1, R0
                 0xe6e00f30u, // USAT16 R0, #0, R0
@@ -47,7 +47,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Lsr_Lsl_Asr_Ror_()
         {
-            return new uint[]
+            return new[]
             {
                 0xe1b00030u, // LSRS R0, R0, R0
                 0xe1b00010u, // LSLS R0, R0, R0

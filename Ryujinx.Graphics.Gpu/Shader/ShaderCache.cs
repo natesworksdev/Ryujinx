@@ -222,7 +222,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             TranslatedShader translatedShader = TranslateShader(_dumper, channel, translatorContext, cachedGuestCode);
 
-            ShaderSource[] shaderSourcesArray = new ShaderSource[] { CreateShaderSource(translatedShader.Program) };
+            ShaderSource[] shaderSourcesArray = { CreateShaderSource(translatedShader.Program) };
 
             IProgram hostProgram = _context.Renderer.CreateProgram(shaderSourcesArray, new ShaderInfo(-1));
 

@@ -26,8 +26,7 @@ namespace Ryujinx.HLE.HOS.Tamper
 
         public ITamperProgram Compile(string name, IEnumerable<string> rawInstructions)
         {
-            string[] addresses = new string[]
-            {
+            string[] addresses = {
                 $"    Executable address: 0x{_exeAddress:X16}",
                 $"    Heap address      : 0x{_heapAddress:X16}",
                 $"    Alias address     : 0x{_aliasAddress:X16}",

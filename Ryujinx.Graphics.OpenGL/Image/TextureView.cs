@@ -66,8 +66,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             GL.BindTexture(target, Handle);
 
-            int[] swizzleRgba = new int[]
-            {
+            int[] swizzleRgba = {
                 (int)Info.SwizzleR.Convert(),
                 (int)Info.SwizzleG.Convert(),
                 (int)Info.SwizzleB.Convert(),

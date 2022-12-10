@@ -7,8 +7,7 @@ namespace Ryujinx.Ava.Input
 {
     internal static class AvaloniaKeyboardMappingHelper
     {
-        private static readonly AvaKey[] _keyMapping = new AvaKey[(int)Key.Count]
-        {
+        private static readonly AvaKey[] _keyMapping = {
             // NOTE: Invalid
             AvaKey.None,
 

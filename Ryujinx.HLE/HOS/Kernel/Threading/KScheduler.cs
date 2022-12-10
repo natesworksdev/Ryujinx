@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         private const int RoundRobinTimeQuantumMs = 10;
 
-        private static readonly int[] PreemptionPriorities = new int[] { 59, 59, 59, 63 };
+        private static readonly int[] PreemptionPriorities = { 59, 59, 59, 63 };
 
         private readonly KernelContext _context;
         private readonly int _coreId;

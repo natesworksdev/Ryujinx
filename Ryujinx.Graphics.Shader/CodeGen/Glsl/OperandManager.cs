@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 {
     class OperandManager
     {
-        private static readonly string[] StagePrefixes = new string[] { "cp", "vp", "tcp", "tep", "gp", "fp" };
+        private static readonly string[] StagePrefixes = { "cp", "vp", "tcp", "tep", "gp", "fp" };
 
         private readonly struct BuiltInAttribute
         {

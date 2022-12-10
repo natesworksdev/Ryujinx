@@ -36,7 +36,7 @@ namespace Ryujinx.Tests.Cpu
             //  - xor 0
             // Only includes non-C variant, as the other can be tested with unicorn.
 
-            return new CrcTest[]
+            return new[]
             {
                 new CrcTest(0x00000000u, 0x00_00_00_00_00_00_00_00u, false, 0x00000000, 0x00000000, 0x00000000, 0x00000000),
                 new CrcTest(0x00000000u, 0x7f_ff_ff_ff_ff_ff_ff_ffu, false, 0x2d02ef8d, 0xbe2612ff, 0xdebb20e3, 0xa9de8355),

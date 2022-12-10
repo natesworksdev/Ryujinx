@@ -108,7 +108,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             ushort low = (ushort)(immH0 << 6);
             ushort high = (ushort)(immH1 << 6);
 
-            return new Operand[]
+            return new[]
             {
                 ConstF((float)Unsafe.As<ushort, Half>(ref low)),
                 ConstF((float)Unsafe.As<ushort, Half>(ref high))
@@ -120,7 +120,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             ushort low = (ushort)imm32;
             ushort high = (ushort)(imm32 >> 16);
 
-            return new Operand[]
+            return new[]
             {
                 ConstF((float)Unsafe.As<ushort, Half>(ref low)),
                 ConstF((float)Unsafe.As<ushort, Half>(ref high))
@@ -142,23 +142,23 @@ namespace Ryujinx.Graphics.Shader.Instructions
             switch (swizzle)
             {
                 case HalfSwizzle.F16:
-                    return new Operand[]
+                    return new[]
                     {
                         context.UnpackHalf2x16Low (src),
                         context.UnpackHalf2x16High(src)
                     };
 
-                case HalfSwizzle.F32: return new Operand[] { src, src };
+                case HalfSwizzle.F32: return new[] { src, src };
 
                 case HalfSwizzle.H0H0:
-                    return new Operand[]
+                    return new[]
                     {
                         context.UnpackHalf2x16Low(src),
                         context.UnpackHalf2x16Low(src)
                     };
 
                 case HalfSwizzle.H1H1:
-                    return new Operand[]
+                    return new[]
                     {
                         context.UnpackHalf2x16High(src),
                         context.UnpackHalf2x16High(src)

@@ -28,8 +28,7 @@ namespace Ryujinx.Input.HLE
             }
         }
 
-        private static readonly HLEButtonMappingEntry[] _hleButtonMapping = new HLEButtonMappingEntry[]
-        {
+        private static readonly HLEButtonMappingEntry[] _hleButtonMapping = {
             new HLEButtonMappingEntry(GamepadButtonInputId.A, ControllerKeys.A),
             new HLEButtonMappingEntry(GamepadButtonInputId.B, ControllerKeys.B),
             new HLEButtonMappingEntry(GamepadButtonInputId.X, ControllerKeys.X),
@@ -65,8 +64,7 @@ namespace Ryujinx.Input.HLE
             }
         }
 
-        private static readonly HLEKeyboardMappingEntry[] KeyMapping = new HLEKeyboardMappingEntry[]
-        {
+        private static readonly HLEKeyboardMappingEntry[] KeyMapping = {
             new HLEKeyboardMappingEntry(Key.A, 0x4),
             new HLEKeyboardMappingEntry(Key.B, 0x5),
             new HLEKeyboardMappingEntry(Key.C, 0x6),
@@ -192,8 +190,7 @@ namespace Ryujinx.Input.HLE
             new HLEKeyboardMappingEntry(Key.WinRight,     0xE7),
         };
 
-        private static readonly HLEKeyboardMappingEntry[] KeyModifierMapping = new HLEKeyboardMappingEntry[]
-        {
+        private static readonly HLEKeyboardMappingEntry[] KeyModifierMapping = {
             new HLEKeyboardMappingEntry(Key.ControlLeft,  0),
             new HLEKeyboardMappingEntry(Key.ShiftLeft,    1),
             new HLEKeyboardMappingEntry(Key.AltLeft,      2),

@@ -114,7 +114,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             }
             else
             {
-                LocationNameCache = new string[] { "UTC" };
+                LocationNameCache = new[] { "UTC" };
 
                 Logger.Error?.Print(LogClass.ServiceTime, TimeZoneSystemTitleMissingErrorMessage);
             }

@@ -31,16 +31,14 @@ namespace Ryujinx.Audio.Backends.CompatLayer
         private const int Minus6dBInQ15 = (int)(0.501f * RawQ15One);
         private const int Minus12dBInQ15 = (int)(0.251f * RawQ15One);
 
-        private static readonly int[] DefaultSurroundToStereoCoefficients = new int[4]
-        {
+        private static readonly int[] DefaultSurroundToStereoCoefficients = {
             RawQ15One,
             Minus3dBInQ15,
             Minus12dBInQ15,
             Minus3dBInQ15
         };
 
-        private static readonly int[] DefaultStereoToMonoCoefficients = new int[2]
-        {
+        private static readonly int[] DefaultStereoToMonoCoefficients = {
             Minus6dBInQ15,
             Minus6dBInQ15
         };

@@ -12,7 +12,7 @@ namespace Ryujinx.Tests.Cpu
 #region "ValueSource (Opcodes)"
         private static uint[] _Add_Adds_Rsb_Rsbs_()
         {
-            return new uint[]
+            return new[]
             {
                 0xe0800000u, // ADD R0, R0, R0, LSL #0
                 0xe0900000u, // ADDS R0, R0, R0, LSL #0
@@ -23,7 +23,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Adc_Adcs_Rsc_Rscs_Sbc_Sbcs_()
         {
-            return new uint[]
+            return new[]
             {
                 0xe0a00000u, // ADC R0, R0, R0
                 0xe0b00000u, // ADCS R0, R0, R0

@@ -36,7 +36,7 @@ namespace Ryujinx.Tests.Cpu
             //  - bytes in order of increasing significance
             //  - xor 0
 
-            return new CrcTest32[]
+            return new[]
             {
                 new CrcTest32(0x00000000u, 0x00_00_00_00u, false, 0x00000000, 0x00000000, 0x00000000),
                 new CrcTest32(0x00000000u, 0x7f_ff_ff_ffu, false, 0x2d02ef8d, 0xbe2612ff, 0x3303a3c3),

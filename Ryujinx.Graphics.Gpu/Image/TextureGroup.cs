@@ -1121,7 +1121,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     handle.RegisterDirtyEvent(() => DirtyAction(groupHandle));
                 }
 
-                handles = new TextureGroupHandle[] { groupHandle };
+                handles = new[] { groupHandle };
             }
             else
             {

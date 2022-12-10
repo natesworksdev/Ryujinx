@@ -9,21 +9,21 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
     public class Reverb3dCommand : ICommand
     {
-        private static readonly int[] OutputEarlyIndicesTableMono = new int[20] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-        private static readonly int[] TargetEarlyDelayLineIndicesTableMono = new int[20] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
-        private static readonly int[] TargetOutputFeedbackIndicesTableMono = new int[1] { 0 };
+        private static readonly int[] OutputEarlyIndicesTableMono = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        private static readonly int[] TargetEarlyDelayLineIndicesTableMono = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
+        private static readonly int[] TargetOutputFeedbackIndicesTableMono = { 0 };
 
-        private static readonly int[] OutputEarlyIndicesTableStereo = new int[20] { 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1 };
-        private static readonly int[] TargetEarlyDelayLineIndicesTableStereo = new int[20] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
-        private static readonly int[] TargetOutputFeedbackIndicesTableStereo = new int[2] { 0, 1 };
+        private static readonly int[] OutputEarlyIndicesTableStereo = { 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1 };
+        private static readonly int[] TargetEarlyDelayLineIndicesTableStereo = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
+        private static readonly int[] TargetOutputFeedbackIndicesTableStereo = { 0, 1 };
 
-        private static readonly int[] OutputEarlyIndicesTableQuadraphonic = new int[20] { 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 0, 0, 0, 0, 3, 3, 3 };
-        private static readonly int[] TargetEarlyDelayLineIndicesTableQuadraphonic = new int[20] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
-        private static readonly int[] TargetOutputFeedbackIndicesTableQuadraphonic = new int[4] { 0, 1, 2, 3 };
+        private static readonly int[] OutputEarlyIndicesTableQuadraphonic = { 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 0, 0, 0, 0, 3, 3, 3 };
+        private static readonly int[] TargetEarlyDelayLineIndicesTableQuadraphonic = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
+        private static readonly int[] TargetOutputFeedbackIndicesTableQuadraphonic = { 0, 1, 2, 3 };
 
-        private static readonly int[] OutputEarlyIndicesTableSurround = new int[40] { 4, 5, 0, 5, 0, 5, 1, 5, 1, 5, 1, 5, 1, 5, 2, 5, 2, 5, 2, 5, 1, 5, 1, 5, 1, 5, 0, 5, 0, 5, 0, 5, 0, 5, 3, 5, 3, 5, 3, 5 };
-        private static readonly int[] TargetEarlyDelayLineIndicesTableSurround = new int[40] { 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15, 16, 16, 17, 17, 18, 18, 19, 19 };
-        private static readonly int[] TargetOutputFeedbackIndicesTableSurround = new int[6] { 0, 1, 2, 3, -1, 3 };
+        private static readonly int[] OutputEarlyIndicesTableSurround = { 4, 5, 0, 5, 0, 5, 1, 5, 1, 5, 1, 5, 1, 5, 2, 5, 2, 5, 2, 5, 1, 5, 1, 5, 1, 5, 0, 5, 0, 5, 0, 5, 0, 5, 3, 5, 3, 5, 3, 5 };
+        private static readonly int[] TargetEarlyDelayLineIndicesTableSurround = { 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15, 16, 16, 17, 17, 18, 18, 19, 19 };
+        private static readonly int[] TargetOutputFeedbackIndicesTableSurround = { 0, 1, 2, 3, -1, 3 };
 
         public bool Enabled { get; set; }
 

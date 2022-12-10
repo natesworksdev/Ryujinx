@@ -6,8 +6,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
 {
     internal struct Reader
     {
-        private static readonly byte[] Norm = new byte[]
-        {
+        private static readonly byte[] Norm = {
             0, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
             3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
             2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,

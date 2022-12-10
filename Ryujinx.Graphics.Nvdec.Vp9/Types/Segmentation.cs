@@ -6,8 +6,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
 {
     internal struct Segmentation
     {
-        private static readonly int[] SegFeatureDataSigned = new int[] { 1, 1, 0, 0 };
-        private static readonly int[] SegFeatureDataMax = new int[] { QuantCommon.MaxQ, Vp9.LoopFilter.MaxLoopFilter, 3, 0 };
+        private static readonly int[] SegFeatureDataSigned = { 1, 1, 0, 0 };
+        private static readonly int[] SegFeatureDataMax = { QuantCommon.MaxQ, Vp9.LoopFilter.MaxLoopFilter, 3, 0 };
 
         public bool Enabled;
         public bool UpdateMap;

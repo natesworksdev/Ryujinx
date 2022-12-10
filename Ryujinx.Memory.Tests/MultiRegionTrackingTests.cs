@@ -209,7 +209,7 @@ namespace Ryujinx.Memory.Tests
 
             // Query some large regions to prep the subdivision of the tracking region.
 
-            int[] regionSizes = new int[] { 6, 4, 3, 2, 6, 1 };
+            int[] regionSizes = { 6, 4, 3, 2, 6, 1 };
             ulong address = 0;
 
             for (int i = 0; i < regionSizes.Length; i++)
@@ -333,8 +333,7 @@ namespace Ryujinx.Memory.Tests
 
             // Finally, create a granular handle that inherits all these handles.
 
-            IEnumerable<IRegionHandle>[] handleGroups = new IEnumerable<IRegionHandle>[]
-            {
+            IEnumerable<IRegionHandle>[] handleGroups = {
                 granular.GetHandles(),
                 singlePages,
                 doublePages
@@ -342,8 +341,7 @@ namespace Ryujinx.Memory.Tests
 
             MultiRegionHandle combined = _tracking.BeginGranularTracking(0, PageSize * 18, handleGroups.SelectMany((handles) => handles), PageSize);
 
-            bool[] expectedDirty = new bool[]
-            {
+            bool[] expectedDirty = {
                 true, true, true, // Gap.
                 false, true, false, // Multi-region.
                 true, true, // Gap.
@@ -433,7 +431,7 @@ namespace Ryujinx.Memory.Tests
             Assert.IsTrue(actionTriggered); // Action triggered.
 
             // Precise writes are ignored on two later handles due to the action returning true.
-            Assert.AreEqual(pagesModified, new bool[] { true, false, false });
+            Assert.AreEqual(pagesModified, new[] { true, false, false });
         }
     }
 }
