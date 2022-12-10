@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Audio.Backends.SoundIo.Native
 {
-    public static class SoundIo
+    public static partial class SoundIo
     {
         private const string LibraryName = "libsoundio";
 
@@ -109,67 +109,70 @@ namespace Ryujinx.Audio.Backends.SoundIo.Native
             public int Step;
         }
 
-        [DllImport(LibraryName)]
-        public static extern IntPtr soundio_create();
+        [LibraryImport(LibraryName)]
+        public static partial IntPtr soundio_create();
 
-        [DllImport(LibraryName)]
-        public static extern SoundIoError soundio_connect(IntPtr ctx);
+        [LibraryImport(LibraryName)]
+        public static partial SoundIoError soundio_connect(IntPtr ctx);
 
-        [DllImport(LibraryName)]
-        public static extern void soundio_disconnect(IntPtr ctx);
+        [LibraryImport(LibraryName)]
+        public static partial void soundio_disconnect(IntPtr ctx);
 
-        [DllImport(LibraryName)]
-        public static extern void soundio_flush_events(IntPtr ctx);
+        [LibraryImport(LibraryName)]
+        public static partial void soundio_flush_events(IntPtr ctx);
 
-        [DllImport(LibraryName)]
-        public static extern int soundio_output_device_count(IntPtr ctx);
+        [LibraryImport(LibraryName)]
+        public static partial int soundio_output_device_count(IntPtr ctx);
 
-        [DllImport(LibraryName)]
-        public static extern int soundio_default_output_device_index(IntPtr ctx);
+        [LibraryImport(LibraryName)]
+        public static partial int soundio_default_output_device_index(IntPtr ctx);
 
-        [DllImport(LibraryName)]
-        public static extern IntPtr soundio_get_output_device(IntPtr ctx, int index);
+        [LibraryImport(LibraryName)]
+        public static partial IntPtr soundio_get_output_device(IntPtr ctx, int index);
 
-        [DllImport(LibraryName)]
-        public static extern bool soundio_device_supports_format(IntPtr devCtx, SoundIoFormat format);
+        [LibraryImport(LibraryName)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool soundio_device_supports_format(IntPtr devCtx, SoundIoFormat format);
 
-        [DllImport(LibraryName)]
-        public static extern bool soundio_device_supports_layout(IntPtr devCtx, IntPtr layout);
+        [LibraryImport(LibraryName)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool soundio_device_supports_layout(IntPtr devCtx, IntPtr layout);
 
-        [DllImport(LibraryName)]
-        public static extern bool soundio_device_supports_sample_rate(IntPtr devCtx, int sampleRate);
+        [LibraryImport(LibraryName)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool soundio_device_supports_sample_rate(IntPtr devCtx, int sampleRate);
 
-        [DllImport(LibraryName)]
-        public static extern IntPtr soundio_outstream_create(IntPtr devCtx);
+        [LibraryImport(LibraryName)]
+        public static partial IntPtr soundio_outstream_create(IntPtr devCtx);
 
-        [DllImport(LibraryName)]
-        public static extern SoundIoError soundio_outstream_open(IntPtr outStreamCtx);
+        [LibraryImport(LibraryName)]
+        public static partial SoundIoError soundio_outstream_open(IntPtr outStreamCtx);
 
-        [DllImport(LibraryName)]
-        public static extern SoundIoError soundio_outstream_start(IntPtr outStreamCtx);
+        [LibraryImport(LibraryName)]
+        public static partial SoundIoError soundio_outstream_start(IntPtr outStreamCtx);
 
-        [DllImport(LibraryName)]
-        public static extern SoundIoError soundio_outstream_begin_write(IntPtr outStreamCtx, IntPtr areas, IntPtr frameCount);
+        [LibraryImport(LibraryName)]
+        public static partial SoundIoError soundio_outstream_begin_write(IntPtr outStreamCtx, IntPtr areas, IntPtr frameCount);
 
-        [DllImport(LibraryName)]
-        public static extern SoundIoError soundio_outstream_end_write(IntPtr outStreamCtx);
+        [LibraryImport(LibraryName)]
+        public static partial SoundIoError soundio_outstream_end_write(IntPtr outStreamCtx);
 
-        [DllImport(LibraryName)]
-        public static extern SoundIoError soundio_outstream_pause(IntPtr devCtx, bool pause);
+        [LibraryImport(LibraryName)]
+        public static partial SoundIoError soundio_outstream_pause(IntPtr devCtx, [MarshalAs(UnmanagedType.Bool)] bool pause);
 
-        [DllImport(LibraryName)]
-        public static extern SoundIoError soundio_outstream_set_volume(IntPtr devCtx, double volume);
+        [LibraryImport(LibraryName)]
+        public static partial SoundIoError soundio_outstream_set_volume(IntPtr devCtx, double volume);
 
-        [DllImport(LibraryName)]
-        public static extern void soundio_outstream_destroy(IntPtr streamCtx);
+        [LibraryImport(LibraryName)]
+        public static partial void soundio_outstream_destroy(IntPtr streamCtx);
 
-        [DllImport(LibraryName)]
-        public static extern void soundio_destroy(IntPtr ctx);
+        [LibraryImport(LibraryName)]
+        public static partial void soundio_destroy(IntPtr ctx);
 
-        [DllImport(LibraryName)]
-        public static extern IntPtr soundio_channel_layout_get_default(int channelCount);
+        [LibraryImport(LibraryName)]
+        public static partial IntPtr soundio_channel_layout_get_default(int channelCount);
 
-        [DllImport(LibraryName)]
-        public static extern IntPtr soundio_strerror(SoundIoError err);
+        [LibraryImport(LibraryName)]
+        public static partial IntPtr soundio_strerror(SoundIoError err);
     }
 }
