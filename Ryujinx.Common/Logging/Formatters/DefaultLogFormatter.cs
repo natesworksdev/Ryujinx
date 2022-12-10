@@ -27,6 +27,7 @@ namespace Ryujinx.Common.Logging
 
                 if (args.Data is not null)
                 {
+                    sb.Append(' ');
                     DynamicObjectFormatter.Format(sb, args.Data);
                 }
 
