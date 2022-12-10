@@ -1,11 +1,12 @@
 ﻿using Ryujinx.Common.Utilities;
 using System.IO;
-using System.Text.Json;
 
 namespace Ryujinx.Common.Logging
 {
     public class JsonLogTarget : ILogTarget
     {
+        private static readonly DynamicObjectFormatter ObjectFormatter = new();
+
         private Stream _stream;
         private bool   _leaveOpen;
         private string _name;
@@ -26,12 +27,11 @@ namespace Ryujinx.Common.Logging
 
         public void Log(object sender, LogEventArgs e)
         {
-            string text = JsonHelper.Serialize(e, LogEventJsonSerializerContext.Default.LogEventArgs);
+            var jsonLogEventArgs = JsonLogEventArgs.FromLogEventArgs(e, ObjectFormatter);
+            string text = JsonHelper.Serialize(jsonLogEventArgs, LogEventJsonSerializerContext.Default.JsonLogEventArgs);
 
-            using (BinaryWriter writer = new BinaryWriter(_stream))
-            {
-                writer.Write(text);
-            }
+            using BinaryWriter writer = new(_stream);
+            writer.Write(text);
         }
 
         public void Dispose()
