@@ -15,7 +15,7 @@ namespace Ryujinx.Tests.Cpu
 #region "ValueSource (Opcodes)"
         private static uint[] _Vrint_AMNP_V_F32_()
         {
-            return new uint[]
+            return new[]
             {
                 0xf3ba0500u, // VRINTA.F32 Q0, Q0
                 0xf3ba0680u, // VRINTM.F32 Q0, Q0
@@ -28,8 +28,8 @@ namespace Ryujinx.Tests.Cpu
 #region "ValueSource (Types)"
         private static uint[] _1S_()
         {
-            return new uint[] { 0x00000000u, 0x7FFFFFFFu,
-                                0x80000000u, 0xFFFFFFFFu };
+            return new[] { 0x00000000u, 0x7FFFFFFFu,
+                           0x80000000u, 0xFFFFFFFFu };
         }
 
         private static IEnumerable<ulong> _1S_F_()

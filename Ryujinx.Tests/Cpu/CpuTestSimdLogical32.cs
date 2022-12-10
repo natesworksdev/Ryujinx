@@ -13,17 +13,17 @@ namespace Ryujinx.Tests.Cpu
 #region "ValueSource (Types)"
         private static ulong[] _8B4H2S_()
         {
-            return new ulong[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                 0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
-                                 0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                 0x8000000080000000ul, 0xFFFFFFFFFFFFFFFFul };
+            return new[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
+                           0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
+                           0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
+                           0x8000000080000000ul, 0xFFFFFFFFFFFFFFFFul };
         }
 #endregion
 
 #region "ValueSource (Opcodes)"
         private static uint[] _Vbic_Vbif_Vbit_Vbsl_Vand_Vorn_Vorr_Veor_I_()
         {
-            return new uint[]
+            return new[]
             {
                 0xf2100110u, // VBIC D0, D0, D0
                 0xf3300110u, // VBIF D0, D0, D0
@@ -38,7 +38,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Vbic_Vorr_II_()
         {
-            return new uint[]
+            return new[]
             {
                 0xf2800130u, // VBIC.I32 D0, #0 (A1)
                 0xf2800930u, // VBIC.I16 D0, #0 (A2)

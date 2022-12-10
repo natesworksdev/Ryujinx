@@ -16,72 +16,72 @@ namespace Ryujinx.Tests.Cpu
 #region "ValueSource (Types)"
         private static ulong[] _1B1H1S1D_()
         {
-            return new ulong[] { 0x0000000000000000ul, 0x000000000000007Ful,
-                                 0x0000000000000080ul, 0x00000000000000FFul,
-                                 0x0000000000007FFFul, 0x0000000000008000ul,
-                                 0x000000000000FFFFul, 0x000000007FFFFFFFul,
-                                 0x0000000080000000ul, 0x00000000FFFFFFFFul,
-                                 0x7FFFFFFFFFFFFFFFul, 0x8000000000000000ul,
-                                 0xFFFFFFFFFFFFFFFFul };
+            return new[] { 0x0000000000000000ul, 0x000000000000007Ful,
+                           0x0000000000000080ul, 0x00000000000000FFul,
+                           0x0000000000007FFFul, 0x0000000000008000ul,
+                           0x000000000000FFFFul, 0x000000007FFFFFFFul,
+                           0x0000000080000000ul, 0x00000000FFFFFFFFul,
+                           0x7FFFFFFFFFFFFFFFul, 0x8000000000000000ul,
+                           0xFFFFFFFFFFFFFFFFul };
         }
 
         private static ulong[] _1D_()
         {
-            return new ulong[] { 0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                 0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
+            return new[] { 0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                           0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
         }
 
         private static ulong[] _1H1S_()
         {
-            return new ulong[] { 0x0000000000000000ul, 0x0000000000007FFFul,
-                                 0x0000000000008000ul, 0x000000000000FFFFul,
-                                 0x000000007FFFFFFFul, 0x0000000080000000ul,
-                                 0x00000000FFFFFFFFul };
+            return new[] { 0x0000000000000000ul, 0x0000000000007FFFul,
+                           0x0000000000008000ul, 0x000000000000FFFFul,
+                           0x000000007FFFFFFFul, 0x0000000080000000ul,
+                           0x00000000FFFFFFFFul };
         }
 
         private static ulong[] _4H2S_()
         {
-            return new ulong[] { 0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                 0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                 0x8000000080000000ul, 0xFFFFFFFFFFFFFFFFul };
+            return new[] { 0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
+                           0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
+                           0x8000000080000000ul, 0xFFFFFFFFFFFFFFFFul };
         }
 
         private static ulong[] _4H2S1D_()
         {
-            return new ulong[] { 0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                 0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                 0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                 0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
+            return new[] { 0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
+                           0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
+                           0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
+                           0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
         }
 
         private static ulong[] _8B_()
         {
-            return new ulong[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                 0x8080808080808080ul, 0xFFFFFFFFFFFFFFFFul };
+            return new[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
+                           0x8080808080808080ul, 0xFFFFFFFFFFFFFFFFul };
         }
 
         private static ulong[] _8B1D_()
         {
-            return new ulong[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                 0x8080808080808080ul, 0x7FFFFFFFFFFFFFFFul,
-                                 0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
+            return new[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
+                           0x8080808080808080ul, 0x7FFFFFFFFFFFFFFFul,
+                           0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
         }
 
         private static ulong[] _8B4H2S_()
         {
-            return new ulong[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                 0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
-                                 0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                 0x8000000080000000ul, 0xFFFFFFFFFFFFFFFFul };
+            return new[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
+                           0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
+                           0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
+                           0x8000000080000000ul, 0xFFFFFFFFFFFFFFFFul };
         }
 
         private static ulong[] _8B4H2S1D_()
         {
-            return new ulong[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                 0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
-                                 0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                 0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                 0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
+            return new[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
+                           0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
+                           0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
+                           0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
+                           0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
         }
 
         private static IEnumerable<ulong> _1S_F_()
@@ -212,7 +212,7 @@ namespace Ryujinx.Tests.Cpu
 #region "ValueSource (Opcodes)"
         private static uint[] _F_Abd_Add_Div_Mul_Mulx_Nmul_Sub_S_S_()
         {
-            return new uint[]
+            return new[]
             {
                 0x7EA2D420u, // FABD  S0, S1, S2
                 0x1E222820u, // FADD  S0, S1, S2
@@ -226,7 +226,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Abd_Add_Div_Mul_Mulx_Nmul_Sub_S_D_()
         {
-            return new uint[]
+            return new[]
             {
                 0x7EE2D420u, // FABD  D0, D1, D2
                 0x1E622820u, // FADD  D0, D1, D2
@@ -240,7 +240,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Abd_Add_Div_Mul_Mulx_Sub_P_V_2S_4S_()
         {
-            return new uint[]
+            return new[]
             {
                 0x2EA0D400u, // FABD  V0.2S, V0.2S, V0.2S
                 0x0E20D400u, // FADD  V0.2S, V0.2S, V0.2S
@@ -254,7 +254,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Abd_Add_Div_Mul_Mulx_Sub_P_V_2D_()
         {
-            return new uint[]
+            return new[]
             {
                 0x6EE0D400u, // FABD  V0.2D, V0.2D, V0.2D
                 0x4E60D400u, // FADD  V0.2D, V0.2D, V0.2D
@@ -268,7 +268,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_AcCm_EqGeGt_S_S_()
         {
-            return new uint[]
+            return new[]
             {
                 0x7E22EC20u, // FACGE S0, S1, S2
                 0x7EA2EC20u, // FACGT S0, S1, S2
@@ -280,7 +280,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_AcCm_EqGeGt_S_D_()
         {
-            return new uint[]
+            return new[]
             {
                 0x7E62EC20u, // FACGE D0, D1, D2
                 0x7EE2EC20u, // FACGT D0, D1, D2
@@ -292,7 +292,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_AcCm_EqGeGt_V_2S_4S_()
         {
-            return new uint[]
+            return new[]
             {
                 0x2E20EC00u, // FACGE V0.2S, V0.2S, V0.2S
                 0x2EA0EC00u, // FACGT V0.2S, V0.2S, V0.2S
@@ -304,7 +304,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_AcCm_EqGeGt_V_2D_()
         {
-            return new uint[]
+            return new[]
             {
                 0x6E60EC00u, // FACGE V0.2D, V0.2D, V0.2D
                 0x6EE0EC00u, // FACGT V0.2D, V0.2D, V0.2D
@@ -316,7 +316,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Cmp_Cmpe_S_S_()
         {
-            return new uint[]
+            return new[]
             {
                 0x1E222020u, // FCMP  S1, S2
                 0x1E222030u  // FCMPE S1, S2
@@ -325,7 +325,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Cmp_Cmpe_S_D_()
         {
-            return new uint[]
+            return new[]
             {
                 0x1E622020u, // FCMP  D1, D2
                 0x1E622030u  // FCMPE D1, D2
@@ -334,7 +334,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Madd_Msub_Nmadd_Nmsub_S_S_()
         {
-            return new uint[]
+            return new[]
             {
                 0x1F020C20u, // FMADD  S0, S1, S2, S3
                 0x1F028C20u, // FMSUB  S0, S1, S2, S3
@@ -345,7 +345,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Madd_Msub_Nmadd_Nmsub_S_D_()
         {
-            return new uint[]
+            return new[]
             {
                 0x1F420C20u, // FMADD  D0, D1, D2, D3
                 0x1F428C20u, // FMSUB  D0, D1, D2, D3
@@ -356,7 +356,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Max_Min_Nm_S_S_()
         {
-            return new uint[]
+            return new[]
             {
                 0x1E224820u, // FMAX   S0, S1, S2
                 0x1E226820u, // FMAXNM S0, S1, S2
@@ -367,7 +367,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Max_Min_Nm_S_D_()
         {
-            return new uint[]
+            return new[]
             {
                 0x1E624820u, // FMAX   D0, D1, D2
                 0x1E626820u, // FMAXNM D0, D1, D2
@@ -378,7 +378,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Max_Min_Nm_P_V_2S_4S_()
         {
-            return new uint[]
+            return new[]
             {
                 0x0E20F400u, // FMAX    V0.2S, V0.2S, V0.2S
                 0x0E20C400u, // FMAXNM  V0.2S, V0.2S, V0.2S
@@ -393,7 +393,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Max_Min_Nm_P_V_2D_()
         {
-            return new uint[]
+            return new[]
             {
                 0x4E60F400u, // FMAX    V0.2D, V0.2D, V0.2D
                 0x4E60C400u, // FMAXNM  V0.2D, V0.2D, V0.2D
@@ -408,7 +408,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Mla_Mls_V_2S_4S_()
         {
-            return new uint[]
+            return new[]
             {
                 0x0E20CC00u, // FMLA V0.2S, V0.2S, V0.2S
                 0x0EA0CC00u  // FMLS V0.2S, V0.2S, V0.2S
@@ -417,7 +417,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Mla_Mls_V_2D_()
         {
-            return new uint[]
+            return new[]
             {
                 0x4E60CC00u, // FMLA V0.2D, V0.2D, V0.2D
                 0x4EE0CC00u  // FMLS V0.2D, V0.2D, V0.2D
@@ -426,7 +426,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Recps_Rsqrts_S_S_()
         {
-            return new uint[]
+            return new[]
             {
                 0x5E22FC20u, // FRECPS  S0, S1, S2
                 0x5EA2FC20u  // FRSQRTS S0, S1, S2
@@ -435,7 +435,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Recps_Rsqrts_S_D_()
         {
-            return new uint[]
+            return new[]
             {
                 0x5E62FC20u, // FRECPS  D0, D1, D2
                 0x5EE2FC20u  // FRSQRTS D0, D1, D2
@@ -444,7 +444,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Recps_Rsqrts_V_2S_4S_()
         {
-            return new uint[]
+            return new[]
             {
                 0x0E20FC00u, // FRECPS  V0.2S, V0.2S, V0.2S
                 0x0EA0FC00u  // FRSQRTS V0.2S, V0.2S, V0.2S
@@ -453,7 +453,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Recps_Rsqrts_V_2D_()
         {
-            return new uint[]
+            return new[]
             {
                 0x4E60FC00u, // FRECPS  V0.2D, V0.2D, V0.2D
                 0x4EE0FC00u  // FRSQRTS V0.2D, V0.2D, V0.2D
@@ -462,7 +462,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Mla_Mls_Mul_V_8B_4H_2S_()
         {
-            return new uint[]
+            return new[]
             {
                 0x0E209400u, // MLA V0.8B, V0.8B, V0.8B
                 0x2E209400u, // MLS V0.8B, V0.8B, V0.8B
@@ -472,7 +472,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Mla_Mls_Mul_V_16B_8H_4S_()
         {
-            return new uint[]
+            return new[]
             {
                 0x4E209400u, // MLA V0.16B, V0.16B, V0.16B
                 0x6E209400u, // MLS V0.16B, V0.16B, V0.16B
@@ -482,7 +482,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Sha1c_Sha1m_Sha1p_Sha1su0_V_()
         {
-            return new uint[]
+            return new[]
             {
                 0x5E000000u, // SHA1C   Q0,    S0,    V0.4S
                 0x5E002000u, // SHA1M   Q0,    S0,    V0.4S
@@ -493,7 +493,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Sha256h_Sha256h2_Sha256su1_V_()
         {
-            return new uint[]
+            return new[]
             {
                 0x5E004000u, // SHA256H   Q0,    Q0,    V0.4S
                 0x5E005000u, // SHA256H2  Q0,    Q0,    V0.4S
@@ -503,7 +503,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _SU_Max_Min_P_V_()
         {
-            return new uint[]
+            return new[]
             {
                 0x0E206400u, // SMAX  V0.8B, V0.8B, V0.8B
                 0x0E20A400u, // SMAXP V0.8B, V0.8B, V0.8B
@@ -518,7 +518,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _SU_Mlal_Mlsl_Mull_V_8B8H_4H4S_2S2D_()
         {
-            return new uint[]
+            return new[]
             {
                 0x0E208000u, // SMLAL V0.8H, V0.8B, V0.8B
                 0x0E20A000u, // SMLSL V0.8H, V0.8B, V0.8B
@@ -531,7 +531,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _SU_Mlal_Mlsl_Mull_V_16B8H_8H4S_4S2D_()
         {
-            return new uint[]
+            return new[]
             {
                 0x4E208000u, // SMLAL2 V0.8H, V0.16B, V0.16B
                 0x4E20A000u, // SMLSL2 V0.8H, V0.16B, V0.16B
@@ -544,7 +544,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _ShlReg_S_D_()
         {
-            return new uint[]
+            return new[]
             {
                 0x5EE04400u, // SSHL D0, D0, D0
                 0x7EE04400u  // USHL D0, D0, D0
@@ -553,7 +553,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _ShlReg_V_8B_4H_2S_()
         {
-            return new uint[]
+            return new[]
             {
                 0x0E205C00u, // SQRSHL V0.8B, V0.8B, V0.8B
                 0x0E204C00u, // SQSHL  V0.8B, V0.8B, V0.8B
@@ -568,7 +568,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _ShlReg_V_16B_8H_4S_2D_()
         {
-            return new uint[]
+            return new[]
             {
                 0x4E205C00u, // SQRSHL V0.16B, V0.16B, V0.16B
                 0x4E204C00u, // SQSHL  V0.16B, V0.16B, V0.16B
