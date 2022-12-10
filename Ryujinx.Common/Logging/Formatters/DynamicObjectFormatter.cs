@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Reflection;
 using System.Text;
 
@@ -8,14 +9,26 @@ internal class DynamicObjectFormatter
 {
     private static readonly ObjectPool<StringBuilder> StringBuilderPool = SharedPools.Default<StringBuilder>();
 
-    public string Format(object dynamicObject)
+    public static string? Format(object? dynamicObject)
     {
+        if (dynamicObject is null)
+        {
+            return null;
+        }
+
         StringBuilder sb = StringBuilderPool.Allocate();
-        Format(sb, dynamicObject);
-        return sb.ToString();
+        try
+        {
+            Format(sb, dynamicObject);
+            return sb.ToString();
+        }
+        finally
+        {
+            StringBuilderPool.Release(sb);
+        }
     }
 
-    public static void Format(StringBuilder sb, object dynamicObject)
+    public static void Format(StringBuilder sb, object? dynamicObject)
     {
         if (dynamicObject is null)
         {
@@ -33,7 +46,7 @@ internal class DynamicObjectFormatter
 
             if (typeof(Array).IsAssignableFrom(prop.PropertyType))
             {
-                Array array = (Array)prop.GetValue(dynamicObject);
+                Array? array = (Array?) prop.GetValue(dynamicObject);
                 if (array is not null)
                 {
                     foreach (var item in array)

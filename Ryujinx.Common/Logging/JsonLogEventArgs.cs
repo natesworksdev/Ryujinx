@@ -22,8 +22,8 @@ internal class JsonLogEventArgs : EventArgs
         Data       = data;
     }
 
-    public static JsonLogEventArgs FromLogEventArgs(LogEventArgs args, DynamicObjectFormatter objectFormatter)
+    public static JsonLogEventArgs FromLogEventArgs(LogEventArgs args)
     {
-        return new JsonLogEventArgs(args.Level, args.Time, args.ThreadName, args.Message, objectFormatter.Format(args.Data));
+        return new JsonLogEventArgs(args.Level, args.Time, args.ThreadName, args.Message, DynamicObjectFormatter.Format(args.Data));
     }
 }
