@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Common.Logging;
 
-[JsonSerializable(typeof(JsonLogEventArgs))]
+[JsonSerializable(typeof(LogEventArgsJson))]
 internal partial class LogEventJsonSerializerContext : JsonSerializerContext
 {
 }
