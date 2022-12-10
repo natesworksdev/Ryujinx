@@ -1,6 +1,6 @@
-﻿namespace SoundIOSharp
+﻿namespace Ryujinx.Audio.Backends.SoundIo.Native
 {
-    public enum SoundIOChannelId
+    public enum SoundIoChannelId
     {
         Invalid,
         FrontLeft,
@@ -70,6 +70,6 @@
         Aux12,
         Aux13,
         Aux14,
-        Aux15
+        Aux15,
     }
 }
