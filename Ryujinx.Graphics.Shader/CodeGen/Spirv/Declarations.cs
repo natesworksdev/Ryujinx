@@ -10,7 +10,7 @@ using static Spv.Specification;
 
 namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 {
-    using SpvInstruction = Spv.Generator.Instruction;
+    using SpvInstruction = Instruction;
 
     static class Declarations
     {
