@@ -262,7 +262,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Gets a hashcode for this descriptor.
+        /// Gets a hash code for this descriptor.
         /// </summary>
         /// <returns>The hash code for this descriptor.</returns>
         public override int GetHashCode()

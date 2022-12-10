@@ -169,18 +169,15 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>The texture if found, null otherwise</returns>
         public Texture FindShortCache(in TextureDescriptor descriptor)
         {
-            if (_shortCacheLookup.Count > 0)
+            if (_shortCacheLookup.Count > 0 && _shortCacheLookup.TryGetValue(descriptor, out var entry))
             {
-                if (_shortCacheLookup.TryGetValue(descriptor, out var entry))
+                if (entry.InvalidatedSequence == entry.Texture.InvalidatedSequence)
                 {
-                    if (entry.InvalidatedSequence == entry.Texture.InvalidatedSequence)
-                    {
-                        return entry.Texture;
-                    }
-                    else
-                    {
-                        _shortCacheLookup.Remove(descriptor);
-                    }
+                    return entry.Texture;
+                }
+                else
+                {
+                    _shortCacheLookup.Remove(descriptor);
                 }
             }
 
