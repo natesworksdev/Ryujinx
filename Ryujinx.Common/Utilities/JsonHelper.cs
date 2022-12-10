@@ -53,6 +53,11 @@ public class JsonHelper
         return JsonSerializer.Deserialize(file, typeInfo);
     }
 
+    public static void SerializeToStream<T>(Stream stream, T value, JsonTypeInfo<T> typeInfo)
+    {
+        JsonSerializer.Serialize(stream, value, typeInfo);
+    }
+
     private class SnakeCaseNamingPolicy : JsonNamingPolicy
     {
         public override string ConvertName(string name)

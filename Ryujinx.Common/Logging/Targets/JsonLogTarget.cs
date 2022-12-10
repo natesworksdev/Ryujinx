@@ -26,10 +26,7 @@ namespace Ryujinx.Common.Logging
         public void Log(object sender, LogEventArgs e)
         {
             var logEventArgsJson = LogEventArgsJson.FromLogEventArgs(e);
-            string text = JsonHelper.Serialize(logEventArgsJson, LogEventJsonSerializerContext.Default.LogEventArgsJson);
-
-            using BinaryWriter writer = new(_stream);
-            writer.Write(text);
+            JsonHelper.SerializeToStream(_stream, logEventArgsJson, LogEventJsonSerializerContext.Default.LogEventArgsJson);
         }
 
         public void Dispose()
