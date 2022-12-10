@@ -82,13 +82,25 @@ namespace Ryujinx.Audio.Backends.SoundIo.Native
             return new SoundIoContext(context);
         }
 
-        public void Dispose()
+        protected virtual void Dispose(bool disposing)
         {
             if (_context != IntPtr.Zero)
             {
                 soundio_destroy(_context);
                 _context = IntPtr.Zero;
+
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~SoundIoContext()
+        {
+            Dispose(false);
         }
     }
 }

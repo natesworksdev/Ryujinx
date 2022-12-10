@@ -141,13 +141,24 @@ namespace Ryujinx.Audio.Backends.SoundIo.Native
 
         public void EndWrite() => CheckError(soundio_outstream_end_write(_context));
 
-        public void Dispose()
+        protected virtual void Dispose(bool disposing)
         {
             if (_context != IntPtr.Zero)
             {
                 soundio_outstream_destroy(_context);
                 _context = IntPtr.Zero;
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~SoundIoOutStreamContext()
+        {
+            Dispose(false);
         }
     }
 }
