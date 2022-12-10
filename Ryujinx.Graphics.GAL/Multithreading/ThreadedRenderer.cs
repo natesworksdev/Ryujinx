@@ -48,7 +48,6 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
         private int _consumerPtr;
         private int _commandCount;
-        private int _interrupted;
 
         private int _producerPtr;
         private int _lastProducedPtr;
@@ -125,21 +124,18 @@ namespace Ryujinx.Graphics.GAL.Multithreading
                 _galWorkAvailable.Wait();
                 _galWorkAvailable.Reset();
 
-                if (Volatile.Read(ref _interrupted) != 0)
+                if (Volatile.Read(ref _interruptAction) != null)
                 {
-                    while (Volatile.Read(ref _interruptAction) == null) { }
-
                     _interruptAction();
                     _interruptRun.Set();
 
                     Interlocked.Exchange(ref _interruptAction, null);
-                    Interlocked.Exchange(ref _interrupted, 0);
                 }
 
                 // The other thread can only increase the command count.
                 // We can assume that if it is above 0, it will stay there or get higher.
 
-                while (_commandCount > 0 && Volatile.Read(ref _interrupted) == 0)
+                while (_commandCount > 0 && Volatile.Read(ref _interruptAction) == null)
                 {
                     int commandPtr = _consumerPtr;
 
@@ -452,9 +448,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             }
             else
             {
-                while (Interlocked.CompareExchange(ref _interrupted, 1, 0) != 0) { }
-
-                Interlocked.Exchange(ref _interruptAction, action);
+                while (Interlocked.CompareExchange(ref _interruptAction, action, null) != null) { }
 
                 _galWorkAvailable.Set();
 
