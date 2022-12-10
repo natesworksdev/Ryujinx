@@ -5,7 +5,6 @@ namespace Ryujinx.Common.Logging
     internal class DefaultLogFormatter : ILogFormatter
     {
         private static readonly ObjectPool<StringBuilder> StringBuilderPool = SharedPools.Default<StringBuilder>();
-        private static readonly DynamicObjectFormatter DynamicObjectFormatter = new();
 
         public string Format(LogEventArgs args)
         {
