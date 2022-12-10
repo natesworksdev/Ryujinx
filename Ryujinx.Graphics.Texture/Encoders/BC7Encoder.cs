@@ -57,8 +57,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
             }
         }
 
-        private static readonly int[] _mostFrequentPartitions = new int[]
-        {
+        private static readonly int[] _mostFrequentPartitions = {
             0, 13, 2, 1, 15, 14, 10, 23
         };
 

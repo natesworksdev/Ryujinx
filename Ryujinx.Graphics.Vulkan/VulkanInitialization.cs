@@ -17,8 +17,7 @@ namespace Ryujinx.Graphics.Vulkan
         private const string AppName = "Ryujinx.Graphics.Vulkan";
         private const int QueuesCount = 2;
 
-        public static string[] DesirableExtensions { get; } = new string[]
-        {
+        public static string[] DesirableExtensions { get; } = {
             ExtConditionalRendering.ExtensionName,
             ExtExtendedDynamicState.ExtensionName,
             ExtTransformFeedback.ExtensionName,
@@ -35,13 +34,11 @@ namespace Ryujinx.Graphics.Vulkan
             "VK_NV_geometry_shader_passthrough"
         };
 
-        public static string[] RequiredExtensions { get; } = new string[]
-        {
+        public static string[] RequiredExtensions { get; } = {
             KhrSwapchain.ExtensionName
         };
 
-        private static string[] _excludedMessages = new string[]
-        {
+        private static string[] _excludedMessages = {
             // NOTE: Done on purpose right now.
             "UNASSIGNED-CoreValidation-Shader-OutputNotConsumed",
             // TODO: Figure out if fixable

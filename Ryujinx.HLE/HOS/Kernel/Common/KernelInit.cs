@@ -71,7 +71,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 
             servicePool = new MemoryRegion(DramMemoryMap.SlabHeapEnd, servicePoolSize);
 
-            return new KMemoryRegionManager[]
+            return new[]
             {
                 GetMemoryRegion(applicationPool),
                 GetMemoryRegion(appletPool),

@@ -77,7 +77,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
             else
             {
-                _hashTable[bucketIndex] = new Entry[]
+                _hashTable[bucketIndex] = new[]
                 {
                     entry
                 };

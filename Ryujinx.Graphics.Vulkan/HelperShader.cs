@@ -275,7 +275,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _pipeline.SetProgram(_programColorClear);
             _pipeline.SetRenderTarget(dst, (uint)dstWidth, (uint)dstHeight, false, dstFormat);
-            _pipeline.SetRenderTargetColorMasks(new uint[] { componentMask });
+            _pipeline.SetRenderTargetColorMasks(new[] { componentMask });
             _pipeline.SetViewports(viewports, false);
             _pipeline.SetScissors(scissors);
             _pipeline.SetPrimitiveTopology(GAL.PrimitiveTopology.TriangleStrip);

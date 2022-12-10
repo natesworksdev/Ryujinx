@@ -226,7 +226,7 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
                 source.UseOps.Add(this);
             }
 
-            _sources = new Operand[] { source };
+            _sources = new[] { source };
         }
     }
 }
