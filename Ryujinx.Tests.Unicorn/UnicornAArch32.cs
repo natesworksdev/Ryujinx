@@ -263,7 +263,7 @@ namespace Ryujinx.Tests.Unicorn
             return value;
         }
 
-        public byte MemoryRead8(ulong address) => MemoryRead(address, 1)[0];
+        public byte   MemoryRead8 (ulong address) => MemoryRead(address, 1)[0];
         public UInt16 MemoryRead16(ulong address) => (UInt16)BitConverter.ToInt16(MemoryRead(address, 2), 0);
         public UInt32 MemoryRead32(ulong address) => (UInt32)BitConverter.ToInt32(MemoryRead(address, 4), 0);
         public UInt64 MemoryRead64(ulong address) => (UInt64)BitConverter.ToInt64(MemoryRead(address, 8), 0);
@@ -273,12 +273,12 @@ namespace Ryujinx.Tests.Unicorn
             Interface.Checked(Interface.uc_mem_write(uc, address, value, (ulong)value.Length));
         }
 
-        public void MemoryWrite8(ulong address, byte value) => MemoryWrite(address, new byte[] { value });
-        public void MemoryWrite16(ulong address, Int16 value) => MemoryWrite(address, BitConverter.GetBytes(value));
+        public void MemoryWrite8(ulong address, byte value)    => MemoryWrite(address, new[] { value });
+        public void MemoryWrite16(ulong address, Int16 value)  => MemoryWrite(address, BitConverter.GetBytes(value));
         public void MemoryWrite16(ulong address, UInt16 value) => MemoryWrite(address, BitConverter.GetBytes(value));
-        public void MemoryWrite32(ulong address, Int32 value) => MemoryWrite(address, BitConverter.GetBytes(value));
+        public void MemoryWrite32(ulong address, Int32 value)  => MemoryWrite(address, BitConverter.GetBytes(value));
         public void MemoryWrite32(ulong address, UInt32 value) => MemoryWrite(address, BitConverter.GetBytes(value));
-        public void MemoryWrite64(ulong address, Int64 value) => MemoryWrite(address, BitConverter.GetBytes(value));
+        public void MemoryWrite64(ulong address, Int64 value)  => MemoryWrite(address, BitConverter.GetBytes(value));
         public void MemoryWrite64(ulong address, UInt64 value) => MemoryWrite(address, BitConverter.GetBytes(value));
 
         public void MemoryMap(ulong address, ulong size, MemoryPermission permissions)

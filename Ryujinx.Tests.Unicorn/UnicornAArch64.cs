@@ -288,7 +288,7 @@ namespace Ryujinx.Tests.Unicorn
             Interface.Checked(Interface.uc_mem_write(uc, address, value, (ulong)value.Length));
         }
 
-        public void MemoryWrite8 (ulong address, byte value)   => MemoryWrite(address, new byte[]{value});
+        public void MemoryWrite8 (ulong address, byte value)   => MemoryWrite(address, new[] { value });
         public void MemoryWrite16(ulong address, Int16 value)  => MemoryWrite(address, BitConverter.GetBytes(value));
         public void MemoryWrite16(ulong address, UInt16 value) => MemoryWrite(address, BitConverter.GetBytes(value));
         public void MemoryWrite32(ulong address, Int32 value)  => MemoryWrite(address, BitConverter.GetBytes(value));
