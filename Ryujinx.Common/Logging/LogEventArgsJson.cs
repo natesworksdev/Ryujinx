@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Ryujinx.Common.Logging;
 
-internal class JsonLogEventArgs : EventArgs
+internal class LogEventArgsJson
 {
     public LogLevel Level { get; }
     public TimeSpan Time { get; }
@@ -13,7 +13,7 @@ internal class JsonLogEventArgs : EventArgs
     public string Data { get; }
 
     [JsonConstructor]
-    public JsonLogEventArgs(LogLevel level, TimeSpan time, string threadName, string message, string data = null)
+    public LogEventArgsJson(LogLevel level, TimeSpan time, string threadName, string message, string data = null)
     {
         Level      = level;
         Time       = time;
@@ -22,8 +22,8 @@ internal class JsonLogEventArgs : EventArgs
         Data       = data;
     }
 
-    public static JsonLogEventArgs FromLogEventArgs(LogEventArgs args)
+    public static LogEventArgsJson FromLogEventArgs(LogEventArgs args)
     {
-        return new JsonLogEventArgs(args.Level, args.Time, args.ThreadName, args.Message, DynamicObjectFormatter.Format(args.Data));
+        return new LogEventArgsJson(args.Level, args.Time, args.ThreadName, args.Message, DynamicObjectFormatter.Format(args.Data));
     }
 }

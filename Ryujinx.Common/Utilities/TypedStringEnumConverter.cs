@@ -9,7 +9,7 @@ namespace Ryujinx.Common.Utilities;
 /// Specifies that value of <see cref="TEnum"/> will be serialized as string in JSONs
 /// </summary>
 /// <remarks>
-/// AOT-friendly alternative to <see cref="JsonStringEnumConverter"/>.
+/// Trimming friendly alternative to <see cref="JsonStringEnumConverter"/>.
 /// Get rid of this converter if dotnet supports similar functionality out of the box.
 /// </remarks>
 /// <typeparam name="TEnum">Type of enum to serialize</typeparam>
