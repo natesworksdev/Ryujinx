@@ -1,5 +1,8 @@
-﻿namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
+﻿using System;
+
+namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
+    [Flags]
     enum Status : int
     {
         Success          = 0,
