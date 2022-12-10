@@ -37,7 +37,7 @@ internal class DynamicObjectFormatter
 
         PropertyInfo[] props = dynamicObject.GetType().GetProperties();
 
-        sb.Append(" {");
+        sb.Append('{');
 
         foreach (var prop in props)
         {
