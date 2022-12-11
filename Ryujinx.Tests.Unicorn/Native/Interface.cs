@@ -59,55 +59,42 @@ namespace Ryujinx.Tests.Unicorn.Native
         }
 
         [LibraryImport("unicorn")]
-        [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
         public static partial uint uc_version(out uint major, out uint minor);
 
         [LibraryImport("unicorn")]
-        [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
         public static partial Error uc_open(Arch arch, Mode mode, out IntPtr uc);
 
         [LibraryImport("unicorn")]
-        [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
         public static partial Error uc_close(IntPtr uc);
 
         [LibraryImport("unicorn")]
-        [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
         public static partial IntPtr uc_strerror(Error err);
 
         [LibraryImport("unicorn")]
-        [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
         public static partial Error uc_reg_write(IntPtr uc, int regid, byte[] value);
 
         [LibraryImport("unicorn")]
-        [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
         public static partial Error uc_reg_read(IntPtr uc, int regid, byte[] value);
 
         [LibraryImport("unicorn")]
-        [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
         public static partial Error uc_mem_write(IntPtr uc, ulong address, byte[] bytes, ulong size);
 
         [LibraryImport("unicorn")]
-        [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
         public static partial Error uc_mem_read(IntPtr uc, ulong address, byte[] bytes, ulong size);
 
         [LibraryImport("unicorn")]
-        [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
         public static partial Error uc_emu_start(IntPtr uc, ulong begin, ulong until, ulong timeout, ulong count);
 
         [LibraryImport("unicorn")]
-        [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
         public static partial Error uc_mem_map(IntPtr uc, ulong address, ulong size, uint perms);
 
         [LibraryImport("unicorn")]
-        [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
         public static partial Error uc_mem_unmap(IntPtr uc, ulong address, ulong size);
 
         [LibraryImport("unicorn")]
-        [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
         public static partial Error uc_mem_protect(IntPtr uc, ulong address, ulong size, uint perms);
 
         [LibraryImport("unicorn")]
-        [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
         public static partial Error uc_mem_regions(IntPtr uc, out IntPtr regions, out uint count);
     }
 }
