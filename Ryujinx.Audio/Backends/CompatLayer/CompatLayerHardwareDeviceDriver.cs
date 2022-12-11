@@ -121,6 +121,16 @@ namespace Ryujinx.Audio.Backends.CompatLayer
                 return realSession;
             }
 
+            if (hardwareSampleFormat != sampleFormat)
+            {
+                Logger.Warning?.Print(LogClass.Audio, $"{sampleFormat} isn't supported by the audio device, conversion to {hardwareSampleFormat} will happen.");
+
+                if (hardwareSampleFormat < sampleFormat)
+                {
+                    Logger.Warning?.Print(LogClass.Audio, $"{hardwareSampleFormat} has worse  quality than {sampleFormat}, audio fidelity will suffer!");
+                }
+            }
+
             if (direction == Direction.Input)
             {
                 Logger.Warning?.Print(LogClass.Audio, $"The selected audio backend doesn't support the requested audio input configuration, fallback to dummy...");
