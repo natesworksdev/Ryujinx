@@ -92,8 +92,8 @@ namespace Ryujinx.Ava.Ui.Controls
         [LibraryImport("user32.dll", SetLastError = true, EntryPoint = "CreateWindowExW")]
         public static partial IntPtr CreateWindowEx(
            uint dwExStyle,
-           [MarshalAs(UnmanagedType.LPTStr)] string lpClassName,
-           [MarshalAs(UnmanagedType.LPTStr)] string lpWindowName,
+           [MarshalAs(UnmanagedType.LPWStr)] string lpClassName,
+           [MarshalAs(UnmanagedType.LPWStr)] string lpWindowName,
            WindowStyles dwStyle,
            int x,
            int y,
