@@ -79,6 +79,7 @@ namespace Ryujinx.Graphics.Nvdec.FFmpeg.Native
         public unsafe delegate void av_log_set_callback_callback(void* a0, AVLog level, [MarshalAs(UnmanagedType.LPUTF8Str)] string a2, byte* a3);
 
         [LibraryImport(AvUtilLibraryName)]
+        [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
         internal static unsafe partial AVFrame* av_frame_alloc();
 
         [LibraryImport(AvUtilLibraryName)]
