@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Graphics.GAL;
 using System;
+// ReSharper disable UnusedMember.Local
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed
 {

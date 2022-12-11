@@ -1,5 +1,6 @@
 using Ryujinx.Graphics.GAL;
 using System.Collections.Generic;
+// ReSharper disable UnusedMember.Local
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
