@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL.Multithreading.Commands;
 using Ryujinx.Graphics.GAL.Multithreading.Commands.Buffer;
 using Ryujinx.Graphics.GAL.Multithreading.Commands.Renderer;
@@ -39,7 +40,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         private CircularSpanPool _spanPool;
 
         private ManualResetEventSlim _invokeRun;
-        private ManualResetEventSlim _interruptRun;
+        private AutoResetEvent _interruptRun;
 
         private bool _lastSampleCounterClear = true;
 
@@ -87,7 +88,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
             _galWorkAvailable = new ManualResetEventSlim(false);
             _invokeRun = new ManualResetEventSlim();
-            _interruptRun = new ManualResetEventSlim();
+            _interruptRun = new AutoResetEvent(false);
             _spanPool = new CircularSpanPool(this, SpanPoolBytes);
             SpanPool = _spanPool;
 
@@ -452,7 +453,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
                 _galWorkAvailable.Set();
 
-                _interruptRun.Wait();
+                _interruptRun.WaitOne();
             }
         }
 

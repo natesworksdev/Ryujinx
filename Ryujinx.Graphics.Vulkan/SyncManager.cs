@@ -1,4 +1,6 @@
 using Ryujinx.Common.Logging;
+using shaderc;
+using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +15,11 @@ namespace Ryujinx.Graphics.Vulkan
             public MultiFenceHolder Waitable;
             public ulong FlushId;
             public bool Signalled;
+
+            public bool NeedsFlush(ulong currentFlushId)
+            {
+                return (long)(FlushId - currentFlushId) >= 0;
+            }
         }
 
         private ulong _firstHandle = 0;
@@ -125,11 +132,11 @@ namespace Ryujinx.Graphics.Vulkan
                         return;
                     }
 
-                    if ((long)(result.FlushId - FlushId) >= 0)
+                    if (result.NeedsFlush(FlushId))
                     {
                         _gd.InterruptAction(() =>
                         {
-                            if ((long)(result.FlushId - FlushId) >= 0)
+                            if (result.NeedsFlush(FlushId))
                             {
                                 _gd.FlushAllCommands();
                             }
@@ -161,7 +168,7 @@ namespace Ryujinx.Graphics.Vulkan
                     first = _handles.FirstOrDefault();
                 }
 
-                if (first == null) break;
+                if (first == null || first.NeedsFlush(FlushId)) break;
 
                 bool signaled = first.Waitable.WaitForFences(_gd.Api, _device, 0);
                 if (signaled)
