@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Path = System.IO.Path;
@@ -941,6 +942,58 @@ namespace Ryujinx.Ava.Ui.ViewModels
             new DirectoryInfo(logPath).Create();
 
             OpenHelper.OpenFolder(logPath);
+        }
+
+        public static void OpenGlobalDlcsFolder()
+        {
+            string globalDlcsPath = Path.Combine(ReleaseInformations.GetBaseApplicationDirectory(), "GlobalDlcs");
+
+            new DirectoryInfo(globalDlcsPath).Create();
+
+            OpenHelper.OpenFolder(globalDlcsPath);
+        }
+
+        public static void OpenGlobalUpdatesFolder()
+        {
+            string golbalUpdatesPath = Path.Combine(ReleaseInformations.GetBaseApplicationDirectory(), "GlobalUpdates");
+
+            new DirectoryInfo(golbalUpdatesPath).Create();
+
+            OpenHelper.OpenFolder(golbalUpdatesPath);
+        }
+
+        public async void LoadGlobalDlcs()
+        {
+            AutoDownloadableContentLoader downloadableContentManager = new AutoDownloadableContentLoader(Applications, _owner.VirtualFileSystem);
+
+            //Searches for the files in the Global Dlcs folder and puts their path and titlename (from folder) in a dictionary.
+            Dictionary<string, string> dlcsAndUpdatesPathWithGameName = Directory.GetFiles(Path.Combine(ReleaseInformations.GetBaseApplicationDirectory(), "GlobalDlcs"))
+                .ToDictionary(x => x, y => Path.GetFileName(y).Split(new[] { "[" }, StringSplitOptions.RemoveEmptyEntries)
+                .First()
+                .Trim());
+
+
+            foreach (ApplicationData application in Applications)
+            {
+                await downloadableContentManager.AutoLoadDlcsAsync(application, dlcsAndUpdatesPathWithGameName);
+            }
+        }
+
+        public async void LoadGlobalUpdates()
+        {
+            AutoTitleUpdateLoader titleUpdateManager = new AutoTitleUpdateLoader(Applications, _owner.VirtualFileSystem);
+
+            //Searches for the files in the Global Updates folder and puts their path and titlename (from folder) in a dictionary.
+            Dictionary<string, string> dlcsAndUpdatesPathWithGameName = Directory.GetFiles(Path.Combine(ReleaseInformations.GetBaseApplicationDirectory(), "GlobalUpdates"))
+                .ToDictionary(x => x, y => Path.GetFileName(y).Split(new[] { "[" }, StringSplitOptions.RemoveEmptyEntries)
+                .First()
+                .Trim());
+
+
+            foreach (ApplicationData application in Applications)
+            {
+                await titleUpdateManager.AutoLoadUpdatesAsync(application, dlcsAndUpdatesPathWithGameName);
+            }
         }
 
         public void ToggleFullscreen()
