@@ -1,6 +1,4 @@
 using Ryujinx.Common.Logging;
-using shaderc;
-using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 using System.Collections.Generic;
 using System.Linq;
