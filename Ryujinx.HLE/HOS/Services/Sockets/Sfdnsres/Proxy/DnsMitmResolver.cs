@@ -1,0 +1,117 @@
+using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Services.Sockets.Nsd;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Enumeration;
+using System.Net;
+
+namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy
+{
+    class DnsMitmResolver
+    {
+        private const string HostsFilePath = "/atmosphere/hosts/default.txt";
+
+        private static DnsMitmResolver Instance;
+
+        private Dictionary<string, IPAddress> _mitmHostEntries = new();
+
+        public static DnsMitmResolver Initialize(ServiceCtx context)
+        {
+            return Instance ??= new DnsMitmResolver(context);
+        }
+
+        private DnsMitmResolver(ServiceCtx context)
+        {
+            ReloadEntries(context);
+
+            Logger.Info?.PrintMsg(LogClass.ServiceBsd, $"Successfully loaded {_mitmHostEntries.Count} hosts file entries!");
+        }
+
+        public void ReloadEntries(ServiceCtx context)
+        {
+            string sdPath = context.Device.Configuration.VirtualFileSystem.GetSdCardPath();
+            string filePath = context.Device.Configuration.VirtualFileSystem.GetFullPath(sdPath, HostsFilePath);
+
+            Logger.Info?.PrintMsg(LogClass.ServiceBsd, $"Checking hosts file path: {filePath}");
+
+            _mitmHostEntries.Clear();
+
+            if (File.Exists(filePath))
+            {
+                using FileStream fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read);
+                using StreamReader reader = new(fileStream);
+
+                while (!reader.EndOfStream)
+                {
+                    string line = reader.ReadLine();
+
+                    if (line == null)
+                    {
+                        break;
+                    }
+
+                    // Ignore comments
+                    if (line.StartsWith("#"))
+                    {
+                        continue;
+                    }
+
+                    string[] entry = line.Split(new[] { ' ', '\t' },
+                        StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+                    // Hosts file example entry:
+                    // 127.0.0.1  localhost loopback
+
+                    // 0. Check the size of the array
+                    if (entry.Length < 2)
+                    {
+                        Logger.Warning?.PrintMsg(LogClass.ServiceBsd, $"Invalid entry in hosts file: {line}");
+                        continue;
+                    }
+
+                    // 1. Parse the address
+                    if (!IPAddress.TryParse(entry[0], out IPAddress address))
+                    {
+                        Logger.Warning?.PrintMsg(LogClass.ServiceBsd, $"Failed to parse IP address in hosts file: {entry[0]}");
+                        continue;
+                    }
+
+                    // 2. Check for AMS hosts file extension: "%"
+                    for (int i = 1; i < entry.Length; i++)
+                    {
+                        entry[i] = entry[i].Replace("%", IManager.NsdSettings.Environment);
+                    }
+
+                    // 3. Add hostname to entry dictionary (updating duplicate entries)
+                    foreach (string hostname in entry[1..])
+                    {
+                        _mitmHostEntries[hostname] = address;
+                    }
+                }
+            }
+        }
+
+        public IPHostEntry ResolveAddress(string host)
+        {
+            foreach (var hostEntry in _mitmHostEntries)
+            {
+                // Check for AMS hosts file extension: "*"
+                // NOTE: MatchesSimpleExpression also allows "?" as a wildcard
+                if (FileSystemName.MatchesSimpleExpression(hostEntry.Key, host))
+                {
+                    Logger.Info?.PrintMsg(LogClass.ServiceBsd, $"Match found for '{host}': {hostEntry.Value}");
+
+                    return new IPHostEntry
+                    {
+                        AddressList = new[] { hostEntry.Value },
+                        HostName = hostEntry.Key
+                    };
+                }
+            }
+
+            // No match has been found, resolve the host using regular dns
+            return Dns.GetHostEntry(host);
+        }
+    }
+}
