@@ -24,16 +24,12 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy
         private DnsMitmResolver(ServiceCtx context)
         {
             ReloadEntries(context);
-
-            Logger.Info?.PrintMsg(LogClass.ServiceBsd, $"Successfully loaded {_mitmHostEntries.Count} hosts file entries!");
         }
 
         public void ReloadEntries(ServiceCtx context)
         {
             string sdPath = context.Device.Configuration.VirtualFileSystem.GetSdCardPath();
             string filePath = context.Device.Configuration.VirtualFileSystem.GetFullPath(sdPath, HostsFilePath);
-
-            Logger.Info?.PrintMsg(LogClass.ServiceBsd, $"Checking hosts file path: {filePath}");
 
             _mitmHostEntries.Clear();
 
@@ -100,7 +96,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy
                 // NOTE: MatchesSimpleExpression also allows "?" as a wildcard
                 if (FileSystemName.MatchesSimpleExpression(hostEntry.Key, host))
                 {
-                    Logger.Info?.PrintMsg(LogClass.ServiceBsd, $"Match found for '{host}': {hostEntry.Value}");
+                    Logger.Info?.PrintMsg(LogClass.ServiceBsd, $"Redirecting '{host}' to: {hostEntry.Value}");
 
                     return new IPHostEntry
                     {
