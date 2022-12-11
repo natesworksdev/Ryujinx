@@ -64,8 +64,8 @@ namespace Ryujinx.Common.SystemInfo
             }
         }
 
-        [return: MarshalAs(UnmanagedType.Bool)]
         [LibraryImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         private static partial bool GlobalMemoryStatusEx(ref MemoryStatusEx lpBuffer);
 
         private static ManagementObjectCollection GetWMIObjects(string scope, string query)
