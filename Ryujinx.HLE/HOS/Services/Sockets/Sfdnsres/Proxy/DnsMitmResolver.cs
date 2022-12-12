@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy
         private static DnsMitmResolver _instance;
         public static DnsMitmResolver Instance => _instance ??= new DnsMitmResolver();
 
-        private Dictionary<string, IPAddress> _mitmHostEntries = new();
+        private readonly Dictionary<string, IPAddress> _mitmHostEntries = new();
 
         public void ReloadEntries(ServiceCtx context)
         {
