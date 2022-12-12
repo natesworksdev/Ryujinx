@@ -1,5 +1,6 @@
 using System;
 
+namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 {
     [Flags]
     enum BsdSocketFlags
