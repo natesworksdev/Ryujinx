@@ -93,7 +93,8 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy
                     return new IPHostEntry
                     {
                         AddressList = new[] { hostEntry.Value },
-                        HostName = hostEntry.Key
+                        HostName = hostEntry.Key,
+                        Aliases = Array.Empty<string>()
                     };
                 }
             }
