@@ -909,8 +909,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                     format = vertexAttrib.UnpackType() switch
                     {
-                        3 => Format.R32G32B32A32Sint,
-                        4 => Format.R32G32B32A32Uint,
+                        VertexAttribType.Sint => Format.R32G32B32A32Sint,
+                        VertexAttribType.Uint => Format.R32G32B32A32Uint,
                         _ => Format.R32G32B32A32Float
                     };
                 }

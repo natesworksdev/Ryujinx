@@ -78,6 +78,7 @@ namespace Ryujinx.Graphics.Vulkan
         internal bool IsAmdWindows { get; private set; }
         internal bool IsIntelWindows { get; private set; }
         internal bool IsAmdGcn { get; private set; }
+        internal bool IsMoltenVk { get; private set; }
         internal bool IsTBDR { get; private set; }
         public string GpuVendor { get; private set; }
         public string GpuRenderer { get; private set; }
