@@ -875,21 +875,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                         break;
                 }
             }
-            else if (!_context.Capabilities.Supports16BitRGBAFormat && Format.Is16BitRGBA())
-            {
-                switch (Format)
-                {
-                    case Format.B5G6R5Unorm:
-                    case Format.R5G6B5Unorm:
-                        result = PixelConverter.ConvertR5G6B5ToRGBA8(result);
-                        break;
-                    case Format.B5G5R5A1Unorm:
-                    case Format.R5G5B5X1Unorm:
-                    case Format.R5G5B5A1Unorm:
-                        result = PixelConverter.ConvertR5G5B5ToRGBA8(result, Format == Format.R5G5B5X1Unorm);
-                        break;
-                }
-            }
             else if (!TextureCompatibility.HostSupportsBcFormat(Format, Target, _context.Capabilities))
             {
                 switch (Format)
@@ -926,6 +911,29 @@ namespace Ryujinx.Graphics.Gpu.Image
             else if (!_context.Capabilities.SupportsR4G4Format && Format == Format.R4G4Unorm)
             {
                 result = PixelConverter.ConvertR4G4ToR4G4B4A4(result);
+
+                if (!_context.Capabilities.Supports16BitRGBAFormat)
+                {
+                    result = PixelConverter.ConvertRGBA4ToRGBA8(result);
+                }
+            }
+            else if (!_context.Capabilities.Supports16BitRGBAFormat && Format.Is16BitRGBA())
+            {
+                switch (Format)
+                {
+                    case Format.B5G6R5Unorm:
+                    case Format.R5G6B5Unorm:
+                        result = PixelConverter.ConvertR5G6B5ToRGBA8(result);
+                        break;
+                    case Format.B5G5R5A1Unorm:
+                    case Format.R5G5B5X1Unorm:
+                    case Format.R5G5B5A1Unorm:
+                        result = PixelConverter.ConvertR5G5B5ToRGBA8(result, Format == Format.R5G5B5X1Unorm);
+                        break;
+                    case Format.R4G4B4A4Unorm:
+                        result = PixelConverter.ConvertRGBA4ToRGBA8(result);
+                        break;
+                }
             }
 
             return result;
