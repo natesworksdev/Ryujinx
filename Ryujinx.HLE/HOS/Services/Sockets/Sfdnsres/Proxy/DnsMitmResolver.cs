@@ -53,8 +53,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy
                         continue;
                     }
 
-                    string[] entry = line.Split(new[] { ' ', '\t' },
-                        StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    string[] entry = line.Split(new[] { ' ', '\t' }, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
                     // Hosts file example entry:
                     // 127.0.0.1  localhost loopback
@@ -63,6 +62,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy
                     if (entry.Length < 2)
                     {
                         Logger.Warning?.PrintMsg(LogClass.ServiceBsd, $"Invalid entry in hosts file: {line}");
+                        
                         continue;
                     }
 
@@ -70,6 +70,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy
                     if (!IPAddress.TryParse(entry[0], out IPAddress address))
                     {
                         Logger.Warning?.PrintMsg(LogClass.ServiceBsd, $"Failed to parse IP address in hosts file: {entry[0]}");
+                        
                         continue;
                     }
 
