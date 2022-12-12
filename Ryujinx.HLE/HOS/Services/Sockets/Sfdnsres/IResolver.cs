@@ -18,11 +18,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
     [Service("sfdnsres")]
     class IResolver : IpcService
     {
-        private static DnsMitmResolver _dnsMitmResolver;
-
         public IResolver(ServiceCtx context)
         {
-            _dnsMitmResolver = DnsMitmResolver.Initialize(context);
+            DnsMitmResolver.Instance.ReloadEntries(context);
         }
 
         [CommandHipc(0)]
@@ -269,7 +267,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         // AtmosphereReloadHostsFile()
         public ResultCode AtmosphereReloadHostsFile(ServiceCtx context)
         {
-            _dnsMitmResolver.ReloadEntries(context);
+            DnsMitmResolver.Instance.ReloadEntries(context);
 
             return ResultCode.Success;
         }
@@ -336,7 +334,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
                     try
                     {
-                        hostEntry = _dnsMitmResolver.ResolveAddress(targetHost);
+                        hostEntry = DnsMitmResolver.Instance.ResolveAddress(targetHost);
                     }
                     catch (SocketException exception)
                     {
@@ -552,7 +550,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
                     try
                     {
-                        hostEntry = _dnsMitmResolver.ResolveAddress(targetHost);
+                        hostEntry = DnsMitmResolver.Instance.ResolveAddress(targetHost);
                     }
                     catch (SocketException exception)
                     {

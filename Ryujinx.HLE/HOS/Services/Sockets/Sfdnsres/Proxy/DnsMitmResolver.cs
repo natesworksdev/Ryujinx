@@ -12,19 +12,10 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy
     {
         private const string HostsFilePath = "/atmosphere/hosts/default.txt";
 
-        private static DnsMitmResolver Instance;
+        private static DnsMitmResolver _instance;
+        public static DnsMitmResolver Instance => _instance ??= new DnsMitmResolver();
 
         private Dictionary<string, IPAddress> _mitmHostEntries = new();
-
-        public static DnsMitmResolver Initialize(ServiceCtx context)
-        {
-            return Instance ??= new DnsMitmResolver(context);
-        }
-
-        private DnsMitmResolver(ServiceCtx context)
-        {
-            ReloadEntries(context);
-        }
 
         public void ReloadEntries(ServiceCtx context)
         {
@@ -62,7 +53,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy
                     if (entry.Length < 2)
                     {
                         Logger.Warning?.PrintMsg(LogClass.ServiceBsd, $"Invalid entry in hosts file: {line}");
-                        
+
                         continue;
                     }
 
@@ -70,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy
                     if (!IPAddress.TryParse(entry[0], out IPAddress address))
                     {
                         Logger.Warning?.PrintMsg(LogClass.ServiceBsd, $"Failed to parse IP address in hosts file: {entry[0]}");
-                        
+
                         continue;
                     }
 
