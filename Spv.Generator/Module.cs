@@ -333,7 +333,7 @@ namespace Spv.Generator
                 declarations.AddRange(_typeDeclarations.Values);
                 declarations.AddRange(_globals);
                 declarations.AddRange(_constants.Values);
-                declarations.Sort((Instruction x, Instruction y) => x.Id.CompareTo(y.Id));
+                declarations.Sort((x, y) => x.Id.CompareTo(y.Id));
 
                 // 9.
                 foreach (Instruction declaration in declarations)

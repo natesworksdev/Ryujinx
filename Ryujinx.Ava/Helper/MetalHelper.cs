@@ -87,7 +87,7 @@ namespace Ryujinx.Ava.Ui.Helper
             objc_msgSend(metalLayer, "setContentsScale:", Program.DesktopScaleFactor);
 
             // Ensure the scale factor is up to date.
-            updateBounds = (Rect rect) => {
+            updateBounds = (_) => {
                 objc_msgSend(metalLayer, "setContentsScale:", Program.DesktopScaleFactor);
             };
 

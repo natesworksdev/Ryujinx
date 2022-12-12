@@ -300,7 +300,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     _syncActionRegistered = true;
                 }
 
-                Action<ulong, ulong> registerRangeAction = (ulong address, ulong size) =>
+                Action<ulong, ulong> registerRangeAction = (address, size) =>
                 {
                     if (_useGranular)
                     {

@@ -558,7 +558,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private static Host1xContext GetHost1XContext(GpuContext gpu, ulong pid)
         {
-            return _host1xContextRegistry.GetOrAdd(pid, (ulong key) => new Host1xContext(gpu, key));
+            return _host1xContextRegistry.GetOrAdd(pid, (key) => new Host1xContext(gpu, key));
         }
 
         public static void Destroy()
