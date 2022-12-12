@@ -1,5 +1,4 @@
-﻿using Ryujinx.Common.Logging;
-using Ryujinx.Common.Pools;
+﻿using Ryujinx.Common.Pools;
 using Ryujinx.Memory.Range;
 using System;
 using System.Collections.Generic;

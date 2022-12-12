@@ -2,7 +2,6 @@
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.HOS.Services.Time.Types;
-using Ryujinx.HLE.Utilities;
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading;

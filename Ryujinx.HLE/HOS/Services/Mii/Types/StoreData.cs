@@ -1,7 +1,5 @@
 ﻿using LibHac.Common;
-using Ryujinx.HLE.Utilities;
 using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Mii.Types

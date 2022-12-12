@@ -1,4 +1,5 @@
-﻿namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
+﻿// ReSharper disable UnusedMember.Global
+namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
     enum ColorFormat : ulong
     {

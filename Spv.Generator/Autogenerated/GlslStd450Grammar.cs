@@ -26,8 +26,6 @@
 // IN THE MATERIALS.
 #endregion
 
-using static Spv.Specification;
-
 namespace Spv.Generator
 {
     public partial class Module

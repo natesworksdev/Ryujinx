@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using Ryujinx.Common.Configuration;
 using Silk.NET.Vulkan;
 using SPB.Graphics.OpenGL;

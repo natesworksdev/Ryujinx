@@ -1,11 +1,8 @@
-using Avalonia;
-using Avalonia.OpenGL;
 using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Configuration;
 using SPB.Graphics;
 using SPB.Graphics.OpenGL;
 using SPB.Platform;
-using SPB.Platform.GLX;
 using SPB.Platform.WGL;
 using SPB.Windowing;
 using System;

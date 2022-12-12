@@ -6,7 +6,6 @@ using Ryujinx.HLE.HOS.Services.Nifm.StaticService.Types;
 using System;
 using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 {

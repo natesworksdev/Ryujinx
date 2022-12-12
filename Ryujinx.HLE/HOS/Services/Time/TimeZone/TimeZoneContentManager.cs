@@ -11,7 +11,6 @@ using Ryujinx.Cpu;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
-using Ryujinx.HLE.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;

@@ -5,7 +5,6 @@ using Ryujinx.Ui.Common.Configuration;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text.Json;
 
 namespace Ryujinx.Ava.Common.Locale
 {

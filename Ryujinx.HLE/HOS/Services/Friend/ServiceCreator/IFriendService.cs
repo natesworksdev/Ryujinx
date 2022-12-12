@@ -9,7 +9,6 @@ using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.HLE.HOS.Services.Friend.ServiceCreator.FriendService;
 using System;
-using System.IO;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator

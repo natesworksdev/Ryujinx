@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Threading;
