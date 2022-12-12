@@ -22,10 +22,11 @@ namespace Ryujinx.Ava
 {
     internal class Program
     {
-        public static double WindowScaleFactor { get; set; }
-        public static string Version           { get; private set; }
-        public static string ConfigurationPath { get; private set; }
-        public static bool   PreviewerDetached { get; private set; }
+        public static double WindowScaleFactor  { get; set; }
+        public static double DesktopScaleFactor { get; set; } = 1.0;
+        public static string Version            { get; private set; }
+        public static string ConfigurationPath  { get; private set; }
+        public static bool   PreviewerDetached {  get; private set; }
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern int MessageBoxA(IntPtr hWnd, string text, string caption, uint type);
@@ -81,8 +82,8 @@ namespace Ryujinx.Ava
             Console.Title = $"Ryujinx Console {Version}";
 
             // Hook unhandled exception and process exit events.
-            AppDomain.CurrentDomain.UnhandledException += (object sender, UnhandledExceptionEventArgs e) => ProcessUnhandledException(e.ExceptionObject as Exception, e.IsTerminating);
-            AppDomain.CurrentDomain.ProcessExit        += (object sender, EventArgs e)                   => Exit();
+            AppDomain.CurrentDomain.UnhandledException += (sender, e) => ProcessUnhandledException(e.ExceptionObject as Exception, e.IsTerminating);
+            AppDomain.CurrentDomain.ProcessExit        += (sender, e) => Exit();
 
             // Setup base data directory.
             AppDataManager.Initialize(CommandLineState.BaseDirPathArg);
