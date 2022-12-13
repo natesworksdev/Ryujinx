@@ -90,6 +90,11 @@ namespace ARMeilleure.Translation
             BranchIf(label, op1, Const(op1.Type, 0), Comparison.NotEqual, falseFreq);
         }
 
+        public Operand Breakpoint()
+        {
+            return Add(Instruction.Breakpoint, default);
+        }
+
         public Operand ByteSwap(Operand op1)
         {
             return Add(Instruction.ByteSwap, Local(op1.Type), op1);

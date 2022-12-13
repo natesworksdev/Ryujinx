@@ -1,4 +1,5 @@
 using ARMeilleure.CodeGen.X86;
+using System.Runtime.InteropServices;
 
 namespace ARMeilleure
 {
@@ -8,6 +9,9 @@ namespace ARMeilleure
 
         public static bool AllowLcqInFunctionTable  { get; set; } = true;
         public static bool UseUnmanagedDispatchLoop { get; set; } = true;
+        public static bool UseDirectTableCalls      { get; set; } = true;
+
+        public static bool UseAdvSimdIfAvailable { get; set; } = true;
 
         public static bool UseSseIfAvailable       { get; set; } = true;
         public static bool UseSse2IfAvailable      { get; set; } = true;
@@ -29,6 +33,8 @@ namespace ARMeilleure
             get => HardwareCapabilities.ForceLegacySse;
             set => HardwareCapabilities.ForceLegacySse = value;
         }
+
+        internal static bool UseAdvSimd => UseAdvSimdIfAvailable && RuntimeInformation.ProcessArchitecture == Architecture.Arm64;
 
         internal static bool UseSse       => UseSseIfAvailable       && HardwareCapabilities.SupportsSse;
         internal static bool UseSse2      => UseSse2IfAvailable      && HardwareCapabilities.SupportsSse2;

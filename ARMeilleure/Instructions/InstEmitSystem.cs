@@ -150,6 +150,8 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSystem op = (OpCodeSystem)context.CurrOp;
 
+            context.SyncQcFlag();
+
             Operand fpsr = Const(0);
 
             for (int flag = 0; flag < RegisterConsts.FpFlagsCount; flag++)

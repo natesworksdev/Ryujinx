@@ -178,6 +178,12 @@ namespace ARMeilleure.Instructions
 
         private static void EmitTableBranch(ArmEmitterContext context, Operand guestAddress, bool isJump)
         {
+            if (!Optimizations.UseDirectTableCalls)
+            {
+                context.Return(guestAddress);
+                return;
+            }
+
             context.StoreToContext();
 
             if (guestAddress.Type == OperandType.I32)

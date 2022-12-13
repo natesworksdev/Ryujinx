@@ -8,6 +8,7 @@ namespace ARMeilleure.IntermediateRepresentation
         BitwiseNot,
         BitwiseOr,
         BranchIf,
+        Breakpoint,
         ByteSwap,
         Call,
         Compare,

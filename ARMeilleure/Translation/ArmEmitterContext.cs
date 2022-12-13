@@ -39,6 +39,8 @@ namespace ARMeilleure.Translation
             }
         }
 
+        private bool _pendingQcFlagSync;
+
         public OpCode CurrOp { get; set; }
 
         public IMemoryManager Memory { get; }
@@ -137,6 +139,49 @@ namespace ARMeilleure.Translation
         {
             _optOpLastCompare = null;
             _optOpLastFlagSet = null;
+        }
+
+        public void SetPendingQcFlagSync()
+        {
+            _pendingQcFlagSync = true;
+        }
+
+        public void SyncQcFlag()
+        {
+            if (_pendingQcFlagSync)
+            {
+                if (Optimizations.UseAdvSimd)
+                {
+                    Operand fpsr = AddIntrinsicInt(Intrinsic.Arm64MrsFpsr);
+
+                    uint qcFlagMask = (uint)FPSR.Qc;
+
+                    Operand qcClearLabel = Label();
+
+                    BranchIfFalse(qcClearLabel, BitwiseAnd(fpsr, Const(qcFlagMask)));
+
+                    fpsr = BitwiseAnd(fpsr, Const(~qcFlagMask));
+                    AddIntrinsicNoRet(Intrinsic.Arm64MsrFpsr, fpsr);
+                    InstEmitHelper.SetFpFlag(this, FPState.QcFlag, Const(1));
+
+                    MarkLabel(qcClearLabel);
+                }
+
+                _pendingQcFlagSync = false;
+            }
+        }
+
+        public void ClearQcFlag()
+        {
+            if (Optimizations.UseAdvSimd)
+            {
+                Operand fpsr = AddIntrinsicInt(Intrinsic.Arm64MrsFpsr);
+
+                uint qcFlagMask = (uint)FPSR.Qc;
+
+                fpsr = BitwiseAnd(fpsr, Const(~qcFlagMask));
+                AddIntrinsicNoRet(Intrinsic.Arm64MsrFpsr, fpsr);
+            }
         }
 
         public Operand TryGetComparisonResult(Condition condition)
