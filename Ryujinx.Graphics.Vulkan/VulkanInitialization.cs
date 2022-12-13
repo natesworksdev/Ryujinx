@@ -490,6 +490,21 @@ namespace Ryujinx.Graphics.Vulkan
 
                 pExtendedFeatures = &featuresSubgroupSizeControl;
             }
+            
+            PhysicalDeviceCustomBorderColorFeaturesEXT featuresCustomBorderColor;
+
+            if (supportedExtensions.Contains("VK_EXT_custom_border_color"))
+            {
+                featuresCustomBorderColor = new PhysicalDeviceCustomBorderColorFeaturesEXT()
+                {
+                    SType = StructureType.PhysicalDeviceCustomBorderColorFeaturesExt,
+                    PNext = pExtendedFeatures,
+                    CustomBorderColors = true,
+                    CustomBorderColorWithoutFormat = true,
+                };
+
+                pExtendedFeatures = &featuresCustomBorderColor;
+            }
 
             var enabledExtensions = RequiredExtensions.Union(DesirableExtensions.Intersect(supportedExtensions)).ToArray();
 
