@@ -443,11 +443,6 @@ namespace Ryujinx.Memory
             return 1UL << 12;
         }
 
-        public static bool IsPageAligned(ulong address, ulong size)
-        {
-            return ((address | size) & (GetPageSize() - 1)) == 0;
-        }
-
         private static void ThrowInvalidMemoryRegionException() => throw new InvalidMemoryRegionException();
     }
 }
