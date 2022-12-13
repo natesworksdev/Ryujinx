@@ -48,6 +48,7 @@ namespace Ryujinx.Graphics.Vulkan
         internal DescriptorSetManager DescriptorSetManager { get; private set; }
         internal PipelineLayoutCache PipelineLayoutCache { get; private set; }
         internal BackgroundResources BackgroundResources { get; private set; }
+        internal Action<Action> InterruptAction { get; private set; };
 
         internal BufferManager BufferManager { get; private set; }
 
@@ -83,7 +84,6 @@ namespace Ryujinx.Graphics.Vulkan
         public bool PreferThreading => true;
 
         public event EventHandler<ScreenCaptureImageInfo> ScreenCaptured;
-        public Action<Action> InterruptAction;
 
         public VulkanRenderer(Func<Instance, Vk, SurfaceKHR> surfaceFunc, Func<string[]> requiredExtensionsFunc, string preferredGpuId)
         {

@@ -480,6 +480,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _frameComplete.Dispose();
             _galWorkAvailable.Dispose();
             _invokeRun.Dispose();
+            _interruptRun.Dispose();
 
             Sync.Dispose();
         }
