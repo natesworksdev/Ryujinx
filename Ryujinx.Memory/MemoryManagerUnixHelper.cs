@@ -151,7 +151,7 @@ namespace Ryujinx.Memory
                 }
             }
 
-            if (flags.HasFlag(MmapFlags.MAP_JIT_DARWIN) && OperatingSystem.IsMacOS())
+            if (flags.HasFlag(MmapFlags.MAP_JIT_DARWIN) && OperatingSystem.IsMacOSVersionAtLeast(10, 14))
             {
                 result |= (int)MmapFlags.MAP_JIT_DARWIN;
             }

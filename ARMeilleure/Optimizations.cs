@@ -1,5 +1,5 @@
 using ARMeilleure.CodeGen.X86;
-using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics.Arm;
 
 namespace ARMeilleure
 {
@@ -34,7 +34,7 @@ namespace ARMeilleure
             set => HardwareCapabilities.ForceLegacySse = value;
         }
 
-        internal static bool UseAdvSimd => UseAdvSimdIfAvailable && RuntimeInformation.ProcessArchitecture == Architecture.Arm64;
+        internal static bool UseAdvSimd => UseAdvSimdIfAvailable && AdvSimd.IsSupported;
 
         internal static bool UseSse       => UseSseIfAvailable       && HardwareCapabilities.SupportsSse;
         internal static bool UseSse2      => UseSse2IfAvailable      && HardwareCapabilities.SupportsSse2;
