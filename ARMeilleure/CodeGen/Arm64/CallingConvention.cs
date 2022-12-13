@@ -5,7 +5,13 @@ namespace ARMeilleure.CodeGen.Arm64
     static class CallingConvention
     {
         private const int RegistersMask = unchecked((int)0xffffffff);
-        private const int ReservedRegsMask = (1 << CodeGenCommon.ReservedRegister) | (1 << 29) | (1 << 30) | (1 << 31);
+
+        // Some of those register have specific roles and can't be used as general purpose registers.
+        // X18 - Reserved for platform specific usage.
+        // X29 - Frame pointer.
+        // X30 - Return address.
+        // X31 - Not an actual register, in some cases maps to SP, and in others to ZR.
+        private const int ReservedRegsMask = (1 << CodeGenCommon.ReservedRegister) | (1 << 18) | (1 << 29) | (1 << 30) | (1 << 31);
 
         public static int GetIntAvailableRegisters()
         {

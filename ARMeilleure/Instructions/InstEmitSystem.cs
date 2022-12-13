@@ -198,6 +198,8 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSystem op = (OpCodeSystem)context.CurrOp;
 
+            context.ClearQcFlagIfModified();
+
             Operand fpsr = GetIntOrZR(context, op.Rt);
                     fpsr = context.ConvertI64ToI32(fpsr);
 

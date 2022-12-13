@@ -160,8 +160,7 @@ namespace ARMeilleure.Translation
 
                     BranchIfFalse(qcClearLabel, BitwiseAnd(fpsr, Const(qcFlagMask)));
 
-                    fpsr = BitwiseAnd(fpsr, Const(~qcFlagMask));
-                    AddIntrinsicNoRet(Intrinsic.Arm64MsrFpsr, fpsr);
+                    AddIntrinsicNoRet(Intrinsic.Arm64MsrFpsr, Const(0));
                     InstEmitHelper.SetFpFlag(this, FPState.QcFlag, Const(1));
 
                     MarkLabel(qcClearLabel);
@@ -175,12 +174,15 @@ namespace ARMeilleure.Translation
         {
             if (Optimizations.UseAdvSimd)
             {
-                Operand fpsr = AddIntrinsicInt(Intrinsic.Arm64MrsFpsr);
+                AddIntrinsicNoRet(Intrinsic.Arm64MsrFpsr, Const(0));
+            }
+        }
 
-                uint qcFlagMask = (uint)FPSR.Qc;
-
-                fpsr = BitwiseAnd(fpsr, Const(~qcFlagMask));
-                AddIntrinsicNoRet(Intrinsic.Arm64MsrFpsr, fpsr);
+        public void ClearQcFlagIfModified()
+        {
+            if (_pendingQcFlagSync && Optimizations.UseAdvSimd)
+            {
+                AddIntrinsicNoRet(Intrinsic.Arm64MsrFpsr, Const(0));
             }
         }
 

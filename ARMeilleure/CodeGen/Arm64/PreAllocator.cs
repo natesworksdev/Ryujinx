@@ -833,6 +833,8 @@ namespace ARMeilleure.CodeGen.Arm64
                 case Instruction.Spill:
                 case Instruction.SpillArg:
                     return true;
+                case Instruction.Extended:
+                    return value == 0;
             }
 
             return false;
