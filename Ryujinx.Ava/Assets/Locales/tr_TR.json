@@ -542,6 +542,7 @@
   "CompilingShaders": "Shaderlar Derleniyor",
   "AllKeyboards": "Tüm Klavyeler",
   "OpenFileDialogTitle": "Açmak için desteklenen bir dosya seçin",
+  "CreateZipFileDialogTitle": "Bir dizin ve dosya adı seçin",
   "OpenFolderDialogTitle": "Ayrıştırılmamış oyun içeren bir klasör seçin",
   "AllSupportedFormats": "Tüm Desteklenen Formatlar",
   "RyujinxUpdater": "Ryujinx Güncelleyicisi",
@@ -575,7 +576,7 @@
   "Discard": "Iskarta",
   "UserProfilesSetProfileImage": "Profil Resmi Ayarla",
   "UserProfileEmptyNameError": "İsim gerekli",
-  "UserProfileNoImageError":  "Profil resmi ayarlanmalıdır",
+  "UserProfileNoImageError": "Profil resmi ayarlanmalıdır",
   "GameUpdateWindowHeading": "{0} için güncellemeler mevcut [{1}]",
   "SettingsTabHotkeysResScaleUpHotkey": "Çözünürlüğü artır:",
   "SettingsTabHotkeysResScaleDownHotkey": "Çözünürlüğü azalt:"

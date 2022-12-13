@@ -1,5 +1,5 @@
-﻿using Avalonia.Controls;
-using Avalonia.Logging;
+﻿
+using Avalonia.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common.Configuration;
@@ -17,6 +17,7 @@ namespace Ryujinx.Ava.Ui.Controls
     internal class BackupSavedataCommand : ICommand
     {
         public event EventHandler CanExecuteChanged;
+
         private readonly IControl parentControl;
 
         public BackupSavedataCommand(IControl parentControl)
@@ -36,37 +37,46 @@ namespace Ryujinx.Ava.Ui.Controls
 
         public async void SaveUserSaveDirectoryAsZip()
         {
-            CreateBackupZip(await OpenFolderDialog());
+            CreateBackupZip(await GetAndPrepareBackupPath());
         }
 
-        private async Task<string> OpenFolderDialog()
+        private async Task<string> GetAndPrepareBackupPath()
         {
-            OpenFolderDialog dialog = new()
+            SaveFileDialog saveFileDialog = new SaveFileDialog()
             {
-                Title = LocaleManager.Instance["OpenFolderDialogTitle"]
+                Title = LocaleManager.Instance["CreateZipFileDialogTitle"],
+                InitialFileName = "Ryujinx_backup.zip",
+                Filters = new System.Collections.Generic.List<FileDialogFilter>(new[] { new FileDialogFilter() { Extensions = new System.Collections.Generic.List<string>() { "zip" } } })
             };
 
-            return await dialog.ShowAsync(parentControl.VisualRoot as MainWindow);
+            string zipPath = await saveFileDialog.ShowAsync(parentControl.VisualRoot as MainWindow);
+
+            if (File.Exists(zipPath))
+            {
+                File.Delete(zipPath);
+            }
+
+            return zipPath;
         }
 
-        private void CreateBackupZip(string directoryPath)
+        private void CreateBackupZip(string userBackupPath)
         {
-            if (!string.IsNullOrWhiteSpace(directoryPath) && Directory.Exists(directoryPath))
+            if (!string.IsNullOrWhiteSpace(userBackupPath) && Directory.Exists(Directory.GetParent(userBackupPath).FullName))
             {
                 string saveDir = Path.Combine(AppDataManager.BaseDirPath, AppDataManager.DefaultNandDir, "user", "save");
 
-                string zipFolderPath = Path.Combine(directoryPath, "Ryujinx_backup.zip");
-
-                Logger.Info.Value.Print(LogClass.Application, $"Start creating backup...", nameof(BackupSavedataCommand));
-
-                if (File.Exists(zipFolderPath))
+                try
                 {
-                    File.Delete(zipFolderPath);
-                }
-                
-                ZipFile.CreateFromDirectory(saveDir, zipFolderPath);
+                    Logger.Info.Value.Print(LogClass.Application, $"Start creating backup...", nameof(BackupSavedataCommand));
 
-                Logger.Info.Value.Print(LogClass.Application, $"Backup done. Zip is locate under {directoryPath}", nameof(BackupSavedataCommand));
+                    ZipFile.CreateFromDirectory(saveDir, userBackupPath);
+
+                    Logger.Info.Value.Print(LogClass.Application, $"Backup done. Zip is locate under {userBackupPath}", nameof(BackupSavedataCommand));
+                }
+                catch (Exception)
+                {
+                    Logger.Error.Value.Print(LogClass.Application, $"Could not create backup zip file.", nameof(BackupSavedataCommand));
+                }
             }
         }
     }

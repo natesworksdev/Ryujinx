@@ -542,6 +542,7 @@
   "CompilingShaders": "編譯渲染器中",
   "AllKeyboards": "所有鍵盤",
   "OpenFileDialogTitle": "選擇支援的檔案格式",
+  "CreateZipFileDialogTitle": "選擇目錄和文件名",
   "OpenFolderDialogTitle": "選擇一個包含解包遊戲的資料夾",
   "AllSupportedFormats": "全部支援的格式",
   "RyujinxUpdater": "Ryujinx 更新程式",
