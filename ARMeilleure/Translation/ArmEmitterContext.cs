@@ -83,6 +83,8 @@ namespace ARMeilleure.Translation
 
         public override Operand Call(MethodInfo info, params Operand[] callArgs)
         {
+            SyncQcFlag();
+
             if (!HasPtc)
             {
                 return base.Call(info, callArgs);
