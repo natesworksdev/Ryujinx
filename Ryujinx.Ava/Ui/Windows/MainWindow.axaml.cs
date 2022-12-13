@@ -36,6 +36,7 @@ namespace Ryujinx.Ava.Ui.Windows
 {
     public partial class MainWindow : StyleableWindow
     {
+        internal static MainWindowViewModel MainWindowViewModel { get; private set; }
         private bool _canUpdate;
         private bool _isClosing;
         private bool _isLoading;
@@ -81,6 +82,8 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             ViewModel = new MainWindowViewModel(this);
 
+            MainWindowViewModel = ViewModel;
+
             DataContext = ViewModel;
 
             InitializeComponent();
@@ -90,7 +93,9 @@ namespace Ryujinx.Ava.Ui.Windows
 
             Title = $"Ryujinx {Program.Version}";
 
-            Height /= Program.WindowScaleFactor;
+            // NOTE: Height of MenuBar and StatusBar is not usable here, since it would still be 0 at this point.
+            double barHeight = MenuBar.MinHeight + StatusBar.MinHeight;
+            Height = ((Height - barHeight) / Program.WindowScaleFactor) + barHeight;
             Width /= Program.WindowScaleFactor;
 
             if (Program.PreviewerDetached)
@@ -147,6 +152,12 @@ namespace Ryujinx.Ava.Ui.Windows
                     ViewModel.ShowStatusSeparator = true;
                 });
             }
+        }
+
+        protected override void HandleScalingChanged(double scale)
+        {
+            Program.DesktopScaleFactor = scale;
+            base.HandleScalingChanged(scale);
         }
 
         public void Application_Opened(object sender, ApplicationOpenedEventArgs args)
@@ -261,6 +272,7 @@ namespace Ryujinx.Ava.Ui.Windows
                     return;
                 }
 
+                CanUpdate = false;
                 ViewModel.LoadHeading = string.IsNullOrWhiteSpace(titleName) ? string.Format(LocaleManager.Instance["LoadingHeading"], AppHost.Device.Application.TitleName) : titleName;
                 ViewModel.TitleName   = string.IsNullOrWhiteSpace(titleName) ? AppHost.Device.Application.TitleName : titleName;
 
@@ -366,6 +378,7 @@ namespace Ryujinx.Ava.Ui.Windows
                 ViewModel.ShowContent = true;
                 ViewModel.ShowLoadProgress = false;
                 ViewModel.IsLoadingIndeterminate = false;
+                CanUpdate = true;
                 Cursor = Cursor.Default;
 
                 if (MainContent.Content != _mainViewContent)

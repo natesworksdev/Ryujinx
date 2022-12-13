@@ -11,7 +11,7 @@ namespace ARMeilleure.Decoders
 
         private const int FastLookupSize = 0x1000;
 
-        private struct InstInfo
+        private readonly struct InstInfo
         {
             public int Mask  { get; }
             public int Value { get; }
@@ -1341,7 +1341,7 @@ namespace ARMeilleure.Decoders
         {
             string reversedEncoding = encoding.Substring(16) + encoding.Substring(0, 16);
             MakeOp reversedMakeOp =
-                (InstDescriptor inst, ulong address, int opCode)
+                (inst, address, opCode)
                     => makeOp(inst, address, (int)BitOperations.RotateRight((uint)opCode, 16));
             Set(reversedEncoding, AllInstT32, new InstDescriptor(name, emitter), reversedMakeOp);
         }

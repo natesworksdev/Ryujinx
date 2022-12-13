@@ -76,6 +76,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         private bool _showAll;
         private string _lastScannedAmiiboId;
         private ReadOnlyObservableCollection<ApplicationData> _appsObservableList;
+        public ApplicationLibrary ApplicationLibrary => _owner.ApplicationLibrary;
 
         public string TitleName { get; internal set; }
 
@@ -103,8 +104,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public void Initialize()
         {
-            _owner.ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
-            _owner.ApplicationLibrary.ApplicationAdded += ApplicationLibrary_ApplicationAdded;
+            ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
+            ApplicationLibrary.ApplicationAdded += ApplicationLibrary_ApplicationAdded;
 
             Ptc.PtcStateChanged -= ProgressHandler;
             Ptc.PtcStateChanged += ProgressHandler;
@@ -434,9 +435,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 OnPropertyChanged();
             }
         }
-
-        public Thickness GridItemPadding => ShowNames ? new Thickness() : new Thickness(5);
-
+        
         public bool ShowMenuAndStatusBar
         {
             get => _showMenuAndStatusBar;
@@ -503,8 +502,10 @@ namespace Ryujinx.Ava.Ui.ViewModels
             return SortMode switch
             {
                 ApplicationSort.LastPlayed      => new Models.Generic.LastPlayedSortComparer(IsAscending),
-                ApplicationSort.FileSize        => new Models.Generic.FileSizeSortComparer(IsAscending),
-                ApplicationSort.TotalTimePlayed => new Models.Generic.TimePlayedSortComparer(IsAscending),
+                ApplicationSort.FileSize        => IsAscending  ? SortExpressionComparer<ApplicationData>.Ascending(app  => app.FileSizeBytes)
+                                                                : SortExpressionComparer<ApplicationData>.Descending(app => app.FileSizeBytes),
+                ApplicationSort.TotalTimePlayed => IsAscending  ? SortExpressionComparer<ApplicationData>.Ascending(app  => app.TimePlayedNum)
+                                                                : SortExpressionComparer<ApplicationData>.Descending(app => app.TimePlayedNum),
                 ApplicationSort.Title           => IsAscending  ? SortExpressionComparer<ApplicationData>.Ascending(app  => app.TitleName)
                                                                 : SortExpressionComparer<ApplicationData>.Descending(app => app.TitleName),
                 ApplicationSort.Favorite        => !IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app  => app.Favorite)
@@ -598,7 +599,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 ConfigurationState.Instance.Ui.ShowNames.Value = value;
 
                 OnPropertyChanged();
-                OnPropertyChanged(nameof(GridItemPadding));
                 OnPropertyChanged(nameof(GridSizeScale));
 
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
@@ -715,7 +715,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 OnPropertyChanged(nameof(IsGridLarge));
                 OnPropertyChanged(nameof(IsGridHuge));
                 OnPropertyChanged(nameof(ShowNames));
-                OnPropertyChanged(nameof(GridItemPadding));
 
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             }
@@ -779,6 +778,11 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 {
                     _owner.LoadProgressBar.IsVisible = false;
                 }
+
+                if (e.NumAppsLoaded == e.NumAppsFound)
+                {
+                    _owner.LoadProgressBar.IsVisible = false;
+                }
             });
         }
 
@@ -817,7 +821,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
             Thread thread = new(() =>
             {
-                _owner.ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs.Value, ConfigurationState.Instance.System.Language);
+                ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs.Value, ConfigurationState.Instance.System.Language);
 
                 _isLoading = false;
             })
@@ -879,17 +883,17 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public void LoadConfigurableHotKeys()
         {
-            if (AvaloniaMappingHelper.TryGetAvaKey((Ryujinx.Input.Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi, out var showUiKey))
+            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Ryujinx.Input.Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi, out var showUiKey))
             {
                 ShowUiKey = new KeyGesture(showUiKey, KeyModifiers.None);
             }
 
-            if (AvaloniaMappingHelper.TryGetAvaKey((Ryujinx.Input.Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot, out var screenshotKey))
+            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Ryujinx.Input.Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot, out var screenshotKey))
             {
                 ScreenshotKey = new KeyGesture(screenshotKey, KeyModifiers.None);
             }
 
-            if (AvaloniaMappingHelper.TryGetAvaKey((Ryujinx.Input.Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Pause, out var pauseKey))
+            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Ryujinx.Input.Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Pause, out var pauseKey))
             {
                 PauseKey = new KeyGesture(pauseKey, KeyModifiers.None);
             }
@@ -1005,7 +1009,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public async void ManageProfiles()
         {
-            await NavigationDialogHost.Show(_owner.AccountManager, _owner.ContentManager, _owner.VirtualFileSystem);
+            await NavigationDialogHost.Show(_owner.AccountManager, _owner.ContentManager, _owner.VirtualFileSystem, _owner.LibHacHorizonManager.RyujinxClient);
         }
 
         public async void OpenAboutWindow()
@@ -1098,7 +1102,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             {
                 selection.Favorite = !selection.Favorite;
 
-                _owner.ApplicationLibrary.LoadAndSaveMetaData(selection.TitleId, appMetadata =>
+                ApplicationLibrary.LoadAndSaveMetaData(selection.TitleId, appMetadata =>
                 {
                     appMetadata.Favorite = selection.Favorite;
                 });

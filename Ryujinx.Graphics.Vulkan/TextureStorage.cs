@@ -12,22 +12,22 @@ namespace Ryujinx.Graphics.Vulkan
     class TextureStorage : IDisposable
     {
         private const MemoryPropertyFlags DefaultImageMemoryFlags =
-            MemoryPropertyFlags.MemoryPropertyDeviceLocalBit;
+            MemoryPropertyFlags.DeviceLocalBit;
 
         private const ImageUsageFlags DefaultUsageFlags =
-            ImageUsageFlags.ImageUsageSampledBit |
-            ImageUsageFlags.ImageUsageTransferSrcBit |
-            ImageUsageFlags.ImageUsageTransferDstBit;
+            ImageUsageFlags.SampledBit |
+            ImageUsageFlags.TransferSrcBit |
+            ImageUsageFlags.TransferDstBit;
 
         public const AccessFlags DefaultAccessMask =
-            AccessFlags.AccessShaderReadBit |
-            AccessFlags.AccessShaderWriteBit |
-            AccessFlags.AccessColorAttachmentReadBit |
-            AccessFlags.AccessColorAttachmentWriteBit |
-            AccessFlags.AccessDepthStencilAttachmentReadBit |
-            AccessFlags.AccessDepthStencilAttachmentWriteBit |
-            AccessFlags.AccessTransferReadBit |
-            AccessFlags.AccessTransferWriteBit;
+            AccessFlags.ShaderReadBit |
+            AccessFlags.ShaderWriteBit |
+            AccessFlags.ColorAttachmentReadBit |
+            AccessFlags.ColorAttachmentWriteBit |
+            AccessFlags.DepthStencilAttachmentReadBit |
+            AccessFlags.DepthStencilAttachmentWriteBit |
+            AccessFlags.TransferReadBit |
+            AccessFlags.TransferWriteBit;
 
         private readonly VulkanRenderer _gd;
 
@@ -77,38 +77,38 @@ namespace Ryujinx.Graphics.Vulkan
 
             var extent = new Extent3D((uint)info.Width, (uint)info.Height, depth);
 
-            var sampleCountFlags = ConvertToSampleCountFlags((uint)info.Samples);
+            var sampleCountFlags = ConvertToSampleCountFlags(gd.Capabilities.SupportedSampleCounts, (uint)info.Samples);
 
             var usage = DefaultUsageFlags;
 
             if (info.Format.IsDepthOrStencil())
             {
-                usage |= ImageUsageFlags.ImageUsageDepthStencilAttachmentBit;
+                usage |= ImageUsageFlags.DepthStencilAttachmentBit;
             }
             else if (info.Format.IsRtColorCompatible())
             {
-                usage |= ImageUsageFlags.ImageUsageColorAttachmentBit;
+                usage |= ImageUsageFlags.ColorAttachmentBit;
             }
 
             if (info.Format.IsImageCompatible())
             {
-                usage |= ImageUsageFlags.ImageUsageStorageBit;
+                usage |= ImageUsageFlags.StorageBit;
             }
 
-            var flags = ImageCreateFlags.ImageCreateMutableFormatBit;
+            var flags = ImageCreateFlags.CreateMutableFormatBit;
 
             // This flag causes mipmapped texture arrays to break on AMD GCN, so for that copy dependencies are forced for aliasing as cube.
             bool isCube = info.Target == Target.Cubemap || info.Target == Target.CubemapArray;
             bool cubeCompatible = gd.IsAmdGcn ? isCube : (info.Width == info.Height && layers >= 6);
 
-            if (type == ImageType.ImageType2D && cubeCompatible)
+            if (type == ImageType.Type2D && cubeCompatible)
             {
-                flags |= ImageCreateFlags.ImageCreateCubeCompatibleBit;
+                flags |= ImageCreateFlags.CreateCubeCompatibleBit;
             }
 
-            if (type == ImageType.ImageType3D)
+            if (type == ImageType.Type3D)
             {
-                flags |= ImageCreateFlags.ImageCreate2DArrayCompatibleBit;
+                flags |= ImageCreateFlags.Create2DArrayCompatibleBit;
             }
 
             var imageCreateInfo = new ImageCreateInfo()
@@ -290,8 +290,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             _gd.Api.CmdPipelineBarrier(
                 cbs.CommandBuffer,
-                PipelineStageFlags.PipelineStageTopOfPipeBit,
-                PipelineStageFlags.PipelineStageAllCommandsBit,
+                PipelineStageFlags.TopOfPipeBit,
+                PipelineStageFlags.AllCommandsBit,
                 0,
                 0,
                 null,
@@ -306,15 +306,23 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public static SampleCountFlags ConvertToSampleCountFlags(uint samples)
+        public static SampleCountFlags ConvertToSampleCountFlags(SampleCountFlags supportedSampleCounts, uint samples)
         {
-            if (samples == 0 || samples > (uint)SampleCountFlags.SampleCount64Bit)
+            if (samples == 0 || samples > (uint)SampleCountFlags.Count64Bit)
             {
-                return SampleCountFlags.SampleCount1Bit;
+                return SampleCountFlags.Count1Bit;
             }
 
             // Round up to the nearest power of two.
-            return (SampleCountFlags)(1u << (31 - BitOperations.LeadingZeroCount(samples)));
+            SampleCountFlags converted = (SampleCountFlags)(1u << (31 - BitOperations.LeadingZeroCount(samples)));
+
+            // Pick nearest sample count that the host actually supports.
+            while (converted != SampleCountFlags.Count1Bit && (converted & supportedSampleCounts) == 0)
+            {
+                converted = (SampleCountFlags)((uint)converted >> 1);
+            }
+
+            return converted;
         }
 
         public TextureView CreateView(TextureCreateInfo info, int firstLayer, int firstLevel)
@@ -428,7 +436,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void InsertBarrier(CommandBufferScoped cbs, AccessFlags dstAccessFlags, PipelineStageFlags dstStageFlags)
         {
-            if (_lastModificationAccess != AccessFlags.AccessNoneKhr)
+            if (_lastModificationAccess != AccessFlags.NoneKhr)
             {
                 ImageAspectFlags aspectFlags;
 
@@ -436,20 +444,20 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     if (_info.Format == GAL.Format.S8Uint)
                     {
-                        aspectFlags = ImageAspectFlags.ImageAspectStencilBit;
+                        aspectFlags = ImageAspectFlags.StencilBit;
                     }
                     else if (_info.Format == GAL.Format.D16Unorm || _info.Format == GAL.Format.D32Float)
                     {
-                        aspectFlags = ImageAspectFlags.ImageAspectDepthBit;
+                        aspectFlags = ImageAspectFlags.DepthBit;
                     }
                     else
                     {
-                        aspectFlags = ImageAspectFlags.ImageAspectDepthBit | ImageAspectFlags.ImageAspectStencilBit;
+                        aspectFlags = ImageAspectFlags.DepthBit | ImageAspectFlags.StencilBit;
                     }
                 }
                 else
                 {
-                    aspectFlags = ImageAspectFlags.ImageAspectColorBit;
+                    aspectFlags = ImageAspectFlags.ColorBit;
                 }
 
                 TextureView.InsertImageBarrier(
@@ -466,7 +474,7 @@ namespace Ryujinx.Graphics.Vulkan
                     _info.GetLayers(),
                     _info.Levels);
 
-                _lastModificationAccess = AccessFlags.AccessNoneKhr;
+                _lastModificationAccess = AccessFlags.NoneKhr;
             }
         }
 

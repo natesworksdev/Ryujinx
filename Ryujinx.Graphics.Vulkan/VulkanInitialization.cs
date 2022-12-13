@@ -1,4 +1,4 @@
-using Ryujinx.Common.Configuration;
+﻿using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
@@ -21,6 +21,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             ExtConditionalRendering.ExtensionName,
             ExtExtendedDynamicState.ExtensionName,
+            ExtTransformFeedback.ExtensionName,
             KhrDrawIndirectCount.ExtensionName,
             KhrPushDescriptor.ExtensionName,
             "VK_EXT_custom_border_color",
@@ -36,9 +37,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public static string[] RequiredExtensions { get; } = new string[]
         {
-            KhrSwapchain.ExtensionName,
-            "VK_EXT_shader_subgroup_vote",
-            ExtTransformFeedback.ExtensionName
+            KhrSwapchain.ExtensionName
         };
 
         private static string[] _excludedMessages = new string[]
@@ -160,20 +159,20 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            if (messageSeverity.HasFlag(DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityErrorBitExt))
+            if (messageSeverity.HasFlag(DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt))
             {
                 Logger.Error?.Print(LogClass.Gpu, msg);
                 //throw new Exception(msg);
             }
-            else if (messageSeverity.HasFlag(DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityWarningBitExt))
+            else if (messageSeverity.HasFlag(DebugUtilsMessageSeverityFlagsEXT.WarningBitExt))
             {
                 Logger.Warning?.Print(LogClass.Gpu, msg);
             }
-            else if (messageSeverity.HasFlag(DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityInfoBitExt))
+            else if (messageSeverity.HasFlag(DebugUtilsMessageSeverityFlagsEXT.InfoBitExt))
             {
                 Logger.Info?.Print(LogClass.Gpu, msg);
             }
-            else // if (messageSeverity.HasFlag(DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityVerboseBitExt))
+            else // if (messageSeverity.HasFlag(DebugUtilsMessageSeverityFlagsEXT.VerboseBitExt))
             {
                 Logger.Debug?.Print(LogClass.Gpu, msg);
             }
@@ -318,7 +317,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         internal static uint FindSuitableQueueFamily(Vk api, PhysicalDevice physicalDevice, SurfaceKHR surface, out uint queueCount)
         {
-            const QueueFlags RequiredFlags = QueueFlags.QueueGraphicsBit | QueueFlags.QueueComputeBit;
+            const QueueFlags RequiredFlags = QueueFlags.GraphicsBit | QueueFlags.ComputeBit;
 
             var khrSurface = new KhrSurface(api.Context);
 
@@ -383,12 +382,12 @@ namespace Ryujinx.Graphics.Vulkan
                 DepthClamp = true,
                 DualSrcBlend = true,
                 FragmentStoresAndAtomics = true,
-                GeometryShader = true,
+                GeometryShader = supportedFeatures.GeometryShader,
                 ImageCubeArray = true,
                 IndependentBlend = true,
-                LogicOp = true,
+                LogicOp = supportedFeatures.LogicOp,
                 MultiViewport = true,
-                PipelineStatisticsQuery = true,
+                PipelineStatisticsQuery = supportedFeatures.PipelineStatisticsQuery,
                 SamplerAnisotropy = true,
                 ShaderClipDistance = true,
                 ShaderFloat64 = supportedFeatures.ShaderFloat64,
@@ -562,24 +561,24 @@ namespace Ryujinx.Graphics.Vulkan
 
                 var filterLogType = logLevel switch
                 {
-                    GraphicsDebugLevel.Error => DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypeValidationBitExt,
-                    GraphicsDebugLevel.Slowdowns => DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypeValidationBitExt |
-                                                    DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypePerformanceBitExt,
-                    GraphicsDebugLevel.All => DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypeGeneralBitExt |
-                                              DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypeValidationBitExt |
-                                              DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypePerformanceBitExt,
+                    GraphicsDebugLevel.Error => DebugUtilsMessageTypeFlagsEXT.ValidationBitExt,
+                    GraphicsDebugLevel.Slowdowns => DebugUtilsMessageTypeFlagsEXT.ValidationBitExt |
+                                                    DebugUtilsMessageTypeFlagsEXT.PerformanceBitExt,
+                    GraphicsDebugLevel.All => DebugUtilsMessageTypeFlagsEXT.GeneralBitExt |
+                                              DebugUtilsMessageTypeFlagsEXT.ValidationBitExt |
+                                              DebugUtilsMessageTypeFlagsEXT.PerformanceBitExt,
                     _ => throw new ArgumentException($"Invalid log level \"{logLevel}\".")
                 };
 
                 var filterLogSeverity = logLevel switch
                 {
-                    GraphicsDebugLevel.Error => DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityErrorBitExt,
-                    GraphicsDebugLevel.Slowdowns => DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityErrorBitExt |
-                                                    DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityWarningBitExt,
-                    GraphicsDebugLevel.All => DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityInfoBitExt |
-                                              DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityWarningBitExt |
-                                              DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityVerboseBitExt |
-                                              DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityErrorBitExt,
+                    GraphicsDebugLevel.Error => DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt,
+                    GraphicsDebugLevel.Slowdowns => DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt |
+                                                    DebugUtilsMessageSeverityFlagsEXT.WarningBitExt,
+                    GraphicsDebugLevel.All => DebugUtilsMessageSeverityFlagsEXT.InfoBitExt |
+                                              DebugUtilsMessageSeverityFlagsEXT.WarningBitExt |
+                                              DebugUtilsMessageSeverityFlagsEXT.VerboseBitExt |
+                                              DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt,
                     _ => throw new ArgumentException($"Invalid log level \"{logLevel}\".")
                 };
 

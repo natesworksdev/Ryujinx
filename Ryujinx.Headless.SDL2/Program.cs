@@ -77,6 +77,26 @@ namespace Ryujinx.Headless.SDL2
             _accountManager = new AccountManager(_libHacHorizonManager.RyujinxClient);
             _userChannelPersistence = new UserChannelPersistence();
 
+            if (OperatingSystem.IsMacOS())
+            {
+                AutoResetEvent invoked = new AutoResetEvent(false);
+
+                // MacOS must perform SDL polls from the main thread.
+                Ryujinx.SDL2.Common.SDL2Driver.MainThreadDispatcher = (Action action) =>
+                {
+                    invoked.Reset();
+
+                    WindowBase.QueueMainThreadAction(() =>
+                    {
+                        action();
+
+                        invoked.Set();
+                    });
+
+                    invoked.WaitOne();
+                };
+            }
+
             _inputManager = new InputManager(new SDL2KeyboardDriver(), new SDL2GamepadDriver());
 
             GraphicsConfig.EnableShaderCache = true;
@@ -638,16 +658,7 @@ namespace Ryujinx.Headless.SDL2
 
             Translator.IsReadyForTranslation.Reset();
 
-            Thread windowThread = new Thread(() =>
-            {
-                ExecutionEntrypoint();
-            })
-            {
-                Name = "GUI.WindowThread"
-            };
-
-            windowThread.Start();
-            windowThread.Join();
+            ExecutionEntrypoint();
 
             return true;
         }

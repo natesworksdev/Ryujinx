@@ -113,6 +113,7 @@ namespace Ryujinx.Graphics.OpenGL
                 supports3DTextureCompression: false,
                 supportsBgraFormat: false,
                 supportsR4G4Format: false,
+                supportsSnormBufferTextureFormat: false,
                 supportsFragmentShaderInterlock: HwCapabilities.SupportsFragmentShaderInterlock,
                 supportsFragmentShaderOrderingIntel: HwCapabilities.SupportsFragmentShaderOrdering,
                 supportsGeometryShaderPassthrough: HwCapabilities.SupportsGeometryShaderPassthrough,
@@ -236,6 +237,11 @@ namespace Ryujinx.Graphics.OpenGL
         public void WaitSync(ulong id)
         {
             _sync.Wait(id);
+        }
+
+        public ulong GetCurrentSync()
+        {
+            return _sync.GetCurrent();
         }
 
         public void Screenshot()

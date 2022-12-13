@@ -97,7 +97,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _dummyBuffer = gd.BufferManager.Create(gd, 0x10000, forConditionalRendering: false, deviceLocal: true);
             }
 
-            _dummyTexture = gd.CreateTextureView(new GAL.TextureCreateInfo(
+            _dummyTexture = gd.CreateTextureView(new TextureCreateInfo(
                 1,
                 1,
                 1,
@@ -229,7 +229,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
             else if (texture is TextureView view)
             {
-                view.Storage.InsertBarrier(cbs, AccessFlags.AccessShaderReadBit, stage.ConvertToPipelineStageFlags());
+                view.Storage.InsertBarrier(cbs, AccessFlags.ShaderReadBit, stage.ConvertToPipelineStageFlags());
 
                 _textureRefs[binding] = view.GetImageView();
                 _samplerRefs[binding] = ((SamplerHolder)sampler)?.GetSampler();
