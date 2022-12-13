@@ -48,7 +48,7 @@ namespace Ryujinx.Graphics.Vulkan
         internal DescriptorSetManager DescriptorSetManager { get; private set; }
         internal PipelineLayoutCache PipelineLayoutCache { get; private set; }
         internal BackgroundResources BackgroundResources { get; private set; }
-        internal Action<Action> InterruptAction { get; private set; };
+        internal Action<Action> InterruptAction { get; private set; }
 
         internal BufferManager BufferManager { get; private set; }
 
