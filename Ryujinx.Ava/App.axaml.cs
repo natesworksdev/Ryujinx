@@ -23,8 +23,6 @@ namespace Ryujinx.Ava
         public override void Initialize()
         {
             Name = $"Ryujinx {Program.Version}";
-
-            AvaloniaXamlLoader.Load(this);
         }
 
         public override void OnFrameworkInitializationCompleted()

@@ -51,11 +51,6 @@ namespace Ryujinx.Ava.UI.Controls
             InitializeComponent();
         }
 
-        private void InitializeComponent()
-        {
-            // AvaloniaXamlLoader.Load(this);
-        }
-
         private void SearchBox_OnKeyUp(object sender, KeyEventArgs e)
         {
             (DataContext as MainWindowViewModel).SearchText = (sender as TextBox).Text;

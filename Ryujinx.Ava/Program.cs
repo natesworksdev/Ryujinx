@@ -104,13 +104,15 @@ namespace Ryujinx.Ava
                     EnableMultiTouch = true,
                     EnableIme        = true,
                     UseEGL           = false,
-                    UseGpu           = true
+                    UseGpu           = true,
+                    UseCompositor    = true
                 })
                 .With(new Win32PlatformOptions
                 {
                     UseWgl                          = false,
                     AllowEglInitialization          = false,
                     CompositionBackdropCornerRadius = 8.0f,
+                    UseCompositor                   = true
                 })
                 .UseSkia();
         }
