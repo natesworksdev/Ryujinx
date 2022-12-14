@@ -24,9 +24,6 @@
     <Design.DataContext>
         <viewModels:SettingsViewModel />
     </Design.DataContext>
-    <Window.Resources>
-        <controls:KeyValueConverter x:Key="Key" />
-    </Window.Resources>
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" MinWidth="600">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
