@@ -2,7 +2,6 @@ using Avalonia.Platform.Storage;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 using Ryujinx.Ava.Ui.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -18,17 +17,12 @@ public partial class SettingsUIView : UserControl
     public SettingsUIView()
     {
         InitializeComponent();
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
         _viewModel = DataContext as SettingsViewModel;
     }
     
     private async void AddButton_OnClick(object sender, RoutedEventArgs e)
     {
-        string path = this.FindControl<TextBox>("PathBox").Text;
+        string path = PathBox.Text;
 
         if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path) && !_viewModel.GameDirectories.Contains(path))
         {

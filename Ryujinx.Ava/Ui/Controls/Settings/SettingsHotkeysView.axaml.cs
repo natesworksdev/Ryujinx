@@ -2,7 +2,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 using Ryujinx.Ava.Ui.ViewModels;
 using Ryujinx.Input;
 using Ryujinx.Input.Assigner;
@@ -17,14 +16,9 @@ public partial class SettingsHotkeysView : UserControl
     public SettingsHotkeysView()
     {
         InitializeComponent();
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
         _viewModel = DataContext as SettingsViewModel;
     }
-    
+
     private void MouseClick(object sender, PointerPressedEventArgs e)
     {
         bool shouldUnbind = e.GetCurrentPoint(this).Properties.IsMiddleButtonPressed;

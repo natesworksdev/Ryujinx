@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using Ryujinx.Ava.Ui.Models;
 using Avalonia.Data.Converters;
 using Avalonia.Data;
@@ -16,21 +15,17 @@ public partial class SettingsSystemView : UserControl
     {
         InitializeComponent();
         
+        _viewModel = DataContext as SettingsViewModel;
+
         FuncMultiValueConverter<string, string> converter = new(parts => string.Format("{0}  {1}   {2}", parts.ToArray()).Trim());
         MultiBinding tzMultiBinding = new() { Converter = converter };
         tzMultiBinding.Bindings.Add(new Binding("UtcDifference"));
         tzMultiBinding.Bindings.Add(new Binding("Location"));
         tzMultiBinding.Bindings.Add(new Binding("Abbreviation"));
 
-        this.FindControl<AutoCompleteBox>("TimeZoneBox").ValueMemberBinding = tzMultiBinding;
+        TimeZoneBox.ValueMemberBinding = tzMultiBinding;
     }
 
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-        _viewModel = DataContext as SettingsViewModel;
-    }
-    
     private void TimeZoneBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (e.AddedItems != null && e.AddedItems.Count > 0)
