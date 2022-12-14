@@ -75,7 +75,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
                     for (int j = 0; j < sampleCount; j++)
                     {
-                        outputBuffer[i + j * channelCount] = short.CreateSaturating(inputBuffer[j]);
+                        outputBuffer[i + j * channelCount] = PcmHelper.Saturate(inputBuffer[j]);
                     }
                 }
 

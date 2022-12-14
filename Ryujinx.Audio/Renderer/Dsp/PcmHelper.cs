@@ -33,7 +33,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short ConvertSampleToPcmInt16(float sample)
         {
-            return short.CreateSaturating(sample * short.MaxValue);
+            return Saturate(sample * short.MaxValue);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -96,6 +96,22 @@ namespace Ryujinx.Audio.Renderer.Dsp
             }
 
             return decodedCount;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static short Saturate(float value)
+        {
+            if (value > short.MaxValue)
+            {
+                return short.MaxValue;
+            }
+
+            if (value < short.MinValue)
+            {
+                return short.MinValue;
+            }
+
+            return (short)value;
         }
     }
 }
