@@ -1,0 +1,46 @@
+<UserControl 
+    x:Class="Ryujinx.Ava.Ui.Controls.Settings.SettingsInputView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:window="clr-namespace:Ryujinx.Ava.Ui.Windows"
+    xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
+    Width="1100"
+    Height="768"
+    d:DesignWidth="800"
+    d:DesignHeight="950"
+    MinWidth="800"
+    MinHeight="480"
+    mc:Ignorable="d">
+    <ScrollViewer 
+        Name="InputPage"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch"
+        HorizontalScrollBarVisibility="Disabled"
+        VerticalScrollBarVisibility="Auto">
+        <Border Classes="settings">
+            <StackPanel Margin="4" Orientation="Vertical">
+                <StackPanel Orientation="Horizontal">
+                    <CheckBox Margin="5,0"
+                              ToolTip.Tip="{locale:Locale DockModeToggleTooltip}"
+                              IsChecked="{Binding EnableDockedMode}">
+                        <TextBlock VerticalAlignment="Center"
+                                   Text="{locale:Locale SettingsTabInputEnableDockedMode}" />
+                    </CheckBox>
+                    <CheckBox Margin="5,0"
+                              ToolTip.Tip="{locale:Locale DirectKeyboardTooltip}"
+                              IsChecked="{Binding EnableKeyboard}">
+                        <TextBlock Text="{locale:Locale SettingsTabInputDirectKeyboardAccess}" />
+                    </CheckBox>
+                    <CheckBox Margin="5,0"
+                              ToolTip.Tip="{locale:Locale DirectMouseTooltip}"
+                              IsChecked="{Binding EnableMouse}">
+                        <TextBlock Text="{locale:Locale SettingsTabInputDirectMouseAccess}" />
+                    </CheckBox>
+                </StackPanel>
+                <window:ControllerSettingsWindow Name="ControllerSettings" Margin="0,0,0,0" MinHeight="600" />
+            </StackPanel>
+        </Border>
+    </ScrollViewer>
+</UserControl>
