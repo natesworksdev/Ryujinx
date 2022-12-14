@@ -61,18 +61,6 @@ namespace Ryujinx.Audio.Renderer.Dsp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static short Saturate(int value)
-        {
-            if (value > short.MaxValue)
-                value = short.MaxValue;
-
-            if (value < short.MinValue)
-                value = short.MinValue;
-
-            return (short)value;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static short GetCoefficientAtIndex(ReadOnlySpan<short> coefficients, int index)
         {
             if ((uint)index > (uint)coefficients.Length)
@@ -162,7 +150,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
 
                         sample = FixedPointHelper.RoundUpAndToInt(sample * scaleFixedPoint + prediction, FixedPointPrecision);
 
-                        short saturatedSample = Saturate(sample);
+                        short saturatedSample = short.CreateSaturating(sample);
 
                         history1 = history0;
                         history0 = saturatedSample;
@@ -188,11 +176,11 @@ namespace Ryujinx.Audio.Renderer.Dsp
 
                         int prediction0 = coefficient0 * history0 + coefficient1 * history1;
                         sample0 = FixedPointHelper.RoundUpAndToInt(sample0 * scaleFixedPoint + prediction0, FixedPointPrecision);
-                        short saturatedSample0 = Saturate(sample0);
+                        short saturatedSample0 = short.CreateSaturating(sample0);
 
                         int prediction1 = coefficient0 * saturatedSample0 + coefficient1 * history0;
                         sample1 = FixedPointHelper.RoundUpAndToInt(sample1 * scaleFixedPoint + prediction1, FixedPointPrecision);
-                        short saturatedSample1 = Saturate(sample1);
+                        short saturatedSample1 = short.CreateSaturating(sample1);
 
                         history1 = saturatedSample0;
                         history0 = saturatedSample1;

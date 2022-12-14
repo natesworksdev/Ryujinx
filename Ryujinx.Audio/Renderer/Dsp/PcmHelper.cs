@@ -39,9 +39,9 @@ namespace Ryujinx.Audio.Renderer.Dsp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TOutput ConvertSample<TInput, TOutput>(TInput value) where TInput: INumber<TInput>, IMinMaxValue<TInput> where TOutput : INumber<TOutput>, IMinMaxValue<TOutput>
         {
-            TOutput conversionRate = TOutput.MaxValue / TOutput.CreateSaturating(TInput.MaxValue);
+            TInput conversionRate = TInput.CreateSaturating(TOutput.MaxValue / TOutput.CreateSaturating(TInput.MaxValue));
 
-            return TOutput.CreateSaturating(value) * conversionRate;
+            return TOutput.CreateSaturating(value * conversionRate);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -96,12 +96,6 @@ namespace Ryujinx.Audio.Renderer.Dsp
             }
 
             return decodedCount;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short Saturate(float value)
-        {
-            return short.CreateSaturating(value);
         }
     }
 }
