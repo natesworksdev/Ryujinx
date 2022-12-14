@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Modules
 {
-    public static partial class Updater
+    public static class Updater
     {
         internal static bool Running;
 
