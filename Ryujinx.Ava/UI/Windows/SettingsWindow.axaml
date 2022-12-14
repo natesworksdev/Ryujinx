@@ -38,15 +38,15 @@
             IsVisible="False"
             KeyboardNavigation.IsTabStop="False"/>
         <Grid Name="Pages" IsVisible="False" Grid.Row="2">
-            <ScrollViewer Name="UiPage"
-                          Margin="0,0,2,0"
-                          HorizontalAlignment="Stretch"
-                          VerticalAlignment="Stretch"
-                          HorizontalScrollBarVisibility="Disabled"
-                          VerticalScrollBarVisibility="Auto">
+            <ScrollViewer 
+                Name="UiPage"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
                 <Border Classes="settings">
                     <StackPanel
-                        Margin="10,5"
+                        Margin="10"
                         HorizontalAlignment="Stretch"
                         Orientation="Vertical"
                         Spacing="10">
@@ -164,12 +164,12 @@
                     </StackPanel>
                 </Border>
             </ScrollViewer>
-            <ScrollViewer Name="InputPage"
-                          HorizontalAlignment="Stretch"
-                          VerticalAlignment="Stretch"
-                          Padding="0,0,2,0"
-                          HorizontalScrollBarVisibility="Disabled"
-                          VerticalScrollBarVisibility="Auto">
+            <ScrollViewer 
+                Name="InputPage"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
                 <Border Classes="settings">
                     <StackPanel Margin="4" Orientation="Vertical">
                         <StackPanel Orientation="Horizontal">
@@ -194,13 +194,14 @@
                     </StackPanel>
                 </Border>
             </ScrollViewer>
-            <ScrollViewer Name="HotkeysPage"
-                          HorizontalAlignment="Stretch"
-                          VerticalAlignment="Stretch"
-                          HorizontalScrollBarVisibility="Disabled"
-                          VerticalScrollBarVisibility="Auto">
+            <ScrollViewer 
+                Name="HotkeysPage"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
                 <Border Classes="settings">
-                    <StackPanel Margin="10,5" Orientation="Vertical" Spacing="10">
+                    <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
                         <TextBlock Classes="h1" Text="{locale:Locale SettingsTabHotkeysHotkeys}" />
                         <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                             <TextBlock VerticalAlignment="Center" Text="{locale:Locale SettingsTabHotkeysToggleVsyncHotkey}" Width="230" />
@@ -277,14 +278,15 @@
                     </StackPanel>
                 </Border>
             </ScrollViewer>
-            <ScrollViewer Name="SystemPage"
-                          HorizontalAlignment="Stretch"
-                          VerticalAlignment="Stretch"
-                          HorizontalScrollBarVisibility="Disabled"
-                          VerticalScrollBarVisibility="Auto">
+            <ScrollViewer 
+                Name="SystemPage"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
                 <Border Classes="settings">
                     <StackPanel
-                        Margin="10,5"
+                        Margin="10"
                         HorizontalAlignment="Stretch"
                         Orientation="Vertical"
                         Spacing="10">
@@ -465,7 +467,7 @@
                 VerticalScrollBarVisibility="Auto">
                 <Border Classes="settings">
                     <StackPanel
-                        Margin="10,5"
+                        Margin="10"
                         HorizontalAlignment="Stretch"
                         Orientation="Vertical"
                         Spacing="10">
@@ -522,7 +524,7 @@
                 VerticalScrollBarVisibility="Auto">
                 <Border Classes="settings">
                     <StackPanel
-                        Margin="10,5"
+                        Margin="10"
                         HorizontalAlignment="Stretch"
                         Orientation="Vertical"
                         Spacing="10">
@@ -724,7 +726,7 @@
                 VerticalScrollBarVisibility="Auto">
                 <Border Classes="settings">
                     <StackPanel
-                        Margin="10,5"
+                        Margin="10"
                         HorizontalAlignment="Stretch"
                         Orientation="Vertical"
                         Spacing="10">
@@ -789,7 +791,7 @@
                 VerticalScrollBarVisibility="Auto">
                 <Border Classes="settings">
                     <StackPanel
-                        Margin="10,5"
+                        Margin="10"
                         HorizontalAlignment="Stretch"
                         Orientation="Vertical"
                         Spacing="10">
@@ -809,7 +811,7 @@
                 VerticalScrollBarVisibility="Auto">
                 <Border Classes="settings">
                     <StackPanel
-                        Margin="10,5"
+                        Margin="10"
                         HorizontalAlignment="Stretch"
                         Orientation="Vertical"
                         Spacing="10">
