@@ -1,5 +1,6 @@
 using Avalonia.Platform.Storage;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Ryujinx.Ava.Ui.ViewModels;
@@ -36,22 +37,25 @@ public partial class SettingsUIView : UserControl
         }
         else
         {
-            /*var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                AllowMultiple = false
-            });
-
-            if (result.Count > 0)
-            {
-                if (result[0].TryGetUri(out Uri uri))
+                var result = await desktop.MainWindow.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
                 {
-                    if (!_viewModel.GameDirectories.Contains(uri.LocalPath))
+                    AllowMultiple = false
+                });
+
+                if (result.Count > 0)
+                {
+                    if (result[0].TryGetUri(out Uri uri))
                     {
-                        _viewModel.GameDirectories.Add(uri.LocalPath);
-                        _viewModel.DirectoryChanged = true;
+                        if (!_viewModel.GameDirectories.Contains(uri.LocalPath))
+                        {
+                            _viewModel.GameDirectories.Add(uri.LocalPath);
+                            _viewModel.DirectoryChanged = true;
+                        }
                     }
                 }
-            }*/
+            }
         }
     }
 
