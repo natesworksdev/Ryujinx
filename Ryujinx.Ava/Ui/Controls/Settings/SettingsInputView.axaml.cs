@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
@@ -14,5 +13,12 @@ public partial class SettingsInputView : UserControl
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
+    }
+
+    protected override void OnUnloaded()
+    {
+        ControllerSettings.Dispose();
+        
+        base.OnUnloaded();
     }
 }

@@ -57,12 +57,5 @@ namespace Ryujinx.Ava.Ui.Windows
                 };
             }
         }
-
-        protected override void OnClosed(EventArgs e)
-        {
-            // ControllerSettings.Dispose();
-
-            base.OnClosed(e);
-        }
     }
 }
