@@ -58,16 +58,16 @@ namespace Ryujinx.Audio.Backends.CompatLayer
                 return targetSampleFormat;
             }
 
-            // Attempt conversion from PCM16
+            // Attempt conversion from PCM16.
             if (targetSampleFormat == SampleFormat.PcmInt16)
             {
-                // Prefer PCM32 in case of conversion.
+                // Prefer PCM32 if we need to convert.
                 if (_realDriver.SupportsSampleFormat(SampleFormat.PcmInt32))
                 {
                     return SampleFormat.PcmInt32;
                 }
 
-                // If not supported, PCM float would provide better quality at the lowest cost compared to PCM24.
+                // If not supported, PCM float provides the best quality with a cost lower than PCM24.
                 if (_realDriver.SupportsSampleFormat(SampleFormat.PcmFloat))
                 {
                     return SampleFormat.PcmFloat;
@@ -75,7 +75,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
 
                 // TODO: Implement PCM24 conversion.
 
-                // If nothing is truely supported... attempt PCM8 at the cost of loosing quality...
+                // If nothing is truly supported, attempt PCM8 at the cost of loosing quality.
                 if (_realDriver.SupportsSampleFormat(SampleFormat.PcmInt8))
                 {
                     return SampleFormat.PcmInt8;

@@ -45,6 +45,11 @@ namespace Ryujinx.Audio.Backends.CompatLayer
 
             if (_userSampleFormat != realSampleFormat)
             {
+                if (_userSampleFormat != SampleFormat.PcmInt16)
+                {
+                    throw new NotImplementedException("Converting formats other than PCM16 is not supported.");
+                }
+
                 int userSampleCount = buffer.Data.Length / BackendHelper.GetSampleSize(_userSampleFormat);
 
                 ReadOnlySpan<short> samples = MemoryMarshal.Cast<byte, short>(buffer.Data);
