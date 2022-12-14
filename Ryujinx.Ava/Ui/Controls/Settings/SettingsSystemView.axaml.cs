@@ -3,14 +3,14 @@ using Avalonia.Markup.Xaml;
 using Ryujinx.Ava.Ui.Models;
 using Avalonia.Data.Converters;
 using Avalonia.Data;
-using Ryujinx.Ava.Ui.Windows;
+using Ryujinx.Ava.Ui.ViewModels;
 using System.Linq;
 
 namespace Ryujinx.Ava.Ui.Controls.Settings;
 
 public partial class SettingsSystemView : UserControl
 {
-    private SettingsWindow _parent;
+    private SettingsViewModel _viewModel;
 
     public SettingsSystemView()
     {
@@ -22,12 +22,13 @@ public partial class SettingsSystemView : UserControl
         tzMultiBinding.Bindings.Add(new Binding("Location"));
         tzMultiBinding.Bindings.Add(new Binding("Abbreviation"));
 
-        TimeZoneBox.ValueMemberBinding = tzMultiBinding;
+        // TimeZoneBox.ValueMemberBinding = tzMultiBinding;
     }
 
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
+        _viewModel = DataContext as SettingsViewModel;
     }
     
     private void TimeZoneBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -38,7 +39,7 @@ public partial class SettingsSystemView : UserControl
             {
                 e.Handled = true;
 
-                _parent.ViewModel.ValidateAndSetTimeZone(timeZone.Location);
+                _viewModel.ValidateAndSetTimeZone(timeZone.Location);
             }
         }
     }
@@ -49,7 +50,7 @@ public partial class SettingsSystemView : UserControl
         {
             if (box.SelectedItem != null && box.SelectedItem is TimeZone timeZone)
             {
-                _parent.ViewModel.ValidateAndSetTimeZone(timeZone.Location);
+                _viewModel.ValidateAndSetTimeZone(timeZone.Location);
             }
         }
     }

@@ -14,11 +14,7 @@
     MinHeight="480"
     mc:Ignorable="d"
     x:CompileBindings="True"
-    x:DataType="viewModels:SettingsViewModel"
     Focusable="True">
-    <Design.DataContext>
-        <viewModels:SettingsViewModel />
-    </Design.DataContext>
     <ScrollViewer 
         Name="HotkeysPage"
         HorizontalAlignment="Stretch"
@@ -32,7 +28,6 @@
                     <TextBlock VerticalAlignment="Center" Text="{locale:Locale SettingsTabHotkeysToggleVsyncHotkey}" Width="230" />
                     <ToggleButton Width="90" Height="27" Checked="Button_Checked" Unchecked="Button_Unchecked">
                         <TextBlock
-                            Text="{Binding KeyboardHotkeys.ToggleVsync, Mode=TwoWay, Converter={StaticResource Key}}"
                             TextAlignment="Center" />
                     </ToggleButton>
                 </StackPanel>
@@ -40,7 +35,6 @@
                     <TextBlock VerticalAlignment="Center" Text="{locale:Locale SettingsTabHotkeysScreenshotHotkey}" Width="230" />
                     <ToggleButton Width="90" Height="27" Checked="Button_Checked" Unchecked="Button_Unchecked">
                         <TextBlock
-                            Text="{Binding KeyboardHotkeys.Screenshot, Mode=TwoWay, Converter={StaticResource Key}}"
                             TextAlignment="Center" />
                     </ToggleButton>
                 </StackPanel>
@@ -48,7 +42,6 @@
                     <TextBlock VerticalAlignment="Center" Text="{locale:Locale SettingsTabHotkeysShowUiHotkey}" Width="230" />
                     <ToggleButton Width="90" Height="27" Checked="Button_Checked" Unchecked="Button_Unchecked">
                         <TextBlock
-                            Text="{Binding KeyboardHotkeys.ShowUi, Mode=TwoWay, Converter={StaticResource Key}}"
                             TextAlignment="Center" />
                     </ToggleButton>
                 </StackPanel>
@@ -56,7 +49,6 @@
                     <TextBlock VerticalAlignment="Center" Text="{locale:Locale SettingsTabHotkeysPauseHotkey}" Width="230" />
                     <ToggleButton Width="90" Height="27" Checked="Button_Checked" Unchecked="Button_Unchecked">
                         <TextBlock
-                            Text="{Binding KeyboardHotkeys.Pause, Mode=TwoWay, Converter={StaticResource Key}}"
                             TextAlignment="Center" />
                     </ToggleButton>
                 </StackPanel>
@@ -64,7 +56,6 @@
                     <TextBlock VerticalAlignment="Center" Text="{locale:Locale SettingsTabHotkeysToggleMuteHotkey}" Width="230" />
                     <ToggleButton Width="90" Height="27" Checked="Button_Checked" Unchecked="Button_Unchecked">
                         <TextBlock
-                            Text="{Binding KeyboardHotkeys.ToggleMute, Mode=TwoWay, Converter={StaticResource Key}}"
                             TextAlignment="Center" />
                     </ToggleButton>
                 </StackPanel>
@@ -72,7 +63,6 @@
                     <TextBlock VerticalAlignment="Center" Text="{locale:Locale SettingsTabHotkeysResScaleUpHotkey}" Width="230" />
                     <ToggleButton Width="90" Height="27" Checked="Button_Checked" Unchecked="Button_Unchecked">
                         <TextBlock
-                            Text="{Binding KeyboardHotkeys.ResScaleUp, Mode=TwoWay, Converter={StaticResource Key}}"
                             TextAlignment="Center" />
                     </ToggleButton>
                 </StackPanel>
@@ -80,7 +70,6 @@
                     <TextBlock VerticalAlignment="Center" Text="{locale:Locale SettingsTabHotkeysResScaleDownHotkey}" Width="230" />
                     <ToggleButton Width="90" Height="27" Checked="Button_Checked" Unchecked="Button_Unchecked">
                         <TextBlock
-                            Text="{Binding KeyboardHotkeys.ResScaleDown, Mode=TwoWay, Converter={StaticResource Key}}"
                             TextAlignment="Center" />
                     </ToggleButton>
                 </StackPanel>
@@ -88,7 +77,6 @@
                     <TextBlock VerticalAlignment="Center" Text="{locale:Locale SettingsTabHotkeysVolumeUpHotkey}" Width="230" />
                     <ToggleButton Width="90" Height="27" Checked="Button_Checked" Unchecked="Button_Unchecked">
                         <TextBlock
-                            Text="{Binding KeyboardHotkeys.VolumeUp, Mode=TwoWay, Converter={StaticResource Key}}"
                             TextAlignment="Center" />
                     </ToggleButton>
                 </StackPanel>
@@ -96,7 +84,6 @@
                     <TextBlock VerticalAlignment="Center" Text="{locale:Locale SettingsTabHotkeysVolumeDownHotkey}" Width="230" />
                     <ToggleButton Width="90" Height="27" Checked="Button_Checked" Unchecked="Button_Unchecked">
                         <TextBlock
-                            Text="{Binding KeyboardHotkeys.VolumeDown, Mode=TwoWay, Converter={StaticResource Key}}"
                             TextAlignment="Center" />
                     </ToggleButton>
                 </StackPanel>

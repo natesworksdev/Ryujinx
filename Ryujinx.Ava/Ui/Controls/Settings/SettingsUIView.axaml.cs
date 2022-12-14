@@ -2,7 +2,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Ryujinx.Ava.Ui.Windows;
+using Ryujinx.Ava.Ui.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,9 +12,9 @@ namespace Ryujinx.Ava.Ui.Controls.Settings;
 
 public partial class SettingsUIView : UserControl
 {
-    private SettingsWindow _parent;
+    private SettingsViewModel _viewModel;
 
-    public SettingsUIView(SettingsWindow settingsWindow)
+    public SettingsUIView()
     {
         InitializeComponent();
     }
@@ -22,20 +22,21 @@ public partial class SettingsUIView : UserControl
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
+        _viewModel = DataContext as SettingsViewModel;
     }
     
     private async void AddButton_OnClick(object sender, RoutedEventArgs e)
     {
         string path = PathBox.Text;
 
-        if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path) && !_parent.ViewModel.GameDirectories.Contains(path))
+        if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path) && !_viewModel.GameDirectories.Contains(path))
         {
-            _parent.ViewModel.GameDirectories.Add(path);
-            _parent.ViewModel.DirectoryChanged = true;
+            _viewModel.GameDirectories.Add(path);
+            _viewModel.DirectoryChanged = true;
         }
         else
         {
-            var result = await _parent.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            /*var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
                 AllowMultiple = false
             });
@@ -44,13 +45,13 @@ public partial class SettingsUIView : UserControl
             {
                 if (result[0].TryGetUri(out Uri uri))
                 {
-                    if (!_parent.ViewModel.GameDirectories.Contains(uri.LocalPath))
+                    if (!_viewModel.GameDirectories.Contains(uri.LocalPath))
                     {
-                        _parent.ViewModel.GameDirectories.Add(uri.LocalPath);
-                        _parent.ViewModel.DirectoryChanged = true;
+                        _viewModel.GameDirectories.Add(uri.LocalPath);
+                        _viewModel.DirectoryChanged = true;
                     }
                 }
-            }
+            }*/
         }
     }
 
@@ -60,8 +61,8 @@ public partial class SettingsUIView : UserControl
 
         foreach (string path in new List<string>(GameList.SelectedItems.Cast<string>()))
         {
-            _parent.ViewModel.GameDirectories.Remove(path);
-            _parent.ViewModel.DirectoryChanged = true;
+            _viewModel.GameDirectories.Remove(path);
+            _viewModel.DirectoryChanged = true;
         }
 
         if (GameList.ItemCount > 0)
