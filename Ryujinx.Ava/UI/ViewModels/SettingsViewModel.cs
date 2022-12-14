@@ -488,7 +488,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             
             if (_owner is SettingsWindow owner)
             {
-                owner.ControllerSettings?.SaveCurrentProfile();
+                // owner.ControllerSettings?.SaveCurrentProfile();
             }
             
             if (_owner.Owner is MainWindow window && _directoryChanged)
