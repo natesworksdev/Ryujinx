@@ -22,7 +22,7 @@ public partial class SettingsSystemView : UserControl
         tzMultiBinding.Bindings.Add(new Binding("Location"));
         tzMultiBinding.Bindings.Add(new Binding("Abbreviation"));
 
-        // TimeZoneBox.ValueMemberBinding = tzMultiBinding;
+        this.FindControl<AutoCompleteBox>("TimeZoneBox").ValueMemberBinding = tzMultiBinding;
     }
 
     private void InitializeComponent()

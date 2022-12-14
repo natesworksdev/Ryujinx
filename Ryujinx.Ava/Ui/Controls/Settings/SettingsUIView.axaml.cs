@@ -28,7 +28,7 @@ public partial class SettingsUIView : UserControl
     
     private async void AddButton_OnClick(object sender, RoutedEventArgs e)
     {
-        string path = PathBox.Text;
+        string path = this.FindControl<TextBox>("PathBox").Text;
 
         if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path) && !_viewModel.GameDirectories.Contains(path))
         {
