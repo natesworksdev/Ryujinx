@@ -1,3 +1,4 @@
+using Avalonia.Controls.ApplicationLifetimes;
 using LibHac;
 using LibHac.Fs;
 using LibHac.Fs.Shim;
@@ -67,9 +68,11 @@ namespace Ryujinx.Ava.UI.Models
             }
             else
             {
-                // TODO: Fix
-                // var appMetadata = MainWindow.ApplicationLibrary.LoadAndSaveMetaData(TitleIdString);
-                // Title = appMetadata.Title ?? TitleIdString;
+                if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                {
+                    var appMetadata = (desktop.MainWindow as MainWindow).ApplicationLibrary.LoadAndSaveMetaData(TitleIdString);
+                    Title = appMetadata.Title ?? TitleIdString;
+                }
             }
 
             Task.Run(() =>
