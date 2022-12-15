@@ -42,7 +42,7 @@ using ShaderCacheLoadingState = Ryujinx.Graphics.Gpu.Shader.ShaderCacheState;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
-    internal class MainWindowViewModel : BaseModel
+    public class MainWindowViewModel : BaseModel
     {
         private const int HotKeyPressDelayMs = 500;
 

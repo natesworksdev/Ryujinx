@@ -1,11 +1,12 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 
-namespace Ryujinx.Ava.UI.Views.Settings;
-
-public partial class SettingsCPUView : UserControl
+namespace Ryujinx.Ava.UI.Views.Settings
 {
-    public SettingsCPUView()
+    public partial class SettingsCPUView : UserControl
     {
-        InitializeComponent();
+        public SettingsCPUView()
+        {
+            InitializeComponent();
+        }
     }
 }

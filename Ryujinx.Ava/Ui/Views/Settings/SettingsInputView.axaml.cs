@@ -1,18 +1,17 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 
-namespace Ryujinx.Ava.UI.Views.Settings;
-
-public partial class SettingsInputView : UserControl
+namespace Ryujinx.Ava.UI.Views.Settings
 {
-    public SettingsInputView()
+    public partial class SettingsInputView : UserControl
     {
-        InitializeComponent();
-    }
+        public SettingsInputView()
+        {
+            InitializeComponent();
+        }
 
-    protected override void OnUnloaded()
-    {
-        ControllerSettings.Dispose();
-        
-        base.OnUnloaded();
+        public void Dispose()
+        {
+            ControllerSettings.Dispose();
+        }
     }
 }

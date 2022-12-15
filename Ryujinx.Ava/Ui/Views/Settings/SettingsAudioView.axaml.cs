@@ -1,11 +1,12 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 
-namespace Ryujinx.Ava.UI.Views.Settings;
-
-public partial class SettingsAudioView : UserControl
+namespace Ryujinx.Ava.UI.Views.Settings
 {
-    public SettingsAudioView()
+    public partial class SettingsAudioView : UserControl
     {
-        InitializeComponent();
+        public SettingsAudioView()
+        {
+            InitializeComponent();
+        }
     }
 }

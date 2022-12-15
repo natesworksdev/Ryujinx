@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -75,7 +74,8 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 _canUpdate = value;
 
-                Dispatcher.UIThread.InvokeAsync(() => UpdateMenuItem.IsEnabled = _canUpdate);
+                // TODO: Fix
+                // Dispatcher.UIThread.InvokeAsync(() => UpdateMenuItem.IsEnabled = _canUpdate);
             }
         }
 
@@ -406,15 +406,6 @@ namespace Ryujinx.Ava.UI.Windows
             });
         }
 
-        public void Sort_Checked(object sender, RoutedEventArgs args)
-        {
-            if (sender is RadioButton button)
-            {
-                var sort = Enum.Parse<ApplicationSort>(button.Tag.ToString());
-                ViewModel.Sort(sort);
-            }
-        }
-
         protected override void HandleWindowStateChanged(WindowState state)
         {
             WindowState = state;
@@ -422,15 +413,6 @@ namespace Ryujinx.Ava.UI.Windows
             if (state != WindowState.Minimized)
             {
                 Renderer.Start();
-            }
-        }
-
-        public void Order_Checked(object sender, RoutedEventArgs args)
-        {
-            if (sender is RadioButton button)
-            {
-                var tag = button.Tag.ToString();
-                ViewModel.Sort(tag != "Descending");
             }
         }
 
@@ -591,43 +573,6 @@ namespace Ryujinx.Ava.UI.Windows
 
             ViewModel.ProgressBarForegroundColor = new SolidColorBrush(progressFgColor);
             ViewModel.ProgressBarBackgroundColor = new SolidColorBrush(progressBgColor);
-        }
-
-        private void SearchBox_OnKeyUp(object sender, KeyEventArgs e)
-        {
-            ViewModel.SearchText = SearchBox.Text;
-        }
-
-        private async void StopEmulation_Click(object sender, RoutedEventArgs e)
-        {
-            if (AppHost != null)
-            {
-                await AppHost.ShowExitPrompt();
-            }
-        }
-
-        private async void PauseEmulation_Click(object sender, RoutedEventArgs e)
-        {
-            await Task.Run(() =>
-            {
-                AppHost?.Pause();
-            });
-        }
-
-        private async void ResumeEmulation_Click(object sender, RoutedEventArgs e)
-        {
-            await Task.Run(() =>
-            {
-                AppHost?.Resume();
-            });
-        }
-
-        private void ScanAmiiboMenuItem_AttachedToVisualTree(object sender, VisualTreeAttachmentEventArgs e)
-        {
-            if (sender is MenuItem)
-            {
-                ViewModel.IsAmiiboRequested = AppHost.Device.System.SearchingForAmiibo(out _);
-            }
         }
 
         private void VsyncStatus_PointerReleased(object sender, PointerReleasedEventArgs e)

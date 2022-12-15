@@ -1,70 +1,82 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
-using Avalonia.Platform.Storage;
+using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.ViewModels;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Ryujinx.Ava.UI.Views.Settings;
-
-public partial class SettingsUIView : UserControl
+namespace Ryujinx.Ava.UI.Views.Settings
 {
-    public SettingsViewModel ViewModel;
-    
-    public SettingsUIView()
+    public partial class SettingsUIView : UserControl
     {
-        InitializeComponent();
-    }
-    
-    private async void AddButton_OnClick(object sender, RoutedEventArgs e)
-    {
-        string path = PathBox.Text;
+        public SettingsViewModel ViewModel;
 
-        if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path) && !ViewModel.GameDirectories.Contains(path))
+        public SettingsUIView()
         {
-            ViewModel.GameDirectories.Add(path);
-            ViewModel.DirectoryChanged = true;
+            InitializeComponent();
         }
-        else
-        {
-            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-            {
-                var result = await desktop.MainWindow.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
-                {
-                    AllowMultiple = false
-                });
 
-                if (result.Count > 0)
+        private async void AddButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            string path = PathBox.Text;
+
+            if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path) && !ViewModel.GameDirectories.Contains(path))
+            {
+                ViewModel.GameDirectories.Add(path);
+                ViewModel.DirectoryChanged = true;
+            }
+            else
+            {
+                if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
                 {
-                    if (result[0].TryGetUri(out Uri uri))
+                    path = await new OpenFolderDialog().ShowAsync(desktop.MainWindow);
+
+                    if (!string.IsNullOrWhiteSpace(path))
                     {
-                        if (!ViewModel.GameDirectories.Contains(uri.LocalPath))
-                        {
-                            ViewModel.GameDirectories.Add(uri.LocalPath);
-                            ViewModel.DirectoryChanged = true;
-                        }
+                        ViewModel.GameDirectories.Add(path);
+                        ViewModel.DirectoryChanged = true;
                     }
                 }
             }
         }
-    }
 
-    private void RemoveButton_OnClick(object sender, RoutedEventArgs e)
-    {
-        int oldIndex = GameList.SelectedIndex;
-
-        foreach (string path in new List<string>(GameList.SelectedItems.Cast<string>()))
+        private void RemoveButton_OnClick(object sender, RoutedEventArgs e)
         {
-            ViewModel.GameDirectories.Remove(path);
-            ViewModel.DirectoryChanged = true;
+            int oldIndex = GameList.SelectedIndex;
+
+            foreach (string path in new List<string>(GameList.SelectedItems.Cast<string>()))
+            {
+                ViewModel.GameDirectories.Remove(path);
+                ViewModel.DirectoryChanged = true;
+            }
+
+            if (GameList.ItemCount > 0)
+            {
+                GameList.SelectedIndex = oldIndex < GameList.ItemCount ? oldIndex : 0;
+            }
         }
 
-        if (GameList.ItemCount > 0)
+        public async void BrowseTheme(object sender, RoutedEventArgs e)
         {
-            GameList.SelectedIndex = oldIndex < GameList.ItemCount ? oldIndex : 0;
+            var dialog = new OpenFileDialog()
+            {
+                Title = LocaleManager.Instance[LocaleKeys.SettingsSelectThemeFileDialogTitle],
+                AllowMultiple = false
+            };
+
+            dialog.Filters.Add(new FileDialogFilter() { Extensions = { "xaml" }, Name = LocaleManager.Instance[LocaleKeys.SettingsXamlThemeFile] });
+
+            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                var file = await dialog.ShowAsync(desktop.MainWindow);
+
+                if (file != null && file.Length > 0)
+                {
+                    ViewModel.CustomThemePath = file[0];
+                }
+            }
         }
     }
 }

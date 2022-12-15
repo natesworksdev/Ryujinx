@@ -1,11 +1,12 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 
-namespace Ryujinx.Ava.UI.Views.Settings;
-
-public partial class SettingsLoggingView : UserControl
+namespace Ryujinx.Ava.UI.Views.Settings
 {
-    public SettingsLoggingView()
+    public partial class SettingsLoggingView : UserControl
     {
-        InitializeComponent();
+        public SettingsLoggingView()
+        {
+            InitializeComponent();
+        }
     }
 }

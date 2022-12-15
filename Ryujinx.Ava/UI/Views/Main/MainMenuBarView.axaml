@@ -1,17 +1,11 @@
-﻿<UserControl
+<UserControl 
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
     mc:Ignorable="d"
-    xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
-    x:DataType="viewModels:MainWindowViewModel"
-    x:Class="Ryujinx.Ava.UI.Views.Main.MainMenuBarView"
-    x:CompileBindings="True">
-    <Design.DataContext>
-        <viewModels:MainWindowViewModel />
-    </Design.DataContext>
+    x:Class="Ryujinx.Ava.UI.Views.Main.MainMenuBarView">
     <DockPanel HorizontalAlignment="Stretch">
         <Menu
             Name="Menu"
@@ -36,7 +30,7 @@
                     ToolTip.Tip="{locale:Locale LoadApplicationFolderTooltip}" />
                 <MenuItem Header="{locale:Locale MenuBarFileOpenApplet}" IsEnabled="{Binding IsAppletMenuActive}">
                     <MenuItem
-                        Click="OpenMiiApplet"
+                        Command="{ReflectionBinding OpenMiiApplet}"
                         Header="Mii Edit Applet"
                         ToolTip.Tip="{locale:Locale MenuBarFileOpenAppletOpenMiiAppletToolTip}" />
                 </MenuItem>
@@ -51,7 +45,7 @@
                     ToolTip.Tip="{locale:Locale OpenRyujinxLogsTooltip}" />
                 <Separator />
                 <MenuItem
-                    Click="CloseWindow"
+                    Command="{ReflectionBinding CloseWindow}"
                     Header="{locale:Locale MenuBarFileExit}"
                     ToolTip.Tip="{locale:Locale ExitTooltip}" />
             </MenuItem>
@@ -60,22 +54,13 @@
                     Command="{ReflectionBinding ToggleFullscreen}"
                     Header="{locale:Locale MenuBarOptionsToggleFullscreen}"
                     InputGesture="F11" />
-                <MenuItem>
-                    <MenuItem.Icon>
-                        <CheckBox IsChecked="{Binding StartGamesInFullscreen, Mode=TwoWay}"
-                                  MinWidth="250">
-                            <TextBlock Text="{locale:Locale MenuBarOptionsStartGamesInFullscreen}"/>
-                        </CheckBox>
-                    </MenuItem.Icon>
-                </MenuItem>
-                <MenuItem IsVisible="{Binding ShowConsoleVisible}">
-                    <MenuItem.Icon>
-                        <CheckBox IsChecked="{Binding ShowConsole, Mode=TwoWay}"
-                                  MinWidth="250">
-                            <TextBlock Text="{locale:Locale MenuBarOptionsShowConsole}"/>
-                        </CheckBox>
-                    </MenuItem.Icon>
-                </MenuItem>
+                <CheckBox IsChecked="{Binding StartGamesInFullscreen, Mode=TwoWay}" MinWidth="250">
+                    <TextBlock Text="{locale:Locale MenuBarOptionsStartGamesInFullscreen}"/>
+                </CheckBox>
+                <CheckBox IsVisible="{Binding ShowConsoleVisible}" IsChecked="{Binding ShowConsole, Mode=TwoWay}"
+                          MinWidth="250">
+                    <TextBlock Text="{locale:Locale MenuBarOptionsShowConsole}"/>
+                </CheckBox>
                 <Separator />
                 <MenuItem Header="{locale:Locale MenuBarOptionsChangeLanguage}">
                     <MenuItem
@@ -137,7 +122,7 @@
                 </MenuItem>
                 <Separator />
                 <MenuItem
-                    Click="OpenSettings"
+                    Command="{ReflectionBinding OpenSettings}"
                     Header="{locale:Locale MenuBarOptionsSettings}"
                     ToolTip.Tip="{locale:Locale OpenSettingsTooltip}" />
                 <MenuItem
@@ -174,7 +159,7 @@
                 <MenuItem
                     Name="ScanAmiiboMenuItem"
                     AttachedToVisualTree="ScanAmiiboMenuItem_AttachedToVisualTree"
-                    Click="OpenAmiiboWindow"
+                    Command="{ReflectionBinding OpenAmiiboWindow}"
                     Header="{locale:Locale MenuBarActionsScanAmiibo}"
                     IsEnabled="{Binding IsAmiiboRequested}" />
                 <MenuItem
@@ -188,7 +173,7 @@
                     InputGesture="{Binding ShowUiKey}"
                     IsEnabled="{Binding IsGameRunning}" />
                 <MenuItem
-                    Click="OpenCheatManagerForCurrentApp"
+                    Command="{ReflectionBinding OpenCheatManagerForCurrentApp}"
                     Header="{locale:Locale GameListContextMenuManageCheat}"
                     IsEnabled="{Binding IsGameRunning}" />
             </MenuItem>
@@ -201,13 +186,12 @@
             <MenuItem VerticalAlignment="Center" Header="{locale:Locale MenuBarHelp}">
                 <MenuItem
                     Name="UpdateMenuItem"
-                    IsEnabled="{Binding CanUpdate}"
-                    Click="CheckForUpdates"
+                    Command="{ReflectionBinding CheckForUpdates}"
                     Header="{locale:Locale MenuBarHelpCheckForUpdates}"
                     ToolTip.Tip="{locale:Locale CheckUpdatesTooltip}" />
                 <Separator />
                 <MenuItem
-                    Click="OpenAboutWindow"
+                    Command="{ReflectionBinding OpenAboutWindow}"
                     Header="{locale:Locale MenuBarHelpAbout}"
                     ToolTip.Tip="{locale:Locale OpenAboutTooltip}" />
             </MenuItem>
