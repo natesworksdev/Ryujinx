@@ -231,7 +231,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             get => _lastScannedAmiiboId;
             set
             {
-                _lastFullscreenToggle = value;
+                _lastScannedAmiiboId = value;
                 
                 OnPropertyChanged();
             }
@@ -249,8 +249,9 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 return Glyph switch
                 {
-                    Glyph.List => _owner.GameList.SelectedApplication,
-                    Glyph.Grid => _owner.GameGrid.SelectedApplication,
+                    // TODO: Fix
+                    Glyph.List => null,  //_owner.GameList.SelectedApplication,
+                    Glyph.Grid => null, //_owner.GameGrid.SelectedApplication,
                     _          => null,
                 };
             }
