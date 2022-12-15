@@ -8,7 +8,7 @@ body:
       options:
       - label: I have searched the existing issues
         required: true
-  - type: input
+  - type: textarea
     id: issue
     attributes:
       label: Description of Issue
@@ -30,14 +30,24 @@ body:
       placeholder: Logs files can be found under "Logs" folder in Ryujinx program folder. You can drag and drop the log on to the text area
     validations:
       required: true
-  - type: input
+  - type: dropdown
     id: os
     attributes:
-      label: OS
-      placeholder: |
-        - *(e.g. Windows 10)*
+      label: Operating System
+      options:
+      - Windows 11
+      - Windows 10
+      - Linux - Specify Distro Below
+      - macOS
     validations:
       required: true
+  - type: input
+    id: os-distro
+    attributes:
+      label: If Linux - Specify Distro
+      placeholder: "Example: Arch"
+    validations:
+      required: false
   - type: input
     id: ryujinx-version
     attributes:
