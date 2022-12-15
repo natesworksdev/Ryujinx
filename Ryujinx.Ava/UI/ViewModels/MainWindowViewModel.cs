@@ -1,33 +1,19 @@
 using ARMeilleure.Translation.PTC;
-using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
-using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using DynamicData;
 using DynamicData.Binding;
 using LibHac.Fs;
 using LibHac.FsSystem;
-using LibHac.Ncm;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Input;
-<<<<<<< HEAD
-=======
-using Ryujinx.Ava.Modules.Updater;
->>>>>>> 66aac324 (Fix Namespace Case)
-using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
-using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
-using Ryujinx.Common.Logging;
 using Ryujinx.HLE;
-using Ryujinx.HLE.FileSystem;
-using Ryujinx.HLE.HOS;
-using Ryujinx.Modules;
 using Ryujinx.Ui.App.Common;
-using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
 using System;
@@ -44,9 +30,6 @@ namespace Ryujinx.Ava.UI.ViewModels
 {
     public class MainWindowViewModel : BaseModel
     {
-        private const int HotKeyPressDelayMs = 500;
-
-        private readonly MainWindow _owner;
         private ObservableCollection<ApplicationData> _applications;
         private string _aspectStatusText;
 
@@ -62,6 +45,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private bool _isAmiiboRequested;
         private bool _isGameRunning;
         private bool _isLoading;
+        private bool _isFullScreen;
         private int _progressMaximum;
         private int _progressValue;
         private long _lastFullscreenToggle = Environment.TickCount64;
@@ -81,14 +65,9 @@ namespace Ryujinx.Ava.UI.ViewModels
         private bool _showAll;
         private string _lastScannedAmiiboId;
         private ReadOnlyObservableCollection<ApplicationData> _appsObservableList;
-        public ApplicationLibrary ApplicationLibrary => _owner.ApplicationLibrary;
 
         public string TitleName { get; internal set; }
-
-        public MainWindowViewModel(MainWindow owner) : this()
-        {
-            _owner = owner;
-        }
+        internal AppHost AppHost { get; set; }
 
         public MainWindowViewModel()
         {
@@ -109,9 +88,6 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void Initialize()
         {
-            ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
-            ApplicationLibrary.ApplicationAdded += ApplicationLibrary_ApplicationAdded;
-
             Ptc.PtcStateChanged -= ProgressHandler;
             Ptc.PtcStateChanged += ProgressHandler;
         }
@@ -158,6 +134,19 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged();
             }
         }
+
+        public long LastFullscreenToggle
+        {
+            get => _lastFullscreenToggle;
+            set
+            {
+                _lastFullscreenToggle = value;
+                
+                OnPropertyChanged();
+            }
+        }
+        
+        
 
         public bool EnableNonGameRunningControls => !IsGameRunning;
 
@@ -211,6 +200,39 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 _gameStatusText = value;
 
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsFullScreen
+        {
+            get => _isFullScreen;
+            set
+            {
+                _isFullScreen = value;
+                
+                OnPropertyChanged();
+            }
+        }
+
+        public bool ShowAll
+        {
+            get => _showAll;
+            set
+            {
+                _showAll = value;
+                
+                OnPropertyChanged();
+            }
+        }
+
+        public string LastScannedAmiiboId
+        {
+            get => _lastScannedAmiiboId;
+            set
+            {
+                _lastFullscreenToggle = value;
+                
                 OnPropertyChanged();
             }
         }
@@ -421,7 +443,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 if (_isGameRunning)
                 {
-                    _owner.AppHost.Device.SetVolume(_volume);
+                    AppHost.Device.SetVolume(_volume);
                 }
 
                 OnPropertyChanged(nameof(VolumeStatusText));
@@ -525,7 +547,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             };
         }
 
-        private void RefreshView()
+        public void RefreshView()
         {
             RefreshGrid();
         }
@@ -725,30 +747,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public async void OpenAmiiboWindow()
-        {
-            if (!_isAmiiboRequested)
-            {
-                return;
-            }
-
-            if (_owner.AppHost.Device.System.SearchingForAmiibo(out int deviceId))
-            {
-                string      titleId = _owner.AppHost.Device.Application.TitleIdText.ToUpper();
-                AmiiboWindow window = new(_showAll, _lastScannedAmiiboId, titleId);
-
-                await window.ShowDialog(_owner);
-
-                if (window.IsScanned)
-                {
-                    _showAll             = window.ViewModel.ShowAllAmiibo;
-                    _lastScannedAmiiboId = window.ScannedAmiibo.GetId();
-
-                    _owner.AppHost.Device.System.ScanAmiibo(deviceId, _lastScannedAmiiboId, window.ViewModel.UseRandomUuid);
-                }
-            }
-        }
-
         public void HandleShaderProgress(Switch emulationContext)
         {
             emulationContext.Gpu.ShaderCacheStateChanged -= ProgressHandler;
@@ -763,129 +761,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
 
             return false;
-        }
-
-        private void ApplicationLibrary_ApplicationAdded(object sender, ApplicationAddedEventArgs e)
-        {
-            AddApplication(e.AppData);
-        }
-
-        private void ApplicationLibrary_ApplicationCountUpdated(object sender, ApplicationCountUpdatedEventArgs e)
-        {
-            LocaleManager.Instance.UpdateDynamicValue("StatusBarGamesLoaded", e.NumAppsLoaded, e.NumAppsFound);
-
-            Dispatcher.UIThread.Post(() =>
-            {
-                StatusBarProgressValue   = e.NumAppsLoaded;
-                StatusBarProgressMaximum = e.NumAppsFound;
-
-                if (e.NumAppsFound == 0)
-                {
-                    _owner.StatusBarView.LoadProgressBar.IsVisible = false;
-                }
-
-                if (e.NumAppsLoaded == e.NumAppsFound)
-                {
-                    _owner.StatusBarView.LoadProgressBar.IsVisible = false;
-                }
-            });
-        }
-
-        public void AddApplication(ApplicationData applicationData)
-        {
-            Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                Applications.Add(applicationData);
-            });
-        }
-
-        public async void LoadApplications()
-        {
-            await Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                Applications.Clear();
-
-                _owner.StatusBarView.LoadProgressBar.IsVisible = true;
-                StatusBarProgressMaximum         = 0;
-                StatusBarProgressValue           = 0;
-
-                LocaleManager.Instance.UpdateDynamicValue("StatusBarGamesLoaded", 0, 0);
-            });
-
-            ReloadGameList();
-        }
-
-        private void ReloadGameList()
-        {
-            if (_isLoading)
-            {
-                return;
-            }
-
-            _isLoading = true;
-
-            ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs.Value, ConfigurationState.Instance.System.Language);
-
-            _isLoading = false;
-        }
-
-        public async void OpenFile()
-        {
-            var result = await _owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-            {
-                Title = LocaleManager.Instance["OpenFileDialogTitle"],
-                AllowMultiple = false,
-                FileTypeFilter = new List<FilePickerFileType>
-                {
-                    new(LocaleManager.Instance["AllSupportedFormats"])
-                    {
-                        Patterns = new[] { "*.nsp", "*.pfs0", "*.xci", "*.nca", "*.nro", "*.nso"},
-                        AppleUniformTypeIdentifiers = new[]
-                        {
-                            "com.ryujinx.Ryujinx-nsp",
-                            "com.ryujinx.Ryujinx-pfs0",
-                            "com.ryujinx.Ryujinx-xci",
-                            "com.ryujinx.Ryujinx-nca",
-                            "com.ryujinx.Ryujinx-nro",
-                            "com.ryujinx.Ryujinx-nso"
-                        },
-                        MimeTypes = new[]
-                        {
-                            "application/x-nx-nsp",
-                            "application/x-nx-pfs0",
-                            "application/x-nx-xci",
-                            "application/x-nx-nca",
-                            "application/x-nx-nro",
-                            "application/x-nx-nso"
-                        }
-                    }
-                }
-            });
-
-            if (result.Count > 0)
-            {
-                if (result[0].TryGetUri(out Uri uri))
-                {
-                    _owner.LoadApplication(uri.LocalPath);
-                }
-            }
-        }
-
-        public async void OpenFolder()
-        {
-            var result = await _owner.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
-            {
-                Title = LocaleManager.Instance["OpenFolderDialogTitle"],
-                AllowMultiple = false
-            });
-
-            if (result.Count > 0)
-            {
-                if (result[0].TryGetUri(out Uri uri))
-                {
-                    _owner.LoadApplication(uri.LocalPath);
-                }
-            }
         }
 
         public void LoadConfigurableHotKeys()
@@ -908,7 +783,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void TakeScreenshot()
         {
-            _owner.AppHost.ScreenshotRequested = true;
+            AppHost.ScreenshotRequested = true;
         }
 
         public void HideUi()
@@ -926,16 +801,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             Glyph = Glyph.Grid;
         }
 
-        public void OpenMiiApplet()
-        {
-            string contentPath = _owner.ContentManager.GetInstalledContentPath(0x0100000000001009, StorageId.BuiltInSystem, NcaContentType.Program);
-
-            if (!string.IsNullOrWhiteSpace(contentPath))
-            {
-                _owner.LoadApplication(contentPath, false, "Mii Applet");
-            }
-        }
-
         public static void OpenRyujinxFolder()
         {
             OpenHelper.OpenFolder(AppDataManager.BaseDirPath);
@@ -943,85 +808,19 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public static void OpenLogsFolder()
         {
-            string logPath = Path.Combine(ReleaseInformation.GetBaseApplicationDirectory(), "Logs");
+            string logPath = Path.Combine(ReleaseInformations.GetBaseApplicationDirectory(), "Logs");
 
             new DirectoryInfo(logPath).Create();
 
             OpenHelper.OpenFolder(logPath);
         }
-
-        public void ToggleFullscreen()
-        {
-            if (Environment.TickCount64 - _lastFullscreenToggle < HotKeyPressDelayMs)
-            {
-                return;
-            }
-
-            _lastFullscreenToggle = Environment.TickCount64;
-
-            if (_owner.WindowState == WindowState.FullScreen)
-            {
-                _owner.WindowState = WindowState.Normal;
-
-                if (IsGameRunning)
-                {
-                    ShowMenuAndStatusBar = true;
-                }
-            }
-            else
-            {
-                _owner.WindowState = WindowState.FullScreen;
-
-                if (IsGameRunning)
-                {
-                    ShowMenuAndStatusBar = false;
-                }
-            }
-
-            OnPropertyChanged(nameof(IsFullScreen));
-        }
-
-        public bool IsFullScreen => _owner.WindowState == WindowState.FullScreen;
-
+        
         public void ToggleDockMode()
         {
             if (IsGameRunning)
             {
                 ConfigurationState.Instance.System.EnableDockedMode.Value = !ConfigurationState.Instance.System.EnableDockedMode.Value;
             }
-        }
-
-        public async void ExitCurrentState()
-        {
-            if (_owner.WindowState == WindowState.FullScreen)
-            {
-                ToggleFullscreen();
-            }
-            else if (IsGameRunning)
-            {
-                await Task.Delay(100);
-
-                _owner.AppHost?.ShowExitPrompt();
-            }
-        }
-
-        public async void OpenSettings()
-        {
-            _owner.SettingsWindow = new(_owner.VirtualFileSystem, _owner.ContentManager);
-
-            await _owner.SettingsWindow.ShowDialog(_owner);
-
-            LoadConfigurableHotKeys();
-        }
-
-        public async void ManageProfiles()
-        {
-            await NavigationDialogHost.Show(_owner.AccountManager, _owner.ContentManager, _owner.VirtualFileSystem, _owner.LibHacHorizonManager.RyujinxClient);
-        }
-
-        public async void OpenAboutWindow()
-        {
-            await AboutWindow.Show();
         }
 
         public void ChangeLanguage(object obj)
@@ -1076,71 +875,6 @@ namespace Ryujinx.Ava.UI.ViewModels
                 }
             }
             catch (Exception) { }
-        }
-
-        public void OpenUserSaveDirectory()
-        {
-            ApplicationData selection = SelectedApplication;
-            if (selection != null)
-            {
-                Task.Run(() =>
-                {
-                    if (!ulong.TryParse(selection.TitleId, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ulong titleIdNumber))
-                    {
-                        Dispatcher.UIThread.Post(async () =>
-                        {
-                            await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance["DialogRyujinxErrorMessage"], LocaleManager.Instance["DialogInvalidTitleIdErrorMessage"]);
-                        });
-
-                        return;
-                    }
-
-                    UserId         userId         = new((ulong)_owner.AccountManager.LastOpenedUser.UserId.High, (ulong)_owner.AccountManager.LastOpenedUser.UserId.Low);
-                    SaveDataFilter saveDataFilter = SaveDataFilter.Make(titleIdNumber, saveType: default, userId, saveDataId: default, index: default);
-                    OpenSaveDirectory(in saveDataFilter, selection, titleIdNumber);
-                });
-            }
-        }
-
-        public void ToggleFavorite()
-        {
-            ApplicationData selection = SelectedApplication;
-            if (selection != null)
-            {
-                selection.Favorite = !selection.Favorite;
-
-                ApplicationLibrary.LoadAndSaveMetaData(selection.TitleId, appMetadata =>
-                {
-                    appMetadata.Favorite = selection.Favorite;
-                });
-
-                RefreshView();
-            }
-        }
-
-        public void OpenModsDirectory()
-        {
-            ApplicationData selection = SelectedApplication;
-            if (selection != null)
-            {
-                string modsBasePath  = _owner.VirtualFileSystem.ModLoader.GetModsBasePath();
-                string titleModsPath = _owner.VirtualFileSystem.ModLoader.GetTitleDir(modsBasePath, selection.TitleId);
-
-                OpenHelper.OpenFolder(titleModsPath);
-            }
-        }
-
-        public void OpenSdModsDirectory()
-        {
-            ApplicationData selection = SelectedApplication;
-
-            if (selection != null)
-            {
-                string sdModsBasePath = _owner.VirtualFileSystem.ModLoader.GetSdModsBasePath();
-                string titleModsPath  = _owner.VirtualFileSystem.ModLoader.GetTitleDir(sdModsBasePath, selection.TitleId);
-
-                OpenHelper.OpenFolder(titleModsPath);
-            }
         }
 
         public void OpenPtcDirectory()
@@ -1225,7 +959,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void SimulateWakeUpMessage()
         {
-            _owner.AppHost.Device.System.SimulateWakeUpMessage();
+            AppHost.Device.System.SimulateWakeUpMessage();
         }
 
         public async void PurgeShaderCache()
@@ -1281,57 +1015,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public async void CheckForUpdates()
-        {
-            if (Updater.CanUpdate(true, _owner))
-            {
-                await Updater.BeginParse(_owner, true);
-            }
-        }
-
-        public async void OpenTitleUpdateManager()
-        {
-            ApplicationData selection = SelectedApplication;
-            if (selection != null)
-            {
-                await new TitleUpdateWindow(_owner.VirtualFileSystem, ulong.Parse(selection.TitleId, NumberStyles.HexNumber), selection.TitleName).ShowDialog(_owner);
-            }
-        }
-
-        public async void OpenDownloadableContentManager()
-        {
-            ApplicationData selection = SelectedApplication;
-            if (selection != null)
-            {
-                await new DownloadableContentManagerWindow(_owner.VirtualFileSystem, ulong.Parse(selection.TitleId, NumberStyles.HexNumber), selection.TitleName).ShowDialog(_owner);
-            }
-        }
-
-        public async void OpenCheatManager()
-        {
-            ApplicationData selection = SelectedApplication;
-            if (selection != null)
-            {
-                await new CheatWindow(_owner.VirtualFileSystem, selection.TitleId, selection.TitleName).ShowDialog(_owner);
-            }
-        }
-
-        public async void OpenCheatManagerForCurrentApp()
-        {
-            if (!IsGameRunning)
-            {
-                return;
-            }
-
-            ApplicationLoader application = _owner.AppHost.Device.Application;
-            if (application != null)
-            {
-                await new CheatWindow(_owner.VirtualFileSystem, application.TitleIdText, application.TitleName).ShowDialog(_owner);
-
-                _owner.AppHost.Device.EnableCheats();
-            }
-        }
-
         public void OpenDeviceSaveDirectory()
         {
             ApplicationData selection = SelectedApplication;
@@ -1378,7 +1061,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        private void OpenSaveDirectory(in SaveDataFilter filter, ApplicationData data, ulong titleId)
+        public void OpenSaveDirectory(in SaveDataFilter filter, ApplicationData data, ulong titleId)
         {
             ApplicationHelper.OpenSaveDir(in filter, titleId, data.ControlHolder, data.TitleName);
         }
@@ -1407,153 +1090,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             if (selection != null)
             {
                 await ApplicationHelper.ExtractSection(NcaSectionType.Code, selection.Path);
-            }
-        }
-
-        public void CloseWindow()
-        {
-            _owner.Close();
-        }
-
-        private async Task HandleFirmwareInstallation(string filename)
-        {
-            try
-            {
-                SystemVersion firmwareVersion = _owner.ContentManager.VerifyFirmwarePackage(filename);
-
-                if (firmwareVersion == null)
-                {
-                    await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance["DialogFirmwareInstallerFirmwareNotFoundErrorMessage"], filename));
-
-                    return;
-                }
-
-                string dialogTitle = string.Format(LocaleManager.Instance["DialogFirmwareInstallerFirmwareInstallTitle"], firmwareVersion.VersionString);
-
-                SystemVersion currentVersion = _owner.ContentManager.GetCurrentFirmwareVersion();
-
-                string dialogMessage = string.Format(LocaleManager.Instance["DialogFirmwareInstallerFirmwareInstallMessage"], firmwareVersion.VersionString);
-
-                if (currentVersion != null)
-                {
-                    dialogMessage += string.Format(LocaleManager.Instance["DialogFirmwareInstallerFirmwareInstallSubMessage"], currentVersion.VersionString);
-                }
-
-                dialogMessage += LocaleManager.Instance["DialogFirmwareInstallerFirmwareInstallConfirmMessage"];
-
-                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
-                    dialogTitle,
-                    dialogMessage,
-                    LocaleManager.Instance["InputDialogYes"],
-                    LocaleManager.Instance["InputDialogNo"],
-                    LocaleManager.Instance["RyujinxConfirm"]);
-
-                UpdateWaitWindow waitingDialog = ContentDialogHelper.CreateWaitingDialog(dialogTitle, LocaleManager.Instance["DialogFirmwareInstallerFirmwareInstallWaitMessage"]);
-
-                if (result == UserResult.Yes)
-                {
-                    Logger.Info?.Print(LogClass.Application, $"Installing firmware {firmwareVersion.VersionString}");
-
-                    Thread thread = new(() =>
-                    {
-                        Dispatcher.UIThread.InvokeAsync(delegate
-                        {
-                            waitingDialog.Show();
-                        });
-
-                        try
-                        {
-                            _owner.ContentManager.InstallFirmware(filename);
-
-                            Dispatcher.UIThread.InvokeAsync(async delegate
-                            {
-                                waitingDialog.Close();
-
-                                string message = string.Format(LocaleManager.Instance["DialogFirmwareInstallerFirmwareInstallSuccessMessage"], firmwareVersion.VersionString);
-
-                                await ContentDialogHelper.CreateInfoDialog(dialogTitle, message, LocaleManager.Instance["InputDialogOk"], "", LocaleManager.Instance["RyujinxInfo"]);
-
-                                Logger.Info?.Print(LogClass.Application, message);
-
-                                // Purge Applet Cache.
-
-                                DirectoryInfo miiEditorCacheFolder = new DirectoryInfo(Path.Combine(AppDataManager.GamesDirPath, "0100000000001009", "cache"));
-
-                                if (miiEditorCacheFolder.Exists)
-                                {
-                                    miiEditorCacheFolder.Delete(true);
-                                }
-                            });
-                        }
-                        catch (Exception ex)
-                        {
-                            Dispatcher.UIThread.InvokeAsync(async () =>
-                            {
-                                waitingDialog.Close();
-
-                                await ContentDialogHelper.CreateErrorDialog(ex.Message);
-                            });
-                        }
-                        finally
-                        {
-                            _owner.RefreshFirmwareStatus();
-                        }
-                    });
-
-                    thread.Name = "GUI.FirmwareInstallerThread";
-                    thread.Start();
-                }
-            }
-            catch (LibHac.Common.Keys.MissingKeyException ex)
-            {
-                Logger.Error?.Print(LogClass.Application, ex.ToString());
-
-                Dispatcher.UIThread.Post(async () => await UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys, _owner));
-            }
-            catch (Exception ex)
-            {
-                await ContentDialogHelper.CreateErrorDialog(ex.Message);
-            }
-        }
-
-        public async void InstallFirmwareFromFile()
-        {
-            var result = await _owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-            {
-                AllowMultiple = false,
-                FileTypeFilter = new List<FilePickerFileType>
-                {
-                    new(LocaleManager.Instance["FileDialogAllTypes"])
-                    {
-                        Patterns = new[] { "*.xci", "*.zip" },
-                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.Ryujinx-xci", "public.zip-archive" },
-                        MimeTypes = new[] { "application/x-nx-xci", "application/zip" }
-                    }
-                }
-            });
-
-            if (result.Count > 0)
-            {
-                if (result[0].TryGetUri(out Uri uri))
-                {
-                    await HandleFirmwareInstallation(uri.LocalPath);
-                }
-            }
-        }
-
-        public async void InstallFirmwareFromFolder()
-        {
-            var result = await _owner.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
-            {
-                AllowMultiple = false
-            });
-
-            if (result.Count > 0)
-            {
-                if (result[0].TryGetUri(out Uri uri))
-                {
-                    await HandleFirmwareInstallation(uri.LocalPath);
-                }
             }
         }
     }

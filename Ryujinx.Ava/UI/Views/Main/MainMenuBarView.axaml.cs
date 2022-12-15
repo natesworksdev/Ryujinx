@@ -21,7 +21,7 @@ public partial class MainMenuBarView : UserControl
     {
         await Task.Run(() =>
         {
-            Window.AppHost?.ShowExitPrompt();
+            Window.ViewModel.AppHost?.ShowExitPrompt();
         });
     }
 
@@ -29,7 +29,7 @@ public partial class MainMenuBarView : UserControl
     {
         await Task.Run(() =>
         {
-            Window.AppHost?.Pause();
+            Window.ViewModel.AppHost?.Pause();
         });
     }
 
@@ -37,7 +37,7 @@ public partial class MainMenuBarView : UserControl
     {
         await Task.Run(() =>
         {
-            Window.AppHost?.Resume();
+            Window.ViewModel.AppHost?.Resume();
         });
     }
 
@@ -45,7 +45,7 @@ public partial class MainMenuBarView : UserControl
     {
         if (sender is MenuItem)
         {
-            ViewModel.IsAmiiboRequested = Window.AppHost.Device.System.SearchingForAmiibo(out _);
+            ViewModel.IsAmiiboRequested = Window.ViewModel.AppHost.Device.System.SearchingForAmiibo(out _);
         }
     }
 }

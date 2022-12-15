@@ -492,7 +492,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             
             if (_owner.Owner is MainWindow window && _directoryChanged)
             {
-                window.ViewModel.LoadApplications();
+                window.LoadApplications();
             }
 
             _directoryChanged = false;

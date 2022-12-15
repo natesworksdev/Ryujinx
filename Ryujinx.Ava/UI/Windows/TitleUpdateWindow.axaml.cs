@@ -266,7 +266,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             if (Owner is MainWindow window)
             {
-                window.ViewModel.LoadApplications();
+                window.LoadApplications();
             }
 
             Close();

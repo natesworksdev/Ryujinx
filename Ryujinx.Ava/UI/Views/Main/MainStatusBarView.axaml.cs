@@ -19,9 +19,9 @@ public partial class MainStatusBarView : UserControl
 
     private void VsyncStatus_PointerReleased(object sender, PointerReleasedEventArgs e)
     {
-        Window.AppHost.Device.EnableDeviceVsync = !Window.AppHost.Device.EnableDeviceVsync;
+        Window.ViewModel.AppHost.Device.EnableDeviceVsync = !Window.ViewModel.AppHost.Device.EnableDeviceVsync;
 
-        Logger.Info?.Print(LogClass.Application, $"VSync toggled to: {Window.AppHost.Device.EnableDeviceVsync}");
+        Logger.Info?.Print(LogClass.Application, $"VSync toggled to: {Window.ViewModel.AppHost.Device.EnableDeviceVsync}");
     }
 
     private void DockedStatus_PointerReleased(object sender, PointerReleasedEventArgs e)
