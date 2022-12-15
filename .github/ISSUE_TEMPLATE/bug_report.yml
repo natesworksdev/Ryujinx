@@ -27,24 +27,34 @@ body:
     attributes:
       label: Log File
       description: A log file will help our developers to better diagnose and fix the issue.
-      placeholder: Logs files can be found under ``Logs`` folder in Ryujinx program folder.
+      placeholder: Logs files can be found under "Logs" folder in Ryujinx program folder. You can drag and drop the log on to the textarea
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: OS
+      value: |
+        - *(e.g. Windows 10)*
     validations:
       required: true
   - type: textarea
-    id: system-config
+    id: environment
     attributes:
       label: Environment?
-      placeholder: |
-        - OS: *(e.g. Windows 10)*
-        - CPU: *(e.g. i7-6700)*
-        - GPU: *(e.g. NVIDIA RTX 2070)*
-        - RAM: *(e.g. 16GiB)*
-        - Applied Mods: [ Yes (Which ones) / No ]
       value: |
-        - OS: 
-        - CPU:
-        - GPU:
-        - RAM:
-        - Applied Mods:
+        - ##### CPU: *(e.g. i7-6700)*
+        - ##### GPU: *(e.g. NVIDIA RTX 2070)*
+        - ##### RAM: *(e.g. 16GB)*
+        - Applied Mods: [ Yes (Which ones) / No ]
     validations:
       required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 
+      description: |
+      - Additional info about your environment:
+      - [ Any other information relevant to your issue. ]
+    validations:
+      required: false
