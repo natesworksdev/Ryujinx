@@ -8,6 +8,9 @@ namespace Ryujinx.Graphics.Texture
     {
         private const uint AlphaMask = 0xff000000u;
 
+        private const int BlockWidth = 4;
+        private const int BlockHeight = 4;
+
         private static readonly int[][] _etc1Lut =
         {
             new int[] { 2, 8, -2, -8 },
@@ -51,17 +54,17 @@ namespace Ryujinx.Graphics.Texture
 
             int inputOffset = 0;
 
-            byte[] output = new byte[width * height * 4];
+            byte[] output = new byte[CalculateOutputSize(width, height, depth, levels, layers)];
 
             Span<uint> outputUint = MemoryMarshal.Cast<byte, uint>(output);
-            Span<uint> tile = stackalloc uint[16];
+            Span<uint> tile = stackalloc uint[BlockWidth * BlockHeight];
 
             int imageBaseOOffs = 0;
 
             for (int l = 0; l < levels; l++)
             {
-                int wInBlocks = (width + 3) / 4;
-                int hInBlocks = (height + 3) / 4;
+                int wInBlocks = (width + BlockWidth - 1) / BlockWidth;
+                int hInBlocks = (height + BlockHeight - 1) / BlockHeight;
 
                 for (int l2 = 0; l2 < layers; l2++)
                 {
@@ -69,13 +72,13 @@ namespace Ryujinx.Graphics.Texture
                     {
                         for (int y = 0; y < hInBlocks; y++)
                         {
-                            int ty = y * 4;
-                            int bh = Math.Min(4, height - ty);
+                            int ty = y * BlockHeight;
+                            int bh = Math.Min(BlockHeight, height - ty);
 
                             for (int x = 0; x < wInBlocks; x++)
                             {
-                                int tx = x * 4;
-                                int bw = Math.Min(4, width - tx);
+                                int tx = x * BlockWidth;
+                                int bw = Math.Min(BlockWidth, width - tx);
 
                                 ulong colorBlock = dataUlong[inputOffset++];
 
@@ -89,7 +92,7 @@ namespace Ryujinx.Graphics.Texture
                                     {
                                         int oOffs = oOffsBase + px;
 
-                                        outputUint[oOffs] = tile[py * 4 + px] | AlphaMask;
+                                        outputUint[oOffs] = tile[py * BlockHeight + px] | AlphaMask;
                                     }
                                 }
                             }
@@ -113,17 +116,17 @@ namespace Ryujinx.Graphics.Texture
 
             int inputOffset = 0;
 
-            byte[] output = new byte[width * height * 4];
+            byte[] output = new byte[CalculateOutputSize(width, height, depth, levels, layers)];
 
             Span<uint> outputUint = MemoryMarshal.Cast<byte, uint>(output);
-            Span<uint> tile = stackalloc uint[16];
+            Span<uint> tile = stackalloc uint[BlockWidth * BlockHeight];
 
             int imageBaseOOffs = 0;
 
             for (int l = 0; l < levels; l++)
             {
-                int wInBlocks = (width + 3) / 4;
-                int hInBlocks = (height + 3) / 4;
+                int wInBlocks = (width + BlockWidth - 1) / BlockWidth;
+                int hInBlocks = (height + BlockHeight - 1) / BlockHeight;
 
                 for (int l2 = 0; l2 < layers; l2++)
                 {
@@ -131,13 +134,13 @@ namespace Ryujinx.Graphics.Texture
                     {
                         for (int y = 0; y < hInBlocks; y++)
                         {
-                            int ty = y * 4;
-                            int bh = Math.Min(4, height - ty);
+                            int ty = y * BlockHeight;
+                            int bh = Math.Min(BlockHeight, height - ty);
 
                             for (int x = 0; x < wInBlocks; x++)
                             {
-                                int tx = x * 4;
-                                int bw = Math.Min(4, width - tx);
+                                int tx = x * BlockWidth;
+                                int bw = Math.Min(BlockWidth, width - tx);
 
                                 ulong colorBlock = dataUlong[inputOffset++];
 
@@ -147,7 +150,7 @@ namespace Ryujinx.Graphics.Texture
                                 {
                                     int oOffsBase = imageBaseOOffs + ((ty + py) * width) + tx;
 
-                                    tile.Slice(py * 4, bw).CopyTo(outputUint.Slice(oOffsBase, bw));
+                                    tile.Slice(py * BlockWidth, bw).CopyTo(outputUint.Slice(oOffsBase, bw));
                                 }
                             }
                         }
@@ -170,17 +173,17 @@ namespace Ryujinx.Graphics.Texture
 
             int inputOffset = 0;
 
-            byte[] output = new byte[width * height * 4];
+            byte[] output = new byte[CalculateOutputSize(width, height, depth, levels, layers)];
 
             Span<uint> outputUint = MemoryMarshal.Cast<byte, uint>(output);
-            Span<uint> tile = stackalloc uint[16];
+            Span<uint> tile = stackalloc uint[BlockWidth * BlockHeight];
 
             int imageBaseOOffs = 0;
 
             for (int l = 0; l < levels; l++)
             {
-                int wInBlocks = (width + 3) / 4;
-                int hInBlocks = (height + 3) / 4;
+                int wInBlocks = (width + BlockWidth - 1) / BlockWidth;
+                int hInBlocks = (height + BlockHeight - 1) / BlockHeight;
 
                 for (int l2 = 0; l2 < layers; l2++)
                 {
@@ -188,13 +191,13 @@ namespace Ryujinx.Graphics.Texture
                     {
                         for (int y = 0; y < hInBlocks; y++)
                         {
-                            int ty = y * 4;
-                            int bh = Math.Min(4, height - ty);
+                            int ty = y * BlockHeight;
+                            int bh = Math.Min(BlockHeight, height - ty);
 
                             for (int x = 0; x < wInBlocks; x++)
                             {
-                                int tx = x * 4;
-                                int bw = Math.Min(4, width - tx);
+                                int tx = x * BlockWidth;
+                                int bw = Math.Min(BlockWidth, width - tx);
 
                                 ulong alphaBlock = dataUlong[inputOffset];
                                 ulong colorBlock = dataUlong[inputOffset + 1];
@@ -221,7 +224,7 @@ namespace Ryujinx.Graphics.Texture
 
                                             byte a = Saturate(alphaBase + alphaTable[alphaIndex] * alphaMultiplier);
 
-                                            outputUint[oOffs] = tile[py * 4 + px] | ((uint)a << 24);
+                                            outputUint[oOffs] = tile[py * BlockWidth + px] | ((uint)a << 24);
                                         }
                                     }
                                 }
@@ -237,7 +240,7 @@ namespace Ryujinx.Graphics.Texture
                                         {
                                             int oOffs = oOffsBase + px;
 
-                                            outputUint[oOffs] = tile[py * 4 + px] | a;
+                                            outputUint[oOffs] = tile[py * BlockWidth + px] | a;
                                         }
                                     }
                                 }
@@ -661,6 +664,18 @@ namespace Ryujinx.Graphics.Texture
         private static byte Saturate(int value)
         {
             return value > byte.MaxValue ? byte.MaxValue : value < byte.MinValue ? byte.MinValue : (byte)value;
+        }
+
+        private static int CalculateOutputSize(int width, int height, int depth, int levels, int layers)
+        {
+            int size = 0;
+
+            for (int l = 0; l < levels; l++)
+            {
+                size += Math.Max(1, width >> l) * Math.Max(1, height >> l) * Math.Max(1, depth >> l) * layers * 4;
+            }
+
+            return size;
         }
     }
 }
