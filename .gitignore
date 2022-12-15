@@ -170,3 +170,6 @@ launchSettings.json
 
 # NetCore Publishing Profiles
 PublishProfiles/
+
+# Auto generated C# files
+*.g.cs
