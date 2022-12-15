@@ -34,8 +34,24 @@ body:
     id: os
     attributes:
       label: OS
-      value: |
+      placeholder: |
         - *(e.g. Windows 10)*
+    validations:
+      required: true
+  - type: input
+    id: ryujinx-version
+    attributes:
+      label: Ryujinx version
+      placeholder: |
+        - *(e.g. 1.0.470)*
+    validations:
+      required: true
+  - type: input
+    id: game-version
+    attributes:
+      label: Game version
+      placeholder: |
+        - *(e.g. 1.1.1)*
     validations:
       required: true
   - type: textarea
@@ -55,6 +71,6 @@ body:
       label: Additional context?
       description: |
       - Additional info about your environment:
-      - [ Any other information relevant to your issue. ]
+      - Any other information relevant to your issue.
     validations:
       required: false
