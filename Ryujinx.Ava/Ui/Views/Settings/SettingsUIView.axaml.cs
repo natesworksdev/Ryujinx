@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Ryujinx.Ava.UI.Controls.Settings;
+namespace Ryujinx.Ava.UI.Views.Settings;
 
 public partial class SettingsUIView : UserControl
 {

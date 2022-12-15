@@ -5,6 +5,7 @@ using Avalonia.VisualTree;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Navigation;
 using Ryujinx.Ava.Common.Locale;
+using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.HLE.FileSystem;
@@ -15,7 +16,7 @@ using System.Collections.Generic;
 using System.IO;
 using Image = SixLabors.ImageSharp.Image;
 
-namespace Ryujinx.Ava.UI.Controls
+namespace Ryujinx.Ava.UI.Views
 {
     public partial class ProfileImageSelectionDialog : UserControl
     {

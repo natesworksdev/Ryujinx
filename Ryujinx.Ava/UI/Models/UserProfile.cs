@@ -1,5 +1,6 @@
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.ViewModels;
+using Ryujinx.Ava.UI.Views;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Profile = Ryujinx.HLE.HOS.Services.Account.Acc.UserProfile;
 

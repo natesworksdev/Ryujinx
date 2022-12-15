@@ -18,7 +18,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using UserProfile = Ryujinx.Ava.UI.Models.UserProfile;
 
-namespace Ryujinx.Ava.UI.Controls
+namespace Ryujinx.Ava.UI.Views
 {
     public partial class SaveManager : UserControl
     {

@@ -2,13 +2,10 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Navigation;
-<<<<<<< HEAD
-using Ryujinx.Ava.UI.Models;
-=======
->>>>>>> 66aac324 (Fix Namespace Case)
+using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.ViewModels;
 
-namespace Ryujinx.Ava.UI.Controls
+namespace Ryujinx.Ava.UI.Views
 {
     public partial class UserRecoverer : UserControl
     {

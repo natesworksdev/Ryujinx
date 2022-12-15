@@ -4,6 +4,7 @@ using FluentAvalonia.UI.Controls;
 using LibHac;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.ViewModels;
+using Ryujinx.Ava.UI.Views;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using System;

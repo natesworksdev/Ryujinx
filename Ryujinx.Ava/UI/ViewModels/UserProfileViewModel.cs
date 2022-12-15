@@ -7,6 +7,7 @@ using LibHac.Fs.Shim;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
+using Ryujinx.Ava.UI.Views;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using System;
 using System.Collections.Generic;
