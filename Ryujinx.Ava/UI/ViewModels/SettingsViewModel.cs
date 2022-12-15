@@ -30,7 +30,7 @@ using TimeZone = Ryujinx.Ava.UI.Models.TimeZone;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
-    internal class SettingsViewModel : BaseModel
+    public class SettingsViewModel : BaseModel
     {
         private readonly VirtualFileSystem _virtualFileSystem;
         private readonly ContentManager _contentManager;

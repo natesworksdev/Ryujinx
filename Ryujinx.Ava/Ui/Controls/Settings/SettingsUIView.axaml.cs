@@ -12,22 +12,21 @@ namespace Ryujinx.Ava.Ui.Controls.Settings;
 
 public partial class SettingsUIView : UserControl
 {
-    private SettingsViewModel _viewModel;
-
+    public SettingsViewModel ViewModel;
+    
     public SettingsUIView()
     {
         InitializeComponent();
-        _viewModel = DataContext as SettingsViewModel;
     }
     
     private async void AddButton_OnClick(object sender, RoutedEventArgs e)
     {
         string path = PathBox.Text;
 
-        if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path) && !_viewModel.GameDirectories.Contains(path))
+        if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path) && !ViewModel.GameDirectories.Contains(path))
         {
-            _viewModel.GameDirectories.Add(path);
-            _viewModel.DirectoryChanged = true;
+            ViewModel.GameDirectories.Add(path);
+            ViewModel.DirectoryChanged = true;
         }
         else
         {
@@ -42,10 +41,10 @@ public partial class SettingsUIView : UserControl
                 {
                     if (result[0].TryGetUri(out Uri uri))
                     {
-                        if (!_viewModel.GameDirectories.Contains(uri.LocalPath))
+                        if (!ViewModel.GameDirectories.Contains(uri.LocalPath))
                         {
-                            _viewModel.GameDirectories.Add(uri.LocalPath);
-                            _viewModel.DirectoryChanged = true;
+                            ViewModel.GameDirectories.Add(uri.LocalPath);
+                            ViewModel.DirectoryChanged = true;
                         }
                     }
                 }
@@ -59,8 +58,8 @@ public partial class SettingsUIView : UserControl
 
         foreach (string path in new List<string>(GameList.SelectedItems.Cast<string>()))
         {
-            _viewModel.GameDirectories.Remove(path);
-            _viewModel.DirectoryChanged = true;
+            ViewModel.GameDirectories.Remove(path);
+            ViewModel.DirectoryChanged = true;
         }
 
         if (GameList.ItemCount > 0)

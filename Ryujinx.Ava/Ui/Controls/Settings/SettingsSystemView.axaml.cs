@@ -9,14 +9,12 @@ namespace Ryujinx.Ava.Ui.Controls.Settings;
 
 public partial class SettingsSystemView : UserControl
 {
-    private SettingsViewModel _viewModel;
+    public SettingsViewModel ViewModel;
 
     public SettingsSystemView()
     {
         InitializeComponent();
         
-        _viewModel = DataContext as SettingsViewModel;
-
         FuncMultiValueConverter<string, string> converter = new(parts => string.Format("{0}  {1}   {2}", parts.ToArray()).Trim());
         MultiBinding tzMultiBinding = new() { Converter = converter };
         tzMultiBinding.Bindings.Add(new Binding("UtcDifference"));
@@ -34,7 +32,7 @@ public partial class SettingsSystemView : UserControl
             {
                 e.Handled = true;
 
-                _viewModel.ValidateAndSetTimeZone(timeZone.Location);
+                ViewModel.ValidateAndSetTimeZone(timeZone.Location);
             }
         }
     }
@@ -45,7 +43,7 @@ public partial class SettingsSystemView : UserControl
         {
             if (box.SelectedItem != null && box.SelectedItem is TimeZone timeZone)
             {
-                _viewModel.ValidateAndSetTimeZone(timeZone.Location);
+                ViewModel.ValidateAndSetTimeZone(timeZone.Location);
             }
         }
     }

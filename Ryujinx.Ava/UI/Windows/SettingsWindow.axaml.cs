@@ -42,19 +42,42 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             if (e.SelectedItem is NavigationViewItem navitem)
             {
-                NavPanel.Content = navitem.Tag.ToString() switch
+                switch(navitem.Tag.ToString())
                 {
-                    "UiPage"       => UiPage,
-                    "InputPage"    => InputPage,
-                    "HotkeysPage"  => HotkeysPage,
-                    "SystemPage"   => SystemPage,
-                    "CpuPage"      => CpuPage,
-                    "GraphicsPage" => GraphicsPage,
-                    "AudioPage"    => AudioPage,
-                    "NetworkPage"  => NetworkPage,
-                    "LoggingPage"  => LoggingPage,
-                    _              => throw new NotImplementedException()
-                };
+                    case "UiPage":
+                        var uiPage = UiPage;
+                        uiPage.ViewModel = ViewModel;
+                        NavPanel.Content = uiPage;
+                        break;
+                    case "InputPage":
+                        NavPanel.Content = InputPage;
+                        break;
+                    case "HotkeysPage":
+                        NavPanel.Content = HotkeysPage;
+                        break;
+                    case "SystemPage":
+                        var systemPage = SystemPage;
+                        systemPage.ViewModel = ViewModel;
+                        NavPanel.Content = systemPage;
+                        break;
+                    case "CpuPage":
+                        NavPanel.Content = CpuPage;
+                        break;
+                    case "GraphicsPage":
+                        NavPanel.Content = GraphicsPage;
+                        break;
+                    case "AudioPage":
+                        NavPanel.Content = AudioPage;
+                        break;
+                    case "NetworkPage":
+                        NavPanel.Content = NetworkPage;
+                        break;
+                    case "LoggingPage":
+                        NavPanel.Content = LoggingPage;
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
             }
         }
     }
