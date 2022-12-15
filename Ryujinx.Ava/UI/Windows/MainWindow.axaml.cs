@@ -575,25 +575,6 @@ namespace Ryujinx.Ava.UI.Windows
             ViewModel.ProgressBarBackgroundColor = new SolidColorBrush(progressBgColor);
         }
 
-        private void VsyncStatus_PointerReleased(object sender, PointerReleasedEventArgs e)
-        {
-            AppHost.Device.EnableDeviceVsync = !AppHost.Device.EnableDeviceVsync;
-
-            Logger.Info?.Print(LogClass.Application, $"VSync toggled to: {AppHost.Device.EnableDeviceVsync}");
-        }
-
-        private void DockedStatus_PointerReleased(object sender, PointerReleasedEventArgs e)
-        {
-            ConfigurationState.Instance.System.EnableDockedMode.Value = !ConfigurationState.Instance.System.EnableDockedMode.Value;
-        }
-
-        private void AspectRatioStatus_PointerReleased(object sender, PointerReleasedEventArgs e)
-        {
-            AspectRatio aspectRatio = ConfigurationState.Instance.Graphics.AspectRatio.Value;
-
-            ConfigurationState.Instance.Graphics.AspectRatio.Value = (int)aspectRatio + 1 > Enum.GetNames(typeof(AspectRatio)).Length - 1 ? AspectRatio.Fixed4x3 : aspectRatio + 1;
-        }
-
         private void VolumeStatus_CheckedChanged(object sender, RoutedEventArgs e)
         {
             var volumeSplitButton = sender as ToggleSplitButton;
