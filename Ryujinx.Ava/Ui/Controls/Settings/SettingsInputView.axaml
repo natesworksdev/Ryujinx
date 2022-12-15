@@ -33,7 +33,7 @@
                         <TextBlock Text="{locale:Locale SettingsTabInputDirectMouseAccess}" />
                     </CheckBox>
                 </StackPanel>
-                <window:ControllerSettingsWindow Name="ControllerSettings" Margin="0,0,0,0" MinHeight="600" />
+                <window:ControllerSettingsWindow Name="ControllerSettings" Margin="0" MinHeight="600" />
             </StackPanel>
         </Border>
     </ScrollViewer>
