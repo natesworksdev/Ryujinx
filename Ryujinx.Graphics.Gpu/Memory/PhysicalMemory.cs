@@ -7,6 +7,7 @@ using Ryujinx.Memory.Range;
 using Ryujinx.Memory.Tracking;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu.Memory
@@ -293,6 +294,19 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     offset += size;
                 }
             }
+        }
+
+        /// <summary>
+        /// Fills the specified memory region with a 32-bit integer value.
+        /// </summary>
+        /// <param name="address">CPU virtual address of the region</param>
+        /// <param name="size">Size of the region</param>
+        /// <param name="value">Value to fill the region with</param>
+        public void Fill(ulong address, int size, uint value)
+        {
+            using WritableRegion region = _cpuMemory.GetWritableRegion(address, size);
+
+            MemoryMarshal.Cast<byte, uint>(region.Memory.Span).Fill(value);
         }
 
         /// <summary>
