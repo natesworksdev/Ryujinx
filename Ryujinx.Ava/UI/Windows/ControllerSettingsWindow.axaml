@@ -1160,9 +1160,6 @@
                     </StackPanel>
                 </Border>
             </Grid>
-
         </Grid>
-
     </StackPanel>
-
 </UserControl>

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <UserControl 
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -9,17 +8,6 @@
     mc:Ignorable="d"
     x:Class="Ryujinx.Ava.UI.Windows.MotionSettingsWindow"
     Focusable="True">
-=======
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:ui="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
-             xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
-             mc:Ignorable="d"
-             x:Class="Ryujinx.Ava.UI.Windows.MotionSettingsWindow"
-             Focusable="True">
->>>>>>> 66aac324 (Fix Namespace Case)
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -40,9 +28,10 @@
                     Maximum="100"
                     Minimum="0"
                     Value="{Binding Sensitivity, Mode=TwoWay}" />
-                <TextBlock HorizontalAlignment="Center"
-                            Margin="5, 0"
-                            Text="{Binding Sensitivity, StringFormat=\{0:0\}%}" />
+                <TextBlock 
+                    HorizontalAlignment="Center"
+                    Margin="5, 0"
+                    Text="{Binding Sensitivity, StringFormat=\{0:0\}%}" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <TextBlock
@@ -65,8 +54,10 @@
             </StackPanel>
             <Separator Height="1" Margin="0,5" />
             <CheckBox Margin="5" IsChecked="{Binding EnableCemuHookMotion}">
-                <TextBlock Margin="0,3,0,0" VerticalAlignment="Center"
-                        Text="{locale:Locale ControllerSettingsMotionUseCemuhookCompatibleMotion}" />
+                <TextBlock 
+                    Margin="0,3,0,0" 
+                    VerticalAlignment="Center"
+                    Text="{locale:Locale ControllerSettingsMotionUseCemuhookCompatibleMotion}" />
             </CheckBox>
         </StackPanel>
         <Border Grid.Row="1"
@@ -121,30 +112,42 @@
                                 <ColumnDefinition />
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Margin="0,10,0,0" VerticalAlignment="Center"
-                                       Text="{locale:Locale ControllerSettingsMotionControllerSlot}" />
-                            <ui:NumberBox Grid.Row="0" Grid.Column="1"
-                                          Name="CemuHookSlotUpDown"
-                                          SmallChange="1"
-                                          LargeChange="1"
-                                          Maximum="4"
-                                          Minimum="0"
-                                          Value="{Binding Slot}" />
-                            <TextBlock Margin="0,10,0,0" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"
-                                       Text="{locale:Locale ControllerSettingsMotionRightJoyConSlot}" />
-                            <ui:NumberBox Grid.Row="1" Grid.Column="1"
-                                          Name="CemuHookRightJoyConSlotUpDown"
-                                          SmallChange="1"
-                                          LargeChange="1"
-                                          Maximum="4"
-                                          Minimum="0"
-                                          Value="{Binding AltSlot}" />
+                            <TextBlock 
+                                Margin="0,10,0,0" 
+                                VerticalAlignment="Center"
+                                Text="{locale:Locale ControllerSettingsMotionControllerSlot}" />
+                            <ui:NumberBox 
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Name="CemuHookSlotUpDown"
+                                SmallChange="1"
+                                LargeChange="1"
+                                Maximum="4"
+                                Minimum="0"
+                                Value="{Binding Slot}" />
+                            <TextBlock 
+                                Margin="0,10,0,0" 
+                                Grid.Row="1" 
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                Text="{locale:Locale ControllerSettingsMotionRightJoyConSlot}" />
+                            <ui:NumberBox 
+                                Grid.Row="1" 
+                                Grid.Column="1"
+                                Name="CemuHookRightJoyConSlotUpDown"
+                                SmallChange="1"
+                                LargeChange="1"
+                                Maximum="4"
+                                Minimum="0"
+                                Value="{Binding AltSlot}" />
                         </Grid>
                     </StackPanel>
-                    <CheckBox HorizontalAlignment="Center"
-                              IsChecked="{Binding MirrorInput, Mode=TwoWay}">
-                        <TextBlock HorizontalAlignment="Center"
-                                   Text="{locale:Locale ControllerSettingsMotionMirrorInput}" />
+                    <CheckBox 
+                        HorizontalAlignment="Center"
+                        IsChecked="{Binding MirrorInput, Mode=TwoWay}">
+                        <TextBlock 
+                            HorizontalAlignment="Center"
+                            Text="{locale:Locale ControllerSettingsMotionMirrorInput}" />
                     </CheckBox>
                 </StackPanel>
             </Grid>
