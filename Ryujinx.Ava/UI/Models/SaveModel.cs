@@ -4,12 +4,14 @@ using LibHac.Fs.Shim;
 using LibHac.Ncm;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
+<<<<<<< HEAD
 using Ryujinx.Ava.UI.Controls;
+=======
+>>>>>>> 66aac324 (Fix Namespace Case)
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.HLE.FileSystem;
-using Ryujinx.Ui.App.Common;
 using System;
 using System.IO;
 using System.Linq;

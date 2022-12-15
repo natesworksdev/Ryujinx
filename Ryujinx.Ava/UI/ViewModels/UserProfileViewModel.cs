@@ -12,7 +12,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+<<<<<<< HEAD
 using UserId = Ryujinx.HLE.HOS.Services.Account.Acc.UserId;
+=======
+>>>>>>> 66aac324 (Fix Namespace Case)
 using UserProfile = Ryujinx.Ava.UI.Models.UserProfile;
 
 namespace Ryujinx.Ava.UI.ViewModels

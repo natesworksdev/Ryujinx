@@ -3,7 +3,11 @@ using System.Runtime.Versioning;
 using System.Runtime.InteropServices;
 using Avalonia;
 
+<<<<<<<< HEAD:Ryujinx.Ava/Helper/MetalHelper.cs
 namespace Ryujinx.Ava.UI.Helper
+========
+namespace Ryujinx.Ava.UI.Helpers
+>>>>>>>> 66aac324 (Fix Namespace Case):Ryujinx.Ava/UI/Helpers/MetalHelper.cs
 {
     public delegate void UpdateBoundsCallbackDelegate(Rect rect);
 

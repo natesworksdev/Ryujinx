@@ -4,10 +4,13 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
-using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Input;
+<<<<<<< HEAD
+=======
+using Ryujinx.Ava.Modules.Updater;
+>>>>>>> 66aac324 (Fix Namespace Case)
 using Ryujinx.Ava.UI.Applet;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;

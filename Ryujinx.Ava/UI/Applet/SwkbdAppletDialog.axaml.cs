@@ -12,7 +12,11 @@ using Ryujinx.HLE.HOS.Applets;
 using System;
 using System.Threading.Tasks;
 
+<<<<<<< HEAD
 namespace Ryujinx.Ava.UI.Controls
+=======
+namespace Ryujinx.Ava.UI.Applet
+>>>>>>> 66aac324 (Fix Namespace Case)
 {
     internal partial class SwkbdAppletDialog : UserControl
     {

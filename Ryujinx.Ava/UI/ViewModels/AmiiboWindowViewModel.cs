@@ -3,7 +3,10 @@ using Avalonia.Collections;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Ryujinx.Ava.Common.Locale;
+<<<<<<< HEAD
 using Ryujinx.Ava.UI.Controls;
+=======
+>>>>>>> 66aac324 (Fix Namespace Case)
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.Windows;
@@ -17,7 +20,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.UI.ViewModels

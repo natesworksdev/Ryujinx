@@ -1,13 +1,16 @@
 using Avalonia;
 using Avalonia.Threading;
-using Ryujinx.Ava.UI.Helper;
+<<<<<<< HEAD
+=======
+using Ryujinx.Ava.Modules.Updater;
+>>>>>>> 66aac324 (Fix Namespace Case)
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Common.Logging;
-using Ryujinx.Common.SystemInfo;
 using Ryujinx.Common.SystemInterop;
+using Ryujinx.Common.SystemInfo;
 using Ryujinx.Modules;
 using Ryujinx.SDL2.Common;
 using Ryujinx.Ui.Common;
@@ -90,8 +93,6 @@ namespace Ryujinx.Ava
 
             Initialize(args);
 
-            LoggerAdapter.Register();
-
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
 
@@ -114,7 +115,8 @@ namespace Ryujinx.Ava
                     CompositionBackdropCornerRadius = 8.0f,
                     UseCompositor                   = true
                 })
-                .UseSkia();
+                .UseSkia()
+                .LogToTrace();
         }
 
         private static void Initialize(string[] args)
@@ -227,12 +229,6 @@ namespace Ryujinx.Ava
                 {
                     ConfigurationState.Instance.Graphics.GraphicsBackend.Value = GraphicsBackend.Vulkan;
                 }
-            }
-
-            // Check if docked mode was overriden.
-            if (CommandLineState.OverrideDockedMode.HasValue)
-            {
-                ConfigurationState.Instance.System.EnableDockedMode.Value = CommandLineState.OverrideDockedMode.Value;
             }
         }
 

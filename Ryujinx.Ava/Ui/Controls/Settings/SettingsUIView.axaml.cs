@@ -1,14 +1,14 @@
-using Avalonia.Platform.Storage;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
-using Ryujinx.Ava.Ui.ViewModels;
+using Avalonia.Platform.Storage;
+using Ryujinx.Ava.UI.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Ryujinx.Ava.Ui.Controls.Settings;
+namespace Ryujinx.Ava.UI.Controls.Settings;
 
 public partial class SettingsUIView : UserControl
 {

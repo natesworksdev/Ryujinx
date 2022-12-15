@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <UserControl 
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -14,6 +15,21 @@
     Width="550"
     x:Class="Ryujinx.Ava.UI.Controls.SaveManager"
     Focusable="True">
+=======
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ui="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
+             xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
+             xmlns:helpers="clr-namespace:Ryujinx.Ava.UI.Helpers"
+             xmlns:models="clr-namespace:Ryujinx.Ava.UI.Models"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             Height="400"
+             Width="550"
+             x:Class="Ryujinx.Ava.UI.Controls.SaveManager"
+             Focusable="True">
+>>>>>>> 66aac324 (Fix Namespace Case)
     <UserControl.Resources>
         <helpers:BitmapArrayValueConverter x:Key="ByteImage" />
     </UserControl.Resources>
@@ -22,13 +38,18 @@
             <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
+<<<<<<< HEAD
         <Grid 
             Grid.Row="0" 
             HorizontalAlignment="Stretch">
+=======
+        <Grid Grid.Row="0" HorizontalAlignment="Stretch">
+>>>>>>> 66aac324 (Fix Namespace Case)
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
+<<<<<<< HEAD
             <StackPanel 
                 Spacing="10" 
                 Orientation="Horizontal" 
@@ -49,10 +70,23 @@
                             VerticalAlignment="Center" 
                             HorizontalContentAlignment="Left"
                             Content="{locale:Locale Size}" />
+=======
+            <StackPanel Spacing="10" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <Label Content="{locale:Locale CommonSort}" VerticalAlignment="Center" />
+                <ComboBox SelectedIndex="{Binding SortIndex}" Width="100">
+                    <ComboBoxItem>
+                        <Label VerticalAlignment="Center" HorizontalContentAlignment="Left"
+                               Content="{locale:Locale Name}" />
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <Label VerticalAlignment="Center" HorizontalContentAlignment="Left"
+                               Content="{locale:Locale Size}" />
+>>>>>>> 66aac324 (Fix Namespace Case)
                     </ComboBoxItem>
                 </ComboBox>
                 <ComboBox SelectedIndex="{Binding OrderIndex}" Width="150">
                     <ComboBoxItem>
+<<<<<<< HEAD
                         <Label 
                             VerticalAlignment="Center" 
                             HorizontalContentAlignment="Left"
@@ -70,10 +104,23 @@
                 Grid.Column="1" 
                 HorizontalAlignment="Stretch" 
                 Margin="10,0, 0, 0">
+=======
+                        <Label VerticalAlignment="Center" HorizontalContentAlignment="Left"
+                               Content="{locale:Locale OrderAscending}" />
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <Label VerticalAlignment="Center" HorizontalContentAlignment="Left"
+                               Content="{locale:Locale Descending}" />
+                    </ComboBoxItem>
+                </ComboBox>
+            </StackPanel>
+            <Grid Grid.Column="1" HorizontalAlignment="Stretch" Margin="10,0, 0, 0">
+>>>>>>> 66aac324 (Fix Namespace Case)
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
+<<<<<<< HEAD
                 <Label 
                     Content="{locale:Locale Search}"
                     VerticalAlignment="Center"/>
@@ -95,6 +142,14 @@
                 Items="{Binding View}" 
                 HorizontalAlignment="Stretch" 
                 VerticalAlignment="Stretch">
+=======
+                <Label Content="{locale:Locale Search}" VerticalAlignment="Center"/>
+                <TextBox Margin="5,0,0,0" Grid.Column="1" HorizontalAlignment="Stretch" Text="{Binding Search}"/>
+            </Grid>
+        </Grid>
+        <Border Grid.Row="1" Margin="0,5" BorderThickness="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <ListBox Name="SaveList" Items="{Binding View}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+>>>>>>> 66aac324 (Fix Namespace Case)
                 <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="models:SaveModel">
                         <Grid HorizontalAlignment="Stretch" Margin="0,5">
@@ -103,6 +158,7 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" Orientation="Horizontal">
+<<<<<<< HEAD
                                 <Border 
                                     Height="42" 
                                     Margin="2" 
@@ -164,6 +220,34 @@
                                         Symbol="Delete" 
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center" />
+=======
+                                <Border Height="42" Margin="2" Width="42" Padding="10"
+                                        IsVisible="{Binding !InGameList}">
+                                    <ui:SymbolIcon Symbol="Help" FontSize="30" HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                </Border>
+                                <Image IsVisible="{Binding InGameList}"
+                                       Margin="2"
+                                       Width="42"
+                                       Height="42"
+                                       Source="{Binding Icon, Converter={StaticResource ByteImage}}" />
+                                <TextBlock MaxLines="3" Width="320" Margin="5" TextWrapping="Wrap"
+                                           Text="{Binding  Title}" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="10" HorizontalAlignment="Right"
+                                        Orientation="Horizontal">
+                                <Label Content="{Binding SizeString}" IsVisible="{Binding SizeAvailable}"
+                                       VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                <Button VerticalAlignment="Center" HorizontalAlignment="Right" Padding="10"
+                                        MinWidth="0" MinHeight="0" Name="OpenLocation" Command="{Binding OpenLocation}">
+                                    <ui:SymbolIcon Symbol="OpenFolder" HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                </Button>
+                                <Button VerticalAlignment="Center" HorizontalAlignment="Right" Padding="10"
+                                        MinWidth="0" MinHeight="0" Name="Delete" Command="{Binding Delete}">
+                                    <ui:SymbolIcon Symbol="Delete" HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+>>>>>>> 66aac324 (Fix Namespace Case)
                                 </Button>
                             </StackPanel>
                         </Grid>

@@ -1,6 +1,9 @@
 using Avalonia;
 using Avalonia.Controls;
+<<<<<<< HEAD
 using Avalonia.Markup.Xaml;
+=======
+>>>>>>> 66aac324 (Fix Namespace Case)
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Common.Configuration;
 using Silk.NET.Vulkan;

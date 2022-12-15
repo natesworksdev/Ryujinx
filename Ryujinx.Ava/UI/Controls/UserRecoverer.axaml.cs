@@ -1,10 +1,11 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Navigation;
+<<<<<<< HEAD
 using Ryujinx.Ava.UI.Models;
+=======
+>>>>>>> 66aac324 (Fix Namespace Case)
 using Ryujinx.Ava.UI.ViewModels;
 
 namespace Ryujinx.Ava.UI.Controls

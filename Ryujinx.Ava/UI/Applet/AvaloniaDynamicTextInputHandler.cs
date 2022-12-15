@@ -3,13 +3,15 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
 using Ryujinx.Ava.Input;
+<<<<<<< HEAD
 using Ryujinx.Ava.UI.Controls;
+=======
+>>>>>>> 66aac324 (Fix Namespace Case)
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.HLE.Ui;
 using System;
 using System.Threading;
-
 using HidKey = Ryujinx.Common.Configuration.Hid.Key;
 
 namespace Ryujinx.Ava.UI.Applet

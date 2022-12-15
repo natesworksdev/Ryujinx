@@ -2,14 +2,24 @@
     x:Class="Ryujinx.Ava.UI.Windows.MainWindow"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+<<<<<<< HEAD
     xmlns:controls="clr-namespace:Ryujinx.Ava.UI.Controls"
+=======
+>>>>>>> 66aac324 (Fix Namespace Case)
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
+<<<<<<< HEAD
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     xmlns:window="clr-namespace:Ryujinx.Ava.UI.Windows"
     xmlns:helpers="clr-namespace:Ryujinx.Ava.UI.Helpers"
+=======
+    xmlns:window="clr-namespace:Ryujinx.Ava.UI.Windows"
+    xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
+    xmlns:helpers="clr-namespace:Ryujinx.Ava.UI.Helpers"
+    xmlns:controls="clr-namespace:Ryujinx.Ava.UI.Controls"
+>>>>>>> 66aac324 (Fix Namespace Case)
     Title="Ryujinx"
     Width="1280"
     Height="777"

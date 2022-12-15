@@ -2,7 +2,10 @@ using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
+<<<<<<< HEAD
 using Ryujinx.Ava.UI.Models;
+=======
+>>>>>>> 66aac324 (Fix Namespace Case)
 using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.UI.Controls

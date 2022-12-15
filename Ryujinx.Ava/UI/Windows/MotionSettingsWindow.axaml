@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <UserControl 
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -8,6 +9,17 @@
     mc:Ignorable="d"
     x:Class="Ryujinx.Ava.UI.Windows.MotionSettingsWindow"
     Focusable="True">
+=======
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ui="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
+             xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
+             mc:Ignorable="d"
+             x:Class="Ryujinx.Ava.UI.Windows.MotionSettingsWindow"
+             Focusable="True">
+>>>>>>> 66aac324 (Fix Namespace Case)
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />

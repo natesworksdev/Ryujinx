@@ -12,6 +12,10 @@ using LibHac.Ncm;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Input;
+<<<<<<< HEAD
+=======
+using Ryujinx.Ava.Modules.Updater;
+>>>>>>> 66aac324 (Fix Namespace Case)
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Windows;

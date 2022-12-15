@@ -5,11 +5,13 @@ using LibHac;
 using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Shim;
+<<<<<<< HEAD
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
+=======
+>>>>>>> 66aac324 (Fix Namespace Case)
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.HLE.FileSystem;
-using Ryujinx.Ui.App.Common;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
