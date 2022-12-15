@@ -243,15 +243,17 @@ namespace Ryujinx.Ava.UI.ViewModels
         private float  _volume;
         private string _backendText;
 
+        public ApplicationData ListSelectedApplication;
+        public ApplicationData GridSelectedApplication;
+
         public ApplicationData SelectedApplication
         {
             get
             {
                 return Glyph switch
                 {
-                    // TODO: Fix
-                    Glyph.List => null,  //_owner.GameList.SelectedApplication,
-                    Glyph.Grid => null, //_owner.GameGrid.SelectedApplication,
+                    Glyph.List => ListSelectedApplication,
+                    Glyph.Grid => GridSelectedApplication,
                     _          => null,
                 };
             }

@@ -37,13 +37,21 @@ namespace Ryujinx.Ava.UI.Controls
         {
             if (sender is ListBox listBox)
             {
-                _selectedApplication = listBox.SelectedItem as ApplicationData;
+                var selected = listBox.SelectedItem as ApplicationData;
 
-                (DataContext as MainWindowViewModel).GridSelectedApplication = _selectedApplication;
+                SelectedApplication = selected;
             }
         }
 
-        public ApplicationData SelectedApplication => _selectedApplication;
+        public ApplicationData SelectedApplication
+        {
+            get => _selectedApplication;
+            set
+            {
+                _selectedApplication = value;
+                (DataContext as MainWindowViewModel).GridSelectedApplication = value;
+            }
+        }
 
         public GameGridView()
         {
