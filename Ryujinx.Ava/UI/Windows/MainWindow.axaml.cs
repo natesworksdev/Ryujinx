@@ -98,8 +98,9 @@ namespace Ryujinx.Ava.UI.Windows
             Title = $"Ryujinx {Program.Version}";
 
             // NOTE: Height of MenuBar and StatusBar is not usable here, since it would still be 0 at this point.
-            double barHeight = MenuBar.MinHeight + StatusBar.MinHeight;
-            Height = ((Height - barHeight) / Program.WindowScaleFactor) + barHeight;
+            // TODO: Fix
+            // double barHeight = MenuBar.MinHeight + StatusBar.MinHeight;
+            // Height = ((Height - barHeight) / Program.WindowScaleFactor) + barHeight;
             Width /= Program.WindowScaleFactor;
 
             if (Program.PreviewerDetached)
@@ -500,7 +501,8 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void Load()
         {
-            VolumeStatus.Click += VolumeStatus_CheckedChanged;
+            // TODO: Fix
+            // VolumeStatus.Click += VolumeStatus_CheckedChanged;
 
             GameGrid.ApplicationOpened += Application_Opened;
 
