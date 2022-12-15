@@ -65,7 +65,8 @@
                 VerticalAlignment="Stretch"
                 IsVisible="{Binding ShowMenuAndStatusBar}"
                 Orientation="Vertical">
-                <main:MainMenuBarView />
+                <main:MainMenuBarView 
+                    Name="MenuBarView" />
             </StackPanel>
             <ContentControl
                 Name="MainContent"
@@ -82,7 +83,9 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <main:MainViewControls/>
+                    <main:MainViewControls
+                        Name="ViewControls"
+                        Grid.Row="0"/>
                     <controls:GameListView
                         x:Name="GameList"
                         Grid.Row="1"
@@ -192,6 +195,7 @@
                 </Grid>
             </Grid>
             <main:MainStatusBarView 
+                Name="StatusBarView"
                 Grid.Row="2" />
         </Grid>
     </Grid>

@@ -74,8 +74,7 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 _canUpdate = value;
 
-                // TODO: Fix
-                // Dispatcher.UIThread.InvokeAsync(() => UpdateMenuItem.IsEnabled = _canUpdate);
+                Dispatcher.UIThread.InvokeAsync(() => MenuBarView.UpdateMenuItem.IsEnabled = _canUpdate);
             }
         }
 
@@ -98,9 +97,8 @@ namespace Ryujinx.Ava.UI.Windows
             Title = $"Ryujinx {Program.Version}";
 
             // NOTE: Height of MenuBar and StatusBar is not usable here, since it would still be 0 at this point.
-            // TODO: Fix
-            // double barHeight = MenuBar.MinHeight + StatusBar.MinHeight;
-            // Height = ((Height - barHeight) / Program.WindowScaleFactor) + barHeight;
+            double barHeight = MenuBar.MinHeight + StatusBarView.StatusBar.MinHeight;
+            Height = ((Height - barHeight) / Program.WindowScaleFactor) + barHeight;
             Width /= Program.WindowScaleFactor;
 
             if (Program.PreviewerDetached)
@@ -501,8 +499,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void Load()
         {
-            // TODO: Fix
-            // VolumeStatus.Click += VolumeStatus_CheckedChanged;
+            StatusBarView.VolumeStatus.Click += VolumeStatus_CheckedChanged;
 
             GameGrid.ApplicationOpened += Application_Opened;
 

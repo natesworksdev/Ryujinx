@@ -781,14 +781,12 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 if (e.NumAppsFound == 0)
                 {
-                    // TODO: Fix
-                    // _owner.LoadProgressBar.IsVisible = false;
+                    _owner.StatusBarView.LoadProgressBar.IsVisible = false;
                 }
 
                 if (e.NumAppsLoaded == e.NumAppsFound)
                 {
-                    // TODO: Fix
-                    // _owner.LoadProgressBar.IsVisible = false;
+                    _owner.StatusBarView.LoadProgressBar.IsVisible = false;
                 }
             });
         }
@@ -807,8 +805,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 Applications.Clear();
 
-                // TODO: Fix
-                // _owner.LoadProgressBar.IsVisible = true;
+                _owner.StatusBarView.LoadProgressBar.IsVisible = true;
                 StatusBarProgressMaximum         = 0;
                 StatusBarProgressValue           = 0;
 
