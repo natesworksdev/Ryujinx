@@ -2,7 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Ryujinx.Ava.Ui.ViewModels;
+using Ryujinx.Ava.Input;
 using Ryujinx.Input;
 using Ryujinx.Input.Assigner;
 
@@ -11,12 +11,12 @@ namespace Ryujinx.Ava.Ui.Controls.Settings;
 public partial class SettingsHotkeysView : UserControl
 {
     private ButtonKeyAssigner _currentAssigner;
-    private SettingsViewModel _viewModel;
+    private IGamepadDriver AvaloniaKeyboardDriver;
     
     public SettingsHotkeysView()
     {
         InitializeComponent();
-        _viewModel = DataContext as SettingsViewModel;
+        AvaloniaKeyboardDriver = new AvaloniaKeyboardDriver(this);
     }
 
     private void MouseClick(object sender, PointerPressedEventArgs e)
@@ -37,15 +37,15 @@ public partial class SettingsHotkeysView : UserControl
                 return;
             }
 
-            if (_currentAssigner == null && (bool)button.IsChecked)
+            if (_currentAssigner == null && button.IsChecked != null && (bool)button.IsChecked)
             {
                 _currentAssigner = new ButtonKeyAssigner(button);
 
-                FocusManager.Instance.Focus(this, NavigationMethod.Pointer);
+                FocusManager.Instance?.Focus(this, NavigationMethod.Pointer);
 
                 PointerPressed += MouseClick;
 
-                IKeyboard       keyboard = (IKeyboard)_viewModel.AvaloniaKeyboardDriver.GetGamepad(_viewModel.AvaloniaKeyboardDriver.GamepadsIds[0]);
+                var keyboard = (IKeyboard)AvaloniaKeyboardDriver.GetGamepad(AvaloniaKeyboardDriver.GamepadsIds[0]);
                 IButtonAssigner assigner = new KeyboardKeyAssigner(keyboard);
 
                 _currentAssigner.GetInputAndAssign(assigner);

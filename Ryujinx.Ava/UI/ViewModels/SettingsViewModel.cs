@@ -213,9 +213,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged();
             }
         }
-
-        public IGamepadDriver AvaloniaKeyboardDriver { get; }
-
+        
         public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager, StyleableWindow owner) : this()
         {
             _virtualFileSystem = virtualFileSystem;
@@ -224,7 +222,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             if (Program.PreviewerDetached)
             {
                 LoadTimeZones();
-                AvaloniaKeyboardDriver = new AvaloniaKeyboardDriver(owner);
             }
         }
 
