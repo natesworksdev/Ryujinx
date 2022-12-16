@@ -1,3 +1,4 @@
+using Ryujinx.Common;
 using System;
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
@@ -63,8 +64,8 @@ namespace Ryujinx.Graphics.Texture
 
             for (int l = 0; l < levels; l++)
             {
-                int wInBlocks = (width + BlockWidth - 1) / BlockWidth;
-                int hInBlocks = (height + BlockHeight - 1) / BlockHeight;
+                int wInBlocks = BitUtils.DivRoundUp(width, BlockWidth);
+                int hInBlocks = BitUtils.DivRoundUp(height, BlockHeight);
 
                 for (int l2 = 0; l2 < layers; l2++)
                 {
@@ -92,7 +93,7 @@ namespace Ryujinx.Graphics.Texture
                                     {
                                         int oOffs = oOffsBase + px;
 
-                                        outputUint[oOffs] = tile[py * BlockHeight + px] | AlphaMask;
+                                        outputUint[oOffs] = tile[py * BlockWidth + px] | AlphaMask;
                                     }
                                 }
                             }
@@ -125,8 +126,8 @@ namespace Ryujinx.Graphics.Texture
 
             for (int l = 0; l < levels; l++)
             {
-                int wInBlocks = (width + BlockWidth - 1) / BlockWidth;
-                int hInBlocks = (height + BlockHeight - 1) / BlockHeight;
+                int wInBlocks = BitUtils.DivRoundUp(width, BlockWidth);
+                int hInBlocks = BitUtils.DivRoundUp(height, BlockHeight);
 
                 for (int l2 = 0; l2 < layers; l2++)
                 {
@@ -182,8 +183,8 @@ namespace Ryujinx.Graphics.Texture
 
             for (int l = 0; l < levels; l++)
             {
-                int wInBlocks = (width + BlockWidth - 1) / BlockWidth;
-                int hInBlocks = (height + BlockHeight - 1) / BlockHeight;
+                int wInBlocks = BitUtils.DivRoundUp(width, BlockWidth);
+                int hInBlocks = BitUtils.DivRoundUp(height, BlockHeight);
 
                 for (int l2 = 0; l2 < layers; l2++)
                 {
@@ -220,7 +221,7 @@ namespace Ryujinx.Graphics.Texture
                                         for (int px = 0; px < bw; px++)
                                         {
                                             int oOffs = oOffsBase + px;
-                                            int alphaIndex = (int)((alphaIndices >> (((px * 4 + py) ^ 0xf) * 3)) & 7);
+                                            int alphaIndex = (int)((alphaIndices >> (((px * BlockHeight + py) ^ 0xf) * 3)) & 7);
 
                                             byte a = Saturate(alphaBase + alphaTable[alphaIndex] * alphaMultiplier);
 
@@ -437,9 +438,9 @@ namespace Ryujinx.Graphics.Texture
 
             blockHigh = BinaryPrimitives.ReverseEndianness(blockHigh);
 
-            for (int y = 0; y < 4; y++)
+            for (int y = 0; y < BlockHeight; y++)
             {
-                for (int x = 0; x < 4; x++)
+                for (int x = 0; x < BlockWidth; x++)
                 {
                     int offset = (y * 4) + x;
                     int index = (x * 4) + y;
@@ -495,9 +496,9 @@ namespace Ryujinx.Graphics.Texture
 
             blockHigh = BinaryPrimitives.ReverseEndianness(blockHigh);
 
-            for (int y = 0; y < 4; y++)
+            for (int y = 0; y < BlockHeight; y++)
             {
-                for (int x = 0; x < 4; x++)
+                for (int x = 0; x < BlockWidth; x++)
                 {
                     int offset = (y * 4) + x;
                     int index = (x * 4) + y;
@@ -547,11 +548,11 @@ namespace Ryujinx.Graphics.Texture
             gv = (gv << 1) | (gv >> 6);
             bv = (bv << 2) | (bv >> 4);
 
-            for (int y = 0; y < 4; y++)
+            for (int y = 0; y < BlockHeight; y++)
             {
-                for (int x = 0; x < 4; x++)
+                for (int x = 0; x < BlockWidth; x++)
                 {
-                    int offset = (y * 4) + x;
+                    int offset = y * BlockWidth + x;
 
                     byte r = Saturate(((x * (rh - r0)) + (y * (rv - r0)) + (r0 * 4) + 2) >> 2);
                     byte g = Saturate(((x * (gh - g0)) + (y * (gv - g0)) + (g0 * 4) + 2) >> 2);
@@ -581,15 +582,15 @@ namespace Ryujinx.Graphics.Texture
 
             if (!flip)
             {
-                for (int y = 0; y < 4; y++)
+                for (int y = 0; y < BlockHeight; y++)
                 {
-                    for (int x = 0; x < 2; x++)
+                    for (int x = 0; x < BlockWidth / 2; x++)
                     {
                         uint color1 = CalculatePixel(r1, g1, b1, x + 0, y, blockHigh, table1, alphaMask);
                         uint color2 = CalculatePixel(r2, g2, b2, x + 2, y, blockHigh, table2, alphaMask);
 
-                        int offset1 = (y * 4) + x;
-                        int offset2 = (y * 4) + x + 2;
+                        int offset1 = y * BlockWidth + x;
+                        int offset2 = y * BlockWidth + x + 2;
 
                         tile[offset1] = color1;
                         tile[offset2] = color2;
@@ -598,15 +599,15 @@ namespace Ryujinx.Graphics.Texture
             }
             else
             {
-                for (int y = 0; y < 2; y++)
+                for (int y = 0; y < BlockHeight / 2; y++)
                 {
-                    for (int x = 0; x < 4; x++)
+                    for (int x = 0; x < BlockWidth; x++)
                     {
                         uint color1 = CalculatePixel(r1, g1, b1, x, y + 0, blockHigh, table1, alphaMask);
                         uint color2 = CalculatePixel(r2, g2, b2, x, y + 2, blockHigh, table2, alphaMask);
 
-                        int offset1 = (y * 4) + x;
-                        int offset2 = ((y + 2) * 4) + x;
+                        int offset1 = (y * BlockWidth) + x;
+                        int offset2 = ((y + 2) * BlockWidth) + x;
 
                         tile[offset1] = color1;
                         tile[offset2] = color2;
@@ -617,7 +618,7 @@ namespace Ryujinx.Graphics.Texture
 
         private static uint CalculatePixel(uint r, uint g, uint b, int x, int y, uint block, int[] table, uint alphaMask)
         {
-            int index = (x * 4) + y;
+            int index = x * BlockHeight + y;
             uint msb = block << 1;
             uint tableIndex = index < 8
                 ? ((block >> (index + 24)) & 1) + ((msb >> (index + 8)) & 2)
