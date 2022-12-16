@@ -546,6 +546,7 @@
   "CompilingShaders": "编译着色器中",
   "AllKeyboards": "所有键盘",
   "OpenFileDialogTitle": "选择支持的文件格式",
+  "CreateZipFileDialogTitle": "选择目录和文件名",
   "OpenFolderDialogTitle": "选择一个包含解包游戏的文件夹",
   "AllSupportedFormats": "所有支持的格式",
   "RyujinxUpdater": "Ryujinx 更新程序",

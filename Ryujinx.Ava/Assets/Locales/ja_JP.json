@@ -546,6 +546,7 @@
   "CompilingShaders": "シェーダをコンパイル中",
   "AllKeyboards": "すべてのキーボード",
   "OpenFileDialogTitle": "開くファイルを選択",
+  "CreateZipFileDialogTitle": "ディレクトリとファイル名を選択",
   "OpenFolderDialogTitle": "展開されたゲームフォルダを選択",
   "AllSupportedFormats": "すべての対応フォーマット",
   "RyujinxUpdater": "Ryujinx アップデータ",

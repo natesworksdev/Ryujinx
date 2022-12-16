@@ -546,6 +546,7 @@
   "CompilingShaders": "Shaderlar Derleniyor",
   "AllKeyboards": "Tüm Klavyeler",
   "OpenFileDialogTitle": "Açmak için desteklenen bir dosya seçin",
+  "CreateZipFileDialogTitle": "Bir dizin ve dosya adı seçin",
   "OpenFolderDialogTitle": "Ayrıştırılmamış oyun içeren bir klasör seçin",
   "AllSupportedFormats": "Tüm Desteklenen Formatlar",
   "RyujinxUpdater": "Ryujinx Güncelleyicisi",

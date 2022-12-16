@@ -549,6 +549,7 @@
   "CompilingShaders": "Compiling Shaders",
   "AllKeyboards": "All keyboards",
   "OpenFileDialogTitle": "Select a supported file to open",
+  "CreateZipFileDialogTitle": "Select a directory and filename",
   "OpenFolderDialogTitle": "Select a folder with an unpacked game",
   "AllSupportedFormats": "All Supported Formats",
   "RyujinxUpdater": "Ryujinx Updater",

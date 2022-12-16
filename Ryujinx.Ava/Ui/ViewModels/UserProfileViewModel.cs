@@ -99,7 +99,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 default, saveDataId: default, index: default);
 
             using var saveDataIterator = new UniqueRef<SaveDataIterator>();
-
+           
             _owner.HorizonClient.Fs.OpenSaveDataIterator(ref saveDataIterator.Ref(), SaveDataSpaceId.User, in saveDataFilter).ThrowIfFailure();
 
             Span<SaveDataInfo> saveDataInfo = stackalloc SaveDataInfo[10];
@@ -148,8 +148,10 @@ namespace Ryujinx.Ava.Ui.ViewModels
             ContentDialog contentDialog = new ContentDialog
             {
                 Title = string.Format(LocaleManager.Instance["SaveManagerHeading"], userProfile.Name),
-                PrimaryButtonText = "",
-                SecondaryButtonText = "",
+                PrimaryButtonText = "Backup Savedata",
+                PrimaryButtonCommand = new BackupSavedataCommand(_owner),
+                SecondaryButtonText = "Restore Savedata",
+                SecondaryButtonCommand = new RestoreSavedataCommand(_owner),
                 CloseButtonText = LocaleManager.Instance["UserProfilesClose"],
                 Content = manager,
                 Padding = new Thickness(0)

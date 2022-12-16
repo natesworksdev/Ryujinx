@@ -546,6 +546,7 @@
   "CompilingShaders": "Kompilowanie Shaderów",
   "AllKeyboards": "Wszystkie klawiatury",
   "OpenFileDialogTitle": "Wybierz obsługiwany plik do otwarcia",
+  "CreateZipFileDialogTitle": "Wybierz katalog i nazwę pliku",
   "OpenFolderDialogTitle": "Wybierz folder z rozpakowaną grą",
   "AllSupportedFormats": "Wszystkie Obsługiwane Formaty",
   "RyujinxUpdater": "Aktualizator Ryujinx",
