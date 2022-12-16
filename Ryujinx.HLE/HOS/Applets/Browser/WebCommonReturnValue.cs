@@ -4,9 +4,9 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
 {
     public struct WebCommonReturnValue
     {
-        public WebExitReason ExitReason;
-        public uint          Padding;
+        public WebExitReason   ExitReason;
+        public uint            Padding;
         public Array4096<byte> LastUrl;
-        public ulong         LastUrlSize;
+        public ulong           LastUrlSize;
     }
 }
