@@ -530,7 +530,10 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
                     receiveRegion.Dispose();
 
-                    context.Memory.Write(sockAddrOutPosition, BsdSockAddr.FromIPEndPoint(endPoint));
+                    if (sockAddrOutSize != 0)
+                    {
+                        context.Memory.Write(sockAddrOutPosition, BsdSockAddr.FromIPEndPoint(endPoint));
+                    }
                 }
             }
 
