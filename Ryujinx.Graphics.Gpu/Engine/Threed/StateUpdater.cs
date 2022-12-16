@@ -1,7 +1,5 @@
 ﻿using Ryujinx.Common.Logging;
-using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.GAL;
-using Ryujinx.Graphics.Gpu.Engine.GPFifo;
 using Ryujinx.Graphics.Gpu.Engine.Types;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Gpu.Shader;
@@ -1295,7 +1293,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             for (int stageIndex = 0; stageIndex < Constants.ShaderStages; stageIndex++)
             {
-                _currentProgramInfo[stageIndex] = gs.Shaders[stageIndex + 1]?.Info;
+                ShaderProgramInfo info = gs.Shaders[stageIndex + 1]?.Info;
+
+                if (info?.UsesRtLayer == true)
+                {
+                    _vtgWritesRtLayer = true;
+                }
+
+                _currentProgramInfo[stageIndex] = info;
             }
 
             _context.Renderer.Pipeline.SetProgram(gs.HostProgram);
