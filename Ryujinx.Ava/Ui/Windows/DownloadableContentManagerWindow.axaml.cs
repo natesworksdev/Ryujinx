@@ -12,10 +12,13 @@ using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
+using Ryujinx.Ui.App.Common;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -27,14 +30,16 @@ namespace Ryujinx.Ava.Ui.Windows
 {
     public partial class DownloadableContentManagerWindow : StyleableWindow
     {
-        private readonly List<DownloadableContentContainer> _downloadableContentContainerList;
-        private readonly string                             _downloadableContentJsonPath;
+        private List<DownloadableContentContainer>     _downloadableContentContainerList;
+        private string                                 _downloadableContentJsonPath;
 
-        private VirtualFileSystem                      _virtualFileSystem    { get; }
+        private VirtualFileSystem                      _virtualFileSystem { get; }
         private AvaloniaList<DownloadableContentModel> _downloadableContents { get; set; }
 
-        private ulong  _titleId   { get; }
-        private string _titleName { get; }
+        private ulong _titleId      { get; }
+        private string _titleName   { get; }
+
+        private readonly List<ApplicationData> Applications;
 
         public DownloadableContentManagerWindow()
         {
@@ -45,24 +50,16 @@ namespace Ryujinx.Ava.Ui.Windows
             Title = $"Ryujinx {Program.Version} - {LocaleManager.Instance["DlcWindowTitle"]} - {_titleName} ({_titleId:X16})";
         }
 
-        public DownloadableContentManagerWindow(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
+        public DownloadableContentManagerWindow(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName, List<ApplicationData> applications = null)
         {
             _virtualFileSystem    = virtualFileSystem;
             _downloadableContents = new AvaloniaList<DownloadableContentModel>();
 
-            _titleId   = titleId;
-            _titleName = titleName;
+            Applications = applications;
+            _titleId     = titleId;
+            _titleName   = titleName;
 
-            _downloadableContentJsonPath = Path.Combine(AppDataManager.GamesDirPath, titleId.ToString("x16"), "dlc.json");
-
-            try
-            {
-                _downloadableContentContainerList = JsonHelper.DeserializeFromFile<List<DownloadableContentContainer>>(_downloadableContentJsonPath);
-            }
-            catch
-            {
-                _downloadableContentContainerList = new List<DownloadableContentContainer>();
-            }
+            _downloadableContentJsonPath = LoadJsonFromTitle(_titleId);
 
             DataContext = this;
 
@@ -90,30 +87,27 @@ namespace Ryujinx.Ava.Ui.Windows
 
         private void LoadDownloadableContents()
         {
-            foreach (DownloadableContentContainer downloadableContentContainer in _downloadableContentContainerList)
+            foreach (DownloadableContentContainer downloadableContentContainer in _downloadableContentContainerList.Where(dlcContainer => File.Exists(dlcContainer.ContainerPath)))
             {
-                if (File.Exists(downloadableContentContainer.ContainerPath))
+                using FileStream containerFile = File.OpenRead(downloadableContentContainer.ContainerPath);
+
+                PartitionFileSystem partitionFileSystem = new(containerFile.AsStorage());
+
+                _virtualFileSystem.ImportTickets(partitionFileSystem);
+
+                foreach (DownloadableContentNca downloadableContentNca in downloadableContentContainer.DownloadableContentNcaList)
                 {
-                    using FileStream containerFile = File.OpenRead(downloadableContentContainer.ContainerPath);
+                    using UniqueRef<IFile> ncaFile = new();
 
-                    PartitionFileSystem partitionFileSystem = new(containerFile.AsStorage());
+                    partitionFileSystem.OpenFile(ref ncaFile.Ref(), downloadableContentNca.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
-                    _virtualFileSystem.ImportTickets(partitionFileSystem);
-
-                    foreach (DownloadableContentNca downloadableContentNca in downloadableContentContainer.DownloadableContentNcaList)
+                    Nca nca = TryOpenNca(ncaFile.Get.AsStorage(), downloadableContentContainer.ContainerPath);
+                    if (nca != null)
                     {
-                        using UniqueRef<IFile> ncaFile = new();
-
-                        partitionFileSystem.OpenFile(ref ncaFile.Ref(), downloadableContentNca.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-
-                        Nca nca = TryOpenNca(ncaFile.Get.AsStorage(), downloadableContentContainer.ContainerPath);
-                        if (nca != null)
-                        {
-                            _downloadableContents.Add(new DownloadableContentModel(nca.Header.TitleId.ToString("X16"),
-                                                                                   downloadableContentContainer.ContainerPath,
-                                                                                   downloadableContentNca.FullPath,
-                                                                                   downloadableContentNca.Enabled));
-                        }
+                        _downloadableContents.Add(new DownloadableContentModel(nca.Header.TitleId.ToString("X16"),
+                                                                               downloadableContentContainer.ContainerPath,
+                                                                               downloadableContentNca.FullPath,
+                                                                               downloadableContentNca.Enabled));
                     }
                 }
             }
@@ -139,7 +133,7 @@ namespace Ryujinx.Ava.Ui.Windows
             return null;
         }
 
-        private async Task AddDownloadableContent(string path)
+        private async Task AddDownloadableContent(string path, ulong titleId)
         {
             if (!File.Exists(path) || _downloadableContents.FirstOrDefault(x => x.ContainerPath == path) != null)
             {
@@ -167,7 +161,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
                 if (nca.Header.ContentType == NcaContentType.PublicData)
                 {
-                    if ((nca.Header.TitleId & 0xFFFFFFFFFFFFE000) != _titleId)
+                    if ((nca.Header.TitleId & 0xFFFFFFFFFFFFE000) != titleId)
                     {
                         break;
                     }
@@ -210,6 +204,51 @@ namespace Ryujinx.Ava.Ui.Windows
             PrintHeading();
         }
 
+        private string LoadJsonFromTitle(ulong titleId)
+        {
+            string _downloadableContentJsonPath = Path.Combine(AppDataManager.GamesDirPath, titleId.ToString("x16"), "dlc.json");
+
+            try
+            {
+                _downloadableContentContainerList = JsonHelper.DeserializeFromFile<List<DownloadableContentContainer>>(_downloadableContentJsonPath);
+            }
+            catch
+            {
+                _downloadableContentContainerList = new List<DownloadableContentContainer>();
+            }
+
+            return _downloadableContentJsonPath;
+        }
+
+        private string LoadJsonFromTitle(ApplicationData applicationdata)
+        {
+            ulong titleId = ulong.Parse(applicationdata.TitleId, NumberStyles.HexNumber);
+
+            return LoadJsonFromTitle(titleId);
+        }
+
+        public async void LoadGlobalDlcs()
+        {
+            AutoDownloadableContentLoader downloadableContentManager = new AutoDownloadableContentLoader(Applications);
+
+            foreach (ApplicationData application in Applications)
+            {
+                try
+                {
+                    _downloadableContents.Clear();
+                     await downloadableContentManager.AutoLoadDlcsAsync(application, AddDownloadableContent);
+                    _downloadableContentJsonPath = LoadJsonFromTitle(application);
+                    Save();
+                }
+                catch (Exception)
+                {
+                    Logger.Error?.Print(LogClass.Application, $"Error while downloading downloadable content for title: {application.TitleName}", nameof(AutoDownloadableContentLoader));
+                }
+            }
+
+            Close();
+        }
+
         public void RemoveSelected()
         {
             RemoveDownloadableContents(true);
@@ -222,7 +261,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
         public void EnableAll()
         {
-            foreach(var item in _downloadableContents)
+            foreach (var item in _downloadableContents)
             {
                 item.Enabled = true;
             }
@@ -239,7 +278,7 @@ namespace Ryujinx.Ava.Ui.Windows
         public async void Add()
         {
             OpenFileDialog dialog = new OpenFileDialog()
-            { 
+            {
                 Title         = LocaleManager.Instance["SelectDlcDialogTitle"],
                 AllowMultiple = true
             };
@@ -256,7 +295,7 @@ namespace Ryujinx.Ava.Ui.Windows
             {
                 foreach (string file in files)
                 {
-                   await AddDownloadableContent(file);
+                    await AddDownloadableContent(file, _titleId);
                 }
             }
 

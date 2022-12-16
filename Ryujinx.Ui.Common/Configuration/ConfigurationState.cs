@@ -301,6 +301,16 @@ namespace Ryujinx.Ui.Common.Configuration
             /// </summary>
             public ReactiveObject<bool> IgnoreMissingServices { get; private set; }
 
+            /// <summary>
+            /// Change the global dlc path for auto import
+            /// </summary>
+            public ReactiveObject<string> GlobalDlcPath { get; private set; }
+
+            /// <summary>
+            /// Change the global title update path for auto import
+            /// </summary>
+            public ReactiveObject<string> GlobalTitleUpdatePath { get; private set; }
+
             public SystemSection()
             {
                 Language                      = new ReactiveObject<Language>();
@@ -327,6 +337,10 @@ namespace Ryujinx.Ui.Common.Configuration
                 IgnoreMissingServices.Event   += static (sender, e) => LogValueChange(sender, e, nameof(IgnoreMissingServices));
                 AudioVolume                   = new ReactiveObject<float>();
                 AudioVolume.Event             += static (sender, e) => LogValueChange(sender, e, nameof(AudioVolume));
+                GlobalDlcPath                = new ReactiveObject<string>();
+                GlobalDlcPath.Event          += static (sender, e) => LogValueChange(sender, e, nameof(GlobalDlcPath));
+                GlobalTitleUpdatePath        = new ReactiveObject<string>();
+                GlobalTitleUpdatePath.Event  += static (sender, e) => LogValueChange(sender, e, nameof(GlobalTitleUpdatePath));
             }
         }
 
@@ -566,6 +580,8 @@ namespace Ryujinx.Ui.Common.Configuration
                 MemoryManagerMode          = System.MemoryManagerMode,
                 ExpandRam                  = System.ExpandRam,
                 IgnoreMissingServices      = System.IgnoreMissingServices,
+                GlobalDlcPath              = System.GlobalDlcPath,
+                GlobalTitleUpdatePath      = System.GlobalTitleUpdatePath,
                 GuiColumns                 = new GuiColumns
                 {
                     FavColumn        = Ui.GuiColumns.FavColumn,
@@ -1261,6 +1277,8 @@ namespace Ryujinx.Ui.Common.Configuration
             Hid.EnableMouse.Value                     = configurationFileFormat.EnableMouse;
             Hid.Hotkeys.Value                         = configurationFileFormat.Hotkeys;
             Hid.InputConfig.Value                     = configurationFileFormat.InputConfig;
+            System.GlobalDlcPath.Value                = configurationFileFormat.GlobalDlcPath;
+            System.GlobalTitleUpdatePath.Value        = configurationFileFormat.GlobalTitleUpdatePath;
 
             if (Hid.InputConfig.Value == null)
             {

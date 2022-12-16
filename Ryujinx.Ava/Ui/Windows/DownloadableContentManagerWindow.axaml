@@ -52,6 +52,15 @@
                 Command="{Binding DisableAll}">
                 <TextBlock Text="{locale:Locale DlcManagerDisableAllButton}" />
             </Button>
+			<Button
+				  DockPanel.Dock="Right"
+				  MinWidth="90"
+				  Margin="380,0"
+				  Width="150"
+				  ToolTip.Tip="{locale:Locale AutoLoadGlobalDownloadableContentToolTip}"
+				  Command="{Binding LoadGlobalDlcs}">
+				<TextBlock Text="{locale:Locale AutoLoadGlobalDownloadableContent}" />
+			</Button>
         </DockPanel>
         <Border
             Grid.Row="3"

@@ -22,8 +22,9 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <TextBlock
+        </Grid.RowDefinitions> 
+		<StackPanel>
+			<TextBlock
             Name="Heading"
             Grid.Row="1"
             MaxWidth="500"
@@ -33,6 +34,15 @@
             LineHeight="18"
             TextAlignment="Center"
             TextWrapping="Wrap" />
+			<Button
+				  MinWidth="90"
+				  Margin="360,0"
+				  Width="190"
+				  ToolTip.Tip="{locale:Locale AutoLoadGlobalTitleUpdatesToolTip}"
+				  Command="{Binding LoadGlobalTitleUpdates}">
+				<TextBlock Text="{locale:Locale AutoLoadGlobalTitleUpdates}" />
+			</Button>
+		</StackPanel>
         <Border
             Grid.Row="2"
             Margin="5"
