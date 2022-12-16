@@ -35,5 +35,10 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Types
 
             return result;
         }
+        
+        public int Size()
+        {
+            return MemoryMarshal.Cast<BsdSockAddr, byte>(MemoryMarshal.CreateSpan(ref this, 1)).Length;
+        }
     }
 }
