@@ -536,6 +536,10 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                     {
                         context.Memory.Write(sockAddrOutPosition, bsdSockAddr);
                     }
+                    else
+                    {
+                        errno = LinuxError.ENOMEM;
+                    }
                 }
             }
 
