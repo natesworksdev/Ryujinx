@@ -22,12 +22,12 @@ namespace Ryujinx.Ava.Ui.Controls
         public async Task AutoLoadUpdatesAsync(ApplicationData application, Func<string, ulong, Task> addTitleUpdates)
         {
             //bannedSmbols clears out special symbols ex. not allowed in windows folder name
-            //replaceChars replaces signs needed but in different encoding. example Shin Megami Tensei V 
+            //replaceChars replaces signs needed but in different encoding. example Shin Megami Tensei V
             char[] bannedSymbols = { '.', ',', ':', ';', '>', '<', '\'', '\"', };
-            Dictionary<char, char> replaceChars = new Dictionary<char, char>() 
+            Dictionary<char, char> replaceChars = new Dictionary<char, char>()
             {
                 {'Ⅴ','V' }
-            }; 
+            };
 
             string gameTitle = string.Join("", application.TitleName.Split(bannedSymbols))
                 .Replace(replaceChars.First().Key,
@@ -45,7 +45,7 @@ namespace Ryujinx.Ava.Ui.Controls
         public Dictionary<string, string> GetTitleUpdatesWithGameName()
         {
             //Searches for the files in the Global Updates folder and puts their path and titlename (from folder) in a dictionary.
-            return Directory.GetFiles(ConfigurationState.Instance.System.GlobalTitleUpdatePath)
+            return Directory.GetFiles(ConfigurationState.Instance.System.GlobalTitleUpdatePath, "*.nsp", SearchOption.AllDirectories)
                 .ToDictionary(x => x, y => Path.GetFileName(y).Split(new[] { "[" }, StringSplitOptions.RemoveEmptyEntries)
                 .First()
                 .Trim());
