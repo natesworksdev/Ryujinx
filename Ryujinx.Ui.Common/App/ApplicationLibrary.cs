@@ -18,6 +18,7 @@ using Ryujinx.Ui.Common.Configuration.System;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -104,7 +105,18 @@ namespace Ryujinx.Ui.App.Common
                         continue;
                     }
 
-                    foreach (string app in Directory.EnumerateFiles(appDir, "*", SearchOption.AllDirectories))
+                    IEnumerable<string> content = Enumerable.Empty<string>();
+
+                    try
+                    {
+                        content = Directory.EnumerateFiles(appDir, "*", SearchOption.AllDirectories);
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        Logger.Warning?.Print(LogClass.Application, $"Failed to get access to directory: \"{appDir}\"");
+                    }
+
+                    foreach (string app in content)
                     {
                         if (_cancellationToken.Token.IsCancellationRequested)
                         {
