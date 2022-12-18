@@ -1186,50 +1186,53 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private void ProgressHandler<T>(T state, int current, int total) where T : Enum
         {
-            try
+            Dispatcher.UIThread.Post((() =>
             {
-                ProgressMaximum = total;
-                ProgressValue = current;
-
-                switch (state)
+                try
                 {
-                    case PtcLoadingState ptcState:
-                        CacheLoadStatus = $"{current} / {total}";
-                        switch (ptcState)
-                        {
-                            case PtcLoadingState.Start:
-                            case PtcLoadingState.Loading:
-                                LoadHeading = LocaleManager.Instance["CompilingPPTC"];
-                                IsLoadingIndeterminate = false;
-                                break;
-                            case PtcLoadingState.Loaded:
-                                LoadHeading = string.Format(LocaleManager.Instance["LoadingHeading"], TitleName);
-                                IsLoadingIndeterminate = true;
-                                CacheLoadStatus = "";
-                                break;
-                        }
-                        break;
-                    case ShaderCacheLoadingState shaderCacheState:
-                        CacheLoadStatus = $"{current} / {total}";
-                        switch (shaderCacheState)
-                        {
-                            case ShaderCacheLoadingState.Start:
-                            case ShaderCacheLoadingState.Loading:
-                                LoadHeading = LocaleManager.Instance["CompilingShaders"];
-                                IsLoadingIndeterminate = false;
-                                break;
-                            case ShaderCacheLoadingState.Loaded:
-                                LoadHeading = string.Format(LocaleManager.Instance["LoadingHeading"], TitleName);
-                                IsLoadingIndeterminate = true;
-                                CacheLoadStatus = "";
-                                break;
-                        }
-                        break;
-                    default:
-                        throw new ArgumentException($"Unknown Progress Handler type {typeof(T)}");
+                    ProgressMaximum = total;
+                    ProgressValue = current;
+    
+                    switch (state)
+                    {
+                        case PtcLoadingState ptcState:
+                            CacheLoadStatus = $"{current} / {total}";
+                            switch (ptcState)
+                            {
+                                case PtcLoadingState.Start:
+                                case PtcLoadingState.Loading:
+                                    LoadHeading = LocaleManager.Instance["CompilingPPTC"];
+                                    IsLoadingIndeterminate = false;
+                                    break;
+                                case PtcLoadingState.Loaded:
+                                    LoadHeading = string.Format(LocaleManager.Instance["LoadingHeading"], TitleName);
+                                    IsLoadingIndeterminate = true;
+                                    CacheLoadStatus = "";
+                                    break;
+                            }
+                            break;
+                        case ShaderCacheLoadingState shaderCacheState:
+                            CacheLoadStatus = $"{current} / {total}";
+                            switch (shaderCacheState)
+                            {
+                                case ShaderCacheLoadingState.Start:
+                                case ShaderCacheLoadingState.Loading:
+                                    LoadHeading = LocaleManager.Instance["CompilingShaders"];
+                                    IsLoadingIndeterminate = false;
+                                    break;
+                                case ShaderCacheLoadingState.Loaded:
+                                    LoadHeading = string.Format(LocaleManager.Instance["LoadingHeading"], TitleName);
+                                    IsLoadingIndeterminate = true;
+                                    CacheLoadStatus = "";
+                                    break;
+                            }
+                            break;
+                        default:
+                            throw new ArgumentException($"Unknown Progress Handler type {typeof(T)}");
+                    }
                 }
-            }
-            catch (Exception) { }
+                catch (Exception) { }
+            }));
         }
 
         public void OpenPtcDirectory()
