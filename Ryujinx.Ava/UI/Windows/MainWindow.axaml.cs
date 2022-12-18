@@ -157,22 +157,6 @@ namespace Ryujinx.Ava.UI.Windows
             });
         }
         
-        public void ToggleFavorite()
-        {
-            ApplicationData selection = ViewModel.SelectedApplication;
-            if (selection != null)
-            {
-                selection.Favorite = !selection.Favorite;
-
-                ApplicationLibrary.LoadAndSaveMetaData(selection.TitleId, appMetadata =>
-                {
-                    appMetadata.Favorite = selection.Favorite;
-                });
-
-                ViewModel.RefreshView();
-            }
-        }
-        
         private void ApplicationLibrary_ApplicationAdded(object sender, ApplicationAddedEventArgs e)
         {
             AddApplication(e.AppData);
@@ -467,82 +451,6 @@ namespace Ryujinx.Ava.UI.Windows
             ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs.Value, ConfigurationState.Instance.System.Language);
 
             _isLoading = false;
-        }
-
-        public void OpenUserSaveDirectory()
-        {
-            ApplicationData selection = ViewModel.SelectedApplication;
-            if (selection != null)
-            {
-                Task.Run(() =>
-                {
-                    if (!ulong.TryParse(selection.TitleId, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ulong titleIdNumber))
-                    {
-                        Dispatcher.UIThread.Post(async () =>
-                        {
-                            await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance["DialogRyujinxErrorMessage"], LocaleManager.Instance["DialogInvalidTitleIdErrorMessage"]);
-                        });
-
-                        return;
-                    }
-
-                    UserId         userId         = new((ulong)AccountManager.LastOpenedUser.UserId.High, (ulong)AccountManager.LastOpenedUser.UserId.Low);
-                    SaveDataFilter saveDataFilter = SaveDataFilter.Make(titleIdNumber, saveType: default, userId, saveDataId: default, index: default);
-                    ViewModel.OpenSaveDirectory(in saveDataFilter, selection, titleIdNumber);
-                });
-            }
-        }
-        
-        public void OpenModsDirectory()
-        {
-            ApplicationData selection = ViewModel.SelectedApplication;
-            if (selection != null)
-            {
-                string modsBasePath  = VirtualFileSystem.ModLoader.GetModsBasePath();
-                string titleModsPath = VirtualFileSystem.ModLoader.GetTitleDir(modsBasePath, selection.TitleId);
-
-                OpenHelper.OpenFolder(titleModsPath);
-            }
-        }
-
-        public void OpenSdModsDirectory()
-        {
-            ApplicationData selection = ViewModel.SelectedApplication;
-
-            if (selection != null)
-            {
-                string sdModsBasePath = VirtualFileSystem.ModLoader.GetSdModsBasePath();
-                string titleModsPath  = VirtualFileSystem.ModLoader.GetTitleDir(sdModsBasePath, selection.TitleId);
-
-                OpenHelper.OpenFolder(titleModsPath);
-            }
-        }
-
-        public async void OpenTitleUpdateManager()
-        {
-            ApplicationData selection = ViewModel.SelectedApplication;
-            if (selection != null)
-            {
-                await new TitleUpdateWindow(VirtualFileSystem, ulong.Parse(selection.TitleId, NumberStyles.HexNumber), selection.TitleName).ShowDialog(this);
-            }
-        }
-
-        public async void OpenDownloadableContentManager()
-        {
-            ApplicationData selection = ViewModel.SelectedApplication;
-            if (selection != null)
-            {
-                await new DownloadableContentManagerWindow(VirtualFileSystem, ulong.Parse(selection.TitleId, NumberStyles.HexNumber), selection.TitleName).ShowDialog(this);
-            }
-        }
-
-        public async void OpenCheatManager()
-        {
-            ApplicationData selection = ViewModel.SelectedApplication;
-            if (selection != null)
-            {
-                await new CheatWindow(VirtualFileSystem, selection.TitleId, selection.TitleName).ShowDialog(this);
-            }
         }
     }
 }

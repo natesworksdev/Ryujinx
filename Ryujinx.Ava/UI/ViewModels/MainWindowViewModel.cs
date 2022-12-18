@@ -1,5 +1,6 @@
 using ARMeilleure.Translation.PTC;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -16,6 +17,7 @@ using Ryujinx.Ava.Input;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
+using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
@@ -38,6 +40,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Path = System.IO.Path;
 using ShaderCacheLoadingState = Ryujinx.Graphics.Gpu.Shader.ShaderCacheState;
+using UserId = LibHac.Fs.UserId;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
@@ -1397,6 +1400,107 @@ namespace Ryujinx.Ava.UI.ViewModels
                     var saveDataFilter = SaveDataFilter.Make(titleIdNumber, SaveDataType.Bcat, userId: default, saveDataId: default, index: default);
                     OpenSaveDirectory(in saveDataFilter, selection, titleIdNumber);
                 });
+            }
+        }
+        
+        public void ToggleFavorite()
+        {
+            ApplicationData selection = SelectedApplication;
+            if (selection != null)
+            {
+                selection.Favorite = !selection.Favorite;
+
+                ApplicationLibrary.LoadAndSaveMetaData(selection.TitleId, appMetadata =>
+                {
+                    appMetadata.Favorite = selection.Favorite;
+                });
+
+                RefreshView();
+            }
+        }
+
+        public void OpenUserSaveDirectory()
+        {
+            ApplicationData selection = SelectedApplication;
+            if (selection != null)
+            {
+                Task.Run(() =>
+                {
+                    if (!ulong.TryParse(selection.TitleId, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ulong titleIdNumber))
+                    {
+                        Dispatcher.UIThread.Post(async () =>
+                        {
+                            await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance["DialogRyujinxErrorMessage"], LocaleManager.Instance["DialogInvalidTitleIdErrorMessage"]);
+                        });
+
+                        return;
+                    }
+
+                    UserId         userId         = new((ulong)AccountManager.LastOpenedUser.UserId.High, (ulong)AccountManager.LastOpenedUser.UserId.Low);
+                    SaveDataFilter saveDataFilter = SaveDataFilter.Make(titleIdNumber, saveType: default, userId, saveDataId: default, index: default);
+                    OpenSaveDirectory(in saveDataFilter, selection, titleIdNumber);
+                });
+            }
+        }
+        
+        public void OpenModsDirectory()
+        {
+            ApplicationData selection = SelectedApplication;
+            if (selection != null)
+            {
+                string modsBasePath  = VirtualFileSystem.ModLoader.GetModsBasePath();
+                string titleModsPath = VirtualFileSystem.ModLoader.GetTitleDir(modsBasePath, selection.TitleId);
+
+                OpenHelper.OpenFolder(titleModsPath);
+            }
+        }
+
+        public void OpenSdModsDirectory()
+        {
+            ApplicationData selection = SelectedApplication;
+
+            if (selection != null)
+            {
+                string sdModsBasePath = VirtualFileSystem.ModLoader.GetSdModsBasePath();
+                string titleModsPath  = VirtualFileSystem.ModLoader.GetTitleDir(sdModsBasePath, selection.TitleId);
+
+                OpenHelper.OpenFolder(titleModsPath);
+            }
+        }
+
+        public async void OpenTitleUpdateManager()
+        {
+            ApplicationData selection = SelectedApplication;
+            if (selection != null)
+            {
+                if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                {
+                    await new TitleUpdateWindow(VirtualFileSystem, ulong.Parse(selection.TitleId, NumberStyles.HexNumber), selection.TitleName).ShowDialog(desktop.MainWindow);
+                }
+            }
+        }
+
+        public async void OpenDownloadableContentManager()
+        {
+            ApplicationData selection = SelectedApplication;
+            if (selection != null)
+            {
+                if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                {
+                    await new DownloadableContentManagerWindow(VirtualFileSystem, ulong.Parse(selection.TitleId, NumberStyles.HexNumber), selection.TitleName).ShowDialog(desktop.MainWindow);
+                }
+            }
+        }
+
+        public async void OpenCheatManager()
+        {
+            ApplicationData selection = SelectedApplication;
+            if (selection != null)
+            {
+                if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                {
+                    await new CheatWindow(VirtualFileSystem, selection.TitleId, selection.TitleName).ShowDialog(desktop.MainWindow);
+                }
             }
         }
 
