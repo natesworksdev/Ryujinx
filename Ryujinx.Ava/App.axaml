@@ -5,6 +5,6 @@
     xmlns:sty="using:FluentAvalonia.Styling">
     <Application.Styles>
         <sty:FluentAvaloniaTheme PreferSystemTheme="False" TextVerticalAlignmentOverrideBehavior="AlwaysEnabled" />
-        <StyleInclude Source="Assets/Styles/Styles.xaml"/>
+        <StyleInclude Source="/../Assets/Styles/Styles.xaml"/>
     </Application.Styles>
 </Application>
