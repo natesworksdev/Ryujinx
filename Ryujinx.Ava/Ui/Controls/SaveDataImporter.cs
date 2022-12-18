@@ -1,8 +1,11 @@
 ﻿using Avalonia.Controls;
+using LibHac;
 using Ryujinx.Ava.Common.Locale;
+using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
+using Ryujinx.HLE.FileSystem;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,21 +13,16 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Path = System.IO.Path;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
-    internal class RestoreSavedataCommand : ICommand
+    internal class SaveDataImporter
     {
-        public event EventHandler CanExecuteChanged;
 
-        private readonly IControl parentControl;
-
-        public RestoreSavedataCommand(IControl parentControl)
-        {
-            this.parentControl = parentControl;
-        }
+        private readonly UserProfile _userProfile;
+        private readonly HorizonClient _horizonClient;
+        private readonly VirtualFileSystem _virtualFileSystem;
 
         private async Task<bool> ShowConditionMessage()
         {
@@ -33,28 +31,18 @@ namespace Ryujinx.Ava.Ui.Controls
                "Do you want to continue?");
         }
 
-        public bool CanExecute(object parameter)
-        {
-            return true;
-        }
-
-        public void Execute(object parameter)
-        {
-            RestoreSavedataBackup();
-        }
-
-        public async void RestoreSavedataBackup()
+        public async void RestoreSavedataBackup(MainWindow mainWindow)
         {
             if (!(await ShowConditionMessage())) return;
 
-            string[] backupZipFiles = await ShowFolderDialog();
+            string[] backupZipFiles = await ShowFolderDialog(mainWindow);
 
             ExtractBackupToSaveDirectory(backupZipFiles);
 
-            Logger.Info.Value.Print(LogClass.Application, $"Done extracting savedata backup!", nameof(RestoreSavedataCommand));
+            Logger.Info.Value.Print(LogClass.Application, $"Done extracting savedata backup!", nameof(SaveDataImporter));
         }
 
-        private async Task<string[]> ShowFolderDialog()
+        private async Task<string[]> ShowFolderDialog(MainWindow mainWindow)
         {
             OpenFileDialog dialog = new()
             {
@@ -63,7 +51,7 @@ namespace Ryujinx.Ava.Ui.Controls
                 Filters = new List<FileDialogFilter>(new[] { new FileDialogFilter() { Extensions = new List<string>() { "zip" } } })
             };
 
-            return await dialog.ShowAsync(parentControl.VisualRoot as MainWindow);
+            return await dialog.ShowAsync(mainWindow);
         }
 
         private Dictionary<string, string> GetTitleIdWithSavedataPath(string saveDirectoryPath)
@@ -84,7 +72,7 @@ namespace Ryujinx.Ava.Ui.Controls
                 }
                 catch (Exception)
                 {
-                    Logger.Error.Value.Print(LogClass.Application, $"Could not extract hex from savedata file: {saveDataExtra0file}", nameof(RestoreSavedataCommand));
+                    Logger.Error.Value.Print(LogClass.Application, $"Could not extract hex from savedata file: {saveDataExtra0file}", nameof(SaveDataImporter));
                 }
             }
 
@@ -110,7 +98,7 @@ namespace Ryujinx.Ava.Ui.Controls
                 string tempZipExtractionPath = Path.GetTempPath();
                 ZipFile.ExtractToDirectory(backupZipFiles.First(), tempZipExtractionPath, true);
 
-                Logger.Info.Value.Print(LogClass.Application, $"Extracted Backup zip to temp path: {tempZipExtractionPath}", nameof(RestoreSavedataCommand));
+                Logger.Info.Value.Print(LogClass.Application, $"Extracted Backup zip to temp path: {tempZipExtractionPath}", nameof(SaveDataImporter));
 
                 string saveDir = Path.Combine(AppDataManager.BaseDirPath, AppDataManager.DefaultNandDir, "user", "save");
 
@@ -130,11 +118,11 @@ namespace Ryujinx.Ava.Ui.Controls
                     try
                     {
                         Directory.Move(Directory.GetParent(titleIdAndBackupPath.Value).FullName, Directory.GetParent(titleIdsWithSavePaths[titleIdAndBackupPath.Key]).FullName);
-                        Logger.Info.Value.Print(LogClass.Application, $"Copied Savedata {titleIdAndBackupPath.Value} to {titleIdsWithSavePaths[titleIdAndBackupPath.Key]}", nameof(RestoreSavedataCommand));
+                        Logger.Info.Value.Print(LogClass.Application, $"Copied Savedata {titleIdAndBackupPath.Value} to {titleIdsWithSavePaths[titleIdAndBackupPath.Key]}", nameof(SaveDataImporter));
                     }
                     catch (Exception)
                     {
-                        Logger.Error.Value.Print(LogClass.Application, $"Could not copy Savedata {titleIdAndBackupPath.Value} to {titleIdsWithSavePaths[titleIdAndBackupPath.Key]}", nameof(RestoreSavedataCommand));
+                        Logger.Error.Value.Print(LogClass.Application, $"Could not copy Savedata {titleIdAndBackupPath.Value} to {titleIdsWithSavePaths[titleIdAndBackupPath.Key]}", nameof(SaveDataImporter));
                     }
                 }
             }

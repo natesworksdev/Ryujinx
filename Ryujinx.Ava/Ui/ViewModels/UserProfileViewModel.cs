@@ -143,15 +143,13 @@ namespace Ryujinx.Ava.Ui.ViewModels
         {
             UserProfile userProfile = _highlightedProfile ?? SelectedProfile;
 
-            SaveManager manager = new SaveManager(userProfile, _owner.HorizonClient, _owner.VirtualFileSystem);
+            SaveManager manager = new SaveManager(userProfile, _owner.HorizonClient, _owner.VirtualFileSystem, _owner.Applications);
             
             ContentDialog contentDialog = new ContentDialog
             {
                 Title = string.Format(LocaleManager.Instance["SaveManagerHeading"], userProfile.Name),
-                PrimaryButtonText = "Backup Savedata",
-                PrimaryButtonCommand = new BackupSavedataCommand(_owner),
-                SecondaryButtonText = "Restore Savedata",
-                SecondaryButtonCommand = new RestoreSavedataCommand(_owner),
+                PrimaryButtonText = "",
+                SecondaryButtonText = "",
                 CloseButtonText = LocaleManager.Instance["UserProfilesClose"],
                 Content = manager,
                 Padding = new Thickness(0)

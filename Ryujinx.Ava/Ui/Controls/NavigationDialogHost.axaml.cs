@@ -2,11 +2,14 @@ using Avalonia;
 using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
 using LibHac;
+using LibHac.FsSystem;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.ViewModels;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.Ui.App.Common;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Controls
@@ -17,20 +20,24 @@ namespace Ryujinx.Ava.Ui.Controls
         public ContentManager ContentManager { get; }
         public VirtualFileSystem VirtualFileSystem { get; }
         public HorizonClient HorizonClient { get; }
+        public List<ApplicationData> Applications { get; }
         public UserProfileViewModel ViewModel { get; set; }
 
         public NavigationDialogHost()
         {
             InitializeComponent();
+            
+            
         }
 
         public NavigationDialogHost(AccountManager accountManager, ContentManager contentManager,
-            VirtualFileSystem virtualFileSystem, HorizonClient horizonClient)
+            VirtualFileSystem virtualFileSystem, HorizonClient horizonClient, List<ApplicationData> applications)
         {
             AccountManager = accountManager;
             ContentManager = contentManager;
             VirtualFileSystem = virtualFileSystem;
             HorizonClient = horizonClient;
+            Applications = applications;
             ViewModel = new UserProfileViewModel(this);
 
 
@@ -60,9 +67,9 @@ namespace Ryujinx.Ava.Ui.Controls
         }
 
         public static async Task Show(AccountManager ownerAccountManager, ContentManager ownerContentManager,
-            VirtualFileSystem ownerVirtualFileSystem, HorizonClient ownerHorizonClient)
+            VirtualFileSystem ownerVirtualFileSystem, HorizonClient ownerHorizonClient, List<ApplicationData> applications)
         {
-            var content = new NavigationDialogHost(ownerAccountManager, ownerContentManager, ownerVirtualFileSystem, ownerHorizonClient);
+            var content = new NavigationDialogHost(ownerAccountManager, ownerContentManager, ownerVirtualFileSystem, ownerHorizonClient, applications);
             ContentDialog contentDialog = new ContentDialog
             {
                 Title = LocaleManager.Instance["UserProfileWindowTitle"],
