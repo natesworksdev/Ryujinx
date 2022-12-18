@@ -28,7 +28,7 @@
         </Grid.ColumnDefinitions>
         <Image
             Grid.Row="1"
-            Grid.RowSpan="5"
+            Grid.RowSpan="4"
             Height="80"
             MinWidth="50"
             Margin="5,10,20,10"

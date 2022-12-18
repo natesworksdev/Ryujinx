@@ -18,14 +18,16 @@
                             </MenuItem>
                         </MenuItem>
                     </Menu>
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel
+                        Grid.Row="0"
+                        Orientation="Horizontal">
                         <ToggleButton
-                            Name="btnAdd"
+                            Name="BtnAdd"
                             Height="28"
                             HorizontalAlignment="Right"
                             Content="Addy" />
                         <Button
-                            Name="btnRem"
+                            Name="BtnRem"
                             HorizontalAlignment="Right"
                             Content="Add" />
                         <TextBox
@@ -86,7 +88,6 @@
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="Background" Value="{DynamicResource ThemeControlBorderColor}" />
         <Setter Property="SeparatorBrush" Value="{DynamicResource ThemeControlBorderColor}" />
         <Setter Property="Padding" Value="5" />
         <Setter Property="Background" Value="{DynamicResource ThemeContentBackgroundColor}" />

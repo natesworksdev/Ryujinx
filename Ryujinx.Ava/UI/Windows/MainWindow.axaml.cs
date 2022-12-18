@@ -2,12 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Media;
-using Avalonia.Platform.Storage;
 using Avalonia.Threading;
-using LibHac.Fs;
-using LibHac.FsSystem;
-using LibHac.Ncm;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Input;
@@ -16,11 +11,8 @@ using Ryujinx.Ava.Input;
 using Ryujinx.Ava.Modules.Updater;
 >>>>>>> 66aac324 (Fix Namespace Case)
 using Ryujinx.Ava.UI.Applet;
-using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
-using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
-using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.FileSystem;
@@ -32,17 +24,11 @@ using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
-using SixLabors.ImageSharp.PixelFormats;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using InputManager = Ryujinx.Input.HLE.InputManager;
-using Path = System.IO.Path;
-using UserId = LibHac.Fs.UserId;
 
 namespace Ryujinx.Ava.UI.Windows
 {

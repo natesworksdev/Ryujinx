@@ -1,6 +1,5 @@
 ﻿using ARMeilleure.Translation;
 using ARMeilleure.Translation.PTC;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
@@ -176,7 +175,7 @@ namespace Ryujinx.Ava
                 _lastCursorMoveTime = Stopwatch.GetTimestamp();
                 var p = e.GetCurrentPoint(visual).Position;
                 var r = visual.InputHitTest(p);
-                _isMouseInRenderer = r == Renderer;
+                _isMouseInRenderer = Equals(r, Renderer);
             }
         }
 

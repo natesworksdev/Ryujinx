@@ -69,7 +69,7 @@ namespace Ryujinx.Ava
                     if (result == UserResult.Yes)
                     {
                         var path = Process.GetCurrentProcess().MainModule.FileName;
-                        var proc = Process.Start(path, CommandLineState.Arguments);
+                        Process.Start(path, CommandLineState.Arguments);
                         desktop.Shutdown();
                         Environment.Exit(0);
                     }
@@ -112,7 +112,7 @@ namespace Ryujinx.Ava
                     currentStyles.RemoveRange(1, currentStyles.Count - 1);
                 }
 
-                IStyle newStyles = null;
+                IStyle newStyles;
 
                 // Load requested style, and fallback to Dark theme if loading failed.
                 try

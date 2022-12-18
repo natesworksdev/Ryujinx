@@ -16,13 +16,15 @@
                             </MenuItem>
                         </MenuItem>
                     </Menu>
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel
+                        Grid.Row="0"
+                        Orientation="Horizontal">
                         <Button
-                            Name="btnAdd"
+                            Name="BtnAdd"
                             HorizontalAlignment="Right"
                             Content="Add" />
                         <Button
-                            Name="btnRem"
+                            Name="BtnRem"
                             HorizontalAlignment="Right"
                             Content="Add" />
                         <TextBox
