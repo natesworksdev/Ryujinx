@@ -136,7 +136,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             ShowLoading = showLoading;
             SwitchToGameControl = switchToGameControl;
             SetMainContent = setMainContent;
-            TopLevel = TopLevel;
+            TopLevel = topLevel;
 
             Ptc.PtcStateChanged -= ProgressHandler;
             Ptc.PtcStateChanged += ProgressHandler;
