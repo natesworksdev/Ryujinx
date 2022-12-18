@@ -108,19 +108,19 @@
             Spacing="10"
             Orientation="Horizontal"
             HorizontalAlignment="Right"
-            ReverseOrder="{ReflectionBinding IsMacOS}">
+            ReverseOrder="{Binding IsMacOS}">
             <Button 
                 HotKey="Enter" 
                 Classes="accent"
                 Content="{locale:Locale SettingsButtonOk}" 
-                Command="{ReflectionBinding OkButton}" />
+                Command="{Binding OkButton}" />
             <Button 
                 HotKey="Escape" 
                 Content="{locale:Locale SettingsButtonCancel}" 
-                Command="{ReflectionBinding CancelButton}" />
+                Command="{Binding CancelButton}" />
             <Button 
                 Content="{locale:Locale SettingsButtonApply}" 
-                Command="{ReflectionBinding ApplyButton}" />
+                Command="{Binding ApplyButton}" />
         </ReversibleStackPanel>
     </Grid>
 </window:StyleableWindow>

@@ -41,10 +41,10 @@
         </Grid.RowDefinitions>
         <helpers:OffscreenTextBox Name="HiddenTextBox" Grid.Row="0" />
         <StackPanel Grid.Row="0" IsVisible="False">
-            <helpers:HotKeyControl Name="FullscreenHotKey" Command="{ReflectionBinding ToggleFullscreen}" />
-            <helpers:HotKeyControl Name="FullscreenHotKey2" Command="{ReflectionBinding ToggleFullscreen}" />
-            <helpers:HotKeyControl Name="DockToggleHotKey" Command="{ReflectionBinding ToggleDockMode}" />
-            <helpers:HotKeyControl Name="ExitHotKey" Command="{ReflectionBinding ExitCurrentState}" />
+            <helpers:HotKeyControl Name="FullscreenHotKey" Command="{Binding ToggleFullscreen}" />
+            <helpers:HotKeyControl Name="FullscreenHotKey2" Command="{Binding ToggleFullscreen}" />
+            <helpers:HotKeyControl Name="DockToggleHotKey" Command="{Binding ToggleDockMode}" />
+            <helpers:HotKeyControl Name="ExitHotKey" Command="{Binding ExitCurrentState}" />
         </StackPanel>
         <Grid
             Grid.Row="1"

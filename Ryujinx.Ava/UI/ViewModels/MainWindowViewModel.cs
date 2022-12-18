@@ -1142,6 +1142,20 @@ namespace Ryujinx.Ava.UI.ViewModels
                 ConfigurationState.Instance.System.EnableDockedMode.Value = !ConfigurationState.Instance.System.EnableDockedMode.Value;
             }
         }
+        
+        public async void ExitCurrentState()
+        {
+            if (WindowState == WindowState.FullScreen)
+            {
+                ToggleFullscreen();
+            }
+            else if (IsGameRunning)
+            {
+                await Task.Delay(100);
+
+                AppHost?.ShowExitPrompt();
+            }
+        }
 
         public void ChangeLanguage(object obj)
         {

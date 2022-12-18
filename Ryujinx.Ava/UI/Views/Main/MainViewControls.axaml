@@ -16,7 +16,7 @@
             MinWidth="40"
             Margin="5,2,0,2"
             VerticalAlignment="Stretch"
-            Command="{ReflectionBinding SetListMode}"
+            Command="{Binding SetListMode}"
             IsEnabled="{Binding IsGrid}">
             <ui:FontIcon
                 Margin="0"
@@ -30,7 +30,7 @@
             MinWidth="40"
             Margin="5,2,5,2"
             VerticalAlignment="Stretch"
-            Command="{ReflectionBinding SetGridMode}"
+            Command="{Binding SetGridMode}"
             IsEnabled="{Binding IsList}">
             <ui:FontIcon
                 Margin="0"

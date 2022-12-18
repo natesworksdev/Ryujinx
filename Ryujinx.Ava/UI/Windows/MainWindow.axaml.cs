@@ -468,21 +468,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             _isLoading = false;
         }
-        
-        public async void ExitCurrentState()
-        {
-            if (ViewModel.WindowState == WindowState.FullScreen)
-            {
-                ViewModel.ToggleFullscreen();
-            }
-            else if (ViewModel.IsGameRunning)
-            {
-                await Task.Delay(100);
 
-                ViewModel.AppHost?.ShowExitPrompt();
-            }
-        }
-        
         public void OpenUserSaveDirectory()
         {
             ApplicationData selection = ViewModel.SelectedApplication;
