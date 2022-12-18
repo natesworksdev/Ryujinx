@@ -8,6 +8,9 @@
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     x:DataType="viewModels:MainWindowViewModel"
     x:Class="Ryujinx.Ava.UI.Views.Main.MainMenuBarView">
+    <Design.DataContext>
+        <viewModels:MainWindowViewModel />
+    </Design.DataContext>
     <DockPanel HorizontalAlignment="Stretch">
         <Menu
             Name="Menu"

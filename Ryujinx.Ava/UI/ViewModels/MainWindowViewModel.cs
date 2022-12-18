@@ -81,7 +81,10 @@ namespace Ryujinx.Ava.UI.ViewModels
         private bool _isLoadingIndeterminate = true;
         private bool _showAll;
         private string _lastScannedAmiiboId;
+        private bool _statusBarVisible;
         private ReadOnlyObservableCollection<ApplicationData> _appsObservableList;
+        
+        public event Action ReloadGameList;
 
         public string TitleName { get; internal set; }
         internal AppHost AppHost { get; set; }
@@ -214,7 +217,16 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-
+        public bool StatusBarVisible
+        {
+            get => _statusBarVisible && EnableNonGameRunningControls;
+            set
+            {
+                _statusBarVisible = value;
+                
+                OnPropertyChanged();
+            }
+        }
 
         public bool EnableNonGameRunningControls => !IsGameRunning;
 
@@ -234,6 +246,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(EnableNonGameRunningControls));
+                OnPropertyChanged(nameof(StatusBarVisible));
                 OnPropertyChanged(nameof(ShowFirmwareStatus));
             }
         }
@@ -1507,6 +1520,22 @@ namespace Ryujinx.Ava.UI.ViewModels
         public void OpenSaveDirectory(in SaveDataFilter filter, ApplicationData data, ulong titleId)
         {
             ApplicationHelper.OpenSaveDir(in filter, titleId, data.ControlHolder, data.TitleName);
+        }
+        
+        public async void LoadApplications()
+        {
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                Applications.Clear();
+
+                StatusBarVisible                 = true;
+                StatusBarProgressMaximum         = 0;
+                StatusBarProgressValue           = 0;
+
+                LocaleManager.Instance.UpdateDynamicValue("StatusBarGamesLoaded", 0, 0);
+            });
+
+            ReloadGameList?.Invoke();
         }
 
         private async void ExtractLogo()

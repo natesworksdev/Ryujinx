@@ -117,11 +117,12 @@ namespace Ryujinx.Ava.UI.Windows
 
                 LoadGameList();
 
-                this.GetObservable(WindowBase.IsActiveProperty).Subscribe(IsActiveChanged);
+                this.GetObservable(IsActiveProperty).Subscribe(IsActiveChanged);
             }
 
             ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
             ApplicationLibrary.ApplicationAdded += ApplicationLibrary_ApplicationAdded;
+            ViewModel.ReloadGameList += ReloadGameList;
         }
 
         private void IsActiveChanged(bool obj)
