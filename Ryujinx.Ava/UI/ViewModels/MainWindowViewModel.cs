@@ -59,7 +59,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         private string _gpuStatusText;
         private bool _isAmiiboRequested;
         private bool _isGameRunning;
-        private bool _isLoading;
         private bool _isFullScreen;
         private int _progressMaximum;
         private int _progressValue;

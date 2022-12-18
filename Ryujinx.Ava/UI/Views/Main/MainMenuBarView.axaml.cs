@@ -134,7 +134,7 @@ public partial class MainMenuBarView : UserControl
         await new AboutWindow().ShowDialog(Window);
     }
 
-    public async void CloseWindow(object sender, RoutedEventArgs e)
+    public void CloseWindow(object sender, RoutedEventArgs e)
     {
         Window.Close();
     }
