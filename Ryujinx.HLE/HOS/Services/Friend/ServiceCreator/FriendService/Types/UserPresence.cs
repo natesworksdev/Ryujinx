@@ -29,7 +29,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator.FriendService
 
         public override string ToString()
         {
-            return $"UserPresence {{ UserId: {UserId}, LastTimeOnlineTimestamp: {LastTimeOnlineTimestamp}, Status: {Status}, AppKeyValueStorage: {Encoding.ASCII.GetString(AppKeyValueStorage)} }}";
+            return $"UserPresence {{ UserId: {UserId}, LastTimeOnlineTimestamp: {LastTimeOnlineTimestamp}, Status: {Status} }}";
         }
     }
 }
