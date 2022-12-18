@@ -128,7 +128,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static int GetConstOp(ref Operand baseOp)
         {
-            Operation operation = GetAsgOpAddZx32(baseOp);
+            Operation operation = GetAsgOpWithInst(baseOp, Instruction.Add);
 
             if (operation == default)
             {
@@ -174,7 +174,7 @@ namespace ARMeilleure.CodeGen.X86
 
             Multiplier scale = Multiplier.x1;
 
-            Operation addOp = GetAsgOpAddZx32(baseOp);
+            Operation addOp = GetAsgOpWithInst(baseOp, Instruction.Add);
 
             if (addOp == default)
             {
@@ -224,41 +224,6 @@ namespace ARMeilleure.CodeGen.X86
             }
 
             return (indexOp, scale);
-        }
-
-        private static Operation GetAsgOpAddZx32(Operand op)
-        {
-            // If we have multiple assignments, folding is not safe
-            // as the value may be different depending on the
-            // control flow path.
-            if (op.AssignmentsCount != 1)
-            {
-                return default;
-            }
-
-            Operation asgOp = op.Assignments[0];
-
-            if (asgOp.Instruction == Instruction.ZeroExtend32)
-            {
-                // If we have a zero-extension, we might be able to ignore
-                // it if the input is I32, since in that case the upper bits should already be zero
-                // and re-interpreting it as I64 is safe.
-                op = asgOp.GetSource(0);
-
-                if (op.Type != OperandType.I32 || op.AssignmentsCount != 1)
-                {
-                    return default;
-                }
-
-                asgOp = op.Assignments[0];
-            }
-
-            if (asgOp.Instruction != Instruction.Add)
-            {
-                return default;
-            }
-
-            return asgOp;
         }
 
         private static Operation GetAsgOpWithInst(Operand op, Instruction inst)
