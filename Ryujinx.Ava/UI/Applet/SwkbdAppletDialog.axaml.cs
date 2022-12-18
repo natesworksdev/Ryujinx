@@ -116,7 +116,7 @@ namespace Ryujinx.Ava.UI.Applet
 
                 overlay.Position = window.PointToScreen(new Point());
 
-                await contentDialog.ShowAsync(overlay);
+                await contentDialog.ShowAsync();
                 contentDialog.Closed -= handler;
                 overlay.Close();
             };
