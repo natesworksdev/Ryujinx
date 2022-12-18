@@ -72,6 +72,16 @@ public partial class MainMenuBarView : UserControl
 
         ViewModel.LoadConfigurableHotKeys();
     }
+    
+    public void OpenMiiApplet(object sender, RoutedEventArgs e)
+    {
+        string contentPath = ViewModel.ContentManager.GetInstalledContentPath(0x0100000000001009, StorageId.BuiltInSystem, NcaContentType.Program);
+
+        if (!string.IsNullOrWhiteSpace(contentPath))
+        {
+            ViewModel.LoadApplication(contentPath, false, "Mii Applet");
+        }
+    }
 
     public async void OpenAmiiboWindow(object sender, RoutedEventArgs e)
     {

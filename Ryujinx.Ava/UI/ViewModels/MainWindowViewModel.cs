@@ -1477,16 +1477,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public void OpenMiiApplet(object sender, RoutedEventArgs e)
-        {
-            string contentPath = ContentManager.GetInstalledContentPath(0x0100000000001009, StorageId.BuiltInSystem, NcaContentType.Program);
-
-            if (!string.IsNullOrWhiteSpace(contentPath))
-            {
-                LoadApplication(contentPath, false, "Mii Applet");
-            }
-        }
-
         public async void LoadApplication(string path, bool startFullscreen = false, string titleName = "")
         {
             if (AppHost != null)

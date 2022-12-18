@@ -32,7 +32,7 @@
                     ToolTip.Tip="{locale:Locale LoadApplicationFolderTooltip}" />
                 <MenuItem Header="{locale:Locale MenuBarFileOpenApplet}" IsEnabled="{Binding IsAppletMenuActive}">
                     <MenuItem
-                        Command="{Binding OpenMiiApplet}"
+                        Click="OpenMiiApplet"
                         Header="Mii Edit Applet"
                         ToolTip.Tip="{locale:Locale MenuBarFileOpenAppletOpenMiiAppletToolTip}" />
                 </MenuItem>
