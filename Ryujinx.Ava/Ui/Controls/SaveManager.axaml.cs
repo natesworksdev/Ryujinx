@@ -91,15 +91,16 @@ namespace Ryujinx.Ava.Ui.Controls
 
         public void ImportBackup()
         {
-            SaveDataImporter restoreSavedataCommand = new SaveDataImporter();
+            SaveDataImporter restoreSavedataCommand = new SaveDataImporter(_applications, _userProfile, _horizonClient, _virtualFileSystem);
             restoreSavedataCommand.RestoreSavedataBackup(Parent.VisualRoot as MainWindow);
+
+            LoadSaves();
         }
 
         public void ExportBackup()
         {
-            SaveDataExporter backupSavedataCommand = new SaveDataExporter(_userProfile, _horizonClient, _virtualFileSystem);
-            backupSavedataCommand.SaveUserSaveDirectoryAsZip(Parent.VisualRoot as MainWindow, Saves.ToList(), _applications);
-           
+            SaveDataExporter backupSavedataCommand = new SaveDataExporter(_applications, _userProfile, _horizonClient, _virtualFileSystem);
+            backupSavedataCommand.SaveUserSaveDirectoryAsZip(Parent.VisualRoot as MainWindow, Saves.ToList());
         }
 
         public void LoadSaves()

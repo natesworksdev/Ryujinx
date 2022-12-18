@@ -104,24 +104,6 @@
                                 Header="{locale:Locale MenuBarFileOpenLogsFolder}"
                                 ToolTip.Tip="{locale:Locale OpenRyujinxLogsTooltip}" />
 							<Separator />
-							<MenuItem
-							Command="{ReflectionBinding OpenGlobalUpdatesFolder}"
-							Header="Open Global Updates Folder"
-							ToolTip.Tip="{locale:Locale OpenRyujinxLogsTooltip}" />
-							<MenuItem
-                                Command="{ReflectionBinding LoadGlobalUpdates}"
-                                Header="Load Gobal Updates Folder"
-                                ToolTip.Tip="{locale:Locale OpenRyujinxLogsTooltip}" />
-							<Separator />
-							<MenuItem
-							Command="{ReflectionBinding OpenGlobalDlcsFolder}"
-							Header="Open Global Dlc Folder"
-							ToolTip.Tip="{locale:Locale OpenRyujinxLogsTooltip}" />
-							<MenuItem
-							Command="{ReflectionBinding LoadGlobalDlcs}"
-							Header="Load Gobal Dlcs"
-							ToolTip.Tip="{locale:Locale OpenRyujinxLogsTooltip}" />
-							<Separator />
                             <MenuItem
                                 Command="{ReflectionBinding CloseWindow}"
                                 Header="{locale:Locale MenuBarFileExit}"
