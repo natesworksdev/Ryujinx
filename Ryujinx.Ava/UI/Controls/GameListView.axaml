@@ -138,7 +138,7 @@
                     <Setter Property="Background" Value="{DynamicResource AppListBackgroundColor}" />
                 </Style>
                 <Style Selector="ListBoxItem:selected /template/ Rectangle#SelectionIndicator">
-                    <Setter Property="MinHeight" Value="{Binding $parent[UserControl].DataContext.ItemSelectorSize}" />
+                    <Setter Property="MinHeight" Value="{Binding $parent[UserControl].DataContext.ListItemSelectorSize}" />
                 </Style>
                 <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
                     <Setter Property="Background" Value="{DynamicResource AppListHoverBackgroundColor}" />
