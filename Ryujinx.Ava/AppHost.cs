@@ -134,6 +134,7 @@ namespace Ryujinx.Ava
             _hideCursorOnIdle = ConfigurationState.Instance.HideCursorOnIdle;
             _lastCursorMoveTime = Stopwatch.GetTimestamp();
             _glLogLevel = ConfigurationState.Instance.Logger.GraphicsDebugLevel;
+            _topLevel = topLevel;
             _inputManager.SetMouseDriver(new AvaloniaMouseDriver(_topLevel, renderer));
             _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad("0");
 
@@ -165,7 +166,6 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.System.AudioVolume.Event += UpdateAudioVolumeState;
 
             _gpuCancellationTokenSource = new CancellationTokenSource();
-            _topLevel = topLevel;
         }
 
         private void Parent_PointerMoved(object sender, PointerEventArgs e)

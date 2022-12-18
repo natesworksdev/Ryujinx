@@ -97,7 +97,7 @@ namespace Ryujinx.Ava.UI.Windows
                     ShowLoading,
                     SwitchToGameControl,
                     SetMainContent,
-                    () => this.VisualRoot as TopLevel);
+                    this);
 
                 ViewModel.RefreshFirmwareStatus();
 

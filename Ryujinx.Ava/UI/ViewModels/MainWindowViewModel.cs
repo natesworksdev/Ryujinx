@@ -121,7 +121,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             Action<bool> showLoading,
             Action<bool> switchToGameControl,
             Action<Control> setMainContent,
-            Func<TopLevel> getTopLevel)
+            TopLevel topLevel)
         {
             ContentManager = contentManager;
             StorageProvider = storageProvider;
@@ -136,7 +136,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             ShowLoading = showLoading;
             SwitchToGameControl = switchToGameControl;
             SetMainContent = setMainContent;
-            GetTopLevel = getTopLevel;
+            TopLevel = TopLevel;
 
             Ptc.PtcStateChanged -= ProgressHandler;
             Ptc.PtcStateChanged += ProgressHandler;
@@ -935,7 +935,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public Action<bool> ShowLoading { get; private set; }
         public Action<bool> SwitchToGameControl { get; private set; }
         public Action<Control> SetMainContent { get; private set; }
-        public Func<TopLevel> GetTopLevel { get; private set; }
+        public TopLevel TopLevel { get; private set; }
         public RendererHost RendererControl { get; private set; }
         public bool IsClosing { get; set; }
         public LibHacHorizonManager LibHacHorizonManager { get; internal set; }
@@ -1661,7 +1661,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 RendererControl.CreateVulkan();
             }
 
-            AppHost = new AppHost(RendererControl, InputManager, path, VirtualFileSystem, ContentManager, AccountManager, UserChannelPersistence, this, GetTopLevel());
+            AppHost = new AppHost(RendererControl, InputManager, path, VirtualFileSystem, ContentManager, AccountManager, UserChannelPersistence, this, TopLevel);
 
             Dispatcher.UIThread.Post(async () =>
             {
