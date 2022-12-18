@@ -39,6 +39,8 @@
   "GameListHeaderFileExtension": "Dateiformat",
   "GameListHeaderFileSize": "Dateigröße",
   "GameListHeaderPath": "Pfad",
+  "ImportBackup": "Backup wiederherstellen",
+  "ExportBackup": "Backup exportieren",
   "GameListContextMenuOpenUserSaveDirectory": "Spielstand-Verzeichnis öffnen",
   "GameListContextMenuOpenUserSaveDirectoryToolTip": "Öffnet das Verzeichnis, welches den Benutzer-Spielstand beinhaltet",
   "GameListContextMenuOpenUserDeviceDirectory": "Benutzer-Geräte-Verzeichnis öffnen",

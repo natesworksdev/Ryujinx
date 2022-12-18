@@ -21,6 +21,8 @@
   "MenuBarHelp": "Aide",
   "MenuBarHelpCheckForUpdates": "Vérifier les mises à jour",
   "MenuBarHelpAbout": "Á propos",
+  "ImportBackup": "importer une sauvegarde",
+  "ExportBackup": "exporter la sauvegarde",
   "MenuSearch": "Rechercher...",
   "GameListHeaderFavorite": "Favoris",
   "GameListHeaderIcon": "Icône",

@@ -26,6 +26,8 @@
   "MenuBarFileToolsInstallFirmwareFromFile": "Instalar firmware desde un archivo XCI o ZIP",
   "MenuBarFileToolsInstallFirmwareFromDirectory": "Instalar firmware desde una carpeta",
   "MenuBarHelp": "A_yuda",
+  "ImportBackup": "importar copia de seguridad",
+  "ExportBackup": "exportar copia de seguridad",
   "MenuBarHelpCheckForUpdates": "Buscar actualizaciones",
   "MenuBarHelpAbout": "Acerca de",
   "MenuSearch": "Buscar...",

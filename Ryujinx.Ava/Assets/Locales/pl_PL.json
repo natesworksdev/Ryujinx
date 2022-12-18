@@ -22,6 +22,8 @@
   "MenuBarOptionsSimulateWakeUpMessage": "Symuluj Wiadomość Budzenia",
   "MenuBarActionsScanAmiibo": "Skanuj Amiibo",
   "MenuBarTools": "_Narzędzia",
+  "ImportBackup": "zaimportuj kopię zapasową",
+  "ExportBackup": "wyeksportuj kopię zapasową",
   "MenuBarToolsInstallFirmware": "Zainstaluj Firmware",
   "MenuBarFileToolsInstallFirmwareFromFile": "Zainstaluj Firmware z XCI lub ZIP",
   "MenuBarFileToolsInstallFirmwareFromDirectory": "Zainstaluj Firmware z Katalogu",

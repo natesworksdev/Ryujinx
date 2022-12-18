@@ -22,6 +22,8 @@
   "MenuBarOptionsSimulateWakeUpMessage": "スリープ復帰メッセージをシミュレート",
   "MenuBarActionsScanAmiibo": "Amiibo をスキャン",
   "MenuBarTools": "ツール(_T)",
+  "ImportBackup": "バックアップのインポート",
+  "ExportBackup": "バックアップのエクスポート",
   "MenuBarToolsInstallFirmware": "ファームウェアをインストール",
   "MenuBarFileToolsInstallFirmwareFromFile": "XCI または ZIP からファームウェアをインストール",
   "MenuBarFileToolsInstallFirmwareFromDirectory": "ディレクトリからファームウェアをインストール",

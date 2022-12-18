@@ -22,6 +22,8 @@
   "MenuBarOptionsSimulateWakeUpMessage": "Uyandırma Mesajı Simüle Et",
   "MenuBarActionsScanAmiibo": "Amiibo Tarama",
   "MenuBarTools": "_Aletler",
+  "ImportBackup": "yedeklemeyi içe aktar",
+  "ExportBackup": "yedeklemeyi dışa aktar",
   "MenuBarToolsInstallFirmware": "Firmware Yükle",
   "MenuBarFileToolsInstallFirmwareFromFile": "Firmware Yükle (XCI veya ZIP)",
   "MenuBarFileToolsInstallFirmwareFromDirectory": "Firmware Yükle (Dizin üzerinden)",

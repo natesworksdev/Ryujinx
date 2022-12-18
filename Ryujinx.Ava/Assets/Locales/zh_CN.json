@@ -22,6 +22,8 @@
   "MenuBarOptionsSimulateWakeUpMessage": "模拟唤醒消息",
   "MenuBarActionsScanAmiibo": "扫描 Amiibo",
   "MenuBarTools": "工具",
+  "ImportBackup": "导入备份",
+  "ExportBackup": "导出备份",
   "MenuBarToolsInstallFirmware": "安装固件",
   "MenuBarFileToolsInstallFirmwareFromFile": "从 XCI 或 ZIP 安装固件",
   "MenuBarFileToolsInstallFirmwareFromDirectory": "从文件夹安装固件",

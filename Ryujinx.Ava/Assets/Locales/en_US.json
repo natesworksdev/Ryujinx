@@ -29,6 +29,8 @@
   "MenuBarHelpCheckForUpdates": "Check for Updates",
   "MenuBarHelpAbout": "About",
   "MenuSearch": "Search...",
+  "ImportBackup": "Import backup",
+  "ExportBackup": "Export backup",
   "GameListHeaderFavorite": "Fav",
   "GameListHeaderIcon": "Icon",
   "GameListHeaderApplication": "Name",
@@ -610,5 +612,5 @@
   "Search": "Search",
   "UserProfilesRecoverLostAccounts": "Recover Lost Accounts",
   "Recover": "Recover",
-  "UserProfilesRecoverHeading" : "Saves were found for the following accounts"
+  "UserProfilesRecoverHeading": "Saves were found for the following accounts"
 }
