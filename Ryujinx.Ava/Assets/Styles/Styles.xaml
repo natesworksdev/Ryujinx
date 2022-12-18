@@ -183,7 +183,7 @@
         <Setter Property="MinWidth" Value="80" />
     </Style>
     <Style Selector="ProgressBar /template/ Border#ProgressBarTrack">
-        <Setter Property="IsVisible" Value="False"/>
+        <Setter Property="IsVisible" Value="False" />
     </Style>
     <Style Selector="TabItem">
         <Setter Property="FontSize" Value="14" />

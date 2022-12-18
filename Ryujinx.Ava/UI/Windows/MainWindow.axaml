@@ -177,7 +177,6 @@
                                 Margin="0"
                                 Padding="0"
                                 HorizontalAlignment="Stretch"
-                                Background="{Binding ProgressBarBackgroundColor}"
                                 ClipToBounds="True"
                                 CornerRadius="5"
                                 Foreground="{Binding ProgressBarForegroundColor}"
