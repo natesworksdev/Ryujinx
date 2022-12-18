@@ -195,6 +195,8 @@ namespace Ryujinx.Graphics.Vulkan
             var srcImage = src.GetImage().Get(cbs).Value;
             var dstImage = dst.GetImage().Get(cbs).Value;
 
+            using var debugScope = _gd.CreateLabelScope(cbs.CommandBuffer, $"TextureView.CopyTo({Info.Format} -> {dst.Info.Format}{firstLayer}:{firstLevel})", new ColorF(1, 1, 0, 1));
+
             if (!dst.Info.Target.IsMultisample() && Info.Target.IsMultisample())
             {
                 int layers = Math.Min(Info.GetLayers(), dst.Info.GetLayers() - firstLayer);
@@ -247,6 +249,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             var srcImage = src.GetImage().Get(cbs).Value;
             var dstImage = dst.GetImage().Get(cbs).Value;
+            using var debugScope = _gd.CreateLabelScope(cbs.CommandBuffer, $"TextureView.CopyTo({Info.Format}:{srcLayer}:{srcLevel} -> {dst.Info.Format}:{dstLayer}:{dstLevel})", new ColorF(1, 1, 0, 1));
 
             if (!dst.Info.Target.IsMultisample() && Info.Target.IsMultisample())
             {
@@ -292,6 +295,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 var cbs = _gd.PipelineInternal.CurrentCommandBuffer;
 
+                using var debugScope = _gd.CreateLabelScope(cbs.CommandBuffer, $"TextureView.CopyTo({Info.Format}:{srcRegion} -> {dst.Info.Format}:{dstRegion})", new ColorF(1, 1, 0, 1));
                 CopyToImpl(cbs, dst, srcRegion, dstRegion, linearFilter);
             }
             else
@@ -300,6 +304,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 using var cbs = cbp.Rent();
 
+                using var debugScope = _gd.CreateLabelScope(cbs.CommandBuffer, $"TextureView.CopyTo({Info.Format}:{srcRegion} -> {dst.Info.Format}:{dstRegion})", new ColorF(1, 1, 0, 1));
                 CopyToImpl(cbs, dst, srcRegion, dstRegion, linearFilter);
             }
         }
@@ -307,6 +312,8 @@ namespace Ryujinx.Graphics.Vulkan
         private void CopyToImpl(CommandBufferScoped cbs, TextureView dst, Extents2D srcRegion, Extents2D dstRegion, bool linearFilter)
         {
             var src = this;
+
+            using var debugScope = _gd.CreateLabelScope(cbs.CommandBuffer, $"TextureView.CopyToImpl({src.Info.Format}:{srcRegion} -> {dst.Info.Format}:{dstRegion})", new ColorF(1, 1, 0, 1));
 
             var srcFormat = GetCompatibleGalFormat(src.Info.Format);
             var dstFormat = GetCompatibleGalFormat(dst.Info.Format);
@@ -767,6 +774,8 @@ namespace Ryujinx.Graphics.Vulkan
             int offset = 0,
             int stride = 0)
         {
+            using var debugScope = _gd.CreateLabelScope(commandBuffer, $"TextureView.CopyFromOrToBuffer({Info.Format} {(to ? "->" : "<-")} {size} bytes)", new ColorF(1, 1, 0, 1));
+
             bool is3D = Info.Target == Target.Texture3D;
             int width = Math.Max(1, Info.Width >> dstLevel);
             int height = Math.Max(1, Info.Height >> dstLevel);
@@ -777,6 +786,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             for (int level = 0; level < levels; level++)
             {
+                debugScope.InsertLabel($"level: {level}", new ColorF(1, 1, 0, 1));
+
                 int mipSize = GetBufferDataLength(Info.GetMipSize2D(dstLevel + level) * dstLayers);
 
                 int endOffset = offset + mipSize;
@@ -847,6 +858,8 @@ namespace Ryujinx.Graphics.Vulkan
             int width,
             int height)
         {
+            using var debugScope = _gd.CreateLabelScope(commandBuffer, $"TextureView.CopyFromOrToBuffer({Info.Format} {(to ? "->" : "<-")} {size} bytes)", new ColorF(1, 1, 0, 1));
+
             var aspectFlags = Info.Format.ConvertAspectFlags();
 
             if (aspectFlags == (ImageAspectFlags.DepthBit | ImageAspectFlags.StencilBit))

@@ -41,6 +41,8 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (srcBuffer.TryIncrementReferenceCount())
                 {
+                    using var debugScope = _gd.CreateLabelScope(cbs.CommandBuffer, $"PersistentFlushBuffer.GetBufferData: 0x{offset:X} {size} bytes", new ColorF(0.5f, 0.5f, 1, 1));
+
                     BufferHolder.Copy(_gd, cbs, srcBuffer, dstBuffer, offset, 0, size, registerSrcUsage: false);
                 }
                 else
@@ -66,6 +68,8 @@ namespace Ryujinx.Graphics.Vulkan
                 var buffer = flushStorage.GetBuffer(cbs.CommandBuffer).Get(cbs).Value;
                 var image = view.GetImage().Get(cbs).Value;
 
+                using var debugScope = _gd.CreateLabelScope(cbs.CommandBuffer, $"PersistentFlushBuffer.GetTextureData: {size} bytes", new ColorF(0.5f, 0.5f, 1, 1));
+
                 view.CopyFromOrToBuffer(cbs.CommandBuffer, buffer, image, size, true, 0, 0, info.GetLayers(), info.Levels, singleSlice: false);
             }
 
@@ -81,6 +85,8 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 var buffer = flushStorage.GetBuffer(cbs.CommandBuffer).Get(cbs).Value;
                 var image = view.GetImage().Get(cbs).Value;
+
+                using var debugScope = _gd.CreateLabelScope(cbs.CommandBuffer, $"PersistentFlushBuffer.GetTextureData: {size} bytes layer:{layer} level:{level}", new ColorF(0.5f, 0.5f, 1, 1));
 
                 view.CopyFromOrToBuffer(cbs.CommandBuffer, buffer, image, size, true, layer, level, 1, 1, singleSlice: true);
             }

@@ -32,6 +32,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         private void CopyPendingQuery()
         {
+            using var debugScope = _pendingQueryCopies.Count > 0 ? Gd.CreateLabelScope(CommandBuffer, $"PipelineFull.CopyPendingQuery({_pendingQueryCopies.Count})", new ColorF(0.5f, 1.0f, 0, 1)) : null;
+
             foreach (var query in _pendingQueryCopies)
             {
                 query.PoolCopy(Cbs);
@@ -46,6 +48,8 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 return;
             }
+
+            using var debugScope = Gd.CreateLabelScope(CommandBuffer, $"PipelineFull.ClearRenderTargetColor({index},{layer},{layerCount},{componentMask})", color);
 
             if (componentMask != 0xf)
             {
@@ -239,6 +243,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Restore()
         {
+            using var debugScope = Gd.CreateLabelScope(CommandBuffer, $"PipelineFull.Restore({Pbp})", new ColorF(0.5f, 1.0f, 0, 1));
+
             if (Pipeline != null)
             {
                 Gd.Api.CmdBindPipeline(CommandBuffer, Pbp, Pipeline.Get(Cbs).Value);

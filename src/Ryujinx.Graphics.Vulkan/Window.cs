@@ -295,6 +295,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             var cbs = _gd.CommandBufferPool.Rent();
 
+            using var debugScope = _gd.CreateLabelScope(cbs.CommandBuffer, $"Window.Present", new ColorF(0, 1, 0, 1));
+
             Transition(
                 cbs.CommandBuffer,
                 swapchainImage,
@@ -541,6 +543,8 @@ namespace Ryujinx.Graphics.Vulkan
             ImageLayout srcLayout,
             ImageLayout dstLayout)
         {
+            using var debugScope = _gd.CreateLabelScope(commandBuffer, $"Window.Transition({srcAccess}:{srcLayout} -> {dstAccess}:{dstLayout})", new ColorF(1, 1, 0, 1));
+
             var subresourceRange = new ImageSubresourceRange(ImageAspectFlags.ColorBit, 0, 1, 0, 1);
 
             var barrier = new ImageMemoryBarrier

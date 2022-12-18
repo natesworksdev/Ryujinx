@@ -360,6 +360,8 @@ namespace Ryujinx.Graphics.Vulkan
             TextureView src,
             TextureView dst)
         {
+            using var debugScope = gd.CreateLabelScope(cbs.CommandBuffer, $"TextureCopy.ResolveDepthStencil({src.Info.Format})", new ColorF(1, 0, 1, 1));
+
             var dsAttachmentReference = new AttachmentReference2(StructureType.AttachmentReference2, null, 0, ImageLayout.General);
             var dsResolveAttachmentReference = new AttachmentReference2(StructureType.AttachmentReference2, null, 1, ImageLayout.General);
 
