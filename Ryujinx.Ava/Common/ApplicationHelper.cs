@@ -421,10 +421,5 @@ namespace Ryujinx.Ava.Common
 
             return Result.Success;
         }
-
-        internal static (Result? result, bool canceled) CopyDirectory(FileSystemClient fs, string subSrcPath, string subDstPath)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
