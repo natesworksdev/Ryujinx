@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Path = System.IO.Path;
 
@@ -32,11 +33,21 @@ namespace Ryujinx.Ava.Ui.Controls
         public async Task AutoLoadDlcsAsync(ApplicationData application, Func<string, ulong, Task> addDlcs)
         {
             char[] bannedSymbols = { '.', ',', ':', ';', '>', '<', '\'', '\"', };
-            string gameTitle = string.Join("", application.TitleName.Split(bannedSymbols)).ToLower().Trim();
+            Dictionary<char,char> replaceChars = new Dictionary<char, char>()
+            {
+                {'Ⅴ','V' }
+            }; //This Dictionary replaces signs needed but in different encoding. example Shin Megami Tensei V 
 
-            GetDlcsWithGameName().Where(titleDlc => titleDlc.Value.ToLower() == gameTitle)
-                .ToList()
-                .ForEach(async dlc => await addDlcs(dlc.Key, ulong.Parse(application.TitleId, NumberStyles.HexNumber)));
+            string gameTitle = string.Join("", application.TitleName.Split(bannedSymbols))
+                .Replace(replaceChars.First().Key,
+                         replaceChars.First().Value)
+                .ToUpper()
+                .Trim();
+
+            foreach (KeyValuePair<string, string> dlcWithGameTitle in GetDlcsWithGameName().Where(titleDlc => titleDlc.Value.ToUpper() == gameTitle).ToList())
+            {
+                await addDlcs(dlcWithGameTitle.Key, ulong.Parse(application.TitleId, NumberStyles.HexNumber));
+            }
         }
     }
 }

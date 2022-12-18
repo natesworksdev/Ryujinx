@@ -21,13 +21,25 @@ namespace Ryujinx.Ava.Ui.Controls
 
         public async Task AutoLoadUpdatesAsync(ApplicationData application, Func<string, ulong, Task> addTitleUpdates)
         {
+            //bannedSmbols clears out special symbols ex. not allowed in windows folder name
+            //replaceChars replaces signs needed but in different encoding. example Shin Megami Tensei V 
             char[] bannedSymbols = { '.', ',', ':', ';', '>', '<', '\'', '\"', };
-            string gameTitle = string.Join("", application.TitleName.Split(bannedSymbols)).ToLower().Trim();
+            Dictionary<char, char> replaceChars = new Dictionary<char, char>() 
+            {
+                {'Ⅴ','V' }
+            }; 
+
+            string gameTitle = string.Join("", application.TitleName.Split(bannedSymbols))
+                .Replace(replaceChars.First().Key,
+                         replaceChars.First().Value)
+                .ToUpper()
+                .Trim();
 
             //Loops through the Updates to the given gameTitle and adds them to the downloadableContent List
-            GetTitleUpdatesWithGameName().Where(titleDlc => titleDlc.Value.ToLower() == gameTitle)
-               .ToList()
-               .ForEach(async dlc => await addTitleUpdates(dlc.Key, ulong.Parse(application.TitleId, NumberStyles.HexNumber)));
+            foreach (KeyValuePair<string, string> updateWithGameTitle in GetTitleUpdatesWithGameName().Where(titleUpdate => titleUpdate.Value.ToUpper() == gameTitle).ToList())
+            {
+                await addTitleUpdates(updateWithGameTitle.Key, ulong.Parse(application.TitleId, NumberStyles.HexNumber));
+            }
         }
 
         public Dictionary<string, string> GetTitleUpdatesWithGameName()
