@@ -9,7 +9,9 @@
     xmlns:helpers="clr-namespace:Ryujinx.Ava.UI.Helpers"
     xmlns:controls="clr-namespace:Ryujinx.Ava.UI.Controls"
     xmlns:main="clr-namespace:Ryujinx.Ava.UI.Views.Main"
-    Title="Ryujinx"
+    Cursor="{Binding Cursor}"
+    Title="{Binding Title}"
+    WindowState="{Binding WindowState}"
     Width="1280"
     Height="777"
     MinWidth="1092"
@@ -78,7 +80,7 @@
                 BorderThickness="0,0,0,0"
                 DockPanel.Dock="Top"
                 IsVisible="{Binding ShowContent}">
-                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Name="GameLibrary">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />

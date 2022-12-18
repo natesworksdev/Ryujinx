@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Ryujinx.Ava.UI.Windows;
@@ -15,6 +16,18 @@ public partial class MainStatusBarView : UserControl
     public MainStatusBarView()
     {
         InitializeComponent();
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+
+        if (this.VisualRoot is MainWindow window)
+        {
+            Window = window;
+        }
+
+        DataContext = Window.ViewModel;
     }
 
     private void VsyncStatus_PointerReleased(object sender, PointerReleasedEventArgs e)

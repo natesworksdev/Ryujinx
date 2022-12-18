@@ -67,7 +67,7 @@ namespace Ryujinx.Ava.UI.Helpers
             };
         }
 
-        public static async Task ShowUserErrorDialog(UserError error, StyleableWindow owner)
+        public static async Task ShowUserErrorDialog(UserError error)
         {
             string errorCode = GetErrorCode(error);
 
