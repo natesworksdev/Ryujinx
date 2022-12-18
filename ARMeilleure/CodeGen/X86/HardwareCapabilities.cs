@@ -34,7 +34,8 @@ namespace ARMeilleure.CodeGen.X86
 
         private static uint GetXcr0Eax()
         {
-            ReadOnlySpan<byte> asmGetXcr0 = new byte[]{
+            ReadOnlySpan<byte> asmGetXcr0 = new byte[]
+            {
                 0x31, 0xc9, // xor ecx, ecx
                 0xf, 0x01, 0xd0, // xgetbv
                 0xc3, // ret
@@ -98,7 +99,7 @@ namespace ARMeilleure.CodeGen.X86
             YmmHi128 = 1 << 2,
             Opmask = 1 << 5,
             ZmmHi256 = 1 << 6,
-            Hi16Zmm = 1 << 7,
+            Hi16Zmm = 1 << 7
         }
 
         public static FeatureFlags1Edx FeatureInfo1Edx { get; }
