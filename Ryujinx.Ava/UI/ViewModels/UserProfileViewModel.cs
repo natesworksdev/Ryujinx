@@ -13,10 +13,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-<<<<<<< HEAD
-using UserId = Ryujinx.HLE.HOS.Services.Account.Acc.UserId;
-=======
->>>>>>> 66aac324 (Fix Namespace Case)
 using UserProfile = Ryujinx.Ava.UI.Models.UserProfile;
 
 namespace Ryujinx.Ava.UI.ViewModels
@@ -110,7 +106,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             Span<SaveDataInfo> saveDataInfo = stackalloc SaveDataInfo[10];
 
-            HashSet<UserId> lostAccounts = new HashSet<UserId>();
+            HashSet<HLE.HOS.Services.Account.Acc.UserId> lostAccounts = new();
 
             while (true)
             {
@@ -124,7 +120,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 for (int i = 0; i < readCount; i++)
                 {
                     var save = saveDataInfo[i];
-                    var id = new UserId((long)save.UserId.Id.Low, (long)save.UserId.Id.High);
+                    var id = new HLE.HOS.Services.Account.Acc.UserId((long)save.UserId.Id.Low, (long)save.UserId.Id.High);
                     if (Profiles.FirstOrDefault( x=> x.UserId == id) == null)
                     {
                         lostAccounts.Add(id);
@@ -140,23 +136,21 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void AddUser()
         {
-            UserProfile userProfile = null;
-
-            _owner.Navigate(typeof(UserEditor), (this._owner, userProfile, true));
+            _owner.Navigate(typeof(UserEditor), (this._owner, (UserProfile)null, true));
         }
 
         public async void ManageSaves()
         {
             UserProfile userProfile = _highlightedProfile ?? SelectedProfile;
 
-            SaveManager manager = new SaveManager(userProfile, _owner.HorizonClient, _owner.VirtualFileSystem);
+            SaveManager manager = new(userProfile, _owner.HorizonClient, _owner.VirtualFileSystem);
             
-            ContentDialog contentDialog = new ContentDialog
+            ContentDialog contentDialog = new()
             {
-                Title = string.Format(LocaleManager.Instance[LocaleKeys.SaveManagerHeading], userProfile.Name),
+                Title = string.Format(LocaleManager.Instance["SaveManagerHeading"], userProfile.Name),
                 PrimaryButtonText = "",
                 SecondaryButtonText = "",
-                CloseButtonText = LocaleManager.Instance[LocaleKeys.UserProfilesClose],
+                CloseButtonText = LocaleManager.Instance["UserProfilesClose"],
                 Content = manager,
                 Padding = new Thickness(0)
             };
@@ -182,10 +176,12 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                     if (profile == null)
                     {
-                        Dispatcher.UIThread.Post(async () =>
+                        async void Action()
                         {
-                            await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogUserProfileDeletionWarningMessage]);
-                        });
+                            await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance["DialogUserProfileDeletionWarningMessage"]);
+                        }
+
+                        Dispatcher.UIThread.Post(Action);
 
                         return;
                     }
@@ -194,8 +190,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                 }
 
                 var result =
-                    await ContentDialogHelper.CreateConfirmationDialog(LocaleManager.Instance[LocaleKeys.DialogUserProfileDeletionConfirmMessage], "",
-                        LocaleManager.Instance[LocaleKeys.InputDialogYes], LocaleManager.Instance[LocaleKeys.InputDialogNo], "");
+                    await ContentDialogHelper.CreateConfirmationDialog(LocaleManager.Instance["DialogUserProfileDeletionConfirmMessage"], "",
+                        LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"], "");
 
                 if (result == UserResult.Yes)
                 {
