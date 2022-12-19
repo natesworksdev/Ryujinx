@@ -1209,7 +1209,7 @@ namespace ARMeilleure.CodeGen.X86
             // Specify 64-bit lane mode
             bool w = Is64Bits(type);
             // Src2 register index
-            byte vvvv = (byte)(src2Idx & 0b1111);
+            byte vvvv = (byte)(~src2Idx & 0b1111);
             // Opcode prefix
             byte pp = (flags & InstructionFlags.PrefixMask) switch
             {
