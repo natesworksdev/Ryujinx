@@ -260,7 +260,7 @@ namespace ARMeilleure.Instructions
 
                 Operand n = GetVec(op.Rn);
 
-                Operand res = context.AddIntrinsic(Intrinsic.X86Vpternlogd, n, n, Const(0b01010101));
+                Operand res = context.AddIntrinsic(Intrinsic.X86Vpternlogd, n, n, Const(~0b10101010));
 
                 if (op.RegisterSize == RegisterSize.Simd64)
                 {
@@ -297,6 +297,22 @@ namespace ARMeilleure.Instructions
             if (Optimizations.UseAdvSimd)
             {
                 InstEmitSimdHelperArm64.EmitVectorBinaryOp(context, Intrinsic.Arm64OrnV);
+            }
+            else if (Optimizations.UseAvx512Ortho)
+            {
+                OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+
+                Operand n = GetVec(op.Rn);
+                Operand m = GetVec(op.Rm);
+
+                Operand res = context.AddIntrinsic(Intrinsic.X86Vpternlogd, n, m, Const(0b11001100 | ~0b10101010));
+
+                if (op.RegisterSize == RegisterSize.Simd64)
+                {
+                    res = context.VectorZeroUpper64(res);
+                }
+
+                context.Copy(GetVec(op.Rd), res);
             }
             else if (Optimizations.UseSse2)
             {
