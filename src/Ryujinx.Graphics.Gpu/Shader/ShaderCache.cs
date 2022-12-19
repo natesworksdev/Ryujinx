@@ -730,8 +730,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             codeA ??= memoryManager.GetSpan(vertexA.Address, vertexA.Size).ToArray();
             codeB ??= memoryManager.GetSpan(currentStage.Address, currentStage.Size).ToArray();
-            byte[] cb1DataA = physical.GetSpan(cb1DataAddress, vertexA.Cb1DataSize).ToArray();
-            byte[] cb1DataB = physical.GetSpan(cb1DataAddress, currentStage.Cb1DataSize).ToArray();
+            byte[] cb1DataA = Read(physical, cb1DataAddress, vertexA.Cb1DataSize);
+            byte[] cb1DataB = Read(physical, cb1DataAddress, currentStage.Cb1DataSize);
 
             ShaderDumpPaths pathsA = default;
             ShaderDumpPaths pathsB = default;
@@ -770,7 +770,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 ? channel.BufferManager.GetComputeUniformBufferAddress(1)
                 : channel.BufferManager.GetGraphicsUniformBufferAddress(StageToStageIndex(context.Stage), 1);
 
-            byte[] cb1Data = physical.GetSpan(cb1DataAddress, context.Cb1DataSize).ToArray();
+            byte[] cb1Data = Read(physical, cb1DataAddress, context.Cb1DataSize);
             code ??= memoryManager.GetSpan(context.Address, context.Size).ToArray();
 
             ShaderDumpPaths paths = dumper?.Dump(code, context.Stage == ShaderStage.Compute) ?? default;
@@ -779,6 +779,23 @@ namespace Ryujinx.Graphics.Gpu.Shader
             paths.Prepend(program);
 
             return new TranslatedShader(new CachedShaderStage(program.Info, code, cb1Data), program);
+        }
+
+        /// <summary>
+        /// Reads data from physical memory, if it exists.
+        /// </summary>
+        /// <param name="physicalMemory">Physical memory to read the data from, might be null</param>
+        /// <param name="address">Address to read the data from</param>
+        /// <param name="size">Size of the data to read</param>
+        /// <returns>An array with the data</returns>
+        private static byte[] Read(PhysicalMemory physicalMemory, ulong address, int size)
+        {
+            if (size == 0 || physicalMemory == null)
+            {
+                return Array.Empty<byte>();
+            }
+
+            return physicalMemory.GetSpan(address, size).ToArray();
         }
 
         /// <summary>
