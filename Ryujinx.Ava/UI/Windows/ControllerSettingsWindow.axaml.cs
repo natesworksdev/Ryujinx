@@ -4,10 +4,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Ryujinx.Ava.Common.Locale;
-<<<<<<< HEAD:Ryujinx.Ava/UI/Windows/ControllerSettingsWindow.axaml.cs
-using Ryujinx.Ava.UI.Controls;
-=======
->>>>>>> 66aac324 (Fix Namespace Case):Ryujinx.Ava/Ui/Windows/ControllerSettingsWindow.axaml.cs
+using Ryujinx.Ava.Input;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
@@ -27,7 +24,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         public ControllerSettingsWindow()
         {
-            DataContext = ViewModel = new ControllerSettingsViewModel(this);
+            DataContext = ViewModel = new ControllerSettingsViewModel(new AvaloniaKeyboardDriver(this));
 
             InitializeComponent();
 

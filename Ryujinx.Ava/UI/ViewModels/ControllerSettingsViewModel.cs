@@ -47,13 +47,12 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private PlayerIndex _playerId;
         private int _controller;
-        private int _controllerNumber = 0;
+        private int _controllerNumber;
         private string _controllerImage;
         private int _device;
         private object _configuration;
         private string _profileName;
         private bool _isLoaded;
-        private readonly UserControl _owner;
 
         public IGamepadDriver AvaloniaKeyboardDriver { get; }
         public IGamepad SelectedGamepad { get; private set; }
@@ -233,17 +232,15 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public InputConfig Config { get; set; }
 
-        public ControllerSettingsViewModel(UserControl owner) : this()
+        public ControllerSettingsViewModel(AvaloniaKeyboardDriver avaloniaKeyboardDriver) : this()
         {
-            _owner = owner;
-
             if (Program.PreviewerDetached)
             {
                 _mainWindow =
                     (MainWindow)((IClassicDesktopStyleApplicationLifetime)Avalonia.Application.Current
                         .ApplicationLifetime).MainWindow;
 
-                AvaloniaKeyboardDriver = new AvaloniaKeyboardDriver(owner);
+                AvaloniaKeyboardDriver = avaloniaKeyboardDriver;
 
                 _mainWindow.InputManager.GamepadDriver.OnGamepadConnected += HandleOnGamepadConnected;
                 _mainWindow.InputManager.GamepadDriver.OnGamepadDisconnected += HandleOnGamepadDisconnected;

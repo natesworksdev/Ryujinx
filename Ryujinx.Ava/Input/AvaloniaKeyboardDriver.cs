@@ -9,7 +9,7 @@ using Key = Ryujinx.Input.Key;
 
 namespace Ryujinx.Ava.Input
 {
-    internal class AvaloniaKeyboardDriver : IGamepadDriver
+    public class AvaloniaKeyboardDriver : IGamepadDriver
     {
         private static readonly string[] _keyboardIdentifers = new string[1] { "0" };
         private readonly Control         _control;
