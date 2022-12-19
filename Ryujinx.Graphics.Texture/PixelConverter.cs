@@ -57,7 +57,7 @@ namespace Ryujinx.Graphics.Texture
 
                 for (int y = 0; y < height; y++)
                 {
-                    for (int i = 0; i < width; i++)
+                    for (int x = 0; x < width; x++)
                     {
                         outputSpan[outOffset++] = data[offset++];
                     }
@@ -81,19 +81,23 @@ namespace Ryujinx.Graphics.Texture
             ReadOnlySpan<ushort> inputSpan = MemoryMarshal.Cast<byte, ushort>(data);
             Span<uint> outputSpan = MemoryMarshal.Cast<byte, uint>(output);
 
-            float factor5Bit = 255.499f/31f;
-            float factor6Bit = 255.499f/63f;
-
             for (int y = 0; y < height; y++)
             {
-                for (int i = 0; i < width; i++)
+                for (int x = 0; x < width; x++)
                 {
-                    ushort packed = inputSpan[offset++];
-                    uint r = (uint)((packed & 31) * factor5Bit);
-                    uint g = (uint)(((packed >> 5) & 63) * factor6Bit);
-                    uint b = (uint)(((packed >> 11) & 31) * factor5Bit);
+                    uint packed = inputSpan[offset++];
 
-                    outputSpan[outOffset++] = r | (g << 8) | (b << 16) | 0xFF000000;
+                    uint outputPacked =  0xff000000;
+                         outputPacked |= (packed << 3)  & 0x000000f8;
+                         outputPacked |= (packed << 10) & 0x00f80000;
+
+                    // Replicate 5 bit components.
+                    outputPacked |= (outputPacked >> 5) & 0x000f0000f;
+
+                    // Include and replicate 6 bit component.
+                    outputPacked |= ((packed << 5) & 0x0000fc00) | ((packed >> 1) & 0x00000300);
+
+                    outputSpan[outOffset++] = outputPacked;
                 }
 
                 offset += remainder;
@@ -114,20 +118,24 @@ namespace Ryujinx.Graphics.Texture
             ReadOnlySpan<ushort> inputSpan = MemoryMarshal.Cast<byte, ushort>(data);
             Span<uint> outputSpan = MemoryMarshal.Cast<byte, uint>(output);
 
-            float factor5Bit = 255.499f / 31f;
-
             for (int y = 0; y < height; y++)
             {
-                for (int i = 0; i < width; i++)
+                for (int x = 0; x < width; x++)
                 {
-                    ushort packed = inputSpan[offset++];
+                    uint packed = inputSpan[offset++];
 
-                    uint a = (uint)(forceAlpha ? 1 : (packed >> 15)) * 255u;
-                    uint r = (uint)((packed & 31) * factor5Bit) & a;
-                    uint g = (uint)(((packed >> 5) & 31) * factor5Bit) & a;
-                    uint b = (uint)(((packed >> 10) & 31) * factor5Bit) & a;
+                    uint outputPacked =  0xff000000;
+                         outputPacked |= (packed << 3) & 0x000000f8;
+                         outputPacked |= (packed << 6) & 0x0000f800;
+                         outputPacked |= (packed << 9) & 0x00f80000;
 
-                    outputSpan[outOffset++] = r | (g << 8) | (b << 16) | (a << 24);
+                    // Replicate 5 bit components.
+                    outputPacked |= (outputPacked >> 5) & 0x000f0f0f;
+
+                    uint a = forceAlpha ? 1 : (packed >> 15);
+                    outputPacked &= a * 0xffffffffu;
+
+                    outputSpan[outOffset++] = outputPacked;
                 }
 
                 offset += remainder;
@@ -150,7 +158,7 @@ namespace Ryujinx.Graphics.Texture
 
             for (int y = 0; y < height; y++)
             {
-                for (int i = 0; i < width; i++)
+                for (int x = 0; x < width; x++)
                 {
                     uint packed = inputSpan[offset++];
 
@@ -162,6 +170,7 @@ namespace Ryujinx.Graphics.Texture
                     outputSpan[outOffset++] = outputPacked * 0x11;
                 }
 
+                offset += remainder;
                 outOffset += outRemainder;
             }
 

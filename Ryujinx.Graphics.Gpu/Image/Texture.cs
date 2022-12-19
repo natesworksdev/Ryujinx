@@ -879,6 +879,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 switch (Format)
                 {
+                    case Format.Bc1RgbaSrgb:
                     case Format.Bc1RgbaUnorm:
                         result = BCnDecoder.DecodeBC1(result, width, height, depth, levels, layers);
                         break;
