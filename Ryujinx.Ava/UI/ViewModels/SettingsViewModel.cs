@@ -1,6 +1,5 @@
 using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using DynamicData;
 using LibHac.Tools.FsSystem;
@@ -31,7 +30,6 @@ namespace Ryujinx.Ava.UI.ViewModels
     {
         private readonly VirtualFileSystem _virtualFileSystem;
         private readonly ContentManager _contentManager;
-        private readonly StyleableWindow _owner;
         private TimeZoneContentManager _timeZoneContentManager;
 
         private readonly List<string> _validTzRegions;
@@ -45,6 +43,10 @@ namespace Ryujinx.Ava.UI.ViewModels
         private List<string> _gpuIds = new();
         private KeyboardHotkeys _keyboardHotkeys;
         private int _graphicsBackendIndex;
+        private string _customThemePath;
+
+        public event Action CloseWindow;
+        public event Action SaveSettingsEvent;
 
         public int ResolutionScale
         {
@@ -64,22 +66,19 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 _graphicsBackendMultithreadingIndex = value;
 
-                if (_owner != null)
+                if (_graphicsBackendMultithreadingIndex != (int)ConfigurationState.Instance.Graphics.BackendThreading.Value)
                 {
-                    if (_graphicsBackendMultithreadingIndex != (int)ConfigurationState.Instance.Graphics.BackendThreading.Value)
+                    async void Action()
                     {
-                        async void Action()
-                        {
-                            await ContentDialogHelper.CreateInfoDialog(
-                                LocaleManager.Instance["DialogSettingsBackendThreadingWarningMessage"], 
-                                "", 
-                                "", 
-                                LocaleManager.Instance["InputDialogOk"], 
-                                LocaleManager.Instance["DialogSettingsBackendThreadingWarningTitle"]);
-                        }
-
-                        Dispatcher.UIThread.Post(Action);
+                        await ContentDialogHelper.CreateInfoDialog(
+                            LocaleManager.Instance["DialogSettingsBackendThreadingWarningMessage"], 
+                            "", 
+                            "", 
+                            LocaleManager.Instance["InputDialogOk"], 
+                            LocaleManager.Instance["DialogSettingsBackendThreadingWarningTitle"]);
                     }
+
+                    Dispatcher.UIThread.Post(Action);
                 }
 
                 OnPropertyChanged();
@@ -160,7 +159,19 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public string TimeZone { get; set; }
         public string ShaderDumpPath { get; set; }
-        public string CustomThemePath { get; set; }
+
+        public string CustomThemePath
+        {
+            get
+            {
+                return _customThemePath;
+            }
+            set
+            {
+                _customThemePath = value;
+                OnPropertyChanged();
+            }
+        }
 
         public int Language { get; set; }
         public int Region { get; set; }
@@ -214,11 +225,10 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
         
-        public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager, StyleableWindow owner) : this()
+        public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager) : this()
         {
             _virtualFileSystem = virtualFileSystem;
             _contentManager = contentManager;
-            _owner = owner;
             if (Program.PreviewerDetached)
             {
                 LoadTimeZones();
@@ -296,33 +306,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             if (_validTzRegions.Contains(location))
             {
                 TimeZone = location;
-            }
-        }
-
-        public async void BrowseTheme()
-        {
-            var result = await _owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-            {
-                Title = LocaleManager.Instance["SettingsSelectThemeFileDialogTitle"],
-                AllowMultiple = false,
-                FileTypeFilter = new List<FilePickerFileType>
-                {
-                    new(LocaleManager.Instance["SettingsXamlThemeFile"])
-                    {
-                        Patterns = new[] { "*.xaml" },
-                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.Ryujinx-xaml" },
-                        MimeTypes = new[] { "application/xaml+xml" }
-                    }
-                }
-            });
-
-            if (result.Count > 0)
-            {
-                if (result[0].TryGetUri(out Uri uri))
-                {
-                    CustomThemePath = uri.LocalPath;
-                    OnPropertyChanged(nameof(CustomThemePath));
-                }
             }
         }
 
@@ -482,16 +465,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.ToFileFormat().SaveConfig(Program.ConfigurationPath);
 
             MainWindow.UpdateGraphicsConfig();
-
-            if (_owner is SettingsWindow owner)
-            {
-                owner.InputPage.ControllerSettings?.SaveCurrentProfile();
-            }
             
-            if (_owner.Owner is MainWindow window && _directoryChanged)
-            {
-                window.LoadApplications();
-            }
+            SaveSettingsEvent?.Invoke();
 
             _directoryChanged = false;
         }
@@ -509,13 +484,13 @@ namespace Ryujinx.Ava.UI.ViewModels
         public void OkButton()
         {
             SaveSettings();
-            _owner.Close();
+            CloseWindow?.Invoke();
         }
 
         public void CancelButton()
         {
             RevertIfNotSaved();
-            _owner.Close();
+            CloseWindow?.Invoke();
         }
     }
 }

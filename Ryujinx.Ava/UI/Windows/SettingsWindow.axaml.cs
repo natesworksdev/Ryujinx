@@ -1,3 +1,5 @@
+using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using FluentAvalonia.Core;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
@@ -8,6 +10,7 @@ using Ryujinx.Ava.UI.ViewModels;
 >>>>>>> 66aac324 (Fix Namespace Case):Ryujinx.Ava/Ui/Windows/SettingsWindow.axaml.cs
 using Ryujinx.HLE.FileSystem;
 using System;
+using System.Collections.Generic;
 
 namespace Ryujinx.Ava.UI.Windows
 {
@@ -19,8 +22,11 @@ namespace Ryujinx.Ava.UI.Windows
         {
             Title = $"Ryujinx {Program.Version} - {LocaleManager.Instance["Settings"]}";
 
-            ViewModel   = new SettingsViewModel(virtualFileSystem, contentManager, this);
+            ViewModel   = new SettingsViewModel(virtualFileSystem, contentManager);
             DataContext = ViewModel;
+
+            ViewModel.CloseWindow += Close;
+            ViewModel.SaveSettingsEvent += SaveSettings;
 
             InitializeComponent();
             Load();
@@ -33,6 +39,16 @@ namespace Ryujinx.Ava.UI.Windows
 
             InitializeComponent();
             Load();
+        }
+
+        public void SaveSettings()
+        {
+            InputPage.ControllerSettings?.SaveCurrentProfile();
+
+            if (Owner is MainWindow window && ViewModel.DirectoryChanged)
+            {
+                window.LoadApplications();
+            }
         }
 
         private void Load()
