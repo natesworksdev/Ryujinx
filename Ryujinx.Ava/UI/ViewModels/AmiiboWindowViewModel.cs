@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Media.Imaging;
-using Avalonia.Threading;
 using Ryujinx.Ava.Common.Locale;
 <<<<<<< HEAD
 using Ryujinx.Ava.UI.Controls;
@@ -9,7 +8,6 @@ using Ryujinx.Ava.UI.Controls;
 >>>>>>> 66aac324 (Fix Namespace Case)
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
-using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Utilities;
@@ -32,7 +30,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         private readonly string _amiiboJsonPath;
         private readonly byte[] _amiiboLogoBytes;
         private readonly HttpClient _httpClient;
-        private readonly StyleableWindow _owner;
         
         private Bitmap _amiiboImage;
         private List<Amiibo.AmiiboApi> _amiiboList;
@@ -46,9 +43,10 @@ namespace Ryujinx.Ava.UI.ViewModels
         private bool _useRandomUuid;
         private string _usage;
 
-        public AmiiboWindowViewModel(StyleableWindow owner, string lastScannedAmiiboId, string titleId)
+        public event Action CloseWindow;
+
+        public AmiiboWindowViewModel(string lastScannedAmiiboId, string titleId)
         {
-            _owner = owner;
             _httpClient = new HttpClient { Timeout = TimeSpan.FromMilliseconds(5000) };
             LastScannedAmiiboId = lastScannedAmiiboId;
             TitleId = titleId;
@@ -400,14 +398,9 @@ namespace Ryujinx.Ava.UI.ViewModels
                 "",
                 LocaleManager.Instance[LocaleKeys.RyujinxInfo]);
 
-            Close();
+            CloseWindow?.Invoke();
 
             return DefaultJson;
-        }
-
-        private void Close()
-        {
-            Dispatcher.UIThread.Post(_owner.Close);
         }
 
         private async Task UpdateAmiiboPreview(string imageUrl)
