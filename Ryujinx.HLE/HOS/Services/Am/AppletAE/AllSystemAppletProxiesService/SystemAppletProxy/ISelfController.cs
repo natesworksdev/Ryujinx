@@ -302,10 +302,11 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // IsIlluminanceAvailable() -> bool
         public ResultCode IsIlluminanceAvailable(ServiceCtx context)
         {
-            // NOTE: This should call through to Lbl, but there's no situation where we'd want false.
+            // NOTE: This should call IsAmbientLightSensorAvailable through to Lbl, but there's no situation where we'd want false.
             context.ResponseData.Write(true);
             
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
             return ResultCode.Success;
         }
 
