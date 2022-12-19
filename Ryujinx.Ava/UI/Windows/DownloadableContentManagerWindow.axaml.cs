@@ -1,5 +1,6 @@
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using LibHac.Common;
@@ -214,17 +215,17 @@ namespace Ryujinx.Ava.UI.Windows
             PrintHeading();
         }
 
-        public void RemoveSelected()
+        public void RemoveSelected(object sender, RoutedEventArgs e)
         {
             RemoveDownloadableContents(true);
         }
 
-        public void RemoveAll()
+        public void RemoveAll(object sender, RoutedEventArgs e)
         {
             RemoveDownloadableContents();
         }
 
-        public void EnableAll()
+        public void EnableAll(object sender, RoutedEventArgs e)
         {
             foreach(var item in _downloadableContents)
             {
@@ -232,7 +233,7 @@ namespace Ryujinx.Ava.UI.Windows
             }
         }
 
-        public void DisableAll()
+        public void DisableAll(object sender, RoutedEventArgs e)
         {
             foreach (var item in _downloadableContents)
             {
@@ -240,7 +241,7 @@ namespace Ryujinx.Ava.UI.Windows
             }
         }
 
-        public async void Add()
+        public async void Add(object sender, RoutedEventArgs e)
         {
             var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
@@ -307,9 +308,14 @@ namespace Ryujinx.Ava.UI.Windows
             }
         }
 
-        public void SaveAndClose()
+        public void SaveAndClose(object sender, RoutedEventArgs e)
         {
             Save();
+            Close();
+        }
+
+        public void Close(object sender, RoutedEventArgs e)
+        {
             Close();
         }
     }

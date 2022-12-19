@@ -42,14 +42,14 @@
                 Name="EnableAllButton"
                 MinWidth="90"
                 Margin="5"
-                Command="{Binding EnableAll}">
+                Click="EnableAll">
                 <TextBlock Text="{locale:Locale DlcManagerEnableAllButton}" />
             </Button>
             <Button
                 Name="DisableAllButton"
                 MinWidth="90"
                 Margin="5"
-                Command="{Binding DisableAll}">
+                Click="DisableAll">
                 <TextBlock Text="{locale:Locale DlcManagerDisableAllButton}" />
             </Button>
         </DockPanel>
@@ -133,21 +133,21 @@
                     Name="AddButton"
                     MinWidth="90"
                     Margin="5"
-                    Command="{Binding Add}">
+                    Click="Add">
                     <TextBlock Text="{locale:Locale SettingsTabGeneralAdd}" />
                 </Button>
                 <Button
                     Name="RemoveButton"
                     MinWidth="90"
                     Margin="5"
-                    Command="{Binding RemoveSelected}">
+                    Click="RemoveSelected">
                     <TextBlock Text="{locale:Locale SettingsTabGeneralRemove}" />
                 </Button>
                 <Button
                     Name="RemoveAllButton"
                     MinWidth="90"
                     Margin="5"
-                    Command="{Binding RemoveAll}">
+                    Click="RemoveAll">
                     <TextBlock Text="{locale:Locale DlcManagerRemoveAllButton}" />
                 </Button>
             </DockPanel>
@@ -156,14 +156,14 @@
                     Name="SaveButton"
                     MinWidth="90"
                     Margin="5"
-                    Command="{Binding SaveAndClose}">
+                    Click="SaveAndClose">
                     <TextBlock Text="{locale:Locale SettingsButtonSave}" />
                 </Button>
                 <Button
                     Name="CancelButton"
                     MinWidth="90"
                     Margin="5"
-                    Command="{Binding Close}">
+                    Click="Close">
                     <TextBlock Text="{locale:Locale InputDialogCancel}" />
                 </Button>
             </DockPanel>
