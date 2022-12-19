@@ -8,11 +8,6 @@ using Ryujinx.Audio.Backends.OpenAL;
 using Ryujinx.Audio.Backends.SDL2;
 using Ryujinx.Audio.Backends.SoundIo;
 using Ryujinx.Ava.Common.Locale;
-<<<<<<< HEAD
-using Ryujinx.Ava.Input;
-using Ryujinx.Ava.UI.Controls;
-=======
->>>>>>> 66aac324 (Fix Namespace Case)
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Configuration;
@@ -46,8 +41,8 @@ namespace Ryujinx.Ava.UI.ViewModels
         private int _graphicsBackendMultithreadingIndex;
         private float _volume;
         private bool _isVulkanAvailable = true;
-        private bool _directoryChanged = false;
-        private List<string> _gpuIds = new List<string>();
+        private bool _directoryChanged;
+        private List<string> _gpuIds = new();
         private KeyboardHotkeys _keyboardHotkeys;
         private int _graphicsBackendIndex;
 
@@ -73,14 +68,17 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     if (_graphicsBackendMultithreadingIndex != (int)ConfigurationState.Instance.Graphics.BackendThreading.Value)
                     {
-                        Dispatcher.UIThread.Post(async () =>
+                        async void Action()
                         {
-                            await ContentDialogHelper.CreateInfoDialog(LocaleManager.Instance["DialogSettingsBackendThreadingWarningMessage"],
-                                                                       "",
-                                                                       "",
-                                                                       LocaleManager.Instance["InputDialogOk"],
-                                                                       LocaleManager.Instance["DialogSettingsBackendThreadingWarningTitle"]);
-                        });
+                            await ContentDialogHelper.CreateInfoDialog(
+                                LocaleManager.Instance["DialogSettingsBackendThreadingWarningMessage"], 
+                                "", 
+                                "", 
+                                LocaleManager.Instance["InputDialogOk"], 
+                                LocaleManager.Instance["DialogSettingsBackendThreadingWarningTitle"]);
+                        }
+
+                        Dispatcher.UIThread.Post(Action);
                     }
                 }
 
@@ -193,7 +191,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 _volume = value;
 
-                ConfigurationState.Instance.System.AudioVolume.Value = (float)(_volume / 100);
+                ConfigurationState.Instance.System.AudioVolume.Value = _volume / 100;
 
                 OnPropertyChanged();
             }
@@ -250,10 +248,10 @@ namespace Ryujinx.Ava.UI.ViewModels
             IsSDL2Enabled = SDL2HardwareDeviceDriver.IsSupported;
         }
 
-        private unsafe void LoadAvailableGpus()
+        private void LoadAvailableGpus()
         {
             _gpuIds = new List<string>();
-            List<string> names = new List<string>();
+            List<string> names = new();
             var devices = VulkanRenderer.GetPhysicalDevices();
 
             if (devices.Length == 0)
@@ -271,7 +269,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
 
             AvailableGpus.Clear();
-            AvailableGpus.AddRange(names.Select(x => new ComboBoxItem() { Content = x }));
+            AvailableGpus.AddRange(names.Select(x => new ComboBoxItem { Content = x }));
         }
 
         public void LoadTimeZones()
@@ -484,7 +482,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.ToFileFormat().SaveConfig(Program.ConfigurationPath);
 
             MainWindow.UpdateGraphicsConfig();
-            
+
             if (_owner is SettingsWindow owner)
             {
                 owner.InputPage.ControllerSettings?.SaveCurrentProfile();
