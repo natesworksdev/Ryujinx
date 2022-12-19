@@ -7,6 +7,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// </summary>
     struct IndexBuffer
     {
+        public BufferCache BufferCache;
         public ulong Address;
         public ulong Size;
 
