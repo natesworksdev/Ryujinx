@@ -20,6 +20,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public ITexture Texture { get; }
 
         /// <summary>
+        /// Buffer cache that owns the buffer.
+        /// </summary>
+        public BufferCache BufferCache { get; }
+
+        /// <summary>
         /// The base address of the buffer binding.
         /// </summary>
         public ulong Address { get; }
@@ -49,6 +54,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="stage">Shader stage accessing the texture</param>
         /// <param name="texture">Buffer texture</param>
+        /// <param name="bufferCache">Buffer cache that owns the buffer</param>
         /// <param name="address">Base address</param>
         /// <param name="size">Size in bytes</param>
         /// <param name="bindingInfo">Binding info</param>
@@ -57,6 +63,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public BufferTextureBinding(
             ShaderStage stage,
             ITexture texture,
+            BufferCache bufferCache,
             ulong address,
             ulong size,
             TextureBindingInfo bindingInfo,
@@ -65,6 +72,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             Stage = stage;
             Texture = texture;
+            BufferCache = bufferCache;
             Address = address;
             Size = size;
             BindingInfo = bindingInfo;
