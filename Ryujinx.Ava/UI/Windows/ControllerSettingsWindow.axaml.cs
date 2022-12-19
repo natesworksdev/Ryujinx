@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -8,10 +9,13 @@ using Ryujinx.Ava.Input;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
+using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Input;
 using Ryujinx.Input.Assigner;
+using Ryujinx.Ui.Common.Configuration;
 using System;
+using System.Collections.Generic;
 
 namespace Ryujinx.Ava.UI.Windows
 {
@@ -20,11 +24,17 @@ namespace Ryujinx.Ava.UI.Windows
         private bool _dialogOpen;
 
         private ButtonKeyAssigner _currentAssigner;
-        internal ControllerSettingsViewModel ViewModel { get; set; }
+        private readonly MainWindow _mainWindow;
+        private ControllerSettingsViewModel ViewModel { get; }
 
         public ControllerSettingsWindow()
         {
-            DataContext = ViewModel = new ControllerSettingsViewModel(new AvaloniaKeyboardDriver(this));
+            _mainWindow =
+                (MainWindow)((IClassicDesktopStyleApplicationLifetime)Avalonia.Application.Current
+                    .ApplicationLifetime).MainWindow;
+            DataContext = ViewModel = new ControllerSettingsViewModel(new AvaloniaKeyboardDriver(this), _mainWindow.InputManager);
+            ViewModel.ConfigSaved += OnSave;
+            
 
             InitializeComponent();
 
@@ -34,6 +44,14 @@ namespace Ryujinx.Ava.UI.Windows
                 {
                     button.Checked += Button_Checked;
                     button.Unchecked += Button_Unchecked;
+                }
+            }
+
+            if (Program.PreviewerDetached)
+            {
+                if (_mainWindow.ViewModel.AppHost != null)
+                {
+                    _mainWindow.ViewModel.AppHost.NpadManager.BlockInputUpdates();
                 }
             }
         }
@@ -92,6 +110,11 @@ namespace Ryujinx.Ava.UI.Windows
                     }
                 }
             }
+        }
+
+        private void OnSave(List<InputConfig> newConfig)
+        {
+            _mainWindow.ViewModel.AppHost?.NpadManager.ReloadConfiguration(newConfig, ConfigurationState.Instance.Hid.EnableKeyboard, ConfigurationState.Instance.Hid.EnableMouse);
         }
 
         public void SaveCurrentProfile()
@@ -176,6 +199,7 @@ namespace Ryujinx.Ava.UI.Windows
             _currentAssigner?.Cancel();
             _currentAssigner = null;
             ViewModel.Dispose();
+            _mainWindow.ViewModel.AppHost?.NpadManager.UnblockInputUpdates();
         }
     }
 }

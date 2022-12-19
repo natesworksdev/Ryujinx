@@ -1,5 +1,4 @@
 using Avalonia.Collections;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Svg.Skia;
 using Avalonia.Threading;
 using Ryujinx.Ava.Common.Locale;
@@ -30,6 +29,7 @@ using System.Text.Json;
 using ConfigGamepadInputId = Ryujinx.Common.Configuration.Hid.Controller.GamepadInputId;
 using ConfigStickInputId = Ryujinx.Common.Configuration.Hid.Controller.StickInputId;
 using Key = Ryujinx.Common.Configuration.Hid.Key;
+using InputManager = Ryujinx.Input.HLE.InputManager;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
@@ -42,9 +42,9 @@ namespace Ryujinx.Ava.UI.ViewModels
         private const string JoyConRightResource = "Ryujinx.Ui.Common/Resources/Controller_JoyConRight.svg";
         private const string KeyboardString = "keyboard";
         private const string ControllerString = "controller";
-        private readonly MainWindow _mainWindow;
 
         private PlayerIndex _playerId;
+        private InputManager _inputManager;
         private int _controller;
         private int _controllerNumber;
         private string _controllerImage;
@@ -55,6 +55,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public IGamepadDriver AvaloniaKeyboardDriver { get; }
         public IGamepad SelectedGamepad { get; private set; }
+        public event Action<List<InputConfig>> ConfigSaved;
 
         public ObservableCollection<PlayerModel> PlayerIndexes { get; set; }
         public ObservableCollection<(DeviceType Type, string Id, string Name)> Devices { get; set; }
@@ -231,22 +232,15 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public InputConfig Config { get; set; }
 
-        public ControllerSettingsViewModel(AvaloniaKeyboardDriver avaloniaKeyboardDriver) : this()
+        public ControllerSettingsViewModel(AvaloniaKeyboardDriver avaloniaKeyboardDriver, InputManager inputManager) : this()
         {
             if (Program.PreviewerDetached)
             {
-                _mainWindow =
-                    (MainWindow)((IClassicDesktopStyleApplicationLifetime)Avalonia.Application.Current
-                        .ApplicationLifetime).MainWindow;
-
                 AvaloniaKeyboardDriver = avaloniaKeyboardDriver;
+                _inputManager = inputManager;
 
-                _mainWindow.InputManager.GamepadDriver.OnGamepadConnected += HandleOnGamepadConnected;
-                _mainWindow.InputManager.GamepadDriver.OnGamepadDisconnected += HandleOnGamepadDisconnected;
-                if (_mainWindow.ViewModel.AppHost != null)
-                {
-                    _mainWindow.ViewModel.AppHost.NpadManager.BlockInputUpdates();
-                }
+                _inputManager.GamepadDriver.OnGamepadConnected += HandleOnGamepadConnected;
+                _inputManager.GamepadDriver.OnGamepadDisconnected += HandleOnGamepadDisconnected;
 
                 _isLoaded = false;
 
@@ -344,25 +338,20 @@ namespace Ryujinx.Ava.UI.ViewModels
             string id = GetCurrentGamepadId();
             var type = Devices[Device].Type;
 
-            if (type == DeviceType.None)
+            switch (type)
             {
-                return;
-            }
-            else if (type == DeviceType.Keyboard)
-            {
-                if (_mainWindow.InputManager.KeyboardDriver is AvaloniaKeyboardDriver)
-                {
+                case DeviceType.None:
+                    return;
+                case DeviceType.Keyboard when _inputManager.KeyboardDriver is AvaloniaKeyboardDriver:
                     // NOTE: To get input in this window, we need to bind a custom keyboard driver instead of using the InputManager one as the main window isn't focused...
                     SelectedGamepad = AvaloniaKeyboardDriver.GetGamepad(id);
-                }
-                else
-                {
-                    SelectedGamepad = _mainWindow.InputManager.KeyboardDriver.GetGamepad(id);
-                }
-            }
-            else
-            {
-                SelectedGamepad = _mainWindow.InputManager.GamepadDriver.GetGamepad(id);
+                    break;
+                case DeviceType.Keyboard:
+                    SelectedGamepad = _inputManager.KeyboardDriver.GetGamepad(id);
+                    break;
+                default:
+                    SelectedGamepad = _inputManager.GamepadDriver.GetGamepad(id);
+                    break;
             }
         }
 
@@ -456,9 +445,9 @@ namespace Ryujinx.Ava.UI.ViewModels
                 DeviceList.Clear();
                 Devices.Add((DeviceType.None, Disabled, LocaleManager.Instance[LocaleKeys.ControllerSettingsDeviceDisabled]));
 
-                foreach (string id in _mainWindow.InputManager.KeyboardDriver.GamepadsIds)
+                foreach (string id in _inputManager.KeyboardDriver.GamepadsIds)
                 {
-                    using IGamepad gamepad = _mainWindow.InputManager.KeyboardDriver.GetGamepad(id);
+                    using IGamepad gamepad = _inputManager.KeyboardDriver.GetGamepad(id);
 
                     if (gamepad != null)
                     {
@@ -466,9 +455,9 @@ namespace Ryujinx.Ava.UI.ViewModels
                     }
                 }
 
-                foreach (string id in _mainWindow.InputManager.GamepadDriver.GamepadsIds)
+                foreach (string id in _inputManager.GamepadDriver.GamepadsIds)
                 {
-                    using IGamepad gamepad = _mainWindow.InputManager.GamepadDriver.GetGamepad(id);
+                    using IGamepad gamepad = _inputManager.GamepadDriver.GetGamepad(id);
 
                     if (gamepad != null)
                     {
@@ -861,18 +850,13 @@ namespace Ryujinx.Ava.UI.ViewModels
                 }
             }
 
-            _mainWindow.ViewModel.AppHost?.NpadManager.ReloadConfiguration(newConfig, ConfigurationState.Instance.Hid.EnableKeyboard, ConfigurationState.Instance.Hid.EnableMouse);
+            ConfigSaved?.Invoke(newConfig);
 
             // Atomically replace and signal input change.
             // NOTE: Do not modify InputConfig.Value directly as other code depends on the on-change event.
             ConfigurationState.Instance.Hid.InputConfig.Value = newConfig;
 
             ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
-        }
-
-        public void NotifyChange(string property)
-        {
-            OnPropertyChanged(property);
         }
 
         public void NotifyChanges()
@@ -887,11 +871,9 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void Dispose()
         {
-            _mainWindow.InputManager.GamepadDriver.OnGamepadConnected -= HandleOnGamepadConnected;
-            _mainWindow.InputManager.GamepadDriver.OnGamepadDisconnected -= HandleOnGamepadDisconnected;
-
-            _mainWindow.ViewModel.AppHost?.NpadManager.UnblockInputUpdates();
-
+            _inputManager.GamepadDriver.OnGamepadConnected -= HandleOnGamepadConnected;
+            _inputManager.GamepadDriver.OnGamepadDisconnected -= HandleOnGamepadDisconnected;
+            
             SelectedGamepad?.Dispose();
 
             AvaloniaKeyboardDriver.Dispose();
