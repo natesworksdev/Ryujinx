@@ -1170,21 +1170,21 @@ namespace ARMeilleure.CodeGen.X86
             int maskRegisterIdx = 0,
             bool zeroElements = false)
         {
-            int destIdx = dest.GetRegister().Index;
-            int src1Idx = src1.GetRegister().Index;
-            int src2Idx = src2.GetRegister().Index;
+            int op1Idx = dest.GetRegister().Index;
+            int op2Idx = src1.GetRegister().Index;
+            int op3Idx = src2.GetRegister().Index;
 
             WriteByte(0x62);
 
             // P0
-            // Extend dest register
-            bool r = (destIdx & 8) == 0;
-            // Extend src register
-            bool x = (src1Idx & 16) == 0;
-            // Extend src register
-            bool b = (src1Idx & 8) == 0;
-            // Extend dest register
-            bool rp = (destIdx & 16) == 0;
+            // Extend operand 1 register
+            bool r = (op1Idx & 8) == 0;
+            // Extend operand 3 register
+            bool x = (op3Idx & 16) == 0;
+            // Extend operand 3 register
+            bool b = (op3Idx & 8) == 0;
+            // Extend operand 1 register
+            bool rp = (op1Idx & 16) == 0;
             // Escape code index
             byte mm = 0b00;
 
@@ -1208,8 +1208,8 @@ namespace ARMeilleure.CodeGen.X86
             // P1
             // Specify 64-bit lane mode
             bool w = Is64Bits(type);
-            // Src2 register index
-            byte vvvv = (byte)(~src2Idx & 0b1111);
+            // operand 2 register index
+            byte vvvv = (byte)(~op2Idx & 0b1111);
             // Opcode prefix
             byte pp = (flags & InstructionFlags.PrefixMask) switch
             {
@@ -1240,8 +1240,8 @@ namespace ARMeilleure.CodeGen.X86
             }
             // Embedded broadcast in the case of a memory operand
             bool bcast = broadcast;
-            // Extend src2 register
-            bool vp = (src2Idx & 16) == 0;
+            // Extend operand 2 register
+            bool vp = (op2Idx & 16) == 0;
             // Mask register index
             Debug.Assert(maskRegisterIdx < 8, $"Invalid mask register index {maskRegisterIdx}.");
             byte aaa = (byte)(maskRegisterIdx & 0b111);
