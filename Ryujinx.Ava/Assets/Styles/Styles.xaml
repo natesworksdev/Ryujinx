@@ -83,6 +83,24 @@
     <Style Selector="Button.SystemCaption">
         <Setter Property="MinWidth" Value="10" />
     </Style>
+    <Style Selector="ListBox ListBoxItem:selected TextBlock">
+        <Setter Property="Foreground" Value="Black" />
+    </Style>
+    <Style Selector="ListBox ListBoxItem:pointerover TextBlock">
+        <Setter Property="Foreground" Value="Black" />
+    </Style>
+    <Style Selector="ListBox ListBoxItem:selected AccessText">
+        <Setter Property="Foreground" Value="Black" />
+    </Style>
+    <Style Selector="ListBox ListBoxItem:pointerover AccessText">
+        <Setter Property="Foreground" Value="Black" />
+    </Style>
+    <Style Selector="ListBox ListBoxItem:selected ui|SymbolIcon">
+        <Setter Property="Foreground" Value="Black" />
+    </Style>
+    <Style Selector="ListBox ListBoxItem:pointerover ui|SymbolIcon">
+        <Setter Property="Foreground" Value="Black" />
+    </Style>
     <Style Selector="DataGridColumnHeader">
         <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />

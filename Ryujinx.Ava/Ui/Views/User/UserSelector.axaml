@@ -112,38 +112,38 @@
                 Grid.Row="0"
                 Grid.Column="0"
                 Margin="2"
-                Command="{Binding AddUser}" 
+                Click="AddUser" 
                 Content="{locale:Locale UserProfilesAddNewProfile}" />
             <Button
                 HorizontalAlignment="Stretch"
                 Grid.Row="0"
                 Margin="2"
                 Grid.Column="1"
-                Command="{Binding EditUser}"
+                Click="EditUser"
                 Content="{locale:Locale UserProfilesEditProfile}"
-                IsEnabled="{Binding IsSelectedProfiledEditable}" />
+                IsEnabled="{Binding IsHighlightedProfileEditable}" />
             <Button 
                 HorizontalAlignment="Stretch"
                 Grid.Row="1"
                 Grid.Column="0"
                 Margin="2"
                 Content="{locale:Locale UserProfilesManageSaves}" 
-                Command="{Binding ManageSaves}" />
+                Click="ManageSaves" />
             <Button
                 HorizontalAlignment="Stretch"
                 Grid.Row="1"
                 Grid.Column="1"
                 Margin="2"
-                Command="{Binding DeleteUser}"
+                Click="DeleteUser"
                 Content="{locale:Locale UserProfilesDeleteSelectedProfile}"
-                IsEnabled="{Binding IsSelectedProfileDeletable}" />
+                IsEnabled="{Binding IsHighlightedProfileDeletable}" />
             <Button
                 HorizontalAlignment="Stretch"
                 Grid.Row="2"
                 Grid.ColumnSpan="2"
                 Grid.Column="0"
                 Margin="2"
-                Command="{Binding RecoverLostAccounts}"
+                Click="RecoverLostAccounts"
                 Content="{locale:Locale UserProfilesRecoverLostAccounts}" />
         </Grid>
     </Grid>

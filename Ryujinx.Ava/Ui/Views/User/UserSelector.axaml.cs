@@ -53,7 +53,7 @@ namespace Ryujinx.Ava.UI.Views
 
                     _parent?.AccountManager?.OpenUser(ViewModel.SelectedProfile.UserId);
 
-                    ViewModel.LoadProfiles();
+                    _parent.LoadProfiles();
 
                     foreach (UserProfile profile in ViewModel.Profiles)
                     {
@@ -74,6 +74,31 @@ namespace Ryujinx.Ava.UI.Views
                     ViewModel.HighlightedProfile = ViewModel.Profiles[selectedIndex];
                 }
             }
+        }
+
+        private void AddUser(object sender, RoutedEventArgs e)
+        {
+            _parent.AddUser();
+        }
+
+        private void EditUser(object sender, RoutedEventArgs e)
+        {
+            _parent.EditUser();
+        }
+
+        private void ManageSaves(object sender, RoutedEventArgs e)
+        {
+            _parent.ManageSaves();
+        }
+
+        private void RecoverLostAccounts(object sender, RoutedEventArgs e)
+        {
+            _parent.RecoverLostAccounts();
+        }
+
+        private void DeleteUser(object sender, RoutedEventArgs e)
+        {
+            _parent.DeleteUser();
         }
     }
 }

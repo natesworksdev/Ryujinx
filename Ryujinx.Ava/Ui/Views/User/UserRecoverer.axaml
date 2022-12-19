@@ -29,7 +29,7 @@
                 Width="50"
                 MinWidth="50"
                 HorizontalAlignment="Left"
-                Command="{Binding GoBack}">
+                Click="GoBack">
             <ui:SymbolIcon Symbol="Back"/>
         </Button>
         <TextBlock Grid.Row="1"
@@ -60,7 +60,7 @@
                                 TextWrapping="Wrap" />
                             <Button Grid.Column="1"
                                     HorizontalAlignment="Right"
-                                    Command="{Binding Recover}"
+                                    Click="Recover"
                                     CommandParameter="{Binding}"
                                     Content="{locale:Locale Recover}"/>
                         </Grid>

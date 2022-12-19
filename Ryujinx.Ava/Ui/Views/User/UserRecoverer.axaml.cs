@@ -38,5 +38,15 @@ namespace Ryujinx.Ava.UI.Views
                 DataContext = _viewModel;
             }
         }
+
+        private void GoBack(object sender, RoutedEventArgs e)
+        {
+            _parent.GoBack();
+        }
+
+        private void Recover(object sender, RoutedEventArgs e)
+        {
+            _parent.RecoverLostAccounts();
+        }
     }
 }
