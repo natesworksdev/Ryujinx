@@ -1,7 +1,9 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Platform.Storage;
+using Avalonia.VisualTree;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
@@ -20,7 +22,7 @@ public partial class MainMenuBarView : UserControl
 {
     public MainWindow Window { get; private set; }
     public MainWindowViewModel ViewModel { get; private set; }
-    
+
     public MainMenuBarView()
     {
         InitializeComponent();
@@ -72,7 +74,7 @@ public partial class MainMenuBarView : UserControl
 
         ViewModel.LoadConfigurableHotKeys();
     }
-    
+
     public void OpenMiiApplet(object sender, RoutedEventArgs e)
     {
         string contentPath = ViewModel.ContentManager.GetInstalledContentPath(0x0100000000001009, StorageId.BuiltInSystem, NcaContentType.Program);
@@ -147,5 +149,33 @@ public partial class MainMenuBarView : UserControl
     public void CloseWindow(object sender, RoutedEventArgs e)
     {
         Window.Close();
+    }
+
+    // NOTE: This is 100% a Avalonia bug.
+    //       Currently Checkboxes are duplicated and get a new MenuItem as parent.
+    //       However the new MenuItem does not use the same value for IsVisible as the child.
+    private void ConditionalMenuItem_OnInitialized(object sender, EventArgs e)
+    {
+        Control control = (sender as Control)!;
+
+        if (control.IsVisible)
+        {
+            return;
+        }
+
+        if (control.Parent is MenuItem parent && parent.Header == sender)
+        {
+            parent.IsVisible = control.IsVisible;
+        }
+        else
+        {
+            foreach (var child in control.Parent!.GetLogicalChildren())
+            {
+                if (child is MenuItem item && item.Header == sender)
+                {
+                    item.IsVisible = control.IsVisible;
+                }
+            }
+        }
     }
 }
