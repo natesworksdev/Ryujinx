@@ -39,15 +39,19 @@
             Orientation="Horizontal">
             <Button 
                 Name="Import" 
-                Click="Import_OnClick" 
-                Width="200">
+                Click="Import_OnClick">
                 <TextBlock Text="{locale:Locale ProfileImageSelectionImportImage}" />
             </Button>
             <Button 
                 Name="SelectFirmwareImage" 
-                IsEnabled="{Binding FirmwareFound}" Click="SelectFirmwareImage_OnClick"
-                Width="200">
+                IsEnabled="{Binding FirmwareFound}" 
+                Click="SelectFirmwareImage_OnClick">
                 <TextBlock Text="{locale:Locale ProfileImageSelectionSelectAvatar}" />
+            </Button>
+            <Button
+                Name="Cancel"
+                Click="Cancel_OnClick">
+                <TextBlock Text="{locale:Locale Cancel}" />
             </Button>
         </StackPanel>
     </Grid>

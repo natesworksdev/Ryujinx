@@ -45,14 +45,17 @@
             HorizontalAlignment="Right"
             VerticalAlignment="Stretch"
             Orientation="Vertical">
-            <Image
-                Name="ProfileImage"
-                Width="96"
-                Height="96"
-                Margin="0"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Top"
-                Source="{Binding Image, Converter={StaticResource ByteImage}}" />
+            <Panel
+                Background="{DynamicResource AppListBackgroundColor}">
+                <Image
+                    Name="ProfileImage"
+                    Width="96"
+                    Height="96"
+                    Margin="0"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    Source="{Binding Image, Converter={StaticResource ByteImage}}" />
+            </Panel>
         </StackPanel>
         <StackPanel
             Grid.Row="1"

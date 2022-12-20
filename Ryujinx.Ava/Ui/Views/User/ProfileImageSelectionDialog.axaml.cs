@@ -81,6 +81,11 @@ namespace Ryujinx.Ava.UI.Views
             }
         }
 
+        private void Cancel_OnClick(object sender, RoutedEventArgs e)
+        {
+            _parent?.GoBack();
+        }
+
         private void SelectFirmwareImage_OnClick(object sender, RoutedEventArgs e)
         {
             if (FirmwareFound)
