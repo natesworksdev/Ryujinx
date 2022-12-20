@@ -26,7 +26,7 @@ using Color = Avalonia.Media.Color;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
-    internal class AvatarProfileViewModel : BaseModel, IDisposable
+    internal class UserFirmwareAvatarSelectorViewModel : BaseModel, IDisposable
     {
         private const int MaxImageTasks = 4;
         
@@ -42,6 +42,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private bool _isActive;
         private byte[] _selectedImage;
         private bool _isIndeterminate = true;
+        private bool _isVisible;
 
         public bool IsActive
         {
@@ -49,12 +50,12 @@ namespace Ryujinx.Ava.UI.ViewModels
             set => _isActive = value;
         }
 
-        public AvatarProfileViewModel()
+        public UserFirmwareAvatarSelectorViewModel()
         {
             _images = new ObservableCollection<ProfileImageModel>();
         }
         
-        public AvatarProfileViewModel(Action loadCompleteAction)
+        public UserFirmwareAvatarSelectorViewModel(Action loadCompleteAction)
         {
             _images = new ObservableCollection<ProfileImageModel>();
 
@@ -114,6 +115,16 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        public bool IsVisible
+        {
+            get => _isVisible;
+            set
+            {
+                _isVisible = value;
+                OnPropertyChanged();
+            }
+        }
+
         public int SelectedIndex
         {
             get => _selectedIndex;
@@ -145,6 +156,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             if (_isPreloading)
             {
                 IsIndeterminate = false;
+                IsVisible = true;
                 return;
             }
             Task.Run(() =>
@@ -157,6 +169,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 
                 ImagesLoaded = 0;
                 IsIndeterminate = false;
+                IsVisible = true;
 
                 var keys = _avatarStore.Keys.ToList();
 
@@ -172,6 +185,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                 Task.WaitAll(tasks.ToArray());
                 
                 Images.AddRange(newImages);
+                
+                IsVisible = false;
 
                 void ImageTask(int start)
                 {

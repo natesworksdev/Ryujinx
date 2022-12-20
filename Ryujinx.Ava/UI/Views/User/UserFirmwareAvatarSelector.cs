@@ -9,12 +9,12 @@ using Ryujinx.HLE.FileSystem;
 
 namespace Ryujinx.Ava.UI.Windows
 {
-    public partial class AvatarWindow : UserControl
+    public partial class UserFirmwareAvatarSelector : UserControl
     {
         private NavigationDialogHost _parent;
         private TempProfile _profile;
 
-        public AvatarWindow(ContentManager contentManager)
+        public UserFirmwareAvatarSelector(ContentManager contentManager)
         {
             ContentManager = contentManager;
 
@@ -23,7 +23,7 @@ namespace Ryujinx.Ava.UI.Windows
             InitializeComponent();
         }
 
-        public AvatarWindow()
+        public UserFirmwareAvatarSelector()
         {
             InitializeComponent();
 
@@ -43,7 +43,7 @@ namespace Ryujinx.Ava.UI.Windows
                     ContentManager = _parent.ContentManager;
                     if (Program.PreviewerDetached)
                     {
-                        ViewModel = new AvatarProfileViewModel(() => ViewModel.ReloadImages());
+                        ViewModel = new UserFirmwareAvatarSelectorViewModel(() => ViewModel.ReloadImages());
                     }
 
                     DataContext = ViewModel;
@@ -53,7 +53,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         public ContentManager ContentManager { get; private set; }
 
-        internal AvatarProfileViewModel ViewModel { get; set; }
+        internal UserFirmwareAvatarSelectorViewModel ViewModel { get; set; }
 
         private void CloseButton_OnClick(object sender, RoutedEventArgs e)
         {

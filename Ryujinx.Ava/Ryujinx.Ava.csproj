@@ -130,6 +130,10 @@
       <DependentUpon>GameListView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="UI\Views\User\UserFirmwareAvatarSelector.cs">
+      <DependentUpon>UserFirmwareAvatarSelector.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

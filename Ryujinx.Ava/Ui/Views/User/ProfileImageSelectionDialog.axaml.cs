@@ -90,7 +90,7 @@ namespace Ryujinx.Ava.UI.Views
         {
             if (FirmwareFound)
             {
-                _parent.Navigate(typeof(AvatarWindow), (_parent, _profile));
+                _parent.Navigate(typeof(UserFirmwareAvatarSelector), (_parent, _profile));
             }
         }
 

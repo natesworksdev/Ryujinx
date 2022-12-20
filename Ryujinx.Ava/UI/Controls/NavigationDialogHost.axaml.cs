@@ -48,7 +48,7 @@ namespace Ryujinx.Ava.UI.Controls
             {
                 Task.Run(() =>
                 {
-                    AvatarProfileViewModel.PreloadAvatars(contentManager, virtualFileSystem);
+                    UserFirmwareAvatarSelectorViewModel.PreloadAvatars(contentManager, virtualFileSystem);
                 });
             }
             InitializeComponent();
