@@ -65,40 +65,14 @@ namespace Ryujinx.Graphics.Shader.Translation
         public UInt128 NextInputAttributesComponents { get; private set; }
         public UInt128 ThisInputAttributesComponents { get; private set; }
 
+        public int AccessibleStorageBuffersMask { get; private set; }
+        public int AccessibleConstantBuffersMask { get; private set; }
+
         private int _usedConstantBuffers;
         private int _usedStorageBuffers;
         private int _usedStorageBuffersWrite;
 
-        private struct TextureInfo : IEquatable<TextureInfo>
-        {
-            public int CbufSlot { get; }
-            public int Handle { get; }
-            public bool Indexed { get; }
-            public TextureFormat Format { get; }
-
-            public TextureInfo(int cbufSlot, int handle, bool indexed, TextureFormat format)
-            {
-                CbufSlot = cbufSlot;
-                Handle = handle;
-                Indexed = indexed;
-                Format = format;
-            }
-
-            public override bool Equals(object obj)
-            {
-                return obj is TextureInfo other && Equals(other);
-            }
-
-            public bool Equals(TextureInfo other)
-            {
-                return CbufSlot == other.CbufSlot && Handle == other.Handle && Indexed == other.Indexed && Format == other.Format;
-            }
-
-            public override int GetHashCode()
-            {
-                return HashCode.Combine(CbufSlot, Handle, Indexed, Format);
-            }
-        }
+        private readonly record struct TextureInfo(int CbufSlot, int Handle, bool Indexed, TextureFormat Format);
 
         private struct TextureMeta
         {
@@ -127,6 +101,9 @@ namespace Ryujinx.Graphics.Shader.Translation
             GpuAccessor = gpuAccessor;
             Options     = options;
 
+            AccessibleStorageBuffersMask  = (1 << GlobalMemory.StorageMaxCount) - 1;
+            AccessibleConstantBuffersMask = (1 << GlobalMemory.UbeMaxCount) - 1;
+
             UsedInputAttributesPerPatch  = new HashSet<int>();
             UsedOutputAttributesPerPatch = new HashSet<int>();
 
@@ -146,6 +123,11 @@ namespace Ryujinx.Graphics.Shader.Translation
             OutputTopology           = outputTopology;
             MaxOutputVertices        = maxOutputVertices;
             TransformFeedbackEnabled = gpuAccessor.QueryTransformFeedbackEnabled();
+
+            if (Stage != ShaderStage.Compute)
+            {
+                AccessibleConstantBuffersMask = 0;
+            }
         }
 
         public ShaderConfig(ShaderHeader header, IGpuAccessor gpuAccessor, TranslationOptions options) : this(gpuAccessor, options)
@@ -427,6 +409,12 @@ namespace Ryujinx.Graphics.Shader.Translation
         public void SetUsedFeature(FeatureFlags flags)
         {
             UsedFeatures |= flags;
+        }
+
+        public void SetAccessibleBufferMasks(int sbMask, int ubeMask)
+        {
+            AccessibleStorageBuffersMask = sbMask;
+            AccessibleConstantBuffersMask = ubeMask;
         }
 
         public void SetUsedConstantBuffer(int slot)

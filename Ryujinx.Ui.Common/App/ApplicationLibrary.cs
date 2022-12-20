@@ -444,7 +444,10 @@ namespace Ryujinx.Ui.App.Common
                         continue;
                     }
 
-                    ApplicationMetadata appMetadata = LoadAndSaveMetaData(titleId);
+                    ApplicationMetadata appMetadata = LoadAndSaveMetaData(titleId, appMetadata =>
+                    {
+                        appMetadata.Title = titleName;
+                    });
 
                     if (appMetadata.LastPlayed != "Never" && !DateTime.TryParse(appMetadata.LastPlayed, out _))
                     {
@@ -462,9 +465,11 @@ namespace Ryujinx.Ui.App.Common
                         Developer = developer,
                         Version = version,
                         TimePlayed = ConvertSecondsToReadableString(appMetadata.TimePlayed),
+                        TimePlayedNum = appMetadata.TimePlayed,
                         LastPlayed = appMetadata.LastPlayed,
                         FileExtension = Path.GetExtension(applicationPath).ToUpper().Remove(0, 1),
-                        FileSize = (fileSize < 1) ? (fileSize * 1024).ToString("0.##") + "MiB" : fileSize.ToString("0.##") + "GiB",
+                        FileSize = (fileSize < 1) ? (fileSize * 1024).ToString("0.##") + " MiB" : fileSize.ToString("0.##") + " GiB",
+                        FileSizeBytes = fileSize,
                         Path = applicationPath,
                         ControlHolder = controlHolder
                     };
@@ -739,19 +744,19 @@ namespace Ryujinx.Ui.App.Common
 
             if (seconds < secondsPerMinute)
             {
-                readableString = $"{seconds}s";
+                readableString = $"{seconds} seconds";
             }
             else if (seconds < secondsPerHour)
             {
-                readableString = $"{Math.Round(seconds / secondsPerMinute, 2, MidpointRounding.AwayFromZero)} mins";
+                readableString = $"{Math.Round(seconds / secondsPerMinute, 0, MidpointRounding.AwayFromZero)} minutes";
             }
             else if (seconds < secondsPerDay)
             {
-                readableString = $"{Math.Round(seconds / secondsPerHour, 2, MidpointRounding.AwayFromZero)} hrs";
+                readableString = $"{Math.Round(seconds / secondsPerHour, 1, MidpointRounding.AwayFromZero)} hours";
             }
             else
             {
-                readableString = $"{Math.Round(seconds / secondsPerDay, 2, MidpointRounding.AwayFromZero)} days";
+                readableString = $"{Math.Round(seconds / secondsPerDay, 1, MidpointRounding.AwayFromZero)} days";
             }
 
             return readableString;

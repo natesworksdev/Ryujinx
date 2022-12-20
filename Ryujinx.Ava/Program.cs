@@ -1,16 +1,15 @@
 using ARMeilleure.Translation.PTC;
 using Avalonia;
-using Avalonia.Rendering;
 using Avalonia.Threading;
-using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Common.Logging;
-using Ryujinx.Common.System;
+using Ryujinx.Common.SystemInterop;
 using Ryujinx.Common.SystemInfo;
 using Ryujinx.Modules;
+using Ryujinx.SDL2.Common;
 using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
@@ -21,20 +20,18 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Ava
 {
-    internal class Program
+    internal partial class Program
     {
-        public static double      WindowScaleFactor { get; set; }
-        public static double      ActualScaleFactor { get; set; }
-        public static string      Version           { get; private set; }
-        public static string      ConfigurationPath { get; private set; }
-        public static bool        PreviewerDetached { get; private set; }
-        public static RenderTimer RenderTimer       { get; private set; }
+        public static double WindowScaleFactor  { get; set; }
+        public static double DesktopScaleFactor { get; set; } = 1.0;
+        public static string Version            { get; private set; }
+        public static string ConfigurationPath  { get; private set; }
+        public static bool   PreviewerDetached {  get; private set; }
 
-        [DllImport("user32.dll", SetLastError = true)]
-        public static extern int MessageBoxA(IntPtr hWnd, string text, string caption, uint type);
+        [LibraryImport("user32.dll", SetLastError = true)]
+        public static partial int MessageBoxA(IntPtr hWnd, [MarshalAs(UnmanagedType.LPStr)] string text, [MarshalAs(UnmanagedType.LPStr)] string caption, uint type);
 
         private const uint MB_ICONWARNING = 0x30;
-        private const int  BaseDpi        = 96;
 
         public static void Main(string[] args)
         {
@@ -49,11 +46,7 @@ namespace Ryujinx.Ava
 
             Initialize(args);
 
-            RenderTimer = new RenderTimer();
-
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
-
-            RenderTimer.Dispose();
         }
 
         public static AppBuilder BuildAvaloniaApp()
@@ -65,7 +58,7 @@ namespace Ryujinx.Ava
                     EnableMultiTouch = true,
                     EnableIme        = true,
                     UseEGL           = false,
-                    UseGpu           = false
+                    UseGpu           = true
                 })
                 .With(new Win32PlatformOptions
                 {
@@ -75,12 +68,6 @@ namespace Ryujinx.Ava
                     CompositionBackdropCornerRadius = 8.0f,
                 })
                 .UseSkia()
-                .AfterSetup(_ =>
-                {
-                    AvaloniaLocator.CurrentMutable
-                        .Bind<IRenderTimer>().ToConstant(RenderTimer)
-                        .Bind<IRenderLoop>().ToConstant(new RenderLoop(RenderTimer, Dispatcher.UIThread));
-                })
                 .LogToTrace();
         }
 
@@ -95,8 +82,8 @@ namespace Ryujinx.Ava
             Console.Title = $"Ryujinx Console {Version}";
 
             // Hook unhandled exception and process exit events.
-            AppDomain.CurrentDomain.UnhandledException += (object sender, UnhandledExceptionEventArgs e) => ProcessUnhandledException(e.ExceptionObject as Exception, e.IsTerminating);
-            AppDomain.CurrentDomain.ProcessExit        += (object sender, EventArgs e)                   => Exit();
+            AppDomain.CurrentDomain.UnhandledException += (sender, e) => ProcessUnhandledException(e.ExceptionObject as Exception, e.IsTerminating);
+            AppDomain.CurrentDomain.ProcessExit        += (sender, e) => Exit();
 
             // Setup base data directory.
             AppDataManager.Initialize(CommandLineState.BaseDirPathArg);
@@ -110,12 +97,14 @@ namespace Ryujinx.Ava
             // Initialize Discord integration.
             DiscordIntegrationModule.Initialize();
 
+            // Initialize SDL2 driver
+            SDL2Driver.MainThreadDispatcher = action => Dispatcher.UIThread.InvokeAsync(action, DispatcherPriority.Input);
+
             ReloadConfig();
 
             ForceDpiAware.Windows();
 
             WindowScaleFactor = ForceDpiAware.GetWindowScaleFactor();
-            ActualScaleFactor = ForceDpiAware.GetActualScaleFactor() / BaseDpi;
 
             // Logging system information.
             PrintSystemInfo();

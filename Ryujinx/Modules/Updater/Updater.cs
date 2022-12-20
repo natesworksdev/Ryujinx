@@ -293,7 +293,7 @@ namespace Ryujinx.Modules
                         list[index] = args.Result;
                         Interlocked.Increment(ref completedRequests);
 
-                        if (Interlocked.Equals(completedRequests, ConnectionCount))
+                        if (Equals(completedRequests, ConnectionCount))
                         {
                             byte[] mergedFileBytes = new byte[_buildSize];
                             for (int connectionIndex = 0, destinationOffset = 0; connectionIndex < ConnectionCount; connectionIndex++)
@@ -387,16 +387,19 @@ namespace Ryujinx.Modules
             worker.Start();
         }
 
-        [DllImport("libc", SetLastError = true)]
-        private static extern int chmod(string path, uint mode);
-
-        private static void SetUnixPermissions()
+        private static void SetFileExecutable(string path)
         {
-            string ryuBin = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx");
+            const UnixFileMode ExecutableFileMode = UnixFileMode.UserExecute |
+                                                    UnixFileMode.UserWrite |
+                                                    UnixFileMode.UserRead |
+                                                    UnixFileMode.GroupRead |
+                                                    UnixFileMode.GroupWrite |
+                                                    UnixFileMode.OtherRead |
+                                                    UnixFileMode.OtherWrite;
 
-            if (!OperatingSystem.IsWindows())
+            if (!OperatingSystem.IsWindows() && File.Exists(path))
             {
-                chmod(ryuBin, 493);
+                File.SetUnixFileMode(path, ExecutableFileMode);
             }
         }
 
@@ -519,7 +522,7 @@ namespace Ryujinx.Modules
 
             Directory.Delete(UpdateDir, true);
 
-            SetUnixPermissions();
+            SetFileExecutable(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx"));
 
             updateDialog.MainText.Text      = "Update Complete!";
             updateDialog.SecondaryText.Text = "Do you want to restart Ryujinx now?";

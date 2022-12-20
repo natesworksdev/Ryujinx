@@ -8,14 +8,38 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 {
     static class GlobalToStorage
     {
-        public static void RunPass(BasicBlock block, ShaderConfig config)
+        public static void RunPass(BasicBlock block, ShaderConfig config, ref int sbUseMask, ref int ubeUseMask)
         {
             int sbStart = GetStorageBaseCbOffset(config.Stage);
-
             int sbEnd = sbStart + StorageDescsSize;
+
+            int ubeStart = UbeBaseOffset;
+            int ubeEnd = UbeBaseOffset + UbeDescsSize;
 
             for (LinkedListNode<INode> node = block.Operations.First; node != null; node = node.Next)
             {
+                for (int index = 0; index < node.Value.SourcesCount; index++)
+                {
+                    Operand src = node.Value.GetSource(index);
+
+                    int storageIndex = GetStorageIndex(src, sbStart, sbEnd);
+
+                    if (storageIndex >= 0)
+                    {
+                        sbUseMask |= 1 << storageIndex;
+                    }
+
+                    if (config.Stage == ShaderStage.Compute)
+                    {
+                        int constantIndex = GetStorageIndex(src, ubeStart, ubeEnd);
+
+                        if (constantIndex >= 0)
+                        {
+                            ubeUseMask |= 1 << constantIndex;
+                        }
+                    }
+                }
+
                 if (!(node.Value is Operation operation))
                 {
                     continue;
@@ -43,7 +67,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                         // so NVN "emulates" more constant buffers using global memory access.
                         // Here we try to replace the global access back to a constant buffer
                         // load.
-                        storageIndex = SearchForStorageBase(block, source, UbeBaseOffset, UbeBaseOffset + UbeDescsSize);
+                        storageIndex = SearchForStorageBase(block, source, ubeStart, ubeStart + ubeEnd);
 
                         if (storageIndex >= 0)
                         {
@@ -52,6 +76,8 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     }
                 }
             }
+
+            config.SetAccessibleBufferMasks(sbUseMask, ubeUseMask);
         }
 
         private static LinkedListNode<INode> ReplaceGlobalWithStorage(BasicBlock block, LinkedListNode<INode> node, ShaderConfig config, int storageIndex)
