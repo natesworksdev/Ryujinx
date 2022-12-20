@@ -88,11 +88,11 @@ namespace Ryujinx.Graphics.Texture
                     uint packed = inputSpan[offset++];
 
                     uint outputPacked =  0xff000000;
-                         outputPacked |= (packed << 3)  & 0x000000f8;
-                         outputPacked |= (packed << 10) & 0x00f80000;
+                         outputPacked |= (packed << 3) & 0x000000f8;
+                         outputPacked |= (packed << 8) & 0x00f80000;
 
                     // Replicate 5 bit components.
-                    outputPacked |= (outputPacked >> 5) & 0x000f0000f;
+                    outputPacked |= (outputPacked >> 5) & 0x00070007;
 
                     // Include and replicate 6 bit component.
                     outputPacked |= ((packed << 5) & 0x0000fc00) | ((packed >> 1) & 0x00000300);
@@ -130,7 +130,7 @@ namespace Ryujinx.Graphics.Texture
                          outputPacked |= (packed << 9) & 0x00f80000;
 
                     // Replicate 5 bit components.
-                    outputPacked |= (outputPacked >> 5) & 0x000f0f0f;
+                    outputPacked |= (outputPacked >> 5) & 0x00070707;
 
                     uint a = forceAlpha ? 1 : (packed >> 15);
                     outputPacked &= a * 0xffffffffu;
