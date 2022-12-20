@@ -5,7 +5,7 @@ using FluentAvalonia.UI.Navigation;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.ViewModels;
 
-namespace Ryujinx.Ava.UI.Views
+namespace Ryujinx.Ava.UI.Views.User
 {
     public partial class UserRecoverer : UserControl
     {

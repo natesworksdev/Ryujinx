@@ -7,7 +7,7 @@ using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.ViewModels;
 using UserProfile = Ryujinx.Ava.UI.Models.UserProfile;
 
-namespace Ryujinx.Ava.UI.Views
+namespace Ryujinx.Ava.UI.Views.User
 {
     public partial class UserSelector : UserControl
     {

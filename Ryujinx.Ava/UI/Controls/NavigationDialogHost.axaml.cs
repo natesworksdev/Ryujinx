@@ -9,7 +9,7 @@ using LibHac.Fs.Shim;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
-using Ryujinx.Ava.UI.Views;
+using Ryujinx.Ava.UI.Views.User;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using System;

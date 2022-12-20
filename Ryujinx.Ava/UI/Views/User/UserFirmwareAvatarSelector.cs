@@ -7,7 +7,7 @@ using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.HLE.FileSystem;
 
-namespace Ryujinx.Ava.UI.Windows
+namespace Ryujinx.Ava.UI.Views.User
 {
     public partial class UserFirmwareAvatarSelector : UserControl
     {

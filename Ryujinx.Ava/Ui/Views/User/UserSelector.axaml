@@ -1,5 +1,5 @@
 <UserControl
-    x:Class="Ryujinx.Ava.UI.Views.UserSelector"
+    x:Class="Ryujinx.Ava.UI.Views.User.UserSelector"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
