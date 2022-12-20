@@ -20,17 +20,17 @@ using UserProfile = Ryujinx.Ava.UI.Models.UserProfile;
 
 namespace Ryujinx.Ava.UI.Views.User
 {
-    public partial class SaveManager : UserControl
+    public partial class UserSaveManager : UserControl
     {
         private readonly UserProfile _userProfile;
         private readonly HorizonClient _horizonClient;
         private readonly VirtualFileSystem _virtualFileSystem;
         private int _sortIndex;
         private int _orderIndex;
-        private ObservableCollection<SaveModel> _view = new ObservableCollection<SaveModel>();
+        private ObservableCollection<SaveModel> _view = new();
         private string _search;
 
-        public ObservableCollection<SaveModel> Saves { get; set; } = new ObservableCollection<SaveModel>();
+        public ObservableCollection<SaveModel> Saves { get; set; } = new();
 
         public ObservableCollection<SaveModel> View
         {
@@ -68,12 +68,12 @@ namespace Ryujinx.Ava.UI.Views.User
             }
         }
 
-        public SaveManager()
+        public UserSaveManager()
         {
             InitializeComponent();
         }
 
-        public SaveManager(UserProfile userProfile, HorizonClient horizonClient, VirtualFileSystem virtualFileSystem)
+        public UserSaveManager(UserProfile userProfile, HorizonClient horizonClient, VirtualFileSystem virtualFileSystem)
         {
             _userProfile = userProfile;
             _horizonClient = horizonClient;

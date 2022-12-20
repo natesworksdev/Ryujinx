@@ -17,7 +17,7 @@ using Image = SixLabors.ImageSharp.Image;
 
 namespace Ryujinx.Ava.UI.Views.User
 {
-    public partial class ProfileImageSelectionDialog : UserControl
+    public partial class UserProfileImageSelector : UserControl
     {
         private ContentManager _contentManager;
         private NavigationDialogHost _parent;
@@ -25,7 +25,7 @@ namespace Ryujinx.Ava.UI.Views.User
 
         public bool FirmwareFound => _contentManager.GetCurrentFirmwareVersion() != null;
 
-        public ProfileImageSelectionDialog()
+        public UserProfileImageSelector()
         {
             InitializeComponent();
             AddHandler(Frame.NavigatedToEvent, (s, e) =>

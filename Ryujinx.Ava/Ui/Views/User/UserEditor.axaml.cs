@@ -105,7 +105,7 @@ namespace Ryujinx.Ava.UI.Views.User
 
         public void SelectProfileImage()
         {
-            _parent.Navigate(typeof(ProfileImageSelectionDialog), (_parent, TempProfile));
+            _parent.Navigate(typeof(UserProfileImageSelector), (_parent, TempProfile));
         }
 
         private void ChangePictureButton_Click(object sender, RoutedEventArgs e)

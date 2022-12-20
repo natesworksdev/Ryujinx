@@ -217,7 +217,7 @@ namespace Ryujinx.Ava.UI.Controls
         {
             UserProfile userProfile = ViewModel.HighlightedProfile ?? ViewModel.SelectedProfile;
 
-            SaveManager manager = new(userProfile, HorizonClient, VirtualFileSystem);
+            UserSaveManager manager = new(userProfile, HorizonClient, VirtualFileSystem);
             
             ContentDialog contentDialog = new()
             {
