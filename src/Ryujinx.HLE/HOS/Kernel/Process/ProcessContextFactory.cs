@@ -1,4 +1,5 @@
-﻿using Ryujinx.Memory;
+﻿using Ryujinx.Cpu;
+using Ryujinx.Memory;
 
 namespace Ryujinx.HLE.HOS.Kernel.Process
 {
