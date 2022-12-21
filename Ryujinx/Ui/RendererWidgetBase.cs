@@ -584,7 +584,7 @@ namespace Ryujinx.Ui
                     {
                         if (!ParentWindow.State.HasFlag(WindowState.Fullscreen))
                         {
-                            Device.Application.DiskCacheLoadState.Cancel();
+                            Device.Application.DiskCacheLoadState?.Cancel();
                         }
                     }
                 });

@@ -946,7 +946,7 @@ namespace Ryujinx.Ava
 
                     if (_keyboardInterface.GetKeyboardStateSnapshot().IsPressed(Key.Delete) && _parent.WindowState != WindowState.FullScreen)
                     {
-                        Device.Application.DiskCacheLoadState.Cancel();
+                        Device.Application.DiskCacheLoadState?.Cancel();
                     }
                 });
             }
