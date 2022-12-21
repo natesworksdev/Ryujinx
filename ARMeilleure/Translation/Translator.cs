@@ -432,23 +432,17 @@ namespace ARMeilleure.Translation
 
         internal static void EmitSynchronization(EmitterContext context)
         {
-            long countOffs = NativeContext.GetCounterOffset();
+            long interruptedOffs = NativeContext.GetInterruptStateOffset();
 
-            Operand lblNonZero = Label();
+            Operand interruptedAddr = context.Add(context.LoadArgument(OperandType.I64, 0), Const(interruptedOffs));
+            Operand interrupted = context.Load(OperandType.I32, interruptedAddr);
             Operand lblExit = Label();
 
-            Operand countAddr = context.Add(context.LoadArgument(OperandType.I64, 0), Const(countOffs));
-            Operand count = context.Load(OperandType.I32, countAddr);
-            context.BranchIfTrue(lblNonZero, count, BasicBlockFrequency.Cold);
+            context.BranchIfFalse(lblExit, interrupted, BasicBlockFrequency.Cold);
 
             Operand running = context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.CheckSynchronization)));
             context.BranchIfTrue(lblExit, running, BasicBlockFrequency.Cold);
-
             context.Return(Const(0L));
-
-            context.MarkLabel(lblNonZero);
-            count = context.Subtract(count, Const(1));
-            context.Store(countAddr, count);
 
             context.MarkLabel(lblExit);
         }
