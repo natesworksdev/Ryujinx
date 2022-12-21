@@ -534,7 +534,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
                     if (sockAddrOutSize != 0 && sockAddrOutSize >= (ulong) Unsafe.SizeOf<BsdSockAddr>())
                     {
-                        context.Memory.Write(sockAddrOutPosition, bsdSockAddr);
+                        context.Memory.Write(sockAddrOutPosition, BsdSockAddr.FromIPEndPoint(endPoint));
                     }
                     else
                     {
