@@ -124,16 +124,15 @@ namespace Ryujinx.Graphics.Texture
                 {
                     uint packed = inputSpan[offset++];
 
-                    uint outputPacked =  0xff000000;
+                    uint a = forceAlpha ? 1 : (packed >> 15);
+
+                    uint outputPacked =  a * 0xff000000;
                          outputPacked |= (packed << 3) & 0x000000f8;
                          outputPacked |= (packed << 6) & 0x0000f800;
                          outputPacked |= (packed << 9) & 0x00f80000;
 
                     // Replicate 5 bit components.
                     outputPacked |= (outputPacked >> 5) & 0x00070707;
-
-                    uint a = forceAlpha ? 1 : (packed >> 15);
-                    outputPacked &= a * 0xffffffffu;
 
                     outputSpan[outOffset++] = outputPacked;
                 }
