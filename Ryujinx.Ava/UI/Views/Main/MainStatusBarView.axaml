@@ -74,6 +74,7 @@
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
             IsVisible="{Binding IsGameRunning}"
+            MaxHeight="18"
             Orientation="Horizontal">
             <TextBlock
                 Name="VsyncStatus"
