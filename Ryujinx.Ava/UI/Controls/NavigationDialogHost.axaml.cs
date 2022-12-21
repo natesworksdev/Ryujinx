@@ -210,7 +210,7 @@ namespace Ryujinx.Ava.UI.Controls
 
         public void RecoverLostAccounts()
         {
-            Navigate(typeof(UserRecoverer), (this, this));
+            Navigate(typeof(UserRecoverer), this);
         }
         
         public async void ManageSaves()
