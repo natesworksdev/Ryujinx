@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using LibHac;
@@ -87,6 +88,15 @@ namespace Ryujinx.Ava.UI.Controls
             {
                 content.ViewModel.Dispose();
             };
+
+            Style closeButton = new(x => x.Name("CloseButton"));
+            closeButton.Add(new Setter(WidthProperty, 70d));
+
+            Style closeButtonParent = new(x => x.Name("CommandSpace"));
+            closeButtonParent.Add(new Setter(HorizontalAlignmentProperty, Avalonia.Layout.HorizontalAlignment.Right));
+            
+            contentDialog.Styles.Add(closeButton);
+            contentDialog.Styles.Add(closeButtonParent);
 
             await contentDialog.ShowAsync();
         }
