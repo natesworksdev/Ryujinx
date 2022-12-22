@@ -20,23 +20,26 @@
           VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <Button Grid.Row="0"
-                Margin="5"
+        <StackPanel
+            Grid.Row="0"
+            Margin="0 0 0 5"
+            Orientation="Horizontal">
+            <Button 
                 Height="30"
                 Width="50"
                 MinWidth="50"
                 HorizontalAlignment="Left"
                 Click="GoBack">
-            <ui:SymbolIcon Symbol="Back"/>
-        </Button>
-        <TextBlock Grid.Row="1"
-                   Text="{locale:Locale UserProfilesRecoverHeading}"/>
+                <ui:SymbolIcon Symbol="Back"/>
+            </Button>
+            <TextBlock
+                Margin="10"
+                Text="{locale:Locale UserProfilesRecoverHeading}"/>
+        </StackPanel>
         <ListBox
-            Margin="5"
-            Grid.Row="2"
+            Grid.Row="1"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             Items="{Binding LostProfiles}">
