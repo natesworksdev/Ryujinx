@@ -112,7 +112,7 @@
                 Name="ColorButton" />
             <Button 
                 HorizontalAlignment="Right" 
-                Content="{locale:Locale Discard}" 
+                Content="{locale:Locale Cancel}" 
                 Click="CloseButton_OnClick"
                 Name="CloseButton"
                 Width="200" />

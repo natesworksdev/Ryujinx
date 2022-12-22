@@ -9,6 +9,7 @@ using LibHac.Fs;
 using LibHac.Fs.Shim;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
+using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Views.User;
 using Ryujinx.HLE.FileSystem;
@@ -43,8 +44,7 @@ namespace Ryujinx.Ava.UI.Controls
             HorizonClient = horizonClient;
             ViewModel = new UserProfileViewModel();
             LoadProfiles();
-
-
+            
             if (contentManager.GetCurrentFirmwareVersion() != null)
             {
                 Task.Run(() =>
@@ -120,11 +120,11 @@ namespace Ryujinx.Ava.UI.Controls
                 ViewModel.Profiles.Add(new UserProfile(profile, this));
             }
 
-            ViewModel.SelectedProfile = ViewModel.Profiles.FirstOrDefault(x => x.UserId == AccountManager.LastOpenedUser.UserId);
+            ViewModel.SelectedProfile = ViewModel.Profiles.Cast<UserProfile>().FirstOrDefault(x => x.UserId == AccountManager.LastOpenedUser.UserId);
 
             if (ViewModel.SelectedProfile == null)
             {
-                ViewModel.SelectedProfile = ViewModel.Profiles.First();
+                ViewModel.SelectedProfile = (UserProfile)ViewModel.Profiles.First();
 
                 if (ViewModel.SelectedProfile != null)
                 {
@@ -156,7 +156,7 @@ namespace Ryujinx.Ava.UI.Controls
                 {
                     var save = saveDataInfo[i];
                     var id = new HLE.HOS.Services.Account.Acc.UserId((long)save.UserId.Id.Low, (long)save.UserId.Id.High);
-                    if (ViewModel.Profiles.FirstOrDefault( x=> x.UserId == id) == null)
+                    if (ViewModel.Profiles.Cast<UserProfile>().FirstOrDefault( x=> x.UserId == id) == null)
                     {
                         lostAccounts.Add(id);
                     }
@@ -167,44 +167,44 @@ namespace Ryujinx.Ava.UI.Controls
             {
                 ViewModel.LostProfiles.Add(new UserProfile(new HLE.HOS.Services.Account.Acc.UserProfile(account, "", null), this));
             }
+            
+            ViewModel.Profiles.Add(new AddModel());
         }
 
-        public async void DeleteUser()
+        public async void DeleteUser(UserProfile userProfile)
         {
-            if (ViewModel.HighlightedProfile != null)
+            var lastUserId = AccountManager.LastOpenedUser.UserId;
+
+            if (userProfile.UserId == lastUserId)
             {
-                var lastUserId = AccountManager.LastOpenedUser.UserId;
+                // If we are deleting the currently open profile, then we must open something else before deleting.
+                var profile = ViewModel.Profiles.Cast<UserProfile>().FirstOrDefault(x => x.UserId != lastUserId);
 
-                if (ViewModel.HighlightedProfile.UserId == lastUserId)
+                if (profile == null)
                 {
-                    // If we are deleting the currently open profile, then we must open something else before deleting.
-                    var profile = ViewModel.Profiles.FirstOrDefault(x => x.UserId != lastUserId);
-
-                    if (profile == null)
+                    async void Action()
                     {
-                        async void Action()
-                        {
-                            await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance["DialogUserProfileDeletionWarningMessage"]);
-                        }
-
-                        Dispatcher.UIThread.Post(Action);
-
-                        return;
+                        await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance["DialogUserProfileDeletionWarningMessage"]);
                     }
 
-                    AccountManager.OpenUser(profile.UserId);
+                    Dispatcher.UIThread.Post(Action);
+
+                    return;
                 }
 
-                var result =
-                    await ContentDialogHelper.CreateConfirmationDialog(LocaleManager.Instance["DialogUserProfileDeletionConfirmMessage"], "",
-                        LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"], "");
-
-                if (result == UserResult.Yes)
-                {
-                    AccountManager.DeleteUser(ViewModel.HighlightedProfile.UserId);
-                }
+                AccountManager.OpenUser(profile.UserId);
             }
 
+            var result =
+                await ContentDialogHelper.CreateConfirmationDialog(LocaleManager.Instance["DialogUserProfileDeletionConfirmMessage"], "",
+                    LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"], "");
+
+            if (result == UserResult.Yes)
+            {
+                GoBack();
+                AccountManager.DeleteUser(userProfile.UserId);
+            }
+            
             LoadProfiles();
         }
         
@@ -213,9 +213,9 @@ namespace Ryujinx.Ava.UI.Controls
             Navigate(typeof(UserEditor), (this, (UserProfile)null, true));
         }
         
-        public void EditUser()
+        public void EditUser(UserProfile userProfile)
         {
-            Navigate(typeof(UserEditor), (this, ViewModel.HighlightedProfile ?? ViewModel.SelectedProfile, false));
+            Navigate(typeof(UserEditor), (this, userProfile, false));
         }
 
         public void RecoverLostAccounts()
@@ -223,9 +223,9 @@ namespace Ryujinx.Ava.UI.Controls
             Navigate(typeof(UserRecoverer), this);
         }
         
-        public void ManageSaves()
+        /*public void ManageSaves()
         {
             Navigate(typeof(UserSaveManager), (this, ViewModel.HighlightedProfile ?? ViewModel.SelectedProfile, HorizonClient, VirtualFileSystem));
-        }
+        }*/
     }
 }

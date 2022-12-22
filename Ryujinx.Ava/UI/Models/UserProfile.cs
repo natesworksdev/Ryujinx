@@ -13,6 +13,8 @@ namespace Ryujinx.Ava.UI.Models
         private byte[] _image;
         private string _name;
         private UserId _userId;
+        private bool _isPointerOver;
+        public uint MaxProfileNameLength => 0x20;
 
         public byte[] Image
         {
@@ -44,7 +46,17 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
-        public UserProfile(Profile profile, NavigationDialogHost owner)
+        public bool IsPointerOver
+        {
+            get => _isPointerOver;
+            set
+            {
+                _isPointerOver = value;
+                OnPropertyChanged();
+            }
+        }
+
+    public UserProfile(Profile profile, NavigationDialogHost owner)
         {
             _profile = profile;
             _owner = owner;

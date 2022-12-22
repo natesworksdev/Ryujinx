@@ -7,6 +7,7 @@ using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
+using Ryujinx.HLE.HOS.Services.Account.Acc;
 using UserProfile = Ryujinx.Ava.UI.Models.UserProfile;
 
 namespace Ryujinx.Ava.UI.Views.User
@@ -19,6 +20,7 @@ namespace Ryujinx.Ava.UI.Views.User
 
         public TempProfile TempProfile { get; set; }
         public uint MaxProfileNameLength => 0x20;
+        public bool IsDeletable => _profile.UserId != AccountManager.DefaultUserId;
 
         public UserEditor()
         {
@@ -48,15 +50,28 @@ namespace Ryujinx.Ava.UI.Views.User
                 DataContext = TempProfile;
 
                 AddPictureButton.IsVisible = _isNewUser;
+                ChangePictureButton.IsVisible = !_isNewUser;
                 IdLabel.IsVisible = _profile != null;
                 IdText.IsVisible = _profile != null;
-                ChangePictureButton.IsVisible = !_isNewUser;
+                if (!_isNewUser && IsDeletable)
+                {
+                    DeleteButton.IsVisible = true;
+                }
+                else
+                {
+                    DeleteButton.IsVisible = false;
+                }
             }
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             _parent?.GoBack();
+        }
+
+        private void DeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            _parent.DeleteUser(_profile);
         }
 
         private async void SaveButton_Click(object sender, RoutedEventArgs e)

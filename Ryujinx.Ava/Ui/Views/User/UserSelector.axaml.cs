@@ -41,29 +41,29 @@ namespace Ryujinx.Ava.UI.Views.User
             }
         }
 
-        private void ProfilesList_DoubleTapped(object sender, TappedEventArgs e)
+        private void Grid_PointerEntered(object sender, PointerEventArgs e)
         {
-            if (sender is ListBox listBox)
-            {
-                int selectedIndex = listBox.SelectedIndex;
-
-                if (selectedIndex >= 0 && selectedIndex < ViewModel.Profiles.Count)
+            if (sender is Grid grid)
+            { 
+                if (grid.DataContext is UserProfile profile)
                 {
-                    ViewModel.SelectedProfile = ViewModel.Profiles[selectedIndex];
-
-                    _parent?.AccountManager?.OpenUser(ViewModel.SelectedProfile.UserId);
-
-                    _parent.LoadProfiles();
-
-                    foreach (UserProfile profile in ViewModel.Profiles)
-                    {
-                        profile.UpdateState();
-                    }
+                    profile.IsPointerOver = true;
+                }
+            }
+        }
+        
+        private void Grid_OnPointerExited(object sender, PointerEventArgs e)
+        {
+            if (sender is Grid grid)
+            { 
+                if (grid.DataContext is UserProfile profile)
+                {
+                    profile.IsPointerOver = false;
                 }
             }
         }
 
-        private void SelectingItemsControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ProfilesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (sender is ListBox listBox)
             {
@@ -71,7 +71,20 @@ namespace Ryujinx.Ava.UI.Views.User
 
                 if (selectedIndex >= 0 && selectedIndex < ViewModel.Profiles.Count)
                 {
-                    ViewModel.HighlightedProfile = ViewModel.Profiles[selectedIndex];
+                    if (ViewModel.Profiles[selectedIndex] is UserProfile userProfile)
+                    {
+                        ViewModel.SelectedProfile = userProfile;
+
+                        _parent?.AccountManager?.OpenUser(ViewModel.SelectedProfile.UserId);
+                        
+                        foreach (BaseModel profile in ViewModel.Profiles)
+                        {
+                            if (profile is UserProfile uProfile)
+                            {
+                                uProfile.UpdateState();
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -83,22 +96,18 @@ namespace Ryujinx.Ava.UI.Views.User
 
         private void EditUser(object sender, RoutedEventArgs e)
         {
-            _parent.EditUser();
-        }
-
-        private void ManageSaves(object sender, RoutedEventArgs e)
-        {
-            _parent.ManageSaves();
+            if (sender is Button button)
+            {
+                if (button.DataContext is UserProfile userProfile)
+                {
+                    _parent.EditUser(userProfile);
+                }
+            }
         }
 
         private void RecoverLostAccounts(object sender, RoutedEventArgs e)
         {
             _parent.RecoverLostAccounts();
-        }
-
-        private void DeleteUser(object sender, RoutedEventArgs e)
-        {
-            _parent.DeleteUser();
         }
     }
 }
