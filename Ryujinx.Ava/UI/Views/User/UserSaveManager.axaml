@@ -99,9 +99,23 @@
                 Items="{Binding View}" 
                 HorizontalAlignment="Stretch" 
                 VerticalAlignment="Stretch">
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="Padding" Value="10" />
+                        <Setter Property="Margin" Value="5" />
+                        <Setter Property="CornerRadius" Value="4" />
+                        <Setter Property="Background" Value="{DynamicResource AppListBackgroundColor}" />
+                    </Style>
+                    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                        <Setter Property="Background" Value="{DynamicResource AppListBackgroundColor}" />
+                    </Style>
+                    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+                        <Setter Property="Background" Value="{DynamicResource AppListHoverBackgroundColor}" />
+                    </Style>
+                </ListBox.Styles>
                 <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="models:SaveModel">
-                        <Grid HorizontalAlignment="Stretch" Margin="0,5">
+                        <Grid HorizontalAlignment="Stretch">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition />
                                 <ColumnDefinition Width="Auto" />
@@ -121,7 +135,6 @@
                                 </Border>
                                 <Image 
                                     IsVisible="{Binding InGameList}"
-                                    Margin="2"
                                     Width="42"
                                     Height="42"
                                     Source="{Binding Icon, Converter={StaticResource ByteImage}}" />
