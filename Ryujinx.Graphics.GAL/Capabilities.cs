@@ -2,7 +2,7 @@ using Ryujinx.Graphics.Shader.Translation;
 
 namespace Ryujinx.Graphics.GAL
 {
-    public struct Capabilities
+    public readonly struct Capabilities
     {
         public readonly TargetApi Api;
         public readonly string VendorName;
@@ -14,9 +14,11 @@ namespace Ryujinx.Graphics.GAL
         public readonly bool SupportsBc123Compression;
         public readonly bool SupportsBc45Compression;
         public readonly bool SupportsBc67Compression;
+        public readonly bool SupportsEtc2Compression;
         public readonly bool Supports3DTextureCompression;
         public readonly bool SupportsBgraFormat;
         public readonly bool SupportsR4G4Format;
+        public readonly bool SupportsSnormBufferTextureFormat;
         public readonly bool SupportsFragmentShaderInterlock;
         public readonly bool SupportsFragmentShaderOrderingIntel;
         public readonly bool SupportsGeometryShaderPassthrough;
@@ -49,9 +51,11 @@ namespace Ryujinx.Graphics.GAL
             bool supportsBc123Compression,
             bool supportsBc45Compression,
             bool supportsBc67Compression,
+            bool supportsEtc2Compression,
             bool supports3DTextureCompression,
             bool supportsBgraFormat,
             bool supportsR4G4Format,
+            bool supportsSnormBufferTextureFormat,
             bool supportsFragmentShaderInterlock,
             bool supportsFragmentShaderOrderingIntel,
             bool supportsGeometryShaderPassthrough,
@@ -81,9 +85,11 @@ namespace Ryujinx.Graphics.GAL
             SupportsBc123Compression = supportsBc123Compression;
             SupportsBc45Compression = supportsBc45Compression;
             SupportsBc67Compression = supportsBc67Compression;
+            SupportsEtc2Compression = supportsEtc2Compression;
             Supports3DTextureCompression = supports3DTextureCompression;
             SupportsBgraFormat = supportsBgraFormat;
             SupportsR4G4Format = supportsR4G4Format;
+            SupportsSnormBufferTextureFormat = supportsSnormBufferTextureFormat;
             SupportsFragmentShaderInterlock = supportsFragmentShaderInterlock;
             SupportsFragmentShaderOrderingIntel = supportsFragmentShaderOrderingIntel;
             SupportsGeometryShaderPassthrough = supportsGeometryShaderPassthrough;

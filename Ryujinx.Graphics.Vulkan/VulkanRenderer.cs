@@ -177,6 +177,11 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PhysicalDeviceShaderFloat16Int8Features
             };
 
+            PhysicalDeviceCustomBorderColorFeaturesEXT featuresCustomBorderColor = new PhysicalDeviceCustomBorderColorFeaturesEXT()
+            {
+                SType = StructureType.PhysicalDeviceCustomBorderColorFeaturesExt
+            };
+
             if (supportedExtensions.Contains("VK_EXT_robustness2"))
             {
                 features2.PNext = &featuresRobustness2;
@@ -188,11 +193,28 @@ namespace Ryujinx.Graphics.Vulkan
                 features2.PNext = &featuresShaderInt8;
             }
 
+            if (supportedExtensions.Contains("VK_EXT_custom_border_color"))
+            {
+                featuresCustomBorderColor.PNext = features2.PNext;
+                features2.PNext = &featuresCustomBorderColor;
+            }
+
             Api.GetPhysicalDeviceFeatures2(_physicalDevice, &features2);
+
+            bool customBorderColorSupported = supportedExtensions.Contains("VK_EXT_custom_border_color") &&
+                                              featuresCustomBorderColor.CustomBorderColors &&
+                                              featuresCustomBorderColor.CustomBorderColorWithoutFormat;
+
+            ref var properties = ref properties2.Properties;
+
+            SampleCountFlags supportedSampleCounts =
+                properties.Limits.FramebufferColorSampleCounts &
+                properties.Limits.FramebufferDepthSampleCounts &
+                properties.Limits.FramebufferStencilSampleCounts;
 
             Capabilities = new HardwareCapabilities(
                 supportedExtensions.Contains("VK_EXT_index_type_uint8"),
-                supportedExtensions.Contains("VK_EXT_custom_border_color"),
+                customBorderColorSupported,
                 supportedExtensions.Contains(KhrDrawIndirectCount.ExtensionName),
                 supportedExtensions.Contains("VK_EXT_fragment_shader_interlock"),
                 supportedExtensions.Contains("VK_NV_geometry_shader_passthrough"),
@@ -208,9 +230,8 @@ namespace Ryujinx.Graphics.Vulkan
                 supportedFeatures.GeometryShader,
                 propertiesSubgroupSizeControl.MinSubgroupSize,
                 propertiesSubgroupSizeControl.MaxSubgroupSize,
-                propertiesSubgroupSizeControl.RequiredSubgroupSizeStages);
-
-            ref var properties = ref properties2.Properties;
+                propertiesSubgroupSizeControl.RequiredSubgroupSizeStages,
+                supportedSampleCounts);
 
             MemoryAllocator = new MemoryAllocator(Api, _device, properties.Limits.MaxMemoryAllocationCount);
 
@@ -367,6 +388,13 @@ namespace Ryujinx.Graphics.Vulkan
                 GAL.Format.Bc7Srgb,
                 GAL.Format.Bc7Unorm);
 
+            bool supportsEtc2CompressionFormat = FormatCapabilities.OptimalFormatsSupport(compressedFormatFeatureFlags,
+                GAL.Format.Etc2RgbaSrgb,
+                GAL.Format.Etc2RgbaUnorm,
+                GAL.Format.Etc2RgbPtaSrgb,
+                GAL.Format.Etc2RgbPtaUnorm,
+                GAL.Format.Etc2RgbSrgb,
+                GAL.Format.Etc2RgbUnorm);
 
             PhysicalDeviceVulkan12Features featuresVk12 = new PhysicalDeviceVulkan12Features()
             {
@@ -393,9 +421,11 @@ namespace Ryujinx.Graphics.Vulkan
                 supportsBc123Compression: supportsBc123CompressionFormat,
                 supportsBc45Compression: supportsBc45CompressionFormat,
                 supportsBc67Compression: supportsBc67CompressionFormat,
+                supportsEtc2Compression: supportsEtc2CompressionFormat,
                 supports3DTextureCompression: true,
                 supportsBgraFormat: true,
                 supportsR4G4Format: false,
+                supportsSnormBufferTextureFormat: true,
                 supportsFragmentShaderInterlock: Capabilities.SupportsFragmentShaderInterlock,
                 supportsFragmentShaderOrderingIntel: false,
                 supportsGeometryShaderPassthrough: Capabilities.SupportsGeometryShaderPassthrough,

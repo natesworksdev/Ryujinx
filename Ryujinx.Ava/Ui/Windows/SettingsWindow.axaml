@@ -18,7 +18,8 @@
     WindowStartupLocation="CenterOwner"
     x:CompileBindings="True"
     x:DataType="viewModels:SettingsViewModel"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    Focusable="True">
     <Design.DataContext>
         <viewModels:SettingsViewModel />
     </Design.DataContext>
@@ -539,7 +540,7 @@
                                     <ComboBoxItem IsVisible="{Binding IsVulkanAvailable}">
                                         <TextBlock Text="Vulkan" />
                                     </ComboBoxItem>
-                                    <ComboBoxItem>
+                                    <ComboBoxItem IsEnabled="{Binding IsOpenGLAvailable}">
                                         <TextBlock Text="OpenGL" />
                                     </ComboBoxItem>
                                 </ComboBox>
@@ -875,7 +876,7 @@
                                 </StackPanel>
                                 <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
                                     <TextBlock VerticalAlignment="Center"
-                                            Text="{locale:Locale SettingsTabLoggingOpenglLogLevel}"
+                                            Text="{locale:Locale SettingsTabLoggingGraphicsBackendLogLevel}"
                                             ToolTip.Tip="{locale:Locale OpenGlLogLevel}"
                                             Width="285" />
                                     <ComboBox SelectedIndex="{Binding OpenglDebugLevel}"
@@ -883,17 +884,17 @@
                                             HorizontalContentAlignment="Left"
                                             ToolTip.Tip="{locale:Locale OpenGlLogLevel}">
                                         <ComboBoxItem>
-                                            <TextBlock Text="{locale:Locale SettingsTabLoggingOpenglLogLevelNone}" />
+                                            <TextBlock Text="{locale:Locale SettingsTabLoggingGraphicsBackendLogLevelNone}" />
                                         </ComboBoxItem>
                                         <ComboBoxItem>
-                                            <TextBlock Text="{locale:Locale SettingsTabLoggingOpenglLogLevelError}" />
+                                            <TextBlock Text="{locale:Locale SettingsTabLoggingGraphicsBackendLogLevelError}" />
                                         </ComboBoxItem>
                                         <ComboBoxItem>
                                             <TextBlock
-                                                Text="{locale:Locale SettingsTabLoggingOpenglLogLevelPerformance}" />
+                                                Text="{locale:Locale SettingsTabLoggingGraphicsBackendLogLevelPerformance}" />
                                         </ComboBoxItem>
                                         <ComboBoxItem>
-                                            <TextBlock Text="{locale:Locale SettingsTabLoggingOpenglLogLevelAll}" />
+                                            <TextBlock Text="{locale:Locale SettingsTabLoggingGraphicsBackendLogLevelAll}" />
                                         </ComboBoxItem>
                                     </ComboBox>
                                 </StackPanel>
