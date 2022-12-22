@@ -11,17 +11,18 @@ using LibHac.Fs.Shim;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.HLE.FileSystem;
+using Ryujinx.HLE.HOS.Services.Account.Acc;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using UserProfile = Ryujinx.Ava.UI.Models.UserProfile;
+using UserId = LibHac.Fs.UserId;
 
 namespace Ryujinx.Ava.UI.Views.User
 {
     public partial class UserSaveManager : UserControl
     {
-        private UserProfile _userProfile;
+        private AccountManager _accountManager;
         private HorizonClient _horizonClient;
         private VirtualFileSystem _virtualFileSystem;
         private int _sortIndex;
@@ -86,9 +87,8 @@ namespace Ryujinx.Ava.UI.Views.User
                 {
                     case NavigationMode.New:
                         var args =
-                            ((NavigationDialogHost parent, UserProfile profile, HorizonClient client, VirtualFileSystem
+                            ((NavigationDialogHost parent, AccountManager accountManager, HorizonClient client, VirtualFileSystem
                                 virtualFileSystem))arg.Parameter;
-                        _userProfile = args.profile;
                         _horizonClient = args.client;
                         _virtualFileSystem = args.virtualFileSystem;
 
@@ -105,7 +105,7 @@ namespace Ryujinx.Ava.UI.Views.User
         {
             Saves.Clear();
             var saveDataFilter = SaveDataFilter.Make(programId: default, saveType: SaveDataType.Account,
-                new UserId((ulong)_userProfile.UserId.High, (ulong)_userProfile.UserId.Low), saveDataId: default, index: default);
+                new UserId((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low), saveDataId: default, index: default);
 
             using var saveDataIterator = new UniqueRef<SaveDataIterator>();
 

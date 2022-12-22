@@ -154,6 +154,10 @@
             HorizontalAlignment="Right"
             Orientation="Horizontal">
             <Button
+                Margin="10 0"
+                Click="ManageSaves"
+                Content="{locale:Locale UserProfilesManageSaves}" />
+            <Button
                 Click="RecoverLostAccounts"
                 Content="{locale:Locale UserProfilesRecoverLostAccounts}" />
         </StackPanel>

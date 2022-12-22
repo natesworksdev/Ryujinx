@@ -104,6 +104,11 @@ namespace Ryujinx.Ava.UI.Views.User
                 }
             }
         }
+        
+        private void ManageSaves(object sender, RoutedEventArgs e)
+        {
+            _parent.ManageSaves();
+        }
 
         private void RecoverLostAccounts(object sender, RoutedEventArgs e)
         {

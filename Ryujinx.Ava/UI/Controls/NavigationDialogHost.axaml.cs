@@ -223,9 +223,9 @@ namespace Ryujinx.Ava.UI.Controls
             Navigate(typeof(UserRecoverer), this);
         }
         
-        /*public void ManageSaves()
+        public void ManageSaves()
         {
-            Navigate(typeof(UserSaveManager), (this, ViewModel.HighlightedProfile ?? ViewModel.SelectedProfile, HorizonClient, VirtualFileSystem));
-        }*/
+            Navigate(typeof(UserSaveManager), (this, AccountManager, HorizonClient, VirtualFileSystem));
+        }
     }
 }
