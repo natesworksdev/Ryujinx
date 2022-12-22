@@ -1,46 +1,36 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Styling;
-using FluentAvalonia.UI.Controls;
+using Avalonia.Threading;
 using Ryujinx.Ava.Common.Locale;
-using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
+using Ryujinx.Common.Utilities;
 using Ryujinx.Ui.Common.Helper;
+using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
-using Button = Avalonia.Controls.Button;
 
 namespace Ryujinx.Ava.UI.Windows
 {
-    public partial class AboutWindow : UserControl
+    public partial class AboutWindow : StyleableWindow
     {
+        internal AboutWindowViewModel ViewModel { get; private set; }
+
         public AboutWindow()
         {
-            DataContext = new AboutWindowViewModel();
+            if (Program.PreviewerDetached)
+            {
+                Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance["MenuBarHelpAbout"];
+            }
+            
+            DataContext = ViewModel = new AboutWindowViewModel();
+            
+            ViewModel.Version = Program.Version;
+            ViewModel.Developers = string.Format(LocaleManager.Instance["AboutPageDeveloperListMore"], "gdkchan, Ac_K, Thog, rip in peri peri, LDj3SNuD, emmaus, Thealexbarney, Xpl0itR, GoffyDude, »jD«");
 
             InitializeComponent();
-        }
 
-        public static async Task Show()
-        {
-            ContentDialog contentDialog = new()
-            {
-                PrimaryButtonText   = "",
-                SecondaryButtonText = "",
-                CloseButtonText     = LocaleManager.Instance[LocaleKeys.UserProfilesClose],
-                Content             = new AboutWindow()
-            };
-
-            Style closeButton = new(x => x.Name("CloseButton"));
-            closeButton.Setters.Add(new Setter(WidthProperty, 80d));
-
-            Style closeButtonParent = new(x => x.Name("CommandSpace"));
-            closeButtonParent.Setters.Add(new Setter(HorizontalAlignmentProperty, Avalonia.Layout.HorizontalAlignment.Right));
-
-            contentDialog.Styles.Add(closeButton);
-            contentDialog.Styles.Add(closeButtonParent);
-
-            await ContentDialogHelper.ShowAsync(contentDialog);
+            _ = DownloadPatronsJson();
         }
 
         private void Button_OnClick(object sender, RoutedEventArgs e)
@@ -48,6 +38,29 @@ namespace Ryujinx.Ava.UI.Windows
             if (sender is Button button)
             {
                 OpenHelper.OpenUrl(button.Tag.ToString());
+            }
+        }
+
+        private async Task DownloadPatronsJson()
+        {
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                ViewModel.Supporters = LocaleManager.Instance["ConnectionError"];
+
+                return;
+            }
+
+            HttpClient httpClient = new();
+
+            try
+            {
+                string patreonJsonString = await httpClient.GetStringAsync("https://patreon.ryujinx.org/");
+
+                ViewModel.Supporters = string.Join(", ", JsonHelper.Deserialize<string[]>(patreonJsonString));
+            }
+            catch
+            {
+                ViewModel.Supporters = LocaleManager.Instance["ApiError"];
             }
         }
 

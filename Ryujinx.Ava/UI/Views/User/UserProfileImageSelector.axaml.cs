@@ -7,6 +7,7 @@ using FluentAvalonia.UI.Navigation;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Models;
+using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.HLE.FileSystem;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
@@ -22,9 +23,9 @@ namespace Ryujinx.Ava.UI.Views.User
         private ContentManager _contentManager;
         private NavigationDialogHost _parent;
         private TempProfile _profile;
-
-        public bool FirmwareFound => _contentManager.GetCurrentFirmwareVersion() != null;
-
+        
+        internal UserProfileImageSelectorViewModel ViewModel { get; private set; }
+        
         public UserProfileImageSelector()
         {
             InitializeComponent();
@@ -43,13 +44,18 @@ namespace Ryujinx.Ava.UI.Views.User
                     case NavigationMode.New:
                         (_parent, _profile) = ((NavigationDialogHost, TempProfile))arg.Parameter;
                         _contentManager = _parent.ContentManager;
+
+                        if (Program.PreviewerDetached)
+                        {
+                            DataContext = ViewModel = new UserProfileImageSelectorViewModel();
+                            ViewModel.FirmwareFound = _contentManager.GetCurrentFirmwareVersion() != null;
+                        }
+                        
                         break;
                     case NavigationMode.Back:
                         _parent.GoBack();
                         break;
                 }
-
-                DataContext = this;
             }
         }
 
@@ -82,12 +88,12 @@ namespace Ryujinx.Ava.UI.Views.User
 
         private void Cancel_OnClick(object sender, RoutedEventArgs e)
         {
-            _parent?.GoBack();
+            _parent.GoBack();
         }
 
         private void SelectFirmwareImage_OnClick(object sender, RoutedEventArgs e)
         {
-            if (FirmwareFound)
+            if (ViewModel.FirmwareFound)
             {
                 _parent.Navigate(typeof(UserFirmwareAvatarSelector), (_parent, _profile));
             }

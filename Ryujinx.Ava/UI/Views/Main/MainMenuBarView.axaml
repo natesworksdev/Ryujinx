@@ -7,7 +7,8 @@
     mc:Ignorable="d"
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     x:DataType="viewModels:MainWindowViewModel"
-    x:Class="Ryujinx.Ava.UI.Views.Main.MainMenuBarView">
+    x:Class="Ryujinx.Ava.UI.Views.Main.MainMenuBarView"
+    x:CompileBindings="True">
     <Design.DataContext>
         <viewModels:MainWindowViewModel />
     </Design.DataContext>
