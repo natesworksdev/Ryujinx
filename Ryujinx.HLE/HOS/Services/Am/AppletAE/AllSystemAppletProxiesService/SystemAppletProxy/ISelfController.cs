@@ -335,10 +335,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         public ResultCode GetCurrentIlluminanceEx(ServiceCtx context)
         {
             // TODO: The light value should be configurable - presumably users using software that takes advantage will want control.
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
-
             context.ResponseData.Write(1); // OverLimit
             context.ResponseData.Write(10000f); // Lux - 10K lux is ambient light.
+
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
             return ResultCode.Success;
         }
