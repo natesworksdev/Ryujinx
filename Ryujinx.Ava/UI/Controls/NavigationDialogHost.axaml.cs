@@ -213,23 +213,9 @@ namespace Ryujinx.Ava.UI.Controls
             Navigate(typeof(UserRecoverer), this);
         }
         
-        public async void ManageSaves()
+        public void ManageSaves()
         {
-            UserProfile userProfile = ViewModel.HighlightedProfile ?? ViewModel.SelectedProfile;
-
-            UserSaveManager manager = new(userProfile, HorizonClient, VirtualFileSystem);
-            
-            ContentDialog contentDialog = new()
-            {
-                Title = string.Format(LocaleManager.Instance["SaveManagerHeading"], userProfile.Name),
-                PrimaryButtonText = "",
-                SecondaryButtonText = "",
-                CloseButtonText = LocaleManager.Instance["UserProfilesClose"],
-                Content = manager,
-                Padding = new Thickness(0)
-            };
-
-            await contentDialog.ShowAsync();
+            Navigate(typeof(UserSaveManager), (this, ViewModel.HighlightedProfile ?? ViewModel.SelectedProfile, HorizonClient, VirtualFileSystem));
         }
     }
 }

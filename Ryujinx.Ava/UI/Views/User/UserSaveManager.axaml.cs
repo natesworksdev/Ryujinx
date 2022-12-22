@@ -1,15 +1,14 @@
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using DynamicData;
 using DynamicData.Binding;
+using FluentAvalonia.UI.Controls;
+using FluentAvalonia.UI.Navigation;
 using LibHac;
 using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Shim;
-<<<<<<< HEAD
-using Ryujinx.Ava.Common;
-using Ryujinx.Ava.Common.Locale;
-=======
->>>>>>> 66aac324 (Fix Namespace Case)
+using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.HLE.FileSystem;
 using System;
@@ -22,13 +21,15 @@ namespace Ryujinx.Ava.UI.Views.User
 {
     public partial class UserSaveManager : UserControl
     {
-        private readonly UserProfile _userProfile;
-        private readonly HorizonClient _horizonClient;
-        private readonly VirtualFileSystem _virtualFileSystem;
+        private UserProfile _userProfile;
+        private HorizonClient _horizonClient;
+        private VirtualFileSystem _virtualFileSystem;
         private int _sortIndex;
         private int _orderIndex;
         private ObservableCollection<SaveModel> _view = new();
         private string _search;
+
+        private NavigationDialogHost _parent;
 
         public ObservableCollection<SaveModel> Saves { get; set; } = new();
 
@@ -71,18 +72,33 @@ namespace Ryujinx.Ava.UI.Views.User
         public UserSaveManager()
         {
             InitializeComponent();
+            AddHandler(Frame.NavigatedToEvent, (s, e) =>
+            {
+                NavigatedTo(e);
+            }, RoutingStrategies.Direct);
         }
 
-        public UserSaveManager(UserProfile userProfile, HorizonClient horizonClient, VirtualFileSystem virtualFileSystem)
+        private void NavigatedTo(NavigationEventArgs arg)
         {
-            _userProfile = userProfile;
-            _horizonClient = horizonClient;
-            _virtualFileSystem = virtualFileSystem;
-            InitializeComponent();
+            if (Program.PreviewerDetached)
+            {
+                switch (arg.NavigationMode)
+                {
+                    case NavigationMode.New:
+                        var args =
+                            ((NavigationDialogHost parent, UserProfile profile, HorizonClient client, VirtualFileSystem
+                                virtualFileSystem))arg.Parameter;
+                        _userProfile = args.profile;
+                        _horizonClient = args.client;
+                        _virtualFileSystem = args.virtualFileSystem;
 
-            DataContext = this;
+                        _parent = args.parent;
+                        break;
+                }
 
-            Task.Run(LoadSaves);
+                DataContext = this;
+                Task.Run(LoadSaves);
+            }
         }
 
         public void LoadSaves()
