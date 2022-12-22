@@ -136,6 +136,11 @@ namespace Ryujinx.Ava.UI.Views.User
                 }
             }
         }
+        
+        private void GoBack(object sender, RoutedEventArgs e)
+        {
+            _parent?.GoBack();
+        }
 
         private void Sort()
         {

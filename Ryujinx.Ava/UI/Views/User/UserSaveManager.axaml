@@ -34,6 +34,14 @@
                 Orientation="Horizontal" 
                 HorizontalAlignment="Left" 
                 VerticalAlignment="Center">
+                <Button 
+                    Height="30"
+                    Width="50"
+                    MinWidth="50"
+                    HorizontalAlignment="Left"
+                    Click="GoBack">
+                    <ui:SymbolIcon Symbol="Back"/>
+                </Button>
                 <Label Content="{locale:Locale CommonSort}" VerticalAlignment="Center" />
                 <ComboBox SelectedIndex="{Binding SortIndex}" Width="100">
                     <ComboBoxItem>
