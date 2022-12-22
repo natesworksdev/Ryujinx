@@ -136,7 +136,7 @@
                 Grid.Column="0"
                 Margin="2"
                 Click="AddUser"
-                Width="115"
+                Width="200"
                 Content="{locale:Locale UserProfilesAddNewProfile}" />
             <Button
                 HorizontalAlignment="Stretch"
@@ -144,7 +144,7 @@
                 Margin="2"
                 Grid.Column="1"
                 Click="EditUser"
-                Width="115"
+                Width="200"
                 Content="{locale:Locale UserProfilesEditProfile}"
                 IsEnabled="{Binding IsHighlightedProfileEditable}" />
             <Button 
@@ -152,7 +152,7 @@
                 Grid.Row="1"
                 Grid.Column="0"
                 Margin="2"
-                Width="115"
+                Width="200"
                 Content="{locale:Locale UserProfilesManageSaves}" 
                 Click="ManageSaves" />
             <Button
@@ -161,7 +161,7 @@
                 Grid.Column="1"
                 Margin="2"
                 Click="DeleteUser"
-                Width="115"
+                Width="200"
                 Content="{locale:Locale UserProfilesDeleteSelectedProfile}"
                 IsEnabled="{Binding IsHighlightedProfileDeletable}" />
             <Button
