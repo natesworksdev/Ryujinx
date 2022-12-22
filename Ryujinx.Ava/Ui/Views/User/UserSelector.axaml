@@ -43,16 +43,8 @@
             </ListBox.ItemsPanel>
             <ListBox.Styles>
                 <Style Selector="ListBoxItem">
-                    <Setter Property="Padding" Value="0" />
                     <Setter Property="Margin" Value="5 5 0 5" />
                     <Setter Property="CornerRadius" Value="4" />
-                    <Setter Property="Background" Value="{DynamicResource AppListBackgroundColor}" />
-                </Style>
-                <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
-                    <Setter Property="Background" Value="{DynamicResource AppListBackgroundColor}" />
-                </Style>
-                <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
-                    <Setter Property="Background" Value="{DynamicResource AppListHoverBackgroundColor}" />
                 </Style>
                 <Style Selector="Rectangle#SelectionIndicator">
                     <Setter Property="Opacity" Value="0" />
