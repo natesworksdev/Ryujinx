@@ -1,9 +1,10 @@
 ﻿using Avalonia.Collections;
+using Avalonia.Interactivity;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Models;
+using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -11,27 +12,26 @@ namespace Ryujinx.Ava.UI.Windows
 {
     public partial class CheatWindow : StyleableWindow
     {
-        private readonly string _enabledCheatsPath;
-        public bool NoCheatsFound { get; }
-
-        private AvaloniaList<CheatsList> LoadedCheats { get; }
-
-        public string Heading { get; }
-
+        internal CheatWindowViewModel ViewModel { get; private set; }
+        
         public CheatWindow()
         {
             DataContext = this;
 
             InitializeComponent();
 
-            Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance[LocaleKeys.CheatWindowTitle];
+            Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance["CheatWindowTitle"];
         }
 
         public CheatWindow(VirtualFileSystem virtualFileSystem, string titleId, string titleName)
         {
-            LoadedCheats = new AvaloniaList<CheatsList>();
+            DataContext = ViewModel = new CheatWindowViewModel();
+            
+            ViewModel.CloseAction += Close;
 
-            Heading = string.Format(LocaleManager.Instance[LocaleKeys.CheatWindowHeading], titleName, titleId.ToUpper());
+            ViewModel.LoadedCheats = new AvaloniaList<CheatsList>();
+
+            ViewModel.Heading = string.Format(LocaleManager.Instance["CheatWindowHeading"], titleName, titleId.ToUpper());
 
             InitializeComponent();
 
@@ -39,13 +39,13 @@ namespace Ryujinx.Ava.UI.Windows
             string titleModsPath = virtualFileSystem.ModLoader.GetTitleDir(modsBasePath, titleId);
             ulong titleIdValue = ulong.Parse(titleId, System.Globalization.NumberStyles.HexNumber);
 
-            _enabledCheatsPath = Path.Combine(titleModsPath, "cheats", "enabled.txt");
+            ViewModel.EnabledCheatsPath = Path.Combine(titleModsPath, "cheats", "enabled.txt");
 
             string[] enabled = { };
 
-            if (File.Exists(_enabledCheatsPath))
+            if (File.Exists(ViewModel.EnabledCheatsPath))
             {
-                enabled = File.ReadAllLines(_enabledCheatsPath);
+                enabled = File.ReadAllLines(ViewModel.EnabledCheatsPath);
             }
 
             int cheatAdded = 0;
@@ -70,7 +70,7 @@ namespace Ryujinx.Ava.UI.Windows
                     buildId = Path.GetFileNameWithoutExtension(currentCheatFile).ToUpper();
                     currentGroup = new CheatsList(buildId, parentPath);
 
-                    LoadedCheats.Add(currentGroup);
+                    ViewModel.LoadedCheats.Add(currentGroup);
                 }
 
                 var model = new CheatModel(cheat.Name, buildId, enabled.Contains($"{buildId}-{cheat.Name}"));
@@ -81,38 +81,14 @@ namespace Ryujinx.Ava.UI.Windows
 
             if (cheatAdded == 0)
             {
-                NoCheatsFound = true;
+                ViewModel.NoCheatsFound = true;
             }
-
-            DataContext = this;
             
-            Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance[LocaleKeys.CheatWindowTitle];
+            Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance["CheatWindowTitle"];
         }
 
-        public void Save()
+        private void CloseWindow(object sender, RoutedEventArgs e)
         {
-            if (NoCheatsFound)
-            {
-                return;
-            }
-
-            List<string> enabledCheats = new List<string>();
-
-            foreach (var cheats in LoadedCheats)
-            {
-                foreach (var cheat in cheats)
-                {
-                    if (cheat.IsEnabled)
-                    {
-                        enabledCheats.Add(cheat.BuildIdKey);
-                    }
-                }
-            }
-
-            Directory.CreateDirectory(Path.GetDirectoryName(_enabledCheatsPath));
-
-            File.WriteAllLines(_enabledCheatsPath, enabledCheats);
-
             Close();
         }
     }
