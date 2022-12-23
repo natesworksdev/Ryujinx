@@ -504,7 +504,6 @@ namespace Ryujinx.Ui.Common.Configuration
             {
                 Version                    = ConfigurationFileFormat.CurrentVersion,
                 BackendThreading           = Graphics.BackendThreading,
-                EnableFileLog              = Logger.EnableFileLog,
                 ResScale                   = Graphics.ResScale,
                 ResScaleCustom             = Graphics.ResScaleCustom,
                 MaxAnisotropy              = Graphics.MaxAnisotropy,
@@ -1167,7 +1166,6 @@ namespace Ryujinx.Ui.Common.Configuration
                 configurationFileFormat.ShowConsole = false;
             }
 
-            Logger.EnableFileLog.Value                = configurationFileFormat.EnableFileLog;
             Graphics.ResScale.Value                   = configurationFileFormat.ResScale;
             Graphics.ResScaleCustom.Value             = configurationFileFormat.ResScaleCustom;
             Graphics.MaxAnisotropy.Value              = configurationFileFormat.MaxAnisotropy;
@@ -1176,6 +1174,7 @@ namespace Ryujinx.Ui.Common.Configuration
             Graphics.BackendThreading.Value           = configurationFileFormat.BackendThreading;
             Graphics.GraphicsBackend.Value            = configurationFileFormat.GraphicsBackend;
             Graphics.PreferredGpu.Value               = configurationFileFormat.PreferredGpu;
+            Logger.EnableFileLog.Value                = true;
             Logger.EnableDebug.Value                  = configurationFileFormat.LoggingEnableDebug;
             Logger.EnableTrace.Value                  = configurationFileFormat.LoggingEnableTrace;
             Logger.EnableFsAccessLog.Value            = configurationFileFormat.LoggingEnableFsAccessLog;

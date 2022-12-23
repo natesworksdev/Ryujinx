@@ -22,11 +22,6 @@ namespace Ryujinx.Ui.Common.Configuration
         public int Version { get; set; }
 
         /// <summary>
-        /// Enables or disables logging to a file on disk
-        /// </summary>
-        public bool EnableFileLog { get; set; }
-
-        /// <summary>
         /// Whether or not backend threading is enabled. The "Auto" setting will determine whether threading should be enabled at runtime.
         /// </summary>
         public BackendThreading BackendThreading { get; set; }

@@ -151,6 +151,11 @@ namespace Ryujinx.Ui.Windows
                 _showConsoleToggle.Click();
             }
 
+            if (ConfigurationState.Instance.Logger.EnableFileLog)
+            {
+                _fileLogToggle.Click();
+            }
+
             if (ConfigurationState.Instance.Logger.EnableTrace)
             {
                 _traceLogToggle.Click();
