@@ -106,7 +106,6 @@ namespace Ryujinx.Ui
         [GUI] MenuItem        _hideUi;
         [GUI] MenuItem        _fullScreen;
         [GUI] CheckMenuItem   _startFullScreen;
-        [GUI] CheckMenuItem   _showConsole;
         [GUI] CheckMenuItem   _favToggle;
         [GUI] MenuItem        _firmwareInstallDirectory;
         [GUI] MenuItem        _firmwareInstallFile;
@@ -213,9 +212,6 @@ namespace Ryujinx.Ui
             {
                 _startFullScreen.Active = true;
             }
-
-            _showConsole.Active = ConfigurationState.Instance.Ui.ShowConsole.Value;
-            _showConsole.Visible = ConsoleHelper.SetConsoleWindowStateSupported;
 
             _actionMenu.Sensitive = false;
             _pauseEmulation.Sensitive = false;
@@ -1539,13 +1535,6 @@ namespace Ryujinx.Ui
         private void StartFullScreen_Toggled(object sender, EventArgs args)
         {
             ConfigurationState.Instance.Ui.StartFullscreen.Value = _startFullScreen.Active;
-
-            SaveConfig();
-        }
-
-        private void ShowConsole_Toggled(object sender, EventArgs args)
-        {
-            ConfigurationState.Instance.Ui.ShowConsole.Value = _showConsole.Active;
 
             SaveConfig();
         }

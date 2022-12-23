@@ -495,7 +495,7 @@
   "ControllerSettingsRotate90": "顺时针旋转 90°",
   "IconSize": "图标尺寸",
   "IconSizeTooltip": "更改游戏图标大小",
-  "MenuBarOptionsShowConsole": "显示控制台",
+  "SettingsTabLoggingShowConsole": "显示控制台",
   "ShaderCachePurgeError": "清除着色器缓存时出错: {0}: {1}",
   "UserErrorNoKeys": "找不到密钥",
   "UserErrorNoFirmware": "找不到固件",

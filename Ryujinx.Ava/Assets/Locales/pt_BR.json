@@ -495,7 +495,7 @@
   "ControllerSettingsRotate90": "Rodar 90° sentido horário",
   "IconSize": "Tamanho do ícone",
   "IconSizeTooltip": "Muda o tamanho do ícone do jogo",
-  "MenuBarOptionsShowConsole": "Exibir console",
+  "SettingsTabLoggingShowConsole": "Exibir console",
   "ShaderCachePurgeError": "Erro ao deletar o shader em {0}: {1}",
   "UserErrorNoKeys": "Chaves não encontradas",
   "UserErrorNoFirmware": "Firmware não encontrado",

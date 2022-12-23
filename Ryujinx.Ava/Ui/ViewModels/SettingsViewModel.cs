@@ -21,6 +21,7 @@ using Ryujinx.HLE.HOS.Services.Time.TimeZone;
 using Ryujinx.Input;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Configuration.System;
+using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -121,6 +122,11 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
+        public bool ShowConsoleVisible
+        {
+            get => ConsoleHelper.SetConsoleWindowStateSupported;
+        }
+
         public bool IsMacOS
         {
             get => OperatingSystem.IsMacOS();
@@ -205,6 +211,19 @@ namespace Ryujinx.Ava.Ui.ViewModels
             set
             {
                 _keyboardHotkeys = value;
+
+                OnPropertyChanged();
+            }
+        }
+
+        public bool ShowConsole
+        {
+            get => ConfigurationState.Instance.Ui.ShowConsole;
+            set
+            {
+                ConfigurationState.Instance.Ui.ShowConsole.Value = value;
+
+                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
 
                 OnPropertyChanged();
             }

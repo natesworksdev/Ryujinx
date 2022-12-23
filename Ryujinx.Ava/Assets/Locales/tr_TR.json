@@ -495,7 +495,7 @@
   "ControllerSettingsRotate90": "Saat yönünde 90° Döndür",
   "IconSize": "Ikon Boyutu",
   "IconSizeTooltip": "Oyun ikonlarının boyutunu değiştirmeyi sağlar",
-  "MenuBarOptionsShowConsole": "Konsol'u Göster",
+  "SettingsTabLoggingShowConsole": "Konsol'u Göster",
   "ShaderCachePurgeError": "Belirtilen shader cache temizlenirken hata {0}: {1}",
   "UserErrorNoKeys": "Keys bulunamadı",
   "UserErrorNoFirmware": "Firmware bulunamadı",

@@ -495,7 +495,7 @@
     "ControllerSettingsRotate90": "Ruota in senso orario di 90°",
     "IconSize": "Dimensioni icona",
     "IconSizeTooltip": "Cambia le dimensioni dell'icona di un gioco",
-    "MenuBarOptionsShowConsole": "Mostra console",
+    "SettingsTabLoggingShowConsole": "Mostra console",
     "ShaderCachePurgeError" :  "Errore nella pulizia della shader cache a {0}: {1}",
     "UserErrorNoKeys": "Chiavi non trovate",
     "UserErrorNoFirmware": "Firmware non trovato",

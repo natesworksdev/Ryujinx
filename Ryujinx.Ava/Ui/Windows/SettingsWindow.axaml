@@ -819,6 +819,10 @@
                                       ToolTip.Tip="{locale:Locale FileLogTooltip}">
                                 <TextBlock Text="{locale:Locale SettingsTabLoggingEnableLoggingToFile}" />
                             </CheckBox>
+                            <CheckBox IsVisible="{Binding ShowConsoleVisible}"
+                                      IsChecked="{Binding ShowConsole, Mode=TwoWay}">
+                                <TextBlock Text="{locale:Locale SettingsTabLoggingShowConsole}"/>
+                            </CheckBox>
                             <CheckBox IsChecked="{Binding EnableStub}"
                                       ToolTip.Tip="{locale:Locale StubLogTooltip}">
                                 <TextBlock Text="{locale:Locale SettingsTabLoggingEnableStubLogs}" />

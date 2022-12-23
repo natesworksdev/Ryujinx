@@ -122,14 +122,6 @@
                                     </CheckBox>
                                 </MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem IsVisible="{Binding ShowConsoleVisible}">
-                                <MenuItem.Icon>
-                                    <CheckBox IsChecked="{Binding ShowConsole, Mode=TwoWay}"
-                                              MinWidth="250">
-                                        <TextBlock Text="{locale:Locale MenuBarOptionsShowConsole}"/>
-                                    </CheckBox>
-                                </MenuItem.Icon>
-                            </MenuItem>
                             <Separator />
                             <MenuItem Header="{locale:Locale MenuBarOptionsChangeLanguage}">
                                 <MenuItem

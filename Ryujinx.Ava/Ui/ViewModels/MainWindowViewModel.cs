@@ -435,7 +435,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 OnPropertyChanged();
             }
         }
-        
+
         public bool ShowMenuAndStatusBar
         {
             get => _showMenuAndStatusBar;
@@ -546,24 +546,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                 OnPropertyChanged();
             }
-        }
-
-        public bool ShowConsole
-        {
-            get => ConfigurationState.Instance.Ui.ShowConsole;
-            set
-            {
-                ConfigurationState.Instance.Ui.ShowConsole.Value = value;
-
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
-
-                OnPropertyChanged();
-            }
-        }
-
-        public bool ShowConsoleVisible
-        {
-            get => ConsoleHelper.SetConsoleWindowStateSupported;
         }
 
         public ObservableCollection<ApplicationData> Applications
@@ -1165,7 +1147,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 DirectoryInfo backupDir = new(Path.Combine(AppDataManager.GamesDirPath, selection.TitleId, "cache", "cpu", "1"));
 
                 // FIXME: Found a way to reproduce the bold effect on the title name (fork?).
-                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(LocaleManager.Instance["DialogWarning"], 
+                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(LocaleManager.Instance["DialogWarning"],
                                                                                        string.Format(LocaleManager.Instance["DialogPPTCDeletionMessage"], selection.TitleName),
                                                                                        LocaleManager.Instance["InputDialogYes"],
                                                                                        LocaleManager.Instance["InputDialogNo"],

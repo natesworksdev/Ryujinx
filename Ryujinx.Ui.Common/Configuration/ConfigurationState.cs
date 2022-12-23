@@ -643,7 +643,7 @@ namespace Ryujinx.Ui.Common.Configuration
             Ui.ApplicationSort.Value                  = 0;
             Ui.IsAscendingOrder.Value                 = true;
             Ui.StartFullscreen.Value                  = false;
-            Ui.ShowConsole.Value                      = true;
+            Ui.ShowConsole.Value                      = false;
             Hid.EnableKeyboard.Value                  = false;
             Hid.EnableMouse.Value                     = false;
             Hid.Hotkeys.Value = new KeyboardHotkeys
@@ -1158,6 +1158,13 @@ namespace Ryujinx.Ui.Common.Configuration
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 42.");
 
                 configurationFileFormat.EnableMacroHLE = true;
+            }
+
+            if (configurationFileFormat.Version < 43)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 43.");
+
+                configurationFileFormat.ShowConsole = false;
             }
 
             Logger.EnableFileLog.Value                = configurationFileFormat.EnableFileLog;

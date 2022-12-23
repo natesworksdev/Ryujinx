@@ -495,7 +495,7 @@
   "ControllerSettingsRotate90": "Um 90° rotieren",
   "IconSize": "Cover Größe",
   "IconSizeTooltip": "Ändert die Größe der Spiel-Cover",
-  "MenuBarOptionsShowConsole": "Zeige Konsole",
+  "SettingsTabLoggingShowConsole": "Zeige Konsole",
   "ShaderCachePurgeError": "Es ist ein Fehler beim löschen des Shader Caches aufgetreten bei {0}: {1}",
   "UserErrorNoKeys": "Keys nicht gefunden",
   "UserErrorNoFirmware": "Firmware nicht gefunden",

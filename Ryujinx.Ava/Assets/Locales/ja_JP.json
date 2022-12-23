@@ -495,7 +495,7 @@
   "ControllerSettingsRotate90": "時計回りに 90° 回転",
   "IconSize": "アイコンサイズ",
   "IconSizeTooltip": "ゲームアイコンのサイズを変更します",
-  "MenuBarOptionsShowConsole": "コンソールを表示",
+  "SettingsTabLoggingShowConsole": "コンソールを表示",
   "ShaderCachePurgeError": "シェーダキャッシュの破棄エラー {0}: {1}",
   "UserErrorNoKeys": "Keys がありません",
   "UserErrorNoFirmware": "ファームウェアがありません",

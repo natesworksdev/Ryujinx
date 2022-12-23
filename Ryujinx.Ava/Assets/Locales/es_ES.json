@@ -495,7 +495,7 @@
   "ControllerSettingsRotate90": "Rotar 90° en el sentido de las agujas del reloj",
   "IconSize": "Tamaño de iconos",
   "IconSizeTooltip": "Cambia el tamaño de los iconos de juegos",
-  "MenuBarOptionsShowConsole": "Mostrar consola",
+  "SettingsTabLoggingShowConsole": "Mostrar consola",
   "ShaderCachePurgeError": "Error al eliminar la caché en {0}: {1}",
   "UserErrorNoKeys": "No se encontraron keys",
   "UserErrorNoFirmware": "No se encontró firmware",

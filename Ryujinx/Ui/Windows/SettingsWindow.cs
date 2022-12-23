@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 
 using GUI = Gtk.Builder.ObjectAttribute;
 using Ryujinx.Ui.Common.Configuration.System;
+using Ryujinx.Ui.Common.Helper;
 
 namespace Ryujinx.Ui.Windows
 {
@@ -37,6 +38,7 @@ namespace Ryujinx.Ui.Windows
         private bool _directoryChanged = false;
 
 #pragma warning disable CS0649, IDE0044
+        [GUI] CheckButton     _showConsoleToggle;
         [GUI] CheckButton     _traceLogToggle;
         [GUI] CheckButton     _stubLogToggle;
         [GUI] CheckButton     _debugLogToggle;
@@ -144,14 +146,14 @@ namespace Ryujinx.Ui.Windows
             };
 
             // Setup Currents.
+            if (ConfigurationState.Instance.Ui.ShowConsole)
+            {
+                _showConsoleToggle.Click();
+            }
+
             if (ConfigurationState.Instance.Logger.EnableTrace)
             {
                 _traceLogToggle.Click();
-            }
-
-            if (ConfigurationState.Instance.Logger.EnableFileLog)
-            {
-                _fileLogToggle.Click();
             }
 
             if (ConfigurationState.Instance.Logger.EnableStub)
@@ -423,6 +425,9 @@ namespace Ryujinx.Ui.Windows
 
                 _graphicsBackend.Model = store;
             }
+
+            _showConsoleToggle.Active = ConfigurationState.Instance.Ui.ShowConsole.Value;
+            _showConsoleToggle.Visible = ConsoleHelper.SetConsoleWindowStateSupported;
         }
 
         private void UpdatePreferredGpuComboBox()
@@ -539,6 +544,7 @@ namespace Ryujinx.Ui.Windows
                 DriverUtilities.ToggleOGLThreading(backendThreading == BackendThreading.Off);
             }
 
+            ConfigurationState.Instance.Ui.ShowConsole.Value                      = _showConsoleToggle.Active;
             ConfigurationState.Instance.Logger.EnableTrace.Value                  = _traceLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableStub.Value                   = _stubLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableDebug.Value                  = _debugLogToggle.Active;
