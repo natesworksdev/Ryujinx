@@ -7,13 +7,19 @@
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
     xmlns:helpers="clr-namespace:Ryujinx.Ava.UI.Helpers"
     xmlns:models="clr-namespace:Ryujinx.Ava.UI.Models"
+    xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     mc:Ignorable="d" 
     d:DesignWidth="800" 
     d:DesignHeight="450"
     Height="400"
     Width="550"
     x:Class="Ryujinx.Ava.UI.Views.User.UserSaveManager"
+    x:CompileBindings="True"
+    x:DataType="viewModels:UserSaveManagerViewModel"
     Focusable="True">
+    <Design.DataContext>
+        <viewModels:UserSaveManagerViewModel />
+    </Design.DataContext>
     <UserControl.Resources>
         <helpers:BitmapArrayValueConverter x:Key="ByteImage" />
     </UserControl.Resources>
@@ -96,7 +102,7 @@
             VerticalAlignment="Stretch">
             <ListBox 
                 Name="SaveList" 
-                Items="{Binding View}" 
+                Items="{Binding Views}" 
                 HorizontalAlignment="Stretch" 
                 VerticalAlignment="Stretch">
                 <ListBox.Styles>
@@ -156,7 +162,7 @@
                                     MinWidth="0"
                                     MinHeight="0" 
                                     Name="OpenLocation" 
-                                    Command="{Binding OpenLocation}">
+                                    Click="OpenLocation">
                                     <ui:SymbolIcon
                                         Symbol="OpenFolder" 
                                         HorizontalAlignment="Center"
@@ -169,7 +175,7 @@
                                     MinWidth="0" 
                                     MinHeight="0" 
                                     Name="Delete" 
-                                    Command="{Binding Delete}">
+                                    Click="Delete">
                                     <ui:SymbolIcon 
                                         Symbol="Delete" 
                                         HorizontalAlignment="Center"

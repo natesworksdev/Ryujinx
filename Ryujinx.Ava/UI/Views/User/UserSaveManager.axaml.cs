@@ -1,7 +1,5 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using DynamicData;
-using DynamicData.Binding;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Navigation;
 using LibHac;
@@ -10,11 +8,10 @@ using LibHac.Fs;
 using LibHac.Fs.Shim;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Models;
+using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using UserId = LibHac.Fs.UserId;
 
@@ -22,53 +19,12 @@ namespace Ryujinx.Ava.UI.Views.User
 {
     public partial class UserSaveManager : UserControl
     {
+        internal UserSaveManagerViewModel ViewModel { get; private set; }
+        
         private AccountManager _accountManager;
         private HorizonClient _horizonClient;
         private VirtualFileSystem _virtualFileSystem;
-        private int _sortIndex;
-        private int _orderIndex;
-        private ObservableCollection<SaveModel> _view = new();
-        private string _search;
-
         private NavigationDialogHost _parent;
-
-        public ObservableCollection<SaveModel> Saves { get; set; } = new();
-
-        public ObservableCollection<SaveModel> View
-        {
-            get => _view;
-            set => _view = value;
-        }
-
-        public int SortIndex
-        {
-            get => _sortIndex;
-            set
-            {
-                _sortIndex = value;
-                Sort();
-            }
-        }
-
-        public int OrderIndex
-        {
-            get => _orderIndex;
-            set
-            {
-                _orderIndex = value;
-                Sort();
-            }
-        }
-
-        public string Search
-        {
-            get => _search;
-            set
-            {
-                _search = value;
-                Sort();
-            }
-        }
 
         public UserSaveManager()
         {
@@ -97,14 +53,14 @@ namespace Ryujinx.Ava.UI.Views.User
                         break;
                 }
 
-                DataContext = this;
+                DataContext = ViewModel = new UserSaveManagerViewModel();
                 Task.Run(LoadSaves);
             }
         }
 
         public void LoadSaves()
         {
-            Saves.Clear();
+            ViewModel.Saves.Clear();
             var saveDataFilter = SaveDataFilter.Make(programId: default, saveType: SaveDataType.Account,
                 new UserId((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low), saveDataId: default, index: default);
 
@@ -129,11 +85,11 @@ namespace Ryujinx.Ava.UI.Views.User
                     if (save.ProgramId.Value != 0)
                     {
                         var saveModel = new SaveModel(save, _horizonClient, _virtualFileSystem);
-                        Saves.Add(saveModel);
-                        saveModel.DeleteAction = () => { Saves.Remove(saveModel); };
+                        ViewModel.Saves.Add(saveModel);
+                        saveModel.DeleteAction = () => { ViewModel.Saves.Remove(saveModel); };
                     }
                     
-                    Sort();
+                    ViewModel.Sort();
                 }
             }
         }
@@ -143,42 +99,20 @@ namespace Ryujinx.Ava.UI.Views.User
             _parent?.GoBack();
         }
 
-        private void Sort()
+        private void OpenLocation(object sender, RoutedEventArgs e)
         {
-            Saves.AsObservableChangeSet()
-                .Filter(Filter)
-                .Sort(GetComparer())
-                .Bind(out var view).AsObservableList();
-            
-            _view.Clear();
-            _view.AddRange(view);
-        }
-
-        private IComparer<SaveModel> GetComparer()
-        {
-            switch (SortIndex)
+            if (sender is Avalonia.Controls.Button button)
             {
-                case 0:
-                    return OrderIndex == 0
-                        ? SortExpressionComparer<SaveModel>.Ascending(save => save.Title)
-                        : SortExpressionComparer<SaveModel>.Descending(save => save.Title);
-                case 1:
-                    return OrderIndex == 0
-                        ? SortExpressionComparer<SaveModel>.Ascending(save => save.Size)
-                        : SortExpressionComparer<SaveModel>.Descending(save => save.Size);
-                default:
-                    return null;
+                (button.DataContext as SaveModel).OpenLocation();
             }
         }
 
-        private bool Filter(object arg)
+        private void Delete(object sender, RoutedEventArgs e)
         {
-            if (arg is SaveModel save)
+            if (sender is Avalonia.Controls.Button button)
             {
-                return string.IsNullOrWhiteSpace(_search) || save.Title.ToLower().Contains(_search.ToLower());
+                (button.DataContext as SaveModel).Delete();
             }
-
-            return false;
         }
     }
 }
