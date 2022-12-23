@@ -115,7 +115,7 @@
                     <Setter Property="Margin" Value="5" />
                     <Setter Property="CornerRadius" Value="4" />
                 </Style>
-                <Style Selector="ListBoxItem:selected /template/ Rectangle#SelectionIndicator">
+                <Style Selector="ListBoxItem:selected /template/ Border#SelectionIndicator">
                     <Setter Property="MinHeight" Value="{Binding $parent[UserControl].DataContext.GridItemSelectorSize}" />
                 </Style>
             </ListBox.Styles>

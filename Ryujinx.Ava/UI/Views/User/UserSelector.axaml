@@ -48,7 +48,7 @@
                     <Setter Property="Margin" Value="5 5 0 5" />
                     <Setter Property="CornerRadius" Value="4" />
                 </Style>
-                <Style Selector="Rectangle#SelectionIndicator">
+                <Style Selector="Border#SelectionIndicator">
                     <Setter Property="Opacity" Value="0" />
                 </Style>
             </ListBox.Styles>
