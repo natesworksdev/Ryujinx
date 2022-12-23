@@ -2,7 +2,6 @@
     x:Class="Ryujinx.Ava.UI.Controls.GameGridView"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="clr-namespace:Ryujinx.Ava.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:flex="clr-namespace:Avalonia.Flexbox;assembly=Avalonia.Flexbox"
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"

@@ -1,18 +1,23 @@
-<window:StyleableWindow xmlns="https://github.com/avaloniaui"
-                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="350"
-                        x:Class="Ryujinx.Ava.UI.Windows.AmiiboWindow"
-                        xmlns:window="clr-namespace:Ryujinx.Ava.UI.Windows"
-                        xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
-                        xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
-                        CanResize="False"
-                        WindowStartupLocation="CenterOwner"
-                        Width="800" MinHeight="650" Height="650"
-                        SizeToContent="Manual"
-                        MinWidth="600"
-                        Focusable="True">
+<window:StyleableWindow 
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:window="clr-namespace:Ryujinx.Ava.UI.Windows"
+    xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
+    xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
+    mc:Ignorable="d" 
+    d:DesignWidth="400" 
+    d:DesignHeight="350"
+    x:Class="Ryujinx.Ava.UI.Windows.AmiiboWindow"
+    CanResize="False"
+    WindowStartupLocation="CenterOwner"
+    Width="800" 
+    MinHeight="650" 
+    Height="650"
+    SizeToContent="Manual"
+    MinWidth="600"
+    Focusable="True">
     <Design.DataContext>
         <viewModels:AmiiboWindowViewModel />
     </Design.DataContext>
