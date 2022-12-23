@@ -72,7 +72,6 @@ public class UserSaveManagerViewModel : BaseModel
     
     public void Sort()
     {
-        Console.WriteLine("Sorting");
         Saves.AsObservableChangeSet()
             .Filter(Filter)
             .Sort(GetComparer())
