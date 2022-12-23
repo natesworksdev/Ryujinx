@@ -573,18 +573,18 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void PrepareLoadScreen()
         {
-            using MemoryStream stream = new MemoryStream(ViewModel.SelectedIcon);
+            using MemoryStream stream = new(ViewModel.SelectedIcon);
             using var gameIconBmp = SixLabors.ImageSharp.Image.Load<Bgra32>(stream);
 
             var dominantColor = IconColorPicker.GetFilteredColor(gameIconBmp).ToPixel<Bgra32>();
 
-            const int ColorDivisor = 4;
+            const float colorMultiple = 0.5f;
 
             Color progressFgColor = Color.FromRgb(dominantColor.R, dominantColor.G, dominantColor.B);
             Color progressBgColor = Color.FromRgb(
-                (byte)(dominantColor.R / ColorDivisor),
-                (byte)(dominantColor.G / ColorDivisor),
-                (byte)(dominantColor.B / ColorDivisor));
+                (byte)(dominantColor.R * colorMultiple),
+                (byte)(dominantColor.G * colorMultiple),
+                (byte)(dominantColor.B * colorMultiple));
 
             ViewModel.ProgressBarForegroundColor = new SolidColorBrush(progressFgColor);
             ViewModel.ProgressBarBackgroundColor = new SolidColorBrush(progressBgColor);
