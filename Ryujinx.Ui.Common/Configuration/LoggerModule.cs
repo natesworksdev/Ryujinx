@@ -10,11 +10,7 @@ namespace Ryujinx.Ui.Common.Configuration
         {
             ConfigurationState.Instance.Logger.EnableDebug.Event       += ReloadEnableDebug;
             ConfigurationState.Instance.Logger.EnableStub.Event        += ReloadEnableStub;
-            ConfigurationState.Instance.Logger.EnableInfo.Event        += ReloadEnableInfo;
-            ConfigurationState.Instance.Logger.EnableWarn.Event        += ReloadEnableWarning;
-            ConfigurationState.Instance.Logger.EnableError.Event       += ReloadEnableError;
             ConfigurationState.Instance.Logger.EnableTrace.Event       += ReloadEnableTrace;
-            ConfigurationState.Instance.Logger.EnableGuest.Event       += ReloadEnableGuest;
             ConfigurationState.Instance.Logger.EnableFsAccessLog.Event += ReloadEnableFsAccessLog;
             ConfigurationState.Instance.Logger.FilteredClasses.Event   += ReloadFilteredClasses;
             ConfigurationState.Instance.Logger.EnableFileLog.Event     += ReloadFileLogger;
@@ -30,29 +26,9 @@ namespace Ryujinx.Ui.Common.Configuration
             Logger.SetEnable(LogLevel.Stub, e.NewValue);
         }
 
-        private static void ReloadEnableInfo(object sender, ReactiveEventArgs<bool> e)
-        {
-            Logger.SetEnable(LogLevel.Info, e.NewValue);
-        }
-
-        private static void ReloadEnableWarning(object sender, ReactiveEventArgs<bool> e)
-        {
-            Logger.SetEnable(LogLevel.Warning, e.NewValue);
-        }
-
-        private static void ReloadEnableError(object sender, ReactiveEventArgs<bool> e)
-        {
-            Logger.SetEnable(LogLevel.Error, e.NewValue);
-        }
-
         private static void ReloadEnableTrace(object sender, ReactiveEventArgs<bool> e)
         {
             Logger.SetEnable(LogLevel.Trace, e.NewValue);
-        }
-
-        private static void ReloadEnableGuest(object sender, ReactiveEventArgs<bool> e)
-        {
-            Logger.SetEnable(LogLevel.Guest, e.NewValue);
         }
 
         private static void ReloadEnableFsAccessLog(object sender, ReactiveEventArgs<bool> e)

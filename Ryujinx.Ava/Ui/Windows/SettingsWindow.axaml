@@ -823,25 +823,9 @@
                                       ToolTip.Tip="{locale:Locale StubLogTooltip}">
                                 <TextBlock Text="{locale:Locale SettingsTabLoggingEnableStubLogs}" />
                             </CheckBox>
-                            <CheckBox IsChecked="{Binding EnableInfo}"
-                                      ToolTip.Tip="{locale:Locale InfoLogTooltip}">
-                                <TextBlock Text="{locale:Locale SettingsTabLoggingEnableInfoLogs}" />
-                            </CheckBox>
-                            <CheckBox IsChecked="{Binding EnableWarn}"
-                                      ToolTip.Tip="{locale:Locale WarnLogTooltip}">
-                                <TextBlock Text="{locale:Locale SettingsTabLoggingEnableWarningLogs}" />
-                            </CheckBox>
-                            <CheckBox IsChecked="{Binding EnableError}"
-                                      ToolTip.Tip="{locale:Locale ErrorLogTooltip}">
-                                <TextBlock Text="{locale:Locale SettingsTabLoggingEnableErrorLogs}" />
-                            </CheckBox>
                             <CheckBox IsChecked="{Binding EnableTrace}"
                                       ToolTip.Tip="{locale:Locale TraceLogTooltip}">
                                 <TextBlock Text="{locale:Locale SettingsTabLoggingEnableTraceLogs}" />
-                            </CheckBox>
-                            <CheckBox IsChecked="{Binding EnableGuest}"
-                                      ToolTip.Tip="{locale:Locale GuestLogTooltip}">
-                                <TextBlock Text="{locale:Locale SettingsTabLoggingEnableGuestLogs}" />
                             </CheckBox>
                         </StackPanel>
                         <Separator Height="1" />
@@ -963,17 +947,17 @@
             Orientation="Horizontal"
             HorizontalAlignment="Right"
             ReverseOrder="{ReflectionBinding IsMacOS}">
-            <Button 
-                HotKey="Enter" 
+            <Button
+                HotKey="Enter"
                 Classes="accent"
-                Content="{locale:Locale SettingsButtonOk}" 
+                Content="{locale:Locale SettingsButtonOk}"
                 Command="{ReflectionBinding OkButton}" />
-            <Button 
-                HotKey="Escape" 
-                Content="{locale:Locale SettingsButtonCancel}" 
+            <Button
+                HotKey="Escape"
+                Content="{locale:Locale SettingsButtonCancel}"
                 Command="{ReflectionBinding CancelButton}" />
-            <Button 
-                Content="{locale:Locale SettingsButtonApply}" 
+            <Button
+                Content="{locale:Locale SettingsButtonApply}"
                 Command="{ReflectionBinding ApplyButton}" />
         </ReversibleStackPanel>
     </Grid>

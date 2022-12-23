@@ -155,39 +155,19 @@ namespace Ryujinx.Ui.Common.Configuration
         public class LoggerSection
         {
             /// <summary>
-            /// Enables printing debug log messages
-            /// </summary>
-            public ReactiveObject<bool> EnableDebug { get; private set; }
-
-            /// <summary>
             /// Enables printing stub log messages
             /// </summary>
             public ReactiveObject<bool> EnableStub { get; private set; }
 
             /// <summary>
-            /// Enables printing info log messages
+            /// Enables printing debug log messages
             /// </summary>
-            public ReactiveObject<bool> EnableInfo { get; private set; }
-
-            /// <summary>
-            /// Enables printing warning log messages
-            /// </summary>
-            public ReactiveObject<bool> EnableWarn { get; private set; }
-
-            /// <summary>
-            /// Enables printing error log messages
-            /// </summary>
-            public ReactiveObject<bool> EnableError { get; private set; }
+            public ReactiveObject<bool> EnableDebug { get; private set; }
 
             /// <summary>
             /// Enables printing trace log messages
             /// </summary>
             public ReactiveObject<bool> EnableTrace { get; private set; }
-
-            /// <summary>
-            /// Enables printing guest log messages
-            /// </summary>
-            public ReactiveObject<bool> EnableGuest { get; private set; }
 
             /// <summary>
             /// Enables printing FS access log messages
@@ -211,18 +191,14 @@ namespace Ryujinx.Ui.Common.Configuration
 
             public LoggerSection()
             {
-                EnableDebug         = new ReactiveObject<bool>();
                 EnableStub          = new ReactiveObject<bool>();
-                EnableInfo          = new ReactiveObject<bool>();
-                EnableWarn          = new ReactiveObject<bool>();
-                EnableError         = new ReactiveObject<bool>();
+                EnableDebug         = new ReactiveObject<bool>();
                 EnableTrace         = new ReactiveObject<bool>();
-                EnableGuest         = new ReactiveObject<bool>();
                 EnableFsAccessLog   = new ReactiveObject<bool>();
                 FilteredClasses     = new ReactiveObject<LogClass[]>();
+                GraphicsDebugLevel  = new ReactiveObject<GraphicsDebugLevel>();
                 EnableFileLog       = new ReactiveObject<bool>();
                 EnableFileLog.Event += static (sender, e) => LogValueChange(sender, e, nameof(EnableFileLog));
-                GraphicsDebugLevel  = new ReactiveObject<GraphicsDebugLevel>();
             }
         }
 
@@ -536,11 +512,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 GraphicsShadersDumpPath    = Graphics.ShadersDumpPath,
                 LoggingEnableDebug         = Logger.EnableDebug,
                 LoggingEnableStub          = Logger.EnableStub,
-                LoggingEnableInfo          = Logger.EnableInfo,
-                LoggingEnableWarn          = Logger.EnableWarn,
-                LoggingEnableError         = Logger.EnableError,
                 LoggingEnableTrace         = Logger.EnableTrace,
-                LoggingEnableGuest         = Logger.EnableGuest,
                 LoggingEnableFsAccessLog   = Logger.EnableFsAccessLog,
                 LoggingFilteredClasses     = Logger.FilteredClasses,
                 LoggingGraphicsDebugLevel  = Logger.GraphicsDebugLevel,
@@ -622,11 +594,7 @@ namespace Ryujinx.Ui.Common.Configuration
             Graphics.ShadersDumpPath.Value            = "";
             Logger.EnableDebug.Value                  = false;
             Logger.EnableStub.Value                   = true;
-            Logger.EnableInfo.Value                   = true;
-            Logger.EnableWarn.Value                   = true;
-            Logger.EnableError.Value                  = true;
             Logger.EnableTrace.Value                  = false;
-            Logger.EnableGuest.Value                  = true;
             Logger.EnableFsAccessLog.Value            = false;
             Logger.FilteredClasses.Value              = Array.Empty<LogClass>();
             Logger.GraphicsDebugLevel.Value           = GraphicsDebugLevel.None;
@@ -1202,12 +1170,7 @@ namespace Ryujinx.Ui.Common.Configuration
             Graphics.GraphicsBackend.Value            = configurationFileFormat.GraphicsBackend;
             Graphics.PreferredGpu.Value               = configurationFileFormat.PreferredGpu;
             Logger.EnableDebug.Value                  = configurationFileFormat.LoggingEnableDebug;
-            Logger.EnableStub.Value                   = configurationFileFormat.LoggingEnableStub;
-            Logger.EnableInfo.Value                   = configurationFileFormat.LoggingEnableInfo;
-            Logger.EnableWarn.Value                   = configurationFileFormat.LoggingEnableWarn;
-            Logger.EnableError.Value                  = configurationFileFormat.LoggingEnableError;
             Logger.EnableTrace.Value                  = configurationFileFormat.LoggingEnableTrace;
-            Logger.EnableGuest.Value                  = configurationFileFormat.LoggingEnableGuest;
             Logger.EnableFsAccessLog.Value            = configurationFileFormat.LoggingEnableFsAccessLog;
             Logger.FilteredClasses.Value              = configurationFileFormat.LoggingFilteredClasses;
             Logger.GraphicsDebugLevel.Value           = configurationFileFormat.LoggingGraphicsDebugLevel;

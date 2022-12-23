@@ -67,29 +67,9 @@ namespace Ryujinx.Ui.Common.Configuration
         public bool LoggingEnableStub { get; set; }
 
         /// <summary>
-        /// Enables printing info log messages
-        /// </summary>
-        public bool LoggingEnableInfo { get; set; }
-
-        /// <summary>
-        /// Enables printing warning log messages
-        /// </summary>
-        public bool LoggingEnableWarn { get; set; }
-
-        /// <summary>
-        /// Enables printing error log messages
-        /// </summary>
-        public bool LoggingEnableError { get; set; }
-
-        /// <summary>
         /// Enables printing trace log messages
         /// </summary>
         public bool LoggingEnableTrace { get; set; }
-
-        /// <summary>
-        /// Enables printing guest log messages
-        /// </summary>
-        public bool LoggingEnableGuest { get; set; }
 
         /// <summary>
         /// Enables printing FS access log messages

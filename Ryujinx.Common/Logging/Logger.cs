@@ -77,17 +77,17 @@ namespace Ryujinx.Common.Logging
                 {
                     Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, "Stubbed. " + message), data));
                 }
-            }            
+            }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static string FormatMessage(LogClass Class, string Caller, string Message) => $"{Class} {Caller}: {Message}";
         }
 
         public static Log? Debug     { get; private set; }
-        public static Log? Info      { get; private set; }
-        public static Log? Warning   { get; private set; }
-        public static Log? Error     { get; private set; }
-        public static Log? Guest     { get; private set; }
+        public static Log? Info      { get; } // Always enabled
+        public static Log? Warning   { get; } // Always enabled
+        public static Log? Error     { get; } // Always enabled
+        public static Log? Guest     { get; } // Always enabled
         public static Log? AccessLog { get; private set; }
         public static Log? Stub      { get; private set; }
         public static Log? Trace     { get; private set; }
@@ -112,12 +112,14 @@ namespace Ryujinx.Common.Logging
                 1000,
                 AsyncLogTargetOverflowAction.Discard));
 
-            Notice = new Log(LogLevel.Notice);
-            
-            // Enable important log levels before configuration is loaded
+            // Enable always enabled log levels
+            Guest = new Log(LogLevel.Guest);
             Error = new Log(LogLevel.Error);
             Warning = new Log(LogLevel.Warning);
             Info = new Log(LogLevel.Info);
+            Notice = new Log(LogLevel.Notice);
+
+            // Enable important log levels before configuration is loaded
             Trace = new Log(LogLevel.Trace);
         }
 
@@ -192,10 +194,6 @@ namespace Ryujinx.Common.Logging
             switch (logLevel)
             {
                 case LogLevel.Debug     : Debug     = enabled ? new Log(LogLevel.Debug)    : new Log?(); break;
-                case LogLevel.Info      : Info      = enabled ? new Log(LogLevel.Info)     : new Log?(); break;
-                case LogLevel.Warning   : Warning   = enabled ? new Log(LogLevel.Warning)  : new Log?(); break;
-                case LogLevel.Error     : Error     = enabled ? new Log(LogLevel.Error)    : new Log?(); break;
-                case LogLevel.Guest     : Guest     = enabled ? new Log(LogLevel.Guest)    : new Log?(); break;
                 case LogLevel.AccessLog : AccessLog = enabled ? new Log(LogLevel.AccessLog): new Log?(); break;
                 case LogLevel.Stub      : Stub      = enabled ? new Log(LogLevel.Stub)     : new Log?(); break;
                 case LogLevel.Trace     : Trace     = enabled ? new Log(LogLevel.Trace)    : new Log?(); break;

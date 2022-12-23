@@ -120,12 +120,12 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 OnPropertyChanged();
             }
         }
-        
+
         public bool IsMacOS
         {
             get => OperatingSystem.IsMacOS();
         }
-        
+
         public bool EnableDiscordIntegration { get; set; }
         public bool CheckUpdatesOnStart { get; set; }
         public bool ShowConfirmExit { get; set; }
@@ -144,11 +144,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public bool EnableMacroHLE { get; set; }
         public bool EnableFileLog { get; set; }
         public bool EnableStub { get; set; }
-        public bool EnableInfo { get; set; }
-        public bool EnableWarn { get; set; }
-        public bool EnableError { get; set; }
         public bool EnableTrace { get; set; }
-        public bool EnableGuest { get; set; }
         public bool EnableFsAccessLog { get; set; }
         public bool EnableDebug { get; set; }
         public bool IsOpenAlEnabled { get; set; }
@@ -346,11 +342,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             EnableMacroHLE = config.Graphics.EnableMacroHLE;
             EnableFileLog = config.Logger.EnableFileLog;
             EnableStub = config.Logger.EnableStub;
-            EnableInfo = config.Logger.EnableInfo;
-            EnableWarn = config.Logger.EnableWarn;
-            EnableError = config.Logger.EnableError;
             EnableTrace = config.Logger.EnableTrace;
-            EnableGuest = config.Logger.EnableGuest;
             EnableDebug = config.Logger.EnableDebug;
             EnableFsAccessLog = config.Logger.EnableFsAccessLog;
             EnableCustomTheme = config.Ui.EnableCustomTheme;
@@ -409,13 +401,9 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 config.System.TimeZone.Value = TimeZone;
             }
 
-            config.Logger.EnableError.Value = EnableError;
             config.Logger.EnableTrace.Value = EnableTrace;
-            config.Logger.EnableWarn.Value = EnableWarn;
-            config.Logger.EnableInfo.Value = EnableInfo;
             config.Logger.EnableStub.Value = EnableStub;
             config.Logger.EnableDebug.Value = EnableDebug;
-            config.Logger.EnableGuest.Value = EnableGuest;
             config.Logger.EnableFsAccessLog.Value = EnableFsAccessLog;
             config.Logger.EnableFileLog.Value = EnableFileLog;
             config.Logger.GraphicsDebugLevel.Value = (GraphicsDebugLevel)OpenglDebugLevel;
@@ -486,7 +474,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             {
                 owner.ControllerSettings?.SaveCurrentProfile();
             }
-            
+
             if (_owner.Owner is MainWindow window && _directoryChanged)
             {
                 window.ViewModel.LoadApplications();

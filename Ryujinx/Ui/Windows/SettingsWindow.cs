@@ -38,13 +38,9 @@ namespace Ryujinx.Ui.Windows
 
 #pragma warning disable CS0649, IDE0044
         [GUI] CheckButton     _traceLogToggle;
-        [GUI] CheckButton     _errorLogToggle;
-        [GUI] CheckButton     _warningLogToggle;
-        [GUI] CheckButton     _infoLogToggle;
         [GUI] CheckButton     _stubLogToggle;
         [GUI] CheckButton     _debugLogToggle;
         [GUI] CheckButton     _fileLogToggle;
-        [GUI] CheckButton     _guestLogToggle;
         [GUI] CheckButton     _fsAccessLogToggle;
         [GUI] Adjustment      _fsLogSpinAdjustment;
         [GUI] ComboBoxText    _graphicsDebugLevel;
@@ -158,21 +154,6 @@ namespace Ryujinx.Ui.Windows
                 _fileLogToggle.Click();
             }
 
-            if (ConfigurationState.Instance.Logger.EnableError)
-            {
-                _errorLogToggle.Click();
-            }
-
-            if (ConfigurationState.Instance.Logger.EnableWarn)
-            {
-                _warningLogToggle.Click();
-            }
-
-            if (ConfigurationState.Instance.Logger.EnableInfo)
-            {
-                _infoLogToggle.Click();
-            }
-
             if (ConfigurationState.Instance.Logger.EnableStub)
             {
                 _stubLogToggle.Click();
@@ -181,11 +162,6 @@ namespace Ryujinx.Ui.Windows
             if (ConfigurationState.Instance.Logger.EnableDebug)
             {
                 _debugLogToggle.Click();
-            }
-
-            if (ConfigurationState.Instance.Logger.EnableGuest)
-            {
-                _guestLogToggle.Click();
             }
 
             if (ConfigurationState.Instance.Logger.EnableFsAccessLog)
@@ -563,13 +539,9 @@ namespace Ryujinx.Ui.Windows
                 DriverUtilities.ToggleOGLThreading(backendThreading == BackendThreading.Off);
             }
 
-            ConfigurationState.Instance.Logger.EnableError.Value                  = _errorLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableTrace.Value                  = _traceLogToggle.Active;
-            ConfigurationState.Instance.Logger.EnableWarn.Value                   = _warningLogToggle.Active;
-            ConfigurationState.Instance.Logger.EnableInfo.Value                   = _infoLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableStub.Value                   = _stubLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableDebug.Value                  = _debugLogToggle.Active;
-            ConfigurationState.Instance.Logger.EnableGuest.Value                  = _guestLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableFsAccessLog.Value            = _fsAccessLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableFileLog.Value                = _fileLogToggle.Active;
             ConfigurationState.Instance.Logger.GraphicsDebugLevel.Value           = Enum.Parse<GraphicsDebugLevel>(_graphicsDebugLevel.ActiveId);
