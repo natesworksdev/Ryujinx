@@ -694,6 +694,62 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool IsGridMedium => ConfigurationState.Instance.Ui.GridSize == 2;
         public bool IsGridLarge  => ConfigurationState.Instance.Ui.GridSize == 3;
         public bool IsGridHuge   => ConfigurationState.Instance.Ui.GridSize == 4;
+        
+        public int ListItemSelectorSize
+        {
+            get
+            {
+                if (IsGridSmall)
+                {
+                    return 78;
+                }
+
+                if (IsGridMedium)
+                {
+                    return 100;
+                }
+
+                if (IsGridLarge)
+                {
+                    return 120;
+                }
+
+                if (IsGridHuge)
+                {
+                    return 140;
+                }
+
+                return 16;
+            }
+        }
+
+        public int GridItemSelectorSize
+        {
+            get
+            {
+                if (IsGridSmall)
+                {
+                    return 120;
+                }
+
+                if (IsGridMedium)
+                {
+                    return 150;
+                }
+
+                if (IsGridLarge)
+                {
+                    return 180;
+                }
+
+                if (IsGridHuge)
+                {
+                    return 220;
+                }
+
+                return 16;
+            }
+        }
 
         public int GridSizeScale
         {
@@ -712,6 +768,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged(nameof(IsGridMedium));
                 OnPropertyChanged(nameof(IsGridLarge));
                 OnPropertyChanged(nameof(IsGridHuge));
+                OnPropertyChanged(nameof(ListItemSelectorSize));
+                OnPropertyChanged(nameof(GridItemSelectorSize));
                 OnPropertyChanged(nameof(ShowNames));
 
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);

@@ -259,7 +259,7 @@
   "UserProfilesChangeProfileImage": "Change Profile Image",
   "UserProfilesAvailableUserProfiles": "Available User Profiles:",
   "UserProfilesAddNewProfile": "Create Profile",
-  "UserProfilesDeleteSelectedProfile": "Delete Selected",
+  "UserProfilesDelete": "Delete",
   "UserProfilesClose": "Close",
   "ProfileImageSelectionTitle": "Profile Image Selection",
   "ProfileImageSelectionHeader": "Choose a profile Image",

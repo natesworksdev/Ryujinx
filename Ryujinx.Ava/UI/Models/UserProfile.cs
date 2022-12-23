@@ -1,7 +1,9 @@
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.ViewModels;
+using Ryujinx.Ava.UI.Views.User;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Profile = Ryujinx.HLE.HOS.Services.Account.Acc.UserProfile;
+using UserEditor = Ryujinx.Ava.UI.Views.User.UserEditor;
 
 namespace Ryujinx.Ava.UI.Models
 {
@@ -12,6 +14,8 @@ namespace Ryujinx.Ava.UI.Models
         private byte[] _image;
         private string _name;
         private UserId _userId;
+        private bool _isPointerOver;
+        public uint MaxProfileNameLength => 0x20;
 
         public byte[] Image
         {
@@ -39,6 +43,16 @@ namespace Ryujinx.Ava.UI.Models
             set
             {
                 _name = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsPointerOver
+        {
+            get => _isPointerOver;
+            set
+            {
+                _isPointerOver = value;
                 OnPropertyChanged();
             }
         }

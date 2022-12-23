@@ -1,17 +1,13 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Navigation;
-using Ryujinx.Ava.UI.Models;
-using Ryujinx.Ava.UI.ViewModels;
+using Ryujinx.Ava.UI.Controls;
 
-namespace Ryujinx.Ava.UI.Controls
+namespace Ryujinx.Ava.UI.Views.User
 {
     public partial class UserRecoverer : UserControl
     {
-        private UserProfileViewModel _viewModel;
         private NavigationDialogHost _parent;
 
         public UserRecoverer()
@@ -30,15 +26,22 @@ namespace Ryujinx.Ava.UI.Controls
                 switch (arg.NavigationMode)
                 {
                     case NavigationMode.New:
-                        var args = ((NavigationDialogHost parent, UserProfileViewModel viewModel))arg.Parameter;
+                        var parent = (NavigationDialogHost)arg.Parameter;
 
-                        _viewModel = args.viewModel;
-                        _parent = args.parent;
+                        _parent = parent;
                         break;
                 }
-
-                DataContext = _viewModel;
             }
+        }
+
+        private void GoBack(object sender, RoutedEventArgs e)
+        {
+            _parent?.GoBack();
+        }
+
+        private void Recover(object sender, RoutedEventArgs e)
+        {
+            _parent?.RecoverLostAccounts();
         }
     }
 }

@@ -77,7 +77,14 @@
                             <ListBox
                                 Name="GameList"
                                 MinHeight="250"
-                                Items="{Binding GameDirectories}" />
+                                Items="{Binding GameDirectories}">
+                                <ListBox.Styles>
+                                    <Style Selector="ListBoxItem">
+                                        <Setter Property="Padding" Value="10" />
+                                        <Setter Property="Background" Value="{DynamicResource ListBoxBackground}" />
+                                    </Style>
+                                </ListBox.Styles>
+                            </ListBox>
                             <Grid HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
