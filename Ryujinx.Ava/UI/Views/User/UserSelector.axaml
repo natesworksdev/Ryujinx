@@ -54,7 +54,7 @@
             </ListBox.Styles>
             <ListBox.DataTemplates>
                 <DataTemplate
-                    x:DataType="models:UserProfile">
+                    DataType="models:UserProfile">
                     <Grid
                         PointerEnter="Grid_PointerEntered"
                         PointerLeave="Grid_OnPointerExited">
@@ -110,13 +110,13 @@
                                 CornerRadius="15"
                                 Padding="0"
                                 Click="EditUser">
-                                <ui:SymbolIcon Symbol="Edit"/>
+                                <ui:SymbolIcon Symbol="Edit" />
                             </Button>
                         </Border>
                     </Grid>
                 </DataTemplate>
                 <DataTemplate
-                    x:DataType="models:AddModel">
+                    DataType="models:AddModel">
                     <Panel
                         Height="131"
                         Width="110">
