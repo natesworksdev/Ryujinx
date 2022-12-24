@@ -913,12 +913,19 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 result = PixelConverter.ConvertR4G4ToR4G4B4A4(result, width);
 
-                if (!_context.Capabilities.Supports16BitRGBAFormat)
+                if (!_context.Capabilities.SupportsRGBA4Format)
                 {
                     result = PixelConverter.ConvertRGBA4ToRGBA8(result, width);
                 }
             }
-            else if (!_context.Capabilities.Supports16BitRGBAFormat && Format.Is16BitRGBA())
+            else if (Format == Format.R4G4B4A4Unorm)
+            {
+                if (!_context.Capabilities.SupportsRGBA4Format)
+                {
+                    result = PixelConverter.ConvertRGBA4ToRGBA8(result, width);
+                }
+            }
+            else if (!_context.Capabilities.Supports5BitComponentFormat && Format.Is16BitRGBA())
             {
                 switch (Format)
                 {
