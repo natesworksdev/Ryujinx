@@ -144,6 +144,43 @@ namespace Ryujinx.Graphics.Texture
             return output;
         }
 
+        public unsafe static byte[] ConvertA1B5G5R5ToRGBA8(ReadOnlySpan<byte> data, int width)
+        {
+            byte[] output = new byte[data.Length * 2];
+            int offset = 0;
+            int outOffset = 0;
+
+            (int remainder, int outRemainder, int height) = GetLineRemainders(data.Length, width, 2, 4);
+
+            ReadOnlySpan<ushort> inputSpan = MemoryMarshal.Cast<byte, ushort>(data);
+            Span<uint> outputSpan = MemoryMarshal.Cast<byte, uint>(output);
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    uint packed = inputSpan[offset++];
+
+                    uint a = packed >> 15;
+
+                    uint outputPacked = a * 0xff000000;
+                    outputPacked |= (packed >> 8) & 0x000000f8;
+                    outputPacked |= (packed << 5) & 0x0000f800;
+                    outputPacked |= (packed << 18) & 0x00f80000;
+
+                    // Replicate 5 bit components.
+                    outputPacked |= (outputPacked >> 5) & 0x00070707;
+
+                    outputSpan[outOffset++] = outputPacked;
+                }
+
+                offset += remainder;
+                outOffset += outRemainder;
+            }
+
+            return output;
+        }
+
         public unsafe static byte[] ConvertRGBA4ToRGBA8(ReadOnlySpan<byte> data, int width)
         {
             byte[] output = new byte[data.Length * 2];

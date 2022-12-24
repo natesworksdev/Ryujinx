@@ -401,7 +401,8 @@ namespace Ryujinx.Graphics.Vulkan
                 GAL.Format.R5G5B5A1Unorm,
                 GAL.Format.R5G5B5X1Unorm,
                 GAL.Format.B5G6R5Unorm,
-                GAL.Format.B5G5R5A1Unorm);
+                GAL.Format.B5G5R5A1Unorm,
+                GAL.Format.A1B5G5R5Unorm);
 
             bool supportsRGBA4Format = FormatCapabilities.OptimalFormatsSupport(compressedFormatFeatureFlags,
                 GAL.Format.R4G4B4A4Unorm);

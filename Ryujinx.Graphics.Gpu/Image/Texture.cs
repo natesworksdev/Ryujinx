@@ -873,6 +873,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                     case Format.Etc2RgbUnorm:
                         result = ETC2Decoder.DecodeRgb(result, width, height, depth, levels, layers);
                         break;
+                    case Format.A1B5G5R5Unorm:
+                        result = PixelConverter.ConvertA1B5G5R5ToRGBA8(result, width);
+                        break;
                 }
             }
             else if (!TextureCompatibility.HostSupportsBcFormat(Format, Target, _context.Capabilities))
