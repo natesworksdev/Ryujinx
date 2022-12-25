@@ -96,21 +96,6 @@ namespace Ryujinx.Ava.UI.Windows
             }
         }
 
-        private void OkButton(object sender, RoutedEventArgs e)
-        {
-            ViewModel.OkButton();
-        }
-
-        private void CancelButton(object sender, RoutedEventArgs e)
-        {
-            ViewModel.CancelButton();
-        }
-
-        private void ApplyButton(object sender, RoutedEventArgs e)
-        {
-            ViewModel.ApplyButton();
-        }
-
         protected override void OnClosing(CancelEventArgs e)
         {
             HotkeysPage.Dispose();

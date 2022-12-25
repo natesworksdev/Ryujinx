@@ -107,14 +107,14 @@
                 HotKey="Enter" 
                 Classes="accent"
                 Content="{locale:Locale SettingsButtonOk}" 
-                Click="OkButton" />
+                Command="{ReflectionBinding OkButton}" />
             <Button 
                 HotKey="Escape" 
                 Content="{locale:Locale SettingsButtonCancel}" 
-                Click="CancelButton" />
+                Command="{ReflectionBinding CancelButton}" />
             <Button 
                 Content="{locale:Locale SettingsButtonApply}" 
-                Click="ApplyButton" />
+                Command="{ReflectionBinding ApplyButton}" />
         </ReversibleStackPanel>
     </Grid>
 </window:StyleableWindow>
