@@ -5,6 +5,7 @@ using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.HLE.FileSystem;
 using System;
+using System.ComponentModel;
 
 namespace Ryujinx.Ava.UI.Windows
 {
@@ -108,6 +109,13 @@ namespace Ryujinx.Ava.UI.Windows
         private void ApplyButton(object sender, RoutedEventArgs e)
         {
             ViewModel.ApplyButton();
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            HotkeysPage.Dispose();
+            InputPage.Dispose();
+            base.OnClosing(e);
         }
     }
 }
