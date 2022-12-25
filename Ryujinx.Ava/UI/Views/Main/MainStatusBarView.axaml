@@ -46,7 +46,7 @@
                     Margin="0,0,5,0"
                     VerticalAlignment="Center"
                     Background="Transparent"
-                    Command="{Binding LoadApplications}">
+                    Command="{ReflectionBinding LoadApplications}">
                     <ui:SymbolIcon
                         Width="50"
                         Height="100"
