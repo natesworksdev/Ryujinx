@@ -449,11 +449,11 @@ namespace Ryujinx.Graphics.GAL
         }
 
         /// <summary>
-        /// Checks if the texture format is 16 bit RGBA.
+        /// Checks if the texture format is 16 bit packed.
         /// </summary>
         /// <param name="format">Texture format</param>
-        /// <returns>True if the texture format is 16 bit RGBA format, false otherwise</returns>
-        public static bool Is16BitRGBA(this Format format)
+        /// <returns>True if the texture format is 16 bit packed, false otherwise</returns>
+        public static bool Is16BitPacked(this Format format)
         {
             switch (format)
             {

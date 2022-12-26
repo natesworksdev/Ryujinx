@@ -70,7 +70,7 @@ namespace Ryujinx.Graphics.Texture
             return output;
         }
 
-        public unsafe static byte[] ConvertR5G6B5ToRGBA8(ReadOnlySpan<byte> data, int width)
+        public unsafe static byte[] ConvertR5G6B5ToR8G8B8A8(ReadOnlySpan<byte> data, int width)
         {
             byte[] output = new byte[data.Length * 2];
             int offset = 0;
@@ -107,7 +107,7 @@ namespace Ryujinx.Graphics.Texture
             return output;
         }
 
-        public unsafe static byte[] ConvertR5G5B5ToRGBA8(ReadOnlySpan<byte> data, int width, bool forceAlpha)
+        public unsafe static byte[] ConvertR5G5B5ToR8G8B8A8(ReadOnlySpan<byte> data, int width, bool forceAlpha)
         {
             byte[] output = new byte[data.Length * 2];
             int offset = 0;
@@ -144,7 +144,7 @@ namespace Ryujinx.Graphics.Texture
             return output;
         }
 
-        public unsafe static byte[] ConvertA1B5G5R5ToRGBA8(ReadOnlySpan<byte> data, int width)
+        public unsafe static byte[] ConvertA1B5G5R5ToR8G8B8A8(ReadOnlySpan<byte> data, int width)
         {
             byte[] output = new byte[data.Length * 2];
             int offset = 0;
@@ -181,7 +181,7 @@ namespace Ryujinx.Graphics.Texture
             return output;
         }
 
-        public unsafe static byte[] ConvertRGBA4ToRGBA8(ReadOnlySpan<byte> data, int width)
+        public unsafe static byte[] ConvertR4G4B4A4ToR8G8B8A8(ReadOnlySpan<byte> data, int width)
         {
             byte[] output = new byte[data.Length * 2];
             int offset = 0;
