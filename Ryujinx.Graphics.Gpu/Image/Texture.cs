@@ -873,9 +873,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                     case Format.Etc2RgbUnorm:
                         result = ETC2Decoder.DecodeRgb(result, width, height, depth, levels, layers);
                         break;
-                    case Format.A1B5G5R5Unorm:
-                        result = PixelConverter.ConvertA1B5G5R5ToRGBA8(result, width);
-                        break;
                 }
             }
             else if (!TextureCompatibility.HostSupportsBcFormat(Format, Target, _context.Capabilities))
@@ -940,6 +937,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                     case Format.R5G5B5X1Unorm:
                     case Format.R5G5B5A1Unorm:
                         result = PixelConverter.ConvertR5G5B5ToRGBA8(result, width, Format == Format.R5G5B5X1Unorm);
+                        break;
+                    case Format.A1B5G5R5Unorm:
+                        result = PixelConverter.ConvertA1B5G5R5ToRGBA8(result, width);
                         break;
                     case Format.R4G4B4A4Unorm:
                         result = PixelConverter.ConvertRGBA4ToRGBA8(result, width);
