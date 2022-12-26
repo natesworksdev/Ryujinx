@@ -132,7 +132,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (!caps.SupportsR4G4Format && info.FormatInfo.Format == Format.R4G4Unorm)
             {
-                if (caps.SupportsRGBA4Format)
+                if (caps.SupportsR4G4B4A4Format)
                 {
                     return new FormatInfo(Format.R4G4B4A4Unorm, 1, 1, 2, 4);
                 }
@@ -144,7 +144,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (info.FormatInfo.Format == Format.R4G4B4A4Unorm)
             {
-                if (!caps.SupportsRGBA4Format)
+                if (!caps.SupportsR4G4B4A4Format)
                 {
                     return new FormatInfo(Format.R8G8B8A8Unorm, 1, 1, 4, 4);
                 }
