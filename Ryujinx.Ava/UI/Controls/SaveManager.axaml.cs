@@ -71,7 +71,7 @@ namespace Ryujinx.Ava.UI.Controls
             InitializeComponent();
         }
 
-        public SaveManager(Models.UserProfile userProfile, HorizonClient horizonClient, VirtualFileSystem virtualFileSystem)
+        public SaveManager(UserProfile userProfile, HorizonClient horizonClient, VirtualFileSystem virtualFileSystem)
         {
             _userProfile = userProfile;
             _horizonClient = horizonClient;
