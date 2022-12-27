@@ -126,7 +126,7 @@ namespace Ryujinx.Ava.UI.Helpers
                 cbSize = Marshal.SizeOf<WNDCLASSEX>(),
                 hInstance = GetModuleHandle(null),
                 lpfnWndProc = Marshal.GetFunctionPointerForDelegate(_wndProcDelegate),
-                style = Win32NativeInterop.ClassStyles.CS_OWNDC,
+                style = ClassStyles.CS_OWNDC,
                 lpszClassName = Marshal.StringToHGlobalUni(_className),
                 hCursor = LoadCursor(IntPtr.Zero, (IntPtr)Win32NativeInterop.Cursors.IDC_ARROW)
             };
