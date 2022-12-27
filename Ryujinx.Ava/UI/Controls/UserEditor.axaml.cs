@@ -13,7 +13,7 @@ namespace Ryujinx.Ava.UI.Controls
     public partial class UserEditor : UserControl
     {
         private NavigationDialogHost _parent;
-        private Models.UserProfile _profile;
+        private UserProfile _profile;
         private bool _isNewUser;
 
         public TempProfile TempProfile { get; set; }
