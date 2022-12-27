@@ -137,7 +137,7 @@ namespace Ryujinx.Ava.UI.Helpers
                 0,
                 _className,
                 "NativeWindow",
-                Win32NativeInterop.WindowStyles.WS_CHILD,
+                WindowStyles.WS_CHILD,
                 0,
                 0,
                 640,
