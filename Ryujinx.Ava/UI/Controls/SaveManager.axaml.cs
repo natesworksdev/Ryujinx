@@ -20,7 +20,7 @@ namespace Ryujinx.Ava.UI.Controls
 {
     public partial class SaveManager : UserControl
     {
-        private readonly Models.UserProfile _userProfile;
+        private readonly UserProfile _userProfile;
         private readonly HorizonClient _horizonClient;
         private readonly VirtualFileSystem _virtualFileSystem;
         private int _sortIndex;
