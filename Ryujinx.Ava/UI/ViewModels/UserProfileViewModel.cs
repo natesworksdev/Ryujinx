@@ -135,7 +135,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void AddUser()
         {
-            Models.UserProfile userProfile = null;
+            UserProfile userProfile = null;
 
             _owner.Navigate(typeof(UserEditor), (this._owner, userProfile, true));
         }
