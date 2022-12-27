@@ -180,7 +180,7 @@ namespace Ryujinx.Ava.UI.Windows
         {
             if (e.AddedItems != null && e.AddedItems.Count > 0)
             {
-                if (e.AddedItems[0] is Models.TimeZone timeZone)
+                if (e.AddedItems[0] is TimeZone timeZone)
                 {
                     e.Handled = true;
 
