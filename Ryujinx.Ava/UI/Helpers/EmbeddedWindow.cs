@@ -155,7 +155,7 @@ namespace Ryujinx.Ava.UI.Helpers
         }
 
         [SupportedOSPlatform("windows")]
-        IntPtr WndProc(IntPtr hWnd, Win32NativeInterop.WindowsMessages msg, IntPtr wParam, IntPtr lParam)
+        IntPtr WndProc(IntPtr hWnd, WindowsMessages msg, IntPtr wParam, IntPtr lParam)
         {
             var point = new Point((long)lParam & 0xFFFF, ((long)lParam >> 16) & 0xFFFF);
             var root = VisualRoot as Window;
