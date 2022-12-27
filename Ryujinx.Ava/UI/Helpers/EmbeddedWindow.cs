@@ -16,7 +16,7 @@ namespace Ryujinx.Ava.UI.Helpers
 {
     public class EmbeddedWindow : NativeControlHost
     {
-        private Win32NativeInterop.WindowProc _wndProcDelegate;
+        private WindowProc _wndProcDelegate;
         private string _className;
 
         protected GLXWindow X11Window { get; set; }
