@@ -123,7 +123,7 @@ namespace Ryujinx.Ava.UI.Helpers
             _wndProcDelegate = WndProc;
             var wndClassEx = new Win32NativeInterop.WNDCLASSEX
             {
-                cbSize = Marshal.SizeOf<Win32NativeInterop.WNDCLASSEX>(),
+                cbSize = Marshal.SizeOf<WNDCLASSEX>(),
                 hInstance = GetModuleHandle(null),
                 lpfnWndProc = Marshal.GetFunctionPointerForDelegate(_wndProcDelegate),
                 style = Win32NativeInterop.ClassStyles.CS_OWNDC,
