@@ -193,7 +193,7 @@ namespace Ryujinx.Ava.UI.Windows
         {
             if (sender is AutoCompleteBox box)
             {
-                if (box.SelectedItem != null && box.SelectedItem is Models.TimeZone timeZone)
+                if (box.SelectedItem != null && box.SelectedItem is TimeZone timeZone)
                 {
                     ViewModel.ValidateAndSetTimeZone(timeZone.Location);
                 }
