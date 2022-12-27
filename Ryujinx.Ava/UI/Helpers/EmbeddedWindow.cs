@@ -70,11 +70,13 @@ namespace Ryujinx.Ava.UI.Helpers
             {
                 return CreateLinux(parent);
             }
-            else if (OperatingSystem.IsWindows())
+
+            if (OperatingSystem.IsWindows())
             {
                 return CreateWin32(parent);
             }
-            else if (OperatingSystem.IsMacOS())
+
+            if (OperatingSystem.IsMacOS())
             {
                 return CreateMacOs(parent);
             }
