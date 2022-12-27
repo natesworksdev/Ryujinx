@@ -53,7 +53,7 @@ namespace Ryujinx.Ava.UI.Controls
 
                     ViewModel.LoadProfiles();
 
-                    foreach (Models.UserProfile profile in ViewModel.Profiles)
+                    foreach (UserProfile profile in ViewModel.Profiles)
                     {
                         profile.UpdateState();
                     }
