@@ -142,14 +142,9 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
             _owner.CpuMemory.Read(nroAddress, nroData);
 
-            byte[] nroHash = null;
-
             MemoryStream stream = new MemoryStream(nroData);
 
-            using (SHA256 hasher = SHA256.Create())
-            {
-                nroHash = hasher.ComputeHash(stream);
-            }
+            byte[] nroHash = SHA256.HashData(stream);
 
             if (!IsNroHashPresent(nroHash))
             {
@@ -326,7 +321,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
             ulong bssStart = dataStart + (ulong)relocatableObject.Data.Length;
 
-            ulong bssEnd = BitUtils.AlignUp(bssStart + (ulong)relocatableObject.BssSize, KPageTableBase.PageSize);
+            ulong bssEnd = BitUtils.AlignUp<ulong>(bssStart + relocatableObject.BssSize, KPageTableBase.PageSize);
 
             process.CpuMemory.Write(textStart, relocatableObject.Text);
             process.CpuMemory.Write(roStart,   relocatableObject.Ro);
