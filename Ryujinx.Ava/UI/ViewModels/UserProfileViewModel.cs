@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using UserId = Ryujinx.HLE.HOS.Services.Account.Acc.UserId;
 using UserProfile = Ryujinx.Ava.UI.Models.UserProfile;
 
 namespace Ryujinx.Ava.UI.ViewModels
@@ -20,13 +21,13 @@ namespace Ryujinx.Ava.UI.ViewModels
     {
         private readonly NavigationDialogHost _owner;
 
-        private Models.UserProfile _selectedProfile;
-        private Models.UserProfile _highlightedProfile;
+        private UserProfile _selectedProfile;
+        private UserProfile _highlightedProfile;
 
         public UserProfileViewModel()
         {
-            Profiles = new ObservableCollection<Models.UserProfile>();
-            LostProfiles = new ObservableCollection<Models.UserProfile>();
+            Profiles = new ObservableCollection<UserProfile>();
+            LostProfiles = new ObservableCollection<UserProfile>();
         }
 
         public UserProfileViewModel(NavigationDialogHost owner) : this()
@@ -36,18 +37,18 @@ namespace Ryujinx.Ava.UI.ViewModels
             LoadProfiles();
         }
 
-        public ObservableCollection<Models.UserProfile> Profiles { get; set; }
+        public ObservableCollection<UserProfile> Profiles { get; set; }
 
-        public ObservableCollection<Models.UserProfile> LostProfiles { get; set; }
+        public ObservableCollection<UserProfile> LostProfiles { get; set; }
 
-        public Models.UserProfile SelectedProfile
+        public UserProfile SelectedProfile
         {
             get => _selectedProfile;
             set
             {
                 _selectedProfile = value;
 
-                OnPropertyChanged(nameof(SelectedProfile));
+                OnPropertyChanged();
                 OnPropertyChanged(nameof(IsHighlightedProfileDeletable));
                 OnPropertyChanged(nameof(IsHighlightedProfileEditable));
             }
@@ -57,14 +58,14 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public bool IsHighlightedProfileDeletable => _highlightedProfile != null && _highlightedProfile.UserId != AccountManager.DefaultUserId;
 
-        public Models.UserProfile HighlightedProfile
+        public UserProfile HighlightedProfile
         {
             get => _highlightedProfile;
             set
             {
                 _highlightedProfile = value;
 
-                OnPropertyChanged(nameof(HighlightedProfile));
+                OnPropertyChanged();
                 OnPropertyChanged(nameof(IsHighlightedProfileDeletable));
                 OnPropertyChanged(nameof(IsHighlightedProfileEditable));
             }
@@ -81,7 +82,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             foreach (var profile in profiles)
             {
-                Profiles.Add(new Models.UserProfile(profile, _owner));
+                Profiles.Add(new UserProfile(profile, _owner));
             }
 
             SelectedProfile = Profiles.FirstOrDefault(x => x.UserId == _owner.AccountManager.LastOpenedUser.UserId);
@@ -105,7 +106,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             Span<SaveDataInfo> saveDataInfo = stackalloc SaveDataInfo[10];
 
-            HashSet<HLE.HOS.Services.Account.Acc.UserId> lostAccounts = new HashSet<HLE.HOS.Services.Account.Acc.UserId>();
+            HashSet<UserId> lostAccounts = new HashSet<UserId>();
 
             while (true)
             {
@@ -119,7 +120,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 for (int i = 0; i < readCount; i++)
                 {
                     var save = saveDataInfo[i];
-                    var id = new HLE.HOS.Services.Account.Acc.UserId((long)save.UserId.Id.Low, (long)save.UserId.Id.High);
+                    var id = new UserId((long)save.UserId.Id.Low, (long)save.UserId.Id.High);
                     if (Profiles.FirstOrDefault( x=> x.UserId == id) == null)
                     {
                         lostAccounts.Add(id);
@@ -129,7 +130,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             foreach(var account in lostAccounts)
             {
-                LostProfiles.Add(new Models.UserProfile(new HLE.HOS.Services.Account.Acc.UserProfile(account, "", null), _owner));
+                LostProfiles.Add(new UserProfile(new HLE.HOS.Services.Account.Acc.UserProfile(account, "", null), _owner));
             }
         }
 
