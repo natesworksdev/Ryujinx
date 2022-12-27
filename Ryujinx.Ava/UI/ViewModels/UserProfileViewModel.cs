@@ -142,7 +142,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async void ManageSaves()
         {
-            Models.UserProfile userProfile = _highlightedProfile ?? SelectedProfile;
+            UserProfile userProfile = _highlightedProfile ?? SelectedProfile;
 
             SaveManager manager = new SaveManager(userProfile, _owner.HorizonClient, _owner.VirtualFileSystem);
             
