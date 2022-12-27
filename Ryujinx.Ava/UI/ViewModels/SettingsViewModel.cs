@@ -42,7 +42,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         private float _customResolutionScale;
         private int _resolutionScale;
         private int _graphicsBackendMultithreadingIndex;
-        private float _previousVolumeLevel;
         private float _volume;
         private bool _isVulkanAvailable = true;
         private bool _directoryChanged = false;
@@ -200,7 +199,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public DateTimeOffset DateOffset { get; set; }
         public TimeSpan TimeOffset { get; set; }
-        public AvaloniaList<Models.TimeZone> TimeZones { get; set; }
+        public AvaloniaList<TimeZone> TimeZones { get; set; }
         public AvaloniaList<string> GameDirectories { get; set; }
         public ObservableCollection<ComboBoxItem> AvailableGpus { get; set; }
 
@@ -232,7 +231,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public SettingsViewModel()
         {
             GameDirectories = new AvaloniaList<string>();
-            TimeZones = new AvaloniaList<Models.TimeZone>();
+            TimeZones = new AvaloniaList<TimeZone>();
             AvailableGpus = new ObservableCollection<ComboBoxItem>();
             _validTzRegions = new List<string>();
 
@@ -289,7 +288,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 string abbr2 = abbr.StartsWith('+') || abbr.StartsWith('-') ? string.Empty : abbr;
 
-                TimeZones.Add(new Models.TimeZone($"UTC{hours:+0#;-0#;+00}:{minutes:D2}", location, abbr2));
+                TimeZones.Add(new TimeZone($"UTC{hours:+0#;-0#;+00}:{minutes:D2}", location, abbr2));
 
                 _validTzRegions.Add(location);
             }
@@ -391,8 +390,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             TimeOffset = dateTimeOffset.TimeOfDay;
 
             KeyboardHotkeys = config.Hid.Hotkeys.Value;
-
-            _previousVolumeLevel = Volume;
         }
 
         public void SaveSettings()
@@ -480,9 +477,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.ToFileFormat().SaveConfig(Program.ConfigurationPath);
 
             MainWindow.UpdateGraphicsConfig();
-
-            _previousVolumeLevel = Volume;
-
+            
             if (_owner is SettingsWindow owner)
             {
                 owner.ControllerSettings?.SaveCurrentProfile();

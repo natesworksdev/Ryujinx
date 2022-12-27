@@ -70,11 +70,13 @@ namespace Ryujinx.Ava.UI.Helpers
             {
                 return CreateLinux(parent);
             }
-            else if (OperatingSystem.IsWindows())
+
+            if (OperatingSystem.IsWindows())
             {
                 return CreateWin32(parent);
             }
-            else if (OperatingSystem.IsMacOS())
+
+            if (OperatingSystem.IsMacOS())
             {
                 return CreateMacOs(parent);
             }
@@ -121,14 +123,14 @@ namespace Ryujinx.Ava.UI.Helpers
         {
             _className = "NativeWindow-" + Guid.NewGuid();
             _wndProcDelegate = WndProc;
-            var wndClassEx = new Win32NativeInterop.WNDCLASSEX
+            var wndClassEx = new WNDCLASSEX
             {
                 cbSize = Marshal.SizeOf<WNDCLASSEX>(),
                 hInstance = GetModuleHandle(null),
                 lpfnWndProc = Marshal.GetFunctionPointerForDelegate(_wndProcDelegate),
                 style = ClassStyles.CS_OWNDC,
                 lpszClassName = Marshal.StringToHGlobalUni(_className),
-                hCursor = LoadCursor(IntPtr.Zero, (IntPtr)Win32NativeInterop.Cursors.IDC_ARROW)
+                hCursor = LoadCursor(IntPtr.Zero, (IntPtr)Cursors.IDC_ARROW)
             };
 
             var atom = RegisterClassEx(ref wndClassEx);
@@ -162,9 +164,9 @@ namespace Ryujinx.Ava.UI.Helpers
             bool isLeft = false;
             switch (msg)
             {
-                case Win32NativeInterop.WindowsMessages.LBUTTONDOWN:
-                case Win32NativeInterop.WindowsMessages.RBUTTONDOWN:
-                    isLeft = msg == Win32NativeInterop.WindowsMessages.LBUTTONDOWN;
+                case WindowsMessages.LBUTTONDOWN:
+                case WindowsMessages.RBUTTONDOWN:
+                    isLeft = msg == WindowsMessages.LBUTTONDOWN;
                     this.RaiseEvent(new PointerPressedEventArgs(
                         this,
                         new Pointer(0, PointerType.Mouse, true),
@@ -174,9 +176,9 @@ namespace Ryujinx.Ava.UI.Helpers
                         new PointerPointProperties(isLeft ? RawInputModifiers.LeftMouseButton : RawInputModifiers.RightMouseButton, isLeft ? PointerUpdateKind.LeftButtonPressed : PointerUpdateKind.RightButtonPressed),
                         KeyModifiers.None));
                     break;
-                case Win32NativeInterop.WindowsMessages.LBUTTONUP:
-                case Win32NativeInterop.WindowsMessages.RBUTTONUP:
-                    isLeft = msg == Win32NativeInterop.WindowsMessages.LBUTTONUP;
+                case WindowsMessages.LBUTTONUP:
+                case WindowsMessages.RBUTTONUP:
+                    isLeft = msg == WindowsMessages.LBUTTONUP;
                     this.RaiseEvent(new PointerReleasedEventArgs(
                         this,
                         new Pointer(0, PointerType.Mouse, true),
@@ -187,7 +189,7 @@ namespace Ryujinx.Ava.UI.Helpers
                         KeyModifiers.None,
                         isLeft ? MouseButton.Left : MouseButton.Right));
                     break;
-                case Win32NativeInterop.WindowsMessages.MOUSEMOVE:
+                case WindowsMessages.MOUSEMOVE:
                     this.RaiseEvent(new PointerEventArgs(
                         PointerMovedEvent,
                         this,
@@ -199,7 +201,7 @@ namespace Ryujinx.Ava.UI.Helpers
                         KeyModifiers.None));
                     break;
             }
-            return DefWindowProc(hWnd, msg, (IntPtr)wParam, (IntPtr)lParam);
+            return DefWindowProc(hWnd, msg, wParam, lParam);
         }
 
         [SupportedOSPlatform("macos")]
