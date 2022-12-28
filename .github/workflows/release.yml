@@ -89,8 +89,8 @@ jobs:
           popd
 
           pushd publish_linux_ava
-          tar --exclude "publish/Ryujinx.Ava" -cvf ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar publish
-          python3 ../distribution/misc/add_tar_exec.py ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar "publish/Ryujinx.Ava" "publish/Ryujinx.Ava"
+          tar --exclude "publish/Ryujinx" -cvf ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar publish
+          python3 ../distribution/misc/add_tar_exec.py ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar "publish/Ryujinx" "publish/Ryujinx"
           gzip -9 < ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar > ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz
           rm ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar
           popd
