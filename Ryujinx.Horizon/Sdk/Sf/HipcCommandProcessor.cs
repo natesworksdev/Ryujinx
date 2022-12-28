@@ -212,7 +212,7 @@ namespace Ryujinx.Horizon.Sdk.Sf
                             size = recvPointerSizes[unfixedRecvPointerIndex++];
                         }
 
-                        pointerBufferHead = BitUtils.AlignDown(pointerBufferHead - size, 0x10);
+                        pointerBufferHead = BitUtils.AlignDown(pointerBufferHead - size, 0x10UL);
                         _bufferRanges[i] = new PointerAndSize(pointerBufferHead, size);
                     }
                 }

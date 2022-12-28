@@ -54,7 +54,7 @@ namespace Ryujinx.Horizon
         private void ExpandHeap(ulong expansionSize)
         {
             ulong oldHeapSize = _currentHeapSize;
-            ulong newHeapSize = BitUtils.AlignUp(oldHeapSize + expansionSize, 0x200000);
+            ulong newHeapSize = BitUtils.AlignUp(oldHeapSize + expansionSize, 0x200000UL);
 
             _currentHeapSize = newHeapSize;
 
