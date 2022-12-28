@@ -19,7 +19,5 @@ namespace Ryujinx.Horizon.Common
         public InvalidResultException(string message, Exception innerException) : base(message, innerException)
         {
         }
-
-        
     }
 }
