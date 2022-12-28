@@ -76,11 +76,14 @@
     </Content>
   </ItemGroup>
 
-  <ItemGroup>
-    <ContentWithTargetPath Include="..\distribution\linux\Ryujinx.sh" Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
+    <Content Include="..\distribution\linux\Ryujinx.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        <TargetPath>Ryujinx.sh</TargetPath>
-    </ContentWithTargetPath>
+    </Content>
+    <Content Include="..\distribution\linux\mime\Ryujinx.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <TargetPath>mime\Ryujinx.xml</TargetPath>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
