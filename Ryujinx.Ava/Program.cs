@@ -14,8 +14,10 @@ using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 
 namespace Ryujinx.Ava
@@ -33,9 +35,30 @@ namespace Ryujinx.Ava
 
         private const uint MB_ICONWARNING = 0x30;
 
+        [SupportedOSPlatform("linux")]
+        static void RegisterMimeTypes()
+        {
+            if (!File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "mime", "packages", "Ryujinx.xml")))
+            {
+                string mimeTypesFile = Path.Combine(ReleaseInformations.GetBaseApplicationDirectory(), "mime", "Ryujinx.xml");
+                using Process mimeProcess = new();
+
+                mimeProcess.StartInfo.FileName = "xdg-mime";
+                mimeProcess.StartInfo.Arguments = $"install --mode user {mimeTypesFile}";
+
+                mimeProcess.Start();
+                mimeProcess.WaitForExit();
+            }
+        }
+
         public static void Main(string[] args)
         {
             Version = ReleaseInformations.GetVersion();
+
+            if (OperatingSystem.IsLinux())
+            {
+                RegisterMimeTypes();
+            }
 
             if (OperatingSystem.IsWindows() && !OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17134))
             {

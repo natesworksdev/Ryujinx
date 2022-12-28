@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 
 namespace Ryujinx
@@ -73,6 +74,22 @@ namespace Ryujinx
             }
         }
 
+        [SupportedOSPlatform("linux")]
+        static void RegisterMimeTypes()
+        {
+            if (!File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "mime", "packages", "Ryujinx.xml")))
+            {
+                string mimeTypesFile = Path.Combine(ReleaseInformations.GetBaseApplicationDirectory(), "mime", "Ryujinx.xml");
+                using Process mimeProcess = new();
+
+                mimeProcess.StartInfo.FileName = "xdg-mime";
+                mimeProcess.StartInfo.Arguments = $"install --mode user {mimeTypesFile}";
+
+                mimeProcess.Start();
+                mimeProcess.WaitForExit();
+            }
+        }
+
         static void Main(string[] args)
         {
             Version = ReleaseInformations.GetVersion();
@@ -101,6 +118,8 @@ namespace Ryujinx
             // This ends up causing race condition and abort of XCB when a context is created by SPB (even if SPB do call XInitThreads).
             if (OperatingSystem.IsLinux())
             {
+                RegisterMimeTypes();
+
                 XInitThreads();
                 Environment.SetEnvironmentVariable("GDK_BACKEND", "x11");
                 setenv("GDK_BACKEND", "x11", 1);
