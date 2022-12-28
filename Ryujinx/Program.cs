@@ -77,14 +77,14 @@ namespace Ryujinx
         [SupportedOSPlatform("linux")]
         static void RegisterMimeTypes()
         {
-            if (ReleaseInformations.IsFlatHubBuild())
+            if (ReleaseInformation.IsFlatHubBuild())
             {
                 return;
             }
 
             if (!File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "mime", "packages", "Ryujinx.xml")))
             {
-                string mimeTypesFile = Path.Combine(ReleaseInformations.GetBaseApplicationDirectory(), "mime", "Ryujinx.xml");
+                string mimeTypesFile = Path.Combine(ReleaseInformation.GetBaseApplicationDirectory(), "mime", "Ryujinx.xml");
                 using Process mimeProcess = new();
 
                 mimeProcess.StartInfo.FileName = "xdg-mime";
@@ -97,7 +97,7 @@ namespace Ryujinx
 
         static void Main(string[] args)
         {
-            Version = ReleaseInformations.GetVersion();
+            Version = ReleaseInformation.GetVersion();
 
             if (OperatingSystem.IsWindows() && !OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17134))
             {

@@ -38,14 +38,14 @@ namespace Ryujinx.Ava
         [SupportedOSPlatform("linux")]
         static void RegisterMimeTypes()
         {
-            if (ReleaseInformations.IsFlatHubBuild())
+            if (ReleaseInformation.IsFlatHubBuild())
             {
                 return;
             }
 
             if (!File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "mime", "packages", "Ryujinx.xml")))
             {
-                string mimeTypesFile = Path.Combine(ReleaseInformations.GetBaseApplicationDirectory(), "mime", "Ryujinx.xml");
+                string mimeTypesFile = Path.Combine(ReleaseInformation.GetBaseApplicationDirectory(), "mime", "Ryujinx.xml");
                 using Process mimeProcess = new();
 
                 mimeProcess.StartInfo.FileName = "xdg-mime";
@@ -58,7 +58,7 @@ namespace Ryujinx.Ava
 
         public static void Main(string[] args)
         {
-            Version = ReleaseInformations.GetVersion();
+            Version = ReleaseInformation.GetVersion();
 
             if (OperatingSystem.IsLinux())
             {
