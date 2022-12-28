@@ -7,16 +7,16 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
     {
         public ulong Pc => 0UL;
 
-        public ulong CntfrqEl0 { get => 0; set { } }
+        public ulong CntfrqEl0 { get; set; }
         public ulong CntpctEl0 => 0UL;
 
-        public long TpidrEl0 { get => 0; set { } }
-        public long TpidrroEl0 { get => 0; set { } }
+        public long TpidrEl0 { get; set; }
+        public long TpidrroEl0 { get; set; }
 
-        public uint Pstate { get => 0; set { } }
+        public uint Pstate { get; set; }
 
-        public uint Fpcr { get => 0; set { } }
-        public uint Fpsr { get => 0; set { } }
+        public uint Fpcr { get; set; }
+        public uint Fpsr { get; set; }
 
         public bool IsAarch32 { get => false; set { } }
 
