@@ -77,6 +77,11 @@ namespace Ryujinx
         [SupportedOSPlatform("linux")]
         static void RegisterMimeTypes()
         {
+            if (ReleaseInformations.IsFlatHubBuild())
+            {
+                return;
+            }
+
             if (!File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "mime", "packages", "Ryujinx.xml")))
             {
                 string mimeTypesFile = Path.Combine(ReleaseInformations.GetBaseApplicationDirectory(), "mime", "Ryujinx.xml");
