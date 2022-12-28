@@ -127,7 +127,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
 
                 if (hardwareSampleFormat < sampleFormat)
                 {
-                    Logger.Warning?.Print(LogClass.Audio, $"{hardwareSampleFormat} has worse  quality than {sampleFormat}, audio fidelity will suffer!");
+                    Logger.Warning?.Print(LogClass.Audio, $"{hardwareSampleFormat} has lower quality than {sampleFormat}, expect some loss in audio fidelity.");
                 }
             }
 
