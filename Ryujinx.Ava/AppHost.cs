@@ -450,7 +450,7 @@ namespace Ryujinx.Ava
                                 UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
                                     LocaleManager.Instance["DialogFirmwareNoFirmwareInstalledMessage"],
                                     string.Format(LocaleManager.Instance["DialogFirmwareInstallEmbeddedMessage"],
-                                        firmwareVersion.VersionString),
+                                    firmwareVersion.VersionString),
                                     LocaleManager.Instance["InputDialogYes"],
                                     LocaleManager.Instance["InputDialogNo"],
                                     "");
