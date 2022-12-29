@@ -858,7 +858,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public KeyGesture ScreenshotKey
         {
-            get => KeyGesture.Parse(_screenshotKey); set
+            get => KeyGesture.Parse(_screenshotKey);
+            set
             {
                 _screenshotKey = value.ToString();
 
