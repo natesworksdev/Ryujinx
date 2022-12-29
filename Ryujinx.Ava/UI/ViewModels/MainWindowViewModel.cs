@@ -609,7 +609,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public WindowState WindowState
         {
-            get => _windowState; internal set
+            get => _windowState;
+            internal set
             {
                 _windowState = value;
 
