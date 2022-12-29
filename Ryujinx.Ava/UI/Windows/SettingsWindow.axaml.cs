@@ -1,4 +1,3 @@
-using Avalonia.Interactivity;
 using FluentAvalonia.Core;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
@@ -60,9 +59,8 @@ namespace Ryujinx.Ava.UI.Windows
                 switch(navitem.Tag.ToString())
                 {
                     case "UiPage":
-                        var uiPage = UiPage;
-                        uiPage.ViewModel = ViewModel;
-                        NavPanel.Content = uiPage;
+                        UiPage.ViewModel = ViewModel;
+                        NavPanel.Content = UiPage;
                         break;
                     case "InputPage":
                         NavPanel.Content = InputPage;
@@ -71,9 +69,8 @@ namespace Ryujinx.Ava.UI.Windows
                         NavPanel.Content = HotkeysPage;
                         break;
                     case "SystemPage":
-                        var systemPage = SystemPage;
-                        systemPage.ViewModel = ViewModel;
-                        NavPanel.Content = systemPage;
+                        SystemPage.ViewModel = ViewModel;
+                        NavPanel.Content = SystemPage;
                         break;
                     case "CpuPage":
                         NavPanel.Content = CpuPage;
