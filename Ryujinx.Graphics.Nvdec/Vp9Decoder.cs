@@ -44,13 +44,13 @@ namespace Ryujinx.Graphics.Nvdec
 
             if (info.UsePrevInFindMvRefs)
             {
-                mvsIn = GetMvsInput(rm.Gmm, pictureInfo.CurrentFrameSize, state.Vp9SetColMvWriteBufOffset);
+                mvsIn = GetMvsInput(rm.Gmm, pictureInfo.CurrentFrameSize, state.Vp9SetColMvReadBufOffset);
             }
 
             int miCols = BitUtils.DivRoundUp(pictureInfo.CurrentFrameSize.Width, 8);
             int miRows = BitUtils.DivRoundUp(pictureInfo.CurrentFrameSize.Height, 8);
 
-            using var mvsRegion = rm.Gmm.GetWritableRegion(ExtendOffset(state.Vp9SetColMvReadBufOffset), miRows * miCols * 16);
+            using var mvsRegion = rm.Gmm.GetWritableRegion(ExtendOffset(state.Vp9SetColMvWriteBufOffset), miRows * miCols * 16);
 
             Span<Vp9MvRef> mvsOut = MemoryMarshal.Cast<byte, Vp9MvRef>(mvsRegion.Memory.Span);
 
