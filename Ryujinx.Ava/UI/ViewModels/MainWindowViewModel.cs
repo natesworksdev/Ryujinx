@@ -1651,9 +1651,9 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 Applications.Clear();
 
-                StatusBarVisible                 = true;
-                StatusBarProgressMaximum         = 0;
-                StatusBarProgressValue           = 0;
+                StatusBarVisible         = true;
+                StatusBarProgressMaximum = 0;
+                StatusBarProgressValue   = 0;
 
                 LocaleManager.Instance.UpdateDynamicValue("StatusBarGamesLoaded", 0, 0);
             });
