@@ -131,7 +131,7 @@ namespace Ryujinx.Ava.UI.Windows
             Program.DesktopScaleFactor = scale;
             base.HandleScalingChanged(scale);
         }
-        
+
         public void AddApplication(ApplicationData applicationData)
         {
             Dispatcher.UIThread.InvokeAsync(() =>
@@ -139,7 +139,7 @@ namespace Ryujinx.Ava.UI.Windows
                 ViewModel.Applications.Add(applicationData);
             });
         }
-        
+
         private void ApplicationLibrary_ApplicationAdded(object sender, ApplicationAddedEventArgs e)
         {
             AddApplication(e.AppData);

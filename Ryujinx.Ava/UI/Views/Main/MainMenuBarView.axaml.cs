@@ -33,7 +33,6 @@ public partial class MainMenuBarView : UserControl
         }
 
         ViewModel = Window.ViewModel;
-
         DataContext = ViewModel;
     }
 

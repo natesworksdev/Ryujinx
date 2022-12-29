@@ -912,20 +912,20 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             return SortMode switch
             {
-                ApplicationSort.LastPlayed => new Models.Generic.LastPlayedSortComparer(IsAscending),
-                ApplicationSort.FileSize => IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app => app.FileSizeBytes)
+                ApplicationSort.LastPlayed      => new Models.Generic.LastPlayedSortComparer(IsAscending),
+                ApplicationSort.FileSize        => IsAscending  ? SortExpressionComparer<ApplicationData>.Ascending(app => app.FileSizeBytes)
                                                                 : SortExpressionComparer<ApplicationData>.Descending(app => app.FileSizeBytes),
-                ApplicationSort.TotalTimePlayed => IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app => app.TimePlayedNum)
+                ApplicationSort.TotalTimePlayed => IsAscending  ? SortExpressionComparer<ApplicationData>.Ascending(app => app.TimePlayedNum)
                                                                 : SortExpressionComparer<ApplicationData>.Descending(app => app.TimePlayedNum),
-                ApplicationSort.Title => IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app => app.TitleName)
+                ApplicationSort.Title           => IsAscending  ? SortExpressionComparer<ApplicationData>.Ascending(app => app.TitleName)
                                                                 : SortExpressionComparer<ApplicationData>.Descending(app => app.TitleName),
-                ApplicationSort.Favorite => !IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app => app.Favorite)
+                ApplicationSort.Favorite        => !IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app => app.Favorite)
                                                                 : SortExpressionComparer<ApplicationData>.Descending(app => app.Favorite),
-                ApplicationSort.Developer => IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app => app.Developer)
+                ApplicationSort.Developer       => IsAscending  ? SortExpressionComparer<ApplicationData>.Ascending(app => app.Developer)
                                                                 : SortExpressionComparer<ApplicationData>.Descending(app => app.Developer),
-                ApplicationSort.FileType => IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app => app.FileExtension)
+                ApplicationSort.FileType        => IsAscending  ? SortExpressionComparer<ApplicationData>.Ascending(app => app.FileExtension)
                                                                 : SortExpressionComparer<ApplicationData>.Descending(app => app.FileExtension),
-                ApplicationSort.Path => IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app => app.Path)
+                ApplicationSort.Path            => IsAscending  ? SortExpressionComparer<ApplicationData>.Ascending(app => app.Path)
                                                                 : SortExpressionComparer<ApplicationData>.Descending(app => app.Path),
                 _ => null,
             };
@@ -1328,7 +1328,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 ConfigurationState.Instance.System.EnableDockedMode.Value = !ConfigurationState.Instance.System.EnableDockedMode.Value;
             }
         }
-        
+
         public async void ExitCurrentState()
         {
             if (WindowState == WindowState.FullScreen)

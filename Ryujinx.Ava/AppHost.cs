@@ -158,8 +158,8 @@ namespace Ryujinx.Ava
 
             ConfigurationState.Instance.HideCursorOnIdle.Event += HideCursorState_Changed;
 
-            _topLevel.PointerLeave += Parent_PointerExited;
-            _topLevel.PointerMoved += Parent_PointerMoved;
+            _topLevel.PointerLeave += TopLevel_PointerLeave;
+            _topLevel.PointerMoved += TopLevel_PointerMoved;
 
             ConfigurationState.Instance.System.IgnoreMissingServices.Event += UpdateIgnoreMissingServicesState;
             ConfigurationState.Instance.Graphics.AspectRatio.Event += UpdateAspectRatioState;
@@ -169,18 +169,17 @@ namespace Ryujinx.Ava
             _gpuCancellationTokenSource = new CancellationTokenSource();
         }
 
-        private void Parent_PointerMoved(object sender, PointerEventArgs e)
+        private void TopLevel_PointerMoved(object sender, PointerEventArgs e)
         {
             if (sender is Control visual)
             {
                 _lastCursorMoveTime = Stopwatch.GetTimestamp();
-                var p = e.GetCurrentPoint(visual).Position;
-                var r = visual.InputHitTest(p);
-                _isMouseInRenderer = Equals(r, Renderer);
+                var point = e.GetCurrentPoint(visual).Position;
+                _isMouseInRenderer = Equals(visual.InputHitTest(point), Renderer);
             }
         }
 
-        private void Parent_PointerExited(object sender, PointerEventArgs e)
+        private void TopLevel_PointerLeave(object sender, PointerEventArgs e)
         {
             _isMouseInRenderer = false;
             _viewModel.Cursor = Cursor.Default;
