@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Navigation;
 using LibHac;
@@ -60,38 +61,41 @@ namespace Ryujinx.Ava.UI.Views.User
 
         public void LoadSaves()
         {
-            ViewModel.Saves.Clear();
-            var saveDataFilter = SaveDataFilter.Make(programId: default, saveType: SaveDataType.Account,
-                new UserId((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low), saveDataId: default, index: default);
-
-            using var saveDataIterator = new UniqueRef<SaveDataIterator>();
-
-            _horizonClient.Fs.OpenSaveDataIterator(ref saveDataIterator.Ref(), SaveDataSpaceId.User, in saveDataFilter).ThrowIfFailure();
-
-            Span<SaveDataInfo> saveDataInfo = stackalloc SaveDataInfo[10];
-
-            while (true)
+            Dispatcher.UIThread.Post((() =>
             {
-                saveDataIterator.Get.ReadSaveDataInfo(out long readCount, saveDataInfo).ThrowIfFailure();
+                ViewModel.Saves.Clear();
+                var saveDataFilter = SaveDataFilter.Make(programId: default, saveType: SaveDataType.Account,
+                    new UserId((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low), saveDataId: default, index: default);
 
-                if (readCount == 0)
-                {
-                    break;
-                }
+                using var saveDataIterator = new UniqueRef<SaveDataIterator>();
 
-                for (int i = 0; i < readCount; i++)
+                _horizonClient.Fs.OpenSaveDataIterator(ref saveDataIterator.Ref(), SaveDataSpaceId.User, in saveDataFilter).ThrowIfFailure();
+
+                Span<SaveDataInfo> saveDataInfo = stackalloc SaveDataInfo[10];
+
+                while (true)
                 {
-                    var save = saveDataInfo[i];
-                    if (save.ProgramId.Value != 0)
+                    saveDataIterator.Get.ReadSaveDataInfo(out long readCount, saveDataInfo).ThrowIfFailure();
+
+                    if (readCount == 0)
                     {
-                        var saveModel = new SaveModel(save, _horizonClient, _virtualFileSystem);
-                        ViewModel.Saves.Add(saveModel);
-                        saveModel.DeleteAction = () => { ViewModel.Saves.Remove(saveModel); };
+                        break;
                     }
+
+                    for (int i = 0; i < readCount; i++)
+                    {
+                        var save = saveDataInfo[i];
+                        if (save.ProgramId.Value != 0)
+                        {
+                            var saveModel = new SaveModel(save, _horizonClient, _virtualFileSystem);
+                            ViewModel.Saves.Add(saveModel);
+                            saveModel.DeleteAction = () => { ViewModel.Saves.Remove(saveModel); };
+                        }
                     
-                    ViewModel.Sort();
+                        ViewModel.Sort();
+                    }
                 }
-            }
+            }));
         }
         
         private void GoBack(object sender, RoutedEventArgs e)
