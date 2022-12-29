@@ -847,7 +847,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public KeyGesture ShowUiKey
         {
-            get => KeyGesture.Parse(_showUiKey); set
+            get => KeyGesture.Parse(_showUiKey);
+            set
             {
                 _showUiKey = value.ToString();
 
