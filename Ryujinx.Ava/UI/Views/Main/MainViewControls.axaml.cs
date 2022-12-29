@@ -34,8 +34,7 @@ public partial class MainViewControls : UserControl
     {
         if (sender is RadioButton button)
         {
-            var sort = Enum.Parse<ApplicationSort>(button.Tag.ToString());
-            ViewModel.Sort(sort);
+            ViewModel.Sort(Enum.Parse<ApplicationSort>(button.Tag.ToString()));
         }
     }
     
