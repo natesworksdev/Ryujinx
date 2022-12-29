@@ -11,27 +11,33 @@ using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Models;
+using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
+using Ryujinx.Ui.App.Common;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Path = System.IO.Path;
 using SpanHelpers = LibHac.Common.SpanHelpers;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
     public partial class TitleUpdateWindow : StyleableWindow
     {
-        private readonly string     _titleUpdateJsonPath;
-        private TitleUpdateMetadata _titleUpdateWindowData;
+        private string                      _titleUpdateJsonPath;
+        private         TitleUpdateMetadata _titleUpdateWindowData;
 
-        private VirtualFileSystem              _virtualFileSystem { get; }
-        private AvaloniaList<TitleUpdateModel> _titleUpdates      { get; set; }
+        private          VirtualFileSystem              _virtualFileSystem { get; }
+        private          AvaloniaList<TitleUpdateModel> _titleUpdates      { get; set; }
+        private readonly List<ApplicationData>          Applications;
 
         private ulong  _titleId   { get; }
         private string _titleName { get; }
@@ -45,28 +51,16 @@ namespace Ryujinx.Ava.Ui.Windows
             Title = $"Ryujinx {Program.Version} - {LocaleManager.Instance["UpdateWindowTitle"]} - {_titleName} ({_titleId:X16})";
         }
 
-        public TitleUpdateWindow(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
+        public TitleUpdateWindow(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName, List<ApplicationData> applications = null)
         {
             _virtualFileSystem = virtualFileSystem;
             _titleUpdates      = new AvaloniaList<TitleUpdateModel>();
 
+            Applications = applications;
             _titleId   = titleId;
             _titleName = titleName;
 
-            _titleUpdateJsonPath = Path.Combine(AppDataManager.GamesDirPath, titleId.ToString("x16"), "updates.json");
-
-            try
-            {
-                _titleUpdateWindowData = JsonHelper.DeserializeFromFile<TitleUpdateMetadata>(_titleUpdateJsonPath);
-            }
-            catch
-            {
-                _titleUpdateWindowData = new TitleUpdateMetadata 
-                {
-                    Selected = "",
-                    Paths    = new List<string>()
-                };
-            }
+            _titleUpdateJsonPath = LoadJsonFromTitle(titleId);
 
             DataContext = this;
 
@@ -89,7 +83,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
             foreach (string path in _titleUpdateWindowData.Paths)
             {
-                AddUpdate(path);
+                AddUpdate(path, _titleId);
             }
 
             if (_titleUpdateWindowData.Selected == "")
@@ -115,7 +109,7 @@ namespace Ryujinx.Ava.Ui.Windows
             SortUpdates();
         }
 
-        private void AddUpdate(string path)
+        private async Task AddUpdate(string path, ulong titleId)
         {
             if (File.Exists(path) && !_titleUpdates.Any(x => x.Path == path))
             {
@@ -123,7 +117,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
                 try
                 {
-                    (Nca patchNca, Nca controlNca) = ApplicationLoader.GetGameUpdateDataFromPartition(_virtualFileSystem, new PartitionFileSystem(file.AsStorage()), _titleId.ToString("x16"), 0);
+                    (Nca patchNca, Nca controlNca) = ApplicationLoader.GetGameUpdateDataFromPartition(_virtualFileSystem, new PartitionFileSystem(file.AsStorage()), titleId.ToString("x16"), 0);
 
                     if (controlNca != null && patchNca != null)
                     {
@@ -188,6 +182,57 @@ namespace Ryujinx.Ava.Ui.Windows
             RemoveUpdates();
         }
 
+        public async void LoadGlobalTitleUpdates()
+        {
+            AutoTitleUpdateLoader titleUpdateManager = new AutoTitleUpdateLoader(Applications);
+
+            foreach (ApplicationData application in Applications)
+            {
+                try
+                {
+                    _titleUpdates.Clear();
+                    await titleUpdateManager.AutoLoadUpdatesAsync(application, AddUpdate);
+                    _titleUpdateJsonPath = LoadJsonFromTitle(application);
+                    Save();
+                }
+                catch (Exception)
+                {
+                    Logger.Error?.Print(LogClass.Application, $"Error while downloading downloadable content for title: {application.TitleName}", nameof(AutoDownloadableContentLoader));
+                }
+            }
+
+            //TODO Pfad in die einstellungen bringen. Testen, TitleUpdates same
+
+            Close();
+        }
+
+        private string LoadJsonFromTitle(ApplicationData applicationdata)
+        {
+            ulong titleId = ulong.Parse(applicationdata.TitleId, NumberStyles.HexNumber);
+
+            return LoadJsonFromTitle(titleId);
+        }
+
+        private string LoadJsonFromTitle(ulong titleId)
+        {
+            string _titleUpdateJsonPath = Path.Combine(AppDataManager.GamesDirPath, titleId.ToString("x16"), "updates.json");
+
+            try
+            {
+                _titleUpdateWindowData = JsonHelper.DeserializeFromFile<TitleUpdateMetadata>(_titleUpdateJsonPath);
+            }
+            catch
+            {
+                _titleUpdateWindowData = new TitleUpdateMetadata
+                {
+                    Selected = "",
+                    Paths = new List<string>()
+                };
+            }
+
+            return _titleUpdateJsonPath;
+        }
+
         public async void Add()
         {
             OpenFileDialog dialog = new()
@@ -208,7 +253,7 @@ namespace Ryujinx.Ava.Ui.Windows
             {
                 foreach (string file in files)
                 {
-                    AddUpdate(file);
+                    await AddUpdate(file, _titleId);
                 }
             }
 

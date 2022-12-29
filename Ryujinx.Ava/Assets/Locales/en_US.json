@@ -78,6 +78,10 @@
   "SettingsTabGeneralHideCursorOnIdle": "Hide Cursor on Idle",
   "SettingsTabGeneralGameDirectories": "Game Directories",
   "SettingsTabGeneralAdd": "Add",
+  "AutoLoadGlobalTitleUpdates": "Load global titel updates",
+  "AutoLoadGlobalTitleUpdatesToolTip": "Automatically loads all title updates stored in global title update path from settings",
+  "AutoLoadGlobalDownloadableContentToolTip": "Automatically loads all dlcs stored in global dlc path from settings",
+  "AutoLoadGlobalDownloadableContent": "Load global dlcs",
   "SettingsTabGeneralRemove": "Remove",
   "SettingsTabSystem": "System",
   "SettingsTabSystemCore": "Core",
@@ -545,6 +549,7 @@
   "CompilingShaders": "Compiling Shaders",
   "AllKeyboards": "All keyboards",
   "OpenFileDialogTitle": "Select a supported file to open",
+  "CreateZipFileDialogTitle": "Select a directory and filename",
   "OpenFolderDialogTitle": "Select a folder with an unpacked game",
   "AllSupportedFormats": "All Supported Formats",
   "RyujinxUpdater": "Ryujinx Updater",
@@ -609,5 +614,5 @@
   "Search": "Search",
   "UserProfilesRecoverLostAccounts": "Recover Lost Accounts",
   "Recover": "Recover",
-  "UserProfilesRecoverHeading" : "Saves were found for the following accounts"
+  "UserProfilesRecoverHeading": "Saves were found for the following accounts"
 }

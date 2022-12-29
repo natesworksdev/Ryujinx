@@ -155,6 +155,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public bool IsSoundIoEnabled { get; set; }
         public bool IsSDL2Enabled { get; set; }
         public bool EnableCustomTheme { get; set; }
+        public string GlobalDlcPath { get; set; }
+        public string GlobalTitleUpdatePath { get; set; }
         public bool IsCustomResolutionScaleActive => _resolutionScale == 0;
         public bool IsVulkanSelected => GraphicsBackendIndex == 0;
 
@@ -355,6 +357,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
             EnableFsAccessLog = config.Logger.EnableFsAccessLog;
             EnableCustomTheme = config.Ui.EnableCustomTheme;
             Volume = config.System.AudioVolume * 100;
+            GlobalDlcPath = config.System.GlobalDlcPath;
+            GlobalTitleUpdatePath = config.System.GlobalTitleUpdatePath;
 
             GraphicsBackendMultithreadingIndex = (int)config.Graphics.BackendThreading.Value;
 
@@ -475,6 +479,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
 
             config.Hid.Hotkeys.Value = KeyboardHotkeys;
+            config.System.GlobalDlcPath.Value = GlobalDlcPath;
+            config.System.GlobalTitleUpdatePath.Value = GlobalTitleUpdatePath;
 
             config.ToFileFormat().SaveConfig(Program.ConfigurationPath);
 

@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Path = System.IO.Path;
@@ -941,7 +942,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
             new DirectoryInfo(logPath).Create();
 
             OpenHelper.OpenFolder(logPath);
-        }
+        }       
+
 
         public void ToggleFullscreen()
         {
@@ -1287,7 +1289,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             ApplicationData selection = SelectedApplication;
             if (selection != null)
             {
-                await new TitleUpdateWindow(_owner.VirtualFileSystem, ulong.Parse(selection.TitleId, NumberStyles.HexNumber), selection.TitleName).ShowDialog(_owner);
+                await new TitleUpdateWindow(_owner.VirtualFileSystem, ulong.Parse(selection.TitleId, NumberStyles.HexNumber), selection.TitleName, _applications.ToList()).ShowDialog(_owner);
             }
         }
 
@@ -1296,7 +1298,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             ApplicationData selection = SelectedApplication;
             if (selection != null)
             {
-                await new DownloadableContentManagerWindow(_owner.VirtualFileSystem, ulong.Parse(selection.TitleId, NumberStyles.HexNumber), selection.TitleName).ShowDialog(_owner);
+                await new DownloadableContentManagerWindow(_owner.VirtualFileSystem, ulong.Parse(selection.TitleId, NumberStyles.HexNumber), selection.TitleName, _applications.ToList()).ShowDialog(_owner);
             }
         }
 

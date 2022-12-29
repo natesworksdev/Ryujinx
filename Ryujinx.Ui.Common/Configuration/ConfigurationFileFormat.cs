@@ -217,6 +217,16 @@ namespace Ryujinx.Ui.Common.Configuration
         public bool IgnoreMissingServices { get; set; }
 
         /// <summary>
+        /// The Path for the global dlc file folder.
+        /// </summary>
+        public string GlobalDlcPath { get; set; }
+
+        /// <summary>
+        /// The Path for the global title update file folder.
+        /// </summary>
+        public string GlobalTitleUpdatePath { get; set; }
+
+        /// <summary>
         /// Used to toggle columns in the GUI
         /// </summary>
         public GuiColumns GuiColumns { get; set; }

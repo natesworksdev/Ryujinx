@@ -110,6 +110,14 @@
                                                Text="{locale:Locale SettingsTabGeneralRemove}" />
                                 </Button>
                             </Grid>
+							<StackPanel>
+								<Label>Global Downloadable Content Path</Label>
+								<TextBox  Name="GlobalDlcPath" Text="{Binding GlobalDlcPath}"  ToolTip.Tip="Path to all downloadable contents for auto load dlcs "/>
+							</StackPanel>
+							<StackPanel>
+								<Label>Global Title Update Path</Label>
+								<TextBox  Name="GlobalTitleUpdatePath" Text="{Binding GlobalTitleUpdatePath}"  ToolTip.Tip="Path to all title updates for auto load title updates "/>
+							</StackPanel>
                         </StackPanel>
                         <Separator Height="1" />
                         <TextBlock Classes="h1" Text="{locale:Locale SettingsTabGeneralTheme}" />
