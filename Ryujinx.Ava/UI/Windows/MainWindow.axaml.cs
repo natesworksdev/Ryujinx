@@ -310,7 +310,7 @@ namespace Ryujinx.Ava.UI.Windows
                 content = GameLibrary;
             }
 
-            if(MainContent.Content != content)
+            if (MainContent.Content != content)
             {
                 MainContent.Content = content;
             }
