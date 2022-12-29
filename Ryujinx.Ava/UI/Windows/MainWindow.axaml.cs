@@ -6,10 +6,7 @@ using Avalonia.Threading;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Input;
-<<<<<<< HEAD
-=======
 using Ryujinx.Ava.Modules.Updater;
->>>>>>> 66aac324 (Fix Namespace Case)
 using Ryujinx.Ava.UI.Applet;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
@@ -19,7 +16,6 @@ using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.Input.SDL2;
-using Ryujinx.Modules;
 using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;

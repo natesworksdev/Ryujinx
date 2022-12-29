@@ -3,11 +3,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 
-<<<<<<<< HEAD:Ryujinx.Ava/UI/Windows/IconColorPicker.cs
 namespace Ryujinx.Ava.UI.Windows
-========
-namespace Ryujinx.Ava.UI.Helpers
->>>>>>>> 66aac324 (Fix Namespace Case):Ryujinx.Ava/UI/Helpers/IconColorPicker.cs
 {
     static class IconColorPicker
     {

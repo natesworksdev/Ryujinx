@@ -1,16 +1,9 @@
-using Avalonia.Interactivity;
-using Avalonia.Platform.Storage;
 using FluentAvalonia.Core;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
-<<<<<<< HEAD:Ryujinx.Ava/UI/Windows/SettingsWindow.axaml.cs
-using Ryujinx.Ava.Ui.ViewModels;
-=======
 using Ryujinx.Ava.UI.ViewModels;
->>>>>>> 66aac324 (Fix Namespace Case):Ryujinx.Ava/Ui/Windows/SettingsWindow.axaml.cs
 using Ryujinx.HLE.FileSystem;
 using System;
-using System.Collections.Generic;
 
 namespace Ryujinx.Ava.UI.Windows
 {

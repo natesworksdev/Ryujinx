@@ -2,10 +2,6 @@ using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Media.Imaging;
 using Ryujinx.Ava.Common.Locale;
-<<<<<<< HEAD
-using Ryujinx.Ava.UI.Controls;
-=======
->>>>>>> 66aac324 (Fix Namespace Case)
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.Common;

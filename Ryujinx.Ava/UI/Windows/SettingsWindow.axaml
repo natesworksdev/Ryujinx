@@ -6,16 +6,10 @@
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-<<<<<<< HEAD
-    xmlns:viewModels="clr-namespace:Ryujinx.Ava.Ui.ViewModels"
-    xmlns:window="clr-namespace:Ryujinx.Ava.Ui.Windows"
-    xmlns:settings="clr-namespace:Ryujinx.Ava.Ui.Controls.Settings"
-=======
     xmlns:window="clr-namespace:Ryujinx.Ava.UI.Windows"
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     xmlns:settings="clr-namespace:Ryujinx.Ava.UI.Views.Settings"
     xmlns:helpers="clr-namespace:Ryujinx.Ava.UI.Helpers"
->>>>>>> 66aac324 (Fix Namespace Case)
     Width="1100"
     Height="768"
     MinWidth="800"
@@ -81,7 +75,7 @@
                     Tag="CpuPage">
                     <ui:NavigationViewItem.Icon>
                         <ui:FontIcon FontFamily="avares://Ryujinx.Ava/Assets/Fonts#Segoe Fluent Icons"
-                                     Glyph="{controls:GlyphValueConverter Chip}" />
+                                     Glyph="{helpers:GlyphValueConverter Chip}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem

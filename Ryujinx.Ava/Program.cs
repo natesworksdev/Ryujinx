@@ -1,9 +1,6 @@
 using Avalonia;
 using Avalonia.Threading;
-<<<<<<< HEAD
-=======
 using Ryujinx.Ava.Modules.Updater;
->>>>>>> 66aac324 (Fix Namespace Case)
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
@@ -11,7 +8,6 @@ using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.SystemInterop;
 using Ryujinx.Common.SystemInfo;
-using Ryujinx.Modules;
 using Ryujinx.SDL2.Common;
 using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
