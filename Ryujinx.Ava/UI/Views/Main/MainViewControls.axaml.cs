@@ -42,8 +42,7 @@ public partial class MainViewControls : UserControl
     {
         if (sender is RadioButton button)
         {
-            var tag = button.Tag.ToString();
-            ViewModel.Sort(tag != "Descending");
+            ViewModel.Sort(button.Tag.ToString() != "Descending");
         }
     }
     
