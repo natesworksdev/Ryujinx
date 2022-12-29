@@ -660,6 +660,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged();
             }
         }
+
         public string Title
         {
             get => _title;
