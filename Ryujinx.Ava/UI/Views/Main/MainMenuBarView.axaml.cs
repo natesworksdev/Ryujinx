@@ -27,7 +27,7 @@ public partial class MainMenuBarView : UserControl
     {
         base.OnAttachedToVisualTree(e);
 
-        if(this.VisualRoot is MainWindow window)
+        if (this.VisualRoot is MainWindow window)
         {
            Window = window;
         }
