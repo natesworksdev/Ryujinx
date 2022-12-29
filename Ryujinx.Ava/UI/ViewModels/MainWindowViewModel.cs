@@ -572,6 +572,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged();
             }
         }
+
         public bool IsActive
         {
             get => _isActive; set
