@@ -13,6 +13,7 @@ using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using System;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using UserId = LibHac.Fs.UserId;
 
@@ -61,41 +62,43 @@ namespace Ryujinx.Ava.UI.Views.User
 
         public void LoadSaves()
         {
-            Dispatcher.UIThread.Post((() =>
+            ViewModel.Saves.Clear();
+            var saves = new ObservableCollection<SaveModel>();
+            var saveDataFilter = SaveDataFilter.Make(programId: default, saveType: SaveDataType.Account,
+                new UserId((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low), saveDataId: default, index: default);
+
+            using var saveDataIterator = new UniqueRef<SaveDataIterator>();
+
+            _horizonClient.Fs.OpenSaveDataIterator(ref saveDataIterator.Ref(), SaveDataSpaceId.User, in saveDataFilter).ThrowIfFailure();
+
+            Span<SaveDataInfo> saveDataInfo = stackalloc SaveDataInfo[10];
+
+            while (true)
             {
-                ViewModel.Saves.Clear();
-                var saveDataFilter = SaveDataFilter.Make(programId: default, saveType: SaveDataType.Account,
-                    new UserId((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low), saveDataId: default, index: default);
+                saveDataIterator.Get.ReadSaveDataInfo(out long readCount, saveDataInfo).ThrowIfFailure();
 
-                using var saveDataIterator = new UniqueRef<SaveDataIterator>();
-
-                _horizonClient.Fs.OpenSaveDataIterator(ref saveDataIterator.Ref(), SaveDataSpaceId.User, in saveDataFilter).ThrowIfFailure();
-
-                Span<SaveDataInfo> saveDataInfo = stackalloc SaveDataInfo[10];
-
-                while (true)
+                if (readCount == 0)
                 {
-                    saveDataIterator.Get.ReadSaveDataInfo(out long readCount, saveDataInfo).ThrowIfFailure();
+                    break;
+                }
 
-                    if (readCount == 0)
+                for (int i = 0; i < readCount; i++)
+                {
+                    var save = saveDataInfo[i];
+                    if (save.ProgramId.Value != 0)
                     {
-                        break;
-                    }
-
-                    for (int i = 0; i < readCount; i++)
-                    {
-                        var save = saveDataInfo[i];
-                        if (save.ProgramId.Value != 0)
-                        {
-                            var saveModel = new SaveModel(save, _horizonClient, _virtualFileSystem);
-                            ViewModel.Saves.Add(saveModel);
-                            saveModel.DeleteAction = () => { ViewModel.Saves.Remove(saveModel); };
-                        }
-                    
-                        ViewModel.Sort();
+                        var saveModel = new SaveModel(save, _horizonClient, _virtualFileSystem);
+                        saves.Add(saveModel);
+                        saveModel.DeleteAction = () => { ViewModel.Saves.Remove(saveModel); };
                     }
                 }
-            }));
+            }
+            
+            Dispatcher.UIThread.Post(() =>
+            {
+                ViewModel.Saves = saves;
+                ViewModel.Sort();
+            });
         }
         
         private void GoBack(object sender, RoutedEventArgs e)
