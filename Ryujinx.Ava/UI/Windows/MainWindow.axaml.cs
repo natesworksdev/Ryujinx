@@ -413,8 +413,8 @@ namespace Ryujinx.Ava.UI.Windows
                 ViewModel.Applications.Clear();
 
                 StatusBarView.LoadProgressBar.IsVisible = true;
-                ViewModel.StatusBarProgressMaximum         = 0;
-                ViewModel.StatusBarProgressValue           = 0;
+                ViewModel.StatusBarProgressMaximum      = 0;
+                ViewModel.StatusBarProgressValue        = 0;
 
                 LocaleManager.Instance.UpdateDynamicValue("StatusBarGamesLoaded", 0, 0);
             });
