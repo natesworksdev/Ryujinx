@@ -482,7 +482,7 @@ namespace Ryujinx.Ava
                                     string.Format(LocaleManager.Instance["DialogFirmwareInstalledMessage"],
                                     firmwareVersion.VersionString),
                                     string.Format(LocaleManager.Instance["DialogFirmwareInstallEmbeddedSuccessMessage"],
-                                        firmwareVersion.VersionString),
+                                    firmwareVersion.VersionString),
                                     LocaleManager.Instance["InputDialogOk"],
                                     "",
                                     LocaleManager.Instance["RyujinxInfo"]);
