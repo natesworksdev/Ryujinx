@@ -1912,8 +1912,11 @@ namespace Ryujinx.Ava.UI.ViewModels
                 string mainMessage = LocaleManager.Instance["DialogPerformanceCheckLoggingEnabledMessage"];
                 string secondaryMessage = LocaleManager.Instance["DialogPerformanceCheckLoggingEnabledConfirmMessage"];
 
-                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(mainMessage, secondaryMessage,
-                    LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"],
+                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
+                    mainMessage,
+                    secondaryMessage,
+                    LocaleManager.Instance["InputDialogYes"],
+                    LocaleManager.Instance["InputDialogNo"],
                     LocaleManager.Instance["RyujinxConfirm"]);
 
                 if (result != UserResult.Yes)
