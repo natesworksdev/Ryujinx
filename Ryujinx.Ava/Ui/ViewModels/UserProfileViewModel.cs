@@ -99,7 +99,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 default, saveDataId: default, index: default);
 
             using var saveDataIterator = new UniqueRef<SaveDataIterator>();
-
+           
             _owner.HorizonClient.Fs.OpenSaveDataIterator(ref saveDataIterator.Ref(), SaveDataSpaceId.User, in saveDataFilter).ThrowIfFailure();
 
             Span<SaveDataInfo> saveDataInfo = stackalloc SaveDataInfo[10];
@@ -143,7 +143,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         {
             UserProfile userProfile = _highlightedProfile ?? SelectedProfile;
 
-            SaveManager manager = new SaveManager(userProfile, _owner.HorizonClient, _owner.VirtualFileSystem);
+            SaveManager manager = new SaveManager(userProfile, _owner.HorizonClient, _owner.VirtualFileSystem, _owner.Applications);
             
             ContentDialog contentDialog = new ContentDialog
             {

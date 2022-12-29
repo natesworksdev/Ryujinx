@@ -4,15 +4,19 @@ using DynamicData.Binding;
 using LibHac;
 using LibHac.Common;
 using LibHac.Fs;
+using LibHac.Fs.Fsa;
+using LibHac.Fs.Impl;
 using LibHac.Fs.Shim;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Models;
+using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.Ui.App.Common;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using UserProfile = Ryujinx.Ava.Ui.Models.UserProfile;
 
@@ -26,6 +30,7 @@ namespace Ryujinx.Ava.Ui.Controls
         private int _sortIndex;
         private int _orderIndex;
         private ObservableCollection<SaveModel> _view = new ObservableCollection<SaveModel>();
+        private readonly List<ApplicationData> _applications;
         private string _search;
 
         public ObservableCollection<SaveModel> Saves { get; set; } = new ObservableCollection<SaveModel>();
@@ -71,11 +76,12 @@ namespace Ryujinx.Ava.Ui.Controls
             InitializeComponent();
         }
 
-        public SaveManager(UserProfile userProfile, HorizonClient horizonClient, VirtualFileSystem virtualFileSystem)
+        public SaveManager(UserProfile userProfile, HorizonClient horizonClient, VirtualFileSystem virtualFileSystem, List<ApplicationData> applications)
         {
             _userProfile = userProfile;
             _horizonClient = horizonClient;
             _virtualFileSystem = virtualFileSystem;
+            _applications = applications;
             InitializeComponent();
 
             DataContext = this;
@@ -83,8 +89,23 @@ namespace Ryujinx.Ava.Ui.Controls
             Task.Run(LoadSaves);
         }
 
+        public void ImportBackup()
+        {
+            SaveDataImporter restoreSavedataCommand = new SaveDataImporter(_applications, _userProfile, _horizonClient, _virtualFileSystem);
+            restoreSavedataCommand.RestoreSavedataBackup(Parent.VisualRoot as MainWindow);
+
+            LoadSaves();
+        }
+
+        public void ExportBackup()
+        {
+            SaveDataExporter backupSavedataCommand = new SaveDataExporter(_applications, _userProfile, _horizonClient, _virtualFileSystem);
+            backupSavedataCommand.SaveUserSaveDirectoryAsZip(Parent.VisualRoot as MainWindow, Saves.ToList());
+        }
+
         public void LoadSaves()
         {
+            
             Saves.Clear();
             var saveDataFilter = SaveDataFilter.Make(programId: default, saveType: SaveDataType.Account,
                 new UserId((ulong)_userProfile.UserId.High, (ulong)_userProfile.UserId.Low), saveDataId: default, index: default);
@@ -92,7 +113,7 @@ namespace Ryujinx.Ava.Ui.Controls
             using var saveDataIterator = new UniqueRef<SaveDataIterator>();
 
             _horizonClient.Fs.OpenSaveDataIterator(ref saveDataIterator.Ref(), SaveDataSpaceId.User, in saveDataFilter).ThrowIfFailure();
-
+            
             Span<SaveDataInfo> saveDataInfo = stackalloc SaveDataInfo[10];
 
             while (true)

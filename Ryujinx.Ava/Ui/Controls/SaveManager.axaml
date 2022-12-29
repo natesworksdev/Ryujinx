@@ -99,5 +99,10 @@
                 </ListBox.ItemTemplate>
             </ListBox>
         </Border>
-    </Grid>
+
+		<StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right" Grid.Row="1">
+			<Button Command="{Binding ImportBackup}" Content="{locale:Locale ImportBackup}"/>
+			<Button Command="{Binding ExportBackup}" Content="{locale:Locale ExportBackup}"/>
+		</StackPanel>
+	</Grid>
 </UserControl>

@@ -103,7 +103,7 @@
                                 Command="{ReflectionBinding OpenLogsFolder}"
                                 Header="{locale:Locale MenuBarFileOpenLogsFolder}"
                                 ToolTip.Tip="{locale:Locale OpenRyujinxLogsTooltip}" />
-                            <Separator />
+							<Separator />
                             <MenuItem
                                 Command="{ReflectionBinding CloseWindow}"
                                 Header="{locale:Locale MenuBarFileExit}"

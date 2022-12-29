@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Path = System.IO.Path;
@@ -1009,7 +1010,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public async void ManageProfiles()
         {
-            await NavigationDialogHost.Show(_owner.AccountManager, _owner.ContentManager, _owner.VirtualFileSystem, _owner.LibHacHorizonManager.RyujinxClient);
+            await NavigationDialogHost.Show(_owner.AccountManager, _owner.ContentManager, _owner.VirtualFileSystem, _owner.LibHacHorizonManager.RyujinxClient, Applications.ToList());
         }
 
         public async void OpenAboutWindow()

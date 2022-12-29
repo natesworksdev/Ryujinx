@@ -28,6 +28,8 @@
   "MenuBarHelp": "Βοήθεια",
   "MenuBarHelpCheckForUpdates": "Έλεγχος για Ενημερώσεις",
   "MenuBarHelpAbout": "Σχετικά με",
+  "ImportBackup": "εισαγωγή αντιγράφων ασφαλείας",
+  "ExportBackup": "εξαγωγή αντιγράφων ασφαλείας",
   "MenuSearch": "Αναζήτηση...",
   "GameListHeaderFavorite": "Αγαπημένο",
   "GameListHeaderIcon": "Εικονίδιο",

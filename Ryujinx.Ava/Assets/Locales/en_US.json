@@ -29,6 +29,8 @@
   "MenuBarHelpCheckForUpdates": "Check for Updates",
   "MenuBarHelpAbout": "About",
   "MenuSearch": "Search...",
+  "ImportBackup": "Import backup",
+  "ExportBackup": "Export backup",
   "GameListHeaderFavorite": "Fav",
   "GameListHeaderIcon": "Icon",
   "GameListHeaderApplication": "Name",
@@ -545,6 +547,7 @@
   "CompilingShaders": "Compiling Shaders",
   "AllKeyboards": "All keyboards",
   "OpenFileDialogTitle": "Select a supported file to open",
+  "CreateZipFileDialogTitle": "Select a directory and filename",
   "OpenFolderDialogTitle": "Select a folder with an unpacked game",
   "AllSupportedFormats": "All Supported Formats",
   "RyujinxUpdater": "Ryujinx Updater",
@@ -609,5 +612,5 @@
   "Search": "Search",
   "UserProfilesRecoverLostAccounts": "Recover Lost Accounts",
   "Recover": "Recover",
-  "UserProfilesRecoverHeading" : "Saves were found for the following accounts"
+  "UserProfilesRecoverHeading": "Saves were found for the following accounts"
 }
