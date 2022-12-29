@@ -605,6 +605,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged();
             }
         }
+
         public WindowState WindowState
         {
             get => _windowState; internal set
