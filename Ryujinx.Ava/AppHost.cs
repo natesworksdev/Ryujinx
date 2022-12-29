@@ -442,8 +442,7 @@ namespace Ryujinx.Ava
                 if (!SetupValidator.CanStartApplication(ContentManager, ApplicationPath, out UserError userError)) 
                 {
                     {
-                        if (SetupValidator.CanFixStartApplication(ContentManager, ApplicationPath, userError,
-                                out firmwareVersion))
+                        if (SetupValidator.CanFixStartApplication(ContentManager, ApplicationPath, userError, out firmwareVersion))
                         {
                             if (userError == UserError.NoFirmware)
                             {
