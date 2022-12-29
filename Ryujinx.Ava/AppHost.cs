@@ -438,7 +438,7 @@ namespace Ryujinx.Ava
             SystemVersion firmwareVersion = ContentManager.GetCurrentFirmwareVersion();
 
             if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-            { 
+            {
                 if (!SetupValidator.CanStartApplication(ContentManager, ApplicationPath, out UserError userError)) 
                 {
                     {
