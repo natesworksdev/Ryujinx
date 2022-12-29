@@ -169,6 +169,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             set
             {
                 _customThemePath = value;
+
                 OnPropertyChanged();
             }
         }
