@@ -480,7 +480,7 @@ namespace Ryujinx.Ava
 
                                 await ContentDialogHelper.CreateInfoDialog(
                                     string.Format(LocaleManager.Instance["DialogFirmwareInstalledMessage"],
-                                        firmwareVersion.VersionString),
+                                    firmwareVersion.VersionString),
                                     string.Format(LocaleManager.Instance["DialogFirmwareInstallEmbeddedSuccessMessage"],
                                         firmwareVersion.VersionString),
                                     LocaleManager.Instance["InputDialogOk"],
