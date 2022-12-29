@@ -464,8 +464,7 @@ namespace Ryujinx.Ava
                                 }
                             }
 
-                            if (!SetupValidator.TryFixStartApplication(ContentManager, ApplicationPath, userError,
-                                    out _))
+                            if (!SetupValidator.TryFixStartApplication(ContentManager, ApplicationPath, userError, out _))
                             {
                                 await UserErrorDialog.ShowUserErrorDialog(userError, (desktop.MainWindow as MainWindow));
                                 Device.Dispose();
