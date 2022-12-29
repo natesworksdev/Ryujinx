@@ -1932,8 +1932,11 @@ namespace Ryujinx.Ava.UI.ViewModels
                 string mainMessage = LocaleManager.Instance["DialogPerformanceCheckShaderDumpEnabledMessage"];
                 string secondaryMessage = LocaleManager.Instance["DialogPerformanceCheckShaderDumpEnabledConfirmMessage"];
 
-                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(mainMessage, secondaryMessage,
-                    LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"],
+                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
+                    mainMessage,
+                    secondaryMessage,
+                    LocaleManager.Instance["InputDialogYes"],
+                    LocaleManager.Instance["InputDialogNo"],
                     LocaleManager.Instance["RyujinxConfirm"]);
 
                 if (result != UserResult.Yes)
