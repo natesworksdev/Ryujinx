@@ -388,8 +388,8 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.System.EnableDockedMode.Event -= UpdateDockedModeState;
             ConfigurationState.Instance.System.AudioVolume.Event -= UpdateAudioVolumeState;
 
-            _topLevel.PointerLeave -= Parent_PointerExited;
-            _topLevel.PointerMoved -= Parent_PointerMoved;
+            _topLevel.PointerLeave -= TopLevel_PointerLeave;
+            _topLevel.PointerMoved -= TopLevel_PointerMoved;
 
             _gpuCancellationTokenSource.Cancel();
             _gpuCancellationTokenSource.Dispose();
