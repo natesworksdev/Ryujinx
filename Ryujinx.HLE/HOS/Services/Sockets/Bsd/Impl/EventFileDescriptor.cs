@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Ryujinx.HLE.HOS.Services.Sockets.Bsd.Types;
+using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
+namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
 {
     class EventFileDescriptor : IFileDescriptor
     {
@@ -26,8 +27,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             _value = value;
             _flags = flags;
 
-            WriteEvent = new ManualResetEvent(true);
-            ReadEvent = new ManualResetEvent(true);
+            WriteEvent = new ManualResetEvent(false);
+            ReadEvent = new ManualResetEvent(false);
+            UpdateEventStates();
         }
 
         public int Refcount { get; set; }
@@ -36,6 +38,25 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         {
             WriteEvent.Dispose();
             ReadEvent.Dispose();
+        }
+
+        private void ResetEventStates()
+        {
+            WriteEvent.Reset();
+            ReadEvent.Reset();
+        }
+
+        private void UpdateEventStates()
+        {
+            if (_value > 0)
+            {
+                ReadEvent.Set();
+            }
+
+            if (_value != uint.MaxValue - 1)
+            {
+                WriteEvent.Set();
+            }
         }
 
         public LinuxError Read(out int readSize, Span<byte> buffer)
@@ -47,10 +68,10 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 return LinuxError.EINVAL;
             }
 
-            ReadEvent.Reset();
-
             lock (_lock)
             {
+                ResetEventStates();
+
                 ref ulong count = ref MemoryMarshal.Cast<byte, ulong>(buffer)[0];
 
                 if (_value == 0)
@@ -66,6 +87,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                     {
                         readSize = 0;
 
+                        UpdateEventStates();
                         return LinuxError.EAGAIN;
                     }
                 }
@@ -85,8 +107,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                     _value = 0;
                 }
 
-                ReadEvent.Set();
-
+                UpdateEventStates();
                 return LinuxError.SUCCESS;
             }
         }
@@ -100,10 +121,10 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 return LinuxError.EINVAL;
             }
 
-            WriteEvent.Reset();
-
             lock (_lock)
             {
+                ResetEventStates();
+
                 if (_value > _value + count)
                 {
                     if (Blocking)
@@ -114,6 +135,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                     {
                         writeSize = 0;
 
+                        UpdateEventStates();
                         return LinuxError.EAGAIN;
                     }
                 }
@@ -123,8 +145,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 _value += count;
                 Monitor.Pulse(_lock);
 
-                WriteEvent.Set();
-
+                UpdateEventStates();
                 return LinuxError.SUCCESS;
             }
         }

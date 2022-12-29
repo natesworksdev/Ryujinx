@@ -25,7 +25,7 @@ namespace Ryujinx.Audio.Renderer.Server
         /// <summary>
         /// The estimated total processing time.
         /// </summary>
-        public ulong EstimatedProcessingTime { get; set; }
+        public uint EstimatedProcessingTime { get; set; }
 
         /// <summary>
         /// The command list that is populated by the <see cref="CommandBuffer"/>.
@@ -462,6 +462,18 @@ namespace Ryujinx.Audio.Renderer.Server
             if (sendBufferInfo != 0)
             {
                 CaptureBufferCommand command = new CaptureBufferCommand(bufferOffset, inputBufferOffset, sendBufferInfo, isEnabled, countMax, outputBuffer, updateCount, writeOffset, nodeId);
+
+                command.EstimatedProcessingTime = _commandProcessingTimeEstimator.Estimate(command);
+
+                AddCommand(command);
+            }
+        }
+
+        public void GenerateCompressorEffect(uint bufferOffset, CompressorParameter parameter, Memory<CompressorState> state, bool isEnabled, int nodeId)
+        {
+            if (parameter.IsChannelCountValid())
+            {
+                CompressorCommand command = new CompressorCommand(bufferOffset, parameter, state, isEnabled, nodeId);
 
                 command.EstimatedProcessingTime = _commandProcessingTimeEstimator.Estimate(command);
 

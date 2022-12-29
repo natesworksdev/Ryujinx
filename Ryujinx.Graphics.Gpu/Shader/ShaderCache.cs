@@ -26,7 +26,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         public const TranslationFlags DefaultFlags = TranslationFlags.DebugMode;
 
-        private struct TranslatedShader
+        private readonly struct TranslatedShader
         {
             public readonly CachedShaderStage Shader;
             public readonly ShaderProgram Program;
@@ -38,7 +38,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             }
         }
 
-        private struct TranslatedShaderVertexPair
+        private readonly struct TranslatedShaderVertexPair
         {
             public readonly CachedShaderStage VertexA;
             public readonly CachedShaderStage VertexB;
@@ -59,7 +59,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         private readonly Dictionary<ulong, CachedShaderProgram> _cpPrograms;
         private readonly Dictionary<ShaderAddresses, CachedShaderProgram> _gpPrograms;
 
-        private struct ProgramToSave
+        private readonly struct ProgramToSave
         {
             public readonly CachedShaderProgram CachedProgram;
             public readonly IProgram HostProgram;
@@ -300,16 +300,16 @@ namespace Ryujinx.Graphics.Gpu.Shader
             ref ThreedClassState state,
             ref ProgramPipelineState pipeline,
             GpuChannel channel,
-            GpuChannelPoolState poolState,
-            GpuChannelGraphicsState graphicsState,
+            ref GpuChannelPoolState poolState,
+            ref GpuChannelGraphicsState graphicsState,
             ShaderAddresses addresses)
         {
-            if (_gpPrograms.TryGetValue(addresses, out var gpShaders) && IsShaderEqual(channel, poolState, graphicsState, gpShaders, addresses))
+            if (_gpPrograms.TryGetValue(addresses, out var gpShaders) && IsShaderEqual(channel, ref poolState, ref graphicsState, gpShaders, addresses))
             {
                 return gpShaders;
             }
 
-            if (_graphicsShaderCache.TryFind(channel, poolState, graphicsState, addresses, out gpShaders, out var cachedGuestCode))
+            if (_graphicsShaderCache.TryFind(channel, ref poolState, ref graphicsState, addresses, out gpShaders, out var cachedGuestCode))
             {
                 _gpPrograms[addresses] = gpShaders;
                 return gpShaders;
@@ -498,7 +498,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             if (IsShaderEqual(channel.MemoryManager, cpShader.Shaders[0], gpuVa))
             {
-                return cpShader.SpecializationState.MatchesCompute(channel, poolState, computeState, true);
+                return cpShader.SpecializationState.MatchesCompute(channel, ref poolState, computeState, true);
             }
 
             return false;
@@ -515,8 +515,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>True if the code is different, false otherwise</returns>
         private static bool IsShaderEqual(
             GpuChannel channel,
-            GpuChannelPoolState poolState,
-            GpuChannelGraphicsState graphicsState,
+            ref GpuChannelPoolState poolState,
+            ref GpuChannelGraphicsState graphicsState,
             CachedShaderProgram gpShaders,
             ShaderAddresses addresses)
         {
@@ -536,7 +536,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             bool usesDrawParameters = gpShaders.Shaders[1]?.Info.UsesDrawParameters ?? false;
 
-            return gpShaders.SpecializationState.MatchesGraphics(channel, poolState, graphicsState, usesDrawParameters, true);
+            return gpShaders.SpecializationState.MatchesGraphics(channel, ref poolState, ref graphicsState, usesDrawParameters, true);
         }
 
         /// <summary>

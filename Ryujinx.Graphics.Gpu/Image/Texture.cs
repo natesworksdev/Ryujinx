@@ -857,9 +857,23 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 result = decoded;
             }
-            else if (!_context.Capabilities.SupportsR4G4Format && Format == Format.R4G4Unorm)
+            else if (!_context.Capabilities.SupportsEtc2Compression && Format.IsEtc2())
             {
-                result = PixelConverter.ConvertR4G4ToR4G4B4A4(result);
+                switch (Format)
+                {
+                    case Format.Etc2RgbaSrgb:
+                    case Format.Etc2RgbaUnorm:
+                        result = ETC2Decoder.DecodeRgba(result, width, height, depth, levels, layers);
+                        break;
+                    case Format.Etc2RgbPtaSrgb:
+                    case Format.Etc2RgbPtaUnorm:
+                        result = ETC2Decoder.DecodePta(result, width, height, depth, levels, layers);
+                        break;
+                    case Format.Etc2RgbSrgb:
+                    case Format.Etc2RgbUnorm:
+                        result = ETC2Decoder.DecodeRgb(result, width, height, depth, levels, layers);
+                        break;
+                }
             }
             else if (!TextureCompatibility.HostSupportsBcFormat(Format, Target, _context.Capabilities))
             {
@@ -892,6 +906,43 @@ namespace Ryujinx.Graphics.Gpu.Image
                     case Format.Bc7Srgb:
                     case Format.Bc7Unorm:
                         result = BCnDecoder.DecodeBC7(result, width, height, depth, levels, layers);
+                        break;
+                }
+            }
+            else if (!_context.Capabilities.SupportsR4G4Format && Format == Format.R4G4Unorm)
+            {
+                result = PixelConverter.ConvertR4G4ToR4G4B4A4(result, width);
+
+                if (!_context.Capabilities.SupportsR4G4B4A4Format)
+                {
+                    result = PixelConverter.ConvertR4G4B4A4ToR8G8B8A8(result, width);
+                }
+            }
+            else if (Format == Format.R4G4B4A4Unorm)
+            {
+                if (!_context.Capabilities.SupportsR4G4B4A4Format)
+                {
+                    result = PixelConverter.ConvertR4G4B4A4ToR8G8B8A8(result, width);
+                }
+            }
+            else if (!_context.Capabilities.Supports5BitComponentFormat && Format.Is16BitPacked())
+            {
+                switch (Format)
+                {
+                    case Format.B5G6R5Unorm:
+                    case Format.R5G6B5Unorm:
+                        result = PixelConverter.ConvertR5G6B5ToR8G8B8A8(result, width);
+                        break;
+                    case Format.B5G5R5A1Unorm:
+                    case Format.R5G5B5X1Unorm:
+                    case Format.R5G5B5A1Unorm:
+                        result = PixelConverter.ConvertR5G5B5ToR8G8B8A8(result, width, Format == Format.R5G5B5X1Unorm);
+                        break;
+                    case Format.A1B5G5R5Unorm:
+                        result = PixelConverter.ConvertA1B5G5R5ToR8G8B8A8(result, width);
+                        break;
+                    case Format.R4G4B4A4Unorm:
+                        result = PixelConverter.ConvertR4G4B4A4ToR8G8B8A8(result, width);
                         break;
                 }
             }

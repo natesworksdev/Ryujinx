@@ -449,6 +449,27 @@ namespace Ryujinx.Graphics.GAL
         }
 
         /// <summary>
+        /// Checks if the texture format is 16 bit packed.
+        /// </summary>
+        /// <param name="format">Texture format</param>
+        /// <returns>True if the texture format is 16 bit packed, false otherwise</returns>
+        public static bool Is16BitPacked(this Format format)
+        {
+            switch (format)
+            {
+                case Format.B5G6R5Unorm:
+                case Format.B5G5R5A1Unorm:
+                case Format.R5G5B5X1Unorm:
+                case Format.R5G5B5A1Unorm:
+                case Format.R5G6B5Unorm:
+                case Format.R4G4B4A4Unorm:
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Checks if the texture format is an ASTC format.
         /// </summary>
         /// <param name="format">Texture format</param>
@@ -510,6 +531,27 @@ namespace Ryujinx.Graphics.GAL
                 case Format.Astc10x10Srgb:
                 case Format.Astc12x10Srgb:
                 case Format.Astc12x12Srgb:
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Checks if the texture format is an ETC2 format.
+        /// </summary>
+        /// <param name="format">Texture format</param>
+        /// <returns>True if the texture format is an ETC2 format, false otherwise</returns>
+        public static bool IsEtc2(this Format format)
+        {
+            switch (format)
+            {
+                case Format.Etc2RgbaSrgb:
+                case Format.Etc2RgbaUnorm:
+                case Format.Etc2RgbPtaSrgb:
+                case Format.Etc2RgbPtaUnorm:
+                case Format.Etc2RgbSrgb:
+                case Format.Etc2RgbUnorm:
                     return true;
             }
 

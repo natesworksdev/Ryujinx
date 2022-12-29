@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Vulkan
             public ulong Size { get; }
             public bool Mapped => HostPointer != IntPtr.Zero;
 
-            private struct Range : IComparable<Range>
+            private readonly struct Range : IComparable<Range>
             {
                 public ulong Offset { get; }
                 public ulong Size { get; }
@@ -53,7 +53,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     var range = _freeRanges[i];
 
-                    ulong alignedOffset = BitUtils.AlignUp(range.Offset, (int)alignment);
+                    ulong alignedOffset = BitUtils.AlignUp<ulong>(range.Offset, alignment);
                     ulong sizeDelta = alignedOffset - range.Offset;
                     ulong usableSize = range.Size - sizeDelta;
 
@@ -196,7 +196,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            ulong blockAlignedSize = BitUtils.AlignUp(size, _blockAlignment);
+            ulong blockAlignedSize = BitUtils.AlignUp<ulong>(size, (ulong)_blockAlignment);
 
             var memoryAllocateInfo = new MemoryAllocateInfo()
             {

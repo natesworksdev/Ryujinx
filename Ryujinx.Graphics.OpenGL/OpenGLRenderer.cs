@@ -110,9 +110,13 @@ namespace Ryujinx.Graphics.OpenGL
                 supportsBc123Compression: HwCapabilities.SupportsTextureCompressionS3tc,
                 supportsBc45Compression: HwCapabilities.SupportsTextureCompressionRgtc,
                 supportsBc67Compression: true, // Should check BPTC extension, but for some reason NVIDIA is not exposing the extension.
+                supportsEtc2Compression: true,
                 supports3DTextureCompression: false,
                 supportsBgraFormat: false,
                 supportsR4G4Format: false,
+                supportsR4G4B4A4Format: true,
+                supportsSnormBufferTextureFormat: false,
+                supports5BitComponentFormat: true,
                 supportsFragmentShaderInterlock: HwCapabilities.SupportsFragmentShaderInterlock,
                 supportsFragmentShaderOrderingIntel: HwCapabilities.SupportsFragmentShaderOrdering,
                 supportsGeometryShaderPassthrough: HwCapabilities.SupportsGeometryShaderPassthrough,
@@ -236,6 +240,11 @@ namespace Ryujinx.Graphics.OpenGL
         public void WaitSync(ulong id)
         {
             _sync.Wait(id);
+        }
+
+        public ulong GetCurrentSync()
+        {
+            return _sync.GetCurrent();
         }
 
         public void Screenshot()

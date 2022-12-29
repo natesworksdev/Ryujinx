@@ -18,7 +18,10 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
     [Service("sfdnsres")]
     class IResolver : IpcService
     {
-        public IResolver(ServiceCtx context) { }
+        public IResolver(ServiceCtx context)
+        {
+            DnsMitmResolver.Instance.ReloadEntries(context);
+        }
 
         [CommandHipc(0)]
         // SetDnsAddressesPrivateRequest(u32, buffer<unknown, 5, 0>)
@@ -259,6 +262,16 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             return ResultCode.Success;
         }
 
+        // Atmosphère extension for dns_mitm
+        [CommandHipc(65000)]
+        // AtmosphereReloadHostsFile()
+        public ResultCode AtmosphereReloadHostsFile(ServiceCtx context)
+        {
+            DnsMitmResolver.Instance.ReloadEntries(context);
+
+            return ResultCode.Success;
+        }
+
         private static ResultCode GetHostByNameRequestImpl(
             ServiceCtx context,
             ulong inputBufferPosition,
@@ -321,7 +334,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
                     try
                     {
-                        hostEntry = Dns.GetHostEntry(targetHost);
+                        hostEntry = DnsMitmResolver.Instance.ResolveAddress(targetHost);
                     }
                     catch (SocketException exception)
                     {
@@ -537,7 +550,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
                     try
                     {
-                        hostEntry = Dns.GetHostEntry(targetHost);
+                        hostEntry = DnsMitmResolver.Instance.ResolveAddress(targetHost);
                     }
                     catch (SocketException exception)
                     {
@@ -566,7 +579,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
         private static List<AddrInfoSerialized> DeserializeAddrInfos(IVirtualMemoryManager memory, ulong address, ulong size)
         {
-            List<AddrInfoSerialized> result = new List<AddrInfoSerialized>();
+            List<AddrInfoSerialized> result = new();
 
             ReadOnlySpan<byte> data = memory.GetSpan(address, (int)size);
 
@@ -606,9 +619,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
                     }
 
                     // NOTE: 0 = Any
-                    AddrInfoSerializedHeader header = new AddrInfoSerializedHeader(ip, 0);
-                    AddrInfo4 addr = new AddrInfo4(ip, (short)port);
-                    AddrInfoSerialized info = new AddrInfoSerialized(header, addr, null, hostEntry.HostName);
+                    AddrInfoSerializedHeader header = new(ip, 0);
+                    AddrInfo4                addr   = new(ip, (short)port);
+                    AddrInfoSerialized       info   = new(header, addr, null, hostEntry.HostName);
 
                     data = info.Write(data);
                 }

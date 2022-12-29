@@ -44,7 +44,7 @@ namespace Ryujinx.Audio.Renderer.Server
         /// <see cref="Parameter.RendererInfoOutStatus"/> was added to supply the count of update done sent to the DSP.
         /// A new version of the command estimator was added to address timing changes caused by the voice changes.
         /// Additionally, the rendering limit percent was incremented to 80%.
-        /// 
+        ///
         /// </summary>
         /// <remarks>This was added in system update 6.0.0</remarks>
         public const int Revision5 = 5 << 24;
@@ -93,9 +93,11 @@ namespace Ryujinx.Audio.Renderer.Server
         /// <summary>
         /// REV11:
         /// The "legacy" effects (Delay, Reverb and Reverb 3D) were updated to match the standard channel mapping used by the audio renderer.
+        /// A new effect was added: Compressor. This effect is effectively implemented with a DRC.
         /// A new version of the command estimator was added to address timing changes caused by the legacy effects changes.
+        /// A voice drop parameter was added in 15.0.0: This allows an application to amplify or attenuate the estimated time of DSP commands.
         /// </summary>
-        /// <remarks>This was added in system update 14.0.0</remarks>
+        /// <remarks>This was added in system update 14.0.0 but some changes were made in 15.0.0</remarks>
         public const int Revision11 = 11 << 24;
 
         /// <summary>

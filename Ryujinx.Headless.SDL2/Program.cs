@@ -10,7 +10,7 @@ using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Controller.Motion;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
 using Ryujinx.Common.Logging;
-using Ryujinx.Common.System;
+using Ryujinx.Common.SystemInterop;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.GAL.Multithreading;
@@ -76,6 +76,26 @@ namespace Ryujinx.Headless.SDL2
             _contentManager = new ContentManager(_virtualFileSystem);
             _accountManager = new AccountManager(_libHacHorizonManager.RyujinxClient);
             _userChannelPersistence = new UserChannelPersistence();
+
+            if (OperatingSystem.IsMacOS() || OperatingSystem.IsLinux())
+            {
+                AutoResetEvent invoked = new AutoResetEvent(false);
+
+                // MacOS must perform SDL polls from the main thread.
+                Ryujinx.SDL2.Common.SDL2Driver.MainThreadDispatcher = (Action action) =>
+                {
+                    invoked.Reset();
+
+                    WindowBase.QueueMainThreadAction(() =>
+                    {
+                        action();
+
+                        invoked.Set();
+                    });
+
+                    invoked.WaitOne();
+                };
+            }
 
             _inputManager = new InputManager(new SDL2KeyboardDriver(), new SDL2GamepadDriver());
 
@@ -638,16 +658,7 @@ namespace Ryujinx.Headless.SDL2
 
             Translator.IsReadyForTranslation.Reset();
 
-            Thread windowThread = new Thread(() =>
-            {
-                ExecutionEntrypoint();
-            })
-            {
-                Name = "GUI.WindowThread"
-            };
-
-            windowThread.Start();
-            windowThread.Join();
+            ExecutionEntrypoint();
 
             return true;
         }
