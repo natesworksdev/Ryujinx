@@ -58,20 +58,20 @@ namespace Ryujinx.Graphics.Nvdec
 
         private void Execute(int data)
         {
-            Decode((CodecId)_state.State.SetCodecID);
+            Decode((ApplicationId)_state.State.SetApplicationId);
         }
 
-        private void Decode(CodecId codecId)
+        private void Decode(ApplicationId codecId)
         {
             switch (codecId)
             {
-                case CodecId.H264:
+                case ApplicationId.H264:
                     H264Decoder.Decode(_currentContext, _rm, ref _state.State);
                     break;
-                case CodecId.Vp8:
+                case ApplicationId.Vp8:
                     Vp8Decoder.Decode(_currentContext, _rm, ref _state.State);
                     break;
-                case CodecId.Vp9:
+                case ApplicationId.Vp9:
                     Vp9Decoder.Decode(_rm, ref _state.State);
                     break;
                 default:
