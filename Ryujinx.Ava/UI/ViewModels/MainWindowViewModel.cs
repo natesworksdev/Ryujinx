@@ -1927,8 +1927,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             if (!string.IsNullOrWhiteSpace(ConfigurationState.Instance.Graphics.ShadersDumpPath.Value))
             {
                 string mainMessage = LocaleManager.Instance["DialogPerformanceCheckShaderDumpEnabledMessage"];
-                string secondaryMessage =
-                    LocaleManager.Instance["DialogPerformanceCheckShaderDumpEnabledConfirmMessage"];
+                string secondaryMessage = LocaleManager.Instance["DialogPerformanceCheckShaderDumpEnabledConfirmMessage"];
 
                 UserResult result = await ContentDialogHelper.CreateConfirmationDialog(mainMessage, secondaryMessage,
                     LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"],
