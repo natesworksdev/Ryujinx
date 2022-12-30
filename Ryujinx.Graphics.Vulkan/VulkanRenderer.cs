@@ -210,6 +210,9 @@ namespace Ryujinx.Graphics.Vulkan
 
             Api.GetPhysicalDeviceFeatures2(_physicalDevice, &features2);
 
+            // Any device running on MacOS is using MoltenVK, even Intel and AMD vendors.
+            IsMoltenVk = OperatingSystem.IsMacOS();
+
             bool customBorderColorSupported = supportedExtensions.Contains("VK_EXT_custom_border_color") &&
                                               featuresCustomBorderColor.CustomBorderColors &&
                                               featuresCustomBorderColor.CustomBorderColorWithoutFormat;
@@ -232,7 +235,7 @@ namespace Ryujinx.Graphics.Vulkan
                 supportedExtensions.Contains(ExtConditionalRendering.ExtensionName),
                 supportedExtensions.Contains(ExtExtendedDynamicState.ExtensionName),
                 features2.Features.MultiViewport,
-                featuresRobustness2.NullDescriptor || OperatingSystem.IsMacOS(),
+                featuresRobustness2.NullDescriptor || IsMoltenVk,
                 supportedExtensions.Contains(KhrPushDescriptor.ExtensionName),
                 supportsTransformFeedback,
                 propertiesTransformFeedback.TransformFeedbackQueries,
@@ -241,7 +244,7 @@ namespace Ryujinx.Graphics.Vulkan
                 propertiesSubgroupSizeControl.MaxSubgroupSize,
                 propertiesSubgroupSizeControl.RequiredSubgroupSizeStages,
                 supportedSampleCounts,
-                OperatingSystem.IsMacOS() ? PortabilitySubsetFlags.MoltenVK : PortabilitySubsetFlags.None);
+                IsMoltenVk ? PortabilitySubsetFlags.MoltenVK : PortabilitySubsetFlags.None);
 
             MemoryAllocator = new MemoryAllocator(Api, _device, properties.Limits.MaxMemoryAllocationCount);
 
@@ -473,7 +476,7 @@ namespace Ryujinx.Graphics.Vulkan
                 GpuVendor,
                 hasFrontFacingBug: IsIntelWindows,
                 hasVectorIndexingBug: Vendor == Vendor.Qualcomm,
-                reduceShaderPrecision: Vendor == Vendor.MoltenVK,
+                reduceShaderPrecision: IsMoltenVk,
                 supportsAstcCompression: features2.Features.TextureCompressionAstcLdr && supportsAstcFormats,
                 supportsBc123Compression: supportsBc123CompressionFormat,
                 supportsBc45Compression: supportsBc45CompressionFormat,
