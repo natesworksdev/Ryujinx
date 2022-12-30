@@ -1,25 +1,23 @@
-﻿using Avalonia.Controls;
+﻿using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Ui.Common.Helper;
 using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
+using Button = Avalonia.Controls.Button;
 
 namespace Ryujinx.Ava.UI.Windows
 {
-    public partial class AboutWindow : StyleableWindow
+    public partial class AboutWindow : UserControl
     {
         public AboutWindow()
         {
-            if (Program.PreviewerDetached)
-            {
-                Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance["MenuBarHelpAbout"];
-            }
-
             Version = Program.Version;
 
             DataContext = this;
@@ -33,6 +31,22 @@ namespace Ryujinx.Ava.UI.Windows
         public string Version { get; set; }
 
         public string Developers => string.Format(LocaleManager.Instance["AboutPageDeveloperListMore"], "gdkchan, Ac_K, Thog, rip in peri peri, LDj3SNuD, emmaus, Thealexbarney, Xpl0itR, GoffyDude, »jD«");
+
+        public static async Task Show()
+        {
+            var content = new AboutWindow();
+            ContentDialog contentDialog = new ContentDialog
+            {
+                Title = LocaleManager.Instance["MenuBarHelpAbout"],
+                PrimaryButtonText = "",
+                SecondaryButtonText = "",
+                CloseButtonText = LocaleManager.Instance["UserProfilesClose"],
+                Content = content,
+                Padding = new Thickness(0)
+            };
+
+            await contentDialog.ShowAsync();
+        }
 
         private void Button_OnClick(object sender, RoutedEventArgs e)
         {
