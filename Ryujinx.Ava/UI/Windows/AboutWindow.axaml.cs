@@ -2,7 +2,10 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml.Templates;
+using Avalonia.Styling;
 using Avalonia.Threading;
+using DynamicData;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Common.Utilities;
@@ -37,14 +40,21 @@ namespace Ryujinx.Ava.UI.Windows
             var content = new AboutWindow();
             ContentDialog contentDialog = new ContentDialog
             {
-                Title = LocaleManager.Instance["MenuBarHelpAbout"],
                 PrimaryButtonText = "",
                 SecondaryButtonText = "",
                 CloseButtonText = LocaleManager.Instance["UserProfilesClose"],
-                Content = content,
-                Padding = new Thickness(0)
+                Content = content
             };
+            
+            Style closeButton = new(x => x.Name("CloseButton"));
+            closeButton.Setters.Add(new Setter(WidthProperty, 70d));
 
+            Style closeButtonParent = new(x => x.Name("CommandSpace"));
+            closeButtonParent.Setters.Add(new Setter(HorizontalAlignmentProperty, Avalonia.Layout.HorizontalAlignment.Right));
+
+            contentDialog.Styles.Add(closeButton);
+            contentDialog.Styles.Add(closeButtonParent);
+            
             await contentDialog.ShowAsync();
         }
 
