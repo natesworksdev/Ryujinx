@@ -23,7 +23,7 @@ namespace Ryujinx.Headless.SDL2
         [Option("input-profile-5", Required = false, HelpText = "Set the input profile in use for Player 5.")]
         public string InputProfile5Name { get; set; }
 
-        [Option("input-profile-6", Required = false, HelpText = "Set the input profile in use for Player 5.")]
+        [Option("input-profile-6", Required = false, HelpText = "Set the input profile in use for Player 6.")]
         public string InputProfile6Name { get; set; }
 
         [Option("input-profile-7", Required = false, HelpText = "Set the input profile in use for Player 7.")]
@@ -76,7 +76,7 @@ namespace Ryujinx.Headless.SDL2
 
         // System
 
-        [Option("enable-ptc", Required = false, Default = true, HelpText = "Enables profiled translation cache persistency.")]
+        [Option("enable-ptc", Required = false, Default = true, HelpText = "Enables profiled translation cache persistence.")]
         public bool? EnablePtc { get; set; }
 
         [Option("enable-internet-connection", Required = false, Default = false, HelpText = "Enables guest Internet connection.")]
