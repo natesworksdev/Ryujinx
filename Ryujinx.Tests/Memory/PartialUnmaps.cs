@@ -9,6 +9,7 @@ using Ryujinx.Memory.Tests;
 using Ryujinx.Memory.Tracking;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -283,6 +284,7 @@ namespace Ryujinx.Tests.Memory
         [Test]
         // Only test in Windows, as this is only used on Windows and uses Windows APIs for trimming.
         [Platform("Win")]
+        [SuppressMessage("Interoperability", "CA1416:Validate platform compatibility")]
         public void ThreadLocalMap()
         {
             PartialUnmapState.Reset();
