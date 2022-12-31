@@ -1,4 +1,5 @@
-﻿using Ryujinx.Horizon.Common;
+﻿using Ryujinx.Common.Memory;
+using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Sdk.Sf.Cmif;
 using System;
 
@@ -32,7 +33,7 @@ namespace Ryujinx.Horizon.Sdk.Sm
         {
             Span<byte> data = stackalloc byte[8];
 
-            Writer writer = new Writer(data);
+            SpanWriter writer = new SpanWriter(data);
 
             writer.Write(0UL);
 
@@ -43,7 +44,7 @@ namespace Ryujinx.Horizon.Sdk.Sm
         {
             Span<byte> data = stackalloc byte[8];
 
-            Writer writer = new Writer(data);
+            SpanWriter writer = new SpanWriter(data);
 
             writer.Write(name);
 
@@ -63,7 +64,7 @@ namespace Ryujinx.Horizon.Sdk.Sm
         {
             Span<byte> data = stackalloc byte[16];
 
-            Writer writer = new Writer(data);
+            SpanWriter writer = new SpanWriter(data);
 
             writer.Write(name);
             writer.Write(isLight ? 1 : 0);
@@ -85,7 +86,7 @@ namespace Ryujinx.Horizon.Sdk.Sm
         {
             Span<byte> data = stackalloc byte[8];
 
-            Writer writer = new Writer(data);
+            SpanWriter writer = new SpanWriter(data);
 
             writer.Write(name);
 
@@ -96,7 +97,7 @@ namespace Ryujinx.Horizon.Sdk.Sm
         {
             Span<byte> data = stackalloc byte[8];
 
-            Writer writer = new Writer(data);
+            SpanWriter writer = new SpanWriter(data);
 
             writer.Write(0UL);
 

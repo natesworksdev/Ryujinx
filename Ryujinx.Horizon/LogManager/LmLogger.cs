@@ -1,4 +1,5 @@
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Memory;
 using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Sdk.Lm;
 using Ryujinx.Horizon.Sdk.Sf;
@@ -14,41 +15,6 @@ namespace Ryujinx.Horizon.LogManager
     {
         private readonly LmLog _log;
         private readonly ulong _clientProcessId;
-
-        private ref struct Reader
-        {
-            private ReadOnlySpan<byte> _message;
-
-            public int Length => _message.Length;
-
-            public Reader(ReadOnlySpan<byte> message)
-            {
-                _message = message;
-            }
-
-            public T Read<T>() where T : unmanaged
-            {
-                T value = MemoryMarshal.Cast<byte, T>(_message)[0];
-
-                _message = _message.Slice(Unsafe.SizeOf<T>());
-
-                return value;
-            }
-
-            public ReadOnlySpan<byte> GetSpan(int size)
-            {
-                ReadOnlySpan<byte> data = _message.Slice(0, size);
-
-                _message = _message.Slice(size);
-
-                return data;
-            }
-
-            public void Skip(int size)
-            {
-                _message = _message.Slice(size);
-            }
-        }
 
         public LmLogger(LmLog log, ulong clientProcessId)
         {
@@ -97,7 +63,7 @@ namespace Ryujinx.Horizon.LogManager
 
         private static string LogImpl(ReadOnlySpan<byte> message)
         {
-            Reader reader = new Reader(message);
+            SpanReader reader = new SpanReader(message);
 
             LogPacketHeader header = reader.Read<LogPacketHeader>();
 
@@ -151,7 +117,7 @@ namespace Ryujinx.Horizon.LogManager
             return sb.ToString();
         }
 
-        private static int ReadUleb128(ref Reader reader)
+        private static int ReadUleb128(ref SpanReader reader)
         {
             int result = 0;
             int count = 0;
