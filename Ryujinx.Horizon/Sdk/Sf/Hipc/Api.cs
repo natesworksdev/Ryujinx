@@ -14,15 +14,18 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
             if (result == KernelResult.PortRemoteClosed)
             {
                 recvResult = ReceiveResult.Closed;
+
                 return Result.Success;
             }
             else if (result == KernelResult.ReceiveListBroken)
             {
                 recvResult = ReceiveResult.NeedsRetry;
+
                 return Result.Success;
             }
 
             recvResult = ReceiveResult.Success;
+
             return result;
         }
 

@@ -9,7 +9,7 @@
                 Signaled = signaled,
                 InitiallySignaled = signaled,
                 ClearMode = (byte)clearMode,
-                State = EventType.InitializatonState.Initialized
+                State = InitializationState.Initialized
             };
         }
     }

@@ -2,6 +2,7 @@
 {
     struct CmifRequestFormat
     {
+#pragma warning disable CS0649
         public int ObjectId;
         public uint RequestId;
         public uint Context;
@@ -18,5 +19,6 @@
         public int ObjectsCount;
         public int HandlesCount;
         public bool SendPid;
+#pragma warning restore CS0649
     }
 }

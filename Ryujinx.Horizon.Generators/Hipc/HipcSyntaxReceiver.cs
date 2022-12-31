@@ -19,8 +19,7 @@ namespace Ryujinx.Horizon.Generators.Hipc
         {
             if (syntaxNode is ClassDeclarationSyntax classDeclaration)
             {
-                if (!classDeclaration.Modifiers.Any(SyntaxKind.PartialKeyword) ||
-                    classDeclaration.BaseList == null)
+                if (!classDeclaration.Modifiers.Any(SyntaxKind.PartialKeyword) || classDeclaration.BaseList == null)
                 {
                     return;
                 }

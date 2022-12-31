@@ -16,6 +16,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
         protected override Result DispatchManagerRequest(ServerSession session, Span<byte> inMessage, Span<byte> outMessage)
         {
             HipcManager hipcManager = new HipcManager(this, session);
+
             return DispatchRequest(new ServiceObjectHolder(hipcManager), session, inMessage, outMessage);
         }
     }

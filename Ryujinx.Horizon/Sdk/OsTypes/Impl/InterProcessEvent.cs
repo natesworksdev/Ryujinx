@@ -25,7 +25,7 @@ namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
 
         public static void Destroy(ref InterProcessEventType ipEvent)
         {
-            ipEvent.State = InterProcessEventType.InitializationState.NotInitialized;
+            ipEvent.State = InitializationState.NotInitialized;
 
             if (ipEvent.ReadableHandleManaged)
             {

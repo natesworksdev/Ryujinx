@@ -2,12 +2,6 @@
 {
     struct InterProcessEventType
     {
-        public enum InitializationState : byte
-        {
-            NotInitialized,
-            Initialized
-        }
-
         public readonly bool AutoClear;
         public InitializationState State;
         public bool ReadableHandleManaged;

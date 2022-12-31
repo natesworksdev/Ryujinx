@@ -471,6 +471,7 @@ namespace Ryujinx.Horizon.Generators.Hipc
         private static string GetCanonicalTypeNameWithGenericArguments(Compilation compilation, SyntaxNode syntaxNode)
         {
             TypeInfo typeInfo = compilation.GetSemanticModel(syntaxNode.SyntaxTree).GetTypeInfo(syntaxNode);
+
             return typeInfo.Type.ToDisplayString();
         }
 
@@ -491,6 +492,7 @@ namespace Ryujinx.Horizon.Generators.Hipc
         private static SpecialType GetSpecialTypeName(Compilation compilation, SyntaxNode syntaxNode)
         {
             TypeInfo typeInfo = compilation.GetSemanticModel(syntaxNode.SyntaxTree).GetTypeInfo(syntaxNode);
+
             return typeInfo.Type.SpecialType;
         }
 
@@ -505,6 +507,7 @@ namespace Ryujinx.Horizon.Generators.Hipc
             if (typeInfo.Type.SpecialType == SpecialType.None)
             {
                 string pack = GetTypeFirstNamedAttributeAgument(compilation, syntaxNode, TypeStructLayoutAttribute, "Pack");
+
                 return pack ?? "1";
             }
             else
@@ -623,6 +626,7 @@ namespace Ryujinx.Horizon.Generators.Hipc
         private static bool IsUnmanagedType(Compilation compilation, SyntaxNode syntaxNode)
         {
             TypeInfo typeInfo = compilation.GetSemanticModel(syntaxNode.SyntaxTree).GetTypeInfo(syntaxNode);
+
             return typeInfo.Type.IsUnmanagedType;
         }
 

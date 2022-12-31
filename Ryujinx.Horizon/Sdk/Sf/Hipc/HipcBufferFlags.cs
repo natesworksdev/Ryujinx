@@ -1,5 +1,8 @@
-﻿namespace Ryujinx.Horizon.Sdk.Sf.Hipc
+﻿using System;
+
+namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 {
+    [Flags]
     enum HipcBufferFlags : byte
     {
         In = 1 << 0,

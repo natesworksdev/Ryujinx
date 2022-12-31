@@ -22,6 +22,7 @@ namespace Ryujinx.Horizon.Sm
         {
             _clientProcessId = clientProcessId;
             _initialized = true;
+
             return Result.Success;
         }
 
@@ -31,6 +32,7 @@ namespace Ryujinx.Horizon.Sm
             if (!_initialized)
             {
                 handle = 0;
+
                 return SmResult.InvalidClient;
             }
 
@@ -43,6 +45,7 @@ namespace Ryujinx.Horizon.Sm
             if (!_initialized)
             {
                 handle = 0;
+
                 return SmResult.InvalidClient;
             }
 

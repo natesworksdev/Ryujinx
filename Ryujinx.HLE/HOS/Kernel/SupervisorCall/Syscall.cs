@@ -722,6 +722,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             bool isLight,
             [PointerSized] ulong namePtr)
         {
+            // The kernel doesn't use the name pointer, so we can just pass null as the name.
             return CreatePort(out serverPortHandle, out clientPortHandle, maxSessions, isLight, null);
         }
 
