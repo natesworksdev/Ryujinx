@@ -66,9 +66,9 @@ namespace Ryujinx.Headless.SDL2
         private AspectRatio _aspectRatio;
         private bool _enableMouse;
 
-        public WindowBase(InputManager inputManager, GraphicsDebugLevel glLogLevel, AspectRatio aspectRatio, bool enableMouse)
+        public WindowBase(InputManager inputManager, GraphicsDebugLevel glLogLevel, AspectRatio aspectRatio, bool enableMouse, bool hideCursorOnIdle)
         {
-            MouseDriver = new SDL2MouseDriver();
+            MouseDriver = new SDL2MouseDriver(hideCursorOnIdle);
             _inputManager = inputManager;
             _inputManager.SetMouseDriver(MouseDriver);
             NpadManager = _inputManager.CreateNpadManager();

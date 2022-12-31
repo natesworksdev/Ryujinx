@@ -378,8 +378,8 @@ namespace Ryujinx.Headless.SDL2
             }
 
             _inputConfiguration = new List<InputConfig>();
-            _enableKeyboard = (bool)option.EnableKeyboard;
-            _enableMouse = (bool)option.EnableMouse;
+            _enableKeyboard = option.EnableKeyboard;
+            _enableMouse = option.EnableMouse;
 
             void LoadPlayerConfiguration(string inputProfileName, string inputId, PlayerIndex index)
             {
@@ -407,16 +407,16 @@ namespace Ryujinx.Headless.SDL2
             }
 
             // Setup logging level
-            Logger.SetEnable(LogLevel.Debug, (bool)option.LoggingEnableDebug);
-            Logger.SetEnable(LogLevel.Stub, (bool)option.LoggingEnableStub);
-            Logger.SetEnable(LogLevel.Info, (bool)option.LoggingEnableInfo);
-            Logger.SetEnable(LogLevel.Warning, (bool)option.LoggingEnableWarning);
-            Logger.SetEnable(LogLevel.Error, (bool)option.LoggingEnableError);
-            Logger.SetEnable(LogLevel.Trace, (bool)option.LoggingEnableTrace);
-            Logger.SetEnable(LogLevel.Guest, (bool)option.LoggingEnableGuest);
-            Logger.SetEnable(LogLevel.AccessLog, (bool)option.LoggingEnableFsAccessLog);
+            Logger.SetEnable(LogLevel.Debug, option.LoggingEnableDebug);
+            Logger.SetEnable(LogLevel.Stub, option.LoggingEnableStub);
+            Logger.SetEnable(LogLevel.Info, option.LoggingEnableInfo);
+            Logger.SetEnable(LogLevel.Warning, option.LoggingEnableWarning);
+            Logger.SetEnable(LogLevel.Error, option.LoggingEnableError);
+            Logger.SetEnable(LogLevel.Trace, option.LoggingEnableTrace);
+            Logger.SetEnable(LogLevel.Guest, option.LoggingEnableGuest);
+            Logger.SetEnable(LogLevel.AccessLog, option.LoggingEnableFsAccessLog);
 
-            if ((bool)option.EnableFileLog)
+            if (option.EnableFileLog)
             {
                 Logger.AddTarget(new AsyncLogTargetWrapper(
                     new FileLogTarget(ReleaseInformations.GetBaseApplicationDirectory(), "file"),
@@ -426,11 +426,12 @@ namespace Ryujinx.Headless.SDL2
             }
 
             // Setup graphics configuration
-            GraphicsConfig.EnableShaderCache = (bool)option.EnableShaderCache;
-            GraphicsConfig.EnableTextureRecompression = (bool)option.EnableTextureRecompression;
+            GraphicsConfig.EnableShaderCache = option.EnableShaderCache;
+            GraphicsConfig.EnableTextureRecompression = option.EnableTextureRecompression;
             GraphicsConfig.ResScale = option.ResScale;
             GraphicsConfig.MaxAnisotropy = option.MaxAnisotropy;
             GraphicsConfig.ShadersDumpPath = option.GraphicsShadersDumpPath;
+            GraphicsConfig.EnableMacroHLE = option.EnableMacroHLE;
 
             while (true)
             {
@@ -479,8 +480,8 @@ namespace Ryujinx.Headless.SDL2
         private static WindowBase CreateWindow(Options options)
         {
             return options.GraphicsBackend == GraphicsBackend.Vulkan
-                ? new VulkanWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, (bool)options.EnableMouse)
-                : new OpenGLWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, (bool)options.EnableMouse);
+                ? new VulkanWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, options.EnableMouse, options.HideCursorOnIdle)
+                : new OpenGLWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, options.EnableMouse, options.HideCursorOnIdle);
         }
 
         private static IRenderer CreateRenderer(Options options, WindowBase window)
@@ -533,20 +534,20 @@ namespace Ryujinx.Headless.SDL2
                                                                   _userChannelPersistence,
                                                                   renderer,
                                                                   new SDL2HardwareDeviceDriver(),
-                                                                  (bool)options.ExpandRam ? MemoryConfiguration.MemoryConfiguration6GiB : MemoryConfiguration.MemoryConfiguration4GiB,
+                                                                  options.ExpandRam ? MemoryConfiguration.MemoryConfiguration6GiB : MemoryConfiguration.MemoryConfiguration4GiB,
                                                                   window,
                                                                   options.SystemLanguage,
                                                                   options.SystemRegion,
-                                                                  (bool)options.EnableVsync,
-                                                                  (bool)options.EnableDockedMode,
-                                                                  (bool)options.EnablePtc,
-                                                                  (bool)options.EnableInternetAccess,
-                                                                  (bool)options.EnableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None,
+                                                                  options.EnableVsync,
+                                                                  options.EnableDockedMode,
+                                                                  options.EnablePtc,
+                                                                  options.EnableInternetAccess,
+                                                                  options.EnableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None,
                                                                   options.FsGlobalAccessLogMode,
                                                                   options.SystemTimeOffset,
                                                                   options.SystemTimeZone,
                                                                   options.MemoryManagerMode,
-                                                                  (bool)options.IgnoreMissingServices,
+                                                                  options.IgnoreMissingServices,
                                                                   options.AspectRatio,
                                                                   options.AudioVolume);
 

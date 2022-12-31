@@ -103,7 +103,7 @@ namespace Ryujinx.Headless.SDL2.OpenGL
         private GraphicsDebugLevel _glLogLevel;
         private SDL2OpenGLContext _openGLContext;
 
-        public OpenGLWindow(InputManager inputManager, GraphicsDebugLevel glLogLevel, AspectRatio aspectRatio, bool enableMouse) : base(inputManager, glLogLevel, aspectRatio, enableMouse)
+        public OpenGLWindow(InputManager inputManager, GraphicsDebugLevel glLogLevel, AspectRatio aspectRatio, bool enableMouse, bool hideCursorOnIdle) : base(inputManager, glLogLevel, aspectRatio, enableMouse, hideCursorOnIdle)
         {
             _glLogLevel = glLogLevel;
         }

@@ -10,7 +10,12 @@ namespace Ryujinx.Headless.SDL2
 {
     class SDL2MouseDriver : IGamepadDriver
     {
+        private const int CursorHideIdleTime = 8; // seconds
+
         private bool _isDisposed;
+        private bool _hideCursorOnIdle;
+        private bool _isHidden;
+        private long _lastCursorMoveTime;
 
         public bool[] PressedButtons { get; }
 
@@ -18,9 +23,10 @@ namespace Ryujinx.Headless.SDL2
         public Vector2 Scroll { get; private set; }
         public Size _clientSize;
 
-        public SDL2MouseDriver()
+        public SDL2MouseDriver(bool hideCursorOnIdle)
         {
             PressedButtons = new bool[(int)MouseButton.Count];
+            _hideCursorOnIdle = hideCursorOnIdle;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -31,9 +37,33 @@ namespace Ryujinx.Headless.SDL2
             return (MouseButton)(rawButton - 1);
         }
 
+        private void CheckIdle()
+        {
+            if (!_hideCursorOnIdle)
+            {
+                return;
+            }
+
+            long cursorMoveDelta = Stopwatch.GetTimestamp() - _lastCursorMoveTime;
+
+            if (cursorMoveDelta >= CursorHideIdleTime * Stopwatch.Frequency)
+            {
+                if (!_isHidden)
+                {
+                    _ = SDL_ShowCursor(SDL_DISABLE);
+                    _isHidden = true;
+                }
+            }
+            else
+            {
+                _ = SDL_ShowCursor(SDL_ENABLE);
+                _isHidden = false;
+            }
+        }
+
         public void Update(SDL_Event evnt)
         {
-            if (evnt.type == SDL_EventType.SDL_MOUSEBUTTONDOWN || evnt.type == SDL_EventType.SDL_MOUSEBUTTONUP)
+            if (evnt.type is SDL_EventType.SDL_MOUSEBUTTONDOWN or SDL_EventType.SDL_MOUSEBUTTONUP)
             {
                 uint rawButton = evnt.button.button;
 
@@ -47,11 +77,14 @@ namespace Ryujinx.Headless.SDL2
             else if (evnt.type == SDL_EventType.SDL_MOUSEMOTION)
             {
                 CurrentPosition = new Vector2(evnt.motion.x, evnt.motion.y);
+                _lastCursorMoveTime = Stopwatch.GetTimestamp();
             }
             else if (evnt.type == SDL_EventType.SDL_MOUSEWHEEL)
             {
                 Scroll = new Vector2(evnt.wheel.x, evnt.wheel.y);
             }
+
+            CheckIdle();
         }
 
         public void SetClientSize(int width, int height)
