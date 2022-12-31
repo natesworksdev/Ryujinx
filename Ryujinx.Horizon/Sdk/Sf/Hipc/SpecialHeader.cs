@@ -1,4 +1,6 @@
-﻿namespace Ryujinx.Horizon.Sdk.Sf.Hipc
+﻿using Ryujinx.Common.Utilities;
+
+namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 {
     struct SpecialHeader
     {
