@@ -22,8 +22,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public bool Running { get; private set; } = true;
 
-        public ulong GetX(int index) => 0UL;
-        public void SetX(int index, ulong value) { }
+        private readonly ulong[] _x = new ulong[32];
+
+        public ulong GetX(int index) => _x[index];
+        public void SetX(int index, ulong value) => _x[index] = value;
 
         public V128 GetV(int index) => default;
         public void SetV(int index, V128 value) { }

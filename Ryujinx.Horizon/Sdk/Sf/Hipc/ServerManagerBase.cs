@@ -3,7 +3,6 @@ using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Sdk.Sf.Cmif;
 using Ryujinx.Horizon.Sdk.Sm;
 using System;
-using Ryujinx.Horizon.Sm;
 
 namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 {
@@ -19,6 +18,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
         private readonly object _waitableSelectionLock;
         private readonly object _waitListLock;
 
+        private readonly Event _requestStopEvent;
         private readonly Event _notifyEvent;
 
         private readonly MultiWaitHolderBase _requestStopEventHolder;
@@ -41,7 +41,13 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
             _waitableSelectionLock = new object();
             _waitListLock = new object();
 
-            _notifyEvent = new Event(false);
+            _requestStopEvent = new Event(EventClearMode.ManualClear);
+            _notifyEvent = new Event(EventClearMode.ManualClear);
+
+            _requestStopEventHolder = new MultiWaitHolderOfEvent(_requestStopEvent);
+            _multiWait.LinkMultiWaitHolder(_requestStopEventHolder);
+            _notifyEventHolder = new MultiWaitHolderOfEvent(_notifyEvent);
+            _multiWait.LinkMultiWaitHolder(_notifyEventHolder);
         }
 
         public void RegisterObjectForServer(IServiceObject staticObject, int portHandle)
@@ -109,16 +115,23 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 
         private bool WaitAndProcessRequestsImpl()
         {
-            MultiWaitHolder waitable = WaitSignaled();
+            try
+            {
+                MultiWaitHolder multiWait = WaitSignaled();
 
-            if (waitable == null)
+                if (multiWait == null)
+                {
+                    return false;
+                }
+
+                DebugUtil.Assert(Process(multiWait).IsSuccess);
+
+                return HorizonStatic.ThreadContext.Running;
+            }
+            catch (ThreadTerminatedException)
             {
                 return false;
             }
-
-            DebugUtil.Assert(Process(waitable).IsSuccess);
-
-            return HorizonStatic.ThreadContext.Running;
         }
 
         private MultiWaitHolder WaitSignaled()
@@ -137,7 +150,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
                     }
                     else if (selected == _notifyEventHolder)
                     {
-                        _notifyEvent.Reset();
+                        _notifyEvent.Clear();
                     }
                     else
                     {
@@ -147,6 +160,16 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
                     }
                 }
             }
+        }
+
+        public void ResumeProcessing()
+        {
+            _requestStopEvent.Clear();
+        }
+
+        public void RequestStopProcessing()
+        {
+            _requestStopEvent.Signal();
         }
 
         protected override void RegisterSessionToWaitList(ServerSession session)

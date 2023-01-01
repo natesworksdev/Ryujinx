@@ -1,26 +1,61 @@
-﻿namespace Ryujinx.Horizon.Sdk.OsTypes
+﻿using System;
+using System.Collections.Generic;
+
+namespace Ryujinx.Horizon.Sdk.OsTypes
 {
-    class Event
+    class Event : IDisposable
     {
-        // TODO: Actually implement this.
+        private EventType _event;
 
-        private bool _autoClear;
-        private bool _isSignaled;
+        public object EventLock => _event.Lock;
+        public LinkedList<MultiWaitHolderBase> MultiWaitHolders => _event.MultiWaitHolders;
 
-        public Event(bool autoClear, bool isSignaled = false)
+        public Event(EventClearMode clearMode)
         {
-            _autoClear  = autoClear;
-            _isSignaled = isSignaled;
+            Os.InitializeEvent(out _event, signaled: false, clearMode);
         }
 
-        public void Reset()
+        public TriBool IsSignaledThreadUnsafe()
         {
-            _isSignaled = false;
+            return _event.Signaled ? TriBool.True : TriBool.False;
+        }
+
+        public void Wait()
+        {
+            Os.WaitEvent(ref _event);
+        }
+
+        public bool TryWait()
+        {
+            return Os.TryWaitEvent(ref _event);
+        }
+
+        public bool TimedWait(TimeSpan timeout)
+        {
+            return Os.TimedWaitEvent(ref _event, timeout);
         }
 
         public void Signal()
         {
-            _isSignaled = true;
+            Os.SignalEvent(ref _event);
+        }
+
+        public void Clear()
+        {
+            Os.ClearEvent(ref _event);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Os.FinalizeEvent(ref _event);
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

@@ -4,9 +4,7 @@
     {
         public static int GetCurrentThreadHandle()
         {
-            // TODO.
-
-            return 0;
+            return HorizonStatic.CurrentThreadHandle;
         }
     }
 }

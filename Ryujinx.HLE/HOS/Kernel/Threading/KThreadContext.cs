@@ -11,6 +11,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         public bool Running => _context.Running;
         public ulong TlsAddress => (ulong)_context.TpidrroEl0;
 
+        public ulong GetX(int index) => _context.GetX(index);
+
         private int _locked;
 
         public KThreadContext(IExecutionContext context)

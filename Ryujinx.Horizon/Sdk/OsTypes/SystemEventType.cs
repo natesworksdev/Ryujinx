@@ -2,7 +2,7 @@
 {
     struct SystemEventType
     {
-        public enum InitializatonState : byte
+        public enum InitializationState : byte
         {
             NotInitialized,
             InitializedAsEvent,
@@ -10,8 +10,8 @@
         }
 
         public InterProcessEventType InterProcessEvent;
-        public InitializatonState State;
+        public InitializationState State;
 
-        public bool NotInitialized => State == InitializatonState.NotInitialized;
+        public bool NotInitialized => State == InitializationState.NotInitialized;
     }
 }

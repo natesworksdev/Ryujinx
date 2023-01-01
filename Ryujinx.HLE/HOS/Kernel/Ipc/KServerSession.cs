@@ -1228,17 +1228,17 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
             foreach (KThread thread in WaitingThreads)
             {
-                WakeAndSetResult(thread, result);
+                WakeAndSetResult(thread, result, this);
             }
 
             KernelContext.CriticalSection.Leave();
         }
 
-        private void WakeAndSetResult(KThread thread, Result result)
+        private void WakeAndSetResult(KThread thread, Result result, KSynchronizationObject signaledObj = null)
         {
             if ((thread.SchedFlags & ThreadSchedState.LowMask) == ThreadSchedState.Paused)
             {
-                thread.SignaledObj   = null;
+                thread.SignaledObj   = signaledObj;
                 thread.ObjSyncResult = result;
 
                 thread.Reschedule(ThreadSchedState.Running);

@@ -11,6 +11,7 @@ namespace Ryujinx.Horizon.Common
         Result CloseHandle(int handle);
 
         Result WaitSynchronization(out int handleIndex, ReadOnlySpan<int> handles, long timeout);
+        Result CancelSynchronization(int handle);
 
         Result GetProcessId(out ulong pid, int handle);
 

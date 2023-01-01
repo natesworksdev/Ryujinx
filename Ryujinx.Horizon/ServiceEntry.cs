@@ -17,7 +17,7 @@ namespace Ryujinx.Horizon
 
         public void Start(ISyscallApi syscallApi, IVirtualMemoryManager addressSpace, IThreadContext threadContext)
         {
-            HorizonStatic.Register(_options, syscallApi, addressSpace, threadContext);
+            HorizonStatic.Register(_options, syscallApi, addressSpace, threadContext, (int)threadContext.GetX(1));
 
             _entrypoint();
         }

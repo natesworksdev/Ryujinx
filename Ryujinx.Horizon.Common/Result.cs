@@ -76,6 +76,11 @@ namespace Ryujinx.Horizon.Common
 
         public void AbortOnFailure()
         {
+            if (this == KernelResult.ThreadTerminating)
+            {
+                throw new ThreadTerminatedException();
+            }
+
             AbortUnless(Success);
         }
 

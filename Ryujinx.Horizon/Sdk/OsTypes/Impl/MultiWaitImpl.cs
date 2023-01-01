@@ -52,9 +52,8 @@ namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
 
         public MultiWaitHolderBase WaitAnyImpl(bool infinite, long timeout)
         {
-            _waitingThreadHandle = Os.GetCurrentThreadHandle();
-
             _signaledHolder = null;
+            _waitingThreadHandle = Os.GetCurrentThreadHandle();
 
             MultiWaitHolderBase result = LinkHoldersToObjectList();
 
@@ -72,6 +71,7 @@ namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
             }
 
             UnlinkHoldersFromObjectsList();
+            _waitingThreadHandle = 0;
 
             return result;
         }
@@ -84,13 +84,13 @@ namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
 
             int count = FillObjectsArray(objectHandles, objects);
 
-            long endTime = infinite ? -1L : PerformanceCounter.ElapsedMilliseconds * 1000000;
+            long endTime = infinite ? long.MaxValue : PerformanceCounter.ElapsedMilliseconds * 1000000;
 
             while (true)
             {
                 CurrentTime = PerformanceCounter.ElapsedMilliseconds * 1000000;
 
-                MultiWaitHolderBase minTimeoutObject = RecalculateNextTimepoint(endTime, out long minTimeout);
+                MultiWaitHolderBase minTimeoutObject = RecalcMultiWaitTimeout(endTime, out long minTimeout);
 
                 int index;
 
@@ -164,7 +164,7 @@ namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
             return count;
         }
 
-        private MultiWaitHolderBase RecalculateNextTimepoint(long endTime, out long minTimeout)
+        private MultiWaitHolderBase RecalcMultiWaitTimeout(long endTime, out long minTimeout)
         {
             MultiWaitHolderBase minTimeHolder = null;
 
@@ -172,7 +172,7 @@ namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
 
             foreach (MultiWaitHolder holder in _multiWaits)
             {
-                long currentTime = holder.GetWakeUpTime();
+                long currentTime = holder.GetAbsoluteTimeToWakeup();
 
                 if ((ulong)currentTime < (ulong)minTime)
                 {
@@ -205,6 +205,18 @@ namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
             }
 
             return index;
+        }
+
+        public void NotifyAndWakeUpThread(MultiWaitHolderBase holder)
+        {
+            lock (_lock)
+            {
+                if (_signaledHolder == null)
+                {
+                    _signaledHolder = holder;
+                    HorizonStatic.Syscall.CancelSynchronization(_waitingThreadHandle).AbortOnFailure();
+                }
+            }
         }
 
         private MultiWaitHolderBase LinkHoldersToObjectList()

@@ -19,7 +19,7 @@ namespace Ryujinx.Horizon.Sdk.OsTypes
                     return result;
                 }
 
-                sysEvent.State = SystemEventType.InitializatonState.InitializedAsInterProcess;
+                sysEvent.State = SystemEventType.InitializationState.InitializedAsInterProcess;
             }
             else
             {
@@ -32,11 +32,11 @@ namespace Ryujinx.Horizon.Sdk.OsTypes
         public static void DestroySystemEvent(ref SystemEventType sysEvent)
         {
             var oldState = sysEvent.State;
-            sysEvent.State = SystemEventType.InitializatonState.NotInitialized;
+            sysEvent.State = SystemEventType.InitializationState.NotInitialized;
 
             switch (oldState)
             {
-                case SystemEventType.InitializatonState.InitializedAsInterProcess:
+                case SystemEventType.InitializationState.InitializedAsInterProcess:
                     InterProcessEvent.Destroy(ref sysEvent.InterProcessEvent);
                     break;
             }
@@ -66,7 +66,7 @@ namespace Ryujinx.Horizon.Sdk.OsTypes
         {
             switch (sysEvent.State)
             {
-                case SystemEventType.InitializatonState.InitializedAsInterProcess:
+                case SystemEventType.InitializationState.InitializedAsInterProcess:
                     InterProcessEvent.Signal(ref sysEvent.InterProcessEvent);
                     break;
             }
@@ -76,7 +76,7 @@ namespace Ryujinx.Horizon.Sdk.OsTypes
         {
             switch (sysEvent.State)
             {
-                case SystemEventType.InitializatonState.InitializedAsInterProcess:
+                case SystemEventType.InitializationState.InitializedAsInterProcess:
                     InterProcessEvent.Clear(ref sysEvent.InterProcessEvent);
                     break;
             }

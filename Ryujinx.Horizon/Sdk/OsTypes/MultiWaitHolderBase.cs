@@ -17,10 +17,23 @@ namespace Ryujinx.Horizon.Sdk.OsTypes
             MultiWait = multiWait;
         }
 
-        public virtual TriBool LinkToObjectList() => TriBool.Undefined;
+        public MultiWaitImpl GetMultiWait()
+        {
+            return MultiWait;
+        }
 
-        public virtual void UnlinkFromObjectList() { }
+        public virtual TriBool LinkToObjectList()
+        {
+            return TriBool.Undefined;
+        }
 
-        public virtual long GetWakeUpTime() => -1L;
+        public virtual void UnlinkFromObjectList()
+        {
+        }
+
+        public virtual long GetAbsoluteTimeToWakeup()
+        {
+            return long.MaxValue;
+        }
     }
 }
