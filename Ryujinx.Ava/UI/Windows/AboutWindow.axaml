@@ -155,7 +155,7 @@
 						Background="Transparent"
 						Click="Button_OnClick"
 						Tag="https://www.ryujinx.org">
-						<ui:SymbolIcon 
+						<ui:SymbolIcon
 							Symbol="Link"
 							Foreground="{DynamicResource ThemeForegroundColor}" />
 					</Button>
@@ -198,7 +198,7 @@
 					FontSize="15"
 					Text="{locale:Locale AboutRyujinxMaintainersTitle}" />
 				<TextBlock
-					FontSize="12"
+					FontSize="10"
 					TextWrapping="Wrap"
 					Text="{Binding Developers}" />
 				<Button
