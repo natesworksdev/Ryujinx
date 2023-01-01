@@ -2,7 +2,6 @@
 
 namespace Ryujinx.HLE.HOS.Services.Prepo
 {
-    [Flags]
     enum PrepoServicePermissionLevel
     {
         Admin   = -1,
