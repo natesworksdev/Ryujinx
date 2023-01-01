@@ -79,7 +79,7 @@ namespace Ryujinx.Headless.SDL2
 
         // System
 
-        [Option("enable-ptc", Required = false, Default = true, HelpText = "Enables profiled translation cache persistence.")]
+        [Option("enable-ptc", Required = false, Default = true, HelpText = "Enables profiled persistent translation cache.")]
         public bool EnablePtc { get; set; }
 
         [Option("enable-internet-connection", Required = false, Default = false, HelpText = "Enables guest Internet connection.")]
