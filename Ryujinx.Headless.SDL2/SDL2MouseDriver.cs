@@ -63,25 +63,31 @@ namespace Ryujinx.Headless.SDL2
 
         public void Update(SDL_Event evnt)
         {
-            if (evnt.type is SDL_EventType.SDL_MOUSEBUTTONDOWN or SDL_EventType.SDL_MOUSEBUTTONUP)
+            switch (evnt.type)
             {
-                uint rawButton = evnt.button.button;
+                case SDL_EventType.SDL_MOUSEBUTTONDOWN:
+                case SDL_EventType.SDL_MOUSEBUTTONUP:
+                    uint rawButton = evnt.button.button;
 
-                if (rawButton > 0 && rawButton <= (int)MouseButton.Count)
-                {
-                    PressedButtons[(int)DriverButtonToMouseButton(rawButton)] = evnt.type == SDL_EventType.SDL_MOUSEBUTTONDOWN;
+                    if (rawButton > 0 && rawButton <= (int)MouseButton.Count)
+                    {
+                        PressedButtons[(int)DriverButtonToMouseButton(rawButton)] = evnt.type == SDL_EventType.SDL_MOUSEBUTTONDOWN;
 
-                    CurrentPosition = new Vector2(evnt.button.x, evnt.button.y);
-                }
-            }
-            else if (evnt.type == SDL_EventType.SDL_MOUSEMOTION)
-            {
-                CurrentPosition = new Vector2(evnt.motion.x, evnt.motion.y);
-                _lastCursorMoveTime = Stopwatch.GetTimestamp();
-            }
-            else if (evnt.type == SDL_EventType.SDL_MOUSEWHEEL)
-            {
-                Scroll = new Vector2(evnt.wheel.x, evnt.wheel.y);
+                        CurrentPosition = new Vector2(evnt.button.x, evnt.button.y);
+                    }
+
+                    break;
+
+                case SDL_EventType.SDL_MOUSEMOTION:
+                    CurrentPosition = new Vector2(evnt.motion.x, evnt.motion.y);
+                    _lastCursorMoveTime = Stopwatch.GetTimestamp();
+
+                    break;
+
+                case SDL_EventType.SDL_MOUSEWHEEL:
+                    Scroll = new Vector2(evnt.wheel.x, evnt.wheel.y);
+
+                    break;
             }
 
             CheckIdle();
