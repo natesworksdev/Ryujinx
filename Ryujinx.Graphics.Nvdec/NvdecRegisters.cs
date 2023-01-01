@@ -2,7 +2,6 @@
 
 namespace Ryujinx.Graphics.Nvdec
 {
-    // Note: Most of those names are not official.
     struct NvdecRegisters
     {
 #pragma warning disable CS0649

@@ -2,13 +2,13 @@
 {
     public readonly struct FrameDecodedEventArgs
     {
-        public ApplicationId CodecId { get; }
+        public ApplicationId ApplicationId { get; }
         public uint LumaOffset { get; }
         public uint ChromaOffset { get; }
 
-        internal FrameDecodedEventArgs(ApplicationId codecId, uint lumaOffset, uint chromaOffset)
+        internal FrameDecodedEventArgs(ApplicationId applicationId, uint lumaOffset, uint chromaOffset)
         {
-            CodecId = codecId;
+            ApplicationId = applicationId;
             LumaOffset = lumaOffset;
             ChromaOffset = chromaOffset;
         }

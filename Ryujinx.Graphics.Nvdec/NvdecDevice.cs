@@ -61,9 +61,9 @@ namespace Ryujinx.Graphics.Nvdec
             Decode((ApplicationId)_state.State.SetApplicationId);
         }
 
-        private void Decode(ApplicationId codecId)
+        private void Decode(ApplicationId applicationId)
         {
-            switch (codecId)
+            switch (applicationId)
             {
                 case ApplicationId.H264:
                     H264Decoder.Decode(_currentContext, _rm, ref _state.State);
@@ -75,7 +75,7 @@ namespace Ryujinx.Graphics.Nvdec
                     Vp9Decoder.Decode(_rm, ref _state.State);
                     break;
                 default:
-                    Logger.Error?.Print(LogClass.Nvdec, $"Unsupported codec \"{codecId}\".");
+                    Logger.Error?.Print(LogClass.Nvdec, $"Unsupported codec \"{applicationId}\".");
                     break;
             }
         }
