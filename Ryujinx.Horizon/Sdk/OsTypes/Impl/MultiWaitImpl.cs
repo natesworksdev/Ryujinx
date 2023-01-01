@@ -40,9 +40,9 @@ namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
 
         public void MoveAllFrom(MultiWaitImpl other)
         {
-            foreach (MultiWaitHolderBase waitable in other._multiWaits)
+            foreach (MultiWaitHolderBase multiWait in other._multiWaits)
             {
-                waitable.SetMultiWait(this);
+                multiWait.SetMultiWait(this);
             }
 
             _multiWaits.AddRange(other._multiWaits);
@@ -128,9 +128,12 @@ namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
                         }
                         break;
                     case WaitCancelled:
-                        if (_signaledHolder != null)
+                        lock (_lock)
                         {
-                            return _signaledHolder;
+                            if (_signaledHolder != null)
+                            {
+                                return _signaledHolder;
+                            }
                         }
                         break;
                     default:

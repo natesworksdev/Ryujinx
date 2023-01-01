@@ -15,7 +15,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
         private readonly MultiWait _multiWait;
         private readonly MultiWait _waitList;
 
-        private readonly object _waitableSelectionLock;
+        private readonly object _multiWaitSelectionLock;
         private readonly object _waitListLock;
 
         private readonly Event _requestStopEvent;
@@ -38,7 +38,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
             _multiWait = new MultiWait();
             _waitList = new MultiWait();
 
-            _waitableSelectionLock = new object();
+            _multiWaitSelectionLock = new object();
             _waitListLock = new object();
 
             _requestStopEvent = new Event(EventClearMode.ManualClear);
@@ -136,7 +136,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 
         private MultiWaitHolder WaitSignaled()
         {
-            lock (_waitableSelectionLock)
+            lock (_multiWaitSelectionLock)
             {
                 while (true)
                 {
