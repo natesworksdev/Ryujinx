@@ -1190,7 +1190,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
             else
             {
-                // otherwise, clear state.
+                // Otherwise, clear state.
                 UserChannelPersistence = new UserChannelPersistence();
                 _currentEmulatedGamePath = null;
             }
