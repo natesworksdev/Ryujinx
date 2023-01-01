@@ -27,7 +27,7 @@ namespace Ryujinx.Horizon.Generators
         public void LeaveScope(string suffix = "")
         {
             DecreaseIndentation();
-            AppendLine("}" + suffix);
+            AppendLine($"}}{suffix}");
         }
 
         public void IncreaseIndentation()
