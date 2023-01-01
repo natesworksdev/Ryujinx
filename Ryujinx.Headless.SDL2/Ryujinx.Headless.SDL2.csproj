@@ -32,6 +32,10 @@
   </ItemGroup>
 
 	<ItemGroup>
+      <Content Include="..\Ryujinx.Ui.Common\Resources\Logo_Ryujinx.png">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        <TargetPath>Ryujinx.png</TargetPath>
+      </Content>
       <Content Include="..\distribution\legal\THIRDPARTY.md">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         <TargetPath>THIRDPARTY.md</TargetPath>

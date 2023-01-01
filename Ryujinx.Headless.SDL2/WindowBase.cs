@@ -1,4 +1,5 @@
 ﻿using ARMeilleure.Translation;
+using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
@@ -14,8 +15,10 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using static SDL2.SDL;
+using static SDL2.SDL_image;
 using Switch = Ryujinx.HLE.Switch;
 
 namespace Ryujinx.Headless.SDL2
@@ -108,6 +111,14 @@ namespace Ryujinx.Headless.SDL2
             TouchScreenManager.Initialize(device);
         }
 
+        private void SetWindowIcon()
+        {
+            IntPtr iconHandle = IMG_Load(Path.Combine(ReleaseInformations.GetBaseApplicationDirectory(), "Ryujinx.png"));
+
+            SDL_SetWindowIcon(WindowHandle, iconHandle);
+            SDL_FreeSurface(iconHandle);
+        }
+
         private void InitializeWindow()
         {
             string titleNameSection = string.IsNullOrWhiteSpace(Device.Application.TitleName) ? string.Empty
@@ -131,6 +142,8 @@ namespace Ryujinx.Headless.SDL2
 
                 throw new Exception(errorMessage);
             }
+
+            SetWindowIcon();
 
             _windowId = SDL_GetWindowID(WindowHandle);
             SDL2Driver.Instance.RegisterWindow(_windowId, HandleWindowEvent);
