@@ -1,17 +1,11 @@
-﻿using Avalonia;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
-using Avalonia.Threading;
-using DynamicData;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.ViewModels;
-using Ryujinx.Common.Utilities;
 using Ryujinx.Ui.Common.Helper;
-using System.Net.Http;
-using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using Button = Avalonia.Controls.Button;
 
@@ -30,7 +24,7 @@ namespace Ryujinx.Ava.UI.Windows
         {
             var content = new AboutWindow();
             
-            ContentDialog contentDialog = new ContentDialog
+            ContentDialog contentDialog = new()
             {
                 PrimaryButtonText = "",
                 SecondaryButtonText = "",
