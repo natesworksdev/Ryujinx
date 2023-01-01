@@ -280,7 +280,6 @@ namespace Ryujinx.Graphics.Shader.Decoders
         S64 = 7,
     }
 
-    [Flags]
     enum ISrcDstFmt
     {
         U8 = 0,
