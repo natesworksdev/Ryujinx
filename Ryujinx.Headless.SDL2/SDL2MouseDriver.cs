@@ -37,6 +37,20 @@ namespace Ryujinx.Headless.SDL2
             return (MouseButton)(rawButton - 1);
         }
 
+        public void UpdatePosition()
+        {
+            SDL_GetMouseState(out int posX, out int posY);
+            Vector2 position = new(posX, posY);
+
+            if (CurrentPosition != position)
+            {
+                CurrentPosition = position;
+                _lastCursorMoveTime = Stopwatch.GetTimestamp();
+            }
+
+            CheckIdle();
+        }
+
         private void CheckIdle()
         {
             if (!_hideCursorOnIdle)
@@ -56,8 +70,11 @@ namespace Ryujinx.Headless.SDL2
             }
             else
             {
-                SDL_ShowCursor(SDL_ENABLE);
-                _isHidden = false;
+                if (_isHidden)
+                {
+                    SDL_ShowCursor(SDL_ENABLE);
+                    _isHidden = false;
+                }
             }
         }
 
@@ -78,6 +95,7 @@ namespace Ryujinx.Headless.SDL2
 
                     break;
 
+                // NOTE: On Linux using Wayland mouse motion events won't be received at all.
                 case SDL_EventType.SDL_MOUSEMOTION:
                     CurrentPosition = new Vector2(evnt.motion.x, evnt.motion.y);
                     _lastCursorMoveTime = Stopwatch.GetTimestamp();
@@ -89,8 +107,6 @@ namespace Ryujinx.Headless.SDL2
 
                     break;
             }
-
-            CheckIdle();
         }
 
         public void SetClientSize(int width, int height)

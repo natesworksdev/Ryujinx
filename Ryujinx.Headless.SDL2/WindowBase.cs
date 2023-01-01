@@ -349,6 +349,9 @@ namespace Ryujinx.Headless.SDL2
 
             Device.Hid.DebugPad.Update();
 
+            // TODO: Replace this with MouseDriver.CheckIdle() when mouse motion events are received on every supported platform.
+            MouseDriver.UpdatePosition();
+
             return true;
         }
 
