@@ -2,7 +2,6 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Spl
 {
-    [Flags]
     enum ResultCode
     {
         ModuleId       = 26,
