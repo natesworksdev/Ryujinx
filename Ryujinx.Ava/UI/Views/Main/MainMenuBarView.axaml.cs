@@ -71,7 +71,7 @@ public partial class MainMenuBarView : UserControl
     {
         string contentPath = ViewModel.ContentManager.GetInstalledContentPath(0x0100000000001009, StorageId.BuiltInSystem, NcaContentType.Program);
 
-        if (!string.IsNullOrWhiteSpace(contentPath))
+        if (!string.IsNullOrEmpty(contentPath))
         {
             ViewModel.LoadApplication(contentPath, false, "Mii Applet");
         }

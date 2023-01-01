@@ -80,7 +80,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private string _lastScannedAmiiboId;
         private bool _statusBarVisible;
         private ReadOnlyObservableCollection<ApplicationData> _appsObservableList;
-        
+
         private string _showUiKey = "F4";
         private string _pauseKey = "F5";
         private string _screenshotKey = "F8";
@@ -96,7 +96,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private AutoResetEvent _rendererWaitEvent;
         private WindowState _windowState;
         private bool _isActive;
-        
+
         public event Action ReloadGameList;
 
         private string TitleName { get; set; }
@@ -153,8 +153,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             Ptc.PtcStateChanged += ProgressHandler;
         }
 
-        #region Properties
-        
+#region Properties
+
         public string SearchText
         {
             get => _searchText;
@@ -236,7 +236,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             set
             {
                 _statusBarVisible = value;
-                
+
                 OnPropertyChanged();
             }
         }
@@ -330,7 +330,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged();
             }
         }
-        
+
         public ApplicationData SelectedApplication
         {
             get
@@ -729,7 +729,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             }
         }
-        
+
         public int ListItemSelectorSize
         {
             get
@@ -785,7 +785,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 return 16;
             }
         }
-        
+
         public int GridSizeScale
         {
             get => ConfigurationState.Instance.Ui.GridSize;
@@ -810,7 +810,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             }
         }
-        
+
         public string SortName
         {
             get
@@ -876,7 +876,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged();
             }
         }
-        
+
         public ContentManager ContentManager { get; private set; }
         public ApplicationLibrary ApplicationLibrary { get; private set; }
         public VirtualFileSystem VirtualFileSystem { get; private set; }
@@ -904,10 +904,10 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool IsGridLarge => ConfigurationState.Instance.Ui.GridSize == 3;
         public bool IsGridHuge => ConfigurationState.Instance.Ui.GridSize == 4;
 
-        #endregion
+#endregion
 
-        #region PrivateMethods
-        
+#region PrivateMethods
+
         private IComparer<ApplicationData> GetComparer()
         {
             return SortMode switch
@@ -955,7 +955,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             return false;
         }
-        
+
         private async Task HandleFirmwareInstallation(string filename)
         {
             try
@@ -1060,7 +1060,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 await ContentDialogHelper.CreateErrorDialog(ex.Message);
             }
         }
-        
+
         private void ProgressHandler<T>(T state, int current, int total) where T : Enum
         {
             Dispatcher.UIThread.Post((() =>
@@ -1069,7 +1069,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     ProgressMaximum = total;
                     ProgressValue = current;
-    
+
                     switch (state)
                     {
                         case PtcLoadingState ptcState:
@@ -1111,12 +1111,12 @@ namespace Ryujinx.Ava.UI.ViewModels
                 catch (Exception) { }
             }));
         }
-        
+
         private void OpenSaveDirectory(in SaveDataFilter filter, ApplicationData data, ulong titleId)
         {
             ApplicationHelper.OpenSaveDir(in filter, titleId, data.ControlHolder, data.TitleName);
         }
-        
+
         private async void ExtractLogo()
         {
             var selection = SelectedApplication;
@@ -1143,7 +1143,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 await ApplicationHelper.ExtractSection(NcaSectionType.Code, selection.Path);
             }
         }
-        
+
         private void PrepareLoadScreen()
         {
             using MemoryStream stream = new(SelectedIcon);
@@ -1176,7 +1176,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             AppHost?.DisposeContext();
         }
-        
+
         private void HandleRelaunch()
         {
             if (UserChannelPersistence.PreviousIndex != -1 && UserChannelPersistence.ShouldRestart)
@@ -1202,8 +1202,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    VsyncColor = args.VSyncEnabled ? 
-                        new SolidColorBrush(Color.Parse("#ff2eeac9")) : 
+                    VsyncColor = args.VSyncEnabled ?
+                        new SolidColorBrush(Color.Parse("#ff2eeac9")) :
                         new SolidColorBrush(Color.Parse("#ffff4554"));
 
                     DockedStatusText = args.DockedMode;
@@ -1225,10 +1225,10 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             _rendererWaitEvent.Set();
         }
-        
-        #endregion
 
-        #region PublicMethods
+#endregion
+
+#region PublicMethods
 
         public void HandleShaderProgress(Switch emulationContext)
         {
@@ -1300,7 +1300,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 string folder = await dialog.ShowAsync(desktop.MainWindow);
 
-                if (!string.IsNullOrWhiteSpace(folder))
+                if (!string.IsNullOrEmpty(folder))
                 {
                     await HandleFirmwareInstallation(folder);
                 }
@@ -1541,7 +1541,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 });
             }
         }
-        
+
         public void ToggleFavorite()
         {
             ApplicationData selection = SelectedApplication;
@@ -1583,7 +1583,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 });
             }
         }
-        
+
         public void OpenModsDirectory()
         {
             ApplicationData selection = SelectedApplication;
@@ -1714,7 +1714,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 if (!string.IsNullOrWhiteSpace(folder) && Directory.Exists(folder))
                 {
                     LoadApplication(folder);
-                }   
+                }
             }
         }
 
@@ -1755,7 +1755,16 @@ namespace Ryujinx.Ava.UI.ViewModels
                 RendererControl.CreateVulkan();
             }
 
-            AppHost = new AppHost(RendererControl, InputManager, path, VirtualFileSystem, ContentManager, AccountManager, UserChannelPersistence, this, TopLevel);
+            AppHost = new AppHost(
+                RendererControl,
+                InputManager,
+                path,
+                VirtualFileSystem,
+                ContentManager,
+                AccountManager,
+                UserChannelPersistence,
+                this,
+                TopLevel);
 
             async void Action()
             {
@@ -1947,7 +1956,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 }
             }
         }
-        
-        #endregion
+
+#endregion
     }
 }
