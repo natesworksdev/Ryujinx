@@ -50,13 +50,13 @@ namespace Ryujinx.Headless.SDL2
             {
                 if (!_isHidden)
                 {
-                    _ = SDL_ShowCursor(SDL_DISABLE);
+                    SDL_ShowCursor(SDL_DISABLE);
                     _isHidden = true;
                 }
             }
             else
             {
-                _ = SDL_ShowCursor(SDL_ENABLE);
+                SDL_ShowCursor(SDL_ENABLE);
                 _isHidden = false;
             }
         }
