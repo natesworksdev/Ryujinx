@@ -1,3 +1,4 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Sdk.OsTypes;
 using Ryujinx.Horizon.Sdk.Sf.Cmif;
@@ -172,6 +173,8 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
                 }
                 else
                 {
+                    Logger.Warning?.Print(LogClass.KernelIpc, $"Request processing returned error {result}");
+
                     CloseSessionImpl(session);
                     return Result.Success;
                 }
