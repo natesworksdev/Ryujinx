@@ -12,7 +12,13 @@ namespace Ryujinx.Headless.SDL2.Vulkan
     {
         private GraphicsDebugLevel _glLogLevel;
 
-        public VulkanWindow(InputManager inputManager, GraphicsDebugLevel glLogLevel, AspectRatio aspectRatio, bool enableMouse, bool hideCursorOnIdle) : base(inputManager, glLogLevel, aspectRatio, enableMouse, hideCursorOnIdle)
+        public VulkanWindow(
+            InputManager inputManager,
+            GraphicsDebugLevel glLogLevel,
+            AspectRatio aspectRatio,
+            bool enableMouse,
+            bool hideCursorOnIdle)
+            : base(inputManager, glLogLevel, aspectRatio, enableMouse, hideCursorOnIdle)
         {
             _glLogLevel = glLogLevel;
         }
