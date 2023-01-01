@@ -228,7 +228,6 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Rz = 3,
     }
 
-    [Flags]
     enum FComp
     {
         F = 0,

@@ -1,5 +1,3 @@
-using System;
-
 namespace Ryujinx.HLE.HOS.Services.Spl
 {
     enum ResultCode

@@ -1,5 +1,3 @@
-using System;
-
 namespace Ryujinx.HLE.HOS.Kernel.Common
 {
     enum KernelResult

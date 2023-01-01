@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
+﻿namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
     enum Status : int
     {
