@@ -2,7 +2,6 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Kernel.Common
 {
-    [Flags]
     enum KernelResult
     {
         Success              = 0,
