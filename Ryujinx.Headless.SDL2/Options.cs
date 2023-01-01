@@ -6,6 +6,14 @@ namespace Ryujinx.Headless.SDL2
 {
     public class Options
     {
+        // General
+
+        [Option("root-data-dir", Required = false, HelpText = "Set the custom folder path for Ryujinx data.")]
+        public string BaseDataDir { get; set; }
+
+        [Option("profile", Required = false, HelpText = "Set the user profile to launch the game with.")]
+        public string UserProfile { get; set; }
+
         // Input
 
         [Option("input-profile-1", Required = false, HelpText = "Set the input profile in use for Player 1.")]

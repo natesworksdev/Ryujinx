@@ -33,7 +33,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
-
 using ConfigGamepadInputId = Ryujinx.Common.Configuration.Hid.Controller.GamepadInputId;
 using ConfigStickInputId = Ryujinx.Common.Configuration.Hid.Controller.StickInputId;
 using Key = Ryujinx.Common.Configuration.Hid.Key;
@@ -63,20 +62,6 @@ namespace Ryujinx.Headless.SDL2
 
             Console.Title = $"Ryujinx Console {Version} (Headless SDL2)";
 
-            AppDataManager.Initialize(null);
-
-            _virtualFileSystem = VirtualFileSystem.CreateInstance();
-            _libHacHorizonManager = new LibHacHorizonManager();
-
-            _libHacHorizonManager.InitializeFsServer(_virtualFileSystem);
-            _libHacHorizonManager.InitializeArpServer();
-            _libHacHorizonManager.InitializeBcatServer();
-            _libHacHorizonManager.InitializeSystemClients();
-
-            _contentManager = new ContentManager(_virtualFileSystem);
-            _accountManager = new AccountManager(_libHacHorizonManager.RyujinxClient);
-            _userChannelPersistence = new UserChannelPersistence();
-
             if (OperatingSystem.IsMacOS() || OperatingSystem.IsLinux())
             {
                 AutoResetEvent invoked = new AutoResetEvent(false);
@@ -96,10 +81,6 @@ namespace Ryujinx.Headless.SDL2
                     invoked.WaitOne();
                 };
             }
-
-            _inputManager = new InputManager(new SDL2KeyboardDriver(), new SDL2GamepadDriver());
-
-            GraphicsConfig.EnableShaderCache = true;
 
             Parser.Default.ParseArguments<Options>(args)
             .WithParsed(options => Load(options))
@@ -343,6 +324,24 @@ namespace Ryujinx.Headless.SDL2
 
         static void Load(Options option)
         {
+            AppDataManager.Initialize(option.BaseDataDir);
+
+            _virtualFileSystem = VirtualFileSystem.CreateInstance();
+            _libHacHorizonManager = new LibHacHorizonManager();
+
+            _libHacHorizonManager.InitializeFsServer(_virtualFileSystem);
+            _libHacHorizonManager.InitializeArpServer();
+            _libHacHorizonManager.InitializeBcatServer();
+            _libHacHorizonManager.InitializeSystemClients();
+
+            _contentManager = new ContentManager(_virtualFileSystem);
+            _accountManager = new AccountManager(_libHacHorizonManager.RyujinxClient, option.UserProfile);
+            _userChannelPersistence = new UserChannelPersistence();
+
+            _inputManager = new InputManager(new SDL2KeyboardDriver(), new SDL2GamepadDriver());
+
+            GraphicsConfig.EnableShaderCache = true;
+
             IGamepad gamepad;
 
             if (option.ListInputIds)
@@ -650,7 +649,7 @@ namespace Ryujinx.Headless.SDL2
             }
             else
             {
-                Logger.Warning?.Print(LogClass.Application, "Please specify a valid XCI/NCA/NSP/PFS0/NRO file.");
+                Logger.Warning?.Print(LogClass.Application, $"Couldn't load '{options.InputPath}'. Please specify a valid XCI/NCA/NSP/PFS0/NRO file.");
 
                 _emulationContext.Dispose();
 
