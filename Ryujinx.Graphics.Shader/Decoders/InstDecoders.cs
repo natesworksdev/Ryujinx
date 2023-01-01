@@ -714,7 +714,6 @@ namespace Ryujinx.Graphics.Shader.Decoders
         TexSamplerBorderColor = 22,
     }
 
-    [Flags]
     enum VectorSelect
     {
         U8B0 = 0,
