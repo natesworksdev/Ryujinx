@@ -30,7 +30,7 @@ using InputManager = Ryujinx.Input.HLE.InputManager;
 namespace Ryujinx.Ava.UI.Windows
 {
     public partial class MainWindow : StyleableWindow
-    {        
+    {
         internal static MainWindowViewModel MainWindowViewModel { get; private set; }
 
         private bool _isLoading;
