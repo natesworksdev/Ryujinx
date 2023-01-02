@@ -1,4 +1,5 @@
 ﻿using ARMeilleure.Translation;
+using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
@@ -113,6 +114,13 @@ namespace Ryujinx.Headless.SDL2
 
         private void SetWindowIcon()
         {
+            if (OperatingSystem.IsWindows() && !File.Exists(Path.Combine(ReleaseInformations.GetBaseApplicationDirectory(), "SDL_image.dll")))
+            {
+                Logger.Warning?.Print(LogClass.Application, "Couldn't find 'SDL_image.dll', window icon won't be set.");
+
+                return;
+            }
+
             Stream iconStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.Headless.SDL2.Logo_Ryujinx.png");
             byte[] iconBytes = new byte[iconStream!.Length];
 
