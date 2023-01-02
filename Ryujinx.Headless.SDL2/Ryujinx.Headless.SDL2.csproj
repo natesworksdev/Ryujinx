@@ -32,10 +32,6 @@
   </ItemGroup>
 
 	<ItemGroup>
-      <Content Include="..\Ryujinx.Ui.Common\Resources\Logo_Ryujinx.png">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        <TargetPath>Ryujinx.png</TargetPath>
-      </Content>
       <Content Include="..\distribution\legal\THIRDPARTY.md">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         <TargetPath>THIRDPARTY.md</TargetPath>
@@ -45,6 +41,10 @@
         <TargetPath>LICENSE.txt</TargetPath>
       </Content>
 	</ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\Ryujinx.Ui.Common\Resources\Logo_Ryujinx.png" />
+  </ItemGroup>
 
   <!-- Due to .net core 3.1 embedded resource loading -->
   <PropertyGroup>

@@ -1,5 +1,4 @@
 ﻿using ARMeilleure.Translation;
-using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
@@ -16,6 +15,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using static SDL2.SDL;
 using static SDL2.SDL_image;
@@ -113,10 +113,30 @@ namespace Ryujinx.Headless.SDL2
 
         private void SetWindowIcon()
         {
-            IntPtr iconHandle = IMG_Load(Path.Combine(ReleaseInformations.GetBaseApplicationDirectory(), "Ryujinx.png"));
+            Stream iconStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.Headless.SDL2.Logo_Ryujinx.png");
+            byte[] iconBytes = new byte[iconStream!.Length];
 
-            SDL_SetWindowIcon(WindowHandle, iconHandle);
-            SDL_FreeSurface(iconHandle);
+            if (iconStream.Read(iconBytes, 0, iconBytes.Length) != iconBytes.Length)
+            {
+                Logger.Error?.Print(LogClass.Application, "Failed to read icon to byte array.");
+                iconStream.Close();
+
+                return;
+            }
+
+            iconStream.Close();
+
+            unsafe
+            {
+                fixed (byte* iconPtr = iconBytes)
+                {
+                    IntPtr rwOpsStruct = SDL_RWFromConstMem((IntPtr)iconPtr, iconBytes.Length);
+                    IntPtr iconHandle = IMG_Load_RW(rwOpsStruct, 1);
+
+                    SDL_SetWindowIcon(WindowHandle, iconHandle);
+                    SDL_FreeSurface(iconHandle);
+                }
+            }
         }
 
         private void InitializeWindow()
@@ -164,9 +184,11 @@ namespace Ryujinx.Headless.SDL2
                         Renderer?.Window.SetSize(Width, Height);
                         MouseDriver.SetClientSize(Width, Height);
                         break;
+
                     case SDL_WindowEventID.SDL_WINDOWEVENT_CLOSE:
                         Exit();
                         break;
+
                     default:
                         break;
                 }
