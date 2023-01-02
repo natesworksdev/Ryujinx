@@ -83,10 +83,8 @@ namespace Ryujinx.Headless.SDL2
             }
 
             Parser.Default.ParseArguments<Options>(args)
-            .WithParsed(options => Load(options))
+            .WithParsed(Load)
             .WithNotParsed(errors => errors.Output());
-
-            _inputManager.Dispose();
         }
 
         private static InputConfig HandlePlayerConfiguration(string inputProfileName, string inputId, PlayerIndex index)
@@ -443,6 +441,8 @@ namespace Ryujinx.Headless.SDL2
 
                 _userChannelPersistence.ShouldRestart = false;
             }
+
+            _inputManager.Dispose();
         }
 
         private static void SetupProgressHandler()
