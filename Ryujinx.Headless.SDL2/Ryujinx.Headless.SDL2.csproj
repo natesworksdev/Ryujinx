@@ -43,7 +43,7 @@
 	</ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\Ryujinx.Ui.Common\Resources\Logo_Ryujinx.png" />
+    <EmbeddedResource Include="Ryujinx.bmp" />
   </ItemGroup>
 
   <!-- Due to .net core 3.1 embedded resource loading -->

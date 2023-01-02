@@ -1,5 +1,4 @@
 ﻿using ARMeilleure.Translation;
-using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
@@ -17,14 +16,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using static SDL2.SDL;
-using static SDL2.SDL_image;
 using Switch = Ryujinx.HLE.Switch;
 
 namespace Ryujinx.Headless.SDL2
 {
-    abstract class WindowBase : IHostUiHandler, IDisposable
+    abstract partial class WindowBase : IHostUiHandler, IDisposable
     {
         protected const int DefaultWidth = 1280;
         protected const int DefaultHeight = 720;
@@ -32,6 +31,9 @@ namespace Ryujinx.Headless.SDL2
         private const int TargetFps = 60;
 
         private static ConcurrentQueue<Action> MainThreadActions = new ConcurrentQueue<Action>();
+
+        [LibraryImport("SDL2")]
+        private static partial IntPtr SDL_LoadBMP_RW(IntPtr src, int freesrc);
 
         public static void QueueMainThreadAction(Action action)
         {
@@ -114,14 +116,7 @@ namespace Ryujinx.Headless.SDL2
 
         private void SetWindowIcon()
         {
-            if (OperatingSystem.IsWindows() && !File.Exists(Path.Combine(ReleaseInformations.GetBaseApplicationDirectory(), "SDL_image.dll")))
-            {
-                Logger.Warning?.Print(LogClass.Application, "Couldn't find 'SDL_image.dll', window icon won't be set.");
-
-                return;
-            }
-
-            Stream iconStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.Headless.SDL2.Logo_Ryujinx.png");
+            Stream iconStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.Headless.SDL2.Ryujinx.bmp");
             byte[] iconBytes = new byte[iconStream!.Length];
 
             if (iconStream.Read(iconBytes, 0, iconBytes.Length) != iconBytes.Length)
@@ -139,7 +134,7 @@ namespace Ryujinx.Headless.SDL2
                 fixed (byte* iconPtr = iconBytes)
                 {
                     IntPtr rwOpsStruct = SDL_RWFromConstMem((IntPtr)iconPtr, iconBytes.Length);
-                    IntPtr iconHandle = IMG_Load_RW(rwOpsStruct, 1);
+                    IntPtr iconHandle = SDL_LoadBMP_RW(rwOpsStruct, 1);
 
                     SDL_SetWindowIcon(WindowHandle, iconHandle);
                     SDL_FreeSurface(iconHandle);
