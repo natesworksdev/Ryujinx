@@ -76,8 +76,8 @@ namespace Ryujinx.Headless.SDL2
         [Option("enable-mouse", Required = false, Default = false, HelpText = "Enable or disable mouse support.")]
         public bool EnableMouse { get; set; }
 
-        [Option("hide-cursor-on-idle", Required = false, Default = true, HelpText = "Hide the cursor on inactivity.")]
-        public bool HideCursorOnIdle { get; set; }
+        [Option("disable-hide-cursor-on-idle", Required = false, HelpText = "Don't hide the cursor on inactivity.")]
+        public bool DisableHideCursorOnIdle { get; set; }
 
         [Option("list-input-profiles", Required = false, HelpText = "List inputs profiles.")]
         public bool ListInputProfiles { get; set; }
@@ -87,29 +87,29 @@ namespace Ryujinx.Headless.SDL2
 
         // System
 
-        [Option("enable-ptc", Required = false, Default = true, HelpText = "Enables profiled persistent translation cache.")]
-        public bool EnablePtc { get; set; }
+        [Option("disable-ptc", Required = false, HelpText = "Disables profiled persistent translation cache.")]
+        public bool DisablePtc { get; set; }
 
         [Option("enable-internet-connection", Required = false, Default = false, HelpText = "Enables guest Internet connection.")]
         public bool EnableInternetAccess { get; set; }
 
-        [Option("enable-fs-integrity-checks", Required = false, Default = true, HelpText = "Enables integrity checks on Game content files.")]
-        public bool EnableFsIntegrityChecks { get; set; }
+        [Option("disable-fs-integrity-checks", Required = false, HelpText = "Disables integrity checks on Game content files.")]
+        public bool DisableFsIntegrityChecks { get; set; }
 
         [Option("fs-global-access-log-mode", Required = false, Default = 0, HelpText = "Enables FS access log output to the console.")]
         public int FsGlobalAccessLogMode { get; set; }
 
-        [Option("enable-vsync", Required = false, Default = true, HelpText = "Enables Vertical Sync.")]
-        public bool EnableVsync { get; set; }
+        [Option("disable-vsync", Required = false, HelpText = "Disables Vertical Sync.")]
+        public bool DisableVsync { get; set; }
 
-        [Option("enable-shader-cache", Required = false, Default = true, HelpText = "Enables Shader cache.")]
-        public bool EnableShaderCache { get; set; }
+        [Option("disable-shader-cache", Required = false, HelpText = "Disables Shader cache.")]
+        public bool DisableShaderCache { get; set; }
 
         [Option("enable-texture-recompression", Required = false, Default = false, HelpText = "Enables Texture recompression.")]
         public bool EnableTextureRecompression { get; set; }
 
-        [Option("enable-docked-mode", Required = false, Default = true, HelpText = "Enables Docked Mode.")]
-        public bool EnableDockedMode { get; set; }
+        [Option("disable-docked-mode", Required = false, HelpText = "Disables Docked Mode.")]
+        public bool DisableDockedMode { get; set; }
 
         [Option("system-language", Required = false, Default = SystemLanguage.AmericanEnglish, HelpText = "Change System Language.")]
         public SystemLanguage SystemLanguage { get; set; }
@@ -137,23 +137,23 @@ namespace Ryujinx.Headless.SDL2
         [Option("enable-debug-logs", Required = false, Default = false, HelpText = "Enables printing debug log messages.")]
         public bool LoggingEnableDebug { get; set; }
 
-        [Option("enable-stub-logs", Required = false, Default = true, HelpText = "Enables printing stub log messages.")]
-        public bool LoggingEnableStub { get; set; }
+        [Option("disable-stub-logs", Required = false, HelpText = "Disables printing stub log messages.")]
+        public bool LoggingDisableStub { get; set; }
 
-        [Option("enable-info-logs", Required = false, Default = true, HelpText = "Enables printing info log messages.")]
-        public bool LoggingEnableInfo { get; set; }
+        [Option("disable-info-logs", Required = false, HelpText = "Disables printing info log messages.")]
+        public bool LoggingDisableInfo { get; set; }
 
-        [Option("enable-warning-logs", Required = false, Default = true, HelpText = "Enables printing warning log messages.")]
-        public bool LoggingEnableWarning { get; set; }
+        [Option("disable-warning-logs", Required = false, HelpText = "Disables printing warning log messages.")]
+        public bool LoggingDisableWarning { get; set; }
 
-        [Option("enable-error-logs", Required = false, Default = true, HelpText = "Enables printing error log messages.")]
+        [Option("disable-error-logs", Required = false, HelpText = "Disables printing error log messages.")]
         public bool LoggingEnableError { get; set; }
 
         [Option("enable-trace-logs", Required = false, Default = false, HelpText = "Enables printing trace log messages.")]
         public bool LoggingEnableTrace { get; set; }
 
-        [Option("enable-guest-logs", Required = false, Default = true, HelpText = "Enables printing guest log messages.")]
-        public bool LoggingEnableGuest { get; set; }
+        [Option("disable-guest-logs", Required = false, HelpText = "Disables printing guest log messages.")]
+        public bool LoggingDisableGuest { get; set; }
 
         [Option("enable-fs-access-logs", Required = false, Default = false, HelpText = "Enables printing FS access log messages.")]
         public bool LoggingEnableFsAccessLog { get; set; }
@@ -175,8 +175,8 @@ namespace Ryujinx.Headless.SDL2
         [Option("backend-threading", Required = false, Default = BackendThreading.Auto, HelpText = "Whether or not backend threading is enabled. The \"Auto\" setting will determine whether threading should be enabled at runtime.")]
         public BackendThreading BackendThreading { get; set; }
 
-        [Option("enable-macro-hle", Required= false, Default = true, HelpText = "Enables or disables high-level emulation of Macro code. Improves performance but may cause graphical glitches in some games.")]
-        public bool EnableMacroHLE { get; set; }
+        [Option("disable-macro-hle", Required= false, HelpText = "Disables high-level emulation of Macro code. Leaving this enabled improves performance but may cause graphical glitches in some games.")]
+        public bool DisableMacroHLE { get; set; }
 
         [Option("graphics-shaders-dump-path", Required = false, HelpText = "Dumps shaders in this local directory. (Developer only)")]
         public string GraphicsShadersDumpPath { get; set; }

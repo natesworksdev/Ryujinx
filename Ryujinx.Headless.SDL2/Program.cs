@@ -407,12 +407,12 @@ namespace Ryujinx.Headless.SDL2
 
             // Setup logging level
             Logger.SetEnable(LogLevel.Debug, option.LoggingEnableDebug);
-            Logger.SetEnable(LogLevel.Stub, option.LoggingEnableStub);
-            Logger.SetEnable(LogLevel.Info, option.LoggingEnableInfo);
-            Logger.SetEnable(LogLevel.Warning, option.LoggingEnableWarning);
+            Logger.SetEnable(LogLevel.Stub, !option.LoggingDisableStub);
+            Logger.SetEnable(LogLevel.Info, !option.LoggingDisableInfo);
+            Logger.SetEnable(LogLevel.Warning, !option.LoggingDisableWarning);
             Logger.SetEnable(LogLevel.Error, option.LoggingEnableError);
             Logger.SetEnable(LogLevel.Trace, option.LoggingEnableTrace);
-            Logger.SetEnable(LogLevel.Guest, option.LoggingEnableGuest);
+            Logger.SetEnable(LogLevel.Guest, !option.LoggingDisableGuest);
             Logger.SetEnable(LogLevel.AccessLog, option.LoggingEnableFsAccessLog);
 
             if (option.EnableFileLog)
@@ -425,12 +425,12 @@ namespace Ryujinx.Headless.SDL2
             }
 
             // Setup graphics configuration
-            GraphicsConfig.EnableShaderCache = option.EnableShaderCache;
+            GraphicsConfig.EnableShaderCache = !option.DisableShaderCache;
             GraphicsConfig.EnableTextureRecompression = option.EnableTextureRecompression;
             GraphicsConfig.ResScale = option.ResScale;
             GraphicsConfig.MaxAnisotropy = option.MaxAnisotropy;
             GraphicsConfig.ShadersDumpPath = option.GraphicsShadersDumpPath;
-            GraphicsConfig.EnableMacroHLE = option.EnableMacroHLE;
+            GraphicsConfig.EnableMacroHLE = !option.DisableMacroHLE;
 
             while (true)
             {
@@ -479,8 +479,8 @@ namespace Ryujinx.Headless.SDL2
         private static WindowBase CreateWindow(Options options)
         {
             return options.GraphicsBackend == GraphicsBackend.Vulkan
-                ? new VulkanWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, options.EnableMouse, options.HideCursorOnIdle)
-                : new OpenGLWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, options.EnableMouse, options.HideCursorOnIdle);
+                ? new VulkanWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, options.EnableMouse, !options.DisableHideCursorOnIdle)
+                : new OpenGLWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, options.EnableMouse, !options.DisableHideCursorOnIdle);
         }
 
         private static IRenderer CreateRenderer(Options options, WindowBase window)
@@ -537,11 +537,11 @@ namespace Ryujinx.Headless.SDL2
                                                                   window,
                                                                   options.SystemLanguage,
                                                                   options.SystemRegion,
-                                                                  options.EnableVsync,
-                                                                  options.EnableDockedMode,
-                                                                  options.EnablePtc,
+                                                                  !options.DisableVsync,
+                                                                  !options.DisableDockedMode,
+                                                                  !options.DisablePtc,
                                                                   options.EnableInternetAccess,
-                                                                  options.EnableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None,
+                                                                  !options.DisableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None,
                                                                   options.FsGlobalAccessLogMode,
                                                                   options.SystemTimeOffset,
                                                                   options.SystemTimeZone,
