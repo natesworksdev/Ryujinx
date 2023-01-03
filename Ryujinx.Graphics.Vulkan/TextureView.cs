@@ -342,8 +342,7 @@ namespace Ryujinx.Graphics.Vulkan
                     return;
                 }
                 else if (_gd.FormatCapabilities.OptimalFormatSupports(FormatFeatureFlags.BlitSrcBit, srcFormat) &&
-                         _gd.FormatCapabilities.OptimalFormatSupports(FormatFeatureFlags.BlitDstBit, dstFormat) &&
-                         !(_gd.Vendor == Vendor.MoltenVK && !src.Info.Format.IsDepthOrStencil() && !dst.Info.Format.IsDepthOrStencil()))
+                         _gd.FormatCapabilities.OptimalFormatSupports(FormatFeatureFlags.BlitDstBit, dstFormat))
                 {
                     TextureCopy.Blit(
                         _gd.Api,
@@ -1067,11 +1066,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Release()
         {
-            // TODO: Properly fix this.
-            if (!OperatingSystem.IsMacOS())
-            {
-                Dispose();
-            }
+            Dispose();
         }
     }
 }
