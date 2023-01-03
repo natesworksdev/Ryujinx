@@ -56,7 +56,7 @@ namespace Ryujinx.Ava.UI.Windows
         {
             if (e.SelectedItem is NavigationViewItem navItem && navItem.Tag is not null)
             {
-                switch (navitem.Tag.ToString())
+                switch (navItem.Tag.ToString())
                 {
                     case "UiPage":
                         UiPage.ViewModel = ViewModel;
