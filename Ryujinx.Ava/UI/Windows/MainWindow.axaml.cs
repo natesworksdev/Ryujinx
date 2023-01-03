@@ -147,7 +147,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void ApplicationLibrary_ApplicationCountUpdated(object sender, ApplicationCountUpdatedEventArgs e)
         {
-            LocaleManager.Instance.UpdateDynamicValue("StatusBarGamesLoaded", e.NumAppsLoaded, e.NumAppsFound);
+            LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.StatusBarGamesLoaded, e.NumAppsLoaded, e.NumAppsFound);
 
             Dispatcher.UIThread.Post(() =>
             {
@@ -405,7 +405,7 @@ namespace Ryujinx.Ava.UI.Windows
                }
            });
         }
-        
+
         public async void LoadApplications()
         {
             await Dispatcher.UIThread.InvokeAsync(() =>
@@ -416,7 +416,7 @@ namespace Ryujinx.Ava.UI.Windows
                 ViewModel.StatusBarProgressMaximum      = 0;
                 ViewModel.StatusBarProgressValue        = 0;
 
-                LocaleManager.Instance.UpdateDynamicValue("StatusBarGamesLoaded", 0, 0);
+                LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.StatusBarGamesLoaded, 0, 0);
             });
 
             ReloadGameList();
