@@ -23,15 +23,15 @@ namespace Ryujinx.Ava.UI.Windows
         public static async Task Show()
         {
             var content = new AboutWindow();
-            
+
             ContentDialog contentDialog = new()
             {
                 PrimaryButtonText = "",
                 SecondaryButtonText = "",
-                CloseButtonText = LocaleManager.Instance["UserProfilesClose"],
+                CloseButtonText = LocaleManager.Instance[LocaleKeys.UserProfilesClose],
                 Content = content
             };
-            
+
             Style closeButton = new(x => x.Name("CloseButton"));
             closeButton.Setters.Add(new Setter(WidthProperty, 70d));
 
@@ -40,7 +40,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             contentDialog.Styles.Add(closeButton);
             contentDialog.Styles.Add(closeButtonParent);
-            
+
             await contentDialog.ShowAsync();
         }
 

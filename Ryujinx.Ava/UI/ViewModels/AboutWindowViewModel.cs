@@ -30,7 +30,7 @@ public class AboutWindowViewModel : BaseModel
             OnPropertyChanged();
         }
     }
-    
+
     public Bitmap DiscordLogo
     {
         get => _discordLogo;
@@ -40,7 +40,7 @@ public class AboutWindowViewModel : BaseModel
             OnPropertyChanged();
         }
     }
-    
+
     public Bitmap PatreonLogo
     {
         get => _patreonLogo;
@@ -50,7 +50,7 @@ public class AboutWindowViewModel : BaseModel
             OnPropertyChanged();
         }
     }
-    
+
     public Bitmap TwitterLogo
     {
         get => _twitterLogo;
@@ -83,15 +83,15 @@ public class AboutWindowViewModel : BaseModel
 
     public string Developers
     {
-        get => string.Format(LocaleManager.Instance["AboutPageDeveloperListMore"], "gdkchan, Ac_K, Thog, rip in peri peri, LDj3SNuD, emmaus, Thealexbarney, Xpl0itR, GoffyDude, »jD«");
+        get => string.Format(LocaleManager.Instance[LocaleKeys.AboutPageDeveloperListMore], "gdkchan, Ac_K, Thog, rip in peri peri, LDj3SNuD, emmaus, Thealexbarney, Xpl0itR, GoffyDude, »jD«");
     }
 
     public AboutWindowViewModel()
     {
         Version = Program.Version;
-        
+
         var assets = AvaloniaLocator.Current.GetService<Avalonia.Platform.IAssetLoader>();
-        
+
         if (ConfigurationState.Instance.Ui.BaseStyle.Value == "Light")
         {
             GithubLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_GitHub_Light.png?assembly=Ryujinx.Ui.Common")));
@@ -108,12 +108,12 @@ public class AboutWindowViewModel : BaseModel
 
         Dispatcher.UIThread.InvokeAsync(DownloadPatronsJson);
     }
-    
+
     private async Task DownloadPatronsJson()
     {
         if (!NetworkInterface.GetIsNetworkAvailable())
         {
-            Supporters = LocaleManager.Instance["ConnectionError"];
+            Supporters = LocaleManager.Instance[LocaleKeys.ConnectionError];
 
             return;
         }
@@ -128,7 +128,7 @@ public class AboutWindowViewModel : BaseModel
         }
         catch
         {
-            Supporters = LocaleManager.Instance["ApiError"];
+            Supporters = LocaleManager.Instance[LocaleKeys.ApiError];
         }
     }
 }
