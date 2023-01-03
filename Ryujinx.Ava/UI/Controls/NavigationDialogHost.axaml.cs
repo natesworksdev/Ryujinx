@@ -90,7 +90,7 @@ namespace Ryujinx.Ava.UI.Controls
             };
 
             Style closeButton = new(x => x.Name("CloseButton"));
-            closeButton.Setters.Add(new Setter(WidthProperty, 70d));
+            closeButton.Setters.Add(new Setter(WidthProperty, 80d));
 
             Style closeButtonParent = new(x => x.Name("CommandSpace"));
             closeButtonParent.Setters.Add(new Setter(HorizontalAlignmentProperty, Avalonia.Layout.HorizontalAlignment.Right));
