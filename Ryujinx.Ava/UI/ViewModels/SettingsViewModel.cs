@@ -68,19 +68,14 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 if (_graphicsBackendMultithreadingIndex != (int)ConfigurationState.Instance.Graphics.BackendThreading.Value)
                 {
-                    async void Action()
+                    Dispatcher.UIThread.Post(async () =>
                     {
-                        Dispatcher.UIThread.Post(async () =>
-                        {
-                            await ContentDialogHelper.CreateInfoDialog(LocaleManager.Instance[LocaleKeys.DialogSettingsBackendThreadingWarningMessage],
-                                                                       "",
-                                                                       "",
-                                                                       LocaleManager.Instance[LocaleKeys.InputDialogOk],
-                                                                       LocaleManager.Instance[LocaleKeys.DialogSettingsBackendThreadingWarningTitle]);
-                        });
-                    }
-
-                    Dispatcher.UIThread.Post(Action);
+                        await ContentDialogHelper.CreateInfoDialog(LocaleManager.Instance[LocaleKeys.DialogSettingsBackendThreadingWarningMessage],
+                            "",
+                            "",
+                            LocaleManager.Instance[LocaleKeys.InputDialogOk],
+                            LocaleManager.Instance[LocaleKeys.DialogSettingsBackendThreadingWarningTitle]);
+                    });
                 }
 
                 OnPropertyChanged();
@@ -121,12 +116,12 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged();
             }
         }
-        
+
         public bool IsMacOS
         {
             get => OperatingSystem.IsMacOS();
         }
-        
+
         public bool EnableDiscordIntegration { get; set; }
         public bool CheckUpdatesOnStart { get; set; }
         public bool ShowConfirmExit { get; set; }
@@ -227,7 +222,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged();
             }
         }
-        
+
         public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager) : this()
         {
             _virtualFileSystem = virtualFileSystem;
@@ -468,7 +463,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.ToFileFormat().SaveConfig(Program.ConfigurationPath);
 
             MainWindow.UpdateGraphicsConfig();
-            
+
             SaveSettingsEvent?.Invoke();
 
             _directoryChanged = false;

@@ -12,12 +12,12 @@ namespace Ryujinx.Ava.UI.Views.Settings;
 public partial class SettingsUIView : UserControl
 {
     public SettingsViewModel ViewModel;
-    
+
     public SettingsUIView()
     {
         InitializeComponent();
     }
-    
+
     private async void AddButton_OnClick(object sender, RoutedEventArgs e)
     {
         string path = PathBox.Text;
@@ -57,16 +57,16 @@ public partial class SettingsUIView : UserControl
             GameList.SelectedIndex = oldIndex < GameList.ItemCount ? oldIndex : 0;
         }
     }
-    
+
     public async void BrowseTheme(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFileDialog()
         {
-            Title = LocaleManager.Instance["SettingsSelectThemeFileDialogTitle"],
+            Title = LocaleManager.Instance[LocaleKeys.SettingsSelectThemeFileDialogTitle],
             AllowMultiple = false
         };
 
-        dialog.Filters.Add(new FileDialogFilter() { Extensions = { "xaml" }, Name = LocaleManager.Instance["SettingsXamlThemeFile"] });
+        dialog.Filters.Add(new FileDialogFilter() { Extensions = { "xaml" }, Name = LocaleManager.Instance[LocaleKeys.SettingsXamlThemeFile] });
 
         if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
