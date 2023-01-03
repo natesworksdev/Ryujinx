@@ -54,7 +54,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void NavPanelOnSelectionChanged(object sender, NavigationViewSelectionChangedEventArgs e)
         {
-            if (e.SelectedItem is NavigationViewItem navitem)
+            if (e.SelectedItem is NavigationViewItem navItem && navItem.Tag is not null)
             {
                 switch(navitem.Tag.ToString())
                 {
