@@ -9,126 +9,127 @@ using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 
-namespace Ryujinx.Ava.UI.ViewModels;
-
-public class AboutWindowViewModel : BaseModel
+namespace Ryujinx.Ava.UI.ViewModels
 {
-    private Bitmap _githubLogo;
-    private Bitmap _discordLogo;
-    private Bitmap _patreonLogo;
-    private Bitmap _twitterLogo;
-
-    private string _version;
-    private string _supporters;
-
-    public Bitmap GithubLogo
+    public class AboutWindowViewModel : BaseModel
     {
-        get => _githubLogo;
-        set
+        private Bitmap _githubLogo;
+        private Bitmap _discordLogo;
+        private Bitmap _patreonLogo;
+        private Bitmap _twitterLogo;
+
+        private string _version;
+        private string _supporters;
+
+        public Bitmap GithubLogo
         {
-            _githubLogo = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public Bitmap DiscordLogo
-    {
-        get => _discordLogo;
-        set
-        {
-            _discordLogo = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public Bitmap PatreonLogo
-    {
-        get => _patreonLogo;
-        set
-        {
-            _patreonLogo = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public Bitmap TwitterLogo
-    {
-        get => _twitterLogo;
-        set
-        {
-            _twitterLogo = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public string Supporters
-    {
-        get => _supporters;
-        set
-        {
-            _supporters = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public string Version
-    {
-        get => _version;
-        set
-        {
-            _version = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public string Developers
-    {
-        get => string.Format(LocaleManager.Instance[LocaleKeys.AboutPageDeveloperListMore], "gdkchan, Ac_K, Thog, rip in peri peri, LDj3SNuD, emmaus, Thealexbarney, Xpl0itR, GoffyDude, »jD«");
-    }
-
-    public AboutWindowViewModel()
-    {
-        Version = Program.Version;
-
-        var assets = AvaloniaLocator.Current.GetService<Avalonia.Platform.IAssetLoader>();
-
-        if (ConfigurationState.Instance.Ui.BaseStyle.Value == "Light")
-        {
-            GithubLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_GitHub_Light.png?assembly=Ryujinx.Ui.Common")));
-            DiscordLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_Discord_Light.png?assembly=Ryujinx.Ui.Common")));
-            PatreonLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_Patreon_Light.png?assembly=Ryujinx.Ui.Common")));
-            TwitterLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_Twitter_Light.png?assembly=Ryujinx.Ui.Common")));
-        } else
-        {
-            GithubLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_GitHub_Dark.png?assembly=Ryujinx.Ui.Common")));
-            DiscordLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_Discord_Dark.png?assembly=Ryujinx.Ui.Common")));
-            PatreonLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_Patreon_Dark.png?assembly=Ryujinx.Ui.Common")));
-            TwitterLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_Twitter_Dark.png?assembly=Ryujinx.Ui.Common")));
+            get => _githubLogo;
+            set
+            {
+                _githubLogo = value;
+                OnPropertyChanged();
+            }
         }
 
-        Dispatcher.UIThread.InvokeAsync(DownloadPatronsJson);
-    }
-
-    private async Task DownloadPatronsJson()
-    {
-        if (!NetworkInterface.GetIsNetworkAvailable())
+        public Bitmap DiscordLogo
         {
-            Supporters = LocaleManager.Instance[LocaleKeys.ConnectionError];
-
-            return;
+            get => _discordLogo;
+            set
+            {
+                _discordLogo = value;
+                OnPropertyChanged();
+            }
         }
 
-        HttpClient httpClient = new();
-
-        try
+        public Bitmap PatreonLogo
         {
-            string patreonJsonString = await httpClient.GetStringAsync("https://patreon.ryujinx.org/");
-
-            Supporters = string.Join(", ", JsonHelper.Deserialize<string[]>(patreonJsonString));
+            get => _patreonLogo;
+            set
+            {
+                _patreonLogo = value;
+                OnPropertyChanged();
+            }
         }
-        catch
+
+        public Bitmap TwitterLogo
         {
-            Supporters = LocaleManager.Instance[LocaleKeys.ApiError];
+            get => _twitterLogo;
+            set
+            {
+                _twitterLogo = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string Supporters
+        {
+            get => _supporters;
+            set
+            {
+                _supporters = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string Version
+        {
+            get => _version;
+            set
+            {
+                _version = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string Developers
+        {
+            get => string.Format(LocaleManager.Instance[LocaleKeys.AboutPageDeveloperListMore], "gdkchan, Ac_K, Thog, rip in peri peri, LDj3SNuD, emmaus, Thealexbarney, Xpl0itR, GoffyDude, »jD«");
+        }
+
+        public AboutWindowViewModel()
+        {
+            Version = Program.Version;
+
+            var assets = AvaloniaLocator.Current.GetService<Avalonia.Platform.IAssetLoader>();
+
+            if (ConfigurationState.Instance.Ui.BaseStyle.Value == "Light")
+            {
+                GithubLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_GitHub_Light.png?assembly=Ryujinx.Ui.Common")));
+                DiscordLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_Discord_Light.png?assembly=Ryujinx.Ui.Common")));
+                PatreonLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_Patreon_Light.png?assembly=Ryujinx.Ui.Common")));
+                TwitterLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_Twitter_Light.png?assembly=Ryujinx.Ui.Common")));
+            } else
+            {
+                GithubLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_GitHub_Dark.png?assembly=Ryujinx.Ui.Common")));
+                DiscordLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_Discord_Dark.png?assembly=Ryujinx.Ui.Common")));
+                PatreonLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_Patreon_Dark.png?assembly=Ryujinx.Ui.Common")));
+                TwitterLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_Twitter_Dark.png?assembly=Ryujinx.Ui.Common")));
+            }
+
+            Dispatcher.UIThread.InvokeAsync(DownloadPatronsJson);
+        }
+
+        private async Task DownloadPatronsJson()
+        {
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                Supporters = LocaleManager.Instance[LocaleKeys.ConnectionError];
+
+                return;
+            }
+
+            HttpClient httpClient = new();
+
+            try
+            {
+                string patreonJsonString = await httpClient.GetStringAsync("https://patreon.ryujinx.org/");
+
+                Supporters = string.Join(", ", JsonHelper.Deserialize<string[]>(patreonJsonString));
+            }
+            catch
+            {
+                Supporters = LocaleManager.Instance[LocaleKeys.ApiError];
+            }
         }
     }
 }
