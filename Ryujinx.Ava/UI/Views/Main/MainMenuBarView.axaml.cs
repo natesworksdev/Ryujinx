@@ -9,137 +9,138 @@ using LibHac.Ncm;
 using Ryujinx.HLE.HOS;
 using Ryujinx.Modules;
 
-namespace Ryujinx.Ava.UI.Views.Main;
-
-public partial class MainMenuBarView : UserControl
+namespace Ryujinx.Ava.UI.Views.Main
 {
-    public MainWindow Window { get; private set; }
-    public MainWindowViewModel ViewModel { get; private set; }
-
-    public MainMenuBarView()
+    public partial class MainMenuBarView : UserControl
     {
-        InitializeComponent();
-    }
+        public MainWindow Window { get; private set; }
+        public MainWindowViewModel ViewModel { get; private set; }
 
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-
-        if (this.VisualRoot is MainWindow window)
+        public MainMenuBarView()
         {
-           Window = window;
+            InitializeComponent();
         }
 
-        ViewModel = Window.ViewModel;
-        DataContext = ViewModel;
-    }
-
-    private async void StopEmulation_Click(object sender, RoutedEventArgs e)
-    {
-        await Task.Run(() =>
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            Window.ViewModel.AppHost?.ShowExitPrompt();
-        });
-    }
+            base.OnAttachedToVisualTree(e);
 
-    private async void PauseEmulation_Click(object sender, RoutedEventArgs e)
-    {
-        await Task.Run(() =>
-        {
-            Window.ViewModel.AppHost?.Pause();
-        });
-    }
-
-    private async void ResumeEmulation_Click(object sender, RoutedEventArgs e)
-    {
-        await Task.Run(() =>
-        {
-            Window.ViewModel.AppHost?.Resume();
-        });
-    }
-
-    public async void OpenSettings(object sender, RoutedEventArgs e)
-    {
-        Window.SettingsWindow = new(Window.VirtualFileSystem, Window.ContentManager);
-
-        await Window.SettingsWindow.ShowDialog(Window);
-
-        ViewModel.LoadConfigurableHotKeys();
-    }
-
-    public void OpenMiiApplet(object sender, RoutedEventArgs e)
-    {
-        string contentPath = ViewModel.ContentManager.GetInstalledContentPath(0x0100000000001009, StorageId.BuiltInSystem, NcaContentType.Program);
-
-        if (!string.IsNullOrEmpty(contentPath))
-        {
-            ViewModel.LoadApplication(contentPath, false, "Mii Applet");
-        }
-    }
-
-    public async void OpenAmiiboWindow(object sender, RoutedEventArgs e)
-    {
-        if (!ViewModel.IsAmiiboRequested)
-        {
-            return;
-        }
-
-        if (ViewModel.AppHost.Device.System.SearchingForAmiibo(out int deviceId))
-        {
-            string titleId = ViewModel.AppHost.Device.Application.TitleIdText.ToUpper();
-            AmiiboWindow window = new(ViewModel.ShowAll, ViewModel.LastScannedAmiiboId, titleId);
-
-            await window.ShowDialog(Window);
-
-            if (window.IsScanned)
+            if (this.VisualRoot is MainWindow window)
             {
-                ViewModel.ShowAll = window.ViewModel.ShowAllAmiibo;
-                ViewModel.LastScannedAmiiboId = window.ScannedAmiibo.GetId();
+                Window = window;
+            }
 
-                ViewModel.AppHost.Device.System.ScanAmiibo(deviceId, ViewModel.LastScannedAmiiboId, window.ViewModel.UseRandomUuid);
+            ViewModel = Window.ViewModel;
+            DataContext = ViewModel;
+        }
+
+        private async void StopEmulation_Click(object sender, RoutedEventArgs e)
+        {
+            await Task.Run(() =>
+            {
+                Window.ViewModel.AppHost?.ShowExitPrompt();
+            });
+        }
+
+        private async void PauseEmulation_Click(object sender, RoutedEventArgs e)
+        {
+            await Task.Run(() =>
+            {
+                Window.ViewModel.AppHost?.Pause();
+            });
+        }
+
+        private async void ResumeEmulation_Click(object sender, RoutedEventArgs e)
+        {
+            await Task.Run(() =>
+            {
+                Window.ViewModel.AppHost?.Resume();
+            });
+        }
+
+        public async void OpenSettings(object sender, RoutedEventArgs e)
+        {
+            Window.SettingsWindow = new(Window.VirtualFileSystem, Window.ContentManager);
+
+            await Window.SettingsWindow.ShowDialog(Window);
+
+            ViewModel.LoadConfigurableHotKeys();
+        }
+
+        public void OpenMiiApplet(object sender, RoutedEventArgs e)
+        {
+            string contentPath = ViewModel.ContentManager.GetInstalledContentPath(0x0100000000001009, StorageId.BuiltInSystem, NcaContentType.Program);
+
+            if (!string.IsNullOrEmpty(contentPath))
+            {
+                ViewModel.LoadApplication(contentPath, false, "Mii Applet");
             }
         }
-    }
 
-    public async void OpenCheatManagerForCurrentApp(object sender, RoutedEventArgs e)
-    {
-        if (!ViewModel.IsGameRunning)
+        public async void OpenAmiiboWindow(object sender, RoutedEventArgs e)
         {
-            return;
+            if (!ViewModel.IsAmiiboRequested)
+            {
+                return;
+            }
+
+            if (ViewModel.AppHost.Device.System.SearchingForAmiibo(out int deviceId))
+            {
+                string titleId = ViewModel.AppHost.Device.Application.TitleIdText.ToUpper();
+                AmiiboWindow window = new(ViewModel.ShowAll, ViewModel.LastScannedAmiiboId, titleId);
+
+                await window.ShowDialog(Window);
+
+                if (window.IsScanned)
+                {
+                    ViewModel.ShowAll = window.ViewModel.ShowAllAmiibo;
+                    ViewModel.LastScannedAmiiboId = window.ScannedAmiibo.GetId();
+
+                    ViewModel.AppHost.Device.System.ScanAmiibo(deviceId, ViewModel.LastScannedAmiiboId, window.ViewModel.UseRandomUuid);
+                }
+            }
         }
 
-        ApplicationLoader application = ViewModel.AppHost.Device.Application;
-        if (application != null)
+        public async void OpenCheatManagerForCurrentApp(object sender, RoutedEventArgs e)
         {
-            await new CheatWindow(Window.VirtualFileSystem, application.TitleIdText, application.TitleName).ShowDialog(Window);
+            if (!ViewModel.IsGameRunning)
+            {
+                return;
+            }
 
-            ViewModel.AppHost.Device.EnableCheats();
+            ApplicationLoader application = ViewModel.AppHost.Device.Application;
+            if (application != null)
+            {
+                await new CheatWindow(Window.VirtualFileSystem, application.TitleIdText, application.TitleName).ShowDialog(Window);
+
+                ViewModel.AppHost.Device.EnableCheats();
+            }
         }
-    }
 
-    private void ScanAmiiboMenuItem_AttachedToVisualTree(object sender, VisualTreeAttachmentEventArgs e)
-    {
-        if (sender is MenuItem)
+        private void ScanAmiiboMenuItem_AttachedToVisualTree(object sender, VisualTreeAttachmentEventArgs e)
         {
-            ViewModel.IsAmiiboRequested = Window.ViewModel.AppHost.Device.System.SearchingForAmiibo(out _);
+            if (sender is MenuItem)
+            {
+                ViewModel.IsAmiiboRequested = Window.ViewModel.AppHost.Device.System.SearchingForAmiibo(out _);
+            }
         }
-    }
 
-    public async void CheckForUpdates(object sender, RoutedEventArgs e)
-    {
-        if (Updater.CanUpdate(true, Window))
+        public async void CheckForUpdates(object sender, RoutedEventArgs e)
         {
-            await Updater.BeginParse(Window, true);
+            if (Updater.CanUpdate(true, Window))
+            {
+                await Updater.BeginParse(Window, true);
+            }
         }
-    }
 
-    public async void OpenAboutWindow(object sender, RoutedEventArgs e)
-    {
-        await new AboutWindow().ShowDialog(Window);
-    }
+        public async void OpenAboutWindow(object sender, RoutedEventArgs e)
+        {
+            await new AboutWindow().ShowDialog(Window);
+        }
 
-    public void CloseWindow(object sender, RoutedEventArgs e)
-    {
-        Window.Close();
+        public void CloseWindow(object sender, RoutedEventArgs e)
+        {
+            Window.Close();
+        }
     }
 }
