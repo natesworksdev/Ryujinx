@@ -25,7 +25,7 @@
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.4.1" />
     <PackageVersion Include="MsgPack.Cli" Version="1.0.1" />
     <PackageVersion Include="NUnit" Version="3.13.3" />
-    <PackageVersion Include="NUnit3TestAdapter" Version="3.17.0" />
+    <PackageVersion Include="NUnit3TestAdapter" Version="4.1.0" />
     <PackageVersion Include="OpenTK.Core" Version="4.7.5" />
     <PackageVersion Include="OpenTK.Graphics" Version="4.7.5" />
     <PackageVersion Include="OpenTK.OpenAL" Version="4.7.5" />
@@ -50,5 +50,7 @@
     <PackageVersion Include="System.Net.NameResolution" Version="4.3.0" />
     <PackageVersion Include="System.Threading.ThreadPool" Version="4.3.0" />
     <PackageVersion Include="XamlNameReferenceGenerator" Version="1.5.1" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3"/>
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
   </ItemGroup>
 </Project>
