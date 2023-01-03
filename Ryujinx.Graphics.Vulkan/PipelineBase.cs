@@ -1316,7 +1316,8 @@ namespace Ryujinx.Graphics.Vulkan
                     {
                         // Check each binding for a duplicate binding before it.
 
-                        if (colors[i] == colors[j]) {
+                        if (colors[i] == colors[j])
+                        {
                             // Prefer the binding with no write mask.
                             ref var vkBlend2 = ref _newState.Internal.ColorBlendAttachmentState[j];
                             if (vkBlend.ColorWriteMask == 0)

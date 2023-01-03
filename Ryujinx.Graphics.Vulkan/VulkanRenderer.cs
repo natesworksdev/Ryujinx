@@ -231,6 +231,7 @@ namespace Ryujinx.Graphics.Vulkan
             Api.GetPhysicalDeviceFeatures2(_physicalDevice, &features2);
 
             var portabilityFlags = PortabilitySubsetFlags.None;
+
             if (usePortability)
             {
                 portabilityFlags |= propertiesPortabilitySubset.MinVertexInputBindingStrideAlignment > 1 ? PortabilitySubsetFlags.VertexBufferAlignment4B : 0;
