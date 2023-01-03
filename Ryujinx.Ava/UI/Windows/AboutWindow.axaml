@@ -79,18 +79,20 @@
 	                LineHeight="12" />
 				<TextBlock
 	                HorizontalAlignment="Center"
-	                MaxLines="2"
+	                Width="200"
 	                Text="{locale:Locale AboutDisclaimerMessage}"
 	                TextAlignment="Center"
+	                TextWrapping="Wrap"
 	                FontSize="10"
 	                LineHeight="12" />
 				<TextBlock
 	                Name="AmiiboLabel"
 	                HorizontalAlignment="Center"
-	                MaxLines="2"
+	                Width="200"
 	                PointerPressed="AmiiboLabel_OnPointerPressed"
 	                Text="{locale:Locale AboutAmiiboDisclaimerMessage}"
 	                TextAlignment="Center"
+	                TextWrapping="Wrap"
 	                FontSize="10"
 	                LineHeight="12" />
 				<StackPanel
