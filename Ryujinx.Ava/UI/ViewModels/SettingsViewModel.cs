@@ -70,12 +70,14 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     async void Action()
                     {
-                        await ContentDialogHelper.CreateInfoDialog(
-                            LocaleManager.Instance["DialogSettingsBackendThreadingWarningMessage"], 
-                            "", 
-                            "", 
-                            LocaleManager.Instance["InputDialogOk"], 
-                            LocaleManager.Instance["DialogSettingsBackendThreadingWarningTitle"]);
+                        Dispatcher.UIThread.Post(async () =>
+                        {
+                            await ContentDialogHelper.CreateInfoDialog(LocaleManager.Instance[LocaleKeys.DialogSettingsBackendThreadingWarningMessage],
+                                                                       "",
+                                                                       "",
+                                                                       LocaleManager.Instance[LocaleKeys.InputDialogOk],
+                                                                       LocaleManager.Instance[LocaleKeys.DialogSettingsBackendThreadingWarningTitle]);
+                        });
                     }
 
                     Dispatcher.UIThread.Post(Action);
