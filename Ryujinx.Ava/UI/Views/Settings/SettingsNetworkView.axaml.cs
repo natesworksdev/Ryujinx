@@ -1,11 +1,12 @@
 ﻿using Avalonia.Controls;
 
-namespace Ryujinx.Ava.UI.Views.Settings;
-
-public partial class SettingsNetworkView : UserControl
+namespace Ryujinx.Ava.UI.Views.Settings
 {
-    public SettingsNetworkView()
+    public partial class SettingsNetworkView : UserControl
     {
-        InitializeComponent();
+        public SettingsNetworkView()
+        {
+            InitializeComponent();
+        }
     }
 }

@@ -1,16 +1,17 @@
 ﻿using Avalonia.Controls;
 
-namespace Ryujinx.Ava.UI.Views.Settings;
-
-public partial class SettingsInputView : UserControl
+namespace Ryujinx.Ava.UI.Views.Settings
 {
-    public SettingsInputView()
+    public partial class SettingsInputView : UserControl
     {
-        InitializeComponent();
-    }
+        public SettingsInputView()
+        {
+            InitializeComponent();
+        }
 
-    public void Dispose()
-    {
-        ControllerSettings.Dispose();
+        public void Dispose()
+        {
+            ControllerSettings.Dispose();
+        }
     }
 }
