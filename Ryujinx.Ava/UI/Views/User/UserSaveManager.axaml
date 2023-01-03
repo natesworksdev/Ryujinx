@@ -1,4 +1,4 @@
-<UserControl 
+<UserControl
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -8,8 +8,8 @@
     xmlns:helpers="clr-namespace:Ryujinx.Ava.UI.Helpers"
     xmlns:models="clr-namespace:Ryujinx.Ava.UI.Models"
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
-    mc:Ignorable="d" 
-    d:DesignWidth="800" 
+    mc:Ignorable="d"
+    d:DesignWidth="800"
     d:DesignHeight="450"
     Height="400"
     Width="550"
@@ -28,19 +28,19 @@
             <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <Grid 
-            Grid.Row="0" 
+        <Grid
+            Grid.Row="0"
             HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <StackPanel 
-                Spacing="10" 
-                Orientation="Horizontal" 
-                HorizontalAlignment="Left" 
+            <StackPanel
+                Spacing="10"
+                Orientation="Horizontal"
+                HorizontalAlignment="Left"
                 VerticalAlignment="Center">
-                <Button 
+                <Button
                     Height="30"
                     Width="50"
                     MinWidth="50"
@@ -51,7 +51,7 @@
                 <Label Content="{locale:Locale CommonSort}" VerticalAlignment="Center" />
                 <ComboBox SelectedIndex="{Binding SortIndex}" Width="100">
                     <ComboBoxItem>
-                        <Label 
+                        <Label
                             VerticalAlignment="Center"
                             HorizontalContentAlignment="Left"
                             Content="{locale:Locale Name}" />
@@ -65,45 +65,45 @@
                 </ComboBox>
                 <ComboBox SelectedIndex="{Binding OrderIndex}" Width="150">
                     <ComboBoxItem>
-                        <Label 
-                            VerticalAlignment="Center" 
+                        <Label
+                            VerticalAlignment="Center"
                             HorizontalContentAlignment="Left"
                             Content="{locale:Locale OrderAscending}" />
                     </ComboBoxItem>
                     <ComboBoxItem>
-                        <Label 
-                            VerticalAlignment="Center" 
+                        <Label
+                            VerticalAlignment="Center"
                             HorizontalContentAlignment="Left"
-                            Content="{locale:Locale Descending}" />
+                            Content="{locale:Locale OrderDescending}" />
                     </ComboBoxItem>
                 </ComboBox>
             </StackPanel>
-            <Grid 
-                Grid.Column="1" 
-                HorizontalAlignment="Stretch" 
+            <Grid
+                Grid.Column="1"
+                HorizontalAlignment="Stretch"
                 Margin="10,0, 0, 0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
                 <Label Content="{locale:Locale Search}" VerticalAlignment="Center" />
-                <TextBox 
-                    Margin="5,0,0,0" 
-                    Grid.Column="1" 
-                    HorizontalAlignment="Stretch" 
+                <TextBox
+                    Margin="5,0,0,0"
+                    Grid.Column="1"
+                    HorizontalAlignment="Stretch"
                     Text="{Binding Search}" />
             </Grid>
         </Grid>
-        <Border 
-            Grid.Row="1" 
-            Margin="0,5" 
-            BorderThickness="1" 
-            HorizontalAlignment="Stretch" 
+        <Border
+            Grid.Row="1"
+            Margin="0,5"
+            BorderThickness="1"
+            HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch">
-            <ListBox 
-                Name="SaveList" 
-                Items="{Binding Views}" 
-                HorizontalAlignment="Stretch" 
+            <ListBox
+                Name="SaveList"
+                Items="{Binding Views}"
+                HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch">
                 <ListBox.Styles>
                     <Style Selector="ListBoxItem">
@@ -120,64 +120,64 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" Orientation="Horizontal">
-                                <Border 
-                                    Height="42" 
-                                    Margin="2" 
-                                    Width="42" 
+                                <Border
+                                    Height="42"
+                                    Margin="2"
+                                    Width="42"
                                     Padding="10"
                                     IsVisible="{Binding !InGameList}">
-                                    <ui:SymbolIcon 
-                                        Symbol="Help" 
-                                        FontSize="30" 
+                                    <ui:SymbolIcon
+                                        Symbol="Help"
+                                        FontSize="30"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center" />
                                 </Border>
-                                <Image 
+                                <Image
                                     IsVisible="{Binding InGameList}"
                                     Width="42"
                                     Height="42"
                                     Source="{Binding Icon, Converter={StaticResource ByteImage}}" />
-                                <TextBlock 
+                                <TextBlock
                                     MaxLines="3"
-                                    Width="320" 
-                                    Margin="5" 
+                                    Width="320"
+                                    Margin="5"
                                     TextWrapping="Wrap"
-                                    Text="{Binding  Title}" 
+                                    Text="{Binding  Title}"
                                     VerticalAlignment="Center" />
                             </StackPanel>
-                            <StackPanel 
+                            <StackPanel
                                 Grid.Column="1"
-                                Spacing="10" 
+                                Spacing="10"
                                 HorizontalAlignment="Right"
                                 Orientation="Horizontal">
-                                <Label 
-                                    Content="{Binding SizeString}" 
+                                <Label
+                                    Content="{Binding SizeString}"
                                     IsVisible="{Binding SizeAvailable}"
-                                    VerticalAlignment="Center" 
-                                    HorizontalAlignment="Right" />
-                                <Button 
                                     VerticalAlignment="Center"
-                                    HorizontalAlignment="Right" 
+                                    HorizontalAlignment="Right" />
+                                <Button
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Right"
                                     Padding="10"
                                     MinWidth="0"
-                                    MinHeight="0" 
-                                    Name="OpenLocation" 
+                                    MinHeight="0"
+                                    Name="OpenLocation"
                                     Click="OpenLocation">
                                     <ui:SymbolIcon
-                                        Symbol="OpenFolder" 
+                                        Symbol="OpenFolder"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center" />
                                 </Button>
-                                <Button 
+                                <Button
                                     VerticalAlignment="Center"
-                                    HorizontalAlignment="Right" 
+                                    HorizontalAlignment="Right"
                                     Padding="10"
-                                    MinWidth="0" 
-                                    MinHeight="0" 
-                                    Name="Delete" 
+                                    MinWidth="0"
+                                    MinHeight="0"
+                                    Name="Delete"
                                     Click="Delete">
-                                    <ui:SymbolIcon 
-                                        Symbol="Delete" 
+                                    <ui:SymbolIcon
+                                        Symbol="Delete"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center" />
                                 </Button>

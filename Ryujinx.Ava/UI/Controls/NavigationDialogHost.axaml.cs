@@ -44,7 +44,7 @@ namespace Ryujinx.Ava.UI.Controls
             HorizonClient = horizonClient;
             ViewModel = new UserProfileViewModel();
             LoadProfiles();
-            
+
             if (contentManager.GetCurrentFirmwareVersion() != null)
             {
                 Task.Run(() =>
@@ -94,7 +94,7 @@ namespace Ryujinx.Ava.UI.Controls
 
             Style closeButtonParent = new(x => x.Name("CommandSpace"));
             closeButtonParent.Setters.Add(new Setter(HorizontalAlignmentProperty, Avalonia.Layout.HorizontalAlignment.Right));
-            
+
             contentDialog.Styles.Add(closeButton);
             contentDialog.Styles.Add(closeButtonParent);
 
@@ -107,7 +107,7 @@ namespace Ryujinx.Ava.UI.Controls
 
             Navigate(typeof(UserSelector), this);
         }
-        
+
         public void LoadProfiles()
         {
             ViewModel.Profiles.Clear();
@@ -167,7 +167,7 @@ namespace Ryujinx.Ava.UI.Controls
             {
                 ViewModel.LostProfiles.Add(new UserProfile(new HLE.HOS.Services.Account.Acc.UserProfile(account, "", null), this));
             }
-            
+
             ViewModel.Profiles.Add(new AddModel());
         }
 
@@ -184,7 +184,7 @@ namespace Ryujinx.Ava.UI.Controls
                 {
                     async void Action()
                     {
-                        await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance["DialogUserProfileDeletionWarningMessage"]);
+                        await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogUserProfileDeletionWarningMessage]);
                     }
 
                     Dispatcher.UIThread.Post(Action);
@@ -196,23 +196,23 @@ namespace Ryujinx.Ava.UI.Controls
             }
 
             var result =
-                await ContentDialogHelper.CreateConfirmationDialog(LocaleManager.Instance["DialogUserProfileDeletionConfirmMessage"], "",
-                    LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"], "");
+                await ContentDialogHelper.CreateConfirmationDialog(LocaleManager.Instance[LocaleKeys.DialogUserProfileDeletionConfirmMessage], "",
+                    LocaleManager.Instance[LocaleKeys.InputDialogYes], LocaleManager.Instance[LocaleKeys.InputDialogNo], "");
 
             if (result == UserResult.Yes)
             {
                 GoBack();
                 AccountManager.DeleteUser(userProfile.UserId);
             }
-            
+
             LoadProfiles();
         }
-        
+
         public void AddUser()
         {
             Navigate(typeof(UserEditor), (this, (UserProfile)null, true));
         }
-        
+
         public void EditUser(UserProfile userProfile)
         {
             Navigate(typeof(UserEditor), (this, userProfile, false));
@@ -222,7 +222,7 @@ namespace Ryujinx.Ava.UI.Controls
         {
             Navigate(typeof(UserRecoverer), this);
         }
-        
+
         public void ManageSaves()
         {
             Navigate(typeof(UserSaveManager), (this, AccountManager, HorizonClient, VirtualFileSystem));

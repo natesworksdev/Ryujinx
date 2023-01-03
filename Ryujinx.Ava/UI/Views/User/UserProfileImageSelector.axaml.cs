@@ -20,9 +20,9 @@ namespace Ryujinx.Ava.UI.Views.User
         private ContentManager _contentManager;
         private NavigationDialogHost _parent;
         private TempProfile _profile;
-        
+
         internal UserProfileImageSelectorViewModel ViewModel { get; private set; }
-        
+
         public UserProfileImageSelector()
         {
             InitializeComponent();
@@ -47,7 +47,7 @@ namespace Ryujinx.Ava.UI.Views.User
                             DataContext = ViewModel = new UserProfileImageSelectorViewModel();
                             ViewModel.FirmwareFound = _contentManager.GetCurrentFirmwareVersion() != null;
                         }
-                        
+
                         break;
                     case NavigationMode.Back:
                         _parent.GoBack();
@@ -61,7 +61,7 @@ namespace Ryujinx.Ava.UI.Views.User
             OpenFileDialog dialog = new();
             dialog.Filters.Add(new FileDialogFilter
             {
-                Name = LocaleManager.Instance["AllSupportedFormats"],
+                Name = LocaleManager.Instance[LocaleKeys.AllSupportedFormats],
                 Extensions = { "jpg", "jpeg", "png", "bmp" }
             });
             dialog.Filters.Add(new FileDialogFilter { Name = "JPEG", Extensions = { "jpg", "jpeg" } });
