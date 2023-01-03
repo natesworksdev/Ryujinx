@@ -169,7 +169,10 @@ namespace Ryujinx.Graphics.Vulkan
                 properties2.PNext = &propertiesTransformFeedback;
             }
 
-            Api.GetPhysicalDeviceProperties2(_physicalDevice, &properties2);
+            PhysicalDevicePortabilitySubsetPropertiesKHR propertiesPortabilitySubset = new PhysicalDevicePortabilitySubsetPropertiesKHR()
+            {
+                SType = StructureType.PhysicalDevicePortabilitySubsetPropertiesKhr
+            };
 
             PhysicalDeviceFeatures2 features2 = new PhysicalDeviceFeatures2()
             {
@@ -191,6 +194,11 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PhysicalDeviceCustomBorderColorFeaturesExt
             };
 
+            PhysicalDevicePortabilitySubsetFeaturesKHR featuresPortabilitySubset = new PhysicalDevicePortabilitySubsetFeaturesKHR()
+            {
+                SType = StructureType.PhysicalDevicePortabilitySubsetFeaturesKhr
+            };
+
             if (supportedExtensions.Contains("VK_EXT_robustness2"))
             {
                 features2.PNext = &featuresRobustness2;
@@ -208,7 +216,29 @@ namespace Ryujinx.Graphics.Vulkan
                 features2.PNext = &featuresCustomBorderColor;
             }
 
+            bool usePortability = supportedExtensions.Contains("VK_KHR_portability_subset");
+
+            if (usePortability)
+            {
+                propertiesPortabilitySubset.PNext = properties2.PNext;
+                properties2.PNext = &propertiesPortabilitySubset;
+
+                featuresPortabilitySubset.PNext = features2.PNext;
+                features2.PNext = &featuresPortabilitySubset;
+            }
+
+            Api.GetPhysicalDeviceProperties2(_physicalDevice, &properties2);
             Api.GetPhysicalDeviceFeatures2(_physicalDevice, &features2);
+
+            var portabilityFlags = PortabilitySubsetFlags.None;
+            if (usePortability)
+            {
+                portabilityFlags |= propertiesPortabilitySubset.MinVertexInputBindingStrideAlignment > 1 ? PortabilitySubsetFlags.VertexBufferAlignment4B : 0;
+                portabilityFlags |= featuresPortabilitySubset.TriangleFans ? 0 : PortabilitySubsetFlags.NoTriangleFans;
+                portabilityFlags |= featuresPortabilitySubset.PointPolygons ? 0 : PortabilitySubsetFlags.NoPointMode;
+                portabilityFlags |= featuresPortabilitySubset.ImageView2DOn3DImage ? 0 : PortabilitySubsetFlags.No3DImageView;
+                portabilityFlags |= featuresPortabilitySubset.SamplerMipLodBias ? 0 : PortabilitySubsetFlags.NoLodBias;
+            }
 
             // Any device running on MacOS is using MoltenVK, even Intel and AMD vendors.
             IsMoltenVk = OperatingSystem.IsMacOS();
@@ -244,7 +274,7 @@ namespace Ryujinx.Graphics.Vulkan
                 propertiesSubgroupSizeControl.MaxSubgroupSize,
                 propertiesSubgroupSizeControl.RequiredSubgroupSizeStages,
                 supportedSampleCounts,
-                IsMoltenVk ? PortabilitySubsetFlags.MoltenVK : PortabilitySubsetFlags.None);
+                portabilityFlags);
 
             MemoryAllocator = new MemoryAllocator(Api, _device, properties.Limits.MaxMemoryAllocationCount);
 

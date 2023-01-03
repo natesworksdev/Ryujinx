@@ -12,10 +12,9 @@ namespace Ryujinx.Graphics.Vulkan
         NoTriangleFans = 1 << 1,
         NoPointMode = 1 << 2,
         No3DImageView = 1 << 3,
-        NoCompressedView = 1 << 4,
-        NoLodBias = 1 << 5,
+        NoLodBias = 1 << 4,
 
-        MoltenVK = VertexBufferAlignment4B | NoTriangleFans | NoPointMode | No3DImageView | NoCompressedView | NoLodBias
+        MoltenVK = VertexBufferAlignment4B | NoTriangleFans | NoPointMode | No3DImageView | NoLodBias
     }
 
     readonly struct HardwareCapabilities
