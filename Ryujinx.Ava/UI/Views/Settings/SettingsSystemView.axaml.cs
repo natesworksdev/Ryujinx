@@ -41,9 +41,8 @@ public partial class SettingsSystemView : UserControl
 
     private void TimeZoneBox_OnTextChanged(object sender, EventArgs e)
     {
-        if (sender is AutoCompleteBox box)
+        if (sender is AutoCompleteBox box && box.SelectedItem is TimeZone timeZone)
         {
-            if (box.SelectedItem != null && box.SelectedItem is TimeZone timeZone)
             {
                 ViewModel.ValidateAndSetTimeZone(timeZone.Location);
             }
