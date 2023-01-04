@@ -46,7 +46,7 @@
             <ListBox.Styles>
                 <Style Selector="ListBoxItem">
                     <Setter Property="Margin" Value="5 5 0 5" />
-                    <Setter Property="CornerRadius" Value="4" />
+                    <Setter Property="CornerRadius" Value="5" />
                 </Style>
                 <Style Selector="Border#SelectionIndicator">
                     <Setter Property="Opacity" Value="0" />
@@ -85,19 +85,20 @@
                             </StackPanel>
                         </Border>
                         <Border
-                            Height="30"
-                            Width="30"
-                            CornerRadius="15"
+                            Margin="2"
+                            Height="24"
+                            Width="24"
+                            CornerRadius="12"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Top"
                             Background="{DynamicResource ThemeContentBackgroundColor}"
                             IsVisible="{Binding IsPointerOver}">
                             <Button
-                                MaxHeight="30"
-                                MaxWidth="30"
-                                MinHeight="30"
-                                MinWidth="30"
-                                CornerRadius="15"
+                                MaxHeight="24"
+                                MaxWidth="24"
+                                MinHeight="24"
+                                MinWidth="24"
+                                CornerRadius="12"
                                 Padding="0"
                                 Click="EditUser">
                                 <ui:SymbolIcon Symbol="Edit" />
