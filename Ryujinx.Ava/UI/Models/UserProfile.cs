@@ -1,3 +1,4 @@
+using Avalonia.Media;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Views.User;
@@ -15,6 +16,7 @@ namespace Ryujinx.Ava.UI.Models
         private string _name;
         private UserId _userId;
         private bool _isPointerOver;
+        private IBrush _backgroundColor;
         public uint MaxProfileNameLength => 0x20;
 
         public byte[] Image
@@ -57,6 +59,16 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
+        public IBrush BackgroundColor
+        {
+            get => _backgroundColor;
+            set
+            {
+                _backgroundColor = value;
+                OnPropertyChanged();
+            }
+        }
+
         public UserProfile(Profile profile, NavigationDialogHost owner)
         {
             _profile = profile;
@@ -67,11 +79,16 @@ namespace Ryujinx.Ava.UI.Models
             UserId = profile.UserId;
         }
 
-        public bool IsOpened => _profile.AccountState == AccountState.Open;
-
         public void UpdateState()
         {
-            OnPropertyChanged(nameof(IsOpened));
+            Avalonia.Application.Current.Styles.TryGetResource("ControlFillColorSecondary", out object color);
+
+            if (color is not null)
+            {
+                BackgroundColor = _profile.AccountState == AccountState.Open
+                    ? new SolidColorBrush((Color)color)
+                    : Brushes.Transparent;
+            }
             OnPropertyChanged(nameof(Name));
         }
 
