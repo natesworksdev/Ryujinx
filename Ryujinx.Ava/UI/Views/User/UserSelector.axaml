@@ -75,7 +75,7 @@
                                     Source="{Binding Image, Converter={StaticResource ByteImage}}" />
                                 <TextBlock
                                     HorizontalAlignment="Stretch"
-                                    MaxWidth="96"
+                                    MaxWidth="90"
                                     Text="{Binding Name}"
                                     TextAlignment="Center"
                                     TextWrapping="Wrap"
@@ -108,8 +108,8 @@
                 <DataTemplate
                     DataType="models:AddModel">
                     <Panel
-                        Height="131"
-                        Width="110">
+                        Height="118"
+                        Width="96">
                         <Button
                             MinWidth="50"
                             MinHeight="50"
