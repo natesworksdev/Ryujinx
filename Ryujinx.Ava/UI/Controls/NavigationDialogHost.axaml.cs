@@ -113,23 +113,11 @@ namespace Ryujinx.Ava.UI.Controls
             ViewModel.Profiles.Clear();
             ViewModel.LostProfiles.Clear();
 
-            var profiles = AccountManager.GetAllUsers().OrderByDescending(x => x.AccountState == AccountState.Open);
+            var profiles = AccountManager.GetAllUsers();
 
             foreach (var profile in profiles)
             {
                 ViewModel.Profiles.Add(new UserProfile(profile, this));
-            }
-
-            ViewModel.SelectedProfile = ViewModel.Profiles.Cast<UserProfile>().FirstOrDefault(x => x.UserId == AccountManager.LastOpenedUser.UserId);
-
-            if (ViewModel.SelectedProfile == null)
-            {
-                ViewModel.SelectedProfile = (UserProfile)ViewModel.Profiles.First();
-
-                if (ViewModel.SelectedProfile != null)
-                {
-                    AccountManager.OpenUser(ViewModel.SelectedProfile.UserId);
-                }
             }
 
             var saveDataFilter = SaveDataFilter.Make(programId: default, saveType: SaveDataType.Account,

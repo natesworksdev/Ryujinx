@@ -44,18 +44,18 @@ namespace Ryujinx.Ava.UI.Views.User
         private void Grid_PointerEntered(object sender, PointerEventArgs e)
         {
             if (sender is Grid grid)
-            { 
+            {
                 if (grid.DataContext is UserProfile profile)
                 {
                     profile.IsPointerOver = true;
                 }
             }
         }
-        
+
         private void Grid_OnPointerExited(object sender, PointerEventArgs e)
         {
             if (sender is Grid grid)
-            { 
+            {
                 if (grid.DataContext is UserProfile profile)
                 {
                     profile.IsPointerOver = false;
@@ -73,10 +73,8 @@ namespace Ryujinx.Ava.UI.Views.User
                 {
                     if (ViewModel.Profiles[selectedIndex] is UserProfile userProfile)
                     {
-                        ViewModel.SelectedProfile = userProfile;
+                        _parent?.AccountManager?.OpenUser(userProfile.UserId);
 
-                        _parent?.AccountManager?.OpenUser(ViewModel.SelectedProfile.UserId);
-                        
                         foreach (BaseModel profile in ViewModel.Profiles)
                         {
                             if (profile is UserProfile uProfile)
@@ -104,7 +102,7 @@ namespace Ryujinx.Ava.UI.Views.User
                 }
             }
         }
-        
+
         private void ManageSaves(object sender, RoutedEventArgs e)
         {
             _parent.ManageSaves();
