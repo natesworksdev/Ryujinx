@@ -131,8 +131,8 @@ namespace Ryujinx.Headless.SDL2
 
         // Logging
 
-        [Option("enable-file-logging", Required = false, Default = false, HelpText = "Enables logging to a file on disk.")]
-        public bool EnableFileLog { get; set; }
+        [Option("disable-file-logging", Required = false, Default = false, HelpText = "Disables logging to a file on disk.")]
+        public bool DisableFileLog { get; set; }
 
         [Option("enable-debug-logs", Required = false, Default = false, HelpText = "Enables printing debug log messages.")]
         public bool LoggingEnableDebug { get; set; }

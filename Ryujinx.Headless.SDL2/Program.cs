@@ -413,7 +413,7 @@ namespace Ryujinx.Headless.SDL2
             Logger.SetEnable(LogLevel.Guest, !option.LoggingDisableGuest);
             Logger.SetEnable(LogLevel.AccessLog, option.LoggingEnableFsAccessLog);
 
-            if (option.EnableFileLog)
+            if (!option.DisableFileLog)
             {
                 Logger.AddTarget(new AsyncLogTargetWrapper(
                     new FileLogTarget(ReleaseInformations.GetBaseApplicationDirectory(), "file"),
