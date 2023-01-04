@@ -1182,10 +1182,14 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    VsyncColor = new SolidColorBrush(
-                        (Color)Avalonia.Application.Current.Styles.Resources[args.VSyncEnabled ?
-                                "VsyncEnabled" :
-                                "VsyncDisabled"]);
+                    Avalonia.Application.Current.Styles.TryGetResource(args.VSyncEnabled
+                        ? "VsyncEnabled"
+                        : "VsyncDisabled", out object color);
+
+                    if (color is not null)
+                    {
+                        VsyncColor = new SolidColorBrush((Color)color);
+                    }
 
                     DockedStatusText = args.DockedMode;
                     AspectRatioStatusText = args.AspectRatio;
