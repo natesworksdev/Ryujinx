@@ -1,4 +1,3 @@
-using ARMeilleure.Translation.PTC;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
@@ -18,6 +17,7 @@ using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
+using Ryujinx.Cpu;
 using Ryujinx.HLE;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
@@ -148,9 +148,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             SwitchToGameControl = switchToGameControl;
             SetMainContent = setMainContent;
             TopLevel = topLevel;
-
-            Ptc.PtcStateChanged -= ProgressHandler;
-            Ptc.PtcStateChanged += ProgressHandler;
         }
 
 #region Properties
@@ -1054,16 +1051,16 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 switch (state)
                 {
-                    case PtcLoadingState ptcState:
+                    case LoadState ptcState:
                         CacheLoadStatus = $"{current} / {total}";
                         switch (ptcState)
                         {
-                            case PtcLoadingState.Start:
-                            case PtcLoadingState.Loading:
+                            case LoadState.Unloaded:
+                            case LoadState.Loading:
                                 LoadHeading = LocaleManager.Instance[LocaleKeys.CompilingPPTC];
                                 IsLoadingIndeterminate = false;
                                 break;
-                            case PtcLoadingState.Loaded:
+                            case LoadState.Loaded:
                                 LoadHeading = string.Format(LocaleManager.Instance[LocaleKeys.LoadingHeading], TitleName);
                                 IsLoadingIndeterminate = true;
                                 CacheLoadStatus = "";
@@ -1215,8 +1212,14 @@ namespace Ryujinx.Ava.UI.ViewModels
 
 #region PublicMethods
 
-        public void HandleShaderProgress(Switch emulationContext)
+        public void SetUIProgressHandlers(Switch emulationContext)
         {
+            if (emulationContext.Application.DiskCacheLoadState != null)
+            {
+                emulationContext.Application.DiskCacheLoadState.StateChanged -= ProgressHandler;
+                emulationContext.Application.DiskCacheLoadState.StateChanged += ProgressHandler;
+            }
+
             emulationContext.Gpu.ShaderCacheStateChanged -= ProgressHandler;
             emulationContext.Gpu.ShaderCacheStateChanged += ProgressHandler;
         }

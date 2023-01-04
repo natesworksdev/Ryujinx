@@ -1,5 +1,4 @@
 ﻿using ARMeilleure.Translation;
-using ARMeilleure.Translation.PTC;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
@@ -288,7 +287,7 @@ namespace Ryujinx.Ava
                 _viewModel.Title = $"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}";
             });
 
-            _viewModel.HandleShaderProgress(Device);
+            _viewModel.SetUIProgressHandlers(Device);
 
             Renderer.SizeChanged += Window_SizeChanged;
 
@@ -365,8 +364,6 @@ namespace Ryujinx.Ava
 
             DisplaySleep.Restore();
 
-            Ptc.Close();
-            PtcProfiler.Stop();
             NpadManager.Dispose();
             TouchScreenManager.Dispose();
             Device.Dispose();
@@ -968,7 +965,7 @@ namespace Ryujinx.Ava
 
                     if (_keyboardInterface.GetKeyboardStateSnapshot().IsPressed(Key.Delete) && _viewModel.WindowState != WindowState.FullScreen)
                     {
-                        Ptc.Continue();
+                        Device.Application.DiskCacheLoadState?.Cancel();
                     }
                 });
             }
