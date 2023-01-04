@@ -74,12 +74,20 @@ namespace Ryujinx.Ava.UI.Models
             _profile = profile;
             _owner = owner;
 
+            UpdateBackground();
+
             Image = profile.Image;
             Name = profile.Name;
             UserId = profile.UserId;
         }
 
         public void UpdateState()
+        {
+            UpdateBackground();
+            OnPropertyChanged(nameof(Name));
+        }
+
+        private void UpdateBackground()
         {
             Avalonia.Application.Current.Styles.TryGetResource("ControlFillColorSecondary", out object color);
 
@@ -89,7 +97,6 @@ namespace Ryujinx.Ava.UI.Models
                     ? new SolidColorBrush((Color)color)
                     : Brushes.Transparent;
             }
-            OnPropertyChanged(nameof(Name));
         }
 
         public void Recover(UserProfile userProfile)
