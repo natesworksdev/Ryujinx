@@ -602,7 +602,7 @@
   "UserProfilesManageSaves": "Manage Saves",
   "DeleteUserSave": "Do you want to delete user save for this game?",
   "IrreversibleActionNote": "This action is not reversible.",
-  "SaveManagerHeading": "Manage Saves for {0}",
+  "SaveManagerHeading": "Manage Saves for {0} ({1})",
   "SaveManagerTitle": "Save Manager",
   "Name": "Name",
   "Size": "Size",

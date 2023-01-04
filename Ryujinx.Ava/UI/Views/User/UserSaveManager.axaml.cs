@@ -22,7 +22,7 @@ namespace Ryujinx.Ava.UI.Views.User
     public partial class UserSaveManager : UserControl
     {
         internal UserSaveManagerViewModel ViewModel { get; private set; }
-        
+
         private AccountManager _accountManager;
         private HorizonClient _horizonClient;
         private VirtualFileSystem _virtualFileSystem;
@@ -55,7 +55,7 @@ namespace Ryujinx.Ava.UI.Views.User
                         break;
                 }
 
-                DataContext = ViewModel = new UserSaveManagerViewModel();
+                DataContext = ViewModel = new UserSaveManagerViewModel(_accountManager);
                 Task.Run(LoadSaves);
             }
         }
@@ -93,14 +93,14 @@ namespace Ryujinx.Ava.UI.Views.User
                     }
                 }
             }
-            
+
             Dispatcher.UIThread.Post(() =>
             {
                 ViewModel.Saves = saves;
                 ViewModel.Sort();
             });
         }
-        
+
         private void GoBack(object sender, RoutedEventArgs e)
         {
             _parent?.GoBack();
@@ -120,6 +120,11 @@ namespace Ryujinx.Ava.UI.Views.User
             {
                 (button.DataContext as SaveModel).Delete();
             }
+        }
+
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            _parent?.GoBack();
         }
     }
 }

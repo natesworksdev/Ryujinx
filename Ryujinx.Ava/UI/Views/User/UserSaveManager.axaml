@@ -9,7 +9,7 @@
     xmlns:models="clr-namespace:Ryujinx.Ava.UI.Models"
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     mc:Ignorable="d"
-    d:DesignWidth="800"
+    d:DesignWidth="600"
     d:DesignHeight="450"
     Height="400"
     Width="550"
@@ -26,10 +26,18 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Grid
+        <TextBlock
             Grid.Row="0"
+            Padding="0"
+            Margin="0 0 0 5"
+            TextWrapping="Wrap"
+            Text="{Binding SaveManagerHeading}" />
+        <Grid
+            Grid.Row="1"
             HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -40,14 +48,6 @@
                 Orientation="Horizontal"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center">
-                <Button
-                    Height="30"
-                    Width="50"
-                    MinWidth="50"
-                    HorizontalAlignment="Left"
-                    Click="GoBack">
-                    <ui:SymbolIcon Symbol="Back"/>
-                </Button>
                 <Label Content="{locale:Locale CommonSort}" VerticalAlignment="Center" />
                 <ComboBox SelectedIndex="{Binding SortIndex}" Width="100">
                     <ComboBoxItem>
@@ -95,7 +95,7 @@
             </Grid>
         </Grid>
         <Border
-            Grid.Row="1"
+            Grid.Row="2"
             Margin="0,5"
             BorderThickness="1"
             HorizontalAlignment="Stretch"
@@ -187,5 +187,17 @@
                 </ListBox.ItemTemplate>
             </ListBox>
         </Border>
+        <StackPanel
+            Grid.Row="3"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal"
+            Margin="0 10 0 0"
+            Spacing="10">
+            <Button
+                Name="CloseButton"
+                HorizontalAlignment="Right"
+                Click="CloseButton_Click"
+                Content="{locale:Locale Cancel}" />
+        </StackPanel>
     </Grid>
 </UserControl>
