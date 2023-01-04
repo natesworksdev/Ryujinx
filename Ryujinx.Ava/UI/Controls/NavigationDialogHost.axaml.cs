@@ -113,7 +113,7 @@ namespace Ryujinx.Ava.UI.Controls
             ViewModel.Profiles.Clear();
             ViewModel.LostProfiles.Clear();
 
-            var profiles = AccountManager.GetAllUsers();
+            var profiles = AccountManager.GetAllUsers().OrderBy(x => x.Name);
 
             foreach (var profile in profiles)
             {
