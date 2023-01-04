@@ -28,6 +28,7 @@ namespace Ryujinx.Horizon.Sdk.OsTypes
             lock (_event.EventLock)
             {
                 _node = _event.MultiWaitHolders.AddLast(this);
+
                 return _event.IsSignaledThreadUnsafe();
             }
         }

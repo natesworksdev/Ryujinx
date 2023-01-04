@@ -350,8 +350,7 @@ namespace Ryujinx.HLE.HOS
 
                 // TODO:
                 // - Pass enough information (capabilities, process creation info, etc) on ServiceEntry for proper initialization.
-                // - Have the ThreadStart function take the syscall, address space and thread context parameters instead of passing
-                //   them here.
+                // - Have the ThreadStart function take the syscall, address space and thread context parameters instead of passing them here.
                 KernelStatic.StartInitialProcess(KernelContext, creationInfo, defaultCapabilities, 44, () =>
                 {
                     service.Start(KernelContext.Syscall, KernelStatic.GetCurrentProcess().CpuMemory, KernelStatic.GetCurrentThread().ThreadContext);
