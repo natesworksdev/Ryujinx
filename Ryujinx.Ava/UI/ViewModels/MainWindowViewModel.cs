@@ -708,6 +708,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(GridSizeScale));
+                OnPropertyChanged(nameof(GridItemSelectorSize));
 
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             }
@@ -756,11 +757,11 @@ namespace Ryujinx.Ava.UI.ViewModels
                     case 1:
                         return 120;
                     case 2:
-                        return 150;
+                        return ShowNames ? 210 : 150;
                     case 3:
-                        return 180;
+                        return ShowNames ? 240 : 180;
                     case 4:
-                        return 220;
+                        return ShowNames ? 280 : 220;
                     default:
                         return 16;
                 }
