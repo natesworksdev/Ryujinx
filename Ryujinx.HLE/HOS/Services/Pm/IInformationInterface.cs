@@ -1,8 +1,23 @@
-﻿namespace Ryujinx.HLE.HOS.Services.Pm
+﻿using Ryujinx.HLE.HOS.Kernel;
+
+namespace Ryujinx.HLE.HOS.Services.Pm
 {
     [Service("pm:info")]
     class IInformationInterface : IpcService
     {
         public IInformationInterface(ServiceCtx context) { }
+
+        [CommandHipc(0)]
+        // GetTitleId(unknown<8>) -> unknown<8>
+        public ResultCode GetTitleId(ServiceCtx context)
+        {
+            ulong pid = context.RequestData.ReadUInt64();
+
+            var process = KernelStatic.GetProcessByPid(pid);
+
+            context.ResponseData.Write(process.TitleId);
+
+            return ResultCode.Success;
+        }
     }
 }
