@@ -85,7 +85,7 @@ namespace Ryujinx.Ava.UI.Views.User
             }
         }
 
-        private void Cancel_OnClick(object sender, RoutedEventArgs e)
+        private void GoBack(object sender, RoutedEventArgs e)
         {
             _parent.GoBack();
         }
