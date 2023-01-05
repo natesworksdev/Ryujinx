@@ -43,10 +43,11 @@ namespace Ryujinx.Ava.UI.Views.User
                         TempProfile = new TempProfile(_profile);
 
                         _parent = args.parent;
-                        ((ContentDialog)_parent.Parent).Title = $"{LocaleManager.Instance[LocaleKeys.UserProfileWindowTitle]} - " +
-                                                                $"{ (_isNewUser ? LocaleManager.Instance[LocaleKeys.UserEditorTitleCreate] : LocaleManager.Instance[LocaleKeys.UserEditorTitle])}";
                         break;
                 }
+
+                ((ContentDialog)_parent.Parent).Title = $"{LocaleManager.Instance[LocaleKeys.UserProfileWindowTitle]} - " +
+                                                        $"{ (_isNewUser ? LocaleManager.Instance[LocaleKeys.UserEditorTitleCreate] : LocaleManager.Instance[LocaleKeys.UserEditorTitle])}";
 
                 DataContext = TempProfile;
 
