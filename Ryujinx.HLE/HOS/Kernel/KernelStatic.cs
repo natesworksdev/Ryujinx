@@ -1,5 +1,4 @@
-﻿using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Memory;
+﻿using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Horizon.Common;
@@ -66,6 +65,19 @@ namespace Ryujinx.HLE.HOS.Kernel
             if (Context.Processes.TryGetValue(pid, out KProcess process))
             {
                 return process;
+            }
+
+            return null;
+        }
+
+        internal static KProcess GetApplicationProcess()
+        {
+            foreach (var process in Context.Processes.Values)
+            {
+                if (process.IsApplication)
+                {
+                    return process;
+                }
             }
 
             return null;

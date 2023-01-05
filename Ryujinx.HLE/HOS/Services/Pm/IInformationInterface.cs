@@ -1,4 +1,5 @@
 ﻿using Ryujinx.HLE.HOS.Kernel;
+using Ryujinx.HLE.HOS.Kernel.Process;
 
 namespace Ryujinx.HLE.HOS.Services.Pm
 {
@@ -13,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Pm
         {
             ulong pid = context.RequestData.ReadUInt64();
 
-            var process = KernelStatic.GetProcessByPid(pid);
+            KProcess process = KernelStatic.GetProcessByPid(pid);
 
             if (process != null)
             {
