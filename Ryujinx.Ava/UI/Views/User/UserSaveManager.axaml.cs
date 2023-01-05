@@ -121,10 +121,5 @@ namespace Ryujinx.Ava.UI.Views.User
                 (button.DataContext as SaveModel).Delete();
             }
         }
-
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
-        {
-            _parent?.GoBack();
-        }
     }
 }

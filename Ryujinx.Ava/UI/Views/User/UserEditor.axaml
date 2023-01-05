@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:ui="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:helpers="clr-namespace:Ryujinx.Ava.UI.Helpers"
     Margin="0"
@@ -37,7 +38,12 @@
                 MaxLength="{Binding MaxProfileNameLength}"
                 Text="{Binding Name}" />
             <TextBlock Name="IdText" Text="{locale:Locale UserProfilesUserId}" />
-            <TextBlock Name="IdLabel" Text="{Binding UserId}" />
+            <TextBox
+                Name="IdLabel"
+                Width="300"
+                HorizontalAlignment="Stretch"
+                IsReadOnly="True"
+                Watermark="{Binding UserId}" />
         </StackPanel>
         <StackPanel
             Grid.Row="0"
@@ -61,6 +67,21 @@
             Grid.Row="1"
             Grid.Column="0"
             Grid.ColumnSpan="2"
+            HorizontalAlignment="Left"
+            Orientation="Horizontal"
+            Margin="0 10 0 0"
+            Spacing="10">
+            <Button
+                Width="50"
+                MinWidth="50"
+                Click="BackButton_Click">
+                <ui:SymbolIcon Symbol="Back" />
+            </Button>
+        </StackPanel>
+        <StackPanel
+            Grid.Row="1"
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
             HorizontalAlignment="Right"
             Orientation="Horizontal"
             Margin="0 10 0 0"
@@ -70,15 +91,6 @@
                 Click="DeleteButton_Click"
                 Content="{locale:Locale UserProfilesDelete}" />
             <Button
-                Name="SaveButton"
-                Click="SaveButton_Click"
-                Content="{locale:Locale Save}" />
-            <Button
-                Name="CloseButton"
-                HorizontalAlignment="Right"
-                Click="CloseButton_Click"
-                Content="{locale:Locale Cancel}" />
-            <Button
                 Name="ChangePictureButton"
                 Click="ChangePictureButton_Click"
                 Content="{locale:Locale UserProfilesChangeProfileImage}" />
@@ -86,6 +98,10 @@
                 Name="AddPictureButton"
                 Click="ChangePictureButton_Click"
                 Content="{locale:Locale UserProfilesSetProfileImage}" />
+            <Button
+                Name="SaveButton"
+                Click="SaveButton_Click"
+                Content="{locale:Locale Save}" />
         </StackPanel>
     </Grid>
 </UserControl>

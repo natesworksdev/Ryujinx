@@ -5,7 +5,6 @@ using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Navigation;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Controls;
-using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using UserProfile = Ryujinx.Ava.UI.Models.UserProfile;
@@ -64,7 +63,7 @@ namespace Ryujinx.Ava.UI.Views.User
             }
         }
 
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             _parent?.GoBack();
         }

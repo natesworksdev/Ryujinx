@@ -112,5 +112,10 @@ namespace Ryujinx.Ava.UI.Views.User
         {
             _parent.RecoverLostAccounts();
         }
+
+        private void Close(object sender, RoutedEventArgs e)
+        {
+            ((ContentDialog)_parent.Parent).Hide();
+        }
     }
 }

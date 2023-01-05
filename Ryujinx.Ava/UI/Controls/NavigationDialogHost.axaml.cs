@@ -79,7 +79,7 @@ namespace Ryujinx.Ava.UI.Controls
                 Title = LocaleManager.Instance[LocaleKeys.UserProfileWindowTitle],
                 PrimaryButtonText = "",
                 SecondaryButtonText = "",
-                CloseButtonText = LocaleManager.Instance[LocaleKeys.UserProfilesClose],
+                CloseButtonText = "",
                 Content = content,
                 Padding = new Thickness(0)
             };
@@ -89,14 +89,10 @@ namespace Ryujinx.Ava.UI.Controls
                 content.ViewModel.Dispose();
             };
 
-            Style closeButton = new(x => x.Name("CloseButton"));
-            closeButton.Setters.Add(new Setter(WidthProperty, 80d));
+            Style footer = new(x => x.Name("DialogSpace").Child().OfType<Border>());
+            footer.Setters.Add(new Setter(IsVisibleProperty, false));
 
-            Style closeButtonParent = new(x => x.Name("CommandSpace"));
-            closeButtonParent.Setters.Add(new Setter(HorizontalAlignmentProperty, Avalonia.Layout.HorizontalAlignment.Right));
-
-            contentDialog.Styles.Add(closeButton);
-            contentDialog.Styles.Add(closeButtonParent);
+            contentDialog.Styles.Add(footer);
 
             await contentDialog.ShowAsync();
         }
