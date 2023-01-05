@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Pm
         public IInformationInterface(ServiceCtx context) { }
 
         [CommandHipc(0)]
-        // GetProgramId(unknown<8>) -> unknown<8>
+        // GetProgramId(os::ProcessId process_id) -> sf::Out<ncm::ProgramId> out
         public ResultCode GetProgramId(ServiceCtx context)
         {
             ulong pid = context.RequestData.ReadUInt64();
