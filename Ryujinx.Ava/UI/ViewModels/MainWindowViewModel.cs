@@ -700,27 +700,19 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             get
             {
-                if (IsGridSmall)
+                switch (ConfigurationState.Instance.Ui.GridSize)
                 {
-                    return 78;
+                    case 1:
+                        return 78;
+                    case 2:
+                        return 100;
+                    case 3:
+                        return 120;
+                    case 4:
+                        return 140;
+                    default:
+                        return 16;
                 }
-
-                if (IsGridMedium)
-                {
-                    return 100;
-                }
-
-                if (IsGridLarge)
-                {
-                    return 120;
-                }
-
-                if (IsGridHuge)
-                {
-                    return 140;
-                }
-
-                return 16;
             }
         }
 
@@ -728,27 +720,19 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             get
             {
-                if (IsGridSmall)
+                switch (ConfigurationState.Instance.Ui.GridSize)
                 {
-                    return 120;
+                    case 1:
+                        return 120;
+                    case 2:
+                        return ShowNames ? 210 : 150;
+                    case 3:
+                        return ShowNames ? 240 : 180;
+                    case 4:
+                        return ShowNames ? 280 : 220;
+                    default:
+                        return 16;
                 }
-
-                if (IsGridMedium)
-                {
-                    return ShowNames ? 210 : 150;
-                }
-
-                if (IsGridLarge)
-                {
-                    return ShowNames ? 240 : 180;
-                }
-
-                if (IsGridHuge)
-                {
-                    return ShowNames ? 280 : 220;
-                }
-
-                return 16;
             }
         }
 
