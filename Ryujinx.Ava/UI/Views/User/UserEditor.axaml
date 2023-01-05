@@ -70,7 +70,7 @@
             Grid.ColumnSpan="2"
             HorizontalAlignment="Left"
             Orientation="Horizontal"
-            Margin="0 10 0 0"
+            Margin="0 24 0 0"
             Spacing="10">
             <Button
                 Width="50"
@@ -85,7 +85,7 @@
             Grid.ColumnSpan="2"
             HorizontalAlignment="Right"
             Orientation="Horizontal"
-            Margin="0 10 0 0"
+            Margin="0 24 0 0"
             Spacing="10">
             <Button
                 Name="DeleteButton"
