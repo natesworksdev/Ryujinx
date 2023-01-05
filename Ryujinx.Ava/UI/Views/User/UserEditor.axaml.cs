@@ -74,27 +74,21 @@ namespace Ryujinx.Ava.UI.Views.User
             _parent.DeleteUser(_profile);
         }
 
-        private async void SaveButton_Click(object sender, RoutedEventArgs e)
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             DataValidationErrors.ClearErrors(NameBox);
-            bool isInvalid = false;
 
             if (string.IsNullOrWhiteSpace(TempProfile.Name))
             {
                 DataValidationErrors.SetError(NameBox, new DataValidationException(LocaleManager.Instance[LocaleKeys.UserProfileEmptyNameError]));
 
-                isInvalid = true;
+                return;
             }
 
             if (TempProfile.Image == null)
             {
-                await ContentDialogHelper.CreateWarningDialog(LocaleManager.Instance[LocaleKeys.UserProfileNoImageError], "");
+                _parent.Navigate(typeof(UserProfileImageSelector), (_parent, TempProfile));
 
-                isInvalid = true;
-            }
-
-            if(isInvalid)
-            {
                 return;
             }
 
