@@ -24,18 +24,12 @@
             <RowDefinition Height="70" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <StackPanel
+        <TextBlock
             Grid.Row="0"
-            Spacing="10">
-            <TextBlock
-                HorizontalAlignment="Left"
-                Text="{locale:Locale ProfileImageSelectionHeader}" />
-            <TextBlock
-                TextWrapping="Wrap"
-                HorizontalAlignment="Left"
-                TextAlignment="Left"
-                Text="{locale:Locale ProfileImageSelectionNote}" />
-        </StackPanel>
+            TextWrapping="Wrap"
+            HorizontalAlignment="Left"
+            TextAlignment="Left"
+            Text="{locale:Locale ProfileImageSelectionNote}" />
         <StackPanel
             Grid.Row="2"
             Spacing="10"

@@ -3,6 +3,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Navigation;
+using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.ViewModels;
 using UserProfile = Ryujinx.Ava.UI.Models.UserProfile;
@@ -35,6 +36,11 @@ namespace Ryujinx.Ava.UI.Views.User
                 {
                     _parent = (NavigationDialogHost)arg.Parameter;
                     ViewModel = _parent.ViewModel;
+                }
+
+                if (arg.NavigationMode == NavigationMode.Back)
+                {
+                    ((ContentDialog)_parent.Parent).Title = LocaleManager.Instance[LocaleKeys.UserProfileWindowTitle];
                 }
 
                 DataContext = ViewModel;

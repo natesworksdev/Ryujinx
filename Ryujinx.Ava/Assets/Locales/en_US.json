@@ -272,7 +272,7 @@
   "InputDialogAddNewProfileTitle": "Choose the Profile Name",
   "InputDialogAddNewProfileHeader": "Please Enter a Profile Name",
   "InputDialogAddNewProfileSubtext": "(Max Length: {0})",
-  "AvatarChoose": "Choose",
+  "AvatarChoose": "Choose Avatar",
   "AvatarSetBackgroundColor": "Set Background Color",
   "AvatarClose": "Close",
   "ControllerSettingsLoadProfileToolTip": "Load Profile",
@@ -609,5 +609,7 @@
   "Search": "Search",
   "UserProfilesRecoverLostAccounts": "Recover Lost Accounts",
   "Recover": "Recover",
-  "UserProfilesRecoverHeading" : "Saves were found for the following accounts"
+  "UserProfilesRecoverHeading" : "Saves were found for the following accounts",
+  "UserEditorTitle" : "Edit User",
+  "UserEditorTitleCreate" : "Create User"
 }
