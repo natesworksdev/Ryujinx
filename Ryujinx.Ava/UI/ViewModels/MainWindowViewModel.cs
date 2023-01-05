@@ -598,7 +598,6 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(GridSizeScale));
-                OnPropertyChanged(nameof(GridItemSelectorSize));
 
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             }
@@ -696,46 +695,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool IsGridLarge  => ConfigurationState.Instance.Ui.GridSize == 3;
         public bool IsGridHuge   => ConfigurationState.Instance.Ui.GridSize == 4;
 
-        public int ListItemSelectorSize
-        {
-            get
-            {
-                switch (ConfigurationState.Instance.Ui.GridSize)
-                {
-                    case 1:
-                        return 78;
-                    case 2:
-                        return 100;
-                    case 3:
-                        return 120;
-                    case 4:
-                        return 140;
-                    default:
-                        return 16;
-                }
-            }
-        }
-
-        public int GridItemSelectorSize
-        {
-            get
-            {
-                switch (ConfigurationState.Instance.Ui.GridSize)
-                {
-                    case 1:
-                        return 120;
-                    case 2:
-                        return ShowNames ? 210 : 150;
-                    case 3:
-                        return ShowNames ? 240 : 180;
-                    case 4:
-                        return ShowNames ? 280 : 220;
-                    default:
-                        return 16;
-                }
-            }
-        }
-
         public int GridSizeScale
         {
             get => ConfigurationState.Instance.Ui.GridSize;
@@ -753,8 +712,6 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged(nameof(IsGridMedium));
                 OnPropertyChanged(nameof(IsGridLarge));
                 OnPropertyChanged(nameof(IsGridHuge));
-                OnPropertyChanged(nameof(ListItemSelectorSize));
-                OnPropertyChanged(nameof(GridItemSelectorSize));
                 OnPropertyChanged(nameof(ShowNames));
 
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);

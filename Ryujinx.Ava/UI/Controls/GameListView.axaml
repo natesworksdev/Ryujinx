@@ -110,11 +110,6 @@
                         Spacing="2" />
                 </ItemsPanelTemplate>
             </ListBox.ItemsPanel>
-            <ListBox.Styles>
-                <Style Selector="ListBoxItem:selected /template/ Border#SelectionIndicator">
-                    <Setter Property="MinHeight" Value="{Binding $parent[UserControl].DataContext.ListItemSelectorSize}" />
-                </Style>
-            </ListBox.Styles>
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid>
