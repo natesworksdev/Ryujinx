@@ -67,9 +67,6 @@
                 Click="GoBack">
                 <ui:SymbolIcon Symbol="Back"/>
             </Button>
-            <TextBlock
-                Margin="10"
-                Text="{locale:Locale UserProfilesRecoverHeading}"/>
         </StackPanel>
     </Grid>
 </UserControl>

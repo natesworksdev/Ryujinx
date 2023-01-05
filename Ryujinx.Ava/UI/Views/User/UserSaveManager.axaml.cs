@@ -7,6 +7,7 @@ using LibHac;
 using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Shim;
+using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
@@ -56,6 +57,9 @@ namespace Ryujinx.Ava.UI.Views.User
                 }
 
                 DataContext = ViewModel = new UserSaveManagerViewModel(_accountManager);
+                ((ContentDialog)_parent.Parent).Title =
+                    $"{LocaleManager.Instance[LocaleKeys.UserProfileWindowTitle]} - {ViewModel.SaveManagerHeading}";
+
                 Task.Run(LoadSaves);
             }
         }
