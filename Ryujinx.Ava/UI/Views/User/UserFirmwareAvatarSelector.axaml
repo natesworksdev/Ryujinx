@@ -1,4 +1,4 @@
-<UserControl 
+<UserControl
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -20,9 +20,9 @@
 	<UserControl.Resources>
 		<helpers:BitmapArrayValueConverter x:Key="ByteImage" />
 	</UserControl.Resources>
-    <Grid 
-        Margin="0" 
-        HorizontalAlignment="Stretch" 
+    <Grid
+        Margin="0"
+        HorizontalAlignment="Stretch"
         VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -30,20 +30,20 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <ListBox 
-            Grid.Row="1" 
-            BorderThickness="0" 
-            SelectedIndex="{Binding SelectedIndex}" 
+        <ListBox
+            Grid.Row="1"
+            BorderThickness="0"
+            SelectedIndex="{Binding SelectedIndex}"
             Height="400"
-            Items="{Binding Images}" 
-            HorizontalAlignment="Stretch" 
+            Items="{Binding Images}"
+            HorizontalAlignment="Stretch"
             VerticalAlignment="Center">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <WrapPanel 
-                        Orientation="Horizontal" 
-                        MaxWidth="700" 
-                        Margin="0" 
+                    <WrapPanel
+                        Orientation="Horizontal"
+                        MaxWidth="700"
+                        Margin="0"
                         HorizontalAlignment="Center" />
                 </ItemsPanelTemplate>
             </ListBox.ItemsPanel>
@@ -52,43 +52,46 @@
                     <Setter Property="Margin" Value="5" />
                     <Setter Property="CornerRadius" Value="4" />
                 </Style>
+                <Style Selector="ListBoxItem /template/ Border#SelectionIndicator">
+                    <Setter Property="MinHeight" Value="120" />
+                </Style>
             </ListBox.Styles>
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Image 
-                        Margin="10" 
-                        Height="96" 
+                    <Image
+                        Margin="10"
+                        Height="96"
                         Width="96"
-                        Source="{Binding Data, 
+                        Source="{Binding Data,
                         Converter={StaticResource ByteImage}}" />
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <ProgressBar 
-            Grid.Row="2" 
-            IsIndeterminate="{Binding IsIndeterminate}" 
+        <ProgressBar
+            Grid.Row="2"
+            IsIndeterminate="{Binding IsIndeterminate}"
             IsVisible="{Binding IsVisible}"
-            Value="{Binding ImagesLoaded}" 
+            Value="{Binding ImagesLoaded}"
             HorizontalAlignment="Stretch" Margin="5"
-            Maximum="{Binding ImageCount}" 
+            Maximum="{Binding ImageCount}"
             Minimum="0" />
-        <StackPanel 
-            Grid.Row="3" 
-            Orientation="Horizontal" 
-            Spacing="10" 
-            Margin="10" 
+        <StackPanel
+            Grid.Row="3"
+            Orientation="Horizontal"
+            Spacing="10"
+            Margin="10"
             HorizontalAlignment="Center">
-            <Button 
-                Content="{locale:Locale AvatarChoose}" 
-                Width="200" 
-                Name="ChooseButton" 
+            <Button
+                Content="{locale:Locale AvatarChoose}"
+                Width="200"
+                Name="ChooseButton"
                 Click="ChooseButton_OnClick" />
-            <ui:ColorPickerButton 
-                Color="{Binding BackgroundColor, Mode=TwoWay}" 
+            <ui:ColorPickerButton
+                Color="{Binding BackgroundColor, Mode=TwoWay}"
                 Name="ColorButton" />
-            <Button 
-                HorizontalAlignment="Right" 
-                Content="{locale:Locale Cancel}" 
+            <Button
+                HorizontalAlignment="Right"
+                Content="{locale:Locale Cancel}"
                 Click="CloseButton_OnClick"
                 Name="CloseButton"
                 Width="200" />
