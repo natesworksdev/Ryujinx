@@ -1,4 +1,4 @@
-<UserControl 
+<UserControl
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -26,13 +26,11 @@
         </Grid.RowDefinitions>
         <StackPanel
             Grid.Row="0"
-            Margin="0 0 0 5"
+            Margin="0 0 0 10"
             Orientation="Horizontal">
-            <Button 
-                Height="30"
+            <Button
                 Width="50"
                 MinWidth="50"
-                HorizontalAlignment="Left"
                 Click="GoBack">
                 <ui:SymbolIcon Symbol="Back"/>
             </Button>

@@ -29,12 +29,21 @@
             <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <TextBlock
+        <StackPanel
             Grid.Row="0"
-            Padding="0"
-            Margin="0 0 0 5"
-            TextWrapping="Wrap"
-            Text="{Binding SaveManagerHeading}" />
+            Margin="0 0 0 10"
+            Orientation="Horizontal">
+            <Button
+                Width="50"
+                MinWidth="50"
+                Click="GoBack">
+                <ui:SymbolIcon Symbol="Back" />
+            </Button>
+            <TextBlock
+                Margin="10"
+                TextTrimming="CharacterEllipsis"
+                Text="{Binding SaveManagerHeading}" />
+        </StackPanel>
         <Grid
             Grid.Row="1"
             HorizontalAlignment="Stretch">
@@ -47,13 +56,6 @@
                 Orientation="Horizontal"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center">
-                <Button
-                    Height="32"
-                    Width="50"
-                    MinWidth="50"
-                    Click="GoBack">
-                    <ui:SymbolIcon Symbol="Back" />
-                </Button>
                 <Label Content="{locale:Locale CommonSort}" VerticalAlignment="Center" />
                 <ComboBox SelectedIndex="{Binding SortIndex}" Width="100">
                     <ComboBoxItem>

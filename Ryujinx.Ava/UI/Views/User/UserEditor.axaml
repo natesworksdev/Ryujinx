@@ -43,6 +43,7 @@
                 Width="300"
                 HorizontalAlignment="Stretch"
                 IsReadOnly="True"
+                IsHitTestVisible="False"
                 Watermark="{Binding UserId}" />
         </StackPanel>
         <StackPanel
