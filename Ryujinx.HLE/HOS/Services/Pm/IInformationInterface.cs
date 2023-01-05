@@ -8,16 +8,21 @@ namespace Ryujinx.HLE.HOS.Services.Pm
         public IInformationInterface(ServiceCtx context) { }
 
         [CommandHipc(0)]
-        // GetTitleId(unknown<8>) -> unknown<8>
-        public ResultCode GetTitleId(ServiceCtx context)
+        // GetProgramId(unknown<8>) -> unknown<8>
+        public ResultCode GetProgramId(ServiceCtx context)
         {
             ulong pid = context.RequestData.ReadUInt64();
 
             var process = KernelStatic.GetProcessByPid(pid);
 
-            context.ResponseData.Write(process.TitleId);
+            if (process != null)
+            {
+                context.ResponseData.Write(process.TitleId);
 
-            return ResultCode.Success;
+                return ResultCode.Success;
+            }
+
+            return ResultCode.ProcessNotFound;
         }
     }
 }
