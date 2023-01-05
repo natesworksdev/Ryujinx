@@ -55,7 +55,7 @@ namespace Ryujinx.Ava.UI.Views.User
 
         internal UserFirmwareAvatarSelectorViewModel ViewModel { get; set; }
 
-        private void CloseButton_OnClick(object sender, RoutedEventArgs e)
+        private void GoBack(object sender, RoutedEventArgs e)
         {
             ViewModel.Dispose();
 
