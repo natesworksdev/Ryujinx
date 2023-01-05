@@ -28,7 +28,6 @@
             Grid.Row="0"
             Spacing="10">
             <TextBlock
-                FontSize="18"
                 HorizontalAlignment="Left"
                 Text="{locale:Locale ProfileImageSelectionHeader}" />
             <TextBlock

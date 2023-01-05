@@ -10,8 +10,8 @@
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     mc:Ignorable="d"
     d:DesignWidth="600"
-    d:DesignHeight="450"
-    Height="400"
+    d:DesignHeight="500"
+    Height="450"
     Width="550"
     x:Class="Ryujinx.Ava.UI.Views.User.UserSaveManager"
     x:CompileBindings="True"
@@ -26,26 +26,11 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <StackPanel
-            Grid.Row="0"
-            Margin="0 0 0 10"
-            Orientation="Horizontal">
-            <Button
-                Width="50"
-                MinWidth="50"
-                Click="GoBack">
-                <ui:SymbolIcon Symbol="Back" />
-            </Button>
-            <TextBlock
-                Margin="10"
-                TextTrimming="CharacterEllipsis"
-                Text="{Binding SaveManagerHeading}" />
-        </StackPanel>
         <Grid
-            Grid.Row="1"
+            Grid.Row="0"
             HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -103,7 +88,7 @@
             </Grid>
         </Grid>
         <Border
-            Grid.Row="2"
+            Grid.Row="1"
             Margin="0,5"
             BorderThickness="1"
             HorizontalAlignment="Stretch"
@@ -195,5 +180,20 @@
                 </ListBox.ItemTemplate>
             </ListBox>
         </Border>
+        <StackPanel
+            Grid.Row="2"
+            Margin="0 24 0 0"
+            Orientation="Horizontal">
+            <Button
+                Width="50"
+                MinWidth="50"
+                Click="GoBack">
+                <ui:SymbolIcon Symbol="Back" />
+            </Button>
+            <TextBlock
+                Margin="10"
+                TextTrimming="CharacterEllipsis"
+                Text="{Binding SaveManagerHeading}" />
+        </StackPanel>
     </Grid>
 </UserControl>
