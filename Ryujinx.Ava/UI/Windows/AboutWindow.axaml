@@ -37,46 +37,51 @@
 				<RowDefinition Height="*" />
 				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
-			<Grid
-				Grid.Row="0">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="*" />
-					<ColumnDefinition Width="Auto" />
-				</Grid.ColumnDefinitions>
-				<Image
-					Grid.Column="0"
-                    Height="80"
-                    Source="resm:Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png?assembly=Ryujinx.Ui.Common" />
-				<flex:FlexPanel
-					Grid.Column="2"
-					HorizontalAlignment="Stretch"
-					VerticalAlignment="Stretch"
-					Direction="Column"
-					JustifyContent="SpaceAround"
-					RowSpacing="2">
-					<TextBlock
-						FontSize="28"
-						FontWeight="Bold"
-						Text="Ryujinx"
-						TextAlignment="Left" />
-					<TextBlock
-						Text="(REE-YOU-JINX)"
-						TextAlignment="Left" />
-				</flex:FlexPanel>
-			</Grid>
+			<StackPanel
+				Grid.Row="0"
+				Spacing="10"
+				HorizontalAlignment="Stretch"
+				VerticalAlignment="Stretch">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+					<Image
+						Grid.Column="0"
+						Height="80"
+						Source="resm:Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png?assembly=Ryujinx.Ui.Common" />
+					<flex:FlexPanel
+						Grid.Column="2"
+						HorizontalAlignment="Stretch"
+						VerticalAlignment="Stretch"
+						Direction="Column"
+						JustifyContent="SpaceAround"
+						RowSpacing="2">
+						<TextBlock
+							FontSize="28"
+							FontWeight="Bold"
+							Text="Ryujinx"
+							TextAlignment="Left" />
+						<TextBlock
+							Text="(REE-YOU-JINX)"
+							TextAlignment="Left" />
+					</flex:FlexPanel>
+				</Grid>
+				<TextBlock
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center"
+					Text="{Binding Version}"
+					TextAlignment="Center"
+					FontSize="10"
+					LineHeight="12" />
+			</StackPanel>
 			<StackPanel
 				Grid.Row="2"
 				Spacing="10"
 				HorizontalAlignment="Stretch"
 				VerticalAlignment="Stretch">
-				<TextBlock
-	                HorizontalAlignment="Center"
-	                VerticalAlignment="Center"
-	                Text="{Binding Version}"
-	                TextAlignment="Center"
-	                FontSize="10"
-	                LineHeight="12" />
 				<TextBlock
 	                HorizontalAlignment="Center"
 	                Width="200"
