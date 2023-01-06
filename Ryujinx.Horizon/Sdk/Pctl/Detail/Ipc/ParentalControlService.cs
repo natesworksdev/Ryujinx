@@ -4,12 +4,11 @@ using Ryujinx.Horizon.Sdk.Sf;
 using Ryujinx.Horizon.Sdk.Sf.Hipc;
 using Ryujinx.Horizon.Sdk.Time;
 using System;
-using System.Collections.Generic;
 using ApplicationId = Ryujinx.Horizon.Sdk.Ncm.ApplicationId;
 
 namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
 {
-    class ParentalControlService : IParentalControlService
+    partial class ParentalControlService : IParentalControlService
     {
         [CmifCommand(1)]
         public Result Initialize()
@@ -770,11 +769,6 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             arg1 = default;
 
             return Result.Success;
-        }
-
-        public IReadOnlyDictionary<int, CommandHandler> GetCommandHandlers()
-        {
-            throw new NotImplementedException();
         }
     }
 }
