@@ -113,7 +113,8 @@
 						CornerRadius="15"
 						Background="Transparent"
 						Click="Button_OnClick"
-						Tag="https://www.patreon.com/ryujinx">
+						Tag="https://www.patreon.com/ryujinx"
+						ToolTip.Tip="{locale:Locale AboutPatreonUrlTooltipMessage}">
 						<Image Source="{Binding PatreonLogo}" />
 					</Button>
 					<Button
@@ -125,7 +126,8 @@
 						CornerRadius="15"
 						Background="Transparent"
 						Click="Button_OnClick"
-						Tag="https://github.com/Ryujinx/Ryujinx">
+						Tag="https://github.com/Ryujinx/Ryujinx"
+						ToolTip.Tip="{locale:Locale AboutGithubUrlTooltipMessage}">
 						<Image Source="{Binding GithubLogo}" />
 					</Button>
 					<Button
@@ -137,7 +139,8 @@
 						CornerRadius="15"
 						Background="Transparent"
 						Click="Button_OnClick"
-						Tag="https://discordapp.com/invite/N2FmfVc">
+						Tag="https://discordapp.com/invite/N2FmfVc"
+						ToolTip.Tip="{locale:Locale AboutDiscordUrlTooltipMessage}">
 						<Image Source="{Binding DiscordLogo}" />
 					</Button>
 					<Button
@@ -149,7 +152,8 @@
 						CornerRadius="15"
 						Background="Transparent"
 						Click="Button_OnClick"
-						Tag="https://twitter.com/RyujinxEmu">
+						Tag="https://twitter.com/RyujinxEmu"
+						ToolTip.Tip="{locale:Locale AboutTwitterUrlTooltipMessage}">
 						<Image Source="{Binding TwitterLogo}" />
 					</Button>
 					<Button
@@ -161,7 +165,8 @@
 						CornerRadius="15"
 						Background="Transparent"
 						Click="Button_OnClick"
-						Tag="https://www.ryujinx.org">
+						Tag="https://www.ryujinx.org"
+						ToolTip.Tip="{locale:Locale AboutUrlTooltipMessage}">
 						<ui:SymbolIcon
 							Symbol="Link"
 							Foreground="{DynamicResource ThemeForegroundColor}" />
