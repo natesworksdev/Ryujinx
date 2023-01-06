@@ -1,4 +1,5 @@
 using Ryujinx.Horizon.Common;
+using Ryujinx.Horizon.Pctl;
 using Ryujinx.Horizon.Sdk.Pctl.Detail.Service.Watcher;
 using Ryujinx.Horizon.Sdk.Sf;
 using Ryujinx.Horizon.Sdk.Sf.Hipc;
@@ -10,6 +11,13 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
 {
     partial class ParentalControlService : IParentalControlService
     {
+        // TODO: Find where they are set.
+        private bool _restrictionEnabled                  = false;
+        private bool _featuresRestriction                 = false;
+        private bool _freeCommunicationEnabled            = false;
+        private bool _stereoVisionRestrictionConfigurable = true;
+        private bool _stereoVisionRestriction             = false;
+
         [CmifCommand(1)]
         public Result Initialize()
         {
@@ -272,32 +280,91 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             return Result.Success;
         }
 
-        [CmifCommand(1062)]
-        public Result GetStereoVisionRestriction(out bool arg0)
+        [CmifCommand(1062)] // 4.0.0+
+        // GetStereoVisionRestriction() -> bool
+        public Result GetStereoVisionRestriction(out bool stereoVisionRestriction)
         {
-            arg0 = default;
+            if ((_permissionFlag & 0x200) == 0)
+            {
+                stereoVisionRestriction = default;
+                return PctlResult.PermissionDenied;
+            }
+
+            stereoVisionRestriction = false;
+
+            if (_stereoVisionRestrictionConfigurable)
+            {
+                stereoVisionRestriction = _stereoVisionRestriction;
+            }
 
             return Result.Success;
         }
 
-        [CmifCommand(1063)]
-        public Result SetStereoVisionRestriction(bool arg0)
+        [CmifCommand(1063)] // 4.0.0+
+        // SetStereoVisionRestriction(bool)
+        public Result SetStereoVisionRestriction(bool stereoVisionRestriction)
         {
+            if ((_permissionFlag & 0x200) == 0)
+            {
+                return PctlResult.PermissionDenied;
+            }
+
+            if (!_featuresRestriction)
+            {
+                if (_stereoVisionRestrictionConfigurable)
+                {
+                    _stereoVisionRestriction = stereoVisionRestriction;
+
+                    // TODO: It signals an internal event of service. We have to determine where this event is used.
+                }
+            }
+
             return Result.Success;
         }
 
-        [CmifCommand(1064)]
+        [CmifCommand(1064)] // 5.0.0+
+        // ResetConfirmedStereoVisionPermission()
         public Result ResetConfirmedStereoVisionPermission()
         {
             return Result.Success;
         }
 
-        [CmifCommand(1065)]
-        public Result IsStereoVisionPermitted(out bool arg0)
+        [CmifCommand(1065)] // 5.0.0+
+        // IsStereoVisionPermitted() -> bool
+        public Result IsStereoVisionPermitted(out bool isStereoVisionPermitted)
         {
-            arg0 = default;
+            isStereoVisionPermitted = false;
 
-            return Result.Success;
+            Result result = IsStereoVisionPermittedImpl();
+
+            if (result == Result.Success)
+            {
+                isStereoVisionPermitted = true;
+            }
+
+            return result;
+        }
+
+        private Result IsStereoVisionPermittedImpl()
+        {
+            /*
+                // TODO: Application Exemptions are read from file "appExemptions.dat" in the service savedata.
+                //       Since we don't support the pctl savedata for now, this can be implemented later.
+
+                if (appExemption)
+                {
+                    return Result.Success;
+                }
+            */
+
+            if (_stereoVisionRestrictionConfigurable && _stereoVisionRestriction)
+            {
+                return PctlResult.StereoVisionDenied;
+            }
+            else
+            {
+                return Result.Success;
+            }
         }
 
         [CmifCommand(1201)]
