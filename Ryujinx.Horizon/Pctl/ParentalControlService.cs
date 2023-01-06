@@ -38,7 +38,6 @@ namespace Ryujinx.Horizon.Pctl
         }
 
         [CmifCommand(1)] // 4.0.0+
-        // Initialize()
         public Result Initialize()
         {
             if ((_permissionFlag & 0x8001) == 0)
@@ -83,7 +82,6 @@ namespace Ryujinx.Horizon.Pctl
         }
 
         [CmifCommand(1001)]
-        // CheckFreeCommunicationPermission()
         public Result CheckFreeCommunicationPermission()
         {
             if (_parentalControlFlag == ParentalControlFlagValue.FreeCommunication && _restrictionEnabled)
@@ -226,7 +224,6 @@ namespace Ryujinx.Horizon.Pctl
         }
 
         [CmifCommand(1013)] // 4.0.0+
-        // ConfirmStereoVisionPermission()
         public Result ConfirmStereoVisionPermission()
         {
             return IsStereoVisionPermittedImpl();
@@ -266,7 +263,6 @@ namespace Ryujinx.Horizon.Pctl
         }
 
         [CmifCommand(1017)] // 10.0.0+
-        // EndFreeCommunication()
         public Result EndFreeCommunication()
         {
             _freeCommunicationEnabled = false;
@@ -275,7 +271,6 @@ namespace Ryujinx.Horizon.Pctl
         }
 
         [CmifCommand(1018)] // 10.0.0+
-        // IsFreeCommunicationAvailable()
         public Result IsFreeCommunicationAvailable()
         {
             if (_parentalControlFlag == ParentalControlFlagValue.FreeCommunication && _restrictionEnabled)
@@ -292,7 +287,6 @@ namespace Ryujinx.Horizon.Pctl
         }
 
         [CmifCommand(1031)]
-        // IsRestrictionEnabled() -> b8
         public Result IsRestrictionEnabled(out bool restrictionEnabled)
         {
             if ((_permissionFlag & 0x140) == 0)
@@ -485,7 +479,6 @@ namespace Ryujinx.Horizon.Pctl
         }
 
         [CmifCommand(1061)] // 4.0.0+
-        // ConfirmStereoVisionRestrictionConfigurable()
         public Result ConfirmStereoVisionRestrictionConfigurable()
         {
             if ((_permissionFlag & 2) == 0)
@@ -504,7 +497,6 @@ namespace Ryujinx.Horizon.Pctl
         }
 
         [CmifCommand(1062)] // 4.0.0+
-        // GetStereoVisionRestriction() -> bool
         public Result GetStereoVisionRestriction(out bool stereoVisionRestriction)
         {
             if ((_permissionFlag & 0x200) == 0)
@@ -524,7 +516,6 @@ namespace Ryujinx.Horizon.Pctl
         }
 
         [CmifCommand(1063)] // 4.0.0+
-        // SetStereoVisionRestriction(bool)
         public Result SetStereoVisionRestriction(bool stereoVisionRestriction)
         {
             if ((_permissionFlag & 0x200) == 0)
@@ -546,7 +537,6 @@ namespace Ryujinx.Horizon.Pctl
         }
 
         [CmifCommand(1064)] // 5.0.0+
-        // ResetConfirmedStereoVisionPermission()
         public Result ResetConfirmedStereoVisionPermission()
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
@@ -558,7 +548,6 @@ namespace Ryujinx.Horizon.Pctl
         }
 
         [CmifCommand(1065)] // 5.0.0+
-        // IsStereoVisionPermitted() -> bool
         public Result IsStereoVisionPermitted(out bool isStereoVisionPermitted)
         {
             isStereoVisionPermitted = false;
