@@ -1,6 +1,8 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.Horizon.Common;
-using Ryujinx.Horizon.Pctl;
+using Ryujinx.Horizon.Sdk.Pctl;
+using Ryujinx.Horizon.Sdk.Pctl.Detail;
+using Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc;
 using Ryujinx.Horizon.Sdk.Pctl.Detail.Service.Watcher;
 using Ryujinx.Horizon.Sdk.Sf;
 using Ryujinx.Horizon.Sdk.Sf.Hipc;
@@ -8,7 +10,7 @@ using Ryujinx.Horizon.Sdk.Time;
 using System;
 using ApplicationId = Ryujinx.Horizon.Sdk.Ncm.ApplicationId;
 
-namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
+namespace Ryujinx.Horizon.Pctl
 {
     partial class ParentalControlService : IParentalControlService
     {

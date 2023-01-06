@@ -1,4 +1,5 @@
 using Ryujinx.Horizon.LogManager;
+using Ryujinx.Horizon.Pctl;
 using System.Collections.Generic;
 
 namespace Ryujinx.Horizon
@@ -15,6 +16,7 @@ namespace Ryujinx.Horizon
             }
 
             RegisterService<LmMain>();
+            RegisterService<PctlMain>();
 
             return entries;
         }
