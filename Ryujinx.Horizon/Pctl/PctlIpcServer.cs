@@ -10,6 +10,19 @@ namespace Ryujinx.Horizon.Pctl
         private const int PctlAMaxSessionsCount = 1;
         private const int PctlRMaxSessionsCount = 1;
 
+        // TODO: Use actual values these are from LogManager
+        private const int PointerBufferSize = 0x400;
+        private const int MaxDomains = 31;
+        private const int MaxDomainObjects = 61;
+
+        private const int MaxPortsCount = 1;
+
+        private static readonly ManagerOptions _pctlManagerOptions = new ManagerOptions(
+                PointerBufferSize,
+                MaxDomains,
+                MaxDomainObjects,
+                false);
+
         private static readonly ServiceName _pctlServiceName = ServiceName.Encode("pctl");
         private static readonly ServiceName _pctlSServiceName = ServiceName.Encode("pctl:s");
         private static readonly ServiceName _pctlAServiceName = ServiceName.Encode("pctl:a");
