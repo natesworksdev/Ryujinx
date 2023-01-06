@@ -78,9 +78,9 @@ namespace Ryujinx.Headless.SDL2
             GraphicsDebugLevel glLogLevel,
             AspectRatio aspectRatio,
             bool enableMouse,
-            bool hideCursorOnIdle)
+            HideCursor hideCursor)
         {
-            MouseDriver = new SDL2MouseDriver(hideCursorOnIdle);
+            MouseDriver = new SDL2MouseDriver(hideCursor);
             _inputManager = inputManager;
             _inputManager.SetMouseDriver(MouseDriver);
             NpadManager = _inputManager.CreateNpadManager();

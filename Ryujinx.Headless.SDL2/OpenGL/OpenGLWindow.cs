@@ -107,8 +107,8 @@ namespace Ryujinx.Headless.SDL2.OpenGL
             GraphicsDebugLevel glLogLevel,
             AspectRatio aspectRatio,
             bool enableMouse,
-            bool hideCursorOnIdle)
-            : base(inputManager, glLogLevel, aspectRatio, enableMouse, hideCursorOnIdle)
+            HideCursor hideCursor)
+            : base(inputManager, glLogLevel, aspectRatio, enableMouse, hideCursor)
         {
             _glLogLevel = glLogLevel;
         }

@@ -76,8 +76,8 @@ namespace Ryujinx.Headless.SDL2
         [Option("enable-mouse", Required = false, Default = false, HelpText = "Enable or disable mouse support.")]
         public bool EnableMouse { get; set; }
 
-        [Option("disable-hide-cursor-on-idle", Required = false, HelpText = "Don't hide the cursor on inactivity.")]
-        public bool DisableHideCursorOnIdle { get; set; }
+        [Option("hide-cursor", Required = false, Default = HideCursor.OnIdle, HelpText = "Change when the cursor gets hidden.")]
+        public HideCursor HideCursor { get; set; }
 
         [Option("list-input-profiles", Required = false, HelpText = "List inputs profiles.")]
         public bool ListInputProfiles { get; set; }

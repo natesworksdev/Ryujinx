@@ -13,7 +13,7 @@ namespace Ryujinx.Headless.SDL2
         private const int CursorHideIdleTime = 8; // seconds
 
         private bool _isDisposed;
-        private bool _hideCursorOnIdle;
+        private HideCursor _hideCursor;
         private bool _isHidden;
         private long _lastCursorMoveTime;
 
@@ -23,10 +23,16 @@ namespace Ryujinx.Headless.SDL2
         public Vector2 Scroll { get; private set; }
         public Size _clientSize;
 
-        public SDL2MouseDriver(bool hideCursorOnIdle)
+        public SDL2MouseDriver(HideCursor hideCursor)
         {
             PressedButtons = new bool[(int)MouseButton.Count];
-            _hideCursorOnIdle = hideCursorOnIdle;
+            _hideCursor = hideCursor;
+
+            if (_hideCursor == HideCursor.Always)
+            {
+                SDL_ShowCursor(SDL_DISABLE);
+                _isHidden = true;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -53,7 +59,7 @@ namespace Ryujinx.Headless.SDL2
 
         private void CheckIdle()
         {
-            if (!_hideCursorOnIdle)
+            if (_hideCursor != HideCursor.OnIdle)
             {
                 return;
             }
