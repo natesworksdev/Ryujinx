@@ -62,7 +62,7 @@ namespace ARMeilleure.CodeGen.Arm64
                     }
 
                     // Try to fold something like:
-                    //  lsl x1, #2
+                    //  lsl x1, x1, #2
                     //  add x0, x0, x1
                     //  ldr x0, [x0]
                     //  add x2, x2, #16
