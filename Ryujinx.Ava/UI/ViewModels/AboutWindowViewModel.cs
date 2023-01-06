@@ -125,7 +125,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 string patreonJsonString = await httpClient.GetStringAsync("https://patreon.ryujinx.org/");
 
-                Supporters = string.Join(", ", JsonHelper.Deserialize<string[]>(patreonJsonString));
+                Supporters = string.Join(", ", JsonHelper.Deserialize<string[]>(patreonJsonString)) + "\n\n";
             }
             catch
             {
