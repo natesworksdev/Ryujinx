@@ -89,11 +89,6 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             return Result.Success;
         }
 
-        Result IParentalControlService.ConfirmResumeApplicationPermission(ApplicationId arg0, ReadOnlySpan<sbyte> arg1, bool arg2)
-        {
-            return ConfirmResumeApplicationPermission(arg0, arg1, arg2);
-        }
-
         [CmifCommand(1002)]
         public Result ConfirmLaunchApplicationPermission(ApplicationId arg0, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<sbyte> arg1, bool arg2)
         {
@@ -177,11 +172,6 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
         public Result ConfirmPlayableApplicationVideoOld([Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<sbyte> arg0)
         {
             return Result.Success;
-        }
-
-        Result IParentalControlService.ConfirmPlayableApplicationVideo(ApplicationId arg0, ReadOnlySpan<sbyte> arg1)
-        {
-            return ConfirmPlayableApplicationVideo(arg0, arg1);
         }
 
         [CmifCommand(1015)]
@@ -295,11 +285,6 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             return Result.Success;
         }
 
-        Result IParentalControlService.AddToFreeCommunicationApplicationList(ApplicationId arg0)
-        {
-            return AddToFreeCommunicationApplicationList(arg0);
-        }
-
         [CmifCommand(1042)]
         public Result AddToFreeCommunicationApplicationList(ApplicationId arg0)
         {
@@ -330,11 +315,6 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
         public Result DisableFeaturesForReset()
         {
             return Result.Success;
-        }
-
-        Result IParentalControlService.NotifyApplicationDownloadStarted(ApplicationId arg0)
-        {
-            return NotifyApplicationDownloadStarted(arg0);
         }
 
         [CmifCommand(1047)]
@@ -700,11 +680,6 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             return Result.Success;
         }
 
-        Result IParentalControlService.DeleteFromFreeCommunicationApplicationListForDebug(ApplicationId arg0)
-        {
-            return DeleteFromFreeCommunicationApplicationListForDebug(arg0);
-        }
-
         [CmifCommand(1901)]
         public Result DeleteFromFreeCommunicationApplicationListForDebug(ApplicationId arg0)
         {
@@ -737,16 +712,6 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
         public Result UpdateExemptApplicationListForDebug([Buffer(HipcBufferFlags.In | HipcBufferFlags.MapAlias)] ReadOnlySpan<ExemptApplicationInfo> arg0)
         {
             return Result.Success;
-        }
-
-        Result IParentalControlService.AddToExemptApplicationListForDebug(ApplicationId arg0)
-        {
-            return AddToExemptApplicationListForDebug(arg0);
-        }
-
-        Result IParentalControlService.DeleteFromExemptApplicationListForDebug(ApplicationId arg0)
-        {
-            return DeleteFromExemptApplicationListForDebug(arg0);
         }
 
         [CmifCommand(1906)]
@@ -916,11 +881,6 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             arg0 = default;
 
             return Result.Success;
-        }
-
-        Result IParentalControlService.RequestUpdateExemptionListAsync(out AsyncData arg0, out int arg1, ApplicationId arg2, bool arg3)
-        {
-            return RequestUpdateExemptionListAsync(out arg0, out arg1, arg2, arg3);
         }
 
         [CmifCommand(2016)]
