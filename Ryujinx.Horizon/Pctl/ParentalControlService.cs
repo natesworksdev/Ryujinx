@@ -8,7 +8,6 @@ using Ryujinx.Horizon.Sdk.Sf;
 using Ryujinx.Horizon.Sdk.Sf.Hipc;
 using Ryujinx.Horizon.Sdk.Time;
 using System;
-using ApplicationId = Ryujinx.Horizon.Sdk.Ncm.ApplicationId;
 
 namespace Ryujinx.Horizon.Pctl
 {

@@ -3,7 +3,6 @@ using Ryujinx.Horizon.Sdk.Pctl.Detail.Service.Watcher;
 using Ryujinx.Horizon.Sdk.Sf;
 using Ryujinx.Horizon.Sdk.Time;
 using System;
-using ApplicationId = Ryujinx.Horizon.Sdk.Ncm.ApplicationId;
 
 namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
 {
