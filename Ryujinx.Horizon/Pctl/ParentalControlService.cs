@@ -26,6 +26,17 @@ namespace Ryujinx.Horizon.Pctl
         private bool _stereoVisionRestrictionConfigurable = true;
         private bool _stereoVisionRestriction             = false;
 
+        public ParentalControlService(ulong pid, bool withInitialize, int permissionFlag)
+        {
+            _pid            = pid;
+            _permissionFlag = permissionFlag;
+
+            if (withInitialize)
+            {
+                Initialize();
+            }
+        }
+
         [CmifCommand(1)] // 4.0.0+
         // Initialize()
         public Result Initialize()
