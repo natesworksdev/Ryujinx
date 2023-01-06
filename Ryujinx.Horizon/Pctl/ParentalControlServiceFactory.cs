@@ -8,6 +8,11 @@ namespace Ryujinx.Horizon.Pctl
     {
         private int _permissionFlag;
 
+        public ParentalControlServiceFactory(int permissionFlag)
+        {
+            _permissionFlag = permissionFlag;
+        }
+
         [CmifCommand(0)]
         public Result CreateService(out IParentalControlService pctlSerivce, ulong arg1, [ClientProcessId] ulong pid)
         {

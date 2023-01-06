@@ -42,10 +42,10 @@ namespace Ryujinx.Horizon.Pctl
             _pctlRServerManager =
                 new ServerManager(allocator, _sm, MaxPortsCount, _pctlManagerOptions, PctlRMaxSessionsCount);
 
-            _pctlSericeObject = new ParentalControlServiceFactory();
-            _pctlSSericeObject = new ParentalControlServiceFactory();
-            _pctlASericeObject = new ParentalControlServiceFactory();
-            _pctlRSericeObject = new ParentalControlServiceFactory();
+            _pctlSericeObject = new ParentalControlServiceFactory(0x303);
+            _pctlSSericeObject = new ParentalControlServiceFactory(0x838E);
+            _pctlASericeObject = new ParentalControlServiceFactory(0x83BE);
+            _pctlRSericeObject = new ParentalControlServiceFactory(0x8040);
 
             _pctlServerManager.RegisterObjectForServer(_pctlSericeObject, _pctlServiceName, PctlMaxSessionsCount);
             _pctlSServerManager.RegisterObjectForServer(_pctlSSericeObject, _pctlSServiceName, PctlSMaxSessionsCount);
