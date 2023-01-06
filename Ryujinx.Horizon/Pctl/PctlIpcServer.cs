@@ -10,6 +10,9 @@ namespace Ryujinx.Horizon.Pctl
         private const int PctlAMaxSessionsCount = 1;
         private const int PctlRMaxSessionsCount = 1;
 
+        private const int PctlTotalMaxSessionsCount =
+            PctlMaxSessionsCount + PctlSMaxSessionsCount + PctlAMaxSessionsCount + PctlRMaxSessionsCount;
+
         // TODO: Use actual values these are from LogManager
         private const int PointerBufferSize = 0x400;
         private const int MaxDomains = 31;
@@ -30,9 +33,6 @@ namespace Ryujinx.Horizon.Pctl
 
         private SmApi _sm;
         private ServerManager _pctlServerManager;
-        private ServerManager _pctlSServerManager;
-        private ServerManager _pctlAServerManager;
-        private ServerManager _pctlRServerManager;
 
         private ParentalControlServiceFactory _pctlSericeObject;
         private ParentalControlServiceFactory _pctlSSericeObject;
@@ -47,13 +47,7 @@ namespace Ryujinx.Horizon.Pctl
             _sm.Initialize().AbortOnFailure();
 
             _pctlServerManager =
-                new ServerManager(allocator, _sm, MaxPortsCount, _pctlManagerOptions, PctlMaxSessionsCount);
-            _pctlSServerManager =
-                new ServerManager(allocator, _sm, MaxPortsCount, _pctlManagerOptions, PctlSMaxSessionsCount);
-            _pctlAServerManager =
-                new ServerManager(allocator, _sm, MaxPortsCount, _pctlManagerOptions, PctlAMaxSessionsCount);
-            _pctlRServerManager =
-                new ServerManager(allocator, _sm, MaxPortsCount, _pctlManagerOptions, PctlRMaxSessionsCount);
+                new ServerManager(allocator, _sm, MaxPortsCount, _pctlManagerOptions, PctlTotalMaxSessionsCount);
 
             _pctlSericeObject = new ParentalControlServiceFactory(0x303);
             _pctlSSericeObject = new ParentalControlServiceFactory(0x838E);
@@ -61,25 +55,19 @@ namespace Ryujinx.Horizon.Pctl
             _pctlRSericeObject = new ParentalControlServiceFactory(0x8040);
 
             _pctlServerManager.RegisterObjectForServer(_pctlSericeObject, _pctlServiceName, PctlMaxSessionsCount);
-            _pctlSServerManager.RegisterObjectForServer(_pctlSSericeObject, _pctlSServiceName, PctlSMaxSessionsCount);
-            _pctlAServerManager.RegisterObjectForServer(_pctlASericeObject, _pctlAServiceName, PctlAMaxSessionsCount);
-            _pctlRServerManager.RegisterObjectForServer(_pctlRSericeObject, _pctlRServiceName, PctlRMaxSessionsCount);
+            _pctlServerManager.RegisterObjectForServer(_pctlSSericeObject, _pctlSServiceName, PctlSMaxSessionsCount);
+            _pctlServerManager.RegisterObjectForServer(_pctlASericeObject, _pctlAServiceName, PctlAMaxSessionsCount);
+            _pctlServerManager.RegisterObjectForServer(_pctlRSericeObject, _pctlRServiceName, PctlRMaxSessionsCount);
         }
 
         public void ServiceRequests()
         {
             _pctlServerManager.ServiceRequests();
-            _pctlSServerManager.ServiceRequests();
-            _pctlAServerManager.ServiceRequests();
-            _pctlRServerManager.ServiceRequests();
         }
 
         public void Shutdown()
         {
             _pctlServerManager.Dispose();
-            _pctlSServerManager.Dispose();
-            _pctlAServerManager.Dispose();
-            _pctlRServerManager.Dispose();
         }
     }
 }
