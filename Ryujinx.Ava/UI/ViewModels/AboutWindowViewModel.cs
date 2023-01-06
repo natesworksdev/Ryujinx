@@ -98,7 +98,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                 DiscordLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_Discord_Light.png?assembly=Ryujinx.Ui.Common")));
                 PatreonLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_Patreon_Light.png?assembly=Ryujinx.Ui.Common")));
                 TwitterLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_Twitter_Light.png?assembly=Ryujinx.Ui.Common")));
-            } else
+            }
+            else
             {
                 GithubLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_GitHub_Dark.png?assembly=Ryujinx.Ui.Common")));
                 DiscordLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_Discord_Dark.png?assembly=Ryujinx.Ui.Common")));
