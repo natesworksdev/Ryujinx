@@ -160,7 +160,14 @@ namespace Ryujinx.Horizon.Generators.Hipc
                         args[index++] = arg;
                     }
 
-                    generator.AppendLine($"{{ {commandId}, new CommandHandler({method.Identifier.Text}, {string.Join(", ", args)}) }},");
+                    if (args.Length == 0)
+                    {
+                        generator.AppendLine($"{{ {commandId}, new CommandHandler({method.Identifier.Text}, Array.Empty<CommandArg>()) }},");
+                    }
+                    else
+                    {
+                        generator.AppendLine($"{{ {commandId}, new CommandHandler({method.Identifier.Text}, {string.Join(", ", args)}) }},");
+                    }
                 }
             }
 

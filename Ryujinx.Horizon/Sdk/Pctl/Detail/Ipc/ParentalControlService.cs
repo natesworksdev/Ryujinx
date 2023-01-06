@@ -25,10 +25,49 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
         private bool _stereoVisionRestrictionConfigurable = true;
         private bool _stereoVisionRestriction             = false;
 
-        [CmifCommand(1)]
+        [CmifCommand(1)] // 4.0.0+
+        // Initialize()
         public Result Initialize()
         {
-            return Result.Success;
+            if ((_permissionFlag & 0x8001) == 0)
+            {
+                return PctlResult.PermissionDenied;
+            }
+
+            Result result = PctlResult.InvalidPid;
+
+            if (_pid != 0)
+            {
+                if ((_permissionFlag & 0x40) == 0)
+                {
+                    /*ulong titleId = ApplicationLaunchProperty.GetByPid(context).TitleId;
+
+                    if (titleId != 0)
+                    {
+                        _titleId = titleId;
+
+                        // TODO: Call nn::arp::GetApplicationControlProperty here when implemented, if it return ResultCode.Success we assign fields.
+                        _ratingAge           = Array.ConvertAll(context.Device.Application.ControlData.Value.RatingAge.ItemsRo.ToArray(), Convert.ToInt32);
+                        _parentalControlFlag = context.Device.Application.ControlData.Value.ParentalControlFlag;
+                    }*/
+                }
+
+                if (_titleId != 0)
+                {
+                    // TODO: Service store some private fields in another static object.
+
+                    if ((_permissionFlag & 0x8040) == 0)
+                    {
+                        // TODO: Service store TitleId and FreeCommunicationEnabled in another static object.
+                        //       When it's done it signal an event in this static object.
+                        Logger.Stub?.PrintStub(LogClass.ServicePctl);
+                    }
+                }
+
+                result = Result.Success;
+            }
+
+            return result;
         }
 
         [CmifCommand(1001)]
