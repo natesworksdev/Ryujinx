@@ -13,12 +13,12 @@ namespace Ryujinx.Horizon.Pctl
         private const int PctlTotalMaxSessionsCount =
             PctlMaxSessionsCount + PctlSMaxSessionsCount + PctlAMaxSessionsCount + PctlRMaxSessionsCount;
 
+        private const int PointerBufferSize = 0x80;
         // TODO: Use actual values these are from LogManager
-        private const int PointerBufferSize = 0x400;
         private const int MaxDomains = 31;
         private const int MaxDomainObjects = 61;
 
-        private const int MaxPortsCount = 1;
+        private const int MaxPortsCount = 4;
 
         private static readonly ManagerOptions _pctlManagerOptions = new ManagerOptions(
                 PointerBufferSize,
