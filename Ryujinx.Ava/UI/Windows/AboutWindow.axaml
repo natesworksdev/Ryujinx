@@ -209,7 +209,7 @@
 					TextWrapping="Wrap"
 					Text="{Binding Developers}" />
 				<Button
-					HorizontalAlignment="Right"
+					HorizontalAlignment="Left"
 					Background="Transparent"
 					Click="Button_OnClick"
 					Padding="5"
