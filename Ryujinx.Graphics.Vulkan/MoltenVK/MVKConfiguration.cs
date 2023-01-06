@@ -1,5 +1,5 @@
-using Silk.NET.Core;
 using System;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Vulkan.MoltenVK
 {
@@ -45,6 +45,25 @@ namespace Ryujinx.Graphics.Vulkan.MoltenVK
         MVK_CONFIG_VK_SEMAPHORE_SUPPORT_STYLE_MAX_ENUM = 0x7FFFFFFF
     }
 
+    readonly struct Bool32
+    {
+        uint Value { get; }
+
+        public Bool32(uint value)
+        {
+            Value = value;
+        }
+
+        public Bool32(bool value)
+        {
+            Value = value ? 1u : 0u;
+        }
+
+        public static implicit operator bool(Bool32 val) => val.Value == 1;
+        public static implicit operator Bool32(bool val) => new Bool32(val);
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     struct MVKConfiguration
     {
         public Bool32 DebugMode;

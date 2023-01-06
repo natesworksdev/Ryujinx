@@ -6,13 +6,13 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.Graphics.Vulkan.MoltenVK
 {
     [SupportedOSPlatform("macos")]
-    public static class MVKInitialization
+    public static partial class MVKInitialization
     {
-        [DllImport("libMoltenVK.dylib")]
-        private static extern Result vkGetMoltenVKConfigurationMVK(IntPtr unusedInstance, out MVKConfiguration config, in IntPtr configSize);
+        [LibraryImport("libMoltenVK.dylib")]
+        private static partial Result vkGetMoltenVKConfigurationMVK(IntPtr unusedInstance, out MVKConfiguration config, in IntPtr configSize);
 
-        [DllImport("libMoltenVK.dylib")]
-        private static extern Result vkSetMoltenVKConfigurationMVK(IntPtr unusedInstance, in MVKConfiguration config, in IntPtr configSize);
+        [LibraryImport("libMoltenVK.dylib")]
+        private static partial Result vkSetMoltenVKConfigurationMVK(IntPtr unusedInstance, in MVKConfiguration config, in IntPtr configSize);
 
         public static void Initialize()
         {
