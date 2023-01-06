@@ -1,3 +1,4 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Pctl;
 using Ryujinx.Horizon.Sdk.Pctl.Detail.Service.Watcher;
@@ -11,6 +12,12 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
 {
     partial class ParentalControlService : IParentalControlService
     {
+        private ulong                    _pid;
+        private int                      _permissionFlag;
+        private ulong                    _titleId;
+        private ParentalControlFlagValue _parentalControlFlag;
+        private int[]                    _ratingAge;
+
         // TODO: Find where they are set.
         private bool _restrictionEnabled                  = false;
         private bool _featuresRestriction                 = false;
@@ -25,8 +32,21 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
         }
 
         [CmifCommand(1001)]
-        public Result TryBeginFreeCommunication()
+        // CheckFreeCommunicationPermission()
+        public Result CheckFreeCommunicationPermission()
         {
+            if (_parentalControlFlag == ParentalControlFlagValue.FreeCommunication && _restrictionEnabled)
+            {
+                // TODO: It seems to checks if an entry exists in the FreeCommunicationApplicationList using the TitleId.
+                //       Then it returns FreeCommunicationDisabled if the entry doesn't exist.
+
+                return PctlResult.FreeCommunicationDisabled;
+            }
+
+            _freeCommunicationEnabled = true;
+
+            Logger.Stub?.PrintStub(LogClass.ServicePctl);
+
             return Result.Success;
         }
 
@@ -107,10 +127,11 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             return Result.Success;
         }
 
-        [CmifCommand(1013)]
+        [CmifCommand(1013)] // 4.0.0+
+        // ConfirmStereoVisionPermission()
         public Result ConfirmStereoVisionPermission()
         {
-            return Result.Success;
+            return IsStereoVisionPermittedImpl();
         }
 
         [CmifCommand(1014)]
@@ -136,22 +157,43 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             return Result.Success;
         }
 
-        [CmifCommand(1017)]
+        [CmifCommand(1017)] // 10.0.0+
+        // EndFreeCommunication()
         public Result EndFreeCommunication()
         {
+            _freeCommunicationEnabled = false;
+
             return Result.Success;
         }
 
         [CmifCommand(1018)]
+        // IsFreeCommunicationAvailable()
         public Result IsFreeCommunicationAvailable()
         {
+            if (_parentalControlFlag == ParentalControlFlagValue.FreeCommunication && _restrictionEnabled)
+            {
+                // TODO: It seems to checks if an entry exists in the FreeCommunicationApplicationList using the TitleId.
+                //       Then it returns FreeCommunicationDisabled if the entry doesn't exist.
+
+                return PctlResult.FreeCommunicationDisabled;
+            }
+
+            Logger.Stub?.PrintStub(LogClass.ServicePctl);
+
             return Result.Success;
         }
 
         [CmifCommand(1031)]
-        public Result IsRestrictionEnabled(out bool arg0)
+        // IsRestrictionEnabled() -> b8
+        public Result IsRestrictionEnabled(out bool restrictionEnabled)
         {
-            arg0 = default;
+            if ((_permissionFlag & 0x140) == 0)
+            {
+                restrictionEnabled = default;
+                return PctlResult.PermissionDenied;
+            }
+
+            restrictionEnabled = _restrictionEnabled;
 
             return Result.Success;
         }
@@ -274,10 +316,23 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             return Result.Success;
         }
 
-        [CmifCommand(1061)]
+        [CmifCommand(1061)] // 4.0.0+
+        // ConfirmStereoVisionRestrictionConfigurable()
         public Result ConfirmStereoVisionRestrictionConfigurable()
         {
-            return Result.Success;
+            if ((_permissionFlag & 2) == 0)
+            {
+                return PctlResult.PermissionDenied;
+            }
+
+            if (_stereoVisionRestrictionConfigurable)
+            {
+                return Result.Success;
+            }
+            else
+            {
+                return PctlResult.StereoVisionRestrictionConfigurableDisabled;
+            }
         }
 
         [CmifCommand(1062)] // 4.0.0+

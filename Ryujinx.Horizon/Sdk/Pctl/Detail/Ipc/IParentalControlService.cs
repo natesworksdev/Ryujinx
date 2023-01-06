@@ -10,7 +10,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
     interface IParentalControlService : IServiceObject
     {
         Result Initialize();
-        Result TryBeginFreeCommunication();
+        Result CheckFreeCommunicationPermission();
         Result ConfirmLaunchApplicationPermission(ApplicationId arg0, ReadOnlySpan<sbyte> arg1, bool arg2);
         Result ConfirmResumeApplicationPermission(ApplicationId arg0, ReadOnlySpan<sbyte> arg1, bool arg2);
         Result ConfirmSnsPostPermission();
