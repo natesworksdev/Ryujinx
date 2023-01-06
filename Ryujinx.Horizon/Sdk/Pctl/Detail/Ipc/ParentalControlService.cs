@@ -220,7 +220,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             return IsStereoVisionPermittedImpl();
         }
 
-        [CmifCommand(1014)]
+        [CmifCommand(1014)] // 5.0.0+
         public Result ConfirmPlayableApplicationVideoOld([Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<sbyte> arg0)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
@@ -231,7 +231,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             throw new NotImplementedException();
         }
 
-        [CmifCommand(1015)]
+        [CmifCommand(1015)] // 5.0.0+
         public Result ConfirmPlayableApplicationVideo(ApplicationId arg0, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<sbyte> arg1)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
@@ -242,7 +242,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             throw new NotImplementedException();
         }
 
-        [CmifCommand(1016)]
+        [CmifCommand(1016)] // 6.0.0+
         public Result ConfirmShowNewsPermission([Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<sbyte> arg0)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
@@ -262,7 +262,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             return Result.Success;
         }
 
-        [CmifCommand(1018)]
+        [CmifCommand(1018)] // 10.0.0+
         // IsFreeCommunicationAvailable()
         public Result IsFreeCommunicationAvailable()
         {
@@ -439,7 +439,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             throw new NotImplementedException();
         }
 
-        [CmifCommand(1047)]
+        [CmifCommand(1047)] // 3.0.0+
         public Result NotifyApplicationDownloadStarted(ApplicationId arg0)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
@@ -450,7 +450,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             throw new NotImplementedException();
         }
 
-        [CmifCommand(1048)]
+        [CmifCommand(1048)] // 6.0.0+
         public Result NotifyNetworkProfileCreated()
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
@@ -461,7 +461,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             throw new NotImplementedException();
         }
 
-        [CmifCommand(1049)]
+        [CmifCommand(1049)] // 11.0.0+
         public Result ResetFreeCommunicationApplicationList()
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
@@ -664,7 +664,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             throw new NotImplementedException();
         }
 
-        [CmifCommand(1208)]
+        [CmifCommand(1208)] // 4.0.0+
         public Result GetPinCode(out int arg0, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.Pointer)] Span<sbyte> arg1)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
@@ -736,7 +736,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             throw new NotImplementedException();
         }
 
-        [CmifCommand(1425)]
+        [CmifCommand(1425)] // 6.0.0+
         public Result RequestPostEvents(out int arg0, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias)] Span<EventData> arg1)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
@@ -748,7 +748,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             throw new NotImplementedException();
         }
 
-        [CmifCommand(1426)]
+        [CmifCommand(1426)] // 11.0.0+
         public Result GetPostEventInterval(out int arg0)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
@@ -760,7 +760,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             throw new NotImplementedException();
         }
 
-        [CmifCommand(1427)]
+        [CmifCommand(1427)] // 11.0.0+
         public Result SetPostEventInterval(int arg0)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
@@ -865,7 +865,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             throw new NotImplementedException();
         }
 
-        [CmifCommand(1458)]
+        [CmifCommand(1458)] // 4.0.0+
         public Result IsPlayTimerAlarmDisabled(out bool arg0)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
@@ -981,7 +981,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             throw new NotImplementedException();
         }
 
-        [CmifCommand(1903)]
+        [CmifCommand(1903)] // 5.0.0+
         public Result GetExemptApplicationListCountForDebug(out int arg0)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
@@ -993,7 +993,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             throw new NotImplementedException();
         }
 
-        [CmifCommand(1904)]
+        [CmifCommand(1904)] // 5.0.0+
         public Result GetExemptApplicationListForDebug(out int arg0, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias)] Span<ExemptApplicationInfo> arg1, int arg2)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
@@ -1005,7 +1005,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             throw new NotImplementedException();
         }
 
-        [CmifCommand(1905)]
+        [CmifCommand(1905)] // 5.0.0+
         public Result UpdateExemptApplicationListForDebug([Buffer(HipcBufferFlags.In | HipcBufferFlags.MapAlias)] ReadOnlySpan<ExemptApplicationInfo> arg0)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
@@ -1016,7 +1016,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             throw new NotImplementedException();
         }
 
-        [CmifCommand(1906)]
+        [CmifCommand(1906)] // 5.0.0+
         public Result AddToExemptApplicationListForDebug(ApplicationId arg0)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
@@ -1027,7 +1027,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             throw new NotImplementedException();
         }
 
-        [CmifCommand(1907)]
+        [CmifCommand(1907)] // 5.0.0+
         public Result DeleteFromExemptApplicationListForDebug(ApplicationId arg0)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
@@ -1038,7 +1038,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             throw new NotImplementedException();
         }
 
-        [CmifCommand(1908)]
+        [CmifCommand(1908)] // 5.0.0+
         public Result ClearExemptApplicationListForDebug()
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
@@ -1083,7 +1083,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             throw new NotImplementedException();
         }
 
-        [CmifCommand(1953)]
+        [CmifCommand(1953)] // 4.0.0+
         public Result SetPlayTimerAlarmDisabledForDebug(bool arg0)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
@@ -1281,7 +1281,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl.Detail.Ipc
             throw new NotImplementedException();
         }
 
-        [CmifCommand(2016)]
+        [CmifCommand(2016)] // 5.0.0+
         public Result RequestUpdateExemptionListAsync(out AsyncData arg0, [CopyHandle] out int arg1, ApplicationId arg2, bool arg3)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
