@@ -1,4 +1,5 @@
 using Ryujinx.Horizon.Common;
+using Ryujinx.Horizon.Sdk.Pctl.Detail.Service.Watcher;
 using Ryujinx.Horizon.Sdk.Sf;
 using Ryujinx.Horizon.Sdk.Time;
 using System;
