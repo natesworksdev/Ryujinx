@@ -614,11 +614,6 @@ namespace Ryujinx.Graphics.Vulkan
             _syncManager.Wait(id);
         }
 
-        public ulong GetCurrentSync()
-        {
-            return _syncManager.GetCurrent();
-        }
-
         public void SetInterruptAction(Action<Action> interruptAction)
         {
             InterruptAction = interruptAction;

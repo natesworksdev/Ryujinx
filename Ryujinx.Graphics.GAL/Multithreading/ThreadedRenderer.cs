@@ -354,11 +354,6 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             return box.Result;
         }
 
-        public ulong GetCurrentSync()
-        {
-            return _baseRenderer.GetCurrentSync();
-        }
-
         public HardwareInfo GetHardwareInfo()
         {
             return _baseRenderer.GetHardwareInfo();

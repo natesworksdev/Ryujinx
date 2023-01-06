@@ -242,11 +242,6 @@ namespace Ryujinx.Graphics.OpenGL
             _sync.Wait(id);
         }
 
-        public ulong GetCurrentSync()
-        {
-            return _sync.GetCurrent();
-        }
-
         public void SetInterruptAction(Action<Action> interruptAction)
         {
             // Currently no need for an interrupt action.
