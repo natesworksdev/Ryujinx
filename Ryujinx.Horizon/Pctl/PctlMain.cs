@@ -4,7 +4,11 @@ namespace Ryujinx.Horizon.Pctl
     {
         public static void Main()
         {
-            throw new System.NotImplementedException();
+            PctlIpcServer ipcServer = new PctlIpcServer();
+
+            ipcServer.Initialize();
+            ipcServer.ServiceRequests();
+            ipcServer.Shutdown();
         }
     }
 }

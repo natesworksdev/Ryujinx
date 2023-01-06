@@ -52,5 +52,21 @@ namespace Ryujinx.Horizon.Pctl
             _pctlAServerManager.RegisterObjectForServer(_pctlASericeObject, _pctlAServiceName, PctlAMaxSessionsCount);
             _pctlRServerManager.RegisterObjectForServer(_pctlRSericeObject, _pctlRServiceName, PctlRMaxSessionsCount);
         }
+
+        public void ServiceRequests()
+        {
+            _pctlServerManager.ServiceRequests();
+            _pctlSServerManager.ServiceRequests();
+            _pctlAServerManager.ServiceRequests();
+            _pctlRServerManager.ServiceRequests();
+        }
+
+        public void Shutdown()
+        {
+            _pctlServerManager.Dispose();
+            _pctlSServerManager.Dispose();
+            _pctlAServerManager.Dispose();
+            _pctlRServerManager.Dispose();
+        }
     }
 }
