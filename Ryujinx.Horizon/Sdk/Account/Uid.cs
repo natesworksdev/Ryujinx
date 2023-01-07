@@ -1,5 +1,4 @@
-﻿using LibHac.Account;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -7,28 +6,28 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.Horizon.Sdk.Account
 {
     [StructLayout(LayoutKind.Sequential)]
-    public readonly record struct UserId
+    public readonly record struct Uid
     {
         public readonly long High;
         public readonly long Low;
 
         public bool IsNull => (Low | High) == 0;
 
-        public static UserId Null => new(0, 0);
+        public static Uid Null => new(0, 0);
 
-        public UserId(long low, long high)
+        public Uid(long low, long high)
         {
             Low  = low;
             High = high;
         }
 
-        public UserId(byte[] bytes)
+        public Uid(byte[] bytes)
         {
             High = BitConverter.ToInt64(bytes, 0);
             Low  = BitConverter.ToInt64(bytes, 8);
         }
 
-        public UserId(string hex)
+        public Uid(string hex)
         {
             if (hex == null || hex.Length != 32 || !hex.All("0123456789abcdefABCDEF".Contains))
             {
@@ -50,9 +49,9 @@ namespace Ryujinx.Horizon.Sdk.Account
             return High.ToString("x16") + Low.ToString("x16");
         }
 
-        public Uid ToLibHacUid()
+        public LibHac.Account.Uid ToLibHacUid()
         {
-            return new Uid((ulong)High, (ulong)Low);
+            return new LibHac.Account.Uid((ulong)High, (ulong)Low);
         }
 
         public UInt128 ToUInt128()

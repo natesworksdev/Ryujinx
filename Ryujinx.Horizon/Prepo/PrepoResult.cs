@@ -10,5 +10,6 @@ namespace Ryujinx.Horizon.Prepo
         public static Result InvalidState      => new(ModuleId, 5);
         public static Result InvalidBufferSize => new(ModuleId, 9);
         public static Result PermissionDenied  => new(ModuleId, 90);
+        public static Result InvalidPid        => new(ModuleId, 101);
     }
 }

@@ -14,7 +14,7 @@ namespace Ryujinx.Horizon.LogManager
 
         private static readonly ManagerOptions _logManagerOptions = new(PointerBufferSize, MaxDomains, MaxDomainObjects, false);
 
-        private SmApi _sm;
+        private SmApi         _sm;
         private ServerManager _serverManager;
 
         public void Initialize()
@@ -26,7 +26,7 @@ namespace Ryujinx.Horizon.LogManager
 
             _serverManager = new ServerManager(allocator, _sm, MaxPortsCount, _logManagerOptions, LogMaxSessionsCount);
 
-            _serverManager.RegisterObjectForServer(new ILogService(), ServiceName.Encode("lm"), LogMaxSessionsCount);
+            _serverManager.RegisterObjectForServer(new LogService(), ServiceName.Encode("lm"), LogMaxSessionsCount);
         }
 
         public void ServiceRequests()

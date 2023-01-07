@@ -6,13 +6,13 @@ namespace Ryujinx.Horizon
 {
     public struct ServiceEntry
     {
-        private readonly Action _entrypoint;
+        private readonly Action         _entrypoint;
         private readonly HorizonOptions _options;
 
         internal ServiceEntry(Action entrypoint, HorizonOptions options)
         {
             _entrypoint = entrypoint;
-            _options = options;
+            _options    = options;
         }
 
         public void Start(ISyscallApi syscallApi, IVirtualMemoryManager addressSpace, IThreadContext threadContext)

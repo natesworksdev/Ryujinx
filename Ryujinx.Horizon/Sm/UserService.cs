@@ -10,7 +10,7 @@ namespace Ryujinx.Horizon.Sm
         private readonly ServiceManager _serviceManager;
 
         private ulong _clientProcessId;
-        private bool _initialized;
+        private bool  _initialized;
 
         public UserService(ServiceManager serviceManager)
         {
@@ -18,15 +18,17 @@ namespace Ryujinx.Horizon.Sm
         }
 
         [CmifCommand(0)]
+        // Initialize(pid, u64 reserved)
         public Result Initialize([ClientProcessId] ulong clientProcessId)
         {
             _clientProcessId = clientProcessId;
-            _initialized = true;
+            _initialized     = true;
 
             return Result.Success;
         }
 
         [CmifCommand(1)]
+        // GetService(ServiceName name) -> handle<move, session>
         public Result GetService([MoveHandle] out int handle, ServiceName name)
         {
             if (!_initialized)
@@ -40,6 +42,7 @@ namespace Ryujinx.Horizon.Sm
         }
 
         [CmifCommand(2)]
+        // RegisterService(ServiceName name, u8 isLight, u32 maxHandles) -> handle<move, port>
         public Result RegisterService([MoveHandle] out int handle, ServiceName name, int maxSessions, bool isLight)
         {
             if (!_initialized)
@@ -53,6 +56,7 @@ namespace Ryujinx.Horizon.Sm
         }
 
         [CmifCommand(3)]
+        // UnregisterService(ServiceName name)
         public Result UnregisterService(ServiceName name)
         {
             if (!_initialized)

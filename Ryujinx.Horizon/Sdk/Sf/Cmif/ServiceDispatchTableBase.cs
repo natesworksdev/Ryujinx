@@ -46,6 +46,8 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
                     CommandHandler.GetCmifOutHeaderPointer(ref outHeader, ref outRawData);
                     outHeader[0] = new CmifOutHeader() { Magic = CmifMessage.CmifOutHeaderMagic, Result = Result.Success };
 
+                    Logger.Warning?.Print(LogClass.Service, $"Missing service {objectName} (command ID: {commandId}) ignored");
+
                     return Result.Success;
                 }
                 else if (HorizonStatic.Options.ThrowOnInvalidCommandIds)
@@ -74,6 +76,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
             if (outHeader.IsEmpty)
             {
                 commandResult.AbortOnSuccess();
+
                 return commandResult;
             }
 

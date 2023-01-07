@@ -11,12 +11,12 @@ using System.Text;
 
 namespace Ryujinx.Horizon.LogManager
 {
-    partial class ILogger : IServiceObject
+    partial class LmLogger : IServiceObject
     {
-        private readonly ILogService _log;
-        private readonly ulong _pid;
+        private readonly LogService _log;
+        private readonly ulong      _pid;
 
-        public ILogger(ILogService log, ulong pid)
+        public LmLogger(LogService log, ulong pid)
         {
             _log = log;
             _pid = pid;
@@ -50,7 +50,6 @@ namespace Ryujinx.Horizon.LogManager
             ref LogPacketHeader header = ref MemoryMarshal.Cast<byte, LogPacketHeader>(message)[0];
 
             uint expectedMessageSize = (uint)Unsafe.SizeOf<LogPacketHeader>() + header.PayloadSize;
-
             if (expectedMessageSize != (uint)message.Length)
             {
                 Logger.Warning?.Print(LogClass.ServiceLm, $"Invalid message size (expected 0x{expectedMessageSize:X} but got 0x{message.Length:X}).");
@@ -65,13 +64,11 @@ namespace Ryujinx.Horizon.LogManager
 
         private static string LogImpl(ReadOnlySpan<byte> message)
         {
-            SpanReader reader = new(message);
+            SpanReader      reader  = new(message);
+            LogPacketHeader header  = reader.Read<LogPacketHeader>();
+            StringBuilder   builder = new();
 
-            LogPacketHeader header = reader.Read<LogPacketHeader>();
-
-            StringBuilder sb = new();
-
-            sb.AppendLine($"Guest Log:\n  Log level: {header.Severity}");
+            builder.AppendLine($"Guest Log:\n  Log level: {header.Severity}");
 
             while (reader.Length > 0)
             {
@@ -113,10 +110,10 @@ namespace Ryujinx.Horizon.LogManager
                     fieldStr = $"Field{field}: '{Encoding.UTF8.GetString(reader.GetSpan(size)).TrimEnd()}'";
                 }
 
-                sb.AppendLine($"    {fieldStr}");
+                builder.AppendLine($"    {fieldStr}");
             }
 
-            return sb.ToString();
+            return builder.ToString();
         }
 
         private static int ReadUleb128(ref SpanReader reader)
