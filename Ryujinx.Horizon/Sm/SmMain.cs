@@ -14,8 +14,8 @@ namespace Ryujinx.Horizon.Sm
 
         private const int MaxPortsCount = 2;
 
-        private readonly ServerManager _serverManager = new ServerManager(null, null, MaxPortsCount, ManagerOptions.Default, 0);
-        private readonly ServiceManager _serviceManager = new ServiceManager();
+        private readonly ServerManager  _serverManager  = new(null, null, MaxPortsCount, ManagerOptions.Default, 0);
+        private readonly ServiceManager _serviceManager = new();
 
         public void Main()
         {

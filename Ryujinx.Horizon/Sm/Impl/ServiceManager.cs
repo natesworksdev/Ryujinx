@@ -140,6 +140,7 @@ namespace Ryujinx.Horizon.Sm.Impl
             }
 
             serviceInfo.Free();
+
             return Result.Success;
         }
 

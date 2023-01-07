@@ -1,10 +1,10 @@
-﻿namespace Ryujinx.Horizon.LogManager
+﻿namespace Ryujinx.Horizon.Prepo
 {
-    class LmMain : IService
+    class PrepoMain : IService
     {
         public static void Main()
         {
-            LmIpcServer ipcServer = new();
+            PrepoIpcServer ipcServer = new();
 
             ipcServer.Initialize();
             ipcServer.ServiceRequests();

@@ -11,21 +11,22 @@ using System.Text;
 
 namespace Ryujinx.Horizon.LogManager
 {
-    partial class LmLogger : IServiceObject
+    partial class ILogger : IServiceObject
     {
-        private readonly LmLog _log;
-        private readonly ulong _clientProcessId;
+        private readonly ILogService _log;
+        private readonly ulong _pid;
 
-        public LmLogger(LmLog log, ulong clientProcessId)
+        public ILogger(ILogService log, ulong pid)
         {
             _log = log;
-            _clientProcessId = clientProcessId;
+            _pid = pid;
         }
 
         [CmifCommand(0)]
+        // Log(buffer<unknown, 0x21>)
         public Result Log([Buffer(HipcBufferFlags.In | HipcBufferFlags.AutoSelect)] Span<byte> message)
         {
-            if (!SetProcessId(message, _clientProcessId))
+            if (!SetProcessId(message, _pid))
             {
                 return Result.Success;
             }
@@ -35,7 +36,8 @@ namespace Ryujinx.Horizon.LogManager
             return Result.Success;
         }
 
-        [CmifCommand(1)]
+        [CmifCommand(1)] // 3.0.0+
+        // SetDestination(u32)
         public Result SetDestination(LogDestination destination)
         {
             _log.LogDestination = destination;
@@ -63,11 +65,11 @@ namespace Ryujinx.Horizon.LogManager
 
         private static string LogImpl(ReadOnlySpan<byte> message)
         {
-            SpanReader reader = new SpanReader(message);
+            SpanReader reader = new(message);
 
             LogPacketHeader header = reader.Read<LogPacketHeader>();
 
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
 
             sb.AppendLine($"Guest Log:\n  Log level: {header.Severity}");
 
@@ -78,7 +80,7 @@ namespace Ryujinx.Horizon.LogManager
 
                 LogDataChunkKey field = (LogDataChunkKey)type;
 
-                string fieldStr = string.Empty;
+                string fieldStr;
 
                 if (field == LogDataChunkKey.Start)
                 {
@@ -120,7 +122,7 @@ namespace Ryujinx.Horizon.LogManager
         private static int ReadUleb128(ref SpanReader reader)
         {
             int result = 0;
-            int count = 0;
+            int count  = 0;
 
             byte encoded;
 

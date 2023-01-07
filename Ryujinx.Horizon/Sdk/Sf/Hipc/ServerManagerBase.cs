@@ -198,15 +198,12 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 
         private Result Process(MultiWaitHolder holder)
         {
-            switch ((UserDataTag)holder.UserData)
+            return (UserDataTag)holder.UserData switch
             {
-                case UserDataTag.Server:
-                    return ProcessForServer(holder);
-                case UserDataTag.Session:
-                    return ProcessForSession(holder);
-                default:
-                    throw new NotImplementedException(((UserDataTag)holder.UserData).ToString());
-            }
+                UserDataTag.Server => ProcessForServer(holder),
+                UserDataTag.Session => ProcessForSession(holder),
+                _ => throw new NotImplementedException(((UserDataTag)holder.UserData).ToString()),
+            };
         }
 
         private Result ProcessForServer(MultiWaitHolder holder)

@@ -4,14 +4,15 @@ using Ryujinx.Horizon.Sdk.Sf;
 
 namespace Ryujinx.Horizon.LogManager
 {
-    partial class LmLog : IServiceObject
+    partial class ILogService : IServiceObject
     {
         public LogDestination LogDestination { get; set; } = LogDestination.TargetManager;
 
         [CmifCommand(0)]
-        public Result OpenLogger(out LmLogger logger, [ClientProcessId] ulong clientProcessId)
+        // OpenLogger(u64, pid) -> object<nn::lm::ILogger>
+        public Result OpenLogger(out ILogger logger, [ClientProcessId] ulong pid)
         {
-            logger = new LmLogger(this, clientProcessId);
+            logger = new ILogger(this, pid);
 
             return Result.Success;
         }
