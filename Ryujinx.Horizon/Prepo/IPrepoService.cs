@@ -10,7 +10,7 @@ namespace Ryujinx.Horizon.Prepo
         Result SaveReport(ReadOnlySpan<byte> gameRoomBuffer, ReadOnlySpan<byte> reportBuffer, ulong pid);
         Result SaveReportWithUser(UserId userId, ReadOnlySpan<byte> gameRoomBuffer, ReadOnlySpan<byte> reportBuffer, ulong pid);
         Result RequestImmediateTransmission();
-        Result GetTransmissionStatus(out int resultCode);
+        Result GetTransmissionStatus(out int status);
         Result GetSystemSessionId(out ulong systemSessionId);
         Result SaveSystemReport(ReadOnlySpan<byte> gameRoomBuffer, ReadOnlySpan<byte> reportBuffer, ulong pid);
         Result SaveSystemReportWithUser(UserId userId, ReadOnlySpan<byte> gameRoomBuffer, ReadOnlySpan<byte> reportBuffer, ulong pid);
