@@ -14,7 +14,7 @@ namespace Ryujinx.Horizon.Pctl
             PctlMaxSessionsCount + PctlSMaxSessionsCount + PctlAMaxSessionsCount + PctlRMaxSessionsCount;
 
         private const int PointerBufferSize = 0x80;
-        private const int MaxDomains = 31;
+        private const int MaxDomains = 32;
         private const int MaxDomainObjects = 64;
 
         private const int MaxPortsCount = 4;
