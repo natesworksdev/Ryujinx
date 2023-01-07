@@ -24,36 +24,6 @@ namespace Ryujinx.Ava.UI.Windows
             InitializeComponent();
         }
 
-        private void InputElement_OnPointerEnter(object? sender, PointerEventArgs e)
-        {
-            if (e.GetCurrentPoint(null).Properties.IsLeftButtonPressed)
-            {
-                ListBoxItem lbi = (sender as TextBlock)?.Parent as ListBoxItem;
-                ListBox lb = lbi.Parent as ListBox;
-                lb.SelectedItems.Add((sender as TextBlock)?.DataContext);
-                e.Pointer.Capture(null);
-                e.Handled = true;
-            }
-        }
-
-        private void InputElement_OnPointerPressed(object? sender, PointerPressedEventArgs e)
-        {
-            if (e.GetCurrentPoint(null).Properties.IsLeftButtonPressed)
-            {
-                ListBoxItem lbi = (sender as TextBlock)?.Parent as ListBoxItem;
-                ListBox lb = lbi.Parent as ListBox;
-                lb.SelectedItems.Clear();
-                lb.SelectedItems.Add((sender as TextBlock)?.DataContext);
-                e.Pointer.Capture(null);
-                e.Handled = true;
-            }
-        }
-
-        private void ConsoleListBox_OnPointerPressed(object? sender, PointerPressedEventArgs e)
-        {
-            e.Handled = true;
-        }
-
         protected override void OnClosing(CancelEventArgs e)
         {
             Hide();
@@ -61,6 +31,19 @@ namespace Ryujinx.Ava.UI.Windows
             ConfigurationState.Instance.Ui.ShowConsole.Value = false;
 
             base.OnClosing(e);
+        }
+
+        private void ConsoleListBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is ListBox listBox)
+            {
+                if (listBox.Selection.Count > 0)
+                {
+                    string text = ((InMemoryLogTarget.Entry)listBox.SelectedItem).Text;
+                    Application.Current.Clipboard.SetTextAsync(text).Wait();
+                    listBox.Selection.Clear();
+                }
+            }
         }
     }
 }

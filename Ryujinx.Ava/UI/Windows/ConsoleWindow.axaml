@@ -6,7 +6,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     xmlns:window="clr-namespace:Ryujinx.Ava.UI.Windows"
-    xmlns:system="clr-namespace:System;assembly=System.Runtime"
     Title="Ryujinx Console"
     Width="800"
     Height="480"
@@ -24,12 +23,11 @@
             x:Name="ConsoleListBox"
             Items="{Binding LogEntries}"
             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-            SelectionMode="Multiple"
-            PointerPressed="ConsoleListBox_OnPointerPressed">
+            ScrollViewer.VerticalScrollBarVisibility="Visible"
+            SelectionChanged="ConsoleListBox_OnSelectionChanged">
             <ListBox.Styles>
                 <Style Selector="ListBoxItem">
                     <Setter Property="FontFamily" Value="Inconsolata, Consolas, Monospace, Courier" />
-                    <Setter Property="Margin" Value="0" />
                     <Setter Property="Padding" Value="0" />
                     <Setter Property="MinHeight" Value="0" />
                 </Style>
@@ -37,9 +35,6 @@
             <ListBox.DataTemplates>
                 <DataTemplate>
                     <TextBlock
-                        HorizontalAlignment="Stretch"
-                        PointerEnter="InputElement_OnPointerEnter"
-                        PointerPressed="InputElement_OnPointerPressed"
                         Text="{Binding Text}"
                         TextWrapping="Wrap">
                         <TextBlock.Foreground>
