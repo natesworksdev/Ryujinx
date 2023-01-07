@@ -183,7 +183,7 @@ namespace Ryujinx.Horizon.Prepo
                 }
             }
 
-            string gameRoom = Encoding.UTF8.GetString(gameRoomBuffer.ToArray()).TrimEnd();
+            string gameRoom = Encoding.UTF8.GetString(gameRoomBuffer).TrimEnd();
 
             if (gameRoom == string.Empty)
             {
