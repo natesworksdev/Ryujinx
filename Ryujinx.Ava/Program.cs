@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Threading;
+using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
@@ -136,6 +137,7 @@ namespace Ryujinx.Ava
 
             // Initialize the logger system.
             LoggerModule.Initialize();
+            InMemoryLogTarget.Register();
 
             // Register mime types on linux.
             if (OperatingSystem.IsLinux())

@@ -68,7 +68,7 @@
                         </CheckBox>
                     </MenuItem.Icon>
                 </MenuItem>
-                <MenuItem IsVisible="{Binding ShowConsoleVisible}">
+                <MenuItem>
                     <MenuItem.Icon>
                         <CheckBox IsChecked="{Binding ShowConsole, Mode=TwoWay}"
                                   MinWidth="250">

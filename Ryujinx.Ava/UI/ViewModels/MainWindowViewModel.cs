@@ -119,6 +119,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 Volume = ConfigurationState.Instance.System.AudioVolume;
             }
+
+            ConfigurationState.Instance.Ui.ShowConsole.Event += delegate { OnPropertyChanged(nameof(ShowConsole)); };
         }
 
         public void Initialize(
@@ -667,11 +669,6 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 OnPropertyChanged();
             }
-        }
-
-        public bool ShowConsoleVisible
-        {
-            get => ConsoleHelper.SetConsoleWindowStateSupported;
         }
 
         public ObservableCollection<ApplicationData> Applications

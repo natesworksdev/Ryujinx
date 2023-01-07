@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
@@ -20,6 +21,8 @@ namespace Ryujinx.Ava
 {
     public class App : Application
     {
+        private ConsoleWindow _consoleWindow;
+
         public override void Initialize()
         {
             Name = $"Ryujinx {Program.Version}";
@@ -32,6 +35,7 @@ namespace Ryujinx.Ava
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 desktop.MainWindow = new MainWindow();
+                desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
             }
 
             base.OnFrameworkInitializationCompleted();
@@ -43,12 +47,32 @@ namespace Ryujinx.Ava
                 ConfigurationState.Instance.Ui.BaseStyle.Event += ThemeChanged_Event;
                 ConfigurationState.Instance.Ui.CustomThemePath.Event += ThemeChanged_Event;
                 ConfigurationState.Instance.Ui.EnableCustomTheme.Event += CustomThemeChanged_Event;
+                ConfigurationState.Instance.Ui.ShowConsole.Event += ShowConsoleChanged_Event;
+
+                if (ConfigurationState.Instance.Ui.ShowConsole.Value)
+                {
+                    _consoleWindow ??= new ConsoleWindow();
+                    _consoleWindow.Show();
+                }
             }
         }
 
         private void CustomThemeChanged_Event(object sender, ReactiveEventArgs<bool> e)
         {
             ApplyConfiguredTheme();
+        }
+
+        private void ShowConsoleChanged_Event(object sender, ReactiveEventArgs<bool> e)
+        {
+            _consoleWindow ??= new ConsoleWindow();
+            if (e.NewValue)
+            {
+                _consoleWindow.Show();
+            }
+            else
+            {
+                _consoleWindow.Hide();
+            }
         }
 
         private void ShowRestartDialog()

@@ -67,7 +67,7 @@
                 VerticalAlignment="Stretch"
                 IsVisible="{Binding ShowMenuAndStatusBar}"
                 Orientation="Vertical">
-                <main:MainMenuBarView 
+                <main:MainMenuBarView
                     Name="MenuBarView" />
             </StackPanel>
             <ContentControl
@@ -197,7 +197,7 @@
                     </Grid>
                 </Grid>
             </Grid>
-            <main:MainStatusBarView 
+            <main:MainStatusBarView
                 Name="StatusBarView"
                 Grid.Row="2" />
         </Grid>

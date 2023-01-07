@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Common.Logging
 {
-    interface ILogFormatter
+    public interface ILogFormatter
     {
         string Format(LogEventArgs args);
     }

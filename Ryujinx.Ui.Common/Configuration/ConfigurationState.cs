@@ -6,7 +6,6 @@ using Ryujinx.Common.Configuration.Hid.Keyboard;
 using Ryujinx.Common.Logging;
 using Ryujinx.Ui.Common.Configuration.System;
 using Ryujinx.Ui.Common.Configuration.Ui;
-using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.Generic;
 
@@ -145,7 +144,6 @@ namespace Ryujinx.Ui.Common.Configuration
                 IsAscendingOrder  = new ReactiveObject<bool>();
                 LanguageCode      = new ReactiveObject<string>();
                 ShowConsole       = new ReactiveObject<bool>();
-                ShowConsole.Event += static (s, e) => { ConsoleHelper.SetConsoleWindowState(e.NewValue); };
             }
         }
 
