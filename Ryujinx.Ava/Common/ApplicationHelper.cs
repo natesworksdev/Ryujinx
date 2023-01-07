@@ -80,7 +80,7 @@ namespace Ryujinx.Ava.Common
                     Dispatcher.UIThread.Post(async () =>
                     {
                         await ContentDialogHelper.CreateErrorDialog(
-                            string.Format(LocaleManager.Instance["DialogMessageCreateSaveErrorMessage"], result.ToStringWithName()));
+                            string.Format(LocaleManager.Instance[LocaleKeys.DialogMessageCreateSaveErrorMessage], result.ToStringWithName()));
                     });
 
                     return false;
@@ -99,7 +99,7 @@ namespace Ryujinx.Ava.Common
 
             Dispatcher.UIThread.Post(async () =>
             {
-                await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance["DialogMessageFindSaveErrorMessage"], result.ToStringWithName()));
+                await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[LocaleKeys.DialogMessageFindSaveErrorMessage], result.ToStringWithName()));
             });
 
             return false;
@@ -152,7 +152,7 @@ namespace Ryujinx.Ava.Common
         {
             var result = await _owner.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
-                Title = LocaleManager.Instance["FolderDialogExtractTitle"],
+                Title = LocaleManager.Instance[LocaleKeys.FolderDialogExtractTitle],
                 AllowMultiple = false
             });
 
@@ -168,11 +168,11 @@ namespace Ryujinx.Ava.Common
                     Dispatcher.UIThread.Post(async () =>
                     {
                         UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
-                            string.Format(LocaleManager.Instance["DialogNcaExtractionMessage"], ncaSectionType, Path.GetFileName(titleFilePath)),
+                            string.Format(LocaleManager.Instance[LocaleKeys.DialogNcaExtractionMessage], ncaSectionType, Path.GetFileName(titleFilePath)),
                             "",
                             "",
-                            LocaleManager.Instance["InputDialogCancel"],
-                            LocaleManager.Instance["DialogNcaExtractionTitle"]);
+                            LocaleManager.Instance[LocaleKeys.InputDialogCancel],
+                            LocaleManager.Instance[LocaleKeys.DialogNcaExtractionTitle]);
 
                         if (result == UserResult.Cancel)
                         {
@@ -238,7 +238,7 @@ namespace Ryujinx.Ava.Common
                                 "Extraction failure. The main NCA was not present in the selected file");
                             Dispatcher.UIThread.InvokeAsync(async () =>
                             {
-                                await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance["DialogNcaExtractionMainNcaNotFoundErrorMessage"]);
+                                await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogNcaExtractionMainNcaNotFoundErrorMessage]);
                             });
                             return;
                         }
@@ -279,7 +279,7 @@ namespace Ryujinx.Ava.Common
                                         $"LibHac returned error code: {resultCode.Value.ErrorCode}");
                                     Dispatcher.UIThread.InvokeAsync(async () =>
                                     {
-                                        await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance["DialogNcaExtractionCheckLogErrorMessage"]);
+                                        await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogNcaExtractionCheckLogErrorMessage]);
                                     });
                                 }
                                 else if (resultCode.Value.IsSuccess())
@@ -287,11 +287,11 @@ namespace Ryujinx.Ava.Common
                                     Dispatcher.UIThread.InvokeAsync(async () =>
                                     {
                                         await ContentDialogHelper.CreateInfoDialog(
-                                            LocaleManager.Instance["DialogNcaExtractionSuccessMessage"],
+                                            LocaleManager.Instance[LocaleKeys.DialogNcaExtractionSuccessMessage],
                                             "",
-                                            LocaleManager.Instance["InputDialogOk"],
+                                            LocaleManager.Instance[LocaleKeys.InputDialogOk],
                                             "",
-                                            LocaleManager.Instance["DialogNcaExtractionTitle"]);
+                                            LocaleManager.Instance[LocaleKeys.DialogNcaExtractionTitle]);
                                     });
                                 }
                             }

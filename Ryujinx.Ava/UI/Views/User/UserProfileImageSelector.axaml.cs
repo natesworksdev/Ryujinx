@@ -23,9 +23,9 @@ namespace Ryujinx.Ava.UI.Views.User
         private ContentManager _contentManager;
         private NavigationDialogHost _parent;
         private TempProfile _profile;
-        
+
         internal UserProfileImageSelectorViewModel ViewModel { get; private set; }
-        
+
         public UserProfileImageSelector()
         {
             InitializeComponent();
@@ -50,7 +50,7 @@ namespace Ryujinx.Ava.UI.Views.User
                             DataContext = ViewModel = new UserProfileImageSelectorViewModel();
                             ViewModel.FirmwareFound = _contentManager.GetCurrentFirmwareVersion() != null;
                         }
-                        
+
                         break;
                     case NavigationMode.Back:
                         _parent.GoBack();
@@ -67,7 +67,7 @@ namespace Ryujinx.Ava.UI.Views.User
                 AllowMultiple  = false,
                 FileTypeFilter = new List<FilePickerFileType>
                 {
-                    new(LocaleManager.Instance["AllSupportedFormats"])
+                    new(LocaleManager.Instance[LocaleKeys.AllSupportedFormats])
                     {
                         Patterns                    = new[] { "*.jpg", "*.jpeg", "*.png", "*.bmp" },
                         AppleUniformTypeIdentifiers = new[] { "public.jpeg", "public.png", "com.microsoft.bmp" },

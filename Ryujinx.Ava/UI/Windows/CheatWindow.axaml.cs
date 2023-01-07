@@ -13,25 +13,25 @@ namespace Ryujinx.Ava.UI.Windows
     public partial class CheatWindow : StyleableWindow
     {
         internal CheatWindowViewModel ViewModel { get; private set; }
-        
+
         public CheatWindow()
         {
             DataContext = this;
 
             InitializeComponent();
 
-            Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance["CheatWindowTitle"];
+            Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance[LocaleKeys.CheatWindowTitle];
         }
 
         public CheatWindow(VirtualFileSystem virtualFileSystem, string titleId, string titleName)
         {
             DataContext = ViewModel = new CheatWindowViewModel();
-            
+
             ViewModel.CloseAction += Close;
 
             ViewModel.LoadedCheats = new AvaloniaList<CheatsList>();
 
-            ViewModel.Heading = string.Format(LocaleManager.Instance["CheatWindowHeading"], titleName, titleId.ToUpper());
+            ViewModel.Heading = string.Format(LocaleManager.Instance[LocaleKeys.CheatWindowHeading], titleName, titleId.ToUpper());
 
             InitializeComponent();
 
@@ -83,8 +83,8 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 ViewModel.NoCheatsFound = true;
             }
-            
-            Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance["CheatWindowTitle"];
+
+            Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance[LocaleKeys.CheatWindowTitle];
         }
 
         private void CloseWindow(object sender, RoutedEventArgs e)

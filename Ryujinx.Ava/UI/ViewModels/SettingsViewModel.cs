@@ -71,11 +71,11 @@ namespace Ryujinx.Ava.UI.ViewModels
                     async void Action()
                     {
                         await ContentDialogHelper.CreateInfoDialog(
-                            LocaleManager.Instance["DialogSettingsBackendThreadingWarningMessage"], 
-                            "", 
-                            "", 
-                            LocaleManager.Instance["InputDialogOk"], 
-                            LocaleManager.Instance["DialogSettingsBackendThreadingWarningTitle"]);
+                            LocaleManager.Instance[LocaleKeys.DialogSettingsBackendThreadingWarningMessage],
+                            "",
+                            "",
+                            LocaleManager.Instance[LocaleKeys.InputDialogOk],
+                            LocaleManager.Instance[LocaleKeys.DialogSettingsBackendThreadingWarningTitle]);
                     }
 
                     Dispatcher.UIThread.Post(Action);
@@ -119,12 +119,12 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged();
             }
         }
-        
+
         public bool IsMacOS
         {
             get => OperatingSystem.IsMacOS();
         }
-        
+
         public bool EnableDiscordIntegration { get; set; }
         public bool CheckUpdatesOnStart { get; set; }
         public bool ShowConfirmExit { get; set; }
@@ -224,7 +224,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged();
             }
         }
-        
+
         public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager) : this()
         {
             _virtualFileSystem = virtualFileSystem;
@@ -465,7 +465,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.ToFileFormat().SaveConfig(Program.ConfigurationPath);
 
             MainWindow.UpdateGraphicsConfig();
-            
+
             SaveSettingsEvent?.Invoke();
 
             _directoryChanged = false;

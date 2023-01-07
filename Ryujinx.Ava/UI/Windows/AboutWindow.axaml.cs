@@ -4,7 +4,6 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.ViewModels;
-using Ryujinx.Common.Utilities;
 using Ryujinx.Ui.Common.Helper;
 using System.Net.Http;
 using System.Net.NetworkInformation;
@@ -14,26 +13,16 @@ namespace Ryujinx.Ava.UI.Windows
 {
     public partial class AboutWindow : StyleableWindow
     {
-        internal AboutWindowViewModel ViewModel { get; private set; }
-
         public AboutWindow()
         {
-            if (Program.PreviewerDetached)
-            {
-                Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance["MenuBarHelpAbout"];
-            }
-            
-            DataContext = ViewModel = new AboutWindowViewModel();
-            
-            ViewModel.Version = Program.Version;
-            ViewModel.Developers = string.Format(LocaleManager.Instance["AboutPageDeveloperListMore"], "gdkchan, Ac_K, Thog, rip in peri peri, LDj3SNuD, emmaus, Thealexbarney, Xpl0itR, GoffyDude, »jD«");
+            DataContext = new AboutWindowViewModel();
 
             InitializeComponent();
 
             _ = DownloadPatronsJson();
         }
 
-        private void Button_OnClick(object sender, RoutedEventArgs e)
+        public static async Task Show()
         {
             if (sender is Button button)
             {
@@ -45,7 +34,11 @@ namespace Ryujinx.Ava.UI.Windows
         {
             if (!NetworkInterface.GetIsNetworkAvailable())
             {
-                ViewModel.Supporters = LocaleManager.Instance["ConnectionError"];
+                PrimaryButtonText = "",
+                SecondaryButtonText = "",
+                CloseButtonText = LocaleManager.Instance[LocaleKeys.UserProfilesClose],
+                Content = content
+            };
 
                 return;
             }
@@ -56,11 +49,14 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 string patreonJsonString = await httpClient.GetStringAsync("https://patreon.ryujinx.org/");
 
-                ViewModel.Supporters = string.Join(", ", JsonHelper.Deserialize<string[]>(patreonJsonString));
-            }
-            catch
+            await contentDialog.ShowAsync();
+        }
+
+        private void Button_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button)
             {
-                ViewModel.Supporters = LocaleManager.Instance["ApiError"];
+                OpenHelper.OpenUrl(button.Tag.ToString());
             }
         }
 
