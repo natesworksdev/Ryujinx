@@ -135,7 +135,7 @@ namespace Ryujinx.Ava.UI.Views.Main
 
         public async void OpenAboutWindow(object sender, RoutedEventArgs e)
         {
-            await new AboutWindow().ShowDialog(Window);
+            await AboutWindow.Show();
         }
 
         public void CloseWindow(object sender, RoutedEventArgs e)
