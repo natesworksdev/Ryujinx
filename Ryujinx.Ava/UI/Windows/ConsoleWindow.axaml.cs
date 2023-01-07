@@ -1,19 +1,12 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Logging;
-using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ui.Common.Configuration;
-using SixLabors.ImageSharp;
-using System;
 using System.ComponentModel;
 
 namespace Ryujinx.Ava.UI.Windows
 {
     public partial class ConsoleWindow : StyleableWindow
     {
-        internal static ConsoleWindowViewModel ConsoleWindowViewModel { get; private set; }
+        private static ConsoleWindowViewModel ConsoleWindowViewModel { get; set; }
 
         public ConsoleWindow()
         {
@@ -22,6 +15,17 @@ namespace Ryujinx.Ava.UI.Windows
             DataContext = ConsoleWindowViewModel;
 
             InitializeComponent();
+
+            ConsoleScrollViewer.ScrollChanged += OnScrollChanged;
+            AutoScrollCheckBox.Checked += OnScrollChanged;
+        }
+
+        private void OnScrollChanged(object sender, object e)
+        {
+            if (AutoScrollCheckBox.IsChecked == true)
+            {
+                ConsoleScrollViewer.ScrollToEnd();
+            }
         }
 
         protected override void OnClosing(CancelEventArgs e)
@@ -31,19 +35,6 @@ namespace Ryujinx.Ava.UI.Windows
             ConfigurationState.Instance.Ui.ShowConsole.Value = false;
 
             base.OnClosing(e);
-        }
-
-        private void ConsoleListBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (sender is ListBox listBox)
-            {
-                if (listBox.Selection.Count > 0)
-                {
-                    string text = ((InMemoryLogTarget.Entry)listBox.SelectedItem).Text;
-                    Application.Current.Clipboard.SetTextAsync(text).Wait();
-                    listBox.Selection.Clear();
-                }
-            }
         }
     }
 }
