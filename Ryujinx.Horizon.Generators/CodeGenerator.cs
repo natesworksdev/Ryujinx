@@ -1,14 +1,13 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 
 namespace Ryujinx.Horizon.Generators
 {
     class CodeGenerator
     {
-        private const int SingleIndentLength = 4;
+        private const int IndentLength = 4;
 
         private readonly StringBuilder _sb;
-        private int _currentIndentCharsCount;
+        private int _currentIndentCount;
 
         public CodeGenerator()
         {
@@ -34,12 +33,15 @@ namespace Ryujinx.Horizon.Generators
 
         public void IncreaseIndentation()
         {
-            _currentIndentCharsCount += SingleIndentLength;
+            _currentIndentCount++;
         }
 
         public void DecreaseIndentation()
         {
-            _currentIndentCharsCount = Math.Max(_currentIndentCharsCount - SingleIndentLength, 0);
+            if (_currentIndentCount - 1 >= 0)
+            {
+                _currentIndentCount--;   
+            }
         }
 
         public void AppendLine()
@@ -49,7 +51,7 @@ namespace Ryujinx.Horizon.Generators
 
         public void AppendLine(string text)
         {
-            _sb.Append(' ', _currentIndentCharsCount);
+            _sb.Append(' ', IndentLength * _currentIndentCount);
             _sb.AppendLine(text);
         }
 
