@@ -50,7 +50,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
         private static string GetMask(int index)
         {
-            return $".{"rgba".AsSpan(index, 1)}";
+            return $".{"xy".AsSpan(index, 1)}";
         }
     }
 }
