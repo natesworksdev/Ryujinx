@@ -3,13 +3,15 @@ using MsgPack.Serialization;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Horizon.Common;
+using Ryujinx.Horizon.Prepo.Types;
 using Ryujinx.Horizon.Sdk.Account;
+using Ryujinx.Horizon.Sdk.Prepo;
 using Ryujinx.Horizon.Sdk.Sf;
 using Ryujinx.Horizon.Sdk.Sf.Hipc;
 using System;
 using System.Text;
 
-namespace Ryujinx.Horizon.Prepo
+namespace Ryujinx.Horizon.Prepo.Ipc
 {
     partial class PrepoService : IPrepoService
     {

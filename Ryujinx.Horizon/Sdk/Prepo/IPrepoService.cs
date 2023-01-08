@@ -3,7 +3,7 @@ using Ryujinx.Horizon.Sdk.Account;
 using Ryujinx.Horizon.Sdk.Sf;
 using System;
 
-namespace Ryujinx.Horizon.Prepo
+namespace Ryujinx.Horizon.Sdk.Prepo
 {
     interface IPrepoService : IServiceObject
     {
