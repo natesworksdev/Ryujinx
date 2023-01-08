@@ -1,3 +1,4 @@
+using Ryujinx.Common.SystemInterop;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,6 +14,8 @@ namespace Ryujinx.Common.Logging
         private static readonly bool[] m_EnabledClasses;
 
         private static readonly List<ILogTarget> m_LogTargets;
+
+        private static readonly StdErrAdapter m_stdErrAdapter;
 
         public static event EventHandler<LogEventArgs> Updated;
 
@@ -77,7 +80,13 @@ namespace Ryujinx.Common.Logging
                 {
                     Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, "Stubbed. " + message), data));
                 }
-            }            
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void PrintRawMsg(string message)
+            {
+                Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, message));
+            }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static string FormatMessage(LogClass Class, string Caller, string Message) => $"{Class} {Caller}: {Message}";
@@ -92,6 +101,7 @@ namespace Ryujinx.Common.Logging
         public static Log? Stub      { get; private set; }
         public static Log? Trace     { get; private set; }
         public static Log  Notice    { get; } // Always enabled
+        public static Log  StdErr    { get; } // Always enabled
 
         static Logger()
         {
@@ -113,12 +123,15 @@ namespace Ryujinx.Common.Logging
                 AsyncLogTargetOverflowAction.Discard));
 
             Notice = new Log(LogLevel.Notice);
-            
+            StdErr = new Log(LogLevel.StdErr);
+
             // Enable important log levels before configuration is loaded
             Error = new Log(LogLevel.Error);
             Warning = new Log(LogLevel.Warning);
             Info = new Log(LogLevel.Info);
             Trace = new Log(LogLevel.Trace);
+
+            m_stdErrAdapter = new StdErrAdapter();
         }
 
         public static void RestartTime()
@@ -163,6 +176,8 @@ namespace Ryujinx.Common.Logging
         public static void Shutdown()
         {
             Updated = null;
+
+            m_stdErrAdapter.Dispose();
 
             foreach (var target in m_LogTargets)
             {

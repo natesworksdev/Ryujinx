@@ -1,6 +1,5 @@
 using Avalonia.Media;
 using Ryujinx.Common.Logging;
-using System;
 using System.Collections.ObjectModel;
 
 namespace Ryujinx.Ava.UI.Models
@@ -20,14 +19,16 @@ namespace Ryujinx.Ava.UI.Models
             LogLevel.Stub    => Colors.DarkGray,
             LogLevel.Notice  => Colors.Cyan,
             LogLevel.Trace   => Colors.DarkCyan,
+            LogLevel.StdErr  => Colors.Gray,
             _                => Colors.Gray,
         };
 
         private static readonly InMemoryLogTarget _instance = new InMemoryLogTarget("inMemory");
 
-        private static int _maximumSize = 20000;
         private readonly ILogFormatter _formatter;
         private readonly string _name;
+
+        private const int _maximumSize = 20000;
 
         public ObservableCollection<Entry> Entries;
 
@@ -49,15 +50,19 @@ namespace Ryujinx.Ava.UI.Models
         public static void Register()
         {
             Logger.AddTarget(new AsyncLogTargetWrapper(Instance, 1000, AsyncLogTargetOverflowAction.Block));
-            Logger.RemoveTarget("console");
         }
 
         public void Log(object sender, LogEventArgs args)
         {
+            AddEntry(GetLogColor(args.Level), _formatter.Format(args));
+        }
+
+        private void AddEntry(Color color, string text)
+        {
             Entries.Add(new Entry()
             {
-                Color = GetLogColor(args.Level),
-                Text = _formatter.Format(args),
+                Color = color,
+                Text = text,
             });
 
             if (Entries.Count > _maximumSize)

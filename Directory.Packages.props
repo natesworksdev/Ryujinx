@@ -24,6 +24,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.4.1" />
     <PackageVersion Include="MsgPack.Cli" Version="1.0.1" />
+    <PackageVersion Include="Mono.Unix" Version="7.1.0-final.1.21458.1" />
     <PackageVersion Include="NUnit" Version="3.13.3" />
     <PackageVersion Include="NUnit3TestAdapter" Version="4.1.0" />
     <PackageVersion Include="OpenTK.Core" Version="4.7.5" />

@@ -10,6 +10,7 @@ namespace Ryujinx.Common.Logging
         Guest,
         AccessLog,
         Notice,
-        Trace
+        Trace,
+        StdErr,
     }
 }
