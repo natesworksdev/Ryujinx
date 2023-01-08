@@ -296,29 +296,27 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
         private static RectangleF MeasureString(string text, Font font)
         {
             RendererOptions options = new RendererOptions(font);
-            switch (text)
+            if (text == "")
             {
-                case "":
-                    FontRectangle emptyRectangle = TextMeasurer.Measure(" ", options);
-                    return new RectangleF(0, emptyRectangle.Y, 0, emptyRectangle.Height);
-                default:
-                    FontRectangle rectangle = TextMeasurer.Measure(text, options);
-                    return new RectangleF(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
+                FontRectangle emptyRectangle = TextMeasurer.Measure(" ", options);
+                return new RectangleF(0, emptyRectangle.Y, 0, emptyRectangle.Height);
             }
+
+            FontRectangle rectangle = TextMeasurer.Measure(text, options);
+            return new RectangleF(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
         }
 
         private static RectangleF MeasureString(ReadOnlySpan<char> text, Font font)
         {
             RendererOptions options = new RendererOptions(font);
-            switch (text)
+            if (text == "")
             {
-                case "":
-                    FontRectangle emptyRectangle = TextMeasurer.Measure(" ", options);
-                    return new RectangleF(0, emptyRectangle.Y, 0, emptyRectangle.Height);
-                default:
-                    FontRectangle rectangle = TextMeasurer.Measure(text, options);
-                    return new RectangleF(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
+                FontRectangle emptyRectangle = TextMeasurer.Measure(" ", options);
+                return new RectangleF(0, emptyRectangle.Y, 0, emptyRectangle.Height);
             }
+
+            FontRectangle rectangle = TextMeasurer.Measure(text, options);
+            return new RectangleF(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
         }
 
         private void DrawTextBox(IImageProcessingContext context, SoftwareKeyboardUiState state)
