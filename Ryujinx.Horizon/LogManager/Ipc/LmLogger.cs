@@ -9,9 +9,9 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Ryujinx.Horizon.LogManager
+namespace Ryujinx.Horizon.LogManager.Ipc
 {
-    partial class LmLogger : IServiceObject
+    partial class LmLogger : ILmLogger
     {
         private readonly LogService _log;
         private readonly ulong      _pid;

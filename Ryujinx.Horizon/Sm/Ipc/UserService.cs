@@ -3,9 +3,9 @@ using Ryujinx.Horizon.Sdk.Sf;
 using Ryujinx.Horizon.Sdk.Sm;
 using Ryujinx.Horizon.Sm.Impl;
 
-namespace Ryujinx.Horizon.Sm
+namespace Ryujinx.Horizon.Sm.Ipc
 {
-    partial class UserService : IServiceObject
+    partial class UserService : IUserService
     {
         private readonly ServiceManager _serviceManager;
 

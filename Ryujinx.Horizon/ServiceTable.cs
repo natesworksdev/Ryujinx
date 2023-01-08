@@ -9,6 +9,7 @@ namespace Ryujinx.Horizon
     {
         private int _readyServices;
         private int _totalServices;
+
         private readonly ManualResetEvent _servicesReadyEvent = new(false);
 
         public IEnumerable<ServiceEntry> GetServices(HorizonOptions options)

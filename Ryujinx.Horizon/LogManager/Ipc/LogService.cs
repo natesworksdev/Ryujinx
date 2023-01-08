@@ -2,9 +2,9 @@
 using Ryujinx.Horizon.Sdk.Lm;
 using Ryujinx.Horizon.Sdk.Sf;
 
-namespace Ryujinx.Horizon.LogManager
+namespace Ryujinx.Horizon.LogManager.Ipc
 {
-    partial class LogService : IServiceObject
+    partial class LogService : ILogService
     {
         public LogDestination LogDestination { get; set; } = LogDestination.TargetManager;
 
