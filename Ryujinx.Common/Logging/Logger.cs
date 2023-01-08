@@ -15,7 +15,7 @@ namespace Ryujinx.Common.Logging
 
         private static readonly List<ILogTarget> m_LogTargets;
 
-        private static readonly StdErrAdapter m_stdErrAdapter;
+        private static readonly StdErrAdapter _mStdErrAdapter;
 
         public static event EventHandler<LogEventArgs> Updated;
 
@@ -131,7 +131,7 @@ namespace Ryujinx.Common.Logging
             Info = new Log(LogLevel.Info);
             Trace = new Log(LogLevel.Trace);
 
-            m_stdErrAdapter = new StdErrAdapter();
+            _mStdErrAdapter = new StdErrAdapter();
         }
 
         public static void RestartTime()
@@ -177,7 +177,7 @@ namespace Ryujinx.Common.Logging
         {
             Updated = null;
 
-            m_stdErrAdapter.Dispose();
+            _mStdErrAdapter.Dispose();
 
             foreach (var target in m_LogTargets)
             {

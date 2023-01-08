@@ -4,41 +4,47 @@ using System.Collections.ObjectModel;
 
 namespace Ryujinx.Ava.UI.Models
 {
-    public class InMemoryLogTarget : ILogTarget
+    internal class InMemoryLogTarget : ILogTarget
     {
-        public class Entry
+        internal struct Entry
         {
-            public Color Color { get; set; }
-            public string Text { get; set; }
+            public Entry(Color color, string text)
+            {
+                Color = color;
+                Text = text;
+            }
+
+            public Color Color { get; }
+            public string Text { get; }
         }
 
-        private static Color GetLogColor(LogLevel level) => level switch {
-            LogLevel.Info    => Colors.White,
-            LogLevel.Warning => Colors.Yellow,
-            LogLevel.Error   => Colors.Red,
-            LogLevel.Stub    => Colors.DarkGray,
-            LogLevel.Notice  => Colors.Cyan,
-            LogLevel.Trace   => Colors.DarkCyan,
-            LogLevel.StdErr  => Colors.Gray,
-            _                => Colors.Gray,
-        };
+        private static Color GetLogColor(LogLevel level)
+        {
+            return level switch
+            {
+                LogLevel.Info    => Colors.White,
+                LogLevel.Warning => Colors.Yellow,
+                LogLevel.Error   => Colors.Red,
+                LogLevel.Stub    => Colors.DarkGray,
+                LogLevel.Notice  => Colors.Cyan,
+                LogLevel.Trace   => Colors.DarkCyan,
+                LogLevel.StdErr  => Colors.Gray,
+                _                => Colors.Gray,
+            };
+        }
 
         private static readonly InMemoryLogTarget _instance = new InMemoryLogTarget("inMemory");
 
         private readonly ILogFormatter _formatter;
         private readonly string _name;
 
-        private const int _maximumSize = 20000;
+        private const int MaximumSize = 20000;
 
-        public ObservableCollection<Entry> Entries;
+        public readonly ObservableCollection<Entry> Entries;
 
-        string ILogTarget.Name { get => _name; }
+        string ILogTarget.Name => _name;
 
         public static InMemoryLogTarget Instance => _instance;
-
-        static InMemoryLogTarget()
-        {
-        }
 
         private InMemoryLogTarget(string name)
         {
@@ -59,13 +65,9 @@ namespace Ryujinx.Ava.UI.Models
 
         private void AddEntry(Color color, string text)
         {
-            Entries.Add(new Entry()
-            {
-                Color = color,
-                Text = text,
-            });
+            Entries.Add(new Entry(color, text));
 
-            if (Entries.Count > _maximumSize)
+            if (Entries.Count > MaximumSize)
             {
                 Entries.RemoveAt(0);
             }
