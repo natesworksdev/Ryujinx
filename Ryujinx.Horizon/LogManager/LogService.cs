@@ -9,10 +9,9 @@ namespace Ryujinx.Horizon.LogManager
         public LogDestination LogDestination { get; set; } = LogDestination.TargetManager;
 
         [CmifCommand(0)]
-        // OpenLogger(u64, pid) -> object<nn::lm::ILogger>
         public Result OpenLogger(out LmLogger logger, [ClientProcessId] ulong pid)
         {
-            // NOTE: Internal name is ILogger, but we rename it LmLogger to avoid name clash with Ryujinx.Common.Logging logger.
+            // NOTE: Internal name is Logger, but we rename it LmLogger to avoid name clash with Ryujinx.Common.Logging logger.
             logger = new LmLogger(this, pid);
 
             return Result.Success;

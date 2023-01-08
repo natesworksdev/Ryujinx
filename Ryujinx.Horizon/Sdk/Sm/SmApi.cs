@@ -7,18 +7,18 @@ namespace Ryujinx.Horizon.Sdk.Sm
 {
     class SmApi
     {
-        private const string smName = "sm:";
+        private const string SmName = "sm:";
 
         private int _portHandle;
 
         public Result Initialize()
         {
-            Result result = HorizonStatic.Syscall.ConnectToNamedPort(out int portHandle, smName);
+            Result result = HorizonStatic.Syscall.ConnectToNamedPort(out int portHandle, SmName);
 
             while (result == KernelResult.NotFound)
             {
                 HorizonStatic.Syscall.SleepThread(50000000L);
-                result = HorizonStatic.Syscall.ConnectToNamedPort(out portHandle, smName);
+                result = HorizonStatic.Syscall.ConnectToNamedPort(out portHandle, SmName);
             }
 
             if (result.IsFailure)

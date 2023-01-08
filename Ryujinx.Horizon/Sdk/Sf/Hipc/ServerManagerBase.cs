@@ -106,6 +106,11 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
             throw new NotSupportedException();
         }
 
+        protected Result AcceptImpl(Server server, IServiceObject obj)
+        {
+            return AcceptSession(server.PortHandle, new ServiceObjectHolder(obj));
+        }
+
         public void ServiceRequests()
         {
             while (WaitAndProcessRequestsImpl());

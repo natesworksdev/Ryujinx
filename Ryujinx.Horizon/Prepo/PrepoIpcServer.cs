@@ -16,7 +16,7 @@ namespace Ryujinx.Horizon.Prepo
         private static readonly ManagerOptions _logManagerOptions = new(PointerBufferSize, MaxDomains, MaxDomainObjects, false);
 
         private SmApi _sm;
-        private ServerManager _serverManager;
+        private PrepoServerManager _serverManager;
 
         public void Initialize()
         {
@@ -25,14 +25,14 @@ namespace Ryujinx.Horizon.Prepo
             _sm = new SmApi();
             _sm.Initialize().AbortOnFailure();
 
-            _serverManager = new ServerManager(allocator, _sm, MaxPortsCount, _logManagerOptions, PrepoTotalMaxSessionsCount);
+            _serverManager = new PrepoServerManager(allocator, _sm, MaxPortsCount, _logManagerOptions, PrepoTotalMaxSessionsCount);
 
-            _serverManager.RegisterObjectForServer(new PrepoService(PrepoServicePermissionLevel.Admin),   ServiceName.Encode("prepo:a"),  PrepoMaxSessionsCount); // 1.0.0-5.1.0
-            _serverManager.RegisterObjectForServer(new PrepoService(PrepoServicePermissionLevel.Admin),   ServiceName.Encode("prepo:a2"), PrepoMaxSessionsCount); // 6.0.0+
-            _serverManager.RegisterObjectForServer(new PrepoService(PrepoServicePermissionLevel.Manager), ServiceName.Encode("prepo:m"),  PrepoMaxSessionsCount);
-            _serverManager.RegisterObjectForServer(new PrepoService(PrepoServicePermissionLevel.User),    ServiceName.Encode("prepo:u"),  PrepoMaxSessionsCount);
-            _serverManager.RegisterObjectForServer(new PrepoService(PrepoServicePermissionLevel.System),  ServiceName.Encode("prepo:s"),  PrepoMaxSessionsCount);
-            _serverManager.RegisterObjectForServer(new PrepoService(PrepoServicePermissionLevel.Debug),   ServiceName.Encode("prepo:d"),  PrepoMaxSessionsCount); // 1.0.0
+            _serverManager.RegisterServer((int)PrepoPortIndex.Admin,   ServiceName.Encode("prepo:a"),  PrepoMaxSessionsCount); // 1.0.0-5.1.0
+            _serverManager.RegisterServer((int)PrepoPortIndex.Admin2,  ServiceName.Encode("prepo:a2"), PrepoMaxSessionsCount); // 6.0.0+
+            _serverManager.RegisterServer((int)PrepoPortIndex.Manager, ServiceName.Encode("prepo:m"),  PrepoMaxSessionsCount);
+            _serverManager.RegisterServer((int)PrepoPortIndex.User,    ServiceName.Encode("prepo:u"),  PrepoMaxSessionsCount);
+            _serverManager.RegisterServer((int)PrepoPortIndex.System,  ServiceName.Encode("prepo:s"),  PrepoMaxSessionsCount);
+            _serverManager.RegisterServer((int)PrepoPortIndex.Debug,   ServiceName.Encode("prepo:d"),  PrepoMaxSessionsCount); // 1.0.0
         }
 
         public void ServiceRequests()

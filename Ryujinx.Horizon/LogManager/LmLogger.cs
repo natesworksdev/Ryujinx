@@ -23,7 +23,6 @@ namespace Ryujinx.Horizon.LogManager
         }
 
         [CmifCommand(0)]
-        // Log(buffer<unknown, 0x21>)
         public Result Log([Buffer(HipcBufferFlags.In | HipcBufferFlags.AutoSelect)] Span<byte> message)
         {
             if (!SetProcessId(message, _pid))
@@ -37,7 +36,6 @@ namespace Ryujinx.Horizon.LogManager
         }
 
         [CmifCommand(1)] // 3.0.0+
-        // SetDestination(u32)
         public Result SetDestination(LogDestination destination)
         {
             _log.LogDestination = destination;

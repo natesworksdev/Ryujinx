@@ -192,13 +192,18 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 
             using var _ = new ScopedInlineContextChange(GetInlineContext(commandType, inMessage));
 
-            return commandType switch
+            switch (commandType)
             {
-                CommandType.Request or CommandType.RequestWithContext => DispatchRequest(session.ServiceObjectHolder, session, inMessage, outMessage),
-                CommandType.Control or CommandType.ControlWithContext => DispatchManagerRequest(session, inMessage, outMessage),
-                _                                                     => HipcResult.UnknownCommandType
-            };
+                case CommandType.Request:
+                case CommandType.RequestWithContext:
+                    return DispatchRequest(session.ServiceObjectHolder, session, inMessage, outMessage);
+                case CommandType.Control:
+                case CommandType.ControlWithContext:
+                    return DispatchManagerRequest(session, inMessage, outMessage);
+                default:
+                    return HipcResult.UnknownCommandType;
         }
+    }
 
         private static int GetInlineContext(CommandType commandType, ReadOnlySpan<byte> inMessage)
         {

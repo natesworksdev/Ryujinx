@@ -33,7 +33,6 @@ namespace Ryujinx.Horizon.Prepo
         [CmifCommand(10100)] // 1.0.0-5.1.0
         [CmifCommand(10102)] // 6.0.0-9.2.0
         [CmifCommand(10104)] // 10.0.0+
-        // SaveReport(u64, pid, buffer<u8, 9>, buffer<bytes, 5>)
         public Result SaveReport([Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<byte> gameRoomBuffer, [Buffer(HipcBufferFlags.In | HipcBufferFlags.MapAlias)] ReadOnlySpan<byte> reportBuffer, [ClientProcessId] ulong pid)
         {
             if ((_permissionLevel & PrepoServicePermissionLevel.User) == 0)
@@ -49,7 +48,6 @@ namespace Ryujinx.Horizon.Prepo
         [CmifCommand(10101)] // 1.0.0-5.1.0
         [CmifCommand(10103)] // 6.0.0-9.2.0
         [CmifCommand(10105)] // 10.0.0+
-        // SaveReportWithUser(nn::account::Uid, u64, pid, buffer<u8, 9>, buffer<bytes, 5>)
         public Result SaveReportWithUser(Uid userId, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<byte> gameRoomBuffer, [Buffer(HipcBufferFlags.In | HipcBufferFlags.MapAlias)] ReadOnlySpan<byte> reportBuffer, [ClientProcessId] ulong pid)
         {
             if ((_permissionLevel & PrepoServicePermissionLevel.User) == 0)
@@ -63,19 +61,17 @@ namespace Ryujinx.Horizon.Prepo
         }
 
         [CmifCommand(10200)]
-        // RequestImmediateTransmission()
         public Result RequestImmediateTransmission()
         {
             _immediateTransmissionEnabled = true;
 
             // It signals an event of nn::prepo::detail::service::core::TransmissionStatusManager that requests the transmission of the report.
-            // Since we don't use reports it's fine to do nothing.
+            // Since we don't use reports, it's fine to do nothing.
 
             return Result.Success;
         }
 
         [CmifCommand(10300)]
-        // GetTransmissionStatus() -> u32
         public Result GetTransmissionStatus(out int status)
         {
             status = 0;
@@ -89,7 +85,6 @@ namespace Ryujinx.Horizon.Prepo
         }
 
         [CmifCommand(10400)] // 9.0.0+
-        // GetSystemSessionId() -> u64
         public Result GetSystemSessionId(out ulong systemSessionId)
         {
             systemSessionId = default;
@@ -110,7 +105,6 @@ namespace Ryujinx.Horizon.Prepo
         }
 
         [CmifCommand(20100)]
-        // SaveSystemReport(u64, pid, buffer<u8, 9>, buffer<bytes, 5>)
         public Result SaveSystemReport([Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<byte> gameRoomBuffer, [Buffer(HipcBufferFlags.In | HipcBufferFlags.MapAlias)] ReadOnlySpan<byte> reportBuffer, [ClientProcessId] ulong pid)
         {
             if ((_permissionLevel & PrepoServicePermissionLevel.System) != 0)
@@ -122,7 +116,6 @@ namespace Ryujinx.Horizon.Prepo
         }
 
         [CmifCommand(20101)]
-        // SaveSystemReportWithUser(nn::account::Uid, u64, pid, buffer<u8, 9>, buffer<bytes, 5>)
         public Result SaveSystemReportWithUser(Uid userId, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<byte> gameRoomBuffer, [Buffer(HipcBufferFlags.In | HipcBufferFlags.MapAlias)] ReadOnlySpan<byte> reportBuffer, [ClientProcessId] ulong pid)
         {
             if ((_permissionLevel & PrepoServicePermissionLevel.System) != 0)
@@ -134,7 +127,6 @@ namespace Ryujinx.Horizon.Prepo
         }
 
         [CmifCommand(40100)] // 2.0.0+
-        // IsUserAgreementCheckEnabled() -> u8
         public Result IsUserAgreementCheckEnabled(out bool enabled)
         {
             enabled = false;
@@ -154,7 +146,6 @@ namespace Ryujinx.Horizon.Prepo
         }
 
         [CmifCommand(40101)] // 2.0.0+
-        // SetUserAgreementCheckEnabled(u8)
         public Result SetUserAgreementCheckEnabled(bool enabled)
         {
             if (_permissionLevel == PrepoServicePermissionLevel.User || _permissionLevel == PrepoServicePermissionLevel.System)
@@ -198,7 +189,7 @@ namespace Ryujinx.Horizon.Prepo
                 return PrepoResult.InvalidBufferSize;
             }
 
-            // NOTE: Service call arp:r using the pid to get the application id, if it fails PrepoResult.InvalidPid is returned.
+            // NOTE: The service calls arp:r using the pid to get the application id, if it fails PrepoResult.InvalidPid is returned.
             //       Reports are stored internally and an event is signaled to transmit them.
 
             StringBuilder     builder            = new();

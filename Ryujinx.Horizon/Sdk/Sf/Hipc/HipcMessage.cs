@@ -102,7 +102,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
                 HasSpecialHeader     = hasSpecialHeader
             };
 
-            destination = destination.Slice(Unsafe.SizeOf<Header>());
+            destination = destination[Unsafe.SizeOf<Header>()..];
 
             if (hasSpecialHeader)
             {
