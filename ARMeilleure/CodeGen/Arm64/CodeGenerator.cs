@@ -46,7 +46,6 @@ namespace ARMeilleure.CodeGen.Arm64
             Add(Instruction.BitwiseNot,              GenerateBitwiseNot);
             Add(Instruction.BitwiseOr,               GenerateBitwiseOr);
             Add(Instruction.BranchIf,                GenerateBranchIf);
-            Add(Instruction.Breakpoint,              GenerateBreakpoint);
             Add(Instruction.ByteSwap,                GenerateByteSwap);
             Add(Instruction.Call,                    GenerateCall);
             //Add(Instruction.Clobber,                 GenerateClobber);
@@ -329,11 +328,6 @@ namespace ARMeilleure.CodeGen.Arm64
             GenerateCompareCommon(context, operation);
 
             context.JumpTo(cond, context.CurrBlock.GetSuccessor(1));
-        }
-
-        private static void GenerateBreakpoint(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Brk();
         }
 
         private static void GenerateByteSwap(CodeGenContext context, Operation operation)
