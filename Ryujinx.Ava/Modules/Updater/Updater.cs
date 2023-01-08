@@ -56,7 +56,7 @@ namespace Ryujinx.Modules
             }
 
             Running = true;
-            mainWindow.ViewModel.CanUpdate = false;
+            mainWindow.CanUpdate = false;
 
             // Detect current platform
             if (OperatingSystem.IsMacOS())
@@ -182,7 +182,7 @@ namespace Ryujinx.Modules
                 }
 
                 Running = false;
-                mainWindow.ViewModel.CanUpdate = true;
+                mainWindow.CanUpdate = true;
 
                 return;
             }
