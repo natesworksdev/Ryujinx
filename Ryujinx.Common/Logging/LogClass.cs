@@ -5,11 +5,12 @@ namespace Ryujinx.Common.Logging
         Application,
         Audio,
         AudioRenderer,
+        Avalonia,
         Configuration,
         Cpu,
-        Font,
         Emulation,
         FFmpeg,
+        Font,
         Gpu,
         Hid,
         Host1x,
@@ -66,6 +67,6 @@ namespace Ryujinx.Common.Logging
         ServiceVi,
         SurfaceFlinger,
         TamperMachine,
-        Vic
+        Vic,
     }
 }
