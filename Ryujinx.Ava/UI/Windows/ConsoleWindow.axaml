@@ -25,7 +25,7 @@
             Grid.Column="0"
             Name="ConsoleScrollViewer"
             HorizontalScrollBarVisibility="Disabled"
-            VerticalScrollBarVisibility="{Binding ScrollBarVisible}">
+            VerticalScrollBarVisibility="Visible">
             <ItemsControl
                 Name="ConsoleItemsControl"
                 Items="{Binding LogEntries}">
@@ -55,7 +55,7 @@
             <CheckBox
                 HorizontalAlignment="Center"
                 Name="AutoScrollCheckBox"
-                IsChecked="{Binding AutoScroll}"
+                IsChecked="True"
                 Content="{locale:Locale ConsoleWindowAutoScroll}" />
             <Button
                 HorizontalAlignment="Center"
