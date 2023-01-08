@@ -6,6 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     xmlns:window="clr-namespace:Ryujinx.Ava.UI.Windows"
+    xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
     Title="Ryujinx Console"
     Width="800"
     Height="480"
@@ -55,11 +56,11 @@
                 HorizontalAlignment="Center"
                 Name="AutoScrollCheckBox"
                 IsChecked="{Binding AutoScroll}"
-                Content="Auto-scroll" />
+                Content="{locale:Locale ConsoleWindowAutoScroll}" />
             <Button
                 HorizontalAlignment="Center"
                 Command="{ReflectionBinding OpenLogsFolder}"
-                Content="Open Logs" />
+                Content="{locale:Locale MenuBarFileOpenLogsFolder}" />
         </StackPanel>
     </Grid>
 </window:StyleableWindow>
