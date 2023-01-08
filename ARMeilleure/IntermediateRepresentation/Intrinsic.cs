@@ -351,7 +351,7 @@ namespace ARMeilleure.IntermediateRepresentation
         Arm64FrecpeV,
         Arm64FrecpsS,
         Arm64FrecpsV,
-        Arm64FrecpxV,
+        Arm64FrecpxS,
         Arm64FrintaV,
         Arm64FrintaS,
         Arm64FrintiV,

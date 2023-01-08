@@ -9,7 +9,6 @@ namespace ARMeilleure
 
         public static bool AllowLcqInFunctionTable  { get; set; } = true;
         public static bool UseUnmanagedDispatchLoop { get; set; } = true;
-        public static bool UseDirectTableCalls      { get; set; } = true;
 
         public static bool UseAdvSimdIfAvailable { get; set; } = true;
 

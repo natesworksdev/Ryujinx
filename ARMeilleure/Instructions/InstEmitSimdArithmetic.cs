@@ -1918,8 +1918,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseAdvSimd)
             {
-                // TODO Arm64: Rename to FrecpxS?
-                InstEmitSimdHelperArm64.EmitScalarBinaryOpF(context, Intrinsic.Arm64FrecpxV);
+                InstEmitSimdHelperArm64.EmitScalarBinaryOpF(context, Intrinsic.Arm64FrecpxS);
             }
             else
             {

@@ -5,7 +5,6 @@ using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
 using System.Diagnostics;
-using System.Reflection;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
@@ -64,14 +63,7 @@ namespace ARMeilleure.Instructions
 
             if (doubleWidth)
             {
-                if (index == 1)
-                {
-                    return context.AddIntrinsic(Intrinsic.Arm64InsVe | Intrinsic.Arm64VDWord, target, Const(1), value, Const(0)); // Low to high.
-                }
-                else
-                {
-                    return context.AddIntrinsic(Intrinsic.Arm64InsVe | Intrinsic.Arm64VDWord, target, Const(0), value, Const(0)); // Low to low, keep high from original.
-                }
+                return context.AddIntrinsic(Intrinsic.Arm64InsVe | Intrinsic.Arm64VDWord, target, Const(index), value, Const(0));
             }
             else
             {
@@ -81,9 +73,8 @@ namespace ARMeilleure.Instructions
 
         public static Operand EmitExtractScalar(ArmEmitterContext context, Operand target, int reg, bool doubleWidth)
         {
-            // Index into 0, 0 into index. This swap happens at the start of an A32 scalar op if required.
             int index = reg & (doubleWidth ? 1 : 3);
-            if (index == 0) return target;
+            if (index == 0) return target; // Element is already at index 0, so just return the vector directly.
 
             if (doubleWidth)
             {

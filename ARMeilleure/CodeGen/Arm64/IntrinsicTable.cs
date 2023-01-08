@@ -184,7 +184,7 @@ namespace ARMeilleure.CodeGen.Arm64
             Add(Intrinsic.Arm64FrecpeV,       new IntrinsicInfo(0x0ea1d800u, IntrinsicType.VectorUnary));
             Add(Intrinsic.Arm64FrecpsS,       new IntrinsicInfo(0x5e20fc00u, IntrinsicType.ScalarBinary));
             Add(Intrinsic.Arm64FrecpsV,       new IntrinsicInfo(0x0e20fc00u, IntrinsicType.VectorBinary));
-            Add(Intrinsic.Arm64FrecpxV,       new IntrinsicInfo(0x5ea1f800u, IntrinsicType.ScalarUnary));
+            Add(Intrinsic.Arm64FrecpxS,       new IntrinsicInfo(0x5ea1f800u, IntrinsicType.ScalarUnary));
             Add(Intrinsic.Arm64FrintaV,       new IntrinsicInfo(0x2e218800u, IntrinsicType.VectorUnary));
             Add(Intrinsic.Arm64FrintaS,       new IntrinsicInfo(0x1e264000u, IntrinsicType.ScalarUnary));
             Add(Intrinsic.Arm64FrintiV,       new IntrinsicInfo(0x2ea19800u, IntrinsicType.VectorUnary));

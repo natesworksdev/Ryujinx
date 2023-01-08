@@ -43,7 +43,7 @@ namespace ARMeilleure.CodeGen.Arm64
                 {
                     nextNode = node.ListNext;
 
-                    // Insert copies for constants that can't fit on a 32-bits immediate.
+                    // Insert copies for constants that can't fit on a 32-bit immediate.
                     // Doing this early unblocks a few optimizations.
                     if (node.Instruction == Instruction.Add)
                     {
