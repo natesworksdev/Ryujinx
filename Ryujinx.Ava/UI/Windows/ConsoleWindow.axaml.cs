@@ -22,6 +22,8 @@ namespace Ryujinx.Ava.UI.Windows
 
             InitializeComponent();
 
+            Title = $"Ryujinx Console {Program.Version}";
+
             ConsoleWindowViewModel.LogEntries.CollectionChanged += LogEntriesOnCollectionChanged;
             AutoScrollCheckBox.Checked += AutoScrollCheckBoxOnChecked;
             ConsoleItemsControl.LayoutUpdated += ConsoleItemsControlOnLayoutUpdated;
