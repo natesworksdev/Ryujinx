@@ -28,111 +28,117 @@
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <ListBox
-            MaxHeight="300"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Center"
-            SelectionChanged="ProfilesList_SelectionChanged"
-            Items="{Binding Profiles}">
-            <ListBox.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <flex:FlexPanel
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch"
-                        AlignContent="FlexStart"
-                        JustifyContent="FlexStart" />
-                </ItemsPanelTemplate>
-            </ListBox.ItemsPanel>
-            <ListBox.Styles>
-                <Style Selector="ListBoxItem">
-                    <Setter Property="Margin" Value="5 5 0 5" />
-                    <Setter Property="CornerRadius" Value="5" />
-                </Style>
-                <Style Selector="Border#SelectionIndicator">
-                    <Setter Property="Opacity" Value="0" />
-                </Style>
-            </ListBox.Styles>
-            <ListBox.DataTemplates>
-                <DataTemplate
-                    DataType="models:UserProfile">
-                    <Grid
-                        PointerEnter="Grid_PointerEntered"
-                        PointerLeave="Grid_OnPointerExited">
-                        <Border
+        <Border
+            CornerRadius="5"
+            BorderBrush="{DynamicResource AppListHoverBackgroundColor}"
+            BorderThickness="1">
+            <ListBox
+                MaxHeight="300"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Center"
+                SelectionChanged="ProfilesList_SelectionChanged"
+                Background="Transparent"
+                Items="{Binding Profiles}">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <flex:FlexPanel
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
-                            ClipToBounds="True"
-                            CornerRadius="5"
-                            Background="{Binding BackgroundColor}">
-                            <StackPanel
+                            AlignContent="FlexStart"
+                            JustifyContent="FlexStart" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="Margin" Value="5 5 0 5" />
+                        <Setter Property="CornerRadius" Value="5" />
+                    </Style>
+                    <Style Selector="Border#SelectionIndicator">
+                        <Setter Property="Opacity" Value="0" />
+                    </Style>
+                </ListBox.Styles>
+                <ListBox.DataTemplates>
+                    <DataTemplate
+                        DataType="models:UserProfile">
+                        <Grid
+                            PointerEnter="Grid_PointerEntered"
+                            PointerLeave="Grid_OnPointerExited">
+                            <Border
                                 HorizontalAlignment="Stretch"
-                                VerticalAlignment="Stretch">
-                                <Image
-                                    Width="96"
-                                    Height="96"
+                                VerticalAlignment="Stretch"
+                                ClipToBounds="True"
+                                CornerRadius="5"
+                                Background="{Binding BackgroundColor}">
+                                <StackPanel
                                     HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Top"
-                                    Source="{Binding Image, Converter={StaticResource ByteImage}}" />
-                                <TextBlock
-                                    HorizontalAlignment="Stretch"
-                                    MaxWidth="90"
-                                    Text="{Binding Name}"
-                                    TextAlignment="Center"
-                                    TextWrapping="Wrap"
-                                    TextTrimming="CharacterEllipsis"
-                                    MaxLines="2"
-                                    Margin="5" />
-                            </StackPanel>
-                        </Border>
-                        <Border
-                            Margin="2"
-                            Height="24"
-                            Width="24"
-                            CornerRadius="12"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Top"
-                            Background="{DynamicResource ThemeContentBackgroundColor}"
-                            IsVisible="{Binding IsPointerOver}">
-                            <Button
-                                MaxHeight="24"
-                                MaxWidth="24"
-                                MinHeight="24"
-                                MinWidth="24"
+                                    VerticalAlignment="Stretch">
+                                    <Image
+                                        Width="96"
+                                        Height="96"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Top"
+                                        Source="{Binding Image, Converter={StaticResource ByteImage}}" />
+                                    <TextBlock
+                                        HorizontalAlignment="Stretch"
+                                        MaxWidth="90"
+                                        Text="{Binding Name}"
+                                        TextAlignment="Center"
+                                        TextWrapping="Wrap"
+                                        TextTrimming="CharacterEllipsis"
+                                        MaxLines="2"
+                                        Margin="5" />
+                                </StackPanel>
+                            </Border>
+                            <Border
+                                Margin="2"
+                                Height="24"
+                                Width="24"
                                 CornerRadius="12"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Background="{DynamicResource ThemeContentBackgroundColor}"
+                                IsVisible="{Binding IsPointerOver}">
+                                <Button
+                                    MaxHeight="24"
+                                    MaxWidth="24"
+                                    MinHeight="24"
+                                    MinWidth="24"
+                                    CornerRadius="12"
+                                    Padding="0"
+                                    Click="EditUser">
+                                    <ui:SymbolIcon Symbol="Edit" />
+                                </Button>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                    <DataTemplate
+                        DataType="models:AddModel">
+                        <Panel
+                            Height="118"
+                            Width="96">
+                            <Button
+                                MinWidth="50"
+                                MinHeight="50"
+                                MaxWidth="50"
+                                MaxHeight="50"
+                                CornerRadius="25"
+                                Margin="10"
                                 Padding="0"
-                                Click="EditUser">
-                                <ui:SymbolIcon Symbol="Edit" />
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Click="AddUser">
+                                <ui:SymbolIcon Symbol="Add" />
                             </Button>
-                        </Border>
-                    </Grid>
-                </DataTemplate>
-                <DataTemplate
-                    DataType="models:AddModel">
-                    <Panel
-                        Height="118"
-                        Width="96">
-                        <Button
-                            MinWidth="50"
-                            MinHeight="50"
-                            MaxWidth="50"
-                            MaxHeight="50"
-                            CornerRadius="25"
-                            Margin="10"
-                            Padding="0"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Click="AddUser">
-                            <ui:SymbolIcon Symbol="Add" />
-                        </Button>
-                        <Panel.Styles>
-                            <Style Selector="Panel">
-                                <Setter Property="Background" Value="{DynamicResource ListBoxBackground}"/>
-                            </Style>
-                        </Panel.Styles>
-                    </Panel>
-                </DataTemplate>
-            </ListBox.DataTemplates>
-        </ListBox>
+                            <Panel.Styles>
+                                <Style Selector="Panel">
+                                    <Setter Property="Background" Value="{DynamicResource ListBoxBackground}"/>
+                                </Style>
+                            </Panel.Styles>
+                        </Panel>
+                    </DataTemplate>
+                </ListBox.DataTemplates>
+            </ListBox>
+        </Border>
         <StackPanel
             Grid.Row="1"
             Margin="0 24 0 0"
