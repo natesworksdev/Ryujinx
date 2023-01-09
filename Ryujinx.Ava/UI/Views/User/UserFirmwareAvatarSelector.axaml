@@ -5,8 +5,8 @@
     xmlns:ui="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Width="540"
-    d:DesignWidth="590"
+    Width="528"
+    d:DesignWidth="578"
     d:DesignHeight="350"
     x:Class="Ryujinx.Ava.UI.Views.User.UserFirmwareAvatarSelector"
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
@@ -51,9 +51,12 @@
                 <Style Selector="ListBoxItem">
                     <Setter Property="Margin" Value="5" />
                     <Setter Property="CornerRadius" Value="4" />
+                    <Setter Property="Width" Value="78" />
+                    <Setter Property="MaxWidth" Value="78" />
+                    <Setter Property="MinWidth" Value="78" />
                 </Style>
                 <Style Selector="ListBoxItem /template/ Border#SelectionIndicator">
-                    <Setter Property="MinHeight" Value="94" />
+                    <Setter Property="MinHeight" Value="74" />
                 </Style>
             </ListBox.Styles>
             <ListBox.ItemTemplate>
@@ -61,8 +64,8 @@
                     <Panel
                         Background="{Binding BackgroundColor}"
                         Margin="5"
-                        Height="80"
-                        Width="80">
+                        Height="60"
+                        Width="60">
                         <Image Source="{Binding Data, Converter={StaticResource ByteImage}}" />
                     </Panel>
                 </DataTemplate>
