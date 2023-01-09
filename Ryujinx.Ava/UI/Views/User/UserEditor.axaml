@@ -36,6 +36,7 @@
                 Width="300"
                 HorizontalAlignment="Stretch"
                 MaxLength="{Binding MaxProfileNameLength}"
+                Watermark="{locale:Locale ProfileNameSelectionWatermark}"
                 Text="{Binding Name}" />
             <TextBlock Name="IdText" Text="{locale:Locale UserProfilesUserId}" />
             <TextBox
