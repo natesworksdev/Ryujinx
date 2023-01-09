@@ -40,7 +40,7 @@ namespace Ryujinx.Ava.UI.Windows
             contentDialog.Styles.Add(closeButton);
             contentDialog.Styles.Add(closeButtonParent);
 
-            await ContentDialogOverlay.ShowAsync(contentDialog);
+            await ContentDialogHelper.ShowAsync(contentDialog);
         }
 
         private void Button_OnClick(object sender, RoutedEventArgs e)
