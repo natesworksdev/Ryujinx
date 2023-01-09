@@ -38,19 +38,21 @@ jobs:
         shell: bash
       - name: Configure for release
         run: |
-          sed -r --in-place 's/\%\%RYUJINX_BUILD_VERSION\%\%/${{ steps.version_info.outputs.build_version }}/g;' Ryujinx.Common/ReleaseInformations.cs
-          sed -r --in-place 's/\%\%RYUJINX_BUILD_GIT_HASH\%\%/${{ steps.version_info.outputs.git_short_hash }}/g;' Ryujinx.Common/ReleaseInformations.cs
-          sed -r --in-place 's/\%\%RYUJINX_TARGET_RELEASE_CHANNEL_NAME\%\%/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_NAME }}/g;' Ryujinx.Common/ReleaseInformations.cs
-          sed -r --in-place 's/\%\%RYUJINX_TARGET_RELEASE_CHANNEL_OWNER\%\%/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/g;' Ryujinx.Common/ReleaseInformations.cs
-          sed -r --in-place 's/\%\%RYUJINX_TARGET_RELEASE_CHANNEL_REPO\%\%/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/g;' Ryujinx.Common/ReleaseInformations.cs
+          sed -r --in-place 's/\%\%RYUJINX_BUILD_VERSION\%\%/${{ steps.version_info.outputs.build_version }}/g;' Ryujinx.Common/ReleaseInformation.cs
+          sed -r --in-place 's/\%\%RYUJINX_BUILD_GIT_HASH\%\%/${{ steps.version_info.outputs.git_short_hash }}/g;' Ryujinx.Common/ReleaseInformation.cs
+          sed -r --in-place 's/\%\%RYUJINX_TARGET_RELEASE_CHANNEL_NAME\%\%/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_NAME }}/g;' Ryujinx.Common/ReleaseInformation.cs
+          sed -r --in-place 's/\%\%RYUJINX_TARGET_RELEASE_CHANNEL_OWNER\%\%/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/g;' Ryujinx.Common/ReleaseInformation.cs
+          sed -r --in-place 's/\%\%RYUJINX_TARGET_RELEASE_CHANNEL_REPO\%\%/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/g;' Ryujinx.Common/ReleaseInformation.cs
         shell: bash
       - name: Create output dir
         run: "mkdir release_output"
+
       - name: Publish Windows
         run: |
           dotnet publish -c Release -r win10-x64 -o ./publish_windows/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded Ryujinx --self-contained true
           dotnet publish -c Release -r win10-x64 -o ./publish_windows_sdl2_headless/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded Ryujinx.Headless.SDL2 --self-contained true
           dotnet publish -c Release -r win10-x64 -o ./publish_windows_ava/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded Ryujinx.Ava --self-contained true
+          mv ./publish_windows_ava/publish/Ryujinx.Ava.exe ./publish_windows_ava/publish/Ryujinx.exe
       - name: Packing Windows builds
         run: |
           pushd publish_windows
@@ -71,19 +73,28 @@ jobs:
           dotnet publish -c Release -r linux-x64 -o ./publish_linux/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded Ryujinx --self-contained true
           dotnet publish -c Release -r linux-x64 -o ./publish_linux_sdl2_headless/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded Ryujinx.Headless.SDL2 --self-contained true
           dotnet publish -c Release -r linux-x64 -o ./publish_linux_ava/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded Ryujinx.Ava --self-contained true
-
+          mv ./publish_linux_ava/publish/Ryujinx.Ava ./publish_linux_ava/publish/Ryujinx
       - name: Packing Linux builds
         run: |
           pushd publish_linux
-          tar -czvf ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
+          tar --exclude "publish/Ryujinx" -cvf ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar publish
+          python3 ../distribution/misc/add_tar_exec.py ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar "publish/Ryujinx" "publish/Ryujinx"
+          gzip -9 < ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar > ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz
+          rm ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar
           popd
 
           pushd publish_linux_sdl2_headless
-          tar -czvf ../release_output/sdl2-ryujinx-headless-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
+          tar --exclude "publish/Ryujinx.Headless.SDL2" -cvf ../release_output/sdl2-ryujinx-headless-${{ steps.version_info.outputs.build_version }}-linux_x64.tar publish
+          python3 ../distribution/misc/add_tar_exec.py ../release_output/sdl2-ryujinx-headless-${{ steps.version_info.outputs.build_version }}-linux_x64.tar "publish/Ryujinx.Headless.SDL2" "publish/Ryujinx.Headless.SDL2"
+          gzip -9 < ../release_output/sdl2-ryujinx-headless-${{ steps.version_info.outputs.build_version }}-linux_x64.tar > ../release_output/sdl2-ryujinx-headless-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz
+          rm ../release_output/sdl2-ryujinx-headless-${{ steps.version_info.outputs.build_version }}-linux_x64.tar
           popd
 
           pushd publish_linux_ava
-          tar -czvf ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
+          tar --exclude "publish/Ryujinx" -cvf ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar publish
+          python3 ../distribution/misc/add_tar_exec.py ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar "publish/Ryujinx" "publish/Ryujinx"
+          gzip -9 < ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar > ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz
+          rm ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar
           popd
         shell: bash
 

@@ -76,6 +76,16 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
+    <Content Include="..\distribution\linux\Ryujinx.sh">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\distribution\linux\mime\Ryujinx.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <TargetPath>mime\Ryujinx.xml</TargetPath>
+    </Content>
+  </ItemGroup>
+
   <ItemGroup>
     <AvaloniaResource Include="Ui\**\*.xaml">
       <SubType>Designer</SubType>
