@@ -10,7 +10,7 @@
     x:Class="Ryujinx.Ava.UI.Controls.NavigationDialogHost"
     Focusable="True">
     <ui:Frame 
-        HorizontalAlignment="Stretch" 
+        HorizontalAlignment="Stretch"
         VerticalAlignment="Stretch"
         x:Name="ContentFrame">
     </ui:Frame>
