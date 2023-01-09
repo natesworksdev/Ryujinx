@@ -17,7 +17,6 @@ namespace Ryujinx.Ava.UI.Models
         private UserId _userId;
         private bool _isPointerOver;
         private IBrush _backgroundColor;
-        public uint MaxProfileNameLength => 0x20;
 
         public byte[] Image
         {
