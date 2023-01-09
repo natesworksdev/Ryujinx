@@ -67,7 +67,7 @@ namespace Ryujinx.Ava.UI.Views.User
 
         private void ChooseButton_OnClick(object sender, RoutedEventArgs e)
         {
-            if (ViewModel.SelectedIndex > -1 && ViewModel.SelectedImage != null)
+            if (ViewModel.SelectedImage != null)
             {
                 MemoryStream streamJpg = new();
                 SixLabors.ImageSharp.Image avatarImage =
