@@ -18,13 +18,13 @@ namespace Ryujinx.Ava.UI.Helpers
 
             Window parent = GetMainWindow();
 
-            if (DialogNeedsOverlay())
+            if (parent.IsActive && parent is MainWindow window && window.ViewModel.IsGameRunning)
             {
                 contentDialogOverlayWindow = new()
                 {
-                    Height = parent.Bounds.Height,
-                    Width = parent.Bounds.Width,
-                    Position = parent.PointToScreen(new Point()),
+                    Height        = parent.Bounds.Height,
+                    Width         = parent.Bounds.Width,
+                    Position      = parent.PointToScreen(new Point()),
                     ShowInTaskbar = false
                 };
 
@@ -85,22 +85,6 @@ namespace Ryujinx.Ava.UI.Helpers
             }
 
             return result;
-        }
-
-        private static bool DialogNeedsOverlay()
-        {
-            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime al)
-            {
-                foreach (Window item in al.Windows)
-                {
-                    if (item.IsActive && item is MainWindow window && window.ViewModel.IsGameRunning)
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
         }
 
         private static Window GetMainWindow()
