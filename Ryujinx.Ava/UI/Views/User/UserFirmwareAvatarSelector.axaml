@@ -58,23 +58,16 @@
             </ListBox.Styles>
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Image
+                    <Panel
+                        Background="{Binding BackgroundColor}"
                         Margin="5"
                         Height="80"
-                        Width="80"
-                        Source="{Binding Data,
-                        Converter={StaticResource ByteImage}}" />
+                        Width="80">
+                        <Image Source="{Binding Data, Converter={StaticResource ByteImage}}" />
+                    </Panel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <ProgressBar
-            Grid.Row="2"
-            IsIndeterminate="{Binding IsIndeterminate}"
-            IsVisible="{Binding IsVisible}"
-            Value="{Binding ImagesLoaded}"
-            HorizontalAlignment="Stretch" Margin="5"
-            Maximum="{Binding ImageCount}"
-            Minimum="0" />
         <StackPanel
             Grid.Row="3"
             Orientation="Horizontal"

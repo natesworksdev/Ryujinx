@@ -6,6 +6,11 @@ using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.HLE.FileSystem;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using System.IO;
 
 namespace Ryujinx.Ava.UI.Views.User
 {
@@ -43,7 +48,7 @@ namespace Ryujinx.Ava.UI.Views.User
                     ContentManager = _parent.ContentManager;
                     if (Program.PreviewerDetached)
                     {
-                        ViewModel = new UserFirmwareAvatarSelectorViewModel(() => ViewModel.ReloadImages());
+                        ViewModel = new UserFirmwareAvatarSelectorViewModel();
                     }
 
                     DataContext = ViewModel;
@@ -57,18 +62,25 @@ namespace Ryujinx.Ava.UI.Views.User
 
         private void GoBack(object sender, RoutedEventArgs e)
         {
-            ViewModel.Dispose();
-
             _parent.GoBack();
         }
 
         private void ChooseButton_OnClick(object sender, RoutedEventArgs e)
         {
-            if (ViewModel.SelectedIndex > -1)
+            if (ViewModel.SelectedIndex > -1 && ViewModel.SelectedImage != null)
             {
-                _profile.Image = ViewModel.SelectedImage;
+                MemoryStream streamJpg = new();
+                SixLabors.ImageSharp.Image avatarImage =
+                    SixLabors.ImageSharp.Image.Load(ViewModel.SelectedImage, new PngDecoder());
 
-                ViewModel.Dispose();
+                avatarImage.Mutate(x => x.BackgroundColor(new Rgba32(
+                    ViewModel.BackgroundColor.R,
+                    ViewModel.BackgroundColor.G,
+                    ViewModel.BackgroundColor.B,
+                    ViewModel.BackgroundColor.A)));
+                avatarImage.SaveAsJpeg(streamJpg);
+
+                _profile.Image = streamJpg.ToArray();
 
                 _parent.GoBack();
             }
