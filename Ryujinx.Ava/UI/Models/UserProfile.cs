@@ -1,7 +1,6 @@
 using Avalonia.Media;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.ViewModels;
-using Ryujinx.Ava.UI.Views.User;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Profile = Ryujinx.HLE.HOS.Services.Account.Acc.UserProfile;
 using UserEditor = Ryujinx.Ava.UI.Views.User.UserEditor;

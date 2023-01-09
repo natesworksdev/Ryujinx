@@ -6,7 +6,9 @@ using FluentAvalonia.UI.Navigation;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Models;
+using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using System;
 using UserProfile = Ryujinx.Ava.UI.Models.UserProfile;
 
 namespace Ryujinx.Ava.UI.Views.User
@@ -66,9 +68,42 @@ namespace Ryujinx.Ava.UI.Views.User
             }
         }
 
-        private void BackButton_Click(object sender, RoutedEventArgs e)
+        private async void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            _parent?.GoBack();
+            if (_isNewUser)
+            {
+                if (TempProfile.Name != String.Empty || TempProfile.Image != null)
+                {
+                    if (await ContentDialogHelper.CreateChoiceDialog(
+                            LocaleManager.Instance[LocaleKeys.DialogUserProfileUnsavedChangesTitle],
+                            LocaleManager.Instance[LocaleKeys.DialogUserProfileUnsavedChangesMessage],
+                            LocaleManager.Instance[LocaleKeys.DialogUserProfileUnsavedChangesSubMessage]))
+                    {
+                        _parent?.GoBack();
+                    }
+                }
+                else
+                {
+                    _parent?.GoBack();
+                }
+            }
+            else
+            {
+                if (_profile.Name != TempProfile.Name || _profile.Image != TempProfile.Image)
+                {
+                    if (await ContentDialogHelper.CreateChoiceDialog(
+                            LocaleManager.Instance[LocaleKeys.DialogUserProfileUnsavedChangesTitle],
+                            LocaleManager.Instance[LocaleKeys.DialogUserProfileUnsavedChangesMessage],
+                            LocaleManager.Instance[LocaleKeys.DialogUserProfileUnsavedChangesSubMessage]))
+                    {
+                        _parent?.GoBack();
+                    }
+                }
+                else
+                {
+                    _parent?.GoBack();
+                }
+            }
         }
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
