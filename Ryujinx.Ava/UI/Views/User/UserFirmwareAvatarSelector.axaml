@@ -89,8 +89,21 @@
             Margin="0 24 0 0"
             HorizontalAlignment="Right">
             <ui:ColorPickerButton
+                FlyoutPlacement="Top"
+                IsMoreButtonVisible="False"
+                UseColorPalette="False"
+                UseColorTriangle="False"
+                UseColorWheel="False"
+                ShowAcceptDismissButtons="False"
+                IsAlphaEnabled="False"
                 Color="{Binding BackgroundColor, Mode=TwoWay}"
-                Name="ColorButton" />
+                Name="ColorButton">
+                <ui:ColorPickerButton.Styles>
+                    <Style Selector="Grid#Root > DockPanel > Grid">
+                        <Setter Property="IsVisible" Value="False" />
+                    </Style>
+                </ui:ColorPickerButton.Styles>
+            </ui:ColorPickerButton>
             <Button
                 Content="{locale:Locale AvatarChoose}"
                 Height="35"
