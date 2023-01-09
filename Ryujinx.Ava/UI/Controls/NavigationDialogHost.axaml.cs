@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using FluentAvalonia.Core;
 using FluentAvalonia.UI.Controls;
 using LibHac;
 using LibHac.Common;
@@ -151,6 +152,8 @@ namespace Ryujinx.Ava.UI.Controls
             {
                 ViewModel.LostProfiles.Add(new UserProfile(new HLE.HOS.Services.Account.Acc.UserProfile(account, "", null), this));
             }
+
+            ViewModel.LostProfileExists = lostAccounts.Count > 0;
 
             ViewModel.Profiles.Add(new AddModel());
         }
