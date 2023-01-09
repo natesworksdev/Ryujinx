@@ -56,7 +56,7 @@
                     <Setter Property="MinWidth" Value="78" />
                 </Style>
                 <Style Selector="ListBoxItem /template/ Border#SelectionIndicator">
-                    <Setter Property="MinHeight" Value="74" />
+                    <Setter Property="MinHeight" Value="70" />
                 </Style>
             </ListBox.Styles>
             <ListBox.ItemTemplate>
