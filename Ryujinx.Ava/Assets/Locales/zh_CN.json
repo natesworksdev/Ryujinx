@@ -609,5 +609,6 @@
   "Search": "搜索",
   "UserProfilesRecoverLostAccounts": "恢复丢失的账户",
   "Recover": "恢复",
-  "UserProfilesRecoverHeading": "找到了这些用户的存档数据"
+  "UserProfilesRecoverHeading": "找到了这些用户的存档数据",
+  "Language": "简体中文"
 }

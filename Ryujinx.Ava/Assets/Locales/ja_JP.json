@@ -609,5 +609,6 @@
   "Search": "検索",
   "UserProfilesRecoverLostAccounts": "アカウントの復旧",
   "Recover": "復旧",
-  "UserProfilesRecoverHeading": "以下のアカウントのセーブデータが見つかりました"
+  "UserProfilesRecoverHeading": "以下のアカウントのセーブデータが見つかりました",
+  "Language": "日本語"
 }
