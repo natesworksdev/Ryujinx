@@ -228,7 +228,7 @@ namespace Ryujinx.Ava
                 }
             }
 
-            // Check if docked mode was overriden
+            // Check if docked mode was overriden.
             if (CommandLineState.OverrideDockedMode.HasValue)
             {
                 ConfigurationState.Instance.System.EnableDockedMode.Value = CommandLineState.OverrideDockedMode.Value;
