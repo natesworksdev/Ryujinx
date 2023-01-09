@@ -104,7 +104,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public static void PreloadAvatars(ContentManager contentManager, VirtualFileSystem virtualFileSystem)
         {
-           if (_avatarStore.Count > 0)
+            if (_avatarStore.Count > 0)
             {
                 return;
             }
