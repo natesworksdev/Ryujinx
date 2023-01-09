@@ -52,17 +52,29 @@
             HorizontalAlignment="Right"
             VerticalAlignment="Stretch"
             Orientation="Vertical">
-            <Panel
-                Background="{DynamicResource AppListBackgroundColor}">
-                <Image
-                    Name="ProfileImage"
-                    Width="96"
-                    Height="96"
-                    Margin="0"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Top"
-                    Source="{Binding Image, Converter={StaticResource ByteImage}}" />
-            </Panel>
+            <Border
+                BorderBrush="{DynamicResource AppListHoverBackgroundColor}"
+                BorderThickness="1">
+                <Panel>
+                    <ui:SymbolIcon
+                        FontSize="60"
+                        Width="96"
+                        Height="96"
+                        Margin="0"
+                        Foreground="{DynamicResource AppListHoverBackgroundColor}"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Top"
+                        Symbol="Camera" />
+                    <Image
+                        Name="ProfileImage"
+                        Width="96"
+                        Height="96"
+                        Margin="0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Top"
+                        Source="{Binding Image, Converter={StaticResource ByteImage}}" />
+                </Panel>
+            </Border>
         </StackPanel>
         <StackPanel
             Grid.Row="1"
