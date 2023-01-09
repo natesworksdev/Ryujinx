@@ -45,7 +45,6 @@ namespace Ryujinx.Ava.UI.ViewModels
     {
         private const int HotKeyPressDelayMs = 500;
 
-        private readonly MainWindow _owner;
         private ObservableCollection<ApplicationData> _applications;
         private string _aspectStatusText;
 
@@ -96,15 +95,13 @@ namespace Ryujinx.Ava.UI.ViewModels
         private WindowState _windowState;
         private bool _isActive;
 
+        public ApplicationData ListSelectedApplication;
+        public ApplicationData GridSelectedApplication;
+
         public event Action ReloadGameList;
 
         private string TitleName { get; set; }
         internal AppHost AppHost { get; set; }
-
-        public MainWindowViewModel(MainWindow owner) : this()
-        {
-            _owner = owner;
-        }
 
         public MainWindowViewModel()
         {
@@ -338,8 +335,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 return Glyph switch
                 {
-                    Glyph.List => _owner.GameList.SelectedApplication,
-                    Glyph.Grid => _owner.GameGrid.SelectedApplication,
+                    Glyph.List => ListSelectedApplication,
+                    Glyph.Grid => GridSelectedApplication,
                     _ => null,
                 };
             }

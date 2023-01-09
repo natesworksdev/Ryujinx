@@ -56,7 +56,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         public MainWindow()
         {
-            ViewModel = new MainWindowViewModel(this);
+            ViewModel = new MainWindowViewModel();
 
             MainWindowViewModel = ViewModel;
 
