@@ -748,14 +748,7 @@ namespace Ryujinx.Ava
                 }
             });
 
-            IRenderer renderer = Device.Gpu.Renderer;
-
-            if (renderer is ThreadedRenderer tr)
-            {
-                renderer = tr.BaseRenderer;
-            }
-
-            _renderer = renderer;
+            _renderer = Device.Gpu.Renderer is ThreadedRenderer tr ? tr.BaseRenderer : Device.Gpu.Renderer;
 
             _renderer.ScreenCaptured += Renderer_ScreenCaptured;
 
