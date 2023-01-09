@@ -38,7 +38,7 @@ namespace Ryujinx.Ava.UI.Models
         private readonly ILogFormatter _formatter;
         private readonly string _name;
 
-        private const int MaximumSize = 20000;
+        private const int MaximumSize = 50;
 
         public readonly ObservableCollection<Entry> Entries;
 
