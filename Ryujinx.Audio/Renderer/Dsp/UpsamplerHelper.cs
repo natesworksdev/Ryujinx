@@ -25,7 +25,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
                 {
                     return 1.0f;
                 }
-                return (float) (Math.Sin(Math.PI * x) / (Math.PI * x));
+                return (MathF.Sin(MathF.PI * x) / (MathF.PI * x));
             }
 
             float BlackmanWindow(float x)
@@ -34,7 +34,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
                 const float a0 = 0.5f - 0.5f * a;
                 const float a1 = -0.5f;
                 const float a2 = 0.5f * a;
-                return a0 + a1 * (float)Math.Cos(2 * Math.PI * x) + a2 * (float)Math.Cos(4 * Math.PI * x);
+                return a0 + a1 * MathF.Cos(2 * MathF.PI * x) + a2 * MathF.Cos(4 * MathF.PI * x);
             }
             
             float[] result = new float[FilterBankLength];
