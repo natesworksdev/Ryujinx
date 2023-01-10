@@ -13,7 +13,7 @@ namespace Ryujinx.Ava.UI.Views.Input
                 nameof(Side),
                 o => o.Side,
                 (o, v) => o.Side = v);
-        public InputStickView ViewModel;
+        public InputStickViewModel ViewModel;
 
         private StickInputId _side;
         public StickInputId Side
@@ -39,7 +39,7 @@ namespace Ryujinx.Ava.UI.Views.Input
 
             if (VisualRoot is ControllerSettingsWindow window)
             {
-                ViewModel = window.ViewModel;
+                ViewModel = new InputStickViewModel(Side);
             }
 
             DataContext = ViewModel;

@@ -1,3 +1,4 @@
+using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
 
@@ -5,6 +6,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 {
     public class InputStickViewModel : BaseModel
     {
+        private StickInputId _side;
         private string _stickName;
 
         private bool _isController;
@@ -23,7 +25,29 @@ namespace Ryujinx.Ava.UI.ViewModels
         private float _deadzone;
         private float _range;
 
-        public StickInputId Side;
+        public StickInputId Side
+        {
+            get => _side;
+            set
+            {
+                switch (value)
+                {
+                    case StickInputId.Left:
+                        StickName = LocaleManager.Instance[LocaleKeys.ControllerSettingsLStick];
+                        break;
+                    case StickInputId.Right:
+                        StickName = LocaleManager.Instance[LocaleKeys.ControllerSettingsRStick];
+                        break;
+                }
+
+                _side = value;
+            }
+        }
+
+        public InputStickViewModel(StickInputId side)
+        {
+            Side = side;
+        }
 
         public string StickName
         {
