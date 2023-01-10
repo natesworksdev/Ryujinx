@@ -10,7 +10,7 @@ namespace Ryujinx.Ava.UI.Windows
 {
     public partial class MotionSettingsWindow : UserControl
     {
-        private readonly InputConfiguration<GamepadInputId, StickInputId> _viewmodel;
+        private readonly InputConfiguration _viewmodel;
 
         public MotionSettingsWindow()
         {
@@ -20,20 +20,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         public MotionSettingsWindow(ControllerSettingsViewModel viewmodel)
         {
-            var config = viewmodel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
-
-            _viewmodel = new InputConfiguration<GamepadInputId, StickInputId>()
-            {
-                Slot = config.Slot,
-                AltSlot = config.AltSlot,
-                DsuServerHost = config.DsuServerHost,
-                DsuServerPort = config.DsuServerPort,
-                MirrorInput = config.MirrorInput,
-                EnableMotion = config.EnableMotion,
-                Sensitivity = config.Sensitivity,
-                GyroDeadzone = config.GyroDeadzone,
-                EnableCemuHookMotion = config.EnableCemuHookMotion
-            };
+            _viewmodel = viewmodel.Configuration;
 
             InitializeComponent();
             DataContext = _viewmodel;
@@ -53,16 +40,15 @@ namespace Ryujinx.Ava.UI.Windows
             };
             contentDialog.PrimaryButtonClick += (sender, args) =>
             {
-                var config = viewmodel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
-                config.Slot = content._viewmodel.Slot;
-                config.EnableMotion = content._viewmodel.EnableMotion;
-                config.Sensitivity = content._viewmodel.Sensitivity;
-                config.GyroDeadzone = content._viewmodel.GyroDeadzone;
-                config.AltSlot = content._viewmodel.AltSlot;
-                config.DsuServerHost = content._viewmodel.DsuServerHost;
-                config.DsuServerPort = content._viewmodel.DsuServerPort;
-                config.EnableCemuHookMotion = content._viewmodel.EnableCemuHookMotion;
-                config.MirrorInput = content._viewmodel.MirrorInput;
+                viewmodel.Configuration.Slot = content._viewmodel.Slot;
+                viewmodel.Configuration.EnableMotion = content._viewmodel.EnableMotion;
+                viewmodel.Configuration.Sensitivity = content._viewmodel.Sensitivity;
+                viewmodel.Configuration.GyroDeadzone = content._viewmodel.GyroDeadzone;
+                viewmodel.Configuration.AltSlot = content._viewmodel.AltSlot;
+                viewmodel.Configuration.DsuServerHost = content._viewmodel.DsuServerHost;
+                viewmodel.Configuration.DsuServerPort = content._viewmodel.DsuServerPort;
+                viewmodel.Configuration.EnableCemuHookMotion = content._viewmodel.EnableCemuHookMotion;
+                viewmodel.Configuration.MirrorInput = content._viewmodel.MirrorInput;
             };
 
             await contentDialog.ShowAsync();

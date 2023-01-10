@@ -46,7 +46,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private int _controllerNumber = 0;
         private string _controllerImage;
         private int _device;
-        private object _configuration;
+        private InputConfiguration _configuration;
         private string _profileName;
         private bool _isLoaded;
         private readonly UserControl _owner;
@@ -71,7 +71,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public bool IsModified { get; set; }
 
-        public object Configuration
+        public InputConfiguration Configuration
         {
             get => _configuration;
             set
@@ -285,12 +285,12 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             if (Config is StandardKeyboardInputConfig keyboardInputConfig)
             {
-                Configuration = new InputConfiguration<Key, ConfigStickInputId>(keyboardInputConfig);
+                Configuration = new InputConfiguration(keyboardInputConfig);
             }
 
             if (Config is StandardControllerInputConfig controllerInputConfig)
             {
-                Configuration = new InputConfiguration<ConfigGamepadInputId, ConfigStickInputId>(controllerInputConfig);
+                Configuration = new InputConfiguration(controllerInputConfig);
             }
         }
 
@@ -763,14 +763,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                     InputConfig config = null;
 
-                    if (IsKeyboard)
-                    {
-                        config = (Configuration as InputConfiguration<Key, ConfigStickInputId>).GetConfig();
-                    }
-                    else if (IsController)
-                    {
-                        config = (Configuration as InputConfiguration<GamepadInputId, ConfigStickInputId>).GetConfig();
-                    }
+                    config = Configuration.GetConfig();
 
                     config.ControllerType = Controllers[_controller].Type;
 
@@ -834,18 +827,14 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 if (device.Type == DeviceType.Keyboard)
                 {
-                    var inputConfig = Configuration as InputConfiguration<Key, ConfigStickInputId>;
-                    inputConfig.Id = device.Id;
+                    Configuration.Id = device.Id;
                 }
                 else
                 {
-                    var inputConfig = Configuration as InputConfiguration<GamepadInputId, ConfigStickInputId>;
-                    inputConfig.Id = device.Id.Split(" ")[0];
+                    Configuration.Id = device.Id.Split(" ")[0];
                 }
 
-                var config = !IsController
-                    ? (Configuration as InputConfiguration<Key, ConfigStickInputId>).GetConfig()
-                    : (Configuration as InputConfiguration<GamepadInputId, ConfigStickInputId>).GetConfig();
+                var config = Configuration.GetConfig();
                 config.ControllerType = Controllers[_controller].Type;
                 config.PlayerIndex = _playerId;
 

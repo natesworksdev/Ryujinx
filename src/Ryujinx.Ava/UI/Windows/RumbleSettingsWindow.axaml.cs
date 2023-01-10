@@ -10,7 +10,7 @@ namespace Ryujinx.Ava.UI.Windows
 {
     public partial class RumbleSettingsWindow : UserControl
     {
-        private readonly InputConfiguration<GamepadInputId, StickInputId> _viewmodel;
+        private readonly InputConfiguration _viewmodel;
 
         public RumbleSettingsWindow()
         {
@@ -20,12 +20,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         public RumbleSettingsWindow(ControllerSettingsViewModel viewmodel)
         {
-            var config = viewmodel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
-
-            _viewmodel = new InputConfiguration<GamepadInputId, StickInputId>()
-            {
-                StrongRumble = config.StrongRumble, WeakRumble = config.WeakRumble
-            };
+            _viewmodel = viewmodel.Configuration;
 
             InitializeComponent();
             DataContext = _viewmodel;
@@ -43,14 +38,13 @@ namespace Ryujinx.Ava.UI.Windows
                 CloseButtonText = LocaleManager.Instance[LocaleKeys.ControllerSettingsClose],
                 Content = content,
             };
-            
+
             contentDialog.PrimaryButtonClick += (sender, args) =>
             {
-                var config = viewmodel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
-                config.StrongRumble = content._viewmodel.StrongRumble;
-                config.WeakRumble = content._viewmodel.WeakRumble;
+                viewmodel.Configuration.StrongRumble = content._viewmodel.StrongRumble;
+                viewmodel.Configuration.WeakRumble = content._viewmodel.WeakRumble;
             };
-            
+
             await contentDialog.ShowAsync();
         }
     }
