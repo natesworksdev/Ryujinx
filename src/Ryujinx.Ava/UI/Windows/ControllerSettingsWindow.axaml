@@ -164,6 +164,10 @@
             </StackPanel>
         </StackPanel>
 
+        <Separator
+            Margin="0 10"
+            Height="1" />
+
         <!-- Button/JoyStick Settings -->
         <Grid
             Name="SettingButtons"
@@ -186,6 +190,7 @@
                 <Border
                     BorderBrush="{DynamicResource ThemeControlBorderColor}"
                     BorderThickness="1"
+                    CornerRadius="5"
                     IsVisible="{Binding IsLeft}">
                     <Grid
                         Margin="10"
@@ -199,7 +204,6 @@
                             <RowDefinition />
                         </Grid.RowDefinitions>
                         <StackPanel
-                            Margin="0,0,0,4"
                             Grid.Column="0"
                             Grid.Row="0"
                             Orientation="Horizontal">
@@ -238,7 +242,6 @@
                             </ToggleButton>
                         </StackPanel>
                         <StackPanel
-                            Margin="0,0,0,4"
                             Grid.Column="1"
                             Grid.Row="0"
                             Orientation="Horizontal">
@@ -758,6 +761,7 @@
                 <Border
                     BorderBrush="{DynamicResource ThemeControlBorderColor}"
                     BorderThickness="1"
+                    CornerRadius="5"
                     IsVisible="{Binding IsRight}">
                     <Grid
                         Margin="10"
@@ -771,7 +775,6 @@
                                 <RowDefinition />
                             </Grid.RowDefinitions>
                             <StackPanel
-                                Margin="0,0,0,4"
                                 Grid.Column="1"
                                 Grid.Row="0"
                                 Orientation="Horizontal">
@@ -810,7 +813,6 @@
                                 </ToggleButton>
                             </StackPanel>
                             <StackPanel
-                                Margin="0,0,0,4"
                                 Grid.Column="0"
                                 Grid.Row="0"
                                 Orientation="Horizontal">
