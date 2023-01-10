@@ -38,7 +38,7 @@ namespace Ryujinx.Ava.UI.Models
         private readonly ILogFormatter _formatter;
         private readonly string _name;
 
-        private const int MaximumSize = 50;
+        private const int MaximumSize = 1000;
 
         public readonly ObservableCollection<Entry> Entries;
 
@@ -65,11 +65,11 @@ namespace Ryujinx.Ava.UI.Models
 
         private void AddEntry(Color color, string text)
         {
-            Entries.Add(new Entry(color, text));
+            Entries.Insert(0, new Entry(color, text));
 
             if (Entries.Count > MaximumSize)
             {
-                Entries.RemoveAt(0);
+                Entries.RemoveAt(Entries.Count - 1);
             }
         }
 

@@ -20,43 +20,46 @@
     mc:Ignorable="d"
     Focusable="True">
     <Grid>
-        <ScrollViewer
+        <ListBox
             Grid.Row="0"
             Grid.Column="0"
-            Name="ConsoleScrollViewer"
-            HorizontalScrollBarVisibility="Disabled"
-            VerticalScrollBarVisibility="Visible">
-            <ItemsControl
-                Name="ConsoleItemsControl"
-                Items="{Binding LogEntries}">
-                <ItemsControl.Styles>
-                    <Style Selector="TextBlock">
-                        <Setter Property="FontFamily" Value="Inconsolata, Consolas, Monospace, Courier" />
-                        <Setter Property="TextWrapping" Value="Wrap" />
-                    </Style>
-                </ItemsControl.Styles>
-                <ItemsControl.DataTemplates>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Text}">
-                            <TextBlock.Foreground>
-                                <SolidColorBrush Color="{Binding Color}" />
-                            </TextBlock.Foreground>
-                        </TextBlock>
-                    </DataTemplate>
-                </ItemsControl.DataTemplates>
-            </ItemsControl>
-        </ScrollViewer>
+            Name="ConsoleListBox"
+            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+            ScrollViewer.VerticalScrollBarVisibility="Visible"
+            Items="{Binding LogEntries}">
+            <ListBox.RenderTransform>
+                <ScaleTransform ScaleY="-1" />
+            </ListBox.RenderTransform>
+            <ListBox.Styles>
+                <Style Selector="TextBlock">
+                    <Setter Property="FontFamily" Value="Inconsolata, Consolas, Monospace, Courier" />
+                    <Setter Property="TextWrapping" Value="Wrap" />
+                </Style>
+                <Style Selector="ListBoxItem">
+                    <Setter Property="MinHeight" Value="0" />
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <ScaleTransform ScaleY="-1" />
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListBox.Styles>
+            <ListBox.DataTemplates>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Text}">
+                        <TextBlock.Foreground>
+                            <SolidColorBrush Color="{Binding Color}" />
+                        </TextBlock.Foreground>
+                    </TextBlock>
+                </DataTemplate>
+            </ListBox.DataTemplates>
+        </ListBox>
         <StackPanel
             Grid.Row="0"
             Grid.Column="0"
             VerticalAlignment="Top"
             HorizontalAlignment="Right"
             Background="{DynamicResource ThemeContentBackgroundColor}">
-            <CheckBox
-                HorizontalAlignment="Center"
-                Name="AutoScrollCheckBox"
-                IsChecked="True"
-                Content="{locale:Locale ConsoleWindowAutoScroll}" />
             <Button
                 HorizontalAlignment="Center"
                 Command="{ReflectionBinding OpenLogsFolder}"
