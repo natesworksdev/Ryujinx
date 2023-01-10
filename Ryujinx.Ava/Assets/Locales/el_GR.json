@@ -1,4 +1,5 @@
 {
+  "Language": "Ελληνικά",
   "MenuBarFileOpenApplet": "Άνοιγμα Applet",
   "MenuBarFileOpenAppletOpenMiiAppletToolTip": "Άνοιγμα του Mii Editor Applet σε Αυτόνομη λειτουργία",
   "SettingsTabInputDirectMouseAccess": "Άμεση Πρόσβαση Ποντικιού",
@@ -41,10 +42,10 @@
   "GameListHeaderPath": "Τοποθεσία",
   "GameListContextMenuOpenUserSaveDirectory": "Άνοιγμα Τοποθεσίας Αποθήκευσης Χρήστη",
   "GameListContextMenuOpenUserSaveDirectoryToolTip": "Ανοίγει την τοποθεσία που περιέχει την Αποθήκευση Χρήστη της εφαρμογής",
-  "GameListContextMenuOpenUserDeviceDirectory": "Άνοιγμα Τοποθεσίας Συσκευής Χρήστη",
-  "GameListContextMenuOpenUserDeviceDirectoryToolTip": "Ανοίγει την τοποθεσία που περιέχει την Αποθήκευση Συσκευής της εφαρμογής",
-  "GameListContextMenuOpenUserBcatDirectory": "Άνοιγμα Τοποθεσίας BCAT",
-  "GameListContextMenuOpenUserBcatDirectoryToolTip": "Ανοίγει την τοποθεσία που περιέχει την Αποθήκευση BCAT της εφαρμογής",
+  "GameListContextMenuOpenDeviceSaveDirectory": "Άνοιγμα Τοποθεσίας Συσκευής Χρήστη",
+  "GameListContextMenuOpenDeviceSaveDirectoryToolTip": "Ανοίγει την τοποθεσία που περιέχει την Αποθήκευση Συσκευής της εφαρμογής",
+  "GameListContextMenuOpenBcatSaveDirectory": "Άνοιγμα Τοποθεσίας BCAT",
+  "GameListContextMenuOpenBcatSaveDirectoryToolTip": "Ανοίγει την τοποθεσία που περιέχει την Αποθήκευση BCAT της εφαρμογής",
   "GameListContextMenuManageTitleUpdates": "Διαχείριση Ενημερώσεων Παιχνιδιού",
   "GameListContextMenuManageTitleUpdatesToolTip": "Ανοίγει το παράθυρο διαχείρισης Ενημερώσεων Παιχνιδιού",
   "GameListContextMenuManageDlc": "Διαχείριση DLC",
@@ -609,6 +610,5 @@
   "Search": "Search",
   "UserProfilesRecoverLostAccounts": "Recover Lost Accounts",
   "Recover": "Recover",
-  "UserProfilesRecoverHeading": "Saves were found for the following accounts",
-  "Language": "Ελληνικά"
+  "UserProfilesRecoverHeading": "Saves were found for the following accounts"
 }

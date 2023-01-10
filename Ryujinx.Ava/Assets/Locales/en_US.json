@@ -1,4 +1,5 @@
 {
+  "Language": "English (US)",
   "MenuBarFileOpenApplet": "Open Applet",
   "MenuBarFileOpenAppletOpenMiiAppletToolTip": "Open Mii Editor Applet in Standalone mode",
   "SettingsTabInputDirectMouseAccess": "Direct Mouse Access",
@@ -41,10 +42,10 @@
   "GameListHeaderPath": "Path",
   "GameListContextMenuOpenUserSaveDirectory": "Open User Save Directory",
   "GameListContextMenuOpenUserSaveDirectoryToolTip": "Opens the directory which contains Application's User Save",
-  "GameListContextMenuOpenUserDeviceDirectory": "Open User Device Directory",
-  "GameListContextMenuOpenUserDeviceDirectoryToolTip": "Opens the directory which contains Application's Device Save",
-  "GameListContextMenuOpenUserBcatDirectory": "Open User BCAT Directory",
-  "GameListContextMenuOpenUserBcatDirectoryToolTip": "Opens the directory which contains Application's BCAT Save",
+  "GameListContextMenuOpenDeviceSaveDirectory": "Open Device Save Directory",
+  "GameListContextMenuOpenDeviceSaveDirectoryToolTip": "Opens the directory which contains Application's Device Save",
+  "GameListContextMenuOpenBcatSaveDirectory": "Open BCAT Save Directory",
+  "GameListContextMenuOpenBcatSaveDirectoryToolTip": "Opens the directory which contains Application's BCAT Save",
   "GameListContextMenuManageTitleUpdates": "Manage Title Updates",
   "GameListContextMenuManageTitleUpdatesToolTip": "Opens the Title Update management window",
   "GameListContextMenuManageDlc": "Manage DLC",
@@ -609,6 +610,6 @@
   "Search": "Search",
   "UserProfilesRecoverLostAccounts": "Recover Lost Accounts",
   "Recover": "Recover",
-  "UserProfilesRecoverHeading": "Saves were found for the following accounts",
-  "Language": "English (US)"
+  "UserProfilesRecoverHeading" : "Saves were found for the following accounts"
 }
+
