@@ -231,7 +231,6 @@
                             Margin="0,0,0,4"
                             Grid.Column="0"
                             Grid.Row="0"
-                            Background="{DynamicResource ThemeDarkColor}"
                             Orientation="Horizontal">
                             <TextBlock
                                 Width="20"
@@ -251,7 +250,6 @@
                         <StackPanel
                             Grid.Column="0"
                             Grid.Row="1"
-                            Background="{DynamicResource ThemeDarkColor}"
                             Orientation="Horizontal">
                             <TextBlock
                                 Width="20"
@@ -272,7 +270,6 @@
                             Margin="0,0,0,4"
                             Grid.Column="1"
                             Grid.Row="0"
-                            Background="{DynamicResource ThemeDarkColor}"
                             Orientation="Horizontal">
                             <TextBlock
                                 Width="20"
@@ -806,7 +803,6 @@
                                 Margin="0,0,0,4"
                                 Grid.Column="1"
                                 Grid.Row="0"
-                                Background="{DynamicResource ThemeDarkColor}"
                                 Orientation="Horizontal">
                                 <TextBlock
                                     Width="20"
@@ -826,7 +822,6 @@
                             <StackPanel
                                 Grid.Column="1"
                                 Grid.Row="1"
-                                Background="{DynamicResource ThemeDarkColor}"
                                 Orientation="Horizontal">
                                 <TextBlock
                                     Width="20"
@@ -847,7 +842,6 @@
                                 Margin="0,0,0,4"
                                 Grid.Column="0"
                                 Grid.Row="0"
-                                Background="{DynamicResource ThemeDarkColor}"
                                 Orientation="Horizontal">
                                 <TextBlock
                                     Width="20"
