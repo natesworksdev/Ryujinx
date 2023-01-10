@@ -206,7 +206,8 @@ namespace Ryujinx.Ava
                 {
                     lock (_lockObject)
                     {
-                        string filename = $"ryujinx_capture_{DateTime.Now.Year}-{DateTime.Now.Month:D2}-{DateTime.Now.Day:D2}_{DateTime.Now.Hour:D2}-{DateTime.Now.Minute:D2}-{DateTime.Now.Second:D2}.png";
+                        DateTime currentTime = DateTime.Now;
+                        string   filename    = $"ryujinx_capture_{currentTime}-{currentTime:D2}-{currentTime:D2}_{currentTime:D2}-{currentTime:D2}-{currentTime:D2}.png";
                         
                         string directory = AppDataManager.Mode switch
                         {
