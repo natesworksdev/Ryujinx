@@ -73,18 +73,26 @@ namespace Ryujinx.Audio.Renderer.Dsp
             float DoFilterBank(ref UpsamplerBufferState state, float[] bank)
             {
                 float result = 0.0f;
-                
+
                 Debug.Assert(state.History.Length == HistoryLength);
                 Debug.Assert(bank.Length == FilterBankLength);
                 for (int j = 0; j < FilterBankLength; j++)
                 {
-                    result += bank[j] * state.History[(state.CurrentIndex + j) % HistoryLength];
+                    result += bank[j] * state.History[j];
                 }
 
                 return result;
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            void NextInput(ref UpsamplerBufferState state, float input)
+            {
+                Array.Copy(state.History, 1, state.History, 0, HistoryLength - 1);
+                state.History[HistoryLength - 1] = input;
+            }
+
             int inputBufferIndex = 0;
+
             switch (state.Scale)
             { 
                 case 6.0f:
@@ -93,8 +101,8 @@ namespace Ryujinx.Audio.Renderer.Dsp
                         switch (state.Phase)
                         {
                             case 0:
-                                state.History[state.CurrentIndex++ % HistoryLength] = inputBuffer[inputBufferIndex++];
-                                outputBuffer[i] = state.History[state.CurrentIndex + Bank0CenterIndex];
+                                NextInput(ref state, inputBuffer[inputBufferIndex++]);
+                                outputBuffer[i] = state.History[Bank0CenterIndex];
                                 break;
                             case 1:
                                 outputBuffer[i] = DoFilterBank(ref state, Bank1);
@@ -122,8 +130,8 @@ namespace Ryujinx.Audio.Renderer.Dsp
                         switch (state.Phase)
                         {
                             case 0:
-                                state.History[state.CurrentIndex++ % HistoryLength] = inputBuffer[inputBufferIndex++];
-                                outputBuffer[i] = state.History[state.CurrentIndex + Bank0CenterIndex];
+                                NextInput(ref state, inputBuffer[inputBufferIndex++]);
+                                outputBuffer[i] = state.History[Bank0CenterIndex];
                                 break;
                             case 1:
                                 outputBuffer[i] = DoFilterBank(ref state, Bank2);
@@ -132,7 +140,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
                                 outputBuffer[i] = DoFilterBank(ref state, Bank4);
                                 break;
                         }
-                        
+
                         state.Phase = (state.Phase + 1) % 3;
                     }
                     break;
@@ -143,14 +151,14 @@ namespace Ryujinx.Audio.Renderer.Dsp
                         switch (state.Phase)
                         {
                             case 0:
-                                state.History[state.CurrentIndex++ % HistoryLength] = inputBuffer[inputBufferIndex++];
-                                outputBuffer[i] = state.History[state.CurrentIndex + Bank0CenterIndex];
+                                NextInput(ref state, inputBuffer[inputBufferIndex++]);
+                                outputBuffer[i] = state.History[Bank0CenterIndex];
                                 break;
                             case 1:
                                 outputBuffer[i] = DoFilterBank(ref state, Bank4);
                                 break;
                             case 2:
-                                state.History[state.CurrentIndex++ % HistoryLength] = inputBuffer[inputBufferIndex++];
+                                NextInput(ref state, inputBuffer[inputBufferIndex++]);
                                 outputBuffer[i] = DoFilterBank(ref state, Bank2);
                                 break;
                         }
@@ -161,8 +169,6 @@ namespace Ryujinx.Audio.Renderer.Dsp
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-
-            state.CurrentIndex %= HistoryLength;
         }
     }
 }

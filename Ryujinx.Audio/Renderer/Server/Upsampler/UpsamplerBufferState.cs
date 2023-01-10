@@ -6,7 +6,6 @@ namespace Ryujinx.Audio.Renderer.Server.Upsampler
 
         public float Scale;
         public float[] History = new float[HistoryLength];
-        public int CurrentIndex = 0;
         public bool Initialized = false;
         public int Phase = 0;
 
