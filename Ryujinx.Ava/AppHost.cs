@@ -522,42 +522,52 @@ namespace Ryujinx.Ava
             }
             else if (File.Exists(ApplicationPath))
             {
-                string extension = Path.GetExtension(ApplicationPath).ToLowerInvariant();
-
-                if (extension == ".xci")
+                switch (Path.GetExtension(ApplicationPath).ToLowerInvariant())
                 {
-                    Logger.Info?.Print(LogClass.Application, "Loading as XCI.");
+                    case ".xci":
+                        {
+                            Logger.Info?.Print(LogClass.Application, "Loading as XCI.");
 
-                    Device.LoadXci(ApplicationPath);
-                }
-                else if (extension == ".nca")
-                {
-                    Logger.Info?.Print(LogClass.Application, "Loading as NCA.");
+                            Device.LoadXci(ApplicationPath);
 
-                    Device.LoadNca(ApplicationPath);
-                }
-                else if (extension == ".nsp" || extension == ".pfs0")
-                {
-                    Logger.Info?.Print(LogClass.Application, "Loading as NSP.");
+                            break;
+                        }
+                    case ".nca":
+                        {
+                            Logger.Info?.Print(LogClass.Application, "Loading as NCA.");
 
-                    Device.LoadNsp(ApplicationPath);
-                }
-                else
-                {
-                    Logger.Info?.Print(LogClass.Application, "Loading as homebrew.");
+                            Device.LoadNca(ApplicationPath);
 
-                    try
-                    {
-                        Device.LoadProgram(ApplicationPath);
-                    }
-                    catch (ArgumentOutOfRangeException)
-                    {
-                        Logger.Error?.Print(LogClass.Application, "The specified file is not supported by Ryujinx.");
+                            break;
+                        }
+                    case ".nsp":
+                    case ".pfs0":
+                        {
+                            Logger.Info?.Print(LogClass.Application, "Loading as NSP.");
 
-                        Dispose();
+                            Device.LoadNsp(ApplicationPath);
 
-                        return false;
-                    }
+                            break;
+                        }
+                    default:
+                        {
+                            Logger.Info?.Print(LogClass.Application, "Loading as homebrew.");
+
+                            try
+                            {
+                                Device.LoadProgram(ApplicationPath);
+                            }
+                            catch (ArgumentOutOfRangeException)
+                            {
+                                Logger.Error?.Print(LogClass.Application, "The specified file is not supported by Ryujinx.");
+
+                                Dispose();
+
+                                return false;
+                            }
+
+                            break;
+                        }
                 }
             }
             else
