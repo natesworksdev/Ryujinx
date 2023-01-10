@@ -183,11 +183,19 @@ namespace Ryujinx.Cpu
                 else
                 {
                     // The update method assumes that shared mappings are already aligned.
-                    ulong endAddress = va + size;
 
-                    va = BitUtils.AlignDown(va, alignment);
-                    pa = BitUtils.AlignDown(pa, alignment);
-                    size = BitUtils.AlignUp(endAddress, alignment) - va;
+                    if (!flags.HasFlag(MemoryMapFlags.Private))
+                    {
+                        if ((va & (alignment - 1)) != (pa & (alignment - 1)))
+                        {
+                            throw new InvalidMemoryRegionException($"Virtual address 0x{va:X} and physical address 0x{pa:X} are misaligned and can't be aligned.");
+                        }
+
+                        ulong endAddress = va + size;
+                        va = BitUtils.AlignDown(va, alignment);
+                        pa = BitUtils.AlignDown(pa, alignment);
+                        size = BitUtils.AlignUp(endAddress, alignment) - va;
+                    }
 
                     Update(va, pa, size, MappingType.Shared);
                 }
@@ -254,7 +262,7 @@ namespace Ryujinx.Cpu
                     case MappingType.Private:
                         if (map.Type == MappingType.Shared)
                         {
-                            throw new InvalidOperationException($"Private mapping request at 0x{va:X} with size 0x{size:X} overlaps shared mapping at 0x{map.Address:X} with size 0x{map.Size:X}.");
+                            throw new InvalidMemoryRegionException($"Private mapping request at 0x{va:X} with size 0x{size:X} overlaps shared mapping at 0x{map.Address:X} with size 0x{map.Size:X}.");
                         }
                         else
                         {
@@ -264,7 +272,7 @@ namespace Ryujinx.Cpu
                     case MappingType.Shared:
                         if (map.Type != MappingType.None)
                         {
-                            throw new InvalidOperationException($"Shared mapping request at 0x{va:X} with size 0x{size:X} overlaps mapping at 0x{map.Address:X} with size 0x{map.Size:X}.");
+                            throw new InvalidMemoryRegionException($"Shared mapping request at 0x{va:X} with size 0x{size:X} overlaps mapping at 0x{map.Address:X} with size 0x{map.Size:X}.");
                         }
                         else
                         {
