@@ -209,6 +209,7 @@
                 VerticalAlignment="Top"
                 HorizontalAlignment="Stretch"
                 Orientation="Vertical"
+                Margin="0 0 10 0"
                 Spacing="10">
                 <!-- Left Triggers -->
                 <Border
@@ -783,6 +784,7 @@
                 VerticalAlignment="Top"
                 HorizontalAlignment="Stretch"
                 Orientation="Vertical"
+                Margin="10 0 0 0"
                 Spacing="10">
                 <!-- Right Triggers -->
                 <Border
