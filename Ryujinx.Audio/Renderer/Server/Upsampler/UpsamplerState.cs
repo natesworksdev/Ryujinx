@@ -38,6 +38,11 @@ namespace Ryujinx.Audio.Renderer.Server.Upsampler
         public ushort[] InputBufferIndices;
 
         /// <summary>
+        /// State of each input buffer index kept across invocations of the upsampler.
+        /// </summary>
+        public UpsamplerBufferState[] BufferStates = Array.Empty<UpsamplerBufferState>();
+
+        /// <summary>
         /// Create a new <see cref="UpsamplerState"/>.
         /// </summary>
         /// <param name="manager">The upsampler manager.</param>

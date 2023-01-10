@@ -40,6 +40,8 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                 info.InputBufferIndices[i] = (ushort)(bufferOffset + inputBufferOffset[i]);
             }
 
+            Array.Resize(ref info.BufferStates, Math.Max(info.BufferStates.Length, (int)inputCount));
+
             UpsamplerInfo = info;
         }
 
@@ -50,8 +52,6 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
         public void Process(CommandList context)
         {
-            float ratio = (float)InputSampleRate / Constants.TargetSampleRate;
-
             uint bufferCount = Math.Min(BufferCount, UpsamplerInfo.SourceSampleCount);
 
             for (int i = 0; i < bufferCount; i++)
@@ -59,9 +59,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                 Span<float> inputBuffer = context.GetBuffer(UpsamplerInfo.InputBufferIndices[i]);
                 Span<float> outputBuffer = GetBuffer(UpsamplerInfo.InputBufferIndices[i], (int)UpsamplerInfo.SampleCount);
 
-                float fraction = 0.0f;
-
-                ResamplerHelper.ResampleForUpsampler(outputBuffer, inputBuffer, ratio, ref fraction, (int)(InputSampleCount / ratio));
+                UpsamplerHelper.Upsample(outputBuffer, inputBuffer, (int) UpsamplerInfo.SampleCount, (int) InputSampleCount, ref UpsamplerInfo.BufferStates[i]);
             }
         }
     }
