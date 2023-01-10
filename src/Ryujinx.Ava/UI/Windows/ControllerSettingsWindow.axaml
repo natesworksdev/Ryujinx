@@ -25,173 +25,144 @@
         HorizontalAlignment="Stretch"
         VerticalAlignment="Stretch"
         Orientation="Vertical">
-        <Grid Margin="2,2,2,5" HorizontalAlignment="Stretch">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="0.5*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <Border
-                Grid.Column="0"
-                Margin="0,0,2,0"
-                BorderBrush="{DynamicResource ThemeControlBorderColor}"
-                BorderThickness="1"
-                Padding="2,0">
-                <StackPanel
-                    Margin="2"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Orientation="Vertical">
-                    <TextBlock
-                        Margin="0,0,0,4"
-                        HorizontalAlignment="Center"
-                        Text="{locale:Locale ControllerSettingsPlayer}" />
-                    <ComboBox
-                        Name="PlayerIndexBox"
-                        Width="150"
-                        SelectionChanged="PlayerIndexBox_OnSelectionChanged"
-                        Items="{Binding PlayerIndexes}"
-                        SelectedIndex="{Binding PlayerId}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Name}" />
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </StackPanel>
-            </Border>
+        <StackPanel
+            Orientation="Horizontal"
+            HorizontalAlignment="Stretch"
+            Spacing="10">
+            <StackPanel
+                Width="150"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Orientation="Vertical">
+                <TextBlock
+                    Margin="0,0,0,4"
+                    HorizontalAlignment="Left"
+                    Text="{locale:Locale ControllerSettingsPlayer}" />
+                <ComboBox
+                    Name="PlayerIndexBox"
+                    Width="150"
+                    SelectionChanged="PlayerIndexBox_OnSelectionChanged"
+                    Items="{Binding PlayerIndexes}"
+                    SelectedIndex="{Binding PlayerId}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
 
             <!-- Main Controller Settings -->
-            <Border
-                Grid.Column="1"
-                Margin="0,0,2,0"
-                BorderBrush="{DynamicResource ThemeControlBorderColor}"
-                BorderThickness="1"
-                Padding="2,0">
-                <StackPanel
-                    Margin="2"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Center"
-                    Orientation="Vertical">
-                    <TextBlock
-                        Margin="0,0,0,5"
-                        HorizontalAlignment="Center"
-                        Text="{locale:Locale ControllerSettingsInputDevice}" />
-                    <Grid HorizontalAlignment="Stretch">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <ComboBox
-                            Name="DeviceBox"
-                            HorizontalAlignment="Stretch"
-                            Items="{Binding DeviceList}"
-                            SelectedIndex="{Binding Device}" />
-                        <Button
-                            Grid.Column="1"
-                            MinWidth="0"
-                            Margin="5,0,0,0"
-                            VerticalAlignment="Center"
-                            Command="{Binding LoadDevices}">
-                            <ui:SymbolIcon
-                                Symbol="Refresh"
-                                FontSize="15"
-                                Height="20" />
-                        </Button>
-                    </Grid>
-                </StackPanel>
-            </Border>
-            <Border
-                Grid.Column="2"
-                Margin="0,0,2,0"
-                BorderBrush="{DynamicResource ThemeControlBorderColor}"
-                BorderThickness="1"
-                Padding="2,0">
-                <Grid
-                    Margin="2"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Center">
-                    <Grid.RowDefinitions>
-                        <RowDefinition />
-                        <RowDefinition />
-                    </Grid.RowDefinitions>
-                    <TextBlock
-                        Margin="0,0,0,4"
-                        HorizontalAlignment="Center"
-                        Text="{locale:Locale ControllerSettingsControllerType}" />
+            <StackPanel
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Center"
+                Orientation="Vertical">
+                <TextBlock
+                    Margin="0,0,0,5"
+                    HorizontalAlignment="Left"
+                    Text="{locale:Locale ControllerSettingsInputDevice}" />
+                <Grid HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
                     <ComboBox
-                        Grid.Row="1"
+                        Name="DeviceBox"
                         HorizontalAlignment="Stretch"
-                        Items="{Binding Controllers}"
-                        SelectedIndex="{Binding Controller}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Name}" />
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                        Items="{Binding DeviceList}"
+                        SelectedIndex="{Binding Device}" />
+                    <Button
+                        Grid.Column="1"
+                        MinWidth="0"
+                        Margin="5,0,0,0"
+                        VerticalAlignment="Center"
+                        Command="{Binding LoadDevices}">
+                        <ui:SymbolIcon
+                            Symbol="Refresh"
+                            FontSize="15"
+                            Height="20" />
+                    </Button>
                 </Grid>
-            </Border>
-            <Border
-                Grid.Column="3"
-                BorderBrush="{DynamicResource ThemeControlBorderColor}"
-                BorderThickness="1"
-                Padding="2,0" >
-                <StackPanel
-                    Margin="2"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Orientation="Vertical">
-                    <TextBlock
-                        Margin="0,0,0,4"
-                        HorizontalAlignment="Center"
-                        Text="{locale:Locale ControllerSettingsProfile}" />
-                    <StackPanel Orientation="Horizontal">
-                        <ui:ComboBox
-                            IsEditable="True"
-                            Name="ProfileBox"
-                            Width="100"
-                            SelectedIndex="0"
-                            Items="{Binding ProfilesList}"
-                            Text="{Binding ProfileName}" />
-                        <Button
-                            MinWidth="0"
-                            Margin="5,0,0,0"
-                            VerticalAlignment="Center"
-                            ToolTip.Tip="{locale:Locale ControllerSettingsLoadProfileToolTip}"
-                            Command="{Binding LoadProfile}">
-                            <ui:SymbolIcon
-                                Symbol="Upload"
-                                FontSize="15"
-                                Height="20" />
-                        </Button>
-                        <Button
-                            MinWidth="0"
-                            Margin="5,0,0,0"
-                            VerticalAlignment="Center"
-                            ToolTip.Tip="{locale:Locale ControllerSettingsSaveProfileToolTip}"
-                            Command="{Binding SaveProfile}">
-                            <ui:SymbolIcon
-                                Symbol="Save"
-                                FontSize="15"
-                                Height="20" />
-                        </Button>
-                        <Button
-                            MinWidth="0"
-                            Margin="5,0,0,0"
-                            VerticalAlignment="Center"
-                            ToolTip.Tip="{locale:Locale ControllerSettingsRemoveProfileToolTip}"
-                            Command="{Binding RemoveProfile}">
-                            <ui:SymbolIcon
-                                Symbol="Delete"
-                                FontSize="15"
-                                Height="20" />
-                        </Button>
-                    </StackPanel>
+            </StackPanel>
+
+            <Grid
+                Width="130"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <TextBlock
+                    Margin="0,0,0,4"
+                    HorizontalAlignment="Left"
+                    Text="{locale:Locale ControllerSettingsControllerType}" />
+                <ComboBox
+                    Grid.Row="1"
+                    HorizontalAlignment="Stretch"
+                    Items="{Binding Controllers}"
+                    SelectedIndex="{Binding Controller}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </Grid>
+
+            <StackPanel
+                Width="220"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Orientation="Vertical">
+                <TextBlock
+                    Margin="0,0,0,4"
+                    HorizontalAlignment="Left"
+                    Text="{locale:Locale ControllerSettingsProfile}" />
+                <StackPanel Orientation="Horizontal">
+                    <ui:ComboBox
+                        IsEditable="True"
+                        Name="ProfileBox"
+                        Width="100"
+                        SelectedIndex="0"
+                        Items="{Binding ProfilesList}"
+                        Text="{Binding ProfileName}" />
+                    <Button
+                        MinWidth="0"
+                        Margin="5,0,0,0"
+                        VerticalAlignment="Center"
+                        ToolTip.Tip="{locale:Locale ControllerSettingsLoadProfileToolTip}"
+                        Command="{Binding LoadProfile}">
+                        <ui:SymbolIcon
+                            Symbol="Upload"
+                            FontSize="15"
+                            Height="20" />
+                    </Button>
+                    <Button
+                        MinWidth="0"
+                        Margin="5,0,0,0"
+                        VerticalAlignment="Center"
+                        ToolTip.Tip="{locale:Locale ControllerSettingsSaveProfileToolTip}"
+                        Command="{Binding SaveProfile}">
+                        <ui:SymbolIcon
+                            Symbol="Save"
+                            FontSize="15"
+                            Height="20" />
+                    </Button>
+                    <Button
+                        MinWidth="0"
+                        Margin="5,0,0,0"
+                        VerticalAlignment="Center"
+                        ToolTip.Tip="{locale:Locale ControllerSettingsRemoveProfileToolTip}"
+                        Command="{Binding RemoveProfile}">
+                        <ui:SymbolIcon
+                            Symbol="Delete"
+                            FontSize="15"
+                            Height="20" />
+                    </Button>
                 </StackPanel>
-            </Border>
-        </Grid>
+            </StackPanel>
+        </StackPanel>
 
         <!-- Button/JoyStick Settings -->
         <Grid

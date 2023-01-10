@@ -1,4 +1,4 @@
-﻿<UserControl 
+﻿<UserControl
     x:Class="Ryujinx.Ava.UI.Views.Settings.SettingsInputView"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -13,14 +13,14 @@
     <Design.DataContext>
         <viewModels:SettingsViewModel />
     </Design.DataContext>
-    <ScrollViewer 
+    <ScrollViewer
         Name="InputPage"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Stretch"
         HorizontalScrollBarVisibility="Disabled"
         VerticalScrollBarVisibility="Auto">
         <Border Classes="settings">
-            <StackPanel Margin="4" Orientation="Vertical">
+            <StackPanel Margin="10" Orientation="Vertical">
                 <StackPanel Orientation="Horizontal">
                     <CheckBox Margin="5,0"
                               ToolTip.Tip="{locale:Locale DockModeToggleTooltip}"
