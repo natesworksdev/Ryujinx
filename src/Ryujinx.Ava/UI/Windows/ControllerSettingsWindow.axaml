@@ -502,7 +502,7 @@
                     <Border
                         BorderBrush="{DynamicResource ThemeControlBorderColor}"
                         BorderThickness="1"
-                        CornerRadius="10"
+                        CornerRadius="5"
                         IsVisible="{Binding IsLeft}">
                         <StackPanel
                             Orientation="Vertical"
@@ -606,10 +606,18 @@
                 <!-- Trigger Threshold -->
                 <Border
                     BorderBrush="{DynamicResource ThemeControlBorderColor}"
-                    BorderThickness="1">
-                    <StackPanel Margin="10" Orientation="Vertical">
-                        <TextBlock HorizontalAlignment="Center" Text="{locale:Locale ControllerSettingsTriggerThreshold}" />
-                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    BorderThickness="1"
+                    CornerRadius="5">
+                    <StackPanel
+                        Margin="10"
+                        Orientation="Vertical"
+                        Spacing="4">
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Text="{locale:Locale ControllerSettingsTriggerThreshold}" />
+                        <StackPanel
+                            HorizontalAlignment="Center"
+                            Orientation="Horizontal">
                             <Slider
                                 Width="130"
                                 Maximum="1"
@@ -620,10 +628,8 @@
                             <TextBlock Text="{Binding Configuration.TriggerThreshold, StringFormat=\{0:0.00\}}" />
                         </StackPanel>
                         <StackPanel
-                            Margin="0,4,0,0"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Background="{DynamicResource ThemeDarkColor}"
                             IsVisible="{Binding !IsRight}"
                             Orientation="Horizontal">
                             <TextBlock
@@ -642,11 +648,9 @@
                             </ToggleButton>
                         </StackPanel>
                         <StackPanel
-                            Margin="0,4,0,0"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             IsVisible="{Binding !IsRight}"
-                            Background="{DynamicResource ThemeDarkColor}"
                             Orientation="Horizontal">
                             <TextBlock
                                 Width="20"
@@ -664,11 +668,9 @@
                             </ToggleButton>
                         </StackPanel>
                         <StackPanel
-                            Margin="0,4,0,0"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             IsVisible="{Binding !IsLeft}"
-                            Background="{DynamicResource ThemeDarkColor}"
                             Orientation="Horizontal">
                             <TextBlock
                                 Width="20"
@@ -686,11 +688,9 @@
                             </ToggleButton>
                         </StackPanel>
                         <StackPanel
-                            Margin="0,4,0,0"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             IsVisible="{Binding !IsLeft}"
-                            Background="{DynamicResource ThemeDarkColor}"
                             Orientation="Horizontal">
                             <TextBlock
                                 Width="20"
