@@ -196,7 +196,6 @@
         <!-- Button/JoyStick Settings -->
         <Grid
             Name="SettingButtons"
-            MinHeight="450"
             IsVisible="{Binding ShowSettings}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -217,7 +216,9 @@
                         BorderBrush="{DynamicResource ThemeControlBorderColor}"
                         BorderThickness="1"
                         IsVisible="{Binding IsLeft}">
-                        <Grid Margin="10" HorizontalAlignment="Stretch">
+                        <Grid
+                            Margin="10"
+                            HorizontalAlignment="Stretch">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition />
                                 <ColumnDefinition />
@@ -294,18 +295,24 @@
                     <Border
                         BorderBrush="{DynamicResource ThemeControlBorderColor}"
                         BorderThickness="1"
+                        CornerRadius="5"
                         IsVisible="{Binding IsLeft}">
-                        <StackPanel Margin="10" Orientation="Vertical">
+                        <StackPanel
+                            Orientation="Vertical"
+                            Margin="10">
                             <TextBlock
                                 Margin="0,0,0,10"
                                 HorizontalAlignment="Center"
                                 Text="{locale:Locale ControllerSettingsLStick}" />
 
                             <!--  Left Joystick Keyboard  -->
-                            <StackPanel IsVisible="{Binding !IsController}" Orientation="Vertical">
+                            <StackPanel
+                                IsVisible="{Binding !IsController}"
+                                Orientation="Vertical"
+                                Spacing="4">
 
                                 <!--  Left Joystick Button  -->
-                                <StackPanel Margin="0,0,0,4" Background="{DynamicResource ThemeDarkColor}" Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal">
                                     <TextBlock
                                         Margin="0,0,10,0"
                                         Width="120"
@@ -324,7 +331,7 @@
                                 </StackPanel>
 
                                 <!--  Left Joystick Up  -->
-                                <StackPanel Margin="0,0,0,4" Background="{DynamicResource ThemeDarkColor}" Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal">
                                     <TextBlock
                                         Margin="0,0,10,0"
                                         Width="120"
@@ -343,7 +350,7 @@
                                 </StackPanel>
 
                                 <!--  Left Joystick Down  -->
-                                <StackPanel Margin="0,0,0,4" Background="{DynamicResource ThemeDarkColor}" Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal">
                                     <TextBlock
                                         Margin="0,0,10,0"
                                         Width="120"
@@ -362,7 +369,7 @@
                                 </StackPanel>
 
                                 <!--  Left Joystick Left  -->
-                                <StackPanel Margin="0,0,0,4" Background="{DynamicResource ThemeDarkColor}" Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal">
                                     <TextBlock
                                         Margin="0,0,10,0"
                                         Width="120"
@@ -381,7 +388,7 @@
                                 </StackPanel>
 
                                 <!--  Left Joystick Right  -->
-                                <StackPanel Margin="0,0,0,4" Background="{DynamicResource ThemeDarkColor}" Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal">
                                     <TextBlock
                                         Margin="0,0,10,0"
                                         Width="120"
@@ -401,10 +408,13 @@
                             </StackPanel>
 
                             <!--  Left Joystick Controller  -->
-                            <StackPanel IsVisible="{Binding IsController}" Orientation="Vertical">
+                            <StackPanel
+                                IsVisible="{Binding IsController}"
+                                Orientation="Vertical"
+                                Spacing="4">
 
                                 <!--  Left Joystick Button  -->
-                                <StackPanel Background="{DynamicResource ThemeDarkColor}" Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal">
                                     <TextBlock
                                         Margin="0,0,10,0"
                                         Width="120"
@@ -423,7 +433,7 @@
                                 </StackPanel>
 
                                 <!--  Left Joystick Stick  -->
-                                <StackPanel Margin="0,4,0,4" Background="{DynamicResource ThemeDarkColor}" Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal">
                                     <TextBlock
                                         Margin="0,0,10,0"
                                         Width="120"
@@ -450,7 +460,7 @@
                                 <CheckBox IsChecked="{Binding Configuration.LeftRotate90}">
                                     <TextBlock Text="{locale:Locale ControllerSettingsRotate90}" />
                                 </CheckBox>
-                                <Separator Margin="0,4,0,4" Height="1" />
+                                <Separator Height="1" />
                                 <StackPanel Orientation="Vertical">
                                     <TextBlock Text="{locale:Locale ControllerSettingsLStickDeadzone}" />
                                     <StackPanel
@@ -763,8 +773,9 @@
                         BorderBrush="{DynamicResource ThemeControlBorderColor}"
                         BorderThickness="1"
                         IsVisible="{Binding IsRight}">
-                        <StackPanel Margin="10" Orientation="Vertical">
-                            <Grid HorizontalAlignment="Stretch">
+                        <Grid
+                            Margin="10"
+                            HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition />
                                     <ColumnDefinition />
@@ -797,8 +808,6 @@
                                 <StackPanel
                                     Grid.Column="1"
                                     Grid.Row="1"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
                                     Background="{DynamicResource ThemeDarkColor}"
                                     Orientation="Horizontal">
                                     <TextBlock
@@ -817,11 +826,9 @@
                                     </ToggleButton>
                                 </StackPanel>
                                 <StackPanel
-                                    Margin="0,0,8,4"
+                                    Margin="0,0,0,4"
                                     Grid.Column="0"
                                     Grid.Row="0"
-                                    HorizontalAlignment="Right"
-                                    VerticalAlignment="Center"
                                     Background="{DynamicResource ThemeDarkColor}"
                                     Orientation="Horizontal">
                                     <TextBlock
@@ -840,16 +847,18 @@
                                     </ToggleButton>
                                 </StackPanel>
                             </Grid>
-                        </StackPanel>
                     </Border>
                     <!-- Right Buttons -->
                     <Border
                         BorderBrush="{DynamicResource ThemeControlBorderColor}"
                         BorderThickness="1"
+                        CornerRadius="5"
                         IsVisible="{Binding IsRight}">
-                        <StackPanel Margin="10" Orientation="Vertical">
+                        <StackPanel
+                            Orientation="Vertical"
+                            Margin="10"
+                            Spacing="10">
                             <TextBlock
-                                Margin="0,0,0,10"
                                 HorizontalAlignment="Center"
                                 Text="{locale:Locale ControllerSettingsButtons}" />
                             <Grid HorizontalAlignment="Stretch">
@@ -863,10 +872,8 @@
                                 </Grid.RowDefinitions>
                                 <!--  Right Buttons X  -->
                                 <StackPanel
-                                    Margin="0,0,0,4"
                                     Grid.Column="0"
                                     Grid.Row="0"
-                                    Background="{DynamicResource ThemeDarkColor}"
                                     Orientation="Horizontal">
                                     <TextBlock
                                         Width="20"
@@ -887,7 +894,6 @@
                                 <StackPanel
                                     Grid.Column="0"
                                     Grid.Row="1"
-                                    Background="{DynamicResource ThemeDarkColor}"
                                     Orientation="Horizontal">
                                     <TextBlock
                                         Width="20"
@@ -906,10 +912,8 @@
                                 </StackPanel>
                                 <!--  Right Buttons A  -->
                                 <StackPanel
-                                    Margin="0,0,0,4"
                                     Grid.Column="1"
                                     Grid.Row="0"
-                                    Background="{DynamicResource ThemeDarkColor}"
                                     Orientation="Horizontal">
                                     <TextBlock
                                         Width="20"
@@ -930,7 +934,6 @@
                                 <StackPanel
                                     Grid.Column="1"
                                     Grid.Row="1"
-                                    Background="{DynamicResource ThemeDarkColor}"
                                     Orientation="Horizontal">
                                     <TextBlock
                                         Width="20"
@@ -952,21 +955,26 @@
                     </Border>
                     <!-- Right Joystick -->
                     <Border
-                        Padding="10"
                         BorderBrush="{DynamicResource ThemeControlBorderColor}"
                         BorderThickness="1"
+                        CornerRadius="5"
                         IsVisible="{Binding IsRight}">
-                        <StackPanel Orientation="Vertical">
+                        <StackPanel
+                            Orientation="Vertical"
+                            Margin="10">
                             <TextBlock
                                 Margin="0,0,0,10"
                                 HorizontalAlignment="Center"
                                 Text="{locale:Locale ControllerSettingsRStick}" />
 
                             <!--  Right Joystick Keyboard  -->
-                            <StackPanel IsVisible="{Binding !IsController}" Orientation="Vertical">
+                            <StackPanel
+                                IsVisible="{Binding !IsController}"
+                                Orientation="Vertical"
+                                Spacing="4">
 
                                 <!--  Right Joystick Button  -->
-                                <StackPanel Margin="0,0,0,4" Background="{DynamicResource ThemeDarkColor}" Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal">
                                     <TextBlock
                                         Margin="0,0,10,0"
                                         Width="120"
@@ -985,7 +993,7 @@
                                 </StackPanel>
 
                                 <!--  Right Joystick Up  -->
-                                <StackPanel Margin="0,0,0,4" Background="{DynamicResource ThemeDarkColor}" Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal">
                                     <TextBlock
                                         Margin="0,0,10,0"
                                         Width="120"
@@ -1004,7 +1012,7 @@
                                 </StackPanel>
 
                                 <!--  Right Joystick Down  -->
-                                <StackPanel Margin="0,0,0,4" Background="{DynamicResource ThemeDarkColor}" Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal">
                                     <TextBlock
                                         Margin="0,0,10,0"
                                         Width="120"
@@ -1023,7 +1031,7 @@
                                 </StackPanel>
 
                                 <!--  Right Joystick Left  -->
-                                <StackPanel Margin="0,0,0,4" Background="{DynamicResource ThemeDarkColor}" Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal">
                                     <TextBlock
                                         Margin="0,0,10,0"
                                         Width="120"
@@ -1042,7 +1050,7 @@
                                 </StackPanel>
 
                                 <!--  Right Joystick Right  -->
-                                <StackPanel Margin="0,0,0,4" Background="{DynamicResource ThemeDarkColor}" Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal">
                                     <TextBlock
                                         Margin="0,0,10,0"
                                         Width="120"
@@ -1062,10 +1070,13 @@
                             </StackPanel>
 
                             <!--  Right Joystick Controller  -->
-                            <StackPanel IsVisible="{Binding IsController}" Orientation="Vertical">
+                            <StackPanel
+                                IsVisible="{Binding IsController}"
+                                Orientation="Vertical"
+                                Spacing="4">
 
                                 <!--  Right Joystick Button  -->
-                                <StackPanel Background="{DynamicResource ThemeDarkColor}" Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal">
                                     <TextBlock
                                         Margin="0,0,10,0"
                                         Width="120"
@@ -1085,7 +1096,7 @@
 
 
                                 <!--  Right Joystick Stick  -->
-                                <StackPanel Margin="0,4,0,4" Background="{DynamicResource ThemeDarkColor}" Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal">
                                     <TextBlock
                                         Margin="0,0,10,0"
                                         Width="120"
@@ -1112,7 +1123,7 @@
                                 <CheckBox IsChecked="{Binding Configuration.RightRotate90}">
                                     <TextBlock Text="{locale:Locale ControllerSettingsRotate90}" />
                                 </CheckBox>
-                                <Separator Margin="0,4,0,4" Height="1" />
+                                <Separator Height="1" />
                                 <StackPanel Orientation="Vertical">
                                     <TextBlock Text="{locale:Locale ControllerSettingsRStickDeadzone}" />
                                     <StackPanel
