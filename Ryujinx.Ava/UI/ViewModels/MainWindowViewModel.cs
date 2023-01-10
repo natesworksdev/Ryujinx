@@ -675,6 +675,11 @@ namespace Ryujinx.Ava.UI.ViewModels
             get => ConsoleHelper.SetConsoleWindowStateSupported;
         }
 
+        public bool RegisterFileTypesVisible
+        {
+            get => FileAssociationHelper.IsTypeAssociationSupported;
+        }
+
         public ObservableCollection<ApplicationData> Applications
         {
             get => _applications;

@@ -141,6 +141,10 @@
                     <MenuItem Command="{ReflectionBinding InstallFirmwareFromFile}" Header="{locale:Locale MenuBarFileToolsInstallFirmwareFromFile}" />
                     <MenuItem Command="{ReflectionBinding InstallFirmwareFromFolder}" Header="{locale:Locale MenuBarFileToolsInstallFirmwareFromDirectory}" />
                 </MenuItem>
+                <MenuItem
+                    Click="RegisterFileTypes_Click"
+                    Header="{locale:Locale MenuBarToolsRegisterFileTypes}"
+                    IsVisible="{Binding RegisterFileTypesVisible}" />
             </MenuItem>
             <MenuItem VerticalAlignment="Center" Header="{locale:Locale MenuBarHelp}">
                 <MenuItem

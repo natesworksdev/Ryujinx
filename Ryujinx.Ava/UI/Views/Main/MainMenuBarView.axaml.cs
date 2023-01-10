@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using LibHac.FsSystem;
 using LibHac.Ncm;
+using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
@@ -10,6 +11,7 @@ using Ryujinx.Common;
 using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.HOS;
 using Ryujinx.Modules;
+using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -160,6 +162,19 @@ namespace Ryujinx.Ava.UI.Views.Main
             if (sender is MenuItem)
             {
                 ViewModel.IsAmiiboRequested = Window.ViewModel.AppHost.Device.System.SearchingForAmiibo(out _);
+            }
+        }
+
+        private async void RegisterFileTypes_Click(object sender, RoutedEventArgs e)
+        {
+            if (FileAssociationHelper.RegisterTypeAssociations())
+            {
+                await ContentDialogHelper.CreateInfoDialog(LocaleManager.Instance[LocaleKeys.DialogRegisterFileTypesSuccessMessage],
+                    string.Empty, LocaleManager.Instance[LocaleKeys.InputDialogOk], string.Empty, string.Empty);
+            }
+            else
+            {
+                await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogRegisterFileTypesErrorMessage]);
             }
         }
 
