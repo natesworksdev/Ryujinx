@@ -1,0 +1,238 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:flex="clr-namespace:Avalonia.Flexbox;assembly=Avalonia.Flexbox"
+    xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
+    xmlns:helpers="clr-namespace:Ryujinx.Ava.UI.Helpers"
+    xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
+    mc:Ignorable="d"
+    x:Class="Ryujinx.Ava.UI.Views.Input.InputStickView"
+    x:CompileBindings="True"
+    x:DataType="viewModels:InputStickViewModel">
+    <Design.DataContext>
+        <viewModels:InputStickViewModel />
+    </Design.DataContext>
+    <UserControl.Resources>
+        <helpers:KeyValueConverter x:Key="Key" />
+    </UserControl.Resources>
+    <Border
+        BorderBrush="{DynamicResource ThemeControlBorderColor}"
+        BorderThickness="1"
+        CornerRadius="5">
+        <StackPanel
+            Orientation="Vertical"
+            Margin="10">
+            <TextBlock
+                Margin="0,0,0,10"
+                HorizontalAlignment="Center"
+                Text="{Binding StickName}" />
+
+            <!-- Joystick Keyboard -->
+            <StackPanel
+                IsVisible="{Binding !IsController}"
+                Orientation="Vertical"
+                Spacing="4">
+
+                <!-- Joystick Button -->
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,0,10,0"
+                        Width="120"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="{locale:Locale ControllerSettingsStickButton}"
+                        TextAlignment="Center" />
+                    <ToggleButton
+                        Width="90"
+                        Height="27"
+                        HorizontalAlignment="Stretch">
+                        <TextBlock
+                            Text="{Binding KeyboardStickButton, Mode=TwoWay, Converter={StaticResource Key}}"
+                            TextAlignment="Center" />
+                    </ToggleButton>
+                </StackPanel>
+
+                <!-- Joystick Up -->
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,0,10,0"
+                        Width="120"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="{locale:Locale ControllerSettingsStickUp}"
+                        TextAlignment="Center" />
+                    <ToggleButton
+                        Width="90"
+                        Height="27"
+                        HorizontalAlignment="Stretch">
+                        <TextBlock
+                            Text="{Binding StickUp, Mode=TwoWay, Converter={StaticResource Key}}"
+                            TextAlignment="Center" />
+                    </ToggleButton>
+                </StackPanel>
+
+                <!-- Joystick Down -->
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,0,10,0"
+                        Width="120"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="{locale:Locale ControllerSettingsStickDown}"
+                        TextAlignment="Center" />
+                    <ToggleButton
+                        Width="90"
+                        Height="27"
+                        HorizontalAlignment="Stretch">
+                        <TextBlock
+                            Text="{Binding StickDown, Mode=TwoWay, Converter={StaticResource Key}}"
+                            TextAlignment="Center" />
+                    </ToggleButton>
+                </StackPanel>
+
+                <!-- Joystick Left -->
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,0,10,0"
+                        Width="120"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="{locale:Locale ControllerSettingsStickLeft}"
+                        TextAlignment="Center" />
+                    <ToggleButton
+                        Width="90"
+                        Height="27"
+                        HorizontalAlignment="Stretch">
+                        <TextBlock
+                            Text="{Binding StickLeft, Mode=TwoWay, Converter={StaticResource Key}}"
+                            TextAlignment="Center" />
+                    </ToggleButton>
+                </StackPanel>
+
+                <!-- Joystick Right -->
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,0,10,0"
+                        Width="120"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="{locale:Locale ControllerSettingsStickRight}"
+                        TextAlignment="Center" />
+                    <ToggleButton
+                        Width="90"
+                        Height="27"
+                        HorizontalAlignment="Stretch">
+                        <TextBlock
+                            Text="{Binding StickRight, Mode=TwoWay, Converter={StaticResource Key}}"
+                            TextAlignment="Center" />
+                    </ToggleButton>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Joystick Controller -->
+            <StackPanel
+                IsVisible="{Binding IsController}"
+                Orientation="Vertical"
+                Spacing="4">
+
+                <!-- Joystick Button -->
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,0,10,0"
+                        Width="120"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="{locale:Locale ControllerSettingsStickButton}"
+                        TextAlignment="Center" />
+                    <ToggleButton
+                        Width="90"
+                        Height="27"
+                        HorizontalAlignment="Stretch">
+                        <TextBlock
+                            Text="{Binding ControllerStickButton, Mode=TwoWay, Converter={StaticResource Key}}"
+                            TextAlignment="Center" />
+                    </ToggleButton>
+                </StackPanel>
+
+
+                <!-- Joystick Stick -->
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,0,10,0"
+                        Width="120"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="{locale:Locale ControllerSettingsStickStick}"
+                        TextAlignment="Center" />
+                    <ToggleButton
+                        Width="90"
+                        Height="27"
+                        HorizontalAlignment="Stretch"
+                        Tag="stick">
+                        <TextBlock
+                            Text="{Binding Joystick, Mode=TwoWay, Converter={StaticResource Key}}"
+                            TextAlignment="Center" />
+                    </ToggleButton>
+                </StackPanel>
+
+                <flex:FlexPanel
+                    AlignContent="Center"
+                    JustifyContent="SpaceBetween">
+                    <CheckBox
+                        MinWidth="0"
+                        IsChecked="{Binding InvertXAxis}">
+                        <TextBlock Text="{locale:Locale ControllerSettingsStickInvertXAxis}" />
+                    </CheckBox>
+                    <CheckBox
+                        MinWidth="0"
+                        IsChecked="{Binding InvertYAxis}">
+                        <TextBlock Text="{locale:Locale ControllerSettingsStickInvertYAxis}" />
+                    </CheckBox>
+                </flex:FlexPanel>
+
+                <CheckBox
+                    MinWidth="0"
+                    IsChecked="{Binding Rotate90}">
+                    <TextBlock Text="{locale:Locale ControllerSettingsRotate90}" />
+                </CheckBox>
+
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="{locale:Locale ControllerSettingsStickDeadzone}" />
+                    <flex:FlexPanel
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        Direction="Row"
+                        AlignItems="Center"
+                        JustifyContent="SpaceBetween">
+                        <Slider
+                            Minimum="0"
+                            Maximum="1"
+                            TickFrequency="0.01"
+                            IsSnapToTickEnabled="True"
+                            Width="180"
+                            Value="{Binding Deadzone, Mode=TwoWay}" />
+                        <TextBlock Text="{Binding Deadzone, StringFormat=\{0:0.00\}}" />
+                    </flex:FlexPanel>
+                    <TextBlock Text="{locale:Locale ControllerSettingsStickRange}" />
+                    <flex:FlexPanel
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        Direction="Row"
+                        AlignItems="Center"
+                        JustifyContent="SpaceBetween">
+                        <Slider
+                            Minimum="0"
+                            Maximum="2"
+                            TickFrequency="0.01"
+                            IsSnapToTickEnabled="True"
+                            Width="180"
+                            Value="{Binding Range, Mode=TwoWay}" />
+                        <TextBlock Text="{Binding Range, StringFormat=\{0:0.00\}}" />
+                    </flex:FlexPanel>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>
