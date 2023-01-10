@@ -502,16 +502,21 @@
                     <Border
                         BorderBrush="{DynamicResource ThemeControlBorderColor}"
                         BorderThickness="1"
-                        VerticalAlignment="Top"
+                        CornerRadius="10"
                         IsVisible="{Binding IsLeft}">
-                        <StackPanel Margin="10" Orientation="Vertical">
+                        <StackPanel
+                            Orientation="Vertical"
+                            Margin="10"
+                            Spacing="10">
                             <TextBlock
-                                Margin="0,0,0,10"
                                 HorizontalAlignment="Center"
                                 Text="{locale:Locale ControllerSettingsDPad}" />
-                            <StackPanel Orientation="Vertical">
+                            <StackPanel
+                                Orientation="Vertical"
+                                Spacing="4">
                                 <!--  Left DPad Up  -->
-                                <StackPanel Margin="0,0,0,4" Background="{DynamicResource ThemeDarkColor}" Orientation="Horizontal">
+                                <StackPanel
+                                    Orientation="Horizontal">
                                     <TextBlock
                                         Margin="0,0,10,0"
                                         Width="120"
@@ -530,7 +535,8 @@
                                 </StackPanel>
 
                                 <!--  Left DPad Down  -->
-                                <StackPanel Margin="0,0,0,4" Background="{DynamicResource ThemeDarkColor}" Orientation="Horizontal">
+                                <StackPanel
+                                    Orientation="Horizontal">
                                     <TextBlock
                                         Margin="0,0,10,0"
                                         Width="120"
@@ -549,7 +555,8 @@
                                 </StackPanel>
 
                                 <!--  Left DPad Left  -->
-                                <StackPanel Margin="0,0,0,4" Background="{DynamicResource ThemeDarkColor}" Orientation="Horizontal">
+                                <StackPanel
+                                    Orientation="Horizontal">
                                     <TextBlock
                                         Margin="0,0,10,0"
                                         Width="120"
@@ -568,7 +575,8 @@
                                 </StackPanel>
 
                                 <!--  Left DPad Right  -->
-                                <StackPanel Margin="0,0,0,4" Background="{DynamicResource ThemeDarkColor}" Orientation="Horizontal">
+                                <StackPanel
+                                    Orientation="Horizontal">
                                     <TextBlock
                                         Margin="0,0,10,0"
                                         Width="120"
