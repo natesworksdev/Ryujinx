@@ -44,7 +44,6 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-
 using GUI = Gtk.Builder.ObjectAttribute;
 using ShaderCacheLoadingState = Ryujinx.Graphics.Gpu.Shader.ShaderCacheState;
 
@@ -109,6 +108,7 @@ namespace Ryujinx.Ui
         [GUI] CheckMenuItem   _favToggle;
         [GUI] MenuItem        _firmwareInstallDirectory;
         [GUI] MenuItem        _firmwareInstallFile;
+        [GUI] MenuItem        _registerFileTypes;
         [GUI] Label           _fifoStatus;
         [GUI] CheckMenuItem   _iconToggle;
         [GUI] CheckMenuItem   _developerToggle;
@@ -219,6 +219,8 @@ namespace Ryujinx.Ui
             _actionMenu.Sensitive = false;
             _pauseEmulation.Sensitive = false;
             _resumeEmulation.Sensitive = false;
+
+            _registerFileTypes.Visible = FileAssociationHelper.IsTypeAssociationSupported;
 
             if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        _favToggle.Active        = true;
             if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)       _iconToggle.Active       = true;
@@ -1498,6 +1500,18 @@ namespace Ryujinx.Ui
             {
                 _firmwareVersionLabel.Text = currentFirmware != null ? currentFirmware.VersionString : "0.0.0";
             });
+        }
+
+        private void RegisterFileTypes_Pressed(object sender, EventArgs e)
+        {
+            if (FileAssociationHelper.RegisterTypeAssociations())
+            {
+                GtkDialog.CreateInfoDialog("Register file types", "File types successfully registered!");
+            }
+            else
+            {
+                GtkDialog.CreateErrorDialog("Failed to register file types.");
+            }
         }
 
         private void HandleRelaunch()
