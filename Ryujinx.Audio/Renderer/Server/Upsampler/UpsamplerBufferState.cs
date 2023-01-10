@@ -5,7 +5,7 @@ namespace Ryujinx.Audio.Renderer.Server.Upsampler
         public const int HistoryLength = 20;
 
         public float Scale;
-        public float[] History = new float[HistoryLength];
+        public readonly float[] History = new float[HistoryLength];
         public bool Initialized = false;
         public int Phase = 0;
 

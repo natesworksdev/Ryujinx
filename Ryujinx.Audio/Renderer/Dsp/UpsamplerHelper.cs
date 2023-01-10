@@ -11,11 +11,11 @@ namespace Ryujinx.Audio.Renderer.Dsp
         private const int FilterBankLength = 20;
         // Bank0 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         private const int Bank0CenterIndex = 9;
-        private static readonly float[] Bank1 = PrecomputeFilterBank(1.0f / 6.0f);
-        private static readonly float[] Bank2 = PrecomputeFilterBank(2.0f / 6.0f);
-        private static readonly float[] Bank3 = PrecomputeFilterBank(3.0f / 6.0f);
-        private static readonly float[] Bank4 = PrecomputeFilterBank(4.0f / 6.0f);
-        private static readonly float[] Bank5 = PrecomputeFilterBank(5.0f / 6.0f);
+        private static ReadOnlySpan<float> Bank1 => PrecomputeFilterBank(1.0f / 6.0f);
+        private static ReadOnlySpan<float> Bank2 => PrecomputeFilterBank(2.0f / 6.0f);
+        private static ReadOnlySpan<float> Bank3 => PrecomputeFilterBank(3.0f / 6.0f);
+        private static ReadOnlySpan<float> Bank4 => PrecomputeFilterBank(4.0f / 6.0f);
+        private static ReadOnlySpan<float> Bank5 => PrecomputeFilterBank(5.0f / 6.0f);
 
         private static float[] PrecomputeFilterBank(float offset)
         {
@@ -70,7 +70,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            float DoFilterBank(ref UpsamplerBufferState state, float[] bank)
+            float DoFilterBank(ref UpsamplerBufferState state, ReadOnlySpan<float> bank)
             {
                 float result = 0.0f;
 

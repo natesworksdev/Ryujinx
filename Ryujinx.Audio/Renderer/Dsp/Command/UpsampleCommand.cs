@@ -59,7 +59,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                 Span<float> inputBuffer = context.GetBuffer(UpsamplerInfo.InputBufferIndices[i]);
                 Span<float> outputBuffer = GetBuffer(UpsamplerInfo.InputBufferIndices[i], (int)UpsamplerInfo.SampleCount);
 
-                UpsamplerHelper.Upsample(outputBuffer, inputBuffer, (int) UpsamplerInfo.SampleCount, (int) InputSampleCount, ref UpsamplerInfo.BufferStates[i]);
+                UpsamplerHelper.Upsample(outputBuffer, inputBuffer, (int)UpsamplerInfo.SampleCount, (int)InputSampleCount, ref UpsamplerInfo.BufferStates[i]);
             }
         }
     }
