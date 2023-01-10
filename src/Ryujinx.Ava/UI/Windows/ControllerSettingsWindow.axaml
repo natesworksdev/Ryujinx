@@ -208,14 +208,13 @@
             <Grid
                 Margin="0,0,10,0"
                 Grid.Column="0"
-                VerticalAlignment="Stretch"
-                DockPanel.Dock="Left">
+                VerticalAlignment="Top"
+                HorizontalAlignment="Stretch">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-
                 <!--  Left Triggers  -->
                 <Border
                     Grid.Row="0"
@@ -295,7 +294,6 @@
                         </StackPanel>
                     </Grid>
                 </Border>
-
                 <!--  Left Joystick  -->
                 <Border
                     Grid.Row="1"
@@ -495,7 +493,6 @@
                         </StackPanel>
                     </StackPanel>
                 </Border>
-
                 <!--  Left DPad  -->
                 <Border
                     Grid.Row="2"
@@ -590,7 +587,9 @@
             </Grid>
 
             <!--  Triggers And Side Buttons-->
-            <StackPanel Grid.Column="1" HorizontalAlignment="Stretch">
+            <StackPanel
+                Grid.Column="1"
+                HorizontalAlignment="Stretch">
                 <Border
                     BorderBrush="{DynamicResource ThemeControlBorderColor}"
                     BorderThickness="1">
@@ -754,18 +753,18 @@
                 </StackPanel>
             </StackPanel>
 
-            <!--Right Controls-->
+            <!-- Right Controls -->
             <Grid
                 Margin="10,0,0,0"
                 Grid.Column="2"
                 VerticalAlignment="Top"
-                HorizontalAlignment="Stretch" >
+                HorizontalAlignment="Stretch">
                 <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
+                <!--  Right Triggers  -->
                 <Border
                     Grid.Row="0"
                     BorderBrush="{DynamicResource ThemeControlBorderColor}"
@@ -850,6 +849,7 @@
                         </Grid>
                     </StackPanel>
                 </Border>
+                <!--  Right Buttons  -->
                 <Border
                     Grid.Row="1"
                     BorderBrush="{DynamicResource ThemeControlBorderColor}"
@@ -958,6 +958,7 @@
                         </Grid>
                     </StackPanel>
                 </Border>
+                <!--  Right Joystick  -->
                 <Border
                     Grid.Row="2"
                     Padding="10"
@@ -1161,9 +1162,6 @@
                     </StackPanel>
                 </Border>
             </Grid>
-
         </Grid>
-
     </StackPanel>
-
 </UserControl>
