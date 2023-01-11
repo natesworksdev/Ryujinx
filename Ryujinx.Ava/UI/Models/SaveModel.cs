@@ -54,7 +54,7 @@ namespace Ryujinx.Ava.UI.Models
                 max /= scale;
             }
 
-            return "0 KB";
+            return "0 KiB";
         }
 
         public SaveModel(SaveDataInfo info, VirtualFileSystem virtualFileSystem)
