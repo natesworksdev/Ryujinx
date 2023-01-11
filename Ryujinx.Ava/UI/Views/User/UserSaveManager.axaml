@@ -91,6 +91,8 @@
             Grid.Row="1"
             Margin="0,5"
             BorderThickness="1"
+            BorderBrush="{DynamicResource AppListHoverBackgroundColor}"
+            CornerRadius="5"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch">
             <ListBox
@@ -112,10 +114,12 @@
                                 <ColumnDefinition />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                            <StackPanel
+                                Grid.Column="0"
+                                Orientation="Horizontal"
+                                Spacing="5">
                                 <Border
                                     Height="42"
-                                    Margin="2"
                                     Width="42"
                                     Padding="10"
                                     IsVisible="{Binding !InGameList}">

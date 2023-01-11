@@ -149,7 +149,6 @@
                 Click="ManageSaves"
                 Content="{locale:Locale UserProfilesManageSaves}" />
             <Button
-                IsVisible="{Binding LostProfileExists}"
                 Click="RecoverLostAccounts"
                 Content="{locale:Locale UserProfilesRecoverLostAccounts}" />
         </StackPanel>

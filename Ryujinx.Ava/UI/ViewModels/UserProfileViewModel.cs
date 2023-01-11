@@ -16,8 +16,6 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public ObservableCollection<UserProfile> LostProfiles { get; set; }
 
-        public bool LostProfileExists { get; set; }
-
         public void Dispose() { }
     }
 }
