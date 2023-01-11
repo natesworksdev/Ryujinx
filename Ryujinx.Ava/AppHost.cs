@@ -44,8 +44,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
+using static Ryujinx.Ava.UI.Helpers.Win32NativeInterop;
 using Image = SixLabors.ImageSharp.Image;
 using InputManager = Ryujinx.Input.HLE.InputManager;
 using Key = Ryujinx.Input.Key;
@@ -65,6 +67,9 @@ namespace Ryujinx.Ava
 
         private static readonly Cursor InvisibleCursor = new(StandardCursorType.None);
 
+        [SupportedOSPlatform("windows")] private static readonly IntPtr InvisibleCursorWin = CreateEmptyCursor();
+        [SupportedOSPlatform("windows")] private static readonly IntPtr DefaultCursorWin = CreateArrowCursor();
+
         private readonly long      _ticksPerFrame;
         private readonly Stopwatch _chrono;
         private long               _ticks;
@@ -81,7 +86,6 @@ namespace Ryujinx.Ava
         private float                       _newVolume;
         private KeyboardHotkeyState         _prevHotkeyState;
 
-        private bool _hideCursorOnIdle;
         private long _lastCursorMoveTime;
         private bool _isCursorInRenderer;
 
@@ -131,7 +135,6 @@ namespace Ryujinx.Ava
             _accountManager         = accountManager;
             _userChannelPersistence = userChannelPersistence;
             _renderingThread        = new Thread(RenderLoop, 1 * 1024 * 1024) { Name = "GUI.RenderThread" };
-            _hideCursorOnIdle       = ConfigurationState.Instance.HideCursorOnIdle;
             _lastCursorMoveTime     = Stopwatch.GetTimestamp();
             _glLogLevel             = ConfigurationState.Instance.Logger.GraphicsDebugLevel;
             _topLevel               = topLevel;
@@ -159,7 +162,6 @@ namespace Ryujinx.Ava
 
             ConfigurationState.Instance.HideCursorOnIdle.Event += HideCursorState_Changed;
 
-            _topLevel.PointerLeave += TopLevel_PointerLeave;
             _topLevel.PointerMoved += TopLevel_PointerMoved;
 
             ConfigurationState.Instance.System.IgnoreMissingServices.Event += UpdateIgnoreMissingServicesState;
@@ -172,20 +174,47 @@ namespace Ryujinx.Ava
 
         private void TopLevel_PointerMoved(object sender, PointerEventArgs e)
         {
-            if (sender is Control visual)
+            if (sender is MainWindow window)
             {
                 _lastCursorMoveTime = Stopwatch.GetTimestamp();
 
-                var point = e.GetCurrentPoint(visual).Position;
+                if ((Renderer.Content as EmbeddedWindow).TransformedBounds != null)
+                {
+                    var point  = e.GetCurrentPoint(window).Position;
+                    var bounds = (Renderer.Content as EmbeddedWindow).TransformedBounds.Value.Clip;
 
-                _isCursorInRenderer = Equals(visual.InputHitTest(point), Renderer);
+                    _isCursorInRenderer = point.X >= bounds.X &&
+                                          point.X <= bounds.Width + bounds.X &&
+                                          point.Y >= bounds.Y &&
+                                          point.Y <= bounds.Height + bounds.Y;
+                }
             }
         }
 
-        private void TopLevel_PointerLeave(object sender, PointerEventArgs e)
+        private void ShowCursor()
         {
-            _isCursorInRenderer = false;
-            _viewModel.Cursor   = Cursor.Default;
+            Dispatcher.UIThread.Post(() =>
+            {
+                _viewModel.Cursor = Cursor.Default;
+
+                if (OperatingSystem.IsWindows())
+                {
+                    SetCursor(DefaultCursorWin);
+                }
+            });
+        }
+
+        private void HideCursor()
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                _viewModel.Cursor = InvisibleCursor;
+
+                if (OperatingSystem.IsWindows())
+                {
+                    SetCursor(InvisibleCursorWin);
+                }
+            });
         }
 
         private void SetRendererWindowSize(Size size)
@@ -380,7 +409,6 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.System.EnableDockedMode.Event      -= UpdateDockedModeState;
             ConfigurationState.Instance.System.AudioVolume.Event           -= UpdateAudioVolumeState;
 
-            _topLevel.PointerLeave -= TopLevel_PointerLeave;
             _topLevel.PointerMoved -= TopLevel_PointerMoved;
 
             _gpuCancellationTokenSource.Cancel();
@@ -406,19 +434,10 @@ namespace Ryujinx.Ava
 
         private void HideCursorState_Changed(object sender, ReactiveEventArgs<bool> state)
         {
-            Dispatcher.UIThread.InvokeAsync(delegate
+            if (state.NewValue)
             {
-                _hideCursorOnIdle = state.NewValue;
-
-                if (_hideCursorOnIdle)
-                {
-                    _lastCursorMoveTime = Stopwatch.GetTimestamp();
-                }
-                else
-                {
-                    _viewModel.Cursor = Cursor.Default;
-                }
-            });
+                _lastCursorMoveTime = Stopwatch.GetTimestamp();
+            }
         }
 
         public async Task<bool> LoadGuestApplication()
@@ -860,29 +879,6 @@ namespace Ryujinx.Ava
             }
         }
 
-        private void HandleScreenState()
-        {
-            if (ConfigurationState.Instance.Hid.EnableMouse)
-            {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    _viewModel.Cursor = _isCursorInRenderer ? InvisibleCursor : Cursor.Default;
-                });
-            }
-            else
-            {
-                if (_hideCursorOnIdle)
-                {
-                    long cursorMoveDelta = Stopwatch.GetTimestamp() - _lastCursorMoveTime;
-
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        _viewModel.Cursor = cursorMoveDelta >= CursorHideIdleTime * Stopwatch.Frequency ? InvisibleCursor : Cursor.Default;
-                    });
-                }
-            }
-        }
-
         private bool UpdateFrame()
         {
             if (!_isActive)
@@ -890,23 +886,44 @@ namespace Ryujinx.Ava
                 return false;
             }
 
+            NpadManager.Update(ConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat());
+
             if (_viewModel.IsActive)
             {
+                if (ConfigurationState.Instance.Hid.EnableMouse)
+                {
+                    if (_isCursorInRenderer)
+                    {
+                        HideCursor();
+                    }
+                    else
+                    {
+                        ShowCursor();
+                    }
+                }
+                else
+                {
+                    if (ConfigurationState.Instance.HideCursorOnIdle)
+                    {
+                        if (Stopwatch.GetTimestamp() - _lastCursorMoveTime >= CursorHideIdleTime * Stopwatch.Frequency)
+                        {
+                            HideCursor();
+                        }
+                        else
+                        {
+                            ShowCursor();
+                        }
+                    }
+                }
+
                 Dispatcher.UIThread.Post(() =>
                 {
-                    HandleScreenState();
-
                     if (_keyboardInterface.GetKeyboardStateSnapshot().IsPressed(Key.Delete) && _viewModel.WindowState != WindowState.FullScreen)
                     {
                         Device.Application.DiskCacheLoadState?.Cancel();
                     }
                 });
-            }
 
-            NpadManager.Update(ConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat());
-
-            if (_viewModel.IsActive)
-            {
                 KeyboardHotkeyState currentHotkeyState = GetHotkeyState();
 
                 if (currentHotkeyState != _prevHotkeyState)
