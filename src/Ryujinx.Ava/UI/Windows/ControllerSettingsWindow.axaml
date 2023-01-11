@@ -273,7 +273,11 @@
                     </Grid>
                 </Border>
                 <!-- Left Joystick -->
-                <input:InputStickView Side="Left"/>
+                <Panel
+                    IsVisible="{Binding IsLeft}">
+                    <input:InputStickView
+                        Side="Left" />
+                </Panel>
                 <!-- Left DPad -->
                 <Border
                     BorderBrush="{DynamicResource ThemeControlBorderColor}"
@@ -735,7 +739,11 @@
                     </StackPanel>
                 </Border>
                 <!-- Right Joystick -->
-                <input:InputStickView Side="Right" />
+                <Panel
+                    IsVisible="{Binding IsRight}">
+                    <input:InputStickView
+                        Side="Right" />
+                </Panel>
             </StackPanel>
         </Grid>
     </StackPanel>
