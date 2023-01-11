@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Configuration.Hid.Controller;
+using System;
 
 namespace Ryujinx.Ava.UI.Views.Input
 {
@@ -37,9 +38,9 @@ namespace Ryujinx.Ava.UI.Views.Input
         {
             base.OnAttachedToVisualTree(e);
 
-            if (VisualRoot is ControllerSettingsWindow window)
+            if (Parent.DataContext is ControllerSettingsViewModel viewModel)
             {
-                ViewModel = new InputStickViewModel(Side);
+                ViewModel = new InputStickViewModel(Side, viewModel);
             }
 
             DataContext = ViewModel;
