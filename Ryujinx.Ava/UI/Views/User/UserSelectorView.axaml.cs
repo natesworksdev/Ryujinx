@@ -13,6 +13,7 @@ namespace Ryujinx.Ava.UI.Views.User
     public partial class UserSelectorViews : UserControl
     {
         private NavigationDialogHost _parent;
+
         public UserProfileViewModel ViewModel { get; set; }
 
         public UserSelectorViews()
