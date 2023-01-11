@@ -4,9 +4,9 @@ using System.Text;
 
 namespace Ryujinx.Ava.UI.Helpers
 {
-    using AvaLogger = Avalonia.Logging.Logger;
+    using AvaLogger   = Avalonia.Logging.Logger;
     using AvaLogLevel = Avalonia.Logging.LogEventLevel;
-    using RyuLogger = Ryujinx.Common.Logging.Logger;
+    using RyuLogger   = Ryujinx.Common.Logging.Logger;
     using RyuLogClass = Ryujinx.Common.Logging.LogClass;
 
     internal class LoggerAdapter : Avalonia.Logging.ILogSink
@@ -16,41 +16,55 @@ namespace Ryujinx.Ava.UI.Helpers
             AvaLogger.Sink = new LoggerAdapter();
         }
 
+        private static RyuLogger.Log? GetLog(AvaLogLevel level)
+        {
+            return level switch
+            {
+                AvaLogLevel.Verbose     => RyuLogger.Debug,
+                AvaLogLevel.Debug       => RyuLogger.Debug,
+                AvaLogLevel.Information => RyuLogger.Debug,
+                AvaLogLevel.Warning     => RyuLogger.Debug,
+                AvaLogLevel.Error       => RyuLogger.Error,
+                AvaLogLevel.Fatal       => RyuLogger.Error,
+                _ => throw new ArgumentOutOfRangeException(nameof(level), level, null)
+            };
+        }
+
         public bool IsEnabled(AvaLogLevel level, string area)
         {
-            return RyuLogger.Debug != null;
+            return GetLog != null;
         }
 
         public void Log(AvaLogLevel level, string area, object source, string messageTemplate)
         {
-            RyuLogger.Debug?.PrintMsg(RyuLogClass.Ui, Format(level, area, messageTemplate, source, null));
+            GetLog(level)?.PrintMsg(RyuLogClass.Ui, Format(level, area, messageTemplate, source, null));
         }
 
         public void Log<T0>(AvaLogLevel level, string area, object source, string messageTemplate, T0 propertyValue0)
         {
-            RyuLogger.Debug?.PrintMsg(RyuLogClass.Ui, Format(level, area, messageTemplate, source, new object[] { propertyValue0 }));
+            GetLog(level)?.PrintMsg(RyuLogClass.Ui, Format(level, area, messageTemplate, source, new object[] { propertyValue0 }));
         }
 
         public void Log<T0, T1>(AvaLogLevel level, string area, object source, string messageTemplate, T0 propertyValue0,  T1 propertyValue1)
         {
-            RyuLogger.Debug?.PrintMsg(RyuLogClass.Ui, Format(level, area, messageTemplate, source, new object[] { propertyValue0, propertyValue1 }));
+            GetLog(level)?.PrintMsg(RyuLogClass.Ui, Format(level, area, messageTemplate, source, new object[] { propertyValue0, propertyValue1 }));
         }
 
         public void Log<T0, T1, T2>(AvaLogLevel level, string area, object source, string messageTemplate, T0 propertyValue0, T1 propertyValue1, T2 propertyValue2)
         {
-            RyuLogger.Debug?.PrintMsg(RyuLogClass.Ui, Format(level, area, messageTemplate, source, new object[] { propertyValue0, propertyValue1, propertyValue2 }));
+            GetLog(level)?.PrintMsg(RyuLogClass.Ui, Format(level, area, messageTemplate, source, new object[] { propertyValue0, propertyValue1, propertyValue2 }));
         }
 
         public void Log(AvaLogLevel level, string area, object source, string messageTemplate, params object[] propertyValues)
         {
-            RyuLogger.Debug?.PrintMsg(RyuLogClass.Ui, Format(level, area, messageTemplate, source, propertyValues));
+            GetLog(level)?.PrintMsg(RyuLogClass.Ui, Format(level, area, messageTemplate, source, propertyValues));
         }
 
         private static string Format(AvaLogLevel level, string area, string template, object source, object[] v)
         {
-            var result = new StringBuilder();
+            StringBuilder result = new();
             var r = new CharacterReader(template.AsSpan());
-            var i = 0;
+            int i = 0;
 
             result.Append('[');
             result.Append(level);
