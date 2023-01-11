@@ -32,7 +32,7 @@ namespace Ryujinx.Ava.UI.Helpers
 
         public bool IsEnabled(AvaLogLevel level, string area)
         {
-            return GetLog != null;
+            return GetLog(level) != null;
         }
 
         public void Log(AvaLogLevel level, string area, object source, string messageTemplate)
