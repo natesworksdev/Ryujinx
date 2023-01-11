@@ -45,9 +45,7 @@ namespace Ryujinx.Ava.UI.Views.User
                 switch (arg.NavigationMode)
                 {
                     case NavigationMode.New:
-                        var args =
-                            ((NavigationDialogHost parent, AccountManager accountManager, HorizonClient client, VirtualFileSystem
-                                virtualFileSystem))arg.Parameter;
+                        var args = ((NavigationDialogHost parent, AccountManager accountManager, HorizonClient client, VirtualFileSystem virtualFileSystem))arg.Parameter;
                         _accountManager = args.accountManager;
                         _horizonClient = args.client;
                         _virtualFileSystem = args.virtualFileSystem;
