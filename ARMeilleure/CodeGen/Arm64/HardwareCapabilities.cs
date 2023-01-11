@@ -151,6 +151,10 @@ namespace ARMeilleure.CodeGen.Arm64
             "hw.optional.arm.FEAT_FP16",
             "hw.optional.arm.FEAT_AES",
             "hw.optional.arm.FEAT_PMULL",
+            "hw.optional.arm.FEAT_LSE",
+            "hw.optional.armv8_crc32",
+            "hw.optional.arm.FEAT_SHA1",
+            "hw.optional.arm.FEAT_SHA256"
         };
 
         [Flags]
@@ -161,6 +165,10 @@ namespace ARMeilleure.CodeGen.Arm64
             Fp16    = 1 << 2,
             Aes     = 1 << 3,
             Pmull   = 1 << 4,
+            Lse     = 1 << 5,
+            Crc32   = 1 << 6,
+            Sha1    = 1 << 7,
+            Sha256  = 1 << 8
         }
 
         public static MacOsFeatureFlags MacOsFeatureInfo { get; } = 0;
@@ -168,6 +176,11 @@ namespace ARMeilleure.CodeGen.Arm64
 #endregion
 
         public static bool SupportsAdvSimd => LinuxFeatureInfoHwCap.HasFlag(LinuxFeatureFlagsHwCap.Asimd) || MacOsFeatureInfo.HasFlag(MacOsFeatureFlags.AdvSimd);
+        public static bool SupportsAes => LinuxFeatureInfoHwCap.HasFlag(LinuxFeatureFlagsHwCap.Aes) || MacOsFeatureInfo.HasFlag(MacOsFeatureFlags.Aes);
         public static bool SupportsPmull => LinuxFeatureInfoHwCap.HasFlag(LinuxFeatureFlagsHwCap.Pmull) || MacOsFeatureInfo.HasFlag(MacOsFeatureFlags.Pmull);
+        public static bool SupportsLse => LinuxFeatureInfoHwCap.HasFlag(LinuxFeatureFlagsHwCap.Atomics) || MacOsFeatureInfo.HasFlag(MacOsFeatureFlags.Lse);
+        public static bool SupportsCrc32 => LinuxFeatureInfoHwCap.HasFlag(LinuxFeatureFlagsHwCap.Crc32) || MacOsFeatureInfo.HasFlag(MacOsFeatureFlags.Crc32);
+        public static bool SupportsSha1 => LinuxFeatureInfoHwCap.HasFlag(LinuxFeatureFlagsHwCap.Sha1) || MacOsFeatureInfo.HasFlag(MacOsFeatureFlags.Sha1);
+        public static bool SupportsSha256 => LinuxFeatureInfoHwCap.HasFlag(LinuxFeatureFlagsHwCap.Sha2) || MacOsFeatureInfo.HasFlag(MacOsFeatureFlags.Sha256);
     }
 }
