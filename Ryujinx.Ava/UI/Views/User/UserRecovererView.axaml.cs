@@ -7,11 +7,11 @@ using Ryujinx.Ava.UI.Controls;
 
 namespace Ryujinx.Ava.UI.Views.User
 {
-    public partial class UserRecoverer : UserControl
+    public partial class UserRecovererView : UserControl
     {
         private NavigationDialogHost _parent;
 
-        public UserRecoverer()
+        public UserRecovererView()
         {
             InitializeComponent();
             AddHandler(Frame.NavigatedToEvent, (s, e) =>

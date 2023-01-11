@@ -13,7 +13,7 @@ using UserProfile = Ryujinx.Ava.UI.Models.UserProfile;
 
 namespace Ryujinx.Ava.UI.Views.User
 {
-    public partial class UserEditor : UserControl
+    public partial class UserEditorView : UserControl
     {
         private NavigationDialogHost _parent;
         private UserProfile _profile;
@@ -23,7 +23,7 @@ namespace Ryujinx.Ava.UI.Views.User
         public uint MaxProfileNameLength => 0x20;
         public bool IsDeletable => _profile.UserId != AccountManager.DefaultUserId;
 
-        public UserEditor()
+        public UserEditorView()
         {
             InitializeComponent();
             AddHandler(Frame.NavigatedToEvent, (s, e) =>
@@ -124,7 +124,7 @@ namespace Ryujinx.Ava.UI.Views.User
 
             if (TempProfile.Image == null)
             {
-                _parent.Navigate(typeof(UserProfileImageSelector), (_parent, TempProfile));
+                _parent.Navigate(typeof(UserProfileImageSelectorView), (_parent, TempProfile));
 
                 return;
             }
@@ -151,7 +151,7 @@ namespace Ryujinx.Ava.UI.Views.User
 
         public void SelectProfileImage()
         {
-            _parent.Navigate(typeof(UserProfileImageSelector), (_parent, TempProfile));
+            _parent.Navigate(typeof(UserProfileImageSelectorView), (_parent, TempProfile));
         }
 
         private void ChangePictureButton_Click(object sender, RoutedEventArgs e)

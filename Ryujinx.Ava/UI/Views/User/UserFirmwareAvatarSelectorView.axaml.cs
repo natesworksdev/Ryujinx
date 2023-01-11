@@ -14,12 +14,12 @@ using System.IO;
 
 namespace Ryujinx.Ava.UI.Views.User
 {
-    public partial class UserFirmwareAvatarSelector : UserControl
+    public partial class UserFirmwareAvatarSelectorView : UserControl
     {
         private NavigationDialogHost _parent;
         private TempProfile _profile;
 
-        public UserFirmwareAvatarSelector(ContentManager contentManager)
+        public UserFirmwareAvatarSelectorView(ContentManager contentManager)
         {
             ContentManager = contentManager;
 
@@ -28,7 +28,7 @@ namespace Ryujinx.Ava.UI.Views.User
             InitializeComponent();
         }
 
-        public UserFirmwareAvatarSelector()
+        public UserFirmwareAvatarSelectorView()
         {
             InitializeComponent();
 

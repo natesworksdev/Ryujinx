@@ -10,12 +10,12 @@ using UserProfile = Ryujinx.Ava.UI.Models.UserProfile;
 
 namespace Ryujinx.Ava.UI.Views.User
 {
-    public partial class UserSelector : UserControl
+    public partial class UserSelectorViews : UserControl
     {
         private NavigationDialogHost _parent;
         public UserProfileViewModel ViewModel { get; set; }
 
-        public UserSelector()
+        public UserSelectorViews()
         {
             InitializeComponent();
 

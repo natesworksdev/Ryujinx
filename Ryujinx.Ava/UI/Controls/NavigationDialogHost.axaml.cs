@@ -102,7 +102,7 @@ namespace Ryujinx.Ava.UI.Controls
         {
             base.OnAttachedToVisualTree(e);
 
-            Navigate(typeof(UserSelector), this);
+            Navigate(typeof(UserSelectorViews), this);
         }
 
         public void LoadProfiles()
@@ -195,22 +195,22 @@ namespace Ryujinx.Ava.UI.Controls
 
         public void AddUser()
         {
-            Navigate(typeof(UserEditor), (this, (UserProfile)null, true));
+            Navigate(typeof(UserEditorView), (this, (UserProfile)null, true));
         }
 
         public void EditUser(UserProfile userProfile)
         {
-            Navigate(typeof(UserEditor), (this, userProfile, false));
+            Navigate(typeof(UserEditorView), (this, userProfile, false));
         }
 
         public void RecoverLostAccounts()
         {
-            Navigate(typeof(UserRecoverer), this);
+            Navigate(typeof(UserRecovererView), this);
         }
 
         public void ManageSaves()
         {
-            Navigate(typeof(UserSaveManager), (this, AccountManager, HorizonClient, VirtualFileSystem));
+            Navigate(typeof(UserSaveManagerView), (this, AccountManager, HorizonClient, VirtualFileSystem));
         }
     }
 }

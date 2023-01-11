@@ -20,7 +20,7 @@ using UserId = LibHac.Fs.UserId;
 
 namespace Ryujinx.Ava.UI.Views.User
 {
-    public partial class UserSaveManager : UserControl
+    public partial class UserSaveManagerView : UserControl
     {
         internal UserSaveManagerViewModel ViewModel { get; private set; }
 
@@ -29,7 +29,7 @@ namespace Ryujinx.Ava.UI.Views.User
         private VirtualFileSystem _virtualFileSystem;
         private NavigationDialogHost _parent;
 
-        public UserSaveManager()
+        public UserSaveManagerView()
         {
             InitializeComponent();
             AddHandler(Frame.NavigatedToEvent, (s, e) =>

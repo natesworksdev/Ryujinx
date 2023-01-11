@@ -8,7 +8,7 @@
     Width="528"
     d:DesignWidth="578"
     d:DesignHeight="350"
-    x:Class="Ryujinx.Ava.UI.Views.User.UserFirmwareAvatarSelector"
+    x:Class="Ryujinx.Ava.UI.Views.User.UserFirmwareAvatarSelectorView"
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     xmlns:helpers="clr-namespace:Ryujinx.Ava.UI.Helpers"
