@@ -130,24 +130,18 @@ namespace ARMeilleure.CodeGen.Arm64
 #region macOS
 
         [LibraryImport("libSystem.dylib", SetLastError = true)]
-        private static unsafe partial int sysctlbyname([MarshalAs(UnmanagedType.LPStr)] string name, int* oldValue, ref ulong oldSize, IntPtr newValue, ulong newValueSize);
+        private static unsafe partial int sysctlbyname([MarshalAs(UnmanagedType.LPStr)] string name, ref int oldValue, ref ulong oldSize, IntPtr newValue, ulong newValueSize);
 
         [SupportedOSPlatform("macos")]
         private static bool CheckSysctlName(string name)
         {
-            unsafe
+            int val = 0;
+            ulong size = (ulong)Unsafe.SizeOf<int>();
+            if (sysctlbyname(name, ref val, ref size, IntPtr.Zero, 0) == 0 && size == (ulong)Unsafe.SizeOf<int>())
             {
-                int[] value = {0};
-                fixed (int* valuePtr = &value[0])
-                {
-                    ulong size = (ulong)Unsafe.SizeOf<int>();
-                    if (sysctlbyname(name, valuePtr, ref size, IntPtr.Zero, 0) == 0 && size == (ulong)Unsafe.SizeOf<int>())
-                    {
-                        return *valuePtr != 0;
-                    }
-                    return false;
-                }
+                return val != 0;
             }
+            return false;
         }
 
         private static string[] _sysctlNames = new string[]
