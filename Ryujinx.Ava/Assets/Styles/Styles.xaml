@@ -303,6 +303,9 @@
         <Color x:Key="ThemeControlBorderColor">#FF505050</Color>
         <Color x:Key="VsyncEnabled">#FF2EEAC9</Color>
         <Color x:Key="VsyncDisabled">#FFFF4554</Color>
+        <Color x:Key="AppListBackgroundColor">#0FFFFFFF</Color>
+        <Color x:Key="AppListHoverBackgroundColor">#1EFFFFFF</Color>
+        <Color x:Key="SecondaryTextColor">#A0FFFFFF</Color>
         <x:Double x:Key="ScrollBarThickness">15</x:Double>
         <x:Double x:Key="FontSizeSmall">8</x:Double>
         <x:Double x:Key="FontSizeNormal">10</x:Double>
