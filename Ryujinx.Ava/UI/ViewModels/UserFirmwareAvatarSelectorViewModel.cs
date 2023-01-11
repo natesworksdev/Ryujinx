@@ -109,9 +109,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 return;
             }
 
-            string contentPath =
-                contentManager.GetInstalledContentPath(0x010000000000080A, StorageId.BuiltInSystem,
-                    NcaContentType.Data);
+            string contentPath = contentManager.GetInstalledContentPath(0x010000000000080A, StorageId.BuiltInSystem, NcaContentType.Data);
             string avatarPath = virtualFileSystem.SwitchPathToSystemPath(contentPath);
 
             if (!string.IsNullOrWhiteSpace(avatarPath))
