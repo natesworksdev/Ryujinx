@@ -70,8 +70,7 @@ namespace Ryujinx.Ava.UI.Views.User
             if (ViewModel.SelectedImage != null)
             {
                 MemoryStream streamJpg = new();
-                SixLabors.ImageSharp.Image avatarImage =
-                    SixLabors.ImageSharp.Image.Load(ViewModel.SelectedImage, new PngDecoder());
+                SixLabors.ImageSharp.Image avatarImage = SixLabors.ImageSharp.Image.Load(ViewModel.SelectedImage, new PngDecoder());
 
                 avatarImage.Mutate(x => x.BackgroundColor(new Rgba32(
                     ViewModel.BackgroundColor.R,
