@@ -152,7 +152,7 @@ namespace Ryujinx.Ava.UI.Controls
                 ViewModel.LostProfiles.Add(new UserProfile(new HLE.HOS.Services.Account.Acc.UserProfile(account, "", null), this));
             }
 
-            ViewModel.Profiles.Add(new AddModel());
+            ViewModel.Profiles.Add(new BaseModel());
         }
 
         public async void DeleteUser(UserProfile userProfile)

@@ -112,7 +112,7 @@
                         </Grid>
                     </DataTemplate>
                     <DataTemplate
-                        DataType="models:AddModel">
+                        DataType="viewModels:BaseModel">
                         <Panel
                             Height="118"
                             Width="96">
