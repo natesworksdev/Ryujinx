@@ -615,6 +615,7 @@
   "UserProfilesRecoverLostAccounts": "Recover Lost Accounts",
   "Recover": "Recover",
   "UserProfilesRecoverHeading" : "Saves were found for the following accounts",
+  "UserProfilesRecoverEmptyList": "No profiles to recover",
   "UserEditorTitle" : "Edit User",
   "UserEditorTitleCreate" : "Create User"
 }

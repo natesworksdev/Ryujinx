@@ -29,38 +29,44 @@
             BorderBrush="{DynamicResource AppListHoverBackgroundColor}"
             BorderThickness="1"
             Grid.Row="0">
-            <ListBox
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                Items="{Binding LostProfiles}">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Border
-                            Margin="2"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Stretch"
-                            ClipToBounds="True"
-                            CornerRadius="5">
-                            <Grid Margin="0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock
-                                    HorizontalAlignment="Stretch"
-                                    Text="{Binding UserId}"
-                                    TextAlignment="Left"
-                                    TextWrapping="Wrap" />
-                                <Button Grid.Column="1"
-                                        HorizontalAlignment="Right"
-                                        Click="Recover"
-                                        CommandParameter="{Binding}"
-                                        Content="{locale:Locale Recover}"/>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+            <Panel>
+                <ListBox
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Items="{Binding LostProfiles}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border
+                                Margin="2"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                ClipToBounds="True"
+                                CornerRadius="5">
+                                <Grid Margin="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        HorizontalAlignment="Stretch"
+                                        Text="{Binding UserId}"
+                                        TextAlignment="Left"
+                                        TextWrapping="Wrap" />
+                                    <Button Grid.Column="1"
+                                            HorizontalAlignment="Right"
+                                            Click="Recover"
+                                            CommandParameter="{Binding}"
+                                            Content="{locale:Locale Recover}"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <TextBlock
+                    IsVisible="{Binding IsEmpty}"
+                    TextAlignment="Center"
+                    Text="{locale:Locale UserProfilesRecoverEmptyList}"/>
+            </Panel>
         </Border>
         <StackPanel
             Grid.Row="1"
