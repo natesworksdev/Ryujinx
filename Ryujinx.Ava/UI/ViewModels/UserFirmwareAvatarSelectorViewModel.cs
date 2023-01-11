@@ -124,8 +124,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                     foreach (DirectoryEntryEx item in romfs.EnumerateEntries())
                     {
                         // TODO: Parse DatabaseInfo.bin and table.bin files for more accuracy.
-                        if (item.Type == DirectoryEntryType.File && item.FullPath.Contains("chara") &&
-                            item.FullPath.Contains("szs"))
+                        if (item.Type == DirectoryEntryType.File && item.FullPath.Contains("chara") && item.FullPath.Contains("szs"))
                         {
                             using var file = new UniqueRef<IFile>();
 
