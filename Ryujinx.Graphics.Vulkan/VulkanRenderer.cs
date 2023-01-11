@@ -587,11 +587,6 @@ namespace Ryujinx.Graphics.Vulkan
 
             Vendor = VendorUtils.FromId(properties.VendorID);
 
-            if (IsMoltenVk)
-            {
-                Vendor = Vendor.MoltenVK;
-            }
-
             IsAmdWindows = Vendor == Vendor.Amd && RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             IsIntelWindows = Vendor == Vendor.Intel && RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             IsTBDR = IsMoltenVk || Vendor == Vendor.Qualcomm;
@@ -600,7 +595,7 @@ namespace Ryujinx.Graphics.Vulkan
             GpuRenderer = Marshal.PtrToStringAnsi((IntPtr)properties.DeviceName);
             GpuVersion = $"Vulkan v{ParseStandardVulkanVersion(properties.ApiVersion)}, Driver v{ParseDriverVersion(ref properties)}";
 
-            IsAmdGcn = Vendor == Vendor.Amd && VendorUtils.AmdGcnRegex().IsMatch(GpuRenderer);
+            IsAmdGcn = !IsMoltenVk && Vendor == Vendor.Amd && VendorUtils.AmdGcnRegex().IsMatch(GpuRenderer);
 
             Logger.Notice.Print(LogClass.Gpu, $"{GpuVendor} {GpuRenderer} ({GpuVersion})");
         }
