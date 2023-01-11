@@ -132,6 +132,8 @@
                                     Height="42"
                                     Width="42"
                                     Padding="10"
+                                    BorderBrush="{DynamicResource AppListHoverBackgroundColor}"
+                                    BorderThickness="1"
                                     IsVisible="{Binding !InGameList}">
                                     <ui:SymbolIcon
                                         Symbol="Help"
