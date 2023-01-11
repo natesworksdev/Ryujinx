@@ -47,7 +47,9 @@ namespace Ryujinx.Ava.UI.Models
             foreach (string order in orders)
             {
                 if ( Size > max )
+                {
                     return $"{decimal.Divide(Size, max):##.##} {order}";
+                }
 
                 max /= scale;
             }
