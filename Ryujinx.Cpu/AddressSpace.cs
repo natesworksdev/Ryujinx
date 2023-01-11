@@ -149,19 +149,26 @@ namespace Ryujinx.Cpu
 
         private readonly object _treeLock;
 
+        private readonly bool _supports4KBPages;
+
         public MemoryBlock Base { get; }
         public MemoryBlock Mirror { get; }
 
-        public AddressSpace(MemoryBlock backingMemory, ulong asSize)
+        public AddressSpace(MemoryBlock backingMemory, ulong asSize, bool supports4KBPages)
         {
-            _backingMemory = backingMemory;
-            _privateMemoryAllocator = new PrivateMemoryAllocator(DefaultBlockAlignment, MemoryAllocationFlags.Mirrorable | MemoryAllocationFlags.NoMap);
-            _mappingTree = new IntrusiveRedBlackTree<Mapping>();
-            _privateTree = new IntrusiveRedBlackTree<PrivateMapping>();
-            _treeLock = new object();
+            if (!supports4KBPages)
+            {
+                _privateMemoryAllocator = new PrivateMemoryAllocator(DefaultBlockAlignment, MemoryAllocationFlags.Mirrorable | MemoryAllocationFlags.NoMap);
+                _mappingTree = new IntrusiveRedBlackTree<Mapping>();
+                _privateTree = new IntrusiveRedBlackTree<PrivateMapping>();
+                _treeLock = new object();
 
-            _mappingTree.Add(new Mapping(0UL, asSize, MappingType.None));
-            _privateTree.Add(new PrivateMapping(0UL, asSize, default));
+                _mappingTree.Add(new Mapping(0UL, asSize, MappingType.None));
+                _privateTree.Add(new PrivateMapping(0UL, asSize, default));
+            }
+
+            _backingMemory = backingMemory;
+            _supports4KBPages = supports4KBPages;
 
             MemoryAllocationFlags asFlags = MemoryAllocationFlags.Reserve | MemoryAllocationFlags.ViewCompatible;
 
@@ -171,6 +178,14 @@ namespace Ryujinx.Cpu
 
         public void Map(ulong va, ulong pa, ulong size, MemoryMapFlags flags)
         {
+            if (_supports4KBPages)
+            {
+                Base.MapView(_backingMemory, pa, va, size);
+                Mirror.MapView(_backingMemory, pa, va, size);
+
+                return;
+            }
+
             lock (_treeLock)
             {
                 ulong alignment = MemoryBlock.GetPageSize();
@@ -204,6 +219,14 @@ namespace Ryujinx.Cpu
 
         public void Unmap(ulong va, ulong size)
         {
+            if (_supports4KBPages)
+            {
+                Base.UnmapView(_backingMemory, va, size);
+                Mirror.UnmapView(_backingMemory, va, size);
+
+                return;
+            }
+
             lock (_treeLock)
             {
                 Update(va, 0UL, size, MappingType.None);

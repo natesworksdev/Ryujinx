@@ -87,7 +87,7 @@ namespace Ryujinx.Cpu.Jit
 
             _pageBitmap = new ulong[1 << (AddressSpaceBits - (PageBits + PageToPteShift))];
 
-            _addressSpace = new AddressSpace(backingMemory, asSize);
+            _addressSpace = new AddressSpace(backingMemory, asSize, Supports4KBPages);
 
             Tracking = new MemoryTracking(this, (int)MemoryBlock.GetPageSize(), invalidAccessHandler);
             _memoryEh = new MemoryEhMeilleure(_addressSpace.Base, _addressSpace.Mirror, Tracking);
