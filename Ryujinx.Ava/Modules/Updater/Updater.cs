@@ -248,7 +248,7 @@ namespace Ryujinx.Modules
 
         public static async void UpdateRyujinx(Window parent, string downloadUrl)
         {
-            UpdateSuccessful = false;
+            _updateSuccessful = false;
 
             // Empty update dir, although it shouldn't ever have anything inside it
             if (Directory.Exists(UpdateDir))
@@ -284,7 +284,7 @@ namespace Ryujinx.Modules
 
             await taskDialog.ShowAsync(true);
 
-            if (UpdateSuccessful)
+            if (_updateSuccessful)
             {
                 var shouldRestart = await ContentDialogHelper.CreateChoiceDialog(LocaleManager.Instance[LocaleKeys.RyujinxUpdater],
                     LocaleManager.Instance[LocaleKeys.DialogUpdaterCompleteMessage],
@@ -605,7 +605,7 @@ namespace Ryujinx.Modules
 
             SetFileExecutable(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx"));
 
-            UpdateSuccessful = true;
+            _updateSuccessful = true;
 
             taskDialog.Hide();
         }
