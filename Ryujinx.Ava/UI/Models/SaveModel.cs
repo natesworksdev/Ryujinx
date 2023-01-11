@@ -41,7 +41,7 @@ namespace Ryujinx.Ava.UI.Models
         private string GetSizeString()
         {
             const int scale = 1024;
-            string[] orders = { "GB", "MB", "KB" };
+            string[] orders = { "GiB", "MiB", "KiB" };
             long max = (long)Math.Pow(scale, orders.Length);
 
             foreach (string order in orders)
