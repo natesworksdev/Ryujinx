@@ -1,5 +1,4 @@
 using Ryujinx.Ava.Common.Locale;
-using Ryujinx.Ava.UI.Models;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
 
@@ -30,8 +29,16 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public InputStickViewModel(StickInputId side, ControllerSettingsViewModel viewModel)
         {
-            IsController = viewModel.IsController;
             _isLeft = side == StickInputId.Left;
+            _viewModel = viewModel;
+            _viewModel.OnNotifyChanges += InitValues;
+
+            InitValues();
+        }
+
+        private void InitValues()
+        {
+            IsController = _viewModel.IsController;
 
             if (_isLeft)
             {

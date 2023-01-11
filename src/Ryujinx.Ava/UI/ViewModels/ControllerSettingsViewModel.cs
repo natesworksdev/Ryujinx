@@ -71,6 +71,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public bool IsModified { get; set; }
 
+        public event Action OnNotifyChanges;
+
         public InputConfiguration Configuration
         {
             get => _configuration;
@@ -858,11 +860,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
         }
 
-        public void NotifyChange(string property)
-        {
-            OnPropertyChanged(property);
-        }
-
         public void NotifyChanges()
         {
             OnPropertyChanged(nameof(Configuration));
@@ -871,6 +868,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             OnPropertyChanged(nameof(IsKeyboard));
             OnPropertyChanged(nameof(IsRight));
             OnPropertyChanged(nameof(IsLeft));
+            OnNotifyChanges?.Invoke();
         }
 
         public void Dispose()
