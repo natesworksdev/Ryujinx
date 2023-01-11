@@ -7,8 +7,10 @@ using LibHac;
 using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Shim;
+using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Controls;
+using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.HLE.FileSystem;
@@ -94,7 +96,6 @@ namespace Ryujinx.Ava.UI.Views.User
                     {
                         var saveModel = new SaveModel(save, _horizonClient, _virtualFileSystem);
                         saves.Add(saveModel);
-                        saveModel.DeleteAction = () => { ViewModel.Saves.Remove(saveModel); };
                     }
                 }
             }
@@ -115,15 +116,32 @@ namespace Ryujinx.Ava.UI.Views.User
         {
             if (sender is Avalonia.Controls.Button button)
             {
-                (button.DataContext as SaveModel).OpenLocation();
+                if (button.DataContext is SaveModel saveModel)
+                {
+                    ApplicationHelper.OpenSaveDir(saveModel.SaveId);
+                }
             }
         }
 
-        private void Delete(object sender, RoutedEventArgs e)
+        private async void Delete(object sender, RoutedEventArgs e)
         {
             if (sender is Avalonia.Controls.Button button)
             {
-                (button.DataContext as SaveModel).Delete();
+                if (button.DataContext is SaveModel saveModel)
+                {
+                    var result = await ContentDialogHelper.CreateConfirmationDialog(LocaleManager.Instance[LocaleKeys.DeleteUserSave],
+                        LocaleManager.Instance[LocaleKeys.IrreversibleActionNote],
+                        LocaleManager.Instance[LocaleKeys.InputDialogYes],
+                        LocaleManager.Instance[LocaleKeys.InputDialogNo], "");
+
+                    if (result == UserResult.Yes)
+                    {
+                        _horizonClient.Fs.DeleteSaveData(SaveDataSpaceId.User, saveModel.SaveId);
+                    }
+
+                    ViewModel.Saves.Remove(saveModel);
+                    ViewModel.Views.Remove(saveModel);
+                }
             }
         }
     }

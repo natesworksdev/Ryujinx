@@ -67,6 +67,11 @@ namespace Ryujinx.Ava.UI.ViewModels
         public ObservableCollection<SaveModel> Views
         {
             get => _views;
+            set
+            {
+                _views = value;
+                OnPropertyChanged();
+            }
         }
 
         public UserSaveManagerViewModel(AccountManager accountManager)
