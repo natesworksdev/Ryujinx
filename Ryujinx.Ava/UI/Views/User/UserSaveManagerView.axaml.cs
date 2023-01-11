@@ -57,8 +57,7 @@ namespace Ryujinx.Ava.UI.Views.User
                 }
 
                 DataContext = ViewModel = new UserSaveManagerViewModel(_accountManager);
-                ((ContentDialog)_parent.Parent).Title =
-                    $"{LocaleManager.Instance[LocaleKeys.UserProfileWindowTitle]} - {ViewModel.SaveManagerHeading}";
+                ((ContentDialog)_parent.Parent).Title = $"{LocaleManager.Instance[LocaleKeys.UserProfileWindowTitle]} - {ViewModel.SaveManagerHeading}";
 
                 Task.Run(LoadSaves);
             }
