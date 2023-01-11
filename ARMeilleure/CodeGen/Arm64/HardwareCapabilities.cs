@@ -25,17 +25,17 @@ namespace ARMeilleure.CodeGen.Arm64
 
             if (OperatingSystem.IsMacOS())
             {
-                foreach ((string flagName, MacOsFeatureFlags flag) in Enumerable.Zip(Enum.GetNames<MacOsFeatureFlags>(), Enum.GetValues<MacOsFeatureFlags>()))
+                for (int i = 0; i < _sysctlNames.Length; i++)
                 {
-                    string sysctlName = typeof(MacOsFeatureFlags).GetField(flagName)!.GetCustomAttributes(false).OfType<SysctlName>().Single().Name;
-
-                    if (CheckSysctlName(sysctlName))
+                    if (CheckSysctlName(_sysctlNames[i]))
                     {
-                        MacOsFeatureInfo |= flag;
+                        MacOsFeatureInfo |= (MacOsFeatureFlags)(1 << i);
                     }
                 }
             }
         }
+
+#region Linux
 
         private const ulong AT_HWCAP = 16;
         private const ulong AT_HWCAP2 = 26;
@@ -125,6 +125,10 @@ namespace ARMeilleure.CodeGen.Arm64
         public static LinuxFeatureFlagsHwCap LinuxFeatureInfoHwCap { get; } = 0;
         public static LinuxFeatureFlagsHwCap2 LinuxFeatureInfoHwCap2 { get; } = 0;
 
+#endregion
+
+#region macOS
+
         [LibraryImport("libSystem.dylib", SetLastError = true)]
         private static unsafe partial int sysctlbyname([MarshalAs(UnmanagedType.LPStr)] string name, int* oldValue, ref ulong oldSize, IntPtr newValue, ulong newValueSize);
 
@@ -146,81 +150,30 @@ namespace ARMeilleure.CodeGen.Arm64
             }
         }
 
-        private class SysctlName : Attribute
+        private static string[] _sysctlNames = new string[]
         {
-            internal SysctlName(string name)
-            {
-                Name = name;
-            }
-
-            internal string Name { get; }
-        }
+            "hw.optional.floatingpoint",
+            "hw.optional.AdvSIMD",
+            "hw.optional.arm.FEAT_FP16",
+            "hw.optional.arm.FEAT_AES",
+            "hw.optional.arm.FEAT_PMULL",
+        };
 
         [Flags]
         public enum MacOsFeatureFlags
         {
-            [SysctlName("hw.optional.arm.FEAT_AES")]
-            Aes          = 1 << 0,
-            [SysctlName("hw.optional.arm.FEAT_PMULL")]
-            Pmull        = 1 << 1,
-            [SysctlName("hw.optional.arm.FEAT_SHA1")]
-            Sha1         = 1 << 2,
-            [SysctlName("hw.optional.arm.FEAT_SHA256")]
-            Sha256       = 1 << 3,
-            [SysctlName("hw.optional.arm.FEAT_SHA512")]
-            Sha512       = 1 << 4,
-            [SysctlName("hw.optional.armv8_crc32")]
-            Crc32        = 1 << 5,
-            [SysctlName("hw.optional.arm.FEAT_LSE")]
-            Lse          = 1 << 6,
-            [SysctlName("hw.optional.arm.FEAT_RDM")]
-            Rdm          = 1 << 7,
-            [SysctlName("hw.optional.arm.FEAT_SHA3")]
-            Sha3         = 1 << 8,
-            [SysctlName("hw.optional.arm.FEAT_DotProd")]
-            DotProd      = 1 << 9,
-            [SysctlName("hw.optional.arm.FEAT_FHM")]
-            Fhm          = 1 << 10,
-            [SysctlName("hw.optional.arm.FEAT_FlagM")]
-            FlagM        = 1 << 11,
-            [SysctlName("hw.optional.arm.FEAT_FlagM2")]
-            FlagM2       = 1 << 12,
-            [SysctlName("hw.optional.floatingpoint")]
-            Fp           = 1 << 13,
-            [SysctlName("hw.optional.arm.FEAT_FP16")]
-            Fp16         = 1 << 14,
-            [SysctlName("hw.optional.AdvSIMD")]
-            Asimd        = 1 << 15,
-            [SysctlName("hw.optional.AdvSIMD_HPFPCvt")]
-            AsimdHpfpcvt = 1 << 16,
-            [SysctlName("hw.optional.arm.FEAT_CSV2")]
-            Csv2         = 1 << 17,
-            [SysctlName("hw.optional.arm.FEAT_CSV3")]
-            Csv3         = 1 << 18,
-            [SysctlName("hw.optional.arm.FEAT_DPB")]
-            Dpb          = 1 << 19,
-            [SysctlName("hw.optional.arm.FEAT_DPB2")]
-            Dpb2         = 1 << 20,
-            [SysctlName("hw.optional.arm.FEAT_JSCVT")]
-            Jscvt        = 1 << 21,
-            [SysctlName("hw.optional.arm.FEAT_FCMA")]
-            Fcma         = 1 << 22,
-            [SysctlName("hw.optional.arm.FEAT_LRCPC")]
-            Lrcpc        = 1 << 23,
-            [SysctlName("hw.optional.arm.FEAT_LRCPC2")]
-            Lrcpc2       = 1 << 24,
-            [SysctlName("hw.optional.arm.FEAT_FRINTTS")]
-            Frintts      = 1 << 25,
-            [SysctlName("hw.optional.arm.FEAT_SB")]
-            Sb           = 1 << 26,
-            [SysctlName("hw.optional.arm.FEAT_BF16")]
-            Bf16         = 1 << 27,
-            [SysctlName("hw.optional.arm.FEAT_I8MM")]
-            I8mm         = 1 << 28
+            Fp      = 1 << 0,
+            AdvSimd = 1 << 1,
+            Fp16    = 1 << 2,
+            Aes     = 1 << 3,
+            Pmull   = 1 << 4,
         }
 
         public static MacOsFeatureFlags MacOsFeatureInfo { get; } = 0;
 
-        public static bool SupportsPmull = LinuxFeatureInfoHwCap.HasFlag(LinuxFeatureFlagsHwCap.Pmull) || MacOsFeatureInfo.HasFlag(MacOsFeatureFlags.Pmull);
+#endregion
+
+        public static bool SupportsAdvSimd => LinuxFeatureInfoHwCap.HasFlag(LinuxFeatureFlagsHwCap.Asimd) || MacOsFeatureInfo.HasFlag(MacOsFeatureFlags.AdvSimd);
+        public static bool SupportsPmull => LinuxFeatureInfoHwCap.HasFlag(LinuxFeatureFlagsHwCap.Pmull) || MacOsFeatureInfo.HasFlag(MacOsFeatureFlags.Pmull);
     }
 }

@@ -36,7 +36,7 @@ namespace ARMeilleure
             set => X86HardwareCapabilities.ForceLegacySse = value;
         }
 
-        internal static bool UseAdvSimd    => UseAdvSimdIfAvailable    && AdvSimd.IsSupported;
+        internal static bool UseAdvSimd    => UseAdvSimdIfAvailable    && Arm64HardwareCapabilities.SupportsAdvSimd;
         internal static bool UseArm64Pmull => UseArm64PmullIfAvailable && Arm64HardwareCapabilities.SupportsPmull;
 
         internal static bool UseSse       => UseSseIfAvailable       && X86HardwareCapabilities.SupportsSse;
