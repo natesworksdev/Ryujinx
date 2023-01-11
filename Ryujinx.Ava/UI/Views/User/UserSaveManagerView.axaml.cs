@@ -138,6 +138,7 @@ namespace Ryujinx.Ava.UI.Views.User
                     {
                         _horizonClient.Fs.DeleteSaveData(SaveDataSpaceId.User, saveModel.SaveId);
                         ViewModel.Saves.Remove(saveModel);
+                        ViewModel.Sort();
                     }
                 }
             }
