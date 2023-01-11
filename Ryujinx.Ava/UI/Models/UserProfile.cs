@@ -91,9 +91,7 @@ namespace Ryujinx.Ava.UI.Models
 
             if (color is not null)
             {
-                BackgroundColor = _profile.AccountState == AccountState.Open
-                    ? new SolidColorBrush((Color)color)
-                    : Brushes.Transparent;
+                BackgroundColor = _profile.AccountState == AccountState.Open ? new SolidColorBrush((Color)color) : Brushes.Transparent;
             }
         }
 
