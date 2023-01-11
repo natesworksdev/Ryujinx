@@ -234,11 +234,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         }
 
         /// <summary>
-        /// Updates the type of the output attributes produced by the shader based on the current render target state.
+        /// Updates the type of the outputs produced by the fragment shader based on the current render target state.
         /// </summary>
         /// <param name="rtControl">The render target control register</param>
         /// <param name="state">The color attachment state</param>
-        public void SetOutputAttributeTypes(RtControl rtControl, ref Array8<RtColorState> state)
+        public void SetFragmentOutputTypes(RtControl rtControl, ref Array8<RtColorState> state)
         {
             bool changed = false;
             int count = rtControl.UnpackCount();
@@ -255,9 +255,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                     AttributeType type = format.IsInteger() ? (format.IsSint() ? AttributeType.Sint : AttributeType.Uint) : AttributeType.Float;
 
-                    if (type != _graphics.OutputAttributeTypes[index])
+                    if (type != _graphics.FragmentOutputTypes[index])
                     {
-                        _graphics.OutputAttributeTypes[index] = type;
+                        _graphics.FragmentOutputTypes[index] = type;
                         changed = true;
                     }
                 }

@@ -129,7 +129,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             else if (value >= AttributeConsts.FragmentOutputColorBase && value < AttributeConsts.FragmentOutputColorEnd)
             {
                 int location = (value - AttributeConsts.FragmentOutputColorBase) / 16;
-                var elemType = config.GpuAccessor.QueryOutputAttributeType(location) switch
+                var elemType = config.GpuAccessor.QueryFragmentOutputType(location) switch
                 {
                     AttributeType.Sint => AggregateType.S32,
                     AttributeType.Uint => AggregateType.U32,

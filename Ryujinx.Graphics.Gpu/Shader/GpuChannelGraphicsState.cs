@@ -88,9 +88,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public bool HasUnalignedStorageBuffer;
 
         /// <summary>
-        /// Type of the fragment shader output attributes.
+        /// Type of the fragment shader outputs.
         /// </summary>
-        public Array8<AttributeType> OutputAttributeTypes;
+        public Array8<AttributeType> FragmentOutputTypes;
 
         /// <summary>
         /// Creates a new GPU graphics state.
@@ -110,7 +110,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="attributeTypes">Type of the vertex attributes consumed by the shader</param>
         /// <param name="hasConstantBufferDrawParameters">Indicates that the draw is writing the base vertex, base instance and draw index to Constant Buffer 0</param>
         /// <param name="hasUnalignedStorageBuffer">Indicates that any storage buffer use is unaligned</param>
-        /// <param name="outputAttributeTypes">Type of the fragment shader output attributes</param>
+        /// <param name="fragmentOutputTypes">Type of the fragment shader outputs</param>
         public GpuChannelGraphicsState(
             bool earlyZForce,
             PrimitiveTopology topology,
@@ -127,7 +127,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             ref Array32<AttributeType> attributeTypes,
             bool hasConstantBufferDrawParameters,
             bool hasUnalignedStorageBuffer,
-            ref Array8<AttributeType> outputAttributeTypes)
+            ref Array8<AttributeType> fragmentOutputTypes)
         {
             EarlyZForce = earlyZForce;
             Topology = topology;
@@ -144,7 +144,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             AttributeTypes = attributeTypes;
             HasConstantBufferDrawParameters = hasConstantBufferDrawParameters;
             HasUnalignedStorageBuffer = hasUnalignedStorageBuffer;
-            OutputAttributeTypes = outputAttributeTypes;
+            FragmentOutputTypes = fragmentOutputTypes;
         }
     }
 }

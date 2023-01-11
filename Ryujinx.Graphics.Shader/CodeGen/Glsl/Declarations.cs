@@ -672,7 +672,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             else
             {
                 string type = context.Config.Stage != ShaderStage.Fragment ? "vec4" :
-                    context.Config.GpuAccessor.QueryOutputAttributeType(attr) switch
+                    context.Config.GpuAccessor.QueryFragmentOutputType(attr) switch
                     {
                         AttributeType.Sint => "ivec4",
                         AttributeType.Uint => "uvec4",

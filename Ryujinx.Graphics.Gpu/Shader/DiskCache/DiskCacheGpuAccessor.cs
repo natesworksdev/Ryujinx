@@ -108,9 +108,9 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         }
 
         /// <inheritdoc/>
-        public AttributeType QueryOutputAttributeType(int location)
+        public AttributeType QueryFragmentOutputType(int location)
         {
-            return _oldSpecState.GraphicsState.OutputAttributeTypes[location];
+            return _oldSpecState.GraphicsState.FragmentOutputTypes[location];
         }
 
         /// <inheritdoc/>

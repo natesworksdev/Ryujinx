@@ -114,9 +114,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <inheritdoc/>
-        public AttributeType QueryOutputAttributeType(int location)
+        public AttributeType QueryFragmentOutputType(int location)
         {
-            return _state.GraphicsState.OutputAttributeTypes[location];
+            return _state.GraphicsState.FragmentOutputTypes[location];
         }
 
         /// <inheritdoc/>

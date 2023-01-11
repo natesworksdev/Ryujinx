@@ -537,7 +537,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         public void UpdateRenderTargetSpecialization()
         {
-            _currentSpecState.SetOutputAttributeTypes(_state.State.RtControl, ref _state.State.RtColorState);
+            _currentSpecState.SetFragmentOutputTypes(_state.State.RtControl, ref _state.State.RtColorState);
         }
 
         /// <summary>
