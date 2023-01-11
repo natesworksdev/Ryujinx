@@ -1,10 +1,6 @@
 using LibHac;
 using LibHac.Fs;
-using LibHac.Fs.Shim;
 using LibHac.Ncm;
-using Ryujinx.Ava.Common;
-using Ryujinx.Ava.Common.Locale;
-using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.HLE.FileSystem;
@@ -16,7 +12,6 @@ namespace Ryujinx.Ava.UI.Models
 {
     public class SaveModel : BaseModel
     {
-        private readonly HorizonClient _horizonClient;
         private long _size;
 
         public ulong SaveId { get; }
@@ -43,9 +38,8 @@ namespace Ryujinx.Ava.UI.Models
 
         public string SizeString => $"{((float)_size * 0.000000954):0.###}MB";
 
-        public SaveModel(SaveDataInfo info, HorizonClient horizonClient, VirtualFileSystem virtualFileSystem)
+        public SaveModel(SaveDataInfo info, VirtualFileSystem virtualFileSystem)
         {
-            _horizonClient = horizonClient;
             SaveId = info.SaveDataId;
             TitleId = info.ProgramId;
             UserId = info.UserId;
