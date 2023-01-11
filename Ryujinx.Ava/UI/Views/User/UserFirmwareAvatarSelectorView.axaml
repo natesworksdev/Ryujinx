@@ -62,9 +62,7 @@
                 <DataTemplate>
                     <Panel
                         Background="{Binding BackgroundColor}"
-                        Margin="5"
-                        Height="60"
-                        Width="60">
+                        Margin="5">
                         <Image Source="{Binding Data, Converter={StaticResource ByteImage}}" />
                     </Panel>
                 </DataTemplate>
