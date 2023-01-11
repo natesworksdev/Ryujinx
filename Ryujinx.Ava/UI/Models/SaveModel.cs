@@ -1,9 +1,9 @@
-using LibHac;
 using LibHac.Fs;
 using LibHac.Ncm;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.HLE.FileSystem;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -36,7 +36,24 @@ namespace Ryujinx.Ava.UI.Models
 
         public bool SizeAvailable { get; set; }
 
-        public string SizeString => $"{((float)_size * 0.000000954):0.###}MB";
+        public string SizeString => GetSizeString();
+
+        private string GetSizeString()
+        {
+            const int scale = 1024;
+            string[] orders = { "GB", "MB", "KB" };
+            long max = (long)Math.Pow(scale, orders.Length);
+
+            foreach (string order in orders)
+            {
+                if ( Size > max )
+                    return $"{decimal.Divide(Size, max):##.##} {order}";
+
+                max /= scale;
+            }
+
+            return "0 KB";
+        }
 
         public SaveModel(SaveDataInfo info, VirtualFileSystem virtualFileSystem)
         {
