@@ -180,9 +180,12 @@ namespace Ryujinx.Ava.UI.Controls
                 AccountManager.OpenUser(profile.UserId);
             }
 
-            var result =
-                await ContentDialogHelper.CreateConfirmationDialog(LocaleManager.Instance[LocaleKeys.DialogUserProfileDeletionConfirmMessage], "",
-                    LocaleManager.Instance[LocaleKeys.InputDialogYes], LocaleManager.Instance[LocaleKeys.InputDialogNo], "");
+            var result = await ContentDialogHelper.CreateConfirmationDialog(
+                LocaleManager.Instance[LocaleKeys.DialogUserProfileDeletionConfirmMessage],
+                "",
+                LocaleManager.Instance[LocaleKeys.InputDialogYes],
+                LocaleManager.Instance[LocaleKeys.InputDialogNo],
+                "");
 
             if (result == UserResult.Yes)
             {
