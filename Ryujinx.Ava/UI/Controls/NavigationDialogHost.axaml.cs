@@ -117,8 +117,7 @@ namespace Ryujinx.Ava.UI.Controls
                 ViewModel.Profiles.Add(new UserProfile(profile, this));
             }
 
-            var saveDataFilter = SaveDataFilter.Make(programId: default, saveType: SaveDataType.Account,
-                default, saveDataId: default, index: default);
+            var saveDataFilter = SaveDataFilter.Make(programId: default, saveType: SaveDataType.Account, default, saveDataId: default, index: default);
 
             using var saveDataIterator = new UniqueRef<SaveDataIterator>();
 
