@@ -31,8 +31,7 @@ namespace Ryujinx.Ava.UI.Views.User
 
                         _parent = parent;
 
-                        ((ContentDialog)_parent.Parent).Title =
-                            $"{LocaleManager.Instance[LocaleKeys.UserProfileWindowTitle]} - {LocaleManager.Instance[LocaleKeys.UserProfilesRecoverHeading]}";
+                        ((ContentDialog)_parent.Parent).Title = $"{LocaleManager.Instance[LocaleKeys.UserProfileWindowTitle]} - {LocaleManager.Instance[LocaleKeys.UserProfilesRecoverHeading]}";
 
                         break;
                 }
