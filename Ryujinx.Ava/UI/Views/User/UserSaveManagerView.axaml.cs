@@ -68,8 +68,12 @@ namespace Ryujinx.Ava.UI.Views.User
         {
             ViewModel.Saves.Clear();
             var saves = new ObservableCollection<SaveModel>();
-            var saveDataFilter = SaveDataFilter.Make(programId: default, saveType: SaveDataType.Account,
-                new UserId((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low), saveDataId: default, index: default);
+            var saveDataFilter = SaveDataFilter.Make(
+                programId: default,
+                saveType: SaveDataType.Account,
+                new UserId((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low),
+                saveDataId: default,
+                index: default);
 
             using var saveDataIterator = new UniqueRef<SaveDataIterator>();
 
