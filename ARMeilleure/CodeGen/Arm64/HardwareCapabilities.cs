@@ -77,7 +77,7 @@ namespace ARMeilleure.CodeGen.Arm64
             Ssbs      = 1 << 28,
             Sb        = 1 << 29,
             Paca      = 1 << 30,
-            Pacg      = (ulong)1 << 31
+            Pacg      = 1UL << 31
         }
 
         [Flags]
@@ -114,12 +114,12 @@ namespace ARMeilleure.CodeGen.Arm64
             Sme_b16f32  = 1 << 28,
             Sme_f32f32  = 1 << 29,
             Sme_fa64    = 1 << 30,
-            Wfxt        = (ulong)1 << 31,
-            Ebf16       = (ulong)1 << 32,
-            Sve_Ebf16   = (ulong)1 << 33,
-            Cssc        = (ulong)1 << 34,
-            Rprfm       = (ulong)1 << 35,
-            Sve2p1      = (ulong)1 << 36
+            Wfxt        = 1UL << 31,
+            Ebf16       = 1UL << 32,
+            Sve_Ebf16   = 1UL << 33,
+            Cssc        = 1UL << 34,
+            Rprfm       = 1UL << 35,
+            Sve2p1      = 1UL << 36
         }
 
         public static LinuxFeatureFlagsHwCap LinuxFeatureInfoHwCap { get; } = 0;
@@ -130,14 +130,13 @@ namespace ARMeilleure.CodeGen.Arm64
 #region macOS
 
         [LibraryImport("libSystem.dylib", SetLastError = true)]
-        private static unsafe partial int sysctlbyname([MarshalAs(UnmanagedType.LPStr)] string name, ref int oldValue, ref ulong oldSize, IntPtr newValue, ulong newValueSize);
+        private static unsafe partial int sysctlbyname([MarshalAs(UnmanagedType.LPStr)] string name, out int oldValue, ref ulong oldSize, IntPtr newValue, ulong newValueSize);
 
         [SupportedOSPlatform("macos")]
         private static bool CheckSysctlName(string name)
         {
-            int val = 0;
-            ulong size = (ulong)Unsafe.SizeOf<int>();
-            if (sysctlbyname(name, ref val, ref size, IntPtr.Zero, 0) == 0 && size == (ulong)Unsafe.SizeOf<int>())
+            ulong size = sizeof(int);
+            if (sysctlbyname(name, out int val, ref size, IntPtr.Zero, 0) == 0 && size == sizeof(int))
             {
                 return val != 0;
             }
