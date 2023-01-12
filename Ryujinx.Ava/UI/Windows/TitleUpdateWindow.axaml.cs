@@ -11,6 +11,7 @@ using Ryujinx.HLE.FileSystem;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Button = Avalonia.Controls.Button;
 
 namespace Ryujinx.Ava.UI.Windows
 {
@@ -83,6 +84,16 @@ namespace Ryujinx.Ava.UI.Windows
             }
 
             ((ContentDialog)Parent).Hide();
+        }
+
+        private void OpenLocation(object sender, RoutedEventArgs e)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        private void RemoveUpdate(object sender, RoutedEventArgs e)
+        {
+            ViewModel.RemoveUpdate((TitleUpdateModel)((Button)e.Source).DataContext);
         }
     }
 }

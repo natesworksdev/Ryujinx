@@ -34,6 +34,7 @@ public class TitleUpdateViewModel : BaseModel
     private string              _titleName { get; }
 
     private AvaloniaList<TitleUpdateModel> _titleUpdates = new();
+    private AvaloniaList<object> _views = new();
     private object _selectedUpdate;
 
     public AvaloniaList<TitleUpdateModel> TitleUpdates
@@ -42,6 +43,16 @@ public class TitleUpdateViewModel : BaseModel
         set
         {
             _titleUpdates = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public AvaloniaList<object> Views
+    {
+        get => _views;
+        set
+        {
+            _views = value;
             OnPropertyChanged();
         }
     }
@@ -83,26 +94,14 @@ public class TitleUpdateViewModel : BaseModel
 
     private void LoadUpdates()
     {
-        TitleUpdates.Add(new TitleUpdateModel(default, string.Empty, true));
-
         foreach (string path in _titleUpdateWindowData.Paths)
         {
             AddUpdate(path);
         }
 
-        if (_titleUpdateWindowData.Selected == "")
-        {
-            SelectedUpdate = TitleUpdates[0];
-        }
-        else
-        {
-            TitleUpdateModel selected = TitleUpdates.FirstOrDefault(x => x.Path == _titleUpdateWindowData.Selected);
+        TitleUpdateModel selected = TitleUpdates.FirstOrDefault(x => x.Path == _titleUpdateWindowData.Selected, null);
 
-            if (selected != null)
-            {
-                SelectedUpdate = selected;
-            }
-        }
+        SelectedUpdate = selected;
 
         SortUpdates();
     }
@@ -125,13 +124,26 @@ public class TitleUpdateViewModel : BaseModel
             return Version.Parse(first.Control.DisplayVersionString.ToString()).CompareTo(Version.Parse(second.Control.DisplayVersionString.ToString())) * -1;
         });
 
-        TitleUpdates.Clear();
-        TitleUpdates.AddRange(list);
+        var model = new BaseModel();
+
+        if (SelectedUpdate == null)
+        {
+            SelectedUpdate = model;
+        }
+
+        Views.Clear();
+        Views.Add(model);
+        Views.AddRange(list);
+
+        if (!TitleUpdates.Contains(SelectedUpdate))
+        {
+            SelectedUpdate = Views.Last();
+        }
     }
 
     private void AddUpdate(string path)
     {
-        if (File.Exists(path) && ! TitleUpdates.Any(x => x.Path == path))
+        if (File.Exists(path) && TitleUpdates.All(x => x.Path != path))
         {
             using FileStream file = new(path, FileMode.Open, FileAccess.Read);
 
@@ -149,8 +161,6 @@ public class TitleUpdateViewModel : BaseModel
                     nacpFile.Get.Read(out _, 0, SpanHelpers.AsByteSpan(ref controlData), ReadOption.None).ThrowIfFailure();
 
                     TitleUpdates.Add(new TitleUpdateModel(controlData, path));
-
-                    SelectedUpdate = TitleUpdates.Last();
                 }
                 else
                 {
@@ -170,30 +180,11 @@ public class TitleUpdateViewModel : BaseModel
         }
     }
 
-    private void RemoveUpdates(bool removeSelectedOnly = false)
+    public void RemoveUpdate(TitleUpdateModel update)
     {
-        if (removeSelectedOnly)
-        {
-            TitleUpdates.RemoveAll(TitleUpdates.Where(x => x == SelectedUpdate && !x.IsNoUpdate).ToList());
-        }
-        else
-        {
-            TitleUpdates.RemoveAll(TitleUpdates.Where(x => !x.IsNoUpdate).ToList());
-        }
-
-        SelectedUpdate = TitleUpdates.FirstOrDefault(x => x.IsNoUpdate);
+        TitleUpdates.Remove(update);
 
         SortUpdates();
-    }
-
-    public void RemoveSelected()
-    {
-        RemoveUpdates(true);
-    }
-
-    public void RemoveAll()
-    {
-        RemoveUpdates();
     }
 
     public async void Add()
