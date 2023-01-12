@@ -14,6 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Pm
         // GetProgramId() -> sf::Out<ncm::ProgramId> out_process_id
         public ResultCode GetApplicationProcessId(ServiceCtx context)
         {
+            // TODO: Not correct as it shouldn't be directly using kernel objects here
             KProcess process = KernelStatic.GetApplicationProcess();
 
             if (process != null)
