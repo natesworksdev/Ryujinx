@@ -986,6 +986,8 @@ namespace Ryujinx.Graphics.Vulkan
                 _programColorBlitClearAlpha.Dispose();
                 _programColorBlit.Dispose();
                 _programColorClearF.Dispose();
+                _programColorClearSI.Dispose();
+                _programColorClearUI.Dispose();
                 _programStrideChange.Dispose();
                 _programConvertIndexBuffer.Dispose();
                 _programConvertIndirectData.Dispose();

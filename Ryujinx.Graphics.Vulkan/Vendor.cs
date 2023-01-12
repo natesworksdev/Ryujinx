@@ -36,7 +36,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 0x1002 => "AMD",
                 0x1010 => "ImgTec",
-                0x106B => "MoltenVK",
+                0x106B => "Apple",
                 0x10DE => "NVIDIA",
                 0x13B5 => "ARM",
                 0x1AE0 => "Google",
