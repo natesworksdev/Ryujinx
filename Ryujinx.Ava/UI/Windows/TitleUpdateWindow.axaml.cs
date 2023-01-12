@@ -66,7 +66,7 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 ViewModel._titleUpdateWindowData.Paths.Add(update.Path);
 
-                if (update.IsEnabled)
+                if (update == ViewModel.SelectedUpdate)
                 {
                     ViewModel._titleUpdateWindowData.Selected = update.Path;
                 }

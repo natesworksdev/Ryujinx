@@ -5,7 +5,6 @@ namespace Ryujinx.Ava.UI.Models
 {
     public class TitleUpdateModel
     {
-        public bool IsEnabled { get; set; }
         public bool IsNoUpdate { get; }
         public ApplicationControlProperty Control { get; }
         public string Path { get; }

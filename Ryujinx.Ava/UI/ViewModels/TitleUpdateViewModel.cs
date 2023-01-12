@@ -34,6 +34,7 @@ public class TitleUpdateViewModel : BaseModel
     private string              _titleName { get; }
 
     private AvaloniaList<TitleUpdateModel> _titleUpdates = new();
+    private object _selectedUpdate;
 
     public AvaloniaList<TitleUpdateModel> TitleUpdates
     {
@@ -41,6 +42,16 @@ public class TitleUpdateViewModel : BaseModel
         set
         {
             _titleUpdates = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public object SelectedUpdate
+    {
+        get => _selectedUpdate;
+        set
+        {
+            _selectedUpdate = value;
             OnPropertyChanged();
         }
     }
@@ -81,21 +92,15 @@ public class TitleUpdateViewModel : BaseModel
 
         if (_titleUpdateWindowData.Selected == "")
         {
-            TitleUpdates[0].IsEnabled = true;
+            SelectedUpdate = TitleUpdates[0];
         }
         else
         {
-            TitleUpdateModel       selected = TitleUpdates.FirstOrDefault(x => x.Path == _titleUpdateWindowData.Selected);
-            List<TitleUpdateModel> enabled  = TitleUpdates.Where(x => x.IsEnabled).ToList();
-
-            foreach (TitleUpdateModel update in enabled)
-            {
-                update.IsEnabled = false;
-            }
+            TitleUpdateModel selected = TitleUpdates.FirstOrDefault(x => x.Path == _titleUpdateWindowData.Selected);
 
             if (selected != null)
             {
-                selected.IsEnabled = true;
+                SelectedUpdate = selected;
             }
         }
 
@@ -145,12 +150,7 @@ public class TitleUpdateViewModel : BaseModel
 
                     TitleUpdates.Add(new TitleUpdateModel(controlData, path));
 
-                    foreach (var update in TitleUpdates)
-                    {
-                        update.IsEnabled = false;
-                    }
-
-                    TitleUpdates.Last().IsEnabled = true;
+                    SelectedUpdate = TitleUpdates.Last();
                 }
                 else
                 {
@@ -174,14 +174,14 @@ public class TitleUpdateViewModel : BaseModel
     {
         if (removeSelectedOnly)
         {
-            TitleUpdates.RemoveAll(TitleUpdates.Where(x => x.IsEnabled && !x.IsNoUpdate).ToList());
+            TitleUpdates.RemoveAll(TitleUpdates.Where(x => x == SelectedUpdate && !x.IsNoUpdate).ToList());
         }
         else
         {
             TitleUpdates.RemoveAll(TitleUpdates.Where(x => !x.IsNoUpdate).ToList());
         }
 
-        TitleUpdates.FirstOrDefault(x => x.IsNoUpdate).IsEnabled = true;
+        SelectedUpdate = TitleUpdates.FirstOrDefault(x => x.IsNoUpdate);
 
         SortUpdates();
     }
