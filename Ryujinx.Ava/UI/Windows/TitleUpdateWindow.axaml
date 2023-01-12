@@ -24,7 +24,7 @@
             Margin="0 0 0 24"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
-            BorderBrush="Gray"
+            BorderBrush="{DynamicResource AppListBackgroundColor}"
             BorderThickness="1"
             CornerRadius="5"
             Padding="2.5">
