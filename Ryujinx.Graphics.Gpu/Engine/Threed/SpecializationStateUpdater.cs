@@ -11,6 +11,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     /// </summary>
     internal class SpecializationStateUpdater
     {
+        private GpuContext _context;
         private GpuChannelGraphicsState _graphics;
         private GpuChannelPoolState _pool;
 
@@ -18,6 +19,15 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private bool _usesTopology;
 
         private bool _changed;
+
+        /// <summary>
+        /// Creates a new instance of the specialization state updater class.
+        /// </summary>
+        /// <param name="context">GPU context</param>
+        public SpecializationStateUpdater(GpuContext context)
+        {
+            _context = context;
+        }
 
         /// <summary>
         /// Signal that the specialization state has changed.
@@ -263,7 +273,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 }
             }
 
-            if (changed)
+            if (changed && _context.Capabilities.NeedsFragmentOutputSpecialization)
             {
                 Signal();
             }

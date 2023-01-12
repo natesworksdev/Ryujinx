@@ -106,6 +106,7 @@ namespace Ryujinx.Graphics.OpenGL
                 vendorName: GpuVendor,
                 hasFrontFacingBug: HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelWindows,
                 hasVectorIndexingBug: HwCapabilities.Vendor == HwCapabilities.GpuVendor.AmdWindows,
+                needsFragmentOutputSpecialization: false,
                 reduceShaderPrecision: false,
                 supportsAstcCompression: HwCapabilities.SupportsAstcCompression,
                 supportsBc123Compression: HwCapabilities.SupportsTextureCompressionS3tc,
