@@ -2,12 +2,14 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
 using FluentAvalonia.UI.Controls;
+using Microsoft.IdentityModel.Tokens;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
+using Ryujinx.Ui.Common.Helper;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -88,12 +90,28 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void OpenLocation(object sender, RoutedEventArgs e)
         {
-            throw new System.NotImplementedException();
+            if (sender is Button button)
+            {
+                if (button.DataContext is TitleUpdateModel model)
+                {
+                    if (File.Exists(model.Path))
+                    {
+                        var folderPath = model.Path.Remove(model.Path.LastIndexOf(Path.DirectorySeparatorChar) + 1);
+                        if (!folderPath.IsNullOrEmpty())
+                        {
+                            OpenHelper.OpenFolder(folderPath);
+                        }
+                    }
+                }
+            }
         }
 
         private void RemoveUpdate(object sender, RoutedEventArgs e)
         {
-            ViewModel.RemoveUpdate((TitleUpdateModel)((Button)e.Source).DataContext);
+            if (sender is Button button)
+            {
+                ViewModel.RemoveUpdate((TitleUpdateModel)button.DataContext);
+            }
         }
     }
 }
