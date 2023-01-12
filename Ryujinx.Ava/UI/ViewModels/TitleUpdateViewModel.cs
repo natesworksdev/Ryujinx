@@ -12,7 +12,6 @@ using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
-using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
@@ -21,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using SpanHelpers = LibHac.Common.SpanHelpers;
 using Path = System.IO.Path;
 
@@ -29,24 +27,13 @@ namespace Ryujinx.Ava.UI.ViewModels;
 
 public class TitleUpdateViewModel : BaseModel
 {
-    private TitleUpdateMetadata _titleUpdateWindowData;
-    private readonly string     _titleUpdateJsonPath;
+    public TitleUpdateMetadata _titleUpdateWindowData;
+    public readonly string     _titleUpdateJsonPath;
     private VirtualFileSystem   _virtualFileSystem { get; }
     private ulong               _titleId   { get; }
     private string              _titleName { get; }
 
-    private string _heading;
     private AvaloniaList<TitleUpdateModel> _titleUpdates = new();
-
-    public string Heading
-    {
-        get => _heading;
-        set
-        {
-            _heading = value;
-            OnPropertyChanged();
-        }
-    }
 
     public AvaloniaList<TitleUpdateModel> TitleUpdates
     {
@@ -81,17 +68,11 @@ public class TitleUpdateViewModel : BaseModel
         }
 
         LoadUpdates();
-        PrintHeading();
-    }
-
-    private void PrintHeading()
-    {
-        Heading = string.Format(LocaleManager.Instance[LocaleKeys.GameUpdateWindowHeading], _titleUpdates.Count - 1, _titleName, _titleId.ToString("X16"));
     }
 
     private void LoadUpdates()
     {
-        _titleUpdates.Add(new TitleUpdateModel(default, string.Empty, true));
+        TitleUpdates.Add(new TitleUpdateModel(default, string.Empty, true));
 
         foreach (string path in _titleUpdateWindowData.Paths)
         {
@@ -100,12 +81,12 @@ public class TitleUpdateViewModel : BaseModel
 
         if (_titleUpdateWindowData.Selected == "")
         {
-            _titleUpdates[0].IsEnabled = true;
+            TitleUpdates[0].IsEnabled = true;
         }
         else
         {
-            TitleUpdateModel       selected = _titleUpdates.FirstOrDefault(x => x.Path == _titleUpdateWindowData.Selected);
-            List<TitleUpdateModel> enabled  = _titleUpdates.Where(x => x.IsEnabled).ToList();
+            TitleUpdateModel       selected = TitleUpdates.FirstOrDefault(x => x.Path == _titleUpdateWindowData.Selected);
+            List<TitleUpdateModel> enabled  = TitleUpdates.Where(x => x.IsEnabled).ToList();
 
             foreach (TitleUpdateModel update in enabled)
             {
@@ -123,7 +104,7 @@ public class TitleUpdateViewModel : BaseModel
 
     private void SortUpdates()
     {
-        var list = _titleUpdates.ToList();
+        var list = TitleUpdates.ToList();
 
         list.Sort((first, second) =>
         {
@@ -139,13 +120,13 @@ public class TitleUpdateViewModel : BaseModel
             return Version.Parse(first.Control.DisplayVersionString.ToString()).CompareTo(Version.Parse(second.Control.DisplayVersionString.ToString())) * -1;
         });
 
-        _titleUpdates.Clear();
-        _titleUpdates.AddRange(list);
+        TitleUpdates.Clear();
+        TitleUpdates.AddRange(list);
     }
 
     private void AddUpdate(string path)
     {
-        if (File.Exists(path) && !_titleUpdates.Any(x => x.Path == path))
+        if (File.Exists(path) && ! TitleUpdates.Any(x => x.Path == path))
         {
             using FileStream file = new(path, FileMode.Open, FileAccess.Read);
 
@@ -162,14 +143,14 @@ public class TitleUpdateViewModel : BaseModel
                     controlNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None).OpenFile(ref nacpFile.Ref(), "/control.nacp".ToU8Span(), OpenMode.Read).ThrowIfFailure();
                     nacpFile.Get.Read(out _, 0, SpanHelpers.AsByteSpan(ref controlData), ReadOption.None).ThrowIfFailure();
 
-                    _titleUpdates.Add(new TitleUpdateModel(controlData, path));
+                    TitleUpdates.Add(new TitleUpdateModel(controlData, path));
 
-                    foreach (var update in _titleUpdates)
+                    foreach (var update in TitleUpdates)
                     {
                         update.IsEnabled = false;
                     }
 
-                    _titleUpdates.Last().IsEnabled = true;
+                    TitleUpdates.Last().IsEnabled = true;
                 }
                 else
                 {
@@ -193,17 +174,16 @@ public class TitleUpdateViewModel : BaseModel
     {
         if (removeSelectedOnly)
         {
-            _titleUpdates.RemoveAll(_titleUpdates.Where(x => x.IsEnabled && !x.IsNoUpdate).ToList());
+            TitleUpdates.RemoveAll(TitleUpdates.Where(x => x.IsEnabled && !x.IsNoUpdate).ToList());
         }
         else
         {
-            _titleUpdates.RemoveAll(_titleUpdates.Where(x => !x.IsNoUpdate).ToList());
+            TitleUpdates.RemoveAll(TitleUpdates.Where(x => !x.IsNoUpdate).ToList());
         }
 
-        _titleUpdates.FirstOrDefault(x => x.IsNoUpdate).IsEnabled = true;
+        TitleUpdates.FirstOrDefault(x => x.IsNoUpdate).IsEnabled = true;
 
         SortUpdates();
-        PrintHeading();
     }
 
     public void RemoveSelected()
@@ -244,35 +224,5 @@ public class TitleUpdateViewModel : BaseModel
         }
 
         SortUpdates();
-        PrintHeading();
-    }
-
-    public void Save()
-    {
-        _titleUpdateWindowData.Paths.Clear();
-
-        _titleUpdateWindowData.Selected = "";
-
-        foreach (TitleUpdateModel update in _titleUpdates)
-        {
-            _titleUpdateWindowData.Paths.Add(update.Path);
-
-            if (update.IsEnabled)
-            {
-                _titleUpdateWindowData.Selected = update.Path;
-            }
-        }
-
-        using (FileStream titleUpdateJsonStream = File.Create(_titleUpdateJsonPath, 4096, FileOptions.WriteThrough))
-        {
-            titleUpdateJsonStream.Write(Encoding.UTF8.GetBytes(JsonHelper.Serialize(_titleUpdateWindowData, true)));
-        }
-
-        /*if (Owner is MainWindow window)
-        {
-            window.ViewModel.LoadApplications();
-        }*/
-
-        // Close();
     }
 }
