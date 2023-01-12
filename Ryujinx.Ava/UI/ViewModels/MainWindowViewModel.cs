@@ -1604,10 +1604,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             ApplicationData selection = SelectedApplication;
             if (selection != null)
             {
-                if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-                {
-                    await new TitleUpdateWindow(VirtualFileSystem, ulong.Parse(selection.TitleId, NumberStyles.HexNumber), selection.TitleName).ShowDialog(desktop.MainWindow);
-                }
+                await TitleUpdateWindow.Show(VirtualFileSystem, ulong.Parse(selection.TitleId, NumberStyles.HexNumber), selection.TitleName);
             }
         }
 

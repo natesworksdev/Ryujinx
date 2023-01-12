@@ -1,5 +1,6 @@
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using LibHac.Common;
 using LibHac.Fs;
@@ -229,13 +230,16 @@ public class TitleUpdateViewModel : BaseModel
             Extensions = { "nsp" }
         });
 
-        string[] files = await dialog.ShowAsync(this);
-
-        if (files != null)
+        if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            foreach (string file in files)
+            string[] files = await dialog.ShowAsync(desktop.MainWindow);
+
+            if (files != null)
             {
-                AddUpdate(file);
+                foreach (string file in files)
+                {
+                    AddUpdate(file);
+                }
             }
         }
 
@@ -264,11 +268,11 @@ public class TitleUpdateViewModel : BaseModel
             titleUpdateJsonStream.Write(Encoding.UTF8.GetBytes(JsonHelper.Serialize(_titleUpdateWindowData, true)));
         }
 
-        if (Owner is MainWindow window)
+        /*if (Owner is MainWindow window)
         {
             window.ViewModel.LoadApplications();
-        }
+        }*/
 
-        Close();
+        // Close();
     }
 }

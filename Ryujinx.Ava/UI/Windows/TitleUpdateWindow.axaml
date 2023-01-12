@@ -76,21 +76,21 @@
                     Name="AddButton"
                     MinWidth="90"
                     Margin="5"
-                    Command="{Binding Add}">
+                    Command="{ReflectionBinding Add}">
                     <TextBlock Text="{locale:Locale SettingsTabGeneralAdd}" />
                 </Button>
                 <Button
                     Name="RemoveButton"
                     MinWidth="90"
                     Margin="5"
-                    Command="{Binding RemoveSelected}">
+                    Command="{ReflectionBinding RemoveSelected}">
                     <TextBlock Text="{locale:Locale SettingsTabGeneralRemove}" />
                 </Button>
                 <Button
                     Name="RemoveAllButton"
                     MinWidth="90"
                     Margin="5"
-                    Command="{Binding RemoveAll}">
+                    Command="{ReflectionBinding RemoveAll}">
                     <TextBlock Text="{locale:Locale DlcManagerRemoveAllButton}" />
                 </Button>
             </DockPanel>
@@ -99,14 +99,13 @@
                     Name="SaveButton"
                     MinWidth="90"
                     Margin="5"
-                    Command="{Binding Save}">
+                    Command="{ReflectionBinding Save}">
                     <TextBlock Text="{locale:Locale SettingsButtonSave}" />
                 </Button>
                 <Button
                     Name="CancelButton"
                     MinWidth="90"
-                    Margin="5"
-                    Click="Close">
+                    Margin="5">
                     <TextBlock Text="{locale:Locale InputDialogCancel}" />
                 </Button>
             </DockPanel>
