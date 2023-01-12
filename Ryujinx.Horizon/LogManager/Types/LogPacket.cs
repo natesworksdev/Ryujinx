@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Ryujinx.Horizon.LogManager.Types
 {
-    class LogPacket
+    struct LogPacket
     {
         public string      Message;
         public int         Line;

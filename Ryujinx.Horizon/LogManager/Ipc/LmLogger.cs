@@ -14,6 +14,8 @@ namespace Ryujinx.Horizon.LogManager.Ipc
 {
     partial class LmLogger : ILmLogger
     {
+        private const int MessageLengthLimit = 5000;
+
         private readonly LogService _log;
         private readonly ulong      _pid;
 
@@ -70,11 +72,12 @@ namespace Ryujinx.Horizon.LogManager.Ipc
             return true;
         }
 
-        private bool LogImpl(ReadOnlySpan<byte> buffer)
+        private bool LogImpl(ReadOnlySpan<byte> message)
         {
-            SpanReader      reader = new(buffer);
+            SpanReader      reader = new(message);
             LogPacketHeader header = reader.Read<LogPacketHeader>();
 
+            bool isHeadPacket = (header.Flags & LogPacketFlags.IsHead) != 0;
             bool isTailPacket = (header.Flags & LogPacketFlags.IsTail) != 0;
 
             _logPacket.Severity = header.Severity;
@@ -110,21 +113,19 @@ namespace Ryujinx.Horizon.LogManager.Ipc
                 }
                 else if (key == LogDataChunkKey.Message)
                 {
-                    string message = Encoding.UTF8.GetString(reader.GetSpan(size)).TrimEnd();
+                    string text = Encoding.UTF8.GetString(reader.GetSpan(size)).TrimEnd();
 
-                    if (!isTailPacket)
+                    if (isHeadPacket && isTailPacket)
                     {
-                        _logPacket.Message += message;
+                        _logPacket.Message = text;
                     }
                     else
                     {
-                        if (string.IsNullOrEmpty(_logPacket.Message))
+                        _logPacket.Message += text;
+
+                        if (_logPacket.Message.Length >= MessageLengthLimit)
                         {
-                            _logPacket.Message = message;
-                        }
-                        else
-                        {
-                            _logPacket.Message += message;
+                            isTailPacket = true;
                         }
                     }
                 }
