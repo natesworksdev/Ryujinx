@@ -35,7 +35,7 @@ namespace Ryujinx.Graphics.Gpu
         /// <summary>
         /// Host hardware capabilities from the GPU context.
         /// </summary>
-        internal Capabilities Capabilities => _context.Capabilities;
+        internal ref Capabilities Capabilities => ref _context.Capabilities;
 
         /// <summary>
         /// Creates a new instance of a GPU channel.
