@@ -1,4 +1,5 @@
 using Ryujinx.Audio.Renderer.Server.Upsampler;
+using Ryujinx.Common.Memory;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -11,13 +12,13 @@ namespace Ryujinx.Audio.Renderer.Dsp
         private const int FilterBankLength = 20;
         // Bank0 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         private const int Bank0CenterIndex = 9;
-        private static readonly float[] Bank1 = PrecomputeFilterBank(1.0f / 6.0f);
-        private static readonly float[] Bank2 = PrecomputeFilterBank(2.0f / 6.0f);
-        private static readonly float[] Bank3 = PrecomputeFilterBank(3.0f / 6.0f);
-        private static readonly float[] Bank4 = PrecomputeFilterBank(4.0f / 6.0f);
-        private static readonly float[] Bank5 = PrecomputeFilterBank(5.0f / 6.0f);
+        private static readonly Array20<float> Bank1 = PrecomputeFilterBank(1.0f / 6.0f);
+        private static readonly Array20<float> Bank2 = PrecomputeFilterBank(2.0f / 6.0f);
+        private static readonly Array20<float> Bank3 = PrecomputeFilterBank(3.0f / 6.0f);
+        private static readonly Array20<float> Bank4 = PrecomputeFilterBank(4.0f / 6.0f);
+        private static readonly Array20<float> Bank5 = PrecomputeFilterBank(5.0f / 6.0f);
 
-        private static float[] PrecomputeFilterBank(float offset)
+        private static Array20<float> PrecomputeFilterBank(float offset)
         {
             float Sinc(float x)
             {
@@ -37,7 +38,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
                 return a0 + a1 * MathF.Cos(2 * MathF.PI * x) + a2 * MathF.Cos(4 * MathF.PI * x);
             }
             
-            float[] result = new float[FilterBankLength];
+            Array20<float> result = new Array20<float>();
 
             for (int i = 0; i < FilterBankLength; i++)
             {
@@ -70,7 +71,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            float DoFilterBank(ref UpsamplerBufferState state, float[] bank)
+            float DoFilterBank(ref UpsamplerBufferState state, Array20<float> bank)
             {
                 float result = 0.0f;
 
@@ -87,7 +88,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             void NextInput(ref UpsamplerBufferState state, float input)
             {
-                Array.Copy(state.History, 1, state.History, 0, HistoryLength - 1);
+                state.History.AsSpan().Slice(1).CopyTo(state.History.AsSpan());
                 state.History[HistoryLength - 1] = input;
             }
 
