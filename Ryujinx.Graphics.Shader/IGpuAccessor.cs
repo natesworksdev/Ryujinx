@@ -117,6 +117,7 @@ namespace Ryujinx.Graphics.Shader
         /// <summary>
         /// Queries output type for fragment shaders.
         /// </summary>
+        /// <param name="location">Location of the framgent output</param>
         /// <returns>Output location</returns>
         AttributeType QueryFragmentOutputType(int location)
         {

@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     /// </summary>
     internal class SpecializationStateUpdater
     {
-        private GpuContext _context;
+        private readonly GpuContext _context;
         private GpuChannelGraphicsState _graphics;
         private GpuChannelPoolState _pool;
 

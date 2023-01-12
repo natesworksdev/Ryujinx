@@ -100,6 +100,9 @@ namespace Ryujinx.Graphics.Vulkan
             if (OperatingSystem.IsMacOS())
             {
                 MVKInitialization.Initialize();
+
+                // Any device running on MacOS is using MoltenVK, even Intel and AMD vendors.
+                IsMoltenVk = true;
             }
         }
 
@@ -240,9 +243,6 @@ namespace Ryujinx.Graphics.Vulkan
                 portabilityFlags |= featuresPortabilitySubset.ImageView2DOn3DImage ? 0 : PortabilitySubsetFlags.No3DImageView;
                 portabilityFlags |= featuresPortabilitySubset.SamplerMipLodBias ? 0 : PortabilitySubsetFlags.NoLodBias;
             }
-
-            // Any device running on MacOS is using MoltenVK, even Intel and AMD vendors.
-            IsMoltenVk = OperatingSystem.IsMacOS();
 
             bool customBorderColorSupported = supportedExtensions.Contains("VK_EXT_custom_border_color") &&
                                               featuresCustomBorderColor.CustomBorderColors &&
@@ -590,7 +590,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             IsAmdWindows = Vendor == Vendor.Amd && RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             IsIntelWindows = Vendor == Vendor.Intel && RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            IsTBDR = IsMoltenVk || Vendor == Vendor.Qualcomm;
+            IsTBDR = IsMoltenVk || Vendor == Vendor.Qualcomm || Vendor == Vendor.ARM || Vendor == Vendor.ImgTec;
 
             GpuVendor = vendorName;
             GpuRenderer = Marshal.PtrToStringAnsi((IntPtr)properties.DeviceName);

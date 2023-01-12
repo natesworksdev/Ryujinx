@@ -5,8 +5,10 @@ namespace Ryujinx.Graphics.Vulkan
     enum Vendor
     {
         Amd,
+        ImgTec,
         Intel,
         Nvidia,
+        ARM,
         Qualcomm,
         Apple,
         Unknown
@@ -22,8 +24,10 @@ namespace Ryujinx.Graphics.Vulkan
             return id switch
             {
                 0x1002 => Vendor.Amd,
+                0x1010 => Vendor.ImgTec,
                 0x106B => Vendor.Apple,
                 0x10DE => Vendor.Nvidia,
+                0x13B5 => Vendor.ARM,
                 0x8086 => Vendor.Intel,
                 0x5143 => Vendor.Qualcomm,
                 _ => Vendor.Unknown
