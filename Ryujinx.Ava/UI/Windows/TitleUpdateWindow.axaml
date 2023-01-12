@@ -29,6 +29,7 @@
             CornerRadius="5"
             Padding="2.5">
             <ListBox
+                Background="Transparent"
                 SelectedItem="{Binding SelectedUpdate, Mode=TwoWay}"
                 Items="{Binding Views}">
                 <ListBox.DataTemplates>
