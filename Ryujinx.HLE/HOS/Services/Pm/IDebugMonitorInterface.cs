@@ -15,13 +15,14 @@ namespace Ryujinx.HLE.HOS.Services.Pm
         public ResultCode GetApplicationProcessId(ServiceCtx context)
         {
             // TODO: Not correct as it shouldn't be directly using kernel objects here
-            KProcess process = KernelStatic.GetApplicationProcess();
-
-            if (process != null)
+            foreach (KProcess process in context.Device.System.KernelContext.Processes.Values)
             {
-                context.ResponseData.Write(process.Pid);
+                if (process.IsApplication)
+                {
+                    context.ResponseData.Write(process.Pid);
 
-                return ResultCode.Success;
+                    return ResultCode.Success;
+                }
             }
 
             return ResultCode.ProcessNotFound;
