@@ -30,6 +30,7 @@
             Padding="2.5">
             <ListBox
                 VirtualizationMode="None"
+                AutoScrollToSelectedItem="True"
                 Background="Transparent"
                 SelectedItem="{Binding SelectedUpdate, Mode=TwoWay}"
                 Items="{Binding Views}">
