@@ -12,7 +12,7 @@
 
         public static ApplicationId Invalid => new(0);
 
-        public bool IsValid => Id >= First.Id || Id <= Last.Id;
+        public bool IsValid => Id >= First.Id && Id <= Last.Id;
 
         public ApplicationId(ulong id)
         {
