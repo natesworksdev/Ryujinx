@@ -86,6 +86,11 @@
                         </Panel>
                     </DataTemplate>
                 </ListBox.DataTemplates>
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="Background" Value="Transparent" />
+                    </Style>
+                </ListBox.Styles>
             </ListBox>
         </Border>
         <Panel
