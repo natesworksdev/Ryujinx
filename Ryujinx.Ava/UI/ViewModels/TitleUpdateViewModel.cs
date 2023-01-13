@@ -124,20 +124,20 @@ public class TitleUpdateViewModel : BaseModel
             return Version.Parse(first.Control.DisplayVersionString.ToString()).CompareTo(Version.Parse(second.Control.DisplayVersionString.ToString())) * -1;
         });
 
-        var model = new BaseModel();
-
-        if (SelectedUpdate == null)
-        {
-            SelectedUpdate = model;
-        }
-
         Views.Clear();
-        Views.Add(model);
+        Views.Add(new BaseModel());
         Views.AddRange(list);
 
         if (!TitleUpdates.Contains(SelectedUpdate))
         {
-            SelectedUpdate = Views.Last();
+            if (Views.Count > 1)
+            {
+                SelectedUpdate = Views[1];
+            }
+            else
+            {
+                SelectedUpdate = Views[0];
+            }
         }
     }
 
