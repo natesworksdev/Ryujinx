@@ -106,7 +106,7 @@ public class TitleUpdateViewModel : BaseModel
         SortUpdates();
     }
 
-    private void SortUpdates()
+    public void SortUpdates()
     {
         var list = TitleUpdates.ToList();
 

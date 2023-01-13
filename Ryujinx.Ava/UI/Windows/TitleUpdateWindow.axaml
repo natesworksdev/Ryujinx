@@ -101,6 +101,12 @@
                     Command="{ReflectionBinding Add}">
                     <TextBlock Text="{locale:Locale SettingsTabGeneralAdd}" />
                 </Button>
+                <Button
+                    Name="RemoveAllButton"
+                    MinWidth="90"
+                    Click="RemoveAll">
+                    <TextBlock Text="{locale:Locale DlcManagerRemoveAllButton}" />
+                </Button>
             </StackPanel>
             <StackPanel
                 Orientation="Horizontal"

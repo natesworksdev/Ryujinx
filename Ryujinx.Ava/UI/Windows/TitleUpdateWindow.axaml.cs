@@ -113,5 +113,12 @@ namespace Ryujinx.Ava.UI.Windows
                 ViewModel.RemoveUpdate((TitleUpdateModel)button.DataContext);
             }
         }
+
+        private void RemoveAll(object sender, RoutedEventArgs e)
+        {
+            ViewModel.TitleUpdates.Clear();
+
+            ViewModel.SortUpdates();
+        }
     }
 }
