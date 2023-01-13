@@ -59,7 +59,7 @@ namespace Ryujinx.Ui.Common.Helper
                 }
                 else if (OperatingSystem.IsLinux())
                 {
-                    Process.Start("dbus-send", $"--session --print-reply --dest=org.freedesktop.FileManager1 --type=method_call /org/freedesktop/FileManager1 org.freedesktop.FileManager1.ShowItems array:string:\"{path}\" string:\"\"");
+                    Process.Start("dbus-send", $"--session --print-reply --dest=org.freedesktop.FileManager1 --type=method_call /org/freedesktop/FileManager1 org.freedesktop.FileManager1.ShowItems array:string:\"file://{path}\" string:\"\"");
                 }
                 else
                 {
