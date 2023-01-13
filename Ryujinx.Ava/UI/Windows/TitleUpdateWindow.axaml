@@ -76,12 +76,15 @@
                     </DataTemplate>
                     <DataTemplate
                         DataType="viewModels:BaseModel">
-                        <TextBlock
-                            Margin="10"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
-                            TextWrapping="Wrap"
-                            Text="{locale:Locale NoUpdate}" />
+                        <Panel
+                            Height="33"
+                            Margin="10">
+                            <TextBlock
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                TextWrapping="Wrap"
+                                Text="{locale:Locale NoUpdate}" />
+                        </Panel>
                     </DataTemplate>
                 </ListBox.DataTemplates>
             </ListBox>
