@@ -4,20 +4,8 @@ using System.Collections.ObjectModel;
 
 namespace Ryujinx.Ava.UI.Models
 {
-    internal class InMemoryLogTarget : ILogTarget
+    class InMemoryLogTarget : ILogTarget
     {
-        internal struct Entry
-        {
-            public Entry(Color color, string text)
-            {
-                Color = color;
-                Text = text;
-            }
-
-            public Color Color { get; }
-            public string Text { get; }
-        }
-
         private static Color GetLogColor(LogLevel level)
         {
             return level switch
@@ -40,7 +28,7 @@ namespace Ryujinx.Ava.UI.Models
 
         private const int MaximumSize = 1000;
 
-        public readonly ObservableCollection<Entry> Entries;
+        public readonly ObservableCollection<InMemoryLogTargetEntry> Entries;
 
         string ILogTarget.Name => _name;
 
@@ -50,7 +38,7 @@ namespace Ryujinx.Ava.UI.Models
         {
             _formatter = new DefaultLogFormatter();
             _name      = name;
-            Entries    = new ObservableCollection<Entry>();
+            Entries    = new ObservableCollection<InMemoryLogTargetEntry>();
         }
 
         public static void Register()
@@ -65,11 +53,11 @@ namespace Ryujinx.Ava.UI.Models
 
         private void AddEntry(Color color, string text)
         {
-            Entries.Insert(0, new Entry(color, text));
+            Entries.Add(new InMemoryLogTargetEntry(color, text));
 
             if (Entries.Count > MaximumSize)
             {
-                Entries.RemoveAt(Entries.Count - 1);
+                Entries.RemoveAt(0);
             }
         }
 

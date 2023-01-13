@@ -14,7 +14,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             _owner = window;
         }
 
-        public ObservableCollection<InMemoryLogTarget.Entry> LogEntries => InMemoryLogTarget.Instance.Entries;
+        public ObservableCollection<InMemoryLogTargetEntry> LogEntries => InMemoryLogTarget.Instance.Entries;
 
         public static void OpenLogsFolder()
         {

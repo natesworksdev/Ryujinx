@@ -7,6 +7,7 @@
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     xmlns:window="clr-namespace:Ryujinx.Ava.UI.Windows"
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
+    xmlns:models="clr-namespace:Ryujinx.Ava.UI.Models"
     Title="Ryujinx Console"
     Width="800"
     Height="480"
@@ -20,46 +21,44 @@
     mc:Ignorable="d"
     Focusable="True">
     <Grid>
-        <ListBox
+        <ScrollViewer 
             Grid.Row="0"
             Grid.Column="0"
-            Name="ConsoleListBox"
-            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-            ScrollViewer.VerticalScrollBarVisibility="Visible"
-            Items="{Binding LogEntries}">
-            <ListBox.RenderTransform>
-                <ScaleTransform ScaleY="-1" />
-            </ListBox.RenderTransform>
-            <ListBox.Styles>
-                <Style Selector="TextBlock">
-                    <Setter Property="FontFamily" Value="Inconsolata, Consolas, Monospace, Courier" />
-                    <Setter Property="TextWrapping" Value="Wrap" />
-                </Style>
-                <Style Selector="ListBoxItem">
-                    <Setter Property="MinHeight" Value="0" />
-                    <Setter Property="RenderTransform">
-                        <Setter.Value>
-                            <ScaleTransform ScaleY="-1" />
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </ListBox.Styles>
-            <ListBox.DataTemplates>
-                <DataTemplate>
-                    <TextBlock Text="{Binding Text}">
-                        <TextBlock.Foreground>
-                            <SolidColorBrush Color="{Binding Color}" />
-                        </TextBlock.Foreground>
-                    </TextBlock>
-                </DataTemplate>
-            </ListBox.DataTemplates>
-        </ListBox>
+            Name="ConsoleScrollViewer"
+            HorizontalScrollBarVisibility="Disabled"
+            VerticalScrollBarVisibility="Visible">
+            <ItemsRepeater 
+                Name="ConsoleRepeater"
+                Background="Transparent"
+                Items="{Binding LogEntries}">
+                <ItemsRepeater.Styles>
+                    <Style Selector="TextBlock">
+                        <Setter Property="FontFamily" Value="Inconsolata, Consolas, Monospace, Courier" />
+                        <Setter Property="TextWrapping" Value="Wrap" />
+                    </Style>
+                </ItemsRepeater.Styles>
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:DataType="models:InMemoryLogTargetEntry">
+                        <TextBlock Text="{Binding Text}">
+                            <TextBlock.Foreground>
+                                <SolidColorBrush Color="{Binding Color}" />
+                            </TextBlock.Foreground>
+                        </TextBlock>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </ScrollViewer>
         <StackPanel
             Grid.Row="0"
             Grid.Column="0"
             VerticalAlignment="Top"
             HorizontalAlignment="Right"
             Background="{DynamicResource ThemeContentBackgroundColor}">
+            <CheckBox
+                HorizontalAlignment="Center"
+                Name="AutoScrollCheckBox"
+                IsChecked="True"
+                Content="{locale:Locale ConsoleWindowAutoScroll}" />
             <Button
                 HorizontalAlignment="Center"
                 Command="{ReflectionBinding OpenLogsFolder}"
