@@ -200,7 +200,7 @@ namespace Ryujinx.Horizon.Prepo.Ipc
 
             // NOTE: The service calls arp:r using the pid to get the application id, if it fails PrepoResult.InvalidPid is returned.
             //       Reports are stored internally and an event is signaled to transmit them.
-            if (pid != 0 )
+            if (pid != 0)
             {
                 builder.AppendLine($" Pid: {pid}");
             }

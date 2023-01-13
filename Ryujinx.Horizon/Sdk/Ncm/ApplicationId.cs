@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Horizon.Sdk.Ncm
 {
-    public readonly struct ApplicationId
+    readonly struct ApplicationId
     {
         public readonly ulong Id;
 
@@ -12,7 +12,7 @@
 
         public static ApplicationId Invalid => new(0);
 
-        public bool IsInvalid => Id < First.Id && Id > Last.Id;
+        public bool IsValid => Id >= First.Id || Id <= Last.Id;
 
         public ApplicationId(ulong id)
         {
