@@ -128,7 +128,11 @@ public class TitleUpdateViewModel : BaseModel
         Views.Add(new BaseModel());
         Views.AddRange(list);
 
-        if (!TitleUpdates.Contains(SelectedUpdate))
+        if (SelectedUpdate == null)
+        {
+            SelectedUpdate = Views[0];
+        }
+        else if (!TitleUpdates.Contains(SelectedUpdate))
         {
             if (Views.Count > 1)
             {
