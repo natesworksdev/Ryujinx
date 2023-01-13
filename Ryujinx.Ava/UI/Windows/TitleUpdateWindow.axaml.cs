@@ -93,10 +93,7 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 if (button.DataContext is TitleUpdateModel model)
                 {
-                    if (File.Exists(model.Path))
-                    {
-                        OpenHelper.LocateFile(model.Path);
-                    }
+                    OpenHelper.LocateFile(model.Path);
                 }
             }
         }
