@@ -66,9 +66,8 @@ namespace Ryujinx.Ava
         private const float VolumeDelta        = 0.05f;
 
         private static readonly Cursor InvisibleCursor = new(StandardCursorType.None);
-
-        [SupportedOSPlatform("windows")] private static readonly IntPtr InvisibleCursorWin = CreateEmptyCursor();
-        [SupportedOSPlatform("windows")] private static readonly IntPtr DefaultCursorWin = CreateArrowCursor();
+        private readonly IntPtr InvisibleCursorWin;
+        private readonly IntPtr DefaultCursorWin;
 
         private readonly long      _ticksPerFrame;
         private readonly Stopwatch _chrono;
@@ -163,6 +162,12 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.HideCursorOnIdle.Event += HideCursorState_Changed;
 
             _topLevel.PointerMoved += TopLevel_PointerMoved;
+
+            if (OperatingSystem.IsWindows())
+            {
+                InvisibleCursorWin = CreateEmptyCursor();
+                DefaultCursorWin   = CreateArrowCursor();
+            }
 
             ConfigurationState.Instance.System.IgnoreMissingServices.Event += UpdateIgnoreMissingServicesState;
             ConfigurationState.Instance.Graphics.AspectRatio.Event         += UpdateAspectRatioState;
