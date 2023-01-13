@@ -69,18 +69,5 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             return null;
         }
-
-        internal static KProcess GetApplicationProcess()
-        {
-            foreach (var process in Context.Processes.Values)
-            {
-                if (process.IsApplication)
-                {
-                    return process;
-                }
-            }
-
-            return null;
-        }
     }
 }
