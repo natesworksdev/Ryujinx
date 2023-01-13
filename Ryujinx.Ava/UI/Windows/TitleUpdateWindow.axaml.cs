@@ -2,7 +2,6 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
 using FluentAvalonia.UI.Controls;
-using Microsoft.IdentityModel.Tokens;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
@@ -96,11 +95,7 @@ namespace Ryujinx.Ava.UI.Windows
                 {
                     if (File.Exists(model.Path))
                     {
-                        var folderPath = model.Path.Remove(model.Path.LastIndexOf(Path.DirectorySeparatorChar) + 1);
-                        if (!folderPath.IsNullOrEmpty())
-                        {
-                            OpenHelper.OpenFolder(folderPath);
-                        }
+                        OpenHelper.LocateFile(model.Path);
                     }
                 }
             }
