@@ -29,9 +29,9 @@ public class TitleUpdateViewModel : BaseModel
 {
     public TitleUpdateMetadata _titleUpdateWindowData;
     public readonly string     _titleUpdateJsonPath;
-    private VirtualFileSystem   _virtualFileSystem { get; }
-    private ulong               _titleId   { get; }
-    private string              _titleName { get; }
+    private VirtualFileSystem  _virtualFileSystem { get; }
+    private ulong              _titleId           { get; }
+    private string             _titleName         { get; }
 
     private AvaloniaList<TitleUpdateModel> _titleUpdates = new();
     private AvaloniaList<object> _views = new();
