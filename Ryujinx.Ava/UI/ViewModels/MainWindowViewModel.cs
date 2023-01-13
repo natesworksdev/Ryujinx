@@ -1603,7 +1603,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             if (SelectedApplication != null)
             {
-                await TitleUpdateWindow.Show(VirtualFileSystem, ulong.Parse(selection.TitleId, NumberStyles.HexNumber), selection.TitleName);
+                await TitleUpdateWindow.Show(VirtualFileSystem, ulong.Parse(SelectedApplication.TitleId, NumberStyles.HexNumber), SelectedApplication.TitleName);
             }
         }
 
