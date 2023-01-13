@@ -1508,7 +1508,10 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 if (!ulong.TryParse(SelectedApplication.TitleId, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ulong titleIdNumber))
                 {
-                    NotificationHelper.ShowError($"{LocaleManager.Instance[LocaleKeys.DialogRyujinxErrorMessage]}\n{LocaleManager.Instance[LocaleKeys.DialogInvalidTitleIdErrorMessage]}");
+                    Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogRyujinxErrorMessage], LocaleManager.Instance[LocaleKeys.DialogInvalidTitleIdErrorMessage]);
+                    });
 
                     return;
                 }

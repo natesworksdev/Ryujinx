@@ -73,7 +73,10 @@ namespace Ryujinx.Ava.Common
                 result = _horizonClient.Fs.EnsureApplicationSaveData(out _, new LibHac.Ncm.ApplicationId(titleId), in control, in user);
                 if (result.IsFailure())
                 {
-                    NotificationHelper.ShowError(string.Format(LocaleManager.Instance[LocaleKeys.DialogMessageCreateSaveErrorMessage], result.ToStringWithName()));
+                    Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[LocaleKeys.DialogMessageCreateSaveErrorMessage], result.ToStringWithName()));
+                    });
 
                     return false;
                 }
@@ -89,7 +92,10 @@ namespace Ryujinx.Ava.Common
                 return true;
             }
 
-            NotificationHelper.ShowError(string.Format(LocaleManager.Instance[LocaleKeys.DialogMessageFindSaveErrorMessage], result.ToStringWithName()));
+            Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[LocaleKeys.DialogMessageCreateSaveErrorMessage], result.ToStringWithName()));
+            });
 
             return false;
         }
@@ -213,7 +219,10 @@ namespace Ryujinx.Ava.Common
                     {
                         Logger.Error?.Print(LogClass.Application, "Extraction failure. The main NCA was not present in the selected file");
 
-                        NotificationHelper.ShowError(LocaleManager.Instance[LocaleKeys.DialogNcaExtractionMainNcaNotFoundErrorMessage]);
+                        Dispatcher.UIThread.InvokeAsync(async () =>
+                        {
+                            await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogNcaExtractionMainNcaNotFoundErrorMessage]);
+                        });
 
                         return;
                     }
@@ -251,7 +260,10 @@ namespace Ryujinx.Ava.Common
                             {
                                 Logger.Error?.Print(LogClass.Application, $"LibHac returned error code: {resultCode.Value.ErrorCode}");
 
-                                NotificationHelper.ShowError(LocaleManager.Instance[LocaleKeys.DialogNcaExtractionCheckLogErrorMessage]);
+                                Dispatcher.UIThread.InvokeAsync(async () =>
+                                {
+                                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogNcaExtractionCheckLogErrorMessage]);
+                                });
                             }
                             else if (resultCode.Value.IsSuccess())
                             {
@@ -269,7 +281,10 @@ namespace Ryujinx.Ava.Common
                     {
                         Logger.Error?.Print(LogClass.Application, $"{ex.Message}");
 
-                        NotificationHelper.ShowError(ex.Message);
+                        Dispatcher.UIThread.InvokeAsync(async () =>
+                        {
+                            await ContentDialogHelper.CreateErrorDialog(ex.Message);
+                        });
                     }
                 });
 
