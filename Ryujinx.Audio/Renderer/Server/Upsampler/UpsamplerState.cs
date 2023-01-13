@@ -40,7 +40,7 @@ namespace Ryujinx.Audio.Renderer.Server.Upsampler
         /// <summary>
         /// State of each input buffer index kept across invocations of the upsampler.
         /// </summary>
-        public UpsamplerBufferState[] BufferStates = Array.Empty<UpsamplerBufferState>();
+        public UpsamplerBufferState[] BufferStates;
 
         /// <summary>
         /// Create a new <see cref="UpsamplerState"/>.

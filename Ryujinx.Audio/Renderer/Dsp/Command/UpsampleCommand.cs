@@ -40,7 +40,11 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                 info.InputBufferIndices[i] = (ushort)(bufferOffset + inputBufferOffset[i]);
             }
 
-            Array.Resize(ref info.BufferStates, Math.Max(info.BufferStates.Length, (int)inputCount));
+            if (info.BufferStates?.Length != (int)inputCount)
+            {
+                // Keep state if possible.
+                info.BufferStates = new UpsamplerBufferState[(int)inputCount];
+            }
 
             UpsamplerInfo = info;
         }

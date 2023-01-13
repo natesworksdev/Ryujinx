@@ -71,7 +71,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            float DoFilterBank(ref UpsamplerBufferState state, Array20<float> bank)
+            float DoFilterBank(ref UpsamplerBufferState state, in Array20<float> bank)
             {
                 float result = 0.0f;
 
