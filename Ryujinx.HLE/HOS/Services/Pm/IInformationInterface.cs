@@ -15,9 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Pm
             ulong pid = context.RequestData.ReadUInt64();
 
             // TODO: Not correct as it shouldn't be directly using kernel objects here
-            KProcess process = KernelStatic.GetProcessByPid(pid);
-
-            if (process != null)
+            if (context.Device.System.KernelContext.Processes.TryGetValue(pid, out KProcess process))
             {
                 context.ResponseData.Write(process.TitleId);
 
