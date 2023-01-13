@@ -1601,8 +1601,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async void OpenTitleUpdateManager()
         {
-            ApplicationData selection = SelectedApplication;
-            if (selection != null)
+            if (SelectedApplication != null)
             {
                 await TitleUpdateWindow.Show(VirtualFileSystem, ulong.Parse(selection.TitleId, NumberStyles.HexNumber), selection.TitleName);
             }
