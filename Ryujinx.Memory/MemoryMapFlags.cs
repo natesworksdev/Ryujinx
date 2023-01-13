@@ -1,8 +1,11 @@
+using System;
+
 namespace Ryujinx.Memory
 {
     /// <summary>
     /// Flags that indicate how the host memory should be mapped.
     /// </summary>
+    [Flags]
     public enum MemoryMapFlags
     {
         /// <summary>
