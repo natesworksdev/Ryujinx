@@ -13,6 +13,7 @@ using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
@@ -82,6 +83,7 @@ public class TitleUpdateViewModel : BaseModel
         }
         catch
         {
+            Logger.Warning?.Print(LogClass.Application, $"Failed to deserialize title update data for {_titleId} at {_titleUpdateJsonPath}");
             _titleUpdateWindowData = new TitleUpdateMetadata
             {
                 Selected = "",
