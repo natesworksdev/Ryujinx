@@ -66,7 +66,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             AttachmentSamples = new uint[count];
             AttachmentFormats = new VkFormat[count];
-            AttachmentIndices = new int[count];
+            AttachmentIndices = new int[colorsCount];
 
             uint width = uint.MaxValue;
             uint height = uint.MaxValue;

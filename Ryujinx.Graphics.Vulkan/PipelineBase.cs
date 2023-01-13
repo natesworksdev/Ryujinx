@@ -1375,8 +1375,6 @@ namespace Ryujinx.Graphics.Vulkan
 
                 for (int i = 0; i < FramebufferParams.AttachmentsCount; i++)
                 {
-                    int bindIndex = FramebufferParams.AttachmentIndices[i];
-
                     attachmentDescs[i] = new AttachmentDescription(
                         0,
                         FramebufferParams.AttachmentFormats[i],
