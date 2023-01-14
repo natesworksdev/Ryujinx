@@ -38,7 +38,8 @@ namespace Ryujinx.Ava.UI.Helpers
 
         public static void DestroyMetalLayer(IntPtr nsView, IntPtr metalLayer)
         {
-            // TODO
+            NativeMacOS.objc_msgSend(nsView, "dealloc");
+            NativeMacOS.objc_msgSend(metalLayer, "dealloc");
         }
     }
 }
