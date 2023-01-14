@@ -51,9 +51,9 @@ namespace Ryujinx.Ui.Common.Helper
 
             public unsafe Selector(string name)
             {
-                IntPtr cfstrSelector = CreateCFString(name);
-                IntPtr selector = NSSelectorFromString(cfstrSelector);
-                CFRelease(cfstrSelector);
+                CFString cfstrSelector = new CFString(name);
+                IntPtr selector = NSSelectorFromString(cfstrSelector.StrPtr);
+                cfstrSelector.Dispose();
                 NativePtr = selector;
             }
 
@@ -66,10 +66,10 @@ namespace Ryujinx.Ui.Common.Helper
 
             public unsafe NSURL(string path)
             {
-                IntPtr cfstrPath = CreateCFString(path);
+                CFString cfstrPath = new CFString(path);
                 IntPtr nsUrl = objc_getClass("NSURL");
-                URLPtr = IntPtr_objc_msgSend(nsUrl, new Selector("fileURLWithPath:"), cfstrPath);
-                CFRelease(cfstrPath);
+                URLPtr = IntPtr_objc_msgSend(nsUrl, new Selector("fileURLWithPath:"), cfstrPath.StrPtr);
+                cfstrPath.Dispose();
             }
 
             public void Dispose()
@@ -78,12 +78,21 @@ namespace Ryujinx.Ui.Common.Helper
             }
         }
 
-        public unsafe static IntPtr CreateCFString(string aString)
+        public struct CFString : IDisposable
         {
-            var bytes = Encoding.Unicode.GetBytes(aString);
-            fixed (byte* b = bytes) {
-                var cfStr = CFStringCreateWithBytes(IntPtr.Zero, (IntPtr)b, bytes.Length, CFStringEncoding.UTF16, false);
-                return cfStr;
+            public readonly IntPtr StrPtr;
+
+            public unsafe CFString(string aString)
+            {
+                var bytes = Encoding.Unicode.GetBytes(aString);
+                fixed (byte* b = bytes) {
+                    StrPtr = CFStringCreateWithBytes(IntPtr.Zero, (IntPtr)b, bytes.Length, CFStringEncoding.UTF16, false);
+                }
+            }
+
+            public void Dispose()
+            {
+                CFRelease(StrPtr);
             }
         }
 
