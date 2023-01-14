@@ -84,7 +84,15 @@ namespace Ryujinx.Ui.Common.Helper
             }
             else if (OperatingSystem.IsMacOS())
             {
-                Process.Start("open", url);
+                NativeMacOS.NSURL nsUrl = new(url);
+
+                IntPtr nsWorkspace = NativeMacOS.objc_getClass("NSWorkspace");
+                IntPtr sharedWorkspace = NativeMacOS.IntPtr_objc_msgSend(nsWorkspace, new NativeMacOS.Selector("sharedWorkspace"));
+
+                NativeMacOS.IntPtr_objc_msgSend(sharedWorkspace, new NativeMacOS.Selector("openURL:"), nsUrl.URLPtr);
+
+                NativeMacOS.CFRelease(sharedWorkspace);
+                nsUrl.Dispose();
             }
             else
             {
