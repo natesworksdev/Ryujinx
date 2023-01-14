@@ -84,6 +84,7 @@ public class TitleUpdateViewModel : BaseModel
         catch
         {
             Logger.Warning?.Print(LogClass.Application, $"Failed to deserialize title update data for {_titleId} at {_titleUpdateJsonPath}");
+
             _titleUpdateWindowData = new TitleUpdateMetadata
             {
                 Selected = "",
