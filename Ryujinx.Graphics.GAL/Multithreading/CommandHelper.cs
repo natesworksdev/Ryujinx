@@ -35,7 +35,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         {
             int maxCommandSize = 0;
 
-            void Register<T>(CommandType commandType) where T : IGALCommand, IGALCommand<T>
+            void Register<T>(CommandType commandType) where T : unmanaged, IGALCommand, IGALCommand<T>
             {
                 maxCommandSize = Math.Max(maxCommandSize, Unsafe.SizeOf<T>());
                 _lookup[(int)commandType] = (memory, threaded, renderer) => T.Run(ref GetCommand<T>(memory), threaded, renderer);
