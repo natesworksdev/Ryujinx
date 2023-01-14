@@ -9,14 +9,9 @@ namespace Ryujinx.Ui.Common.Helper
     public static partial class NativeMacOS
     {
         private const string ObjCRuntime = "/usr/lib/libobjc.A.dylib";
-        private const string CoreFoundationFramework = "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation";
-        private const string FoundationFramework = "/System/Library/Frameworks/Foundation.framework/Foundation";
 
-        [LibraryImport(CoreFoundationFramework)]
-        public static partial IntPtr CFStringCreateWithBytes(IntPtr allocator, IntPtr buffer, long bufferLength, CFStringEncoding encoding, [MarshalAs(UnmanagedType.Bool)]bool isExternalRepresentation);
-
-        [LibraryImport(FoundationFramework)]
-        public static partial IntPtr NSSelectorFromString(IntPtr cfstr);
+        [LibraryImport(ObjCRuntime, StringMarshalling = StringMarshalling.Utf8)]
+        private static unsafe partial IntPtr sel_getUid(string name);
 
         [LibraryImport(ObjCRuntime, StringMarshalling = StringMarshalling.Utf8)]
         public static partial IntPtr objc_getClass(string name);
@@ -42,47 +37,50 @@ namespace Ryujinx.Ui.Common.Helper
         [LibraryImport(ObjCRuntime, EntryPoint = "objc_msgSend")]
         public static partial IntPtr IntPtr_objc_msgSend(IntPtr receiver, Selector selector, IntPtr param);
 
+        [LibraryImport(ObjCRuntime, EntryPoint = "objc_msgSend", StringMarshalling = StringMarshalling.Utf8)]
+        public static partial IntPtr IntPtr_objc_msgSend(IntPtr receiver, Selector selector, string param);
+
         [LibraryImport(ObjCRuntime, EntryPoint = "objc_msgSend")]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static partial bool bool_objc_msgSend(IntPtr receiver, Selector selector, IntPtr param);
 
         public struct Selector
         {
-            public readonly IntPtr NativePtr;
+            public readonly IntPtr SelPtr;
 
             public unsafe Selector(string name)
             {
-                CFString cfstrSelector = new CFString(name);
-                IntPtr selector = NSSelectorFromString(cfstrSelector.StrPtr);
-                NativePtr = selector;
+                SelPtr = sel_getUid(name);
             }
 
-            public static implicit operator Selector(string value) => new Selector(value);
+            public static implicit operator Selector(string value) => new (value);
         }
 
         public struct NSURL
         {
             public readonly IntPtr URLPtr;
 
-            public unsafe NSURL(string path)
+            public NSURL(string path)
             {
-                CFString cfstrPath = new CFString(path);
+                NSString nsStringPath = new(path);
                 IntPtr nsUrl = objc_getClass("NSURL");
-                URLPtr = IntPtr_objc_msgSend(nsUrl, new Selector("URLWithString:"), cfstrPath.StrPtr);
+                URLPtr = IntPtr_objc_msgSend(nsUrl, "URLWithString:", nsStringPath);
             }
+
+            public static implicit operator IntPtr(NSURL nsUrl) => nsUrl.URLPtr;
         }
 
-        public struct CFString
+        public struct NSString
         {
             public readonly IntPtr StrPtr;
 
-            public unsafe CFString(string aString)
+            public NSString(string aString)
             {
-                var bytes = Encoding.Unicode.GetBytes(aString);
-                fixed (byte* b = bytes) {
-                    StrPtr = CFStringCreateWithBytes(IntPtr.Zero, (IntPtr)b, bytes.Length, CFStringEncoding.UTF16, false);
-                }
+                IntPtr nsString = objc_getClass("NSString");
+                StrPtr = IntPtr_objc_msgSend(nsString, "stringWithUTF8String:", aString);
             }
+
+            public static implicit operator IntPtr(NSString nsString) => nsString.StrPtr;
         }
 
         public struct NSPoint
@@ -107,14 +105,6 @@ namespace Ryujinx.Ui.Common.Helper
                 Pos = new NSPoint(x, y);
                 Size = new NSPoint(width, height);
             }
-        }
-
-        public enum CFStringEncoding : uint
-        {
-            UTF16 = 0x0100,
-            UTF16BE = 0x10000100,
-            UTF16LE = 0x14000100,
-            ASCII = 0x0600
         }
     }
 }
