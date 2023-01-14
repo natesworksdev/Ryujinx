@@ -15,9 +15,6 @@ namespace Ryujinx.Ui.Common.Helper
         [LibraryImport(CoreFoundationFramework)]
         public static partial IntPtr CFStringCreateWithBytes(IntPtr allocator, IntPtr buffer, long bufferLength, CFStringEncoding encoding, [MarshalAs(UnmanagedType.Bool)]bool isExternalRepresentation);
 
-        [LibraryImport(CoreFoundationFramework)]
-        public static partial void CFRelease(IntPtr handle);
-
         [LibraryImport(FoundationFramework)]
         public static partial IntPtr NSSelectorFromString(IntPtr cfstr);
 
@@ -57,14 +54,13 @@ namespace Ryujinx.Ui.Common.Helper
             {
                 CFString cfstrSelector = new CFString(name);
                 IntPtr selector = NSSelectorFromString(cfstrSelector.StrPtr);
-                cfstrSelector.Dispose();
                 NativePtr = selector;
             }
 
             public static implicit operator Selector(string value) => new Selector(value);
         }
 
-        public struct NSURL : IDisposable
+        public struct NSURL
         {
             public readonly IntPtr URLPtr;
 
@@ -73,16 +69,10 @@ namespace Ryujinx.Ui.Common.Helper
                 CFString cfstrPath = new CFString(path);
                 IntPtr nsUrl = objc_getClass("NSURL");
                 URLPtr = IntPtr_objc_msgSend(nsUrl, new Selector("URLWithString:"), cfstrPath.StrPtr);
-                cfstrPath.Dispose();
-            }
-
-            public void Dispose()
-            {
-                CFRelease(URLPtr);
             }
         }
 
-        public struct CFString : IDisposable
+        public struct CFString
         {
             public readonly IntPtr StrPtr;
 
@@ -92,11 +82,6 @@ namespace Ryujinx.Ui.Common.Helper
                 fixed (byte* b = bytes) {
                     StrPtr = CFStringCreateWithBytes(IntPtr.Zero, (IntPtr)b, bytes.Length, CFStringEncoding.UTF16, false);
                 }
-            }
-
-            public void Dispose()
-            {
-                CFRelease(StrPtr);
             }
         }
 

@@ -90,9 +90,6 @@ namespace Ryujinx.Ui.Common.Helper
                 IntPtr sharedWorkspace = NativeMacOS.IntPtr_objc_msgSend(nsWorkspace, "sharedWorkspace");
 
                 NativeMacOS.bool_objc_msgSend(sharedWorkspace, "openURL:", nsUrl.URLPtr);
-
-                NativeMacOS.CFRelease(sharedWorkspace);
-                nsUrl.Dispose();
             }
             else
             {
