@@ -123,49 +123,49 @@ namespace Ryujinx.Horizon.Generators.Hipc
                 {
                     string[] args = new string[method.ParameterList.Parameters.Count];
 
-                    int index = 0;
-
-                    foreach (var parameter in method.ParameterList.Parameters)
-                    {
-                        string canonicalTypeName = GetCanonicalTypeNameWithGenericArguments(compilation, parameter.Type);
-                        CommandArgType argType = GetCommandArgType(compilation, parameter);
-
-                        string arg;
-
-                        if (argType == CommandArgType.Buffer)
-                        {
-                            string bufferFlags = GetFirstAttributeAgument(compilation, parameter, TypeBufferAttribute, 0);
-                            string bufferFixedSize = GetFirstAttributeAgument(compilation, parameter, TypeBufferAttribute, 1);
-
-                            if (bufferFixedSize != null)
-                            {
-                                arg = $"new CommandArg({bufferFlags}, {bufferFixedSize})";
-                            }
-                            else
-                            {
-                                arg = $"new CommandArg({bufferFlags})";
-                            }
-                        }
-                        else if (argType == CommandArgType.InArgument || argType == CommandArgType.OutArgument)
-                        {
-                            string alignment = GetTypeAlignmentExpression(compilation, parameter.Type);
-
-                            arg = $"new CommandArg(CommandArgType.{argType}, Unsafe.SizeOf<{canonicalTypeName}>(), {alignment})";
-                        }
-                        else
-                        {
-                            arg = $"new CommandArg(CommandArgType.{argType})";
-                        }
-
-                        args[index++] = arg;
-                    }
-
                     if (args.Length == 0)
                     {
                         generator.AppendLine($"{{ {commandId}, new CommandHandler({method.Identifier.Text}, Array.Empty<CommandArg>()) }},");
                     }
                     else
                     {
+                        int index = 0;
+
+                        foreach (var parameter in method.ParameterList.Parameters)
+                        {
+                            string canonicalTypeName = GetCanonicalTypeNameWithGenericArguments(compilation, parameter.Type);
+                            CommandArgType argType = GetCommandArgType(compilation, parameter);
+
+                            string arg;
+
+                            if (argType == CommandArgType.Buffer)
+                            {
+                                string bufferFlags = GetFirstAttributeAgument(compilation, parameter, TypeBufferAttribute, 0);
+                                string bufferFixedSize = GetFirstAttributeAgument(compilation, parameter, TypeBufferAttribute, 1);
+
+                                if (bufferFixedSize != null)
+                                {
+                                    arg = $"new CommandArg({bufferFlags}, {bufferFixedSize})";
+                                }
+                                else
+                                {
+                                    arg = $"new CommandArg({bufferFlags})";
+                                }
+                            }
+                            else if (argType == CommandArgType.InArgument || argType == CommandArgType.OutArgument)
+                            {
+                                string alignment = GetTypeAlignmentExpression(compilation, parameter.Type);
+
+                                arg = $"new CommandArg(CommandArgType.{argType}, Unsafe.SizeOf<{canonicalTypeName}>(), {alignment})";
+                            }
+                            else
+                            {
+                                arg = $"new CommandArg(CommandArgType.{argType})";
+                            }
+
+                            args[index++] = arg;
+                        }
+
                         generator.AppendLine($"{{ {commandId}, new CommandHandler({method.Identifier.Text}, {string.Join(", ", args)}) }},");
                     }
                 }
@@ -267,6 +267,8 @@ namespace Ryujinx.Horizon.Generators.Hipc
             }
 
             int index = 0;
+            int inArgIndex = 0;
+            int outArgIndex = 0;
             int inCopyHandleIndex = 0;
             int inMoveHandleIndex = 0;
             int inObjectIndex = 0;
@@ -284,7 +286,7 @@ namespace Ryujinx.Horizon.Generators.Hipc
                 {
                     if (IsNonSpanOutBuffer(compilation, parameter))
                     {
-                        generator.AppendLine($"using var {argName} = CommandSerialization.GetWritableRegion(processor.GetBufferRange({index}));");
+                        generator.AppendLine($"using var {argName} = CommandSerialization.GetWritableRegion(processor.GetBufferRange({outArgIndex++}));");
 
                         argName = $"out {GenerateSpanCastElement0(canonicalTypeName, $"{argName}.Memory.Span")}";
                     }
@@ -302,7 +304,7 @@ namespace Ryujinx.Horizon.Generators.Hipc
                     switch (argType)
                     {
                         case CommandArgType.InArgument:
-                            value = $"CommandSerialization.DeserializeArg<{canonicalTypeName}>(inRawData, processor.GetInArgOffset({index}))";
+                            value = $"CommandSerialization.DeserializeArg<{canonicalTypeName}>(inRawData, processor.GetInArgOffset({inArgIndex++}))";
                             break;
                         case CommandArgType.InCopyHandle:
                             value = $"CommandSerialization.DeserializeCopyHandle(ref context, {inCopyHandleIndex++})";

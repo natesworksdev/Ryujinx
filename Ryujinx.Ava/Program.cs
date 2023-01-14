@@ -1,20 +1,23 @@
 using Avalonia;
 using Avalonia.Threading;
+using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Common.Logging;
-using Ryujinx.Common.SystemInterop;
 using Ryujinx.Common.SystemInfo;
+using Ryujinx.Common.SystemInterop;
 using Ryujinx.Modules;
 using Ryujinx.SDL2.Common;
 using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 
 namespace Ryujinx.Ava
@@ -25,16 +28,58 @@ namespace Ryujinx.Ava
         public static double DesktopScaleFactor { get; set; } = 1.0;
         public static string Version            { get; private set; }
         public static string ConfigurationPath  { get; private set; }
-        public static bool   PreviewerDetached {  get; private set; }
+        public static bool   PreviewerDetached  { get; private set; }
 
         [LibraryImport("user32.dll", SetLastError = true)]
         public static partial int MessageBoxA(IntPtr hWnd, [MarshalAs(UnmanagedType.LPStr)] string text, [MarshalAs(UnmanagedType.LPStr)] string caption, uint type);
 
         private const uint MB_ICONWARNING = 0x30;
 
+        [SupportedOSPlatform("linux")]
+        static void RegisterMimeTypes()
+        {
+            if (ReleaseInformation.IsFlatHubBuild())
+            {
+                return;
+            }
+
+            string mimeDbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "mime");
+
+            if (!File.Exists(Path.Combine(mimeDbPath, "packages", "Ryujinx.xml")))
+            {
+                string mimeTypesFile = Path.Combine(ReleaseInformation.GetBaseApplicationDirectory(), "mime", "Ryujinx.xml");
+                using Process mimeProcess = new();
+
+                mimeProcess.StartInfo.FileName = "xdg-mime";
+                mimeProcess.StartInfo.Arguments = $"install --novendor --mode user {mimeTypesFile}";
+
+                mimeProcess.Start();
+                mimeProcess.WaitForExit();
+
+                if (mimeProcess.ExitCode != 0)
+                {
+                    Logger.Error?.PrintMsg(LogClass.Application, $"Unable to install mime types. Make sure xdg-utils is installed. Process exited with code: {mimeProcess.ExitCode}");
+                    return;
+                }
+
+                using Process updateMimeProcess = new();
+
+                updateMimeProcess.StartInfo.FileName = "update-mime-database";
+                updateMimeProcess.StartInfo.Arguments = mimeDbPath;
+
+                updateMimeProcess.Start();
+                updateMimeProcess.WaitForExit();
+
+                if (updateMimeProcess.ExitCode != 0)
+                {
+                    Logger.Error?.PrintMsg(LogClass.Application, $"Could not update local mime database. Process exited with code: {updateMimeProcess.ExitCode}");
+                }
+            }
+        }
+
         public static void Main(string[] args)
         {
-            Version = ReleaseInformations.GetVersion();
+            Version = ReleaseInformation.GetVersion();
 
             if (OperatingSystem.IsWindows() && !OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17134))
             {
@@ -44,6 +89,8 @@ namespace Ryujinx.Ava
             PreviewerDetached = true;
 
             Initialize(args);
+
+            LoggerAdapter.Register();
 
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
@@ -66,8 +113,7 @@ namespace Ryujinx.Ava
                     AllowEglInitialization          = false,
                     CompositionBackdropCornerRadius = 8.0f,
                 })
-                .UseSkia()
-                .LogToTrace();
+                .UseSkia();
         }
 
         private static void Initialize(string[] args)
@@ -92,6 +138,12 @@ namespace Ryujinx.Ava
 
             // Initialize the logger system.
             LoggerModule.Initialize();
+
+            // Register mime types on linux.
+            if (OperatingSystem.IsLinux())
+            {
+                RegisterMimeTypes();
+            }
 
             // Initialize Discord integration.
             DiscordIntegrationModule.Initialize();
@@ -174,6 +226,12 @@ namespace Ryujinx.Ava
                 {
                     ConfigurationState.Instance.Graphics.GraphicsBackend.Value = GraphicsBackend.Vulkan;
                 }
+            }
+
+            // Check if docked mode was overriden.
+            if (CommandLineState.OverrideDockedMode.HasValue)
+            {
+                ConfigurationState.Instance.System.EnableDockedMode.Value = CommandLineState.OverrideDockedMode.Value;
             }
         }
 
