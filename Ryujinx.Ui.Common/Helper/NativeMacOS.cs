@@ -8,40 +8,41 @@ namespace Ryujinx.Ui.Common.Helper
     [SupportedOSPlatform("macos")]
     public static partial class NativeMacOS
     {
+        private const string ObjCRuntime = "/usr/lib/libobjc.A.dylib";
+        private const string CoreFoundationFramework = "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation";
         private const string FoundationFramework = "/System/Library/Frameworks/Foundation.framework/Foundation";
-        private const string AppKitFramework = "/System/Library/Frameworks/AppKit.framework/AppKit";
 
-        [LibraryImport(FoundationFramework)]
+        [LibraryImport(CoreFoundationFramework)]
         public static partial IntPtr CFStringCreateWithBytes(IntPtr allocator, IntPtr buffer, long bufferLength, CFStringEncoding encoding, [MarshalAs(UnmanagedType.Bool)]bool isExternalRepresentation);
 
-        [LibraryImport(FoundationFramework)]
+        [LibraryImport(CoreFoundationFramework)]
         public static partial void CFRelease(IntPtr handle);
 
-        [LibraryImport(AppKitFramework)]
+        [LibraryImport(FoundationFramework)]
         public static partial IntPtr NSSelectorFromString(IntPtr cfstr);
 
-        [LibraryImport(AppKitFramework, StringMarshalling = StringMarshalling.Utf16)]
+        [LibraryImport(ObjCRuntime, StringMarshalling = StringMarshalling.Utf8)]
         public static partial IntPtr objc_getClass(string name);
 
-        [LibraryImport(FoundationFramework)]
+        [LibraryImport(ObjCRuntime)]
         public static partial void objc_msgSend(IntPtr receiver, Selector selector);
 
-        [LibraryImport(FoundationFramework)]
+        [LibraryImport(ObjCRuntime)]
         public static partial void objc_msgSend(IntPtr receiver, Selector selector, byte value);
 
-        [LibraryImport(FoundationFramework)]
+        [LibraryImport(ObjCRuntime)]
         public static partial void objc_msgSend(IntPtr receiver, Selector selector, IntPtr value);
 
-        [LibraryImport(FoundationFramework)]
+        [LibraryImport(ObjCRuntime)]
         public static partial void objc_msgSend(IntPtr receiver, Selector selector, NSRect point);
 
-        [LibraryImport(FoundationFramework)]
+        [LibraryImport(ObjCRuntime)]
         public static partial void objc_msgSend(IntPtr receiver, Selector selector, double value);
 
-        [LibraryImport(FoundationFramework, EntryPoint = "objc_msgSend")]
+        [LibraryImport(ObjCRuntime, EntryPoint = "objc_msgSend")]
         public static partial IntPtr IntPtr_objc_msgSend(IntPtr receiver, Selector selector);
 
-        [LibraryImport(FoundationFramework, EntryPoint = "objc_msgSend")]
+        [LibraryImport(ObjCRuntime, EntryPoint = "objc_msgSend")]
         public static partial IntPtr IntPtr_objc_msgSend(IntPtr receiver, Selector selector, IntPtr param);
 
         public struct Selector
