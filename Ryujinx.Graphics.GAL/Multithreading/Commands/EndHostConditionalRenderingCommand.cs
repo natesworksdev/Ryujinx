@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Graphics.GAL.Multithreading.Commands
 {
-    struct EndHostConditionalRenderingCommand : IGALCommand
+    struct EndHostConditionalRenderingCommand : IGALCommand, IGALCommand<EndHostConditionalRenderingCommand>
     {
         public CommandType CommandType => CommandType.EndHostConditionalRendering;
 
