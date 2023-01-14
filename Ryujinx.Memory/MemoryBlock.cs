@@ -435,7 +435,7 @@ namespace Ryujinx.Memory
 
         public static ulong GetPageSize()
         {
-            return (ulong) Environment.SystemPageSize;
+            return (ulong)Environment.SystemPageSize;
         }
 
         private static void ThrowInvalidMemoryRegionException() => throw new InvalidMemoryRegionException();
