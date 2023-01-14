@@ -177,7 +177,7 @@ namespace Ryujinx.Memory.Tracking
 
                 if (handle.Dirty)
                 {
-                    rgSize += handle.Size;
+                    rgSize += handle.RealSize;
                     handle.Reprotect();
                 }
 
@@ -201,7 +201,7 @@ namespace Ryujinx.Memory.Tracking
                 if (handle.Dirty)
                 {
                     handle.Reprotect();
-                    modifiedAction(rgStart, handle.Size);
+                    modifiedAction(rgStart, handle.RealSize);
                 }
 
                 return;
@@ -277,7 +277,7 @@ namespace Ryujinx.Memory.Tracking
                     rgStart = handle.RealAddress;
                 }
 
-                rgSize += handle.Size;
+                rgSize += handle.RealSize;
                 handle.Reprotect(false, (checkMasks[index] & bitValue) == 0);
 
                 checkMasks[index] &= ~bitValue;
@@ -321,7 +321,7 @@ namespace Ryujinx.Memory.Tracking
                     {
                         handle.Reprotect();
 
-                        modifiedAction(rgStart, handle.Size);
+                        modifiedAction(rgStart, handle.RealSize);
                     }
                 }
 
