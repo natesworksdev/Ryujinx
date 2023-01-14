@@ -45,6 +45,10 @@ namespace Ryujinx.Ui.Common.Helper
         [LibraryImport(ObjCRuntime, EntryPoint = "objc_msgSend")]
         public static partial IntPtr IntPtr_objc_msgSend(IntPtr receiver, Selector selector, IntPtr param);
 
+        [LibraryImport(ObjCRuntime, EntryPoint = "objc_msgSend")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool bool_objc_msgSend(IntPtr receiver, Selector selector, IntPtr param);
+
         public struct Selector
         {
             public readonly IntPtr NativePtr;
@@ -68,7 +72,7 @@ namespace Ryujinx.Ui.Common.Helper
             {
                 CFString cfstrPath = new CFString(path);
                 IntPtr nsUrl = objc_getClass("NSURL");
-                URLPtr = IntPtr_objc_msgSend(nsUrl, new Selector("fileURLWithPath:"), cfstrPath.StrPtr);
+                URLPtr = IntPtr_objc_msgSend(nsUrl, new Selector("URLWithString:"), cfstrPath.StrPtr);
                 cfstrPath.Dispose();
             }
 
