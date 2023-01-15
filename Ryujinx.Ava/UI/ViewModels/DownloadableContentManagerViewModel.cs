@@ -2,6 +2,7 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
+using DynamicData;
 using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
@@ -99,10 +100,17 @@ namespace Ryujinx.Ava.UI.ViewModels
                         Nca nca = TryOpenNca(ncaFile.Get.AsStorage(), downloadableContentContainer.ContainerPath);
                         if (nca != null)
                         {
-                            DownloadableContents.Add(new DownloadableContentModel(nca.Header.TitleId.ToString("X16"),
+                            var content = new DownloadableContentModel(nca.Header.TitleId.ToString("X16"),
                                 downloadableContentContainer.ContainerPath,
                                 downloadableContentNca.FullPath,
-                                downloadableContentNca.Enabled));
+                                downloadableContentNca.Enabled);
+
+                            DownloadableContents.Add(content);
+
+                            if (content.Enabled)
+                            {
+                                SelectedDownloadableContents.Add(content);
+                            }
                         }
                     }
                 }
@@ -190,7 +198,10 @@ namespace Ryujinx.Ava.UI.ViewModels
                         break;
                     }
 
-                    DownloadableContents.Add(new DownloadableContentModel(nca.Header.TitleId.ToString("X16"), path, fileEntry.FullPath, true));
+                    var content = new DownloadableContentModel(nca.Header.TitleId.ToString("X16"), path,
+                        fileEntry.FullPath, true);
+                    DownloadableContents.Add(content);
+                    SelectedDownloadableContents.Add(content);
 
                     containsDownloadableContent = true;
                 }

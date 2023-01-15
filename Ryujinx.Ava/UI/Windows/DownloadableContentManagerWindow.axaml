@@ -32,6 +32,7 @@
                 VirtualizationMode="None"
                 SelectionMode="Multiple"
                 Background="Transparent"
+                SelectionChanged="OnSelectionChanged"
                 SelectedItems="{Binding SelectedDownloadableContents, Mode=TwoWay}"
                 Items="{Binding DownloadableContents}">
                 <ListBox.DataTemplates>
