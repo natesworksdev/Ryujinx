@@ -1,0 +1,114 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
+    xmlns:helpers="clr-namespace:Ryujinx.Ava.UI.Helpers"
+    xmlns:flex="clr-namespace:Avalonia.Flexbox;assembly=Avalonia.Flexbox"
+    xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
+    mc:Ignorable="d"
+    x:Class="Ryujinx.Ava.UI.Views.Input.InputButtonView"
+    x:CompileBindings="True"
+    x:DataType="viewModels:InputButtonViewModel">
+    <Design.DataContext>
+        <viewModels:InputButtonViewModel />
+    </Design.DataContext>
+    <UserControl.Resources>
+        <helpers:InputModelConverter x:Key="Key" />
+    </UserControl.Resources>
+    <Border
+        BorderBrush="{DynamicResource ThemeControlBorderColor}"
+        BorderThickness="1"
+        CornerRadius="5">
+        <StackPanel
+            Orientation="Vertical"
+            Margin="10"
+            Spacing="10">
+            <TextBlock
+                HorizontalAlignment="Center"
+                Text="{locale:Locale ControllerSettingsButtons}" />
+           <flex:FlexPanel
+                Direction="Column"
+                JustifyContent="SpaceBetween"
+                AlignContent="SpaceBetween"
+                RowSpacing="5">
+                <flex:FlexPanel
+                    Direction="Row">
+                    <StackPanel
+                        Orientation="Horizontal">
+                        <TextBlock
+                            Width="20"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Text="{Binding ButtonTLName}"
+                            TextAlignment="Center" />
+                        <ToggleButton
+                            Width="90"
+                            Height="27"
+                            HorizontalAlignment="Stretch">
+                            <TextBlock
+                                Text="{Binding ButtonTL, Mode=TwoWay, Converter={StaticResource Key}}"
+                                TextAlignment="Center" />
+                        </ToggleButton>
+                    </StackPanel>
+                    <StackPanel
+                        Orientation="Horizontal">
+                        <TextBlock
+                            Width="20"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Text="{Binding ButtonTRName}"
+                            TextAlignment="Center" />
+                        <ToggleButton
+                            Width="90"
+                            Height="27"
+                            HorizontalAlignment="Stretch">
+                            <TextBlock
+                                Text="{Binding ButtonTR, Mode=TwoWay, Converter={StaticResource Key}}"
+                                TextAlignment="Center" />
+                        </ToggleButton>
+                    </StackPanel>
+                </flex:FlexPanel>
+                <flex:FlexPanel
+                    Direction="Row">
+                    <StackPanel
+                        Orientation="Horizontal">
+                        <TextBlock
+                            Width="20"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Text="{Binding ButtonBLName}"
+                            TextAlignment="Center" />
+                        <ToggleButton
+                            Width="90"
+                            Height="27"
+                            HorizontalAlignment="Stretch">
+                            <TextBlock
+                                Text="{Binding ButtonBL, Mode=TwoWay, Converter={StaticResource Key}}"
+                                TextAlignment="Center" />
+                        </ToggleButton>
+                    </StackPanel>
+                    <!--  Right Buttons B  -->
+                    <StackPanel
+                        Orientation="Horizontal">
+                        <TextBlock
+                            Width="20"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Text="{Binding ButtonBRName}"
+                            TextAlignment="Center" />
+                        <ToggleButton
+                            Width="90"
+                            Height="27"
+                            HorizontalAlignment="Stretch">
+                            <TextBlock
+                                Text="{Binding ButtonBR, Mode=TwoWay, Converter={StaticResource Key}}"
+                                TextAlignment="Center" />
+                        </ToggleButton>
+                    </StackPanel>
+                </flex:FlexPanel>
+            </flex:FlexPanel>
+        </StackPanel>
+    </Border>
+</UserControl>
