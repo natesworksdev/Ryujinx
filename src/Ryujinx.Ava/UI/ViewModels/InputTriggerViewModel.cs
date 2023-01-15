@@ -1,6 +1,7 @@
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
+using Avalonia.Flexbox;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
@@ -13,6 +14,8 @@ namespace Ryujinx.Ava.UI.ViewModels
         private Key _triggerButton;
         private Key _bumperButton;
         private Key _consoleButton;
+
+        private AlignItems _flexDirection;
 
         private ControllerSettingsViewModel _viewModel;
         private bool _isLeft;
@@ -37,6 +40,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _triggerButton = _viewModel.Configuration.ButtonZl;
                 _bumperButton = _viewModel.Configuration.ButtonL;
                 _consoleButton = _viewModel.Configuration.ButtonMinus;
+                _flexDirection = AlignItems.FlexStart;
             }
             else
             {
@@ -47,6 +51,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _triggerButton = _viewModel.Configuration.ButtonZr;
                 _bumperButton = _viewModel.Configuration.ButtonR;
                 _consoleButton = _viewModel.Configuration.ButtonPlus;
+                _flexDirection = AlignItems.FlexEnd;
             }
         }
 
@@ -130,6 +135,16 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     _viewModel.Configuration.ButtonPlus = value;
                 }
+                OnPropertyChanged();
+            }
+        }
+
+        public AlignItems FlexDirection
+        {
+            get => _flexDirection;
+            set
+            {
+                _flexDirection = value;
                 OnPropertyChanged();
             }
         }
