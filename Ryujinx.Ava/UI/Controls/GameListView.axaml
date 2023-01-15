@@ -13,7 +13,7 @@
     Focusable="True">
     <UserControl.Resources>
         <helpers:BitmapArrayValueConverter x:Key="ByteImage" />
-        <MenuFlyout x:Key="GameContextMenu" Opened="MenuBase_OnMenuOpened">
+        <MenuFlyout x:Key="GameContextMenu">
             <MenuItem
                 Command="{Binding ToggleFavorite}"
                 Header="{locale:Locale GameListContextMenuToggleFavorite}"
