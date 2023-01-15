@@ -108,7 +108,7 @@ namespace Ryujinx.Ui
         [GUI] CheckMenuItem   _favToggle;
         [GUI] MenuItem        _firmwareInstallDirectory;
         [GUI] MenuItem        _firmwareInstallFile;
-        [GUI] MenuItem        _registerFileTypes;
+        [GUI] MenuItem        _fileTypesSubMenu;
         [GUI] Label           _fifoStatus;
         [GUI] CheckMenuItem   _iconToggle;
         [GUI] CheckMenuItem   _developerToggle;
@@ -220,7 +220,7 @@ namespace Ryujinx.Ui
             _pauseEmulation.Sensitive = false;
             _resumeEmulation.Sensitive = false;
 
-            _registerFileTypes.Visible = FileAssociationHelper.IsTypeAssociationSupported;
+            _fileTypesSubMenu.Visible = FileAssociationHelper.IsTypeAssociationSupported;
 
             if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        _favToggle.Active        = true;
             if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)       _iconToggle.Active       = true;
@@ -1502,7 +1502,7 @@ namespace Ryujinx.Ui
             });
         }
 
-        private void RegisterFileTypes_Pressed(object sender, EventArgs e)
+        private void InstallFileTypes_Pressed(object sender, EventArgs e)
         {
             if (FileAssociationHelper.Install())
             {
@@ -1511,6 +1511,18 @@ namespace Ryujinx.Ui
             else
             {
                 GtkDialog.CreateErrorDialog("Failed to install file types.");
+            }
+        }
+
+        private void UninstallFileTypes_Pressed(object sender, EventArgs e)
+        {
+            if (FileAssociationHelper.Uninstall())
+            {
+                GtkDialog.CreateInfoDialog("Uninstall file types", "File types successfully uninstalled!");
+            }
+            else
+            {
+                GtkDialog.CreateErrorDialog("Failed to uninstall file types.");
             }
         }
 

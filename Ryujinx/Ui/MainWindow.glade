@@ -3,65 +3,65 @@
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkApplicationWindow" id="_mainWin">
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <property name="title" translatable="yes">Ryujinx</property>
-    <property name="window_position">center</property>
+    <property name="window-position">center</property>
     <child>
       <object class="GtkBox" id="_box">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkMenuBar" id="_menuBar">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <child>
               <object class="GtkMenuItem" id="_fileMenu">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="label" translatable="yes">File</property>
-                <property name="use_underline">True</property>
+                <property name="use-underline">True</property>
                 <child type="submenu">
                   <object class="GtkMenu">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <child>
                       <object class="GtkMenuItem" id="_loadApplicationFile">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="tooltip_text" translatable="yes">Open a file explorer to choose a Switch compatible file to load</property>
+                        <property name="can-focus">False</property>
+                        <property name="tooltip-text" translatable="yes">Open a file explorer to choose a Switch compatible file to load</property>
                         <property name="label" translatable="yes">Load Application from File</property>
-                        <property name="use_underline">True</property>
+                        <property name="use-underline">True</property>
                         <signal name="activate" handler="Load_Application_File" swapped="no"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkMenuItem" id="_loadApplicationFolder">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="tooltip_text" translatable="yes">Open a file explorer to choose a Switch compatible, unpacked application to load</property>
+                        <property name="can-focus">False</property>
+                        <property name="tooltip-text" translatable="yes">Open a file explorer to choose a Switch compatible, unpacked application to load</property>
                         <property name="label" translatable="yes">Load Unpacked Game</property>
-                        <property name="use_underline">True</property>
+                        <property name="use-underline">True</property>
                         <signal name="activate" handler="Load_Application_Folder" swapped="no"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkMenuItem" id="_appletMenu">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Load Applet</property>
-                        <property name="use_underline">True</property>
+                        <property name="use-underline">True</property>
                         <child type="submenu">
                           <object class="GtkMenu">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
+                            <property name="can-focus">False</property>
                             <child>
                               <object class="GtkMenuItem" id="LoadMiiEditApplet">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="tooltip_text" translatable="yes">Open Mii Editor Applet in Standalone mode</property>
+                                <property name="can-focus">False</property>
+                                <property name="tooltip-text" translatable="yes">Open Mii Editor Applet in Standalone mode</property>
                                 <property name="label" translatable="yes">Mii Editor</property>
-                                <property name="use_underline">True</property>
+                                <property name="use-underline">True</property>
                                 <signal name="activate" handler="Load_Mii_Edit_Applet" swapped="no"/>
                               </object>
                             </child>
@@ -72,42 +72,42 @@
                     <child>
                       <object class="GtkSeparatorMenuItem">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkMenuItem" id="OpenRyuFolder">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="tooltip_text" translatable="yes">Open Ryujinx filesystem folder</property>
+                        <property name="can-focus">False</property>
+                        <property name="tooltip-text" translatable="yes">Open Ryujinx filesystem folder</property>
                         <property name="label" translatable="yes">Open Ryujinx Folder</property>
-                        <property name="use_underline">True</property>
+                        <property name="use-underline">True</property>
                         <signal name="activate" handler="Open_Ryu_Folder" swapped="no"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkMenuItem" id="OpenLogsFolder">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="tooltip_text" translatable="yes">Opens the folder where logs are written to.</property>
+                        <property name="can-focus">False</property>
+                        <property name="tooltip-text" translatable="yes">Opens the folder where logs are written to.</property>
                         <property name="label" translatable="yes">Open Logs Folder</property>
-                        <property name="use_underline">True</property>
+                        <property name="use-underline">True</property>
                         <signal name="activate" handler="OpenLogsFolder_Pressed" swapped="no"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkSeparatorMenuItem">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkMenuItem" id="ExitMenuItem">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="tooltip_text" translatable="yes">Exit Ryujinx</property>
+                        <property name="can-focus">False</property>
+                        <property name="tooltip-text" translatable="yes">Exit Ryujinx</property>
                         <property name="label" translatable="yes">Exit</property>
-                        <property name="use_underline">True</property>
+                        <property name="use-underline">True</property>
                         <signal name="activate" handler="Exit_Pressed" swapped="no"/>
                       </object>
                     </child>
@@ -118,88 +118,88 @@
             <child>
               <object class="GtkMenuItem" id="_optionMenu">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="label" translatable="yes">Options</property>
-                <property name="use_underline">True</property>
+                <property name="use-underline">True</property>
                 <child type="submenu">
                   <object class="GtkMenu">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <child>
                       <object class="GtkMenuItem" id="_fullScreen">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Enter Fullscreen</property>
-                        <property name="use_underline">True</property>
+                        <property name="use-underline">True</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkCheckMenuItem" id="_startFullScreen">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Start Games in Fullscreen Mode</property>
-                        <property name="use_underline">True</property>
+                        <property name="use-underline">True</property>
                         <signal name="toggled" handler="StartFullScreen_Toggled" swapped="no"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkCheckMenuItem" id="_showConsole">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Show Log Console</property>
-                        <property name="use_underline">True</property>
+                        <property name="use-underline">True</property>
                         <signal name="toggled" handler="ShowConsole_Toggled" swapped="no"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkSeparatorMenuItem">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkMenuItem" id="GUIColumns">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="tooltip_text" translatable="yes">Select which GUI columns to enable</property>
+                        <property name="can-focus">False</property>
+                        <property name="tooltip-text" translatable="yes">Select which GUI columns to enable</property>
                         <property name="label" translatable="yes">Enable GUI Columns</property>
-                        <property name="use_underline">True</property>
+                        <property name="use-underline">True</property>
                         <child type="submenu">
                           <object class="GtkMenu">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
+                            <property name="can-focus">False</property>
                             <child>
                               <object class="GtkCheckMenuItem" id="_favToggle">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="tooltip_text" translatable="yes">Enable or Disable Favorite Games Column in the game list</property>
+                                <property name="can-focus">False</property>
+                                <property name="tooltip-text" translatable="yes">Enable or Disable Favorite Games Column in the game list</property>
                                 <property name="label" translatable="yes">Enable Favorite Games Column</property>
-                                <property name="use_underline">True</property>
+                                <property name="use-underline">True</property>
                               </object>
                             </child>
                             <child>
                               <object class="GtkCheckMenuItem" id="_iconToggle">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="tooltip_text" translatable="yes">Enable or Disable Icon Column in the game list</property>
+                                <property name="can-focus">False</property>
+                                <property name="tooltip-text" translatable="yes">Enable or Disable Icon Column in the game list</property>
                                 <property name="label" translatable="yes">Enable Icon Column</property>
-                                <property name="use_underline">True</property>
+                                <property name="use-underline">True</property>
                               </object>
                             </child>
                             <child>
                               <object class="GtkCheckMenuItem" id="_appToggle">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="tooltip_text" translatable="yes">Enable or Disable Title Name/ID Column in the game list</property>
+                                <property name="can-focus">False</property>
+                                <property name="tooltip-text" translatable="yes">Enable or Disable Title Name/ID Column in the game list</property>
                                 <property name="label" translatable="yes">Enable Title Name/ID Column</property>
-                                <property name="use_underline">True</property>
+                                <property name="use-underline">True</property>
                               </object>
                             </child>
                             <child>
                               <object class="GtkCheckMenuItem" id="_developerToggle">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="tooltip_text" translatable="yes">Enable or Disable Developer Column in the game list</property>
+                                <property name="can-focus">False</property>
+                                <property name="tooltip-text" translatable="yes">Enable or Disable Developer Column in the game list</property>
                                 <property name="label" translatable="yes">Enable Developer Column</property>
                                 <property name="use-underline">True</property>
                               </object>
@@ -420,9 +420,9 @@
                             <child>
                               <object class="GtkMenuItem" id="_firmwareInstallDirectory">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
+                                <property name="can-focus">False</property>
                                 <property name="label" translatable="yes">Install a firmware from a directory</property>
-                                <property name="use_underline">True</property>
+                                <property name="use-underline">True</property>
                                 <signal name="activate" handler="Installer_Directory_Pressed" swapped="no"/>
                               </object>
                             </child>
@@ -431,11 +431,33 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="_registerFileTypes">
+                      <object class="GtkMenuItem" id="_fileTypesSubMenu">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Register file types</property>
-                        <signal name="activate" handler="RegisterFileTypes_Pressed" swapped="no"/>
+                        <property name="label" translatable="yes">Manage file types</property>
+                        <property name="use-underline">True</property>
+                        <child type="submenu">
+                          <object class="GtkMenu">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <child>
+                              <object class="GtkMenuItem" id="_installFileTypes">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Install file types</property>
+                                <signal name="activate" handler="InstallFileTypes_Pressed" swapped="no"/>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkMenuItem" id="_uninstallFileTypes">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Uninstall file types</property>
+                                <signal name="activate" handler="UninstallFileTypes_Pressed" swapped="no"/>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>
