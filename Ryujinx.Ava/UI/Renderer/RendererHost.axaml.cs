@@ -49,11 +49,6 @@ namespace Ryujinx.Ava.UI.Renderer
             }
         }
 
-        public SurfaceKHR CreateVulkanSurface(Instance instance, Vk api)
-        {
-            return (EmbeddedWindow is EmbeddedWindowVulkan vulkanEmbeddedWindow) ? vulkanEmbeddedWindow.CreateSurface(instance) : default;
-        }
-
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);

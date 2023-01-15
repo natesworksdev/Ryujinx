@@ -636,7 +636,10 @@ namespace Ryujinx.Ava
 
             if (ConfigurationState.Instance.Graphics.GraphicsBackend.Value == GraphicsBackend.Vulkan)
             {
-                renderer = new VulkanRenderer(_rendererHost.CreateVulkanSurface, VulkanHelper.GetRequiredInstanceExtensions, ConfigurationState.Instance.Graphics.PreferredGpu.Value);
+                renderer = new VulkanRenderer(
+                    (_rendererHost.EmbeddedWindow as EmbeddedWindowVulkan).CreateSurface,
+                    VulkanHelper.GetRequiredInstanceExtensions,
+                    ConfigurationState.Instance.Graphics.PreferredGpu.Value);
             }
             else
             {
