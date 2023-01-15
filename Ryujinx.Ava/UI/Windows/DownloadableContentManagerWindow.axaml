@@ -32,7 +32,7 @@
                 VirtualizationMode="None"
                 SelectionMode="Multiple"
                 Background="Transparent"
-                SelectedItems="{Binding SelectedDLCs, Mode=TwoWay}"
+                SelectedItems="{Binding SelectedDownloadableContents, Mode=TwoWay}"
                 Items="{Binding DownloadableContents}">
                 <ListBox.DataTemplates>
                     <DataTemplate
@@ -48,7 +48,7 @@
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
                                     TextWrapping="Wrap"
-                                    Text="{Binding ContainerPath}" />
+                                    Text="{Binding FileName}" />
                                 <StackPanel
                                     Grid.Column="1"
                                     Spacing="10"

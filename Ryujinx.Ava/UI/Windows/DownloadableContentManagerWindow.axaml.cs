@@ -9,7 +9,7 @@ using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.Ui.Common.Helper;
 using System.Threading.Tasks;
-using Button = FluentAvalonia.UI.Controls.Button;
+using Button = Avalonia.Controls.Button;
 
 namespace Ryujinx.Ava.UI.Windows
 {
@@ -29,10 +29,6 @@ namespace Ryujinx.Ava.UI.Windows
             DataContext = ViewModel = new DownloadableContentManagerViewModel(virtualFileSystem, titleId, titleName);
 
             InitializeComponent();
-
-            // RemoveButton.IsEnabled = false;
-
-            // DlcDataGrid.SelectionChanged += DlcDataGrid_SelectionChanged;
         }
 
         public static async Task Show(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
@@ -67,7 +63,13 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void RemoveDLC(object sender, RoutedEventArgs e)
         {
-            ViewModel.RemoveSelected();
+            if (sender is Button button)
+            {
+                if (button.DataContext is DownloadableContentModel model)
+                {
+                    ViewModel.Remove(model);
+                }
+            }
         }
 
         private void OpenLocation(object sender, RoutedEventArgs e)

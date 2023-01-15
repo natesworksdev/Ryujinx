@@ -32,6 +32,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private VirtualFileSystem                           _virtualFileSystem;
         private AvaloniaList<DownloadableContentModel>      _downloadableContents = new();
+        private AvaloniaList<DownloadableContentModel>      _selectedDownloadableContents = new();
 
         private ulong _titleId;
         private string _titleName;
@@ -46,7 +47,15 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public object SelectedDLCs { get; }
+        public AvaloniaList<DownloadableContentModel> SelectedDownloadableContents
+        {
+            get => _selectedDownloadableContents;
+            set
+            {
+                _selectedDownloadableContents = value;
+                OnPropertyChanged();
+            }
+        }
 
         public DownloadableContentManagerViewModel(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
         {
@@ -90,7 +99,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                         Nca nca = TryOpenNca(ncaFile.Get.AsStorage(), downloadableContentContainer.ContainerPath);
                         if (nca != null)
                         {
-                            _downloadableContents.Add(new DownloadableContentModel(nca.Header.TitleId.ToString("X16"),
+                            DownloadableContents.Add(new DownloadableContentModel(nca.Header.TitleId.ToString("X16"),
                                 downloadableContentContainer.ContainerPath,
                                 downloadableContentNca.FullPath,
                                 downloadableContentNca.Enabled));
@@ -150,7 +159,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private async Task AddDownloadableContent(string path)
         {
-            if (!File.Exists(path) || _downloadableContents.FirstOrDefault(x => x.ContainerPath == path) != null)
+            if (!File.Exists(path) || DownloadableContents.FirstOrDefault(x => x.ContainerPath == path) != null)
             {
                 return;
             }
@@ -181,7 +190,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                         break;
                     }
 
-                    _downloadableContents.Add(new DownloadableContentModel(nca.Header.TitleId.ToString("X16"), path, fileEntry.FullPath, true));
+                    DownloadableContents.Add(new DownloadableContentModel(nca.Header.TitleId.ToString("X16"), path, fileEntry.FullPath, true));
 
                     containsDownloadableContent = true;
                 }
@@ -193,43 +202,19 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        private void RemoveDownloadableContents(bool removeSelectedOnly = false)
+        public void Remove(DownloadableContentModel model)
         {
-            if (removeSelectedOnly)
-            {
-                AvaloniaList<DownloadableContentModel> removedItems = new();
-
-                /*foreach (var item in DlcDataGrid.SelectedItems)
-                {
-                    removedItems.Add(item as DownloadableContentModel);
-                }
-
-                DlcDataGrid.SelectedItems.Clear();*/
-
-                foreach (var item in removedItems)
-                {
-                    _downloadableContents.RemoveAll(_downloadableContents.Where(x => x.TitleId == item.TitleId).ToList());
-                }
-            }
-            else
-            {
-                _downloadableContents.Clear();
-            }
-        }
-
-        public void RemoveSelected()
-        {
-            RemoveDownloadableContents(true);
+            DownloadableContents.Remove(model);
         }
 
         public void RemoveAll()
         {
-            RemoveDownloadableContents();
+            DownloadableContents.Clear();
         }
 
         public void EnableAll()
         {
-            foreach(var item in _downloadableContents)
+            foreach(var item in DownloadableContents)
             {
                 item.Enabled = true;
             }
@@ -237,7 +222,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void DisableAll()
         {
-            foreach (var item in _downloadableContents)
+            foreach (var item in DownloadableContents)
             {
                 item.Enabled = false;
             }
@@ -249,7 +234,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             DownloadableContentContainer container = default;
 
-            foreach (DownloadableContentModel downloadableContent in _downloadableContents)
+            foreach (DownloadableContentModel downloadableContent in DownloadableContents)
             {
                 if (container.ContainerPath != downloadableContent.ContainerPath)
                 {
