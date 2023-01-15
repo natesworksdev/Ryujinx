@@ -21,24 +21,26 @@ namespace Ryujinx.Ui.Common.Helper
                                                          !ReleaseInformation.IsFlatHubBuild();
 
         [SupportedOSPlatform("linux")]
-        private static bool RegisterLinuxMimeTypes()
+        private static bool InstallLinuxMimeTypes(bool uninstall=false)
         {
             string mimeDbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "mime");
+            string installKeyword = !uninstall ? "install" : "uninstall";
 
             if (!File.Exists(Path.Combine(mimeDbPath, "packages", "Ryujinx.xml")))
             {
                 string mimeTypesFile = Path.Combine(ReleaseInformation.GetBaseApplicationDirectory(), "mime", "Ryujinx.xml");
+                string additionalArgs = !uninstall ? "--novendor" : "";
                 using Process mimeProcess = new();
 
                 mimeProcess.StartInfo.FileName = "xdg-mime";
-                mimeProcess.StartInfo.Arguments = $"install --novendor --mode user {mimeTypesFile}";
+                mimeProcess.StartInfo.Arguments = $"{installKeyword} {additionalArgs} --mode user {mimeTypesFile}";
 
                 mimeProcess.Start();
                 mimeProcess.WaitForExit();
 
                 if (mimeProcess.ExitCode != 0)
                 {
-                    Logger.Error?.PrintMsg(LogClass.Application, $"Unable to install mime types. Make sure xdg-utils is installed. Process exited with code: {mimeProcess.ExitCode}");
+                    Logger.Error?.PrintMsg(LogClass.Application, $"Unable to {installKeyword} mime types. Make sure xdg-utils is installed. Process exited with code: {mimeProcess.ExitCode}");
                     return false;
                 }
 
@@ -94,7 +96,7 @@ namespace Ryujinx.Ui.Common.Helper
         {
             if (OperatingSystem.IsLinux())
             {
-                return RegisterLinuxMimeTypes();
+                return InstallLinuxMimeTypes();
             }
 
             if (OperatingSystem.IsWindows())
@@ -103,6 +105,18 @@ namespace Ryujinx.Ui.Common.Helper
             }
 
             // TODO: Add macOS support.
+
+            return false;
+        }
+
+        public static bool UnregisterTypeAssociations()
+        {
+            if (OperatingSystem.IsLinux())
+            {
+                return InstallLinuxMimeTypes(true);
+            }
+
+            // TODO: Add Windows and macOS support.
 
             return false;
         }
