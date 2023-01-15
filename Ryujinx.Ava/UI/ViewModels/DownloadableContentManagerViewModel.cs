@@ -117,6 +117,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                             {
                                 SelectedDownloadableContents.Add(content);
                             }
+
+                            OnPropertyChanged(nameof(UpdateCount));
                         }
                     }
                 }
@@ -209,6 +211,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                     DownloadableContents.Add(content);
                     SelectedDownloadableContents.Add(content);
 
+                    OnPropertyChanged(nameof(UpdateCount));
+
                     containsDownloadableContent = true;
                 }
             }
@@ -222,11 +226,13 @@ namespace Ryujinx.Ava.UI.ViewModels
         public void Remove(DownloadableContentModel model)
         {
             DownloadableContents.Remove(model);
+            OnPropertyChanged(nameof(UpdateCount));
         }
 
         public void RemoveAll()
         {
             DownloadableContents.Clear();
+            OnPropertyChanged(nameof(UpdateCount));
         }
 
         public void EnableAll()
