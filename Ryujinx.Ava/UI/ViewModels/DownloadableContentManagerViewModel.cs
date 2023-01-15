@@ -36,6 +36,16 @@ namespace Ryujinx.Ava.UI.ViewModels
         private ulong _titleId;
         private string _titleName;
 
+        public AvaloniaList<DownloadableContentModel> DownloadableContents
+        {
+            get => _downloadableContents;
+            set
+            {
+                _downloadableContents = value;
+                OnPropertyChanged();
+            }
+        }
+
         public DownloadableContentManagerViewModel(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
         {
             _virtualFileSystem = virtualFileSystem;
@@ -187,12 +197,12 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 AvaloniaList<DownloadableContentModel> removedItems = new();
 
-                foreach (var item in DlcDataGrid.SelectedItems)
+                /*foreach (var item in DlcDataGrid.SelectedItems)
                 {
                     removedItems.Add(item as DownloadableContentModel);
                 }
 
-                DlcDataGrid.SelectedItems.Clear();
+                DlcDataGrid.SelectedItems.Clear();*/
 
                 foreach (var item in removedItems)
                 {

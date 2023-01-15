@@ -6,30 +6,18 @@
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
-    Width="800"
-    Height="500"
+    xmlns:models="clr-namespace:Ryujinx.Ava.UI.Models"
+    Width="500"
+    Height="300"
     mc:Ignorable="d"
     x:CompileBindings="True"
     x:DataType="viewModels:DownloadableContentManagerViewModel"
     Focusable="True">
-    <Grid Name="DownloadableContentGrid" Margin="15">
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <TextBlock
-            Name="Heading"
-            Grid.Row="1"
-            MaxWidth="500"
-            Margin="20,15,20,20"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            LineHeight="18"
-            TextAlignment="Center"
-            TextWrapping="Wrap" />
         <DockPanel
             Grid.Row="2"
             Margin="0"
@@ -65,31 +53,13 @@
                     MinHeight="200"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
-                    CanUserReorderColumns="False"
-                    CanUserResizeColumns="True"
-                    CanUserSortColumns="True"
-                    HorizontalScrollBarVisibility="Auto"
-                    Items="{Binding _downloadableContents}"
-                    SelectionMode="Extended"
-                    VerticalScrollBarVisibility="Auto">
-                    <DataGrid.Styles>
-                        <Styles>
-                            <Style Selector="DataGridCell:nth-child(3), DataGridCell:nth-child(4)">
-                                <Setter Property="HorizontalAlignment" Value="Left" />
-                                <Setter Property="HorizontalContentAlignment" Value="Left" />
-                            </Style>
-                        </Styles>
-                        <Styles>
-                            <Style Selector="DataGridCell:nth-child(1)">
-                                <Setter Property="HorizontalAlignment" Value="Right" />
-                                <Setter Property="HorizontalContentAlignment" Value="Right" />
-                            </Style>
-                        </Styles>
-                    </DataGrid.Styles>
+                    Items="{Binding DownloadableContents}"
+                    SelectionMode="Extended">
                     <DataGrid.Columns>
                         <DataGridTemplateColumn Width="90">
                             <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
+                                <DataTemplate
+                                    DataType="models:DownloadableContentModel">
                                     <CheckBox
                                         Width="50"
                                         MinWidth="40"
@@ -101,6 +71,7 @@
                                 <TextBlock Text="{locale:Locale DlcManagerTableHeadingEnabledLabel}" />
                             </DataGridTemplateColumn.Header>
                         </DataGridTemplateColumn>
+                        <!--
                         <DataGridTextColumn Width="140" Binding="{Binding TitleId}">
                             <DataGridTextColumn.Header>
                                 <TextBlock Text="{locale:Locale DlcManagerTableHeadingTitleIdLabel}" />
@@ -116,15 +87,18 @@
                                 <TextBlock Text="{locale:Locale DlcManagerTableHeadingContainerPathLabel}" />
                             </DataGridTextColumn.Header>
                         </DataGridTextColumn>
+                        -->
                     </DataGrid.Columns>
                 </DataGrid>
             </ScrollViewer>
         </Border>
-        <DockPanel
-            Grid.Row="4"
-            Margin="0"
+        <Panel
+            Grid.Row="1"
             HorizontalAlignment="Stretch">
-            <DockPanel Margin="0" HorizontalAlignment="Left">
+            <StackPanel
+                Orientation="Horizontal"
+                Spacing="10"
+                HorizontalAlignment="Left">
                 <Button
                     Name="AddButton"
                     MinWidth="90"
@@ -146,8 +120,11 @@
                     Command="{ReflectionBinding RemoveAll}">
                     <TextBlock Text="{locale:Locale DlcManagerRemoveAllButton}" />
                 </Button>
-            </DockPanel>
-            <DockPanel Margin="0" HorizontalAlignment="Right">
+            </StackPanel>
+            <StackPanel
+                Orientation="Horizontal"
+                Spacing="10"
+                HorizontalAlignment="Right">
                 <Button
                     Name="SaveButton"
                     MinWidth="90"
@@ -162,7 +139,7 @@
                     Command="{ReflectionBinding Close}">
                     <TextBlock Text="{locale:Locale InputDialogCancel}" />
                 </Button>
-            </DockPanel>
-        </DockPanel>
+            </StackPanel>
+        </Panel>
     </Grid>
 </UserControl>
