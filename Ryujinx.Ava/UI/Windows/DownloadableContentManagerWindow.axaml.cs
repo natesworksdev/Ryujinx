@@ -4,9 +4,12 @@ using Avalonia.Styling;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
+using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.HLE.FileSystem;
+using Ryujinx.Ui.Common.Helper;
 using System.Threading.Tasks;
+using Button = FluentAvalonia.UI.Controls.Button;
 
 namespace Ryujinx.Ava.UI.Windows
 {
@@ -27,7 +30,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             InitializeComponent();
 
-            RemoveButton.IsEnabled = false;
+            // RemoveButton.IsEnabled = false;
 
             // DlcDataGrid.SelectionChanged += DlcDataGrid_SelectionChanged;
         }
@@ -51,11 +54,6 @@ namespace Ryujinx.Ava.UI.Windows
             await ContentDialogHelper.ShowAsync(contentDialog);
         }
 
-        private void DlcDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-           //  RemoveButton.IsEnabled = (DlcDataGrid.SelectedItems.Count > 0);
-        }
-
         public void SaveAndClose()
         {
             ViewModel.Save();
@@ -64,12 +62,18 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void RemoveDLC(object sender, RoutedEventArgs e)
         {
-            throw new System.NotImplementedException();
+            ViewModel.RemoveSelected();
         }
 
         private void OpenLocation(object sender, RoutedEventArgs e)
         {
-            throw new System.NotImplementedException();
+            if (sender is Button button)
+            {
+                if (button.DataContext is DownloadableContentModel model)
+                {
+                    OpenHelper.LocateFile(model.ContainerPath);
+                }
+            }
         }
     }
 }

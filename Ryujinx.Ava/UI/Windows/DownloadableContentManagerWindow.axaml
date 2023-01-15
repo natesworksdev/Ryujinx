@@ -28,55 +28,9 @@
             BorderThickness="1"
             CornerRadius="5"
             Padding="2.5">
-            <!--
-            <ScrollViewer
-                VerticalAlignment="Stretch"
-                HorizontalScrollBarVisibility="Auto"
-                VerticalScrollBarVisibility="Auto">
-                <DataGrid
-                    Name="DlcDataGrid"
-                    MinHeight="200"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    Items="{Binding DownloadableContents}"
-                    SelectionMode="Extended">
-                    <DataGrid.Columns>
-                        <DataGridTemplateColumn Width="90">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate
-                                    DataType="models:DownloadableContentModel">
-                                    <CheckBox
-                                        Width="50"
-                                        MinWidth="40"
-                                        HorizontalAlignment="Center"
-                                        IsChecked="{Binding Enabled}" />
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                            <DataGridTemplateColumn.Header>
-                                <TextBlock Text="{locale:Locale DlcManagerTableHeadingEnabledLabel}" />
-                            </DataGridTemplateColumn.Header>
-                        </DataGridTemplateColumn>
-                        <DataGridTextColumn Width="140" Binding="{Binding TitleId}">
-                            <DataGridTextColumn.Header>
-                                <TextBlock Text="{locale:Locale DlcManagerTableHeadingTitleIdLabel}" />
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-                        <DataGridTextColumn Width="280" Binding="{Binding FullPath}">
-                            <DataGridTextColumn.Header>
-                                <TextBlock Text="{locale:Locale DlcManagerTableHeadingFullPathLabel}" />
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-                        <DataGridTextColumn Binding="{Binding ContainerPath}">
-                            <DataGridTextColumn.Header>
-                                <TextBlock Text="{locale:Locale DlcManagerTableHeadingContainerPathLabel}" />
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
-            </ScrollViewer>
-            -->
             <ListBox
                 VirtualizationMode="None"
+                SelectionMode="Multiple"
                 Background="Transparent"
                 SelectedItems="{Binding SelectedDLCs, Mode=TwoWay}"
                 Items="{Binding DownloadableContents}">
@@ -141,13 +95,6 @@
                     Margin="5"
                     Command="{ReflectionBinding Add}">
                     <TextBlock Text="{locale:Locale SettingsTabGeneralAdd}" />
-                </Button>
-                <Button
-                    Name="RemoveButton"
-                    MinWidth="90"
-                    Margin="5"
-                    Command="{ReflectionBinding RemoveSelected}">
-                    <TextBlock Text="{locale:Locale SettingsTabGeneralRemove}" />
                 </Button>
                 <Button
                     Name="RemoveAllButton"
