@@ -167,7 +167,7 @@ namespace Ryujinx.Ava.UI.Views.Main
 
         private async void RegisterFileTypes_Click(object sender, RoutedEventArgs e)
         {
-            if (FileAssociationHelper.RegisterTypeAssociations())
+            if (FileAssociationHelper.Install())
             {
                 await ContentDialogHelper.CreateInfoDialog(LocaleManager.Instance[LocaleKeys.DialogRegisterFileTypesSuccessMessage],
                     string.Empty, LocaleManager.Instance[LocaleKeys.InputDialogOk], string.Empty, string.Empty);

@@ -62,7 +62,7 @@ namespace Ryujinx.Ui.Common.Helper
         }
 
         [SupportedOSPlatform("windows")]
-        private static bool RegisterWindowsMimeTypes()
+        private static bool InstallWindowsMimeTypes()
         {
             static bool RegisterExtension(string ext)
             {
@@ -92,7 +92,7 @@ namespace Ryujinx.Ui.Common.Helper
             return registered;
         }
 
-        public static bool RegisterTypeAssociations()
+        public static bool Install()
         {
             if (OperatingSystem.IsLinux())
             {
@@ -101,7 +101,7 @@ namespace Ryujinx.Ui.Common.Helper
 
             if (OperatingSystem.IsWindows())
             {
-                return RegisterWindowsMimeTypes();
+                return InstallWindowsMimeTypes();
             }
 
             // TODO: Add macOS support.
@@ -109,7 +109,7 @@ namespace Ryujinx.Ui.Common.Helper
             return false;
         }
 
-        public static bool UnregisterTypeAssociations()
+        public static bool Uninstall()
         {
             if (OperatingSystem.IsLinux())
             {

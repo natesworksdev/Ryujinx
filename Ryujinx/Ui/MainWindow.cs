@@ -1504,13 +1504,13 @@ namespace Ryujinx.Ui
 
         private void RegisterFileTypes_Pressed(object sender, EventArgs e)
         {
-            if (FileAssociationHelper.RegisterTypeAssociations())
+            if (FileAssociationHelper.Install())
             {
-                GtkDialog.CreateInfoDialog("Register file types", "File types successfully registered!");
+                GtkDialog.CreateInfoDialog("Install file types", "File types successfully installed!");
             }
             else
             {
-                GtkDialog.CreateErrorDialog("Failed to register file types.");
+                GtkDialog.CreateErrorDialog("Failed to install file types.");
             }
         }
 
