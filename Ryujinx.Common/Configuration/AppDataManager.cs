@@ -45,7 +45,15 @@ namespace Ryujinx.Common.Configuration
 
         public static void Initialize(string baseDirPath)
         {
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string appDataPath = null;
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
+            {
+                appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library/Application Support");
+            }
+            else
+            {
+                appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            }
 
             if (appDataPath.Length == 0)
             {
@@ -81,6 +89,14 @@ namespace Ryujinx.Common.Configuration
 
             BaseDirPath = Path.GetFullPath(BaseDirPath); // convert relative paths
 
+            // Copy .config dir to application support dir
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX) && Mode == LaunchMode.UserProfile)
+            {
+                var oldConfigPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), DefaultBaseDir);
+                if (Path.Exists(oldConfigPath) && !Path.Exists(BaseDirPath))
+                    CopyDirectory(oldConfigPath, BaseDirPath);
+            }
+
             SetupBasePaths();
         }
 
@@ -90,6 +106,31 @@ namespace Ryujinx.Common.Configuration
             Directory.CreateDirectory(GamesDirPath = Path.Combine(BaseDirPath, GamesDir));
             Directory.CreateDirectory(ProfilesDirPath = Path.Combine(BaseDirPath, ProfilesDir));
             Directory.CreateDirectory(KeysDirPath = Path.Combine(BaseDirPath, KeysDir));
+        }
+
+        private static void CopyDirectory(string sourceDir, string destinationDir)
+        {
+            var dir = new DirectoryInfo(sourceDir);
+
+            if (!dir.Exists)
+                throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
+
+            DirectoryInfo[] subDirs = dir.GetDirectories();
+            Directory.CreateDirectory(destinationDir);
+
+            foreach (FileInfo file in dir.GetFiles())
+            {
+                if (file.Name == ".DS_Store")
+                    continue;
+                string destFile = Path.Combine(destinationDir, file.Name);
+                file.CopyTo(destFile);
+            }
+
+            foreach (DirectoryInfo subDir in subDirs)
+            {
+                string destDir = Path.Combine(destinationDir, subDir.Name);
+                CopyDirectory(subDir.FullName, destDir);
+            }
         }
 
         public static string GetModsPath()   => CustomModsPath ?? Directory.CreateDirectory(Path.Combine(BaseDirPath, DefaultModsDir)).FullName;
