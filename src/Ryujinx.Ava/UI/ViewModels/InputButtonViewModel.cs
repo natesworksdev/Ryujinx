@@ -36,6 +36,11 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _buttonTRName = LocaleManager.Instance[LocaleKeys.ControllerSettingsDPadDown];
                 _buttonBLName = LocaleManager.Instance[LocaleKeys.ControllerSettingsDPadLeft];
                 _buttonBRName = LocaleManager.Instance[LocaleKeys.ControllerSettingsDPadRight];
+
+                _buttonTL = _viewModel.Configuration.DpadUp;
+                _buttonTR = _viewModel.Configuration.DpadDown;
+                _buttonBL = _viewModel.Configuration.DpadLeft;
+                _buttonBR = _viewModel.Configuration.DpadRight;
             }
             else
             {
@@ -43,6 +48,11 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _buttonTRName = LocaleManager.Instance[LocaleKeys.ControllerSettingsButtonA];
                 _buttonBLName = LocaleManager.Instance[LocaleKeys.ControllerSettingsButtonY];
                 _buttonBRName = LocaleManager.Instance[LocaleKeys.ControllerSettingsButtonB];
+
+                _buttonTL = _viewModel.Configuration.ButtonX;
+                _buttonTR = _viewModel.Configuration.ButtonA;
+                _buttonBL = _viewModel.Configuration.ButtonY;
+                _buttonBR = _viewModel.Configuration.ButtonB;
             }
         }
 
