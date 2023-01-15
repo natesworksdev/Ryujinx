@@ -38,14 +38,14 @@
                 Name="EnableAllButton"
                 MinWidth="90"
                 Margin="5"
-                Command="{Binding EnableAll}">
+                Command="{ReflectionBinding EnableAll}">
                 <TextBlock Text="{locale:Locale DlcManagerEnableAllButton}" />
             </Button>
             <Button
                 Name="DisableAllButton"
                 MinWidth="90"
                 Margin="5"
-                Command="{Binding DisableAll}">
+                Command="{ReflectionBinding DisableAll}">
                 <TextBlock Text="{locale:Locale DlcManagerDisableAllButton}" />
             </Button>
         </DockPanel>
