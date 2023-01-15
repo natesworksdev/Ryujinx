@@ -54,9 +54,14 @@ namespace Ryujinx.Ava.UI.Windows
             await ContentDialogHelper.ShowAsync(contentDialog);
         }
 
-        public void SaveAndClose()
+        private void SaveAndClose(object sender, RoutedEventArgs routedEventArgs)
         {
             ViewModel.Save();
+            ((ContentDialog)Parent).Hide();
+        }
+
+        private void Close(object sender, RoutedEventArgs e)
+        {
             ((ContentDialog)Parent).Hide();
         }
 

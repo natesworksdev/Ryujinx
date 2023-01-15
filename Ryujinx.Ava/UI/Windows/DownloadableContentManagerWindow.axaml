@@ -120,14 +120,14 @@
                     Name="SaveButton"
                     MinWidth="90"
                     Margin="5"
-                    Command="{ReflectionBinding SaveAndClose}">
+                    Click="SaveAndClose">
                     <TextBlock Text="{locale:Locale SettingsButtonSave}" />
                 </Button>
                 <Button
                     Name="CancelButton"
                     MinWidth="90"
                     Margin="5"
-                    Command="{ReflectionBinding Close}">
+                    Click="Close">
                     <TextBlock Text="{locale:Locale InputDialogCancel}" />
                 </Button>
             </StackPanel>
