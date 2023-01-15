@@ -45,10 +45,10 @@ namespace Ryujinx.Common.Configuration
 
         public static void Initialize(string baseDirPath)
         {
-            string appDataPath = null;
-            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
+            string appDataPath;
+            if (OperatingSystem.IsMacOS())
             {
-                appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library/Application Support");
+                appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library", "Application Support");
             }
             else
             {
@@ -89,12 +89,20 @@ namespace Ryujinx.Common.Configuration
 
             BaseDirPath = Path.GetFullPath(BaseDirPath); // convert relative paths
 
-            // Copy .config dir to application support dir
-            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX) && Mode == LaunchMode.UserProfile)
+            // NOTE: Copies the Ryujinx folder in `~/.config` to `~/Library/Application Support` if one is found
+            // and a Ryujinx folder does not already exist in Application Support.
+            // Also creates a symlink from `~/.config/Ryujinx` to `~/Library/Application Support/Ryujinx` to preserve backwards compatibility.
+            // This should be removed in the future.
+            if (OperatingSystem.IsMacOS() && Mode == LaunchMode.UserProfile)
             {
-                var oldConfigPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), DefaultBaseDir);
+                string oldConfigPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), DefaultBaseDir);
                 if (Path.Exists(oldConfigPath) && !Path.Exists(BaseDirPath))
+                {
                     CopyDirectory(oldConfigPath, BaseDirPath);
+                    Directory.Delete(oldConfigPath, true);
+                    Directory.CreateSymbolicLink(oldConfigPath, BaseDirPath);
+                }
+
             }
 
             SetupBasePaths();
@@ -113,7 +121,9 @@ namespace Ryujinx.Common.Configuration
             var dir = new DirectoryInfo(sourceDir);
 
             if (!dir.Exists)
+            {
                 throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
+            }
 
             DirectoryInfo[] subDirs = dir.GetDirectories();
             Directory.CreateDirectory(destinationDir);
@@ -121,15 +131,15 @@ namespace Ryujinx.Common.Configuration
             foreach (FileInfo file in dir.GetFiles())
             {
                 if (file.Name == ".DS_Store")
+                {
                     continue;
-                string destFile = Path.Combine(destinationDir, file.Name);
-                file.CopyTo(destFile);
+                }
+                file.CopyTo(Path.Combine(destinationDir, file.Name));
             }
 
             foreach (DirectoryInfo subDir in subDirs)
             {
-                string destDir = Path.Combine(destinationDir, subDir.Name);
-                CopyDirectory(subDir.FullName, destDir);
+                CopyDirectory(subDir.FullName, Path.Combine(destinationDir, subDir.Name));
             }
         }
 
