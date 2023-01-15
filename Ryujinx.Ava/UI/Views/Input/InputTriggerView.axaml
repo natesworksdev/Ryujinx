@@ -1,0 +1,93 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
+    xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
+    xmlns:helpers="clr-namespace:Ryujinx.Ava.UI.Helpers"
+    mc:Ignorable="d"
+    x:Class="Ryujinx.Ava.UI.Views.Input.InputTriggerView"
+    x:CompileBindings="True"
+    x:DataType="viewModels:InputTriggerViewModel">
+    <Design.DataContext>
+        <viewModels:InputTriggerViewModel />
+    </Design.DataContext>
+    <UserControl.Resources>
+        <helpers:KeyValueConverter x:Key="Key" />
+    </UserControl.Resources>
+    <Border
+        BorderBrush="{DynamicResource ThemeControlBorderColor}"
+        BorderThickness="1"
+        CornerRadius="5">
+        <Grid
+            Margin="10"
+            HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <StackPanel
+                Grid.Column="0"
+                Grid.Row="0"
+                Orientation="Horizontal">
+                <TextBlock
+                    Width="20"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Text="{Binding TriggerButtonName}"
+                    TextAlignment="Center" />
+                <ToggleButton
+                    Width="90"
+                    Height="27"
+                    HorizontalAlignment="Stretch">
+                    <TextBlock
+                        Text="{Binding TriggerButton, Mode=TwoWay, Converter={StaticResource Key}}"
+                        TextAlignment="Center" />
+                </ToggleButton>
+            </StackPanel>
+            <StackPanel
+                Grid.Column="0"
+                Grid.Row="1"
+                Orientation="Horizontal">
+                <TextBlock
+                    Width="20"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Text="{Binding BumperButtonName}"
+                    TextAlignment="Center" />
+                <ToggleButton
+                    Width="90"
+                    Height="27"
+                    HorizontalAlignment="Stretch">
+                    <TextBlock
+                        Text="{Binding BumperButton, Mode=TwoWay, Converter={StaticResource Key}}"
+                        TextAlignment="Center" />
+                </ToggleButton>
+            </StackPanel>
+            <StackPanel
+                Grid.Column="1"
+                Grid.Row="0"
+                Orientation="Horizontal">
+                <TextBlock
+                    Width="20"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Text="{Binding ConsoleButtonName}"
+                    TextAlignment="Center" />
+                <ToggleButton
+                    Width="90"
+                    Height="27"
+                    HorizontalAlignment="Stretch">
+                    <TextBlock
+                        Text="{Binding ConsoleButton, Mode=TwoWay, Converter={StaticResource Key}}"
+                        TextAlignment="Center" />
+                </ToggleButton>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>
