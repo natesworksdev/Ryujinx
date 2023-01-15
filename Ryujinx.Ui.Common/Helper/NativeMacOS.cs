@@ -53,7 +53,7 @@ namespace Ryujinx.Ui.Common.Helper
                 SelPtr = sel_getUid(name);
             }
 
-            public static implicit operator Selector(string value) => new (value);
+            public static implicit operator Selector(string value) => new(value);
         }
 
         public struct NSURL
