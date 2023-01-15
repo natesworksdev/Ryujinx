@@ -1431,9 +1431,20 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return;
             }
 
+            bool isGpuThread = _context.IsGpuThread();
+
+            if (isGpuThread)
+            {
+                // No need to wait if we're on the GPU thread, we can just clear the modified flag immediately.
+                handle.Modified = false;
+            }
+
             _context.Renderer.BackgroundContextAction(() =>
             {
-                handle.Sync(_context);
+                if (!isGpuThread)
+                {
+                    handle.Sync(_context);
+                }
 
                 Storage.SignalModifiedDirty();
 

@@ -55,6 +55,11 @@
                             HorizontalContentAlignment="Left"
                             Content="{locale:Locale Size}" />
                     </ComboBoxItem>
+                    <ComboBox.Styles>
+                        <Style Selector="ContentControl#ContentPresenter">
+                            <Setter Property="HorizontalAlignment" Value="Left" />
+                        </Style>
+                    </ComboBox.Styles>
                 </ComboBox>
                 <ComboBox SelectedIndex="{Binding OrderIndex}" Width="150">
                     <ComboBoxItem>
@@ -69,6 +74,11 @@
                             HorizontalContentAlignment="Left"
                             Content="{locale:Locale OrderDescending}" />
                     </ComboBoxItem>
+                    <ComboBox.Styles>
+                        <Style Selector="ContentControl#ContentPresenter">
+                            <Setter Property="HorizontalAlignment" Value="Left" />
+                        </Style>
+                    </ComboBox.Styles>
                 </ComboBox>
             </StackPanel>
             <Grid
@@ -97,6 +107,7 @@
             VerticalAlignment="Stretch">
             <ListBox
                 Name="SaveList"
+                VirtualizationMode="None"
                 Items="{Binding Views}"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch">
@@ -105,6 +116,9 @@
                         <Setter Property="Padding" Value="10" />
                         <Setter Property="Margin" Value="5" />
                         <Setter Property="CornerRadius" Value="4" />
+                    </Style>
+                    <Style Selector="ListBoxItem:selected /template/ Border#SelectionIndicator">
+                        <Setter Property="IsVisible" Value="False" />
                     </Style>
                 </ListBox.Styles>
                 <ListBox.ItemTemplate>
@@ -122,6 +136,8 @@
                                     Height="42"
                                     Width="42"
                                     Padding="10"
+                                    BorderBrush="{DynamicResource AppListHoverBackgroundColor}"
+                                    BorderThickness="1"
                                     IsVisible="{Binding !InGameList}">
                                     <ui:SymbolIcon
                                         Symbol="Help"
