@@ -17,11 +17,10 @@ namespace Ryujinx.Ui.Common.Helper
         [LibraryImport("shell32.dll", SetLastError = true)]
         public static partial void SHChangeNotify(uint wEventId, uint uFlags, IntPtr dwItem1, IntPtr dwItem2);
 
-        public static bool IsTypeAssociationSupported => (OperatingSystem.IsLinux() || OperatingSystem.IsWindows()) &&
-                                                         !ReleaseInformation.IsFlatHubBuild();
+        public static bool IsTypeAssociationSupported => (OperatingSystem.IsLinux() || OperatingSystem.IsWindows()) && !ReleaseInformation.IsFlatHubBuild();
 
         [SupportedOSPlatform("linux")]
-        private static bool InstallLinuxMimeTypes(bool uninstall=false)
+        private static bool InstallLinuxMimeTypes(bool uninstall = false)
         {
             string mimeDbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "mime");
             string installKeyword = !uninstall ? "install" : "uninstall";
@@ -30,6 +29,7 @@ namespace Ryujinx.Ui.Common.Helper
             {
                 string mimeTypesFile = Path.Combine(ReleaseInformation.GetBaseApplicationDirectory(), "mime", "Ryujinx.xml");
                 string additionalArgs = !uninstall ? "--novendor" : "";
+
                 using Process mimeProcess = new();
 
                 mimeProcess.StartInfo.FileName = "xdg-mime";
@@ -41,6 +41,7 @@ namespace Ryujinx.Ui.Common.Helper
                 if (mimeProcess.ExitCode != 0)
                 {
                     Logger.Error?.PrintMsg(LogClass.Application, $"Unable to {installKeyword} mime types. Make sure xdg-utils is installed. Process exited with code: {mimeProcess.ExitCode}");
+
                     return false;
                 }
 
@@ -62,19 +63,28 @@ namespace Ryujinx.Ui.Common.Helper
         }
 
         [SupportedOSPlatform("windows")]
-        private static bool InstallWindowsMimeTypes()
+        private static bool InstallWindowsMimeTypes(bool uninstall = false)
         {
-            static bool RegisterExtension(string ext)
+            static bool RegisterExtension(string ext, bool uninstall = false)
             {
-                RegistryKey key = Registry.CurrentUser.CreateSubKey(@$"Software\Classes\{ext}");
+                string keyString = @$"Software\Classes\{ext}";
 
-                if (key is null)
+                if (uninstall)
                 {
-                    return false;
+                    Registry.CurrentUser.DeleteSubKeyTree(keyString);
                 }
+                else
+                {
+                    RegistryKey key = Registry.CurrentUser.CreateSubKey(keyString);
 
-                key!.CreateSubKey(@"shell\open\command")!.SetValue("", $"\"{Environment.ProcessPath}\" \"%1\"");
-                key.Close();
+                    if (key is null)
+                    {
+                        return false;
+                    }
+
+                    key!.CreateSubKey(@"shell\open\command")!.SetValue("", $"\"{Environment.ProcessPath}\" \"%1\"");
+                    key.Close();
+                }
 
                 // Notify Explorer the file association has been changed.
                 SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_FLUSH, IntPtr.Zero, IntPtr.Zero);
@@ -86,7 +96,7 @@ namespace Ryujinx.Ui.Common.Helper
 
             foreach (string ext in new string[] { ".nca", ".nro", ".nso", ".nsp", ".xci" })
             {
-                registered |= RegisterExtension(ext);
+                registered |= RegisterExtension(ext, uninstall);
             }
 
             return registered;
@@ -116,7 +126,12 @@ namespace Ryujinx.Ui.Common.Helper
                 return InstallLinuxMimeTypes(true);
             }
 
-            // TODO: Add Windows and macOS support.
+            if (OperatingSystem.IsWindows())
+            {
+                return InstallWindowsMimeTypes(true);
+            }
+
+            // TODO: Add macOS support.
 
             return false;
         }
