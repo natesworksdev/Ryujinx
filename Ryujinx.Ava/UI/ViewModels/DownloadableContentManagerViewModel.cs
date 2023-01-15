@@ -46,6 +46,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        public object SelectedDLCs { get; }
+
         public DownloadableContentManagerViewModel(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
         {
             _virtualFileSystem = virtualFileSystem;
