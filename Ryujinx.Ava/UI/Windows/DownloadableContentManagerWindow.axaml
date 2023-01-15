@@ -38,40 +38,48 @@
                     <DataTemplate
                         DataType="models:DownloadableContentModel">
                         <Panel Margin="10">
-                            <TextBlock
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                TextWrapping="Wrap"
-                                Text="{Binding ContainerPath}" />
-                            <StackPanel
-                                Spacing="10"
-                                Orientation="Horizontal"
-                                HorizontalAlignment="Right">
-                                <Button
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock
+                                    Grid.Column="0"
+                                    HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
-                                    HorizontalAlignment="Right"
-                                    Padding="10"
-                                    MinWidth="0"
-                                    MinHeight="0"
-                                    Click="OpenLocation">
-                                    <ui:SymbolIcon
-                                        Symbol="OpenFolder"
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center" />
-                                </Button>
-                                <Button
-                                    VerticalAlignment="Center"
-                                    HorizontalAlignment="Right"
-                                    Padding="10"
-                                    MinWidth="0"
-                                    MinHeight="0"
-                                    Click="RemoveDLC">
-                                    <ui:SymbolIcon
-                                        Symbol="Cancel"
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center" />
-                                </Button>
-                            </StackPanel>
+                                    TextWrapping="Wrap"
+                                    Text="{Binding ContainerPath}" />
+                                <StackPanel
+                                    Grid.Column="1"
+                                    Spacing="10"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Right">
+                                    <Button
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Right"
+                                        Padding="10"
+                                        MinWidth="0"
+                                        MinHeight="0"
+                                        Click="OpenLocation">
+                                        <ui:SymbolIcon
+                                            Symbol="OpenFolder"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center" />
+                                    </Button>
+                                    <Button
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Right"
+                                        Padding="10"
+                                        MinWidth="0"
+                                        MinHeight="0"
+                                        Click="RemoveDLC">
+                                        <ui:SymbolIcon
+                                            Symbol="Cancel"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center" />
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
                         </Panel>
                     </DataTemplate>
                 </ListBox.DataTemplates>
