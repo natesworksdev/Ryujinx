@@ -681,11 +681,25 @@ namespace Ryujinx.Ui.App.Common
         {
             System.TimeSpan time = System.TimeSpan.FromSeconds(seconds);
 
-            string timeString = (time.Days    != 0) ? "{0}d"     : "";
-            timeString       += (time.Hours   != 0) ? " {1:D2}h" : "";
-            timeString       += (time.Minutes != 0) ? " {2:D2}m" : "";
+            string timeString;
+            if (time.Days != 0)
+            {
+                timeString = $"{time.Days}d {time.Hours:D2}h {time.Minutes:D2}m";
+            }
+            else if (time.Hours != 0)
+            {
+                timeString = $"{time.Hours:D2}h {time.Minutes:D2}m";
+            }
+            else if (time.Minutes != 0)
+            {
+                timeString = $"{time.Minutes:D2}m";
+            }
+            else
+            {
+                timeString = "Never";
+            }
 
-            return timeString == "" ? "Never" : string.Format(timeString, time.Days, time.Hours, time.Minutes);
+            return timeString;
         }
 
         private void GetGameInformation(ref ApplicationControlProperty controlData, out string titleName, out string titleId, out string publisher, out string version)
