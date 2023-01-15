@@ -1,5 +1,5 @@
 using Ryujinx.Ava.Common.Locale;
-using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Ava.UI.Models;
 using Ryujinx.Common.Configuration.Hid.Controller;
 
 namespace Ryujinx.Ava.UI.ViewModels
@@ -14,12 +14,12 @@ namespace Ryujinx.Ava.UI.ViewModels
         private bool _rotate90;
 
         private StickInputId _joystick;
-        private Key _keyboardStickButton;
-        private Key _controllerStickButton;
-        private Key _stickUp;
-        private Key _stickDown;
-        private Key _stickLeft;
-        private Key _stickRight;
+        private InputModel _keyboardStickButton;
+        private InputModel _controllerStickButton;
+        private InputModel _stickUp;
+        private InputModel _stickDown;
+        private InputModel _stickLeft;
+        private InputModel _stickRight;
 
         private float _deadzone;
         private float _range;
@@ -162,7 +162,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public Key KeyboardStickButton
+        public InputModel KeyboardStickButton
         {
             get => _keyboardStickButton;
             set
@@ -180,7 +180,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public Key ControllerStickButton
+        public InputModel ControllerStickButton
         {
             get => _controllerStickButton;
             set
@@ -198,7 +198,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public Key StickUp
+        public InputModel StickUp
         {
             get => _stickUp;
             set
@@ -216,7 +216,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public Key StickDown
+        public InputModel StickDown
         {
             get => _stickDown;
             set
@@ -234,7 +234,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public Key StickLeft
+        public InputModel StickLeft
         {
             get => _stickLeft;
             set
@@ -252,7 +252,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public Key StickRight
+        public InputModel StickRight
         {
             get => _stickRight;
             set

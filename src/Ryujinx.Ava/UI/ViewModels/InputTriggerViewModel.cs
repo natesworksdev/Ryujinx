@@ -1,7 +1,7 @@
 using Ryujinx.Ava.Common.Locale;
-using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using Avalonia.Flexbox;
+using Ryujinx.Ava.UI.Models;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
@@ -11,9 +11,9 @@ namespace Ryujinx.Ava.UI.ViewModels
         private string _bumperButtonName;
         private string _consoleButtonName;
 
-        private Key _triggerButton;
-        private Key _bumperButton;
-        private Key _consoleButton;
+        private InputModel _triggerButton;
+        private InputModel _bumperButton;
+        private InputModel _consoleButton;
 
         private AlignItems _flexDirection;
 
@@ -85,7 +85,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public Key TriggerButton
+        public InputModel TriggerButton
         {
             get => _triggerButton;
             set
@@ -103,7 +103,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public Key BumperButton
+        public InputModel BumperButton
         {
             get => _bumperButton;
             set
@@ -121,7 +121,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public Key ConsoleButton
+        public InputModel ConsoleButton
         {
             get => _consoleButton;
             set

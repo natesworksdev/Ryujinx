@@ -15,7 +15,7 @@
         <viewModels:InputStickViewModel />
     </Design.DataContext>
     <UserControl.Resources>
-        <helpers:KeyValueConverter x:Key="Key" />
+        <helpers:InputModelConverter x:Key="Key" />
     </UserControl.Resources>
     <Border
         BorderBrush="{DynamicResource ThemeControlBorderColor}"

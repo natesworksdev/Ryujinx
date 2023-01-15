@@ -1,4 +1,4 @@
-﻿<UserControl 
+﻿<UserControl
     x:Class="Ryujinx.Ava.UI.Views.Settings.SettingsHotkeysView"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -15,9 +15,9 @@
         <viewModels:SettingsViewModel />
     </Design.DataContext>
     <UserControl.Resources>
-        <helpers:KeyValueConverter x:Key="Key" />
+        <helpers:InputModelConverter x:Key="Key" />
     </UserControl.Resources>
-    <ScrollViewer 
+    <ScrollViewer
         Name="HotkeysPage"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Stretch"

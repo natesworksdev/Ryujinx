@@ -21,7 +21,7 @@
         <viewModels:ControllerSettingsViewModel />
     </Design.DataContext>
     <UserControl.Resources>
-        <helpers:KeyValueConverter x:Key="Key" />
+        <helpers:InputModelConverter x:Key="Key" />
     </UserControl.Resources>
     <StackPanel
         HorizontalAlignment="Stretch"
