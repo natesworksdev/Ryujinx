@@ -165,16 +165,29 @@ namespace Ryujinx.Ava.UI.Views.Main
             }
         }
 
-        private async void RegisterFileTypes_Click(object sender, RoutedEventArgs e)
+        private async void InstallFileTypes_Click(object sender, RoutedEventArgs e)
         {
             if (FileAssociationHelper.Install())
             {
-                await ContentDialogHelper.CreateInfoDialog(LocaleManager.Instance[LocaleKeys.DialogRegisterFileTypesSuccessMessage],
+                await ContentDialogHelper.CreateInfoDialog(LocaleManager.Instance[LocaleKeys.DialogInstallFileTypesSuccessMessage],
                     string.Empty, LocaleManager.Instance[LocaleKeys.InputDialogOk], string.Empty, string.Empty);
             }
             else
             {
-                await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogRegisterFileTypesErrorMessage]);
+                await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogInstallFileTypesErrorMessage]);
+            }
+        }
+
+        private async void UninstallFileTypes_Click(object sender, RoutedEventArgs e)
+        {
+            if (FileAssociationHelper.Uninstall())
+            {
+                await ContentDialogHelper.CreateInfoDialog(LocaleManager.Instance[LocaleKeys.DialogUninstallFileTypesSuccessMessage],
+                    string.Empty, LocaleManager.Instance[LocaleKeys.InputDialogOk], string.Empty, string.Empty);
+            }
+            else
+            {
+                await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogUninstallFileTypesErrorMessage]);
             }
         }
 
