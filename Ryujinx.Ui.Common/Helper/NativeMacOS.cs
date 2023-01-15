@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
@@ -64,7 +65,14 @@ namespace Ryujinx.Ui.Common.Helper
             {
                 NSString nsStringPath = new(path);
                 IntPtr nsUrl = objc_getClass("NSURL");
-                URLPtr = IntPtr_objc_msgSend(nsUrl, "URLWithString:", nsStringPath);
+                if (File.Exists(path))
+                {
+                    URLPtr = IntPtr_objc_msgSend(nsUrl, "fileURLWithPath:", nsStringPath);
+                }
+                else
+                {
+                    URLPtr = IntPtr_objc_msgSend(nsUrl, "URLWithString:", nsStringPath);
+                }
             }
 
             public static implicit operator IntPtr(NSURL nsUrl) => nsUrl.URLPtr;

@@ -55,7 +55,14 @@ namespace Ryujinx.Ui.Common.Helper
                 }
                 else if (OperatingSystem.IsMacOS())
                 {
-                    Process.Start("open", $"-R \"{path}\"");
+                    NativeMacOS.NSURL nsUrl = new(path);
+                    IntPtr nsArray = NativeMacOS.objc_getClass("NSArray");
+                    IntPtr urlArray = NativeMacOS.IntPtr_objc_msgSend(nsArray, "arrayWithObject:", nsUrl);
+
+                    IntPtr nsWorkspace = NativeMacOS.objc_getClass("NSWorkspace");
+                    IntPtr sharedWorkspace = NativeMacOS.IntPtr_objc_msgSend(nsWorkspace, "sharedWorkspace");
+
+                    NativeMacOS.objc_msgSend(sharedWorkspace, "activateFileViewerSelectingURLs:", urlArray);
                 }
                 else if (OperatingSystem.IsLinux())
                 {
