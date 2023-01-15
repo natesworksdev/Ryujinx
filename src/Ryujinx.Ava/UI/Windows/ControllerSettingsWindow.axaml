@@ -195,21 +195,17 @@
                 HorizontalAlignment="Stretch"
                 Orientation="Vertical"
                 Margin="0 0 10 0"
-                Spacing="10">
+                Spacing="10"
+                IsVisible="{Binding IsLeft}">
                 <!-- Left Triggers -->
-                <Panel IsVisible="{Binding IsLeft}">
-                    <input:InputTriggerView Side="Left" />
-                </Panel>
+                <input:InputTriggerView Side="Left" />
                 <!-- Left Joystick -->
-                <Panel IsVisible="{Binding IsLeft}">
-                    <input:InputStickView Side="Left" />
-                </Panel>
+                <input:InputStickView Side="Left" />
                 <!-- Left DPad -->
                 <Border
                     BorderBrush="{DynamicResource ThemeControlBorderColor}"
                     BorderThickness="1"
-                    CornerRadius="5"
-                    IsVisible="{Binding IsLeft}">
+                    CornerRadius="5">
                     <StackPanel
                         Orientation="Vertical"
                         Margin="10"
@@ -482,17 +478,15 @@
                 HorizontalAlignment="Stretch"
                 Orientation="Vertical"
                 Margin="10 0 0 0"
-                Spacing="10">
+                Spacing="10"
+                IsVisible="{Binding IsRight}">
                 <!-- Right Triggers -->
-                <Panel IsVisible="{Binding IsRight}">
-                    <input:InputTriggerView Side="Right"/>
-                </Panel>
+                <input:InputTriggerView Side="Right"/>
                 <!-- Right Buttons -->
                 <Border
                     BorderBrush="{DynamicResource ThemeControlBorderColor}"
                     BorderThickness="1"
-                    CornerRadius="5"
-                    IsVisible="{Binding IsRight}">
+                    CornerRadius="5">
                     <StackPanel
                         Orientation="Vertical"
                         Margin="10"
@@ -593,9 +587,7 @@
                     </StackPanel>
                 </Border>
                 <!-- Right Joystick -->
-                <Panel IsVisible="{Binding IsRight}">
-                    <input:InputStickView Side="Right" />
-                </Panel>
+                <input:InputStickView Side="Right" />
             </StackPanel>
         </Grid>
     </StackPanel>
