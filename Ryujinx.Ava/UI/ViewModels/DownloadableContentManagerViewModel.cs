@@ -45,6 +45,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 _downloadableContents = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(UpdateCount));
             }
         }
 
@@ -56,6 +57,11 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _selectedDownloadableContents = value;
                 OnPropertyChanged();
             }
+        }
+
+        public string UpdateCount
+        {
+            get => string.Format(LocaleManager.Instance[LocaleKeys.DlcWindowHeading], DownloadableContents.Count);
         }
 
         public DownloadableContentManagerViewModel(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
@@ -225,18 +231,12 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void EnableAll()
         {
-            foreach(var item in DownloadableContents)
-            {
-                item.Enabled = true;
-            }
+            SelectedDownloadableContents = new(DownloadableContents);
         }
 
         public void DisableAll()
         {
-            foreach (var item in DownloadableContents)
-            {
-                item.Enabled = false;
-            }
+            SelectedDownloadableContents.Clear();
         }
 
         public void Save()
