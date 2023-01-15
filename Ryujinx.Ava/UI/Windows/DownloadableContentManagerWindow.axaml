@@ -1,20 +1,16 @@
-<window:StyleableWindow
+<UserControl
     x:Class="Ryujinx.Ava.UI.Windows.DownloadableContentManagerWindow"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:window="clr-namespace:Ryujinx.Ava.UI.Windows"
+    xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     Width="800"
     Height="500"
-    MinWidth="800"
-    MinHeight="500"
-    MaxWidth="800"
-    MaxHeight="500"
-    SizeToContent="Height"
-    WindowStartupLocation="CenterOwner"
     mc:Ignorable="d"
+    x:CompileBindings="True"
+    x:DataType="viewModels:DownloadableContentManagerViewModel"
     Focusable="True">
     <Grid Name="DownloadableContentGrid" Margin="15">
         <Grid.RowDefinitions>
@@ -133,21 +129,21 @@
                     Name="AddButton"
                     MinWidth="90"
                     Margin="5"
-                    Command="{Binding Add}">
+                    Command="{ReflectionBinding Add}">
                     <TextBlock Text="{locale:Locale SettingsTabGeneralAdd}" />
                 </Button>
                 <Button
                     Name="RemoveButton"
                     MinWidth="90"
                     Margin="5"
-                    Command="{Binding RemoveSelected}">
+                    Command="{ReflectionBinding RemoveSelected}">
                     <TextBlock Text="{locale:Locale SettingsTabGeneralRemove}" />
                 </Button>
                 <Button
                     Name="RemoveAllButton"
                     MinWidth="90"
                     Margin="5"
-                    Command="{Binding RemoveAll}">
+                    Command="{ReflectionBinding RemoveAll}">
                     <TextBlock Text="{locale:Locale DlcManagerRemoveAllButton}" />
                 </Button>
             </DockPanel>
@@ -156,17 +152,17 @@
                     Name="SaveButton"
                     MinWidth="90"
                     Margin="5"
-                    Command="{Binding SaveAndClose}">
+                    Command="{ReflectionBinding SaveAndClose}">
                     <TextBlock Text="{locale:Locale SettingsButtonSave}" />
                 </Button>
                 <Button
                     Name="CancelButton"
                     MinWidth="90"
                     Margin="5"
-                    Command="{Binding Close}">
+                    Command="{ReflectionBinding Close}">
                     <TextBlock Text="{locale:Locale InputDialogCancel}" />
                 </Button>
             </DockPanel>
         </DockPanel>
     </Grid>
-</window:StyleableWindow>
+</UserControl>
