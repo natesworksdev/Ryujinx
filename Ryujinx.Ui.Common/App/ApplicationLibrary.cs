@@ -681,9 +681,9 @@ namespace Ryujinx.Ui.App.Common
         {
             System.TimeSpan time = System.TimeSpan.FromSeconds(seconds);
 
-            string timeString = (time.Days != 0)    ? "{0}d"    : "";
-            timeString       += (time.Hours != 0)   ? "{1:D2}h" : "";
-            timeString       += (time.Minutes != 0) ? "{2:D2}m" : "";
+            string timeString = (time.Days    != 0) ? "{0}d"     : "";
+            timeString       += (time.Hours   != 0) ? " {1:D2}h" : "";
+            timeString       += (time.Minutes != 0) ? " {2:D2}m" : "";
 
             return timeString == "" ? "Never" : string.Format(timeString, time.Days, time.Hours, time.Minutes);
         }
