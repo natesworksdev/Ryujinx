@@ -23,29 +23,42 @@
         <Panel
             Margin="0 0 0 10"
             Grid.Row="0">
-            <StackPanel
-                Orientation="Horizontal"
-                HorizontalAlignment="Left">
-                <TextBlock Text="{Binding UpdateCount}" />
-            </StackPanel>
-            <StackPanel
-                Orientation="Horizontal"
-                HorizontalAlignment="Right">
-                <Button
-                     Name="EnableAllButton"
-                     MinWidth="90"
-                     Margin="5"
-                     Command="{ReflectionBinding EnableAll}">
-                    <TextBlock Text="{locale:Locale DlcManagerEnableAllButton}" />
-                </Button>
-                <Button
-                    Name="DisableAllButton"
-                    MinWidth="90"
-                    Margin="5"
-                    Command="{ReflectionBinding DisableAll}">
-                    <TextBlock Text="{locale:Locale DlcManagerDisableAllButton}" />
-                </Button>
-            </StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    Grid.Column="0"
+                    Text="{Binding UpdateCount}" />
+                <StackPanel
+                    Margin="10 0"
+                    Grid.Column="1"
+                    Orientation="Horizontal">
+                    <Button
+                        Name="EnableAllButton"
+                        MinWidth="90"
+                        Margin="5"
+                        Command="{ReflectionBinding EnableAll}">
+                        <TextBlock Text="{locale:Locale DlcManagerEnableAllButton}" />
+                    </Button>
+                    <Button
+                        Name="DisableAllButton"
+                        MinWidth="90"
+                        Margin="5"
+                        Command="{ReflectionBinding DisableAll}">
+                        <TextBlock Text="{locale:Locale DlcManagerDisableAllButton}" />
+                    </Button>
+                </StackPanel>
+                <TextBox
+                    Grid.Column="2"
+                    MinHeight="23"
+                    MaxHeight="23"
+                    HorizontalAlignment="Stretch"
+                    Watermark="{locale:Locale Search}"
+                    Text="{Binding Search}" />
+            </Grid>
         </Panel>
         <Border
             Grid.Row="1"
@@ -63,7 +76,7 @@
                 Background="Transparent"
                 SelectionChanged="OnSelectionChanged"
                 SelectedItems="{Binding SelectedDownloadableContents, Mode=TwoWay}"
-                Items="{Binding DownloadableContents}">
+                Items="{Binding Views}">
                 <ListBox.DataTemplates>
                     <DataTemplate
                         DataType="models:DownloadableContentModel">

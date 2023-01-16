@@ -33,7 +33,10 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private VirtualFileSystem                           _virtualFileSystem;
         private AvaloniaList<DownloadableContentModel>      _downloadableContents = new();
+        private AvaloniaList<DownloadableContentModel>      _views = new();
         private AvaloniaList<DownloadableContentModel>      _selectedDownloadableContents = new();
+
+        private string _search;
 
         private ulong _titleId;
         private string _titleName;
@@ -46,6 +49,17 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _downloadableContents = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(UpdateCount));
+                Sort();
+            }
+        }
+
+        public AvaloniaList<DownloadableContentModel> Views
+        {
+            get => _views;
+            set
+            {
+                _views = value;
+                OnPropertyChanged();
             }
         }
 
@@ -56,6 +70,17 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 _selectedDownloadableContents = value;
                 OnPropertyChanged();
+            }
+        }
+
+        public string Search
+        {
+            get => _search;
+            set
+            {
+                _search = value;
+                OnPropertyChanged();
+                Sort();
             }
         }
 
@@ -126,6 +151,28 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             // NOTE: Save the list again to remove leftovers.
             Save();
+            Sort();
+        }
+
+        public void Sort()
+        {
+            DownloadableContents.AsObservableChangeSet()
+                .Filter(Filter)
+                .Bind(out var view).AsObservableList();
+
+            _views.Clear();
+            _views.AddRange(view);
+            OnPropertyChanged(nameof(Views));
+        }
+
+        private bool Filter(object arg)
+        {
+            if (arg is DownloadableContentModel content)
+            {
+                return string.IsNullOrWhiteSpace(_search) || content.FileName.ToLower().Contains(_search.ToLower());
+            }
+
+            return false;
         }
 
         private Nca TryOpenNca(IStorage ncaStorage, string containerPath)
@@ -212,6 +259,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                     SelectedDownloadableContents.Add(content);
 
                     OnPropertyChanged(nameof(UpdateCount));
+                    Sort();
 
                     containsDownloadableContent = true;
                 }
@@ -227,12 +275,14 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             DownloadableContents.Remove(model);
             OnPropertyChanged(nameof(UpdateCount));
+            Sort();
         }
 
         public void RemoveAll()
         {
             DownloadableContents.Clear();
             OnPropertyChanged(nameof(UpdateCount));
+            Sort();
         }
 
         public void EnableAll()
