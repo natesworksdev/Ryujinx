@@ -23,7 +23,7 @@ namespace Ryujinx.Ui.Common.Helper
         private static bool InstallLinuxMimeTypes(bool uninstall = false)
         {
             string mimeDbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "mime");
-            string installKeyword = !uninstall ? "install" : "uninstall";
+            string installKeyword = uninstall ? "uninstall" : "install";
 
             if (!File.Exists(Path.Combine(mimeDbPath, "packages", "Ryujinx.xml")))
             {
