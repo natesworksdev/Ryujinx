@@ -83,7 +83,12 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public string Developers
         {
-            get => string.Format(LocaleManager.Instance[LocaleKeys.AboutPageDeveloperListMore], "gdkchan, Ac_K, marysaka, rip in peri peri, LDj3SNuD, emmaus, Thealexbarney, GoffyDude, TSRBerry, IsaacMarovitz");
+            get
+            {
+                LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.AboutPageDeveloperListMore, "gdkchan, Ac_K, marysaka, rip in peri peri, LDj3SNuD, emmaus, Thealexbarney, GoffyDude, TSRBerry, IsaacMarovitz");
+
+                return LocaleManager.Instance[LocaleKeys.AboutPageDeveloperListMore];
+            }
         }
 
         public AboutWindowViewModel()

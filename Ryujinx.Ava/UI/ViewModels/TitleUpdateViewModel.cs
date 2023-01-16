@@ -181,7 +181,9 @@ public class TitleUpdateViewModel : BaseModel
             {
                 Dispatcher.UIThread.Post(async () =>
                 {
-                    await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[LocaleKeys.DialogDlcLoadNcaErrorMessage], ex.Message, path));
+                    LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.DialogLoadNcaErrorMessage, ex.Message, path);
+
+                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogLoadNcaErrorMessage]);
                 });
             }
         }

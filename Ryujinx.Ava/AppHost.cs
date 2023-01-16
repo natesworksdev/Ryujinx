@@ -460,10 +460,11 @@ namespace Ryujinx.Ava
                         {
                             if (userError == UserError.NoFirmware)
                             {
+                                LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.DialogFirmwareInstallEmbeddedMessage, firmwareVersion.VersionString);
+
                                 UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
                                     LocaleManager.Instance[LocaleKeys.DialogFirmwareNoFirmwareInstalledMessage],
-                                    string.Format(LocaleManager.Instance[LocaleKeys.DialogFirmwareInstallEmbeddedMessage],
-                                    firmwareVersion.VersionString),
+                                    LocaleManager.Instance[LocaleKeys.DialogFirmwareInstallEmbeddedMessage],
                                     LocaleManager.Instance[LocaleKeys.InputDialogYes],
                                     LocaleManager.Instance[LocaleKeys.InputDialogNo],
                                     "");
@@ -492,11 +493,12 @@ namespace Ryujinx.Ava
 
                                 _viewModel.RefreshFirmwareStatus();
 
+                                LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.DialogFirmwareInstalledMessage, firmwareVersion.VersionString);
+                                LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.DialogFirmwareInstallEmbeddedSuccessMessage, firmwareVersion.VersionString);
+
                                 await ContentDialogHelper.CreateInfoDialog(
-                                    string.Format(LocaleManager.Instance[LocaleKeys.DialogFirmwareInstalledMessage],
-                                    firmwareVersion.VersionString),
-                                    string.Format(LocaleManager.Instance[LocaleKeys.DialogFirmwareInstallEmbeddedSuccessMessage],
-                                    firmwareVersion.VersionString),
+                                    LocaleManager.Instance[LocaleKeys.DialogFirmwareInstalledMessage],
+                                    LocaleManager.Instance[LocaleKeys.DialogFirmwareInstallEmbeddedSuccessMessage],
                                     LocaleManager.Instance[LocaleKeys.InputDialogOk],
                                     "",
                                     LocaleManager.Instance[LocaleKeys.RyujinxInfo]);

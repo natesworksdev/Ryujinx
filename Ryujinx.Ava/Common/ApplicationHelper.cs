@@ -80,8 +80,9 @@ namespace Ryujinx.Ava.Common
                 {
                     Dispatcher.UIThread.Post(async () =>
                     {
-                        await ContentDialogHelper.CreateErrorDialog(
-                            string.Format(LocaleManager.Instance[LocaleKeys.DialogMessageCreateSaveErrorMessage], result.ToStringWithName()));
+                        LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.DialogMessageCreateSaveErrorMessage, result.ToStringWithName());
+
+                        await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogMessageCreateSaveErrorMessage]);
                     });
 
                     return false;
@@ -100,7 +101,9 @@ namespace Ryujinx.Ava.Common
 
             Dispatcher.UIThread.Post(async () =>
             {
-                await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[LocaleKeys.DialogMessageFindSaveErrorMessage], result.ToStringWithName()));
+                LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.DialogMessageFindSaveErrorMessage, result.ToStringWithName());
+
+                await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogMessageFindSaveErrorMessage]);
             });
 
             return false;
@@ -163,8 +166,10 @@ namespace Ryujinx.Ava.Common
                 {
                     Dispatcher.UIThread.Post(async () =>
                     {
+                        LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.DialogNcaExtractionMessage, ncaSectionType, Path.GetFileName(titleFilePath));
+
                         UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
-                            string.Format(LocaleManager.Instance[LocaleKeys.DialogNcaExtractionMessage], ncaSectionType, Path.GetFileName(titleFilePath)),
+                            LocaleManager.Instance[LocaleKeys.DialogNcaExtractionMessage],
                             "",
                             "",
                             LocaleManager.Instance[LocaleKeys.InputDialogCancel],

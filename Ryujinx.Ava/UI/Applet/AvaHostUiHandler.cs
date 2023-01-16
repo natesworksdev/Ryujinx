@@ -35,11 +35,13 @@ namespace Ryujinx.Ava.UI.Applet
 
             LocaleKeys key = args.PlayerCountMin == args.PlayerCountMax ? LocaleKeys.DialogControllerAppletMessage : LocaleKeys.DialogControllerAppletMessagePlayerRange;
 
-            string message = string.Format(LocaleManager.Instance[key],
-                                           playerCount,
-                                           args.SupportedStyles,
-                                           string.Join(", ", args.SupportedPlayers),
-                                           args.IsDocked ? LocaleManager.Instance[LocaleKeys.DialogControllerAppletDockModeSet] : "");
+            LocaleManager.Instance.UpdateDynamicValue(key,
+                playerCount,
+                args.SupportedStyles,
+                string.Join(", ", args.SupportedPlayers),
+                args.IsDocked ? LocaleManager.Instance[LocaleKeys.DialogControllerAppletDockModeSet] : "");
+
+            string message = LocaleManager.Instance[key];
 
             return DisplayMessageDialog(LocaleManager.Instance[LocaleKeys.DialogControllerAppletTitle], message);
         }
@@ -92,7 +94,9 @@ namespace Ryujinx.Ava.UI.Applet
                 }
                 catch (Exception ex)
                 {
-                    await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[LocaleKeys.DialogMessageDialogErrorExceptionMessage], ex));
+                    LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.DialogMessageDialogErrorExceptionMessage, ex);
+            
+                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogMessageDialogErrorExceptionMessage]);
 
                     dialogCloseEvent.Set();
                 }
@@ -126,7 +130,10 @@ namespace Ryujinx.Ava.UI.Applet
                 catch (Exception ex)
                 {
                     error = true;
-                    await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[LocaleKeys.DialogSoftwareKeyboardErrorExceptionMessage], ex));
+
+                    LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.DialogSoftwareKeyboardErrorExceptionMessage, ex);
+
+                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogSoftwareKeyboardErrorExceptionMessage]);
                 }
                 finally
                 {
@@ -181,7 +188,10 @@ namespace Ryujinx.Ava.UI.Applet
                 catch (Exception ex)
                 {
                     dialogCloseEvent.Set();
-                    await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[LocaleKeys.DialogErrorAppletErrorExceptionMessage], ex));
+
+                    LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.DialogErrorAppletErrorExceptionMessage, ex);
+
+                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogErrorAppletErrorExceptionMessage]);
                 }
             });
 

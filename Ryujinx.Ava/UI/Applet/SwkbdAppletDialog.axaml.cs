@@ -139,14 +139,20 @@ namespace Ryujinx.Ava.UI.Controls
             else if (_inputMin > 0 && _inputMax == int.MaxValue)
             {
                 Error.IsVisible = true;
-                Error.Text = string.Format(LocaleManager.Instance[LocaleKeys.SwkbdMinCharacters], _inputMin);
+
+                LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.SwkbdMinCharacters, _inputMin);
+
+                Error.Text = LocaleManager.Instance[LocaleKeys.SwkbdMinCharacters];
 
                 _checkLength = length => _inputMin <= length;
             }
             else
             {
                 Error.IsVisible = true;
-                Error.Text = string.Format(LocaleManager.Instance[LocaleKeys.SwkbdMinRangeCharacters], _inputMin, _inputMax);
+
+                LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.SwkbdMinRangeCharacters, _inputMin, _inputMax);
+
+                Error.Text = LocaleManager.Instance[LocaleKeys.SwkbdMinRangeCharacters];
 
                 _checkLength = length => _inputMin <= length && length <= _inputMax;
             }

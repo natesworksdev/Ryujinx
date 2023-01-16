@@ -86,7 +86,9 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void PrintHeading()
         {
-            Heading.Text = string.Format(LocaleManager.Instance[LocaleKeys.DlcWindowHeading], _downloadableContents.Count, _titleName, _titleId.ToString("X16"));
+            LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.DlcWindowHeading, _downloadableContents.Count, _titleName, _titleId.ToString("X16"));
+
+            Heading.Text = LocaleManager.Instance[LocaleKeys.DlcWindowHeading];
         }
 
         private void LoadDownloadableContents()
@@ -133,7 +135,9 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[LocaleKeys.DialogDlcLoadNcaErrorMessage], ex.Message, containerPath));
+                    LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.DialogLoadNcaErrorMessage, ex.Message, containerPath);
+
+                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogLoadNcaErrorMessage]);
                 });
             }
 
