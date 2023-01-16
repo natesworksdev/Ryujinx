@@ -49,10 +49,7 @@ namespace Ryujinx.Ava.Common.Locale
             // Load en_US as default, if the target language translation is incomplete.
             LoadDefaultLanguage();
 
-            if (localeLanguageCode != DefaultLanguageCode)
-            {
-                LoadLanguage(localeLanguageCode);
-            }
+            LoadLanguage(localeLanguageCode);
         }
 
         public string this[LocaleKeys key]
