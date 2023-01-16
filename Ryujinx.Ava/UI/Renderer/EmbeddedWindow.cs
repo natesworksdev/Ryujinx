@@ -118,6 +118,7 @@ namespace Ryujinx.Ava.UI.Renderer
             if (ConfigurationState.Instance.Graphics.GraphicsBackend.Value == GraphicsBackend.Vulkan)
             {
                 X11Window = new GLXWindow(new NativeHandle(X11.DefaultDisplay), new NativeHandle(control.Handle));
+                X11Window.Hide();
             }
             else
             {
