@@ -110,7 +110,7 @@ namespace Ryujinx.Ui.Common.Helper
         {
             NSString nsStringPath = new(path);
             IntPtr nsUrl = objc_getClass("NSURL");
-            var urlPtr = IntPtr_objc_msgSend(nsUrl, "URLWithString:", nsStringPath);
+            var urlPtr = IntPtr_objc_msgSend(nsUrl, "fileURLWithPath:", nsStringPath);
 
             IntPtr nsArray = objc_getClass("NSArray");
             IntPtr urlArray = IntPtr_objc_msgSend(nsArray, "arrayWithObject:", urlPtr);
