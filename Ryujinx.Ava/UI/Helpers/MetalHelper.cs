@@ -35,5 +35,10 @@ namespace Ryujinx.Ava.UI.Helpers
             nsView = child;
             return metalLayer;
         }
+
+        public static void DestroyMetalLayer(IntPtr nsView, IntPtr metalLayer)
+        {
+            // TODO
+        }
     }
 }

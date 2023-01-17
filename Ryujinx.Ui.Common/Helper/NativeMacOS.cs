@@ -75,6 +75,25 @@ namespace Ryujinx.Ui.Common.Helper
                 }
             }
 
+            public void OpenURL()
+            {
+                IntPtr nsWorkspace = objc_getClass("NSWorkspace");
+                IntPtr sharedWorkspace = IntPtr_objc_msgSend(nsWorkspace, "sharedWorkspace");
+
+                bool_objc_msgSend(sharedWorkspace, "openURL:", URLPtr);
+            }
+
+            public void ActivateFileViewerSelectingURL()
+            {
+                IntPtr nsArray = objc_getClass("NSArray");
+                IntPtr urlArray = IntPtr_objc_msgSend(nsArray, "arrayWithObject:", URLPtr);
+
+                IntPtr nsWorkspace = objc_getClass("NSWorkspace");
+                IntPtr sharedWorkspace = IntPtr_objc_msgSend(nsWorkspace, "sharedWorkspace");
+
+                objc_msgSend(sharedWorkspace, "activateFileViewerSelectingURLs:", urlArray);
+            }
+
             public static implicit operator IntPtr(NSURL nsUrl) => nsUrl.URLPtr;
         }
 

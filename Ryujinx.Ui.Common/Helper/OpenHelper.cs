@@ -56,13 +56,7 @@ namespace Ryujinx.Ui.Common.Helper
                 else if (OperatingSystem.IsMacOS())
                 {
                     NativeMacOS.NSURL nsUrl = new(path);
-                    IntPtr nsArray = NativeMacOS.objc_getClass("NSArray");
-                    IntPtr urlArray = NativeMacOS.IntPtr_objc_msgSend(nsArray, "arrayWithObject:", nsUrl);
-
-                    IntPtr nsWorkspace = NativeMacOS.objc_getClass("NSWorkspace");
-                    IntPtr sharedWorkspace = NativeMacOS.IntPtr_objc_msgSend(nsWorkspace, "sharedWorkspace");
-
-                    NativeMacOS.objc_msgSend(sharedWorkspace, "activateFileViewerSelectingURLs:", urlArray);
+                    nsUrl.ActivateFileViewerSelectingURL();
                 }
                 else if (OperatingSystem.IsLinux())
                 {
@@ -92,11 +86,7 @@ namespace Ryujinx.Ui.Common.Helper
             else if (OperatingSystem.IsMacOS())
             {
                 NativeMacOS.NSURL nsUrl = new(url);
-
-                IntPtr nsWorkspace = NativeMacOS.objc_getClass("NSWorkspace");
-                IntPtr sharedWorkspace = NativeMacOS.IntPtr_objc_msgSend(nsWorkspace, "sharedWorkspace");
-
-                NativeMacOS.bool_objc_msgSend(sharedWorkspace, "openURL:", nsUrl);
+                nsUrl.OpenURL();
             }
             else
             {
