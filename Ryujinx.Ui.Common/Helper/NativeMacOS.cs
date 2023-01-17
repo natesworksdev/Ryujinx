@@ -57,46 +57,6 @@ namespace Ryujinx.Ui.Common.Helper
             public static implicit operator Selector(string value) => new(value);
         }
 
-        public struct NSURL
-        {
-            public readonly IntPtr URLPtr;
-
-            public NSURL(string path)
-            {
-                NSString nsStringPath = new(path);
-                IntPtr nsUrl = objc_getClass("NSURL");
-                if (File.Exists(path))
-                {
-                    URLPtr = IntPtr_objc_msgSend(nsUrl, "fileURLWithPath:", nsStringPath);
-                }
-                else
-                {
-                    URLPtr = IntPtr_objc_msgSend(nsUrl, "URLWithString:", nsStringPath);
-                }
-            }
-
-            public void OpenURL()
-            {
-                IntPtr nsWorkspace = objc_getClass("NSWorkspace");
-                IntPtr sharedWorkspace = IntPtr_objc_msgSend(nsWorkspace, "sharedWorkspace");
-
-                bool_objc_msgSend(sharedWorkspace, "openURL:", URLPtr);
-            }
-
-            public void ActivateFileViewerSelectingURL()
-            {
-                IntPtr nsArray = objc_getClass("NSArray");
-                IntPtr urlArray = IntPtr_objc_msgSend(nsArray, "arrayWithObject:", URLPtr);
-
-                IntPtr nsWorkspace = objc_getClass("NSWorkspace");
-                IntPtr sharedWorkspace = IntPtr_objc_msgSend(nsWorkspace, "sharedWorkspace");
-
-                objc_msgSend(sharedWorkspace, "activateFileViewerSelectingURLs:", urlArray);
-            }
-
-            public static implicit operator IntPtr(NSURL nsUrl) => nsUrl.URLPtr;
-        }
-
         public struct NSString
         {
             public readonly IntPtr StrPtr;
@@ -132,6 +92,30 @@ namespace Ryujinx.Ui.Common.Helper
                 Pos = new NSPoint(x, y);
                 Size = new NSPoint(width, height);
             }
+        }
+
+        public static void OpenURL(string path)
+        {
+            NSString nsStringPath = new(path);
+            IntPtr nsUrl = objc_getClass("NSURL");
+            var URLPtr = IntPtr_objc_msgSend(nsUrl, "URLWithString:", nsStringPath);
+            IntPtr nsWorkspace = objc_getClass("NSWorkspace");
+            IntPtr sharedWorkspace = IntPtr_objc_msgSend(nsWorkspace, "sharedWorkspace");
+
+            bool_objc_msgSend(sharedWorkspace, "openURL:", URLPtr);
+        }
+
+        public static void ActivateFileViewerSelectingURL(string path)
+        {
+            NSString nsStringPath = new(path);
+            IntPtr nsUrl = objc_getClass("NSURL");
+            IntPtr nsArray = objc_getClass("NSArray");
+            IntPtr urlArray = IntPtr_objc_msgSend(nsArray, "arrayWithObject:", nsUrl);
+
+            IntPtr nsWorkspace = objc_getClass("NSWorkspace");
+            IntPtr sharedWorkspace = IntPtr_objc_msgSend(nsWorkspace, "sharedWorkspace");
+
+            objc_msgSend(sharedWorkspace, "activateFileViewerSelectingURLs:", urlArray);
         }
     }
 }

@@ -55,8 +55,7 @@ namespace Ryujinx.Ui.Common.Helper
                 }
                 else if (OperatingSystem.IsMacOS())
                 {
-                    NativeMacOS.NSURL nsUrl = new(path);
-                    nsUrl.ActivateFileViewerSelectingURL();
+                    NativeMacOS.ActivateFileViewerSelectingURL(path);
                 }
                 else if (OperatingSystem.IsLinux())
                 {
@@ -85,8 +84,7 @@ namespace Ryujinx.Ui.Common.Helper
             }
             else if (OperatingSystem.IsMacOS())
             {
-                NativeMacOS.NSURL nsUrl = new(url);
-                nsUrl.OpenURL();
+                NativeMacOS.OpenURL(url);
             }
             else
             {
