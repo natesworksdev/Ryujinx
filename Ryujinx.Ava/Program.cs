@@ -205,17 +205,7 @@ namespace Ryujinx.Ava
             {
                 if (ConfigurationFileFormat.TryLoad(ConfigurationPath, out ConfigurationFileFormat configurationFileFormat))
                 {
-                    try
-                    {
-                        ConfigurationState.Instance.Load(configurationFileFormat, ConfigurationPath);
-                    }
-                    catch
-                    {
-                        ConfigurationState.Instance.LoadDefault();
-                        ConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
-                        
-                        Logger.Warning?.PrintMsg(LogClass.Application, $"Failed to load config! Loading the default config instead.");
-                    }
+                    ConfigurationState.Instance.Load(configurationFileFormat, ConfigurationPath);
                 }
                 else
                 {
