@@ -200,6 +200,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             else
             {
                 texCallBuilder.Append(')');
+
                 if (texOp.Inst == Instruction.ImageLoad)
                 {
                     texCallBuilder.Append(GetMaskMultiDest(texOp.Index));
