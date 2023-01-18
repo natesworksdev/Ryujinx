@@ -292,7 +292,6 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             _logoPosition = new Point(logoPositionX, logoPositionY);
         }
-        
         private static RectangleF MeasureString(string text, Font font)
         {
             RendererOptions options = new RendererOptions(font);
