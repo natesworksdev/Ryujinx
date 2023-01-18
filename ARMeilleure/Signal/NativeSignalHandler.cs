@@ -258,24 +258,23 @@ namespace ARMeilleure.Signal
                 const ulong mcontextOffset = 48; // uc_mcontext
                 Operand ctxPtr = context.Load(OperandType.I64, context.Add(ucontextPtr, Const(mcontextOffset)));
 
-                if (RuntimeInformation.OSArchitecture == Architecture.Arm64)
+                if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
                 {
                     const ulong esrOffset = 8; // __es.__esr
                     Operand esr = context.Load(OperandType.I64, context.Add(ctxPtr, Const(esrOffset)));
                     return context.BitwiseAnd(esr, Const(0x40ul));
                 }
 
-                if (RuntimeInformation.OSArchitecture == Architecture.X64)
+                if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
                 {
                     const ulong errOffset = 4; // __es.__err
                     Operand err = context.Load(OperandType.I64, context.Add(ctxPtr, Const(errOffset)));
                     return context.BitwiseAnd(err, Const(2ul));
                 }
             }
-
-            if (OperatingSystem.IsLinux())
+            else if (OperatingSystem.IsLinux())
             {
-                if (RuntimeInformation.OSArchitecture == Architecture.Arm64)
+                if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
                 {
                     Operand auxPtr = context.AllocateLocal(OperandType.I64);
 
@@ -307,7 +306,7 @@ namespace ARMeilleure.Signal
                     return context.BitwiseAnd(esr, Const(0x40ul));
                 }
 
-                if (RuntimeInformation.OSArchitecture == Architecture.X64)
+                if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
                 {
                     const int errOffset = 192; // uc_mcontext.gregs[REG_ERR]
                     Operand err = context.Load(OperandType.I64, context.Add(ucontextPtr, Const(errOffset)));
@@ -315,7 +314,7 @@ namespace ARMeilleure.Signal
                 }
             }
 
-            throw new NotImplementedException();
+            throw new PlatformNotSupportedException();
         }
 
         private static UnixExceptionHandler GenerateUnixSignalHandler(IntPtr signalStructPtr)
