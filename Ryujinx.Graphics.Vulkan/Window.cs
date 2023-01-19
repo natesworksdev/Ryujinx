@@ -29,6 +29,7 @@ namespace Ryujinx.Graphics.Vulkan
         private bool _vsyncEnabled;
         private bool _vsyncModeChanged;
         private VkFormat _format;
+
         public unsafe Window(VulkanRenderer gd, SurfaceKHR surface, PhysicalDevice physicalDevice, Device device)
         {
             _gd = gd;
