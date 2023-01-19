@@ -329,6 +329,7 @@ namespace Ryujinx.Ava.UI.Windows
         {
             HotKeyManager.SetHotKey(FullscreenHotKey,  new KeyGesture(Key.Enter, KeyModifiers.Alt));
             HotKeyManager.SetHotKey(FullscreenHotKey2, new KeyGesture(Key.F11));
+            HotKeyManager.SetHotKey(FullscreenHotKeyMacOS, new KeyGesture(Key.F, KeyModifiers.Control | KeyModifiers.Meta)); //Mac OS Control+Cmd+F
             HotKeyManager.SetHotKey(DockToggleHotKey,  new KeyGesture(Key.F9));
             HotKeyManager.SetHotKey(ExitHotKey,        new KeyGesture(Key.Escape));
         }
