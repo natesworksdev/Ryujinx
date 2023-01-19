@@ -14,6 +14,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading;
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
@@ -44,6 +45,8 @@ namespace ARMeilleure.Translation
         private readonly IJitMemoryAllocator _allocator;
         private readonly ConcurrentQueue<KeyValuePair<ulong, TranslatedFunction>> _oldFuncs;
 
+        private readonly Ptc _ptc;
+
         internal TranslatorCache<TranslatedFunction> Functions { get; }
         internal AddressTable<ulong> FunctionTable { get; }
         internal EntryTable<uint> CountTable { get; }
@@ -63,6 +66,8 @@ namespace ARMeilleure.Translation
 
             _oldFuncs = new ConcurrentQueue<KeyValuePair<ulong, TranslatedFunction>>();
 
+            _ptc = new Ptc();
+
             Queue = new TranslatorQueue();
 
             JitCache.Initialize(allocator);
@@ -76,7 +81,22 @@ namespace ARMeilleure.Translation
 
             if (memory.Type.IsHostMapped())
             {
-                NativeSignalHandler.InitializeSignalHandler();
+                NativeSignalHandler.InitializeSignalHandler(allocator.GetPageSize());
+            }
+        }
+
+        public IPtcLoadState LoadDiskCache(string titleIdText, string displayVersion, bool enabled)
+        {
+            _ptc.Initialize(titleIdText, displayVersion, enabled, Memory.Type);
+            return _ptc;
+        }
+
+        public void PrepareCodeRange(ulong address, ulong size)
+        {
+            if (_ptc.Profiler.StaticCodeSize == 0)
+            {
+                _ptc.Profiler.StaticCodeStart = address;
+                _ptc.Profiler.StaticCodeSize = size;
             }
         }
 
@@ -86,16 +106,16 @@ namespace ARMeilleure.Translation
             {
                 IsReadyForTranslation.WaitOne();
 
-                if (Ptc.State == PtcState.Enabled)
+                if (_ptc.State == PtcState.Enabled)
                 {
                     Debug.Assert(Functions.Count == 0);
-                    Ptc.LoadTranslations(this);
-                    Ptc.MakeAndSaveTranslations(this);
+                    _ptc.LoadTranslations(this);
+                    _ptc.MakeAndSaveTranslations(this);
                 }
 
-                PtcProfiler.Start();
+                _ptc.Profiler.Start();
 
-                Ptc.Disable();
+                _ptc.Disable();
 
                 // Simple heuristic, should be user configurable in future. (1 for 4 core/ht or less, 2 for 6 core + ht
                 // etc). All threads are normal priority except from the last, which just fills as much of the last core
@@ -148,6 +168,12 @@ namespace ARMeilleure.Translation
                 Stubs.Dispose();
                 FunctionTable.Dispose();
                 CountTable.Dispose();
+
+                _ptc.Close();
+                _ptc.Profiler.Stop();
+
+                _ptc.Dispose();
+                _ptc.Profiler.Dispose();
             }
         }
 
@@ -189,9 +215,9 @@ namespace ARMeilleure.Translation
                     func = oldFunc;
                 }
 
-                if (PtcProfiler.Enabled)
+                if (_ptc.Profiler.Enabled)
                 {
-                    PtcProfiler.AddEntry(address, mode, highCq: false);
+                    _ptc.Profiler.AddEntry(address, mode, highCq: false);
                 }
 
                 RegisterFunction(address, func);
@@ -217,6 +243,7 @@ namespace ARMeilleure.Translation
                 Stubs,
                 address,
                 highCq,
+                _ptc.State != PtcState.Disabled,
                 mode: Aarch32Mode.User);
 
             Logger.StartPass(PassName.Decoding);
@@ -256,13 +283,13 @@ namespace ARMeilleure.Translation
                 options |= CompilerOptions.Relocatable;
             }
 
-            CompiledFunction compiledFunc = Compiler.Compile(cfg, argTypes, retType, options);
+            CompiledFunction compiledFunc = Compiler.Compile(cfg, argTypes, retType, options, RuntimeInformation.ProcessArchitecture);
 
             if (context.HasPtc && !singleStep)
             {
                 Hash128 hash = Ptc.ComputeHash(Memory, address, funcSize);
 
-                Ptc.WriteCompiledFunction(address, funcSize, hash, highCq, compiledFunc);
+                _ptc.WriteCompiledFunction(address, funcSize, hash, highCq, compiledFunc);
             }
 
             GuestFunction func = compiledFunc.Map<GuestFunction>();
@@ -284,9 +311,9 @@ namespace ARMeilleure.Translation
                     return func;
                 });
 
-                if (PtcProfiler.Enabled)
+                if (_ptc.Profiler.Enabled)
                 {
-                    PtcProfiler.UpdateEntry(request.Address, request.Mode, highCq: true);
+                    _ptc.Profiler.UpdateEntry(request.Address, request.Mode, highCq: true);
                 }
 
                 RegisterFunction(request.Address, func);
@@ -333,9 +360,14 @@ namespace ARMeilleure.Translation
                     }
                 }
 
-                if (block.Address == context.EntryAddress && !context.HighCq)
+                if (block.Address == context.EntryAddress)
                 {
-                    EmitRejitCheck(context, out counter);
+                    if (!context.HighCq)
+                    {
+                        EmitRejitCheck(context, out counter);
+                    }
+
+                    context.ClearQcFlag();
                 }
 
                 context.CurrBlock = block;
@@ -360,9 +392,14 @@ namespace ARMeilleure.Translation
 
                         bool isLastOp = opcIndex == block.OpCodes.Count - 1;
 
-                        if (isLastOp && block.Branch != null && !block.Branch.Exit && block.Branch.Address <= block.Address)
+                        if (isLastOp)
                         {
-                            EmitSynchronization(context);
+                            context.SyncQcFlag();
+
+                            if (block.Branch != null && !block.Branch.Exit && block.Branch.Address <= block.Address)
+                            {
+                                EmitSynchronization(context);
+                            }
                         }
 
                         Operand lblPredicateSkip = default;

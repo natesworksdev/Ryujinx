@@ -1,11 +1,11 @@
-﻿using Ryujinx.Ava.Ui.ViewModels;
+﻿using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Common;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Ui.Common.Configuration;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text.Json;
 
 namespace Ryujinx.Ava.Common.Locale
 {
@@ -13,17 +13,17 @@ namespace Ryujinx.Ava.Common.Locale
     {
         private const string DefaultLanguageCode = "en_US";
 
-        private Dictionary<string, string> _localeStrings;
-        private ConcurrentDictionary<string, object[]> _dynamicValues;
+        private Dictionary<LocaleKeys, string> _localeStrings;
+        private ConcurrentDictionary<LocaleKeys, object[]> _dynamicValues;
 
         public static LocaleManager Instance { get; } = new LocaleManager();
-        public Dictionary<string, string> LocaleStrings { get => _localeStrings; set => _localeStrings = value; }
+        public Dictionary<LocaleKeys, string> LocaleStrings { get => _localeStrings; set => _localeStrings = value; }
 
 
         public LocaleManager()
         {
-            _localeStrings = new Dictionary<string, string>();
-            _dynamicValues = new ConcurrentDictionary<string, object[]>();
+            _localeStrings = new Dictionary<LocaleKeys, string>();
+            _dynamicValues = new ConcurrentDictionary<LocaleKeys, object[]>();
 
             Load();
         }
@@ -49,7 +49,7 @@ namespace Ryujinx.Ava.Common.Locale
             }
         }
 
-        public string this[string key]
+        public string this[LocaleKeys key]
         {
             get
             {
@@ -63,7 +63,7 @@ namespace Ryujinx.Ava.Common.Locale
                     return value;
                 }
 
-                return key;
+                return key.ToString();
             }
             set
             {
@@ -73,7 +73,7 @@ namespace Ryujinx.Ava.Common.Locale
             }
         }
 
-        public void UpdateDynamicValue(string key, params object[] values)
+        public void UpdateDynamicValue(LocaleKeys key, params object[] values)
         {
             _dynamicValues[key] = values;
 
@@ -98,7 +98,10 @@ namespace Ryujinx.Ava.Common.Locale
 
             foreach (var item in strings)
             {
-                this[item.Key] = item.Value;
+                if (Enum.TryParse<LocaleKeys>(item.Key, out var key))
+                {
+                    this[key] = item.Value;
+                }
             }
 
             if (Program.PreviewerDetached)

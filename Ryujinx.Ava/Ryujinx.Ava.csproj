@@ -58,6 +58,7 @@
     <ProjectReference Include="..\Ryujinx.Graphics.OpenGL\Ryujinx.Graphics.OpenGL.csproj" />
     <ProjectReference Include="..\Ryujinx.Graphics.Gpu\Ryujinx.Graphics.Gpu.csproj" />
     <ProjectReference Include="..\Ryujinx.Ui.Common\Ryujinx.Ui.Common.csproj" />
+    <ProjectReference Include="..\Ryujinx.Ui.LocaleGenerator\Ryujinx.Ui.LocaleGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -72,6 +73,16 @@
     <Content Include="..\LICENSE.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <TargetPath>LICENSE.txt</TargetPath>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
+    <Content Include="..\distribution\linux\Ryujinx.sh">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\distribution\linux\mime\Ryujinx.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <TargetPath>mime\Ryujinx.xml</TargetPath>
     </Content>
   </ItemGroup>
 
@@ -119,6 +130,18 @@
       <DependentUpon>GameListView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="UI\Views\User\UserEditorView.axaml.cs">
+      <DependentUpon>UserEditor.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="UI\Views\User\UserRecovererView.axaml.cs">
+      <DependentUpon>UserRecoverer.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="UI\Views\User\UserSelectorView.axaml.cs">
+      <DependentUpon>UserSelector.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -134,6 +157,7 @@
     <None Remove="Assets\Locales\pt_BR.json" />
     <None Remove="Assets\Locales\ru_RU.json" />
     <None Remove="Assets\Locales\tr_TR.json" />
+    <None Remove="Assets\Locales\uk_UA.json" />
     <None Remove="Assets\Locales\zh_CN.json" />
     <None Remove="Assets\Locales\zh_TW.json" />
     <None Remove="Assets\Styles\Styles.xaml" />
@@ -154,8 +178,12 @@
     <EmbeddedResource Include="Assets\Locales\pt_BR.json" />
     <EmbeddedResource Include="Assets\Locales\ru_RU.json" />
     <EmbeddedResource Include="Assets\Locales\tr_TR.json" />
+    <EmbeddedResource Include="Assets\Locales\uk_UA.json" />
     <EmbeddedResource Include="Assets\Locales\zh_CN.json" />
     <EmbeddedResource Include="Assets\Locales\zh_TW.json" />
     <EmbeddedResource Include="Assets\Styles\Styles.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+      <AdditionalFiles Include="Assets\Locales\en_US.json" />
   </ItemGroup>
 </Project>

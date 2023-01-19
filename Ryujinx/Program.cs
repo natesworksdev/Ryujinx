@@ -1,11 +1,10 @@
-using ARMeilleure.Translation.PTC;
 using Gtk;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Common.Logging;
-using Ryujinx.Common.SystemInterop;
 using Ryujinx.Common.SystemInfo;
+using Ryujinx.Common.SystemInterop;
 using Ryujinx.Modules;
 using Ryujinx.SDL2.Common;
 using Ryujinx.Ui;
@@ -19,6 +18,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 
 namespace Ryujinx
@@ -73,9 +73,51 @@ namespace Ryujinx
             }
         }
 
+        [SupportedOSPlatform("linux")]
+        static void RegisterMimeTypes()
+        {
+            if (ReleaseInformation.IsFlatHubBuild())
+            {
+                return;
+            }
+
+            string mimeDbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "mime");
+
+            if (!File.Exists(Path.Combine(mimeDbPath, "packages", "Ryujinx.xml")))
+            {
+                string mimeTypesFile = Path.Combine(ReleaseInformation.GetBaseApplicationDirectory(), "mime", "Ryujinx.xml");
+                using Process mimeProcess = new();
+
+                mimeProcess.StartInfo.FileName = "xdg-mime";
+                mimeProcess.StartInfo.Arguments = $"install --novendor --mode user {mimeTypesFile}";
+
+                mimeProcess.Start();
+                mimeProcess.WaitForExit();
+
+                if (mimeProcess.ExitCode != 0)
+                {
+                    Logger.Error?.PrintMsg(LogClass.Application, $"Unable to install mime types. Make sure xdg-utils is installed. Process exited with code: {mimeProcess.ExitCode}");
+                    return;
+                }
+
+                using Process updateMimeProcess = new();
+
+                updateMimeProcess.StartInfo.FileName = "update-mime-database";
+                updateMimeProcess.StartInfo.Arguments = mimeDbPath;
+
+                updateMimeProcess.Start();
+                updateMimeProcess.WaitForExit();
+
+                if (updateMimeProcess.ExitCode != 0)
+                {
+                    Logger.Error?.PrintMsg(LogClass.Application, $"Could not update local mime database. Process exited with code: {updateMimeProcess.ExitCode}");
+                }
+            }
+        }
+
         static void Main(string[] args)
         {
-            Version = ReleaseInformations.GetVersion();
+            Version = ReleaseInformation.GetVersion();
 
             if (OperatingSystem.IsWindows() && !OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17134))
             {
@@ -102,6 +144,8 @@ namespace Ryujinx
             if (OperatingSystem.IsLinux())
             {
                 XInitThreads();
+                Environment.SetEnvironmentVariable("GDK_BACKEND", "x11");
+                setenv("GDK_BACKEND", "x11", 1);
             }
 
             if (OperatingSystem.IsMacOS())
@@ -144,6 +188,12 @@ namespace Ryujinx
 
             // Initialize the logger system.
             LoggerModule.Initialize();
+
+            // Register mime types on linux.
+            if (OperatingSystem.IsLinux())
+            {
+                RegisterMimeTypes();
+            }
 
             // Initialize Discord integration.
             DiscordIntegrationModule.Initialize();
@@ -219,6 +269,12 @@ namespace Ryujinx
                     ConfigurationState.Instance.Graphics.GraphicsBackend.Value = GraphicsBackend.Vulkan;
                     showVulkanPrompt = false;
                 }
+            }
+
+            // Check if docked mode was overriden.
+            if (CommandLineState.OverrideDockedMode.HasValue)
+            {
+                ConfigurationState.Instance.System.EnableDockedMode.Value = CommandLineState.OverrideDockedMode.Value;
             }
 
             // Logging system information.
@@ -308,9 +364,6 @@ namespace Ryujinx
 
         private static void ProcessUnhandledException(Exception ex, bool isTerminating)
         {
-            Ptc.Close();
-            PtcProfiler.Stop();
-
             string message = $"Unhandled exception caught: {ex}";
 
             Logger.Error?.PrintMsg(LogClass.Application, message);
@@ -329,9 +382,6 @@ namespace Ryujinx
         public static void Exit()
         {
             DiscordIntegrationModule.Exit();
-
-            Ptc.Dispose();
-            PtcProfiler.Dispose();
 
             Logger.Shutdown();
         }

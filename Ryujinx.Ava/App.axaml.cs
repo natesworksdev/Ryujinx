@@ -5,8 +5,9 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using FluentAvalonia.Styling;
 using Ryujinx.Ava.Common.Locale;
-using Ryujinx.Ava.Ui.Controls;
-using Ryujinx.Ava.Ui.Windows;
+using Ryujinx.Ava.UI.Controls;
+using Ryujinx.Ava.UI.Helpers;
+using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Ui.Common.Configuration;
@@ -58,11 +59,11 @@ namespace Ryujinx.Ava
                 if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
                 {
                     var result = await ContentDialogHelper.CreateConfirmationDialog(
-                        LocaleManager.Instance["DialogThemeRestartMessage"],
-                        LocaleManager.Instance["DialogThemeRestartSubMessage"],
-                        LocaleManager.Instance["InputDialogYes"],
-                        LocaleManager.Instance["InputDialogNo"],
-                        LocaleManager.Instance["DialogRestartRequiredMessage"]);
+                        LocaleManager.Instance[LocaleKeys.DialogThemeRestartMessage],
+                        LocaleManager.Instance[LocaleKeys.DialogThemeRestartSubMessage],
+                        LocaleManager.Instance[LocaleKeys.InputDialogYes],
+                        LocaleManager.Instance[LocaleKeys.InputDialogNo],
+                        LocaleManager.Instance[LocaleKeys.DialogRestartRequiredMessage]);
 
                     if (result == UserResult.Yes)
                     {

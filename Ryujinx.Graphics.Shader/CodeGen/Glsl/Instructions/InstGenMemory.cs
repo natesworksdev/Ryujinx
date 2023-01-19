@@ -1,6 +1,8 @@
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
+using Ryujinx.Graphics.Shader.Translation;
 using System;
+using System.Text;
 
 using static Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions.InstGenHelper;
 using static Ryujinx.Graphics.Shader.StructuredIr.InstructionInfo;
@@ -23,7 +25,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     case Instruction.ImageStore:
                         return "// imageStore(bindless)";
                     case Instruction.ImageLoad:
-                        NumberFormatter.TryFormat(0, texOp.Format.GetComponentType(), out string imageConst);
+                        AggregateType componentType = texOp.Format.GetComponentType();
+
+                        NumberFormatter.TryFormat(0, componentType, out string imageConst);
+
+                        AggregateType outputType = texOp.GetVectorType(componentType);
+
+                        if ((outputType & AggregateType.ElementCountMask) != 0)
+                        {
+                            return $"{Declarations.GetVarTypeName(context, outputType, precise: false)}({imageConst})";
+                        }
+
                         return imageConst;
                     default:
                         return NumberFormatter.FormatInt(0);
@@ -33,11 +45,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             bool isArray   = (texOp.Type & SamplerType.Array)   != 0;
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
 
-            string texCall;
+            var texCallBuilder = new StringBuilder();
 
             if (texOp.Inst == Instruction.ImageAtomic)
             {
-                texCall = (texOp.Flags & TextureFlags.AtomicMask) switch {
+                texCallBuilder.Append((texOp.Flags & TextureFlags.AtomicMask) switch {
                     TextureFlags.Add        => "imageAtomicAdd",
                     TextureFlags.Minimum    => "imageAtomicMin",
                     TextureFlags.Maximum    => "imageAtomicMax",
@@ -49,16 +61,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     TextureFlags.Swap       => "imageAtomicExchange",
                     TextureFlags.CAS        => "imageAtomicCompSwap",
                     _                       => "imageAtomicAdd",
-                };
+                });
             }
             else
             {
-                texCall = texOp.Inst == Instruction.ImageLoad ? "imageLoad" : "imageStore";
+                texCallBuilder.Append(texOp.Inst == Instruction.ImageLoad ? "imageLoad" : "imageStore");
             }
 
             int srcIndex = isBindless ? 1 : 0;
 
-            string Src(VariableType type)
+            string Src(AggregateType type)
             {
                 return GetSoureExpr(context, texOp.GetSource(srcIndex++), type);
             }
@@ -67,12 +79,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             if (isIndexed)
             {
-                indexExpr = Src(VariableType.S32);
+                indexExpr = Src(AggregateType.S32);
             }
 
             string imageName = OperandManager.GetImageName(context.Config.Stage, texOp, indexExpr);
 
-            texCall += "(" + imageName;
+            texCallBuilder.Append('(');
+            texCallBuilder.Append(imageName);
 
             int coordsCount = texOp.Type.GetDimensions();
 
@@ -80,7 +93,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             void Append(string str)
             {
-                texCall += ", " + str;
+                texCallBuilder.Append(", ");
+                texCallBuilder.Append(str);
             }
 
             string ApplyScaling(string vector)
@@ -96,11 +110,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     if (pCount == 3 && isArray)
                     {
                         // The array index is not scaled, just x and y.
-                        vector = "ivec3(Helper_TexelFetchScale((" + vector + ").xy, " + scaleIndex + "), (" + vector + ").z)";
+                        vector = $"ivec3(Helper_TexelFetchScale(({vector}).xy, {scaleIndex}), ({vector}).z)";
                     }
                     else if (pCount == 2 && !isArray)
                     {
-                        vector = "Helper_TexelFetchScale(" + vector + ", " + scaleIndex + ")";
+                        vector = $"Helper_TexelFetchScale({vector}, {scaleIndex})";
                     }
                 }
 
@@ -113,19 +127,19 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                 for (int index = 0; index < pCount; index++)
                 {
-                    elems[index] = Src(VariableType.S32);
+                    elems[index] = Src(AggregateType.S32);
                 }
 
-                Append(ApplyScaling("ivec" + pCount + "(" + string.Join(", ", elems) + ")"));
+                Append(ApplyScaling($"ivec{pCount}({string.Join(", ", elems)})"));
             }
             else
             {
-                Append(Src(VariableType.S32));
+                Append(Src(AggregateType.S32));
             }
 
             if (texOp.Inst == Instruction.ImageStore)
             {
-                VariableType type = texOp.Format.GetComponentType();
+                AggregateType type = texOp.Format.GetComponentType();
 
                 string[] cElems = new string[4];
 
@@ -139,8 +153,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     {
                         cElems[index] = type switch
                         {
-                            VariableType.S32 => NumberFormatter.FormatInt(0),
-                            VariableType.U32 => NumberFormatter.FormatUint(0),
+                            AggregateType.S32 => NumberFormatter.FormatInt(0),
+                            AggregateType.U32 => NumberFormatter.FormatUint(0),
                             _                => NumberFormatter.FormatFloat(0)
                         };
                     }
@@ -148,17 +162,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                 string prefix = type switch
                 {
-                    VariableType.S32 => "i",
-                    VariableType.U32 => "u",
+                    AggregateType.S32 => "i",
+                    AggregateType.U32 => "u",
                     _                => string.Empty
                 };
 
-                Append(prefix + "vec4(" + string.Join(", ", cElems) + ")");
+                Append($"{prefix}vec4({string.Join(", ", cElems)})");
             }
 
             if (texOp.Inst == Instruction.ImageAtomic)
             {
-                VariableType type = texOp.Format.GetComponentType();
+                AggregateType type = texOp.Format.GetComponentType();
 
                 if ((texOp.Flags & TextureFlags.AtomicMask) == TextureFlags.CAS)
                 {
@@ -174,19 +188,26 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                 Append(value);
 
-                texCall += ")";
+                texCallBuilder.Append(')');
 
-                if (type != VariableType.S32)
+                if (type != AggregateType.S32)
                 {
-                    texCall = "int(" + texCall + ")";
+                    texCallBuilder
+                        .Insert(0, "int(")
+                        .Append(')');
                 }
             }
             else
             {
-                texCall += ")" + (texOp.Inst == Instruction.ImageLoad ? GetMask(texOp.Index) : "");
+                texCallBuilder.Append(')');
+
+                if (texOp.Inst == Instruction.ImageLoad)
+                {
+                    texCallBuilder.Append(GetMaskMultiDest(texOp.Index));
+                }
             }
 
-            return texCall;
+            return texCallBuilder.ToString();
         }
 
         public static string LoadAttribute(CodeGenContext context, AstOperation operation)
@@ -288,7 +309,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             if (isIndexed)
             {
-                indexExpr = GetSoureExpr(context, texOp.GetSource(0), VariableType.S32);
+                indexExpr = GetSoureExpr(context, texOp.GetSource(0), AggregateType.S32);
             }
 
             string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp, indexExpr);
@@ -303,14 +324,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                 for (int index = 0; index < coordsCount; index++)
                 {
-                    elems[index] = GetSoureExpr(context, texOp.GetSource(coordsIndex + index), VariableType.F32);
+                    elems[index] = GetSoureExpr(context, texOp.GetSource(coordsIndex + index), AggregateType.FP32);
                 }
 
                 coordsExpr = "vec" + coordsCount + "(" + string.Join(", ", elems) + ")";
             }
             else
             {
-                coordsExpr = GetSoureExpr(context, texOp.GetSource(coordsIndex), VariableType.F32);
+                coordsExpr = GetSoureExpr(context, texOp.GetSource(coordsIndex), AggregateType.FP32);
             }
 
             return $"textureQueryLod({samplerName}, {coordsExpr}){GetMask(texOp.Index)}";
@@ -362,9 +383,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             string offsetExpr = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
 
-            VariableType srcType = OperandManager.GetNodeDestType(context, src2);
+            AggregateType srcType = OperandManager.GetNodeDestType(context, src2);
 
-            string src = TypeConversion.ReinterpretCast(context, src2, srcType, VariableType.U32);
+            string src = TypeConversion.ReinterpretCast(context, src2, srcType, AggregateType.U32);
 
             return $"{arrayName}[{offsetExpr}] = {src}";
         }
@@ -376,9 +397,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             string offsetExpr = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
 
-            VariableType srcType = OperandManager.GetNodeDestType(context, src2);
+            AggregateType srcType = OperandManager.GetNodeDestType(context, src2);
 
-            string src = TypeConversion.ReinterpretCast(context, src2, srcType, VariableType.U32);
+            string src = TypeConversion.ReinterpretCast(context, src2, srcType, AggregateType.U32);
 
             return $"{HelperFunctionNames.StoreShared16}({offsetExpr}, {src})";
         }
@@ -390,9 +411,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             string offsetExpr = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
 
-            VariableType srcType = OperandManager.GetNodeDestType(context, src2);
+            AggregateType srcType = OperandManager.GetNodeDestType(context, src2);
 
-            string src = TypeConversion.ReinterpretCast(context, src2, srcType, VariableType.U32);
+            string src = TypeConversion.ReinterpretCast(context, src2, srcType, AggregateType.U32);
 
             return $"{HelperFunctionNames.StoreShared8}({offsetExpr}, {src})";
         }
@@ -406,9 +427,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             string indexExpr  = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
             string offsetExpr = GetSoureExpr(context, src2, GetSrcVarType(operation.Inst, 1));
 
-            VariableType srcType = OperandManager.GetNodeDestType(context, src3);
+            AggregateType srcType = OperandManager.GetNodeDestType(context, src3);
 
-            string src = TypeConversion.ReinterpretCast(context, src3, srcType, VariableType.U32);
+            string src = TypeConversion.ReinterpretCast(context, src3, srcType, AggregateType.U32);
 
             string sb = GetStorageBufferAccessor(indexExpr, offsetExpr, context.Config.Stage);
 
@@ -424,9 +445,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             string indexExpr  = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
             string offsetExpr = GetSoureExpr(context, src2, GetSrcVarType(operation.Inst, 1));
 
-            VariableType srcType = OperandManager.GetNodeDestType(context, src3);
+            AggregateType srcType = OperandManager.GetNodeDestType(context, src3);
 
-            string src = TypeConversion.ReinterpretCast(context, src3, srcType, VariableType.U32);
+            string src = TypeConversion.ReinterpretCast(context, src3, srcType, AggregateType.U32);
 
             string sb = GetStorageBufferAccessor(indexExpr, offsetExpr, context.Config.Stage);
 
@@ -442,9 +463,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             string indexExpr  = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
             string offsetExpr = GetSoureExpr(context, src2, GetSrcVarType(operation.Inst, 1));
 
-            VariableType srcType = OperandManager.GetNodeDestType(context, src3);
+            AggregateType srcType = OperandManager.GetNodeDestType(context, src3);
 
-            string src = TypeConversion.ReinterpretCast(context, src3, srcType, VariableType.U32);
+            string src = TypeConversion.ReinterpretCast(context, src3, srcType, AggregateType.U32);
 
             string sb = GetStorageBufferAccessor(indexExpr, offsetExpr, context.Config.Stage);
 
@@ -469,6 +490,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             bool isMultisample = (texOp.Type & SamplerType.Multisample) != 0;
             bool isShadow      = (texOp.Type & SamplerType.Shadow)      != 0;
 
+            bool colorIsVector = isGather || !isShadow;
+
             SamplerType type = texOp.Type & SamplerType.Mask;
 
             bool is2D   = type == SamplerType.Texture2D;
@@ -492,7 +515,19 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             // TODO: Bindless texture support. For now we just return 0.
             if (isBindless)
             {
-                return NumberFormatter.FormatFloat(0);
+                string scalarValue = NumberFormatter.FormatFloat(0);
+
+                if (colorIsVector)
+                {
+                    AggregateType outputType = texOp.GetVectorType(AggregateType.FP32);
+
+                    if ((outputType & AggregateType.ElementCountMask) != 0)
+                    {
+                        return $"{Declarations.GetVarTypeName(context, outputType, precise: false)}({scalarValue})";
+                    }
+                }
+
+                return scalarValue;
             }
 
             string texCall = intCoords ? "texelFetch" : "texture";
@@ -521,7 +556,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             int srcIndex = isBindless ? 1 : 0;
 
-            string Src(VariableType type)
+            string Src(AggregateType type)
             {
                 return GetSoureExpr(context, texOp.GetSource(srcIndex++), type);
             }
@@ -530,7 +565,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             if (isIndexed)
             {
-                indexExpr = Src(VariableType.S32);
+                indexExpr = Src(AggregateType.S32);
             }
 
             string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp, indexExpr);
@@ -578,7 +613,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 texCall += ", " + str;
             }
 
-            VariableType coordType = intCoords ? VariableType.S32 : VariableType.F32;
+            AggregateType coordType = intCoords ? AggregateType.S32 : AggregateType.FP32;
 
             string AssemblePVector(int count)
             {
@@ -590,7 +625,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     {
                         if (arrayIndexElem == index)
                         {
-                            elems[index] = Src(VariableType.S32);
+                            elems[index] = Src(AggregateType.S32);
 
                             if (!intCoords)
                             {
@@ -652,20 +687,20 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                     for (int index = 0; index < count; index++)
                     {
-                        elems[index] = Src(VariableType.F32);
+                        elems[index] = Src(AggregateType.FP32);
                     }
 
                     return "vec" + count + "(" + string.Join(", ", elems) + ")";
                 }
                 else
                 {
-                    return Src(VariableType.F32);
+                    return Src(AggregateType.FP32);
                 }
             }
 
             if (hasExtraCompareArg)
             {
-                Append(Src(VariableType.F32));
+                Append(Src(AggregateType.FP32));
             }
 
             if (hasDerivatives)
@@ -676,7 +711,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             if (isMultisample)
             {
-                Append(Src(VariableType.S32));
+                Append(Src(AggregateType.S32));
             }
             else if (hasLodLevel)
             {
@@ -691,14 +726,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                     for (int index = 0; index < count; index++)
                     {
-                        elems[index] = Src(VariableType.S32);
+                        elems[index] = Src(AggregateType.S32);
                     }
 
                     return "ivec" + count + "(" + string.Join(", ", elems) + ")";
                 }
                 else
                 {
-                    return Src(VariableType.S32);
+                    return Src(AggregateType.S32);
                 }
             }
 
@@ -718,17 +753,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             if (hasLodBias)
             {
-               Append(Src(VariableType.F32));
+               Append(Src(AggregateType.FP32));
             }
 
             // textureGather* optional extra component index,
             // not needed for shadow samplers.
             if (isGather && !isShadow)
             {
-               Append(Src(VariableType.S32));
+               Append(Src(AggregateType.S32));
             }
 
-            texCall += ")" + (isGather || !isShadow ? GetMask(texOp.Index) : "");
+            texCall += ")" + (colorIsVector ? GetMaskMultiDest(texOp.Index) : "");
 
             return texCall;
         }
@@ -751,7 +786,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             if (isIndexed)
             {
-                indexExpr = GetSoureExpr(context, texOp.GetSource(0), VariableType.S32);
+                indexExpr = GetSoureExpr(context, texOp.GetSource(0), AggregateType.S32);
             }
 
             string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp, indexExpr);
@@ -802,7 +837,22 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
         private static string GetMask(int index)
         {
-            return '.' + "rgba".Substring(index, 1);
+            return $".{"rgba".AsSpan(index, 1)}";
+        }
+
+        private static string GetMaskMultiDest(int mask)
+        {
+            string swizzle = ".";
+
+            for (int i = 0; i < 4; i++)
+            {
+                if ((mask & (1 << i)) != 0)
+                {
+                    swizzle += "xyzw"[i];
+                }
+            }
+
+            return swizzle;
         }
     }
 }

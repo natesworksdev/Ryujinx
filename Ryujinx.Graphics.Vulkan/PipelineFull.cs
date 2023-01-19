@@ -79,6 +79,7 @@ namespace Ryujinx.Graphics.Vulkan
                     (int)FramebufferParams.Width,
                     (int)FramebufferParams.Height,
                     FramebufferParams.AttachmentFormats[index],
+                    FramebufferParams.GetAttachmentComponentType(index),
                     ClearScissor);
             }
             else
@@ -227,13 +228,14 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             CommandBuffer = (Cbs = Gd.CommandBufferPool.ReturnAndRent(Cbs)).CommandBuffer;
+            Gd.RegisterFlush();
 
             // Restore per-command buffer state.
 
             foreach (var queryPool in _activeQueries)
             {
                 Gd.Api.CmdResetQueryPool(CommandBuffer, queryPool, 0, 1);
-                Gd.Api.CmdBeginQuery(CommandBuffer, queryPool, 0, 0);
+                Gd.Api.CmdBeginQuery(CommandBuffer, queryPool, 0, Gd.Capabilities.SupportsPreciseOcclusionQueries ? QueryControlFlags.PreciseBit : 0);
             }
 
             Restore();
@@ -253,7 +255,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            Gd.Api.CmdBeginQuery(CommandBuffer, pool, 0, 0);
+            Gd.Api.CmdBeginQuery(CommandBuffer, pool, 0, Gd.Capabilities.SupportsPreciseOcclusionQueries ? QueryControlFlags.PreciseBit : 0);
 
             _activeQueries.Add(pool);
         }
