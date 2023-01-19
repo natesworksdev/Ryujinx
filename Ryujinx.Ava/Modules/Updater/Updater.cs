@@ -132,8 +132,8 @@ namespace Ryujinx.Modules
                     }
                 }
 
-                // If build not done, assume no new update are availaible.
-                if (_buildUrl == null)
+                // If build not done, assume no new update are available.
+                if (_buildUrl is null)
                 {
                     if (showVersionUpToDate)
                     {
@@ -240,13 +240,13 @@ namespace Ryujinx.Modules
         {
             HttpClient result = new();
 
-            // Required by GitHub to interract with APIs.
+            // Required by GitHub to interact with APIs.
             result.DefaultRequestHeaders.Add("User-Agent", "Ryujinx-Updater/1.0.0");
 
             return result;
         }
 
-        public static async void UpdateRyujinx(Window parent, string downloadUrl)
+        private static async void UpdateRyujinx(Window parent, string downloadUrl)
         {
             _updateSuccessful = false;
 
@@ -408,9 +408,9 @@ namespace Ryujinx.Modules
                     Logger.Warning?.Print(LogClass.Application, ex.Message);
                     Logger.Warning?.Print(LogClass.Application, "Multi-Threaded update failed, falling back to single-threaded updater.");
 
-                    for (int j = 0; j < webClients.Count; j++)
+                    foreach (WebClient webClient in webClients)
                     {
-                        webClients[j].CancelAsync();
+                        webClient.CancelAsync();
                     }
 
                     DoUpdateWithSingleThread(taskDialog, downloadUrl, updateFile);
@@ -496,14 +496,18 @@ namespace Ryujinx.Modules
 
             if (OperatingSystem.IsLinux())
             {
-                using Stream          inStream   = File.OpenRead(updateFile);
-                using GZipInputStream gzipStream = new(inStream);
-                using TarInputStream  tarStream  = new(gzipStream, Encoding.ASCII);
+                await using Stream          inStream   = File.OpenRead(updateFile);
+                await using GZipInputStream gzipStream = new(inStream);
+                await using TarInputStream  tarStream  = new(gzipStream, Encoding.ASCII);
 
                 await Task.Run(() =>
                 {
                     TarEntry tarEntry;
-                    while ((tarEntry = tarStream.GetNextEntry()) != null)
+
+                    // NOTE: This removes the warning for File.SetUnixFileMode() below
+                    Debug.Assert(!OperatingSystem.IsWindows());
+
+                    while ((tarEntry = tarStream.GetNextEntry()) is not null)
                     {
                         if (tarEntry.IsDirectory) continue;
 
@@ -516,13 +520,12 @@ namespace Ryujinx.Modules
                             tarStream.CopyEntryContents(outStream);
                         }
 
+                        File.SetUnixFileMode(outPath, (UnixFileMode)tarEntry.TarHeader.Mode);
                         File.SetLastWriteTime(outPath, DateTime.SpecifyKind(tarEntry.ModTime, DateTimeKind.Utc));
-
-                        TarEntry entry = tarEntry;
 
                         Dispatcher.UIThread.Post(() =>
                         {
-                            taskDialog.SetProgressBarState(GetPercentage(entry.Size, inStream.Length), TaskDialogProgressState.Normal);
+                            taskDialog.SetProgressBarState(GetPercentage(tarEntry.Size, inStream.Length), TaskDialogProgressState.Normal);
                         });
                     }
                 });
@@ -531,7 +534,7 @@ namespace Ryujinx.Modules
             }
             else
             {
-                using Stream  inStream = File.OpenRead(updateFile);
+                await using Stream  inStream = File.OpenRead(updateFile);
                 using ZipFile zipFile  = new(inStream);
 
                 await Task.Run(() =>
