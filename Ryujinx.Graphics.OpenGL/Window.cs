@@ -78,7 +78,7 @@ namespace Ryujinx.Graphics.OpenGL
 
                 viewConverted = _antiAliasing.Run(viewConverted, _width, _height);
 
-                if(viewConverted != oldView)
+                if(viewConverted != oldView && oldView != view)
                 {
                     oldView.Dispose();
                 }

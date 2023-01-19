@@ -3903,7 +3903,7 @@ float insideBox(vec2 v) {
 AF2 translateDest(AF2 pos) {
     AF2 translatedPos = AF2(pos.x, pos.y);
     translatedPos.x = dstX1 < dstX0 ? dstX1 - translatedPos.x : translatedPos.x;
-    translatedPos.y = dstY0 < dstY1 ? dstY1 + dstY0 - translatedPos.y : translatedPos.y;
+    translatedPos.y = dstY0 < dstY1 ? dstY1 + dstY0 - translatedPos.y - 1 : translatedPos.y;
     return translatedPos;
 }
 
