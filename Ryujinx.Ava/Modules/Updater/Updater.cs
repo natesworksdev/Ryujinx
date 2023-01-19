@@ -300,8 +300,6 @@ namespace Ryujinx.Modules
                         ryuExe = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, OperatingSystem.IsWindows() ? "Ryujinx.exe" : "Ryujinx");
                     }
 
-                    SetFileExecutable(ryuExe);
-
                     Process.Start(ryuExe, CommandLineState.Arguments);
 
                     Environment.Exit(0);
@@ -472,22 +470,6 @@ namespace Ryujinx.Modules
             worker.Start();
         }
 
-        private static void SetFileExecutable(string path)
-        {
-            const UnixFileMode ExecutableFileMode = UnixFileMode.UserExecute |
-                                                    UnixFileMode.UserWrite |
-                                                    UnixFileMode.UserRead |
-                                                    UnixFileMode.GroupRead |
-                                                    UnixFileMode.GroupWrite |
-                                                    UnixFileMode.OtherRead |
-                                                    UnixFileMode.OtherWrite;
-
-            if (!OperatingSystem.IsWindows() && File.Exists(path))
-            {
-                File.SetUnixFileMode(path, ExecutableFileMode);
-            }
-        }
-
         private static async void InstallUpdate(TaskDialog taskDialog, string updateFile)
         {
             // Extract Update
@@ -605,8 +587,6 @@ namespace Ryujinx.Modules
             });
 
             Directory.Delete(UpdateDir, true);
-
-            SetFileExecutable(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx"));
 
             _updateSuccessful = true;
 
