@@ -28,8 +28,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         // Tuning for blacklisting textures from scaling when their data is updated from CPU.
         // Each write adds the weight, each GPU modification subtracts 1.
         // Exceeding the threshold blacklists the texture.
-        private const int ScaledSetWeight = 25;
-        private const int ScaledSetThreshold = 75;
+        private const int ScaledSetWeight = 10;
+        private const int ScaledSetThreshold = 30;
 
         private const int MinLevelsForForceAnisotropy = 5;
 
@@ -757,6 +757,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                 texture.SetData(result);
 
                 texture.CopyTo(HostTexture, new Extents2D(0, 0, texture.Width, texture.Height), new Extents2D(0, 0, HostTexture.Width, HostTexture.Height), true);
+
+                Logger.Error?.PrintMsg(LogClass.Gpu, $"Wrote and upscaled data for {Info.Width}x{Info.Height} {Info.Levels}lv {Format}");
             }
             else
             {
