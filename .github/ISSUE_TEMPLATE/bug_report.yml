@@ -30,24 +30,13 @@ body:
       placeholder: Logs files can be found under "Logs" folder in Ryujinx program folder. You can drag and drop the log on to the text area
     validations:
       required: true
-  - type: dropdown
+  - type: input
     id: os
     attributes:
-      label: Operating System
-      options:
-      - Windows 11
-      - Windows 10
-      - Linux - Specify Distro Below
-      - macOS
+      label: OS
+      placeholder: "Example: Windows 10"
     validations:
       required: true
-  - type: input
-    id: os-distro
-    attributes:
-      label: If Linux - Specify Distro
-      placeholder: "Example: Arch"
-    validations:
-      required: false
   - type: input
     id: ryujinx-version
     attributes:
