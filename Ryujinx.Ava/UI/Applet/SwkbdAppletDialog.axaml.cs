@@ -140,9 +140,7 @@ namespace Ryujinx.Ava.UI.Controls
             {
                 Error.IsVisible = true;
 
-                LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.SwkbdMinCharacters, _inputMin);
-
-                Error.Text = LocaleManager.Instance[LocaleKeys.SwkbdMinCharacters];
+                Error.Text = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.SwkbdMinCharacters, _inputMin);
 
                 _checkLength = length => _inputMin <= length;
             }
@@ -150,9 +148,7 @@ namespace Ryujinx.Ava.UI.Controls
             {
                 Error.IsVisible = true;
 
-                LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.SwkbdMinRangeCharacters, _inputMin, _inputMax);
-
-                Error.Text = LocaleManager.Instance[LocaleKeys.SwkbdMinRangeCharacters];
+                Error.Text = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.SwkbdMinRangeCharacters, _inputMin, _inputMax);
 
                 _checkLength = length => _inputMin <= length && length <= _inputMax;
             }

@@ -36,15 +36,13 @@ namespace Ryujinx.Ava.UI.Windows
 
         public static async Task Show(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
         {
-            LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.GameUpdateWindowHeading, titleName, titleId.ToString("X16"));
-
             ContentDialog contentDialog = new()
             {
                 PrimaryButtonText   = "",
                 SecondaryButtonText = "",
                 CloseButtonText     = "",
                 Content             = new TitleUpdateWindow(virtualFileSystem, titleId, titleName),
-                Title               = LocaleManager.Instance[LocaleKeys.GameUpdateWindowHeading]
+                Title               = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.GameUpdateWindowHeading, titleName, titleId.ToString("X16"))
             };
 
             Style bottomBorder = new(x => x.OfType<Grid>().Name("DialogSpace").Child().OfType<Border>());

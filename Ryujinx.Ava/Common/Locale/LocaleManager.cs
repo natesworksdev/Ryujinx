@@ -104,11 +104,13 @@ namespace Ryujinx.Ava.Common.Locale
             }
         }
 
-        public void UpdateDynamicValue(LocaleKeys key, params object[] values)
+        public string UpdateAndGetDynamicValue(LocaleKeys key, params object[] values)
         {
             _dynamicValues[key] = values;
 
             OnPropertyChanged("Item");
+
+            return this[key];
         }
 
         private void LoadDefaultLanguage()

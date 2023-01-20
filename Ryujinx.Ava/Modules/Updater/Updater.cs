@@ -577,9 +577,7 @@ namespace Ryujinx.Modules
                     }
                     catch
                     {
-                        LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.UpdaterRenameFailed, file);
-
-                        Logger.Warning?.Print(LogClass.Application, LocaleManager.Instance[LocaleKeys.UpdaterRenameFailed]);
+                        Logger.Warning?.Print(LogClass.Application, LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.UpdaterRenameFailed, file));
                     }
                 }
 

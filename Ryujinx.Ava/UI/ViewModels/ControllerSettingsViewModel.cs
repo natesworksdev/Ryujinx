@@ -719,9 +719,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     Logger.Error?.Print(LogClass.Configuration, $"Profile {ProfileName} is incompatible with the current input configuration system.");
 
-                    LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.DialogProfileInvalidProfileErrorMessage, ProfileName);
-
-                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogProfileInvalidProfileErrorMessage]);
+                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogProfileInvalidProfileErrorMessage, ProfileName));
 
                     return;
                 }

@@ -31,9 +31,7 @@ namespace Ryujinx.Ava.UI.Windows
         {
             LoadedCheats = new AvaloniaList<CheatsList>();
 
-            LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.CheatWindowHeading, titleName, titleId.ToUpper());
-
-            Heading = LocaleManager.Instance[LocaleKeys.CheatWindowHeading];
+            Heading = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.CheatWindowHeading, titleName, titleId.ToUpper());
 
             InitializeComponent();
 

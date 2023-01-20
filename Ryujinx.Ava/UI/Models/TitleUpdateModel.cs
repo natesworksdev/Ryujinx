@@ -8,15 +8,7 @@ namespace Ryujinx.Ava.UI.Models
         public ApplicationControlProperty Control { get; }
         public string Path { get; }
 
-        public string Label
-        {
-            get
-            {
-                LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.TitleUpdateVersionLabel, Control.DisplayVersionString.ToString());
-
-                return LocaleManager.Instance[LocaleKeys.TitleUpdateVersionLabel];
-            }
-        }
+        public string Label => LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.TitleUpdateVersionLabel, Control.DisplayVersionString.ToString());
 
         public TitleUpdateModel(ApplicationControlProperty control, string path)
         {

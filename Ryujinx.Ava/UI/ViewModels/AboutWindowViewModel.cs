@@ -81,15 +81,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public string Developers
-        {
-            get
-            {
-                LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.AboutPageDeveloperListMore, "gdkchan, Ac_K, marysaka, rip in peri peri, LDj3SNuD, emmaus, Thealexbarney, GoffyDude, TSRBerry, IsaacMarovitz");
-
-                return LocaleManager.Instance[LocaleKeys.AboutPageDeveloperListMore];
-            }
-        }
+        public string Developers => LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.AboutPageDeveloperListMore, "gdkchan, Ac_K, marysaka, rip in peri peri, LDj3SNuD, emmaus, Thealexbarney, GoffyDude, TSRBerry, IsaacMarovitz");
 
         public AboutWindowViewModel()
         {
