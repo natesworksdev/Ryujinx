@@ -59,7 +59,7 @@ namespace Ryujinx.Ava.Common.Locale
                 // Check if the locale contains the key.
                 if (_localeStrings.TryGetValue(key, out string value))
                 {
-                    // Check if the locale needs to be formatted.
+                    // Check if the localized string needs to be formatted.
                     if (_dynamicValues.TryGetValue(key, out var dynamicValue))
                     {
                         try
@@ -68,7 +68,7 @@ namespace Ryujinx.Ava.Common.Locale
                         }
                         catch (Exception)
                         {
-                            // If formatting failed, then use the default locale text.
+                            // If formatting failed use the default text instead.
                             if (_localeDefaultStrings.TryGetValue(key, out value))
                             {
                                 try
@@ -77,7 +77,7 @@ namespace Ryujinx.Ava.Common.Locale
                                 }
                                 catch (Exception)
                                 {
-                                    // If formatting locale default text failed, then returns the key.
+                                    // If formatting the default text failed return the key.
                                     return key.ToString();
                                 }
                             }
@@ -87,13 +87,13 @@ namespace Ryujinx.Ava.Common.Locale
                     return value;
                 }
 
-                // If the locale doesn't contain the key, then returns the default one.
+                // If the locale doesn't contain the key return the default one.
                 if (_localeDefaultStrings.TryGetValue(key, out string defaultValue))
                 {
                     return defaultValue;
                 }
 
-                // If the locale text doesn't exist, then returns the key.
+                // If the locale text doesn't exist return the key.
                 return key.ToString();
             }
             set
