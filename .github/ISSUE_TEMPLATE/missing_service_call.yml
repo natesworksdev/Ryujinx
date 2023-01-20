@@ -4,7 +4,7 @@ body:
   - type: checkboxes
     attributes:
       label: Is there an existing issue for this?
-      description: Please search for existing missing service call
+      description: Please search for an existing missing service call issue first.
       options:
       - label: I have searched the existing issues
         required: true
@@ -26,6 +26,6 @@ body:
     id: required
     attributes:
       label: Required by
-      description: Add our games list database (https://github.com/Ryujinx/Ryujinx-Games-List/issues) links of games who require this instruction
+      description:  Add links to the compatibility list page(s) (https://github.com/Ryujinx/Ryujinx-Games-List/issues) of the game(s) that require this service.
     validations:
       required: true

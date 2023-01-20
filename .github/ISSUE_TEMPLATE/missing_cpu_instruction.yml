@@ -26,6 +26,6 @@ body:
     id: required
     attributes:
       label: Required by
-      description: Add our games list database (https://github.com/Ryujinx/Ryujinx-Games-List/issues) links of games who require this instruction
+      description: Add links to the compatibility list page(s) (https://github.com/Ryujinx/Ryujinx-Games-List/issues) of the game(s) that require this instruction.
     validations:
       required: true
