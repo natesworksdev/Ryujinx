@@ -728,7 +728,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 // If needed, create a texture to load from 1x scale.
                 ITexture texture = _setHostTexture = GetScaledHostTexture(1f, false, _setHostTexture);
 
-                texture.SetData(data);
+                texture.SetData(result);
 
                 texture.CopyTo(HostTexture, new Extents2D(0, 0, texture.Width, texture.Height), new Extents2D(0, 0, HostTexture.Width, HostTexture.Height), true);
             }
