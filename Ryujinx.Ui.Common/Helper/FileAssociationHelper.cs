@@ -11,6 +11,8 @@ namespace Ryujinx.Ui.Common.Helper
 {
     public static partial class FileAssociationHelper
     {
+        private static string[] _fileExtensions = new string[] { ".nca", ".nro", ".nso", ".nsp", ".xci" };
+
         private const int SHCNE_ASSOCCHANGED = 0x8000000;
         private const int SHCNF_FLUSH        = 0x1000;
 
@@ -62,6 +64,35 @@ namespace Ryujinx.Ui.Common.Helper
             return true;
         }
 
+       [SupportedOSPlatform("windows")]
+        private static bool IsTypesRegisteredWindows()
+        {
+            static bool CheckRegistering(string ext)
+            {
+                RegistryKey key = Registry.CurrentUser.OpenSubKey(@$"Software\Classes\{ext}");
+
+                if (key is null)
+                {
+                    return false;
+                }
+
+                key.OpenSubKey(@"shell\open\command");
+
+                string keyValue = (string)key.GetValue("");
+
+                return keyValue is not null && (keyValue.Contains("Ryujinx") || keyValue.Contains(AppDomain.CurrentDomain.FriendlyName));
+            }
+
+            bool registered = false;
+
+            foreach (string ext in _fileExtensions)
+            {
+                registered |= CheckRegistering(ext);
+            }
+
+            return registered;
+        }
+
         [SupportedOSPlatform("windows")]
         private static bool InstallWindowsMimeTypes(bool uninstall = false)
         {
@@ -71,18 +102,24 @@ namespace Ryujinx.Ui.Common.Helper
 
                 if (uninstall)
                 {
+                    if (!IsTypesRegisteredWindows())
+                    {
+                        return false;
+                    }
+
                     Registry.CurrentUser.DeleteSubKeyTree(keyString);
                 }
                 else
                 {
                     RegistryKey key = Registry.CurrentUser.CreateSubKey(keyString);
-
                     if (key is null)
                     {
                         return false;
                     }
 
-                    key!.CreateSubKey(@"shell\open\command")!.SetValue("", $"\"{Environment.ProcessPath}\" \"%1\"");
+                    key.CreateSubKey(@"shell\open\command");
+
+                    key.SetValue("", $"\"{Environment.ProcessPath}\" \"%1\"");
                     key.Close();
                 }
 
@@ -94,12 +131,24 @@ namespace Ryujinx.Ui.Common.Helper
 
             bool registered = false;
 
-            foreach (string ext in new string[] { ".nca", ".nro", ".nso", ".nsp", ".xci" })
+            foreach (string ext in _fileExtensions)
             {
                 registered |= RegisterExtension(ext, uninstall);
             }
 
             return registered;
+        }
+
+        public static bool IsTypesRegistered()
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                return IsTypesRegisteredWindows();
+            }
+
+            // TODO: Add linux and macOS support.
+
+            return false;
         }
 
         public static bool Install()
