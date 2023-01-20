@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Gpu
         /// <summary>
         /// Texture presented on the window.
         /// </summary>
-        private struct PresentationTexture
+        private readonly struct PresentationTexture
         {
             /// <summary>
             /// Texture cache where the texture might be located.
@@ -123,7 +123,8 @@ namespace Ryujinx.Graphics.Gpu
         /// <param name="releaseCallback">Texture release callback</param>
         /// <param name="userObj">User defined object passed to the release callback</param>
         /// <exception cref="ArgumentException">Thrown when <paramref name="pid"/> is invalid</exception>
-        public void EnqueueFrameThreadSafe(
+        /// <returns>True if the frame was added to the queue, false otherwise</returns>
+        public bool EnqueueFrameThreadSafe(
             ulong                      pid,
             ulong                      address,
             int                        width,
@@ -140,7 +141,7 @@ namespace Ryujinx.Graphics.Gpu
         {
             if (!_context.PhysicalMemoryRegistry.TryGetValue(pid, out var physicalMemory))
             {
-                throw new ArgumentException("The PID is invalid or the process was not registered", nameof(pid));
+                return false;
             }
 
             FormatInfo formatInfo = new FormatInfo(format, 1, 1, bytesPerPixel, 4);
@@ -184,6 +185,8 @@ namespace Ryujinx.Graphics.Gpu
                 acquireCallback,
                 releaseCallback,
                 userObj));
+
+            return true;
         }
 
         /// <summary>
@@ -191,7 +194,7 @@ namespace Ryujinx.Graphics.Gpu
         /// If the queue is empty, then no texture is presented.
         /// </summary>
         /// <param name="swapBuffersCallback">Callback method to call when a new texture should be presented on the screen</param>
-        public void Present(Action<object> swapBuffersCallback)
+        public void Present(Action swapBuffersCallback)
         {
             _context.AdvanceSequence();
 
@@ -200,6 +203,8 @@ namespace Ryujinx.Graphics.Gpu
                 pt.AcquireCallback(_context, pt.UserObj);
 
                 Texture texture = pt.Cache.FindOrCreateTexture(null, TextureSearchFlags.WithUpscale, pt.Info, 0, null, pt.Range);
+
+                pt.Cache.Tick();
 
                 texture.SynchronizeMemory();
 

@@ -1,3 +1,4 @@
+using Ryujinx.Graphics.Shader;
 using System;
 
 namespace Ryujinx.Graphics.GAL
@@ -10,9 +11,11 @@ namespace Ryujinx.Graphics.GAL
 
         void ClearBuffer(BufferHandle destination, int offset, int size, uint value);
 
-        void ClearRenderTargetColor(int index, uint componentMask, ColorF color);
+        void ClearRenderTargetColor(int index, int layer, int layerCount, uint componentMask, ColorF color);
 
         void ClearRenderTargetDepthStencil(
+            int layer,
+            int layerCount,
             float depthValue,
             bool depthMask,
             int stencilValue,
@@ -31,12 +34,13 @@ namespace Ryujinx.Graphics.GAL
             int firstIndex,
             int firstVertex,
             int firstInstance);
+        void DrawIndexedIndirect(BufferRange indirectBuffer);
+        void DrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride);
+        void DrawIndirect(BufferRange indirectBuffer);
+        void DrawIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride);
         void DrawTexture(ITexture texture, ISampler sampler, Extents2DF srcRegion, Extents2DF dstRegion);
 
         void EndTransformFeedback();
-
-        void MultiDrawIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride);
-        void MultiDrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride);
 
         void SetAlphaTest(bool enable, float reference, CompareOp op);
 
@@ -59,6 +63,8 @@ namespace Ryujinx.Graphics.GAL
 
         void SetLogicOpState(bool enable, LogicalOp op);
 
+        void SetMultisampleState(MultisampleDescriptor multisample);
+
         void SetPatchParameters(int vertices, ReadOnlySpan<float> defaultOuterLevel, ReadOnlySpan<float> defaultInnerLevel);
         void SetPointParameters(float size, bool isProgramPointSize, bool enablePointSprite, Origin origin);
 
@@ -76,25 +82,23 @@ namespace Ryujinx.Graphics.GAL
         void SetRenderTargetColorMasks(ReadOnlySpan<uint> componentMask);
         void SetRenderTargets(ITexture[] colors, ITexture depthStencil);
 
-        void SetSampler(int binding, ISampler sampler);
-
-        void SetScissor(int index, bool enable, int x, int y, int width, int height);
+        void SetScissors(ReadOnlySpan<Rectangle<int>> regions);
 
         void SetStencilTest(StencilTestDescriptor stencilTest);
 
-        void SetStorageBuffers(int first, ReadOnlySpan<BufferRange> buffers);
+        void SetStorageBuffers(ReadOnlySpan<BufferAssignment> buffers);
 
-        void SetTexture(int binding, ITexture texture);
+        void SetTextureAndSampler(ShaderStage stage, int binding, ITexture texture, ISampler sampler);
 
         void SetTransformFeedbackBuffers(ReadOnlySpan<BufferRange> buffers);
-        void SetUniformBuffers(int first, ReadOnlySpan<BufferRange> buffers);
+        void SetUniformBuffers(ReadOnlySpan<BufferAssignment> buffers);
 
         void SetUserClipDistance(int index, bool enableClip);
 
         void SetVertexAttribs(ReadOnlySpan<VertexAttribDescriptor> vertexAttribs);
         void SetVertexBuffers(ReadOnlySpan<VertexBufferDescriptor> vertexBuffers);
 
-        void SetViewports(int first, ReadOnlySpan<Viewport> viewports, bool disableTransform);
+        void SetViewports(ReadOnlySpan<Viewport> viewports, bool disableTransform);
 
         void TextureBarrier();
         void TextureBarrierTiled();

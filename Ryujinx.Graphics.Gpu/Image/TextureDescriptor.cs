@@ -1,4 +1,4 @@
-using Ryujinx.Graphics.Gpu.Shader.Cache.Definition;
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
 
@@ -7,7 +7,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// <summary>
     /// Maxwell texture descriptor, as stored on the GPU texture pool memory region.
     /// </summary>
-    struct TextureDescriptor : ITextureDescriptor
+    struct TextureDescriptor : ITextureDescriptor, IEquatable<TextureDescriptor>
     {
 #pragma warning disable CS0649
         public uint Word0;
@@ -242,25 +242,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Create the equivalent of this TextureDescriptor for the shader cache.
-        /// </summary>
-        /// <returns>The equivalent of this TextureDescriptor for the shader cache.</returns>
-        public GuestTextureDescriptor ToCache()
-        {
-            GuestTextureDescriptor result = new GuestTextureDescriptor
-            {
-                Handle = uint.MaxValue,
-                Format = UnpackFormat(),
-                Target = UnpackTextureTarget(),
-                IsSrgb = UnpackSrgb(),
-                IsTextureCoordNormalized = UnpackTextureCoordNormalized(),
-
-            };
-
-            return result;
-        }
-
-        /// <summary>
         /// Check if two descriptors are equal.
         /// </summary>
         /// <param name="other">The descriptor to compare against</param>
@@ -268,6 +249,25 @@ namespace Ryujinx.Graphics.Gpu.Image
         public bool Equals(ref TextureDescriptor other)
         {
             return Unsafe.As<TextureDescriptor, Vector256<byte>>(ref this).Equals(Unsafe.As<TextureDescriptor, Vector256<byte>>(ref other));
+        }
+
+        /// <summary>
+        /// Check if two descriptors are equal.
+        /// </summary>
+        /// <param name="other">The descriptor to compare against</param>
+        /// <returns>True if they are equal, false otherwise</returns>
+        public bool Equals(TextureDescriptor other)
+        {
+            return Equals(ref other);
+        }
+
+        /// <summary>
+        /// Gets a hash code for this descriptor.
+        /// </summary>
+        /// <returns>The hash code for this descriptor.</returns>
+        public override int GetHashCode()
+        {
+            return Unsafe.As<TextureDescriptor, Vector256<byte>>(ref this).GetHashCode();
         }
     }
 }

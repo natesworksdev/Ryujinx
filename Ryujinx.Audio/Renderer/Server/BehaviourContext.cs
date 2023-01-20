@@ -1,20 +1,3 @@
-//
-// Copyright (c) 2019-2021 Ryujinx
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-
 using System;
 using System.Diagnostics;
 using static Ryujinx.Audio.Renderer.Common.BehaviourParameter;
@@ -61,7 +44,7 @@ namespace Ryujinx.Audio.Renderer.Server
         /// <see cref="Parameter.RendererInfoOutStatus"/> was added to supply the count of update done sent to the DSP.
         /// A new version of the command estimator was added to address timing changes caused by the voice changes.
         /// Additionally, the rendering limit percent was incremented to 80%.
-        /// 
+        ///
         /// </summary>
         /// <remarks>This was added in system update 6.0.0</remarks>
         public const int Revision5 = 5 << 24;
@@ -110,9 +93,11 @@ namespace Ryujinx.Audio.Renderer.Server
         /// <summary>
         /// REV11:
         /// The "legacy" effects (Delay, Reverb and Reverb 3D) were updated to match the standard channel mapping used by the audio renderer.
+        /// A new effect was added: Compressor. This effect is effectively implemented with a DRC.
         /// A new version of the command estimator was added to address timing changes caused by the legacy effects changes.
+        /// A voice drop parameter was added in 15.0.0: This allows an application to amplify or attenuate the estimated time of DSP commands.
         /// </summary>
-        /// <remarks>This was added in system update 14.0.0</remarks>
+        /// <remarks>This was added in system update 14.0.0 but some changes were made in 15.0.0</remarks>
         public const int Revision11 = 11 << 24;
 
         /// <summary>
@@ -158,8 +143,8 @@ namespace Ryujinx.Audio.Renderer.Server
         public BehaviourContext()
         {
             UserRevision = 0;
-            _errorInfos  = new ErrorInfo[Constants.MaxErrorInfos];
-            _errorIndex  = 0;
+            _errorInfos = new ErrorInfo[Constants.MaxErrorInfos];
+            _errorIndex = 0;
         }
 
         /// <summary>

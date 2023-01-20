@@ -14,7 +14,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 38;
+        public const int CurrentVersion = 42;
 
         /// <summary>
         /// Version of the configuration file format
@@ -80,7 +80,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// Enables printing error log messages
         /// </summary>
         public bool LoggingEnableError { get; set; }
-        
+
         /// <summary>
         /// Enables printing trace log messages
         /// </summary>
@@ -162,6 +162,16 @@ namespace Ryujinx.Ui.Common.Configuration
         public bool EnableShaderCache { get; set; }
 
         /// <summary>
+        /// Enables or disables texture recompression
+        /// </summary>
+        public bool EnableTextureRecompression { get; set; }
+
+        /// <summary>
+        /// Enables or disables Macro high-level emulation
+        /// </summary>
+        public bool EnableMacroHLE { get; set; }
+
+        /// <summary>
         /// Enables or disables profiled translation cache persistency
         /// </summary>
         public bool EnablePtc { get; set; }
@@ -197,7 +207,7 @@ namespace Ryujinx.Ui.Common.Configuration
         public MemoryManagerMode MemoryManagerMode { get; set; }
 
         /// <summary>
-        /// Expands the RAM amount on the emulated system from 4GB to 6GB
+        /// Expands the RAM amount on the emulated system from 4GiB to 6GiB
         /// </summary>
         public bool ExpandRam { get; set; }
 
@@ -309,6 +319,16 @@ namespace Ryujinx.Ui.Common.Configuration
         /// Input configurations
         /// </summary>
         public List<InputConfig> InputConfig { get; set; }
+
+        /// <summary>
+        /// Graphics backend
+        /// </summary>
+        public GraphicsBackend GraphicsBackend { get; set; }
+
+        /// <summary>
+        /// Preferred GPU
+        /// </summary>
+        public string PreferredGpu { get; set; }
 
         /// <summary>
         /// Loads a configuration file from disk

@@ -1,10 +1,13 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl;
+using Ryujinx.HLE.HOS.Services.Sockets.Bsd.Types;
 using Ryujinx.Memory;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -202,12 +205,122 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         }
 
         [CommandHipc(5)]
-        // Select(u32 nfds, nn::socket::timeout timeout, buffer<nn::socket::fd_set, 0x21, 0> readfds_in, buffer<nn::socket::fd_set, 0x21, 0> writefds_in, buffer<nn::socket::fd_set, 0x21, 0> errorfds_in) -> (i32 ret, u32 bsd_errno, buffer<nn::socket::fd_set, 0x22, 0> readfds_out, buffer<nn::socket::fd_set, 0x22, 0> writefds_out, buffer<nn::socket::fd_set, 0x22, 0> errorfds_out)
+        // Select(u32 nfds, nn::socket::timeval timeout, buffer<nn::socket::fd_set, 0x21, 0> readfds_in, buffer<nn::socket::fd_set, 0x21, 0> writefds_in, buffer<nn::socket::fd_set, 0x21, 0> errorfds_in)
+        // -> (i32 ret, u32 bsd_errno, buffer<nn::socket::fd_set, 0x22, 0> readfds_out, buffer<nn::socket::fd_set, 0x22, 0> writefds_out, buffer<nn::socket::fd_set, 0x22, 0> errorfds_out)
         public ResultCode Select(ServiceCtx context)
         {
-            WriteBsdResult(context, -1, LinuxError.EOPNOTSUPP);
+            int fdsCount = context.RequestData.ReadInt32();
+            int timeout  = context.RequestData.ReadInt32();
 
-            Logger.Stub?.PrintStub(LogClass.ServiceBsd);
+            (ulong readFdsInBufferPosition, ulong readFdsInBufferSize) = context.Request.GetBufferType0x21(0);
+            (ulong writeFdsInBufferPosition, ulong writeFdsInBufferSize) = context.Request.GetBufferType0x21(1);
+            (ulong errorFdsInBufferPosition, ulong errorFdsInBufferSize) = context.Request.GetBufferType0x21(2);
+
+            (ulong readFdsOutBufferPosition, ulong readFdsOutBufferSize) = context.Request.GetBufferType0x22(0);
+            (ulong writeFdsOutBufferPosition, ulong writeFdsOutBufferSize) = context.Request.GetBufferType0x22(1);
+            (ulong errorFdsOutBufferPosition, ulong errorFdsOutBufferSize) = context.Request.GetBufferType0x22(2);
+
+            List<IFileDescriptor> readFds  = _context.RetrieveFileDescriptorsFromMask(context.Memory.GetSpan(readFdsInBufferPosition, (int)readFdsInBufferSize));
+            List<IFileDescriptor> writeFds = _context.RetrieveFileDescriptorsFromMask(context.Memory.GetSpan(writeFdsInBufferPosition, (int)writeFdsInBufferSize));
+            List<IFileDescriptor> errorFds = _context.RetrieveFileDescriptorsFromMask(context.Memory.GetSpan(errorFdsInBufferPosition, (int)errorFdsInBufferSize));
+
+            int actualFdsCount = readFds.Count + writeFds.Count + errorFds.Count;
+
+            if (fdsCount == 0 || actualFdsCount == 0)
+            {
+                WriteBsdResult(context, 0);
+
+                return ResultCode.Success;
+            }
+
+            PollEvent[] events = new PollEvent[actualFdsCount];
+
+            int index = 0;
+
+            foreach (IFileDescriptor fd in readFds)
+            {
+                events[index] = new PollEvent(new PollEventData { InputEvents = PollEventTypeMask.Input }, fd);
+
+                index++;
+            }
+
+            foreach (IFileDescriptor fd in writeFds)
+            {
+                events[index] = new PollEvent(new PollEventData { InputEvents = PollEventTypeMask.Output }, fd);
+
+                index++;
+            }
+
+            foreach (IFileDescriptor fd in errorFds)
+            {
+                events[index] = new PollEvent(new PollEventData { InputEvents = PollEventTypeMask.Error }, fd);
+
+                index++;
+            }
+
+            List<PollEvent>[] eventsByPollManager = new List<PollEvent>[_pollManagers.Count];
+
+            for (int i = 0; i < eventsByPollManager.Length; i++)
+            {
+                eventsByPollManager[i] = new List<PollEvent>();
+
+                foreach (PollEvent evnt in events)
+                {
+                    if (_pollManagers[i].IsCompatible(evnt))
+                    {
+                        eventsByPollManager[i].Add(evnt);
+                    }
+                }
+            }
+
+            int updatedCount = 0;
+
+            for (int i = 0; i < _pollManagers.Count; i++)
+            {
+                if (eventsByPollManager[i].Count > 0)
+                {
+                    _pollManagers[i].Select(eventsByPollManager[i], timeout, out int updatedPollCount);
+                    updatedCount += updatedPollCount;
+                }
+            }
+
+            readFds.Clear();
+            writeFds.Clear();
+            errorFds.Clear();
+
+            foreach (PollEvent pollEvent in events)
+            {
+                for (int i = 0; i < _pollManagers.Count; i++)
+                {
+                    if (eventsByPollManager[i].Contains(pollEvent))
+                    {
+                        if (pollEvent.Data.OutputEvents.HasFlag(PollEventTypeMask.Input))
+                        {
+                            readFds.Add(pollEvent.FileDescriptor);
+                        }
+
+                        if (pollEvent.Data.OutputEvents.HasFlag(PollEventTypeMask.Output))
+                        {
+                            writeFds.Add(pollEvent.FileDescriptor);
+                        }
+
+                        if (pollEvent.Data.OutputEvents.HasFlag(PollEventTypeMask.Error))
+                        {
+                            errorFds.Add(pollEvent.FileDescriptor);
+                        }
+                    }
+                }
+            }
+
+            using var readFdsOut  = context.Memory.GetWritableRegion(readFdsOutBufferPosition, (int)readFdsOutBufferSize);
+            using var writeFdsOut = context.Memory.GetWritableRegion(writeFdsOutBufferPosition, (int)writeFdsOutBufferSize);
+            using var errorFdsOut = context.Memory.GetWritableRegion(errorFdsOutBufferPosition, (int)errorFdsOutBufferSize);
+
+            _context.BuildMask(readFds, readFdsOut.Memory.Span);
+            _context.BuildMask(writeFds, writeFdsOut.Memory.Span);
+            _context.BuildMask(errorFds, errorFdsOut.Memory.Span);
+
+            WriteBsdResult(context, updatedCount);
 
             return ResultCode.Success;
         }
@@ -219,9 +332,10 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             int fdsCount = context.RequestData.ReadInt32();
             int timeout  = context.RequestData.ReadInt32();
 
-            (ulong bufferPosition, ulong bufferSize) = context.Request.GetBufferType0x21();
+            (ulong inputBufferPosition, ulong inputBufferSize) = context.Request.GetBufferType0x21();
+            (ulong outputBufferPosition, ulong outputBufferSize) = context.Request.GetBufferType0x22();
 
-            if (timeout < -1 || fdsCount < 0 || (ulong)(fdsCount * 8) > bufferSize)
+            if (timeout < -1 || fdsCount < 0 || (ulong)(fdsCount * 8) > inputBufferSize)
             {
                 return WriteBsdResult(context, -1, LinuxError.EINVAL);
             }
@@ -230,7 +344,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
             for (int i = 0; i < fdsCount; i++)
             {
-                PollEventData pollEventData = context.Memory.Read<PollEventData>(bufferPosition + (ulong)(i * Unsafe.SizeOf<PollEventData>()));
+                PollEventData pollEventData = context.Memory.Read<PollEventData>(inputBufferPosition + (ulong)(i * Unsafe.SizeOf<PollEventData>()));
 
                 IFileDescriptor fileDescriptor = _context.RetrieveFileDescriptor(pollEventData.SocketFd);
 
@@ -277,7 +391,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             {
                 bool IsUnexpectedLinuxError(LinuxError error)
                 {
-                    return errno != LinuxError.SUCCESS && errno != LinuxError.ETIMEDOUT;
+                    return error != LinuxError.SUCCESS && error != LinuxError.ETIMEDOUT;
                 }
 
                 // Hybrid approach
@@ -314,14 +428,19 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                         }
                     }
 
-                    // If we are here, that mean nothing was availaible, sleep for 50ms
+                    if (updateCount > 0)
+                    {
+                        break;
+                    }
+
+                    // If we are here, that mean nothing was available, sleep for 50ms
                     context.Device.System.KernelContext.Syscall.SleepThread(50 * 1000000);
                 }
                 while (PerformanceCounter.ElapsedMilliseconds < budgetLeftMilliseconds);
             }
             else if (timeout == -1)
             {
-                // FIXME: If we get a timeout of -1 and there is no fds to wait on, this should kill the KProces. (need to check that with re)
+                // FIXME: If we get a timeout of -1 and there is no fds to wait on, this should kill the KProcess. (need to check that with re)
                 throw new InvalidOperationException();
             }
             else
@@ -332,7 +451,13 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             // TODO: Spanify
             for (int i = 0; i < fdsCount; i++)
             {
-                context.Memory.Write(bufferPosition + (ulong)(i * Unsafe.SizeOf<PollEventData>()), events[i].Data);
+                context.Memory.Write(outputBufferPosition + (ulong)(i * Unsafe.SizeOf<PollEventData>()), events[i].Data);
+            }
+
+            // In case of non blocking call timeout should not be returned.
+            if (timeout == 0 && errno == LinuxError.ETIMEDOUT)
+            {
+                errno = LinuxError.SUCCESS;
             }
 
             return WriteBsdResult(context, updateCount, errno);
@@ -405,7 +530,14 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
                     receiveRegion.Dispose();
 
-                    context.Memory.Write(sockAddrOutPosition, BsdSockAddr.FromIPEndPoint(endPoint));
+                    if (sockAddrOutSize != 0 && sockAddrOutSize >= (ulong) Unsafe.SizeOf<BsdSockAddr>())
+                    {
+                        context.Memory.Write(sockAddrOutPosition, BsdSockAddr.FromIPEndPoint(endPoint));
+                    }
+                    else
+                    {
+                        errno = LinuxError.ENOMEM;
+                    }
                 }
             }
 
@@ -566,14 +698,18 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
             LinuxError errno  = LinuxError.EBADF;
             ISocket    socket = _context.RetrieveSocket(socketFd);
-
             if (socket != null)
             {
-                errno = LinuxError.SUCCESS;
+                errno = LinuxError.ENOTCONN;
 
-                WriteSockAddr(context, bufferPosition, socket, true);
-                WriteBsdResult(context, 0, errno);
-                context.ResponseData.Write(Unsafe.SizeOf<BsdSockAddr>());
+                if (socket.RemoteEndPoint != null)
+                {
+                    errno = LinuxError.SUCCESS;
+
+                    WriteSockAddr(context, bufferPosition, socket, true);
+                    WriteBsdResult(context, 0, errno);
+                    context.ResponseData.Write(Unsafe.SizeOf<BsdSockAddr>());
+                }
             }
 
             return WriteBsdResult(context, 0, errno);
@@ -875,12 +1011,98 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             return WriteBsdResult(context, newSockFd, errno);
         }
 
+
+        [CommandHipc(29)] // 7.0.0+
+        // RecvMMsg(u32 fd, u32 vlen, u32 flags, u32 reserved, nn::socket::TimeVal timeout) -> (i32 ret, u32 bsd_errno, buffer<bytes, 6> message);
+        public ResultCode RecvMMsg(ServiceCtx context)
+        {
+            int            socketFd    = context.RequestData.ReadInt32();
+            int            vlen        = context.RequestData.ReadInt32();
+            BsdSocketFlags socketFlags = (BsdSocketFlags)context.RequestData.ReadInt32();
+            uint           reserved    = context.RequestData.ReadUInt32();
+            TimeVal        timeout     = context.RequestData.ReadStruct<TimeVal>();
+
+            ulong receivePosition = context.Request.ReceiveBuff[0].Position;
+            ulong receiveLength = context.Request.ReceiveBuff[0].Size;
+
+            WritableRegion receiveRegion = context.Memory.GetWritableRegion(receivePosition, (int)receiveLength);
+
+            LinuxError errno  = LinuxError.EBADF;
+            ISocket    socket = _context.RetrieveSocket(socketFd);
+            int        result = -1;
+
+            if (socket != null)
+            {
+                errno = BsdMMsgHdr.Deserialize(out BsdMMsgHdr message, receiveRegion.Memory.Span, vlen);
+
+                if (errno == LinuxError.SUCCESS)
+                {
+                    errno = socket.RecvMMsg(out result, message, socketFlags, timeout);
+
+                    if (errno == LinuxError.SUCCESS)
+                    {
+                        errno = BsdMMsgHdr.Serialize(receiveRegion.Memory.Span, message);
+                    }
+                }
+            }
+
+            if (errno == LinuxError.SUCCESS)
+            {
+                SetResultErrno(socket, result);
+                receiveRegion.Dispose();
+            }
+
+            return WriteBsdResult(context, result, errno);
+        }
+
+        [CommandHipc(30)] // 7.0.0+
+        // SendMMsg(u32 fd, u32 vlen, u32 flags) -> (i32 ret, u32 bsd_errno, buffer<bytes, 6> message);
+        public ResultCode SendMMsg(ServiceCtx context)
+        {
+            int            socketFd    = context.RequestData.ReadInt32();
+            int            vlen        = context.RequestData.ReadInt32();
+            BsdSocketFlags socketFlags = (BsdSocketFlags)context.RequestData.ReadInt32();
+
+            ulong receivePosition = context.Request.ReceiveBuff[0].Position;
+            ulong receiveLength = context.Request.ReceiveBuff[0].Size;
+
+            WritableRegion receiveRegion = context.Memory.GetWritableRegion(receivePosition, (int)receiveLength);
+
+            LinuxError errno  = LinuxError.EBADF;
+            ISocket    socket = _context.RetrieveSocket(socketFd);
+            int        result = -1;
+
+            if (socket != null)
+            {
+                errno = BsdMMsgHdr.Deserialize(out BsdMMsgHdr message, receiveRegion.Memory.Span, vlen);
+
+                if (errno == LinuxError.SUCCESS)
+                {
+                    errno = socket.SendMMsg(out result, message, socketFlags);
+
+                    if (errno == LinuxError.SUCCESS)
+                    {
+                        errno = BsdMMsgHdr.Serialize(receiveRegion.Memory.Span, message);
+                    }
+                }
+            }
+
+            if (errno == LinuxError.SUCCESS)
+            {
+                SetResultErrno(socket, result);
+                receiveRegion.Dispose();
+            }
+
+            return WriteBsdResult(context, result, errno);
+        }
+
         [CommandHipc(31)] // 7.0.0+
-        // EventFd(u64 initval, nn::socket::EventFdFlags flags) -> (i32 ret, u32 bsd_errno)
+        // EventFd(nn::socket::EventFdFlags flags, u64 initval) -> (i32 ret, u32 bsd_errno)
         public ResultCode EventFd(ServiceCtx context)
         {
-            ulong initialValue = context.RequestData.ReadUInt64();
             EventFdFlags flags = (EventFdFlags)context.RequestData.ReadUInt32();
+            context.RequestData.BaseStream.Position += 4; // Padding
+            ulong initialValue = context.RequestData.ReadUInt64();
 
             EventFileDescriptor newEventFile = new EventFileDescriptor(initialValue, flags);
 

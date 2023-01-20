@@ -6,6 +6,7 @@ using Ryujinx.Audio.Backends.SoundIo;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.GraphicsDriver;
+using Ryujinx.Graphics.Vulkan;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Time.TimeZone;
@@ -33,6 +34,7 @@ namespace Ryujinx.Ui.Windows
 
         private long  _systemTimeOffset;
         private float _previousVolumeLevel;
+        private bool _directoryChanged = false;
 
 #pragma warning disable CS0649, IDE0044
         [GUI] CheckButton     _traceLogToggle;
@@ -53,6 +55,8 @@ namespace Ryujinx.Ui.Windows
         [GUI] CheckButton     _hideCursorOnIdleToggle;
         [GUI] CheckButton     _vSyncToggle;
         [GUI] CheckButton     _shaderCacheToggle;
+        [GUI] CheckButton     _textureRecompressionToggle;
+        [GUI] CheckButton     _macroHLEToggle;
         [GUI] CheckButton     _ptcToggle;
         [GUI] CheckButton     _internetToggle;
         [GUI] CheckButton     _fsicToggle;
@@ -91,6 +95,8 @@ namespace Ryujinx.Ui.Windows
         [GUI] Entry           _graphicsShadersDumpPath;
         [GUI] ComboBoxText    _anisotropy;
         [GUI] ComboBoxText    _aspectRatio;
+        [GUI] ComboBoxText    _graphicsBackend;
+        [GUI] ComboBoxText    _preferredGpu;
         [GUI] ComboBoxText    _resScaleCombo;
         [GUI] Entry           _resScaleText;
         [GUI] ToggleButton    _configureController1;
@@ -107,7 +113,7 @@ namespace Ryujinx.Ui.Windows
 
         public SettingsWindow(MainWindow parent, VirtualFileSystem virtualFileSystem, ContentManager contentManager) : this(parent, new Builder("Ryujinx.Ui.Windows.SettingsWindow.glade"), virtualFileSystem, contentManager) { }
 
-        private SettingsWindow(MainWindow parent, Builder builder, VirtualFileSystem virtualFileSystem, ContentManager contentManager) : base(builder.GetObject("_settingsWin").Handle)
+        private SettingsWindow(MainWindow parent, Builder builder, VirtualFileSystem virtualFileSystem, ContentManager contentManager) : base(builder.GetRawOwnedObject("_settingsWin"))
         {
             Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
 
@@ -229,6 +235,16 @@ namespace Ryujinx.Ui.Windows
                 _shaderCacheToggle.Click();
             }
 
+            if (ConfigurationState.Instance.Graphics.EnableTextureRecompression)
+            {
+                _textureRecompressionToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.Graphics.EnableMacroHLE)
+            {
+                _macroHLEToggle.Click();
+            }
+
             if (ConfigurationState.Instance.System.EnablePtc)
             {
                 _ptcToggle.Click();
@@ -321,6 +337,11 @@ namespace Ryujinx.Ui.Windows
             _resScaleCombo.SetActiveId(ConfigurationState.Instance.Graphics.ResScale.Value.ToString());
             _anisotropy.SetActiveId(ConfigurationState.Instance.Graphics.MaxAnisotropy.Value.ToString());
             _aspectRatio.SetActiveId(((int)ConfigurationState.Instance.Graphics.AspectRatio.Value).ToString());
+            _graphicsBackend.SetActiveId(((int)ConfigurationState.Instance.Graphics.GraphicsBackend.Value).ToString());
+
+            UpdatePreferredGpuComboBox();
+
+            _graphicsBackend.Changed += (sender, e) => UpdatePreferredGpuComboBox();
 
             _custThemePath.Buffer.Text           = ConfigurationState.Instance.Ui.CustomThemePath;
             _resScaleText.Buffer.Text            = ConfigurationState.Instance.Graphics.ResScaleCustom.Value.ToString();
@@ -345,7 +366,7 @@ namespace Ryujinx.Ui.Windows
                 _browseThemePath.Sensitive    = false;
             }
 
-            //Setup system time spinners
+            // Setup system time spinners
             UpdateSystemTimeSpinners();
 
             _audioBackendStore = new ListStore(typeof(string), typeof(AudioBackend));
@@ -401,7 +422,7 @@ namespace Ryujinx.Ui.Windows
             Task.Run(() =>
             {
                 openAlIsSupported  = OpenALHardwareDeviceDriver.IsSupported;
-                soundIoIsSupported = SoundIoHardwareDeviceDriver.IsSupported;
+                soundIoIsSupported = !OperatingSystem.IsMacOS() && SoundIoHardwareDeviceDriver.IsSupported;
                 sdl2IsSupported    = SDL2HardwareDeviceDriver.IsSupported;
             });
 
@@ -417,6 +438,48 @@ namespace Ryujinx.Ui.Windows
                     _ => throw new ArgumentOutOfRangeException()
                 };
             });
+
+            if (OperatingSystem.IsMacOS())
+            {
+                var store = (_graphicsBackend.Model as ListStore);
+                store.GetIter(out TreeIter openglIter, new TreePath(new int[] {1}));
+                store.Remove(ref openglIter);
+
+                _graphicsBackend.Model = store;
+            }
+        }
+
+        private void UpdatePreferredGpuComboBox()
+        {
+            _preferredGpu.RemoveAll();
+
+            if (Enum.Parse<GraphicsBackend>(_graphicsBackend.ActiveId) == GraphicsBackend.Vulkan)
+            {
+                var devices = VulkanRenderer.GetPhysicalDevices();
+                string preferredGpuIdFromConfig = ConfigurationState.Instance.Graphics.PreferredGpu.Value;
+                string preferredGpuId = preferredGpuIdFromConfig;
+                bool noGpuId = string.IsNullOrEmpty(preferredGpuIdFromConfig);
+
+                foreach (var device in devices)
+                {
+                    string dGPU = device.IsDiscrete ? " (dGPU)" : "";
+                    _preferredGpu.Append(device.Id, $"{device.Name}{dGPU}");
+
+                    // If there's no GPU selected yet, we just pick the first GPU.
+                    // If there's a discrete GPU available, we always prefer that over the previous selection,
+                    // as it is likely to have better performance and more features.
+                    // If the configuration file already has a GPU selection, we always prefer that instead.
+                    if (noGpuId && (string.IsNullOrEmpty(preferredGpuId) || device.IsDiscrete))
+                    {
+                        preferredGpuId = device.Id;
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(preferredGpuId))
+                {
+                    _preferredGpu.SetActiveId(preferredGpuId);
+                }
+            }
         }
 
         private void UpdateSystemTimeSpinners()
@@ -454,14 +517,22 @@ namespace Ryujinx.Ui.Windows
 
         private void SaveSettings()
         {
-            List<string> gameDirs = new List<string>();
-
-            _gameDirsBoxStore.GetIterFirst(out TreeIter treeIter);
-            for (int i = 0; i < _gameDirsBoxStore.IterNChildren(); i++)
+            if (_directoryChanged)
             {
-                gameDirs.Add((string)_gameDirsBoxStore.GetValue(treeIter, 0));
+                List<string> gameDirs = new List<string>();
 
-                _gameDirsBoxStore.IterNext(ref treeIter);
+                _gameDirsBoxStore.GetIterFirst(out TreeIter treeIter);
+
+                for (int i = 0; i < _gameDirsBoxStore.IterNChildren(); i++)
+                {
+                    gameDirs.Add((string)_gameDirsBoxStore.GetValue(treeIter, 0));
+
+                    _gameDirsBoxStore.IterNext(ref treeIter);
+                }
+
+                ConfigurationState.Instance.Ui.GameDirs.Value = gameDirs;
+
+                _directoryChanged = false;
             }
 
             if (!float.TryParse(_resScaleText.Buffer.Text, out float resScaleCustom) || resScaleCustom <= 0.0f)
@@ -492,45 +563,48 @@ namespace Ryujinx.Ui.Windows
                 DriverUtilities.ToggleOGLThreading(backendThreading == BackendThreading.Off);
             }
 
-            ConfigurationState.Instance.Logger.EnableError.Value               = _errorLogToggle.Active;
-            ConfigurationState.Instance.Logger.EnableTrace.Value               = _traceLogToggle.Active;
-            ConfigurationState.Instance.Logger.EnableWarn.Value                = _warningLogToggle.Active;
-            ConfigurationState.Instance.Logger.EnableInfo.Value                = _infoLogToggle.Active;
-            ConfigurationState.Instance.Logger.EnableStub.Value                = _stubLogToggle.Active;
-            ConfigurationState.Instance.Logger.EnableDebug.Value               = _debugLogToggle.Active;
-            ConfigurationState.Instance.Logger.EnableGuest.Value               = _guestLogToggle.Active;
-            ConfigurationState.Instance.Logger.EnableFsAccessLog.Value         = _fsAccessLogToggle.Active;
-            ConfigurationState.Instance.Logger.EnableFileLog.Value             = _fileLogToggle.Active;
-            ConfigurationState.Instance.Logger.GraphicsDebugLevel.Value        = Enum.Parse<GraphicsDebugLevel>(_graphicsDebugLevel.ActiveId);
-            ConfigurationState.Instance.System.EnableDockedMode.Value          = _dockedModeToggle.Active;
-            ConfigurationState.Instance.EnableDiscordIntegration.Value         = _discordToggle.Active;
-            ConfigurationState.Instance.CheckUpdatesOnStart.Value              = _checkUpdatesToggle.Active;
-            ConfigurationState.Instance.ShowConfirmExit.Value                  = _showConfirmExitToggle.Active;
-            ConfigurationState.Instance.HideCursorOnIdle.Value                 = _hideCursorOnIdleToggle.Active;
-            ConfigurationState.Instance.Graphics.EnableVsync.Value             = _vSyncToggle.Active;
-            ConfigurationState.Instance.Graphics.EnableShaderCache.Value       = _shaderCacheToggle.Active;
-            ConfigurationState.Instance.System.EnablePtc.Value                 = _ptcToggle.Active;
-            ConfigurationState.Instance.System.EnableInternetAccess.Value      = _internetToggle.Active;
-            ConfigurationState.Instance.System.EnableFsIntegrityChecks.Value   = _fsicToggle.Active;
-            ConfigurationState.Instance.System.MemoryManagerMode.Value         = memoryMode;
-            ConfigurationState.Instance.System.ExpandRam.Value                 = _expandRamToggle.Active;
-            ConfigurationState.Instance.System.IgnoreMissingServices.Value     = _ignoreToggle.Active;
-            ConfigurationState.Instance.Hid.EnableKeyboard.Value               = _directKeyboardAccess.Active;
-            ConfigurationState.Instance.Hid.EnableMouse.Value                  = _directMouseAccess.Active;
-            ConfigurationState.Instance.Ui.EnableCustomTheme.Value             = _custThemeToggle.Active;
-            ConfigurationState.Instance.System.Language.Value                  = Enum.Parse<Language>(_systemLanguageSelect.ActiveId);
-            ConfigurationState.Instance.System.Region.Value                    = Enum.Parse<Common.Configuration.System.Region>(_systemRegionSelect.ActiveId);
-            ConfigurationState.Instance.System.SystemTimeOffset.Value          = _systemTimeOffset;
-            ConfigurationState.Instance.Ui.CustomThemePath.Value               = _custThemePath.Buffer.Text;
-            ConfigurationState.Instance.Graphics.ShadersDumpPath.Value         = _graphicsShadersDumpPath.Buffer.Text;
-            ConfigurationState.Instance.Ui.GameDirs.Value                      = gameDirs;
-            ConfigurationState.Instance.System.FsGlobalAccessLogMode.Value     = (int)_fsLogSpinAdjustment.Value;
-            ConfigurationState.Instance.Graphics.MaxAnisotropy.Value           = float.Parse(_anisotropy.ActiveId, CultureInfo.InvariantCulture);
-            ConfigurationState.Instance.Graphics.AspectRatio.Value             = Enum.Parse<AspectRatio>(_aspectRatio.ActiveId);
-            ConfigurationState.Instance.Graphics.BackendThreading.Value        = backendThreading;
-            ConfigurationState.Instance.Graphics.ResScale.Value                = int.Parse(_resScaleCombo.ActiveId);
-            ConfigurationState.Instance.Graphics.ResScaleCustom.Value          = resScaleCustom;
-            ConfigurationState.Instance.System.AudioVolume.Value               = (float)_audioVolumeSlider.Value / 100.0f;
+            ConfigurationState.Instance.Logger.EnableError.Value                  = _errorLogToggle.Active;
+            ConfigurationState.Instance.Logger.EnableTrace.Value                  = _traceLogToggle.Active;
+            ConfigurationState.Instance.Logger.EnableWarn.Value                   = _warningLogToggle.Active;
+            ConfigurationState.Instance.Logger.EnableInfo.Value                   = _infoLogToggle.Active;
+            ConfigurationState.Instance.Logger.EnableStub.Value                   = _stubLogToggle.Active;
+            ConfigurationState.Instance.Logger.EnableDebug.Value                  = _debugLogToggle.Active;
+            ConfigurationState.Instance.Logger.EnableGuest.Value                  = _guestLogToggle.Active;
+            ConfigurationState.Instance.Logger.EnableFsAccessLog.Value            = _fsAccessLogToggle.Active;
+            ConfigurationState.Instance.Logger.EnableFileLog.Value                = _fileLogToggle.Active;
+            ConfigurationState.Instance.Logger.GraphicsDebugLevel.Value           = Enum.Parse<GraphicsDebugLevel>(_graphicsDebugLevel.ActiveId);
+            ConfigurationState.Instance.System.EnableDockedMode.Value             = _dockedModeToggle.Active;
+            ConfigurationState.Instance.EnableDiscordIntegration.Value            = _discordToggle.Active;
+            ConfigurationState.Instance.CheckUpdatesOnStart.Value                 = _checkUpdatesToggle.Active;
+            ConfigurationState.Instance.ShowConfirmExit.Value                     = _showConfirmExitToggle.Active;
+            ConfigurationState.Instance.HideCursorOnIdle.Value                    = _hideCursorOnIdleToggle.Active;
+            ConfigurationState.Instance.Graphics.EnableVsync.Value                = _vSyncToggle.Active;
+            ConfigurationState.Instance.Graphics.EnableShaderCache.Value          = _shaderCacheToggle.Active;
+            ConfigurationState.Instance.Graphics.EnableTextureRecompression.Value = _textureRecompressionToggle.Active;
+            ConfigurationState.Instance.Graphics.EnableMacroHLE.Value             = _macroHLEToggle.Active;
+            ConfigurationState.Instance.System.EnablePtc.Value                    = _ptcToggle.Active;
+            ConfigurationState.Instance.System.EnableInternetAccess.Value         = _internetToggle.Active;
+            ConfigurationState.Instance.System.EnableFsIntegrityChecks.Value      = _fsicToggle.Active;
+            ConfigurationState.Instance.System.MemoryManagerMode.Value            = memoryMode;
+            ConfigurationState.Instance.System.ExpandRam.Value                    = _expandRamToggle.Active;
+            ConfigurationState.Instance.System.IgnoreMissingServices.Value        = _ignoreToggle.Active;
+            ConfigurationState.Instance.Hid.EnableKeyboard.Value                  = _directKeyboardAccess.Active;
+            ConfigurationState.Instance.Hid.EnableMouse.Value                     = _directMouseAccess.Active;
+            ConfigurationState.Instance.Ui.EnableCustomTheme.Value                = _custThemeToggle.Active;
+            ConfigurationState.Instance.System.Language.Value                     = Enum.Parse<Language>(_systemLanguageSelect.ActiveId);
+            ConfigurationState.Instance.System.Region.Value                       = Enum.Parse<Common.Configuration.System.Region>(_systemRegionSelect.ActiveId);
+            ConfigurationState.Instance.System.SystemTimeOffset.Value             = _systemTimeOffset;
+            ConfigurationState.Instance.Ui.CustomThemePath.Value                  = _custThemePath.Buffer.Text;
+            ConfigurationState.Instance.Graphics.ShadersDumpPath.Value            = _graphicsShadersDumpPath.Buffer.Text;
+            ConfigurationState.Instance.System.FsGlobalAccessLogMode.Value        = (int)_fsLogSpinAdjustment.Value;
+            ConfigurationState.Instance.Graphics.MaxAnisotropy.Value              = float.Parse(_anisotropy.ActiveId, CultureInfo.InvariantCulture);
+            ConfigurationState.Instance.Graphics.AspectRatio.Value                = Enum.Parse<AspectRatio>(_aspectRatio.ActiveId);
+            ConfigurationState.Instance.Graphics.BackendThreading.Value           = backendThreading;
+            ConfigurationState.Instance.Graphics.GraphicsBackend.Value            = Enum.Parse<GraphicsBackend>(_graphicsBackend.ActiveId);
+            ConfigurationState.Instance.Graphics.PreferredGpu.Value               = _preferredGpu.ActiveId;
+            ConfigurationState.Instance.Graphics.ResScale.Value                   = int.Parse(_resScaleCombo.ActiveId);
+            ConfigurationState.Instance.Graphics.ResScaleCustom.Value             = resScaleCustom;
+            ConfigurationState.Instance.System.AudioVolume.Value                  = (float)_audioVolumeSlider.Value / 100.0f;
 
             _previousVolumeLevel = ConfigurationState.Instance.System.AudioVolume.Value;
 
@@ -605,27 +679,27 @@ namespace Ryujinx.Ui.Windows
 
                 if (fileChooser.Run() == (int)ResponseType.Accept)
                 {
+                    _directoryChanged = false;
                     foreach (string directory in fileChooser.Filenames)
                     {
-                        bool directoryAdded = false;
-
                         if (_gameDirsBoxStore.GetIterFirst(out TreeIter treeIter))
                         {
                             do
                             {
                                 if (directory.Equals((string)_gameDirsBoxStore.GetValue(treeIter, 0)))
                                 {
-                                    directoryAdded = true;
                                     break;
                                 }
                             } while(_gameDirsBoxStore.IterNext(ref treeIter));
                         }
 
-                        if (!directoryAdded)
+                        if (!_directoryChanged)
                         {
                             _gameDirsBoxStore.AppendValues(directory);
                         }
                     }
+
+                    _directoryChanged = true;
                 }
 
                 fileChooser.Dispose();
@@ -643,6 +717,8 @@ namespace Ryujinx.Ui.Windows
             if (selection.GetSelected(out TreeIter treeIter))
             {
                 _gameDirsBoxStore.Remove(ref treeIter);
+
+                _directoryChanged = true;
             }
 
             ((ToggleButton)sender).SetStateFlags(StateFlags.Normal, true);

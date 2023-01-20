@@ -1,9 +1,9 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Services.Hid.HidServer;
 using Ryujinx.HLE.HOS.Services.Hid.Irs.Types;
+using Ryujinx.Horizon.Common;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Hid.Irs
@@ -50,7 +50,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
 
             if (_irsensorSharedMemoryHandle == 0)
             {
-                if (context.Process.HandleTable.GenerateHandle(context.Device.System.IirsSharedMem, out _irsensorSharedMemoryHandle) != KernelResult.Success)
+                if (context.Process.HandleTable.GenerateHandle(context.Device.System.IirsSharedMem, out _irsensorSharedMemoryHandle) != Result.Success)
                 {
                     throw new InvalidOperationException("Out of handles!");
                 }
@@ -172,8 +172,8 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
         {
             NpadIdType npadIdType = (NpadIdType)context.RequestData.ReadUInt32();
 
-            if (npadIdType >  NpadIdType.Player8 && 
-                npadIdType != NpadIdType.Unknown && 
+            if (npadIdType >  NpadIdType.Player8 &&
+                npadIdType != NpadIdType.Unknown &&
                 npadIdType != NpadIdType.Handheld)
             {
                 return ResultCode.NpadIdOutOfRange;
@@ -183,7 +183,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
 
             context.ResponseData.Write((int)irCameraHandle);
 
-            // NOTE: If the irCameraHandle pointer is null this error is returned, Doesn't occur in our case. 
+            // NOTE: If the irCameraHandle pointer is null this error is returned, Doesn't occur in our case.
             //       return ResultCode.HandlePointerIsNull;
 
             return ResultCode.Success;
@@ -199,6 +199,18 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
             long  appletResourceUserId  = context.RequestData.ReadInt64();
 
             Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId, irCameraHandle, packedMcuVersionMajor, packedMcuVersionMinor });
+
+            return ResultCode.Success;
+        }
+
+        [CommandHipc(318)] // 4.0.0+
+        // StopImageProcessorAsync(nn::irsensor::IrCameraHandle, nn::applet::AppletResourceUserId, pid)
+        public ResultCode StopImageProcessorAsync(ServiceCtx context)
+        {
+            int  irCameraHandle       = context.RequestData.ReadInt32();
+            long appletResourceUserId = context.RequestData.ReadInt64();
+
+            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId, irCameraHandle });
 
             return ResultCode.Success;
         }

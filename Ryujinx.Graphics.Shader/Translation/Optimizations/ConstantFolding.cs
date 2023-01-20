@@ -1,4 +1,4 @@
-using Ryujinx.Graphics.Shader.Decoders;
+using Ryujinx.Common.Utilities;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using System;
 
@@ -153,6 +153,10 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     EvaluateFPUnary(operation, (x) => float.IsNaN(x));
                     break;
 
+                case Instruction.LoadConstant:
+                    operation.TurnIntoCopy(Cbuf(operation.GetSource(0).Value, operation.GetSource(1).Value));
+                    break;
+
                 case Instruction.Maximum:
                     EvaluateBinary(operation, (x, y) => Math.Max(x, y));
                     break;
@@ -258,7 +262,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
             value = (value >> operation.Index * 16) & 0xffff;
 
-            operation.TurnIntoCopy(ConstF(HalfConversion.HalfToSingle(value)));
+            operation.TurnIntoCopy(ConstF((float)BitConverter.UInt16BitsToHalf((ushort)value)));
         }
 
         private static void FPNegate(Operation operation)

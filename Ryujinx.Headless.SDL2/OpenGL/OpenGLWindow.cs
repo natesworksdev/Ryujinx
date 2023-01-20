@@ -5,7 +5,6 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.Input.HLE;
 using System;
-
 using static SDL2.SDL;
 
 namespace Ryujinx.Headless.SDL2.OpenGL
@@ -103,19 +102,20 @@ namespace Ryujinx.Headless.SDL2.OpenGL
         private GraphicsDebugLevel _glLogLevel;
         private SDL2OpenGLContext _openGLContext;
 
-        public OpenGLWindow(InputManager inputManager, GraphicsDebugLevel glLogLevel, AspectRatio aspectRatio, bool enableMouse) : base(inputManager, glLogLevel, aspectRatio, enableMouse)
+        public OpenGLWindow(
+            InputManager inputManager,
+            GraphicsDebugLevel glLogLevel,
+            AspectRatio aspectRatio,
+            bool enableMouse,
+            HideCursor hideCursor)
+            : base(inputManager, glLogLevel, aspectRatio, enableMouse, hideCursor)
         {
             _glLogLevel = glLogLevel;
         }
 
-        protected override string GetGpuVendorName()
-        {
-            return ((Renderer)Renderer).GpuVendor;
-        }
-
         public override SDL_WindowFlags GetWindowFlags() => SDL_WindowFlags.SDL_WINDOW_OPENGL;
 
-        protected override void InitializeRenderer()
+        protected override void InitializeWindowRenderer()
         {
             // Ensure to not share this context with other contexts before this point.
             SetupOpenGLAttributes(false, _glLogLevel);
@@ -135,19 +135,21 @@ namespace Ryujinx.Headless.SDL2.OpenGL
             _openGLContext = new SDL2OpenGLContext(context, WindowHandle, false);
 
             // First take exclusivity on the OpenGL context.
-            ((Renderer)Renderer).InitializeBackgroundContext(SDL2OpenGLContext.CreateBackgroundContext(_openGLContext));
+            ((OpenGLRenderer)Renderer).InitializeBackgroundContext(SDL2OpenGLContext.CreateBackgroundContext(_openGLContext));
 
             _openGLContext.MakeCurrent();
 
             GL.ClearColor(0, 0, 0, 1.0f);
             GL.Clear(ClearBufferMask.ColorBufferBit);
-            SwapBuffers(0);
+            SwapBuffers();
 
             Renderer?.Window.SetSize(DefaultWidth, DefaultHeight);
             MouseDriver.SetClientSize(DefaultWidth, DefaultHeight);
         }
 
-        protected override void FinalizeRenderer()
+        protected override void InitializeRenderer() { }
+
+        protected override void FinalizeWindowRenderer()
         {
             // Try to bind the OpenGL context before calling the gpu disposal.
             _openGLContext.MakeCurrent();
@@ -159,28 +161,8 @@ namespace Ryujinx.Headless.SDL2.OpenGL
             _openGLContext.Dispose();
         }
 
-        protected override void SwapBuffers(object image)
+        protected override void SwapBuffers()
         {
-            if ((int)image != 0)
-            {
-                // The game's framebruffer is already bound, so blit it to the window's backbuffer
-                GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
-
-                GL.Clear(ClearBufferMask.ColorBufferBit);
-                GL.ClearColor(0, 0, 0, 1);
-
-                GL.BlitFramebuffer(0,
-                    0,
-                    Width,
-                    Height,
-                    0,
-                    0,
-                    Width,
-                    Height,
-                    ClearBufferMask.ColorBufferBit,
-                    BlitFramebufferFilter.Linear);
-            }
-
             SDL_GL_SwapWindow(WindowHandle);
         }
     }

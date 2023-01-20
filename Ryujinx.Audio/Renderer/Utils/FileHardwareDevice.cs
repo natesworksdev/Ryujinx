@@ -1,20 +1,3 @@
-//
-// Copyright (c) 2019-2021 Ryujinx
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-
 using Ryujinx.Audio.Integration;
 using System;
 using System.IO;
@@ -51,10 +34,10 @@ namespace Ryujinx.Audio.Renderer.Utils
 
             writer.Seek(0, SeekOrigin.Begin);
 
-            writer.Write(Encoding.ASCII.GetBytes("RIFF"));
+            writer.Write("RIFF"u8);
             writer.Write((int)(writer.BaseStream.Length - 8));
-            writer.Write(Encoding.ASCII.GetBytes("WAVE"));
-            writer.Write(Encoding.ASCII.GetBytes("fmt "));
+            writer.Write("WAVE"u8);
+            writer.Write("fmt "u8);
             writer.Write(16);
             writer.Write((short)1);
             writer.Write((short)GetChannelCount());
@@ -62,7 +45,7 @@ namespace Ryujinx.Audio.Renderer.Utils
             writer.Write(GetSampleRate() * GetChannelCount() * sizeof(short));
             writer.Write((short)(GetChannelCount() * sizeof(short)));
             writer.Write((short)(sizeof(short) * 8));
-            writer.Write(Encoding.ASCII.GetBytes("data"));
+            writer.Write("data"u8);
             writer.Write((int)(writer.BaseStream.Length - HeaderSize));
 
             writer.Seek((int)currentPos, SeekOrigin.Begin);

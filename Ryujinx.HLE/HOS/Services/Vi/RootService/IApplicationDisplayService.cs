@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Ryujinx.Horizon.Common;
 
 namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 {
@@ -49,7 +50,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
                     Height            = height
                 };
 
-                Encoding.ASCII.GetBytes(name).AsSpan().CopyTo(displayInfo.Name.ToSpan());
+                Encoding.ASCII.GetBytes(name).AsSpan().CopyTo(displayInfo.Name.AsSpan());
 
                 _displayInfo.Add(displayInfo);
             }
@@ -171,7 +172,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
                 return ResultCode.InvalidValue;
             }
 
-            int displayId = _displayInfo.FindIndex(display => Encoding.ASCII.GetString(display.Name.ToSpan()).Trim('\0') == name);
+            int displayId = _displayInfo.FindIndex(display => Encoding.ASCII.GetString(display.Name.AsSpan()).Trim('\0') == name);
 
             if (displayId == -1)
             {
@@ -237,7 +238,12 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
             long  userId    = context.RequestData.ReadInt64();
             ulong parcelPtr = context.Request.ReceiveBuff[0].Position;
 
-            IBinder producer = context.Device.System.SurfaceFlinger.OpenLayer(context.Request.HandleDesc.PId, layerId);
+            ResultCode result = context.Device.System.SurfaceFlinger.OpenLayer(context.Request.HandleDesc.PId, layerId, out IBinder producer);
+
+            if (result != ResultCode.Success)
+            {
+                return result;
+            }
 
             context.Device.System.SurfaceFlinger.SetRenderLayer(layerId);
 
@@ -260,9 +266,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         {
             long layerId = context.RequestData.ReadInt64();
 
-            context.Device.System.SurfaceFlinger.CloseLayer(layerId);
-
-            return ResultCode.Success;
+            return context.Device.System.SurfaceFlinger.CloseLayer(layerId);
         }
 
         [CommandHipc(2030)]
@@ -275,7 +279,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
             ulong parcelPtr = context.Request.ReceiveBuff[0].Position;
 
             // TODO: support multi display.
-            IBinder producer = context.Device.System.SurfaceFlinger.CreateLayer(0, out long layerId);
+            IBinder producer = context.Device.System.SurfaceFlinger.CreateLayer(out long layerId, 0, LayerState.Stray);
 
             context.Device.System.SurfaceFlinger.SetRenderLayer(layerId);
 
@@ -299,9 +303,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         {
             long layerId = context.RequestData.ReadInt64();
 
-            context.Device.System.SurfaceFlinger.CloseLayer(layerId);
-
-            return ResultCode.Success;
+            return context.Device.System.SurfaceFlinger.DestroyStrayLayer(layerId);
         }
 
         [CommandHipc(2101)]
@@ -470,7 +472,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
             if (_vsyncEventHandle == 0)
             {
-                if (context.Process.HandleTable.GenerateHandle(context.Device.System.VsyncEvent.ReadableEvent, out _vsyncEventHandle) != KernelResult.Success)
+                if (context.Process.HandleTable.GenerateHandle(context.Device.System.VsyncEvent.ReadableEvent, out _vsyncEventHandle) != Result.Success)
                 {
                     throw new InvalidOperationException("Out of handles!");
                 }

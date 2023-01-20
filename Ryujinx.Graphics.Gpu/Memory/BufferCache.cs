@@ -22,11 +22,17 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private readonly GpuContext _context;
         private readonly PhysicalMemory _physicalMemory;
 
+        /// <remarks>
+        /// Only modified from the GPU thread. Must lock for add/remove.
+        /// Must lock for any access from other threads.
+        /// </remarks>
         private readonly RangeList<Buffer> _buffers;
 
         private Buffer[] _bufferOverlaps;
 
         private readonly Dictionary<ulong, BufferCacheEntry> _dirtyCache;
+        private readonly Dictionary<ulong, BufferCacheEntry> _modifiedCache;
+        private bool _pruneCaches;
 
         public event Action NotifyBuffersModified;
 
@@ -45,6 +51,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _bufferOverlaps = new Buffer[OverlapsBufferInitialCapacity];
 
             _dirtyCache = new Dictionary<ulong, BufferCacheEntry>();
+
+            // There are a lot more entries on the modified cache, so it is separate from the one for ForceDirty.
+            _modifiedCache = new Dictionary<ulong, BufferCacheEntry>();
         }
 
         /// <summary>
@@ -132,6 +141,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="size">Size in bytes of the buffer</param>
         public void ForceDirty(MemoryManager memoryManager, ulong gpuVa, ulong size)
         {
+            if (_pruneCaches)
+            {
+                Prune();
+            }
+
             if (!_dirtyCache.TryGetValue(gpuVa, out BufferCacheEntry result) ||
                 result.EndGpuAddress < gpuVa + size ||
                 result.UnmappedSequence != result.Buffer.UnmappedSequence)
@@ -146,6 +160,42 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Checks if the given buffer range has been GPU modifed.
+        /// </summary>
+        /// <param name="memoryManager">GPU memory manager where the buffer is mapped</param>
+        /// <param name="gpuVa">Start GPU virtual address of the buffer</param>
+        /// <param name="size">Size in bytes of the buffer</param>
+        /// <returns>True if modified, false otherwise</returns>
+        public bool CheckModified(MemoryManager memoryManager, ulong gpuVa, ulong size, out ulong outAddr)
+        {
+            if (_pruneCaches)
+            {
+                Prune();
+            }
+
+            // Align the address to avoid creating too many entries on the quick lookup dictionary.
+            ulong mask = BufferAlignmentMask;
+            ulong alignedGpuVa = gpuVa & (~mask);
+            ulong alignedEndGpuVa = (gpuVa + size + mask) & (~mask);
+
+            size = alignedEndGpuVa - alignedGpuVa;
+
+            if (!_modifiedCache.TryGetValue(alignedGpuVa, out BufferCacheEntry result) ||
+                result.EndGpuAddress < alignedEndGpuVa ||
+                result.UnmappedSequence != result.Buffer.UnmappedSequence)
+            {
+                ulong address = TranslateAndCreateBuffer(memoryManager, alignedGpuVa, size);
+                result = new BufferCacheEntry(address, alignedGpuVa, GetBuffer(address, size));
+
+                _modifiedCache[alignedGpuVa] = result;
+            }
+
+            outAddr = result.Address | (gpuVa & mask);
+
+            return result.Buffer.IsModified(result.Address, size);
+        }
+
+        /// <summary>
         /// Creates a new buffer for the specified range, if needed.
         /// If a buffer where this range can be fully contained already exists,
         /// then the creation of a new buffer is not necessary.
@@ -154,12 +204,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="size">Size in bytes of the buffer</param>
         private void CreateBufferAligned(ulong address, ulong size)
         {
-            int overlapsCount;
-
-            lock (_buffers)
-            {
-                overlapsCount = _buffers.FindOverlapsNonOverlapping(address, size, ref _bufferOverlaps);
-            }
+            int overlapsCount = _buffers.FindOverlapsNonOverlapping(address, size, ref _bufferOverlaps);
 
             if (overlapsCount != 0)
             {
@@ -228,7 +273,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                         buffer.CopyTo(newBuffer, dstOffset);
                         newBuffer.InheritModifiedRanges(buffer);
 
-                        buffer.DisposeData();
+                        buffer.DecrementReferenceCount();
                     }
 
                     newBuffer.SynchronizeMemory(address, newSize);
@@ -327,18 +372,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Gets a buffer sub-range for a given GPU memory range.
-        /// </summary>
-        /// <param name="memoryManager">GPU memory manager where the buffer is mapped</param>
-        /// <param name="gpuVa">Start GPU virtual address of the buffer</param>
-        /// <param name="size">Size in bytes of the buffer</param>
-        /// <returns>The buffer sub-range for the given range</returns>
-        public BufferRange GetGpuBufferRange(MemoryManager memoryManager, ulong gpuVa, ulong size)
-        {
-            return GetBufferRange(TranslateAndCreateBuffer(memoryManager, gpuVa, size), size);
-        }
-
-        /// <summary>
         /// Gets a buffer sub-range starting at a given memory address.
         /// </summary>
         /// <param name="address">Start address of the memory range</param>
@@ -376,10 +409,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             if (size != 0)
             {
-                lock (_buffers)
-                {
-                    buffer = _buffers.FindFirstOverlap(address, size);
-                }
+                buffer = _buffers.FindFirstOverlap(address, size);
 
                 buffer.SynchronizeMemory(address, size);
 
@@ -390,10 +420,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
             else
             {
-                lock (_buffers)
-                {
-                    buffer = _buffers.FindFirstOverlap(address, 1);
-                }
+                buffer = _buffers.FindFirstOverlap(address, 1);
             }
 
             return buffer;
@@ -408,15 +435,58 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             if (size != 0)
             {
-                Buffer buffer;
-
-                lock (_buffers)
-                {
-                    buffer = _buffers.FindFirstOverlap(address, size);
-                }
+                Buffer buffer = _buffers.FindFirstOverlap(address, size);
 
                 buffer.SynchronizeMemory(address, size);
             }
+        }
+
+        /// <summary>
+        /// Prune any invalid entries from a quick access dictionary.
+        /// </summary>
+        /// <param name="dictionary">Dictionary to prune</param>
+        /// <param name="toDelete">List used to track entries to delete</param>
+        private void Prune(Dictionary<ulong, BufferCacheEntry> dictionary, ref List<ulong> toDelete)
+        {
+            foreach (var entry in dictionary)
+            {
+                if (entry.Value.UnmappedSequence != entry.Value.Buffer.UnmappedSequence)
+                {
+                    (toDelete ??= new()).Add(entry.Key);
+                }
+            }
+
+            if (toDelete != null)
+            {
+                foreach (ulong entry in toDelete)
+                {
+                    dictionary.Remove(entry);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Prune any invalid entries from the quick access dictionaries.
+        /// </summary>
+        private void Prune()
+        {
+            List<ulong> toDelete = null;
+
+            Prune(_dirtyCache, ref toDelete);
+
+            toDelete?.Clear();
+
+            Prune(_modifiedCache, ref toDelete);
+
+            _pruneCaches = false;
+        }
+
+        /// <summary>
+        /// Queues a prune of invalid entries the next time a dictionary cache is accessed.
+        /// </summary>
+        public void QueuePrune()
+        {
+            _pruneCaches = true;
         }
 
         /// <summary>

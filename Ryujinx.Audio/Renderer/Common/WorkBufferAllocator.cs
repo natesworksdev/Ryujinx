@@ -1,20 +1,3 @@
-//
-// Copyright (c) 2019-2021 Ryujinx
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-
 using Ryujinx.Audio.Renderer.Utils;
 using Ryujinx.Common;
 using System;
@@ -40,7 +23,7 @@ namespace Ryujinx.Audio.Renderer.Common
 
             if (size != 0)
             {
-                ulong alignedOffset = BitUtils.AlignUp(Offset, align);
+                ulong alignedOffset = BitUtils.AlignUp<ulong>(Offset, (ulong)align);
 
                 if (alignedOffset + size <= (ulong)BackingMemory.Length)
                 {
@@ -58,7 +41,7 @@ namespace Ryujinx.Audio.Renderer.Common
             return Memory<byte>.Empty;
         }
 
-        public Memory<T> Allocate<T>(ulong count, int align) where T: unmanaged
+        public Memory<T> Allocate<T>(ulong count, int align) where T : unmanaged
         {
             Memory<byte> allocatedMemory = Allocate((ulong)Unsafe.SizeOf<T>() * count, align);
 
@@ -70,9 +53,9 @@ namespace Ryujinx.Audio.Renderer.Common
             return SpanMemoryManager<T>.Cast(allocatedMemory);
         }
 
-        public static ulong GetTargetSize<T>(ulong currentSize, ulong count, int align) where T: unmanaged
+        public static ulong GetTargetSize<T>(ulong currentSize, ulong count, int align) where T : unmanaged
         {
-            return BitUtils.AlignUp(currentSize, align) + (ulong)Unsafe.SizeOf<T>() * count;
+            return BitUtils.AlignUp<ulong>(currentSize, (ulong)align) + (ulong)Unsafe.SizeOf<T>() * count;
         }
     }
 }

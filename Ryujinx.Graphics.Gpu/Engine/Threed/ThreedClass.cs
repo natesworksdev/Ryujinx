@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Graphics.Device;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Gpu.Engine.GPFifo;
 using Ryujinx.Graphics.Gpu.Engine.InlineToMemory;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     class ThreedClass : IDeviceState
     {
         private readonly GpuContext _context;
+        private readonly GPFifoClass _fifoClass;
         private readonly DeviceStateWithShadow<ThreedClassState> _state;
 
         private readonly InlineToMemoryClass _i2mClass;
@@ -26,9 +28,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         /// <param name="context">GPU context</param>
         /// <param name="channel">GPU channel</param>
-        public ThreedClass(GpuContext context, GpuChannel channel)
+        public ThreedClass(GpuContext context, GpuChannel channel, GPFifoClass fifoClass)
         {
             _context = context;
+            _fifoClass = fifoClass;
             _state = new DeviceStateWithShadow<ThreedClassState>(new Dictionary<string, RwCallback>
             {
                 { nameof(ThreedClassState.LaunchDma), new RwCallback(LaunchDma, null) },
@@ -39,6 +42,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 { nameof(ThreedClassState.TextureBarrier), new RwCallback(TextureBarrier, null) },
                 { nameof(ThreedClassState.TextureBarrierTiled), new RwCallback(TextureBarrierTiled, null) },
                 { nameof(ThreedClassState.DrawTextureSrcY), new RwCallback(DrawTexture, null) },
+                { nameof(ThreedClassState.DrawVertexArrayBeginEndInstanceFirst), new RwCallback(DrawVertexArrayBeginEndInstanceFirst, null) },
+                { nameof(ThreedClassState.DrawVertexArrayBeginEndInstanceSubsequent), new RwCallback(DrawVertexArrayBeginEndInstanceSubsequent, null) },
                 { nameof(ThreedClassState.VbElementU8), new RwCallback(VbElementU8, null) },
                 { nameof(ThreedClassState.VbElementU16), new RwCallback(VbElementU16, null) },
                 { nameof(ThreedClassState.VbElementU32), new RwCallback(VbElementU32, null) },
@@ -46,10 +51,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 { nameof(ThreedClassState.RenderEnableCondition), new RwCallback(null, Zero) },
                 { nameof(ThreedClassState.DrawEnd), new RwCallback(DrawEnd, null) },
                 { nameof(ThreedClassState.DrawBegin), new RwCallback(DrawBegin, null) },
-                { nameof(ThreedClassState.DrawIndexedSmall), new RwCallback(DrawIndexedSmall, null) },
-                { nameof(ThreedClassState.DrawIndexedSmall2), new RwCallback(DrawIndexedSmall2, null) },
-                { nameof(ThreedClassState.DrawIndexedSmallIncInstance), new RwCallback(DrawIndexedSmallIncInstance, null) },
-                { nameof(ThreedClassState.DrawIndexedSmallIncInstance2), new RwCallback(DrawIndexedSmallIncInstance2, null) },
+                { nameof(ThreedClassState.DrawIndexBuffer32BeginEndInstanceFirst), new RwCallback(DrawIndexBuffer32BeginEndInstanceFirst, null) },
+                { nameof(ThreedClassState.DrawIndexBuffer16BeginEndInstanceFirst), new RwCallback(DrawIndexBuffer16BeginEndInstanceFirst, null) },
+                { nameof(ThreedClassState.DrawIndexBuffer8BeginEndInstanceFirst), new RwCallback(DrawIndexBuffer8BeginEndInstanceFirst, null) },
+                { nameof(ThreedClassState.DrawIndexBuffer32BeginEndInstanceSubsequent), new RwCallback(DrawIndexBuffer32BeginEndInstanceSubsequent, null) },
+                { nameof(ThreedClassState.DrawIndexBuffer16BeginEndInstanceSubsequent), new RwCallback(DrawIndexBuffer16BeginEndInstanceSubsequent, null) },
+                { nameof(ThreedClassState.DrawIndexBuffer8BeginEndInstanceSubsequent), new RwCallback(DrawIndexBuffer8BeginEndInstanceSubsequent, null) },
                 { nameof(ThreedClassState.IndexBufferCount), new RwCallback(SetIndexBufferCount, null) },
                 { nameof(ThreedClassState.Clear), new RwCallback(Clear, null) },
                 { nameof(ThreedClassState.SemaphoreControl), new RwCallback(Report, null) },
@@ -64,12 +71,13 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             _i2mClass = new InlineToMemoryClass(context, channel, initializeState: false);
 
+            var spec = new SpecializationStateUpdater(context);
             var drawState = new DrawState();
 
-            _drawManager = new DrawManager(context, channel, _state, drawState);
+            _drawManager = new DrawManager(context, channel, _state, drawState, spec);
             _semaphoreUpdater = new SemaphoreUpdater(context, channel, _state);
             _cbUpdater = new ConstantBufferUpdater(channel, _state);
-            _stateUpdater = new StateUpdater(context, channel, _state, drawState);
+            _stateUpdater = new StateUpdater(context, channel, _state, drawState, spec);
 
             // This defaults to "always", even without any register write.
             // Reads just return 0, regardless of what was set there.
@@ -114,6 +122,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         public void UpdateState()
         {
+            _fifoClass.CreatePendingSyncs();
             _cbUpdater.FlushUboDirty();
             _stateUpdater.Update();
         }
@@ -131,10 +140,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Updates render targets (color and depth-stencil buffers) based on current render target state.
         /// </summary>
         /// <param name="useControl">Use draw buffers information from render target control register</param>
+        /// <param name="layered">Indicates if the texture is layered</param>
         /// <param name="singleUse">If this is not -1, it indicates that only the given indexed target will be used.</param>
-        public void UpdateRenderTargetState(bool useControl, int singleUse = -1)
+        public void UpdateRenderTargetState(bool useControl, bool layered = false, int singleUse = -1)
         {
-            _stateUpdater.UpdateRenderTargetState(useControl, singleUse);
+            _stateUpdater.UpdateRenderTargetState(useControl, layered, singleUse);
         }
 
         /// <summary>
@@ -169,6 +179,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public void ForceShaderUpdate()
         {
             _stateUpdater.ForceShaderUpdate();
+        }
+
+        /// <summary>
+        /// Create any syncs from WaitForIdle command that are currently pending.
+        /// </summary>
+        public void CreatePendingSyncs()
+        {
+            _fifoClass.CreatePendingSyncs();
         }
 
         /// <summary>
@@ -232,7 +250,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             uint syncpointId = (uint)argument & 0xFFFF;
 
             _context.AdvanceSequence();
-            _context.CreateHostSyncIfNeeded(true);
+            _context.CreateHostSyncIfNeeded(true, true);
             _context.Renderer.UpdateCounters(); // Poll the query counters, the game may want an updated result.
             _context.Synchronization.IncrementSyncpoint(syncpointId);
         }
@@ -287,6 +305,25 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private void DrawTexture(int argument)
         {
             _drawManager.DrawTexture(this, argument);
+        }
+
+        /// <summary>
+        /// Performs a non-indexed draw with the specified topology, index and count.
+        /// </summary>
+        /// <param name="argument">Method call argument</param>
+        private void DrawVertexArrayBeginEndInstanceFirst(int argument)
+        {
+            _drawManager.DrawVertexArrayBeginEndInstanceFirst(this, argument);
+        }
+
+        /// <summary>
+        /// Performs a non-indexed draw with the specified topology, index and count,
+        /// while incrementing the current instance.
+        /// </summary>
+        /// <param name="argument">Method call argument</param>
+        private void DrawVertexArrayBeginEndInstanceSubsequent(int argument)
+        {
+            _drawManager.DrawVertexArrayBeginEndInstanceSubsequent(this, argument);
         }
 
         /// <summary>
@@ -356,41 +393,60 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         }
 
         /// <summary>
-        /// Performs a indexed draw with a low number of index buffer elements.
+        /// Performs a indexed draw with 8-bit index buffer elements.
         /// </summary>
         /// <param name="argument">Method call argument</param>
-        private void DrawIndexedSmall(int argument)
+        private void DrawIndexBuffer8BeginEndInstanceFirst(int argument)
         {
-            _drawManager.DrawIndexedSmall(this, argument);
+            _drawManager.DrawIndexBuffer8BeginEndInstanceFirst(this, argument);
         }
 
         /// <summary>
-        /// Performs a indexed draw with a low number of index buffer elements.
+        /// Performs a indexed draw with 16-bit index buffer elements.
         /// </summary>
         /// <param name="argument">Method call argument</param>
-        private void DrawIndexedSmall2(int argument)
+        private void DrawIndexBuffer16BeginEndInstanceFirst(int argument)
         {
-            _drawManager.DrawIndexedSmall2(this, argument);
+            _drawManager.DrawIndexBuffer16BeginEndInstanceFirst(this, argument);
         }
 
         /// <summary>
-        /// Performs a indexed draw with a low number of index buffer elements,
+        /// Performs a indexed draw with 32-bit index buffer elements.
+        /// </summary>
+        /// <param name="argument">Method call argument</param>
+        private void DrawIndexBuffer32BeginEndInstanceFirst(int argument)
+        {
+            _drawManager.DrawIndexBuffer32BeginEndInstanceFirst(this, argument);
+        }
+
+        /// <summary>
+        /// Performs a indexed draw with 8-bit index buffer elements,
         /// while also pre-incrementing the current instance value.
         /// </summary>
         /// <param name="argument">Method call argument</param>
-        private void DrawIndexedSmallIncInstance(int argument)
+        private void DrawIndexBuffer8BeginEndInstanceSubsequent(int argument)
         {
-            _drawManager.DrawIndexedSmallIncInstance(this, argument);
+            _drawManager.DrawIndexBuffer8BeginEndInstanceSubsequent(this, argument);
         }
 
         /// <summary>
-        /// Performs a indexed draw with a low number of index buffer elements,
+        /// Performs a indexed draw with 16-bit index buffer elements,
         /// while also pre-incrementing the current instance value.
         /// </summary>
         /// <param name="argument">Method call argument</param>
-        private void DrawIndexedSmallIncInstance2(int argument)
+        private void DrawIndexBuffer16BeginEndInstanceSubsequent(int argument)
         {
-            _drawManager.DrawIndexedSmallIncInstance2(this, argument);
+            _drawManager.DrawIndexBuffer16BeginEndInstanceSubsequent(this, argument);
+        }
+
+        /// <summary>
+        /// Performs a indexed draw with 32-bit index buffer elements,
+        /// while also pre-incrementing the current instance value.
+        /// </summary>
+        /// <param name="argument">Method call argument</param>
+        private void DrawIndexBuffer32BeginEndInstanceSubsequent(int argument)
+        {
+            _drawManager.DrawIndexBuffer32BeginEndInstanceSubsequent(this, argument);
         }
 
         /// <summary>
@@ -485,23 +541,58 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         }
 
         /// <summary>
-        /// Performs a indirect multi-draw, with parameters from a GPU buffer.
+        /// Performs a indexed or non-indexed draw.
         /// </summary>
-        /// <param name="indexCount">Index Buffer Count</param>
         /// <param name="topology">Primitive topology</param>
-        /// <param name="indirectBuffer">GPU buffer with the draw parameters, such as count, first index, etc</param>
-        /// <param name="parameterBuffer">GPU buffer with the draw count</param>
-        /// <param name="maxDrawCount">Maximum number of draws that can be made</param>
-        /// <param name="stride">Distance in bytes between each element on the <paramref name="indirectBuffer"/> array</param>
-        public void MultiDrawIndirectCount(
-            int indexCount,
+        /// <param name="count">Index count for indexed draws, vertex count for non-indexed draws</param>
+        /// <param name="instanceCount">Instance count</param>
+        /// <param name="firstIndex">First index on the index buffer for indexed draws, ignored for non-indexed draws</param>
+        /// <param name="firstVertex">First vertex on the vertex buffer</param>
+        /// <param name="firstInstance">First instance</param>
+        /// <param name="indexed">True if the draw is indexed, false otherwise</param>
+        public void Draw(
             PrimitiveTopology topology,
-            BufferRange indirectBuffer,
-            BufferRange parameterBuffer,
-            int maxDrawCount,
-            int stride)
+            int count,
+            int instanceCount,
+            int firstIndex,
+            int firstVertex,
+            int firstInstance,
+            bool indexed)
         {
-            _drawManager.MultiDrawIndirectCount(this, indexCount, topology, indirectBuffer, parameterBuffer, maxDrawCount, stride);
+            _drawManager.Draw(this, topology, count, instanceCount, firstIndex, firstVertex, firstInstance, indexed);
+        }
+
+        /// <summary>
+        /// Performs a indirect draw, with parameters from a GPU buffer.
+        /// </summary>
+        /// <param name="topology">Primitive topology</param>
+        /// <param name="indirectBufferAddress">Address of the buffer with the draw parameters, such as count, first index, etc</param>
+        /// <param name="parameterBufferAddress">Address of the buffer with the draw count</param>
+        /// <param name="maxDrawCount">Maximum number of draws that can be made</param>
+        /// <param name="stride">Distance in bytes between each entry on the data pointed to by <paramref name="indirectBufferAddress"/></param>
+        /// <param name="indexCount">Maximum number of indices that the draw can consume</param>
+        /// <param name="drawType">Type of the indirect draw, which can be indexed or non-indexed, with or without a draw count</param>
+        public void DrawIndirect(
+            PrimitiveTopology topology,
+            ulong indirectBufferAddress,
+            ulong parameterBufferAddress,
+            int maxDrawCount,
+            int stride,
+            int indexCount,
+            IndirectDrawType drawType)
+        {
+            _drawManager.DrawIndirect(this, topology, indirectBufferAddress, parameterBufferAddress, maxDrawCount, stride, indexCount, drawType);
+        }
+
+        /// <summary>
+        /// Clears the current color and depth-stencil buffers.
+        /// Which buffers should be cleared can also specified with the arguments.
+        /// </summary>
+        /// <param name="argument">Method call argument</param>
+        /// <param name="layerCount">For array and 3D textures, indicates how many layers should be cleared</param>
+        public void Clear(int argument, int layerCount)
+        {
+            _drawManager.Clear(this, argument, layerCount);
         }
     }
 }

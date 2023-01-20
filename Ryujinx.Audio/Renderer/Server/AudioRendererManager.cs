@@ -1,20 +1,3 @@
-//
-// Copyright (c) 2019-2021 Ryujinx
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-
 using Ryujinx.Audio.Integration;
 using Ryujinx.Audio.Renderer.Dsp;
 using Ryujinx.Audio.Renderer.Parameter;
@@ -322,13 +305,34 @@ namespace Ryujinx.Audio.Renderer.Server
         /// <param name="workBufferSize">The guest work buffer size.</param>
         /// <param name="processHandle">The process handle of the application.</param>
         /// <returns>A <see cref="ResultCode"/> reporting an error or a success.</returns>
-        public ResultCode OpenAudioRenderer(out AudioRenderSystem renderer, IVirtualMemoryManager memoryManager, ref AudioRendererConfiguration parameter, ulong appletResourceUserId, ulong workBufferAddress, ulong workBufferSize, uint processHandle, float volume)
+        public ResultCode OpenAudioRenderer(
+            out AudioRenderSystem renderer,
+            IVirtualMemoryManager memoryManager,
+            ref AudioRendererConfiguration parameter,
+            ulong appletResourceUserId,
+            ulong workBufferAddress,
+            ulong workBufferSize,
+            uint processHandle,
+            float volume)
         {
             int sessionId = AcquireSessionId();
 
             AudioRenderSystem audioRenderer = new AudioRenderSystem(this, _sessionsSystemEvent[sessionId]);
 
-            ResultCode result = audioRenderer.Initialize(ref parameter, processHandle, workBufferAddress, workBufferSize, sessionId, appletResourceUserId, memoryManager);
+            // TODO: Eventually, we should try to use the guest supplied work buffer instead of allocating
+            // our own. However, it was causing problems on some applications that would unmap the memory
+            // before the audio renderer was fully disposed.
+            Memory<byte> workBufferMemory = GC.AllocateArray<byte>((int)workBufferSize, pinned: true);
+
+            ResultCode result = audioRenderer.Initialize(
+                ref parameter,
+                processHandle,
+                workBufferMemory,
+                workBufferAddress,
+                workBufferSize,
+                sessionId,
+                appletResourceUserId,
+                memoryManager);
 
             if (result == ResultCode.Success)
             {

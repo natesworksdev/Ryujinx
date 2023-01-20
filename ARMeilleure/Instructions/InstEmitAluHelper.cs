@@ -128,7 +128,7 @@ namespace ARMeilleure.Instructions
         {
             Debug.Assert(value.Type == OperandType.I32);
 
-            if (((OpCode32)context.CurrOp).IsThumb())
+            if (((OpCode32)context.CurrOp).IsThumb)
             {
                 bool isReturn = IsA32Return(context);
                 if (!isReturn)
@@ -205,7 +205,7 @@ namespace ARMeilleure.Instructions
                     return Const(op.Immediate);
                 }
 
-                case OpCode32AluImm16 op: return Const(op.Immediate);
+                case IOpCode32AluImm16 op: return Const(op.Immediate);
 
                 case IOpCode32AluRsImm op: return GetMShiftedByImmediate(context, op, setCarry);
                 case IOpCode32AluRsReg op: return GetMShiftedByReg(context, op, setCarry);

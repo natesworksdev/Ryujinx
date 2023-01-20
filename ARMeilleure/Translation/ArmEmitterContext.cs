@@ -6,7 +6,6 @@ using ARMeilleure.Instructions;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Memory;
 using ARMeilleure.State;
-using ARMeilleure.Translation.PTC;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -40,11 +39,11 @@ namespace ARMeilleure.Translation
             }
         }
 
+        private bool _pendingQcFlagSync;
+
         public OpCode CurrOp { get; set; }
 
         public IMemoryManager Memory { get; }
-
-        public bool HasPtc { get; }
 
         public EntryTable<uint> CountTable { get; }
         public AddressTable<ulong> FunctionTable { get; }
@@ -52,6 +51,7 @@ namespace ARMeilleure.Translation
 
         public ulong EntryAddress { get; }
         public bool HighCq { get; }
+        public bool HasPtc { get; }
         public Aarch32Mode Mode { get; }
 
         private int _ifThenBlockStateIndex = 0;
@@ -66,15 +66,16 @@ namespace ARMeilleure.Translation
             TranslatorStubs stubs,
             ulong entryAddress,
             bool highCq,
+            bool hasPtc,
             Aarch32Mode mode)
         {
-            HasPtc = Ptc.State != PtcState.Disabled;
             Memory = memory;
             CountTable = countTable;
             FunctionTable = funcTable;
             Stubs = stubs;
             EntryAddress = entryAddress;
             HighCq = highCq;
+            HasPtc = hasPtc;
             Mode = mode;
 
             _labels = new Dictionary<ulong, Operand>();
@@ -82,6 +83,8 @@ namespace ARMeilleure.Translation
 
         public override Operand Call(MethodInfo info, params Operand[] callArgs)
         {
+            SyncQcFlag();
+
             if (!HasPtc)
             {
                 return base.Call(info, callArgs);
@@ -138,6 +141,51 @@ namespace ARMeilleure.Translation
         {
             _optOpLastCompare = null;
             _optOpLastFlagSet = null;
+        }
+
+        public void SetPendingQcFlagSync()
+        {
+            _pendingQcFlagSync = true;
+        }
+
+        public void SyncQcFlag()
+        {
+            if (_pendingQcFlagSync)
+            {
+                if (Optimizations.UseAdvSimd)
+                {
+                    Operand fpsr = AddIntrinsicInt(Intrinsic.Arm64MrsFpsr);
+
+                    uint qcFlagMask = (uint)FPSR.Qc;
+
+                    Operand qcClearLabel = Label();
+
+                    BranchIfFalse(qcClearLabel, BitwiseAnd(fpsr, Const(qcFlagMask)));
+
+                    AddIntrinsicNoRet(Intrinsic.Arm64MsrFpsr, Const(0));
+                    InstEmitHelper.SetFpFlag(this, FPState.QcFlag, Const(1));
+
+                    MarkLabel(qcClearLabel);
+                }
+
+                _pendingQcFlagSync = false;
+            }
+        }
+
+        public void ClearQcFlag()
+        {
+            if (Optimizations.UseAdvSimd)
+            {
+                AddIntrinsicNoRet(Intrinsic.Arm64MsrFpsr, Const(0));
+            }
+        }
+
+        public void ClearQcFlagIfModified()
+        {
+            if (_pendingQcFlagSync && Optimizations.UseAdvSimd)
+            {
+                AddIntrinsicNoRet(Intrinsic.Arm64MsrFpsr, Const(0));
+            }
         }
 
         public Operand TryGetComparisonResult(Condition condition)

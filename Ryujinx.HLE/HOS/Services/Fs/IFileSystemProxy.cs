@@ -12,12 +12,14 @@ using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy;
+using System;
 using System.IO;
 
 using static Ryujinx.HLE.Utilities.StringUtils;
 using IFileSystem = LibHac.FsSrv.Sf.IFileSystem;
 using IStorage = LibHac.FsSrv.Sf.IStorage;
 using RightsId = LibHac.Fs.RightsId;
+using GameCardHandle = System.UInt32;
 
 namespace Ryujinx.HLE.HOS.Services.Fs
 {
@@ -25,6 +27,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
     class IFileSystemProxy : DisposableIpcService
     {
         private SharedRef<LibHac.FsSrv.Sf.IFileSystemProxy> _baseFileSystemProxy;
+        private ulong _pid;
 
         public IFileSystemProxy(ServiceCtx context) : base(context.Device.System.FsServer)
         {
@@ -36,6 +39,8 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         // SetCurrentProcess(u64, pid)
         public ResultCode SetCurrentProcess(ServiceCtx context)
         {
+            _pid = context.Request.HandleDesc.PId;
+
             return ResultCode.Success;
         }
 
@@ -238,7 +243,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         // OpenGameCardStorage(u32 handle, u32 partitionId) -> object<nn::fssrv::sf::IStorage>
         public ResultCode OpenGameCardStorage(ServiceCtx context)
         {
-            GameCardHandle handle = new GameCardHandle(context.RequestData.ReadInt32());
+            GameCardHandle handle = context.RequestData.ReadUInt32();
             GameCardPartitionRaw partitionId = (GameCardPartitionRaw)context.RequestData.ReadInt32();
             using var storage = new SharedRef<IStorage>();
 
@@ -254,7 +259,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         // OpenGameCardFileSystem(u32 handle, u32 partitionId) -> object<nn::fssrv::sf::IFileSystem>
         public ResultCode OpenGameCardFileSystem(ServiceCtx context)
         {
-            GameCardHandle handle = new GameCardHandle(context.RequestData.ReadInt32());
+            GameCardHandle handle = context.RequestData.ReadUInt32();
             GameCardPartition partitionId = (GameCardPartition)context.RequestData.ReadInt32();
             using var fileSystem = new SharedRef<IFileSystem>();
 
@@ -312,6 +317,17 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             HashSalt hashSalt = context.RequestData.ReadStruct<HashSalt>();
 
             return (ResultCode)_baseFileSystemProxy.Get.CreateSaveDataFileSystemWithHashSalt(in attribute, in creationInfo, in metaCreateInfo, in hashSalt).Value;
+        }
+
+        [CommandHipc(37)] // 14.0.0+
+        // CreateSaveDataFileSystemWithCreationInfo2(buffer<nn::fs::SaveDataCreationInfo2, 25> creationInfo) -> ()
+        public ResultCode CreateSaveDataFileSystemWithCreationInfo2(ServiceCtx context)
+        {
+            byte[] creationInfoBuffer = new byte[context.Request.SendBuff[0].Size];
+            context.Memory.Read(context.Request.SendBuff[0].Position, creationInfoBuffer);
+            ref readonly SaveDataCreationInfo2 creationInfo = ref SpanHelpers.AsReadOnlyStruct<SaveDataCreationInfo2>(creationInfoBuffer);
+
+            return (ResultCode)_baseFileSystemProxy.Get.CreateSaveDataFileSystemWithCreationInfo2(in creationInfo).Value;
         }
 
         [CommandHipc(51)]
@@ -500,16 +516,16 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             SaveDataSpaceId spaceId = (SaveDataSpaceId)context.RequestData.ReadInt64();
             SaveDataFilter filter = context.RequestData.ReadStruct<SaveDataFilter>();
 
-            ulong bufferPosition = context.Request.ReceiveBuff[0].Position;
+            ulong bufferAddress = context.Request.ReceiveBuff[0].Position;
             ulong bufferLen = context.Request.ReceiveBuff[0].Size;
 
-            byte[] infoBuffer = new byte[bufferLen];
+            using (var region = context.Memory.GetWritableRegion(bufferAddress, (int)bufferLen, true))
+            {
+                Result result = _baseFileSystemProxy.Get.FindSaveDataWithFilter(out long count, new OutBuffer(region.Memory.Span), spaceId, in filter);
+                if (result.IsFailure()) return (ResultCode)result.Value;
 
-            Result result = _baseFileSystemProxy.Get.FindSaveDataWithFilter(out long count, new OutBuffer(infoBuffer), spaceId, in filter);
-            if (result.IsFailure()) return (ResultCode)result.Value;
-
-            context.Memory.Write(bufferPosition, infoBuffer);
-            context.ResponseData.Write(count);
+                context.ResponseData.Write(count);
+            }
 
             return ResultCode.Success;
         }
@@ -689,7 +705,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         // OpenDataStorageByCurrentProcess() -> object<nn::fssrv::sf::IStorage> dataStorage
         public ResultCode OpenDataStorageByCurrentProcess(ServiceCtx context)
         {
-            var storage = context.Device.FileSystem.RomFs.AsStorage(true);
+            var storage = context.Device.FileSystem.GetRomFs(_pid).AsStorage(true);
             using var sharedStorage = new SharedRef<LibHac.Fs.IStorage>(storage);
             using var sfStorage = new SharedRef<IStorage>(new StorageInterfaceAdapter(ref sharedStorage.Ref()));
 
@@ -778,7 +794,27 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         // OpenPatchDataStorageByCurrentProcess() -> object<nn::fssrv::sf::IStorage>
         public ResultCode OpenPatchDataStorageByCurrentProcess(ServiceCtx context)
         {
-            var storage = context.Device.FileSystem.RomFs.AsStorage(true);
+            var storage = context.Device.FileSystem.GetRomFs(_pid).AsStorage(true);
+            using var sharedStorage = new SharedRef<LibHac.Fs.IStorage>(storage);
+            using var sfStorage = new SharedRef<IStorage>(new StorageInterfaceAdapter(ref sharedStorage.Ref()));
+
+            MakeObject(context, new FileSystemProxy.IStorage(ref sfStorage.Ref()));
+
+            return ResultCode.Success;
+        }
+
+        [CommandHipc(205)]
+        // OpenDataStorageWithProgramIndex(u8 program_index) -> object<nn::fssrv::sf::IStorage>
+        public ResultCode OpenDataStorageWithProgramIndex(ServiceCtx context)
+        {
+            byte programIndex = context.RequestData.ReadByte();
+
+            if ((context.Device.Application.TitleId & 0xf) != programIndex)
+            {
+                throw new NotImplementedException($"Accessing storage from other programs is not supported (program index = {programIndex}).");
+            }
+
+            var storage = context.Device.FileSystem.GetRomFs(_pid).AsStorage(true);
             using var sharedStorage = new SharedRef<LibHac.Fs.IStorage>(storage);
             using var sfStorage = new SharedRef<IStorage>(new StorageInterfaceAdapter(ref sharedStorage.Ref()));
 
@@ -868,7 +904,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         [CommandHipc(606)]
         public ResultCode GetRightsId(ServiceCtx context)
         {
-            LibHac.Ncm.StorageId storageId = (LibHac.Ncm.StorageId)context.RequestData.ReadInt64();
+            StorageId storageId = (StorageId)context.RequestData.ReadInt64();
             ProgramId programId = context.RequestData.ReadStruct<ProgramId>();
 
             Result result = _baseFileSystemProxy.Get.GetRightsId(out RightsId rightsId, programId, storageId);

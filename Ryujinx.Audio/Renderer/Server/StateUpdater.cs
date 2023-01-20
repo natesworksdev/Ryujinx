@@ -1,20 +1,3 @@
-//
-// Copyright (c) 2019-2021 Ryujinx
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-
 using Ryujinx.Audio.Renderer.Common;
 using Ryujinx.Audio.Renderer.Parameter;
 using Ryujinx.Audio.Renderer.Parameter.Performance;
@@ -38,7 +21,7 @@ namespace Ryujinx.Audio.Renderer.Server
     public class StateUpdater
     {
         private readonly ReadOnlyMemory<byte> _inputOrigin;
-        private ReadOnlyMemory <byte> _outputOrigin;
+        private ReadOnlyMemory<byte> _outputOrigin;
         private ReadOnlyMemory<byte> _input;
 
         private Memory<byte> _output;
@@ -136,7 +119,7 @@ namespace Ryujinx.Audio.Renderer.Server
                 ref VoiceChannelResource resource = ref context.GetChannelResource(i);
 
                 resource.Id = parameter.Id;
-                parameter.Mix.ToSpan().CopyTo(resource.Mix.ToSpan());
+                parameter.Mix.AsSpan().CopyTo(resource.Mix.AsSpan());
                 resource.IsUsed = parameter.IsUsed;
             }
 
@@ -224,7 +207,7 @@ namespace Ryujinx.Audio.Renderer.Server
             return ResultCode.Success;
         }
 
-        private static void ResetEffect<T>(ref BaseEffect effect, ref T parameter, PoolMapper mapper) where T: unmanaged, IEffectInParameter
+        private static void ResetEffect<T>(ref BaseEffect effect, ref T parameter, PoolMapper mapper) where T : unmanaged, IEffectInParameter
         {
             effect.ForceUnmapBuffers(mapper);
 
@@ -257,6 +240,10 @@ namespace Ryujinx.Audio.Renderer.Server
                 case EffectType.CaptureBuffer:
                     effect = new CaptureBufferEffect();
                     break;
+                case EffectType.Compressor:
+                    effect = new CompressorEffect();
+                    break;
+
                 default:
                     throw new NotImplementedException($"EffectType {parameter.Type} not implemented!");
             }
@@ -604,7 +591,7 @@ namespace Ryujinx.Audio.Renderer.Server
         {
             ref BehaviourErrorInfoOutStatus outStatus = ref SpanIOHelper.GetWriteRef<BehaviourErrorInfoOutStatus>(ref _output)[0];
 
-            _behaviourContext.CopyErrorInfo(outStatus.ErrorInfos.ToSpan(), out outStatus.ErrorInfosCount);
+            _behaviourContext.CopyErrorInfo(outStatus.ErrorInfos.AsSpan(), out outStatus.ErrorInfosCount);
 
             OutputHeader.BehaviourSize = (uint)Unsafe.SizeOf<BehaviourErrorInfoOutStatus>();
             OutputHeader.TotalSize += OutputHeader.BehaviourSize;

@@ -1,5 +1,4 @@
 using Ryujinx.Common.Logging;
-using Ryujinx.Common.Memory;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Services.Sockets.Nsd.Manager;
 using Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy;
@@ -11,7 +10,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -20,7 +18,10 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
     [Service("sfdnsres")]
     class IResolver : IpcService
     {
-        public IResolver(ServiceCtx context) { }
+        public IResolver(ServiceCtx context)
+        {
+            DnsMitmResolver.Instance.ReloadEntries(context);
+        }
 
         [CommandHipc(0)]
         // SetDnsAddressesPrivateRequest(u32, buffer<unknown, 5, 0>)
@@ -235,6 +236,42 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             return GetAddrInfoRequestImpl(context, outputBufferPosition, outputBufferSize, true, optionsBufferPosition, optionsBufferSize);
         }
 
+        [CommandHipc(14)] // 5.0.0+
+        // ResolverSetOptionRequest(buffer<unknown, 5, 0>, u64 unknown, u64 pid_placeholder, pid) -> (i32 ret, u32 bsd_errno)
+        public ResultCode ResolverSetOptionRequest(ServiceCtx context)
+        {
+            ulong bufferPosition = context.Request.SendBuff[0].Position;
+            ulong bufferSize     = context.Request.SendBuff[0].Size;
+
+            ulong unknown = context.RequestData.ReadUInt64();
+
+            byte[] buffer = new byte[bufferSize];
+
+            context.Memory.Read(bufferPosition, buffer);
+
+            // TODO: Parse and use options.
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSfdnsres, new { unknown });
+
+            NetDbError netDbErrorCode = NetDbError.Success;
+            GaiError   errno          = GaiError.Success;
+
+            context.ResponseData.Write((int)errno);
+            context.ResponseData.Write((int)netDbErrorCode);
+
+            return ResultCode.Success;
+        }
+
+        // Atmosphère extension for dns_mitm
+        [CommandHipc(65000)]
+        // AtmosphereReloadHostsFile()
+        public ResultCode AtmosphereReloadHostsFile(ServiceCtx context)
+        {
+            DnsMitmResolver.Instance.ReloadEntries(context);
+
+            return ResultCode.Success;
+        }
+
         private static ResultCode GetHostByNameRequestImpl(
             ServiceCtx context,
             ulong inputBufferPosition,
@@ -297,7 +334,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
                     try
                     {
-                        hostEntry = Dns.GetHostEntry(targetHost);
+                        hostEntry = DnsMitmResolver.Instance.ResolveAddress(targetHost);
                     }
                     catch (SocketException exception)
                     {
@@ -513,7 +550,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
                     try
                     {
-                        hostEntry = Dns.GetHostEntry(targetHost);
+                        hostEntry = DnsMitmResolver.Instance.ResolveAddress(targetHost);
                     }
                     catch (SocketException exception)
                     {
@@ -542,7 +579,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
         private static List<AddrInfoSerialized> DeserializeAddrInfos(IVirtualMemoryManager memory, ulong address, ulong size)
         {
-            List<AddrInfoSerialized> result = new List<AddrInfoSerialized>();
+            List<AddrInfoSerialized> result = new();
 
             ReadOnlySpan<byte> data = memory.GetSpan(address, (int)size);
 
@@ -582,9 +619,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
                     }
 
                     // NOTE: 0 = Any
-                    AddrInfoSerializedHeader header = new AddrInfoSerializedHeader(ip, 0);
-                    AddrInfo4 addr = new AddrInfo4(ip, (short)port);
-                    AddrInfoSerialized info = new AddrInfoSerialized(header, addr, null, hostEntry.HostName);
+                    AddrInfoSerializedHeader header = new(ip, 0);
+                    AddrInfo4                addr   = new(ip, (short)port);
+                    AddrInfoSerialized       info   = new(header, addr, null, hostEntry.HostName);
 
                     data = info.Write(data);
                 }
@@ -615,7 +652,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             {
                 context.ResponseData.Write((int)netDbErrorCode);
                 context.ResponseData.Write((int)errno);
-                context.ResponseData.Write((int)serializedSize);
+                context.ResponseData.Write(serializedSize);
             }
         }
 

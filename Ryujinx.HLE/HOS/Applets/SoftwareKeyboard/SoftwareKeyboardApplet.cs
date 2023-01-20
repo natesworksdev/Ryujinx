@@ -1,4 +1,5 @@
-﻿using Ryujinx.Common.Configuration.Hid;
+﻿using Ryujinx.Common;
+using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Applets.SoftwareKeyboard;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE;
@@ -8,7 +9,9 @@ using Ryujinx.HLE.Ui.Input;
 using Ryujinx.Memory;
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -78,13 +81,13 @@ namespace Ryujinx.HLE.HOS.Applets
                 var launchParams   = _normalSession.Pop();
                 var keyboardConfig = _normalSession.Pop();
 
-                _isBackground = keyboardConfig.Length == Marshal.SizeOf<SoftwareKeyboardInitialize>();
+                _isBackground = keyboardConfig.Length == Unsafe.SizeOf<SoftwareKeyboardInitialize>();
 
                 if (_isBackground)
                 {
                     // Initialize the keyboard applet in background mode.
 
-                    _keyboardBackgroundInitialize = ReadStruct<SoftwareKeyboardInitialize>(keyboardConfig);
+                    _keyboardBackgroundInitialize = MemoryMarshal.Read<SoftwareKeyboardInitialize>(keyboardConfig);
                     _backgroundState              = InlineKeyboardState.Uninitialized;
 
                     if (_device.UiHandler == null)
@@ -204,12 +207,11 @@ namespace Ryujinx.HLE.HOS.Applets
             else
             {
                 // Call the configured GUI handler to get user's input.
-
                 var args = new SoftwareKeyboardUiArgs
                 {
-                    HeaderText = _keyboardForegroundConfig.HeaderText,
-                    SubtitleText = _keyboardForegroundConfig.SubtitleText,
-                    GuideText = _keyboardForegroundConfig.GuideText,
+                    HeaderText = StripUnicodeControlCodes(_keyboardForegroundConfig.HeaderText),
+                    SubtitleText = StripUnicodeControlCodes(_keyboardForegroundConfig.SubtitleText),
+                    GuideText = StripUnicodeControlCodes(_keyboardForegroundConfig.GuideText),
                     SubmitText = (!string.IsNullOrWhiteSpace(_keyboardForegroundConfig.SubmitText) ?
                     _keyboardForegroundConfig.SubmitText : "OK"),
                     StringLengthMin = _keyboardForegroundConfig.StringLengthMin,
@@ -343,7 +345,7 @@ namespace Ryujinx.HLE.HOS.Applets
                         else
                         {
                             int wordsCount = reader.ReadInt32();
-                            int wordSize = Marshal.SizeOf<SoftwareKeyboardUserWord>();
+                            int wordSize = Unsafe.SizeOf<SoftwareKeyboardUserWord>();
                             remaining = stream.Length - stream.Position;
 
                             if (wordsCount > MaxUserWords)
@@ -360,8 +362,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
                                 for (int word = 0; word < wordsCount; word++)
                                 {
-                                    byte[] wordData = reader.ReadBytes(wordSize);
-                                    _keyboardBackgroundUserWords[word] = ReadStruct<SoftwareKeyboardUserWord>(wordData);
+                                    _keyboardBackgroundUserWords[word] = reader.ReadStruct<SoftwareKeyboardUserWord>();
                                 }
                             }
                         }
@@ -370,27 +371,25 @@ namespace Ryujinx.HLE.HOS.Applets
                     case InlineKeyboardRequest.SetCustomizeDic:
                         // Read the custom dic data.
                         remaining = stream.Length - stream.Position;
-                        if (remaining != Marshal.SizeOf<SoftwareKeyboardCustomizeDic>())
+                        if (remaining != Unsafe.SizeOf<SoftwareKeyboardCustomizeDic>())
                         {
                             Logger.Warning?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard Customize Dic of {remaining} bytes");
                         }
                         else
                         {
-                            var keyboardDicData = reader.ReadBytes((int)remaining);
-                            _keyboardBackgroundDic = ReadStruct<SoftwareKeyboardCustomizeDic>(keyboardDicData);
+                            _keyboardBackgroundDic = reader.ReadStruct<SoftwareKeyboardCustomizeDic>();
                         }
                         break;
                     case InlineKeyboardRequest.SetCustomizedDictionaries:
                         // Read the custom dictionaries data.
                         remaining = stream.Length - stream.Position;
-                        if (remaining != Marshal.SizeOf<SoftwareKeyboardDictSet>())
+                        if (remaining != Unsafe.SizeOf<SoftwareKeyboardDictSet>())
                         {
                             Logger.Warning?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard DictSet of {remaining} bytes");
                         }
                         else
                         {
-                            var keyboardDictData = reader.ReadBytes((int)remaining);
-                            _keyboardBackgroundDictSet = ReadStruct<SoftwareKeyboardDictSet>(keyboardDictData);
+                            _keyboardBackgroundDictSet = reader.ReadStruct<SoftwareKeyboardDictSet>();
                         }
                         break;
                     case InlineKeyboardRequest.Calc:
@@ -764,7 +763,42 @@ namespace Ryujinx.HLE.HOS.Applets
             }
         }
 
-        private static T ReadStruct<T>(byte[] data)
+        /// <summary>
+        /// Removes all Unicode control code characters from the input string.
+        /// This includes CR/LF, tabs, null characters, escape characters,
+        /// and special control codes which are used for formatting by the real keyboard applet.
+        /// </summary>
+        /// <remarks>
+        /// Some games send special control codes (such as 0x13 "Device Control 3") as part of the string.
+        /// Future implementations of the emulated keyboard applet will need to handle these as well.
+        /// </remarks>
+        /// <param name="input">The input string to sanitize (may be null).</param>
+        /// <returns>The sanitized string.</returns>
+        internal static string StripUnicodeControlCodes(string input)
+        {
+            if (input is null)
+            {
+                return null;
+            }
+            
+            if (input.Length == 0)
+            {
+                return string.Empty;
+            }
+
+            StringBuilder sb = new StringBuilder(capacity: input.Length);
+            foreach (char c in input)
+            {
+                if (!char.IsControl(c))
+                {
+                    sb.Append(c);
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        private static T ReadStruct<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T>(byte[] data)
             where T : struct
         {
             GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);

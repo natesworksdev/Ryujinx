@@ -5,18 +5,18 @@ using System;
 
 namespace Ryujinx.Ava.Common.Locale
 {
-    public class LocaleExtension : MarkupExtension
+    internal class LocaleExtension : MarkupExtension
     {
-        public LocaleExtension(string key)
+        public LocaleExtension(LocaleKeys key)
         {
             Key = key;
         }
 
-        public string Key { get; }
+        public LocaleKeys Key { get; }
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
-            string keyToUse = Key;
+            LocaleKeys keyToUse = Key;
 
             ReflectionBindingExtension binding = new($"[{keyToUse}]")
             {

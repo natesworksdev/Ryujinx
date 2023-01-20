@@ -7,6 +7,12 @@ namespace Ryujinx.Memory
     public interface IVirtualMemoryManager
     {
         /// <summary>
+        /// Indicates whenever the memory manager supports aliasing pages at 4KB granularity.
+        /// </summary>
+        /// <returns>True if 4KB pages are supported by the memory manager, false otherwise</returns>
+        bool Supports4KBPages { get; }
+
+        /// <summary>
         /// Maps a virtual memory range into a physical memory range.
         /// </summary>
         /// <remarks>
@@ -15,7 +21,20 @@ namespace Ryujinx.Memory
         /// <param name="va">Virtual memory address</param>
         /// <param name="pa">Physical memory address where the region should be mapped to</param>
         /// <param name="size">Size to be mapped</param>
-        void Map(ulong va, ulong pa, ulong size);
+        /// <param name="flags">Flags controlling memory mapping</param>
+        void Map(ulong va, ulong pa, ulong size, MemoryMapFlags flags);
+
+        /// <summary>
+        /// Maps a virtual memory range into an arbitrary host memory range.
+        /// </summary>
+        /// <remarks>
+        /// Addresses and size must be page aligned.
+        /// Not all memory managers supports this feature.
+        /// </remarks>
+        /// <param name="va">Virtual memory address</param>
+        /// <param name="hostPointer">Host pointer where the virtual region should be mapped</param>
+        /// <param name="size">Size to be mapped</param>
+        void MapForeign(ulong va, nuint hostPointer, ulong size);
 
         /// <summary>
         /// Unmaps a previously mapped range of virtual memory.
@@ -57,6 +76,17 @@ namespace Ryujinx.Memory
         /// <param name="data">Data to be written</param>
         /// <exception cref="InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
         void Write(ulong va, ReadOnlySpan<byte> data);
+
+        /// <summary>
+        /// Writes data to the application process, returning false if the data was not changed.
+        /// This triggers read memory tracking, as a redundancy check would be useless if the data is not up to date.
+        /// </summary>
+        /// <remarks>The memory manager can return that memory has changed when it hasn't to avoid expensive data copies.</remarks>
+        /// <param name="va">Virtual address to write the data into</param>
+        /// <param name="data">Data to be written</param>
+        /// <exception cref="InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
+        /// <returns>True if the data was changed, false otherwise</returns>
+        bool WriteWithRedundancyCheck(ulong va, ReadOnlySpan<byte> data);
 
         void Fill(ulong va, ulong size, byte value)
         {
@@ -103,6 +133,15 @@ namespace Ryujinx.Memory
         /// <returns>A reference to the data in memory</returns>
         /// <exception cref="MemoryNotContiguousException">Throw if the specified memory region is not contiguous in physical memory</exception>
         ref T GetRef<T>(ulong va) where T : unmanaged;
+
+        /// <summary>
+        /// Gets the host regions that make up the given virtual address region.
+        /// If any part of the virtual region is unmapped, null is returned.
+        /// </summary>
+        /// <param name="va">Virtual address of the range</param>
+        /// <param name="size">Size of the range</param>
+        /// <returns>Array of host regions</returns>
+        IEnumerable<HostMemoryRange> GetHostRegions(ulong va, ulong size);
 
         /// <summary>
         /// Gets the physical regions that make up the given virtual address region.

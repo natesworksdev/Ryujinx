@@ -63,7 +63,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             short dqv = dq[0];
             ReadOnlySpan<byte> cat6Prob = (xd.Bd == 12)
                 ? Luts.Vp9Cat6ProbHigh12
-                : (xd.Bd == 10) ? new ReadOnlySpan<byte>(Luts.Vp9Cat6ProbHigh12).Slice(2) : Luts.Vp9Cat6Prob;
+                : (xd.Bd == 10) ? Luts.Vp9Cat6ProbHigh12.Slice(2) : Luts.Vp9Cat6Prob;
             int cat6Bits = (xd.Bd == 12) ? 18 : (xd.Bd == 10) ? 16 : 14;
             // Keep value, range, and count as locals.  The compiler produces better
             // results with the locals than using r directly.
@@ -236,8 +236,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             ref MacroBlockDPlane pd = ref xd.Plane[plane];
             ref Array2<short> dequant = ref pd.SegDequant[segId];
             int eob;
-            Span<sbyte> a = pd.AboveContext.ToSpan().Slice(x);
-            Span<sbyte> l = pd.LeftContext.ToSpan().Slice(y);
+            Span<sbyte> a = pd.AboveContext.AsSpan().Slice(x);
+            Span<sbyte> l = pd.LeftContext.AsSpan().Slice(y);
             int ctx;
             int ctxShiftA = 0;
             int ctxShiftL = 0;
@@ -250,7 +250,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     eob = DecodeCoefs(
                         ref xd,
                         GetPlaneType(plane),
-                        pd.DqCoeff.ToSpan(),
+                        pd.DqCoeff.AsSpan(),
                         txSize,
                         ref dequant,
                         ctx,
@@ -266,7 +266,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     eob = DecodeCoefs(
                         ref xd,
                         GetPlaneType(plane),
-                        pd.DqCoeff.ToSpan(),
+                        pd.DqCoeff.AsSpan(),
                         txSize,
                         ref dequant,
                         ctx,
@@ -283,7 +283,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     eob = DecodeCoefs(
                         ref xd,
                         GetPlaneType(plane),
-                        pd.DqCoeff.ToSpan(),
+                        pd.DqCoeff.AsSpan(),
                         txSize,
                         ref dequant,
                         ctx,
@@ -303,7 +303,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     eob = DecodeCoefs(
                         ref xd,
                         GetPlaneType(plane),
-                        pd.DqCoeff.ToSpan(),
+                        pd.DqCoeff.AsSpan(),
                         txSize,
                         ref dequant,
                         ctx,

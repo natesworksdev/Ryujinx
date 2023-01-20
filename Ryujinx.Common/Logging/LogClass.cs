@@ -7,9 +7,9 @@ namespace Ryujinx.Common.Logging
         AudioRenderer,
         Configuration,
         Cpu,
-        Font,
         Emulation,
         FFmpeg,
+        Font,
         Gpu,
         Hid,
         Host1x,
@@ -30,6 +30,7 @@ namespace Ryujinx.Common.Logging
         ServiceBsd,
         ServiceBtm,
         ServiceCaps,
+        ServiceFatal,
         ServiceFriend,
         ServiceFs,
         ServiceHid,
@@ -65,6 +66,7 @@ namespace Ryujinx.Common.Logging
         ServiceVi,
         SurfaceFlinger,
         TamperMachine,
+        Ui,
         Vic
     }
 }

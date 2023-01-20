@@ -1,11 +1,12 @@
 using Ryujinx.HLE.HOS.Kernel.Memory;
+using Ryujinx.Horizon.Common;
 using System;
 
 namespace Ryujinx.HLE.HOS.Kernel.Common
 {
     static class KernelInit
     {
-        private struct MemoryRegion
+        private readonly struct MemoryRegion
         {
             public ulong Address { get; }
             public ulong Size    { get; }
@@ -21,9 +22,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 
         public static void InitializeResourceLimit(KResourceLimit resourceLimit, MemorySize size)
         {
-            void EnsureSuccess(KernelResult result)
+            void EnsureSuccess(Result result)
             {
-                if (result != KernelResult.Success)
+                if (result != Result.Success)
                 {
                     throw new InvalidOperationException($"Unexpected result \"{result}\".");
                 }

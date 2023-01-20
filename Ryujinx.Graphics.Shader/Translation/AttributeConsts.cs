@@ -8,7 +8,9 @@ namespace Ryujinx.Graphics.Shader.Translation
         public const int TessLevelOuter3     = 0x00c;
         public const int TessLevelInner0     = 0x010;
         public const int TessLevelInner1     = 0x014;
+        public const int PrimitiveId         = 0x060;
         public const int Layer               = 0x064;
+        public const int ViewportIndex       = 0x068;
         public const int PointSize           = 0x06c;
         public const int PositionX           = 0x070;
         public const int PositionY           = 0x074;
@@ -53,6 +55,9 @@ namespace Ryujinx.Graphics.Shader.Translation
         public const int UserAttributeBase   = 0x80;
         public const int UserAttributeEnd    = UserAttributeBase + UserAttributesCount * 16;
 
+        public const int UserAttributePerPatchBase = 0x18;
+        public const int UserAttributePerPatchEnd  = 0x200;
+
         public const int LoadOutputMask = 1 << 30;
         public const int Mask = 0x3fffffff;
 
@@ -81,8 +86,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         public const int LaneId = 0x2000020;
 
         public const int InvocationId = 0x2000024;
-        public const int PrimitiveId = 0x2000028;
-        public const int PatchVerticesIn = 0x200002c;
+        public const int PatchVerticesIn = 0x2000028;
 
         public const int EqMask = 0x2000030;
         public const int GeMask = 0x2000034;
@@ -91,5 +95,11 @@ namespace Ryujinx.Graphics.Shader.Translation
         public const int LtMask = 0x2000040;
 
         public const int ThreadKill = 0x2000044;
+
+        public const int BaseInstance = 0x2000050;
+        public const int BaseVertex = 0x2000054;
+        public const int InstanceIndex = 0x2000058;
+        public const int VertexIndex = 0x200005c;
+        public const int DrawIndex = 0x2000060;
     }
 }

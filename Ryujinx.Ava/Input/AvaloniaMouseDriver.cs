@@ -1,6 +1,7 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Threading;
+using FluentAvalonia.Core;
 using Ryujinx.Input;
 using System;
 using System.Numerics;
@@ -9,26 +10,57 @@ using Size = System.Drawing.Size;
 
 namespace Ryujinx.Ava.Input
 {
-    public class AvaloniaMouseDriver : IGamepadDriver
+    internal class AvaloniaMouseDriver : IGamepadDriver
     {
-        private Control _widget;
-        private bool _isDisposed;
+        private Control           _widget;
+        private bool              _isDisposed;
+        private Size              _size;
+        private readonly TopLevel _window;
 
-        public bool[] PressedButtons { get; }
-
+        public bool[]  PressedButtons  { get; }
         public Vector2 CurrentPosition { get; private set; }
-        public Vector2 Scroll { get; private set; }
+        public Vector2 Scroll          { get; private set; }
 
-        public AvaloniaMouseDriver(Control parent)
+        public string               DriverName  => "AvaloniaMouseDriver";
+        public ReadOnlySpan<string> GamepadsIds => new[] { "0" };
+
+        public AvaloniaMouseDriver(TopLevel window, Control parent)
         {
             _widget = parent;
+            _window = window;
 
-            _widget.PointerMoved += Parent_PointerMovedEvent;
-            _widget.PointerPressed += Parent_PointerPressEvent;
-            _widget.PointerReleased += Parent_PointerReleaseEvent;
+            _widget.PointerMoved        += Parent_PointerMovedEvent;
+            _widget.PointerPressed      += Parent_PointerPressEvent;
+            _widget.PointerReleased     += Parent_PointerReleaseEvent;
             _widget.PointerWheelChanged += Parent_ScrollEvent;
+            
+            _window.PointerMoved        += Parent_PointerMovedEvent;
+            _window.PointerPressed      += Parent_PointerPressEvent;
+            _window.PointerReleased     += Parent_PointerReleaseEvent;
+            _window.PointerWheelChanged += Parent_ScrollEvent;
 
             PressedButtons = new bool[(int)MouseButton.Count];
+
+            _size = new Size((int)parent.Bounds.Width, (int)parent.Bounds.Height);
+
+            parent.GetObservable(Visual.BoundsProperty).Subscribe(Resized);
+        }
+
+        public event Action<string> OnGamepadConnected
+        {
+            add    { }
+            remove { }
+        }
+
+        public event Action<string> OnGamepadDisconnected
+        {
+            add    { }
+            remove { }
+        }
+
+        private void Resized(Rect rect)
+        {
+            _size = new Size((int)rect.Width, (int)rect.Height);
         }
 
         private void Parent_ScrollEvent(object o, PointerWheelEventArgs args)
@@ -38,32 +70,45 @@ namespace Ryujinx.Ava.Input
 
         private void Parent_PointerReleaseEvent(object o, PointerReleasedEventArgs args)
         {
-            var pointerProperties = args.GetCurrentPoint(_widget).Properties;
-            PressedButtons[(int)args.InitialPressMouseButton - 1] = false;
+            int button = (int)args.InitialPressMouseButton - 1;
+
+            if (PressedButtons.Count() >= button)
+            {
+                PressedButtons[button] = false;
+            }
         }
 
         private void Parent_PointerPressEvent(object o, PointerPressedEventArgs args)
         {
-            var pointerProperties = args.GetCurrentPoint(_widget).Properties;
+            int button = (int)args.GetCurrentPoint(_widget).Properties.PointerUpdateKind;
 
-            PressedButtons[(int)pointerProperties.PointerUpdateKind] = true;
+            if (PressedButtons.Count() >= button)
+            {
+                PressedButtons[button] = true;
+            }
         }
 
         private void Parent_PointerMovedEvent(object o, PointerEventArgs args)
         {
-            var position = args.GetPosition(_widget);
+            Point position = args.GetPosition(_widget);
 
             CurrentPosition = new Vector2((float)position.X, (float)position.Y);
         }
 
         public void SetMousePressed(MouseButton button)
         {
-            PressedButtons[(int)button] = true;
+            if (PressedButtons.Count() >= (int)button)
+            {
+                PressedButtons[(int)button] = true;
+            }
         }
 
         public void SetMouseReleased(MouseButton button)
         {
-            PressedButtons[(int)button] = false;
+            if (PressedButtons.Count() >= (int)button)
+            {
+                PressedButtons[(int)button] = false;
+            }
         }
 
         public void SetPosition(double x, double y)
@@ -73,36 +118,18 @@ namespace Ryujinx.Ava.Input
 
         public bool IsButtonPressed(MouseButton button)
         {
-            return PressedButtons[(int)button];
+            if (PressedButtons.Count() >= (int)button)
+            {
+                return PressedButtons[(int)button];
+            }
+
+            return false;
         }
 
         public Size GetClientSize()
         {
-            Size size = new();
-
-            Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                size = new Size((int)_widget.Bounds.Width, (int)_widget.Bounds.Height);
-            }).Wait();
-
-            return size;
+            return _size;
         }
-
-        public string DriverName => "Avalonia";
-
-        public event Action<string> OnGamepadConnected
-        {
-            add { }
-            remove { }
-        }
-
-        public event Action<string> OnGamepadDisconnected
-        {
-            add { }
-            remove { }
-        }
-
-        public ReadOnlySpan<string> GamepadsIds => new[] { "0" };
 
         public IGamepad GetGamepad(string id)
         {
@@ -118,10 +145,15 @@ namespace Ryujinx.Ava.Input
 
             _isDisposed = true;
 
-            _widget.PointerMoved -= Parent_PointerMovedEvent;
-            _widget.PointerPressed -= Parent_PointerPressEvent;
-            _widget.PointerReleased -= Parent_PointerReleaseEvent;
+            _widget.PointerMoved        -= Parent_PointerMovedEvent;
+            _widget.PointerPressed      -= Parent_PointerPressEvent;
+            _widget.PointerReleased     -= Parent_PointerReleaseEvent;
             _widget.PointerWheelChanged -= Parent_ScrollEvent;
+
+            _window.PointerMoved        -= Parent_PointerMovedEvent;
+            _window.PointerPressed      -= Parent_PointerPressEvent;
+            _window.PointerReleased     -= Parent_PointerReleaseEvent;
+            _window.PointerWheelChanged -= Parent_ScrollEvent;
 
             _widget = null;
         }

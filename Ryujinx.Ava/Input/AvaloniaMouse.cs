@@ -6,19 +6,16 @@ using System.Numerics;
 
 namespace Ryujinx.Ava.Input
 {
-    public class AvaloniaMouse : IMouse
+    internal class AvaloniaMouse : IMouse
     {
         private AvaloniaMouseDriver _driver;
 
-        public GamepadFeaturesFlag Features => throw new NotImplementedException();
-
-        public string Id => "0";
-
+        public string Id   => "0";
         public string Name => "AvaloniaMouse";
 
-        public bool IsConnected => true;
-
-        public bool[] Buttons => _driver.PressedButtons;
+        public bool                IsConnected => true;
+        public GamepadFeaturesFlag Features    => throw new NotImplementedException();
+        public bool[]              Buttons     => _driver.PressedButtons;
 
         public AvaloniaMouse(AvaloniaMouseDriver driver)
         {

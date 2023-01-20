@@ -14,6 +14,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading;
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
@@ -44,15 +45,13 @@ namespace ARMeilleure.Translation
         private readonly IJitMemoryAllocator _allocator;
         private readonly ConcurrentQueue<KeyValuePair<ulong, TranslatedFunction>> _oldFuncs;
 
-        private readonly ConcurrentDictionary<ulong, object> _backgroundSet;
-        private readonly ConcurrentStack<RejitRequest> _backgroundStack;
-        private readonly AutoResetEvent _backgroundTranslatorEvent;
-        private readonly ReaderWriterLock _backgroundTranslatorLock;
+        private readonly Ptc _ptc;
 
         internal TranslatorCache<TranslatedFunction> Functions { get; }
         internal AddressTable<ulong> FunctionTable { get; }
         internal EntryTable<uint> CountTable { get; }
         internal TranslatorStubs Stubs { get; }
+        internal TranslatorQueue Queue { get; }
         internal IMemoryManager Memory { get; }
 
         private volatile int _threadCount;
@@ -67,10 +66,9 @@ namespace ARMeilleure.Translation
 
             _oldFuncs = new ConcurrentQueue<KeyValuePair<ulong, TranslatedFunction>>();
 
-            _backgroundSet = new ConcurrentDictionary<ulong, object>();
-            _backgroundStack = new ConcurrentStack<RejitRequest>();
-            _backgroundTranslatorEvent = new AutoResetEvent(false);
-            _backgroundTranslatorLock = new ReaderWriterLock();
+            _ptc = new Ptc();
+
+            Queue = new TranslatorQueue();
 
             JitCache.Initialize(allocator);
 
@@ -83,45 +81,23 @@ namespace ARMeilleure.Translation
 
             if (memory.Type.IsHostMapped())
             {
-                NativeSignalHandler.InitializeSignalHandler();
+                NativeSignalHandler.InitializeSignalHandler(allocator.GetPageSize());
             }
         }
 
-        private void TranslateStackedSubs()
+        public IPtcLoadState LoadDiskCache(string titleIdText, string displayVersion, bool enabled)
         {
-            while (_threadCount != 0)
+            _ptc.Initialize(titleIdText, displayVersion, enabled, Memory.Type);
+            return _ptc;
+        }
+
+        public void PrepareCodeRange(ulong address, ulong size)
+        {
+            if (_ptc.Profiler.StaticCodeSize == 0)
             {
-                _backgroundTranslatorLock.AcquireReaderLock(Timeout.Infinite);
-
-                if (_backgroundStack.TryPop(out RejitRequest request) &&
-                    _backgroundSet.TryRemove(request.Address, out _))
-                {
-                    TranslatedFunction func = Translate(request.Address, request.Mode, highCq: true);
-
-                    Functions.AddOrUpdate(request.Address, func.GuestSize, func, (key, oldFunc) =>
-                    {
-                        EnqueueForDeletion(key, oldFunc);
-                        return func;
-                    });
-
-                    if (PtcProfiler.Enabled)
-                    {
-                        PtcProfiler.UpdateEntry(request.Address, request.Mode, highCq: true);
-                    }
-
-                    RegisterFunction(request.Address, func);
-
-                    _backgroundTranslatorLock.ReleaseReaderLock();
-                }
-                else
-                {
-                    _backgroundTranslatorLock.ReleaseReaderLock();
-                    _backgroundTranslatorEvent.WaitOne();
-                }
+                _ptc.Profiler.StaticCodeStart = address;
+                _ptc.Profiler.StaticCodeSize = size;
             }
-
-             // Wake up any other background translator threads, to encourage them to exit.
-            _backgroundTranslatorEvent.Set();
         }
 
         public void Execute(State.ExecutionContext context, ulong address)
@@ -130,16 +106,16 @@ namespace ARMeilleure.Translation
             {
                 IsReadyForTranslation.WaitOne();
 
-                if (Ptc.State == PtcState.Enabled)
+                if (_ptc.State == PtcState.Enabled)
                 {
                     Debug.Assert(Functions.Count == 0);
-                    Ptc.LoadTranslations(this);
-                    Ptc.MakeAndSaveTranslations(this);
+                    _ptc.LoadTranslations(this);
+                    _ptc.MakeAndSaveTranslations(this);
                 }
 
-                PtcProfiler.Start();
+                _ptc.Profiler.Start();
 
-                Ptc.Disable();
+                _ptc.Disable();
 
                 // Simple heuristic, should be user configurable in future. (1 for 4 core/ht or less, 2 for 6 core + ht
                 // etc). All threads are normal priority except from the last, which just fills as much of the last core
@@ -155,7 +131,7 @@ namespace ARMeilleure.Translation
                 {
                     bool last = i != 0 && i == unboundedThreadCount - 1;
 
-                    Thread backgroundTranslatorThread = new Thread(TranslateStackedSubs)
+                    Thread backgroundTranslatorThread = new Thread(BackgroundTranslate)
                     {
                         Name = "CPU.BackgroundTranslatorThread." + i,
                         Priority = last ? ThreadPriority.Lowest : ThreadPriority.Normal
@@ -186,13 +162,18 @@ namespace ARMeilleure.Translation
 
             if (Interlocked.Decrement(ref _threadCount) == 0)
             {
-                _backgroundTranslatorEvent.Set();
-
                 ClearJitCache();
 
+                Queue.Dispose();
                 Stubs.Dispose();
                 FunctionTable.Dispose();
                 CountTable.Dispose();
+
+                _ptc.Close();
+                _ptc.Profiler.Stop();
+
+                _ptc.Dispose();
+                _ptc.Profiler.Dispose();
             }
         }
 
@@ -234,9 +215,9 @@ namespace ARMeilleure.Translation
                     func = oldFunc;
                 }
 
-                if (PtcProfiler.Enabled)
+                if (_ptc.Profiler.Enabled)
                 {
-                    PtcProfiler.AddEntry(address, mode, highCq: false);
+                    _ptc.Profiler.AddEntry(address, mode, highCq: false);
                 }
 
                 RegisterFunction(address, func);
@@ -262,6 +243,7 @@ namespace ARMeilleure.Translation
                 Stubs,
                 address,
                 highCq,
+                _ptc.State != PtcState.Disabled,
                 mode: Aarch32Mode.User);
 
             Logger.StartPass(PassName.Decoding);
@@ -301,13 +283,13 @@ namespace ARMeilleure.Translation
                 options |= CompilerOptions.Relocatable;
             }
 
-            CompiledFunction compiledFunc = Compiler.Compile(cfg, argTypes, retType, options);
+            CompiledFunction compiledFunc = Compiler.Compile(cfg, argTypes, retType, options, RuntimeInformation.ProcessArchitecture);
 
             if (context.HasPtc && !singleStep)
             {
                 Hash128 hash = Ptc.ComputeHash(Memory, address, funcSize);
 
-                Ptc.WriteCompiledFunction(address, funcSize, hash, highCq, compiledFunc);
+                _ptc.WriteCompiledFunction(address, funcSize, hash, highCq, compiledFunc);
             }
 
             GuestFunction func = compiledFunc.Map<GuestFunction>();
@@ -317,7 +299,28 @@ namespace ARMeilleure.Translation
             return new TranslatedFunction(func, counter, funcSize, highCq);
         }
 
-        private struct Range
+        private void BackgroundTranslate()
+        {
+            while (_threadCount != 0 && Queue.TryDequeue(out RejitRequest request))
+            {
+                TranslatedFunction func = Translate(request.Address, request.Mode, highCq: true);
+
+                Functions.AddOrUpdate(request.Address, func.GuestSize, func, (key, oldFunc) =>
+                {
+                    EnqueueForDeletion(key, oldFunc);
+                    return func;
+                });
+
+                if (_ptc.Profiler.Enabled)
+                {
+                    _ptc.Profiler.UpdateEntry(request.Address, request.Mode, highCq: true);
+                }
+
+                RegisterFunction(request.Address, func);
+            }
+        }
+
+        private readonly struct Range
         {
             public ulong Start { get; }
             public ulong End { get; }
@@ -357,9 +360,14 @@ namespace ARMeilleure.Translation
                     }
                 }
 
-                if (block.Address == context.EntryAddress && !context.HighCq)
+                if (block.Address == context.EntryAddress)
                 {
-                    EmitRejitCheck(context, out counter);
+                    if (!context.HighCq)
+                    {
+                        EmitRejitCheck(context, out counter);
+                    }
+
+                    context.ClearQcFlag();
                 }
 
                 context.CurrBlock = block;
@@ -384,9 +392,14 @@ namespace ARMeilleure.Translation
 
                         bool isLastOp = opcIndex == block.OpCodes.Count - 1;
 
-                        if (isLastOp && block.Branch != null && !block.Branch.Exit && block.Branch.Address <= block.Address)
+                        if (isLastOp)
                         {
-                            EmitSynchronization(context);
+                            context.SyncQcFlag();
+
+                            if (block.Branch != null && !block.Branch.Exit && block.Branch.Address <= block.Address)
+                            {
+                                EmitSynchronization(context);
+                            }
                         }
 
                         Operand lblPredicateSkip = default;
@@ -479,12 +492,15 @@ namespace ARMeilleure.Translation
 
         public void InvalidateJitCacheRegion(ulong address, ulong size)
         {
-            // If rejit is running, stop it as it may be trying to rejit a function on the invalidated region.
-            ClearRejitQueue(allowRequeue: true);
-
             ulong[] overlapAddresses = Array.Empty<ulong>();
 
             int overlapsCount = Functions.GetOverlaps(address, size, ref overlapAddresses);
+
+            if (overlapsCount != 0)
+            {
+                // If rejit is running, stop it as it may be trying to rejit a function on the invalidated region.
+                ClearRejitQueue(allowRequeue: true);
+            }
 
             for (int index = 0; index < overlapsCount; index++)
             {
@@ -504,11 +520,7 @@ namespace ARMeilleure.Translation
 
         internal void EnqueueForRejit(ulong guestAddress, ExecutionMode mode)
         {
-            if (_backgroundSet.TryAdd(guestAddress, null))
-            {
-                _backgroundStack.Push(new RejitRequest(guestAddress, mode));
-                _backgroundTranslatorEvent.Set();
-            }
+            Queue.Enqueue(guestAddress, mode);
         }
 
         private void EnqueueForDeletion(ulong guestAddress, TranslatedFunction func)
@@ -542,26 +554,23 @@ namespace ARMeilleure.Translation
 
         private void ClearRejitQueue(bool allowRequeue)
         {
-            _backgroundTranslatorLock.AcquireWriterLock(Timeout.Infinite);
-
-            if (allowRequeue)
+            if (!allowRequeue)
             {
-                while (_backgroundStack.TryPop(out var request))
+                Queue.Clear();
+
+                return;
+            }
+
+            lock (Queue.Sync)
+            {
+                while (Queue.Count > 0 && Queue.TryDequeue(out RejitRequest request))
                 {
                     if (Functions.TryGetValue(request.Address, out var func) && func.CallCounter != null)
                     {
                         Volatile.Write(ref func.CallCounter.Value, 0);
                     }
-
-                    _backgroundSet.TryRemove(request.Address, out _);
                 }
             }
-            else
-            {
-                _backgroundStack.Clear();
-            }
-
-            _backgroundTranslatorLock.ReleaseWriterLock();
         }
     }
 }

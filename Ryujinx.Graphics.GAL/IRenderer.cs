@@ -1,5 +1,4 @@
 using Ryujinx.Common.Configuration;
-using Ryujinx.Graphics.Shader;
 using System;
 
 namespace Ryujinx.Graphics.GAL
@@ -23,13 +22,15 @@ namespace Ryujinx.Graphics.GAL
         ISampler CreateSampler(SamplerCreateInfo info);
         ITexture CreateTexture(TextureCreateInfo info, float scale);
 
-        void CreateSync(ulong id);
+        void CreateSync(ulong id, bool strict);
 
         void DeleteBuffer(BufferHandle buffer);
 
         ReadOnlySpan<byte> GetBufferData(BufferHandle buffer, int offset, int size);
 
         Capabilities GetCapabilities();
+        ulong GetCurrentSync();
+        HardwareInfo GetHardwareInfo();
 
         IProgram LoadProgramBinary(byte[] programBinary, bool hasFragmentShader, ShaderInfo info);
 
@@ -51,6 +52,8 @@ namespace Ryujinx.Graphics.GAL
         void WaitSync(ulong id);
 
         void Initialize(GraphicsDebugLevel logLevel);
+
+        void SetInterruptAction(Action<Action> interruptAction);
 
         void Screenshot();
     }

@@ -1,6 +1,6 @@
 namespace Ryujinx.Graphics.GAL
 {
-    public struct SamplerCreateInfo
+    public readonly struct SamplerCreateInfo
     {
         public MinFilter MinFilter { get; }
         public MagFilter MagFilter { get; }
@@ -49,6 +49,24 @@ namespace Ryujinx.Graphics.GAL
             MaxLod          = maxLod;
             MipLodBias      = mipLodBias;
             MaxAnisotropy   = maxAnisotropy;
+        }
+
+        public static SamplerCreateInfo Create(MinFilter minFilter, MagFilter magFilter)
+        {
+            return new SamplerCreateInfo(
+                minFilter,
+                magFilter,
+                false,
+                AddressMode.ClampToEdge,
+                AddressMode.ClampToEdge,
+                AddressMode.ClampToEdge,
+                CompareMode.None,
+                CompareOp.Always,
+                new ColorF(0f, 0f, 0f, 0f),
+                0f,
+                0f,
+                0f,
+                1f);
         }
     }
 }

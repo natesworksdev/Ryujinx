@@ -6,6 +6,11 @@
     enum MacroHLEFunctionName
     {
         None,
+        ClearColor,
+        ClearDepthStencil,
+        DrawArraysInstanced,
+        DrawElementsInstanced,
+        DrawElementsIndirect,
         MultiDrawElementsIndirectCount
     }
 }

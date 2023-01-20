@@ -2,11 +2,11 @@
 using Ryujinx.Cpu;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.HLE.HOS.Services.Hid.HidServer;
 using Ryujinx.HLE.HOS.Services.Nfc.Nfp.NfpManager;
+using Ryujinx.Horizon.Common;
 using System;
 using System.Buffers.Binary;
 using System.Globalization;
@@ -589,9 +589,9 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
             ulong outputPosition = context.Request.RecvListBuff[0].Position;
 
-            context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize((uint)Marshal.SizeOf(typeof(TagInfo)));
+            context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize((uint)Marshal.SizeOf<TagInfo>());
 
-            MemoryHelper.FillWithZeros(context.Memory, outputPosition, Marshal.SizeOf(typeof(TagInfo)));
+            MemoryHelper.FillWithZeros(context.Memory, outputPosition, Marshal.SizeOf<TagInfo>());
 
             uint deviceHandle = (uint)context.RequestData.ReadUInt64();
 
@@ -628,7 +628,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                                 Reserved2  = new Array6<byte>()
                             };
 
-                            Uuid.CopyTo(tagInfo.Uuid.ToSpan());
+                            Uuid.CopyTo(tagInfo.Uuid.AsSpan());
 
                             context.Memory.Write(outputPosition, tagInfo);
 
@@ -665,9 +665,9 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
             ulong outputPosition = context.Request.RecvListBuff[0].Position;
 
-            context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize((uint)Marshal.SizeOf(typeof(RegisterInfo)));
+            context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize((uint)Marshal.SizeOf<RegisterInfo>());
 
-            MemoryHelper.FillWithZeros(context.Memory, outputPosition, Marshal.SizeOf(typeof(RegisterInfo)));
+            MemoryHelper.FillWithZeros(context.Memory, outputPosition, Marshal.SizeOf<RegisterInfo>());
 
             uint deviceHandle = (uint)context.RequestData.ReadUInt64();
 
@@ -728,9 +728,9 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
             ulong outputPosition = context.Request.RecvListBuff[0].Position;
 
-            context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize((uint)Marshal.SizeOf(typeof(CommonInfo)));
+            context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize((uint)Marshal.SizeOf<CommonInfo>());
 
-            MemoryHelper.FillWithZeros(context.Memory, outputPosition, Marshal.SizeOf(typeof(CommonInfo)));
+            MemoryHelper.FillWithZeros(context.Memory, outputPosition, Marshal.SizeOf<CommonInfo>());
 
             uint deviceHandle = (uint)context.RequestData.ReadUInt64();
 
@@ -788,9 +788,9 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
             ulong outputPosition = context.Request.RecvListBuff[0].Position;
 
-            context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize((uint)Marshal.SizeOf(typeof(ModelInfo)));
+            context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize((uint)Marshal.SizeOf<ModelInfo>());
 
-            MemoryHelper.FillWithZeros(context.Memory, outputPosition, Marshal.SizeOf(typeof(ModelInfo)));
+            MemoryHelper.FillWithZeros(context.Memory, outputPosition, Marshal.SizeOf<ModelInfo>());
 
             uint deviceHandle = (uint)context.RequestData.ReadUInt64();
 
@@ -816,11 +816,11 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                                 Reserved = new Array57<byte>()
                             };
 
-                            modelInfo.CharacterId      = BinaryPrimitives.ReverseEndianness(ushort.Parse(context.Device.System.NfpDevices[i].AmiiboId.Substring(0, 4), NumberStyles.HexNumber));
-                            modelInfo.CharacterVariant = byte.Parse(context.Device.System.NfpDevices[i].AmiiboId.Substring(4, 2), NumberStyles.HexNumber);
-                            modelInfo.Series           = byte.Parse(context.Device.System.NfpDevices[i].AmiiboId.Substring(12, 2), NumberStyles.HexNumber);
-                            modelInfo.ModelNumber      = ushort.Parse(context.Device.System.NfpDevices[i].AmiiboId.Substring(8, 4), NumberStyles.HexNumber);
-                            modelInfo.Type             = byte.Parse(context.Device.System.NfpDevices[i].AmiiboId.Substring(6, 2), NumberStyles.HexNumber);
+                            modelInfo.CharacterId      = BinaryPrimitives.ReverseEndianness(ushort.Parse(context.Device.System.NfpDevices[i].AmiiboId.AsSpan(0, 4), NumberStyles.HexNumber));
+                            modelInfo.CharacterVariant = byte.Parse(context.Device.System.NfpDevices[i].AmiiboId.AsSpan(4, 2), NumberStyles.HexNumber);
+                            modelInfo.Series           = byte.Parse(context.Device.System.NfpDevices[i].AmiiboId.AsSpan(12, 2), NumberStyles.HexNumber);
+                            modelInfo.ModelNumber      = ushort.Parse(context.Device.System.NfpDevices[i].AmiiboId.AsSpan(8, 4), NumberStyles.HexNumber);
+                            modelInfo.Type             = byte.Parse(context.Device.System.NfpDevices[i].AmiiboId.AsSpan(6, 2), NumberStyles.HexNumber);
 
                             context.Memory.Write(outputPosition, modelInfo);
 
@@ -851,7 +851,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                 {
                     context.Device.System.NfpDevices[i].ActivateEvent = new KEvent(context.Device.System.KernelContext);
 
-                    if (context.Process.HandleTable.GenerateHandle(context.Device.System.NfpDevices[i].ActivateEvent.ReadableEvent, out int activateEventHandle) != KernelResult.Success)
+                    if (context.Process.HandleTable.GenerateHandle(context.Device.System.NfpDevices[i].ActivateEvent.ReadableEvent, out int activateEventHandle) != Result.Success)
                     {
                         throw new InvalidOperationException("Out of handles!");
                     }
@@ -877,7 +877,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                 {
                     context.Device.System.NfpDevices[i].DeactivateEvent = new KEvent(context.Device.System.KernelContext);
 
-                    if (context.Process.HandleTable.GenerateHandle(context.Device.System.NfpDevices[i].DeactivateEvent.ReadableEvent, out int deactivateEventHandle) != KernelResult.Success)
+                    if (context.Process.HandleTable.GenerateHandle(context.Device.System.NfpDevices[i].DeactivateEvent.ReadableEvent, out int deactivateEventHandle) != Result.Success)
                     {
                         throw new InvalidOperationException("Out of handles!");
                     }
@@ -960,7 +960,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
         {
             _availabilityChangeEvent = new KEvent(context.Device.System.KernelContext);
 
-            if (context.Process.HandleTable.GenerateHandle(_availabilityChangeEvent.ReadableEvent, out int availabilityChangeEventHandle) != KernelResult.Success)
+            if (context.Process.HandleTable.GenerateHandle(_availabilityChangeEvent.ReadableEvent, out int availabilityChangeEventHandle) != Result.Success)
             {
                 throw new InvalidOperationException("Out of handles!");
             }

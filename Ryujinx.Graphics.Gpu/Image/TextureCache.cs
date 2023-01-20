@@ -1,10 +1,8 @@
 using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
-using Ryujinx.Graphics.Gpu.Engine.Dma;
 using Ryujinx.Graphics.Gpu.Engine.Threed;
 using Ryujinx.Graphics.Gpu.Engine.Twod;
 using Ryujinx.Graphics.Gpu.Engine.Types;
-using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Texture;
 using Ryujinx.Memory.Range;
@@ -18,7 +16,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// </summary>
     class TextureCache : IDisposable
     {
-        private struct OverlapInfo
+        private readonly struct OverlapInfo
         {
             public TextureViewCompatibility Compatibility { get; }
             public int FirstLayer { get; }
@@ -172,6 +170,14 @@ namespace Ryujinx.Graphics.Gpu.Image
                     // Targets that are roughly 16:9 can only be rescaled if they're equal to or above 360p. (excludes blur and bloom textures)
                     return false;
                 }
+            }
+
+            if (info.Width == info.Height * info.Height)
+            {
+                // Possibly used for a "3D texture" drawn onto a 2D surface.
+                // Some games do this to generate a tone mapping LUT without rendering into 3D texture slices.
+
+                return false;
             }
 
             return true;
@@ -349,6 +355,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="memoryManager">GPU memory manager where the texture is mapped</param>
         /// <param name="dsState">Depth-stencil buffer texture to find or create</param>
         /// <param name="size">Size of the depth-stencil texture</param>
+        /// <param name="layered">Indicates if the texture might be accessed with a non-zero layer index</param>
         /// <param name="samplesInX">Number of samples in the X direction, for MSAA</param>
         /// <param name="samplesInY">Number of samples in the Y direction, for MSAA</param>
         /// <param name="sizeHint">A hint indicating the minimum used size for the texture</param>
@@ -357,6 +364,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             MemoryManager memoryManager,
             RtDepthStencilState dsState,
             Size3D size,
+            bool layered,
             int samplesInX,
             int samplesInY,
             Size sizeHint)
@@ -364,9 +372,24 @@ namespace Ryujinx.Graphics.Gpu.Image
             int gobBlocksInY = dsState.MemoryLayout.UnpackGobBlocksInY();
             int gobBlocksInZ = dsState.MemoryLayout.UnpackGobBlocksInZ();
 
-            Target target = (samplesInX | samplesInY) != 1
-                ? Target.Texture2DMultisample
-                : Target.Texture2D;
+            Target target;
+
+            if (dsState.MemoryLayout.UnpackIsTarget3D())
+            {
+                target = Target.Texture3D;
+            }
+            else if ((samplesInX | samplesInY) != 1)
+            {
+                target = size.Depth > 1 && layered
+                    ? Target.Texture2DMultisampleArray
+                    : Target.Texture2DMultisample;
+            }
+            else
+            {
+                target = size.Depth > 1 && layered
+                    ? Target.Texture2DArray
+                    : Target.Texture2D;
+            }
 
             FormatInfo formatInfo = dsState.Format.Convert();
 
@@ -872,26 +895,40 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Attempt to find a texture on the short duration cache.
+        /// </summary>
+        /// <param name="descriptor">The texture descriptor</param>
+        /// <returns>The texture if found, null otherwise</returns>
+        public Texture FindShortCache(in TextureDescriptor descriptor)
+        {
+            return _cache.FindShortCache(descriptor);
+        }
+
+        /// <summary>
         /// Tries to find an existing texture matching the given buffer copy destination. If none is found, returns null.
         /// </summary>
         /// <param name="memoryManager">GPU memory manager where the texture is mapped</param>
-        /// <param name="tex">The texture information</param>
         /// <param name="gpuVa">GPU virtual address of the texture</param>
         /// <param name="bpp">Bytes per pixel</param>
         /// <param name="stride">If <paramref name="linear"/> is true, should have the texture stride, otherwise ignored</param>
+        /// <param name="height">If <paramref name="linear"/> is false, should have the texture height, otherwise ignored</param>
         /// <param name="xCount">Number of pixels to be copied per line</param>
         /// <param name="yCount">Number of lines to be copied</param>
         /// <param name="linear">True if the texture has a linear layout, false otherwise</param>
+        /// <param name="gobBlocksInY">If <paramref name="linear"/> is false, the amount of GOB blocks in the Y axis</param>
+        /// <param name="gobBlocksInZ">If <paramref name="linear"/> is false, the amount of GOB blocks in the Z axis</param>
         /// <returns>A matching texture, or null if there is no match</returns>
         public Texture FindTexture(
             MemoryManager memoryManager,
-            DmaTexture tex,
             ulong gpuVa,
             int bpp,
             int stride,
+            int height,
             int xCount,
             int yCount,
-            bool linear)
+            bool linear,
+            int gobBlocksInY,
+            int gobBlocksInZ)
         {
             ulong address = memoryManager.Translate(gpuVa);
 
@@ -920,7 +957,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     // Size is not available for linear textures. Use the stride and end of the copy region instead.
 
-                    match = texture.Info.IsLinear && texture.Info.Stride == stride && tex.RegionY + yCount <= texture.Info.Height;
+                    match = texture.Info.IsLinear && texture.Info.Stride == stride && yCount == texture.Info.Height;
                 }
                 else
                 {
@@ -928,10 +965,10 @@ namespace Ryujinx.Graphics.Gpu.Image
                     // Due to the way linear strided and block layouts work, widths can be multiplied by Bpp for comparison.
                     // Note: tex.Width is the aligned texture size. Prefer param.XCount, as the destination should be a texture with that exact size.
 
-                    bool sizeMatch = xCount * bpp == texture.Info.Width * format.BytesPerPixel && tex.Height == texture.Info.Height;
+                    bool sizeMatch = xCount * bpp == texture.Info.Width * format.BytesPerPixel && height == texture.Info.Height;
                     bool formatMatch = !texture.Info.IsLinear &&
-                                        texture.Info.GobBlocksInY == tex.MemoryLayout.UnpackGobBlocksInY() &&
-                                        texture.Info.GobBlocksInZ == tex.MemoryLayout.UnpackGobBlocksInZ();
+                                        texture.Info.GobBlocksInY == gobBlocksInY &&
+                                        texture.Info.GobBlocksInZ == gobBlocksInZ;
 
                     match = sizeMatch && formatMatch;
                 }
@@ -1061,10 +1098,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             FormatInfo formatInfo = TextureCompatibility.ToHostCompatibleFormat(info, caps);
 
-            if (info.Target == Target.TextureBuffer)
+            if (info.Target == Target.TextureBuffer && !caps.SupportsSnormBufferTextureFormat)
             {
-                // We assume that the host does not support signed normalized format
-                // (as is the case with OpenGL), so we just use a unsigned format.
+                // If the host does not support signed normalized formats, we use a signed integer format instead.
                 // The shader will need the appropriate conversion code to compensate.
                 switch (formatInfo.Format)
                 {
@@ -1137,6 +1173,46 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 _partiallyMappedTextures.Remove(texture);
             }
+        }
+
+        /// <summary>
+        /// Queues the removal of a texture from the auto delete cache.
+        /// </summary>
+        /// <remarks>
+        /// This function is thread safe and can be called from any thread.
+        /// The texture will be deleted on the next time the cache is used.
+        /// </remarks>
+        /// <param name="texture">The texture to be removed</param>
+        public void QueueAutoDeleteCacheRemoval(Texture texture)
+        {
+            _cache.RemoveDeferred(texture);
+        }
+
+        /// <summary>
+        /// Adds a texture to the short duration cache. This typically keeps it alive for two ticks.
+        /// </summary>
+        /// <param name="texture">Texture to add to the short cache</param>
+        /// <param name="descriptor">Last used texture descriptor</param>
+        public void AddShortCache(Texture texture, ref TextureDescriptor descriptor)
+        {
+            _cache.AddShortCache(texture, ref descriptor);
+        }
+
+        /// <summary>
+        /// Removes a texture from the short duration cache.
+        /// </summary>
+        /// <param name="texture">Texture to remove from the short cache</param>
+        public void RemoveShortCache(Texture texture)
+        {
+            _cache.RemoveShortCache(texture);
+        }
+
+        /// <summary>
+        /// Ticks periodic elements of the texture cache.
+        /// </summary>
+        public void Tick()
+        {
+            _cache.ProcessShortCache();
         }
 
         /// <summary>

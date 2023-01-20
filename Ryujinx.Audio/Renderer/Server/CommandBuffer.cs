@@ -1,20 +1,3 @@
-//
-// Copyright (c) 2019-2021 Ryujinx
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-
 using Ryujinx.Audio.Renderer.Common;
 using Ryujinx.Audio.Renderer.Dsp.Command;
 using Ryujinx.Audio.Renderer.Dsp.State;
@@ -24,7 +7,6 @@ using Ryujinx.Audio.Renderer.Server.Performance;
 using Ryujinx.Audio.Renderer.Server.Sink;
 using Ryujinx.Audio.Renderer.Server.Upsampler;
 using Ryujinx.Audio.Renderer.Server.Voice;
-using Ryujinx.Common.Memory;
 using System;
 using CpuAddress = System.UInt64;
 
@@ -43,7 +25,7 @@ namespace Ryujinx.Audio.Renderer.Server
         /// <summary>
         /// The estimated total processing time.
         /// </summary>
-        public ulong EstimatedProcessingTime { get; set; }
+        public uint EstimatedProcessingTime { get; set; }
 
         /// <summary>
         /// The command list that is populated by the <see cref="CommandBuffer"/>.
@@ -480,6 +462,18 @@ namespace Ryujinx.Audio.Renderer.Server
             if (sendBufferInfo != 0)
             {
                 CaptureBufferCommand command = new CaptureBufferCommand(bufferOffset, inputBufferOffset, sendBufferInfo, isEnabled, countMax, outputBuffer, updateCount, writeOffset, nodeId);
+
+                command.EstimatedProcessingTime = _commandProcessingTimeEstimator.Estimate(command);
+
+                AddCommand(command);
+            }
+        }
+
+        public void GenerateCompressorEffect(uint bufferOffset, CompressorParameter parameter, Memory<CompressorState> state, bool isEnabled, int nodeId)
+        {
+            if (parameter.IsChannelCountValid())
+            {
+                CompressorCommand command = new CompressorCommand(bufferOffset, parameter, state, isEnabled, nodeId);
 
                 command.EstimatedProcessingTime = _commandProcessingTimeEstimator.Estimate(command);
 

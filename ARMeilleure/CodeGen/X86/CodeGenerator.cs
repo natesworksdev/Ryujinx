@@ -16,6 +16,7 @@ namespace ARMeilleure.CodeGen.X86
 {
     static class CodeGenerator
     {
+        private const int RegistersCount = 16;
         private const int PageSize       = 0x1000;
         private const int StackGuardSize = 0x2000;
 
@@ -143,7 +144,8 @@ namespace ARMeilleure.CodeGen.X86
                 CallingConvention.GetIntCallerSavedRegisters(),
                 CallingConvention.GetVecCallerSavedRegisters(),
                 CallingConvention.GetIntCalleeSavedRegisters(),
-                CallingConvention.GetVecCalleeSavedRegisters());
+                CallingConvention.GetVecCalleeSavedRegisters(),
+                RegistersCount);
 
             AllocationResult allocResult = regAlloc.RunPass(cfg, stackAlloc, regMasks);
 
@@ -1586,6 +1588,12 @@ namespace ARMeilleure.CodeGen.X86
             Operand source = operation.GetSource(0);
 
             Debug.Assert(dest.Type.IsInteger() && source.Type.IsInteger());
+
+            // We can eliminate the move if source is already 32-bit and the registers are the same.
+            if (dest.Value == source.Value && source.Type == OperandType.I32)
+            {
+                return;
+            }
 
             context.Assembler.Mov(dest, source, OperandType.I32);
         }

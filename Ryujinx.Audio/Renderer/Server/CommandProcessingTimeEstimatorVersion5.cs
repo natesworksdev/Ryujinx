@@ -1,20 +1,3 @@
-﻿//
-// Copyright (c) 2019-2022 Ryujinx
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-
 using Ryujinx.Audio.Renderer.Dsp.Command;
 using System;
 using System.Diagnostics;
@@ -244,6 +227,80 @@ namespace Ryujinx.Audio.Renderer.Server
                         return (uint)626.42f;
                     case 6:
                         return (uint)682.47f;
+                    default:
+                        throw new NotImplementedException($"{command.Parameter.ChannelCount}");
+                }
+            }
+        }
+
+        public override uint Estimate(CompressorCommand command)
+        {
+            Debug.Assert(_sampleCount == 160 || _sampleCount == 240);
+
+            if (_sampleCount == 160)
+            {
+                if (command.Enabled)
+                {
+                    switch (command.Parameter.ChannelCount)
+                    {
+                        case 1:
+                            return 34431;
+                        case 2:
+                            return 44253;
+                        case 4:
+                            return 63827;
+                        case 6:
+                            return 83361;
+                        default:
+                            throw new NotImplementedException($"{command.Parameter.ChannelCount}");
+                    }
+                }
+                else
+                {
+                    switch (command.Parameter.ChannelCount)
+                    {
+                        case 1:
+                            return (uint)630.12f;
+                        case 2:
+                            return (uint)638.27f;
+                        case 4:
+                            return (uint)705.86f;
+                        case 6:
+                            return (uint)782.02f;
+                        default:
+                            throw new NotImplementedException($"{command.Parameter.ChannelCount}");
+                    }
+                }
+            }
+
+            if (command.Enabled)
+            {
+                switch (command.Parameter.ChannelCount)
+                {
+                    case 1:
+                        return 51095;
+                    case 2:
+                        return 65693;
+                    case 4:
+                        return 95383;
+                    case 6:
+                        return 124510;
+                    default:
+                        throw new NotImplementedException($"{command.Parameter.ChannelCount}");
+                }
+            }
+            else
+            {
+                switch (command.Parameter.ChannelCount)
+                {
+                    case 1:
+                        return (uint)840.14f;
+                    case 2:
+                        return (uint)826.1f;
+                    case 4:
+                        return (uint)901.88f;
+                    case 6:
+                        return (uint)965.29f;
                     default:
                         throw new NotImplementedException($"{command.Parameter.ChannelCount}");
                 }

@@ -1,19 +1,21 @@
 ﻿using Gdk;
-using Gtk;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Input.HLE;
+using Ryujinx.Ui.Helper;
 using SPB.Graphics.Vulkan;
 using SPB.Platform.Win32;
 using SPB.Platform.X11;
+using SPB.Platform.Metal;
 using SPB.Windowing;
 using System;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.Ui
 {
-    public class VKRenderer : RendererWidgetBase
+    public partial class VKRenderer : RendererWidgetBase
     {
         public NativeWindowBase NativeWindow { get; private set; }
+        private UpdateBoundsCallbackDelegate _updateBoundsCallback;
 
         public VKRenderer(InputManager inputManager, GraphicsDebugLevel glLogLevel) : base(inputManager, glLogLevel) { }
 
@@ -32,18 +34,24 @@ namespace Ryujinx.Ui
 
                 return new SimpleX11Window(new NativeHandle(displayHandle), new NativeHandle(windowHandle));
             }
+            else if (OperatingSystem.IsMacOS())
+            {
+                IntPtr metalLayer = MetalHelper.GetMetalLayer(Display, Window, out IntPtr nsView, out _updateBoundsCallback);
+
+                return new SimpleMetalWindow(new NativeHandle(nsView), new NativeHandle(metalLayer));
+            }
 
             throw new NotImplementedException();
         }
 
-        [DllImport("libgdk-3-0.dll")]
-        private static extern IntPtr gdk_win32_window_get_handle(IntPtr d);
+        [LibraryImport("libgdk-3-0.dll")]
+        private static partial IntPtr gdk_win32_window_get_handle(IntPtr d);
 
-        [DllImport("libgdk-3.so.0")]
-        private static extern IntPtr gdk_x11_display_get_xdisplay(IntPtr gdkDisplay);
+        [LibraryImport("libgdk-3.so.0")]
+        private static partial IntPtr gdk_x11_display_get_xdisplay(IntPtr gdkDisplay);
 
-        [DllImport("libgdk-3.so.0")]
-        private static extern IntPtr gdk_x11_window_get_xid(IntPtr gdkWindow);
+        [LibraryImport("libgdk-3.so.0")]
+        private static partial IntPtr gdk_x11_window_get_xid(IntPtr gdkWindow);
 
         protected override bool OnConfigureEvent(EventConfigure evnt)
         {
@@ -54,7 +62,11 @@ namespace Ryujinx.Ui
                 WaitEvent.Set();
             }
 
-            return base.OnConfigureEvent(evnt);
+            bool result = base.OnConfigureEvent(evnt);
+
+            _updateBoundsCallback?.Invoke(Window);
+
+            return result;
         }
 
         public unsafe IntPtr CreateWindowSurface(IntPtr instance)
@@ -64,16 +76,17 @@ namespace Ryujinx.Ui
 
         public override void InitializeRenderer() { }
 
-        public override void SwapBuffers(object image) { }
+        public override void SwapBuffers() { }
 
-        public override string GetGpuVendorName()
+        protected override string GetGpuBackendName()
         {
-            return "Vulkan (Unknown)";
+            return "Vulkan";
         }
 
         protected override void Dispose(bool disposing)
         {
-            Device.DisposeGpu();
+            Device?.DisposeGpu();
+
             NpadManager.Dispose();
         }
     }

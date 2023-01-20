@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -11,7 +12,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     /// <summary>
     /// State update callback entry, with the callback function and associated field names.
     /// </summary>
-    struct StateUpdateCallbackEntry
+    readonly struct StateUpdateCallbackEntry
     {
         /// <summary>
         /// Callback function, to be called if the register was written as the state needs to be updated.
@@ -39,7 +40,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     /// GPU state update tracker.
     /// </summary>
     /// <typeparam name="TState">State type</typeparam>
-    class StateUpdateTracker<TState>
+    class StateUpdateTracker<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] TState>
     {
         private const int BlockSize = 0xe00;
         private const int RegisterSize = sizeof(uint);
@@ -135,6 +136,16 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         {
             Debug.Assert(_callbacks.Length <= sizeof(ulong) * 8);
             _dirtyMask = ulong.MaxValue >> ((sizeof(ulong) * 8) - _callbacks.Length);
+        }
+
+        /// <summary>
+        /// Check if the given register group is dirty without clearing it.
+        /// </summary>
+        /// <param name="groupIndex">Index of the group to check</param>
+        /// <returns>True if dirty, false otherwise</returns>
+        public bool IsDirty(int groupIndex)
+        {
+            return (_dirtyMask & (1UL << groupIndex)) != 0;
         }
 
         /// <summary>

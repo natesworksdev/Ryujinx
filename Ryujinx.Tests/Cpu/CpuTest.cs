@@ -38,14 +38,11 @@ namespace Ryujinx.Tests.Cpu
 
         private bool _usingMemory;
 
-        static CpuTest()
+        [OneTimeSetUp]
+        public void OneTimeSetup()
         {
             _unicornAvailable = UnicornAArch64.IsAvailable();
-
-            if (!_unicornAvailable)
-            {
-                Console.WriteLine("WARNING: Could not find Unicorn.");
-            }
+            Assume.That(_unicornAvailable, "Unicorn is not available");
         }
 
         [SetUp]
@@ -56,7 +53,7 @@ namespace Ryujinx.Tests.Cpu
             _ram = new MemoryBlock(Size * 2);
             _memory = new MemoryManager(_ram, 1ul << 16);
             _memory.IncrementReferenceCount();
-            _memory.Map(CodeBaseAddress, 0, Size * 2);
+            _memory.Map(CodeBaseAddress, 0, Size * 2, MemoryMapFlags.Private);
 
             _context = CpuContext.CreateExecutionContext();
             Translator.IsReadyForTranslation.Set();
@@ -80,6 +77,12 @@ namespace Ryujinx.Tests.Cpu
         [TearDown]
         public void Teardown()
         {
+            if (_unicornAvailable)
+            {
+                _unicornEmu.Dispose();
+                _unicornEmu = null;
+            }
+
             _memory.DecrementReferenceCount();
             _context.Dispose();
             _ram.Dispose();

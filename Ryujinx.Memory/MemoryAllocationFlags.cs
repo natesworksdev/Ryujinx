@@ -38,9 +38,15 @@ namespace Ryujinx.Memory
         ViewCompatible = 1 << 3,
 
         /// <summary>
-        /// Forces views to be mapped page by page on Windows. When partial unmaps are done, this avoids the need
-        /// to unmap the full range and remap sub-ranges, which creates a time window with incorrectly unmapped memory.
+        /// If used with the <see cref="Mirrorable"/> flag, indicates that the memory block will only be used as
+        /// backing storage and will never be accessed directly, so the memory for the block will not be mapped.
         /// </summary>
-        ForceWindows4KBViewMapping = 1 << 4
+        NoMap = 1 << 4,
+
+        /// <summary>
+        /// Indicates that the memory will be used to store JIT generated code.
+        /// On some platforms, this requires special flags to be passed that will allow the memory to be executable.
+        /// </summary>
+        Jit = 1 << 5
     }
 }

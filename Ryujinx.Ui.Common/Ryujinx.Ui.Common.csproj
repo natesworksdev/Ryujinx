@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,15 +34,19 @@
     <EmbeddedResource Include="Resources\Icon_NSP.png" />
     <EmbeddedResource Include="Resources\Icon_XCI.png" />
     <EmbeddedResource Include="Resources\Logo_Amiibo.png" />
-    <EmbeddedResource Include="Resources\Logo_Discord.png" />
-    <EmbeddedResource Include="Resources\Logo_GitHub.png" />
-    <EmbeddedResource Include="Resources\Logo_Patreon.png" />
     <EmbeddedResource Include="Resources\Logo_Ryujinx.png" />
-    <EmbeddedResource Include="Resources\Logo_Twitter.png" />
+    <EmbeddedResource Include="Resources\Logo_Discord_Dark.png" />
+    <EmbeddedResource Include="Resources\Logo_Discord_Light.png" />
+    <EmbeddedResource Include="Resources\Logo_GitHub_Dark.png" />
+    <EmbeddedResource Include="Resources\Logo_GitHub_Light.png" />
+    <EmbeddedResource Include="Resources\Logo_Patreon_Dark.png" />
+    <EmbeddedResource Include="Resources\Logo_Patreon_Light.png" />
+    <EmbeddedResource Include="Resources\Logo_Twitter_Dark.png" />
+    <EmbeddedResource Include="Resources\Logo_Twitter_Light.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DiscordRichPresence" Version="1.0.175" />
+    <PackageReference Include="DiscordRichPresence" />
   </ItemGroup>
 
   <ItemGroup>

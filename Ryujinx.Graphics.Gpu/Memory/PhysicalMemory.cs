@@ -22,6 +22,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private int _referenceCount;
 
         /// <summary>
+        /// Indicates whenever the memory manager supports 4KB pages.
+        /// </summary>
+        public bool Supports4KBPages => _cpuMemory.Supports4KBPages;
+
+        /// <summary>
         /// In-memory shader cache.
         /// </summary>
         public ShaderCache ShaderCache { get; }
@@ -240,6 +245,19 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public void WriteUntracked(MultiRange range, ReadOnlySpan<byte> data)
         {
             WriteImpl(range, data, _cpuMemory.WriteUntracked);
+        }
+
+        /// <summary>
+        /// Writes data to the application process, returning false if the data was not changed.
+        /// This triggers read memory tracking, as a redundancy check would be useless if the data is not up to date.
+        /// </summary>
+        /// <remarks>The memory manager can return that memory has changed when it hasn't to avoid expensive data copies.</remarks>
+        /// <param name="address">Address to write into</param>
+        /// <param name="data">Data to be written</param>
+        /// <returns>True if the data was changed, false otherwise</returns>
+        public bool WriteWithRedundancyCheck(ulong address, ReadOnlySpan<byte> data)
+        {
+            return _cpuMemory.WriteWithRedundancyCheck(address, data);
         }
 
         private delegate void WriteCallback(ulong address, ReadOnlySpan<byte> data);

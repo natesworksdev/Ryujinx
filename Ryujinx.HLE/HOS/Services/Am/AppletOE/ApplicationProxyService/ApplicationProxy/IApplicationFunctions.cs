@@ -1,4 +1,3 @@
-using LibHac;
 using LibHac.Account;
 using LibHac.Common;
 using LibHac.Fs;
@@ -9,18 +8,16 @@ using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE.Storage;
 using Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy.Types;
 using Ryujinx.HLE.HOS.Services.Sdb.Pdm.QueryService;
 using Ryujinx.HLE.HOS.SystemState;
+using Ryujinx.Horizon.Common;
 using System;
 using System.Numerics;
 using System.Threading;
-
-using static LibHac.Fs.ApplicationSaveDataManagement;
 using AccountUid    = Ryujinx.HLE.HOS.Services.Account.Acc.UserId;
 using ApplicationId = LibHac.Ncm.ApplicationId;
 
@@ -28,8 +25,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 {
     class IApplicationFunctions : IpcService
     {
-        private ulong _defaultSaveDataSize        = 200000000;
-        private ulong _defaultJournalSaveDataSize = 200000000;
+        private long _defaultSaveDataSize        = 200000000;
+        private long _defaultJournalSaveDataSize = 200000000;
 
         private KEvent _gpuErrorDetectedSystemEvent;
         private KEvent _friendInvitationStorageChannelEvent;
@@ -45,7 +42,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         private int _jitLoaded;
 
-        private HorizonClient _horizon;
+        private LibHac.HorizonClient _horizon;
 
         public IApplicationFunctions(Horizon system)
         {
@@ -138,8 +135,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
                     "No control file was found for this game. Using a dummy one instead. This may cause inaccuracies in some games.");
             }
 
-            HorizonClient hos = context.Device.System.LibHacHorizonManager.AmClient;
-            Result result = hos.Fs.EnsureApplicationSaveData(out long requiredSize, applicationId, in control, in userId);
+            LibHac.HorizonClient hos = context.Device.System.LibHacHorizonManager.AmClient;
+            LibHac.Result result = hos.Fs.EnsureApplicationSaveData(out long requiredSize, applicationId, in control, in userId);
 
             context.ResponseData.Write(requiredSize);
 
@@ -159,7 +156,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             int  supportedLanguages  = (int)context.Device.Application.ControlData.Value.SupportedLanguageFlag;
             int  firstSupported      = BitOperations.TrailingZeroCount(supportedLanguages);
 
-            if (firstSupported > (int)SystemState.TitleLanguage.BrazilianPortuguese)
+            if (firstSupported > (int)TitleLanguage.BrazilianPortuguese)
             {
                 Logger.Warning?.Print(LogClass.ServiceAm, "Application has zero supported languages");
 
@@ -172,7 +169,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             // TODO: In the future, a GUI could enable user-specified search priority
             if (((1 << (int)context.Device.System.State.DesiredTitleLanguage) & supportedLanguages) == 0)
             {
-                SystemLanguage newLanguage = Enum.Parse<SystemLanguage>(Enum.GetName(typeof(SystemState.TitleLanguage), firstSupported));
+                SystemLanguage newLanguage = Enum.Parse<SystemLanguage>(Enum.GetName(typeof(TitleLanguage), firstSupported));
                 desiredLanguageCode = SystemStateMgr.GetLanguageCode((int)newLanguage);
 
                 Logger.Info?.Print(LogClass.ServiceAm, $"Application doesn't support configured language. Using {newLanguage}");
@@ -187,7 +184,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // SetTerminateResult(u32)
         public ResultCode SetTerminateResult(ServiceCtx context)
         {
-            Result result = new Result(context.RequestData.ReadUInt32());
+            LibHac.Result result = new LibHac.Result(context.RequestData.ReadUInt32());
 
             Logger.Info?.Print(LogClass.ServiceAm, $"Result = 0x{result.Value:x8} ({result.ToStringWithName()}).");
 
@@ -205,13 +202,13 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         }
 
         [CommandHipc(25)] // 3.0.0+
-        // ExtendSaveData(u8 save_data_type, nn::account::Uid, u64 save_size, u64 journal_size) -> u64 result_code
+        // ExtendSaveData(u8 save_data_type, nn::account::Uid, s64 save_size, s64 journal_size) -> u64 result_code
         public ResultCode ExtendSaveData(ServiceCtx context)
         {
             SaveDataType saveDataType = (SaveDataType)context.RequestData.ReadUInt64();
             Uid          userId       = context.RequestData.ReadStruct<Uid>();
-            ulong        saveDataSize = context.RequestData.ReadUInt64();
-            ulong        journalSize  = context.RequestData.ReadUInt64();
+            long        saveDataSize  = context.RequestData.ReadInt64();
+            long        journalSize   = context.RequestData.ReadInt64();
 
             // NOTE: Service calls nn::fs::ExtendApplicationSaveData.
             //       Since LibHac currently doesn't support this method, we can stub it for now.
@@ -227,7 +224,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         }
 
         [CommandHipc(26)] // 3.0.0+
-        // GetSaveDataSize(u8 save_data_type, nn::account::Uid) -> (u64 save_size, u64 journal_size)
+        // GetSaveDataSize(u8 save_data_type, nn::account::Uid) -> (s64 save_size, s64 journal_size)
         public ResultCode GetSaveDataSize(ServiceCtx context)
         {
             SaveDataType saveDataType = (SaveDataType)context.RequestData.ReadUInt64();
@@ -258,7 +255,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
             BlitStruct<ApplicationControlProperty> controlHolder = context.Device.Application.ControlData;
 
-            Result result = _horizon.Fs.CreateApplicationCacheStorage(out long requiredSize,
+            LibHac.Result result = _horizon.Fs.CreateApplicationCacheStorage(out long requiredSize,
                 out CacheStorageTargetMedia storageTarget, applicationId, in controlHolder.Value, index, saveSize,
                 journalSize);
 
@@ -266,6 +263,23 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
             context.ResponseData.Write((ulong)storageTarget);
             context.ResponseData.Write(requiredSize);
+
+            return ResultCode.Success;
+        }
+
+        [CommandHipc(28)] // 11.0.0+
+        // GetSaveDataSizeMax() -> (s64 save_size_max, s64 journal_size_max)
+        public ResultCode GetSaveDataSizeMax(ServiceCtx context)
+        {
+            // NOTE: We are currently using a stub for GetSaveDataSize() which returns the default values.
+            //       For this method we shouldn't return anything lower than that, but since we aren't interacting
+            //       with fs to get the actual sizes, we return the default values here as well.
+            //       This also helps in case ExtendSaveData() has been executed and the default values were modified.
+
+            context.ResponseData.Write(_defaultSaveDataSize);
+            context.ResponseData.Write(_defaultJournalSaveDataSize);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
             return ResultCode.Success;
         }
@@ -569,7 +583,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         {
             if (_gpuErrorDetectedSystemEventHandle == 0)
             {
-                if (context.Process.HandleTable.GenerateHandle(_gpuErrorDetectedSystemEvent.ReadableEvent, out _gpuErrorDetectedSystemEventHandle) != KernelResult.Success)
+                if (context.Process.HandleTable.GenerateHandle(_gpuErrorDetectedSystemEvent.ReadableEvent, out _gpuErrorDetectedSystemEventHandle) != Result.Success)
                 {
                     throw new InvalidOperationException("Out of handles!");
                 }
@@ -590,7 +604,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         {
             if (_friendInvitationStorageChannelEventHandle == 0)
             {
-                if (context.Process.HandleTable.GenerateHandle(_friendInvitationStorageChannelEvent.ReadableEvent, out _friendInvitationStorageChannelEventHandle) != KernelResult.Success)
+                if (context.Process.HandleTable.GenerateHandle(_friendInvitationStorageChannelEvent.ReadableEvent, out _friendInvitationStorageChannelEventHandle) != Result.Success)
                 {
                     throw new InvalidOperationException("Out of handles!");
                 }
@@ -621,7 +635,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         {
             if (_notificationStorageChannelEventHandle == 0)
             {
-                if (context.Process.HandleTable.GenerateHandle(_notificationStorageChannelEvent.ReadableEvent, out _notificationStorageChannelEventHandle) != KernelResult.Success)
+                if (context.Process.HandleTable.GenerateHandle(_notificationStorageChannelEvent.ReadableEvent, out _notificationStorageChannelEventHandle) != Result.Success)
                 {
                     throw new InvalidOperationException("Out of handles!");
                 }
@@ -638,7 +652,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         {
             if (_healthWarningDisappearedSystemEventHandle == 0)
             {
-                if (context.Process.HandleTable.GenerateHandle(_healthWarningDisappearedSystemEvent.ReadableEvent, out _healthWarningDisappearedSystemEventHandle) != KernelResult.Success)
+                if (context.Process.HandleTable.GenerateHandle(_healthWarningDisappearedSystemEvent.ReadableEvent, out _healthWarningDisappearedSystemEventHandle) != Result.Success)
                 {
                     throw new InvalidOperationException("Out of handles!");
                 }

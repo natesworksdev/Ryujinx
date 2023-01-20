@@ -1,21 +1,5 @@
-//
-// Copyright (c) 2019-2021 Ryujinx
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-
 using Ryujinx.Audio.Renderer.Dsp.State;
+using Ryujinx.Common.Logging;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -89,6 +73,19 @@ namespace Ryujinx.Audio.Renderer.Dsp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static short GetCoefficientAtIndex(ReadOnlySpan<short> coefficients, int index)
+        {
+            if ((uint)index > (uint)coefficients.Length)
+            {
+                Logger.Error?.Print(LogClass.AudioRenderer, $"Out of bound read for coefficient at index {index}");
+
+                return 0;
+            }
+
+            return coefficients[index];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Decode(Span<short> output, ReadOnlySpan<byte> input, int startSampleOffset, int endSampleOffset, int offset, int count, ReadOnlySpan<short> coefficients, ref AdpcmLoopContext loopContext)
         {
             if (input.IsEmpty || endSampleOffset < startSampleOffset)
@@ -101,8 +98,8 @@ namespace Ryujinx.Audio.Renderer.Dsp
             byte coefficientIndex = (byte)((predScale >> 4) & 0xF);
             short history0 = loopContext.History0;
             short history1 = loopContext.History1;
-            short coefficient0 = coefficients[coefficientIndex * 2 + 0];
-            short coefficient1 = coefficients[coefficientIndex * 2 + 1];
+            short coefficient0 = GetCoefficientAtIndex(coefficients, coefficientIndex * 2 + 0);
+            short coefficient1 = GetCoefficientAtIndex(coefficients, coefficientIndex * 2 + 1);
 
             int decodedCount = Math.Min(count, endSampleOffset - startSampleOffset - offset);
             int nibbles = GetNibblesFromSampleCount(offset + startSampleOffset);
@@ -126,8 +123,8 @@ namespace Ryujinx.Audio.Renderer.Dsp
 
                     coefficientIndex = (byte)((predScale >> 4) & 0xF);
 
-                    coefficient0 = coefficients[coefficientIndex * 2 + 0];
-                    coefficient1 = coefficients[coefficientIndex * 2 + 1];
+                    coefficient0 = GetCoefficientAtIndex(coefficients, coefficientIndex * 2);
+                    coefficient1 = GetCoefficientAtIndex(coefficients, coefficientIndex * 2 + 1);
 
                     nibbles += 2;
 

@@ -1,6 +1,8 @@
 using Ryujinx.Common.Logging;
+using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Shader;
+using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Runtime.InteropServices;
 
@@ -16,7 +18,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         private readonly ShaderSpecializationState _oldSpecState;
         private readonly ShaderSpecializationState _newSpecState;
         private readonly int _stageIndex;
-        private ResourceCounts _resourceCounts;
+        private readonly bool _isVulkan;
+        private readonly ResourceCounts _resourceCounts;
 
         /// <summary>
         /// Creates a new instance of the cached GPU state accessor for shader translation.
@@ -34,13 +37,14 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             ShaderSpecializationState oldSpecState,
             ShaderSpecializationState newSpecState,
             ResourceCounts counts,
-            int stageIndex) : base(context)
+            int stageIndex) : base(context, counts, stageIndex)
         {
             _data = data;
             _cb1Data = cb1Data;
             _oldSpecState = oldSpecState;
             _newSpecState = newSpecState;
             _stageIndex = stageIndex;
+            _isVulkan = context.Capabilities.Api == TargetApi.Vulkan;
             _resourceCounts = counts;
         }
 
@@ -68,27 +72,45 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         }
 
         /// <inheritdoc/>
-        public int QueryBindingConstantBuffer(int index)
+        public bool QueryAlphaToCoverageDitherEnable()
         {
-            return _resourceCounts.UniformBuffersCount++;
+            return _oldSpecState.GraphicsState.AlphaToCoverageEnable && _oldSpecState.GraphicsState.AlphaToCoverageDitherEnable;
         }
 
         /// <inheritdoc/>
-        public int QueryBindingStorageBuffer(int index)
+        public AlphaTestOp QueryAlphaTestCompare()
         {
-            return _resourceCounts.StorageBuffersCount++;
+            if (!_isVulkan || !_oldSpecState.GraphicsState.AlphaTestEnable)
+            {
+                return AlphaTestOp.Always;
+            }
+
+            return _oldSpecState.GraphicsState.AlphaTestCompare switch
+            {
+                CompareOp.Never or CompareOp.NeverGl => AlphaTestOp.Never,
+                CompareOp.Less or CompareOp.LessGl => AlphaTestOp.Less,
+                CompareOp.Equal or CompareOp.EqualGl => AlphaTestOp.Equal,
+                CompareOp.LessOrEqual or CompareOp.LessOrEqualGl => AlphaTestOp.LessOrEqual,
+                CompareOp.Greater or CompareOp.GreaterGl => AlphaTestOp.Greater,
+                CompareOp.NotEqual or CompareOp.NotEqualGl => AlphaTestOp.NotEqual,
+                CompareOp.GreaterOrEqual or CompareOp.GreaterOrEqualGl => AlphaTestOp.GreaterOrEqual,
+                _ => AlphaTestOp.Always
+            };
         }
 
         /// <inheritdoc/>
-        public int QueryBindingTexture(int index)
+        public float QueryAlphaTestReference() => _oldSpecState.GraphicsState.AlphaTestReference;
+
+        /// <inheritdoc/>
+        public AttributeType QueryAttributeType(int location)
         {
-            return _resourceCounts.TexturesCount++;
+            return _oldSpecState.GraphicsState.AttributeTypes[location];
         }
 
         /// <inheritdoc/>
-        public int QueryBindingImage(int index)
+        public AttributeType QueryFragmentOutputType(int location)
         {
-            return _resourceCounts.ImagesCount++;
+            return _oldSpecState.GraphicsState.FragmentOutputTypes[location];
         }
 
         /// <inheritdoc/>
@@ -114,10 +136,28 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         }
 
         /// <inheritdoc/>
+        public bool QueryHasConstantBufferDrawParameters()
+        {
+            return _oldSpecState.GraphicsState.HasConstantBufferDrawParameters;
+        }
+
+        /// <inheritdoc/>
         public InputTopology QueryPrimitiveTopology()
         {
             _newSpecState.RecordPrimitiveTopology();
             return ConvertToInputTopology(_oldSpecState.GraphicsState.Topology, _oldSpecState.GraphicsState.TessellationMode);
+        }
+
+        /// <inheritdoc/>
+        public bool QueryProgramPointSize()
+        {
+            return _oldSpecState.GraphicsState.ProgramPointSizeEnable;
+        }
+
+        /// <inheritdoc/>
+        public float QueryPointSize()
+        {
+            return _oldSpecState.GraphicsState.PointSize;
         }
 
         /// <inheritdoc/>
@@ -161,6 +201,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         }
 
         /// <inheritdoc/>
+        public bool QueryTransformDepthMinusOneToOne()
+        {
+            return _oldSpecState.GraphicsState.DepthMode;
+        }
+
+        /// <inheritdoc/>
         public bool QueryTransformFeedbackEnabled()
         {
             return _oldSpecState.TransformFeedbackDescriptors != null;
@@ -183,6 +229,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         {
             _newSpecState.RecordEarlyZForce();
             return _oldSpecState.GraphicsState.EarlyZForce;
+        }
+
+        /// <inheritdoc/>
+        public bool QueryHasUnalignedStorageBuffer()
+        {
+            return _oldSpecState.GraphicsState.HasUnalignedStorageBuffer || _oldSpecState.ComputeState.HasUnalignedStorageBuffer;
         }
 
         /// <inheritdoc/>

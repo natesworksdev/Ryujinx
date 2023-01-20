@@ -2,7 +2,6 @@
 
 using ARMeilleure.State;
 using NUnit.Framework;
-using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.Tests.Cpu
@@ -13,11 +12,13 @@ namespace Ryujinx.Tests.Cpu
 #if SimdReg32
 
 #region "ValueSource (Opcodes)"
-        private static uint[] _V_Add_Sub_Wide_I_()
+        private static uint[] _V_Add_Sub_Long_Wide_I_()
         {
             return new uint[]
             {
+                0xf2800000u, // VADDL.S8 Q0, D0, D0
                 0xf2800100u, // VADDW.S8 Q0, Q0, D0
+                0xf2800200u, // VSUBL.S8 Q0, D0, D0
                 0xf2800300u  // VSUBW.S8 Q0, Q0, D0
             };
         }
@@ -75,6 +76,15 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 
+        private static uint[] _Vmlal_Vmlsl_V_I_()
+        {
+            return new uint[]
+            {
+                0xf2800800u, // VMLAL.S8 Q0, D0, D0
+                0xf2800a00u  // VMLSL.S8 Q0, D0, D0
+            };
+        }
+
         private static uint[] _Vp_Add_Max_Min_F_()
         {
             return new uint[]
@@ -85,16 +95,30 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 
-        // VPADD does not have an unsigned flag, so we check the opcode before setting it.
-        private static uint VpaddI8 = 0xf2000b10u; // VPADD.I8 D0, D0, D0
-
-        private static uint[] _Vp_Add_Max_Min_I_()
+        private static uint[] _Vp_Add_I_()
         {
             return new uint[]
             {
-                VpaddI8,
-                0xf2000a00u, // VPMAX.S8 D0, D0, D0
-                0xf2000a10u  // VPMIN.S8 D0, D0, D0
+                0xf2000b10u // VPADD.I8 D0, D0, D0
+            };
+        }
+
+        private static uint[] _V_Pmax_Pmin_Rhadd_I_()
+        {
+            return new uint[]
+            {
+                0xf2000a00u, // VPMAX .S8 D0, D0, D0
+                0xf2000a10u, // VPMIN .S8 D0, D0, D0
+                0xf2000100u, // VRHADD.S8 D0, D0, D0
+            };
+        }
+
+        private static uint[] _Vq_Add_Sub_I_()
+        {
+            return new uint[]
+            {
+                0xf2000050u, // VQADD.S8 Q0, Q0, Q0
+                0xf2000250u  // VQSUB.S8 Q0, Q0, Q0
             };
         }
 #endregion
@@ -247,9 +271,111 @@ namespace Ryujinx.Tests.Cpu
         private static readonly bool NoInfs  = false;
         private static readonly bool NoNaNs  = false;
 
+        [Test, Pairwise, Description("SHA256H.32 <Qd>, <Qn>, <Qm>")]
+        public void Sha256h_V([Values(0xF3000C40u)] uint opcode,
+                              [Values(0u)] uint rd,
+                              [Values(2u)] uint rn,
+                              [Values(4u)] uint rm,
+                              [Values(0xAEE65C11943FB939ul)] ulong z0,
+                              [Values(0xA89A87F110291DA3ul)] ulong z1,
+                              [Values(0xE9F766DB7A49EA7Dul)] ulong a0,
+                              [Values(0x3053F46B0C2F3507ul)] ulong a1,
+                              [Values(0x6E86A473B9D4A778ul)] ulong b0,
+                              [Values(0x7BE4F9E638156BB1ul)] ulong b1,
+                              [Values(0x1F1DC4A98DA9C132ul)] ulong resultL,
+                              [Values(0xDB9A2A7B47031A0Dul)] ulong resultH)
+        {
+            opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
+            opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
+            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+
+            V128 v0 = MakeVectorE0E1(z0, z1);
+            V128 v1 = MakeVectorE0E1(a0, a1);
+            V128 v2 = MakeVectorE0E1(b0, b1);
+
+            ExecutionContext context = SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, runUnicorn: false);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(GetVectorE0(context.GetV(0)), Is.EqualTo(resultL));
+                Assert.That(GetVectorE1(context.GetV(0)), Is.EqualTo(resultH));
+            });
+
+            // Unicorn does not yet support hash instructions in A32.
+            // CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise, Description("SHA256H2.32 <Qd>, <Qn>, <Qm>")]
+        public void Sha256h2_V([Values(0xF3100C40u)] uint opcode,
+                               [Values(0u)] uint rd,
+                               [Values(2u)] uint rn,
+                               [Values(4u)] uint rm,
+                               [Values(0xAEE65C11943FB939ul)] ulong z0,
+                               [Values(0xA89A87F110291DA3ul)] ulong z1,
+                               [Values(0xE9F766DB7A49EA7Dul)] ulong a0,
+                               [Values(0x3053F46B0C2F3507ul)] ulong a1,
+                               [Values(0x6E86A473B9D4A778ul)] ulong b0,
+                               [Values(0x7BE4F9E638156BB1ul)] ulong b1,
+                               [Values(0x0A1177E9D9C9B611ul)] ulong resultL,
+                               [Values(0xF5A826404928A515ul)] ulong resultH)
+        {
+            opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
+            opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
+            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+
+            V128 v0 = MakeVectorE0E1(z0, z1);
+            V128 v1 = MakeVectorE0E1(a0, a1);
+            V128 v2 = MakeVectorE0E1(b0, b1);
+
+            ExecutionContext context = SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, runUnicorn: false);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(GetVectorE0(context.GetV(0)), Is.EqualTo(resultL));
+                Assert.That(GetVectorE1(context.GetV(0)), Is.EqualTo(resultH));
+            });
+
+            // Unicorn does not yet support hash instructions in A32.
+            // CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise, Description("SHA256SU1.32 <Qd>, <Qn>, <Qm>")]
+        public void Sha256su1_V([Values(0xF3200C40u)] uint opcode,
+                                [Values(0u)] uint rd,
+                                [Values(2u)] uint rn,
+                                [Values(4u)] uint rm,
+                                [Values(0xAEE65C11943FB939ul)] ulong z0,
+                                [Values(0xA89A87F110291DA3ul)] ulong z1,
+                                [Values(0xE9F766DB7A49EA7Dul)] ulong a0,
+                                [Values(0x3053F46B0C2F3507ul)] ulong a1,
+                                [Values(0x6E86A473B9D4A778ul)] ulong b0,
+                                [Values(0x7BE4F9E638156BB1ul)] ulong b1,
+                                [Values(0x9EE69CC896D7DE66ul)] ulong resultL,
+                                [Values(0x004A147155573E54ul)] ulong resultH)
+        {
+            opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
+            opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
+            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+
+            V128 v0 = MakeVectorE0E1(z0, z1);
+            V128 v1 = MakeVectorE0E1(a0, a1);
+            V128 v2 = MakeVectorE0E1(b0, b1);
+
+            ExecutionContext context = SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, runUnicorn: false);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(GetVectorE0(context.GetV(0)), Is.EqualTo(resultL));
+                Assert.That(GetVectorE1(context.GetV(0)), Is.EqualTo(resultH));
+            });
+
+            // Unicorn does not yet support hash instructions in A32.
+            // CompareAgainstUnicorn();
+        }
+
         [Explicit]
         [Test, Pairwise, Description("VADD.f32 V0, V0, V0")]
-        public void Vadd_f32([Values(0u)] uint rd,
+        public void Vadd_F32([Values(0u)] uint rd,
                              [Values(0u, 1u)] uint rn,
                              [Values(0u, 2u)] uint rm,
                              [ValueSource("_2S_F_")] ulong z0,
@@ -283,15 +409,15 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void V_Add_Sub_Wide_I([ValueSource("_V_Add_Sub_Wide_I_")] uint opcode,
-                                     [Range(0u, 5u)] uint rd,
-                                     [Range(0u, 5u)] uint rn,
-                                     [Range(0u, 5u)] uint rm,
-                                     [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong z,
-                                     [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong a,
-                                     [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong b,
-                                     [Values(0u, 1u, 2u)] uint size, // <SU8, SU16, SU32>
-                                     [Values] bool u) // <S, U>
+        public void V_Add_Sub_Long_Wide_I([ValueSource("_V_Add_Sub_Long_Wide_I_")] uint opcode,
+                                          [Range(0u, 5u)] uint rd,
+                                          [Range(0u, 5u)] uint rn,
+                                          [Range(0u, 5u)] uint rm,
+                                          [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong z,
+                                          [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong a,
+                                          [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong b,
+                                          [Values(0u, 1u, 2u)] uint size, // <SU8, SU16, SU32>
+                                          [Values] bool u) // <S, U>
         {
             if (u)
             {
@@ -465,18 +591,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise, Description("VMLSL.<type><size> <Vd>, <Vn>, <Vm>")]
-        public void Vmlsl_I([Values(0u)] uint rd,
-                            [Values(1u, 0u)] uint rn,
-                            [Values(2u, 0u)] uint rm,
-                            [Values(0u, 1u, 2u)] uint size,
-                            [Random(RndCnt)] ulong z,
-                            [Random(RndCnt)] ulong a,
-                            [Random(RndCnt)] ulong b,
-                            [Values] bool u)
+        [Test, Pairwise]
+        public void Vmlal_Vmlsl_I([ValueSource(nameof(_Vmlal_Vmlsl_V_I_))] uint opcode,
+                                  [Values(0u)] uint rd,
+                                  [Values(1u, 0u)] uint rn,
+                                  [Values(2u, 0u)] uint rm,
+                                  [Values(0u, 1u, 2u)] uint size,
+                                  [Random(RndCnt)] ulong z,
+                                  [Random(RndCnt)] ulong a,
+                                  [Random(RndCnt)] ulong b,
+                                  [Values] bool u)
         {
-            uint opcode = 0xf2800a00u; // VMLSL.S8 Q0, D0, D0
-
             opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
@@ -635,17 +760,42 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void Vp_Add_Max_Min_I([ValueSource("_Vp_Add_Max_Min_I_")] uint opcode,
-                                     [Values(0u)] uint rd,
-                                     [Range(0u, 5u)] uint rn,
-                                     [Range(0u, 5u)] uint rm,
-                                     [Values(0u, 1u, 2u)] uint size,
-                                     [Random(RndCnt)] ulong z,
-                                     [Random(RndCnt)] ulong a,
-                                     [Random(RndCnt)] ulong b,
-                                     [Values] bool u)
+        public void Vp_Add_I([ValueSource("_Vp_Add_I_")] uint opcode,
+                             [Values(0u)] uint rd,
+                             [Range(0u, 5u)] uint rn,
+                             [Range(0u, 5u)] uint rm,
+                             [Values(0u, 1u, 2u)] uint size,
+                             [Random(RndCnt)] ulong z,
+                             [Random(RndCnt)] ulong a,
+                             [Random(RndCnt)] ulong b)
         {
-            if (u && opcode != VpaddI8)
+            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
+            opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
+
+            opcode |= size << 20;
+
+            V128 v0 = MakeVectorE0E1(z, z);
+            V128 v1 = MakeVectorE0E1(a, z);
+            V128 v2 = MakeVectorE0E1(b, z);
+
+            SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise]
+        public void V_Pmax_Pmin_Rhadd_I([ValueSource("_V_Pmax_Pmin_Rhadd_I_")] uint opcode,
+                                        [Values(0u)] uint rd,
+                                        [Range(0u, 5u)] uint rn,
+                                        [Range(0u, 5u)] uint rm,
+                                        [Values(0u, 1u, 2u)] uint size,
+                                        [Random(RndCnt)] ulong z,
+                                        [Random(RndCnt)] ulong a,
+                                        [Random(RndCnt)] ulong b,
+                                        [Values] bool u)
+        {
+            if (u)
             {
                 opcode |= 1 << 24;
             }
@@ -659,6 +809,71 @@ namespace Ryujinx.Tests.Cpu
             V128 v0 = MakeVectorE0E1(z, z);
             V128 v1 = MakeVectorE0E1(a, z);
             V128 v2 = MakeVectorE0E1(b, z);
+
+            SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise]
+        public void Vq_Add_Sub_I([ValueSource("_Vq_Add_Sub_I_")] uint opcode,
+                                 [Range(0u, 5u)] uint rd,
+                                 [Range(0u, 5u)] uint rn,
+                                 [Range(0u, 5u)] uint rm,
+                                 [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong z,
+                                 [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong a,
+                                 [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong b,
+                                 [Values(0u, 1u, 2u)] uint size, // <SU8, SU16, SU32>
+                                 [Values] bool u) // <S, U>
+        {
+            if (u)
+            {
+                opcode |= 1 << 24;
+            }
+
+            rd >>= 1; rd <<= 1;
+            rn >>= 1; rn <<= 1;
+            rm >>= 1; rm <<= 1;
+
+            opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
+            opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
+            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+
+            opcode |= (size & 0x3) << 20;
+
+            V128 v0 = MakeVectorE0E1(z, ~z);
+            V128 v1 = MakeVectorE0E1(a, ~a);
+            V128 v2 = MakeVectorE0E1(b, ~b);
+
+            SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise, Description("VQDMULH.<S16, S32> <Qd>, <Qn>, <Qm>")]
+        public void Vqdmulh_I([Range(0u, 5u)] uint rd,
+                              [Range(0u, 5u)] uint rn,
+                              [Range(0u, 5u)] uint rm,
+                              [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong z,
+                              [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong a,
+                              [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong b,
+                              [Values(1u, 2u)] uint size) // <S16, S32>
+        {
+            rd >>= 1; rd <<= 1;
+            rn >>= 1; rn <<= 1;
+            rm >>= 1; rm <<= 1;
+
+            uint opcode = 0xf2100b40u & ~(3u << 20); // VQDMULH.S16 Q0, Q0, Q0
+
+            opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
+            opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
+            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+
+            opcode |= (size & 0x3) << 20;
+
+            V128 v0 = MakeVectorE0E1(z, ~z);
+            V128 v1 = MakeVectorE0E1(a, ~a);
+            V128 v2 = MakeVectorE0E1(b, ~b);
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
 

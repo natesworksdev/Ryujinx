@@ -132,7 +132,7 @@ namespace Ryujinx.HLE.Loaders.Mods
         {
             if (str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
             {
-                return int.TryParse(str.Substring(2), System.Globalization.NumberStyles.HexNumber, null, out value);
+                return int.TryParse(str.AsSpan(2), System.Globalization.NumberStyles.HexNumber, null, out value);
             }
             else
             {
@@ -253,7 +253,7 @@ namespace Ryujinx.HLE.Loaders.Mods
 
                     if (tokens[1][0] == '"')
                     {
-                        var patch = Encoding.ASCII.GetBytes(tokens[1].Trim('"'));
+                        var patch = Encoding.ASCII.GetBytes(tokens[1].Trim('"') + "\0");
                         patches.Add((uint)offset, patch);
                     }
                     else

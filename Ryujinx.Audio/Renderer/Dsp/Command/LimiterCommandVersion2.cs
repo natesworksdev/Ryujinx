@@ -1,26 +1,8 @@
-﻿//
-// Copyright (c) 2019-2021 Ryujinx
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-
 using Ryujinx.Audio.Renderer.Dsp.State;
 using Ryujinx.Audio.Renderer.Parameter;
 using Ryujinx.Audio.Renderer.Parameter.Effect;
 using System;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
@@ -33,7 +15,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
         public CommandType CommandType => CommandType.LimiterVersion2;
 
-        public ulong EstimatedProcessingTime { get; set; }
+        public uint EstimatedProcessingTime { get; set; }
 
         public LimiterParameter Parameter => _parameter;
         public Memory<LimiterState> State { get; }
@@ -119,32 +101,31 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
                         float inputCoefficient = Parameter.ReleaseCoefficient;
 
-                        if (sampleInputMax > state.DectectorAverage[channelIndex])
+                        if (sampleInputMax > state.DetectorAverage[channelIndex].Read())
                         {
                             inputCoefficient = Parameter.AttackCoefficient;
                         }
 
-                        state.DectectorAverage[channelIndex] += inputCoefficient * (sampleInputMax - state.DectectorAverage[channelIndex]);
-
+                        float detectorValue = state.DetectorAverage[channelIndex].Update(sampleInputMax, inputCoefficient);
                         float attenuation = 1.0f;
 
-                        if (state.DectectorAverage[channelIndex] > Parameter.Threshold)
+                        if (detectorValue > Parameter.Threshold)
                         {
-                            attenuation = Parameter.Threshold / state.DectectorAverage[channelIndex];
+                            attenuation = Parameter.Threshold / detectorValue;
                         }
 
                         float outputCoefficient = Parameter.ReleaseCoefficient;
 
-                        if (state.CompressionGain[channelIndex] > attenuation)
+                        if (state.CompressionGainAverage[channelIndex].Read() > attenuation)
                         {
                             outputCoefficient = Parameter.AttackCoefficient;
                         }
 
-                        state.CompressionGain[channelIndex] += outputCoefficient * (attenuation - state.CompressionGain[channelIndex]);
+                        float compressionGain = state.CompressionGainAverage[channelIndex].Update(attenuation, outputCoefficient);
 
                         ref float delayedSample = ref state.DelayedSampleBuffer[channelIndex * Parameter.DelayBufferSampleCountMax + state.DelayedSampleBufferPosition[channelIndex]];
 
-                        float outputSample = delayedSample * state.CompressionGain[channelIndex] * Parameter.OutputGain;
+                        float outputSample = delayedSample * compressionGain * Parameter.OutputGain;
 
                         *((float*)outputBuffers[channelIndex] + sampleIndex) = outputSample * short.MaxValue;
 
@@ -162,7 +143,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                             ref LimiterStatistics statistics = ref MemoryMarshal.Cast<byte, LimiterStatistics>(ResultState.Span[0].SpecificData)[0];
 
                             statistics.InputMax[channelIndex] = Math.Max(statistics.InputMax[channelIndex], sampleInputMax);
-                            statistics.CompressionGainMin[channelIndex] = Math.Min(statistics.CompressionGainMin[channelIndex], state.CompressionGain[channelIndex]);
+                            statistics.CompressionGainMin[channelIndex] = Math.Min(statistics.CompressionGainMin[channelIndex], compressionGain);
                         }
                     }
                 }

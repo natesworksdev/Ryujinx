@@ -12,12 +12,22 @@ namespace Ryujinx.Tests.Cpu
 #if Simd32
 
 #region "ValueSource (Opcodes)"
-        private static uint[] _Vabs_Vneg_V_()
+        private static uint[] _Vabs_Vneg_Vpaddl_I_()
         {
             return new uint[]
             {
-                0xf3b10300u, // VABS.S8 D0, D0
-                0xf3b10380u  // VNEG.S8 D0, D0
+                0xf3b10300u, // VABS.S8   D0, D0
+                0xf3b10380u, // VNEG.S8   D0, D0
+                0xf3b00200u  // VPADDL.S8 D0, D0
+            };
+        }
+
+        private static uint[] _Vabs_Vneg_F_()
+        {
+            return new uint[]
+            {
+                0xf3b90700u, // VABS.F32 D0, D0
+                0xf3b90780u  // VNEG.F32 D0, D0
             };
         }
 #endregion
@@ -171,41 +181,44 @@ namespace Ryujinx.Tests.Cpu
         private static readonly bool NoInfs  = false;
         private static readonly bool NoNaNs  = false;
 
-        [Test, Pairwise]
-        public void Vabs_Vneg_V_S8_S16_S32([ValueSource("_Vabs_Vneg_V_")] uint opcode,
-                                           [Range(0u, 3u)] uint rd,
-                                           [Range(0u, 3u)] uint rm,
-                                           [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong z,
-                                           [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong b,
-                                           [Values(0u, 1u, 2u)] uint size, // <S8, S16, S32>
-                                           [Values] bool q)
+        [Test, Pairwise, Description("SHA256SU0.32 <Qd>, <Qm>")]
+        public void Sha256su0_V([Values(0xF3BA03C0u)] uint opcode,
+                                [Values(0u)] uint rd,
+                                [Values(2u)] uint rm,
+                                [Values(0x9BCBBF7443FB4F91ul)] ulong z0,
+                                [Values(0x482C58A58CBCBD59ul)] ulong z1,
+                                [Values(0xA0099B803625F82Aul)] ulong a0,
+                                [Values(0x1AA3B0B4E1AB4C8Cul)] ulong a1,
+                                [Values(0x29A44D72598F15F3ul)] ulong resultL,
+                                [Values(0x74CED221E2793F07ul)] ulong resultH)
         {
-            const bool f = false;
+            opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
+            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
 
-            Vabs_Vneg_V(opcode, rd, rm, z, b, size, f, q);
-        }
+            V128 v0 = MakeVectorE0E1(z0, z1);
+            V128 v1 = MakeVectorE0E1(a0, a1);
 
-        [Test, Pairwise]
-        public void Vabs_Vneg_V_F32([ValueSource("_Vabs_Vneg_V_")] uint opcode,
-                                    [Range(0u, 3u)] uint rd,
-                                    [Range(0u, 3u)] uint rm,
-                                    [ValueSource("_2S_F_")] ulong z,
-                                    [ValueSource("_2S_F_")] ulong b,
-                                    [Values] bool q)
-        {
-            const uint size = 0b10; // <F32>
-            const bool f = true;
+            ExecutionContext context = SingleOpcode(opcode, v0: v0, v1: v1, runUnicorn: false);
 
-            Vabs_Vneg_V(opcode, rd, rm, z, b, size, f, q);
-        }
-
-        private void Vabs_Vneg_V(uint opcode, uint rd, uint rm, ulong z, ulong b, uint size, bool f, bool q)
-        {
-            if (f)
+            Assert.Multiple(() =>
             {
-                opcode |= 1 << 10;
-            }
+                Assert.That(GetVectorE0(context.GetV(0)), Is.EqualTo(resultL));
+                Assert.That(GetVectorE1(context.GetV(0)), Is.EqualTo(resultH));
+            });
 
+            // Unicorn does not yet support hash instructions in A32.
+            // CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise]
+        public void Vabs_Vneg_Vpaddl_V_I([ValueSource("_Vabs_Vneg_Vpaddl_I_")] uint opcode,
+                                         [Range(0u, 3u)] uint rd,
+                                         [Range(0u, 3u)] uint rm,
+                                         [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong z,
+                                         [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong b,
+                                         [Values(0u, 1u, 2u)] uint size, // <S8, S16, S32>
+                                         [Values] bool q)
+        {
             if (q)
             {
                 opcode |= 1 << 6;
@@ -218,6 +231,33 @@ namespace Ryujinx.Tests.Cpu
             opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
 
             opcode |= (size & 0x3) << 18;
+
+            V128 v0 = MakeVectorE0E1(z, ~z);
+            V128 v1 = MakeVectorE0E1(b, ~b);
+
+            SingleOpcode(opcode, v0: v0, v1: v1);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise]
+        public void Vabs_Vneg_V_F32([ValueSource("_Vabs_Vneg_F_")] uint opcode,
+                                    [Range(0u, 3u)] uint rd,
+                                    [Range(0u, 3u)] uint rm,
+                                    [ValueSource("_2S_F_")] ulong z,
+                                    [ValueSource("_2S_F_")] ulong b,
+                                    [Values] bool q)
+        {
+            if (q)
+            {
+                opcode |= 1 << 6;
+
+                rd >>= 1; rd <<= 1;
+                rm >>= 1; rm <<= 1;
+            }
+
+            opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
+            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
 
             V128 v0 = MakeVectorE0E1(z, ~z);
             V128 v1 = MakeVectorE0E1(b, ~b);
@@ -251,6 +291,32 @@ namespace Ryujinx.Tests.Cpu
             V128 v0 = MakeVectorE0E1(d0, d1);
 
             SingleOpcode(opcode, v0: v0);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise]
+        public void Vmovn_V([Range(0u, 3u)] uint rd,
+                            [Range(0u, 3u)] uint rm,
+                            [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong z,
+                            [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong b,
+                            [Values(0u, 1u, 2u, 3u)] uint op,
+                            [Values(0u, 1u, 2u)] uint size) // <S8, S16, S32>
+        {
+            rm >>= 1; rm <<= 1;
+
+            uint opcode = 0xf3b20200u; // VMOVN.S16 D0, Q0
+
+            opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
+            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+
+            opcode |= (op & 0x3) << 6;
+            opcode |= (size & 0x3) << 18;
+
+            V128 v0 = MakeVectorE0E1(z, ~z);
+            V128 v1 = MakeVectorE0E1(b, ~b);
+
+            SingleOpcode(opcode, v0: v0, v1: v1);
 
             CompareAgainstUnicorn();
         }

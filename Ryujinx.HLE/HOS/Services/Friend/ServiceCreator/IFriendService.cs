@@ -4,12 +4,11 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Common.Memory;
 using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.HLE.HOS.Services.Friend.ServiceCreator.FriendService;
+using Ryujinx.Horizon.Common;
 using System;
-using System.IO;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
@@ -33,12 +32,22 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
                 _completionEvent = new KEvent(context.Device.System.KernelContext);
             }
 
-            if (context.Process.HandleTable.GenerateHandle(_completionEvent.ReadableEvent, out int completionEventHandle) != KernelResult.Success)
+            if (context.Process.HandleTable.GenerateHandle(_completionEvent.ReadableEvent, out int completionEventHandle) != Result.Success)
             {
                 throw new InvalidOperationException("Out of handles!");
             }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(completionEventHandle);
+
+            return ResultCode.Success;
+        }
+
+        [CommandHipc(1)]
+        // nn::friends::Cancel()
+        public ResultCode Cancel(ServiceCtx context)
+        {
+            // TODO: Original service sets an internal field to 1 here. Determine usage.
+            Logger.Stub?.PrintStub(LogClass.ServiceFriend);
 
             return ResultCode.Success;
         }
@@ -131,7 +140,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
                 return ResultCode.InvalidArgument;
             }
 
-            // TODO: Service mount the friends:/ system savedata and try to load friend.cache file, returns true if exists, false otherwise. 
+            // TODO: Service mount the friends:/ system savedata and try to load friend.cache file, returns true if exists, false otherwise.
             // NOTE: If no cache is available, guest then calls nn::friends::EnsureFriendListAvailable, we can avoid that by faking the cache check.
             context.ResponseData.Write(true);
 
@@ -190,7 +199,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
             }
 
             context.Device.System.AccountManager.OpenUserOnlinePlay(userId);
-            
+
             Logger.Stub?.PrintStub(LogClass.ServiceFriend, new { UserId = userId.ToString() });
 
             return ResultCode.Success;
@@ -226,23 +235,14 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
             ulong position = context.Request.PtrBuff[0].Position;
             ulong size     = context.Request.PtrBuff[0].Size;
 
-            byte[] bufferContent = new byte[size];
-
-            context.Memory.Read(position, bufferContent);
+            ReadOnlySpan<UserPresence> userPresenceInputArray = MemoryMarshal.Cast<byte, UserPresence>(context.Memory.GetSpan(position, (int)size));
 
             if (uuid.IsNull)
             {
                 return ResultCode.InvalidArgument;
             }
 
-            int elementCount = bufferContent.Length / Marshal.SizeOf<UserPresence>();
-
-            using (BinaryReader bufferReader = new BinaryReader(new MemoryStream(bufferContent)))
-            {
-                UserPresence[] userPresenceInputArray = bufferReader.ReadStructArray<UserPresence>(elementCount);
-
-                Logger.Stub?.PrintStub(LogClass.ServiceFriend, new { UserId = uuid.ToString(), userPresenceInputArray });
-            }
+            Logger.Stub?.PrintStub(LogClass.ServiceFriend, new { UserId = uuid.ToString(), userPresenceInputArray = userPresenceInputArray.ToArray() });
 
             return ResultCode.Success;
         }
@@ -266,9 +266,8 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
             // NOTE: Calls nn::friends::detail::service::core::PlayHistoryManager::GetInstance and stores the instance.
 
             byte[] randomBytes = new byte[8];
-            Random random      = new Random();
 
-            random.NextBytes(randomBytes);
+            Random.Shared.NextBytes(randomBytes);
 
             // NOTE: Calls nn::friends::detail::service::core::UuidManager::GetInstance and stores the instance.
             //       Then call nn::friends::detail::service::core::AccountStorageManager::GetInstance and store the instance.
@@ -277,7 +276,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
             Array16<byte> randomGuid = new Array16<byte>();
 
-            Guid.NewGuid().ToByteArray().AsSpan().CopyTo(randomGuid.ToSpan());
+            Guid.NewGuid().ToByteArray().AsSpan().CopyTo(randomGuid.AsSpan());
 
             PlayHistoryRegistrationKey playHistoryRegistrationKey = new PlayHistoryRegistrationKey
             {

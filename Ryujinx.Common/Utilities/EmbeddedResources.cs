@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -127,9 +128,16 @@ namespace Ryujinx.Common
             return stream;
         }
 
+        public static string[] GetAllAvailableResources(string path, string ext = "")
+        {
+            return ResolveManifestPath(path).Item1.GetManifestResourceNames()
+                .Where(r => r.EndsWith(ext))
+                .ToArray();
+        }
+
         private static (Assembly, string) ResolveManifestPath(string filename)
         {
-            var segments = filename.Split(new[] { '/' }, 2, StringSplitOptions.RemoveEmptyEntries);
+            var segments = filename.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
 
             if (segments.Length >= 2)
             {

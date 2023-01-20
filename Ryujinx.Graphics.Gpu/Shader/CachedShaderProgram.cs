@@ -25,6 +25,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public CachedShaderStage[] Shaders { get; }
 
         /// <summary>
+        /// Cached shader bindings, ready for placing into the bindings manager.
+        /// </summary>
+        public CachedShaderBindings Bindings { get; }
+
+        /// <summary>
         /// Creates a new instance of the shader bundle.
         /// </summary>
         /// <param name="hostProgram">Host program with all the shader stages</param>
@@ -35,6 +40,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
             HostProgram = hostProgram;
             SpecializationState = specializationState;
             Shaders = shaders;
+
+            SpecializationState.Prepare(shaders);
+            Bindings = new CachedShaderBindings(shaders.Length == 1, shaders);
         }
 
         /// <summary>

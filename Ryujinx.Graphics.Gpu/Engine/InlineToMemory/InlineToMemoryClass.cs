@@ -29,6 +29,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
         private int _dstHeight;
         private int _dstStride;
         private int _dstGobBlocksInY;
+        private int _dstGobBlocksInZ;
         private int _lineLengthIn;
         private int _lineCount;
 
@@ -99,7 +100,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
             _isLinear = (argument & 1) != 0;
 
             _offset = 0;
-            _size = (int)(BitUtils.AlignUp(state.LineLengthIn, 4) * state.LineCount);
+            _size = (int)(BitUtils.AlignUp<uint>(state.LineLengthIn, 4) * state.LineCount);
 
             int count = _size / 4;
 
@@ -117,6 +118,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
             _dstHeight = (int)state.SetDstHeight;
             _dstStride = (int)state.PitchOut;
             _dstGobBlocksInY = 1 << (int)state.SetDstBlockSizeHeight;
+            _dstGobBlocksInZ = 1 << (int)state.SetDstBlockSizeDepth;
             _lineLengthIn = (int)state.LineLengthIn;
             _lineCount = (int)state.LineCount;
 
@@ -176,6 +178,31 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
             }
             else
             {
+                // TODO: Verify if the destination X/Y and width/height are taken into account
+                // for linear texture transfers. If not, we can use the fast path for that aswell.
+                // Right now the copy code at the bottom assumes that it is used on both which might be incorrect.
+                if (!_isLinear)
+                {
+                    var target = memoryManager.Physical.TextureCache.FindTexture(
+                        memoryManager,
+                        _dstGpuVa,
+                        1,
+                        _dstStride,
+                        _dstHeight,
+                        _lineLengthIn,
+                        _lineCount,
+                        _isLinear,
+                        _dstGobBlocksInY,
+                        _dstGobBlocksInZ);
+
+                    if (target != null)
+                    {
+                        target.SetData(data, 0, 0, new GAL.Rectangle<int>(_dstX, _dstY, _lineLengthIn / target.Info.FormatInfo.BytesPerPixel, _lineCount));
+
+                        return;
+                    }
+                }
+
                 var dstCalculator = new OffsetCalculator(
                     _dstWidth,
                     _dstHeight,

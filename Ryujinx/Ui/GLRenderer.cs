@@ -1,6 +1,4 @@
-﻿using Gdk;
-using Gtk;
-using OpenTK.Graphics.OpenGL;
+﻿using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.Input.HLE;
@@ -15,7 +13,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Ui
 {
-    public class GlRenderer : RendererWidgetBase
+    public partial class GlRenderer : RendererWidgetBase
     {
         private GraphicsDebugLevel _glLogLevel;
 
@@ -76,14 +74,14 @@ namespace Ryujinx.Ui
             throw new NotImplementedException();
         }
 
-        [DllImport("libgdk-3-0.dll")]
-        private static extern IntPtr gdk_win32_window_get_handle(IntPtr d);
+        [LibraryImport("libgdk-3-0.dll")]
+        private static partial IntPtr gdk_win32_window_get_handle(IntPtr d);
 
-        [DllImport("libgdk-3.so.0")]
-        private static extern IntPtr gdk_x11_display_get_xdisplay(IntPtr gdkDisplay);
+        [LibraryImport("libgdk-3.so.0")]
+        private static partial IntPtr gdk_x11_display_get_xdisplay(IntPtr gdkDisplay);
 
-        [DllImport("libgdk-3.so.0")]
-        private static extern IntPtr gdk_x11_window_get_xid(IntPtr gdkWindow);
+        [LibraryImport("libgdk-3.so.0")]
+        private static partial IntPtr gdk_x11_window_get_xid(IntPtr gdkWindow);
 
         private static FramebufferFormat GetGraphicsMode()
         {
@@ -93,43 +91,23 @@ namespace Ryujinx.Ui
         public override void InitializeRenderer()
         {
             // First take exclusivity on the OpenGL context.
-            ((Renderer)Renderer).InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext(_openGLContext));
+            ((OpenGLRenderer)Renderer).InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext(_openGLContext));
 
             _openGLContext.MakeCurrent(_nativeWindow);
 
             GL.ClearColor(0, 0, 0, 1.0f);
             GL.Clear(ClearBufferMask.ColorBufferBit);
-            SwapBuffers(0);
+            SwapBuffers();
         }
 
-        public override void SwapBuffers(object image)
+        public override void SwapBuffers()
         {
-            if((int)image != 0)
-            {
-                // The game's framebruffer is already bound, so blit it to the window's backbuffer
-                GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
-
-                GL.Clear(ClearBufferMask.ColorBufferBit);
-                GL.ClearColor(0, 0, 0, 1);
-
-                GL.BlitFramebuffer(0,
-                    0,
-                    WindowWidth,
-                    WindowHeight,
-                    0,
-                    0,
-                    WindowWidth,
-                    WindowHeight,
-                    ClearBufferMask.ColorBufferBit,
-                    BlitFramebufferFilter.Linear);
-            }
-
             _nativeWindow.SwapBuffers();
         }
 
-        public override string GetGpuVendorName()
+        protected override string GetGpuBackendName()
         {
-            return ((Renderer)Renderer).GpuVendor;
+            return "OpenGL";
         }
 
         protected override void Dispose(bool disposing)

@@ -14,7 +14,11 @@ namespace ARMeilleure.Instructions
     {
         public static void And_V(ArmEmitterContext context)
         {
-            if (Optimizations.UseSse2)
+            if (Optimizations.UseAdvSimd)
+            {
+                InstEmitSimdHelperArm64.EmitVectorBinaryOp(context, Intrinsic.Arm64AndV);
+            }
+            else if (Optimizations.UseSse2)
             {
                 OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -38,7 +42,11 @@ namespace ARMeilleure.Instructions
 
         public static void Bic_V(ArmEmitterContext context)
         {
-            if (Optimizations.UseSse2)
+            if (Optimizations.UseAdvSimd)
+            {
+                InstEmitSimdHelperArm64.EmitVectorBinaryOp(context, Intrinsic.Arm64BicV);
+            }
+            else if (Optimizations.UseSse2)
             {
                 OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -98,12 +106,26 @@ namespace ARMeilleure.Instructions
 
         public static void Bif_V(ArmEmitterContext context)
         {
-            EmitBifBit(context, notRm: true);
+            if (Optimizations.UseAdvSimd)
+            {
+                InstEmitSimdHelperArm64.EmitVectorTernaryOpRd(context, Intrinsic.Arm64BifV);
+            }
+            else
+            {
+                EmitBifBit(context, notRm: true);
+            }
         }
 
         public static void Bit_V(ArmEmitterContext context)
         {
-            EmitBifBit(context, notRm: false);
+            if (Optimizations.UseAdvSimd)
+            {
+                InstEmitSimdHelperArm64.EmitVectorTernaryOpRd(context, Intrinsic.Arm64BitV);
+            }
+            else
+            {
+                EmitBifBit(context, notRm: false);
+            }
         }
 
         private static void EmitBifBit(ArmEmitterContext context, bool notRm)
@@ -167,7 +189,11 @@ namespace ARMeilleure.Instructions
 
         public static void Bsl_V(ArmEmitterContext context)
         {
-            if (Optimizations.UseSse2)
+            if (Optimizations.UseAdvSimd)
+            {
+                InstEmitSimdHelperArm64.EmitVectorTernaryOpRd(context, Intrinsic.Arm64BslV);
+            }
+            else if (Optimizations.UseSse2)
             {
                 OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -200,7 +226,11 @@ namespace ARMeilleure.Instructions
 
         public static void Eor_V(ArmEmitterContext context)
         {
-            if (Optimizations.UseSse2)
+            if (Optimizations.UseAdvSimd)
+            {
+                InstEmitSimdHelperArm64.EmitVectorBinaryOp(context, Intrinsic.Arm64EorV);
+            }
+            else if (Optimizations.UseSse2)
             {
                 OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -249,7 +279,11 @@ namespace ARMeilleure.Instructions
 
         public static void Orn_V(ArmEmitterContext context)
         {
-            if (Optimizations.UseSse2)
+            if (Optimizations.UseAdvSimd)
+            {
+                InstEmitSimdHelperArm64.EmitVectorBinaryOp(context, Intrinsic.Arm64OrnV);
+            }
+            else if (Optimizations.UseSse2)
             {
                 OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -280,7 +314,11 @@ namespace ARMeilleure.Instructions
 
         public static void Orr_V(ArmEmitterContext context)
         {
-            if (Optimizations.UseSse2)
+            if (Optimizations.UseAdvSimd)
+            {
+                InstEmitSimdHelperArm64.EmitVectorBinaryOp(context, Intrinsic.Arm64OrrV);
+            }
+            else if (Optimizations.UseSse2)
             {
                 OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -336,20 +374,45 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
-            Operand res = context.VectorZero();
-
-            int elems = op.RegisterSize == RegisterSize.Simd128 ? 16 : 8;
-
-            for (int index = 0; index < elems; index++)
+            if (Optimizations.UseGfni)
             {
-                Operand ne = EmitVectorExtractZx(context, op.Rn, index, 0);
+                const long bitMatrix =
+                    (0b10000000L << 56) |
+                    (0b01000000L << 48) |
+                    (0b00100000L << 40) |
+                    (0b00010000L << 32) |
+                    (0b00001000L << 24) |
+                    (0b00000100L << 16) |
+                    (0b00000010L <<  8) |
+                    (0b00000001L <<  0);
 
-                Operand de = EmitReverseBits8Op(context, ne);
+                Operand vBitMatrix = X86GetAllElements(context, bitMatrix);
 
-                res = EmitVectorInsert(context, res, de, index, 0);
+                Operand res = context.AddIntrinsic(Intrinsic.X86Gf2p8affineqb, GetVec(op.Rn), vBitMatrix, Const(0));
+
+                if (op.RegisterSize == RegisterSize.Simd64)
+                {
+                    res = context.VectorZeroUpper64(res);
+                }
+
+                context.Copy(GetVec(op.Rd), res);
             }
+            else
+            {
+                Operand res = context.VectorZero();
+                int elems = op.RegisterSize == RegisterSize.Simd128 ? 16 : 8;
 
-            context.Copy(GetVec(op.Rd), res);
+                for (int index = 0; index < elems; index++)
+                {
+                    Operand ne = EmitVectorExtractZx(context, op.Rn, index, 0);
+
+                    Operand de = EmitReverseBits8Op(context, ne);
+
+                    res = EmitVectorInsert(context, res, de, index, 0);
+                }
+
+                context.Copy(GetVec(op.Rd), res);
+            }
         }
 
         private static Operand EmitReverseBits8Op(ArmEmitterContext context, Operand op)

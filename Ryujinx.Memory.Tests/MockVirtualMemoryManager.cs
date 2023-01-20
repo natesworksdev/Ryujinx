@@ -4,8 +4,10 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Memory.Tests
 {
-    class MockVirtualMemoryManager : IVirtualMemoryManager
+    public class MockVirtualMemoryManager : IVirtualMemoryManager
     {
+        public bool Supports4KBPages => true;
+
         public bool NoMappings = false;
 
         public event Action<ulong, ulong, MemoryPermission> OnProtect;
@@ -14,7 +16,12 @@ namespace Ryujinx.Memory.Tests
         {
         }
 
-        public void Map(ulong va, ulong pa, ulong size)
+        public void Map(ulong va, ulong pa, ulong size, MemoryMapFlags flags)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void MapForeign(ulong va, nuint hostAddress, ulong size)
         {
             throw new NotImplementedException();
         }
@@ -44,6 +51,11 @@ namespace Ryujinx.Memory.Tests
             throw new NotImplementedException();
         }
 
+        public bool WriteWithRedundancyCheck(ulong va, ReadOnlySpan<byte> data)
+        {
+            throw new NotImplementedException();
+        }
+
         public ReadOnlySpan<byte> GetSpan(ulong va, int size, bool tracked = false)
         {
             throw new NotImplementedException();
@@ -55,6 +67,11 @@ namespace Ryujinx.Memory.Tests
         }
 
         public ref T GetRef<T>(ulong va) where T : unmanaged
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerable<HostMemoryRange> IVirtualMemoryManager.GetHostRegions(ulong va, ulong size)
         {
             throw new NotImplementedException();
         }

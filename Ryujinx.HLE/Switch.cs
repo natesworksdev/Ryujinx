@@ -19,7 +19,7 @@ namespace Ryujinx.HLE
         public MemoryBlock           Memory            { get; }
         public GpuContext            Gpu               { get; }
         public VirtualFileSystem     FileSystem        { get; }
-        public Horizon               System            { get; }
+        public HOS.Horizon           System            { get; }
         public ApplicationLoader     Application       { get; }
         public PerformanceStatistics Statistics        { get; }
         public Hid                   Hid               { get; }
@@ -32,20 +32,9 @@ namespace Ryujinx.HLE
 
         public Switch(HLEConfiguration configuration)
         {
-            if (configuration.GpuRenderer == null)
-            {
-                throw new ArgumentNullException(nameof(configuration.GpuRenderer));
-            }
-
-            if (configuration.AudioDeviceDriver == null)
-            {
-                throw new ArgumentNullException(nameof(configuration.AudioDeviceDriver));
-            }
-
-            if (configuration.UserChannelPersistence == null)
-            {
-                throw new ArgumentNullException(nameof(configuration.UserChannelPersistence));
-            }
+            ArgumentNullException.ThrowIfNull(configuration.GpuRenderer);
+            ArgumentNullException.ThrowIfNull(configuration.AudioDeviceDriver);
+            ArgumentNullException.ThrowIfNull(configuration.UserChannelPersistence);
 
             Configuration = configuration;
             FileSystem    = Configuration.VirtualFileSystem;
@@ -58,7 +47,7 @@ namespace Ryujinx.HLE
             AudioDeviceDriver = new CompatLayerHardwareDeviceDriver(Configuration.AudioDeviceDriver);
             Memory            = new MemoryBlock(Configuration.MemoryConfiguration.ToDramSize(), memoryAllocationFlags);
             Gpu               = new GpuContext(Configuration.GpuRenderer);
-            System            = new Horizon(this);
+            System            = new HOS.Horizon(this);
             Statistics        = new PerformanceStatistics();
             Hid               = new Hid(this, System.HidStorage);
             Application       = new ApplicationLoader(this);
@@ -117,14 +106,14 @@ namespace Ryujinx.HLE
             return Gpu.Window.ConsumeFrameAvailable();
         }
 
-        public void PresentFrame(Action<object> swapBuffersCallback)
+        public void PresentFrame(Action swapBuffersCallback)
         {
             Gpu.Window.Present(swapBuffersCallback);
         }
 
         public void SetVolume(float volume)
         {
-            System.SetVolume(volume);
+            System.SetVolume(Math.Clamp(volume, 0, 1));
         }
 
         public float GetVolume()

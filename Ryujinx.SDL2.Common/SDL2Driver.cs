@@ -28,6 +28,8 @@ namespace Ryujinx.SDL2.Common
             }
         }
 
+        public static Action<Action> MainThreadDispatcher { get; set; }
+
         private const uint SdlInitFlags = SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO | SDL_INIT_VIDEO;
 
         private bool _isRunning;
@@ -42,6 +44,8 @@ namespace Ryujinx.SDL2.Common
         private object _lock = new object();
 
         private SDL2Driver() {}
+
+        private const string SDL_HINT_JOYSTICK_HIDAPI_COMBINE_JOY_CONS = "SDL_JOYSTICK_HIDAPI_COMBINE_JOY_CONS";
 
         public void Initialize()
         {
@@ -60,9 +64,14 @@ namespace Ryujinx.SDL2.Common
                 SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED, "0");
                 SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, "1");
 
+
+                // NOTE: As of SDL2 2.24.0, joycons are combined by default but the motion source only come from one of them.
+                // We disable this behavior for now.
+                SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_COMBINE_JOY_CONS, "0");
+
                 if (SDL_Init(SdlInitFlags) != 0)
                 {
-                    string errorMessage = $"SDL2 initlaization failed with error \"{SDL_GetError()}\"";
+                    string errorMessage = $"SDL2 initialization failed with error \"{SDL_GetError()}\"";
 
                     Logger.Error?.Print(LogClass.Application, errorMessage);
 
@@ -82,7 +91,7 @@ namespace Ryujinx.SDL2.Common
 
                 SDL_EventState(SDL_EventType.SDL_CONTROLLERSENSORUPDATE, SDL_DISABLE);
 
-                string gamepadDbPath = Path.Combine(ReleaseInformations.GetBaseApplicationDirectory(), "SDL_GameControllerDB.txt");
+                string gamepadDbPath = Path.Combine(ReleaseInformation.GetBaseApplicationDirectory(), "SDL_GameControllerDB.txt");
 
                 if (File.Exists(gamepadDbPath))
                 {
@@ -147,10 +156,13 @@ namespace Ryujinx.SDL2.Common
 
             while (_isRunning)
             {
-                while (SDL_PollEvent(out SDL_Event evnt) != 0)
+                MainThreadDispatcher?.Invoke(() =>
                 {
-                    HandleSDLEvent(ref evnt);
-                }
+                    while (SDL_PollEvent(out SDL_Event evnt) != 0)
+                    {
+                        HandleSDLEvent(ref evnt);
+                    }
+                });
 
                 waitHandle.Wait(WaitTimeMs);
             }

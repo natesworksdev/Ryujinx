@@ -1,11 +1,10 @@
 ﻿using ARMeilleure.State;
-using System;
 
 namespace ARMeilleure.Decoders
 {
     class OpCode32SimdMemPair : OpCode32, IOpCode32Simd
     {
-        private static int[] RegsMap =
+        private static int[] _regsMap =
         {
             1, 1, 4, 2,
             1, 1, 3, 1,
@@ -24,10 +23,13 @@ namespace ARMeilleure.Decoders
         public int Regs { get; }
         public int Increment { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdMemPair(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdMemPair(inst, address, opCode, false);
+        public static OpCode CreateT32(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdMemPair(inst, address, opCode, true);
 
-        public OpCode32SimdMemPair(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32SimdMemPair(InstDescriptor inst, ulong address, int opCode, bool isThumb) : base(inst, address, opCode)
         {
+            IsThumb = isThumb;
+
             Vd = (opCode >> 12) & 0xf;
             Vd |= (opCode >> 18) & 0x10;
 
@@ -40,9 +42,9 @@ namespace ARMeilleure.Decoders
             WBack = Rm != RegisterAlias.Aarch32Pc;
             RegisterIndex = Rm != RegisterAlias.Aarch32Pc && Rm != RegisterAlias.Aarch32Sp;
 
-            Regs = RegsMap[(opCode >> 8) & 0xf];
+            Regs = _regsMap[(opCode >> 8) & 0xf];
 
-            Increment = Math.Min(Regs, ((opCode >> 8) & 0x1) + 1);
+            Increment = ((opCode >> 8) & 0x1) + 1;
         }
     }
 }

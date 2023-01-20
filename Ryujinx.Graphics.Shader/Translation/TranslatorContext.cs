@@ -1,6 +1,12 @@
-﻿using Ryujinx.Graphics.Shader.Decoders;
+﻿using Ryujinx.Graphics.Shader.CodeGen.Glsl;
+using Ryujinx.Graphics.Shader.CodeGen.Spirv;
+using Ryujinx.Graphics.Shader.Decoders;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
+using Ryujinx.Graphics.Shader.StructuredIr;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
 
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 using static Ryujinx.Graphics.Shader.Translation.Translator;
@@ -17,6 +23,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         public ShaderStage Stage => _config.Stage;
         public int Size => _config.Size;
         public int Cb1DataSize => _config.Cb1DataSize;
+        public bool LayerOutputWritten => _config.LayerOutputWritten;
 
         public IGpuAccessor GpuAccessor => _config.GpuAccessor;
 
@@ -137,7 +144,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             if (other != null)
             {
-                other._config.MergeOutputUserAttributes(_config.UsedOutputAttributes, 0);
+                other._config.MergeOutputUserAttributes(_config.UsedOutputAttributes, Enumerable.Empty<int>());
 
                 FunctionCode[] otherCode = EmitShader(other._program, other._config, initializeOutputs: true, out int aStart);
 
@@ -147,6 +154,95 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
 
             return Translator.Translate(code, _config);
+        }
+
+        public ShaderProgram GenerateGeometryPassthrough()
+        {
+            int outputAttributesMask = _config.UsedOutputAttributes;
+            int layerOutputAttr = _config.LayerOutputAttribute;
+
+            OutputTopology outputTopology;
+            int maxOutputVertices;
+
+            switch (GpuAccessor.QueryPrimitiveTopology())
+            {
+                case InputTopology.Points:
+                    outputTopology = OutputTopology.PointList;
+                    maxOutputVertices = 1;
+                    break;
+                case InputTopology.Lines:
+                case InputTopology.LinesAdjacency:
+                    outputTopology = OutputTopology.LineStrip;
+                    maxOutputVertices = 2;
+                    break;
+                default:
+                    outputTopology = OutputTopology.TriangleStrip;
+                    maxOutputVertices = 3;
+                    break;
+            }
+
+            ShaderConfig config = new ShaderConfig(ShaderStage.Geometry, outputTopology, maxOutputVertices, GpuAccessor, _config.Options);
+
+            EmitterContext context = new EmitterContext(default, config, false);
+
+            for (int v = 0; v < maxOutputVertices; v++)
+            {
+                int outAttrsMask = outputAttributesMask;
+
+                while (outAttrsMask != 0)
+                {
+                    int attrIndex = BitOperations.TrailingZeroCount(outAttrsMask);
+
+                    outAttrsMask &= ~(1 << attrIndex);
+
+                    for (int c = 0; c < 4; c++)
+                    {
+                        int attr = AttributeConsts.UserAttributeBase + attrIndex * 16 + c * 4;
+
+                        Operand value = context.LoadAttribute(Const(attr), Const(0), Const(v));
+
+                        if (attr == layerOutputAttr)
+                        {
+                            context.Copy(Attribute(AttributeConsts.Layer), value);
+                        }
+                        else
+                        {
+                            context.Copy(Attribute(attr), value);
+                            config.SetOutputUserAttribute(attrIndex);
+                        }
+
+                        config.SetInputUserAttribute(attrIndex, c);
+                    }
+                }
+
+                for (int c = 0; c < 4; c++)
+                {
+                    int attr = AttributeConsts.PositionX + c * 4;
+
+                    Operand value = context.LoadAttribute(Const(attr), Const(0), Const(v));
+
+                    context.Copy(Attribute(attr), value);
+                }
+
+                context.EmitVertex();
+            }
+
+            context.EndPrimitive();
+
+            var operations = context.GetOperations();
+            var cfg = ControlFlowGraph.Create(operations);
+            var function = new Function(cfg.Blocks, "main", false, 0, 0);
+
+            var sInfo = StructuredProgram.MakeStructuredProgram(new[] { function }, config);
+
+            var info = config.CreateProgramInfo();
+
+            return config.Options.TargetLanguage switch
+            {
+                TargetLanguage.Glsl => new ShaderProgram(info, TargetLanguage.Glsl, GlslGenerator.Generate(sInfo, config)),
+                TargetLanguage.Spirv => new ShaderProgram(info, TargetLanguage.Spirv, SpirvGenerator.Generate(sInfo, config)),
+                _ => throw new NotImplementedException(config.Options.TargetLanguage.ToString())
+            };
         }
     }
 }

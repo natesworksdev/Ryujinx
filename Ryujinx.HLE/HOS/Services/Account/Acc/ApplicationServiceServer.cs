@@ -1,8 +1,12 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
+using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Account.Acc.AccountService;
+using Ryujinx.HLE.HOS.Services.Account.Acc.AsyncContext;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Ryujinx.HLE.HOS.Services.Account.Acc
 {
@@ -142,6 +146,28 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return ResultCode.Success;
         }
 
+        public ResultCode CheckNetworkServiceAvailabilityAsync(ServiceCtx context, out IAsyncContext asyncContext)
+        {
+            KEvent         asyncEvent     = new(context.Device.System.KernelContext);
+            AsyncExecution asyncExecution = new(asyncEvent);
+
+            asyncExecution.Initialize(1000, CheckNetworkServiceAvailabilityAsyncImpl);
+
+            asyncContext = new IAsyncContext(asyncExecution);
+
+            // return ResultCode.NullObject if the IAsyncContext pointer is null. Doesn't occur in our case.
+
+            return ResultCode.Success;
+        }
+
+        private async Task CheckNetworkServiceAvailabilityAsyncImpl(CancellationToken token)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceAcc);
+
+            // TODO: Use a real function instead, with the CancellationToken.
+            await Task.CompletedTask;
+        }
+
         public ResultCode StoreSaveDataThumbnail(ServiceCtx context)
         {
             ResultCode resultCode = CheckUserId(context, out UserId _);
@@ -199,6 +225,11 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             Logger.Stub?.PrintStub(LogClass.ServiceAcc);
 
             return ResultCode.Success;
+        }
+
+        public ResultCode ListOpenContextStoredUsers(ServiceCtx context)
+        {
+            return WriteUserList(context, context.Device.System.AccountManager.GetStoredOpenedUsers());
         }
 
         public ResultCode ListQualifiedUsers(ServiceCtx context)

@@ -3,7 +3,6 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
-using System.Reflection;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
@@ -18,7 +17,11 @@ namespace ARMeilleure.Instructions
     {
         public static void Vceq_V(ArmEmitterContext context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseAdvSimd)
+            {
+                InstEmitSimdHelper32Arm64.EmitCmpOpF32(context, CmpCondition.Equal, false);
+            }
+            else if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitSse2OrAvxCmpOpF32(context, CmpCondition.Equal, false);
             }
@@ -39,7 +42,11 @@ namespace ARMeilleure.Instructions
 
             if (op.F)
             {
-                if (Optimizations.FastFP && Optimizations.UseSse2)
+                if (Optimizations.FastFP && Optimizations.UseAdvSimd)
+                {
+                    InstEmitSimdHelper32Arm64.EmitCmpOpF32(context, CmpCondition.Equal, true);
+                }
+                else if (Optimizations.FastFP && Optimizations.UseSse2)
                 {
                     EmitSse2OrAvxCmpOpF32(context, CmpCondition.Equal, true);
                 }
@@ -56,7 +63,11 @@ namespace ARMeilleure.Instructions
 
         public static void Vcge_V(ArmEmitterContext context)
         {
-            if (Optimizations.FastFP && Optimizations.UseAvx)
+            if (Optimizations.FastFP && Optimizations.UseAdvSimd)
+            {
+                InstEmitSimdHelper32Arm64.EmitCmpOpF32(context, CmpCondition.GreaterThanOrEqual, false);
+            }
+            else if (Optimizations.FastFP && Optimizations.UseAvx)
             {
                 EmitSse2OrAvxCmpOpF32(context, CmpCondition.GreaterThanOrEqual, false);
             }
@@ -79,7 +90,11 @@ namespace ARMeilleure.Instructions
 
             if (op.F)
             {
-                if (Optimizations.FastFP && Optimizations.UseAvx)
+                if (Optimizations.FastFP && Optimizations.UseAdvSimd)
+                {
+                    InstEmitSimdHelper32Arm64.EmitCmpOpF32(context, CmpCondition.GreaterThanOrEqual, true);
+                }
+                else if (Optimizations.FastFP && Optimizations.UseAvx)
                 {
                     EmitSse2OrAvxCmpOpF32(context, CmpCondition.GreaterThanOrEqual, true);
                 }
@@ -96,7 +111,11 @@ namespace ARMeilleure.Instructions
 
         public static void Vcgt_V(ArmEmitterContext context)
         {
-            if (Optimizations.FastFP && Optimizations.UseAvx)
+            if (Optimizations.FastFP && Optimizations.UseAdvSimd)
+            {
+                InstEmitSimdHelper32Arm64.EmitCmpOpF32(context, CmpCondition.GreaterThan, false);
+            }
+            else if (Optimizations.FastFP && Optimizations.UseAvx)
             {
                 EmitSse2OrAvxCmpOpF32(context, CmpCondition.GreaterThan, false);
             }
@@ -119,7 +138,11 @@ namespace ARMeilleure.Instructions
 
             if (op.F)
             {
-                if (Optimizations.FastFP && Optimizations.UseAvx)
+                if (Optimizations.FastFP && Optimizations.UseAdvSimd)
+                {
+                    InstEmitSimdHelper32Arm64.EmitCmpOpF32(context, CmpCondition.GreaterThan, true);
+                }
+                else if (Optimizations.FastFP && Optimizations.UseAvx)
                 {
                     EmitSse2OrAvxCmpOpF32(context, CmpCondition.GreaterThan, true);
                 }
@@ -140,7 +163,11 @@ namespace ARMeilleure.Instructions
 
             if (op.F)
             {
-                if (Optimizations.FastFP && Optimizations.UseSse2)
+                if (Optimizations.FastFP && Optimizations.UseAdvSimd)
+                {
+                    InstEmitSimdHelper32Arm64.EmitCmpOpF32(context, CmpCondition.LessThanOrEqual, true);
+                }
+                else if (Optimizations.FastFP && Optimizations.UseSse2)
                 {
                     EmitSse2OrAvxCmpOpF32(context, CmpCondition.LessThanOrEqual, true);
                 }
@@ -161,7 +188,11 @@ namespace ARMeilleure.Instructions
 
             if (op.F)
             {
-                if (Optimizations.FastFP && Optimizations.UseSse2)
+                if (Optimizations.FastFP && Optimizations.UseAdvSimd)
+                {
+                    InstEmitSimdHelper32Arm64.EmitCmpOpF32(context, CmpCondition.LessThan, true);
+                }
+                else if (Optimizations.FastFP && Optimizations.UseSse2)
                 {
                     EmitSse2OrAvxCmpOpF32(context, CmpCondition.LessThan, true);
                 }
@@ -178,37 +209,20 @@ namespace ARMeilleure.Instructions
 
         private static void EmitCmpOpF32(ArmEmitterContext context, string name, bool zero)
         {
-            Operand one = Const(1);
             if (zero)
             {
                 EmitVectorUnaryOpF32(context, (m) =>
                 {
-                    OperandType type = m.Type;
+                    Operand zeroOp = m.Type == OperandType.FP64 ? ConstF(0.0d) : ConstF(0.0f);
 
-                    if (type == OperandType.FP64)
-                    {
-                        return context.Call(typeof(SoftFloat64).GetMethod(name), m, ConstF(0.0d), one);
-                    }
-                    else
-                    {
-                        return context.Call(typeof(SoftFloat32).GetMethod(name), m, ConstF(0.0f), one);
-                    }
+                    return EmitSoftFloatCallDefaultFpscr(context, name, m, zeroOp);
                 });
             }
             else
             {
                 EmitVectorBinaryOpF32(context, (n, m) =>
                 {
-                    OperandType type = n.Type;
-
-                    if (type == OperandType.FP64)
-                    {
-                        return context.Call(typeof(SoftFloat64).GetMethod(name), n, m, one);
-                    }
-                    else
-                    {
-                        return context.Call(typeof(SoftFloat32).GetMethod(name), n, m, one);
-                    }
+                    return EmitSoftFloatCallDefaultFpscr(context, name, n, m);
                 });
             }
         }
@@ -265,12 +279,26 @@ namespace ARMeilleure.Instructions
 
         public static void Vcmp(ArmEmitterContext context)
         {
-            EmitVcmpOrVcmpe(context, false);
+            if (Optimizations.UseAdvSimd)
+            {
+                InstEmitSimdHelper32Arm64.EmitVcmpOrVcmpe(context, false);
+            }
+            else
+            {
+                EmitVcmpOrVcmpe(context, false);
+            }
         }
 
         public static void Vcmpe(ArmEmitterContext context)
         {
-            EmitVcmpOrVcmpe(context, true);
+            if (Optimizations.UseAdvSimd)
+            {
+                InstEmitSimdHelper32Arm64.EmitVcmpOrVcmpe(context, true);
+            }
+            else
+            {
+                EmitVcmpOrVcmpe(context, true);
+            }
         }
 
         private static void EmitVcmpOrVcmpe(ArmEmitterContext context, bool signalNaNs)
@@ -357,11 +385,7 @@ namespace ARMeilleure.Instructions
                     me = ExtractScalar(context, type, op.Vm);
                 }
 
-                MethodInfo info = sizeF != 0
-                    ? typeof(SoftFloat64).GetMethod(nameof(SoftFloat64.FPCompare))
-                    : typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FPCompare));
-
-                Operand nzcv = context.Call(info, ne, me, Const(signalNaNs));
+                Operand nzcv = EmitSoftFloatCall(context, nameof(SoftFloat32.FPCompare), ne, me, Const(signalNaNs));
 
                 EmitSetFpscrNzcv(context, nzcv);
             }

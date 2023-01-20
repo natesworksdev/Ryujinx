@@ -35,6 +35,44 @@ namespace Ryujinx.Graphics.Shader
         ReadOnlySpan<ulong> GetCode(ulong address, int minimumSize);
 
         /// <summary>
+        /// Queries the alpha test comparison operator that is being used currently.
+        /// If alpha test is disabled, it should be set to <see cref="AlphaTestOp.Always"/>.
+        /// </summary>
+        /// <returns>Current alpha test comparison</returns>
+        AlphaTestOp QueryAlphaTestCompare()
+        {
+            return AlphaTestOp.Always;
+        }
+
+        /// <summary>
+        /// Queries the current alpha test reference value used by the comparison.
+        /// </summary>
+        /// <returns>Current alpha test reference value</returns>
+        float QueryAlphaTestReference()
+        {
+            return 0f;
+        }
+
+        /// <summary>
+        /// Queries the type of the vertex shader input attribute at the specified <paramref name="location"/>.
+        /// </summary>
+        /// <param name="location">Location of the input attribute</param>
+        /// <returns>Input type</returns>
+        AttributeType QueryAttributeType(int location)
+        {
+            return AttributeType.Float;
+        }
+
+        /// <summary>
+        /// Queries whenever the alpha-to-coverage dithering feature is enabled.
+        /// </summary>
+        /// <returns>True if the feature is enabled, false otherwise</returns>
+        bool QueryAlphaToCoverageDitherEnable()
+        {
+            return false;
+        }
+
+        /// <summary>
         /// Queries the binding number of a constant buffer.
         /// </summary>
         /// <param name="index">Constant buffer index</param>
@@ -58,8 +96,9 @@ namespace Ryujinx.Graphics.Shader
         /// Queries the binding number of a texture.
         /// </summary>
         /// <param name="index">Texture index</param>
+        /// <param name="isBuffer">Indicates if the texture is a buffer texture</param>
         /// <returns>Binding number</returns>
-        int QueryBindingTexture(int index)
+        int QueryBindingTexture(int index, bool isBuffer)
         {
             return index;
         }
@@ -68,10 +107,21 @@ namespace Ryujinx.Graphics.Shader
         /// Queries the binding number of an image.
         /// </summary>
         /// <param name="index">Image index</param>
+        /// <param name="isBuffer">Indicates if the image is a buffer image</param>
         /// <returns>Binding number</returns>
-        int QueryBindingImage(int index)
+        int QueryBindingImage(int index, bool isBuffer)
         {
             return index;
+        }
+
+        /// <summary>
+        /// Queries output type for fragment shaders.
+        /// </summary>
+        /// <param name="location">Location of the framgent output</param>
+        /// <returns>Output location</returns>
+        AttributeType QueryFragmentOutputType(int location)
+        {
+            return AttributeType.Float;
         }
 
         /// <summary>
@@ -129,6 +179,33 @@ namespace Ryujinx.Graphics.Shader
         }
 
         /// <summary>
+        /// Queries whenever the current draw has written the base vertex and base instance into Constant Buffer 0.
+        /// </summary>
+        /// <returns>True if the shader translator can assume that the constant buffer contains the base IDs, false otherwise</returns>
+        bool QueryHasConstantBufferDrawParameters()
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// Queries whenever the current draw uses unaligned storage buffer addresses.
+        /// </summary>
+        /// <returns>True if any storage buffer address is not aligned to 16 bytes, false otherwise</returns>
+        bool QueryHasUnalignedStorageBuffer()
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// Queries host about whether to reduce precision to improve performance.
+        /// </summary>
+        /// <returns>True if precision is limited to vertex position, false otherwise</returns>
+        bool QueryHostReducedPrecision()
+        {
+            return false;
+        }
+
+        /// <summary>
         /// Queries host about the presence of the FrontFacing built-in variable bug.
         /// </summary>
         /// <returns>True if the bug is present on the host device used, false otherwise</returns>
@@ -183,10 +260,28 @@ namespace Ryujinx.Graphics.Shader
         }
 
         /// <summary>
+        /// Queries host GPU geometry shader passthrough support.
+        /// </summary>
+        /// <returns>True if the GPU and driver supports geometry shader passthrough, false otherwise</returns>
+        bool QueryHostSupportsGeometryShaderPassthrough()
+        {
+            return true;
+        }
+
+        /// <summary>
         /// Queries host support for readable images without a explicit format declaration on the shader.
         /// </summary>
         /// <returns>True if formatted image load is supported, false otherwise</returns>
         bool QueryHostSupportsImageLoadFormatted()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Queries host support for writes to Layer from vertex or tessellation shader stages.
+        /// </summary>
+        /// <returns>True if writes to layer from vertex or tessellation are supported, false otherwise</returns>
+        bool QueryHostSupportsLayerVertexTessellation()
         {
             return true;
         }
@@ -210,10 +305,47 @@ namespace Ryujinx.Graphics.Shader
         }
 
         /// <summary>
+        /// Queries host GPU support for signed normalized buffer texture formats.
+        /// </summary>
+        /// <returns>True if the GPU and driver supports the formats, false otherwise</returns>
+        bool QueryHostSupportsSnormBufferTextureFormat()
+        {
+            return true;
+        }
+
+        /// <summary>
         /// Queries host GPU texture shadow LOD support.
         /// </summary>
         /// <returns>True if the GPU and driver supports texture shadow LOD, false otherwise</returns>
         bool QueryHostSupportsTextureShadowLod()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Queries host GPU shader viewport index output support.
+        /// </summary>
+        /// <returns>True if the GPU and driver supports shader viewport index output, false otherwise</returns>
+        bool QueryHostSupportsViewportIndex()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Queries the point size from the GPU state, used when it is not explicitly set on the shader.
+        /// </summary>
+        /// <returns>Current point size</returns>
+        float QueryPointSize()
+        {
+            return 1f;
+        }
+
+        /// <summary>
+        /// Queries the state that indicates if the program point size should be explicitly set on the shader
+        /// or read from the GPU state.
+        /// </summary>
+        /// <returns>True if the shader is expected to set the point size explicitly, false otherwise</returns>
+        bool QueryProgramPointSize()
         {
             return true;
         }
@@ -237,7 +369,7 @@ namespace Ryujinx.Graphics.Shader
         /// <returns>True if the coordinates are normalized, false otherwise</returns>
         bool QueryTextureCoordNormalized(int handle, int cbufSlot = -1)
         {
-            return false;
+            return true;
         }
 
         /// <summary>
@@ -289,6 +421,15 @@ namespace Ryujinx.Graphics.Shader
         TextureFormat QueryTextureFormat(int handle, int cbufSlot = -1)
         {
             return TextureFormat.R8G8B8A8Unorm;
+        }
+
+        /// <summary>
+        /// Queries depth mode information from the GPU state.
+        /// </summary>
+        /// <returns>True if current depth mode is -1 to 1, false if 0 to 1</returns>
+        bool QueryTransformDepthMinusOneToOne()
+        {
+            return false;
         }
 
         /// <summary>

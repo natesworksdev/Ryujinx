@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         }
     }
 
-    struct SyncTarget
+    readonly struct SyncTarget
     {
         public PushOpInfo PushOpInfo { get; }
         public int PushOpId { get; }
@@ -92,7 +92,11 @@ namespace Ryujinx.Graphics.Shader.Decoders
                 pushOpInfo.Consumers.Add(rightBlock, local);
             }
 
-            rightBlock.SyncTargets.Union(SyncTargets);
+            foreach ((ulong  key, SyncTarget value) in SyncTargets)
+            {
+                rightBlock.SyncTargets.Add(key, value);
+            }
+
             SyncTargets.Clear();
 
             // Move push ops.

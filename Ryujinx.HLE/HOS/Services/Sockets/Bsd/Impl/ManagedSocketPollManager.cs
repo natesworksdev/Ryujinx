@@ -1,8 +1,9 @@
 ﻿using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Services.Sockets.Bsd.Types;
 using System.Collections.Generic;
 using System.Net.Sockets;
 
-namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
+namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
 {
     class ManagedSocketPollManager : IPollManager
     {
@@ -38,12 +39,13 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             {
                 ManagedSocket socket = (ManagedSocket)evnt.FileDescriptor;
 
-                bool isValidEvent = false;
+                bool isValidEvent = evnt.Data.InputEvents == 0;
+
+                errorEvents.Add(socket.Socket);
 
                 if ((evnt.Data.InputEvents & PollEventTypeMask.Input) != 0)
                 {
                     readEvents.Add(socket.Socket);
-                    errorEvents.Add(socket.Socket);
 
                     isValidEvent = true;
                 }
@@ -51,7 +53,6 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 if ((evnt.Data.InputEvents & PollEventTypeMask.UrgentInput) != 0)
                 {
                     readEvents.Add(socket.Socket);
-                    errorEvents.Add(socket.Socket);
 
                     isValidEvent = true;
                 }
@@ -59,14 +60,6 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 if ((evnt.Data.InputEvents & PollEventTypeMask.Output) != 0)
                 {
                     writeEvents.Add(socket.Socket);
-                    errorEvents.Add(socket.Socket);
-
-                    isValidEvent = true;
-                }
-
-                if ((evnt.Data.InputEvents & PollEventTypeMask.Error) != 0)
-                {
-                    errorEvents.Add(socket.Socket);
 
                     isValidEvent = true;
                 }
@@ -93,7 +86,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             {
                 Socket socket = ((ManagedSocket)evnt.FileDescriptor).Socket;
 
-                PollEventTypeMask outputEvents = 0;
+                PollEventTypeMask outputEvents = evnt.Data.OutputEvents & ~evnt.Data.InputEvents;
 
                 if (errorEvents.Contains(socket))
                 {
@@ -122,6 +115,61 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             }
 
             updatedCount = readEvents.Count + writeEvents.Count + errorEvents.Count;
+
+            return LinuxError.SUCCESS;
+        }
+
+        public LinuxError Select(List<PollEvent> events, int timeout, out int updatedCount)
+        {
+            List<Socket> readEvents = new();
+            List<Socket> writeEvents = new();
+            List<Socket> errorEvents = new();
+
+            updatedCount = 0;
+
+            foreach (PollEvent pollEvent in events)
+            {
+                ManagedSocket socket = (ManagedSocket)pollEvent.FileDescriptor;
+
+                if (pollEvent.Data.InputEvents.HasFlag(PollEventTypeMask.Input))
+                {
+                    readEvents.Add(socket.Socket);
+                }
+
+                if (pollEvent.Data.InputEvents.HasFlag(PollEventTypeMask.Output))
+                {
+                    writeEvents.Add(socket.Socket);
+                }
+
+                if (pollEvent.Data.InputEvents.HasFlag(PollEventTypeMask.Error))
+                {
+                    errorEvents.Add(socket.Socket);
+                }
+            }
+
+            Socket.Select(readEvents, writeEvents, errorEvents, timeout);
+
+            updatedCount = readEvents.Count + writeEvents.Count + errorEvents.Count;
+
+            foreach (PollEvent pollEvent in events)
+            {
+                ManagedSocket socket = (ManagedSocket)pollEvent.FileDescriptor;
+
+                if (readEvents.Contains(socket.Socket))
+                {
+                    pollEvent.Data.OutputEvents |= PollEventTypeMask.Input;
+                }
+
+                if (writeEvents.Contains(socket.Socket))
+                {
+                    pollEvent.Data.OutputEvents |= PollEventTypeMask.Output;
+                }
+
+                if (errorEvents.Contains(socket.Socket))
+                {
+                    pollEvent.Data.OutputEvents |= PollEventTypeMask.Error;
+                }
+            }
 
             return LinuxError.SUCCESS;
         }

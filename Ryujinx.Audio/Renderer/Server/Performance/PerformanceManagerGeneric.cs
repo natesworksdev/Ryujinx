@@ -1,20 +1,3 @@
-//
-// Copyright (c) 2019-2021 Ryujinx
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-
 using Ryujinx.Audio.Renderer.Common;
 using Ryujinx.Audio.Renderer.Parameter;
 using Ryujinx.Audio.Renderer.Utils;
@@ -30,7 +13,7 @@ namespace Ryujinx.Audio.Renderer.Server.Performance
     /// <typeparam name="THeader">The header implementation of the performance frame.</typeparam>
     /// <typeparam name="TEntry">The entry implementation of the performance frame.</typeparam>
     /// <typeparam name="TEntryDetail">A detailed implementation of the performance frame.</typeparam>
-    public class PerformanceManagerGeneric<THeader, TEntry, TEntryDetail> : PerformanceManager where THeader: unmanaged, IPerformanceHeader where TEntry : unmanaged, IPerformanceEntry where TEntryDetail: unmanaged, IPerformanceDetailEntry
+    public class PerformanceManagerGeneric<THeader, TEntry, TEntryDetail> : PerformanceManager where THeader : unmanaged, IPerformanceHeader where TEntry : unmanaged, IPerformanceEntry where TEntryDetail : unmanaged, IPerformanceDetailEntry
     {
         /// <summary>
         /// The magic used for the <see cref="THeader"/>.

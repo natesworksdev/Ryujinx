@@ -1,7 +1,8 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy.Types;
+using Ryujinx.Horizon.Common;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy
@@ -31,6 +32,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         private bool _handlesRequestToDisplay            = false;
         private bool _autoSleepDisabled                  = false;
         private bool _albumImageTakenNotificationEnabled = false;
+        private bool _recordVolumeMuted = false;
 
         private uint _screenShotImageOrientation = 0;
         private uint _idleTimeDetectionExtension = 0;
@@ -109,7 +111,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
             if (_libraryAppletLaunchableEventHandle == 0)
             {
-                if (context.Process.HandleTable.GenerateHandle(_libraryAppletLaunchableEvent.ReadableEvent, out _libraryAppletLaunchableEventHandle) != KernelResult.Success)
+                if (context.Process.HandleTable.GenerateHandle(_libraryAppletLaunchableEvent.ReadableEvent, out _libraryAppletLaunchableEventHandle) != Result.Success)
                 {
                     throw new InvalidOperationException("Out of handles!");
                 }
@@ -217,7 +219,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // CreateManagedDisplayLayer() -> u64
         public ResultCode CreateManagedDisplayLayer(ServiceCtx context)
         {
-            context.Device.System.SurfaceFlinger.CreateLayer(_pid, out long layerId);
+            context.Device.System.SurfaceFlinger.CreateLayer(out long layerId, _pid);
             context.Device.System.SurfaceFlinger.SetRenderLayer(layerId);
 
             context.ResponseData.Write(layerId);
@@ -238,8 +240,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // CreateManagedDisplaySeparableLayer() -> (u64, u64)
         public ResultCode CreateManagedDisplaySeparableLayer(ServiceCtx context)
         {
-            context.Device.System.SurfaceFlinger.CreateLayer(_pid, out long displayLayerId);
-            context.Device.System.SurfaceFlinger.CreateLayer(_pid, out long recordingLayerId);
+            context.Device.System.SurfaceFlinger.CreateLayer(out long displayLayerId, _pid);
+            context.Device.System.SurfaceFlinger.CreateLayer(out long recordingLayerId, _pid);
             context.Device.System.SurfaceFlinger.SetRenderLayer(displayLayerId);
 
             context.ResponseData.Write(displayLayerId);
@@ -296,6 +298,18 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             return ResultCode.Success;
         }
 
+        [CommandHipc(67)] //3.0.0+
+        // IsIlluminanceAvailable() -> bool
+        public ResultCode IsIlluminanceAvailable(ServiceCtx context)
+        {
+            // NOTE: This should call IsAmbientLightSensorAvailable through to Lbl, but there's no situation where we'd want false.
+            context.ResponseData.Write(true);
+            
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return ResultCode.Success;
+        }
+
         [CommandHipc(68)]
         // SetAutoSleepDisabled(u8)
         public ResultCode SetAutoSleepDisabled(ServiceCtx context)
@@ -312,6 +326,35 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         public ResultCode IsAutoSleepDisabled(ServiceCtx context)
         {
             context.ResponseData.Write(_autoSleepDisabled);
+
+            return ResultCode.Success;
+        }
+
+        [CommandHipc(71)] //5.0.0+
+        // GetCurrentIlluminanceEx() -> (bool, f32)
+        public ResultCode GetCurrentIlluminanceEx(ServiceCtx context)
+        {
+            // TODO: The light value should be configurable - presumably users using software that takes advantage will want control.
+            context.ResponseData.Write(1); // OverLimit
+            context.ResponseData.Write(10000f); // Lux - 10K lux is ambient light.
+
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return ResultCode.Success;
+        }
+
+        [CommandHipc(80)] // 4.0.0+
+        // SetWirelessPriorityMode(s32 wireless_priority_mode)
+        public ResultCode SetWirelessPriorityMode(ServiceCtx context)
+        {
+            WirelessPriorityMode wirelessPriorityMode = (WirelessPriorityMode)context.RequestData.ReadInt32();
+
+            if (wirelessPriorityMode > WirelessPriorityMode.Unknown2)
+            {
+                return ResultCode.InvalidParameters;
+            }
+
+            Logger.Stub?.PrintStub(LogClass.ServiceAm, new { wirelessPriorityMode });
 
             return ResultCode.Success;
         }
@@ -335,7 +378,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
                 _accumulatedSuspendedTickChangedEvent.ReadableEvent.Signal();
 
-                if (context.Process.HandleTable.GenerateHandle(_accumulatedSuspendedTickChangedEvent.ReadableEvent, out _accumulatedSuspendedTickChangedEventHandle) != KernelResult.Success)
+                if (context.Process.HandleTable.GenerateHandle(_accumulatedSuspendedTickChangedEvent.ReadableEvent, out _accumulatedSuspendedTickChangedEventHandle) != Result.Success)
                 {
                     throw new InvalidOperationException("Out of handles!");
                 }
@@ -353,6 +396,35 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             bool albumImageTakenNotificationEnabled = context.RequestData.ReadBoolean();
 
             _albumImageTakenNotificationEnabled = albumImageTakenNotificationEnabled;
+
+            return ResultCode.Success;
+        }
+
+        [CommandHipc(120)] // 11.0.0+
+        // SaveCurrentScreenshot(s32 album_report_option)
+        public ResultCode SaveCurrentScreenshot(ServiceCtx context)
+        {
+            AlbumReportOption albumReportOption = (AlbumReportOption)context.RequestData.ReadInt32();
+
+            if (albumReportOption > AlbumReportOption.Unknown3)
+            {
+                return ResultCode.InvalidParameters;
+            }
+
+            Logger.Stub?.PrintStub(LogClass.ServiceAm, new { albumReportOption });
+
+            return ResultCode.Success;
+        }
+
+        [CommandHipc(130)] // 13.0.0+
+        // SetRecordVolumeMuted(b8)
+        public ResultCode SetRecordVolumeMuted(ServiceCtx context)
+        {
+            bool recordVolumeMuted = context.RequestData.ReadBoolean();
+
+            Logger.Stub?.PrintStub(LogClass.ServiceAm, new { recordVolumeMuted });
+
+            _recordVolumeMuted = recordVolumeMuted;
 
             return ResultCode.Success;
         }

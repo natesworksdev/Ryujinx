@@ -1,10 +1,13 @@
 ﻿using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Services.Sockets.Bsd.Types;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
+namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
 {
     class ManagedSocket : ISocket
     {
@@ -184,18 +187,35 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         public LinuxError Receive(out int receiveSize, Span<byte> buffer, BsdSocketFlags flags)
         {
+            LinuxError result;
+
+            bool shouldBlockAfterOperation = false;
+
             try
             {
+                if (Blocking && flags.HasFlag(BsdSocketFlags.DontWait))
+                {
+                    Blocking = false;
+                    shouldBlockAfterOperation = true;
+                }
+
                 receiveSize = Socket.Receive(buffer, ConvertBsdSocketFlags(flags));
 
-                return LinuxError.SUCCESS;
+                result = LinuxError.SUCCESS;
             }
             catch (SocketException exception)
             {
                 receiveSize = -1;
 
-                return WinSockHelper.ConvertError((WsaError)exception.ErrorCode);
+                result = WinSockHelper.ConvertError((WsaError)exception.ErrorCode);
             }
+
+            if (shouldBlockAfterOperation)
+            {
+                Blocking = true;
+            }
+
+            return result;
         }
 
         public LinuxError ReceiveFrom(out int receiveSize, Span<byte> buffer, int size, BsdSocketFlags flags, out IPEndPoint remoteEndPoint)
@@ -214,6 +234,13 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 {
                     Blocking = false;
                     shouldBlockAfterOperation = true;
+                }
+
+                if (!Socket.IsBound)
+                {
+                    receiveSize = -1;
+
+                    return LinuxError.EOPNOTSUPP;
                 }
 
                 receiveSize = Socket.ReceiveFrom(buffer[..size], ConvertBsdSocketFlags(flags), ref temp);
@@ -304,11 +331,16 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                     return LinuxError.EOPNOTSUPP;
                 }
 
-                int value = MemoryMarshal.Read<int>(optionValue);
+                int value = optionValue.Length >= 4 ? MemoryMarshal.Read<int>(optionValue) : MemoryMarshal.Read<byte>(optionValue);
 
-                if (option == BsdSocketOption.SoLinger)
+                if (level == SocketOptionLevel.Socket && option == BsdSocketOption.SoLinger)
                 {
-                    int value2 = MemoryMarshal.Read<int>(optionValue[4..]);
+                    int value2 = 0;
+
+                    if (optionValue.Length >= 8)
+                    {
+                        value2 = MemoryMarshal.Read<int>(optionValue[4..]);
+                    }
 
                     Socket.SetSocketOption(level, SocketOptionName.Linger, new LingerOption(value != 0, value2));
                 }
@@ -333,6 +365,166 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         public LinuxError Write(out int writeSize, ReadOnlySpan<byte> buffer)
         {
             return Send(out writeSize, buffer, BsdSocketFlags.None);
+        }
+
+        private bool CanSupportMMsgHdr(BsdMMsgHdr message)
+        {
+            for (int i = 0; i < message.Messages.Length; i++)
+            {
+                if (message.Messages[i].Name != null ||
+                    message.Messages[i].Control != null)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static IList<ArraySegment<byte>> ConvertMessagesToBuffer(BsdMMsgHdr message)
+        {
+            int segmentCount = 0;
+            int index = 0;
+
+            foreach (BsdMsgHdr msgHeader in message.Messages)
+            {
+                segmentCount += msgHeader.Iov.Length;
+            }
+
+            ArraySegment<byte>[] buffers = new ArraySegment<byte>[segmentCount];
+
+            foreach (BsdMsgHdr msgHeader in message.Messages)
+            {
+                foreach (byte[] iov in msgHeader.Iov)
+                {
+                    buffers[index++] = new ArraySegment<byte>(iov);
+                }
+
+                // Clear the length
+                msgHeader.Length = 0;
+            }
+
+            return buffers;
+        }
+
+        private static void UpdateMessages(out int vlen, BsdMMsgHdr message, int transferedSize)
+        {
+            int bytesLeft = transferedSize;
+            int index = 0;
+
+            while (bytesLeft > 0)
+            {
+                // First ensure we haven't finished all buffers
+                if (index >= message.Messages.Length)
+                {
+                    break;
+                }
+
+                BsdMsgHdr msgHeader = message.Messages[index];
+
+                int possiblyTransferedBytes = 0;
+
+                foreach (byte[] iov in msgHeader.Iov)
+                {
+                    possiblyTransferedBytes += iov.Length;
+                }
+
+                int storedBytes;
+
+                if (bytesLeft > possiblyTransferedBytes)
+                {
+                    storedBytes = possiblyTransferedBytes;
+                    index++;
+                }
+                else
+                {
+                    storedBytes = bytesLeft;
+                }
+
+                msgHeader.Length = (uint)storedBytes;
+                bytesLeft -= storedBytes;
+            }
+
+            Debug.Assert(bytesLeft == 0);
+
+            vlen = index + 1;
+        }
+
+        // TODO: Find a way to support passing the timeout somehow without changing the socket ReceiveTimeout.
+        public LinuxError RecvMMsg(out int vlen, BsdMMsgHdr message, BsdSocketFlags flags, TimeVal timeout)
+        {
+            vlen = 0;
+
+            if (message.Messages.Length == 0)
+            {
+                return LinuxError.SUCCESS;
+            }
+
+            if (!CanSupportMMsgHdr(message))
+            {
+                Logger.Warning?.Print(LogClass.ServiceBsd, $"Unsupported BsdMMsgHdr");
+
+                return LinuxError.EOPNOTSUPP;
+            }
+
+            if (message.Messages.Length == 0)
+            {
+                return LinuxError.SUCCESS;
+            }
+
+            try
+            {
+                int receiveSize = Socket.Receive(ConvertMessagesToBuffer(message), ConvertBsdSocketFlags(flags), out SocketError socketError);
+
+                if (receiveSize > 0)
+                {
+                    UpdateMessages(out vlen, message, receiveSize);
+                }
+
+                return WinSockHelper.ConvertError((WsaError)socketError);
+            }
+            catch (SocketException exception)
+            {
+                return WinSockHelper.ConvertError((WsaError)exception.ErrorCode);
+            }
+        }
+
+        public LinuxError SendMMsg(out int vlen, BsdMMsgHdr message, BsdSocketFlags flags)
+        {
+            vlen = 0;
+
+            if (message.Messages.Length == 0)
+            {
+                return LinuxError.SUCCESS;
+            }
+
+            if (!CanSupportMMsgHdr(message))
+            {
+                Logger.Warning?.Print(LogClass.ServiceBsd, $"Unsupported BsdMMsgHdr");
+
+                return LinuxError.EOPNOTSUPP;
+            }
+
+            if (message.Messages.Length == 0)
+            {
+                return LinuxError.SUCCESS;
+            }
+
+            try
+            {
+                int sendSize = Socket.Send(ConvertMessagesToBuffer(message), ConvertBsdSocketFlags(flags), out SocketError socketError);
+
+                if (sendSize > 0)
+                {
+                    UpdateMessages(out vlen, message, sendSize);
+                }
+
+                return WinSockHelper.ConvertError((WsaError)socketError);
+            }
+            catch (SocketException exception)
+            {
+                return WinSockHelper.ConvertError((WsaError)exception.ErrorCode);
+            }
         }
     }
 }

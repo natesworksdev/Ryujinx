@@ -4,19 +4,26 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using FluentAvalonia.Styling;
-using Ryujinx.Ava.Ui.Windows;
+using Ryujinx.Ava.Common.Locale;
+using Ryujinx.Ava.UI.Controls;
+using Ryujinx.Ava.UI.Helpers;
+using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Ui.Common.Configuration;
+using Ryujinx.Ui.Common.Helper;
 using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace Ryujinx.Ava
 {
-    public class App : Avalonia.Application
+    public class App : Application
     {
         public override void Initialize()
         {
+            Name = $"Ryujinx {Program.Version}";
+
             AvaloniaXamlLoader.Load(this);
         }
 
@@ -46,7 +53,28 @@ namespace Ryujinx.Ava
 
         private void ShowRestartDialog()
         {
-            // TODO. Implement Restart Dialog when SettingsWindow is implemented.
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                {
+                    var result = await ContentDialogHelper.CreateConfirmationDialog(
+                        LocaleManager.Instance[LocaleKeys.DialogThemeRestartMessage],
+                        LocaleManager.Instance[LocaleKeys.DialogThemeRestartSubMessage],
+                        LocaleManager.Instance[LocaleKeys.InputDialogYes],
+                        LocaleManager.Instance[LocaleKeys.InputDialogNo],
+                        LocaleManager.Instance[LocaleKeys.DialogRestartRequiredMessage]);
+
+                    if (result == UserResult.Yes)
+                    {
+                        var path = Process.GetCurrentProcess().MainModule.FileName;
+                        var proc = Process.Start(path, CommandLineState.Arguments);
+                        desktop.Shutdown();
+                        Environment.Exit(0);
+                    }
+                }
+            });
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
 
         private void ThemeChanged_Event(object sender, ReactiveEventArgs<string> e)

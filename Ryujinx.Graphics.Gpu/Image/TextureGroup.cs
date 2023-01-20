@@ -1,4 +1,5 @@
-﻿using Ryujinx.Cpu.Tracking;
+﻿using Ryujinx.Common.Memory;
+using Ryujinx.Cpu.Tracking;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Texture;
@@ -13,7 +14,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// <summary>
     /// An overlapping texture group with a given view compatibility.
     /// </summary>
-    struct TextureIncompatibleOverlap
+    readonly struct TextureIncompatibleOverlap
     {
         public readonly TextureGroup Group;
         public readonly TextureViewCompatibility Compatibility;
@@ -348,9 +349,9 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                             ReadOnlySpan<byte> data = _physicalMemory.GetSpan(Storage.Range.GetSlice((ulong)offset, (ulong)size));
 
-                            data = Storage.ConvertToHostCompatibleFormat(data, info.BaseLevel, true);
+                            SpanOrArray<byte> result = Storage.ConvertToHostCompatibleFormat(data, info.BaseLevel, true);
 
-                            Storage.SetData(data, info.BaseLayer, info.BaseLevel);
+                            Storage.SetData(result, info.BaseLayer, info.BaseLevel);
 
                             offsetIndex++;
                         }
@@ -431,6 +432,32 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 FlushTextureDataSliceToGuest(tracked, i, texture);
             }
+        }
+
+        /// <summary>
+        /// Checks if a texture was modified by the GPU.
+        /// </summary>
+        /// <param name="texture">The texture to be checked</param>
+        /// <returns>True if any region of the texture was modified by the GPU, false otherwise</returns>
+        public bool AnyModified(Texture texture)
+        {
+            bool anyModified = false;
+
+            EvaluateRelevantHandles(texture, (baseHandle, regionCount, split) =>
+            {
+                for (int i = 0; i < regionCount; i++)
+                {
+                    TextureGroupHandle group = _handles[baseHandle + i];
+
+                    if (group.Modified)
+                    {
+                        anyModified = true;
+                        break;
+                    }
+                }
+            });
+
+            return anyModified;
         }
 
         /// <summary>
@@ -1393,6 +1420,14 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="size">The size of the flushing memory access</param>
         public void FlushAction(TextureGroupHandle handle, ulong address, ulong size)
         {
+            // If the page size is larger than 4KB, we will have a lot of false positives for flushing.
+            // Let's avoid flushing textures that are unlikely to be read from CPU to improve performance
+            // on those platforms.
+            if (!_physicalMemory.Supports4KBPages && !Storage.Info.IsLinear && !_context.IsGpuThread())
+            {
+                return;
+            }
+
             // There is a small gap here where the action is removed but _actionRegistered is still 1.
             // In this case it will skip registering the action, but here we are already handling it,
             // so there shouldn't be any issue as it's the same handler for all actions.
@@ -1404,9 +1439,20 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return;
             }
 
+            bool isGpuThread = _context.IsGpuThread();
+
+            if (isGpuThread)
+            {
+                // No need to wait if we're on the GPU thread, we can just clear the modified flag immediately.
+                handle.Modified = false;
+            }
+
             _context.Renderer.BackgroundContextAction(() =>
             {
-                handle.Sync(_context);
+                if (!isGpuThread)
+                {
+                    handle.Sync(_context);
+                }
 
                 Storage.SignalModifiedDirty();
 

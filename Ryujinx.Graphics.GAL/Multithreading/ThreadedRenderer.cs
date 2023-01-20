@@ -6,7 +6,6 @@ using Ryujinx.Graphics.GAL.Multithreading.Commands.Renderer;
 using Ryujinx.Graphics.GAL.Multithreading.Model;
 using Ryujinx.Graphics.GAL.Multithreading.Resources;
 using Ryujinx.Graphics.GAL.Multithreading.Resources.Programs;
-using Ryujinx.Graphics.Shader;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -30,6 +29,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         private int _elementSize;
         private IRenderer _baseRenderer;
         private Thread _gpuThread;
+        private Thread _backendThread;
         private bool _disposed;
         private bool _running;
 
@@ -39,6 +39,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         private CircularSpanPool _spanPool;
 
         private ManualResetEventSlim _invokeRun;
+        private AutoResetEvent _interruptRun;
 
         private bool _lastSampleCounterClear = true;
 
@@ -54,6 +55,8 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
         private int _refProducerPtr;
         private int _refConsumerPtr;
+
+        private Action _interruptAction;
 
         public event EventHandler<ScreenCaptureImageInfo> ScreenCaptured;
 
@@ -73,16 +76,18 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         {
             _baseRenderer = renderer;
 
-            renderer.ScreenCaptured += (object sender, ScreenCaptureImageInfo info) => ScreenCaptured?.Invoke(this, info);
+            renderer.ScreenCaptured += (sender, info) => ScreenCaptured?.Invoke(this, info);
+            renderer.SetInterruptAction(Interrupt);
 
             Pipeline = new ThreadedPipeline(this, renderer.Pipeline);
-            Window = new ThreadedWindow(this, renderer.Window);
+            Window = new ThreadedWindow(this, renderer);
             Buffers = new BufferMap();
             Sync = new SyncMap();
             Programs = new ProgramQueue(renderer);
 
             _galWorkAvailable = new ManualResetEventSlim(false);
             _invokeRun = new ManualResetEventSlim();
+            _interruptRun = new AutoResetEvent(false);
             _spanPool = new CircularSpanPool(this, SpanPoolBytes);
             SpanPool = _spanPool;
 
@@ -95,6 +100,8 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         public void RunLoop(Action gpuLoop)
         {
             _running = true;
+
+            _backendThread = Thread.CurrentThread;
 
             _gpuThread = new Thread(() => {
                 gpuLoop();
@@ -117,10 +124,18 @@ namespace Ryujinx.Graphics.GAL.Multithreading
                 _galWorkAvailable.Wait();
                 _galWorkAvailable.Reset();
 
+                if (Volatile.Read(ref _interruptAction) != null)
+                {
+                    _interruptAction();
+                    _interruptRun.Set();
+
+                    Interlocked.Exchange(ref _interruptAction, null);
+                }
+
                 // The other thread can only increase the command count.
                 // We can assume that if it is above 0, it will stay there or get higher.
 
-                while (_commandCount > 0)
+                while (_commandCount > 0 && Volatile.Read(ref _interruptAction) == null)
                 {
                     int commandPtr = _consumerPtr;
 
@@ -262,7 +277,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         public IProgram CreateProgram(ShaderSource[] shaders, ShaderInfo info)
         {
             var program = new ThreadedProgram(this);
+
             SourceProgramRequest request = new SourceProgramRequest(program, shaders, info);
+
             Programs.Add(request);
 
             New<CreateProgramCommand>().Set(Ref((IProgramRequest)request));
@@ -280,10 +297,10 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             return sampler;
         }
 
-        public void CreateSync(ulong id)
+        public void CreateSync(ulong id, bool strict)
         {
             Sync.CreateSyncHandle(id);
-            New<CreateSyncCommand>().Set(id);
+            New<CreateSyncCommand>().Set(id, strict);
             QueueCommand();
         }
 
@@ -335,6 +352,16 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             InvokeCommand();
 
             return box.Result;
+        }
+
+        public ulong GetCurrentSync()
+        {
+            return _baseRenderer.GetCurrentSync();
+        }
+
+        public HardwareInfo GetHardwareInfo()
+        {
+            return _baseRenderer.GetHardwareInfo();
         }
 
         /// <summary>
@@ -410,13 +437,41 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _baseRenderer.WaitSync(id);
         }
 
+        private void Interrupt(Action action)
+        {
+            // Interrupt the backend thread from any external thread and invoke the given action.
+
+            if (Thread.CurrentThread == _backendThread)
+            {
+                // If this is called from the backend thread, the action can run immediately.
+                action();
+            }
+            else
+            {
+                while (Interlocked.CompareExchange(ref _interruptAction, action, null) != null) { }
+
+                _galWorkAvailable.Set();
+
+                _interruptRun.WaitOne();
+            }
+        }
+
+        public void SetInterruptAction(Action<Action> interruptAction)
+        {
+            // Threaded renderer ignores given interrupt action, as it provides its own to the child renderer.
+        }
+
         public void Dispose()
         {
             // Dispose must happen from the render thread, after all commands have completed.
 
             // Stop the GPU thread.
             _disposed = true;
-            _gpuThread.Join();
+
+            if (_gpuThread != null && _gpuThread.IsAlive)
+            {
+                _gpuThread.Join();
+            }
 
             // Dispose the renderer.
             _baseRenderer.Dispose();
@@ -425,6 +480,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _frameComplete.Dispose();
             _galWorkAvailable.Dispose();
             _invokeRun.Dispose();
+            _interruptRun.Dispose();
 
             Sync.Dispose();
         }

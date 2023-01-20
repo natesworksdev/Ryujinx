@@ -19,8 +19,6 @@ namespace ARMeilleure.Translation
 
         public int Count => _count;
 
-        public IntervalTree() { }
-
         #region Public Methods
 
         /// <summary>
@@ -69,10 +67,7 @@ namespace ARMeilleure.Translation
         /// <returns>True if the value was added, false if the start key was already in the dictionary</returns>
         public bool AddOrUpdate(K start, K end, V value, Func<K, V, V> updateFactoryCallback)
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             return BSTInsert(start, end, value, updateFactoryCallback, out IntervalTreeNode<K, V> node);
         }
@@ -87,10 +82,7 @@ namespace ARMeilleure.Translation
         /// <returns><paramref name="value"/> if <paramref name="start"/> is not yet on the tree, or the existing value otherwise</returns>
         public V GetOrAdd(K start, K end, V value)
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             BSTInsert(start, end, value, null, out IntervalTreeNode<K, V> node);
             return node.Value;
@@ -154,10 +146,7 @@ namespace ARMeilleure.Translation
         /// <returns>Node reference in the tree</returns>
         private IntervalTreeNode<K, V> GetNode(K key)
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
+            ArgumentNullException.ThrowIfNull(key);
 
             IntervalTreeNode<K, V> node = _root;
             while (node != null)
@@ -344,7 +333,7 @@ namespace ARMeilleure.Translation
         }
 
         /// <summary>
-        /// Removes the value from the dictionary after searching for it with <paramref name="key">.
+        /// Removes the value from the dictionary after searching for it with <paramref name="key"/>.
         /// </summary>
         /// <param name="key">Key to search for</param>
         /// <returns>Number of deleted values</returns>

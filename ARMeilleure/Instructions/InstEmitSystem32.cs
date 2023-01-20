@@ -16,16 +16,11 @@ namespace ARMeilleure.Instructions
         {
             OpCode32System op = (OpCode32System)context.CurrOp;
 
-            if (op.Coproc != 15)
+            if (op.Coproc != 15 || op.Opc1 != 0)
             {
                 InstEmit.Und(context);
 
                 return;
-            }
-
-            if (op.Opc1 != 0)
-            {
-                throw new NotImplementedException($"Unknown MRC Opc1 0x{op.Opc1:X16} at 0x{op.Address:X16}.");
             }
 
             MethodInfo info;
@@ -35,7 +30,7 @@ namespace ARMeilleure.Instructions
                 case 13: // Process and Thread Info.
                     if (op.CRm != 0)
                     {
-                        throw new NotImplementedException($"Unknown MRC CRm 0x{op.CRm:X16} at 0x{op.Address:X16}.");
+                        throw new NotImplementedException($"Unknown MRC CRm 0x{op.CRm:X} at 0x{op.Address:X} (0x{op.RawOpCode:X}).");
                     }
 
                     switch (op.Opc2)
@@ -44,7 +39,7 @@ namespace ARMeilleure.Instructions
                             info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.SetTpidrEl032)); break;
 
                         default:
-                            throw new NotImplementedException($"Unknown MRC Opc2 0x{op.Opc2:X16} at 0x{op.Address:X16}.");
+                            throw new NotImplementedException($"Unknown MRC Opc2 0x{op.Opc2:X} at 0x{op.Address:X} (0x{op.RawOpCode:X}).");
                     }
 
                     break;
@@ -59,11 +54,11 @@ namespace ARMeilleure.Instructions
                                     return; // No-op.
 
                                 default:
-                                    throw new NotImplementedException($"Unknown MRC Opc2 0x{op.Opc2:X16} at 0x{op.Address:X16}.");
+                                    throw new NotImplementedException($"Unknown MRC Opc2 0x{op.Opc2:X16} at 0x{op.Address:X16} (0x{op.RawOpCode:X}).");
                             }
 
                         default:
-                            throw new NotImplementedException($"Unknown MRC CRm 0x{op.CRm:X16} at 0x{op.Address:X16}.");
+                            throw new NotImplementedException($"Unknown MRC CRm 0x{op.CRm:X16} at 0x{op.Address:X16} (0x{op.RawOpCode:X}).");
                     }
 
                 default:
@@ -77,16 +72,11 @@ namespace ARMeilleure.Instructions
         {
             OpCode32System op = (OpCode32System)context.CurrOp;
 
-            if (op.Coproc != 15)
+            if (op.Coproc != 15 || op.Opc1 != 0)
             {
                 InstEmit.Und(context);
 
                 return;
-            }
-
-            if (op.Opc1 != 0)
-            {
-                throw new NotImplementedException($"Unknown MRC Opc1 0x{op.Opc1:X16} at 0x{op.Address:X16}.");
             }
 
             MethodInfo info;
@@ -96,7 +86,7 @@ namespace ARMeilleure.Instructions
                 case 13: // Process and Thread Info.
                     if (op.CRm != 0)
                     {
-                        throw new NotImplementedException($"Unknown MRC CRm 0x{op.CRm:X16} at 0x{op.Address:X16}.");
+                        throw new NotImplementedException($"Unknown MRC CRm 0x{op.CRm:X} at 0x{op.Address:X} (0x{op.RawOpCode:X}).");
                     }
 
                     switch (op.Opc2)
@@ -108,13 +98,13 @@ namespace ARMeilleure.Instructions
                             info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetTpidr32)); break;
 
                         default:
-                            throw new NotImplementedException($"Unknown MRC Opc2 0x{op.Opc2:X16} at 0x{op.Address:X16}.");
+                            throw new NotImplementedException($"Unknown MRC Opc2 0x{op.Opc2:X} at 0x{op.Address:X} (0x{op.RawOpCode:X}).");
                     }
 
                     break;
 
                 default:
-                    throw new NotImplementedException($"Unknown MRC 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
+                    throw new NotImplementedException($"Unknown MRC 0x{op.RawOpCode:X} at 0x{op.Address:X}.");
             }
 
             if (op.Rt == RegisterAlias.Aarch32Pc)
@@ -154,19 +144,41 @@ namespace ARMeilleure.Instructions
                             info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetCntpctEl0)); break;
 
                         default:
-                            throw new NotImplementedException($"Unknown MRRC Opc1 0x{opc:X16} at 0x{op.Address:X16}.");
+                            throw new NotImplementedException($"Unknown MRRC Opc1 0x{opc:X} at 0x{op.Address:X} (0x{op.RawOpCode:X}).");
                     }
 
                     break;
 
                 default:
-                    throw new NotImplementedException($"Unknown MRRC 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
+                    throw new NotImplementedException($"Unknown MRRC 0x{op.RawOpCode:X} at 0x{op.Address:X}.");
             }
 
             Operand result = context.Call(info);
 
             SetIntA32(context, op.Rt, context.ConvertI64ToI32(result));
             SetIntA32(context, op.CRn, context.ConvertI64ToI32(context.ShiftRightUI(result, Const(32))));
+        }
+
+        public static void Mrs(ArmEmitterContext context)
+        {
+            OpCode32Mrs op = (OpCode32Mrs)context.CurrOp;
+
+            if (op.R)
+            {
+                throw new NotImplementedException("SPSR");
+            }
+            else
+            {
+                Operand spsr = context.ShiftLeft(GetFlag(PState.VFlag), Const((int)PState.VFlag));
+                spsr = context.BitwiseOr(spsr, context.ShiftLeft(GetFlag(PState.CFlag), Const((int)PState.CFlag)));
+                spsr = context.BitwiseOr(spsr, context.ShiftLeft(GetFlag(PState.ZFlag), Const((int)PState.ZFlag)));
+                spsr = context.BitwiseOr(spsr, context.ShiftLeft(GetFlag(PState.NFlag), Const((int)PState.NFlag)));
+                spsr = context.BitwiseOr(spsr, context.ShiftLeft(GetFlag(PState.QFlag), Const((int)PState.QFlag)));
+
+                // TODO: Remaining flags.
+
+                SetIntA32(context, op.Rd, spsr);
+            }
         }
 
         public static void Msr(ArmEmitterContext context)
@@ -185,8 +197,7 @@ namespace ARMeilleure.Instructions
 
                     EmitSetNzcv(context, value);
 
-                    Operand q = context.ShiftRightUI(value, Const((int)PState.QFlag));
-                    q = context.BitwiseAnd(q, Const(1));
+                    Operand q = context.BitwiseAnd(context.ShiftRightUI(value, Const((int)PState.QFlag)), Const(1));
 
                     SetFlag(context, PState.QFlag, q);
                 }
@@ -240,7 +251,7 @@ namespace ARMeilleure.Instructions
                 case 0b1000: // FPEXC
                     throw new NotImplementedException("Supervisor Only");
                 default:
-                    throw new NotImplementedException($"Unknown VMRS 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
+                    throw new NotImplementedException($"Unknown VMRS 0x{op.RawOpCode:X} at 0x{op.Address:X}.");
             }
         }
 
@@ -263,23 +274,16 @@ namespace ARMeilleure.Instructions
                 case 0b1000: // FPEXC
                     throw new NotImplementedException("Supervisor Only");
                 default:
-                    throw new NotImplementedException($"Unknown VMSR 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
+                    throw new NotImplementedException($"Unknown VMSR 0x{op.RawOpCode:X} at 0x{op.Address:X}.");
             }
         }
 
         private static void EmitSetNzcv(ArmEmitterContext context, Operand t)
         {
-            Operand v = context.ShiftRightUI(t, Const((int)PState.VFlag));
-            v = context.BitwiseAnd(v, Const(1));
-
-            Operand c = context.ShiftRightUI(t, Const((int)PState.CFlag));
-            c = context.BitwiseAnd(c, Const(1));
-
-            Operand z = context.ShiftRightUI(t, Const((int)PState.ZFlag));
-            z = context.BitwiseAnd(z, Const(1));
-
-            Operand n = context.ShiftRightUI(t, Const((int)PState.NFlag));
-            n = context.BitwiseAnd(n, Const(1));
+            Operand v = context.BitwiseAnd(context.ShiftRightUI(t, Const((int)PState.VFlag)), Const(1));
+            Operand c = context.BitwiseAnd(context.ShiftRightUI(t, Const((int)PState.CFlag)), Const(1));
+            Operand z = context.BitwiseAnd(context.ShiftRightUI(t, Const((int)PState.ZFlag)), Const(1));
+            Operand n = context.BitwiseAnd(context.ShiftRightUI(t, Const((int)PState.NFlag)), Const(1));
 
             SetFlag(context, PState.VFlag, v);
             SetFlag(context, PState.CFlag, c);
@@ -291,42 +295,32 @@ namespace ARMeilleure.Instructions
         {
             OpCode32SimdSpecial op = (OpCode32SimdSpecial)context.CurrOp;
 
-            Operand vSh = context.ShiftLeft(GetFpFlag(FPState.VFlag), Const((int)FPState.VFlag));
-            Operand cSh = context.ShiftLeft(GetFpFlag(FPState.CFlag), Const((int)FPState.CFlag));
-            Operand zSh = context.ShiftLeft(GetFpFlag(FPState.ZFlag), Const((int)FPState.ZFlag));
-            Operand nSh = context.ShiftLeft(GetFpFlag(FPState.NFlag), Const((int)FPState.NFlag));
+            Operand fpscr = Const(0);
 
-            Operand nzcvSh = context.BitwiseOr(context.BitwiseOr(nSh, zSh), context.BitwiseOr(cSh, vSh));
+            for (int flag = 0; flag < RegisterConsts.FpFlagsCount; flag++)
+            {
+                if (FPSCR.Mask.HasFlag((FPSCR)(1u << flag)))
+                {
+                    fpscr = context.BitwiseOr(fpscr, context.ShiftLeft(GetFpFlag((FPState)flag), Const(flag)));
+                }
+            }
 
-            Operand fpscr = context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFpscr)));
-
-            SetIntA32(context, op.Rt, context.BitwiseOr(nzcvSh, fpscr));
+            SetIntA32(context, op.Rt, fpscr);
         }
 
         private static void EmitSetFpscr(ArmEmitterContext context)
         {
             OpCode32SimdSpecial op = (OpCode32SimdSpecial)context.CurrOp;
 
-            Operand t = GetIntA32(context, op.Rt);
+            Operand fpscr = GetIntA32(context, op.Rt);
 
-            Operand v = context.ShiftRightUI(t, Const((int)FPState.VFlag));
-            v = context.BitwiseAnd(v, Const(1));
-
-            Operand c = context.ShiftRightUI(t, Const((int)FPState.CFlag));
-            c = context.BitwiseAnd(c, Const(1));
-
-            Operand z = context.ShiftRightUI(t, Const((int)FPState.ZFlag));
-            z = context.BitwiseAnd(z, Const(1));
-
-            Operand n = context.ShiftRightUI(t, Const((int)FPState.NFlag));
-            n = context.BitwiseAnd(n, Const(1));
-
-            SetFpFlag(context, FPState.VFlag, v);
-            SetFpFlag(context, FPState.CFlag, c);
-            SetFpFlag(context, FPState.ZFlag, z);
-            SetFpFlag(context, FPState.NFlag, n);
-
-            context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.SetFpscr)), t);
+            for (int flag = 0; flag < RegisterConsts.FpFlagsCount; flag++)
+            {
+                if (FPSCR.Mask.HasFlag((FPSCR)(1u << flag)))
+                {
+                    SetFpFlag(context, (FPState)flag, context.BitwiseAnd(context.ShiftRightUI(fpscr, Const(flag)), Const(1)));
+                }
+            }
         }
     }
 }

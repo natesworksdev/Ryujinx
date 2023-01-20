@@ -1,16 +1,27 @@
 using Ryujinx.Graphics.Gpu.Memory;
+using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
     /// <summary>
     /// Sampler pool.
     /// </summary>
-    class SamplerPool : Pool<Sampler, SamplerDescriptor>
+    class SamplerPool : Pool<Sampler, SamplerDescriptor>, IPool<SamplerPool>
     {
         private float _forcedAnisotropy;
 
         /// <summary>
-        /// Constructs a new instance of the sampler pool.
+        /// Linked list node used on the sampler pool cache.
+        /// </summary>
+        public LinkedListNode<SamplerPool> CacheNode { get; set; }
+
+        /// <summary>
+        /// Timestamp used by the sampler pool cache, updated on every use of this sampler pool.
+        /// </summary>
+        public ulong CacheTimestamp { get; set; }
+
+        /// <summary>
+        /// Creates a new instance of the sampler pool.
         /// </summary>
         /// <param name="context">GPU context that the sampler pool belongs to</param>
         /// <param name="physicalMemory">Physical memory where the sampler descriptors are mapped</param>
@@ -48,6 +59,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                             Items[i] = null;
                         }
                     }
+
+                    UpdateModifiedSequence();
                 }
 
                 SequenceNumber = Context.SequenceNumber;
@@ -69,6 +82,39 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             return sampler;
+        }
+
+        /// <summary>
+        /// Checks if the pool was modified, and returns the last sequence number where a modification was detected.
+        /// </summary>
+        /// <returns>A number that increments each time a modification is detected</returns>
+        public int CheckModified()
+        {
+            if (SequenceNumber != Context.SequenceNumber)
+            {
+                SequenceNumber = Context.SequenceNumber;
+
+                if (_forcedAnisotropy != GraphicsConfig.MaxAnisotropy)
+                {
+                    _forcedAnisotropy = GraphicsConfig.MaxAnisotropy;
+
+                    for (int i = 0; i < Items.Length; i++)
+                    {
+                        if (Items[i] != null)
+                        {
+                            Items[i].Dispose();
+
+                            Items[i] = null;
+                        }
+                    }
+
+                    UpdateModifiedSequence();
+                }
+
+                SynchronizeMemory();
+            }
+
+            return ModifiedSequenceNumber;
         }
 
         /// <summary>

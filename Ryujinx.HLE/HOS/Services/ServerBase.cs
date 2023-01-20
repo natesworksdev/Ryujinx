@@ -1,10 +1,9 @@
-using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel;
-using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.Horizon.Common;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -42,15 +41,12 @@ namespace Ryujinx.HLE.HOS.Services
         public string Name { get; }
         public Func<IpcService> SmObjectFactory { get; }
 
-        private int _threadCount;
-
-        public ServerBase(KernelContext context, string name, Func<IpcService> smObjectFactory = null, int threadCount = 1)
+        public ServerBase(KernelContext context, string name, Func<IpcService> smObjectFactory = null)
         {
             InitDone = new ManualResetEvent(false);
             _context = context;
             Name = name;
             SmObjectFactory = smObjectFactory;
-            _threadCount = threadCount;
 
             const ProcessCreationFlags flags =
                 ProcessCreationFlags.EnableAslr |
@@ -86,27 +82,6 @@ namespace Ryujinx.HLE.HOS.Services
 
         private void Main()
         {
-            for (int i = 1; i < _threadCount; i++)
-            {
-                KernelResult result = _context.Syscall.CreateThread(out int threadHandle, 0UL, 0UL, 0UL, 44, 3, ServerLoop);
-
-                if (result == KernelResult.Success)
-                {
-                    result = _context.Syscall.StartThread(threadHandle);
-
-                    if (result != KernelResult.Success)
-                    {
-                        Logger.Error?.Print(LogClass.Service, $"Failed to start thread on {Name}: {result}");
-                    }
-
-                    _context.Syscall.CloseHandle(threadHandle);
-                }
-                else
-                {
-                    Logger.Error?.Print(LogClass.Service, $"Failed to create thread on {Name}: {result}");
-                }
-            }
-
             ServerLoop();
         }
 
@@ -154,7 +129,7 @@ namespace Ryujinx.HLE.HOS.Services
 
                 replyTargetHandle = 0;
 
-                if (rc == KernelResult.Success && signaledIndex >= portHandles.Length)
+                if (rc == Result.Success && signaledIndex >= portHandles.Length)
                 {
                     // We got a IPC request, process it, pass to the appropriate service if needed.
                     int signaledHandle = handles[signaledIndex];
@@ -166,10 +141,10 @@ namespace Ryujinx.HLE.HOS.Services
                 }
                 else
                 {
-                    if (rc == KernelResult.Success)
+                    if (rc == Result.Success)
                     {
                         // We got a new connection, accept the session to allow servicing future requests.
-                        if (_context.Syscall.AcceptSession(out int serverSessionHandle, handles[signaledIndex]) == KernelResult.Success)
+                        if (_context.Syscall.AcceptSession(out int serverSessionHandle, handles[signaledIndex]) == Result.Success)
                         {
                             IpcService obj = _ports[handles[signaledIndex]].Invoke();
 

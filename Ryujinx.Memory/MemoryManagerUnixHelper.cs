@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Memory
 {
-    public static class MemoryManagerUnixHelper
+    public static partial class MemoryManagerUnixHelper
     {
         [Flags]
         public enum MmapProts : uint
@@ -22,7 +22,8 @@ namespace Ryujinx.Memory
             MAP_ANONYMOUS = 4,
             MAP_NORESERVE = 8,
             MAP_FIXED = 16,
-            MAP_UNLOCKED = 32
+            MAP_UNLOCKED = 32,
+            MAP_JIT_DARWIN = 0x800
         }
 
         [Flags]
@@ -45,44 +46,43 @@ namespace Ryujinx.Memory
         private const int MAP_UNLOCKED_LINUX_GENERIC = 0x80000;
 
         private const int MAP_NORESERVE_DARWIN = 0x40;
-        private const int MAP_JIT_DARWIN = 0x800;
         private const int MAP_ANONYMOUS_DARWIN = 0x1000;
 
         public const int MADV_DONTNEED = 4;
         public const int MADV_REMOVE = 9;
 
-        [DllImport("libc", EntryPoint = "mmap", SetLastError = true)]
-        private static extern IntPtr Internal_mmap(IntPtr address, ulong length, MmapProts prot, int flags, int fd, long offset);
+        [LibraryImport("libc", EntryPoint = "mmap", SetLastError = true)]
+        private static partial IntPtr Internal_mmap(IntPtr address, ulong length, MmapProts prot, int flags, int fd, long offset);
 
-        [DllImport("libc", SetLastError = true)]
-        public static extern int mprotect(IntPtr address, ulong length, MmapProts prot);
+        [LibraryImport("libc", SetLastError = true)]
+        public static partial int mprotect(IntPtr address, ulong length, MmapProts prot);
 
-        [DllImport("libc", SetLastError = true)]
-        public static extern int munmap(IntPtr address, ulong length);
+        [LibraryImport("libc", SetLastError = true)]
+        public static partial int munmap(IntPtr address, ulong length);
 
-        [DllImport("libc", SetLastError = true)]
-        public static extern IntPtr mremap(IntPtr old_address, ulong old_size, ulong new_size, int flags, IntPtr new_address);
+        [LibraryImport("libc", SetLastError = true)]
+        public static partial IntPtr mremap(IntPtr old_address, ulong old_size, ulong new_size, int flags, IntPtr new_address);
 
-        [DllImport("libc", SetLastError = true)]
-        public static extern int madvise(IntPtr address, ulong size, int advice);
+        [LibraryImport("libc", SetLastError = true)]
+        public static partial int madvise(IntPtr address, ulong size, int advice);
 
-        [DllImport("libc", SetLastError = true)]
-        public static extern int mkstemp(IntPtr template);
+        [LibraryImport("libc", SetLastError = true)]
+        public static partial int mkstemp(IntPtr template);
 
-        [DllImport("libc", SetLastError = true)]
-        public static extern int unlink(IntPtr pathname);
+        [LibraryImport("libc", SetLastError = true)]
+        public static partial int unlink(IntPtr pathname);
 
-        [DllImport("libc", SetLastError = true)]
-        public static extern int ftruncate(int fildes, IntPtr length);
+        [LibraryImport("libc", SetLastError = true)]
+        public static partial int ftruncate(int fildes, IntPtr length);
 
-        [DllImport("libc", SetLastError = true)]
-        public static extern int close(int fd);
+        [LibraryImport("libc", SetLastError = true)]
+        public static partial int close(int fd);
 
-        [DllImport("libc", SetLastError = true)]
-        public static extern int shm_open(IntPtr name, int oflag, uint mode);
+        [LibraryImport("libc", SetLastError = true)]
+        public static partial int shm_open(IntPtr name, int oflag, uint mode);
 
-        [DllImport("libc", SetLastError = true)]
-        public static extern int shm_unlink(IntPtr name);
+        [LibraryImport("libc", SetLastError = true)]
+        public static partial int shm_unlink(IntPtr name);
 
         private static int MmapFlagsToSystemFlags(MmapFlags flags)
         {
@@ -151,9 +151,9 @@ namespace Ryujinx.Memory
                 }
             }
 
-            if (OperatingSystem.IsMacOSVersionAtLeast(10, 14))
+            if (flags.HasFlag(MmapFlags.MAP_JIT_DARWIN) && OperatingSystem.IsMacOSVersionAtLeast(10, 14))
             {
-                result |= MAP_JIT_DARWIN;
+                result |= (int)MmapFlags.MAP_JIT_DARWIN;
             }
 
             return result;

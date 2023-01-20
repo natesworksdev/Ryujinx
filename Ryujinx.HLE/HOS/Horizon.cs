@@ -10,6 +10,7 @@ using Ryujinx.Audio.Integration;
 using Ryujinx.Audio.Output;
 using Ryujinx.Audio.Renderer.Device;
 using Ryujinx.Audio.Renderer.Server;
+using Ryujinx.Common.Utilities;
 using Ryujinx.Cpu;
 using Ryujinx.Cpu.Jit;
 using Ryujinx.HLE.FileSystem;
@@ -35,7 +36,7 @@ using Ryujinx.HLE.HOS.Services.SurfaceFlinger;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Executables;
-using Ryujinx.HLE.Utilities;
+using Ryujinx.Horizon;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -122,6 +123,8 @@ namespace Ryujinx.HLE.HOS
 
         internal LibHacHorizonManager LibHacHorizonManager { get; private set; }
 
+        internal ServiceTable ServiceTable { get; private set; }
+
         public bool IsPaused { get; private set; }
 
         public Horizon(Switch device)
@@ -201,7 +204,7 @@ namespace Ryujinx.HLE.HOS
 
             // TODO: use set:sys (and get external clock source id from settings)
             // TODO: use "time!standard_steady_clock_rtc_update_interval_minutes" and implement a worker thread to be accurate.
-            UInt128 clockSourceId = new UInt128(Guid.NewGuid().ToByteArray());
+            UInt128 clockSourceId = UInt128Utils.CreateRandom();
             IRtcManager.GetExternalRtcValue(out ulong rtcValue);
 
             // We assume the rtc is system time.
@@ -309,7 +312,7 @@ namespace Ryujinx.HLE.HOS
             // only then doing connections to SM is safe.
             SmServer.InitDone.WaitOne();
 
-            BsdServer = new ServerBase(KernelContext, "BsdServer", null, 2);
+            BsdServer = new ServerBase(KernelContext, "BsdServer");
             AudRenServer = new ServerBase(KernelContext, "AudioRendererServer");
             AudOutServer = new ServerBase(KernelContext, "AudioOutServer");
             FsServer = new ServerBase(KernelContext, "FsServer");
@@ -319,6 +322,43 @@ namespace Ryujinx.HLE.HOS
             ViServer = new ServerBase(KernelContext, "ViServerU");
             ViServerM = new ServerBase(KernelContext, "ViServerM");
             ViServerS = new ServerBase(KernelContext, "ViServerS");
+
+            StartNewServices();
+        }
+
+        private void StartNewServices()
+        {
+            ServiceTable = new ServiceTable();
+            var services = ServiceTable.GetServices(new HorizonOptions(Device.Configuration.IgnoreMissingServices));
+
+            foreach (var service in services)
+            {
+                const ProcessCreationFlags flags =
+                    ProcessCreationFlags.EnableAslr |
+                    ProcessCreationFlags.AddressSpace64Bit |
+                    ProcessCreationFlags.Is64Bit |
+                    ProcessCreationFlags.PoolPartitionSystem;
+
+                ProcessCreationInfo creationInfo = new ProcessCreationInfo("Service", 1, 0, 0x8000000, 1, flags, 0, 0);
+
+                int[] defaultCapabilities = new int[]
+                {
+                    0x030363F7,
+                    0x1FFFFFCF,
+                    0x207FFFEF,
+                    0x47E0060F,
+                    0x0048BFFF,
+                    0x01007FFF
+                };
+
+                // TODO:
+                // - Pass enough information (capabilities, process creation info, etc) on ServiceEntry for proper initialization.
+                // - Have the ThreadStart function take the syscall, address space and thread context parameters instead of passing them here.
+                KernelStatic.StartInitialProcess(KernelContext, creationInfo, defaultCapabilities, 44, () =>
+                {
+                    service.Start(KernelContext.Syscall, KernelStatic.GetCurrentProcess().CpuMemory, KernelStatic.GetCurrentThread().ThreadContext);
+                });
+            }
         }
 
         public void LoadKip(string kipPath)
@@ -479,7 +519,10 @@ namespace Ryujinx.HLE.HOS
 
                 AudioRendererManager.Dispose();
 
-                LibHacHorizonManager.PmClient.Fs.UnregisterProgram(LibHacHorizonManager.ApplicationClient.Os.GetCurrentProcessId().Value).ThrowIfFailure();
+                if (LibHacHorizonManager.ApplicationClient != null)
+                {
+                    LibHacHorizonManager.PmClient.Fs.UnregisterProgram(LibHacHorizonManager.ApplicationClient.Os.GetCurrentProcessId().Value).ThrowIfFailure();
+                }
 
                 KernelContext.Dispose();
             }

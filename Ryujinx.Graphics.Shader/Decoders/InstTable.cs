@@ -1,4 +1,5 @@
 using Ryujinx.Graphics.Shader.Instructions;
+using System;
 
 namespace Ryujinx.Graphics.Shader.Decoders
 {
@@ -6,7 +7,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
     {
         private const int EncodingBits = 14;
 
-        private struct TableEntry
+        private readonly struct TableEntry
         {
             public InstName Name { get; }
             public InstEmitter Emitter { get; }
@@ -279,16 +280,16 @@ namespace Ryujinx.Graphics.Shader.Decoders
             Add("1110101110xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.SuatomB2,    InstEmit.SuatomB2,    InstProps.Rd  | InstProps.Ra  | InstProps.Rb  | InstProps.Rc);
             Add("1110101011010xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.SuatomCasB,  InstEmit.SuatomCasB,  InstProps.Rd  | InstProps.Ra  | InstProps.Rb  | InstProps.Rc  | InstProps.SPd);
             Add("1110101x1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.SuatomCas,   InstEmit.SuatomCas,   InstProps.Rd  | InstProps.Ra  | InstProps.Rb  | InstProps.SPd);
-            Add("111010110001xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.SuldDB,      InstEmit.SuldDB,      InstProps.Rd  | InstProps.Ra  | InstProps.Rc  | InstProps.SPd | InstProps.TexB);
+            Add("1110101100010xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.SuldDB,      InstEmit.SuldDB,      InstProps.Rd  | InstProps.Ra  | InstProps.Rc  | InstProps.SPd | InstProps.TexB);
             Add("1110101100011xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.SuldD,       InstEmit.SuldD,       InstProps.Rd  | InstProps.Ra  | InstProps.SPd | InstProps.Tex);
-            Add("11101011000xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.SuldB,       InstEmit.SuldB,       InstProps.Rd  | InstProps.Ra  | InstProps.Rc  | InstProps.SPd | InstProps.TexB);
-            Add("11101011000x1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Suld,        InstEmit.Suld,        InstProps.Rd  | InstProps.Ra  | InstProps.SPd | InstProps.Tex);
-            Add("111010110101xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.SuredB,      InstEmit.SuredB,      InstProps.Rd  | InstProps.Ra  | InstProps.Rc);
+            Add("1110101100000xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.SuldB,       InstEmit.SuldB,       InstProps.Rd  | InstProps.Ra  | InstProps.Rc  | InstProps.SPd | InstProps.TexB);
+            Add("1110101100001xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Suld,        InstEmit.Suld,        InstProps.Rd  | InstProps.Ra  | InstProps.SPd | InstProps.Tex);
+            Add("1110101101010xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.SuredB,      InstEmit.SuredB,      InstProps.Rd  | InstProps.Ra  | InstProps.Rc);
             Add("1110101101011xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Sured,       InstEmit.Sured,       InstProps.Rd  | InstProps.Ra);
-            Add("111010110011xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.SustDB,      InstEmit.SustDB,      InstProps.Rd  | InstProps.Ra  | InstProps.Rc  | InstProps.TexB);
+            Add("1110101100110xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.SustDB,      InstEmit.SustDB,      InstProps.Rd  | InstProps.Ra  | InstProps.Rc  | InstProps.TexB);
             Add("1110101100111xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.SustD,       InstEmit.SustD,       InstProps.Rd  | InstProps.Ra  | InstProps.Tex);
-            Add("11101011001xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.SustB,       InstEmit.SustB,       InstProps.Rd  | InstProps.Ra  | InstProps.Rc  | InstProps.TexB);
-            Add("11101011001x1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Sust,        InstEmit.Sust,        InstProps.Rd  | InstProps.Ra  | InstProps.Tex);
+            Add("1110101100100xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.SustB,       InstEmit.SustB,       InstProps.Rd  | InstProps.Ra  | InstProps.Rc  | InstProps.TexB);
+            Add("1110101100101xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Sust,        InstEmit.Sust,        InstProps.Rd  | InstProps.Ra  | InstProps.Tex);
             Add("1111000011111xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Sync,        InstEmit.Sync,        InstProps.Bra);
             Add("11000xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Tex,         InstEmit.Tex,         InstProps.Rd  | InstProps.Ra  | InstProps.Rb  | InstProps.TPd | InstProps.Tex);
             Add("1101111010xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.TexB,        InstEmit.TexB,        InstProps.Rd  | InstProps.Ra  | InstProps.Rb  | InstProps.TPd | InstProps.TexB);
@@ -329,18 +330,18 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
         private static void Add(string encoding, InstName name, InstEmitter emitter, InstProps props = InstProps.None)
         {
-            encoding = encoding.Substring(0, EncodingBits);
+            ReadOnlySpan<char> encodingPart = encoding.AsSpan(0, EncodingBits);
 
-            int bit = encoding.Length - 1;
+            int bit = encodingPart.Length - 1;
             int value = 0;
             int xMask = 0;
             int xBits = 0;
 
-            int[] xPos = new int[encoding.Length];
+            int[] xPos = new int[encodingPart.Length];
 
-            for (int index = 0; index < encoding.Length; index++, bit--)
+            for (int index = 0; index < encodingPart.Length; index++, bit--)
             {
-                char chr = encoding[index];
+                char chr = encodingPart[index];
 
                 if (chr == '1')
                 {

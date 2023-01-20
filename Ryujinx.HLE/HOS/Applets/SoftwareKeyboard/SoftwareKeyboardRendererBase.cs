@@ -11,7 +11,6 @@ using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using SixLabors.ImageSharp.PixelFormats;
-using Ryujinx.Common;
 
 namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 {
@@ -68,8 +67,8 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
         {
             int ryujinxLogoSize = 32;
 
-            Stream logoStream = EmbeddedResources.GetStream("Ryujinx.Ui.Common/Resources/Logo_Ryujinx.png");
-            _ryujinxLogo = LoadResource(logoStream, ryujinxLogoSize, ryujinxLogoSize);
+            string ryujinxIconPath = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Logo_Ryujinx.png";
+            _ryujinxLogo = LoadResource(Assembly.GetExecutingAssembly(), ryujinxIconPath, ryujinxLogoSize, ryujinxLogoSize);
 
             string padAcceptIconPath = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Icon_BtnA.png";
             string padCancelIconPath = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Icon_BtnB.png";
@@ -117,7 +116,8 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
                 uiThemeFontFamily,
                 "Liberation Sans",
                 "FreeSans",
-                "DejaVu Sans"
+                "DejaVu Sans",
+                "Lucida Grande"
             };
 
             foreach (string fontFamily in availableFonts)
@@ -292,20 +292,35 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             _logoPosition = new Point(logoPositionX, logoPositionY);
         }
-
-        private RectangleF MeasureString(string text, Font font)
+        private static RectangleF MeasureString(string text, Font font)
         {
             RendererOptions options = new RendererOptions(font);
-            FontRectangle rectangle = TextMeasurer.Measure(text == "" ? " " : text, options);
 
             if (text == "")
             {
-                return new RectangleF(0, rectangle.Y, 0, rectangle.Height);
+                FontRectangle emptyRectangle = TextMeasurer.Measure(" ", options);
+
+                return new RectangleF(0, emptyRectangle.Y, 0, emptyRectangle.Height);
             }
-            else
+
+            FontRectangle rectangle = TextMeasurer.Measure(text, options);
+
+            return new RectangleF(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
+        }
+
+        private static RectangleF MeasureString(ReadOnlySpan<char> text, Font font)
+        {
+            RendererOptions options = new RendererOptions(font);
+            
+            if (text == "")
             {
-                return new RectangleF(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
+                FontRectangle emptyRectangle = TextMeasurer.Measure(" ", options);
+                return new RectangleF(0, emptyRectangle.Y, 0, emptyRectangle.Height);
             }
+
+            FontRectangle rectangle = TextMeasurer.Measure(text, options);
+
+            return new RectangleF(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
         }
 
         private void DrawTextBox(IImageProcessingContext context, SoftwareKeyboardUiState state)
@@ -354,8 +369,8 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
                 cursorBrush     = _selectionBoxBrush;
                 cursorPen       = _selectionBoxPen;
 
-                string textUntilBegin = state.InputText.Substring(0, state.CursorBegin);
-                string textUntilEnd   = state.InputText.Substring(0, state.CursorEnd);
+                ReadOnlySpan<char> textUntilBegin = state.InputText.AsSpan(0, state.CursorBegin);
+                ReadOnlySpan<char> textUntilEnd   = state.InputText.AsSpan(0, state.CursorEnd);
 
                 var selectionBeginRectangle = MeasureString(textUntilBegin, _inputTextFont);
                 var selectionEndRectangle   = MeasureString(textUntilEnd  , _inputTextFont);
@@ -374,9 +389,9 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
                 {
                     // Show the blinking cursor.
 
-                    int    cursorBegin         = Math.Min(state.InputText.Length, state.CursorBegin);
-                    string textUntilCursor     = state.InputText.Substring(0, cursorBegin);
-                    var    cursorTextRectangle = MeasureString(textUntilCursor, _inputTextFont);
+                    int                cursorBegin         = Math.Min(state.InputText.Length, state.CursorBegin);
+                    ReadOnlySpan<char> textUntilCursor     = state.InputText.AsSpan(0, cursorBegin);
+                    var                cursorTextRectangle = MeasureString(textUntilCursor, _inputTextFont);
 
                     cursorVisible       = true;
                     cursorPositionXLeft = inputTextX + cursorTextRectangle.Width + cursorTextRectangle.X;
@@ -387,7 +402,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
                         if (state.CursorBegin < state.InputText.Length)
                         {
-                            textUntilCursor      = state.InputText.Substring(0, cursorBegin + 1);
+                            textUntilCursor      = state.InputText.AsSpan(0, cursorBegin + 1);
                             cursorTextRectangle  = MeasureString(textUntilCursor, _inputTextFont);
                             cursorPositionXRight = inputTextX + cursorTextRectangle.Width + cursorTextRectangle.X;
                         }

@@ -1,9 +1,7 @@
-﻿<Styles
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+﻿<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <StyleInclude Source="avares://Ryujinx.Ava/Assets/Styles/Styles.xaml" />
     <Design.PreviewWith>
-        <Border Padding="20" Height="2000">
+        <Border Height="2000" Padding="20">
             <StackPanel Spacing="5">
                 <TextBlock Text="Code Font Family" />
                 <Grid RowDefinitions="*,Auto">
@@ -27,8 +25,12 @@
                             Name="btnRem"
                             HorizontalAlignment="Right"
                             Content="Add" />
-                        <TextBox Width="100" VerticalAlignment="Center" Text="Rrrrr" Watermark="Hello"
-                                 UseFloatingWatermark="True" />
+                        <TextBox
+                            Width="100"
+                            VerticalAlignment="Center"
+                            Text="Rrrrr"
+                            UseFloatingWatermark="True"
+                            Watermark="Hello" />
                         <CheckBox>Test Check</CheckBox>
                     </StackPanel>
                 </Grid>
@@ -47,5 +49,9 @@
         <Color x:Key="TextOnAccentFillColorPrimary">#FFFFFFFF</Color>
         <Color x:Key="SystemChromeWhiteColor">#FFFFFFFF</Color>
         <Color x:Key="ThemeForegroundColor">#FF000000</Color>
+        <Color x:Key="MenuFlyoutPresenterBorderColor">#C1C1C1</Color>
+        <Color x:Key="AppListBackgroundColor">#b3ffffff</Color>
+        <Color x:Key="AppListHoverBackgroundColor">#80cccccc</Color>
+        <Color x:Key="SecondaryTextColor">#A0000000</Color>
     </Styles.Resources>
 </Styles>
