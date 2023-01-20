@@ -25,6 +25,12 @@ namespace Ryujinx.Graphics.Gpu.Image
         // This method uses much more memory so we want to avoid it if possible.
         private const int ByteComparisonSwitchThreshold = 4;
 
+        // Tuning for blacklisting textures from scaling when their data is updated from CPU.
+        // Each write adds the weight, each GPU modification subtracts 1.
+        // Exceeding the threshold blacklists the texture.
+        private const int ScaledSetWeight = 25;
+        private const int ScaledSetThreshold = 75;
+
         private const int MinLevelsForForceAnisotropy = 5;
 
         private struct TexturePoolOwner
@@ -123,6 +129,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
         private ITexture _flushHostTexture;
         private ITexture _setHostTexture;
+        private int _scaledSetScore;
 
         private Texture _viewStorage;
 
@@ -520,6 +527,25 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Registers when a texture has had its data set after being scaled, and
+        /// determines if it should be blacklisted from scaling to improve performance.
+        /// </summary>
+        /// <returns>True if setting data for a scaled texture is allowed, false if the texture has been blacklisted</returns>
+        private bool AllowScaledSetData()
+        {
+            _scaledSetScore += ScaledSetWeight;
+
+            if (_scaledSetScore >= ScaledSetThreshold)
+            {
+                BlacklistScale();
+
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Blacklists this texture from being scaled. Resets its scale to 1 if needed.
         /// </summary>
         public void BlacklistScale()
@@ -723,7 +749,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             SpanOrArray<byte> result = ConvertToHostCompatibleFormat(data);
 
-            if (ScaleFactor != 1f)
+            if (ScaleFactor != 1f && AllowScaledSetData())
             {
                 // If needed, create a texture to load from 1x scale.
                 ITexture texture = _setHostTexture = GetScaledHostTexture(1f, false, _setHostTexture);
@@ -1468,6 +1494,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void SignalModified()
         {
+            _scaledSetScore = Math.Max(0, _scaledSetScore - 1);
+
             if (_modifiedStale || Group.HasCopyDependencies)
             {
                 _modifiedStale = false;
