@@ -757,8 +757,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                 texture.SetData(result);
 
                 texture.CopyTo(HostTexture, new Extents2D(0, 0, texture.Width, texture.Height), new Extents2D(0, 0, HostTexture.Width, HostTexture.Height), true);
-
-                Logger.Error?.PrintMsg(LogClass.Gpu, $"Wrote and upscaled data for {Info.Width}x{Info.Height} {Info.Levels}lv {Format}");
             }
             else
             {
