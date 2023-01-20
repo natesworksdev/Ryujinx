@@ -74,7 +74,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 Ccc.Lo => context.BitwiseNot(GetCF()),
                 Ccc.Sff => context.BitwiseNot(GetNF()),
                 Ccc.Ls => context.BitwiseOr(GetZF(), context.BitwiseNot(GetCF())),
-                Ccc.Hi => context.BitwiseOr(GetCF(), context.BitwiseNot(GetZF())),
+                Ccc.Hi => context.BitwiseAnd(GetCF(), context.BitwiseNot(GetZF())),
                 Ccc.Sft => GetNF(),
                 Ccc.Hs => GetCF(),
                 Ccc.Oft => GetVF(),
