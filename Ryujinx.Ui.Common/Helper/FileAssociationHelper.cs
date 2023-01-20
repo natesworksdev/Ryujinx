@@ -13,6 +13,9 @@ namespace Ryujinx.Ui.Common.Helper
     {
         private static string[] _fileExtensions = new string[] { ".nca", ".nro", ".nso", ".nsp", ".xci" };
 
+        [SupportedOSPlatform("linux")]
+        private static string _mimeDbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "mime");
+
         private const int SHCNE_ASSOCCHANGED = 0x8000000;
         private const int SHCNF_FLUSH        = 0x1000;
 
@@ -22,12 +25,14 @@ namespace Ryujinx.Ui.Common.Helper
         public static bool IsTypeAssociationSupported => (OperatingSystem.IsLinux() || OperatingSystem.IsWindows()) && !ReleaseInformation.IsFlatHubBuild();
 
         [SupportedOSPlatform("linux")]
+        private static bool AreMimeTypesRegisteredLinux() => File.Exists(Path.Combine(_mimeDbPath, "packages", "Ryujinx.xml"));
+
+        [SupportedOSPlatform("linux")]
         private static bool InstallLinuxMimeTypes(bool uninstall = false)
         {
-            string mimeDbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "mime");
             string installKeyword = uninstall ? "uninstall" : "install";
 
-            if (!File.Exists(Path.Combine(mimeDbPath, "packages", "Ryujinx.xml")))
+            if (!AreMimeTypesRegisteredLinux())
             {
                 string mimeTypesFile = Path.Combine(ReleaseInformation.GetBaseApplicationDirectory(), "mime", "Ryujinx.xml");
                 string additionalArgs = !uninstall ? "--novendor" : "";
@@ -50,7 +55,7 @@ namespace Ryujinx.Ui.Common.Helper
                 using Process updateMimeProcess = new();
 
                 updateMimeProcess.StartInfo.FileName = "update-mime-database";
-                updateMimeProcess.StartInfo.Arguments = mimeDbPath;
+                updateMimeProcess.StartInfo.Arguments = _mimeDbPath;
 
                 updateMimeProcess.Start();
                 updateMimeProcess.WaitForExit();
@@ -65,7 +70,7 @@ namespace Ryujinx.Ui.Common.Helper
         }
 
        [SupportedOSPlatform("windows")]
-        private static bool IsTypesRegisteredWindows()
+        private static bool AreMimeTypesRegisteredWindows()
         {
             static bool CheckRegistering(string ext)
             {
@@ -102,7 +107,7 @@ namespace Ryujinx.Ui.Common.Helper
 
                 if (uninstall)
                 {
-                    if (!IsTypesRegisteredWindows())
+                    if (!AreMimeTypesRegisteredWindows())
                     {
                         return false;
                     }
@@ -139,14 +144,19 @@ namespace Ryujinx.Ui.Common.Helper
             return registered;
         }
 
-        public static bool IsTypesRegistered()
+        public static bool AreMimeTypesRegistered()
         {
-            if (OperatingSystem.IsWindows())
+            if (OperatingSystem.IsLinux())
             {
-                return IsTypesRegisteredWindows();
+                return AreMimeTypesRegisteredLinux();
             }
 
-            // TODO: Add linux and macOS support.
+            if (OperatingSystem.IsWindows())
+            {
+                return AreMimeTypesRegisteredWindows();
+            }
+
+            // TODO: Add macOS support.
 
             return false;
         }
