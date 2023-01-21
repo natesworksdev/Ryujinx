@@ -69,7 +69,7 @@ namespace Ryujinx.Ui.Common.Helper
             return true;
         }
 
-       [SupportedOSPlatform("windows")]
+        [SupportedOSPlatform("windows")]
         private static bool AreMimeTypesRegisteredWindows()
         {
             static bool CheckRegistering(string ext)
