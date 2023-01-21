@@ -740,7 +740,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             get
             {
-                return (int)ConfigurationState.Instance.Ui.GridSize switch
+                return ConfigurationState.Instance.Ui.GridSize.Value switch
                 {
                     1 => 78,
                     2 => 100,
@@ -755,7 +755,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             get
             {
-                return (int)ConfigurationState.Instance.Ui.GridSize switch
+                return ConfigurationState.Instance.Ui.GridSize.Value switch
                 {
                     1 => 120,
                     2 => ShowNames ? 210 : 150,
