@@ -31,9 +31,12 @@ namespace ARMeilleure.CodeGen.Arm64
 
         public static bool TryEncodeBitMask(Operand operand, out int immN, out int immS, out int immR)
         {
-            ulong value = operand.Value;
+            return TryEncodeBitMask(operand.Type, operand.Value, out immN, out immS, out immR);
+        }
 
-            if (operand.Type == OperandType.I32)
+        public static bool TryEncodeBitMask(OperandType type, ulong value, out int immN, out int immS, out int immR)
+        {
+            if (type == OperandType.I32)
             {
                 value |= value << 32;
             }
