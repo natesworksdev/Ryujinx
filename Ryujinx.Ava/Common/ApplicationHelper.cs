@@ -75,7 +75,7 @@ namespace Ryujinx.Ava.Common
                 {
                     Dispatcher.UIThread.InvokeAsync(async () =>
                     {
-                        await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[LocaleKeys.DialogMessageCreateSaveErrorMessage], result.ToStringWithName()));
+                        await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogMessageCreateSaveErrorMessage, result.ToStringWithName()));
                     });
 
                     return false;
@@ -94,7 +94,7 @@ namespace Ryujinx.Ava.Common
 
             Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[LocaleKeys.DialogMessageCreateSaveErrorMessage], result.ToStringWithName()));
+                await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogMessageFindSaveErrorMessage, result.ToStringWithName()));
             });
 
             return false;
@@ -158,7 +158,7 @@ namespace Ryujinx.Ava.Common
                     Dispatcher.UIThread.Post(async () =>
                     {
                         UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
-                            string.Format(LocaleManager.Instance[LocaleKeys.DialogNcaExtractionMessage], ncaSectionType, Path.GetFileName(titleFilePath)),
+                            LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogNcaExtractionMessage, ncaSectionType, Path.GetFileName(titleFilePath)),
                             "",
                             "",
                             LocaleManager.Instance[LocaleKeys.InputDialogCancel],

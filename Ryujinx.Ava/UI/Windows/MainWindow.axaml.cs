@@ -148,7 +148,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void ApplicationLibrary_ApplicationCountUpdated(object sender, ApplicationCountUpdatedEventArgs e)
         {
-            LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.StatusBarGamesLoaded, e.NumAppsLoaded, e.NumAppsFound);
+            LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.StatusBarGamesLoaded, e.NumAppsLoaded, e.NumAppsFound);
 
             Dispatcher.UIThread.Post(() =>
             {
@@ -273,7 +273,7 @@ namespace Ryujinx.Ava.UI.Windows
                 ViewModel.LoadApplication(_launchPath, _startFullscreen);
             }
 
-            if (ConfigurationState.Instance.CheckUpdatesOnStart.Value && Updater.CanUpdate(false, this))
+            if (ConfigurationState.Instance.CheckUpdatesOnStart.Value && Updater.CanUpdate(false))
             {
                 Updater.BeginParse(this, false).ContinueWith(task =>
                 {
@@ -329,10 +329,11 @@ namespace Ryujinx.Ava.UI.Windows
 
         public void LoadHotKeys()
         {
-            HotKeyManager.SetHotKey(FullscreenHotKey,  new KeyGesture(Key.Enter, KeyModifiers.Alt));
-            HotKeyManager.SetHotKey(FullscreenHotKey2, new KeyGesture(Key.F11));
-            HotKeyManager.SetHotKey(DockToggleHotKey,  new KeyGesture(Key.F9));
-            HotKeyManager.SetHotKey(ExitHotKey,        new KeyGesture(Key.Escape));
+            HotKeyManager.SetHotKey(FullscreenHotKey,      new KeyGesture(Key.Enter, KeyModifiers.Alt));
+            HotKeyManager.SetHotKey(FullscreenHotKey2,     new KeyGesture(Key.F11));
+            HotKeyManager.SetHotKey(FullscreenHotKeyMacOS, new KeyGesture(Key.F, KeyModifiers.Control | KeyModifiers.Meta));
+            HotKeyManager.SetHotKey(DockToggleHotKey,      new KeyGesture(Key.F9));
+            HotKeyManager.SetHotKey(ExitHotKey,            new KeyGesture(Key.Escape));
         }
 
         private void VolumeStatus_CheckedChanged(object sender, SplitButtonClickEventArgs e)
@@ -417,7 +418,7 @@ namespace Ryujinx.Ava.UI.Windows
                 ViewModel.StatusBarProgressMaximum      = 0;
                 ViewModel.StatusBarProgressValue        = 0;
 
-                LocaleManager.Instance.UpdateDynamicValue(LocaleKeys.StatusBarGamesLoaded, 0, 0);
+                LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.StatusBarGamesLoaded, 0, 0);
             });
 
             ReloadGameList();

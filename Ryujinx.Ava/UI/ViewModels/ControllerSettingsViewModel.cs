@@ -3,6 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Svg.Skia;
 using Avalonia.Threading;
+using LibHac.Bcat;
+using LibHac.Tools.Fs;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Input;
 using Ryujinx.Ava.UI.Controls;
@@ -435,7 +437,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             if (str.Length > MaxSize)
             {
-                return str.Substring(0, MaxSize - Ellipsis.Length) + Ellipsis;
+                return $"{str.AsSpan(0, MaxSize - Ellipsis.Length)}{Ellipsis}";
             }
 
             return str;
@@ -717,7 +719,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     Logger.Error?.Print(LogClass.Configuration, $"Profile {ProfileName} is incompatible with the current input configuration system.");
 
-                    await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[LocaleKeys.DialogProfileInvalidProfileErrorMessage], ProfileName));
+                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogProfileInvalidProfileErrorMessage, ProfileName));
 
                     return;
                 }
