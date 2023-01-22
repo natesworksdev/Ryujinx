@@ -12,8 +12,6 @@ using Ryujinx.Audio.Renderer.Device;
 using Ryujinx.Audio.Renderer.Server;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Cpu;
-using Ryujinx.Cpu.AppleHv;
-using Ryujinx.Cpu.Jit;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Memory;
@@ -42,7 +40,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using TimeSpanType = Ryujinx.HLE.HOS.Services.Time.Clock.TimeSpanType;
 
