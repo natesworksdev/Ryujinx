@@ -38,6 +38,8 @@ public class TitleUpdateViewModel : BaseModel
     private AvaloniaList<TitleUpdateModel> _titleUpdates = new();
     private AvaloniaList<object> _views = new();
     private object _selectedUpdate;
+    
+    private static readonly TitleUpdateMetadataJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
     public AvaloniaList<TitleUpdateModel> TitleUpdates
     {
@@ -80,7 +82,7 @@ public class TitleUpdateViewModel : BaseModel
 
         try
         {
-            _titleUpdateWindowData = JsonHelper.DeserializeFromFile<TitleUpdateMetadata>(_titleUpdateJsonPath);
+            _titleUpdateWindowData = JsonHelper.DeserializeFromFile(_titleUpdateJsonPath, SerializerContext.TitleUpdateMetadata);
         }
         catch
         {
@@ -245,6 +247,6 @@ public class TitleUpdateViewModel : BaseModel
             }
         }
 
-        File.WriteAllBytes(_titleUpdateJsonPath, Encoding.UTF8.GetBytes(JsonHelper.Serialize(_titleUpdateWindowData, true)));
+        JsonHelper.SerializeToFile(_titleUpdateJsonPath, _titleUpdateWindowData, SerializerContext.TitleUpdateMetadata);
     }
 }
