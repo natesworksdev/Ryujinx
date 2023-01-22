@@ -239,6 +239,12 @@ namespace Ryujinx.Cpu.AppleHv
         HV_INTERRUPT_TYPE_FIQ
     }
 
+    struct hv_simd_fp_uchar16_t
+    {
+        public ulong Low;
+        public ulong High;
+    }
+
     static class HvResultExtensions
     {
         public static void ThrowOnError(this hv_result_t result)
@@ -250,65 +256,65 @@ namespace Ryujinx.Cpu.AppleHv
         }
     }
 
-    static class HvApi
+    static partial class HvApi
     {
         public const string LibraryName = "/System/Library/Frameworks/Hypervisor.framework/Hypervisor";
 
         [LibraryImport(LibraryName, SetLastError = true)]
-        public static extern hv_result_t hv_vm_get_max_vcpu_count(out uint max_vcpu_count);
+        public static partial hv_result_t hv_vm_get_max_vcpu_count(out uint max_vcpu_count);
 
         [LibraryImport(LibraryName, SetLastError = true)]
-        public static extern hv_result_t hv_vm_create(IntPtr config);
+        public static partial hv_result_t hv_vm_create(IntPtr config);
 
         [LibraryImport(LibraryName, SetLastError = true)]
-        public static extern hv_result_t hv_vm_destroy();
+        public static partial hv_result_t hv_vm_destroy();
 
         [LibraryImport(LibraryName, SetLastError = true)]
-        public static extern hv_result_t hv_vm_map(ulong addr, ulong ipa, ulong size, hv_memory_flags_t flags);
+        public static partial hv_result_t hv_vm_map(ulong addr, ulong ipa, ulong size, hv_memory_flags_t flags);
 
         [LibraryImport(LibraryName, SetLastError = true)]
-        public static extern hv_result_t hv_vm_unmap(ulong ipa, ulong size);
+        public static partial hv_result_t hv_vm_unmap(ulong ipa, ulong size);
 
         [LibraryImport(LibraryName, SetLastError = true)]
-        public static extern hv_result_t hv_vm_protect(ulong ipa, ulong size, hv_memory_flags_t flags);
+        public static partial hv_result_t hv_vm_protect(ulong ipa, ulong size, hv_memory_flags_t flags);
 
         [LibraryImport(LibraryName, SetLastError = true)]
-        public unsafe static extern hv_result_t hv_vcpu_create(out ulong vcpu, ref hv_vcpu_exit_t* exit, IntPtr config);
+        public unsafe static partial hv_result_t hv_vcpu_create(out ulong vcpu, ref hv_vcpu_exit_t* exit, IntPtr config);
 
         [LibraryImport(LibraryName, SetLastError = true)]
-        public unsafe static extern hv_result_t hv_vcpu_destroy(ulong vcpu);
+        public unsafe static partial hv_result_t hv_vcpu_destroy(ulong vcpu);
 
         [LibraryImport(LibraryName, SetLastError = true)]
-        public static extern hv_result_t hv_vcpu_run(ulong vcpu);
+        public static partial hv_result_t hv_vcpu_run(ulong vcpu);
 
         [LibraryImport(LibraryName, SetLastError = true)]
-        public static extern hv_result_t hv_vcpus_exit(ref ulong vcpus, uint vcpu_count);
+        public static partial hv_result_t hv_vcpus_exit(ref ulong vcpus, uint vcpu_count);
 
         [LibraryImport(LibraryName, SetLastError = true)]
-        public static extern hv_result_t hv_vcpu_set_vtimer_mask(ulong vcpu, bool vtimer_is_masked);
+        public static partial hv_result_t hv_vcpu_set_vtimer_mask(ulong vcpu, [MarshalAs(UnmanagedType.Bool)] bool vtimer_is_masked);
 
         [LibraryImport(LibraryName, SetLastError = true)]
-        public static extern hv_result_t hv_vcpu_get_reg(ulong vcpu, hv_reg_t reg, out ulong value);
+        public static partial hv_result_t hv_vcpu_get_reg(ulong vcpu, hv_reg_t reg, out ulong value);
 
         [LibraryImport(LibraryName, SetLastError = true)]
-        public static extern hv_result_t hv_vcpu_set_reg(ulong vcpu, hv_reg_t reg, ulong value);
+        public static partial hv_result_t hv_vcpu_set_reg(ulong vcpu, hv_reg_t reg, ulong value);
 
         [LibraryImport(LibraryName, SetLastError = true)]
-        public static extern hv_result_t hv_vcpu_get_simd_fp_reg(ulong vcpu, hv_simd_fp_reg_t reg, out V128 value);
+        public static partial hv_result_t hv_vcpu_get_simd_fp_reg(ulong vcpu, hv_simd_fp_reg_t reg, out hv_simd_fp_uchar16_t value);
 
         [LibraryImport(LibraryName, SetLastError = true)]
-        public static extern hv_result_t hv_vcpu_set_simd_fp_reg(ulong vcpu, hv_simd_fp_reg_t reg, V128 value); // DO NOT USE DIRECTLY!
+        public static partial hv_result_t hv_vcpu_set_simd_fp_reg(ulong vcpu, hv_simd_fp_reg_t reg, hv_simd_fp_uchar16_t value); // DO NOT USE DIRECTLY!
 
         [LibraryImport(LibraryName, SetLastError = true)]
-        public static extern hv_result_t hv_vcpu_get_sys_reg(ulong vcpu, hv_sys_reg_t reg, out ulong value);
+        public static partial hv_result_t hv_vcpu_get_sys_reg(ulong vcpu, hv_sys_reg_t reg, out ulong value);
 
         [LibraryImport(LibraryName, SetLastError = true)]
-        public static extern hv_result_t hv_vcpu_set_sys_reg(ulong vcpu, hv_sys_reg_t reg, ulong value);
+        public static partial hv_result_t hv_vcpu_set_sys_reg(ulong vcpu, hv_sys_reg_t reg, ulong value);
 
         [LibraryImport(LibraryName, SetLastError = true)]
-        public static extern hv_result_t hv_vcpu_get_pending_interrupt(ulong vcpu, hv_interrupt_type_t type, out bool pending);
+        public static partial hv_result_t hv_vcpu_get_pending_interrupt(ulong vcpu, hv_interrupt_type_t type, [MarshalAs(UnmanagedType.Bool)] out bool pending);
 
         [LibraryImport(LibraryName, SetLastError = true)]
-        public static extern hv_result_t hv_vcpu_set_pending_interrupt(ulong vcpu, hv_interrupt_type_t type, bool pending);
+        public static partial hv_result_t hv_vcpu_set_pending_interrupt(ulong vcpu, hv_interrupt_type_t type, [MarshalAs(UnmanagedType.Bool)] bool pending);
     }
 }

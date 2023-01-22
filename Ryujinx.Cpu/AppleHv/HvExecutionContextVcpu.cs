@@ -170,8 +170,8 @@ namespace Ryujinx.Cpu.AppleHv
 
         public V128 GetV(int index)
         {
-            HvApi.hv_vcpu_get_simd_fp_reg(_vcpu, hv_simd_fp_reg_t.HV_SIMD_FP_REG_Q0 + (uint)index, out V128 value).ThrowOnError();
-            return value;
+            HvApi.hv_vcpu_get_simd_fp_reg(_vcpu, hv_simd_fp_reg_t.HV_SIMD_FP_REG_Q0 + (uint)index, out hv_simd_fp_uchar16_t value).ThrowOnError();
+            return new V128(value.Low, value.High);
         }
 
         public void SetV(int index, V128 value)
