@@ -63,7 +63,6 @@ namespace Ryujinx.HLE.HOS
         internal Switch Device { get; private set; }
 
         internal ITickSource TickSource { get; }
-        internal ICpuEngine CpuEngine { get; }
 
         internal SurfaceFlinger SurfaceFlinger { get; private set; }
         internal AudioManager AudioManager { get; private set; }
@@ -132,15 +131,6 @@ namespace Ryujinx.HLE.HOS
         public Horizon(Switch device)
         {
             TickSource = new TickSource(KernelConstants.CounterFrequency);
-
-            if (OperatingSystem.IsMacOS() && RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
-            {
-                CpuEngine = new HvEngine(TickSource);
-            }
-            else
-            {
-                CpuEngine = new JitEngine(TickSource);
-            }
 
             KernelContext = new KernelContext(
                 TickSource,

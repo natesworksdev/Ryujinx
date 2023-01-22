@@ -60,6 +60,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged(nameof(IsCustomResolutionScaleActive));
             }
         }
+
         public int GraphicsBackendMultithreadingIndex
         {
             get => _graphicsBackendMultithreadingIndex;
@@ -120,10 +121,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public bool IsMacOS
-        {
-            get => OperatingSystem.IsMacOS();
-        }
+        public bool IsMacOS => OperatingSystem.IsMacOS();
 
         public bool EnableDiscordIntegration { get; set; }
         public bool CheckUpdatesOnStart { get; set; }
@@ -353,6 +351,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             // CPU
             EnablePptc = config.System.EnablePtc;
             MemoryMode = (int)config.System.MemoryManagerMode.Value;
+            UseHypervisor = config.System.UseHypervisor;
 
             // Graphics
             GraphicsBackendIndex = (int)config.Graphics.GraphicsBackend.Value;
@@ -432,11 +431,11 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.System.EnableFsIntegrityChecks.Value = EnableFsIntegrityChecks;
             config.System.ExpandRam.Value = ExpandDramSize;
             config.System.IgnoreMissingServices.Value = IgnoreMissingServices;
-            config.System.UseHypervisor.Value = UseHypervisor;
 
             // CPU
             config.System.EnablePtc.Value = EnablePptc;
             config.System.MemoryManagerMode.Value = (MemoryManagerMode)MemoryMode;
+            config.System.UseHypervisor.Value = UseHypervisor;
 
             // Graphics
             config.Graphics.GraphicsBackend.Value = (GraphicsBackend)GraphicsBackendIndex;

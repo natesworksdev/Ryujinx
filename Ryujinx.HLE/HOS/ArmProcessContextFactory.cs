@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS
 {
     class ArmProcessContextFactory : IProcessContextFactory
     {
-        private readonly ICpuEngine _cpuEngine;
+        private readonly ITickSource _tickSource;
         private readonly GpuContext _gpu;
         private readonly string _titleIdText;
         private readonly string _displayVersion;
@@ -24,7 +24,7 @@ namespace Ryujinx.HLE.HOS
         public IDiskCacheLoadState DiskCacheLoadState { get; private set; }
 
         public ArmProcessContextFactory(
-            ICpuEngine cpuEngine,
+            ITickSource tickSource,
             GpuContext gpu,
             string titleIdText,
             string displayVersion,
@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS
             ulong codeAddress,
             ulong codeSize)
         {
-            _cpuEngine = cpuEngine;
+            _tickSource = tickSource;
             _gpu = gpu;
             _titleIdText = titleIdText;
             _displayVersion = displayVersion;
@@ -43,37 +43,42 @@ namespace Ryujinx.HLE.HOS
 
         public IProcessContext Create(KernelContext context, ulong pid, ulong addressSpaceSize, InvalidAccessHandler invalidAccessHandler, bool for64Bit)
         {
-            if (OperatingSystem.IsMacOS() && RuntimeInformation.ProcessArchitecture == Architecture.Arm64 && for64Bit && context.Device.Configuration.UseHypervisor)
-            {
-                var memoryManager = new HvMemoryManager(context.Memory, addressSpaceSize, invalidAccessHandler);
-                return new ArmProcessContext<HvMemoryManager>(pid, _cpuEngine, _gpu, memoryManager, for64Bit);
-            }
-
-            MemoryManagerMode mode = context.Device.Configuration.MemoryManagerMode;
-
-            if (!MemoryBlock.SupportsFlags(MemoryAllocationFlags.ViewCompatible))
-            {
-                mode = MemoryManagerMode.SoftwarePageTable;
-            }
-
             IArmProcessContext processContext;
 
-            switch (mode)
+            if (OperatingSystem.IsMacOS() && RuntimeInformation.ProcessArchitecture == Architecture.Arm64 && for64Bit && context.Device.Configuration.UseHypervisor)
             {
-                case MemoryManagerMode.SoftwarePageTable:
-                    var memoryManager = new MemoryManager(context.Memory, addressSpaceSize, invalidAccessHandler);
-                    processContext = new ArmProcessContext<MemoryManager>(pid, _cpuEngine, _gpu, memoryManager, for64Bit);
-                    break;
+                var cpuEngine = new HvEngine(_tickSource);
+                var memoryManager = new HvMemoryManager(context.Memory, addressSpaceSize, invalidAccessHandler);
+                return new ArmProcessContext<HvMemoryManager>(pid, cpuEngine, _gpu, memoryManager, for64Bit);
+            }
+            else
+            {
+                MemoryManagerMode mode = context.Device.Configuration.MemoryManagerMode;
 
-                case MemoryManagerMode.HostMapped:
-                case MemoryManagerMode.HostMappedUnsafe:
-                    bool unsafeMode = mode == MemoryManagerMode.HostMappedUnsafe;
-                    var memoryManagerHostMapped = new MemoryManagerHostMapped(context.Memory, addressSpaceSize, unsafeMode, invalidAccessHandler);
-                    processContext = new ArmProcessContext<MemoryManagerHostMapped>(pid, _cpuEngine, _gpu, memoryManagerHostMapped, for64Bit);
-                    break;
+                if (!MemoryBlock.SupportsFlags(MemoryAllocationFlags.ViewCompatible))
+                {
+                    mode = MemoryManagerMode.SoftwarePageTable;
+                }
 
-                default:
-                    throw new ArgumentOutOfRangeException();
+                var cpuEngine = new JitEngine(_tickSource);
+
+                switch (mode)
+                {
+                    case MemoryManagerMode.SoftwarePageTable:
+                        var memoryManager = new MemoryManager(context.Memory, addressSpaceSize, invalidAccessHandler);
+                        processContext = new ArmProcessContext<MemoryManager>(pid, cpuEngine, _gpu, memoryManager, for64Bit);
+                        break;
+
+                    case MemoryManagerMode.HostMapped:
+                    case MemoryManagerMode.HostMappedUnsafe:
+                        bool unsafeMode = mode == MemoryManagerMode.HostMappedUnsafe;
+                        var memoryManagerHostMapped = new MemoryManagerHostMapped(context.Memory, addressSpaceSize, unsafeMode, invalidAccessHandler);
+                        processContext = new ArmProcessContext<MemoryManagerHostMapped>(pid, cpuEngine, _gpu, memoryManagerHostMapped, for64Bit);
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
 
             DiskCacheLoadState = processContext.Initialize(_titleIdText, _displayVersion, _diskCacheEnabled, _codeAddress, _codeSize);
