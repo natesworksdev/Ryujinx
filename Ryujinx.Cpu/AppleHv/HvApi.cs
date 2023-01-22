@@ -254,61 +254,61 @@ namespace Ryujinx.Cpu.AppleHv
     {
         public const string LibraryName = "/System/Library/Frameworks/Hypervisor.framework/Hypervisor";
 
-        [DllImport(LibraryName, SetLastError = true)]
+        [LibraryImport(LibraryName, SetLastError = true)]
         public static extern hv_result_t hv_vm_get_max_vcpu_count(out uint max_vcpu_count);
 
-        [DllImport(LibraryName, SetLastError = true)]
+        [LibraryImport(LibraryName, SetLastError = true)]
         public static extern hv_result_t hv_vm_create(IntPtr config);
 
-        [DllImport(LibraryName, SetLastError = true)]
+        [LibraryImport(LibraryName, SetLastError = true)]
         public static extern hv_result_t hv_vm_destroy();
 
-        [DllImport(LibraryName, SetLastError = true)]
+        [LibraryImport(LibraryName, SetLastError = true)]
         public static extern hv_result_t hv_vm_map(ulong addr, ulong ipa, ulong size, hv_memory_flags_t flags);
 
-        [DllImport(LibraryName, SetLastError = true)]
+        [LibraryImport(LibraryName, SetLastError = true)]
         public static extern hv_result_t hv_vm_unmap(ulong ipa, ulong size);
 
-        [DllImport(LibraryName, SetLastError = true)]
+        [LibraryImport(LibraryName, SetLastError = true)]
         public static extern hv_result_t hv_vm_protect(ulong ipa, ulong size, hv_memory_flags_t flags);
 
-        [DllImport(LibraryName, SetLastError = true)]
+        [LibraryImport(LibraryName, SetLastError = true)]
         public unsafe static extern hv_result_t hv_vcpu_create(out ulong vcpu, ref hv_vcpu_exit_t* exit, IntPtr config);
 
-        [DllImport(LibraryName, SetLastError = true)]
+        [LibraryImport(LibraryName, SetLastError = true)]
         public unsafe static extern hv_result_t hv_vcpu_destroy(ulong vcpu);
 
-        [DllImport(LibraryName, SetLastError = true)]
+        [LibraryImport(LibraryName, SetLastError = true)]
         public static extern hv_result_t hv_vcpu_run(ulong vcpu);
 
-        [DllImport(LibraryName, SetLastError = true)]
+        [LibraryImport(LibraryName, SetLastError = true)]
         public static extern hv_result_t hv_vcpus_exit(ref ulong vcpus, uint vcpu_count);
 
-        [DllImport(LibraryName, SetLastError = true)]
+        [LibraryImport(LibraryName, SetLastError = true)]
         public static extern hv_result_t hv_vcpu_set_vtimer_mask(ulong vcpu, bool vtimer_is_masked);
 
-        [DllImport(LibraryName, SetLastError = true)]
+        [LibraryImport(LibraryName, SetLastError = true)]
         public static extern hv_result_t hv_vcpu_get_reg(ulong vcpu, hv_reg_t reg, out ulong value);
 
-        [DllImport(LibraryName, SetLastError = true)]
+        [LibraryImport(LibraryName, SetLastError = true)]
         public static extern hv_result_t hv_vcpu_set_reg(ulong vcpu, hv_reg_t reg, ulong value);
 
-        [DllImport(LibraryName, SetLastError = true)]
+        [LibraryImport(LibraryName, SetLastError = true)]
         public static extern hv_result_t hv_vcpu_get_simd_fp_reg(ulong vcpu, hv_simd_fp_reg_t reg, out V128 value);
 
-        [DllImport(LibraryName, SetLastError = true)]
+        [LibraryImport(LibraryName, SetLastError = true)]
         public static extern hv_result_t hv_vcpu_set_simd_fp_reg(ulong vcpu, hv_simd_fp_reg_t reg, V128 value); // DO NOT USE DIRECTLY!
 
-        [DllImport(LibraryName, SetLastError = true)]
+        [LibraryImport(LibraryName, SetLastError = true)]
         public static extern hv_result_t hv_vcpu_get_sys_reg(ulong vcpu, hv_sys_reg_t reg, out ulong value);
 
-        [DllImport(LibraryName, SetLastError = true)]
+        [LibraryImport(LibraryName, SetLastError = true)]
         public static extern hv_result_t hv_vcpu_set_sys_reg(ulong vcpu, hv_sys_reg_t reg, ulong value);
 
-        [DllImport(LibraryName, SetLastError = true)]
+        [LibraryImport(LibraryName, SetLastError = true)]
         public static extern hv_result_t hv_vcpu_get_pending_interrupt(ulong vcpu, hv_interrupt_type_t type, out bool pending);
 
-        [DllImport(LibraryName, SetLastError = true)]
+        [LibraryImport(LibraryName, SetLastError = true)]
         public static extern hv_result_t hv_vcpu_set_pending_interrupt(ulong vcpu, hv_interrupt_type_t type, bool pending);
     }
 }
