@@ -245,8 +245,6 @@ public class TitleUpdateViewModel : BaseModel
             }
         }
 
-        using FileStream titleUpdateJsonStream = File.Create(_titleUpdateJsonPath, 4096, FileOptions.WriteThrough);
-
-        titleUpdateJsonStream.Write(Encoding.UTF8.GetBytes(JsonHelper.Serialize(_titleUpdateWindowData, true)));
+        File.WriteAllBytes(_titleUpdateJsonPath, Encoding.UTF8.GetBytes(JsonHelper.Serialize(_titleUpdateWindowData, true)));
     }
 }
