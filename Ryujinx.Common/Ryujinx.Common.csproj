@@ -4,9 +4,19 @@
     <TargetFramework>net7.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  
+  <PropertyGroup>
+    <ArrayNamespace>Ryujinx.Common.Memory</ArrayNamespace>
+    <ArrayOutputPath>Memory</ArrayOutputPath>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <ArrayInputFiles Include="..\**\*.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="MsgPack.Cli" />
+    <PackageReference Include="Ryujinx.CustomTasks" PrivateAssets="all" />
     <PackageReference Include="System.Management" />
   </ItemGroup>
 

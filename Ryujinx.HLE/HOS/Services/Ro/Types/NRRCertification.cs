@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
         public ulong ApplicationIdMask;
         public ulong ApplicationIdPattern;
         private Array16<byte> _reserved;
-        public ByteArray256 Modulus;
-        public ByteArray256 Signature;
+        public Array256<byte> Modulus;
+        public Array256<byte> Signature;
     }
 }
