@@ -1,4 +1,3 @@
-using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
@@ -7,24 +6,16 @@ using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
-using Ryujinx.Common.Configuration;
-using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.Ui.Common.Helper;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using Button = Avalonia.Controls.Button;
-using Path = System.IO.Path;
 
 namespace Ryujinx.Ava.UI.Windows
 {
     public partial class TitleUpdateWindow : UserControl
     {
         public TitleUpdateViewModel ViewModel;
-
-        private static readonly TitleUpdateMetadataJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
         public TitleUpdateWindow()
         {
