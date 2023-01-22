@@ -1,5 +1,6 @@
 using Ryujinx.Cpu.AppleHv.Arm;
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -112,8 +113,9 @@ namespace Ryujinx.Cpu.AppleHv
                     if ((va >> blockShift) << blockShift != va ||
                         (pa >> blockShift) << blockShift != pa)
                     {
-                        throw new Exception("bad block size");
+                        Debug.Fail($"Block size 0x{blockSize:X} (log2: {blockShift}) is invalid for VA 0x{va:X} or PA 0x{pa:X}.");
                     }
+
                     WriteBlock(currentLevel, (int)(va >> blockShift) & LevelMask, depth, pa, attr);
 
                     va += blockSize;
@@ -341,7 +343,7 @@ namespace Ryujinx.Cpu.AppleHv
             }
             else if (level.Next[index] == null)
             {
-                throw new Exception($"index {index} is block");
+                Debug.Fail($"Index {index} is block, expected a table.");
             }
         }
 
@@ -357,10 +359,7 @@ namespace Ryujinx.Cpu.AppleHv
 
         private static void ValidateEntriesCount(int count)
         {
-            if (count < 0 || count > LevelCount)
-            {
-                throw new Exception("bad count");
-            }
+            Debug.Assert(count >= 0 && count <= LevelCount, $"Entries count {count} is invalid.");
         }
 
         public void Dispose()
