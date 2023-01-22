@@ -52,7 +52,7 @@ body:
       placeholder: |
         - *(e.g. 1.1.1)*
     validations:
-      required: true
+      required: false
   - type: textarea
     id: environment
     attributes:
