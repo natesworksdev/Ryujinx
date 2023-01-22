@@ -1,11 +1,13 @@
 ﻿using Ryujinx.Common.Configuration;
 using Ryujinx.Cpu;
+using Ryujinx.Cpu.AppleHv;
 using Ryujinx.Cpu.Jit;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.Memory;
 using System;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS
 {
@@ -41,6 +43,12 @@ namespace Ryujinx.HLE.HOS
 
         public IProcessContext Create(KernelContext context, ulong pid, ulong addressSpaceSize, InvalidAccessHandler invalidAccessHandler, bool for64Bit)
         {
+            if (OperatingSystem.IsMacOS() && RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+            {
+                var memoryManager = new HvMemoryManager(context.Memory, addressSpaceSize, invalidAccessHandler);
+                return new ArmProcessContext<HvMemoryManager>(pid, _cpuEngine, _gpu, memoryManager, for64Bit);
+            }
+
             MemoryManagerMode mode = context.Device.Configuration.MemoryManagerMode;
 
             if (!MemoryBlock.SupportsFlags(MemoryAllocationFlags.ViewCompatible))

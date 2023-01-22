@@ -40,9 +40,10 @@ namespace Ryujinx.HLE
             FileSystem    = Configuration.VirtualFileSystem;
             UiHandler     = Configuration.HostUiHandler;
 
+            // TODO: Reserve on map, needs 16KB commits.
             MemoryAllocationFlags memoryAllocationFlags = configuration.MemoryManagerMode == MemoryManagerMode.SoftwarePageTable
-                ? MemoryAllocationFlags.Reserve
-                : MemoryAllocationFlags.Reserve | MemoryAllocationFlags.Mirrorable;
+                ? MemoryAllocationFlags.None
+                : MemoryAllocationFlags.Mirrorable;
 
             AudioDeviceDriver = new CompatLayerHardwareDeviceDriver(Configuration.AudioDeviceDriver);
             Memory            = new MemoryBlock(Configuration.MemoryConfiguration.ToDramSize(), memoryAllocationFlags);
