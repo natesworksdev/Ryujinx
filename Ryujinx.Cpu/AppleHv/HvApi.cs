@@ -6,15 +6,19 @@ namespace Ryujinx.Cpu.AppleHv
 {
     struct hv_vcpu_exit_exception_t
     {
+#pragma warning disable CS0649
         public ulong syndrome;
         public ulong virtual_address;
         public ulong physical_address;
+#pragma warning restore CS0649
     }
 
     struct hv_vcpu_exit_t
     {
+#pragma warning disable CS0649
         public uint reason;
         public hv_vcpu_exit_exception_t exception;
+#pragma warning restore CS0649
     }
 
     enum hv_reg_t : uint
