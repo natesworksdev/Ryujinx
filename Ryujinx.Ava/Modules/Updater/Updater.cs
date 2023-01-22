@@ -103,10 +103,10 @@ namespace Ryujinx.Modules
                 string  buildInfoURL = $"{GitHubApiURL}/repos/{ReleaseInformation.ReleaseChannelOwner}/{ReleaseInformation.ReleaseChannelRepo}/releases/latest";
                 string  fetchedJson  = await jsonClient.GetStringAsync(buildInfoURL);
                 var fetched = JsonHelper.Deserialize(fetchedJson, SerializerContext.GithubReleasesJsonResponse);
-                    _buildVer = fetched.Name;
+                _buildVer = fetched.Name;
 
                 foreach (var asset in fetched.Assets)
-                    {
+                {
                     if (asset.Name.StartsWith("test-ava-ryujinx") && asset.Name.EndsWith(_platformExt))
                     {
                         _buildUrl = asset.BrowserDownloadUrl;
