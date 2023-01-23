@@ -8,7 +8,7 @@ namespace Ryujinx.Cpu.AppleHv
     class HvExecutionContext : IExecutionContext
     {
         /// <inheritdoc/>
-        public ulong Pc => _impl.EsrEl1;
+        public ulong Pc => _impl.ElrEl1;
 
         /// <inheritdoc/>
         public long TpidrEl0
