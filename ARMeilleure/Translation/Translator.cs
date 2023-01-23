@@ -292,11 +292,11 @@ namespace ARMeilleure.Translation
                 _ptc.WriteCompiledFunction(address, funcSize, hash, highCq, compiledFunc);
             }
 
-            GuestFunction func = compiledFunc.Map<GuestFunction>();
+            GuestFunction func = compiledFunc.MapWithPointer<GuestFunction>(out IntPtr funcPointer);
 
             Allocators.ResetAll();
 
-            return new TranslatedFunction(func, counter, funcSize, highCq);
+            return new TranslatedFunction(func, funcPointer, counter, funcSize, highCq);
         }
 
         private void BackgroundTranslate()
