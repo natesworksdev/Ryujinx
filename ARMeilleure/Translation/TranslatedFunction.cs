@@ -7,7 +7,7 @@ namespace ARMeilleure.Translation
     {
         private readonly GuestFunction _func; // Ensure that this delegate will not be garbage collected.
 
-        public IntPtr FuncPtr { get; }
+        public IntPtr FuncPointer { get; }
         public Counter<uint> CallCounter { get; }
         public ulong GuestSize { get; }
         public bool HighCq { get; }
@@ -15,7 +15,7 @@ namespace ARMeilleure.Translation
         public TranslatedFunction(GuestFunction func, IntPtr funcPointer, Counter<uint> callCounter, ulong guestSize, bool highCq)
         {
             _func = func;
-            FuncPtr = funcPointer;
+            FuncPointer = funcPointer;
             CallCounter = callCounter;
             GuestSize = guestSize;
             HighCq = highCq;
