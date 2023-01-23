@@ -40,6 +40,10 @@ namespace Ryujinx.Graphics.Vulkan
             BufferUsageFlags.VertexBufferBit |
             BufferUsageFlags.TransformFeedbackBufferBitExt;
 
+        private const BufferUsageFlags HostImportedBufferUsageFlags =
+            BufferUsageFlags.TransferSrcBit |
+            BufferUsageFlags.TransferDstBit;
+
         private readonly Device _device;
 
         private readonly IdList<BufferHolder> _buffers;
@@ -57,7 +61,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public unsafe BufferHandle CreateHostImported(VulkanRenderer gd, nint pointer, int size)
         {
-            var usage = DefaultBufferUsageFlags;
+            var usage = HostImportedBufferUsageFlags;
 
             if (gd.Capabilities.SupportsIndirectParameters)
             {
