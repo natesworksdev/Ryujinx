@@ -18,7 +18,7 @@ namespace Ryujinx.Graphics.Vulkan
         private int _queryCount;
 
         private int[] _queryCountHistory = new int[3];
-        private int _queryCountHistoryPtr;
+        private int _queryCountHistoryIndex;
         private int _remainingQueries;
 
         public void RegisterFlush(ulong drawCount)
@@ -34,7 +34,7 @@ namespace Ryujinx.Graphics.Vulkan
             _hasPendingQuery = true;
             _remainingQueries--;
 
-            _queryCountHistory[_queryCountHistoryPtr]++;
+            _queryCountHistory[_queryCountHistoryIndex]++;
 
             // Interrupt render passes to flush queries, so that early results arrive sooner.
             if (++_queryCount == InitialQueryCountForFlush)
@@ -95,11 +95,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Present()
         {
-            _queryCountHistoryPtr = (_queryCountHistoryPtr + 1) % 3;
+            _queryCountHistoryIndex = (_queryCountHistoryIndex + 1) % 3;
 
             _remainingQueries = _queryCountHistory.Max() + 10;
 
-            _queryCountHistory[_queryCountHistoryPtr] = 0;
+            _queryCountHistory[_queryCountHistoryIndex] = 0;
         }
     }
 }
