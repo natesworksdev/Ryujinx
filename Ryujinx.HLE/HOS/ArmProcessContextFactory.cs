@@ -49,7 +49,7 @@ namespace Ryujinx.HLE.HOS
             {
                 var cpuEngine = new HvEngine(_tickSource);
                 var memoryManager = new HvMemoryManager(context.Memory, addressSpaceSize, invalidAccessHandler);
-                return new ArmProcessContext<HvMemoryManager>(pid, cpuEngine, _gpu, memoryManager, for64Bit);
+                processContext = new ArmProcessContext<HvMemoryManager>(pid, cpuEngine, _gpu, memoryManager, for64Bit);
             }
             else
             {
