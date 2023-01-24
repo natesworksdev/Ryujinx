@@ -218,14 +218,14 @@ namespace Ryujinx.Ava.Common
             {
                 if (mainNca.CanOpenSection(NcaSectionType.Code))
                 {
-                    codeFs = mainNca.OpenFileSystem(NcaSectionType.Code, IntegrityCheckLevel.None);
+                    codeFs = mainNca.OpenFileSystem(NcaSectionType.Code, IntegrityCheckLevel.ErrorOnInvalid);
                 }
             }
             else
             {
                 if (patchNca.CanOpenSection(NcaSectionType.Code))
                 {
-                    codeFs = mainNca.OpenFileSystemWithPatch(patchNca, NcaSectionType.Code, IntegrityCheckLevel.None);
+                    codeFs = mainNca.OpenFileSystemWithPatch(patchNca, NcaSectionType.Code, IntegrityCheckLevel.ErrorOnInvalid);
                 }
             }
                 
