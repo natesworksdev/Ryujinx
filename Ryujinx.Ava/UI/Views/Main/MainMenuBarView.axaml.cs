@@ -149,7 +149,7 @@ namespace Ryujinx.Ava.UI.Views.Main
             ApplicationLoader application = ViewModel.AppHost.Device.Application;
             if (application != null)
             {
-                await new CheatWindow(Window.VirtualFileSystem, application.TitleIdText, application.TitleName).ShowDialog(Window);
+                await new CheatWindow(Window.VirtualFileSystem, application.TitleIdText, application.TitleName, application.BuildId).ShowDialog(Window);
 
                 ViewModel.AppHost.Device.EnableCheats();
             }

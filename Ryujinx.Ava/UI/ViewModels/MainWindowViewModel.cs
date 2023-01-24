@@ -1626,7 +1626,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
                 {
-                    await new CheatWindow(VirtualFileSystem, selection.TitleId, selection.TitleName).ShowDialog(desktop.MainWindow);
+                    await new CheatWindow(VirtualFileSystem, selection.TitleId, selection.TitleName,
+                        ApplicationHelper.GetBuildId(selection.Path)).ShowDialog(desktop.MainWindow);
                 }
             }
         }

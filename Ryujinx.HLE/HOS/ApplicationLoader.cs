@@ -65,6 +65,8 @@ namespace Ryujinx.HLE.HOS
         public bool TitleIs64Bit { get; private set; }
 
         public string TitleIdText => TitleId.ToString("x16");
+        
+        public string BuildId { get; private set; }
 
         public IDiskCacheLoadState DiskCacheLoadState { get; private set; }
 
@@ -654,6 +656,11 @@ namespace Ryujinx.HLE.HOS
             DiskCacheLoadState = result.DiskCacheLoadState;
 
             _device.Configuration.VirtualFileSystem.ModLoader.LoadCheats(TitleId, result.TamperInfo, _device.TamperMachine);
+
+            string[] buildIds = programs.Where(e => e.Name == "main").Select(e =>
+                (BitConverter.ToString(e.BuildId.ItemsRo.ToArray())).Replace("-", "").ToUpper()).ToArray();
+
+            BuildId = buildIds.Any() ? buildIds.First()[..Cheat.CheatIdSize] : string.Empty;
 
             return result.ProcessId;
         }
