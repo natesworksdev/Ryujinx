@@ -29,7 +29,7 @@ namespace ARMeilleure.Translation.PTC
         private const string OuterHeaderMagicString = "PTCohd\0\0";
         private const string InnerHeaderMagicString = "PTCihd\0\0";
 
-        private const uint InternalVersion = 4272; //! To be incremented manually for each change to the ARMeilleure project.
+        private const uint InternalVersion = 4328; //! To be incremented manually for each change to the ARMeilleure project.
 
         private const string ActualDir = "0";
         private const string BackupDir = "1";
@@ -745,9 +745,9 @@ namespace ARMeilleure.Translation.PTC
             bool highCq)
         {
             var cFunc = new CompiledFunction(code, unwindInfo, RelocInfo.Empty);
-            var gFunc = cFunc.Map<GuestFunction>();
+            var gFunc = cFunc.MapWithPointer<GuestFunction>(out IntPtr gFuncPointer);
 
-            return new TranslatedFunction(gFunc, callCounter, guestSize, highCq);
+            return new TranslatedFunction(gFunc, gFuncPointer, callCounter, guestSize, highCq);
         }
 
         private void UpdateInfo(InfoEntry infoEntry)
