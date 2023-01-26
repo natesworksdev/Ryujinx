@@ -106,6 +106,7 @@ namespace Ryujinx.Ui.Applet
                     swkbdDialog.OkButton.Label             = args.SubmitText;
 
                     swkbdDialog.SetInputLengthValidation(args.StringLengthMin, args.StringLengthMax);
+                    swkbdDialog.SetKeyboardMode(args.KeyboardMode);
 
                     if (swkbdDialog.Run() == (int)ResponseType.Ok)
                     {

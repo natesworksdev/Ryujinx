@@ -7,6 +7,7 @@ namespace Ryujinx.Ui.Applet
     {
         private int _inputMin;
         private int _inputMax;
+        private HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode _mode;
 
         private Predicate<int> _checkLength;
 
@@ -73,6 +74,11 @@ namespace Ryujinx.Ui.Applet
             OnInputChanged(this, EventArgs.Empty);
         }
 
+        public void SetKeyboardMode(HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode mode)
+        {
+            _mode = mode;
+        }
+
         private void OnInputActivated(object sender, EventArgs e)
         {
             if (OkButton.IsSensitive)
@@ -81,9 +87,72 @@ namespace Ryujinx.Ui.Applet
             }
         }
 
+        private bool CheckInputTextAgainstKeyboardMode()
+        {
+            bool isTextAgreeWithKeyboardMode = true;
+            switch (_mode)
+            {
+                case HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode.NumbersOnly:
+                    {
+                        foreach (char c in InputEntry.Text)
+                        {
+                            if (!char.IsNumber(c))
+                            {
+                                isTextAgreeWithKeyboardMode = false;
+                                _validationInfo.Visible = true;
+                                _validationInfo.Markup  = $"<i>Must be numbers only.</i>";
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                case HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode.Alphabet:
+                    {
+                        foreach (char c in InputEntry.Text)
+                        {
+                            if (!char.IsLetter(c))
+                            {
+                                isTextAgreeWithKeyboardMode = false;
+                                _validationInfo.Visible = true;
+                                _validationInfo.Markup  = $"<i>Must be alphabets only.</i>";
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                case HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode.ASCII:
+                    {
+                        foreach (char c in InputEntry.Text)
+                        {
+                            if (!char.IsAscii(c))
+                            {
+                                isTextAgreeWithKeyboardMode = false;
+                                _validationInfo.Visible = true;
+                                _validationInfo.Markup  = $"<i>Must be ASCII text only.</i>";
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                case HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode.FullLatin:
+                case HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode.SimplifiedChinese:
+                case HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode.TraditionalChinese:
+                case HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode.Korean:
+                case HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode.LanguageSet2:
+                case HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode.LanguageSet2Latin:
+                case HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode.Default:
+                default:
+                    isTextAgreeWithKeyboardMode = true;
+                    _validationInfo.Visible = false;
+                    break;
+            }
+
+            return isTextAgreeWithKeyboardMode;
+        }
+
         private void OnInputChanged(object sender, EventArgs e)
         {
-            OkButton.Sensitive = _checkLength(InputEntry.Text.Length);
+            OkButton.Sensitive = _checkLength(InputEntry.Text.Length) && CheckInputTextAgainstKeyboardMode();
         }
     }
 }
