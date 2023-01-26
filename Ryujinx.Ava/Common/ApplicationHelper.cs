@@ -140,7 +140,7 @@ namespace Ryujinx.Ava.Common
                 OpenHelper.OpenFolder(workingPath);
             }
         }
-        
+
         public static async Task ExtractSection(NcaSectionType ncaSectionType, string titleFilePath, string titleName, int programIndex = 0)
         {
             OpenFolderDialog folderDialog = new()
