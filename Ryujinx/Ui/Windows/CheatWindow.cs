@@ -21,12 +21,12 @@ namespace Ryujinx.Ui.Windows
         [GUI] Button   _saveButton;
 #pragma warning restore CS0649, IDE0044
 
-        public CheatWindow(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName) : this(new Builder("Ryujinx.Ui.Windows.CheatWindow.glade"), virtualFileSystem, titleId, titleName) { }
+        public CheatWindow(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName, string gameBuildId) : this(new Builder("Ryujinx.Ui.Windows.CheatWindow.glade"), virtualFileSystem, titleId, titleName, gameBuildId) { }
 
-        private CheatWindow(Builder builder, VirtualFileSystem virtualFileSystem, ulong titleId, string titleName) : base(builder.GetRawOwnedObject("_cheatWindow"))
+        private CheatWindow(Builder builder, VirtualFileSystem virtualFileSystem, ulong titleId, string titleName, string gameBuildId) : base(builder.GetRawOwnedObject("_cheatWindow"))
         {
             builder.Autoconnect(this);
-            _baseTitleInfoLabel.Text = $"Cheats Available for {titleName} [{titleId:X16}]";
+            _baseTitleInfoLabel.Text = $"Cheats Available for {titleName} [{gameBuildId}]";
 
             string modsBasePath  = virtualFileSystem.ModLoader.GetModsBasePath();
             string titleModsPath = virtualFileSystem.ModLoader.GetTitleDir(modsBasePath, titleId.ToString("X16"));
