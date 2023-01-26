@@ -41,7 +41,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             Operand address = context.IAdd(Register(op.SrcA, RegisterType.Gpr), Const(offset));
 
-            var targets = context.CurrBlock.Successors.Skip(startIndex);
+            var targets = context.CurrBlock.Successors.Skip(startIndex).ToArray();
 
             bool allTargetsSinglePred = true;
             int total = context.CurrBlock.Successors.Count - startIndex;

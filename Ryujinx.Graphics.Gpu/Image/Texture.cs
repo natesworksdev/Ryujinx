@@ -1568,7 +1568,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             MultiRange otherRange = texture.Range;
 
             IEnumerable<MultiRange> regions = _sizeInfo.AllRegions().Select((region) => Range.GetSlice((ulong)region.Offset, (ulong)region.Size));
-            IEnumerable<MultiRange> otherRegions = texture._sizeInfo.AllRegions().Select((region) => otherRange.GetSlice((ulong)region.Offset, (ulong)region.Size));
+            MultiRange[] otherRegions = texture._sizeInfo.AllRegions().Select((region) => otherRange.GetSlice((ulong)region.Offset, (ulong)region.Size)).ToArray();
 
             foreach (MultiRange region in regions)
             {

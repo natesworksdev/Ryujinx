@@ -350,7 +350,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
             if (hostEntry != null)
             {
-                IEnumerable<IPAddress> addresses = GetIpv4Addresses(hostEntry);
+                IPAddress[] addresses = GetIpv4Addresses(hostEntry);
 
                 if (!addresses.Any())
                 {
@@ -439,7 +439,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             return ResultCode.Success;
         }
 
-        private static int SerializeHostEntries(ServiceCtx context, ulong outputBufferPosition, ulong outputBufferSize, IPHostEntry hostEntry, IEnumerable<IPAddress> addresses = null)
+        private static int SerializeHostEntries(ServiceCtx context, ulong outputBufferPosition, ulong outputBufferSize, IPHostEntry hostEntry, IPAddress[] addresses = null)
         {
             ulong originalBufferPosition = outputBufferPosition;
             ulong bufferPosition         = originalBufferPosition;
@@ -470,7 +470,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             bufferPosition += sizeof(short);
 
             // Ip address count, we can only support ipv4 (blame Nintendo)
-            context.Memory.Write(bufferPosition, addresses != null ? BinaryPrimitives.ReverseEndianness(addresses.Count()) : 0);
+            context.Memory.Write(bufferPosition, addresses != null ? BinaryPrimitives.ReverseEndianness(addresses.Length) : 0);
             bufferPosition += sizeof(int);
 
             if (addresses != null)
@@ -656,9 +656,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             }
         }
 
-        private static IEnumerable<IPAddress> GetIpv4Addresses(IPHostEntry hostEntry)
+        private static IPAddress[] GetIpv4Addresses(IPHostEntry hostEntry)
         {
-            return hostEntry.AddressList.Where(x => x.AddressFamily == AddressFamily.InterNetwork);
+            return hostEntry.AddressList.Where(x => x.AddressFamily == AddressFamily.InterNetwork).ToArray();
         }
 
         private static NetDbError ConvertSocketErrorCodeToNetDbError(int errorCode)

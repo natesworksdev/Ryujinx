@@ -389,7 +389,7 @@ namespace Ryujinx.Memory.Tests
                 Assert.IsTrue(throws);
             }
 
-            IEnumerable<IRegionHandle> combinedHandles = combined.GetHandles();
+            IEnumerable<IRegionHandle> combinedHandles = combined.GetHandles().ToArray();
 
             Assert.AreEqual(handleGroups[0].ElementAt(0), combinedHandles.ElementAt(3));
             Assert.AreEqual(handleGroups[0].ElementAt(1), combinedHandles.ElementAt(4));
