@@ -1,6 +1,5 @@
 using Ryujinx.Memory;
 using System;
-using System.Threading;
 
 namespace Ryujinx.Cpu.AppleHv
 {
@@ -11,41 +10,58 @@ namespace Ryujinx.Cpu.AppleHv
 
         private static int _addressSpaces;
         private static HvIpaAllocator _ipaAllocator;
+        private static object _lock = new object();
 
         public static (ulong, HvIpaAllocator) CreateAddressSpace(MemoryBlock block)
         {
-            if (Interlocked.Increment(ref _addressSpaces) == 1)
+            HvIpaAllocator ipaAllocator;
+
+            lock (_lock)
             {
-                HvApi.hv_vm_create(IntPtr.Zero).ThrowOnError();
-                _ipaAllocator = new HvIpaAllocator();
+                if (++_addressSpaces == 1)
+                {
+                    HvApi.hv_vm_create(IntPtr.Zero).ThrowOnError();
+                    _ipaAllocator = ipaAllocator = new HvIpaAllocator();
+                }
+                else
+                {
+                    ipaAllocator = _ipaAllocator;
+                }
             }
 
             ulong baseAddress;
 
-            lock (_ipaAllocator)
+            lock (ipaAllocator)
             {
-                baseAddress = _ipaAllocator.Allocate(block.Size, AsIpaAlignment);
+                baseAddress = ipaAllocator.Allocate(block.Size, AsIpaAlignment);
             }
 
             var rwx = hv_memory_flags_t.HV_MEMORY_READ | hv_memory_flags_t.HV_MEMORY_WRITE | hv_memory_flags_t.HV_MEMORY_EXEC;
 
             HvApi.hv_vm_map((ulong)block.Pointer, baseAddress, block.Size, rwx).ThrowOnError();
 
-            return (baseAddress, _ipaAllocator);
+            return (baseAddress, ipaAllocator);
         }
 
         public static void DestroyAddressSpace(ulong address, ulong size)
         {
             HvApi.hv_vm_unmap(address, size);
 
-            lock (_ipaAllocator)
+            HvIpaAllocator ipaAllocator;
+
+            lock (_lock)
             {
-                _ipaAllocator.Free(address, size);
+                if (--_addressSpaces == 0)
+                {
+                    HvApi.hv_vm_destroy().ThrowOnError();
+                }
+
+                ipaAllocator = _ipaAllocator;
             }
 
-            if (Interlocked.Decrement(ref _addressSpaces) == 0)
+            lock (ipaAllocator)
             {
-                HvApi.hv_vm_destroy().ThrowOnError();
+                ipaAllocator.Free(address, size);
             }
         }
     }

@@ -13,7 +13,7 @@ using System.Threading;
 namespace Ryujinx.Cpu.AppleHv
 {
     /// <summary>
-    /// Represents a CPU memory manager which maps guest virtual memory directly onto a host virtual region.
+    /// Represents a CPU memory manager which maps guest virtual memory directly onto the Hypervisor page table.
     /// </summary>
     public class HvMemoryManager : MemoryManagerBase, IMemoryManager, IVirtualMemoryManagerTracked, IWritableBlock
     {
@@ -62,7 +62,7 @@ namespace Ryujinx.Cpu.AppleHv
         public event Action<ulong, ulong> UnmapEvent;
 
         /// <summary>
-        /// Creates a new instance of the host mapped memory manager.
+        /// Creates a new instance of the Hypervisor memory manager.
         /// </summary>
         /// <param name="backingMemory">Physical backing memory where virtual memory will be mapped to</param>
         /// <param name="addressSpaceSize">Size of the address space</param>

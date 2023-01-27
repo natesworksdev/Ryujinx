@@ -126,8 +126,8 @@ namespace Ryujinx.Cpu.AppleHv
 
         private void UnmapImpl(PtLevel level, int depth, ulong va, ulong size)
         {
-            ulong endVa = (va + size + PageSize - 1) & ~((ulong)PageSize - 1);
-            va &= ~((ulong)PageSize - 1);
+            ulong endVa = (va + size + PageMask) & ~((ulong)PageMask);
+            va &= ~((ulong)PageMask);
 
             (ulong blockSize, int blockShift) = GetBlockSizeAndShift(depth);
 
