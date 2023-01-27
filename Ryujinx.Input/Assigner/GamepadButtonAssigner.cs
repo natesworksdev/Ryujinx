@@ -61,7 +61,7 @@ namespace Ryujinx.Input.Assigner
 
         public string GetPressedButton()
         {
-            var pressedButtons = _detector.GetPressedButtons().ToArray();
+            var pressedButtons = _detector.GetPressedButtons().Take(1).ToArray();
 
             if (pressedButtons.Any())
             {
