@@ -389,15 +389,15 @@ namespace Ryujinx.Memory.Tests
                 Assert.IsTrue(throws);
             }
 
-            IEnumerable<IRegionHandle> combinedHandles = combined.GetHandles().ToArray();
+            var combinedHandles = combined.GetHandles().ToArray();
 
-            Assert.AreEqual(handleGroups[0].ElementAt(0), combinedHandles.ElementAt(3));
-            Assert.AreEqual(handleGroups[0].ElementAt(1), combinedHandles.ElementAt(4));
-            Assert.AreEqual(handleGroups[0].ElementAt(2), combinedHandles.ElementAt(5));
+            Assert.AreEqual(handleGroups[0].ElementAt(0), combinedHandles[3]);
+            Assert.AreEqual(handleGroups[0].ElementAt(1), combinedHandles[4]);
+            Assert.AreEqual(handleGroups[0].ElementAt(2), combinedHandles[5]);
 
-            Assert.AreEqual(singlePages[0], combinedHandles.ElementAt(8));
-            Assert.AreEqual(singlePages[1], combinedHandles.ElementAt(9));
-            Assert.AreEqual(singlePages[2], combinedHandles.ElementAt(10));
+            Assert.AreEqual(singlePages[0], combinedHandles[8]);
+            Assert.AreEqual(singlePages[1], combinedHandles[9]);
+            Assert.AreEqual(singlePages[2], combinedHandles[10]);
         }
 
         [Test]
