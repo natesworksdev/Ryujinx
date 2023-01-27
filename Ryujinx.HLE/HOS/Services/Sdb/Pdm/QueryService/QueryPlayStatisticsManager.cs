@@ -74,14 +74,12 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pdm.QueryService
                 filteredApplicationPlayStatistics = filteredApplicationPlayStatistics.Where(kv => kv.Key == userId);
             }
 
-            var filteredApplicationPlayStatisticsArray = filteredApplicationPlayStatistics.ToArray();
-            
-            for (int i = 0; i < filteredApplicationPlayStatisticsArray.Length; i++)
+            for (int i = 0; i < filteredApplicationPlayStatistics.Count(); i++)
             {
-                MemoryHelper.Write(context.Memory, outputPosition + (ulong)(i * Unsafe.SizeOf<ApplicationPlayStatistics>()), filteredApplicationPlayStatisticsArray[i].Value);
+                MemoryHelper.Write(context.Memory, outputPosition + (ulong)(i * Unsafe.SizeOf<ApplicationPlayStatistics>()), filteredApplicationPlayStatistics.ElementAt(i).Value);
             }
 
-            context.ResponseData.Write(filteredApplicationPlayStatisticsArray.Length);
+            context.ResponseData.Write(filteredApplicationPlayStatistics.Count());
 
             return ResultCode.Success;
         }
