@@ -254,7 +254,8 @@ namespace Ryujinx.Ava.UI.Renderer
             NativeMacOS.objc_msgSend(metalLayer, "setContentsScale:", Program.DesktopScaleFactor);
 
             // Ensure the scale factor is up to date.
-            _updateBoundsCallback = rect => {
+            _updateBoundsCallback = rect =>
+            {
                 NativeMacOS.objc_msgSend(metalLayer, "setContentsScale:", Program.DesktopScaleFactor);
             };
 
