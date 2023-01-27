@@ -93,32 +93,5 @@ namespace Ryujinx.Ui.Common.Helper
                 Size = new NSPoint(width, height);
             }
         }
-
-        public static void OpenURL(string path)
-        {
-            NSString nsStringPath = new(path);
-            IntPtr nsUrl = objc_getClass("NSURL");
-            var urlPtr = IntPtr_objc_msgSend(nsUrl, "URLWithString:", nsStringPath);
-
-            IntPtr nsWorkspace = objc_getClass("NSWorkspace");
-            IntPtr sharedWorkspace = IntPtr_objc_msgSend(nsWorkspace, "sharedWorkspace");
-
-            bool_objc_msgSend(sharedWorkspace, "openURL:", urlPtr);
-        }
-
-        public static void ActivateFileViewerSelectingURL(string path)
-        {
-            NSString nsStringPath = new(path);
-            IntPtr nsUrl = objc_getClass("NSURL");
-            var urlPtr = IntPtr_objc_msgSend(nsUrl, "fileURLWithPath:", nsStringPath);
-
-            IntPtr nsArray = objc_getClass("NSArray");
-            IntPtr urlArray = IntPtr_objc_msgSend(nsArray, "arrayWithObject:", urlPtr);
-
-            IntPtr nsWorkspace = objc_getClass("NSWorkspace");
-            IntPtr sharedWorkspace = IntPtr_objc_msgSend(nsWorkspace, "sharedWorkspace");
-
-            objc_msgSend(sharedWorkspace, "activateFileViewerSelectingURLs:", urlArray);
-        }
     }
 }

@@ -2,9 +2,9 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Platform;
-using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Ui.Common.Configuration;
+using Ryujinx.Ui.Common.Helper;
 using SPB.Graphics;
 using SPB.Platform;
 using SPB.Platform.GLX;
@@ -30,6 +30,7 @@ namespace Ryujinx.Ava.UI.Renderer
         protected IntPtr NsView       { get; set; }
         protected IntPtr MetalLayer   { get; set; }
 
+        public delegate void UpdateBoundsCallbackDelegate(Rect rect);
         private UpdateBoundsCallbackDelegate _updateBoundsCallback;
 
         public event EventHandler<IntPtr> WindowCreated;
@@ -237,8 +238,28 @@ namespace Ryujinx.Ava.UI.Renderer
         [SupportedOSPlatform("macos")]
         IPlatformHandle CreateMacOS()
         {
-            MetalLayer = MetalHelper.GetMetalLayer(out IntPtr nsView, out _updateBoundsCallback);
+            // Create a new CAMetalLayer.
+            IntPtr layerClass = NativeMacOS.objc_getClass("CAMetalLayer");
+            IntPtr metalLayer = NativeMacOS.IntPtr_objc_msgSend(layerClass, "alloc");
+            NativeMacOS.objc_msgSend(metalLayer, "init");
 
+            // Create a child NSView to render into.
+            IntPtr nsViewClass = NativeMacOS.objc_getClass("NSView");
+            IntPtr child = NativeMacOS.IntPtr_objc_msgSend(nsViewClass, "alloc");
+            NativeMacOS.objc_msgSend(child, "init", new NativeMacOS.NSRect(0, 0, 0, 0));
+
+            // Make its renderer our metal layer.
+            NativeMacOS.objc_msgSend(child, "setWantsLayer:", 1);
+            NativeMacOS.objc_msgSend(child, "setLayer:", metalLayer);
+            NativeMacOS.objc_msgSend(metalLayer, "setContentsScale:", Program.DesktopScaleFactor);
+
+            // Ensure the scale factor is up to date.
+            _updateBoundsCallback = rect => {
+                NativeMacOS.objc_msgSend(metalLayer, "setContentsScale:", Program.DesktopScaleFactor);
+            };
+
+            IntPtr nsView = child;
+            MetalLayer = metalLayer;
             NsView = nsView;
 
             return new PlatformHandle(nsView, "NSView");
@@ -260,7 +281,7 @@ namespace Ryujinx.Ava.UI.Renderer
         [SupportedOSPlatform("macos")]
         void DestroyMacOS()
         {
-            MetalHelper.DestroyMetalLayer(NsView, MetalLayer);
+            // TODO
         }
     }
 }
