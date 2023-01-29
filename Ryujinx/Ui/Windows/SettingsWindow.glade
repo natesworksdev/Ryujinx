@@ -42,7 +42,7 @@
   </object>
   <object class="GtkAdjustment" id="_upscaleLevel">
     <property name="lower">0.01</property>
-    <property name="upper">1.5</property>
+    <property name="upper">1.6</property>
     <property name="step-increment">0.01</property>
     <property name="page-increment">0.10</property>
     <property name="page-size">0.10</property>
