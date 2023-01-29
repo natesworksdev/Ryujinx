@@ -1432,6 +1432,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             */
 
             // pre-flush moves this out here, but i'm not sure it's necessary due to some recent changes (it can also be really slow)
+            // i think this needs to call on unbind to create sync, which wasn't really necessary before.
             _modifiedStale = false;
             Group.SignalModifying(this, bound);
 
