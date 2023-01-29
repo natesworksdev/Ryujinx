@@ -55,7 +55,7 @@ namespace Ryujinx.Graphics.Vic.Image
                     (byte)4, (byte)6, (byte)7, (byte)5,
                     (byte)8, (byte)10, (byte)11, (byte)9,
                     (byte)12, (byte)14, (byte)15, (byte)13);
-                Vector128<short> alphaMask = Vector128.Create(0xffUL << 48).AsInt16();
+                Vector128<short> alphaMask = Vector128.Create(0xff << 24).AsInt16();
 
                 int yStrideGap = yStride - width;
                 int uvStrideGap = uvStride - input.UvWidth;
@@ -96,6 +96,11 @@ namespace Ryujinx.Graphics.Vic.Image
                                 rgba2 = Ssse3.Shuffle(rgba2.AsByte(), shufMask).AsInt16();
                                 rgba3 = Ssse3.Shuffle(rgba3.AsByte(), shufMask).AsInt16();
 
+                                rgba0 = Sse2.Or(rgba0, alphaMask);
+                                rgba1 = Sse2.Or(rgba1, alphaMask);
+                                rgba2 = Sse2.Or(rgba2, alphaMask);
+                                rgba3 = Sse2.Or(rgba3, alphaMask);
+
                                 Vector128<short> rgba16_0 = Sse41.ConvertToVector128Int16(rgba0.AsByte());
                                 Vector128<short> rgba16_1 = Sse41.ConvertToVector128Int16(HighToLow(rgba0.AsByte()));
                                 Vector128<short> rgba16_2 = Sse41.ConvertToVector128Int16(rgba1.AsByte());
@@ -104,15 +109,6 @@ namespace Ryujinx.Graphics.Vic.Image
                                 Vector128<short> rgba16_5 = Sse41.ConvertToVector128Int16(HighToLow(rgba2.AsByte()));
                                 Vector128<short> rgba16_6 = Sse41.ConvertToVector128Int16(rgba3.AsByte());
                                 Vector128<short> rgba16_7 = Sse41.ConvertToVector128Int16(HighToLow(rgba3.AsByte()));
-
-                                rgba16_0 = Sse2.Or(rgba16_0, alphaMask);
-                                rgba16_1 = Sse2.Or(rgba16_1, alphaMask);
-                                rgba16_2 = Sse2.Or(rgba16_2, alphaMask);
-                                rgba16_3 = Sse2.Or(rgba16_3, alphaMask);
-                                rgba16_4 = Sse2.Or(rgba16_4, alphaMask);
-                                rgba16_5 = Sse2.Or(rgba16_5, alphaMask);
-                                rgba16_6 = Sse2.Or(rgba16_6, alphaMask);
-                                rgba16_7 = Sse2.Or(rgba16_7, alphaMask);
 
                                 rgba16_0 = Sse2.ShiftLeftLogical(rgba16_0, 2);
                                 rgba16_1 = Sse2.ShiftLeftLogical(rgba16_1, 2);
