@@ -26,7 +26,7 @@ namespace Ryujinx.Ui.Windows
         private CheatWindow(Builder builder, VirtualFileSystem virtualFileSystem, ulong titleId, string titleName, string gameBuildId) : base(builder.GetRawOwnedObject("_cheatWindow"))
         {
             builder.Autoconnect(this);
-            _baseTitleInfoLabel.Text = $"Cheats Available for {titleName} [{gameBuildId}]";
+            _baseTitleInfoLabel.Text = $"Cheats Available for {titleName} [BID: {gameBuildId}]";
 
             string modsBasePath  = virtualFileSystem.ModLoader.GetModsBasePath();
             string titleModsPath = virtualFileSystem.ModLoader.GetTitleDir(modsBasePath, titleId.ToString("X16"));

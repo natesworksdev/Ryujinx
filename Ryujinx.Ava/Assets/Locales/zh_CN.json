@@ -571,7 +571,7 @@
   "CheatWindowTitle": "金手指管理器",
   "DlcWindowTitle": "管理游戏 DLC",
   "UpdateWindowTitle": "游戏更新管理器",
-  "CheatWindowHeading": "适用于 {0} [{1}] 的金手指",
+  "CheatWindowHeading": "适用于 {0} [BID: {1}] 的金手指",
   "DlcWindowHeading": "{0} 个适用于 {1} ({2}) 的 DLC",
   "UserProfilesEditProfile": "编辑选中账户",
   "Cancel": "取消",

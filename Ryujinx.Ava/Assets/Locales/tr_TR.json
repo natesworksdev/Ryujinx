@@ -571,7 +571,7 @@
   "CheatWindowTitle": "Oyun Hilelerini Yönet",
   "DlcWindowTitle": "Oyun DLC'lerini Yönet",
   "UpdateWindowTitle": "Oyun Güncellemelerini Yönet",
-  "CheatWindowHeading": "{0} için Hile mevcut [{1}]",
+  "CheatWindowHeading": "{0} için Hile mevcut [BID: {1}]",
   "DlcWindowHeading": "{0} için DLC mevcut [{1}]",
   "UserProfilesEditProfile": "Seçiliyi Düzenle",
   "Cancel": "İptal",

@@ -571,7 +571,7 @@
   "CheatWindowTitle": "Gestisci cheat dei giochi",
   "DlcWindowTitle": "Gestisci DLC dei giochi",
   "UpdateWindowTitle": "Gestisci aggiornamenti dei giochi",
-  "CheatWindowHeading": "Cheat disponibiili per {0} [{1}]",
+  "CheatWindowHeading": "Cheat disponibiili per {0} [BID: {1}]",
   "DlcWindowHeading": "DLC disponibili per {0} [{1}]",
   "UserProfilesEditProfile": "Modifica selezionati",
   "Cancel": "Annulla",
