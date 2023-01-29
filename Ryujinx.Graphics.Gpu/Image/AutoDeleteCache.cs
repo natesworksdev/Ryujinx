@@ -45,7 +45,6 @@ namespace Ryujinx.Graphics.Gpu.Image
 
         private Dictionary<TextureDescriptor, ShortTextureCacheEntry> _shortCacheLookup;
 
-
         /// <summary>
         /// Creates a new instance of the automatic deletion cache.
         /// </summary>
