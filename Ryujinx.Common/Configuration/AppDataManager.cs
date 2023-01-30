@@ -100,7 +100,6 @@ namespace Ryujinx.Common.Configuration
                 {
                     CopyDirectory(oldConfigPath, BaseDirPath);
                     Directory.Delete(oldConfigPath, true);
-                    Directory.CreateSymbolicLink(oldConfigPath, BaseDirPath);
                 }
             }
 
