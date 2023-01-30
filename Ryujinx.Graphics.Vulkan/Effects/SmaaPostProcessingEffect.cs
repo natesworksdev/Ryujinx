@@ -201,9 +201,31 @@ namespace Ryujinx.Graphics.Vulkan.Effects
                 _outputTexture?.Dispose();
                 _edgeOutputTexture?.Dispose();
                 _blendOutputTexture?.Dispose();
-                _outputTexture = _renderer.CreateTexture(view.Info, view.ScaleFactor) as TextureView;
-                _edgeOutputTexture = _renderer.CreateTexture(view.Info, view.ScaleFactor) as TextureView;
-                _blendOutputTexture = _renderer.CreateTexture(view.Info, view.ScaleFactor) as TextureView;
+
+                var info = view.Info;
+
+                if (view.Info.Format.IsBgr())
+                {
+                    info = new TextureCreateInfo(info.Width,
+                        info.Height,
+                        info.Depth,
+                        info.Levels,
+                        info.Samples,
+                        info.BlockWidth,
+                        info.BlockHeight,
+                        info.BytesPerPixel,
+                        info.Format,
+                        info.DepthStencilMode,
+                        info.Target,
+                        info.SwizzleB,
+                        info.SwizzleG,
+                        info.SwizzleR,
+                        info.SwizzleA);
+                }
+
+                _outputTexture = _renderer.CreateTexture(info, view.ScaleFactor) as TextureView;
+                _edgeOutputTexture = _renderer.CreateTexture(info, view.ScaleFactor) as TextureView;
+                _blendOutputTexture = _renderer.CreateTexture(info, view.ScaleFactor) as TextureView;
             }
 
             Span<GAL.Viewport> viewports = stackalloc GAL.Viewport[1];

@@ -25,6 +25,7 @@ namespace Ryujinx.Graphics.OpenGL
         private UpscaleType _currentUpscaler;
         private float _upscalerLevel;
         private bool _updateUpscaler;
+        private bool _isBgra;
         private TextureView _upscaledTexture;
 
         internal BackgroundContextWorker BackgroundContext { get; private set; }
@@ -77,6 +78,15 @@ namespace Ryujinx.Graphics.OpenGL
                 var oldView = viewConverted;
 
                 viewConverted = _antiAliasing.Run(viewConverted, _width, _height);
+
+                if (viewConverted.Format.IsBgr())
+                {
+                    var swappedView = _renderer.TextureCopy.BgraSwap(viewConverted);
+
+                    viewConverted?.Dispose();
+
+                    viewConverted = swappedView;
+                }
 
                 if(viewConverted != oldView && oldView != view)
                 {
@@ -157,6 +167,11 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (_upscaler != null)
             {
+                if(viewConverted.Format.IsBgr() && !_isBgra)
+                {
+                    RecreateUpscalingTexture(true);
+                }
+
                 _upscaler.Run(
                     viewConverted,
                     _upscaledTexture,
@@ -367,7 +382,7 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
-        private void RecreateUpscalingTexture()
+        private void RecreateUpscalingTexture(bool forceBgra = false)
         {
             _upscaledTexture?.Dispose();
 
@@ -383,11 +398,12 @@ namespace Ryujinx.Graphics.OpenGL
                 Format.R8G8B8A8Unorm,
                 DepthStencilMode.Depth,
                 Target.Texture2D,
-                SwizzleComponent.Red,
+                forceBgra ? SwizzleComponent.Blue : SwizzleComponent.Red,
                 SwizzleComponent.Green,
-                SwizzleComponent.Blue,
+                forceBgra ? SwizzleComponent.Red : SwizzleComponent.Blue,
                 SwizzleComponent.Alpha);
 
+            _isBgra = forceBgra;
             _upscaledTexture = _renderer.CreateTexture(info, 1) as TextureView;
         }
 

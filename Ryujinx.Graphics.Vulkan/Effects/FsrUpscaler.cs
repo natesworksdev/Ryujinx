@@ -113,9 +113,9 @@ namespace Ryujinx.Graphics.Vulkan.Effects
                     originalInfo.Format,
                     originalInfo.DepthStencilMode,
                     originalInfo.Target,
-                    originalInfo.SwizzleR,
+                    originalInfo.Format.IsBgr() ? originalInfo.SwizzleB : originalInfo.SwizzleR,
                     originalInfo.SwizzleG,
-                    originalInfo.SwizzleB,
+                    originalInfo.Format.IsBgr() ? originalInfo.SwizzleR : originalInfo.SwizzleB,
                     originalInfo.SwizzleA);
                 _intermediaryTexture?.Dispose();
                 _intermediaryTexture = _renderer.CreateTexture(info, view.ScaleFactor) as TextureView;
