@@ -89,7 +89,7 @@ namespace Ryujinx.Common.Configuration
 
             BaseDirPath = Path.GetFullPath(BaseDirPath); // convert relative paths
 
-            // NOTE: Copies the Ryujinx folder in `~/.config` to `~/Library/Application Support` if one is found
+            // NOTE: Moves the Ryujinx folder in `~/.config` to `~/Library/Application Support` if one is found
             // and a Ryujinx folder does not already exist in Application Support.
             // Also creates a symlink from `~/.config/Ryujinx` to `~/Library/Application Support/Ryujinx` to preserve backwards compatibility.
             // This should be removed in the future.
@@ -102,7 +102,6 @@ namespace Ryujinx.Common.Configuration
                     Directory.Delete(oldConfigPath, true);
                     Directory.CreateSymbolicLink(oldConfigPath, BaseDirPath);
                 }
-
             }
 
             SetupBasePaths();
