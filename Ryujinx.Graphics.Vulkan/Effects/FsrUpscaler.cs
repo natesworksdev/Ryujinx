@@ -98,9 +98,12 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             int dstY0,
             int dstY1)
         {
-            if (_intermediaryTexture == null || _intermediaryTexture.Info.Width != width || _intermediaryTexture.Info.Height != height)
+            if (_intermediaryTexture == null || _intermediaryTexture.Info.Width != width || _intermediaryTexture.Info.Height != height && !_intermediaryTexture.Info.Equals(view.Info))
             {
                 var originalInfo = view.Info;
+
+                var swapRB = originalInfo.Format.IsBgr() && originalInfo.SwizzleR == SwizzleComponent.Red;
+
                 var info = new TextureCreateInfo(
                     width,
                     height,
@@ -113,9 +116,9 @@ namespace Ryujinx.Graphics.Vulkan.Effects
                     originalInfo.Format,
                     originalInfo.DepthStencilMode,
                     originalInfo.Target,
-                    originalInfo.Format.IsBgr() ? originalInfo.SwizzleB : originalInfo.SwizzleR,
+                    swapRB ? originalInfo.SwizzleB : originalInfo.SwizzleR,
                     originalInfo.SwizzleG,
-                    originalInfo.Format.IsBgr() ? originalInfo.SwizzleR : originalInfo.SwizzleB,
+                    swapRB ? originalInfo.SwizzleR : originalInfo.SwizzleB,
                     originalInfo.SwizzleA);
                 _intermediaryTexture?.Dispose();
                 _intermediaryTexture = _renderer.CreateTexture(info, view.ScaleFactor) as TextureView;
