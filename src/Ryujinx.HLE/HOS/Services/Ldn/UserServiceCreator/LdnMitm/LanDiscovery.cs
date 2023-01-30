@@ -417,7 +417,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
         {
             Array8<NodeInfo> nodes = NetworkInfo.Ldn.Nodes;
 
-            for (int i = 0; i < nodes.Length; i++)
+            for (int i = 1; i < nodes.Length; i++)
             {
                 if (nodes[i].IsConnected == 0)
                 {
