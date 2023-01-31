@@ -311,7 +311,8 @@ namespace Ryujinx.Graphics.Vulkan
                     dstRegion.Y2 == dst.Height &&
                     src.Width == dst.Width &&
                     src.Height == dst.Height &&
-                    src.VkFormat == dst.VkFormat)
+                    src.VkFormat == dst.VkFormat &&
+                    !srcFormat.IsDepthOrStencil())
                 {
                     if (src.Info.Samples > 1 && src.Info.Samples != dst.Info.Samples && src.Info.Format.IsDepthOrStencil())
                     {
@@ -343,7 +344,8 @@ namespace Ryujinx.Graphics.Vulkan
                     return;
                 }
                 else if (_gd.FormatCapabilities.OptimalFormatSupports(FormatFeatureFlags.BlitSrcBit, srcFormat) &&
-                         _gd.FormatCapabilities.OptimalFormatSupports(FormatFeatureFlags.BlitDstBit, dstFormat))
+                         _gd.FormatCapabilities.OptimalFormatSupports(FormatFeatureFlags.BlitDstBit, dstFormat) &&
+                         !srcFormat.IsDepthOrStencil())
                 {
                     TextureCopy.Blit(
                         _gd.Api,
@@ -372,11 +374,12 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
+            bool isDepthOrStencil = dst.Info.Format.IsDepthOrStencil();
+
             if (VulkanConfiguration.UseSlowSafeBlitOnAmd &&
                 (_gd.Vendor == Vendor.Amd || _gd.IsMoltenVk) &&
                 src.Info.Target == Target.Texture2D &&
-                dst.Info.Target == Target.Texture2D &&
-                !dst.Info.Format.IsDepthOrStencil())
+                dst.Info.Target == Target.Texture2D)
             {
                 _gd.HelperShader.Blit(
                     _gd,
@@ -387,6 +390,7 @@ namespace Ryujinx.Graphics.Vulkan
                     dst.VkFormat,
                     srcRegion,
                     dstRegion,
+                    isDepthOrStencil,
                     linearFilter);
 
                 return;
@@ -395,7 +399,7 @@ namespace Ryujinx.Graphics.Vulkan
             Auto<DisposableImage> srcImage;
             Auto<DisposableImage> dstImage;
 
-            if (dst.Info.Format.IsDepthOrStencil())
+            if (isDepthOrStencil)
             {
                 srcImage = src.Storage.CreateAliasedColorForDepthStorageUnsafe(srcFormat).GetImage();
                 dstImage = dst.Storage.CreateAliasedColorForDepthStorageUnsafe(dstFormat).GetImage();
