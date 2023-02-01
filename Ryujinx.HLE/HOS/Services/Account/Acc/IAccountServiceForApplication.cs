@@ -137,7 +137,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             return resultCode;
         }
-        
+
         [CommandHipc(110)]
         // StoreSaveDataThumbnail(nn::account::Uid, buffer<bytes, 5>)
         public ResultCode StoreSaveDataThumbnail(ServiceCtx context)
@@ -153,13 +153,21 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         }
 
         [CommandHipc(130)] // 5.0.0+
-        // LoadOpenContext(nn::account::Uid)
+        // LoadOpenContext(nn::account::Uid) -> object<nn::account::baas::IManagerForApplication>
         public ResultCode LoadOpenContext(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceAcc);
+            ResultCode resultCode = _applicationServiceServer.CheckUserId(context, out UserId userId);
+
+            if (resultCode != ResultCode.Success)
+            {
+                return resultCode;
+            }
+
+            MakeObject(context, new IManagerForApplication(userId));
 
             return ResultCode.Success;
         }
+
 
         [CommandHipc(60)] // 5.0.0-5.1.0
         [CommandHipc(131)] // 6.0.0+
