@@ -168,7 +168,6 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return ResultCode.Success;
         }
 
-
         [CommandHipc(60)] // 5.0.0-5.1.0
         [CommandHipc(131)] // 6.0.0+
         // ListOpenContextStoredUsers() -> array<nn::account::Uid, 0xa>
