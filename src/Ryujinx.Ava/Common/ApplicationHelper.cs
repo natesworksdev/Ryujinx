@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using LibHac;
 using LibHac.Account;
@@ -143,23 +144,24 @@ namespace Ryujinx.Ava.Common
             }
         }
 
-        public static async Task ExtractSection(NcaSectionType ncaSectionType, string titleFilePath, string titleName, int programIndex = 0)
+        public static async Task ExtractSection(NcaSectionType ncaSectionType, string titleFilePath, string titleName, IStorageProvider storageProvider)
         {
-            OpenFolderDialog folderDialog = new()
+            var result = await storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
-                Title = LocaleManager.Instance[LocaleKeys.FolderDialogExtractTitle]
-            };
+                Title = LocaleManager.Instance[LocaleKeys.FolderDialogExtractTitle],
+                AllowMultiple = false
+            });
 
-            string destination       = await folderDialog.ShowAsync(_owner);
-            var    cancellationToken = new CancellationTokenSource();
-
-            UpdateWaitWindow waitingDialog = new(
-                LocaleManager.Instance[LocaleKeys.DialogNcaExtractionTitle],
-                LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogNcaExtractionMessage, ncaSectionType, Path.GetFileName(titleFilePath)),
-                cancellationToken);
-
-            if (!string.IsNullOrWhiteSpace(destination))
+            if (result.Count > 0)
             {
+                var destination = result[0].Path.LocalPath;
+                var cancellationToken = new CancellationTokenSource();
+
+                UpdateWaitWindow waitingDialog = new(
+                    LocaleManager.Instance[LocaleKeys.DialogNcaExtractionTitle],
+                    LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogNcaExtractionMessage, ncaSectionType, Path.GetFileName(titleFilePath)),
+                    cancellationToken);
+
                 Thread extractorThread = new(() =>
                 {
                     Dispatcher.UIThread.Post(waitingDialog.Show);
@@ -223,7 +225,7 @@ namespace Ryujinx.Ava.Common
                         return;
                     }
 
-                    (Nca updatePatchNca, _) = ApplicationLibrary.GetGameUpdateData(_virtualFileSystem, mainNca.Header.TitleId.ToString("x16"), programIndex, out _);
+                    (Nca updatePatchNca, _) = ApplicationLibrary.GetGameUpdateData(_virtualFileSystem, mainNca.Header.TitleId.ToString("x16"), 0, out _);
                     if (updatePatchNca != null)
                     {
                         patchNca = updatePatchNca;
