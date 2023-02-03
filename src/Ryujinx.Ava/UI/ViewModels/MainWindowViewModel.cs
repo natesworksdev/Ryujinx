@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using DynamicData;
 using DynamicData.Binding;
@@ -125,6 +126,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void Initialize(
             ContentManager contentManager,
+            IStorageProvider storageProvider,
             ApplicationLibrary applicationLibrary,
             VirtualFileSystem virtualFileSystem,
             AccountManager accountManager,
@@ -138,6 +140,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             TopLevel topLevel)
         {
             ContentManager = contentManager;
+            StorageProvider = storageProvider;
             ApplicationLibrary = applicationLibrary;
             VirtualFileSystem = virtualFileSystem;
             AccountManager = accountManager;
@@ -621,7 +624,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged();
             }
         }
-        
+
         public double WindowWidth
         {
             get => _windowWidth;
@@ -884,6 +887,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         }
 
         public ContentManager ContentManager { get; private set; }
+        public IStorageProvider StorageProvider { get; private set; }
         public ApplicationLibrary ApplicationLibrary { get; private set; }
         public VirtualFileSystem VirtualFileSystem { get; private set; }
         public AccountManager AccountManager { get; private set; }
@@ -1261,34 +1265,36 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async void InstallFirmwareFromFile()
         {
-            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                OpenFileDialog dialog = new() { AllowMultiple = false };
-                dialog.Filters.Add(new FileDialogFilter { Name = LocaleManager.Instance[LocaleKeys.FileDialogAllTypes], Extensions = { "xci", "zip" } });
-                dialog.Filters.Add(new FileDialogFilter { Name = "XCI",                                                 Extensions = { "xci" } });
-                dialog.Filters.Add(new FileDialogFilter { Name = "ZIP",                                                 Extensions = { "zip" } });
-
-                string[] file = await dialog.ShowAsync(desktop.MainWindow);
-
-                if (file != null && file.Length > 0)
+                AllowMultiple = false,
+                FileTypeFilter = new List<FilePickerFileType>
                 {
-                    await HandleFirmwareInstallation(file[0]);
+                    new(LocaleManager.Instance[LocaleKeys.FileDialogAllTypes])
+                    {
+                        Patterns = new[] { "*.xci", "*.zip" },
+                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.Ryujinx-xci", "public.zip-archive" },
+                        MimeTypes = new[] { "application/x-nx-xci", "application/zip" }
+                    }
                 }
+            });
+
+            if (result.Count > 0)
+            {
+                await HandleFirmwareInstallation(result[0].Path.LocalPath);
             }
         }
 
         public async void InstallFirmwareFromFolder()
         {
-            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
-                OpenFolderDialog dialog = new();
+                AllowMultiple = false
+            });
 
-                string folder = await dialog.ShowAsync(desktop.MainWindow);
-
-                if (!string.IsNullOrEmpty(folder))
-                {
-                    await HandleFirmwareInstallation(folder);
-                }
+            if (result.Count > 0)
+            {
+                await HandleFirmwareInstallation(result[0].Path.LocalPath);
             }
         }
 
@@ -1384,58 +1390,54 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async void OpenFile()
         {
-            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                OpenFileDialog dialog = new()
+                Title = LocaleManager.Instance[LocaleKeys.OpenFileDialogTitle],
+                AllowMultiple = false,
+                FileTypeFilter = new List<FilePickerFileType>
                 {
-                    Title = LocaleManager.Instance[LocaleKeys.OpenFileDialogTitle]
-                };
-
-                dialog.Filters.Add(new FileDialogFilter
-                {
-                    Name = LocaleManager.Instance[LocaleKeys.AllSupportedFormats],
-                    Extensions =
+                    new(LocaleManager.Instance[LocaleKeys.AllSupportedFormats])
                     {
-                        "nsp",
-                        "pfs0",
-                        "xci",
-                        "nca",
-                        "nro",
-                        "nso"
+                        Patterns = new[] { "*.nsp", "*.pfs0", "*.xci", "*.nca", "*.nro", "*.nso"},
+                        AppleUniformTypeIdentifiers = new[]
+                        {
+                            "com.ryujinx.Ryujinx-nsp",
+                            "com.ryujinx.Ryujinx-pfs0",
+                            "com.ryujinx.Ryujinx-xci",
+                            "com.ryujinx.Ryujinx-nca",
+                            "com.ryujinx.Ryujinx-nro",
+                            "com.ryujinx.Ryujinx-nso"
+                        },
+                        MimeTypes = new[]
+                        {
+                            "application/x-nx-nsp",
+                            "application/x-nx-pfs0",
+                            "application/x-nx-xci",
+                            "application/x-nx-nca",
+                            "application/x-nx-nro",
+                            "application/x-nx-nso"
+                        }
                     }
-                });
-
-                dialog.Filters.Add(new FileDialogFilter { Name = "NSP",  Extensions = { "nsp" } });
-                dialog.Filters.Add(new FileDialogFilter { Name = "PFS0", Extensions = { "pfs0" } });
-                dialog.Filters.Add(new FileDialogFilter { Name = "XCI",  Extensions = { "xci" } });
-                dialog.Filters.Add(new FileDialogFilter { Name = "NCA",  Extensions = { "nca" } });
-                dialog.Filters.Add(new FileDialogFilter { Name = "NRO",  Extensions = { "nro" } });
-                dialog.Filters.Add(new FileDialogFilter { Name = "NSO",  Extensions = { "nso" } });
-
-                string[] files = await dialog.ShowAsync(desktop.MainWindow);
-
-                if (files != null && files.Length > 0)
-                {
-                    LoadApplication(files[0]);
                 }
+            });
+
+            if (result.Count > 0)
+            {
+                LoadApplication(result[0].Path.LocalPath);
             }
         }
 
         public async void OpenFolder()
         {
-            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
-                OpenFolderDialog dialog = new()
-                {
-                    Title = LocaleManager.Instance[LocaleKeys.OpenFolderDialogTitle]
-                };
+                Title = LocaleManager.Instance[LocaleKeys.OpenFolderDialogTitle],
+                AllowMultiple = false
+            });
 
-                string folder = await dialog.ShowAsync(desktop.MainWindow);
-
-                if (!string.IsNullOrWhiteSpace(folder) && Directory.Exists(folder))
-                {
-                    LoadApplication(folder);
-                }
+            if (result.Count > 0)
+            {
+                LoadApplication(result[0].Path.LocalPath);
             }
         }
 

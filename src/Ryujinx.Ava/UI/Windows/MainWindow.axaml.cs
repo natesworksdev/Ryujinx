@@ -85,6 +85,7 @@ namespace Ryujinx.Ava.UI.Windows
 
                 ViewModel.Initialize(
                     ContentManager,
+                    StorageProvider,
                     ApplicationLibrary,
                     VirtualFileSystem,
                     AccountManager,
