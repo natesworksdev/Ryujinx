@@ -210,8 +210,8 @@ namespace Ryujinx.Graphics.Gpu.Image
             ulong offset,
             FormatInfo formatInfo,
             bool shouldCreate,
-            bool preferScaling = true,
-            Size? sizeHint = null)
+            bool preferScaling,
+            Size sizeHint)
         {
             int gobBlocksInY = copyTexture.MemoryLayout.UnpackGobBlocksInY();
             int gobBlocksInZ = copyTexture.MemoryLayout.UnpackGobBlocksInZ();
@@ -229,7 +229,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             TextureInfo info = new TextureInfo(
                 copyTexture.Address.Pack() + offset,
-                width,
+                GetMinimumWidthInGob(width, sizeHint.Width, formatInfo.BytesPerPixel, copyTexture.LinearLayout),
                 copyTexture.Height,
                 copyTexture.Depth,
                 1,
@@ -326,7 +326,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             TextureInfo info = new TextureInfo(
                 colorState.Address.Pack(),
-                width,
+                GetMinimumWidthInGob(width, sizeHint.Width, formatInfo.BytesPerPixel, isLinear),
                 colorState.Height,
                 colorState.Depth,
                 1,
@@ -395,7 +395,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             TextureInfo info = new TextureInfo(
                 dsState.Address.Pack(),
-                size.Width,
+                GetMinimumWidthInGob(size.Width, sizeHint.Width, formatInfo.BytesPerPixel, false),
                 size.Height,
                 size.Depth,
                 1,
@@ -414,6 +414,34 @@ namespace Ryujinx.Graphics.Gpu.Image
             texture?.SynchronizeMemory();
 
             return texture;
+        }
+
+        /// <summary>
+        /// For block linear textures, gets the minimum width of the texture
+        /// that would still have the same number of GOBs per row as the original width.
+        /// </summary>
+        /// <param name="width">The possibly aligned texture width</param>
+        /// <param name="minimumWidth">The minimum width that the texture may have without losing data</param>
+        /// <param name="bytesPerPixel">Bytes per pixel of the texture format</param>
+        /// <param name="isLinear">True if the texture is linear, false for block linear</param>
+        /// <returns>The minimum width of the texture with the same amount of GOBs per row</returns>
+        private static int GetMinimumWidthInGob(int width, int minimumWidth, int bytesPerPixel, bool isLinear)
+        {
+            if (isLinear)
+            {
+                return width;
+            }
+
+            // Calculate the minimum possible that would not cause data loss
+            // and would be still within the same GOB (aligned size would be the same).
+            // This is useful for render and copy operations, where we don't know the
+            // exact width of the texture, but it doesn't matter, as long the texture is
+            // at least as large as the region being rendered or copied.
+
+            int alignment = 64 / bytesPerPixel;
+            int widthAligned = BitUtils.AlignUp(width, alignment);
+
+            return Math.Clamp(widthAligned - alignment + 1, minimumWidth, widthAligned);
         }
 
         /// <summary>
