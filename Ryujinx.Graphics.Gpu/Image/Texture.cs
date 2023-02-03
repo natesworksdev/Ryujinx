@@ -1227,12 +1227,12 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return TextureMatchQuality.NoMatch;
             }
 
-            if (!TextureCompatibility.SizeMatches(Info, info, (flags & TextureSearchFlags.Strict) == 0, FirstLevel))
+            if (!TextureCompatibility.SizeMatches(Info, info, FirstLevel))
             {
                 return TextureMatchQuality.NoMatch;
             }
 
-            if ((flags & TextureSearchFlags.ForSampler) != 0 || (flags & TextureSearchFlags.Strict) != 0)
+            if ((flags & TextureSearchFlags.ForSampler) != 0)
             {
                 if (!TextureCompatibility.SamplerParamsMatches(Info, info))
                 {

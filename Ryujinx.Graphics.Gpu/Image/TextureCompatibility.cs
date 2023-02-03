@@ -384,33 +384,26 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>The view compatibility level of the view sizes</returns>
         public static TextureViewCompatibility ViewSizeMatches(TextureInfo lhs, TextureInfo rhs, int level)
         {
-            Size size = GetAlignedSize(lhs, level);
-
-            Size otherSize = GetAlignedSize(rhs);
+            Size lhsAlignedSize = GetAlignedSize(lhs, level);
+            Size rhsAlignedSize = GetAlignedSize(rhs);
 
             TextureViewCompatibility result = TextureViewCompatibility.Full;
 
             // For copies, we can copy a subset of the 3D texture slices,
             // so the depth may be different in this case.
-            if (rhs.Target == Target.Texture3D && size.Depth != otherSize.Depth)
+            if (rhs.Target == Target.Texture3D && lhsAlignedSize.Depth != rhsAlignedSize.Depth)
             {
                 result = TextureViewCompatibility.CopyOnly;
             }
 
-            if (size.Width == otherSize.Width && size.Height == otherSize.Height)
+            if (lhsAlignedSize.Width == rhsAlignedSize.Width && lhsAlignedSize.Height == rhsAlignedSize.Height)
             {
-                if (level > 0 && result == TextureViewCompatibility.Full)
+                Size lhsSize = GetSizeInBlocks(lhs, level);
+                Size rhsSize = GetSizeInBlocks(rhs);
+
+                if (lhsSize.Width != rhsSize.Width || lhsSize.Height != rhsSize.Height)
                 {
-                    // A resize should not change the aligned size of the largest mip.
-                    // If it would, then create a copy dependency rather than a full view.
-
-                    Size mip0SizeLhs = GetAlignedSize(lhs);
-                    Size mip0SizeRhs = GetLargestAlignedSize(rhs, level);
-
-                    if (mip0SizeLhs.Width != mip0SizeRhs.Width || mip0SizeLhs.Height != mip0SizeRhs.Height)
-                    {
-                        result = TextureViewCompatibility.CopyOnly;
-                    }
+                    result = TextureViewCompatibility.CopyOnly;
                 }
 
                 return result;
@@ -454,58 +447,21 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="lhs">Texture information to compare</param>
         /// <param name="rhs">Texture information to compare with</param>
-        /// <returns>True if the size matches, false otherwise</returns>
-        public static bool SizeMatches(TextureInfo lhs, TextureInfo rhs)
-        {
-            return SizeMatches(lhs, rhs, alignSizes: false);
-        }
-
-        /// <summary>
-        /// Checks if the texture sizes of the supplied texture informations match the given level
-        /// </summary>
-        /// <param name="lhs">Texture information to compare</param>
-        /// <param name="rhs">Texture information to compare with</param>
-        /// <param name="level">Mipmap level of this texture to compare with</param>
-        /// <returns>True if the size matches with the level, false otherwise</returns>
-        public static bool SizeMatches(TextureInfo lhs, TextureInfo rhs, int level)
-        {
-            return Math.Max(1, lhs.Width >> level)      == rhs.Width &&
-                   Math.Max(1, lhs.Height >> level)     == rhs.Height &&
-                   Math.Max(1, lhs.GetDepth() >> level) == rhs.GetDepth();
-        }
-
-        /// <summary>
-        /// Checks if the texture sizes of the supplied texture informations match.
-        /// </summary>
-        /// <param name="lhs">Texture information to compare</param>
-        /// <param name="rhs">Texture information to compare with</param>
-        /// <param name="alignSizes">True to align the sizes according to the texture layout for comparison</param>
         /// <param name="lhsLevel">Mip level of the lhs texture. Aligned sizes are compared for the largest mip</param>
         /// <returns>True if the sizes matches, false otherwise</returns>
-        public static bool SizeMatches(TextureInfo lhs, TextureInfo rhs, bool alignSizes, int lhsLevel = 0)
+        public static bool SizeMatches(TextureInfo lhs, TextureInfo rhs, int lhsLevel = 0)
         {
             if (lhs.GetLayers() != rhs.GetLayers())
             {
                 return false;
             }
 
-            bool isTextureBuffer = lhs.Target == Target.TextureBuffer || rhs.Target == Target.TextureBuffer;
+            Size lhsSize = GetSizeInBlocks(lhs, lhsLevel);
+            Size rhsSize = GetSizeInBlocks(rhs);
 
-            if (alignSizes && !isTextureBuffer)
-            {
-                Size size0 = GetLargestAlignedSize(lhs, lhsLevel);
-                Size size1 = GetLargestAlignedSize(rhs, lhsLevel);
-
-                return size0.Width  == size1.Width &&
-                       size0.Height == size1.Height &&
-                       size0.Depth  == size1.Depth;
-            }
-            else
-            {
-                return lhs.Width      == rhs.Width &&
-                       lhs.Height     == rhs.Height &&
-                       lhs.GetDepth() == rhs.GetDepth();
-            }
+            return lhsSize.Width == rhsSize.Width &&
+                   lhsSize.Height == rhsSize.Height &&
+                   lhsSize.Depth == rhsSize.Depth;
         }
 
         /// <summary>
@@ -573,6 +529,25 @@ namespace Ryujinx.Graphics.Gpu.Image
             int depth = Math.Max(1, info.GetDepth() >> level);
 
             return GetAlignedSize(info, width, height, depth);
+        }
+
+        /// <summary>
+        /// Gets the size in blocks for the given texture information.
+        /// For non-compressed formats, that's the same as the regular size.
+        /// </summary>
+        /// <param name="info">Texture information to calculate the aligned size from</param>
+        /// <param name="level">Mipmap level for texture views</param>
+        /// <returns>The texture size in blocks</returns>
+        public static Size GetSizeInBlocks(TextureInfo info, int level = 0)
+        {
+            int width = Math.Max(1, info.Width >> level);
+            int height = Math.Max(1, info.Height >> level);
+            int depth = Math.Max(1, info.GetDepth() >> level);
+
+            return new Size(
+                BitUtils.DivRoundUp(width, info.FormatInfo.BlockWidth),
+                BitUtils.DivRoundUp(height, info.FormatInfo.BlockHeight),
+                depth);
         }
 
         /// <summary>
