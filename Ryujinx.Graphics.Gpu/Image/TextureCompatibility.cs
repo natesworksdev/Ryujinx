@@ -515,22 +515,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Gets the aligned sizes of the specified texture information, shifted to the largest mip from a given level.
-        /// The alignment depends on the texture layout and format bytes per pixel.
-        /// </summary>
-        /// <param name="info">Texture information to calculate the aligned size from</param>
-        /// <param name="level">Mipmap level for texture views. Shifts the aligned size to represent the largest mip level</param>
-        /// <returns>The aligned texture size of the largest mip level</returns>
-        public static Size GetLargestAlignedSize(TextureInfo info, int level)
-        {
-            int width = info.Width << level;
-            int height = info.Height << level;
-            int depth = info.GetDepth() << level;
-
-            return GetAlignedSize(info, width, height, depth);
-        }
-
-        /// <summary>
         /// Gets the aligned sizes of the specified texture information.
         /// The alignment depends on the texture layout and format bytes per pixel.
         /// </summary>

@@ -255,7 +255,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 flags |= TextureSearchFlags.NoCreate;
             }
 
-            Texture texture = FindOrCreateTexture(memoryManager, flags, info, 0, sizeHint);
+            Texture texture = FindOrCreateTexture(memoryManager, flags, info, 0);
 
             texture?.SynchronizeMemory();
 
@@ -342,7 +342,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             int layerSize = !isLinear ? colorState.LayerSize * 4 : 0;
 
-            Texture texture = FindOrCreateTexture(memoryManager, TextureSearchFlags.WithUpscale, info, layerSize, sizeHint);
+            Texture texture = FindOrCreateTexture(memoryManager, TextureSearchFlags.WithUpscale, info, layerSize);
 
             texture?.SynchronizeMemory();
 
@@ -409,7 +409,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 target,
                 formatInfo);
 
-            Texture texture = FindOrCreateTexture(memoryManager, TextureSearchFlags.WithUpscale, info, dsState.LayerSize * 4, sizeHint);
+            Texture texture = FindOrCreateTexture(memoryManager, TextureSearchFlags.WithUpscale, info, dsState.LayerSize * 4);
 
             texture?.SynchronizeMemory();
 
@@ -451,7 +451,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="flags">The texture search flags, defines texture comparison rules</param>
         /// <param name="info">Texture information of the texture to be found or created</param>
         /// <param name="layerSize">Size in bytes of a single texture layer</param>
-        /// <param name="sizeHint">A hint indicating the minimum used size for the texture</param>
         /// <param name="range">Optional ranges of physical memory where the texture data is located</param>
         /// <returns>The texture</returns>
         public Texture FindOrCreateTexture(
@@ -459,7 +458,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             TextureSearchFlags flags,
             TextureInfo info,
             int layerSize = 0,
-            Size? sizeHint = null,
             MultiRange? range = null)
         {
             bool isSamplerTexture = (flags & TextureSearchFlags.ForSampler) != 0;
@@ -540,8 +538,6 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (texture != null)
             {
-                ChangeSizeIfNeeded(info, texture, isSamplerTexture, sizeHint);
-
                 texture.SynchronizeMemory();
 
                 return texture;
@@ -635,9 +631,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                     }
 
                     texture = overlap.CreateView(adjInfo, sizeInfo, range.Value, oInfo.FirstLayer, oInfo.FirstLevel);
-
-                    ChangeSizeIfNeeded(info, texture, isSamplerTexture, sizeHint);
-
                     texture.SynchronizeMemory();
                     break;
                 }
@@ -884,44 +877,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             return texture;
-        }
-
-        /// <summary>
-        /// Changes a texture's size to match the desired size for samplers,
-        /// or increases a texture's size to fit the region indicated by a size hint.
-        /// </summary>
-        /// <param name="info">The desired texture info</param>
-        /// <param name="texture">The texture to resize</param>
-        /// <param name="isSamplerTexture">True if the texture will be used for a sampler, false otherwise</param>
-        /// <param name="sizeHint">A hint indicating the minimum used size for the texture</param>
-        private void ChangeSizeIfNeeded(TextureInfo info, Texture texture, bool isSamplerTexture, Size? sizeHint)
-        {
-            if (isSamplerTexture)
-            {
-                // If this is used for sampling, the size must match,
-                // otherwise the shader would sample garbage data.
-                // To fix that, we create a new texture with the correct
-                // size, and copy the data from the old one to the new one.
-
-                if (!TextureCompatibility.SizeMatches(texture.Info, info, true))
-                {
-                    texture.ChangeSize(info.Width, info.Height, info.DepthOrLayers);
-                }
-            }
-            else if (sizeHint != null)
-            {
-                // A size hint indicates that data will be used within that range, at least.
-                // If the texture is smaller than the size hint, it must be enlarged to meet it.
-                // The maximum size is provided by the requested info, which generally has an aligned size.
-
-                int width = Math.Max(texture.Info.Width, Math.Min(sizeHint.Value.Width, info.Width));
-                int height = Math.Max(texture.Info.Height, Math.Min(sizeHint.Value.Height, info.Height));
-
-                if (texture.Info.Width != width || texture.Info.Height != height)
-                {
-                    texture.ChangeSize(width, height, info.DepthOrLayers);
-                }
-            }
         }
 
         /// <summary>
