@@ -30,4 +30,9 @@
         <glob pattern="*.xci"/>
         <magic><match value="HEAD" type="string" offset="4352"/></magic>
     </mime-type>
+    <mime-type type="application/x-nx-pfs0">
+        <comment>Nintendo Switch Partition FS</comment>
+        <acronym>PFS0</acronym>
+        <glob pattern="*.pfs0"/>
+    </mime-type>
 </mime-info>
