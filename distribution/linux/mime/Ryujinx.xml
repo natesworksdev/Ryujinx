@@ -34,5 +34,6 @@
         <comment>Nintendo Switch Partition FS</comment>
         <acronym>PFS0</acronym>
         <glob pattern="*.pfs0"/>
+        <magic><match value="PFS0" type="string" offset="0"/></magic>
     </mime-type>
 </mime-info>
