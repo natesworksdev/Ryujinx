@@ -183,7 +183,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                     Logger.Info?.Print(LogClass.ServiceLdn, $"Console's LDN IP is \"{unicastAddress.Address}\".");
 
                     context.ResponseData.Write(NetworkHelpers.ConvertIpv4Address(unicastAddress.Address));
-                    context.ResponseData.Write(NetworkHelpers.ConvertIpv4Address(DEFAULT_SUBNET_MASK));
+                    context.ResponseData.Write(NetworkHelpers.ConvertIpv4Address(unicastAddress.IPv4Mask));
                 }
             }
             else
@@ -730,7 +730,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 return _nifmResultCode;
             }
 
-            throw new NotImplementedException();
+            // TODO
+
+            return ResultCode.Success;
         }
 
         [CommandCmif(209)]
@@ -742,7 +744,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 return _nifmResultCode;
             }
 
-            throw new NotImplementedException();
+            // TODO
+
+            return ResultCode.Success;
         }
 
         [CommandCmif(300)]
@@ -1029,7 +1033,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         public ResultCode Initialize(ServiceCtx context)
         {
             _ = new IPAddress(context.RequestData.ReadUInt32());
-
             _ = new IPAddress(context.RequestData.ReadUInt32());
 
             // NOTE: It seems the guest can get ip_address and subnet_mask from nifm service and pass it through the initialize.
