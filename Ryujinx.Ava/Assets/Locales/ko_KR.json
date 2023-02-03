@@ -571,7 +571,7 @@
   "CheatWindowTitle": "치트 관리자",
   "DlcWindowTitle": "다운로드 가능한 콘텐츠 관리자",
   "UpdateWindowTitle": "타이틀 업데이트 관리자",
-  "CheatWindowHeading": "{0} [BID: {1}]에 사용할 수 있는 치트",
+  "CheatWindowHeading": "{0} [{1}]에 사용할 수 있는 치트",
   "DlcWindowHeading": "{1} ({2})에 사용할 수 있는 {0} 다운로드 가능한 콘텐츠",
   "UserProfilesEditProfile": "선택 항목 편집",
   "Cancel": "취소",

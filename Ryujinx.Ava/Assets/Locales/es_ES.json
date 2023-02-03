@@ -571,7 +571,7 @@
   "CheatWindowTitle": "Administrar cheats",
   "DlcWindowTitle": "Administrar contenido descargable",
   "UpdateWindowTitle": "Administrar actualizaciones",
-  "CheatWindowHeading": "Cheats disponibles para {0} [BID: {1}]",
+  "CheatWindowHeading": "Cheats disponibles para {0} [{1}]",
   "DlcWindowHeading": "Contenido descargable disponible para {0} [{1}]",
   "UserProfilesEditProfile": "Editar selección",
   "Cancel": "Cancelar",

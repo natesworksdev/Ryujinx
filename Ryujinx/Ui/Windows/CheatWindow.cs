@@ -17,6 +17,7 @@ namespace Ryujinx.Ui.Windows
 
 #pragma warning disable CS0649, IDE0044
         [GUI] Label    _baseTitleInfoLabel;
+        [GUI] TextView _buildIdTextView;
         [GUI] TreeView _cheatTreeView;
         [GUI] Button   _saveButton;
 #pragma warning restore CS0649, IDE0044
@@ -27,6 +28,7 @@ namespace Ryujinx.Ui.Windows
         {
             builder.Autoconnect(this);
             _baseTitleInfoLabel.Text = $"Cheats Available for {titleName} [BID: {gameBuildId}]";
+            _buildIdTextView.Buffer.Text = $"BID: {gameBuildId}";
 
             string modsBasePath  = virtualFileSystem.ModLoader.GetModsBasePath();
             string titleModsPath = virtualFileSystem.ModLoader.GetTitleDir(modsBasePath, titleId.ToString("X16"));

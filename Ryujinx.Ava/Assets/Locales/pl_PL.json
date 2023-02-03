@@ -571,7 +571,7 @@
   "CheatWindowTitle": "Menedżer Kodów",
   "DlcWindowTitle": "Menedżer Zawartości do Pobrania",
   "UpdateWindowTitle": "Menedżer Aktualizacji Tytułu",
-  "CheatWindowHeading": "Kody Dostępne dla {0} [BID: {1}]",
+  "CheatWindowHeading": "Kody Dostępne dla {0} [{1}]",
   "DlcWindowHeading": "{0} Zawartości do Pobrania dostępna dla {1} ({2})",
   "UserProfilesEditProfile": "Edytuj Zaznaczone",
   "Cancel": "Anuluj",

@@ -571,7 +571,7 @@
   "CheatWindowTitle": "Менеджер читів",
   "DlcWindowTitle": "Менеджер вмісту для завантаження",
   "UpdateWindowTitle": "Менеджер оновлення назв",
-  "CheatWindowHeading": "Коди доступні для {0} [BID: {1}]",
+  "CheatWindowHeading": "Коди доступні для {0} [{1}]",
   "DlcWindowHeading": "Вміст для завантаження, доступний для {1} ({2}): {0}",
   "UserProfilesEditProfile": "Редагувати вибране",
   "Cancel": "Скасувати",

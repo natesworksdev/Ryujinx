@@ -571,7 +571,7 @@
   "CheatWindowTitle": "Cheats Manager",
   "DlcWindowTitle": "Downloadable Content Manager",
   "UpdateWindowTitle": "Title Update Manager",
-  "CheatWindowHeading": "Cheats Available for {0} [BID: {1}]",
+  "CheatWindowHeading": "Cheats Available for {0} [{1}]",
   "DlcWindowHeading": "{0} Downloadable Content(s) available for {1} ({2})",
   "UserProfilesEditProfile": "Edit Selected",
   "Cancel": "Cancel",

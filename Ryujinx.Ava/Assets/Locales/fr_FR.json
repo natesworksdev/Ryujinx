@@ -571,7 +571,7 @@
   "CheatWindowTitle": "Gestionnaire de triches",
   "DlcWindowTitle": "Gestionnaire de contenus téléchargeables",
   "UpdateWindowTitle": "Gestionnaire de mises à jour",
-  "CheatWindowHeading": "Cheats disponibles pour {0} [BID: {1}]",
+  "CheatWindowHeading": "Cheats disponibles pour {0} [{1}]",
   "DlcWindowHeading": "{0} Contenu(s) téléchargeable(s) disponible pour {1} ({2})",
   "UserProfilesEditProfile": "Éditer la sélection",
   "Cancel": "Annuler",
