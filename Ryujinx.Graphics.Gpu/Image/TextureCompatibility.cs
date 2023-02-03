@@ -387,28 +387,27 @@ namespace Ryujinx.Graphics.Gpu.Image
             Size lhsAlignedSize = GetAlignedSize(lhs, level);
             Size rhsAlignedSize = GetAlignedSize(rhs);
 
+            Size lhsSize = GetSizeInBlocks(lhs, level);
+            Size rhsSize = GetSizeInBlocks(rhs);
+
             TextureViewCompatibility result = TextureViewCompatibility.Full;
 
             // For copies, we can copy a subset of the 3D texture slices,
             // so the depth may be different in this case.
-            if (rhs.Target == Target.Texture3D && lhsAlignedSize.Depth != rhsAlignedSize.Depth)
+            if (rhs.Target == Target.Texture3D && lhsSize.Depth != rhsSize.Depth)
             {
                 result = TextureViewCompatibility.CopyOnly;
             }
 
-            if (lhsAlignedSize.Width == rhsAlignedSize.Width && lhsAlignedSize.Height == rhsAlignedSize.Height)
+            // Some APIs align the width for copy and render target textures,
+            // so the width may not match in this case for different uses of the same texture.
+            // To account for this, we compare the aligned width here.
+            // We expect height to always match exactly, if the texture is the same.
+            if (lhsAlignedSize.Width == rhsAlignedSize.Width && lhsSize.Height == rhsSize.Height)
             {
-                Size lhsSize = GetSizeInBlocks(lhs, level);
-                Size rhsSize = GetSizeInBlocks(rhs);
-
-                if (lhsSize.Width != rhsSize.Width || lhsSize.Height != rhsSize.Height)
-                {
-                    result = TextureViewCompatibility.CopyOnly;
-                }
-
-                return result;
+                return lhsSize.Width != rhsSize.Width ? TextureViewCompatibility.CopyOnly : result;
             }
-            else if (lhs.IsLinear && rhs.IsLinear)
+            else if (lhs.IsLinear && rhs.IsLinear && lhsSize.Height == rhsSize.Height)
             {
                 // Copy between linear textures with matching stride.
                 int stride = BitUtils.AlignUp(Math.Max(1, lhs.Stride >> level), Constants.StrideAlignment);
