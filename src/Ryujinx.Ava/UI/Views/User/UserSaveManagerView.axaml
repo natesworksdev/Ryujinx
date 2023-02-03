@@ -14,7 +14,6 @@
     Height="450"
     Width="550"
     x:Class="Ryujinx.Ava.UI.Views.User.UserSaveManagerView"
-    x:CompileBindings="True"
     x:DataType="viewModels:UserSaveManagerViewModel"
     Focusable="True">
     <Design.DataContext>

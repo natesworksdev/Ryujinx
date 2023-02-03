@@ -15,7 +15,6 @@
     MinWidth="800"
     MinHeight="480"
     WindowStartupLocation="CenterOwner"
-    x:CompileBindings="True"
     x:DataType="viewModels:SettingsViewModel"
     mc:Ignorable="d"
     Focusable="True">
@@ -115,14 +114,14 @@
                 HotKey="Enter"
                 Classes="accent"
                 Content="{locale:Locale SettingsButtonOk}"
-                Command="{ReflectionBinding OkButton}" />
+                Command="{Binding OkButton}" />
             <Button
                 HotKey="Escape"
                 Content="{locale:Locale SettingsButtonCancel}"
-                Command="{ReflectionBinding CancelButton}" />
+                Command="{Binding CancelButton}" />
             <Button
                 Content="{locale:Locale SettingsButtonApply}"
-                Command="{ReflectionBinding ApplyButton}" />
+                Command="{Binding ApplyButton}" />
         </ReversibleStackPanel>
     </Grid>
 </window:StyleableWindow>

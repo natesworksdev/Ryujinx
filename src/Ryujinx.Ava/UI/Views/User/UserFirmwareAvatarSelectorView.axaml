@@ -12,7 +12,6 @@
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     xmlns:helpers="clr-namespace:Ryujinx.Ava.UI.Helpers"
-    x:CompileBindings="True"
     x:DataType="viewModels:UserFirmwareAvatarSelectorViewModel"
     Focusable="True">
     <Design.DataContext>

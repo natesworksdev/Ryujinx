@@ -10,6 +10,7 @@
     <RootNamespace>Ryujinx.Ava</RootNamespace>
     <ApplicationIcon>Ryujinx.ico</ApplicationIcon>
     <TieredPGO>true</TieredPGO>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="$([MSBuild]::IsOSPlatform('OSX'))">

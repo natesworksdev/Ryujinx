@@ -15,7 +15,6 @@
     d:DesignWidth="800"
     mc:Ignorable="d"
     Focusable="True"
-    x:CompileBindings="True"
     x:DataType="viewModels:UserProfileViewModel">
     <UserControl.Resources>
         <helpers:BitmapArrayValueConverter x:Key="ByteImage" />
