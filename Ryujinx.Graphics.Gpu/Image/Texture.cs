@@ -1227,7 +1227,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return TextureMatchQuality.NoMatch;
             }
 
-            if (!TextureCompatibility.SizeMatches(Info, info, FirstLevel))
+            if (!TextureCompatibility.SizeMatches(Info, info))
             {
                 return TextureMatchQuality.NoMatch;
             }

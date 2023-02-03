@@ -446,16 +446,15 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="lhs">Texture information to compare</param>
         /// <param name="rhs">Texture information to compare with</param>
-        /// <param name="lhsLevel">Mip level of the lhs texture. Aligned sizes are compared for the largest mip</param>
         /// <returns>True if the sizes matches, false otherwise</returns>
-        public static bool SizeMatches(TextureInfo lhs, TextureInfo rhs, int lhsLevel = 0)
+        public static bool SizeMatches(TextureInfo lhs, TextureInfo rhs)
         {
             if (lhs.GetLayers() != rhs.GetLayers())
             {
                 return false;
             }
 
-            Size lhsSize = GetSizeInBlocks(lhs, lhsLevel);
+            Size lhsSize = GetSizeInBlocks(lhs);
             Size rhsSize = GetSizeInBlocks(rhs);
 
             return lhsSize.Width == rhsSize.Width &&
