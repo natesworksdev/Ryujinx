@@ -35,7 +35,7 @@ namespace Ryujinx.Ava.UI.Renderer
         private UpdateBoundsCallbackDelegate _updateBoundsCallback;
 
         public event EventHandler<IntPtr> WindowCreated;
-        public event EventHandler<Size>   SizeChanged;
+        public event EventHandler<Size>   BoundsChanged;
 
         public EmbeddedWindow()
         {
@@ -68,7 +68,7 @@ namespace Ryujinx.Ava.UI.Renderer
 
         private void StateChanged(Rect rect)
         {
-            SizeChanged?.Invoke(this, rect.Size);
+            BoundsChanged?.Invoke(this, rect.Size);
             _updateBoundsCallback?.Invoke(rect);
         }
 
