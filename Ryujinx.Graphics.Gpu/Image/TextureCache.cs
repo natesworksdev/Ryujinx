@@ -623,14 +623,15 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 if (oInfo.Compatibility == TextureViewCompatibility.Full)
                 {
-                    TextureInfo adjInfo = AdjustSizes(overlap, info, oInfo.FirstLevel);
-
                     if (!isSamplerTexture)
                     {
-                        info = adjInfo;
+                        // If this is not a sampler texture, the size might be different from the requested size,
+                        // so we need to make sure the texture information has the correct size for this base texture,
+                        // before creating the view.
+                        info = info.CreateInfoForLevelView(overlap, oInfo.FirstLevel);
                     }
 
-                    texture = overlap.CreateView(adjInfo, sizeInfo, range.Value, oInfo.FirstLayer, oInfo.FirstLevel);
+                    texture = overlap.CreateView(info, sizeInfo, range.Value, oInfo.FirstLayer, oInfo.FirstLevel);
                     texture.SynchronizeMemory();
                     break;
                 }
@@ -815,7 +816,11 @@ namespace Ryujinx.Graphics.Gpu.Image
                         continue;
                     }
 
-                    TextureInfo overlapInfo = AdjustSizes(texture, overlap.Info, oInfo.FirstLevel);
+                    // Note: If we allow different sizes for those overlaps,
+                    // we need to make sure that the "info" has the correct size for the parent texture here.
+                    // Since this is not allowed right now, we don't need to do it.
+
+                    TextureInfo overlapInfo = overlap.Info;
 
                     if (texture.ScaleFactor != overlap.ScaleFactor)
                     {
@@ -984,92 +989,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                 Array.Resize(ref _textureOverlaps, OverlapsBufferMaxCapacity);
             }
         }
-
-        /// <summary>
-        /// Adjusts the size of the texture information for a given mipmap level,
-        /// based on the size of a parent texture.
-        /// </summary>
-        /// <param name="parent">The parent texture</param>
-        /// <param name="info">The texture information to be adjusted</param>
-        /// <param name="firstLevel">The first level of the texture view</param>
-        /// <returns>The adjusted texture information with the new size</returns>
-        private static TextureInfo AdjustSizes(Texture parent, TextureInfo info, int firstLevel)
-        {
-            // When the texture is used as view of another texture, we must
-            // ensure that the sizes are valid, otherwise data uploads would fail
-            // (and the size wouldn't match the real size used on the host API).
-            // Given a parent texture from where the view is created, we have the
-            // following rules:
-            // - The view size must be equal to the parent size, divided by (2 ^ l),
-            // where l is the first mipmap level of the view. The division result must
-            // be rounded down, and the result must be clamped to 1.
-            // - If the parent format is compressed, and the view format isn't, the
-            // view size is calculated as above, but the width and height of the
-            // view must be also divided by the compressed format block width and height.
-            // - If the parent format is not compressed, and the view is, the view
-            // size is calculated as described on the first point, but the width and height
-            // of the view must be also multiplied by the block width and height.
-            int width  = Math.Max(1, parent.Info.Width  >> firstLevel);
-            int height = Math.Max(1, parent.Info.Height >> firstLevel);
-
-            if (parent.Info.FormatInfo.IsCompressed && !info.FormatInfo.IsCompressed)
-            {
-                width  = BitUtils.DivRoundUp(width,  parent.Info.FormatInfo.BlockWidth);
-                height = BitUtils.DivRoundUp(height, parent.Info.FormatInfo.BlockHeight);
-            }
-            else if (!parent.Info.FormatInfo.IsCompressed && info.FormatInfo.IsCompressed)
-            {
-                width  *= info.FormatInfo.BlockWidth;
-                height *= info.FormatInfo.BlockHeight;
-            }
-
-            int depthOrLayers;
-
-            if (info.Target == Target.Texture3D)
-            {
-                depthOrLayers = Math.Max(1, parent.Info.DepthOrLayers >> firstLevel);
-            }
-            else
-            {
-                depthOrLayers = info.DepthOrLayers;
-            }
-
-            // 2D and 2D multisample textures are not considered compatible.
-            // This specific case is required for copies, where the source texture might be multisample.
-            // In this case, we inherit the parent texture multisample state.
-            Target target = info.Target;
-            int samplesInX = info.SamplesInX;
-            int samplesInY = info.SamplesInY;
-
-            if (target == Target.Texture2D && parent.Target == Target.Texture2DMultisample)
-            {
-                target = Target.Texture2DMultisample;
-                samplesInX = parent.Info.SamplesInX;
-                samplesInY = parent.Info.SamplesInY;
-            }
-
-            return new TextureInfo(
-                info.GpuAddress,
-                width,
-                height,
-                depthOrLayers,
-                info.Levels,
-                samplesInX,
-                samplesInY,
-                info.Stride,
-                info.IsLinear,
-                info.GobBlocksInY,
-                info.GobBlocksInZ,
-                info.GobBlocksInTileX,
-                target,
-                info.FormatInfo,
-                info.DepthStencilMode,
-                info.SwizzleR,
-                info.SwizzleG,
-                info.SwizzleB,
-                info.SwizzleA);
-        }
-
 
         /// <summary>
         /// Gets a texture creation information from texture information.
