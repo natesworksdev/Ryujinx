@@ -147,7 +147,7 @@ namespace Ryujinx.Ava.UI.Renderer
                         msg == WindowsMessages.RBUTTONUP   ||
                         msg == WindowsMessages.MOUSEMOVE)
                     {
-                        Point   rootVisualPosition = this.TranslatePoint(new Point((long)lParam & 0xFFFF, (long)lParam >> 16 & 0xFFFF), VisualRoot).Value;
+                        Point   rootVisualPosition = this.TranslatePoint(new Point((long)lParam & 0xFFFF, (long)lParam >> 16 & 0xFFFF), this).Value;
                         Pointer pointer            = new(0, PointerType.Mouse, true);
 
                         switch (msg)
@@ -162,7 +162,7 @@ namespace Ryujinx.Ava.UI.Renderer
                                     var evnt = new PointerPressedEventArgs(
                                         this,
                                         pointer,
-                                        VisualRoot,
+                                        this,
                                         rootVisualPosition,
                                         (ulong)Environment.TickCount64,
                                         properties,
@@ -182,7 +182,7 @@ namespace Ryujinx.Ava.UI.Renderer
                                     var evnt = new PointerReleasedEventArgs(
                                         this,
                                         pointer,
-                                        VisualRoot,
+                                        this,
                                         rootVisualPosition,
                                         (ulong)Environment.TickCount64,
                                         properties,
@@ -199,7 +199,7 @@ namespace Ryujinx.Ava.UI.Renderer
                                         PointerMovedEvent,
                                         this,
                                         pointer,
-                                        VisualRoot,
+                                        this,
                                         rootVisualPosition,
                                         (ulong)Environment.TickCount64,
                                         new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.Other),

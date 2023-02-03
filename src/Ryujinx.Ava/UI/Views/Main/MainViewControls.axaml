@@ -78,13 +78,13 @@
             KeyUp="SearchBox_OnKeyUp"
             Text="{Binding SearchText}"
             Watermark="{locale:Locale MenuSearch}" />
-        <ui:DropDownButton
+        <DropDownButton
             Width="150"
             HorizontalAlignment="Right"
             VerticalAlignment="Center"
             Content="{Binding SortName}"
             DockPanel.Dock="Right">
-            <ui:DropDownButton.Flyout>
+            <DropDownButton.Flyout>
                 <Flyout Placement="Bottom">
                     <StackPanel
                         Margin="0"
@@ -163,8 +163,8 @@
                             Tag="Descending" />
                     </StackPanel>
                 </Flyout>
-            </ui:DropDownButton.Flyout>
-        </ui:DropDownButton>
+            </DropDownButton.Flyout>
+        </DropDownButton>
         <TextBlock
             Margin="10,0"
             HorizontalAlignment="Right"

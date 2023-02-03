@@ -191,16 +191,13 @@ namespace Ryujinx.Ava
             {
                 _lastCursorMoveTime = Stopwatch.GetTimestamp();
 
-                if (_rendererHost.EmbeddedWindow.TransformedBounds != null)
-                {
-                    var point  = e.GetCurrentPoint(window).Position;
-                    var bounds = _rendererHost.EmbeddedWindow.TransformedBounds.Value.Clip;
+                var point  = e.GetCurrentPoint(window).Position;
+                var bounds = _rendererHost.EmbeddedWindow.Bounds;
 
-                    _isCursorInRenderer = point.X >= bounds.X &&
-                                          point.X <= bounds.Width + bounds.X &&
-                                          point.Y >= bounds.Y &&
-                                          point.Y <= bounds.Height + bounds.Y;
-                }
+                _isCursorInRenderer = point.X >= bounds.X &&
+                                      point.X <= bounds.Width + bounds.X &&
+                                      point.Y >= bounds.Y &&
+                                      point.Y <= bounds.Height + bounds.Y;
             }
         }
 

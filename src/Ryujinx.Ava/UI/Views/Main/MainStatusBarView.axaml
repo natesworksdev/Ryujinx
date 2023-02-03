@@ -127,7 +127,7 @@
                 BorderBrush="Gray"
                 BorderThickness="1"
                 IsVisible="{Binding !ShowLoadProgress}" />
-            <ui:ToggleSplitButton
+            <ToggleSplitButton
                 Name="VolumeStatus"
                 Padding="5,0,5,0"
                 HorizontalAlignment="Left"
@@ -138,7 +138,7 @@
                 Content="{Binding VolumeStatusText}"
                 IsChecked="{Binding VolumeMuted}"
                 IsVisible="{Binding !ShowLoadProgress}">
-                <ui:ToggleSplitButton.Flyout>
+                <ToggleSplitButton.Flyout>
                     <Flyout Placement="Bottom" ShowMode="TransientWithDismissOnPointerMoveAway">
                         <Grid Margin="0">
                             <Slider
@@ -156,8 +156,8 @@
                                 Value="{Binding Volume}" />
                         </Grid>
                     </Flyout>
-                </ui:ToggleSplitButton.Flyout>
-            </ui:ToggleSplitButton>
+                </ToggleSplitButton.Flyout>
+            </ToggleSplitButton>
             <Border
                 Width="2"
                 Height="12"

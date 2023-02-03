@@ -107,7 +107,6 @@
             VerticalAlignment="Stretch">
             <ListBox
                 Name="SaveList"
-                VirtualizationMode="None"
                 Items="{Binding Views}"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch">

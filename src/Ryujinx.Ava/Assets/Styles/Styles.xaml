@@ -86,7 +86,6 @@
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="Background" Value="{DynamicResource ThemeControlBorderColor}" />
         <Setter Property="SeparatorBrush" Value="{DynamicResource ThemeControlBorderColor}" />
         <Setter Property="Padding" Value="5" />
         <Setter Property="Background" Value="{DynamicResource ThemeContentBackgroundColor}" />
@@ -123,7 +122,6 @@
     </Style>
     <Style Selector="DataGrid">
         <Setter Property="RowBackground" Value="{DynamicResource ThemeAccentBrush4}" />
-        <Setter Property="AlternatingRowBackground" Value="#00FFFFFF" />
         <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLowColor}" />
         <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />

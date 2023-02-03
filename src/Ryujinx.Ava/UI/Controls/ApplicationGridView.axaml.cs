@@ -30,7 +30,7 @@ namespace Ryujinx.Ava.UI.Controls
             AvaloniaXamlLoader.Load(this);
         }
 
-        public void GameList_DoubleTapped(object sender, RoutedEventArgs args)
+        public void GameList_DoubleTapped(object sender, TappedEventArgs args)
         {
             if (sender is ListBox listBox)
             {

@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common;
@@ -383,7 +384,7 @@ namespace Ryujinx.Ava.UI.Windows
             HotKeyManager.SetHotKey(ExitHotKey,            new KeyGesture(Key.Escape));
         }
 
-        private void VolumeStatus_CheckedChanged(object sender, SplitButtonClickEventArgs e)
+        private void VolumeStatus_CheckedChanged(object sender, RoutedEventArgs e)
         {
             var volumeSplitButton = sender as ToggleSplitButton;
             if (ViewModel.IsGameRunning)
@@ -401,7 +402,7 @@ namespace Ryujinx.Ava.UI.Windows
             }
         }
 
-        protected override void OnClosing(CancelEventArgs e)
+        protected override void OnClosing(WindowClosingEventArgs e)
         {
             if (!ViewModel.IsClosing && ViewModel.AppHost != null && ConfigurationState.Instance.ShowConfirmExit)
             {

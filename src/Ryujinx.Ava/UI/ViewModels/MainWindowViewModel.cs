@@ -1176,7 +1176,9 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     Avalonia.Application.Current.Styles.TryGetResource(args.VSyncEnabled
                         ? "VsyncEnabled"
-                        : "VsyncDisabled", out object color);
+                        : "VsyncDisabled",
+                        Avalonia.Application.Current.ActualThemeVariant,
+                        out object color);
 
                     if (color is not null)
                     {

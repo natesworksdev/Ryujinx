@@ -61,8 +61,8 @@
                     <DataTemplate
                         DataType="models:UserProfile">
                         <Grid
-                            PointerEnter="Grid_PointerEntered"
-                            PointerLeave="Grid_OnPointerExited">
+                            PointerEntered="Grid_PointerEntered"
+                            PointerExited="Grid_OnPointerExited">
                             <Border
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch"

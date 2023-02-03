@@ -15,7 +15,7 @@ namespace Ryujinx.Ava.UI.Views.Settings
         public SettingsSystemView()
         {
             InitializeComponent();
-        
+
             FuncMultiValueConverter<string, string> converter = new(parts => string.Format("{0}  {1}   {2}", parts.ToArray()).Trim());
             MultiBinding tzMultiBinding = new() { Converter = converter };
 
@@ -39,7 +39,7 @@ namespace Ryujinx.Ava.UI.Views.Settings
             }
         }
 
-        private void TimeZoneBox_OnTextChanged(object sender, EventArgs e)
+        private void TimeZoneBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {
             if (sender is AutoCompleteBox box && box.SelectedItem is TimeZone timeZone)
             {

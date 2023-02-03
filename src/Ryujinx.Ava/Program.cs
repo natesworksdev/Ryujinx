@@ -64,10 +64,9 @@ namespace Ryujinx.Ava
                 })
                 .With(new Win32PlatformOptions
                 {
-                    EnableMultitouch                = true,
                     UseWgl                          = false,
                     AllowEglInitialization          = false,
-                    CompositionBackdropCornerRadius = 8.0f,
+                    CompositionBackdropCornerRadius = 8.0f
                 })
                 .UseSkia();
         }

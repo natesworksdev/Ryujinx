@@ -264,7 +264,7 @@ namespace Ryujinx.Modules
                 IconSource      = new SymbolIconSource { Symbol = Symbol.Download },
                 Buttons         = { },
                 ShowProgressBar = true,
-                XamlRoot        = parent
+                // XamlRoot        = parent
             };
 
             taskDialog.Opened += (s, e) =>

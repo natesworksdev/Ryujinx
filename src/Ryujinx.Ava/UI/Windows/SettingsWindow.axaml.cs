@@ -92,12 +92,5 @@ namespace Ryujinx.Ava.UI.Windows
                 }
             }
         }
-
-        protected override void OnClosing(CancelEventArgs e)
-        {
-            HotkeysPage.Dispose();
-            InputPage.Dispose();
-            base.OnClosing(e);
-        }
     }
 }
