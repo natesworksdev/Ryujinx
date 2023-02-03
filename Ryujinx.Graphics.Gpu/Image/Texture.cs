@@ -1215,7 +1215,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>A value indicating how well this texture matches the given info</returns>
         public TextureMatchQuality IsExactMatch(TextureInfo info, TextureSearchFlags flags)
         {
-            TextureMatchQuality matchQuality = TextureCompatibility.FormatMatches(Info, info, (flags & TextureSearchFlags.ForSampler) != 0, (flags & TextureSearchFlags.ForCopy) != 0);
+            bool forSampler = (flags & TextureSearchFlags.ForSampler) != 0;
+
+            TextureMatchQuality matchQuality = TextureCompatibility.FormatMatches(Info, info, forSampler, (flags & TextureSearchFlags.ForCopy) != 0);
 
             if (matchQuality == TextureMatchQuality.NoMatch)
             {
@@ -1227,7 +1229,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return TextureMatchQuality.NoMatch;
             }
 
-            if (!TextureCompatibility.SizeMatches(Info, info))
+            if (!TextureCompatibility.SizeMatches(Info, info, forSampler))
             {
                 return TextureMatchQuality.NoMatch;
             }
@@ -1262,12 +1264,20 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="info">Texture view information</param>
         /// <param name="range">Texture view physical memory ranges</param>
+        /// <param name="exactSize">Indicates if the texture sizes must be exactly equal, or width is allowed to differ</param>
         /// <param name="layerSize">Layer size on the given texture</param>
         /// <param name="caps">Host GPU capabilities</param>
         /// <param name="firstLayer">Texture view initial layer on this texture</param>
         /// <param name="firstLevel">Texture view first mipmap level on this texture</param>
         /// <returns>The level of compatiblilty a view with the given parameters created from this texture has</returns>
-        public TextureViewCompatibility IsViewCompatible(TextureInfo info, MultiRange range, int layerSize, Capabilities caps, out int firstLayer, out int firstLevel)
+        public TextureViewCompatibility IsViewCompatible(
+            TextureInfo info,
+            MultiRange range,
+            bool exactSize,
+            int layerSize,
+            Capabilities caps,
+            out int firstLayer,
+            out int firstLevel)
         {
             TextureViewCompatibility result = TextureViewCompatibility.Full;
 
@@ -1317,7 +1327,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return TextureViewCompatibility.LayoutIncompatible;
             }
 
-            result = TextureCompatibility.PropagateViewCompatibility(result, TextureCompatibility.ViewSizeMatches(Info, info, firstLevel));
+            result = TextureCompatibility.PropagateViewCompatibility(result, TextureCompatibility.ViewSizeMatches(Info, info, exactSize, firstLevel));
             result = TextureCompatibility.PropagateViewCompatibility(result, TextureCompatibility.ViewSubImagesInBounds(Info, info, firstLayer, firstLevel));
 
             return result;

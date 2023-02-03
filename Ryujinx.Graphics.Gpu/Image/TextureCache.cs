@@ -596,6 +596,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 TextureViewCompatibility overlapCompatibility = overlap.IsViewCompatible(
                     info,
                     range.Value,
+                    isSamplerTexture,
                     sizeInfo.LayerSize,
                     _context.Capabilities,
                     out int firstLayer,
@@ -710,6 +711,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     TextureViewCompatibility compatibility = texture.IsViewCompatible(
                         overlap.Info,
                         overlap.Range,
+                        exactSize: true,
                         overlap.LayerSize,
                         _context.Capabilities,
                         out int firstLayer,
@@ -901,7 +903,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 // To fix that, we create a new texture with the correct
                 // size, and copy the data from the old one to the new one.
 
-                if (!TextureCompatibility.SizeMatches(texture.Info, info))
+                if (!TextureCompatibility.SizeMatches(texture.Info, info, true))
                 {
                     texture.ChangeSize(info.Width, info.Height, info.DepthOrLayers);
                 }

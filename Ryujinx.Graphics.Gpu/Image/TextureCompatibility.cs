@@ -380,9 +380,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="lhs">Texture information of the texture view</param>
         /// <param name="rhs">Texture information of the texture view to match against</param>
+        /// <param name="exact">Indicates if the sizes must be exactly equal</param>
         /// <param name="level">Mipmap level of the texture view in relation to this texture</param>
         /// <returns>The view compatibility level of the view sizes</returns>
-        public static TextureViewCompatibility ViewSizeMatches(TextureInfo lhs, TextureInfo rhs, int level)
+        public static TextureViewCompatibility ViewSizeMatches(TextureInfo lhs, TextureInfo rhs, bool exact, int level)
         {
             Size lhsAlignedSize = GetAlignedSize(lhs, level);
             Size rhsAlignedSize = GetAlignedSize(rhs);
@@ -405,7 +406,9 @@ namespace Ryujinx.Graphics.Gpu.Image
             // We expect height to always match exactly, if the texture is the same.
             if (lhsAlignedSize.Width == rhsAlignedSize.Width && lhsSize.Height == rhsSize.Height)
             {
-                return lhsSize.Width != rhsSize.Width ? TextureViewCompatibility.CopyOnly : result;
+                return (exact && lhsSize.Width != rhsSize.Width) || lhsSize.Width < rhsSize.Width
+                    ? TextureViewCompatibility.CopyOnly
+                    : result;
             }
             else if (lhs.IsLinear && rhs.IsLinear && lhsSize.Height == rhsSize.Height)
             {
@@ -446,8 +449,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="lhs">Texture information to compare</param>
         /// <param name="rhs">Texture information to compare with</param>
+        /// <param name="exact">Indicates if the size must be exactly equal between the textures, or if <paramref name="rhs"/> is allowed to be larger</param>
         /// <returns>True if the sizes matches, false otherwise</returns>
-        public static bool SizeMatches(TextureInfo lhs, TextureInfo rhs)
+        public static bool SizeMatches(TextureInfo lhs, TextureInfo rhs, bool exact)
         {
             if (lhs.GetLayers() != rhs.GetLayers())
             {
@@ -457,9 +461,22 @@ namespace Ryujinx.Graphics.Gpu.Image
             Size lhsSize = GetSizeInBlocks(lhs);
             Size rhsSize = GetSizeInBlocks(rhs);
 
-            return lhsSize.Width == rhsSize.Width &&
-                   lhsSize.Height == rhsSize.Height &&
-                   lhsSize.Depth == rhsSize.Depth;
+            if (exact || lhs.IsLinear || rhs.IsLinear)
+            {
+                return lhsSize.Width == rhsSize.Width &&
+                       lhsSize.Height == rhsSize.Height &&
+                       lhsSize.Depth == rhsSize.Depth;
+            }
+            else
+            {
+                Size lhsAlignedSize = GetAlignedSize(lhs);
+                Size rhsAlignedSize = GetAlignedSize(rhs);
+
+                return lhsAlignedSize.Width == rhsAlignedSize.Width &&
+                       lhsSize.Width >= rhsSize.Width &&
+                       lhsSize.Height == rhsSize.Height &&
+                       lhsSize.Depth == rhsSize.Depth;
+            }
         }
 
         /// <summary>
