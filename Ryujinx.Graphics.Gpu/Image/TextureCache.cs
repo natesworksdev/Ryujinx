@@ -427,7 +427,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>The minimum width of the texture with the same amount of GOBs per row</returns>
         private static int GetMinimumWidthInGob(int width, int minimumWidth, int bytesPerPixel, bool isLinear)
         {
-            if (isLinear)
+            if (isLinear || (uint)minimumWidth >= (uint)width)
             {
                 return width;
             }
