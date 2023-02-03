@@ -15,6 +15,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using static Ryujinx.Ava.UI.Helpers.Win32NativeInterop;
+#pragma warning disable CS0618
 
 namespace Ryujinx.Ava.UI.Renderer
 {
