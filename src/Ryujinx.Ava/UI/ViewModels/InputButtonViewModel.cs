@@ -19,6 +19,8 @@ namespace Ryujinx.Ava.UI.ViewModels
         private ControllerSettingsViewModel _viewModel;
         private bool _isLeft;
 
+        public InputButtonViewModel() { }
+
         public InputButtonViewModel(StickInputId side, ControllerSettingsViewModel viewModel)
         {
             _isLeft = side == StickInputId.Left;
