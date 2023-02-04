@@ -226,7 +226,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             // D32F and R32F texture have the same representation internally,
             // however the R32F format is used to sample from depth textures.
-            if (lhs.FormatInfo.Format == Format.D32Float && rhs.FormatInfo.Format == Format.R32Float && (forSampler || depthAlias))
+            if (IsValidDepthAsColorAlias(lhs.FormatInfo.Format, rhs.FormatInfo.Format) && (forSampler || depthAlias))
             {
                 return TextureMatchQuality.FormatAlias;
             }
@@ -239,14 +239,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     return TextureMatchQuality.FormatAlias;
                 }
-
-                if (lhs.FormatInfo.Format == Format.D16Unorm && rhs.FormatInfo.Format == Format.R16Unorm)
-                {
-                    return TextureMatchQuality.FormatAlias;
-                }
-
-                if ((lhs.FormatInfo.Format == Format.D24UnormS8Uint ||
-                     lhs.FormatInfo.Format == Format.S8UintD24Unorm) && rhs.FormatInfo.Format == Format.B8G8R8A8Unorm)
+                else if ((lhs.FormatInfo.Format == Format.D24UnormS8Uint ||
+                          lhs.FormatInfo.Format == Format.S8UintD24Unorm) && rhs.FormatInfo.Format == Format.B8G8R8A8Unorm)
                 {
                     return TextureMatchQuality.FormatAlias;
                 }
@@ -625,12 +619,19 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (lhsFormat.Format.IsDepthOrStencil() || rhsFormat.Format.IsDepthOrStencil())
             {
-                return FormatMatches(lhs, rhs, flags.HasFlag(TextureSearchFlags.ForSampler), flags.HasFlag(TextureSearchFlags.DepthAlias)) switch
+                if (lhsFormat.Format == rhsFormat.Format)
                 {
-                    TextureMatchQuality.Perfect => TextureViewCompatibility.Full,
-                    TextureMatchQuality.FormatAlias => TextureViewCompatibility.FormatAlias,
-                    _ => TextureViewCompatibility.Incompatible,
-                };
+                    return TextureViewCompatibility.Full;
+                }
+                else if (IsValidColorAsDepthAlias(lhsFormat.Format, rhsFormat.Format) ||
+                         IsValidDepthAsColorAlias(lhsFormat.Format, rhsFormat.Format))
+                {
+                    return TextureViewCompatibility.CopyOnly;
+                }
+                else
+                {
+                    return TextureViewCompatibility.Incompatible;
+                }
             }
 
             if (IsFormatHostIncompatible(lhs, caps) || IsFormatHostIncompatible(rhs, caps))
@@ -657,6 +658,30 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             return TextureViewCompatibility.Incompatible;
+        }
+
+        /// <summary>
+        /// Checks if it's valid to alias a color format as a depth format.
+        /// </summary>
+        /// <param name="lhsFormat">Source format to be checked</param>
+        /// <param name="rhsFormat">Target format to be checked</param>
+        /// <returns>True if it's valid to alias the formats</returns>
+        private static bool IsValidColorAsDepthAlias(Format lhsFormat, Format rhsFormat)
+        {
+            return (lhsFormat == Format.R32Float && rhsFormat == Format.D32Float) ||
+                   (lhsFormat == Format.R16Unorm && rhsFormat == Format.D16Unorm);
+        }
+
+        /// <summary>
+        /// Checks if it's valid to alias a depth format as a color format.
+        /// </summary>
+        /// <param name="lhsFormat">Source format to be checked</param>
+        /// <param name="rhsFormat">Target format to be checked</param>
+        /// <returns>True if it's valid to alias the formats</returns>
+        private static bool IsValidDepthAsColorAlias(Format lhsFormat, Format rhsFormat)
+        {
+            return (lhsFormat == Format.D32Float && rhsFormat == Format.R32Float) ||
+                   (lhsFormat == Format.D16Unorm && rhsFormat == Format.R16Unorm);
         }
 
         /// <summary>
