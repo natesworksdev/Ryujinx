@@ -2,8 +2,8 @@
 {
     internal enum PlaneType
     {
-        Y = 0,
-        Uv = 1,
+        Y,
+        Uv,
         PlaneTypes
     }
 }

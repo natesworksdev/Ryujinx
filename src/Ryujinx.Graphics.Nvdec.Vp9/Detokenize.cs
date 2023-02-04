@@ -19,24 +19,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         {
             const int maxNeighbors = 2;
 
-            return (1 + tokenCache[neighbors[maxNeighbors * c + 0]] + tokenCache[neighbors[maxNeighbors * c + 1]]) >> 1;
-        }
-
-        private static int ReadCoeff(
-            ref Reader r,
-            ReadOnlySpan<byte> probs,
-            int n,
-            ref ulong value,
-            ref int count,
-            ref uint range)
-        {
-            int i, val = 0;
-            for (i = 0; i < n; ++i)
-            {
-                val = (val << 1) | r.ReadBool(probs[i], ref value, ref count, ref range);
-            }
-
-            return val;
+            return (1 + tokenCache[neighbors[(maxNeighbors * c) + 0]] +
+                    tokenCache[neighbors[(maxNeighbors * c) + 1]]) >> 1;
         }
 
         private static int DecodeCoefs(
@@ -57,14 +41,16 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             int band, c = 0;
             ref Array6<Array6<Array3<byte>>> coefProbs = ref fc.CoefProbs[(int)txSize][(int)type][refr];
             Span<byte> tokenCache = stackalloc byte[32 * 32];
-            ReadOnlySpan<byte> bandTranslate = Luts.get_band_translate(txSize);
-            int dqShift = (txSize == TxSize.Tx32x32) ? 1 : 0;
+            ReadOnlySpan<byte> bandTranslate = Luts.GetBandTranslate(txSize);
+            int dqShift = txSize == TxSize.Tx32x32 ? 1 : 0;
             int v;
             short dqv = dq[0];
-            ReadOnlySpan<byte> cat6Prob = (xd.Bd == 12)
-                ? Luts.Vp9Cat6ProbHigh12
-                : (xd.Bd == 10) ? Luts.Vp9Cat6ProbHigh12.Slice(2) : Luts.Vp9Cat6Prob;
-            int cat6Bits = (xd.Bd == 12) ? 18 : (xd.Bd == 10) ? 16 : 14;
+            ReadOnlySpan<byte> cat6Prob = xd.Bd == 12
+                ? Luts.Cat6ProbHigh12
+                : xd.Bd == 10
+                    ? Luts.Cat6ProbHigh12.Slice(2)
+                    : Luts.Cat6Prob;
+            int cat6Bits = xd.Bd == 12 ? 18 : xd.Bd == 10 ? 16 : 14;
             // Keep value, range, and count as locals.  The compiler produces better
             // results with the locals than using r directly.
             ulong value = r.Value;
@@ -107,8 +93,9 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                         r.Value = value;
                         r.Range = range;
                         r.Count = count;
-                        return c;  // Zero tokens at the end (no eob token)
+                        return c; // Zero tokens at the end (no eob token)
                     }
+
                     ctx = GetCoefContext(nb, tokenCache, c);
                     band = bandTranslate[0];
                     bandTranslate = bandTranslate.Slice(1);
@@ -117,7 +104,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
                 if (r.ReadBool(prob[OneContextNode], ref value, ref count, ref range) != 0)
                 {
-                    ReadOnlySpan<byte> p = Luts.Vp9Pareto8Full[prob[Constants.PivotNode] - 1];
+                    ReadOnlySpan<byte> p = Luts.Pareto8Full[prob[Constants.PivotNode] - 1];
                     if (!xd.Counts.IsNull)
                     {
                         ++counts.Coef[(int)txSize][(int)type][refr][band][ctx][Constants.TwoToken];
@@ -132,20 +119,24 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                             {
                                 if (r.ReadBool(p[7], ref value, ref count, ref range) != 0)
                                 {
-                                    val = Constants.Cat6MinVal + ReadCoeff(ref r, cat6Prob, cat6Bits, ref value, ref count, ref range);
+                                    val = Constants.Cat6MinVal + r.ReadCoeff(cat6Prob, cat6Bits, ref value,
+                                        ref count, ref range);
                                 }
                                 else
                                 {
-                                    val = Constants.Cat5MinVal + ReadCoeff(ref r, Luts.Vp9Cat5Prob, 5, ref value, ref count, ref range);
+                                    val = Constants.Cat5MinVal + r.ReadCoeff(Luts.Cat5Prob, 5, ref value,
+                                        ref count, ref range);
                                 }
                             }
                             else if (r.ReadBool(p[6], ref value, ref count, ref range) != 0)
                             {
-                                val = Constants.Cat4MinVal + ReadCoeff(ref r, Luts.Vp9Cat4Prob, 4, ref value, ref count, ref range);
+                                val = Constants.Cat4MinVal + r.ReadCoeff(Luts.Cat4Prob, 4, ref value, ref count,
+                                    ref range);
                             }
                             else
                             {
-                                val = Constants.Cat3MinVal + ReadCoeff(ref r, Luts.Vp9Cat3Prob, 3, ref value, ref count, ref range);
+                                val = Constants.Cat3MinVal + r.ReadCoeff(Luts.Cat3Prob, 3, ref value, ref count,
+                                    ref range);
                             }
                         }
                         else
@@ -153,13 +144,16 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                             tokenCache[scan[c]] = 4;
                             if (r.ReadBool(p[4], ref value, ref count, ref range) != 0)
                             {
-                                val = Constants.Cat2MinVal + ReadCoeff(ref r, Luts.Vp9Cat2Prob, 2, ref value, ref count, ref range);
+                                val = Constants.Cat2MinVal + r.ReadCoeff(Luts.Cat2Prob, 2, ref value, ref count,
+                                    ref range);
                             }
                             else
                             {
-                                val = Constants.Cat1MinVal + ReadCoeff(ref r, Luts.Vp9Cat1Prob, 1, ref value, ref count, ref range);
+                                val = Constants.Cat1MinVal + r.ReadCoeff(Luts.Cat1Prob, 1, ref value, ref count,
+                                    ref range);
                             }
                         }
+
                         // Val may use 18-bits
                         v = (int)(((long)val * dqv) >> dqShift);
                     }
@@ -187,7 +181,9 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     tokenCache[scan[c]] = 1;
                     v = dqv >> dqShift;
                 }
-                dqcoeff[scan[c]] = (int)HighbdCheckRange(r.ReadBool(128, ref value, ref count, ref range) != 0 ? -v : v, xd.Bd);
+
+                dqcoeff[scan[c]] = (int)HighbdCheckRange(r.ReadBool(128, ref value, ref count, ref range) != 0 ? -v : v,
+                    xd.Bd);
                 ++c;
                 ctx = GetCoefContext(nb, tokenCache, c);
                 dqv = dq[1];
@@ -199,7 +195,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             return c;
         }
 
-        private static void GetCtxShift(ref MacroBlockD xd, ref int ctxShiftA, ref int ctxShiftL, int x, int y, uint txSizeInBlocks)
+        private static void GetCtxShift(ref MacroBlockD xd, ref int ctxShiftA, ref int ctxShiftL, int x, int y,
+            uint txSizeInBlocks)
         {
             if (xd.MaxBlocksWide != 0)
             {
@@ -208,6 +205,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     ctxShiftA = (int)(txSizeInBlocks - (xd.MaxBlocksWide - x)) * 8;
                 }
             }
+
             if (xd.MaxBlocksHigh != 0)
             {
                 if (txSizeInBlocks + y > xd.MaxBlocksHigh)
