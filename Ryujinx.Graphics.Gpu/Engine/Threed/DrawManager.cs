@@ -725,10 +725,25 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 return;
             }
 
+            bool clearDepth = (argument & 1) != 0;
+            bool clearStencil = (argument & 2) != 0;
+            uint componentMask = (uint)((argument >> 2) & 0xf);
             int index = (argument >> 6) & 0xf;
             int layer = (argument >> 10) & 0x3ff;
 
-            engine.UpdateRenderTargetState(useControl: false, layered: layer != 0 || layerCount > 1, singleUse: index);
+            RenderTargetUpdateFlags updateFlags = RenderTargetUpdateFlags.SingleColor;
+
+            if (layer != 0 || layerCount > 1)
+            {
+                updateFlags |= RenderTargetUpdateFlags.Layered;
+            }
+
+            if (clearDepth || clearStencil)
+            {
+                updateFlags |= RenderTargetUpdateFlags.UpdateDepthStencil;
+            }
+
+            engine.UpdateRenderTargetState(updateFlags, singleUse: componentMask != 0 ? index : -1);
 
             // If there is a mismatch on the host clip region and the one explicitly defined by the guest
             // on the screen scissor state, then we need to force only one texture to be bound to avoid
@@ -797,10 +812,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _channel.TextureManager.UpdateRenderTargets();
             }
 
-            bool clearDepth = (argument & 1) != 0;
-            bool clearStencil = (argument & 2) != 0;
-            uint componentMask = (uint)((argument >> 2) & 0xf);
-
             if (componentMask != 0)
             {
                 var clearColor = _state.State.ClearColors;
@@ -841,7 +852,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 engine.UpdateScissorState();
             }
 
-            engine.UpdateRenderTargetState(useControl: true);
+            engine.UpdateRenderTargetState(RenderTargetUpdateFlags.UpdateAll);
 
             if (renderEnable == ConditionalRenderEnabled.Host)
             {
