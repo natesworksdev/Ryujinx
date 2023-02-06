@@ -368,10 +368,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             bool isDepthOrStencil = dst.Info.Format.IsDepthOrStencil();
 
-            if (VulkanConfiguration.UseSlowSafeBlitOnAmd &&
-                (_gd.Vendor == Vendor.Amd || _gd.IsMoltenVk) &&
-                !src.Info.Target.IsMultisample() &&
-                !dst.Info.Target.IsMultisample())
+            if (VulkanConfiguration.UseSlowSafeBlitOnAmd && (_gd.Vendor == Vendor.Amd || _gd.IsMoltenVk))
             {
                 _gd.HelperShader.Blit(
                     _gd,

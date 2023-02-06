@@ -24,6 +24,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly ISampler _samplerLinear;
         private readonly ISampler _samplerNearest;
         private readonly IProgram _programColorBlit;
+        private readonly IProgram _programColorBlitMs;
         private readonly IProgram _programColorBlitClearAlpha;
         private readonly IProgram _programColorClearF;
         private readonly IProgram _programColorClearSI;
@@ -34,7 +35,9 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly IProgram _programColorCopyToNonMs;
         private readonly IProgram _programColorDrawToMs;
         private readonly IProgram _programDepthBlit;
+        private readonly IProgram _programDepthBlitMs;
         private readonly IProgram _programStencilBlit;
+        private readonly IProgram _programStencilBlitMs;
 
         public HelperShader(VulkanRenderer gd, Device device)
         {
@@ -60,6 +63,12 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 new ShaderSource(ShaderBinaries.ColorBlitVertexShaderSource, blitVertexBindings, ShaderStage.Vertex, TargetLanguage.Spirv),
                 new ShaderSource(ShaderBinaries.ColorBlitFragmentShaderSource, blitFragmentBindings, ShaderStage.Fragment, TargetLanguage.Spirv),
+            });
+
+            _programColorBlitMs = gd.CreateProgramWithMinimalLayout(new[]
+            {
+                new ShaderSource(ShaderBinaries.ColorBlitVertexShaderSource, blitVertexBindings, ShaderStage.Vertex, TargetLanguage.Spirv),
+                new ShaderSource(ShaderBinaries.ColorBlitMsFragmentShaderSource, blitFragmentBindings, ShaderStage.Fragment, TargetLanguage.Spirv),
             });
 
             _programColorBlitClearAlpha = gd.CreateProgramWithMinimalLayout(new[]
@@ -160,12 +169,24 @@ namespace Ryujinx.Graphics.Vulkan
                 new ShaderSource(ShaderBinaries.DepthBlitFragmentShaderSource, blitFragmentBindings, ShaderStage.Fragment, TargetLanguage.Spirv),
             });
 
+            _programDepthBlitMs = gd.CreateProgramWithMinimalLayout(new[]
+            {
+                new ShaderSource(ShaderBinaries.ColorBlitVertexShaderSource, blitVertexBindings, ShaderStage.Vertex, TargetLanguage.Spirv),
+                new ShaderSource(ShaderBinaries.DepthBlitMsFragmentShaderSource, blitFragmentBindings, ShaderStage.Fragment, TargetLanguage.Spirv),
+            });
+
             if (gd.Capabilities.SupportsShaderStencilExport)
             {
                 _programStencilBlit = gd.CreateProgramWithMinimalLayout(new[]
                 {
                     new ShaderSource(ShaderBinaries.ColorBlitVertexShaderSource, blitVertexBindings, ShaderStage.Vertex, TargetLanguage.Spirv),
                     new ShaderSource(ShaderBinaries.StencilBlitFragmentShaderSource, blitFragmentBindings, ShaderStage.Fragment, TargetLanguage.Spirv),
+                });
+
+                _programStencilBlitMs = gd.CreateProgramWithMinimalLayout(new[]
+                {
+                    new ShaderSource(ShaderBinaries.ColorBlitVertexShaderSource, blitVertexBindings, ShaderStage.Vertex, TargetLanguage.Spirv),
+                    new ShaderSource(ShaderBinaries.StencilBlitMsFragmentShaderSource, blitFragmentBindings, ShaderStage.Fragment, TargetLanguage.Spirv),
                 });
             }
         }
@@ -187,6 +208,7 @@ namespace Ryujinx.Graphics.Vulkan
             using var cbs = gd.CommandBufferPool.Rent();
 
             var dstFormat = dst.VkFormat;
+            var dstSamples = dst.Info.Samples;
 
             for (int l = 0; l < levels; l++)
             {
@@ -215,11 +237,34 @@ namespace Ryujinx.Graphics.Vulkan
 
                     if (isDepthOrStencil)
                     {
-                        BlitDepthStencil(gd, cbs, srcView, dst.GetImageViewForAttachment(), dstWidth, dstHeight, dstFormat, mipSrcRegion, mipDstRegion);
+                        BlitDepthStencil(
+                            gd,
+                            cbs,
+                            srcView,
+                            dst.GetImageViewForAttachment(),
+                            dstWidth,
+                            dstHeight,
+                            dstSamples,
+                            dstFormat,
+                            mipSrcRegion,
+                            mipDstRegion);
                     }
                     else
                     {
-                        BlitColor(gd, cbs, srcView, dst.GetImageViewForAttachment(), dstWidth, dstHeight, dstFormat, false, mipSrcRegion, mipDstRegion, linearFilter, clearAlpha);
+                        BlitColor(
+                            gd,
+                            cbs,
+                            srcView,
+                            dst.GetImageViewForAttachment(),
+                            dstWidth,
+                            dstHeight,
+                            dstSamples,
+                            dstFormat,
+                            false,
+                            mipSrcRegion,
+                            mipDstRegion,
+                            linearFilter,
+                            clearAlpha);
                     }
 
                     if (srcView != src)
@@ -276,6 +321,7 @@ namespace Ryujinx.Graphics.Vulkan
                         dstView.GetImageViewForAttachment(),
                         dstView.Width,
                         dstView.Height,
+                        dstView.Info.Samples,
                         dstView.VkFormat,
                         dstView.Info.Format.IsDepthOrStencil(),
                         extents,
@@ -302,6 +348,7 @@ namespace Ryujinx.Graphics.Vulkan
             Auto<DisposableImageView> dst,
             int dstWidth,
             int dstHeight,
+            int dstSamples,
             VkFormat dstFormat,
             bool dstIsDepthOrStencil,
             Extents2D srcRegion,
@@ -363,15 +410,23 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (dstIsDepthOrStencil)
             {
-                _pipeline.SetProgram(_programDepthBlit);
+                _pipeline.SetProgram(src.Info.Target.IsMultisample() ? _programDepthBlitMs : _programDepthBlit);
                 _pipeline.SetDepthTest(new DepthTestDescriptor(true, true, GAL.CompareOp.Always));
+            }
+            else if (src.Info.Target.IsMultisample())
+            {
+                _pipeline.SetProgram(_programColorBlitMs);
+            }
+            else if (clearAlpha)
+            {
+                _pipeline.SetProgram(_programColorBlitClearAlpha);
             }
             else
             {
-                _pipeline.SetProgram(clearAlpha ? _programColorBlitClearAlpha : _programColorBlit);
+                _pipeline.SetProgram(_programColorBlit);
             }
 
-            _pipeline.SetRenderTarget(dst, (uint)dstWidth, (uint)dstHeight, dstIsDepthOrStencil, dstFormat);
+            _pipeline.SetRenderTarget(dst, (uint)dstWidth, (uint)dstHeight, (uint)dstSamples, dstIsDepthOrStencil, dstFormat);
             _pipeline.SetRenderTargetColorMasks(new uint[] { 0xf });
             _pipeline.SetScissors(scissors);
 
@@ -401,6 +456,7 @@ namespace Ryujinx.Graphics.Vulkan
             Auto<DisposableImageView> dst,
             int dstWidth,
             int dstHeight,
+            int dstSamples,
             VkFormat dstFormat,
             Extents2D srcRegion,
             Extents2D dstRegion)
@@ -453,7 +509,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             scissors[0] = new Rectangle<int>(0, 0, dstWidth, dstHeight);
 
-            _pipeline.SetRenderTarget(dst, (uint)dstWidth, (uint)dstHeight, true, dstFormat);
+            _pipeline.SetRenderTarget(dst, (uint)dstWidth, (uint)dstHeight, (uint)dstSamples, true, dstFormat);
             _pipeline.SetScissors(scissors);
             _pipeline.SetViewports(viewports, false);
             _pipeline.SetPrimitiveTopology(GAL.PrimitiveTopology.TriangleStrip);
@@ -520,12 +576,12 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (isDepth)
             {
-                _pipeline.SetProgram(_programDepthBlit);
+                _pipeline.SetProgram(src.Info.Target.IsMultisample() ? _programDepthBlitMs : _programDepthBlit);
                 _pipeline.SetDepthTest(new DepthTestDescriptor(true, true, GAL.CompareOp.Always));
             }
             else
             {
-                _pipeline.SetProgram(_programStencilBlit);
+                _pipeline.SetProgram(src.Info.Target.IsMultisample() ? _programStencilBlitMs : _programStencilBlit);
                 _pipeline.SetStencilTest(CreateStencilTestDescriptor(true));
             }
 
@@ -1273,6 +1329,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 _programColorBlitClearAlpha.Dispose();
                 _programColorBlit.Dispose();
+                _programColorBlitMs.Dispose();
                 _programColorClearF.Dispose();
                 _programColorClearSI.Dispose();
                 _programColorClearUI.Dispose();
@@ -1282,7 +1339,9 @@ namespace Ryujinx.Graphics.Vulkan
                 _programColorCopyToNonMs.Dispose();
                 _programColorDrawToMs.Dispose();
                 _programDepthBlit.Dispose();
+                _programDepthBlitMs.Dispose();
                 _programStencilBlit?.Dispose();
+                _programStencilBlitMs?.Dispose();
                 _samplerNearest.Dispose();
                 _samplerLinear.Dispose();
                 _pipeline.Dispose();
