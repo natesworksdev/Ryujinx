@@ -343,6 +343,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _width,
                 _height,
                 _format,
+                false,
                 new Extents2D(srcX0, srcY0, srcX1, srcY1),
                 new Extents2D(dstX0, dstY1, dstX1, dstY0),
                 true,

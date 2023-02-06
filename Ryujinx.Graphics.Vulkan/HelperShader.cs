@@ -173,10 +173,7 @@ namespace Ryujinx.Graphics.Vulkan
         public void Blit(
             VulkanRenderer gd,
             TextureView src,
-            Auto<DisposableImageView> dst,
-            int dstWidth,
-            int dstHeight,
-            VkFormat dstFormat,
+            TextureView dst,
             Extents2D srcRegion,
             Extents2D dstRegion,
             bool isDepthOrStencil,
@@ -187,13 +184,134 @@ namespace Ryujinx.Graphics.Vulkan
 
             using var cbs = gd.CommandBufferPool.Rent();
 
-            if (isDepthOrStencil)
+            var dstFormat = dst.VkFormat;
+
+            static long CalculateRatioFixed16(int srcValue, int dstValue)
             {
-                BlitDepthStencil(gd, cbs, src, dst, dstWidth, dstHeight, dstFormat, srcRegion, dstRegion);
+                return srcValue <= 1 || dstValue <= 1 ? 0L : ((long)(srcValue - 1) << 16) / (dstValue - 1);
             }
-            else
+
+            static int CalculateValueFromFixed16Ratio(int baseValue, long ratio, int maximumExclusive)
             {
-                BlitColor(gd, cbs, src, dst, dstWidth, dstHeight, dstFormat, srcRegion, dstRegion, linearFilter, clearAlpha);
+                return Math.Clamp((int)(((baseValue * ratio) + 0x8000) >> 16), 0, maximumExclusive - 1);
+            }
+
+            int srcDepth = src.Info.GetDepthOrLayers();
+            int dstDepth = dst.Info.GetDepthOrLayers();
+
+            long levelRatio = CalculateRatioFixed16(src.Info.Levels, dst.Info.Levels);
+            long depthRatio = CalculateRatioFixed16(srcDepth, dstDepth);
+
+            for (int l = 0; l < dst.Info.Levels; l++)
+            {
+                // If the amount of levels is different for the source and destination textures,
+                // we want to evenly distribute the source levels in the destination.
+                int srcLevel = CalculateValueFromFixed16Ratio(l, levelRatio, src.Info.Levels);
+
+                int srcWidth = Math.Max(1, src.Width >> srcLevel);
+                int srcHeight = Math.Max(1, src.Height >> srcLevel);
+
+                int dstWidth = Math.Max(1, dst.Width >> l);
+                int dstHeight = Math.Max(1, dst.Height >> l);
+
+                var mipSrcRegion = new Extents2D(
+                    srcRegion.X1 >> srcLevel,
+                    srcRegion.Y1 >> srcLevel,
+                    srcRegion.X2 >> srcLevel,
+                    srcRegion.Y2 >> srcLevel);
+
+                var mipDstRegion = new Extents2D(
+                    dstRegion.X1 >> l,
+                    dstRegion.Y1 >> l,
+                    dstRegion.X2 >> l,
+                    dstRegion.Y2 >> l);
+
+                for (int z = 0; z < dstDepth; z++)
+                {
+                    int srcZ = CalculateValueFromFixed16Ratio(z, depthRatio, srcDepth);
+
+                    var srcView = Create2DLayerView(src, srcZ, srcLevel);
+                    var dstView = Create2DLayerView(dst, z, l);
+
+                    if (isDepthOrStencil)
+                    {
+                        BlitDepthStencil(gd, cbs, srcView, dst.GetImageViewForAttachment(), dstWidth, dstHeight, dstFormat, mipSrcRegion, mipDstRegion);
+                    }
+                    else
+                    {
+                        BlitColor(gd, cbs, srcView, dst.GetImageViewForAttachment(), dstWidth, dstHeight, dstFormat, false, mipSrcRegion, mipDstRegion, linearFilter, clearAlpha);
+                    }
+
+                    if (srcView != src)
+                    {
+                        srcView.Release();
+                    }
+
+                    if (dstView != dst)
+                    {
+                        dstView.Release();
+                    }
+                }
+            }
+        }
+
+        public void CopyColor(
+            VulkanRenderer gd,
+            CommandBufferScoped cbs,
+            TextureView src,
+            TextureView dst,
+            int srcLayer,
+            int dstLayer,
+            int srcLevel,
+            int dstLevel,
+            int depth,
+            int levels)
+        {
+            for (int l = 0; l < levels; l++)
+            {
+                int mipSrcLevel = srcLevel + l;
+                int mipDstLevel = dstLevel + l;
+
+                int srcWidth = Math.Max(1, src.Width >> mipSrcLevel);
+                int srcHeight = Math.Max(1, src.Height >> mipSrcLevel);
+
+                int dstWidth = Math.Max(1, dst.Width >> mipDstLevel);
+                int dstHeight = Math.Max(1, dst.Height >> mipDstLevel);
+
+                var extents = new Extents2D(
+                    0,
+                    0,
+                    Math.Min(srcWidth, dstWidth),
+                    Math.Min(srcHeight, dstHeight));
+
+                for (int z = 0; z < depth; z++)
+                {
+                    var srcView = Create2DLayerView(src, srcLayer + z, mipSrcLevel);
+                    var dstView = Create2DLayerView(dst, dstLayer + z, mipDstLevel);
+
+                    BlitColor(
+                        gd,
+                        cbs,
+                        srcView,
+                        dstView.GetImageViewForAttachment(),
+                        dstView.Width,
+                        dstView.Height,
+                        dstView.VkFormat,
+                        dstView.Info.Format.IsDepthOrStencil(),
+                        extents,
+                        extents,
+                        false);
+
+                    if (srcView != src)
+                    {
+                        srcView.Release();
+                    }
+
+                    if (dstView != dst)
+                    {
+                        dstView.Release();
+                    }
+                }
             }
         }
 
@@ -205,6 +323,7 @@ namespace Ryujinx.Graphics.Vulkan
             int dstWidth,
             int dstHeight,
             VkFormat dstFormat,
+            bool dstIsDepthOrStencil,
             Extents2D srcRegion,
             Extents2D dstRegion,
             bool linearFilter,
@@ -262,8 +381,17 @@ namespace Ryujinx.Graphics.Vulkan
 
             scissors[0] = new Rectangle<int>(0, 0, dstWidth, dstHeight);
 
-            _pipeline.SetProgram(clearAlpha ? _programColorBlitClearAlpha : _programColorBlit);
-            _pipeline.SetRenderTarget(dst, (uint)dstWidth, (uint)dstHeight, false, dstFormat);
+            if (dstIsDepthOrStencil)
+            {
+                _pipeline.SetProgram(_programDepthBlit);
+                _pipeline.SetDepthTest(new DepthTestDescriptor(true, true, GAL.CompareOp.Always));
+            }
+            else
+            {
+                _pipeline.SetProgram(clearAlpha ? _programColorBlitClearAlpha : _programColorBlit);
+            }
+
+            _pipeline.SetRenderTarget(dst, (uint)dstWidth, (uint)dstHeight, dstIsDepthOrStencil, dstFormat);
             _pipeline.SetRenderTargetColorMasks(new uint[] { 0xf });
             _pipeline.SetScissors(scissors);
 
@@ -275,6 +403,12 @@ namespace Ryujinx.Graphics.Vulkan
             _pipeline.SetViewports(viewports, false);
             _pipeline.SetPrimitiveTopology(GAL.PrimitiveTopology.TriangleStrip);
             _pipeline.Draw(4, 1, 0, 0);
+
+            if (dstIsDepthOrStencil)
+            {
+                _pipeline.SetDepthTest(new DepthTestDescriptor(false, false, GAL.CompareOp.Always));
+            }
+
             _pipeline.Finish(gd, cbs);
 
             gd.BufferManager.Delete(bufferHandle);
@@ -795,33 +929,25 @@ namespace Ryujinx.Graphics.Vulkan
 
             _pipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(0, new BufferRange(bufferHandle, 0, ParamsBufferSize)) });
 
-            if (src.Info.Target == Target.Texture2DMultisampleArray ||
-                dst.Info.Target == Target.Texture2DMultisampleArray)
+            for (int z = 0; z < depth; z++)
             {
-                for (int z = 0; z < depth; z++)
-                {
-                    var srcView = Create2DLayerView(src, srcLayer + z, format);
-                    var dstView = Create2DLayerView(dst, dstLayer + z);
-
-                    _pipeline.SetTextureAndSampler(ShaderStage.Compute, 0, srcView, null);
-                    _pipeline.SetImage(0, dstView, format);
-
-                    _pipeline.DispatchCompute(dispatchX, dispatchY, 1);
-
-                    srcView.Release();
-                    dstView.Release();
-                }
-            }
-            else
-            {
-                var srcView = Create2DLayerView(src, srcLayer, format);
+                var srcView = Create2DLayerView(src, srcLayer + z, 0, format);
+                var dstView = Create2DLayerView(dst, dstLayer + z, 0);
 
                 _pipeline.SetTextureAndSampler(ShaderStage.Compute, 0, srcView, null);
-                _pipeline.SetImage(0, dst, format);
+                _pipeline.SetImage(0, dstView, format);
 
                 _pipeline.DispatchCompute(dispatchX, dispatchY, 1);
 
-                srcView.Release();
+                if (srcView != src)
+                {
+                    srcView.Release();
+                }
+
+                if (dstView != dst)
+                {
+                    dstView.Release();
+                }
             }
 
             gd.BufferManager.Delete(bufferHandle);
@@ -906,36 +1032,14 @@ namespace Ryujinx.Graphics.Vulkan
             var format = GetFormat(src.Info.BytesPerPixel);
             var vkFormat = FormatTable.GetFormat(format);
 
-            if (src.Info.Target == Target.Texture2DMultisampleArray ||
-                dst.Info.Target == Target.Texture2DMultisampleArray)
+            for (int z = 0; z < depth; z++)
             {
-                for (int z = 0; z < depth; z++)
-                {
-                    var srcView = Create2DLayerView(src, srcLayer + z, format);
-                    var dstView = Create2DLayerView(dst, dstLayer + z);
-
-                    _pipeline.SetTextureAndSampler(ShaderStage.Fragment, 0, srcView, null);
-                    _pipeline.SetRenderTarget(
-                        ((TextureView)dstView).GetView(format).GetImageViewForAttachment(),
-                        (uint)dst.Width,
-                        (uint)dst.Height,
-                        (uint)samples,
-                        false,
-                        vkFormat);
-
-                    _pipeline.Draw(4, 1, 0, 0);
-
-                    srcView.Release();
-                    dstView.Release();
-                }
-            }
-            else
-            {
-                var srcView = Create2DLayerView(src, srcLayer, format);
+                var srcView = Create2DLayerView(src, srcLayer + z, 0, format);
+                var dstView = Create2DLayerView(dst, dstLayer + z, 0);
 
                 _pipeline.SetTextureAndSampler(ShaderStage.Fragment, 0, srcView, null);
                 _pipeline.SetRenderTarget(
-                    dst.GetView(format).GetImageViewForAttachment(),
+                    ((TextureView)dstView).GetView(format).GetImageViewForAttachment(),
                     (uint)dst.Width,
                     (uint)dst.Height,
                     (uint)samples,
@@ -944,7 +1048,15 @@ namespace Ryujinx.Graphics.Vulkan
 
                 _pipeline.Draw(4, 1, 0, 0);
 
-                srcView.Release();
+                if (srcView != src)
+                {
+                    srcView.Release();
+                }
+
+                if (dstView != dst)
+                {
+                    dstView.Release();
+                }
             }
 
             gd.BufferManager.Delete(bufferHandle);
@@ -1001,14 +1113,18 @@ namespace Ryujinx.Graphics.Vulkan
             return (samplesInXLog2, samplesInYLog2);
         }
 
-        private static ITexture Create2DLayerView(TextureView from, int layer, GAL.Format? format = null)
+        private static TextureView Create2DLayerView(TextureView from, int layer, int level, GAL.Format? format = null)
         {
+            if (from.Info.Target == Target.Texture2D && level == 0 && (format == null || format.Value == from.Info.Format))
+            {
+                return from;
+            }
+
             var target = from.Info.Target switch
             {
                 Target.Texture1DArray => Target.Texture1D,
-                Target.Texture2DArray => Target.Texture2D,
                 Target.Texture2DMultisampleArray => Target.Texture2DMultisample,
-                _ => from.Info.Target
+                _ => Target.Texture2D
             };
 
             var info = new TextureCreateInfo(
@@ -1028,7 +1144,7 @@ namespace Ryujinx.Graphics.Vulkan
                 from.Info.SwizzleB,
                 from.Info.SwizzleA);
 
-            return from.CreateView(info, layer, 0);
+            return from.CreateViewImpl(info, layer, level);
         }
 
         private static GAL.Format GetFormat(int bytesPerPixel)

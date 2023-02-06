@@ -370,16 +370,13 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (VulkanConfiguration.UseSlowSafeBlitOnAmd &&
                 (_gd.Vendor == Vendor.Amd || _gd.IsMoltenVk) &&
-                src.Info.Target == Target.Texture2D &&
-                dst.Info.Target == Target.Texture2D)
+                !src.Info.Target.IsMultisample() &&
+                !dst.Info.Target.IsMultisample())
             {
                 _gd.HelperShader.Blit(
                     _gd,
                     src,
-                    dst.GetIdentityImageView(),
-                    dst.Width,
-                    dst.Height,
-                    dst.VkFormat,
+                    dst,
                     srcRegion,
                     dstRegion,
                     isDepthOrStencil,
@@ -501,7 +498,7 @@ namespace Ryujinx.Graphics.Vulkan
             return CreateViewImpl(info, firstLayer, firstLevel);
         }
 
-        private TextureView CreateViewImpl(TextureCreateInfo info, int firstLayer, int firstLevel)
+        public TextureView CreateViewImpl(TextureCreateInfo info, int firstLayer, int firstLevel)
         {
             return new TextureView(_gd, _device, info, Storage, FirstLayer + firstLayer, FirstLevel + firstLevel);
         }
