@@ -176,6 +176,8 @@ namespace Ryujinx.Graphics.Vulkan
             TextureView dst,
             Extents2D srcRegion,
             Extents2D dstRegion,
+            int layers,
+            int levels,
             bool isDepthOrStencil,
             bool linearFilter,
             bool clearAlpha = false)
@@ -186,39 +188,22 @@ namespace Ryujinx.Graphics.Vulkan
 
             var dstFormat = dst.VkFormat;
 
-            static long CalculateRatioFixed16(int srcValue, int dstValue)
-            {
-                return srcValue <= 1 || dstValue <= 1 ? 0L : ((long)(srcValue - 1) << 16) / (dstValue - 1);
-            }
-
-            static int CalculateValueFromFixed16Ratio(int baseValue, long ratio, int maximumExclusive)
-            {
-                return Math.Clamp((int)(((baseValue * ratio) + 0x8000) >> 16), 0, maximumExclusive - 1);
-            }
-
             int srcDepth = src.Info.GetDepthOrLayers();
             int dstDepth = dst.Info.GetDepthOrLayers();
 
-            long levelRatio = CalculateRatioFixed16(src.Info.Levels, dst.Info.Levels);
-            long depthRatio = CalculateRatioFixed16(srcDepth, dstDepth);
-
-            for (int l = 0; l < dst.Info.Levels; l++)
+            for (int l = 0; l < levels; l++)
             {
-                // If the amount of levels is different for the source and destination textures,
-                // we want to evenly distribute the source levels in the destination.
-                int srcLevel = CalculateValueFromFixed16Ratio(l, levelRatio, src.Info.Levels);
-
-                int srcWidth = Math.Max(1, src.Width >> srcLevel);
-                int srcHeight = Math.Max(1, src.Height >> srcLevel);
+                int srcWidth = Math.Max(1, src.Width >> l);
+                int srcHeight = Math.Max(1, src.Height >> l);
 
                 int dstWidth = Math.Max(1, dst.Width >> l);
                 int dstHeight = Math.Max(1, dst.Height >> l);
 
                 var mipSrcRegion = new Extents2D(
-                    srcRegion.X1 >> srcLevel,
-                    srcRegion.Y1 >> srcLevel,
-                    srcRegion.X2 >> srcLevel,
-                    srcRegion.Y2 >> srcLevel);
+                    srcRegion.X1 >> l,
+                    srcRegion.Y1 >> l,
+                    srcRegion.X2 >> l,
+                    srcRegion.Y2 >> l);
 
                 var mipDstRegion = new Extents2D(
                     dstRegion.X1 >> l,
@@ -226,11 +211,9 @@ namespace Ryujinx.Graphics.Vulkan
                     dstRegion.X2 >> l,
                     dstRegion.Y2 >> l);
 
-                for (int z = 0; z < dstDepth; z++)
+                for (int z = 0; z < layers; z++)
                 {
-                    int srcZ = CalculateValueFromFixed16Ratio(z, depthRatio, srcDepth);
-
-                    var srcView = Create2DLayerView(src, srcZ, srcLevel);
+                    var srcView = Create2DLayerView(src, z, l);
                     var dstView = Create2DLayerView(dst, z, l);
 
                     if (isDepthOrStencil)

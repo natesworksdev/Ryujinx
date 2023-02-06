@@ -379,6 +379,8 @@ namespace Ryujinx.Graphics.Vulkan
                     dst,
                     srcRegion,
                     dstRegion,
+                    layers,
+                    levels,
                     isDepthOrStencil,
                     linearFilter);
 
