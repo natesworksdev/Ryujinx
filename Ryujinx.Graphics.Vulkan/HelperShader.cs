@@ -188,9 +188,6 @@ namespace Ryujinx.Graphics.Vulkan
 
             var dstFormat = dst.VkFormat;
 
-            int srcDepth = src.Info.GetDepthOrLayers();
-            int dstDepth = dst.Info.GetDepthOrLayers();
-
             for (int l = 0; l < levels; l++)
             {
                 int srcWidth = Math.Max(1, src.Width >> l);
