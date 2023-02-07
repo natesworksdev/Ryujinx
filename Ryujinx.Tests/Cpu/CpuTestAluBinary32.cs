@@ -70,7 +70,7 @@ namespace Ryujinx.Tests.Cpu
                                        [Values(1u)] uint rn,
                                        [Values(2u)] uint rm,
                                        [Range(0u, 2u)] uint size,
-                                       [ValueSource("_CRC32_Test_Values_")] CrcTest32 test)
+                                       [ValueSource(nameof(_CRC32_Test_Values_))] CrcTest32 test)
         {
             // Unicorn does not yet support 32bit crc instructions, so test against a known table of results/values.
 

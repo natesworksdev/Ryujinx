@@ -1,9 +1,7 @@
 #define Misc
 
 using ARMeilleure.State;
-
 using NUnit.Framework;
-
 using System;
 using System.Collections.Generic;
 
@@ -412,9 +410,9 @@ namespace Ryujinx.Tests.Cpu
 
         [Explicit]
         [Test, Pairwise]
-        public void Misc4([ValueSource("_1S_F_")] ulong a,
-                          [ValueSource("_1S_F_")] ulong b,
-                          [ValueSource("_1S_F_")] ulong c,
+        public void Misc4([ValueSource(nameof(_1S_F_))] ulong a,
+                          [ValueSource(nameof(_1S_F_))] ulong b,
+                          [ValueSource(nameof(_1S_F_))] ulong c,
                           [Values(0ul, 1ul, 2ul, 3ul)] ulong displacement)
         {
             if (!BitConverter.IsLittleEndian)
@@ -460,7 +458,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Explicit]
         [Test]
-        public void Misc5([ValueSource("_1S_F_")] ulong a)
+        public void Misc5([ValueSource(nameof(_1S_F_))] ulong a)
         {
             SetContext(
                 v0: MakeVectorE0E1(a, TestContext.CurrentContext.Random.NextULong()),

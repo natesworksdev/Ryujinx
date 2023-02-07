@@ -1,7 +1,6 @@
 #define SimdExt
 
 using ARMeilleure.State;
-
 using NUnit.Framework;
 
 namespace Ryujinx.Tests.Cpu
@@ -26,9 +25,9 @@ namespace Ryujinx.Tests.Cpu
         public void Ext_V_8B([Values(0u)]     uint rd,
                              [Values(1u, 0u)] uint rn,
                              [Values(2u, 0u)] uint rm,
-                             [ValueSource("_8B_")] [Random(RndCnt)] ulong z,
-                             [ValueSource("_8B_")] [Random(RndCnt)] ulong a,
-                             [ValueSource("_8B_")] [Random(RndCnt)] ulong b,
+                             [ValueSource(nameof(_8B_))] [Random(RndCnt)] ulong z,
+                             [ValueSource(nameof(_8B_))] [Random(RndCnt)] ulong a,
+                             [ValueSource(nameof(_8B_))] [Random(RndCnt)] ulong b,
                              [Values(0u, 7u)] [Random(1u, 6u, RndCntIndex)] uint index)
         {
             uint imm4 = index & 0x7u;
@@ -50,9 +49,9 @@ namespace Ryujinx.Tests.Cpu
         public void Ext_V_16B([Values(0u)]     uint rd,
                               [Values(1u, 0u)] uint rn,
                               [Values(2u, 0u)] uint rm,
-                              [ValueSource("_8B_")] [Random(RndCnt)] ulong z,
-                              [ValueSource("_8B_")] [Random(RndCnt)] ulong a,
-                              [ValueSource("_8B_")] [Random(RndCnt)] ulong b,
+                              [ValueSource(nameof(_8B_))] [Random(RndCnt)] ulong z,
+                              [ValueSource(nameof(_8B_))] [Random(RndCnt)] ulong a,
+                              [ValueSource(nameof(_8B_))] [Random(RndCnt)] ulong b,
                               [Values(0u, 15u)] [Random(1u, 14u, RndCntIndex)] uint index)
         {
             uint imm4 = index & 0xFu;

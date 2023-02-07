@@ -1,7 +1,6 @@
 #define Alu
 
 using NUnit.Framework;
-
 using System.Collections.Generic;
 
 namespace Ryujinx.Tests.Cpu
@@ -96,7 +95,7 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise, Description("CLS <Xd>, <Xn>")]
         public void Cls_64bit([Values(0u, 31u)] uint rd,
                               [Values(1u, 31u)] uint rn,
-                              [ValueSource("_GenLeadingSignsX_")] [Random(RndCnt)] ulong xn)
+                              [ValueSource(nameof(_GenLeadingSignsX_))] [Random(RndCnt)] ulong xn)
         {
             uint opcode = 0xDAC01400; // CLS X0, X0
             opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -111,7 +110,7 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise, Description("CLS <Wd>, <Wn>")]
         public void Cls_32bit([Values(0u, 31u)] uint rd,
                               [Values(1u, 31u)] uint rn,
-                              [ValueSource("_GenLeadingSignsW_")] [Random(RndCnt)] uint wn)
+                              [ValueSource(nameof(_GenLeadingSignsW_))] [Random(RndCnt)] uint wn)
         {
             uint opcode = 0x5AC01400; // CLS W0, W0
             opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -126,7 +125,7 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise, Description("CLZ <Xd>, <Xn>")]
         public void Clz_64bit([Values(0u, 31u)] uint rd,
                               [Values(1u, 31u)] uint rn,
-                              [ValueSource("_GenLeadingZerosX_")] [Random(RndCnt)] ulong xn)
+                              [ValueSource(nameof(_GenLeadingZerosX_))] [Random(RndCnt)] ulong xn)
         {
             uint opcode = 0xDAC01000; // CLZ X0, X0
             opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -141,7 +140,7 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise, Description("CLZ <Wd>, <Wn>")]
         public void Clz_32bit([Values(0u, 31u)] uint rd,
                               [Values(1u, 31u)] uint rn,
-                              [ValueSource("_GenLeadingZerosW_")] [Random(RndCnt)] uint wn)
+                              [ValueSource(nameof(_GenLeadingZerosW_))] [Random(RndCnt)] uint wn)
         {
             uint opcode = 0x5AC01000; // CLZ W0, W0
             opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);

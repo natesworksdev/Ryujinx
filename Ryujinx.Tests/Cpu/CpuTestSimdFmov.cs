@@ -1,7 +1,6 @@
 #define SimdFmov
 
 using ARMeilleure.State;
-
 using NUnit.Framework;
 
 namespace Ryujinx.Tests.Cpu
@@ -30,7 +29,7 @@ namespace Ryujinx.Tests.Cpu
 #endregion
 
         [Test, Pairwise] [Explicit]
-        public void F_Mov_Si_S([ValueSource("_F_Mov_Si_S_")] uint opcodes,
+        public void F_Mov_Si_S([ValueSource(nameof(_F_Mov_Si_S_))] uint opcodes,
                                [Range(0u, 255u, 1u)] uint imm8)
         {
             opcodes |= ((imm8 & 0xFFu) << 13);
@@ -44,7 +43,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise] [Explicit]
-        public void F_Mov_Si_D([ValueSource("_F_Mov_Si_D_")] uint opcodes,
+        public void F_Mov_Si_D([ValueSource(nameof(_F_Mov_Si_D_))] uint opcodes,
                                [Range(0u, 255u, 1u)] uint imm8)
         {
             opcodes |= ((imm8 & 0xFFu) << 13);

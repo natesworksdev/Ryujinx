@@ -76,7 +76,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void Lsr_Lsl_Asr_Ror([ValueSource("_Lsr_Lsl_Asr_Ror_")] uint opcode,
+        public void Lsr_Lsl_Asr_Ror([ValueSource(nameof(_Lsr_Lsl_Asr_Ror_))] uint opcode,
                                     [Values(0x00000000u, 0x7FFFFFFFu,
                                             0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint shiftValue,
                                     [Range(0, 31)] [Values(32, 256, 768, -1, -23)] int shiftAmount)
@@ -130,7 +130,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void Ssat_Usat([ValueSource("_Ssat_Usat_")] uint opcode,
+        public void Ssat_Usat([ValueSource(nameof(_Ssat_Usat_))] uint opcode,
                               [Values(0u, 0xdu)] uint rd,
                               [Values(1u, 0xdu)] uint rn,
                               [Values(0u, 7u, 8u, 0xfu, 0x10u, 0x1fu)] uint sat,
@@ -148,7 +148,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void Ssat16_Usat16([ValueSource("_Ssat16_Usat16_")] uint opcode,
+        public void Ssat16_Usat16([ValueSource(nameof(_Ssat16_Usat16_))] uint opcode,
                                   [Values(0u, 0xdu)] uint rd,
                                   [Values(1u, 0xdu)] uint rn,
                                   [Values(0u, 7u, 8u, 0xfu)] uint sat,
@@ -165,7 +165,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void SU_H_AddSub_8([ValueSource("_SU_H_AddSub_8_")] uint opcode,
+        public void SU_H_AddSub_8([ValueSource(nameof(_SU_H_AddSub_8_))] uint opcode,
                                   [Values(0u, 0xdu)] uint rd,
                                   [Values(1u)] uint rm,
                                   [Values(2u)] uint rn,

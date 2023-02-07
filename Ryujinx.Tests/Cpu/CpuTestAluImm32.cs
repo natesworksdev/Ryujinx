@@ -36,7 +36,7 @@ namespace Ryujinx.Tests.Cpu
         private const int RndCntAmount = 2;
 
         [Test, Pairwise]
-        public void TestCpuTestAluImm32([ValueSource("_opcodes")] uint opcode,
+        public void TestCpuTestAluImm32([ValueSource(nameof(_opcodes))] uint opcode,
                                         [Values(0u, 13u)] uint rd,
                                         [Values(1u, 13u)] uint rn,
                                         [Random(RndCnt)] uint imm,

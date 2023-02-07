@@ -51,7 +51,7 @@ namespace Ryujinx.Tests.Cpu
         private const int RndCnt = 2;
 
         [Test, Pairwise]
-        public void Vbic_Vbif_Vbit_Vbsl_Vand_Vorn_Vorr_Veor_I([ValueSource("_Vbic_Vbif_Vbit_Vbsl_Vand_Vorn_Vorr_Veor_I_")] uint opcode,
+        public void Vbic_Vbif_Vbit_Vbsl_Vand_Vorn_Vorr_Veor_I([ValueSource(nameof(_Vbic_Vbif_Vbit_Vbsl_Vand_Vorn_Vorr_Veor_I_))] uint opcode,
                                                               [Range(0u, 5u)] uint rd,
                                                               [Range(0u, 5u)] uint rn,
                                                               [Range(0u, 5u)] uint rm,
@@ -83,7 +83,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void Vbic_Vorr_II([ValueSource("_Vbic_Vorr_II_")] uint opcode,
+        public void Vbic_Vorr_II([ValueSource(nameof(_Vbic_Vorr_II_))] uint opcode,
                                  [Values(0u, 1u)] uint rd,
                                  [Values(ulong.MinValue, ulong.MaxValue)] [Random(RndCnt)] ulong z,
                                  [Values(byte.MinValue, byte.MaxValue)] [Random(RndCnt)] byte imm,
@@ -119,9 +119,9 @@ namespace Ryujinx.Tests.Cpu
         public void Vtst([Range(0u, 5u)] uint rd,
                          [Range(0u, 5u)] uint rn,
                          [Range(0u, 5u)] uint rm,
-                         [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong z,
-                         [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong a,
-                         [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong b,
+                         [ValueSource(nameof(_8B4H2S_))] [Random(RndCnt)] ulong z,
+                         [ValueSource(nameof(_8B4H2S_))] [Random(RndCnt)] ulong a,
+                         [ValueSource(nameof(_8B4H2S_))] [Random(RndCnt)] ulong b,
                          [Values(0u, 1u, 2u)] uint size,
                          [Values] bool q)
         {

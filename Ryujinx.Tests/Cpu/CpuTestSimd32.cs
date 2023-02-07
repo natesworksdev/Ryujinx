@@ -211,11 +211,11 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void Vabs_Vneg_Vpaddl_V_I([ValueSource("_Vabs_Vneg_Vpaddl_I_")] uint opcode,
+        public void Vabs_Vneg_Vpaddl_V_I([ValueSource(nameof(_Vabs_Vneg_Vpaddl_I_))] uint opcode,
                                          [Range(0u, 3u)] uint rd,
                                          [Range(0u, 3u)] uint rm,
-                                         [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong z,
-                                         [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong b,
+                                         [ValueSource(nameof(_8B4H2S_))] [Random(RndCnt)] ulong z,
+                                         [ValueSource(nameof(_8B4H2S_))] [Random(RndCnt)] ulong b,
                                          [Values(0u, 1u, 2u)] uint size, // <S8, S16, S32>
                                          [Values] bool q)
         {
@@ -241,11 +241,11 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void Vabs_Vneg_V_F32([ValueSource("_Vabs_Vneg_F_")] uint opcode,
+        public void Vabs_Vneg_V_F32([ValueSource(nameof(_Vabs_Vneg_F_))] uint opcode,
                                     [Range(0u, 3u)] uint rd,
                                     [Range(0u, 3u)] uint rm,
-                                    [ValueSource("_2S_F_")] ulong z,
-                                    [ValueSource("_2S_F_")] ulong b,
+                                    [ValueSource(nameof(_2S_F_))] ulong z,
+                                    [ValueSource(nameof(_2S_F_))] ulong b,
                                     [Values] bool q)
         {
             if (q)
@@ -298,8 +298,8 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise]
         public void Vmovn_V([Range(0u, 3u)] uint rd,
                             [Range(0u, 3u)] uint rm,
-                            [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong z,
-                            [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong b,
+                            [ValueSource(nameof(_8B4H2S_))] [Random(RndCnt)] ulong z,
+                            [ValueSource(nameof(_8B4H2S_))] [Random(RndCnt)] ulong b,
                             [Values(0u, 1u, 2u, 3u)] uint op,
                             [Values(0u, 1u, 2u)] uint size) // <S8, S16, S32>
         {

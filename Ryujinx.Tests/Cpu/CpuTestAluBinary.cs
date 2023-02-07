@@ -60,7 +60,7 @@ namespace Ryujinx.Tests.Cpu
                                   [Values(1u)] uint rn,
                                   [Values(2u)] uint rm,
                                   [Range(0u, 3u)] uint size,
-                                  [ValueSource("_CRC32_Test_Values_")] CrcTest test)
+                                  [ValueSource(nameof(_CRC32_Test_Values_))] CrcTest test)
         {
             uint opcode = 0x1AC04000; // CRC32B W0, W0, W0
 

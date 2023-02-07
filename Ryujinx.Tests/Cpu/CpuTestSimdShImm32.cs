@@ -104,11 +104,11 @@ namespace Ryujinx.Tests.Cpu
         private const int RndCntShiftImm = 2;
 
         [Test, Pairwise]
-        public void Vshr_Imm_SU8([ValueSource("_Vshr_Imm_SU8_")] uint opcode,
+        public void Vshr_Imm_SU8([ValueSource(nameof(_Vshr_Imm_SU8_))] uint opcode,
                                  [Range(0u, 3u)] uint rd,
                                  [Range(0u, 3u)] uint rm,
-                                 [ValueSource("_8B_")] [Random(RndCnt)] ulong z,
-                                 [ValueSource("_8B_")] [Random(RndCnt)] ulong b,
+                                 [ValueSource(nameof(_8B_))] [Random(RndCnt)] ulong z,
+                                 [ValueSource(nameof(_8B_))] [Random(RndCnt)] ulong b,
                                  [Values(1u, 8u)] [Random(2u, 7u, RndCntShiftImm)] uint shiftImm,
                                  [Values] bool u,
                                  [Values] bool q)
@@ -119,11 +119,11 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void Vshr_Imm_SU16([ValueSource("_Vshr_Imm_SU16_")] uint opcode,
+        public void Vshr_Imm_SU16([ValueSource(nameof(_Vshr_Imm_SU16_))] uint opcode,
                                   [Range(0u, 3u)] uint rd,
                                   [Range(0u, 3u)] uint rm,
-                                  [ValueSource("_4H_")] [Random(RndCnt)] ulong z,
-                                  [ValueSource("_4H_")] [Random(RndCnt)] ulong b,
+                                  [ValueSource(nameof(_4H_))] [Random(RndCnt)] ulong z,
+                                  [ValueSource(nameof(_4H_))] [Random(RndCnt)] ulong b,
                                   [Values(1u, 16u)] [Random(2u, 15u, RndCntShiftImm)] uint shiftImm,
                                   [Values] bool u,
                                   [Values] bool q)
@@ -134,11 +134,11 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void Vshr_Imm_SU32([ValueSource("_Vshr_Imm_SU32_")] uint opcode,
+        public void Vshr_Imm_SU32([ValueSource(nameof(_Vshr_Imm_SU32_))] uint opcode,
                                   [Range(0u, 3u)] uint rd,
                                   [Range(0u, 3u)] uint rm,
-                                  [ValueSource("_2S_")] [Random(RndCnt)] ulong z,
-                                  [ValueSource("_2S_")] [Random(RndCnt)] ulong b,
+                                  [ValueSource(nameof(_2S_))] [Random(RndCnt)] ulong z,
+                                  [ValueSource(nameof(_2S_))] [Random(RndCnt)] ulong b,
                                   [Values(1u, 32u)] [Random(2u, 31u, RndCntShiftImm)] uint shiftImm,
                                   [Values] bool u,
                                   [Values] bool q)
@@ -149,11 +149,11 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void Vshr_Imm_SU64([ValueSource("_Vshr_Imm_SU64_")] uint opcode,
+        public void Vshr_Imm_SU64([ValueSource(nameof(_Vshr_Imm_SU64_))] uint opcode,
                                   [Range(0u, 3u)] uint rd,
                                   [Range(0u, 3u)] uint rm,
-                                  [ValueSource("_1D_")] [Random(RndCnt)] ulong z,
-                                  [ValueSource("_1D_")] [Random(RndCnt)] ulong b,
+                                  [ValueSource(nameof(_1D_))] [Random(RndCnt)] ulong z,
+                                  [ValueSource(nameof(_1D_))] [Random(RndCnt)] ulong b,
                                   [Values(1u, 64u)] [Random(2u, 63u, RndCntShiftImm)] uint shiftImm,
                                   [Values] bool u,
                                   [Values] bool q)
@@ -253,7 +253,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void Vqshrn_Vqrshrn_Vrshrn_Imm([ValueSource("_Vqshrn_Vqrshrn_Vrshrn_Imm_")] uint opcode,
+        public void Vqshrn_Vqrshrn_Vrshrn_Imm([ValueSource(nameof(_Vqshrn_Vqrshrn_Vrshrn_Imm_))] uint opcode,
                                               [Values(0u, 1u)] uint rd,
                                               [Values(2u, 0u)] uint rm,
                                               [Values(0u, 1u, 2u)] uint size,
@@ -287,7 +287,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void Vqshrun_Vqrshrun_Imm([ValueSource("_Vqshrun_Vqrshrun_Imm_")] uint opcode,
+        public void Vqshrun_Vqrshrun_Imm([ValueSource(nameof(_Vqshrun_Vqrshrun_Imm_))] uint opcode,
                                          [Values(0u, 1u)] uint rd,
                                          [Values(2u, 0u)] uint rm,
                                          [Values(0u, 1u, 2u)] uint size,
