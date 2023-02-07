@@ -152,9 +152,15 @@ namespace Ryujinx.Horizon.Generators.Kernel
                 GenerateMethod32(generator, context.Compilation, method);
                 GenerateMethod64(generator, context.Compilation, method);
 
-                foreach (AttributeSyntax attribute in method.AttributeLists.SelectMany(attributeList => attributeList.Attributes.Where(attribute => GetCanonicalTypeName(context.Compilation, attribute) == TypeSvcAttribute)))
+                foreach (AttributeSyntax attribute in method.AttributeLists.SelectMany(attributeList =>
+                             attributeList.Attributes.Where(attribute =>
+                                 GetCanonicalTypeName(context.Compilation, attribute) == TypeSvcAttribute)))
                 {
-                    syscalls.AddRange(from attributeArg in attribute.ArgumentList.Arguments where attributeArg.Expression.Kind() == SyntaxKind.NumericLiteralExpression select (LiteralExpressionSyntax)attributeArg.Expression into numericLiteral select new SyscallIdAndName((int)numericLiteral.Token.Value, method.Identifier.Text));
+                    syscalls.AddRange(from attributeArg in attribute.ArgumentList.Arguments
+                        where attributeArg.Expression.Kind() == SyntaxKind.NumericLiteralExpression
+                        select (LiteralExpressionSyntax)attributeArg.Expression
+                        into numericLiteral
+                        select new SyscallIdAndName((int)numericLiteral.Token.Value, method.Identifier.Text));
                 }
             }
 
@@ -501,7 +507,9 @@ namespace Ryujinx.Horizon.Generators.Kernel
 
         private static bool IsPointerSized(Compilation compilation, ParameterSyntax parameterSyntax)
         {
-            return parameterSyntax.AttributeLists.Any(attributeList => attributeList.Attributes.Any(attribute => GetCanonicalTypeName(compilation, attribute) == TypePointerSizedAttribute));
+            return parameterSyntax.AttributeLists.Any(attributeList =>
+                attributeList.Attributes.Any(attribute =>
+                    GetCanonicalTypeName(compilation, attribute) == TypePointerSizedAttribute));
         }
 
         public void Initialize(GeneratorInitializationContext context)
