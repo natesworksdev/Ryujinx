@@ -1,5 +1,6 @@
 using Avalonia.Data;
 using Avalonia.Markup.Xaml;
+using Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings;
 using FluentAvalonia.UI.Controls;
 using System;
 using System.Collections.Generic;
@@ -37,13 +38,7 @@ namespace Ryujinx.Ava.UI.Helpers
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
-            Avalonia.Markup.Xaml.MarkupExtensions.ReflectionBindingExtension binding = new($"[{_key}]")
-            {
-                Mode = BindingMode.OneWay,
-                Source = this
-            };
-
-            return binding.ProvideValue(serviceProvider);
+            return this[_key];
         }
     }
 }
