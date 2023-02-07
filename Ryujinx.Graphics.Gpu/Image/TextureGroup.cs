@@ -881,7 +881,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>A CpuRegionHandle covering the given range</returns>
         private CpuRegionHandle GenerateHandle(ulong address, ulong size)
         {
-            return _physicalMemory.BeginTracking(address, size);
+            return _physicalMemory.BeginTracking(address, size, ResourceKind.Texture);
         }
 
         /// <summary>
