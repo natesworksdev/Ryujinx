@@ -57,7 +57,6 @@ namespace Ryujinx.Tests.Cpu
 #endregion
 
         private const int RndCnt    = 2;
-        private const int RndCntImm = 2;
 
         private static readonly bool NoZeros = false;
         private static readonly bool NoInfs  = false;
@@ -66,8 +65,8 @@ namespace Ryujinx.Tests.Cpu
 #region "AluImm & Csel"
         [Test, Pairwise]
         public void Adds_Csinc_64bit([Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                             0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCnt)] ulong xn,
-                                     [Values(0u, 4095u)] [Random(0u, 4095u, RndCntImm)] uint imm,
+                                             0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                                     [Values(0u, 4095u)] uint imm,
                                      [Values(0b00u, 0b01u)] uint shift,          // <LSL #0, LSL #12>
                                      [Values(0b0000u, 0b0001u, 0b0010u, 0b0011u, // <EQ, NE, CS/HS, CC/LO,
                                              0b0100u, 0b0101u, 0b0110u, 0b0111u, //  MI, PL, VS, VC,
@@ -91,8 +90,8 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise]
         public void Adds_Csinc_32bit([Values(0x00000000u, 0x7FFFFFFFu,
-                                             0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wn,
-                                     [Values(0u, 4095u)] [Random(0u, 4095u, RndCntImm)] uint imm,
+                                             0x80000000u, 0xFFFFFFFFu)] uint wn,
+                                     [Values(0u, 4095u)] uint imm,
                                      [Values(0b00u, 0b01u)] uint shift,          // <LSL #0, LSL #12>
                                      [Values(0b0000u, 0b0001u, 0b0010u, 0b0011u, // <EQ, NE, CS/HS, CC/LO,
                                              0b0100u, 0b0101u, 0b0110u, 0b0111u, //  MI, PL, VS, VC,
@@ -116,8 +115,8 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise]
         public void Subs_Csinc_64bit([Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                             0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCnt)] ulong xn,
-                                     [Values(0u, 4095u)] [Random(0u, 4095u, RndCntImm)] uint imm,
+                                             0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                                     [Values(0u, 4095u)] uint imm,
                                      [Values(0b00u, 0b01u)] uint shift,          // <LSL #0, LSL #12>
                                      [Values(0b0000u, 0b0001u, 0b0010u, 0b0011u, // <EQ, NE, CS/HS, CC/LO,
                                              0b0100u, 0b0101u, 0b0110u, 0b0111u, //  MI, PL, VS, VC,
@@ -141,8 +140,8 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise]
         public void Subs_Csinc_32bit([Values(0x00000000u, 0x7FFFFFFFu,
-                                             0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wn,
-                                     [Values(0u, 4095u)] [Random(0u, 4095u, RndCntImm)] uint imm,
+                                             0x80000000u, 0xFFFFFFFFu)] uint wn,
+                                     [Values(0u, 4095u)] uint imm,
                                      [Values(0b00u, 0b01u)] uint shift,          // <LSL #0, LSL #12>
                                      [Values(0b0000u, 0b0001u, 0b0010u, 0b0011u, // <EQ, NE, CS/HS, CC/LO,
                                              0b0100u, 0b0101u, 0b0110u, 0b0111u, //  MI, PL, VS, VC,

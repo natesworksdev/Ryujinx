@@ -14,7 +14,7 @@ namespace Ryujinx.Tests.Cpu
 #region "ValueSource (Opcodes)"
         private static uint[] _V_Add_Sub_Long_Wide_I_()
         {
-            return new uint[]
+            return new[]
             {
                 0xf2800000u, // VADDL.S8 Q0, D0, D0
                 0xf2800100u, // VADDW.S8 Q0, Q0, D0
@@ -25,7 +25,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Vfma_Vfms_Vfnma_Vfnms_S_F32_()
         {
-            return new uint[]
+            return new[]
             {
                 0xEEA00A00u, // VFMA. F32 S0, S0, S0
                 0xEEA00A40u, // VFMS. F32 S0, S0, S0
@@ -36,7 +36,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Vfma_Vfms_Vfnma_Vfnms_S_F64_()
         {
-            return new uint[]
+            return new[]
             {
                 0xEEA00B00u, // VFMA. F64 D0, D0, D0
                 0xEEA00B40u, // VFMS. F64 D0, D0, D0
@@ -47,7 +47,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Vfma_Vfms_V_F32_()
         {
-            return new uint[]
+            return new[]
             {
                 0xF2000C10u, // VFMA.F32 D0, D0, D0
                 0xF2200C10u  // VFMS.F32 D0, D0, D0
@@ -56,7 +56,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Vmla_Vmls_Vnmla_Vnmls_S_F32_()
         {
-            return new uint[]
+            return new[]
             {
                 0xEE000A00u, // VMLA. F32 S0, S0, S0
                 0xEE000A40u, // VMLS. F32 S0, S0, S0
@@ -67,7 +67,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Vmla_Vmls_Vnmla_Vnmls_S_F64_()
         {
-            return new uint[]
+            return new[]
             {
                 0xEE000B00u, // VMLA. F64 D0, D0, D0
                 0xEE000B40u, // VMLS. F64 D0, D0, D0
@@ -78,7 +78,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Vmlal_Vmlsl_V_I_()
         {
-            return new uint[]
+            return new[]
             {
                 0xf2800800u, // VMLAL.S8 Q0, D0, D0
                 0xf2800a00u  // VMLSL.S8 Q0, D0, D0
@@ -87,7 +87,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Vp_Add_Max_Min_F_()
         {
-            return new uint[]
+            return new[]
             {
                 0xf3000d00u, // VPADD.F32 D0, D0, D0
                 0xf3000f00u, // VPMAX.F32 D0, D0, D0
@@ -97,7 +97,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Vp_Add_I_()
         {
-            return new uint[]
+            return new[]
             {
                 0xf2000b10u // VPADD.I8 D0, D0, D0
             };
@@ -105,7 +105,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _V_Pmax_Pmin_Rhadd_I_()
         {
-            return new uint[]
+            return new[]
             {
                 0xf2000a00u, // VPMAX .S8 D0, D0, D0
                 0xf2000a10u, // VPMIN .S8 D0, D0, D0
@@ -115,7 +115,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _Vq_Add_Sub_I_()
         {
-            return new uint[]
+            return new[]
             {
                 0xf2000050u, // VQADD.S8 Q0, Q0, Q0
                 0xf2000250u  // VQSUB.S8 Q0, Q0, Q0
@@ -126,14 +126,14 @@ namespace Ryujinx.Tests.Cpu
 #region "ValueSource (Types)"
         private static ulong[] _8B1D_()
         {
-            return new ulong[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
+            return new[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
                                  0x8080808080808080ul, 0x7FFFFFFFFFFFFFFFul,
                                  0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
         }
 
         private static ulong[] _8B4H2S1D_()
         {
-            return new ulong[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
+            return new[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
                                  0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
                                  0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
                                  0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
@@ -413,9 +413,9 @@ namespace Ryujinx.Tests.Cpu
                                           [Range(0u, 5u)] uint rd,
                                           [Range(0u, 5u)] uint rn,
                                           [Range(0u, 5u)] uint rm,
-                                          [ValueSource(nameof(_8B4H2S1D_))] [Random(RndCnt)] ulong z,
-                                          [ValueSource(nameof(_8B4H2S1D_))] [Random(RndCnt)] ulong a,
-                                          [ValueSource(nameof(_8B4H2S1D_))] [Random(RndCnt)] ulong b,
+                                          [ValueSource(nameof(_8B4H2S1D_))] ulong z,
+                                          [ValueSource(nameof(_8B4H2S1D_))] ulong a,
+                                          [ValueSource(nameof(_8B4H2S1D_))] ulong b,
                                           [Values(0u, 1u, 2u)] uint size, // <SU8, SU16, SU32>
                                           [Values] bool u) // <S, U>
         {
@@ -666,8 +666,8 @@ namespace Ryujinx.Tests.Cpu
         public void Vmull_I_P8_P64([Values(0u, 1u)] uint rd,
                                    [Values(0u, 1u)] uint rn,
                                    [Values(0u, 1u)] uint rm,
-                                   [ValueSource(nameof(_8B1D_))] [Random(RndCnt)] ulong d0,
-                                   [ValueSource(nameof(_8B1D_))] [Random(RndCnt)] ulong d1,
+                                   [ValueSource(nameof(_8B1D_))] ulong d0,
+                                   [ValueSource(nameof(_8B1D_))] ulong d1,
                                    [Values(0u/*, 2u*/)] uint size) // <P8, P64>
         {
             /*if (size == 2u)
@@ -749,7 +749,6 @@ namespace Ryujinx.Tests.Cpu
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
 
-            var rnd = TestContext.CurrentContext.Random;
             V128 v0 = MakeVectorE0E1(z0, z1);
             V128 v1 = MakeVectorE0E1(a0, a1);
             V128 v2 = MakeVectorE0E1(b0, b1);
@@ -820,9 +819,9 @@ namespace Ryujinx.Tests.Cpu
                                  [Range(0u, 5u)] uint rd,
                                  [Range(0u, 5u)] uint rn,
                                  [Range(0u, 5u)] uint rm,
-                                 [ValueSource(nameof(_8B4H2S1D_))] [Random(RndCnt)] ulong z,
-                                 [ValueSource(nameof(_8B4H2S1D_))] [Random(RndCnt)] ulong a,
-                                 [ValueSource(nameof(_8B4H2S1D_))] [Random(RndCnt)] ulong b,
+                                 [ValueSource(nameof(_8B4H2S1D_))] ulong z,
+                                 [ValueSource(nameof(_8B4H2S1D_))] ulong a,
+                                 [ValueSource(nameof(_8B4H2S1D_))] ulong b,
                                  [Values(0u, 1u, 2u)] uint size, // <SU8, SU16, SU32>
                                  [Values] bool u) // <S, U>
         {
@@ -854,9 +853,9 @@ namespace Ryujinx.Tests.Cpu
         public void Vqdmulh_I([Range(0u, 5u)] uint rd,
                               [Range(0u, 5u)] uint rn,
                               [Range(0u, 5u)] uint rm,
-                              [ValueSource(nameof(_8B4H2S1D_))] [Random(RndCnt)] ulong z,
-                              [ValueSource(nameof(_8B4H2S1D_))] [Random(RndCnt)] ulong a,
-                              [ValueSource(nameof(_8B4H2S1D_))] [Random(RndCnt)] ulong b,
+                              [ValueSource(nameof(_8B4H2S1D_))] ulong z,
+                              [ValueSource(nameof(_8B4H2S1D_))] ulong a,
+                              [ValueSource(nameof(_8B4H2S1D_))] ulong b,
                               [Values(1u, 2u)] uint size) // <S16, S32>
         {
             rd >>= 1; rd <<= 1;

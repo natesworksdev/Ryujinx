@@ -140,7 +140,7 @@ namespace Ryujinx.Tests.Cpu
 #region "ValueSource (Opcodes)"
         private static uint[] _F_Mla_Mls_Se_S_()
         {
-            return new uint[]
+            return new[]
             {
                 0x5F821020u, // FMLA S0, S1, V2.S[0]
                 0x5F825020u  // FMLS S0, S1, V2.S[0]
@@ -149,7 +149,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Mla_Mls_Se_D_()
         {
-            return new uint[]
+            return new[]
             {
                 0x5FC21020u, // FMLA D0, D1, V2.D[0]
                 0x5FC25020u  // FMLS D0, D1, V2.D[0]
@@ -158,7 +158,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Mla_Mls_Ve_2S_4S_()
         {
-            return new uint[]
+            return new[]
             {
                 0x0F801000u, // FMLA V0.2S, V0.2S, V0.S[0]
                 0x0F805000u  // FMLS V0.2S, V0.2S, V0.S[0]
@@ -167,7 +167,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Mla_Mls_Ve_2D_()
         {
-            return new uint[]
+            return new[]
             {
                 0x4FC01000u, // FMLA V0.2D, V0.2D, V0.D[0]
                 0x4FC05000u  // FMLS V0.2D, V0.2D, V0.D[0]
@@ -176,7 +176,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Mul_Mulx_Se_S_()
         {
-            return new uint[]
+            return new[]
             {
                 0x5F829020u, // FMUL  S0, S1, V2.S[0]
                 0x7F829020u  // FMULX S0, S1, V2.S[0]
@@ -185,7 +185,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Mul_Mulx_Se_D_()
         {
-            return new uint[]
+            return new[]
             {
                 0x5FC29020u, // FMUL  D0, D1, V2.D[0]
                 0x7FC29020u  // FMULX D0, D1, V2.D[0]
@@ -194,7 +194,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Mul_Mulx_Ve_2S_4S_()
         {
-            return new uint[]
+            return new[]
             {
                 0x0F809000u, // FMUL  V0.2S, V0.2S, V0.S[0]
                 0x2F809000u  // FMULX V0.2S, V0.2S, V0.S[0]
@@ -203,7 +203,7 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint[] _F_Mul_Mulx_Ve_2D_()
         {
-            return new uint[]
+            return new[]
             {
                 0x4FC09000u, // FMUL  V0.2D, V0.2D, V0.D[0]
                 0x6FC09000u  // FMULX V0.2D, V0.2D, V0.D[0]
