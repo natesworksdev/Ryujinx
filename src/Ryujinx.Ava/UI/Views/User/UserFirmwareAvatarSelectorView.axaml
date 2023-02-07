@@ -53,7 +53,7 @@
                     <Setter Property="MaxWidth" Value="85" />
                     <Setter Property="MinWidth" Value="85" />
                 </Style>
-                <Style Selector="ListBoxItem /template/ Border#SelectionIndicator">
+                <Style Selector="ListBoxItem /template/ Rectangle#SelectionIndicator">
                     <Setter Property="MinHeight" Value="70" />
                 </Style>
             </ListBox.Styles>

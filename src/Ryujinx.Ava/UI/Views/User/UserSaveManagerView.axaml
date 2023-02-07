@@ -115,7 +115,7 @@
                         <Setter Property="Margin" Value="5" />
                         <Setter Property="CornerRadius" Value="4" />
                     </Style>
-                    <Style Selector="ListBoxItem:selected /template/ Border#SelectionIndicator">
+                    <Style Selector="ListBoxItem:selected /template/ Rectangle#SelectionIndicator">
                         <Setter Property="IsVisible" Value="False" />
                     </Style>
                 </ListBox.Styles>

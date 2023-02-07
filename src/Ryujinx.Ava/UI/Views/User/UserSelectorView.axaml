@@ -52,7 +52,7 @@
                         <Setter Property="Margin" Value="5 5 0 5" />
                         <Setter Property="CornerRadius" Value="5" />
                     </Style>
-                    <Style Selector="Border#SelectionIndicator">
+                    <Style Selector="Rectangle#SelectionIndicator">
                         <Setter Property="Opacity" Value="0" />
                     </Style>
                 </ListBox.Styles>
