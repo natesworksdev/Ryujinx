@@ -43,7 +43,8 @@ namespace Ryujinx.Horizon.Generators.Kernel
                 return;
             }
 
-            if (methodDeclaration.AttributeLists.Any(attributeList => attributeList.Attributes.Any(x => x.Name.GetText().ToString() == "Svc")))
+            if (methodDeclaration.AttributeLists.Any(attributeList =>
+                    attributeList.Attributes.Any(x => x.Name.GetText().ToString() == "Svc")))
             {
                 SvcImplementations.Add(methodDeclaration);
             }
