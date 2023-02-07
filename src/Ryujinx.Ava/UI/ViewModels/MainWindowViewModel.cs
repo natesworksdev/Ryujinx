@@ -1253,6 +1253,16 @@ namespace Ryujinx.Ava.UI.ViewModels
             ShowMenuAndStatusBar = false;
         }
 
+        public void ToggleStartGamesInFullscreen()
+        {
+            StartGamesInFullscreen = !StartGamesInFullscreen;
+        }
+
+        public void ToggleShowConsole()
+        {
+            ShowConsole = !ShowConsole;
+        }
+
         public void SetListMode()
         {
             Glyph = Glyph.List;
