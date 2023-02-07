@@ -54,6 +54,7 @@ namespace Ryujinx.Graphics.Vulkan
             gd.Textures.Add(this);
 
             var format = _gd.FormatCapabilities.ConvertToVkFormat(info.Format);
+            var usage = TextureStorage.GetImageUsageFromFormat(info.Format);
             var levels = (uint)info.Levels;
             var layers = (uint)info.GetLayers();
 
@@ -94,8 +95,14 @@ namespace Ryujinx.Graphics.Vulkan
             var subresourceRange = new ImageSubresourceRange(aspectFlags, (uint)firstLevel, levels, (uint)firstLayer, layers);
             var subresourceRangeDepth = new ImageSubresourceRange(aspectFlagsDepth, (uint)firstLevel, levels, (uint)firstLayer, layers);
 
-            unsafe Auto<DisposableImageView> CreateImageView(ComponentMapping cm, ImageSubresourceRange sr, ImageViewType viewType)
+            unsafe Auto<DisposableImageView> CreateImageView(ComponentMapping cm, ImageSubresourceRange sr, ImageViewType viewType, ImageUsageFlags usageFlags)
             {
+                var usage = new ImageViewUsageCreateInfo()
+                {
+                    SType = StructureType.ImageViewUsageCreateInfo,
+                    Usage = usageFlags
+                };
+
                 var imageCreateInfo = new ImageViewCreateInfo()
                 {
                     SType = StructureType.ImageViewCreateInfo,
@@ -103,14 +110,15 @@ namespace Ryujinx.Graphics.Vulkan
                     ViewType = viewType,
                     Format = format,
                     Components = cm,
-                    SubresourceRange = sr
+                    SubresourceRange = sr,
+                    PNext = &usage
                 };
 
                 gd.Api.CreateImageView(device, imageCreateInfo, null, out var imageView).ThrowOnError();
                 return new Auto<DisposableImageView>(new DisposableImageView(gd.Api, device, imageView), null, storage.GetImage());
             }
 
-            _imageView = CreateImageView(componentMapping, subresourceRange, type);
+            _imageView = CreateImageView(componentMapping, subresourceRange, type, ImageUsageFlags.SampledBit);
 
             // Framebuffer attachments and storage images requires a identity component mapping.
             var identityComponentMapping = new ComponentMapping(
@@ -119,14 +127,26 @@ namespace Ryujinx.Graphics.Vulkan
                 ComponentSwizzle.B,
                 ComponentSwizzle.A);
 
-            _imageViewIdentity = CreateImageView(identityComponentMapping, subresourceRangeDepth, type);
+            _imageViewIdentity = CreateImageView(identityComponentMapping, subresourceRangeDepth, type, usage);
 
             // Framebuffer attachments also require 3D textures to be bound as 2D array.
             if (info.Target == Target.Texture3D)
             {
-                subresourceRange = new ImageSubresourceRange(aspectFlags, (uint)firstLevel, levels, (uint)firstLayer, (uint)info.Depth);
+                if (gd.Capabilities.PortabilitySubset.HasFlag(PortabilitySubsetFlags.No3DImageView))
+                {
+                    if (levels == 1 && (info.Format.IsRtColorCompatible() || info.Format.IsDepthOrStencil()))
+                    {
+                        subresourceRange = new ImageSubresourceRange(aspectFlags, (uint)firstLevel, levels, (uint)firstLayer, 1);
 
-                _imageView2dArray = CreateImageView(identityComponentMapping, subresourceRange, ImageViewType.Type2DArray);
+                        _imageView2dArray = CreateImageView(identityComponentMapping, subresourceRange, ImageViewType.Type2D, ImageUsageFlags.ColorAttachmentBit);
+                    }
+                }
+                else
+                {
+                    subresourceRange = new ImageSubresourceRange(aspectFlags, (uint)firstLevel, levels, (uint)firstLayer, (uint)info.Depth);
+
+                    _imageView2dArray = CreateImageView(identityComponentMapping, subresourceRange, ImageViewType.Type2DArray, usage);
+                }
             }
 
             Valid = true;
@@ -344,19 +364,14 @@ namespace Ryujinx.Graphics.Vulkan
 
                     return;
                 }
-                else if (srcFormat == GAL.Format.D32FloatS8Uint && srcFormat == dstFormat && SupportsBlitFromD32FS8ToD32FAndS8())
-                {
-                    BlitDepthStencilWithBuffer(_gd, cbs, src, dst, srcRegion, dstRegion);
-
-                    return;
-                }
             }
 
+            bool isDepthOrStencil = dst.Info.Format.IsDepthOrStencil();
+
             if (VulkanConfiguration.UseSlowSafeBlitOnAmd &&
-                _gd.Vendor == Vendor.Amd &&
+                (_gd.Vendor == Vendor.Amd || _gd.IsMoltenVk) &&
                 src.Info.Target == Target.Texture2D &&
-                dst.Info.Target == Target.Texture2D &&
-                !dst.Info.Format.IsDepthOrStencil())
+                dst.Info.Target == Target.Texture2D)
             {
                 _gd.HelperShader.Blit(
                     _gd,
@@ -367,6 +382,7 @@ namespace Ryujinx.Graphics.Vulkan
                     dst.VkFormat,
                     srcRegion,
                     dstRegion,
+                    isDepthOrStencil,
                     linearFilter);
 
                 return;
@@ -375,7 +391,7 @@ namespace Ryujinx.Graphics.Vulkan
             Auto<DisposableImage> srcImage;
             Auto<DisposableImage> dstImage;
 
-            if (dst.Info.Format.IsDepthOrStencil())
+            if (isDepthOrStencil)
             {
                 srcImage = src.Storage.CreateAliasedColorForDepthStorageUnsafe(srcFormat).GetImage();
                 dstImage = dst.Storage.CreateAliasedColorForDepthStorageUnsafe(dstFormat).GetImage();
@@ -404,189 +420,6 @@ namespace Ryujinx.Graphics.Vulkan
                 linearFilter,
                 ImageAspectFlags.ColorBit,
                 ImageAspectFlags.ColorBit);
-        }
-
-        private static void BlitDepthStencilWithBuffer(
-            VulkanRenderer gd,
-            CommandBufferScoped cbs,
-            TextureView src,
-            TextureView dst,
-            Extents2D srcRegion,
-            Extents2D dstRegion)
-        {
-            int drBaseX = Math.Min(dstRegion.X1, dstRegion.X2);
-            int drBaseY = Math.Min(dstRegion.Y1, dstRegion.Y2);
-            int drWidth = Math.Abs(dstRegion.X2 - dstRegion.X1);
-            int drHeight = Math.Abs(dstRegion.Y2 - dstRegion.Y1);
-
-            var drOriginZero = new Extents2D(
-                dstRegion.X1 - drBaseX,
-                dstRegion.Y1 - drBaseY,
-                dstRegion.X2 - drBaseX,
-                dstRegion.Y2 - drBaseY);
-
-            var d32SrcStorageInfo = TextureStorage.NewCreateInfoWith(ref src._info, GAL.Format.D32Float, 4);
-            var d32DstStorageInfo = TextureStorage.NewCreateInfoWith(ref dst._info, GAL.Format.D32Float, 4, drWidth, drHeight);
-            var s8SrcStorageInfo = TextureStorage.NewCreateInfoWith(ref src._info, GAL.Format.S8Uint, 1);
-            var s8DstStorageInfo = TextureStorage.NewCreateInfoWith(ref dst._info, GAL.Format.S8Uint, 1, drWidth, drHeight);
-
-            using var d32SrcStorage = gd.CreateTextureStorage(d32SrcStorageInfo, src.Storage.ScaleFactor);
-            using var d32DstStorage = gd.CreateTextureStorage(d32DstStorageInfo, dst.Storage.ScaleFactor);
-            using var s8SrcStorage = gd.CreateTextureStorage(s8SrcStorageInfo, src.Storage.ScaleFactor);
-            using var s8DstStorage = gd.CreateTextureStorage(s8DstStorageInfo, dst.Storage.ScaleFactor);
-
-            void SlowBlit(TextureStorage srcTemp, TextureStorage dstTemp, ImageAspectFlags aspectFlags)
-            {
-                int levels = Math.Min(src.Info.Levels, dst.Info.Levels);
-
-                int srcSize = 0;
-                int dstSize = 0;
-
-                for (int l = 0; l < levels; l++)
-                {
-                    srcSize += srcTemp.Info.GetMipSize2D(l);
-                    dstSize += dstTemp.Info.GetMipSize2D(l);
-                }
-
-                using var srcTempBuffer = gd.BufferManager.Create(gd, srcSize, deviceLocal: true);
-                using var dstTempBuffer = gd.BufferManager.Create(gd, dstSize, deviceLocal: true);
-
-                src.Storage.CopyFromOrToBuffer(
-                    cbs.CommandBuffer,
-                    srcTempBuffer.GetBuffer().Get(cbs, 0, srcSize).Value,
-                    src.GetImage().Get(cbs).Value,
-                    srcSize,
-                    to: true,
-                    0,
-                    0,
-                    src.FirstLayer,
-                    src.FirstLevel,
-                    1,
-                    levels,
-                    true,
-                    aspectFlags,
-                    false);
-
-                BufferHolder.InsertBufferBarrier(
-                    gd,
-                    cbs.CommandBuffer,
-                    srcTempBuffer.GetBuffer().Get(cbs, 0, srcSize).Value,
-                    AccessFlags.TransferWriteBit,
-                    AccessFlags.TransferReadBit,
-                    PipelineStageFlags.TransferBit,
-                    PipelineStageFlags.TransferBit,
-                    0,
-                    srcSize);
-
-                srcTemp.CopyFromOrToBuffer(
-                    cbs.CommandBuffer,
-                    srcTempBuffer.GetBuffer().Get(cbs, 0, srcSize).Value,
-                    srcTemp.GetImage().Get(cbs).Value,
-                    srcSize,
-                    to: false,
-                    0,
-                    0,
-                    0,
-                    0,
-                    1,
-                    levels,
-                    true,
-                    aspectFlags,
-                    false);
-
-                InsertImageBarrier(
-                    gd.Api,
-                    cbs.CommandBuffer,
-                    srcTemp.GetImage().Get(cbs).Value,
-                    AccessFlags.TransferWriteBit,
-                    AccessFlags.TransferReadBit,
-                    PipelineStageFlags.TransferBit,
-                    PipelineStageFlags.TransferBit,
-                    aspectFlags,
-                    0,
-                    0,
-                    1,
-                    levels);
-
-                TextureCopy.Blit(
-                    gd.Api,
-                    cbs.CommandBuffer,
-                    srcTemp.GetImage().Get(cbs).Value,
-                    dstTemp.GetImage().Get(cbs).Value,
-                    srcTemp.Info,
-                    dstTemp.Info,
-                    srcRegion,
-                    drOriginZero,
-                    0,
-                    0,
-                    0,
-                    0,
-                    1,
-                    levels,
-                    false,
-                    aspectFlags,
-                    aspectFlags);
-
-                InsertImageBarrier(
-                    gd.Api,
-                    cbs.CommandBuffer,
-                    dstTemp.GetImage().Get(cbs).Value,
-                    AccessFlags.TransferWriteBit,
-                    AccessFlags.TransferReadBit,
-                    PipelineStageFlags.TransferBit,
-                    PipelineStageFlags.TransferBit,
-                    aspectFlags,
-                    0,
-                    0,
-                    1,
-                    levels);
-
-                dstTemp.CopyFromOrToBuffer(
-                    cbs.CommandBuffer,
-                    dstTempBuffer.GetBuffer().Get(cbs, 0, dstSize).Value,
-                    dstTemp.GetImage().Get(cbs).Value,
-                    dstSize,
-                    to: true,
-                    0,
-                    0,
-                    0,
-                    0,
-                    1,
-                    levels,
-                    true,
-                    aspectFlags,
-                    false);
-
-                BufferHolder.InsertBufferBarrier(
-                    gd,
-                    cbs.CommandBuffer,
-                    dstTempBuffer.GetBuffer().Get(cbs, 0, dstSize).Value,
-                    AccessFlags.TransferWriteBit,
-                    AccessFlags.TransferReadBit,
-                    PipelineStageFlags.TransferBit,
-                    PipelineStageFlags.TransferBit,
-                    0,
-                    dstSize);
-
-                dst.Storage.CopyFromOrToBuffer(
-                    cbs.CommandBuffer,
-                    dstTempBuffer.GetBuffer().Get(cbs, 0, dstSize).Value,
-                    dst.GetImage().Get(cbs).Value,
-                    dstSize,
-                    to: false,
-                    drBaseX,
-                    drBaseY,
-                    dst.FirstLayer,
-                    dst.FirstLevel,
-                    1,
-                    levels,
-                    true,
-                    aspectFlags,
-                    false);
-            }
-
-            SlowBlit(d32SrcStorage, d32DstStorage, ImageAspectFlags.DepthBit);
-            SlowBlit(s8SrcStorage, s8DstStorage, ImageAspectFlags.StencilBit);
         }
 
         public static unsafe void InsertImageBarrier(
@@ -627,13 +460,6 @@ namespace Ryujinx.Graphics.Vulkan
                 null,
                 1,
                 memoryBarrier);
-        }
-
-        private bool SupportsBlitFromD32FS8ToD32FAndS8()
-        {
-            var formatFeatureFlags = FormatFeatureFlags.BlitSrcBit | FormatFeatureFlags.BlitDstBit;
-            return _gd.FormatCapabilities.OptimalFormatSupports(formatFeatureFlags, GAL.Format.D32Float)  &&
-                   _gd.FormatCapabilities.OptimalFormatSupports(formatFeatureFlags, GAL.Format.S8Uint);
         }
 
         public TextureView GetView(GAL.Format format)

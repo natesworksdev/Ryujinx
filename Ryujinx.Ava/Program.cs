@@ -1,13 +1,13 @@
-using ARMeilleure.Translation.PTC;
 using Avalonia;
 using Avalonia.Threading;
-using Ryujinx.Ava.Ui.Windows;
+using Ryujinx.Ava.UI.Helpers;
+using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Common.Logging;
-using Ryujinx.Common.SystemInterop;
 using Ryujinx.Common.SystemInfo;
+using Ryujinx.Common.SystemInterop;
 using Ryujinx.Modules;
 using Ryujinx.SDL2.Common;
 using Ryujinx.Ui.Common;
@@ -26,7 +26,7 @@ namespace Ryujinx.Ava
         public static double DesktopScaleFactor { get; set; } = 1.0;
         public static string Version            { get; private set; }
         public static string ConfigurationPath  { get; private set; }
-        public static bool   PreviewerDetached {  get; private set; }
+        public static bool   PreviewerDetached  { get; private set; }
 
         [LibraryImport("user32.dll", SetLastError = true)]
         public static partial int MessageBoxA(IntPtr hWnd, [MarshalAs(UnmanagedType.LPStr)] string text, [MarshalAs(UnmanagedType.LPStr)] string caption, uint type);
@@ -35,7 +35,7 @@ namespace Ryujinx.Ava
 
         public static void Main(string[] args)
         {
-            Version = ReleaseInformations.GetVersion();
+            Version = ReleaseInformation.GetVersion();
 
             if (OperatingSystem.IsWindows() && !OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17134))
             {
@@ -45,6 +45,8 @@ namespace Ryujinx.Ava
             PreviewerDetached = true;
 
             Initialize(args);
+
+            LoggerAdapter.Register();
 
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
@@ -67,8 +69,7 @@ namespace Ryujinx.Ava
                     AllowEglInitialization          = false,
                     CompositionBackdropCornerRadius = 8.0f,
                 })
-                .UseSkia()
-                .LogToTrace();
+                .UseSkia();
         }
 
         private static void Initialize(string[] args)
@@ -176,6 +177,12 @@ namespace Ryujinx.Ava
                     ConfigurationState.Instance.Graphics.GraphicsBackend.Value = GraphicsBackend.Vulkan;
                 }
             }
+
+            // Check if docked mode was overriden.
+            if (CommandLineState.OverrideDockedMode.HasValue)
+            {
+                ConfigurationState.Instance.System.EnableDockedMode.Value = CommandLineState.OverrideDockedMode.Value;
+            }
         }
 
         private static void PrintSystemInfo()
@@ -197,9 +204,6 @@ namespace Ryujinx.Ava
 
         private static void ProcessUnhandledException(Exception ex, bool isTerminating)
         {
-            Ptc.Close();
-            PtcProfiler.Stop();
-
             string message = $"Unhandled exception caught: {ex}";
 
             Logger.Error?.PrintMsg(LogClass.Application, message);
@@ -218,9 +222,6 @@ namespace Ryujinx.Ava
         public static void Exit()
         {
             DiscordIntegrationModule.Exit();
-
-            Ptc.Dispose();
-            PtcProfiler.Dispose();
 
             Logger.Shutdown();
         }

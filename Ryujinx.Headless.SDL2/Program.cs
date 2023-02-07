@@ -1,5 +1,4 @@
 ﻿using ARMeilleure.Translation;
-using ARMeilleure.Translation.PTC;
 using CommandLine;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Audio.Backends.SDL2;
@@ -12,6 +11,7 @@ using Ryujinx.Common.Configuration.Hid.Keyboard;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.SystemInterop;
 using Ryujinx.Common.Utilities;
+using Ryujinx.Cpu;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.GAL.Multithreading;
 using Ryujinx.Graphics.Gpu;
@@ -33,7 +33,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
-
 using ConfigGamepadInputId = Ryujinx.Common.Configuration.Hid.Controller.GamepadInputId;
 using ConfigStickInputId = Ryujinx.Common.Configuration.Hid.Controller.StickInputId;
 using Key = Ryujinx.Common.Configuration.Hid.Key;
@@ -59,25 +58,11 @@ namespace Ryujinx.Headless.SDL2
 
         static void Main(string[] args)
         {
-            Version = ReleaseInformations.GetVersion();
+            Version = ReleaseInformation.GetVersion();
 
             Console.Title = $"Ryujinx Console {Version} (Headless SDL2)";
 
-            AppDataManager.Initialize(null);
-
-            _virtualFileSystem = VirtualFileSystem.CreateInstance();
-            _libHacHorizonManager = new LibHacHorizonManager();
-
-            _libHacHorizonManager.InitializeFsServer(_virtualFileSystem);
-            _libHacHorizonManager.InitializeArpServer();
-            _libHacHorizonManager.InitializeBcatServer();
-            _libHacHorizonManager.InitializeSystemClients();
-
-            _contentManager = new ContentManager(_virtualFileSystem);
-            _accountManager = new AccountManager(_libHacHorizonManager.RyujinxClient);
-            _userChannelPersistence = new UserChannelPersistence();
-
-            if (OperatingSystem.IsMacOS())
+            if (OperatingSystem.IsMacOS() || OperatingSystem.IsLinux())
             {
                 AutoResetEvent invoked = new AutoResetEvent(false);
 
@@ -97,15 +82,9 @@ namespace Ryujinx.Headless.SDL2
                 };
             }
 
-            _inputManager = new InputManager(new SDL2KeyboardDriver(), new SDL2GamepadDriver());
-
-            GraphicsConfig.EnableShaderCache = true;
-
             Parser.Default.ParseArguments<Options>(args)
-            .WithParsed(options => Load(options))
+            .WithParsed(Load)
             .WithNotParsed(errors => errors.Output());
-
-            _inputManager.Dispose();
         }
 
         private static InputConfig HandlePlayerConfiguration(string inputProfileName, string inputId, PlayerIndex index)
@@ -343,6 +322,24 @@ namespace Ryujinx.Headless.SDL2
 
         static void Load(Options option)
         {
+            AppDataManager.Initialize(option.BaseDataDir);
+
+            _virtualFileSystem = VirtualFileSystem.CreateInstance();
+            _libHacHorizonManager = new LibHacHorizonManager();
+
+            _libHacHorizonManager.InitializeFsServer(_virtualFileSystem);
+            _libHacHorizonManager.InitializeArpServer();
+            _libHacHorizonManager.InitializeBcatServer();
+            _libHacHorizonManager.InitializeSystemClients();
+
+            _contentManager = new ContentManager(_virtualFileSystem);
+            _accountManager = new AccountManager(_libHacHorizonManager.RyujinxClient, option.UserProfile);
+            _userChannelPersistence = new UserChannelPersistence();
+
+            _inputManager = new InputManager(new SDL2KeyboardDriver(), new SDL2GamepadDriver());
+
+            GraphicsConfig.EnableShaderCache = true;
+
             IGamepad gamepad;
 
             if (option.ListInputIds)
@@ -378,8 +375,8 @@ namespace Ryujinx.Headless.SDL2
             }
 
             _inputConfiguration = new List<InputConfig>();
-            _enableKeyboard = (bool)option.EnableKeyboard;
-            _enableMouse = (bool)option.EnableMouse;
+            _enableKeyboard = option.EnableKeyboard;
+            _enableMouse = option.EnableMouse;
 
             void LoadPlayerConfiguration(string inputProfileName, string inputId, PlayerIndex index)
             {
@@ -407,30 +404,31 @@ namespace Ryujinx.Headless.SDL2
             }
 
             // Setup logging level
-            Logger.SetEnable(LogLevel.Debug, (bool)option.LoggingEnableDebug);
-            Logger.SetEnable(LogLevel.Stub, (bool)option.LoggingEnableStub);
-            Logger.SetEnable(LogLevel.Info, (bool)option.LoggingEnableInfo);
-            Logger.SetEnable(LogLevel.Warning, (bool)option.LoggingEnableWarning);
-            Logger.SetEnable(LogLevel.Error, (bool)option.LoggingEnableError);
-            Logger.SetEnable(LogLevel.Trace, (bool)option.LoggingEnableTrace);
-            Logger.SetEnable(LogLevel.Guest, (bool)option.LoggingEnableGuest);
-            Logger.SetEnable(LogLevel.AccessLog, (bool)option.LoggingEnableFsAccessLog);
+            Logger.SetEnable(LogLevel.Debug, option.LoggingEnableDebug);
+            Logger.SetEnable(LogLevel.Stub, !option.LoggingDisableStub);
+            Logger.SetEnable(LogLevel.Info, !option.LoggingDisableInfo);
+            Logger.SetEnable(LogLevel.Warning, !option.LoggingDisableWarning);
+            Logger.SetEnable(LogLevel.Error, option.LoggingEnableError);
+            Logger.SetEnable(LogLevel.Trace, option.LoggingEnableTrace);
+            Logger.SetEnable(LogLevel.Guest, !option.LoggingDisableGuest);
+            Logger.SetEnable(LogLevel.AccessLog, option.LoggingEnableFsAccessLog);
 
-            if ((bool)option.EnableFileLog)
+            if (!option.DisableFileLog)
             {
                 Logger.AddTarget(new AsyncLogTargetWrapper(
-                    new FileLogTarget(ReleaseInformations.GetBaseApplicationDirectory(), "file"),
+                    new FileLogTarget(ReleaseInformation.GetBaseApplicationDirectory(), "file"),
                     1000,
                     AsyncLogTargetOverflowAction.Block
                 ));
             }
 
             // Setup graphics configuration
-            GraphicsConfig.EnableShaderCache = (bool)option.EnableShaderCache;
-            GraphicsConfig.EnableTextureRecompression = (bool)option.EnableTextureRecompression;
+            GraphicsConfig.EnableShaderCache = !option.DisableShaderCache;
+            GraphicsConfig.EnableTextureRecompression = option.EnableTextureRecompression;
             GraphicsConfig.ResScale = option.ResScale;
             GraphicsConfig.MaxAnisotropy = option.MaxAnisotropy;
             GraphicsConfig.ShadersDumpPath = option.GraphicsShadersDumpPath;
+            GraphicsConfig.EnableMacroHLE = !option.DisableMacroHLE;
 
             while (true)
             {
@@ -443,12 +441,17 @@ namespace Ryujinx.Headless.SDL2
 
                 _userChannelPersistence.ShouldRestart = false;
             }
+
+            _inputManager.Dispose();
         }
 
         private static void SetupProgressHandler()
         {
-            Ptc.PtcStateChanged -= ProgressHandler;
-            Ptc.PtcStateChanged += ProgressHandler;
+            if (_emulationContext.Application.DiskCacheLoadState != null)
+            {
+                _emulationContext.Application.DiskCacheLoadState.StateChanged -= ProgressHandler;
+                _emulationContext.Application.DiskCacheLoadState.StateChanged += ProgressHandler;
+            }
 
             _emulationContext.Gpu.ShaderCacheStateChanged -= ProgressHandler;
             _emulationContext.Gpu.ShaderCacheStateChanged += ProgressHandler;
@@ -460,7 +463,7 @@ namespace Ryujinx.Headless.SDL2
 
             switch (state)
             {
-                case PtcLoadingState ptcState:
+                case LoadState ptcState:
                     label = $"PTC : {current}/{total}";
                     break;
                 case ShaderCacheState shaderCacheState:
@@ -476,8 +479,8 @@ namespace Ryujinx.Headless.SDL2
         private static WindowBase CreateWindow(Options options)
         {
             return options.GraphicsBackend == GraphicsBackend.Vulkan
-                ? new VulkanWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, (bool)options.EnableMouse)
-                : new OpenGLWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, (bool)options.EnableMouse);
+                ? new VulkanWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, options.EnableMouse, options.HideCursor)
+                : new OpenGLWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, options.EnableMouse, options.HideCursor);
         }
 
         private static IRenderer CreateRenderer(Options options, WindowBase window)
@@ -530,22 +533,23 @@ namespace Ryujinx.Headless.SDL2
                                                                   _userChannelPersistence,
                                                                   renderer,
                                                                   new SDL2HardwareDeviceDriver(),
-                                                                  (bool)options.ExpandRam ? MemoryConfiguration.MemoryConfiguration6GiB : MemoryConfiguration.MemoryConfiguration4GiB,
+                                                                  options.ExpandRam ? MemoryConfiguration.MemoryConfiguration6GiB : MemoryConfiguration.MemoryConfiguration4GiB,
                                                                   window,
                                                                   options.SystemLanguage,
                                                                   options.SystemRegion,
-                                                                  (bool)options.EnableVsync,
-                                                                  (bool)options.EnableDockedMode,
-                                                                  (bool)options.EnablePtc,
-                                                                  (bool)options.EnableInternetAccess,
-                                                                  (bool)options.EnableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None,
+                                                                  !options.DisableVsync,
+                                                                  !options.DisableDockedMode,
+                                                                  !options.DisablePtc,
+                                                                  options.EnableInternetAccess,
+                                                                  !options.DisableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None,
                                                                   options.FsGlobalAccessLogMode,
                                                                   options.SystemTimeOffset,
                                                                   options.SystemTimeZone,
                                                                   options.MemoryManagerMode,
-                                                                  (bool)options.IgnoreMissingServices,
+                                                                  options.IgnoreMissingServices,
                                                                   options.AspectRatio,
-                                                                  options.AudioVolume);
+                                                                  options.AudioVolume,
+                                                                  options.UseHypervisor);
 
             return new Switch(configuration);
         }
@@ -562,9 +566,6 @@ namespace Ryujinx.Headless.SDL2
             _window.Initialize(_emulationContext, _inputConfiguration, _enableKeyboard, _enableMouse);
 
             _window.Execute();
-
-            Ptc.Close();
-            PtcProfiler.Stop();
 
             _emulationContext.Dispose();
             _window.Dispose();
@@ -649,7 +650,7 @@ namespace Ryujinx.Headless.SDL2
             }
             else
             {
-                Logger.Warning?.Print(LogClass.Application, "Please specify a valid XCI/NCA/NSP/PFS0/NRO file.");
+                Logger.Warning?.Print(LogClass.Application, $"Couldn't load '{options.InputPath}'. Please specify a valid XCI/NCA/NSP/PFS0/NRO file.");
 
                 _emulationContext.Dispose();
 

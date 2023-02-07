@@ -14,7 +14,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 42;
+        public const int CurrentVersion = 43;
 
         /// <summary>
         /// Version of the configuration file format
@@ -331,6 +331,11 @@ namespace Ryujinx.Ui.Common.Configuration
         public string PreferredGpu { get; set; }
 
         /// <summary>
+        /// Uses Hypervisor over JIT if available
+        /// </summary>
+        public bool UseHypervisor { get; set; }
+
+        /// <summary>
         /// Loads a configuration file from disk
         /// </summary>
         /// <param name="path">The path to the JSON configuration file</param>
@@ -340,7 +345,7 @@ namespace Ryujinx.Ui.Common.Configuration
             {
                 configurationFileFormat = JsonHelper.DeserializeFromFile<ConfigurationFileFormat>(path);
 
-                return true;
+                return configurationFileFormat.Version != 0;
             }
             catch
             {

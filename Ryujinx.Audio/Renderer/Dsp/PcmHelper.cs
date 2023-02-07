@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Audio.Renderer.Dsp
@@ -21,6 +22,57 @@ namespace Ryujinx.Audio.Renderer.Dsp
         public static int GetBufferSize<T>(int startSampleOffset, int endSampleOffset, int offset, int count) where T : unmanaged
         {
             return GetCountToDecode(startSampleOffset, endSampleOffset, offset, count) * Unsafe.SizeOf<T>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float ConvertSampleToPcmFloat(short sample)
+        {
+            return (float)sample / short.MaxValue;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static short ConvertSampleToPcmInt16(float sample)
+        {
+            return Saturate(sample * short.MaxValue);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ConvertSampleToPcm8(Span<sbyte> output, ReadOnlySpan<short> input)
+        {
+            for (int i = 0; i < input.Length; i++)
+            {
+                // Output most significant byte
+                output[i] = (sbyte)(input[i] >> 8);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ConvertSampleToPcm24(Span<byte> output, ReadOnlySpan<short> input)
+        {
+            for (int i = 0; i < input.Length; i++)
+            {
+                output[i * 3 + 2] = (byte)(input[i] >> 8);
+                output[i * 3 + 1] = (byte)(input[i] & 0xff);
+                output[i * 3 + 0] = 0;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ConvertSampleToPcm32(Span<int> output, ReadOnlySpan<short> input)
+        {
+            for (int i = 0; i < input.Length; i++)
+            {
+                output[i] = ((int)input[i]) << 16;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ConvertSampleToPcmFloat(Span<float> output, ReadOnlySpan<short> input)
+        {
+            for (int i = 0; i < input.Length; i++)
+            {
+                output[i] = ConvertSampleToPcmFloat(input[i]);
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -53,7 +105,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
 
             for (int i = 0; i < decodedCount; i++)
             {
-                output[i] = (short)(input[i * channelCount + channelIndex] * short.MaxValue);
+                output[i] = ConvertSampleToPcmInt16(input[i * channelCount + channelIndex]);
             }
 
             return decodedCount;

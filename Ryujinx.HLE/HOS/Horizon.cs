@@ -12,7 +12,6 @@ using Ryujinx.Audio.Renderer.Device;
 using Ryujinx.Audio.Renderer.Server;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Cpu;
-using Ryujinx.Cpu.Jit;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Memory;
@@ -36,6 +35,7 @@ using Ryujinx.HLE.HOS.Services.SurfaceFlinger;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Executables;
+using Ryujinx.Horizon;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -60,7 +60,6 @@ namespace Ryujinx.HLE.HOS
         internal Switch Device { get; private set; }
 
         internal ITickSource TickSource { get; }
-        internal ICpuEngine CpuEngine { get; }
 
         internal SurfaceFlinger SurfaceFlinger { get; private set; }
         internal AudioManager AudioManager { get; private set; }
@@ -122,12 +121,13 @@ namespace Ryujinx.HLE.HOS
 
         internal LibHacHorizonManager LibHacHorizonManager { get; private set; }
 
+        internal ServiceTable ServiceTable { get; private set; }
+
         public bool IsPaused { get; private set; }
 
         public Horizon(Switch device)
         {
             TickSource = new TickSource(KernelConstants.CounterFrequency);
-            CpuEngine = new JitEngine(TickSource);
 
             KernelContext = new KernelContext(
                 TickSource,
@@ -319,6 +319,43 @@ namespace Ryujinx.HLE.HOS
             ViServer = new ServerBase(KernelContext, "ViServerU");
             ViServerM = new ServerBase(KernelContext, "ViServerM");
             ViServerS = new ServerBase(KernelContext, "ViServerS");
+
+            StartNewServices();
+        }
+
+        private void StartNewServices()
+        {
+            ServiceTable = new ServiceTable();
+            var services = ServiceTable.GetServices(new HorizonOptions(Device.Configuration.IgnoreMissingServices));
+
+            foreach (var service in services)
+            {
+                const ProcessCreationFlags flags =
+                    ProcessCreationFlags.EnableAslr |
+                    ProcessCreationFlags.AddressSpace64Bit |
+                    ProcessCreationFlags.Is64Bit |
+                    ProcessCreationFlags.PoolPartitionSystem;
+
+                ProcessCreationInfo creationInfo = new ProcessCreationInfo("Service", 1, 0, 0x8000000, 1, flags, 0, 0);
+
+                int[] defaultCapabilities = new int[]
+                {
+                    0x030363F7,
+                    0x1FFFFFCF,
+                    0x207FFFEF,
+                    0x47E0060F,
+                    0x0048BFFF,
+                    0x01007FFF
+                };
+
+                // TODO:
+                // - Pass enough information (capabilities, process creation info, etc) on ServiceEntry for proper initialization.
+                // - Have the ThreadStart function take the syscall, address space and thread context parameters instead of passing them here.
+                KernelStatic.StartInitialProcess(KernelContext, creationInfo, defaultCapabilities, 44, () =>
+                {
+                    service.Start(KernelContext.Syscall, KernelStatic.GetCurrentProcess().CpuMemory, KernelStatic.GetCurrentThread().ThreadContext);
+                });
+            }
         }
 
         public void LoadKip(string kipPath)

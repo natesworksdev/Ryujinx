@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Input;
 using System;
@@ -30,11 +31,18 @@ namespace Ryujinx.Ava.Input
             _control.KeyDown   += OnKeyPress;
             _control.KeyUp     += OnKeyRelease;
             _control.TextInput += Control_TextInput;
+            _control.AddHandler(InputElement.TextInputEvent, Control_LastChanceTextInput, RoutingStrategies.Bubble);
         }
 
         private void Control_TextInput(object sender, TextInputEventArgs e)
         {
             TextInput?.Invoke(this, e.Text);
+        }
+
+        private void Control_LastChanceTextInput(object sender, TextInputEventArgs e)
+        {
+            // Swallow event
+            e.Handled = true;
         }
 
         public event Action<string> OnGamepadConnected
@@ -56,7 +64,7 @@ namespace Ryujinx.Ava.Input
                 return null;
             }
 
-            return new AvaloniaKeyboard(this, _keyboardIdentifers[0], LocaleManager.Instance["AllKeyboards"]);
+            return new AvaloniaKeyboard(this, _keyboardIdentifers[0], LocaleManager.Instance[LocaleKeys.AllKeyboards]);
         }
 
         protected virtual void Dispose(bool disposing)

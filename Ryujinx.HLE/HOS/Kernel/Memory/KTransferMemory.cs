@@ -1,6 +1,7 @@
 using Ryujinx.Common;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Process;
+using Ryujinx.Horizon.Common;
 using System;
 
 namespace Ryujinx.HLE.HOS.Kernel.Memory
@@ -36,15 +37,15 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             _isMapped = false;
         }
 
-        public KernelResult Initialize(ulong address, ulong size, KMemoryPermission permission)
+        public Result Initialize(ulong address, ulong size, KMemoryPermission permission)
         {
             KProcess creator = KernelStatic.GetCurrentProcess();
 
             _creator = creator;
 
-            KernelResult result = creator.MemoryManager.BorrowTransferMemory(_pageList, address, size, permission);
+            Result result = creator.MemoryManager.BorrowTransferMemory(_pageList, address, size, permission);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
@@ -60,14 +61,14 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             return result;
         }
 
-        public KernelResult MapIntoProcess(
+        public Result MapIntoProcess(
             KPageTableBase memoryManager,
             ulong address,
             ulong size,
             KProcess process,
             KMemoryPermission permission)
         {
-            if (_pageList.GetPagesCount() != BitUtils.DivRoundUp(size, KPageTableBase.PageSize))
+            if (_pageList.GetPagesCount() != BitUtils.DivRoundUp<ulong>(size, KPageTableBase.PageSize))
             {
                 return KernelResult.InvalidSize;
             }
@@ -79,9 +80,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             MemoryState state = Permission == KMemoryPermission.None ? MemoryState.TransferMemoryIsolated : MemoryState.TransferMemory;
 
-            KernelResult result = memoryManager.MapPages(address, _pageList, state, KMemoryPermission.ReadAndWrite);
+            Result result = memoryManager.MapPages(address, _pageList, state, KMemoryPermission.ReadAndWrite);
 
-            if (result == KernelResult.Success)
+            if (result == Result.Success)
             {
                 _isMapped = true;
             }
@@ -89,22 +90,22 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             return result;
         }
 
-        public KernelResult UnmapFromProcess(
+        public Result UnmapFromProcess(
             KPageTableBase memoryManager,
             ulong address,
             ulong size,
             KProcess process)
         {
-            if (_pageList.GetPagesCount() != BitUtils.DivRoundUp(size, KPageTableBase.PageSize))
+            if (_pageList.GetPagesCount() != BitUtils.DivRoundUp<ulong>(size, (ulong)KPageTableBase.PageSize))
             {
                 return KernelResult.InvalidSize;
             }
 
             MemoryState state = Permission == KMemoryPermission.None ? MemoryState.TransferMemoryIsolated : MemoryState.TransferMemory;
 
-            KernelResult result = memoryManager.UnmapPages(address, _pageList, state);
+            Result result = memoryManager.UnmapPages(address, _pageList, state);
 
-            if (result == KernelResult.Success)
+            if (result == Result.Success)
             {
                 _isMapped = false;
             }
@@ -116,7 +117,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         {
             if (_hasBeenInitialized)
             {
-                if (!_isMapped && _creator.MemoryManager.UnborrowTransferMemory(Address, Size, _pageList) != KernelResult.Success)
+                if (!_isMapped && _creator.MemoryManager.UnborrowTransferMemory(Address, Size, _pageList) != Result.Success)
                 {
                     throw new InvalidOperationException("Unexpected failure restoring transfer memory attributes.");
                 }

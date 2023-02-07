@@ -1,5 +1,4 @@
 ﻿using ARMeilleure.Translation;
-using ARMeilleure.Translation.PTC;
 using Gtk;
 using LibHac.Common;
 using LibHac.Common.Keys;
@@ -16,6 +15,7 @@ using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.SystemInterop;
+using Ryujinx.Cpu;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.GAL.Multithreading;
 using Ryujinx.Graphics.OpenGL;
@@ -44,9 +44,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-
 using GUI = Gtk.Builder.ObjectAttribute;
-using PtcLoadingState = ARMeilleure.Translation.PTC.PtcLoadingState;
 using ShaderCacheLoadingState = Ryujinx.Graphics.Gpu.Shader.ShaderCacheState;
 
 namespace Ryujinx.Ui
@@ -110,6 +108,7 @@ namespace Ryujinx.Ui
         [GUI] CheckMenuItem   _favToggle;
         [GUI] MenuItem        _firmwareInstallDirectory;
         [GUI] MenuItem        _firmwareInstallFile;
+        [GUI] MenuItem        _fileTypesSubMenu;
         [GUI] Label           _fifoStatus;
         [GUI] CheckMenuItem   _iconToggle;
         [GUI] CheckMenuItem   _developerToggle;
@@ -220,6 +219,8 @@ namespace Ryujinx.Ui
             _actionMenu.Sensitive = false;
             _pauseEmulation.Sensitive = false;
             _resumeEmulation.Sensitive = false;
+
+            _fileTypesSubMenu.Visible = FileAssociationHelper.IsTypeAssociationSupported;
 
             if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        _favToggle.Active        = true;
             if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)       _iconToggle.Active       = true;
@@ -576,7 +577,8 @@ namespace Ryujinx.Ui
                                                                           ConfigurationState.Instance.System.MemoryManagerMode,
                                                                           ConfigurationState.Instance.System.IgnoreMissingServices,
                                                                           ConfigurationState.Instance.Graphics.AspectRatio,
-                                                                          ConfigurationState.Instance.System.AudioVolume);
+                                                                          ConfigurationState.Instance.System.AudioVolume,
+                                                                          ConfigurationState.Instance.System.UseHypervisor);
 
             _emulationContext = new HLE.Switch(configuration);
         }
@@ -588,8 +590,11 @@ namespace Ryujinx.Ui
 
         private void SetupProgressUiHandlers()
         {
-            Ptc.PtcStateChanged -= ProgressHandler;
-            Ptc.PtcStateChanged += ProgressHandler;
+            if (_emulationContext.Application.DiskCacheLoadState != null)
+            {
+                _emulationContext.Application.DiskCacheLoadState.StateChanged -= ProgressHandler;
+                _emulationContext.Application.DiskCacheLoadState.StateChanged += ProgressHandler;
+            }
 
             _emulationContext.Gpu.ShaderCacheStateChanged -= ProgressHandler;
             _emulationContext.Gpu.ShaderCacheStateChanged += ProgressHandler;
@@ -602,8 +607,8 @@ namespace Ryujinx.Ui
 
             switch (state)
             {
-                case PtcLoadingState ptcState:
-                    visible = ptcState != PtcLoadingState.Loaded;
+                case LoadState ptcState:
+                    visible = ptcState != LoadState.Loaded;
                     label = $"PTC : {current}/{total}";
                     break;
                 case ShaderCacheLoadingState shaderCacheState:
@@ -704,8 +709,6 @@ namespace Ryujinx.Ui
                 InitializeSwitchInstance();
 
                 UpdateGraphicsConfig();
-
-                SetupProgressUiHandlers();
 
                 SystemVersion firmwareVersion = _contentManager.GetCurrentFirmwareVersion();
 
@@ -841,6 +844,8 @@ namespace Ryujinx.Ui
                     return;
                 }
 
+                SetupProgressUiHandlers();
+
                 _currentEmulatedGamePath = path;
 
                 _deviceExitStatus.Reset();
@@ -966,9 +971,6 @@ namespace Ryujinx.Ui
             RendererWidget.WaitEvent.WaitOne();
 
             RendererWidget.Start();
-
-            Ptc.Close();
-            PtcProfiler.Stop();
 
             _emulationContext.Dispose();
             _deviceExitStatus.Set();
@@ -1295,7 +1297,7 @@ namespace Ryujinx.Ui
 
         private void OpenLogsFolder_Pressed(object sender, EventArgs args)
         {
-            string logPath = System.IO.Path.Combine(ReleaseInformations.GetBaseApplicationDirectory(), "Logs");
+            string logPath = System.IO.Path.Combine(ReleaseInformation.GetBaseApplicationDirectory(), "Logs");
 
             new DirectoryInfo(logPath).Create();
 
@@ -1499,6 +1501,30 @@ namespace Ryujinx.Ui
             {
                 _firmwareVersionLabel.Text = currentFirmware != null ? currentFirmware.VersionString : "0.0.0";
             });
+        }
+
+        private void InstallFileTypes_Pressed(object sender, EventArgs e)
+        {
+            if (FileAssociationHelper.Install())
+            {
+                GtkDialog.CreateInfoDialog("Install file types", "File types successfully installed!");
+            }
+            else
+            {
+                GtkDialog.CreateErrorDialog("Failed to install file types.");
+            }
+        }
+
+        private void UninstallFileTypes_Pressed(object sender, EventArgs e)
+        {
+            if (FileAssociationHelper.Uninstall())
+            {
+                GtkDialog.CreateInfoDialog("Uninstall file types", "File types successfully uninstalled!");
+            }
+            else
+            {
+                GtkDialog.CreateErrorDialog("Failed to uninstall file types.");
+            }
         }
 
         private void HandleRelaunch()

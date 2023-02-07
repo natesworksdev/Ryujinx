@@ -346,23 +346,42 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             {
                 string name = context.OperandManager.DeclareLocal(decl);
 
-                context.AppendLine(GetVarTypeName(decl.VarType) + " " + name + ";");
+                context.AppendLine(GetVarTypeName(context, decl.VarType) + " " + name + ";");
             }
         }
 
-        public static string GetVarTypeName(VariableType type)
+        public static string GetVarTypeName(CodeGenContext context, AggregateType type, bool precise = true)
         {
-            switch (type)
+            if (context.Config.GpuAccessor.QueryHostReducedPrecision())
             {
-                case VariableType.Bool: return "bool";
-                case VariableType.F32: return "precise float";
-                case VariableType.F64: return "double";
-                case VariableType.None: return "void";
-                case VariableType.S32: return "int";
-                case VariableType.U32: return "uint";
+                precise = false;
             }
 
-            throw new ArgumentException($"Invalid variable type \"{type}\".");
+            return type switch
+            {
+                AggregateType.Void => "void",
+                AggregateType.Bool => "bool",
+                AggregateType.FP32 => precise ? "precise float" : "float",
+                AggregateType.FP64 => "double",
+                AggregateType.S32 => "int",
+                AggregateType.U32 => "uint",
+                AggregateType.Vector2 | AggregateType.Bool => "bvec2",
+                AggregateType.Vector2 | AggregateType.FP32 => precise ? "precise vec2" : "vec2",
+                AggregateType.Vector2 | AggregateType.FP64 => "dvec2",
+                AggregateType.Vector2 | AggregateType.S32 => "ivec2",
+                AggregateType.Vector2 | AggregateType.U32 => "uvec2",
+                AggregateType.Vector3 | AggregateType.Bool => "bvec3",
+                AggregateType.Vector3 | AggregateType.FP32 => precise ? "precise vec3" : "vec3",
+                AggregateType.Vector3 | AggregateType.FP64 => "dvec3",
+                AggregateType.Vector3 | AggregateType.S32 => "ivec3",
+                AggregateType.Vector3 | AggregateType.U32 => "uvec3",
+                AggregateType.Vector4 | AggregateType.Bool => "bvec4",
+                AggregateType.Vector4 | AggregateType.FP32 => precise ? "precise vec4" : "vec4",
+                AggregateType.Vector4 | AggregateType.FP64 => "dvec4",
+                AggregateType.Vector4 | AggregateType.S32 => "ivec4",
+                AggregateType.Vector4 | AggregateType.U32 => "uvec4",
+                _ => throw new ArgumentException($"Invalid variable type \"{type}\".")
+            };
         }
 
         private static void DeclareUniforms(CodeGenContext context, BufferDescriptor[] descriptors)
@@ -652,7 +671,22 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
             else
             {
-                context.AppendLine($"layout (location = {attr}) out vec4 {name};");
+                string type = context.Config.Stage != ShaderStage.Fragment ? "vec4" :
+                    context.Config.GpuAccessor.QueryFragmentOutputType(attr) switch
+                    {
+                        AttributeType.Sint => "ivec4",
+                        AttributeType.Uint => "uvec4",
+                        _ => "vec4"
+                    };
+
+                if (context.Config.GpuAccessor.QueryHostReducedPrecision() && context.Config.Stage == ShaderStage.Vertex && attr == 0)
+                {
+                    context.AppendLine($"layout (location = {attr}) invariant out {type} {name};");
+                }
+                else
+                {
+                    context.AppendLine($"layout (location = {attr}) out {type} {name};");
+                }
             }
         }
 

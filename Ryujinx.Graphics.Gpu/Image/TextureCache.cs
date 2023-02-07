@@ -112,7 +112,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>True if eligible</returns>
         private static TextureScaleMode IsUpscaleCompatible(TextureInfo info, bool withUpscale)
         {
-            if ((info.Target == Target.Texture2D || info.Target == Target.Texture2DArray) && !info.FormatInfo.IsCompressed)
+            if ((info.Target == Target.Texture2D || info.Target == Target.Texture2DArray || info.Target == Target.Texture2DMultisample) && !info.FormatInfo.IsCompressed)
             {
                 return UpscaleSafeMode(info) ? (withUpscale ? TextureScaleMode.Scaled : TextureScaleMode.Eligible) : TextureScaleMode.Undesired;
             }
@@ -895,6 +895,16 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Attempt to find a texture on the short duration cache.
+        /// </summary>
+        /// <param name="descriptor">The texture descriptor</param>
+        /// <returns>The texture if found, null otherwise</returns>
+        public Texture FindShortCache(in TextureDescriptor descriptor)
+        {
+            return _cache.FindShortCache(descriptor);
+        }
+
+        /// <summary>
         /// Tries to find an existing texture matching the given buffer copy destination. If none is found, returns null.
         /// </summary>
         /// <param name="memoryManager">GPU memory manager where the texture is mapped</param>
@@ -1163,6 +1173,46 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 _partiallyMappedTextures.Remove(texture);
             }
+        }
+
+        /// <summary>
+        /// Queues the removal of a texture from the auto delete cache.
+        /// </summary>
+        /// <remarks>
+        /// This function is thread safe and can be called from any thread.
+        /// The texture will be deleted on the next time the cache is used.
+        /// </remarks>
+        /// <param name="texture">The texture to be removed</param>
+        public void QueueAutoDeleteCacheRemoval(Texture texture)
+        {
+            _cache.RemoveDeferred(texture);
+        }
+
+        /// <summary>
+        /// Adds a texture to the short duration cache. This typically keeps it alive for two ticks.
+        /// </summary>
+        /// <param name="texture">Texture to add to the short cache</param>
+        /// <param name="descriptor">Last used texture descriptor</param>
+        public void AddShortCache(Texture texture, ref TextureDescriptor descriptor)
+        {
+            _cache.AddShortCache(texture, ref descriptor);
+        }
+
+        /// <summary>
+        /// Removes a texture from the short duration cache.
+        /// </summary>
+        /// <param name="texture">Texture to remove from the short cache</param>
+        public void RemoveShortCache(Texture texture)
+        {
+            _cache.RemoveShortCache(texture);
+        }
+
+        /// <summary>
+        /// Ticks periodic elements of the texture cache.
+        /// </summary>
+        public void Tick()
+        {
+            _cache.ProcessShortCache();
         }
 
         /// <summary>

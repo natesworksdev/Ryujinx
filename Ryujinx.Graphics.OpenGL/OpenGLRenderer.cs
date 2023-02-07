@@ -106,14 +106,19 @@ namespace Ryujinx.Graphics.OpenGL
                 vendorName: GpuVendor,
                 hasFrontFacingBug: HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelWindows,
                 hasVectorIndexingBug: HwCapabilities.Vendor == HwCapabilities.GpuVendor.AmdWindows,
+                needsFragmentOutputSpecialization: false,
+                reduceShaderPrecision: false,
                 supportsAstcCompression: HwCapabilities.SupportsAstcCompression,
                 supportsBc123Compression: HwCapabilities.SupportsTextureCompressionS3tc,
                 supportsBc45Compression: HwCapabilities.SupportsTextureCompressionRgtc,
                 supportsBc67Compression: true, // Should check BPTC extension, but for some reason NVIDIA is not exposing the extension.
+                supportsEtc2Compression: true,
                 supports3DTextureCompression: false,
                 supportsBgraFormat: false,
                 supportsR4G4Format: false,
+                supportsR4G4B4A4Format: true,
                 supportsSnormBufferTextureFormat: false,
+                supports5BitComponentFormat: true,
                 supportsFragmentShaderInterlock: HwCapabilities.SupportsFragmentShaderInterlock,
                 supportsFragmentShaderOrderingIntel: HwCapabilities.SupportsFragmentShaderOrdering,
                 supportsGeometryShaderPassthrough: HwCapabilities.SupportsGeometryShaderPassthrough,
@@ -229,7 +234,7 @@ namespace Ryujinx.Graphics.OpenGL
             return new Program(programBinary, hasFragmentShader, info.FragmentOutputMap);
         }
 
-        public void CreateSync(ulong id)
+        public void CreateSync(ulong id, bool strict)
         {
             _sync.Create(id);
         }
@@ -242,6 +247,11 @@ namespace Ryujinx.Graphics.OpenGL
         public ulong GetCurrentSync()
         {
             return _sync.GetCurrent();
+        }
+
+        public void SetInterruptAction(Action<Action> interruptAction)
+        {
+            // Currently no need for an interrupt action.
         }
 
         public void Screenshot()

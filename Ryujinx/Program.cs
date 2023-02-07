@@ -1,11 +1,10 @@
-using ARMeilleure.Translation.PTC;
 using Gtk;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Common.Logging;
-using Ryujinx.Common.SystemInterop;
 using Ryujinx.Common.SystemInfo;
+using Ryujinx.Common.SystemInterop;
 using Ryujinx.Modules;
 using Ryujinx.SDL2.Common;
 using Ryujinx.Ui;
@@ -75,7 +74,7 @@ namespace Ryujinx
 
         static void Main(string[] args)
         {
-            Version = ReleaseInformations.GetVersion();
+            Version = ReleaseInformation.GetVersion();
 
             if (OperatingSystem.IsWindows() && !OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17134))
             {
@@ -102,6 +101,8 @@ namespace Ryujinx
             if (OperatingSystem.IsLinux())
             {
                 XInitThreads();
+                Environment.SetEnvironmentVariable("GDK_BACKEND", "x11");
+                setenv("GDK_BACKEND", "x11", 1);
             }
 
             if (OperatingSystem.IsMacOS())
@@ -221,6 +222,12 @@ namespace Ryujinx
                 }
             }
 
+            // Check if docked mode was overriden.
+            if (CommandLineState.OverrideDockedMode.HasValue)
+            {
+                ConfigurationState.Instance.System.EnableDockedMode.Value = CommandLineState.OverrideDockedMode.Value;
+            }
+
             // Logging system information.
             PrintSystemInfo();
 
@@ -308,9 +315,6 @@ namespace Ryujinx
 
         private static void ProcessUnhandledException(Exception ex, bool isTerminating)
         {
-            Ptc.Close();
-            PtcProfiler.Stop();
-
             string message = $"Unhandled exception caught: {ex}";
 
             Logger.Error?.PrintMsg(LogClass.Application, message);
@@ -329,9 +333,6 @@ namespace Ryujinx
         public static void Exit()
         {
             DiscordIntegrationModule.Exit();
-
-            Ptc.Dispose();
-            PtcProfiler.Dispose();
 
             Logger.Shutdown();
         }

@@ -1,5 +1,7 @@
 ﻿using ARMeilleure.IntermediateRepresentation;
+using ARMeilleure.Memory;
 using ARMeilleure.Translation;
+using ARMeilleure.Translation.Cache;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -69,8 +71,8 @@ namespace ARMeilleure.Signal
 
         private const uint EXCEPTION_ACCESS_VIOLATION = 0xc0000005;
 
-        private const ulong PageSize = 0x1000;
-        private const ulong PageMask = PageSize - 1;
+        private static ulong _pageSize;
+        private static ulong _pageMask;
 
         private static IntPtr _handlerConfig;
         private static IntPtr _signalHandlerPtr;
@@ -87,7 +89,12 @@ namespace ARMeilleure.Signal
             config = new SignalHandlerConfig();
         }
 
-        public static void InitializeSignalHandler()
+        public static void Initialize(IJitMemoryAllocator allocator)
+        {
+            JitCache.Initialize(allocator);
+        }
+
+        public static void InitializeSignalHandler(ulong pageSize, Func<IntPtr, IntPtr, IntPtr> customSignalHandlerFactory = null)
         {
             if (_initialized) return;
 
@@ -95,20 +102,22 @@ namespace ARMeilleure.Signal
             {
                 if (_initialized) return;
 
-                bool unix = OperatingSystem.IsLinux() || OperatingSystem.IsMacOS();
+                _pageSize = pageSize;
+                _pageMask = pageSize - 1;
+
                 ref SignalHandlerConfig config = ref GetConfigRef();
 
-                if (unix)
+                if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
                 {
-                    // Unix siginfo struct locations.
-                    // NOTE: These are incredibly likely to be different between kernel version and architectures.
-
-                    config.StructAddressOffset = OperatingSystem.IsMacOS() ? 24 : 16; // si_addr
-                    config.StructWriteOffset = 8; // si_code
-
                     _signalHandlerPtr = Marshal.GetFunctionPointerForDelegate(GenerateUnixSignalHandler(_handlerConfig));
 
-                    SigAction old = UnixSignalHandlerRegistration.RegisterExceptionHandler(_signalHandlerPtr);
+                    if (customSignalHandlerFactory != null)
+                    {
+                        _signalHandlerPtr = customSignalHandlerFactory(UnixSignalHandlerRegistration.GetSegfaultExceptionHandler().sa_handler, _signalHandlerPtr);
+                    }
+
+                    var old = UnixSignalHandlerRegistration.RegisterExceptionHandler(_signalHandlerPtr);
+
                     config.UnixOldSigaction = (nuint)(ulong)old.sa_handler;
                     config.UnixOldSigaction3Arg = old.sa_flags & 4;
                 }
@@ -118,6 +127,11 @@ namespace ARMeilleure.Signal
                     config.StructWriteOffset = 32; // ExceptionInformation0
 
                     _signalHandlerPtr = Marshal.GetFunctionPointerForDelegate(GenerateWindowsSignalHandler(_handlerConfig));
+
+                    if (customSignalHandlerFactory != null)
+                    {
+                        _signalHandlerPtr = customSignalHandlerFactory(IntPtr.Zero, _signalHandlerPtr);
+                    }
 
                     _signalHandlerHandle = WindowsSignalHandlerRegistration.RegisterExceptionHandler(_signalHandlerPtr);
                 }
@@ -197,7 +211,7 @@ namespace ARMeilleure.Signal
                 // Only call tracking if in range.
                 context.BranchIfFalse(nextLabel, inRange, BasicBlockFrequency.Cold);
 
-                Operand offset = context.BitwiseAnd(context.Subtract(faultAddress, rangeAddress), Const(~PageMask));
+                Operand offset = context.BitwiseAnd(context.Subtract(faultAddress, rangeAddress), Const(~_pageMask));
 
                 // Call the tracking action, with the pointer's relative offset to the base address.
                 Operand trackingActionPtr = context.Load(OperandType.I64, Const((ulong)signalStructPtr + rangeBaseOffset + 20));
@@ -208,7 +222,7 @@ namespace ARMeilleure.Signal
 
                 // Tracking action should be non-null to call it, otherwise assume false return.
                 context.BranchIfFalse(skipActionLabel, trackingActionPtr);
-                Operand result = context.Call(trackingActionPtr, OperandType.I32, offset, Const(PageSize), isWrite, Const(0));
+                Operand result = context.Call(trackingActionPtr, OperandType.I32, offset, Const(_pageSize), isWrite, Const(0));
                 context.Copy(inRegionLocal, result);
 
                 context.MarkLabel(skipActionLabel);
@@ -231,18 +245,88 @@ namespace ARMeilleure.Signal
             return context.Copy(inRegionLocal);
         }
 
+        private static Operand GenerateUnixFaultAddress(EmitterContext context, Operand sigInfoPtr)
+        {
+            ulong structAddressOffset = OperatingSystem.IsMacOS() ? 24ul : 16ul; // si_addr
+            return context.Load(OperandType.I64, context.Add(sigInfoPtr, Const(structAddressOffset)));
+        }
+
+        private static Operand GenerateUnixWriteFlag(EmitterContext context, Operand ucontextPtr)
+        {
+            if (OperatingSystem.IsMacOS())
+            {
+                const ulong mcontextOffset = 48; // uc_mcontext
+                Operand ctxPtr = context.Load(OperandType.I64, context.Add(ucontextPtr, Const(mcontextOffset)));
+
+                if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+                {
+                    const ulong esrOffset = 8; // __es.__esr
+                    Operand esr = context.Load(OperandType.I64, context.Add(ctxPtr, Const(esrOffset)));
+                    return context.BitwiseAnd(esr, Const(0x40ul));
+                }
+
+                if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
+                {
+                    const ulong errOffset = 4; // __es.__err
+                    Operand err = context.Load(OperandType.I64, context.Add(ctxPtr, Const(errOffset)));
+                    return context.BitwiseAnd(err, Const(2ul));
+                }
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+                {
+                    Operand auxPtr = context.AllocateLocal(OperandType.I64);
+
+                    Operand loopLabel = Label();
+                    Operand successLabel = Label();
+
+                    const ulong auxOffset = 464; // uc_mcontext.__reserved
+                    const uint esrMagic = 0x45535201;
+
+                    context.Copy(auxPtr,  context.Add(ucontextPtr, Const(auxOffset)));
+
+                    context.MarkLabel(loopLabel);
+
+                    // _aarch64_ctx::magic
+                    Operand magic = context.Load(OperandType.I32, auxPtr);
+                    // _aarch64_ctx::size
+                    Operand size = context.Load(OperandType.I32, context.Add(auxPtr, Const(4ul)));
+
+                    context.BranchIf(successLabel, magic, Const(esrMagic), Comparison.Equal);
+
+                    context.Copy(auxPtr, context.Add(auxPtr, context.ZeroExtend32(OperandType.I64, size)));
+
+                    context.Branch(loopLabel);
+
+                    context.MarkLabel(successLabel);
+
+                    // esr_context::esr
+                    Operand esr = context.Load(OperandType.I64, context.Add(auxPtr, Const(8ul)));
+                    return context.BitwiseAnd(esr, Const(0x40ul));
+                }
+
+                if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
+                {
+                    const int errOffset = 192; // uc_mcontext.gregs[REG_ERR]
+                    Operand err = context.Load(OperandType.I64, context.Add(ucontextPtr, Const(errOffset)));
+                    return context.BitwiseAnd(err, Const(2ul));
+                }
+            }
+
+            throw new PlatformNotSupportedException();
+        }
+
         private static UnixExceptionHandler GenerateUnixSignalHandler(IntPtr signalStructPtr)
         {
             EmitterContext context = new EmitterContext();
 
             // (int sig, SigInfo* sigInfo, void* ucontext)
             Operand sigInfoPtr = context.LoadArgument(OperandType.I64, 1);
+            Operand ucontextPtr = context.LoadArgument(OperandType.I64, 2);
 
-            Operand structAddressOffset = context.Load(OperandType.I64, Const((ulong)signalStructPtr + StructAddressOffset));
-            Operand structWriteOffset = context.Load(OperandType.I64, Const((ulong)signalStructPtr + StructWriteOffset));
-
-            Operand faultAddress = context.Load(OperandType.I64, context.Add(sigInfoPtr, context.ZeroExtend32(OperandType.I64, structAddressOffset)));
-            Operand writeFlag = context.Load(OperandType.I64, context.Add(sigInfoPtr, context.ZeroExtend32(OperandType.I64, structWriteOffset)));
+            Operand faultAddress = GenerateUnixFaultAddress(context, sigInfoPtr);
+            Operand writeFlag = GenerateUnixWriteFlag(context, ucontextPtr);
 
             Operand isWrite = context.ICompareNotEqual(writeFlag, Const(0L)); // Normalize to 0/1.
 
@@ -278,7 +362,7 @@ namespace ARMeilleure.Signal
 
             OperandType[] argTypes = new OperandType[] { OperandType.I32, OperandType.I64, OperandType.I64 };
 
-            return Compiler.Compile(cfg, argTypes, OperandType.None, CompilerOptions.HighCq).Map<UnixExceptionHandler>();
+            return Compiler.Compile(cfg, argTypes, OperandType.None, CompilerOptions.HighCq, RuntimeInformation.ProcessArchitecture).Map<UnixExceptionHandler>();
         }
 
         private static VectoredExceptionHandler GenerateWindowsSignalHandler(IntPtr signalStructPtr)
@@ -332,7 +416,7 @@ namespace ARMeilleure.Signal
 
             OperandType[] argTypes = new OperandType[] { OperandType.I64 };
 
-            return Compiler.Compile(cfg, argTypes, OperandType.I32, CompilerOptions.HighCq).Map<VectoredExceptionHandler>();
+            return Compiler.Compile(cfg, argTypes, OperandType.I32, CompilerOptions.HighCq, RuntimeInformation.ProcessArchitecture).Map<VectoredExceptionHandler>();
         }
     }
 }

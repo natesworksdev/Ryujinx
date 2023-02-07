@@ -71,7 +71,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             _i2mClass = new InlineToMemoryClass(context, channel, initializeState: false);
 
-            var spec = new SpecializationStateUpdater();
+            var spec = new SpecializationStateUpdater(context);
             var drawState = new DrawState();
 
             _drawManager = new DrawManager(context, channel, _state, drawState, spec);
@@ -250,7 +250,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             uint syncpointId = (uint)argument & 0xFFFF;
 
             _context.AdvanceSequence();
-            _context.CreateHostSyncIfNeeded(true);
+            _context.CreateHostSyncIfNeeded(true, true);
             _context.Renderer.UpdateCounters(); // Poll the query counters, the game may want an updated result.
             _context.Synchronization.IncrementSyncpoint(syncpointId);
         }

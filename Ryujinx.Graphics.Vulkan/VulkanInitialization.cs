@@ -29,6 +29,7 @@ namespace Ryujinx.Graphics.Vulkan
             "VK_EXT_fragment_shader_interlock",
             "VK_EXT_index_type_uint8",
             "VK_EXT_robustness2",
+            "VK_EXT_shader_stencil_export",
             "VK_KHR_shader_float16_int8",
             "VK_EXT_shader_subgroup_ballot",
             "VK_EXT_subgroup_size_control",
@@ -162,7 +163,6 @@ namespace Ryujinx.Graphics.Vulkan
             if (messageSeverity.HasFlag(DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt))
             {
                 Logger.Error?.Print(LogClass.Gpu, msg);
-                //throw new Exception(msg);
             }
             else if (messageSeverity.HasFlag(DebugUtilsMessageSeverityFlagsEXT.WarningBitExt))
             {
@@ -379,14 +379,46 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PhysicalDeviceFeatures2
             };
 
-            PhysicalDeviceCustomBorderColorFeaturesEXT featuresCustomBorderColorSupported = new PhysicalDeviceCustomBorderColorFeaturesEXT()
+            PhysicalDeviceVulkan11Features supportedFeaturesVk11 = new PhysicalDeviceVulkan11Features()
             {
-                SType = StructureType.PhysicalDeviceCustomBorderColorFeaturesExt
+                SType = StructureType.PhysicalDeviceVulkan11Features,
+                PNext = features2.PNext
+            };
+
+            features2.PNext = &supportedFeaturesVk11;
+
+            PhysicalDeviceCustomBorderColorFeaturesEXT supportedFeaturesCustomBorderColor = new PhysicalDeviceCustomBorderColorFeaturesEXT()
+            {
+                SType = StructureType.PhysicalDeviceCustomBorderColorFeaturesExt,
+                PNext = features2.PNext
             };
 
             if (supportedExtensions.Contains("VK_EXT_custom_border_color"))
             {
-                features2.PNext = &featuresCustomBorderColorSupported;
+                features2.PNext = &supportedFeaturesCustomBorderColor;
+            }
+
+            PhysicalDeviceTransformFeedbackFeaturesEXT supportedFeaturesTransformFeedback = new PhysicalDeviceTransformFeedbackFeaturesEXT()
+            {
+                SType = StructureType.PhysicalDeviceTransformFeedbackFeaturesExt,
+                PNext = features2.PNext
+            };
+
+            if (supportedExtensions.Contains(ExtTransformFeedback.ExtensionName))
+            {
+                features2.PNext = &supportedFeaturesTransformFeedback;
+            }
+
+            PhysicalDeviceRobustness2FeaturesEXT supportedFeaturesRobustness2 = new PhysicalDeviceRobustness2FeaturesEXT()
+            {
+                SType = StructureType.PhysicalDeviceRobustness2FeaturesExt
+            };
+
+            if (supportedExtensions.Contains("VK_EXT_robustness2"))
+            {
+                supportedFeaturesRobustness2.PNext = features2.PNext;
+
+                features2.PNext = &supportedFeaturesRobustness2;
             }
 
             api.GetPhysicalDeviceFeatures2(physicalDevice, &features2);
@@ -396,46 +428,57 @@ namespace Ryujinx.Graphics.Vulkan
             var features = new PhysicalDeviceFeatures()
             {
                 DepthBiasClamp = true,
-                DepthClamp = true,
-                DualSrcBlend = true,
+                DepthClamp = supportedFeatures.DepthClamp,
+                DualSrcBlend = supportedFeatures.DualSrcBlend,
                 FragmentStoresAndAtomics = true,
                 GeometryShader = supportedFeatures.GeometryShader,
                 ImageCubeArray = true,
                 IndependentBlend = true,
                 LogicOp = supportedFeatures.LogicOp,
-                MultiViewport = true,
+                OcclusionQueryPrecise = supportedFeatures.OcclusionQueryPrecise,
+                MultiViewport = supportedFeatures.MultiViewport,
                 PipelineStatisticsQuery = supportedFeatures.PipelineStatisticsQuery,
                 SamplerAnisotropy = true,
                 ShaderClipDistance = true,
                 ShaderFloat64 = supportedFeatures.ShaderFloat64,
-                ShaderImageGatherExtended = true,
+                ShaderImageGatherExtended = supportedFeatures.ShaderImageGatherExtended,
                 ShaderStorageImageMultisample = supportedFeatures.ShaderStorageImageMultisample,
                 // ShaderStorageImageReadWithoutFormat = true,
                 // ShaderStorageImageWriteWithoutFormat = true,
-                TessellationShader = true,
+                TessellationShader = supportedFeatures.TessellationShader,
                 VertexPipelineStoresAndAtomics = true,
                 RobustBufferAccess = useRobustBufferAccess
             };
 
             void* pExtendedFeatures = null;
 
-            var featuresTransformFeedback = new PhysicalDeviceTransformFeedbackFeaturesEXT()
+            PhysicalDeviceTransformFeedbackFeaturesEXT featuresTransformFeedback;
+
+            if (supportedExtensions.Contains(ExtTransformFeedback.ExtensionName))
             {
-                SType = StructureType.PhysicalDeviceTransformFeedbackFeaturesExt,
-                PNext = pExtendedFeatures,
-                TransformFeedback = true
-            };
+                featuresTransformFeedback = new PhysicalDeviceTransformFeedbackFeaturesEXT()
+                {
+                    SType = StructureType.PhysicalDeviceTransformFeedbackFeaturesExt,
+                    PNext = pExtendedFeatures,
+                    TransformFeedback = supportedFeaturesTransformFeedback.TransformFeedback
+                };
 
-            pExtendedFeatures = &featuresTransformFeedback;
+                pExtendedFeatures = &featuresTransformFeedback;
+            }
 
-            var featuresRobustness2 = new PhysicalDeviceRobustness2FeaturesEXT()
+            PhysicalDeviceRobustness2FeaturesEXT featuresRobustness2;
+
+            if (supportedExtensions.Contains("VK_EXT_robustness2"))
             {
-                SType = StructureType.PhysicalDeviceRobustness2FeaturesExt,
-                PNext = pExtendedFeatures,
-                NullDescriptor = true
-            };
+                featuresRobustness2 = new PhysicalDeviceRobustness2FeaturesEXT()
+                {
+                    SType = StructureType.PhysicalDeviceRobustness2FeaturesExt,
+                    PNext = pExtendedFeatures,
+                    NullDescriptor = supportedFeaturesRobustness2.NullDescriptor
+                };
 
-            pExtendedFeatures = &featuresRobustness2;
+                pExtendedFeatures = &featuresRobustness2;
+            }
 
             var featuresExtendedDynamicState = new PhysicalDeviceExtendedDynamicStateFeaturesEXT()
             {
@@ -450,7 +493,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 SType = StructureType.PhysicalDeviceVulkan11Features,
                 PNext = pExtendedFeatures,
-                ShaderDrawParameters = true
+                ShaderDrawParameters = supportedFeaturesVk11.ShaderDrawParameters
             };
 
             pExtendedFeatures = &featuresVk11;
@@ -511,8 +554,8 @@ namespace Ryujinx.Graphics.Vulkan
             PhysicalDeviceCustomBorderColorFeaturesEXT featuresCustomBorderColor;
 
             if (supportedExtensions.Contains("VK_EXT_custom_border_color") &&
-                featuresCustomBorderColorSupported.CustomBorderColors &&
-                featuresCustomBorderColorSupported.CustomBorderColorWithoutFormat)
+                supportedFeaturesCustomBorderColor.CustomBorderColors &&
+                supportedFeaturesCustomBorderColor.CustomBorderColorWithoutFormat)
             {
                 featuresCustomBorderColor = new PhysicalDeviceCustomBorderColorFeaturesEXT()
                 {
