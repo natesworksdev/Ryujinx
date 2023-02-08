@@ -478,9 +478,9 @@ namespace Ryujinx.Modules
 
             if (OperatingSystem.IsLinux())
             {
-                await using Stream          inStream   = File.OpenRead(updateFile);
-                await using GZipInputStream gzipStream = new(inStream);
-                await using TarInputStream  tarStream  = new(gzipStream, Encoding.ASCII);
+                using Stream          inStream   = File.OpenRead(updateFile);
+                using GZipInputStream gzipStream = new(inStream);
+                using TarInputStream  tarStream  = new(gzipStream, Encoding.ASCII);
 
                 await Task.Run(() =>
                 {
@@ -516,7 +516,7 @@ namespace Ryujinx.Modules
             }
             else
             {
-                await using Stream  inStream = File.OpenRead(updateFile);
+                using Stream  inStream = File.OpenRead(updateFile);
                 using ZipFile zipFile  = new(inStream);
 
                 await Task.Run(() =>

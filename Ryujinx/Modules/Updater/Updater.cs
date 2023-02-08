@@ -392,9 +392,9 @@ namespace Ryujinx.Modules
 
             if (OperatingSystem.IsLinux())
             {
-                await using Stream         inStream   = File.OpenRead(updateFile);
-                await using Stream         gzipStream = new GZipInputStream(inStream);
-                await using TarInputStream tarStream  = new TarInputStream(gzipStream, Encoding.ASCII);
+                using Stream         inStream   = File.OpenRead(updateFile);
+                using Stream         gzipStream = new GZipInputStream(inStream);
+                using TarInputStream tarStream  = new TarInputStream(gzipStream, Encoding.ASCII);
                 updateDialog.ProgressBar.MaxValue = inStream.Length;
 
                 await Task.Run(() =>
@@ -433,7 +433,7 @@ namespace Ryujinx.Modules
             }
             else
             {
-                await using Stream  inStream = File.OpenRead(updateFile);
+                using Stream  inStream = File.OpenRead(updateFile);
                 using ZipFile zipFile  = new ZipFile(inStream);
                 updateDialog.ProgressBar.MaxValue = zipFile.Count;
 
