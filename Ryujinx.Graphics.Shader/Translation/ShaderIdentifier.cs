@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 !config.GpuAccessor.QueryHostSupportsGeometryShader() &&
                 IsLayerPassthroughGeometryShader(functions, out int layerInputAttr))
             {
-                config.SetGeomtryShaderLayerInputAttribute(layerInputAttr);
+                config.SetGeometryShaderLayerInputAttribute(layerInputAttr);
 
                 return ShaderIdentification.GeometryLayerPassthrough;
             }

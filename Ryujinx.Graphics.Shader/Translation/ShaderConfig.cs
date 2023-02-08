@@ -247,7 +247,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             LayerOutputAttribute = attr;
         }
 
-        public void SetGeomtryShaderLayerInputAttribute(int attr)
+        public void SetGeometryShaderLayerInputAttribute(int attr)
         {
             HasLayerInputAttribute = true;
             GpLayerInputAttribute = attr;

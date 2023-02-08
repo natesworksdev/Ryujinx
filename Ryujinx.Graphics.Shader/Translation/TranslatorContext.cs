@@ -140,7 +140,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public void SetGeomtryShaderLayerInputAttribute(int attr)
         {
-            _config.SetGeomtryShaderLayerInputAttribute(attr);
+            _config.SetGeometryShaderLayerInputAttribute(attr);
         }
 
         public void SetLastInVertexPipeline(bool hasFragment)
