@@ -121,7 +121,8 @@ namespace Ryujinx.Tests.Unicorn
             RunForCount(1);
         }
 
-        private static int[] XRegisters = {
+        private static int[] XRegisters =
+        {
             Arm.UC_ARM_REG_R0,
             Arm.UC_ARM_REG_R1,
             Arm.UC_ARM_REG_R2,
@@ -140,7 +141,8 @@ namespace Ryujinx.Tests.Unicorn
             Arm.UC_ARM_REG_R15,
         };
 
-        private static int[] QRegisters = {
+        private static int[] QRegisters =
+        {
             Arm.UC_ARM_REG_Q0,
             Arm.UC_ARM_REG_Q1,
             Arm.UC_ARM_REG_Q2,
