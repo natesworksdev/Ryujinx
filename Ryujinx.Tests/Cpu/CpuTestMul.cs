@@ -8,7 +8,6 @@ namespace Ryujinx.Tests.Cpu
     public sealed class CpuTestMul : CpuTest
     {
 #if Mul
-
         [Test, Pairwise, Description("MADD <Xd>, <Xn>, <Xm>, <Xa>")]
         public void Madd_64bit([Values(0u, 31u)] uint rd,
                                [Values(1u, 31u)] uint rn,

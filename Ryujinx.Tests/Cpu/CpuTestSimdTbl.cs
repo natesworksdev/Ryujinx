@@ -14,9 +14,9 @@ namespace Ryujinx.Tests.Cpu
 #region "Helper methods"
         private static ulong GenIdxsForTbls(int regs)
         {
-            const byte idxInRngMin  = 0;
-                  byte idxInRngMax  = (byte)((16 * regs) - 1);
-                  byte idxOutRngMin = (byte) (16 * regs);
+            const byte idxInRngMin = 0;
+            byte idxInRngMax  = (byte)((16 * regs) - 1);
+            byte idxOutRngMin = (byte) (16 * regs);
             const byte idxOutRngMax = 255;
 
             ulong idxs = 0ul;
@@ -39,7 +39,7 @@ namespace Ryujinx.Tests.Cpu
         private static ulong[] _8B_()
         {
             return new[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                 0x8080808080808080ul, 0xFFFFFFFFFFFFFFFFul };
+                           0x8080808080808080ul, 0xFFFFFFFFFFFFFFFFul };
         }
 
         private static IEnumerable<ulong> _GenIdxsForTbl1_()

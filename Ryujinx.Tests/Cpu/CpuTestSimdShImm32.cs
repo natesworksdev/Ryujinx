@@ -13,7 +13,8 @@ namespace Ryujinx.Tests.Cpu
 #region "ValueSource (Types)"
         private static ulong[] _1D_()
         {
-            return new[] { 0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul, 0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
+            return new[] { 0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                           0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
         }
 
         private static ulong[] _2S_()

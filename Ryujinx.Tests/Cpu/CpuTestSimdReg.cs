@@ -15,71 +15,71 @@ namespace Ryujinx.Tests.Cpu
         private static ulong[] _1B1H1S1D_()
         {
             return new[] { 0x0000000000000000ul, 0x000000000000007Ful,
-                                 0x0000000000000080ul, 0x00000000000000FFul,
-                                 0x0000000000007FFFul, 0x0000000000008000ul,
-                                 0x000000000000FFFFul, 0x000000007FFFFFFFul,
-                                 0x0000000080000000ul, 0x00000000FFFFFFFFul,
-                                 0x7FFFFFFFFFFFFFFFul, 0x8000000000000000ul,
-                                 0xFFFFFFFFFFFFFFFFul };
+                           0x0000000000000080ul, 0x00000000000000FFul,
+                           0x0000000000007FFFul, 0x0000000000008000ul,
+                           0x000000000000FFFFul, 0x000000007FFFFFFFul,
+                           0x0000000080000000ul, 0x00000000FFFFFFFFul,
+                           0x7FFFFFFFFFFFFFFFul, 0x8000000000000000ul,
+                           0xFFFFFFFFFFFFFFFFul };
         }
 
         private static ulong[] _1D_()
         {
             return new[] { 0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                 0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
+                           0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
         }
 
         private static ulong[] _1H1S_()
         {
             return new[] { 0x0000000000000000ul, 0x0000000000007FFFul,
-                                 0x0000000000008000ul, 0x000000000000FFFFul,
-                                 0x000000007FFFFFFFul, 0x0000000080000000ul,
-                                 0x00000000FFFFFFFFul };
+                           0x0000000000008000ul, 0x000000000000FFFFul,
+                           0x000000007FFFFFFFul, 0x0000000080000000ul,
+                           0x00000000FFFFFFFFul };
         }
 
         private static ulong[] _4H2S_()
         {
             return new[] { 0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                 0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                 0x8000000080000000ul, 0xFFFFFFFFFFFFFFFFul };
+                           0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
+                           0x8000000080000000ul, 0xFFFFFFFFFFFFFFFFul };
         }
 
         private static ulong[] _4H2S1D_()
         {
             return new[] { 0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                 0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                 0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                 0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
+                           0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
+                           0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
+                           0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
         }
 
         private static ulong[] _8B_()
         {
             return new[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                 0x8080808080808080ul, 0xFFFFFFFFFFFFFFFFul };
+                           0x8080808080808080ul, 0xFFFFFFFFFFFFFFFFul };
         }
 
         private static ulong[] _8B1D_()
         {
             return new[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                 0x8080808080808080ul, 0x7FFFFFFFFFFFFFFFul,
-                                 0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
+                           0x8080808080808080ul, 0x7FFFFFFFFFFFFFFFul,
+                           0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
         }
 
         private static ulong[] _8B4H2S_()
         {
             return new[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                 0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
-                                 0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                 0x8000000080000000ul, 0xFFFFFFFFFFFFFFFFul };
+                           0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
+                           0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
+                           0x8000000080000000ul, 0xFFFFFFFFFFFFFFFFul };
         }
 
         private static ulong[] _8B4H2S1D_()
         {
             return new[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                 0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
-                                 0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                 0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                 0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
+                           0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
+                           0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
+                           0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
+                           0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
         }
 
         private static IEnumerable<ulong> _1S_F_()

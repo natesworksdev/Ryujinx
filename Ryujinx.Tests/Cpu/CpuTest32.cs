@@ -60,7 +60,6 @@ namespace Ryujinx.Tests.Cpu
         [TearDown]
         public void Teardown()
         {
-
             _unicornEmu.Dispose();
             _unicornEmu = null;
 

@@ -29,7 +29,7 @@ namespace Ryujinx.Tests.Cpu
         private static uint[] _1S_()
         {
             return new[] { 0x00000000u, 0x7FFFFFFFu,
-                                0x80000000u, 0xFFFFFFFFu };
+                           0x80000000u, 0xFFFFFFFFu };
         }
 
         private static IEnumerable<ulong> _1S_F_()
