@@ -803,14 +803,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _context.Renderer.Pipeline.SetScissors(scissors);
             }
 
-            if (clipMismatch)
-            {
-                _channel.TextureManager.UpdateRenderTarget(index);
-            }
-            else
-            {
-                _channel.TextureManager.UpdateRenderTargets();
-            }
+            _channel.TextureManager.UpdateRenderTargets();
 
             if (componentMask != 0)
             {
