@@ -401,31 +401,31 @@ namespace Ryujinx.Modules
                 {
                     TarEntry tarEntry;
 
-                    // NOTE: This removes the warning for File.SetUnixFileMode() below
-                    Debug.Assert(!OperatingSystem.IsWindows());
-
-                    while ((tarEntry = tarStream.GetNextEntry()) != null)
+                    if (!OperatingSystem.IsWindows())
                     {
-                        if (tarEntry.IsDirectory) continue;
-
-                        string outPath = Path.Combine(UpdateDir, tarEntry.Name);
-
-                        Directory.CreateDirectory(Path.GetDirectoryName(outPath));
-
-                        using (FileStream outStream = File.OpenWrite(outPath))
+                        while ((tarEntry = tarStream.GetNextEntry()) != null)
                         {
-                            tarStream.CopyEntryContents(outStream);
+                            if (tarEntry.IsDirectory) continue;
+
+                            string outPath = Path.Combine(UpdateDir, tarEntry.Name);
+
+                            Directory.CreateDirectory(Path.GetDirectoryName(outPath));
+
+                            using (FileStream outStream = File.OpenWrite(outPath))
+                            {
+                                tarStream.CopyEntryContents(outStream);
+                            }
+
+                            File.SetUnixFileMode(outPath, (UnixFileMode)tarEntry.TarHeader.Mode);
+                            File.SetLastWriteTime(outPath, DateTime.SpecifyKind(tarEntry.ModTime, DateTimeKind.Utc));
+
+                            TarEntry entry = tarEntry;
+
+                            Application.Invoke(delegate
+                            {
+                                updateDialog.ProgressBar.Value += entry.Size;
+                            });
                         }
-
-                        File.SetUnixFileMode(outPath, (UnixFileMode)tarEntry.TarHeader.Mode);
-                        File.SetLastWriteTime(outPath, DateTime.SpecifyKind(tarEntry.ModTime, DateTimeKind.Utc));
-
-                        TarEntry entry = tarEntry;
-
-                        Application.Invoke(delegate
-                        {
-                            updateDialog.ProgressBar.Value += entry.Size;
-                        });
                     }
                 });
 

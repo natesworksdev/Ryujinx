@@ -486,29 +486,29 @@ namespace Ryujinx.Modules
                 {
                     TarEntry tarEntry;
 
-                    // NOTE: This removes the warning for File.SetUnixFileMode() below
-                    Debug.Assert(!OperatingSystem.IsWindows());
-
-                    while ((tarEntry = tarStream.GetNextEntry()) is not null)
+                    if (!OperatingSystem.IsWindows())
                     {
-                        if (tarEntry.IsDirectory) continue;
-
-                        string outPath = Path.Combine(UpdateDir, tarEntry.Name);
-
-                        Directory.CreateDirectory(Path.GetDirectoryName(outPath));
-
-                        using (FileStream outStream = File.OpenWrite(outPath))
+                        while ((tarEntry = tarStream.GetNextEntry()) is not null)
                         {
-                            tarStream.CopyEntryContents(outStream);
+                            if (tarEntry.IsDirectory) continue;
+
+                            string outPath = Path.Combine(UpdateDir, tarEntry.Name);
+
+                            Directory.CreateDirectory(Path.GetDirectoryName(outPath));
+
+                            using (FileStream outStream = File.OpenWrite(outPath))
+                            {
+                                tarStream.CopyEntryContents(outStream);
+                            }
+
+                            File.SetUnixFileMode(outPath, (UnixFileMode)tarEntry.TarHeader.Mode);
+                            File.SetLastWriteTime(outPath, DateTime.SpecifyKind(tarEntry.ModTime, DateTimeKind.Utc));
+
+                            Dispatcher.UIThread.Post(() =>
+                            {
+                                taskDialog.SetProgressBarState(GetPercentage(tarEntry.Size, inStream.Length), TaskDialogProgressState.Normal);
+                            });
                         }
-
-                        File.SetUnixFileMode(outPath, (UnixFileMode)tarEntry.TarHeader.Mode);
-                        File.SetLastWriteTime(outPath, DateTime.SpecifyKind(tarEntry.ModTime, DateTimeKind.Utc));
-
-                        Dispatcher.UIThread.Post(() =>
-                        {
-                            taskDialog.SetProgressBarState(GetPercentage(tarEntry.Size, inStream.Length), TaskDialogProgressState.Normal);
-                        });
                     }
                 });
 
