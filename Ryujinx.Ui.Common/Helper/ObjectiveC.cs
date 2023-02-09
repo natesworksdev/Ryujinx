@@ -7,7 +7,7 @@ using System.Text;
 namespace Ryujinx.Ui.Common.Helper
 {
     [SupportedOSPlatform("macos")]
-    public static partial class NativeMacOS
+    public static partial class ObjectiveC
     {
         private const string ObjCRuntime = "/usr/lib/libobjc.A.dylib";
 
@@ -70,10 +70,10 @@ namespace Ryujinx.Ui.Common.Helper
             public static implicit operator IntPtr(NSString nsString) => nsString.StrPtr;
         }
 
-        public struct NSPoint
+        public readonly struct NSPoint
         {
-            public double X;
-            public double Y;
+            public readonly double X;
+            public readonly double Y;
 
             public NSPoint(double x, double y)
             {
@@ -82,10 +82,10 @@ namespace Ryujinx.Ui.Common.Helper
             }
         }
 
-        public struct NSRect
+        public readonly struct NSRect
         {
-            public NSPoint Pos;
-            public NSPoint Size;
+            public readonly NSPoint Pos;
+            public readonly NSPoint Size;
 
             public NSRect(double x, double y, double width, double height)
             {

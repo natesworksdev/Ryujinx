@@ -239,24 +239,24 @@ namespace Ryujinx.Ava.UI.Renderer
         IPlatformHandle CreateMacOS()
         {
             // Create a new CAMetalLayer.
-            IntPtr layerClass = NativeMacOS.objc_getClass("CAMetalLayer");
-            IntPtr metalLayer = NativeMacOS.IntPtr_objc_msgSend(layerClass, "alloc");
-            NativeMacOS.objc_msgSend(metalLayer, "init");
+            IntPtr layerClass = ObjectiveC.objc_getClass("CAMetalLayer");
+            IntPtr metalLayer = ObjectiveC.IntPtr_objc_msgSend(layerClass, "alloc");
+            ObjectiveC.objc_msgSend(metalLayer, "init");
 
             // Create a child NSView to render into.
-            IntPtr nsViewClass = NativeMacOS.objc_getClass("NSView");
-            IntPtr child = NativeMacOS.IntPtr_objc_msgSend(nsViewClass, "alloc");
-            NativeMacOS.objc_msgSend(child, "init", new NativeMacOS.NSRect(0, 0, 0, 0));
+            IntPtr nsViewClass = ObjectiveC.objc_getClass("NSView");
+            IntPtr child = ObjectiveC.IntPtr_objc_msgSend(nsViewClass, "alloc");
+            ObjectiveC.objc_msgSend(child, "init", new ObjectiveC.NSRect(0, 0, 0, 0));
 
             // Make its renderer our metal layer.
-            NativeMacOS.objc_msgSend(child, "setWantsLayer:", 1);
-            NativeMacOS.objc_msgSend(child, "setLayer:", metalLayer);
-            NativeMacOS.objc_msgSend(metalLayer, "setContentsScale:", Program.DesktopScaleFactor);
+            ObjectiveC.objc_msgSend(child, "setWantsLayer:", 1);
+            ObjectiveC.objc_msgSend(child, "setLayer:", metalLayer);
+            ObjectiveC.objc_msgSend(metalLayer, "setContentsScale:", Program.DesktopScaleFactor);
 
             // Ensure the scale factor is up to date.
             _updateBoundsCallback = rect =>
             {
-                NativeMacOS.objc_msgSend(metalLayer, "setContentsScale:", Program.DesktopScaleFactor);
+                ObjectiveC.objc_msgSend(metalLayer, "setContentsScale:", Program.DesktopScaleFactor);
             };
 
             IntPtr nsView = child;

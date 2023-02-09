@@ -55,17 +55,17 @@ namespace Ryujinx.Ui.Common.Helper
                 }
                 else if (OperatingSystem.IsMacOS())
                 {
-                    NativeMacOS.NSString nsStringPath = new(path);
-                    IntPtr nsUrl = NativeMacOS.objc_getClass("NSURL");
-                    var urlPtr = NativeMacOS.IntPtr_objc_msgSend(nsUrl, "fileURLWithPath:", nsStringPath);
+                    ObjectiveC.NSString nsStringPath = new(path);
+                    IntPtr nsUrl = ObjectiveC.objc_getClass("NSURL");
+                    var urlPtr = ObjectiveC.IntPtr_objc_msgSend(nsUrl, "fileURLWithPath:", nsStringPath);
 
-                    IntPtr nsArray = NativeMacOS.objc_getClass("NSArray");
-                    IntPtr urlArray = NativeMacOS.IntPtr_objc_msgSend(nsArray, "arrayWithObject:", urlPtr);
+                    IntPtr nsArray = ObjectiveC.objc_getClass("NSArray");
+                    IntPtr urlArray = ObjectiveC.IntPtr_objc_msgSend(nsArray, "arrayWithObject:", urlPtr);
 
-                    IntPtr nsWorkspace = NativeMacOS.objc_getClass("NSWorkspace");
-                    IntPtr sharedWorkspace = NativeMacOS.IntPtr_objc_msgSend(nsWorkspace, "sharedWorkspace");
+                    IntPtr nsWorkspace = ObjectiveC.objc_getClass("NSWorkspace");
+                    IntPtr sharedWorkspace = ObjectiveC.IntPtr_objc_msgSend(nsWorkspace, "sharedWorkspace");
 
-                    NativeMacOS.objc_msgSend(sharedWorkspace, "activateFileViewerSelectingURLs:", urlArray);
+                    ObjectiveC.objc_msgSend(sharedWorkspace, "activateFileViewerSelectingURLs:", urlArray);
                 }
                 else if (OperatingSystem.IsLinux())
                 {
@@ -94,14 +94,14 @@ namespace Ryujinx.Ui.Common.Helper
             }
             else if (OperatingSystem.IsMacOS())
             {
-                NativeMacOS.NSString nsStringPath = new(url);
-                IntPtr nsUrl = NativeMacOS.objc_getClass("NSURL");
-                var urlPtr = NativeMacOS.IntPtr_objc_msgSend(nsUrl, "URLWithString:", nsStringPath);
+                ObjectiveC.NSString nsStringPath = new(url);
+                IntPtr nsUrl = ObjectiveC.objc_getClass("NSURL");
+                var urlPtr = ObjectiveC.IntPtr_objc_msgSend(nsUrl, "URLWithString:", nsStringPath);
 
-                IntPtr nsWorkspace = NativeMacOS.objc_getClass("NSWorkspace");
-                IntPtr sharedWorkspace = NativeMacOS.IntPtr_objc_msgSend(nsWorkspace, "sharedWorkspace");
+                IntPtr nsWorkspace = ObjectiveC.objc_getClass("NSWorkspace");
+                IntPtr sharedWorkspace = ObjectiveC.IntPtr_objc_msgSend(nsWorkspace, "sharedWorkspace");
 
-                NativeMacOS.bool_objc_msgSend(sharedWorkspace, "openURL:", urlPtr);
+                ObjectiveC.bool_objc_msgSend(sharedWorkspace, "openURL:", urlPtr);
             }
             else
             {
