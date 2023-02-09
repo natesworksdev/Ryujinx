@@ -72,7 +72,7 @@
             <ListBox
                 AutoScrollToSelectedItem="False"
                 VirtualizationMode="None"
-                SelectionMode="Multiple"
+                SelectionMode="Multiple, Toggle"
                 Background="Transparent"
                 SelectionChanged="OnSelectionChanged"
                 SelectedItems="{Binding SelectedDownloadableContents, Mode=TwoWay}"
