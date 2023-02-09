@@ -66,7 +66,7 @@ namespace Ryujinx.Ui.Common
             {
                 Assets = new Assets
                 {
-                    LargeImageKey  = "game",
+                    LargeImageKey  = $"https://img-eshop.worker.ryujinx.dev/titleid/${titleId}",
                     LargeImageText = titleName,
                     SmallImageKey  = "ryujinx",
                     SmallImageText = Description,
