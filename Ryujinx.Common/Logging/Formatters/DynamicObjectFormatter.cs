@@ -3,78 +3,79 @@ using System;
 using System.Reflection;
 using System.Text;
 
-namespace Ryujinx.Common.Logging;
-
-internal class DynamicObjectFormatter
+namespace Ryujinx.Common.Logging
 {
-    private static readonly ObjectPool<StringBuilder> StringBuilderPool = SharedPools.Default<StringBuilder>();
-
-    public static string? Format(object? dynamicObject)
+    internal class DynamicObjectFormatter
     {
-        if (dynamicObject is null)
+        private static readonly ObjectPool<StringBuilder> StringBuilderPool = SharedPools.Default<StringBuilder>();
+
+        public static string? Format(object? dynamicObject)
         {
-            return null;
-        }
-
-        StringBuilder sb = StringBuilderPool.Allocate();
-        try
-        {
-            Format(sb, dynamicObject);
-            return sb.ToString();
-        }
-        finally
-        {
-            StringBuilderPool.Release(sb);
-        }
-    }
-
-    public static void Format(StringBuilder sb, object? dynamicObject)
-    {
-        if (dynamicObject is null)
-        {
-            return;
-        }
-
-        PropertyInfo[] props = dynamicObject.GetType().GetProperties();
-
-        sb.Append('{');
-
-        foreach (var prop in props)
-        {
-            sb.Append(prop.Name);
-            sb.Append(": ");
-
-            if (typeof(Array).IsAssignableFrom(prop.PropertyType))
+            if (dynamicObject is null)
             {
-                Array? array = (Array?) prop.GetValue(dynamicObject);
-                if (array is not null)
-                {
-                    foreach (var item in array)
-                    {
-                        sb.Append(item);
-                        sb.Append(", ");
-                    }
+                return null;
+            }
 
-                    if (array.Length > 0)
+            StringBuilder sb = StringBuilderPool.Allocate();
+            try
+            {
+                Format(sb, dynamicObject);
+                return sb.ToString();
+            }
+            finally
+            {
+                StringBuilderPool.Release(sb);
+            }
+        }
+
+        public static void Format(StringBuilder sb, object? dynamicObject)
+        {
+            if (dynamicObject is null)
+            {
+                return;
+            }
+
+            PropertyInfo[] props = dynamicObject.GetType().GetProperties();
+
+            sb.Append('{');
+
+            foreach (var prop in props)
+            {
+                sb.Append(prop.Name);
+                sb.Append(": ");
+
+                if (typeof(Array).IsAssignableFrom(prop.PropertyType))
+                {
+                    Array? array = (Array?) prop.GetValue(dynamicObject);
+                    if (array is not null)
                     {
-                        sb.Remove(sb.Length - 2, 2);
+                        foreach (var item in array)
+                        {
+                            sb.Append(item);
+                            sb.Append(", ");
+                        }
+
+                        if (array.Length > 0)
+                        {
+                            sb.Remove(sb.Length - 2, 2);
+                        }
                     }
                 }
+                else
+                {
+                    sb.Append(prop.GetValue(dynamicObject));
+                }
+
+                sb.Append(" ; ");
             }
-            else
+
+            // We remove the final ';' from the string
+            if (props.Length > 0)
             {
-                sb.Append(prop.GetValue(dynamicObject));
+                sb.Remove(sb.Length - 3, 3);
             }
 
-            sb.Append(" ; ");
+            sb.Append('}');
         }
-
-        // We remove the final ';' from the string
-        if (props.Length > 0)
-        {
-            sb.Remove(sb.Length - 3, 3);
-        }
-
-        sb.Append('}');
     }
 }

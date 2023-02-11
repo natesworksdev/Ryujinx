@@ -1,11 +1,12 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Ryujinx.Ui.Common.Models.Amiibo;
-
-public class AmiiboApiUsage
+namespace Ryujinx.Ui.Common.Models.Amiibo
 {
-    [JsonPropertyName("Usage")]
-    public string Usage { get; set; }
-    [JsonPropertyName("write")]
-    public bool Write { get; set; }
+    public class AmiiboApiUsage
+    {
+        [JsonPropertyName("Usage")]
+        public string Usage { get; set; }
+        [JsonPropertyName("write")]
+        public bool Write { get; set; }
+    }
 }
