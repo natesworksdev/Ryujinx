@@ -118,6 +118,20 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             (_hasLayerViews, _hasMipViews) = PropagateGranularity(hasLayerViews, hasMipViews);
 
+            // If the texture is partially mapped, fully subdivide handles immediately.
+
+            MultiRange range = Storage.Range;
+            for (int i = 0; i < range.Count; i++)
+            {
+                if (range.GetSubRange(i).Address == MemoryManager.PteUnmapped)
+                {
+                    _hasLayerViews = true;
+                    _hasMipViews = true;
+
+                    break;
+                }
+            }
+
             RecalculateHandleRegions();
         }
 
@@ -1057,7 +1071,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// The dirty flags from the previous handles will be kept.
         /// </summary>
         /// <param name="handles">The handles to replace the current handles with</param>
-        private void ReplaceHandles(TextureGroupHandle[] handles)
+        /// <param name="rangeChanged">True if the storage memory range changed since the last region handle generation</param>
+        private void ReplaceHandles(TextureGroupHandle[] handles, bool rangeChanged)
         {
             if (_handles != null)
             {
@@ -1067,7 +1082,39 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     foreach (CpuRegionHandle handle in groupHandle.Handles)
                     {
-                        handle.Reprotect();
+                        if (rangeChanged)
+                        {
+                            // When the storage range changes, this becomes a little different.
+                            // If a range does not match one in the original, treat it as modified.
+                            // It has been newly mapped and its data must be synchronized.
+                            bool hasMatch = false;
+
+                            foreach (var oldGroup in _handles)
+                            {
+                                foreach (var oldHandle in oldGroup.Handles)
+                                {
+                                    if (oldHandle.Equals(handle))
+                                    {
+                                        hasMatch = true;
+                                        break;
+                                    }
+                                }
+
+                                if (hasMatch)
+                                {
+                                    break;
+                                }
+                            }
+
+                            if (hasMatch)
+                            {
+                                handle.Reprotect();
+                            }
+                        }
+                        else
+                        {
+                            handle.Reprotect();
+                        }
                     }
                 }
 
@@ -1089,7 +1136,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// Recalculate handle regions for this texture group, and inherit existing state into the new handles.
         /// </summary>
-        private void RecalculateHandleRegions()
+        /// <param name="rangeChanged">True if the storage memory range changed since the last region handle generation</param>
+        private void RecalculateHandleRegions(bool rangeChanged = false)
         {
             TextureGroupHandle[] handles;
 
@@ -1171,7 +1219,19 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             }
 
-            ReplaceHandles(handles);
+            ReplaceHandles(handles, rangeChanged);
+        }
+
+        /// <summary>
+        /// Regenerates handles when the storage range has been remapped.
+        /// This forces the regions to be fully subdivided.
+        /// </summary>
+        public void RangeChanged()
+        {
+            _hasLayerViews = true;
+            _hasMipViews = true;
+
+            RecalculateHandleRegions(true);
         }
 
         /// <summary>

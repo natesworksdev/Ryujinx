@@ -162,6 +162,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public bool IsView => _viewStorage != this;
 
+        /// <summary>
+        /// Whether or not this texture has views.
+        /// </summary>
+        public bool HasViews => _views.Count > 0;
+
         private int _referenceCount;
         private List<TexturePoolOwner> _poolOwners;
 
@@ -381,6 +386,17 @@ namespace Ryujinx.Graphics.Gpu.Image
             texture._viewStorage = texture;
 
             DecrementReferenceCount();
+        }
+
+        /// <summary>
+        /// Replaces the texture's physical memory range. This forces tracking to regenerate.
+        /// </summary>
+        /// <param name="range">New physical memory range backing the texture</param>
+        public void ReplaceRange(MultiRange range)
+        {
+            Range = range;
+
+            Group.RangeChanged();
         }
 
         /// <summary>
@@ -1586,6 +1602,24 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Queue updating texture mappings on the pool. Happens from another thread.
+        /// </summary>
+        public void UpdatePoolMappings()
+        {
+            lock (_poolOwners)
+            {
+                foreach (var owner in _poolOwners)
+                {
+                    owner.Pool.QueueUpdateMapping(this, owner.ID);
+                }
+
+                _poolOwners.Clear();
+            }
+
+            InvalidatedSequence++;
+        }
+
+        /// <summary>
         /// Delete the texture if it is not used anymore.
         /// The texture is considered unused when the reference count is zero,
         /// and it has no child views.
@@ -1636,7 +1670,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 Group.ClearModified(unmapRange);
             }
 
-            RemoveFromPools(true);
+            UpdatePoolMappings();
         }
 
         /// <summary>

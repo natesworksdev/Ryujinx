@@ -195,6 +195,20 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Update a texture's physical memory range.
+        /// </summary>
+        /// <param name="texture">Texture to update</param>
+        /// <param name="range">New physical memory range</param>
+        public void UpdateMapping(Texture texture, MultiRange range)
+        {
+            _textures.Remove(texture);
+
+            texture.ReplaceRange(range);
+
+            _textures.Add(texture);
+        }
+
+        /// <summary>
         /// Tries to find an existing texture, or create a new one if not found.
         /// </summary>
         /// <param name="memoryManager">GPU memory manager where the texture is mapped</param>
