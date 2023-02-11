@@ -1,5 +1,7 @@
+using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
 using System;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
 {
@@ -50,56 +52,54 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
                 currentCode = currentCode.Slice(0, codeLength);
             }
 
-            foreach (var entry in AdvancedBlendFunctions.Table)
-            {
-                if (currentCode.Length != entry.Code.Length || !currentCode.SequenceEqual(entry.Code))
-                {
-                    continue;
-                }
-
-                if (entry.Constants != null)
-                {
-                    bool constantsMatch = true;
-
-                    for (int i = 0; i < entry.Constants.Length; i++)
-                    {
-                        RgbFloat constant = entry.Constants[i];
-                        RgbHalf constant2 = _state.State.BlendUcodeConstants[i];
-
-                        if ((Half)constant.R != constant2.UnpackR() ||
-                            (Half)constant.G != constant2.UnpackG() ||
-                            (Half)constant.B != constant2.UnpackB())
-                        {
-                            constantsMatch = false;
-                            break;
-                        }
-                    }
-
-                    if (!constantsMatch)
-                    {
-                        continue;
-                    }
-                }
-
-                if (entry.Alpha.Enable != _state.State.BlendUcodeEnable)
-                {
-                    continue;
-                }
-
-                if (entry.Alpha.Enable == BlendUcodeEnable.EnableRGBA &&
-                    (entry.Alpha.AlphaOp != _state.State.BlendStateCommon.AlphaOp ||
-                    entry.Alpha.AlphaSrcFactor != _state.State.BlendStateCommon.AlphaSrcFactor ||
-                    entry.Alpha.AlphaDstFactor != _state.State.BlendStateCommon.AlphaDstFactor))
-                {
-                    continue;
-                }
-
-                descriptor = new AdvancedBlendDescriptor(entry.Mode, entry.Overlap, entry.SrcPreMultiplied);
-                return true;
-            }
+            Hash128 hash = XXHash128.ComputeHash(MemoryMarshal.Cast<uint, byte>(currentCode));
 
             descriptor = default;
-            return false;
+
+            if (!AdvancedBlendPreGenTable.Entries.TryGetValue(hash, out var entry))
+            {
+                return false;
+            }
+
+            if (entry.Constants != null)
+            {
+                bool constantsMatch = true;
+
+                for (int i = 0; i < entry.Constants.Length; i++)
+                {
+                    RgbFloat constant = entry.Constants[i];
+                    RgbHalf constant2 = _state.State.BlendUcodeConstants[i];
+
+                    if ((Half)constant.R != constant2.UnpackR() ||
+                        (Half)constant.G != constant2.UnpackG() ||
+                        (Half)constant.B != constant2.UnpackB())
+                    {
+                        constantsMatch = false;
+                        break;
+                    }
+                }
+
+                if (!constantsMatch)
+                {
+                    return false;
+                }
+            }
+
+            if (entry.Alpha.Enable != _state.State.BlendUcodeEnable)
+            {
+                return false;
+            }
+
+            if (entry.Alpha.Enable == BlendUcodeEnable.EnableRGBA &&
+                (entry.Alpha.AlphaOp != _state.State.BlendStateCommon.AlphaOp ||
+                entry.Alpha.AlphaSrcFactor != _state.State.BlendStateCommon.AlphaSrcFactor ||
+                entry.Alpha.AlphaDstFactor != _state.State.BlendStateCommon.AlphaDstFactor))
+            {
+                return false;
+            }
+
+            descriptor = new AdvancedBlendDescriptor(entry.Mode, entry.Overlap, entry.SrcPreMultiplied);
+            return true;
         }
     }
 }

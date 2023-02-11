@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         public BlendFactor AlphaSrcFactor { get; }
         public BlendFactor AlphaDstFactor { get; }
 
-        private FixedFunctionAlpha(BlendUcodeEnable enable, BlendOp alphaOp, BlendFactor alphaSrc, BlendFactor alphaDst)
+        public FixedFunctionAlpha(BlendUcodeEnable enable, BlendOp alphaOp, BlendFactor alphaSrc, BlendFactor alphaDst)
         {
             Enable = enable;
             AlphaOp = alphaOp;

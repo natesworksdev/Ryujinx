@@ -1,4 +1,8 @@
+using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
+using System.Globalization;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
 {
@@ -207,6 +211,48 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
             new AdvancedBlendUcode(AdvancedBlendMode.HslColor,         AdvancedBlendOverlap.Conjoint,     false, GenConjointHslColor),
             new AdvancedBlendUcode(AdvancedBlendMode.HslLuminosity,    AdvancedBlendOverlap.Conjoint,     false, GenConjointHslLuminosity)
         };
+
+        public static string GenTable()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine($"private static Dictionary<Hash128, AdvancedBlendEntry> _entries = new()");
+            sb.AppendLine("{");
+
+            foreach (var entry in Table)
+            {
+                Hash128 hash = XXHash128.ComputeHash(MemoryMarshal.Cast<uint, byte>(entry.Code));
+
+                string[] constants = new string[entry.Constants != null ? entry.Constants.Length : 0];
+
+                for (int i = 0; i < constants.Length; i++)
+                {
+                    RgbFloat rgb = entry.Constants[i];
+
+                    constants[i] = string.Format(CultureInfo.InvariantCulture, "new " + nameof(RgbFloat) + "({0}f, {1}f, {2}f)", rgb.R, rgb.G, rgb.B);
+                }
+
+                string constantList = constants.Length > 0 ? $"new[] {{ {string.Join(", ", constants)} }}" : $"Array.Empty<{nameof(RgbFloat)}>()";
+
+                static string EnumValue(string name, object value)
+                {
+                    if (value.ToString() == "0")
+                    {
+                        return "0";
+                    }
+
+                    return $"{name}.{value}";
+                }
+
+                string alpha = $"new {nameof(FixedFunctionAlpha)}({EnumValue(nameof(BlendUcodeEnable), entry.Alpha.Enable)}, {EnumValue(nameof(BlendOp), entry.Alpha.AlphaOp)}, {EnumValue(nameof(BlendFactor), entry.Alpha.AlphaSrcFactor)}, {EnumValue(nameof(BlendFactor), entry.Alpha.AlphaDstFactor)})";
+
+                sb.AppendLine($"    {{ new Hash128(0x{hash.Low:X16}, 0x{hash.High:X16}), new AdvancedBlendEntry({nameof(AdvancedBlendMode)}.{entry.Mode}, {nameof(AdvancedBlendOverlap)}.{entry.Overlap}, {(entry.SrcPreMultiplied ? "true" : "false")}, {constantList}, {alpha}) }},");
+            }
+
+            sb.AppendLine("};");
+
+            return sb.ToString();
+        }
 
         private static FixedFunctionAlpha GenUncorrelatedPlusClampedPremul(ref UcodeAssembler asm)
         {
