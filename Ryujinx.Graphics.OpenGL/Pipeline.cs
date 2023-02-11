@@ -789,7 +789,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (HwCapabilities.SupportsBlendEquationAdvanced)
             {
-                GL.BlendEquation((BlendEquationMode)blend.Mode.Convert());
+                GL.BlendEquation((BlendEquationMode)blend.Op.Convert());
                 GL.NV.BlendParameter(NvBlendEquationAdvanced.BlendOverlapNv, (int)blend.Overlap.Convert());
                 GL.NV.BlendParameter(NvBlendEquationAdvanced.BlendPremultipliedSrcNv, blend.SrcPreMultiplied ? 1 : 0);
                 GL.Enable(EnableCap.Blend);

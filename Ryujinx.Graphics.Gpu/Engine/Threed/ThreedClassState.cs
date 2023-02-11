@@ -451,10 +451,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     /// </summary>
     struct RgbHalf
     {
+#pragma warning disable CS0649
         public uint R;
         public uint G;
         public uint B;
         public uint Padding;
+#pragma warning restore CS0649
 
         /// <summary>
         /// Unpacks the red color component as a 16-bit float value.

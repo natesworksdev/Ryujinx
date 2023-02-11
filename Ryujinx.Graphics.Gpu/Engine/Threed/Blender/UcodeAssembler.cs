@@ -108,7 +108,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
     /// </summary>
     struct RgbFloat
     {
-#pragma warning disable CS0649
         /// <summary>
         /// Red component value.
         /// </summary>
@@ -123,7 +122,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         /// Blue component value.
         /// </summary>
         public float B { get; }
-#pragma warning restore CS0649
 
         /// <summary>
         /// Creates a new floating-point RGB value.

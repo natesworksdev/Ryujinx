@@ -1,6 +1,6 @@
 namespace Ryujinx.Graphics.GAL
 {
-    public enum AdvancedBlendMode
+    public enum AdvancedBlendOp
     {
         Zero,
         Src,

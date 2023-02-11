@@ -2,13 +2,13 @@ namespace Ryujinx.Graphics.GAL
 {
     public struct AdvancedBlendDescriptor
     {
-        public AdvancedBlendMode Mode { get; }
+        public AdvancedBlendOp Op { get; }
         public AdvancedBlendOverlap Overlap { get; }
         public bool SrcPreMultiplied { get; }
 
-        public AdvancedBlendDescriptor(AdvancedBlendMode mode, AdvancedBlendOverlap overlap, bool srcPreMultiplied)
+        public AdvancedBlendDescriptor(AdvancedBlendOp op, AdvancedBlendOverlap overlap, bool srcPreMultiplied)
         {
-            Mode = mode;
+            Op = op;
             Overlap = overlap;
             SrcPreMultiplied = srcPreMultiplied;
         }

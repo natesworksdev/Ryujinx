@@ -73,7 +73,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         /// <summary>
         /// Advanced blend operation.
         /// </summary>
-        public AdvancedBlendMode Mode { get; }
+        public AdvancedBlendOp Op { get; }
 
         /// <summary>
         /// Advanced blend overlap mode.
@@ -103,17 +103,17 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         /// <summary>
         /// Creates a new advanced blend state.
         /// </summary>
-        /// <param name="mode">Advanced blend operation</param>
+        /// <param name="op">Advanced blend operation</param>
         /// <param name="overlap">Advanced blend overlap mode</param>
         /// <param name="srcPreMultiplied">Whenever the source input is pre-multiplied</param>
         /// <param name="genFunc">Function that will generate the advanced blend microcode</param>
         public AdvancedBlendUcode(
-            AdvancedBlendMode mode,
+            AdvancedBlendOp op,
             AdvancedBlendOverlap overlap,
             bool srcPreMultiplied,
             GenUcodeFunc genFunc)
         {
-            Mode = mode;
+            Op = op;
             Overlap = overlap;
             SrcPreMultiplied = srcPreMultiplied;
 

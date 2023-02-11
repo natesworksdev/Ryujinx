@@ -108,7 +108,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
                 return false;
             }
 
-            descriptor = new AdvancedBlendDescriptor(entry.Mode, entry.Overlap, entry.SrcPreMultiplied);
+            descriptor = new AdvancedBlendDescriptor(entry.Op, entry.Overlap, entry.SrcPreMultiplied);
             return true;
         }
     }

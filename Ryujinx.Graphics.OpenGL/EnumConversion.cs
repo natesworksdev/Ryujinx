@@ -34,105 +34,105 @@ namespace Ryujinx.Graphics.OpenGL
             return TextureWrapMode.Clamp;
         }
 
-        public static NvBlendEquationAdvanced Convert(this AdvancedBlendMode mode)
+        public static NvBlendEquationAdvanced Convert(this AdvancedBlendOp op)
         {
-            switch (mode)
+            switch (op)
             {
-                case AdvancedBlendMode.Zero:
+                case AdvancedBlendOp.Zero:
                     return NvBlendEquationAdvanced.Zero;
-                case AdvancedBlendMode.Src:
+                case AdvancedBlendOp.Src:
                     return NvBlendEquationAdvanced.SrcNv;
-                case AdvancedBlendMode.Dst:
+                case AdvancedBlendOp.Dst:
                     return NvBlendEquationAdvanced.DstNv;
-                case AdvancedBlendMode.SrcOver:
+                case AdvancedBlendOp.SrcOver:
                     return NvBlendEquationAdvanced.SrcOverNv;
-                case AdvancedBlendMode.DstOver:
+                case AdvancedBlendOp.DstOver:
                     return NvBlendEquationAdvanced.DstOverNv;
-                case AdvancedBlendMode.SrcIn:
+                case AdvancedBlendOp.SrcIn:
                     return NvBlendEquationAdvanced.SrcInNv;
-                case AdvancedBlendMode.DstIn:
+                case AdvancedBlendOp.DstIn:
                     return NvBlendEquationAdvanced.DstInNv;
-                case AdvancedBlendMode.SrcOut:
+                case AdvancedBlendOp.SrcOut:
                     return NvBlendEquationAdvanced.SrcOutNv;
-                case AdvancedBlendMode.DstOut:
+                case AdvancedBlendOp.DstOut:
                     return NvBlendEquationAdvanced.DstOutNv;
-                case AdvancedBlendMode.SrcAtop:
+                case AdvancedBlendOp.SrcAtop:
                     return NvBlendEquationAdvanced.SrcAtopNv;
-                case AdvancedBlendMode.DstAtop:
+                case AdvancedBlendOp.DstAtop:
                     return NvBlendEquationAdvanced.DstAtopNv;
-                case AdvancedBlendMode.Xor:
+                case AdvancedBlendOp.Xor:
                     return NvBlendEquationAdvanced.XorNv;
-                case AdvancedBlendMode.Plus:
+                case AdvancedBlendOp.Plus:
                     return NvBlendEquationAdvanced.PlusNv;
-                case AdvancedBlendMode.PlusClamped:
+                case AdvancedBlendOp.PlusClamped:
                     return NvBlendEquationAdvanced.PlusClampedNv;
-                case AdvancedBlendMode.PlusClampedAlpha:
+                case AdvancedBlendOp.PlusClampedAlpha:
                     return NvBlendEquationAdvanced.PlusClampedAlphaNv;
-                case AdvancedBlendMode.PlusDarker:
+                case AdvancedBlendOp.PlusDarker:
                     return NvBlendEquationAdvanced.PlusDarkerNv;
-                case AdvancedBlendMode.Multiply:
+                case AdvancedBlendOp.Multiply:
                     return NvBlendEquationAdvanced.MultiplyNv;
-                case AdvancedBlendMode.Screen:
+                case AdvancedBlendOp.Screen:
                     return NvBlendEquationAdvanced.ScreenNv;
-                case AdvancedBlendMode.Overlay:
+                case AdvancedBlendOp.Overlay:
                     return NvBlendEquationAdvanced.OverlayNv;
-                case AdvancedBlendMode.Darken:
+                case AdvancedBlendOp.Darken:
                     return NvBlendEquationAdvanced.DarkenNv;
-                case AdvancedBlendMode.Lighten:
+                case AdvancedBlendOp.Lighten:
                     return NvBlendEquationAdvanced.LightenNv;
-                case AdvancedBlendMode.ColorDodge:
+                case AdvancedBlendOp.ColorDodge:
                     return NvBlendEquationAdvanced.ColordodgeNv;
-                case AdvancedBlendMode.ColorBurn:
+                case AdvancedBlendOp.ColorBurn:
                     return NvBlendEquationAdvanced.ColorburnNv;
-                case AdvancedBlendMode.HardLight:
+                case AdvancedBlendOp.HardLight:
                     return NvBlendEquationAdvanced.HardlightNv;
-                case AdvancedBlendMode.SoftLight:
+                case AdvancedBlendOp.SoftLight:
                     return NvBlendEquationAdvanced.SoftlightNv;
-                case AdvancedBlendMode.Difference:
+                case AdvancedBlendOp.Difference:
                     return NvBlendEquationAdvanced.DifferenceNv;
-                case AdvancedBlendMode.Minus:
+                case AdvancedBlendOp.Minus:
                     return NvBlendEquationAdvanced.MinusNv;
-                case AdvancedBlendMode.MinusClamped:
+                case AdvancedBlendOp.MinusClamped:
                     return NvBlendEquationAdvanced.MinusClampedNv;
-                case AdvancedBlendMode.Exclusion:
+                case AdvancedBlendOp.Exclusion:
                     return NvBlendEquationAdvanced.ExclusionNv;
-                case AdvancedBlendMode.Contrast:
+                case AdvancedBlendOp.Contrast:
                     return NvBlendEquationAdvanced.ContrastNv;
-                case AdvancedBlendMode.Invert:
+                case AdvancedBlendOp.Invert:
                     return NvBlendEquationAdvanced.Invert;
-                case AdvancedBlendMode.InvertRGB:
+                case AdvancedBlendOp.InvertRGB:
                     return NvBlendEquationAdvanced.InvertRgbNv;
-                case AdvancedBlendMode.InvertOvg:
+                case AdvancedBlendOp.InvertOvg:
                     return NvBlendEquationAdvanced.InvertOvgNv;
-                case AdvancedBlendMode.LinearDodge:
+                case AdvancedBlendOp.LinearDodge:
                     return NvBlendEquationAdvanced.LineardodgeNv;
-                case AdvancedBlendMode.LinearBurn:
+                case AdvancedBlendOp.LinearBurn:
                     return NvBlendEquationAdvanced.LinearburnNv;
-                case AdvancedBlendMode.VividLight:
+                case AdvancedBlendOp.VividLight:
                     return NvBlendEquationAdvanced.VividlightNv;
-                case AdvancedBlendMode.LinearLight:
+                case AdvancedBlendOp.LinearLight:
                     return NvBlendEquationAdvanced.LinearlightNv;
-                case AdvancedBlendMode.PinLight:
+                case AdvancedBlendOp.PinLight:
                     return NvBlendEquationAdvanced.PinlightNv;
-                case AdvancedBlendMode.HardMix:
+                case AdvancedBlendOp.HardMix:
                     return NvBlendEquationAdvanced.HardmixNv;
-                case AdvancedBlendMode.Red:
+                case AdvancedBlendOp.Red:
                     return NvBlendEquationAdvanced.RedNv;
-                case AdvancedBlendMode.Green:
+                case AdvancedBlendOp.Green:
                     return NvBlendEquationAdvanced.GreenNv;
-                case AdvancedBlendMode.Blue:
+                case AdvancedBlendOp.Blue:
                     return NvBlendEquationAdvanced.BlueNv;
-                case AdvancedBlendMode.HslHue:
+                case AdvancedBlendOp.HslHue:
                     return NvBlendEquationAdvanced.HslHueNv;
-                case AdvancedBlendMode.HslSaturation:
+                case AdvancedBlendOp.HslSaturation:
                     return NvBlendEquationAdvanced.HslSaturationNv;
-                case AdvancedBlendMode.HslColor:
+                case AdvancedBlendOp.HslColor:
                     return NvBlendEquationAdvanced.HslColorNv;
-                case AdvancedBlendMode.HslLuminosity:
+                case AdvancedBlendOp.HslLuminosity:
                     return NvBlendEquationAdvanced.HslLuminosityNv;
             }
 
-            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(AdvancedBlendMode)} enum value: {mode}.");
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(AdvancedBlendOp)} enum value: {op}.");
 
             return NvBlendEquationAdvanced.Zero;
         }

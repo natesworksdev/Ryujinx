@@ -683,7 +683,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (index == 0)
                 {
-                    var blendOp = blend.Mode.Convert();
+                    var blendOp = blend.Op.Convert();
 
                     vkBlend = new PipelineColorBlendAttachmentState(
                         blendEnable: true,
@@ -694,10 +694,10 @@ namespace Ryujinx.Graphics.Vulkan
                     vkBlend.BlendEnable = true;
                     vkBlend.SrcColorBlendFactor = Silk.NET.Vulkan.BlendFactor.Zero;
                     vkBlend.DstColorBlendFactor = Silk.NET.Vulkan.BlendFactor.Zero;
-                    vkBlend.ColorBlendOp = blend.Mode.Convert();
+                    vkBlend.ColorBlendOp = blend.Op.Convert();
                     vkBlend.SrcAlphaBlendFactor = Silk.NET.Vulkan.BlendFactor.Zero;
                     vkBlend.DstAlphaBlendFactor = Silk.NET.Vulkan.BlendFactor.Zero;
-                    vkBlend.AlphaBlendOp = blend.Mode.Convert();
+                    vkBlend.AlphaBlendOp = blend.Op.Convert();
 
                     if (Gd.Capabilities.SupportsBlendEquationAdvancedNonPreMultipliedSrcColor)
                     {
