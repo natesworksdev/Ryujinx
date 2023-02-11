@@ -215,6 +215,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 #pragma warning restore CS0649
     }
 
+    /// <summary>
+    /// Indicates whenever the blend microcode processes RGB and alpha components.
+    /// </summary>
     enum BlendUcodeEnable
     {
         Disabled = 0,

@@ -1,8 +1,12 @@
+
 using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
 {
+    /// <summary>
+    /// Blend microcode instruction.
+    /// </summary>
     enum Instruction
     {
         Mmadd = 0,
@@ -14,6 +18,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         Sub = 6
     }
 
+    /// <summary>
+    /// Blend microcode condition code.
+    /// </summary>
     enum CC
     {
         F = 0,
@@ -26,6 +33,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         GE = 7
     }
 
+    /// <summary>
+    /// Blend microcode opend B or D value.
+    /// </summary>
     enum OpBD
     {
         ConstantZero = 0x0,
@@ -43,6 +53,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         ConstantRGB = 0xd
     }
 
+    /// <summary>
+    /// Blend microcode operand A or C value.
+    /// </summary>
     enum OpAC
     {
         SrcRGB = 0,
@@ -55,6 +68,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         PBR = 7
     }
 
+    /// <summary>
+    /// Blend microcode destination operand.
+    /// </summary>
     enum OpDst
     {
         Temp0 = 0,
@@ -63,6 +79,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         PBR = 3
     }
 
+    /// <summary>
+    /// Blend microcode input swizzle.
+    /// </summary>
     enum Swizzle
     {
         RGB = 0,
@@ -73,6 +92,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         RToA = 5
     }
 
+    /// <summary>
+    /// Blend microcode output components.
+    /// </summary>
     enum WriteMask
     {
         RGB = 0,
@@ -81,12 +103,34 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         B = 3
     }
 
+    /// <summary>
+    /// Floating-point RGB color values.
+    /// </summary>
     struct RgbFloat
     {
+#pragma warning disable CS0649
+        /// <summary>
+        /// Red component value.
+        /// </summary>
         public float R { get; }
-        public float G { get; }
-        public float B { get; }
 
+        /// <summary>
+        /// Green component value.
+        /// </summary>
+        public float G { get; }
+
+        /// <summary>
+        /// Blue component value.
+        /// </summary>
+        public float B { get; }
+#pragma warning restore CS0649
+
+        /// <summary>
+        /// Creates a new floating-point RGB value.
+        /// </summary>
+        /// <param name="r">Red component value</param>
+        /// <param name="g">Green component value</param>
+        /// <param name="b">Blue component value</param>
         public RgbFloat(float r, float g, float b)
         {
             R = r;
@@ -95,6 +139,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         }
     }
 
+    /// <summary>
+    /// Blend microcode destination operand, including swizzle, write mask and condition code update flag.
+    /// </summary>
     struct Dest
     {
         public static Dest Temp0 => new Dest(OpDst.Temp0, Swizzle.RGB, WriteMask.RGB, false);
@@ -119,6 +166,13 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         public WriteMask WriteMask { get; }
         public bool WriteCC { get; }
 
+        /// <summary>
+        /// Creates a new blend microcode destination operand.
+        /// </summary>
+        /// <param name="dst">Operand</param>
+        /// <param name="swizzle">Swizzle</param>
+        /// <param name="writeMask">Write maks</param>
+        /// <param name="writeCC">Indicates if condition codes should be updated</param>
         public Dest(OpDst dst, Swizzle swizzle, WriteMask writeMask, bool writeCC)
         {
             Dst = dst;
@@ -128,10 +182,24 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         }
     }
 
+    /// <summary>
+    /// Blend microcode operaiton.
+    /// </summary>
     struct UcodeOp
     {
         public readonly uint Word;
 
+        /// <summary>
+        /// Creates a new blend microcode operation.
+        /// </summary>
+        /// <param name="cc">Condition code that controls whenever the operation is executed or not</param>
+        /// <param name="inst">Instruction</param>
+        /// <param name="constIndex">Index on the constant table of the constant used by any constant operand</param>
+        /// <param name="dest">Destination operand</param>
+        /// <param name="srcA">First input operand</param>
+        /// <param name="srcB">Second input operand</param>
+        /// <param name="srcC">Third input operand</param>
+        /// <param name="srcD">Fourth input operand</param>
         public UcodeOp(CC cc, Instruction inst, int constIndex, Dest dest, OpAC srcA, OpBD srcB, OpAC srcC, OpBD srcD)
         {
             Word = (uint)cc |
@@ -148,6 +216,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         }
     }
 
+    /// <summary>
+    /// Blend microcode assembler.
+    /// </summary>
     struct UcodeAssembler
     {
         private List<uint> _code;

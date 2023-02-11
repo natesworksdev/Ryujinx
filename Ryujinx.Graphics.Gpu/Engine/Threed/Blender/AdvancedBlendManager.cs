@@ -18,6 +18,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         private readonly uint[] _code;
         private int _ip;
 
+        /// <summary>
+        /// Creates a new instance of the advanced blend manager.
+        /// </summary>
+        /// <param name="state">GPU state of the channel owning this manager</param>
         public AdvancedBlendManager(DeviceStateWithShadow<ThreedClassState> state)
         {
             _state = state;
@@ -42,6 +46,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
             _code[_ip++ & InstructionRamSizeMask] = (uint)argument;
         }
 
+        /// <summary>
+        /// Tries to identify the current advanced blend function being used,
+        /// given the current state and microcode that was uploaded.
+        /// </summary>
+        /// <param name="descriptor">Advanced blend descriptor</param>
+        /// <returns>True if the function was found, false otherwise</returns>
         public bool TryGetAdvancedBlend(out AdvancedBlendDescriptor descriptor)
         {
             Span<uint> currentCode = new Span<uint>(_code);

@@ -214,6 +214,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
 
         public static string GenTable()
         {
+            // This can be used to generate the table on AdvancedBlendPreGenTable.
+
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine($"private static Dictionary<Hash128, AdvancedBlendEntry> _entries = new()");

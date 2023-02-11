@@ -5,14 +5,44 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
 {
+    /// <summary>
+    /// Advanced blend function entry.
+    /// </summary>
     struct AdvancedBlendEntry
     {
+        /// <summary>
+        /// Advanced blend operation.
+        /// </summary>
         public AdvancedBlendMode Mode { get; }
+
+        /// <summary>
+        /// Advanced blend overlap mode.
+        /// </summary>
         public AdvancedBlendOverlap Overlap { get; }
+
+        /// <summary>
+        /// Whenever the source input is pre-multiplied.
+        /// </summary>
         public bool SrcPreMultiplied { get; }
+
+        /// <summary>
+        /// Constants used by the microcode.
+        /// </summary>
         public RgbFloat[] Constants { get; }
+
+        /// <summary>
+        /// Fixed function alpha state.
+        /// </summary>
         public FixedFunctionAlpha Alpha { get; }
 
+        /// <summary>
+        /// Creates a new advanced blend function entry.
+        /// </summary>
+        /// <param name="mode">Advanced blend operation</param>
+        /// <param name="overlap">Advanced blend overlap mode</param>
+        /// <param name="srcPreMultiplied">Whenever the source input is pre-multiplied</param>
+        /// <param name="constants">Constants used by the microcode</param>
+        /// <param name="alpha">Fixed function alpha state</param>
         public AdvancedBlendEntry(
             AdvancedBlendMode mode,
             AdvancedBlendOverlap overlap,
@@ -28,8 +58,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         }
     }
 
+    /// <summary>
+    /// Pre-generated hash table with advanced blend functions used by the driver.
+    /// </summary>
     static class AdvancedBlendPreGenTable
     {
+        /// <summary>
+        /// Advanced blend functions dictionary.
+        /// </summary>
         public static readonly IReadOnlyDictionary<Hash128, AdvancedBlendEntry> Entries = new Dictionary<Hash128, AdvancedBlendEntry>()
         {
             { new Hash128(0x19ECF57B83DE31F7, 0x5BAE759246F264C0), new AdvancedBlendEntry(AdvancedBlendMode.PlusClamped, AdvancedBlendOverlap.Uncorrelated, true, Array.Empty<RgbFloat>(), new FixedFunctionAlpha(BlendUcodeEnable.EnableRGBA, 0, 0, 0)) },
