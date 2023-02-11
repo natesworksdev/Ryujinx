@@ -264,6 +264,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 bool dirty = false;
                 bool anyModified = false;
                 bool anyUnmapped = false;
+                bool anyNonDirty = false;
 
                 for (int i = 0; i < regionCount; i++)
                 {
@@ -316,12 +317,15 @@ namespace Ryujinx.Graphics.Gpu.Image
                         texture.SignalGroupDirty();
                     }
 
-                    _loadNeeded[baseHandle + i] = handleDirty && !handleUnmapped;
+                    bool loadNeeded = handleDirty && !handleUnmapped;
+
+                    anyNonDirty |= !loadNeeded;
+                    _loadNeeded[baseHandle + i] = loadNeeded;
                 }
 
                 if (dirty)
                 {
-                    if (anyUnmapped || (_handles.Length > 1 && (anyModified || split)))
+                    if (anyUnmapped || anyNonDirty || (_handles.Length > 1 && (anyModified || split)))
                     {
                         // Partial texture invalidation. Only update the layers/levels with dirty flags of the storage.
 

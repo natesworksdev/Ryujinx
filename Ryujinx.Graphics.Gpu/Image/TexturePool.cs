@@ -228,7 +228,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 // TODO: Needs to behave differently if a texture's mapping has already changed - must remove from cache if
                 // the mapping is different again, as the mapping cannot be different on two entries of the pool.
 
-                if (request.IsUnmapped && texture.Group.Storage == texture && texture.HasViews)
+                if (request.IsUnmapped && texture.Group.Storage == texture && !texture.HasViews)
                 {
                     // Has the mapping for this texture changed?
                     ref readonly TextureDescriptor descriptor = ref GetDescriptorRef(request.ID);
