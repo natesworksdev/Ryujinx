@@ -1236,6 +1236,8 @@ namespace Ryujinx.Graphics.Gpu.Image
             _hasMipViews = true;
 
             RecalculateHandleRegions(true);
+
+            SignalAllDirty();
         }
 
         /// <summary>
