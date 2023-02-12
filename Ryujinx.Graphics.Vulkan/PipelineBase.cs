@@ -691,14 +691,6 @@ namespace Ryujinx.Graphics.Vulkan
                         alphaBlendOp: blendOp,
                         colorWriteMask: vkBlend.ColorWriteMask);
 
-                    vkBlend.BlendEnable = true;
-                    vkBlend.SrcColorBlendFactor = Silk.NET.Vulkan.BlendFactor.Zero;
-                    vkBlend.DstColorBlendFactor = Silk.NET.Vulkan.BlendFactor.Zero;
-                    vkBlend.ColorBlendOp = blend.Op.Convert();
-                    vkBlend.SrcAlphaBlendFactor = Silk.NET.Vulkan.BlendFactor.Zero;
-                    vkBlend.DstAlphaBlendFactor = Silk.NET.Vulkan.BlendFactor.Zero;
-                    vkBlend.AlphaBlendOp = blend.Op.Convert();
-
                     if (Gd.Capabilities.SupportsBlendEquationAdvancedNonPreMultipliedSrcColor)
                     {
                         _newState.AdvancedBlendSrcPreMultiplied = blend.SrcPreMultiplied;
