@@ -709,7 +709,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (vkBlend.ColorWriteMask == 0)
                 {
-                    _storedBlend[0] = vkBlend;
+                    _storedBlend[index] = vkBlend;
 
                     vkBlend = new PipelineColorBlendAttachmentState();
                 }
@@ -750,6 +750,11 @@ namespace Ryujinx.Graphics.Vulkan
                 blend.BlendConstant.Green,
                 blend.BlendConstant.Blue,
                 blend.BlendConstant.Alpha);
+
+            // Reset advanced blend state back defaults to the cache to help the pipeline cache.
+            _newState.AdvancedBlendSrcPreMultiplied = true;
+            _newState.AdvancedBlendDstPreMultiplied = true;
+            _newState.AdvancedBlendOverlap = BlendOverlapEXT.UncorrelatedExt;
 
             SignalStateChange();
         }

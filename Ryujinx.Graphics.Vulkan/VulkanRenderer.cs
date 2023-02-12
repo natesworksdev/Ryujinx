@@ -159,7 +159,7 @@ namespace Ryujinx.Graphics.Vulkan
             if (supportsBlendOperationAdvanced)
             {
                 propertiesBlendOperationAdvanced.PNext = properties2.PNext;
-                properties2.PNext = &supportsBlendOperationAdvanced;
+                properties2.PNext = &propertiesBlendOperationAdvanced;
             }
 
             PhysicalDeviceSubgroupSizeControlPropertiesEXT propertiesSubgroupSizeControl = new PhysicalDeviceSubgroupSizeControlPropertiesEXT()
