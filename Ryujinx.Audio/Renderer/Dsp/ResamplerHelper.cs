@@ -381,7 +381,6 @@ namespace Ryujinx.Audio.Renderer.Dsp
             return _normalCurveLut2F;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private unsafe static void ResampleDefaultQuality(Span<float> outputBuffer, ReadOnlySpan<short> inputBuffer, float ratio, ref float fraction, int sampleCount, bool needPitch)
         {
             ReadOnlySpan<float> parameters = GetDefaultParameter(ratio);
@@ -523,7 +522,6 @@ namespace Ryujinx.Audio.Renderer.Dsp
             return _highCurveLut2F;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static unsafe void ResampleHighQuality(Span<float> outputBuffer, ReadOnlySpan<short> inputBuffer, float ratio, ref float fraction, int sampleCount)
         {
             ReadOnlySpan<float> parameters = GetHighParameter(ratio);
