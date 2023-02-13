@@ -52,14 +52,17 @@ namespace Ryujinx.Graphics.OpenGL.Effects
             var textureView = _textureStorage.CreateView(view.Info, 0, 0) as TextureView;
 
             int previousProgram = GL.GetInteger(GetPName.CurrentProgram);
+            int previousUnit = GL.GetInteger(GetPName.ActiveTexture);
+            GL.ActiveTexture(TextureUnit.Texture0);
+            int previousTextureBinding = GL.GetInteger(GetPName.TextureBinding2D);
+
             GL.BindImageTexture(0, textureView.Handle, 0, false, 0, TextureAccess.ReadWrite, SizedInternalFormat.Rgba8);
             GL.UseProgram(_shaderProgram);
 
             var dispatchX = BitUtils.DivRoundUp(view.Width, IPostProcessingEffect.LocalGroupSize);
             var dispatchY = BitUtils.DivRoundUp(view.Height, IPostProcessingEffect.LocalGroupSize);
 
-            GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindTexture(TextureTarget.Texture2D, view.Handle);
+            view.Bind(0);
             GL.Uniform1(_inputUniform, 0);
             GL.Uniform1(_outputUniform, 0);
             GL.Uniform2(_resolutionUniform, (float)view.Width, (float)view.Height);
@@ -68,6 +71,11 @@ namespace Ryujinx.Graphics.OpenGL.Effects
             GL.MemoryBarrier(MemoryBarrierFlags.ShaderImageAccessBarrierBit);
 
             (_renderer.Pipeline as Pipeline).RestoreImages1And2();
+
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture2D, previousTextureBinding);
+
+            GL.ActiveTexture((TextureUnit)previousUnit);
 
             return textureView;
         }
