@@ -246,8 +246,14 @@ namespace Ryujinx.Graphics.Gpu.Image
                     Items[request.ID] = texture;
 
                     // Create a new pool reference, as the last one was removed on unmap.
+
                     texture.IncrementReferenceCount(this, request.ID);
                     texture.DecrementReferenceCount();
+
+                    // Refetch the range. Changes since the last check could have been lost
+                    // as the cache entry was not restored (required to queue mapping change)
+
+                    range = _channel.MemoryManager.GetPhysicalRegions(descriptor.UnpackAddress(), texture.Size);
 
                     if (!range.Equals(texture.Range))
                     {

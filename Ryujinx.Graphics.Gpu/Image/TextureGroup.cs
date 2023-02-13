@@ -883,8 +883,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>A TextureGroupHandle covering the given views</returns>
         private TextureGroupHandle GenerateHandles(int viewStart, int views)
         {
+            int viewEnd = viewStart + views - 1;
+            (_, int lastLevel) = GetLayerLevelForView(viewEnd);
+
             int offset = _allOffsets[viewStart];
-            int endOffset = (viewStart + views == _allOffsets.Length) ? (int)Storage.Size : _allOffsets[viewStart + views];
+            int endOffset = _allOffsets[viewEnd] + _sliceSizes[lastLevel];
             int size = endOffset - offset;
 
             var result = new List<CpuRegionHandle>();
