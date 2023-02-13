@@ -11,9 +11,7 @@ namespace Ryujinx.Graphics.GAL
         void ChangeVSyncMode(bool vsyncEnabled);
 
         void SetAntiAliasing(AntiAliasing antialiasing);
-
-        void SetUpscaler(UpscaleType type);
-
-        void SetUpscalerLevel(float level);
+        void SetScalingFilter(ScalingFilter type);
+        void SetScalingFilterLevel(float level);
     }
 }

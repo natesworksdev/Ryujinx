@@ -45,8 +45,8 @@ namespace Ryujinx.Ava.UI.ViewModels
         private KeyboardHotkeys _keyboardHotkeys;
         private int _graphicsBackendIndex;
         private string _customThemePath;
-        private int _upscaleType;
-        private float _upscaleLevel;
+        private int _scalingFilter;
+        private float _scalingFilterLevel;
 
         public event Action CloseWindow;
         public event Action SaveSettingsEvent;
@@ -155,7 +155,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool IsSDL2Enabled { get; set; }
         public bool EnableCustomTheme { get; set; }
         public bool IsCustomResolutionScaleActive => _resolutionScale == 4;
-        public bool IsUpscalingActive => _upscaleType == (int)Ryujinx.Common.Configuration.UpscaleType.Fsr;
+        public bool IsScalingFilterActive => _scalingFilter == (int)Ryujinx.Common.Configuration.ScalingFilter.Fsr;
 
         public bool IsVulkanSelected => GraphicsBackendIndex == 0;
         public bool UseHypervisor { get; set; }
@@ -184,15 +184,15 @@ namespace Ryujinx.Ava.UI.ViewModels
         public int MaxAnisotropy { get; set; }
         public int AspectRatio { get; set; }
         public int AntiAliasingEffect { get; set; }
-        public string UpscaleLevelText => UpscaleLevel.ToString("0.00");
-        public float UpscaleLevel
+        public string ScalingFilterLevelText => ScalingFilterLevel.ToString("0.00");
+        public float ScalingFilterLevel
         {
-            get => _upscaleLevel;
+            get => _scalingFilterLevel;
             set
             {
-                _upscaleLevel = value;
+                _scalingFilterLevel = value;
                 OnPropertyChanged();
-                OnPropertyChanged(nameof(UpscaleLevelText));
+                OnPropertyChanged(nameof(ScalingFilterLevelText));
             }
         }
         public int OpenglDebugLevel { get; set; }
@@ -208,14 +208,14 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged(nameof(IsVulkanSelected));
             }
         }
-        public int UpscaleType
+        public int ScalingFilter
         {
-            get => _upscaleType;
+            get => _scalingFilter;
             set
             {
-                _upscaleType = value;
+                _scalingFilter = value;
                 OnPropertyChanged();
-                OnPropertyChanged(nameof(IsUpscalingActive));
+                OnPropertyChanged(nameof(IsScalingFilterActive));
             }
         }
 
@@ -392,8 +392,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             GraphicsBackendMultithreadingIndex = (int)config.Graphics.BackendThreading.Value;
             ShaderDumpPath = config.Graphics.ShadersDumpPath;
             AntiAliasingEffect = (int)config.Graphics.AntiAliasing.Value;
-            UpscaleType = (int)config.Graphics.UpscaleType.Value;
-            UpscaleLevel = config.Graphics.UpscaleLevel.Value;
+            ScalingFilter = (int)config.Graphics.ScalingFilter.Value;
+            ScalingFilterLevel = config.Graphics.ScalingFilterLevel.Value;
 
             // Audio
             AudioBackend = (int)config.System.AudioBackend.Value;
@@ -477,8 +477,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.Graphics.MaxAnisotropy.Value = MaxAnisotropy == 0 ? -1 : MathF.Pow(2, MaxAnisotropy);
             config.Graphics.AspectRatio.Value = (AspectRatio)AspectRatio;
             config.Graphics.AntiAliasing.Value = (AntiAliasing)AntiAliasingEffect;
-            config.Graphics.UpscaleType.Value = (UpscaleType)UpscaleType;
-            config.Graphics.UpscaleLevel.Value = UpscaleLevel;
+            config.Graphics.ScalingFilter.Value = (ScalingFilter)ScalingFilter;
+            config.Graphics.ScalingFilterLevel.Value = ScalingFilterLevel;
 
             if (ConfigurationState.Instance.Graphics.BackendThreading != (BackendThreading)GraphicsBackendMultithreadingIndex)
             {

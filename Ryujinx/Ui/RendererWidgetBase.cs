@@ -27,7 +27,7 @@ namespace Ryujinx.Ui
     using Image = SixLabors.ImageSharp.Image;
     using Key = Input.Key;
     using Switch = HLE.Switch;
-    using UpscaleType = Graphics.GAL.UpscaleType;
+    using ScalingFilter = Graphics.GAL.ScalingFilter;
 
     public abstract class RendererWidgetBase : DrawingArea
     {
@@ -118,20 +118,20 @@ namespace Ryujinx.Ui
 
             ConfigurationState.Instance.HideCursorOnIdle.Event += HideCursorStateChanged;
             ConfigurationState.Instance.Graphics.AntiAliasing.Event += UpdateAnriAliasing;
-            ConfigurationState.Instance.Graphics.UpscaleType.Event += UpdateUpscaleType;
-            ConfigurationState.Instance.Graphics.UpscaleLevel.Event += UpdateUpscaleLevel;
+            ConfigurationState.Instance.Graphics.ScalingFilter.Event += UpdateScalingFilter;
+            ConfigurationState.Instance.Graphics.ScalingFilterLevel.Event += UpdateScalingFilterLevel;
         }
 
-        private void UpdateUpscaleLevel(object sender, ReactiveEventArgs<float> e)
+        private void UpdateScalingFilterLevel(object sender, ReactiveEventArgs<float> e)
         {
-            Renderer.Window.SetUpscaler((UpscaleType)ConfigurationState.Instance.Graphics.UpscaleType.Value);
-            Renderer.Window.SetUpscalerLevel(ConfigurationState.Instance.Graphics.UpscaleLevel.Value);
+            Renderer.Window.SetScalingFilter((ScalingFilter)ConfigurationState.Instance.Graphics.ScalingFilter.Value);
+            Renderer.Window.SetScalingFilterLevel(ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value);
         }
 
-        private void UpdateUpscaleType(object sender, ReactiveEventArgs<Ryujinx.Common.Configuration.UpscaleType> e)
+        private void UpdateScalingFilter(object sender, ReactiveEventArgs<Ryujinx.Common.Configuration.ScalingFilter> e)
         {
-            Renderer.Window.SetUpscaler((UpscaleType)ConfigurationState.Instance.Graphics.UpscaleType.Value);
-            Renderer.Window.SetUpscalerLevel(ConfigurationState.Instance.Graphics.UpscaleLevel.Value);
+            Renderer.Window.SetScalingFilter((ScalingFilter)ConfigurationState.Instance.Graphics.ScalingFilter.Value);
+            Renderer.Window.SetScalingFilterLevel(ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value);
         }
 
         public abstract void InitializeRenderer();
@@ -166,8 +166,8 @@ namespace Ryujinx.Ui
         {
             ConfigurationState.Instance.HideCursorOnIdle.Event -= HideCursorStateChanged;
             ConfigurationState.Instance.Graphics.AntiAliasing.Event -= UpdateAnriAliasing;
-            ConfigurationState.Instance.Graphics.UpscaleType.Event -= UpdateUpscaleType;
-            ConfigurationState.Instance.Graphics.UpscaleLevel.Event -= UpdateUpscaleLevel;
+            ConfigurationState.Instance.Graphics.ScalingFilter.Event -= UpdateScalingFilter;
+            ConfigurationState.Instance.Graphics.ScalingFilterLevel.Event -= UpdateScalingFilterLevel;
 
             NpadManager.Dispose();
             Dispose();
@@ -419,8 +419,8 @@ namespace Ryujinx.Ui
             Device.Gpu.Renderer.Initialize(_glLogLevel);
 
             Renderer.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)ConfigurationState.Instance.Graphics.AntiAliasing.Value);
-            Renderer.Window.SetUpscaler((Graphics.GAL.UpscaleType)ConfigurationState.Instance.Graphics.UpscaleType.Value);
-            Renderer.Window.SetUpscalerLevel(ConfigurationState.Instance.Graphics.UpscaleLevel.Value);
+            Renderer.Window.SetScalingFilter((Graphics.GAL.ScalingFilter)ConfigurationState.Instance.Graphics.ScalingFilter.Value);
+            Renderer.Window.SetScalingFilterLevel(ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value);
 
             _gpuBackendName = GetGpuBackendName();
             _gpuVendorName = GetGpuVendorName();

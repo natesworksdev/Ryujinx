@@ -33,11 +33,11 @@ namespace Ryujinx.Graphics.Vulkan
         private AntiAliasing _currentAntiAliasing;
         private bool _updateEffect;
         private IPostProcessingEffect _effect;
-        private IScaler _upscaler;
+        private IScalingFilter _scalingFilter;
         private bool _isLinear;
-        private float _upscalerLevel;
-        private bool _updateUpscaler;
-        private UpscaleType _currentUpscaler;
+        private float _scalingFilterLevel;
+        private bool _updateScalingFilter;
+        private ScalingFilter _currentScalingFilter;
 
         public unsafe Window(VulkanRenderer gd, SurfaceKHR surface, PhysicalDevice physicalDevice, Device device)
         {
@@ -363,26 +363,29 @@ namespace Ryujinx.Graphics.Vulkan
             int dstY0 = crop.FlipY ? dstPaddingY : _height - dstPaddingY;
             int dstY1 = crop.FlipY ? _height - dstPaddingY : dstPaddingY;
 
-            if (_upscaler != null)
+            if (_scalingFilter != null)
             {
-                _upscaler.Run(
+                _scalingFilter.Run(
                     view,
                     cbs,
                     _swapchainImageViews[nextImage],
                     _format,
                     _width,
                     _height,
-                    srcX0,
-                    srcX1,
-                    srcY0,
-                    srcY1,
-                    dstX0,
-                    dstX1,
-                    dstY0,
-                    dstY1);
+                    new Extents2D(
+                        srcX0,
+                        srcY0,
+                        srcX1,
+                        srcY1),
+                    new Extents2D(
+                        dstX0,
+                        dstY0,
+                        dstX1,
+                        dstY1)
+                    );
             }
             else
-            {                    
+            {
                 _gd.HelperShader.BlitColor(
                     _gd,
                     cbs,
@@ -448,16 +451,16 @@ namespace Ryujinx.Graphics.Vulkan
             _updateEffect = true;
         }
 
-        public override void SetUpscaler(UpscaleType type)
+        public override void SetScalingFilter(ScalingFilter type)
         {
-            if (_currentUpscaler == type && _effect != null)
+            if (_currentScalingFilter == type && _effect != null)
             {
                 return;
             }
 
-            _currentUpscaler = type;
+            _currentScalingFilter = type;
 
-            _updateUpscaler = true;
+            _updateScalingFilter = true;
         }
 
         private void UpdateEffect()
@@ -494,35 +497,35 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            if (_updateUpscaler)
+            if (_updateScalingFilter)
             {
-                _updateUpscaler = false;
+                _updateScalingFilter = false;
 
-                switch (_currentUpscaler)
+                switch (_currentScalingFilter)
                 {
-                    case UpscaleType.Bilinear:
-                    case UpscaleType.Nearest:
-                        _upscaler?.Dispose();
-                        _upscaler = null;
-                        _isLinear = _currentUpscaler == UpscaleType.Bilinear;
+                    case ScalingFilter.Bilinear:
+                    case ScalingFilter.Nearest:
+                        _scalingFilter?.Dispose();
+                        _scalingFilter = null;
+                        _isLinear = _currentScalingFilter == ScalingFilter.Bilinear;
                         break;
-                    case UpscaleType.Fsr:
-                        if (_upscaler is not FsrUpscaler)
+                    case ScalingFilter.Fsr:
+                        if (_scalingFilter is not FsrScalingFIlter)
                         {
-                            _upscaler?.Dispose();
-                            _upscaler = new FsrUpscaler(_gd, _device);
+                            _scalingFilter?.Dispose();
+                            _scalingFilter = new FsrScalingFIlter(_gd, _device);
                         }
 
-                        _upscaler.Level = _upscalerLevel;
+                        _scalingFilter.Level = _scalingFilterLevel;
                         break;
                 }
             }
         }
 
-        public override void SetUpscalerLevel(float level)
+        public override void SetScalingFilterLevel(float level)
         {
-            _upscalerLevel = level;
-            _updateUpscaler = true;
+            _scalingFilterLevel = level;
+            _updateScalingFilter = true;
         }
 
         private unsafe void Transition(
@@ -597,7 +600,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
 
                 _effect?.Dispose();
-                _upscaler?.Dispose();
+                _scalingFilter?.Dispose();
             }
         }
 

@@ -96,13 +96,13 @@ namespace Ryujinx.Ui.Windows
         [GUI] ComboBoxText    _anisotropy;
         [GUI] ComboBoxText    _aspectRatio;
         [GUI] ComboBoxText    _antiAliasing;
-        [GUI] ComboBoxText    _upscaleType;
+        [GUI] ComboBoxText    _scalingFilter;
         [GUI] ComboBoxText    _graphicsBackend;
         [GUI] ComboBoxText    _preferredGpu;
         [GUI] ComboBoxText    _resScaleCombo;
         [GUI] Entry           _resScaleText;
-        [GUI] Adjustment      _upscaleLevel;
-        [GUI] Scale           _upscaleSlider;
+        [GUI] Adjustment      _scalingFilterLevel;
+        [GUI] Scale           _scalingFilterSlider;
         [GUI] ToggleButton    _configureController1;
         [GUI] ToggleButton    _configureController2;
         [GUI] ToggleButton    _configureController3;
@@ -143,7 +143,7 @@ namespace Ryujinx.Ui.Windows
             _systemTimeZoneEntry.FocusOutEvent += TimeZoneEntry_FocusOut;
 
             _resScaleCombo.Changed += (sender, args) => _resScaleText.Visible = _resScaleCombo.ActiveId == "-1";
-            _upscaleType.Changed += (sender, args) => _upscaleSlider.Visible = _upscaleType.ActiveId == "2";
+            _scalingFilter.Changed += (sender, args) => _scalingFilterSlider.Visible = _scalingFilter.ActiveId == "2";
             _galThreading.Changed += (sender, args) =>
             {
                 if (_galThreading.ActiveId != ConfigurationState.Instance.Graphics.BackendThreading.Value.ToString())
@@ -344,7 +344,7 @@ namespace Ryujinx.Ui.Windows
             _aspectRatio.SetActiveId(((int)ConfigurationState.Instance.Graphics.AspectRatio.Value).ToString());
             _graphicsBackend.SetActiveId(((int)ConfigurationState.Instance.Graphics.GraphicsBackend.Value).ToString());
             _antiAliasing.SetActiveId(((int)ConfigurationState.Instance.Graphics.AntiAliasing.Value).ToString());
-            _upscaleType.SetActiveId(((int)ConfigurationState.Instance.Graphics.UpscaleType.Value).ToString());
+            _scalingFilter.SetActiveId(((int)ConfigurationState.Instance.Graphics.ScalingFilter.Value).ToString());
 
             UpdatePreferredGpuComboBox();
 
@@ -352,9 +352,9 @@ namespace Ryujinx.Ui.Windows
 
             _custThemePath.Buffer.Text           = ConfigurationState.Instance.Ui.CustomThemePath;
             _resScaleText.Buffer.Text            = ConfigurationState.Instance.Graphics.ResScaleCustom.Value.ToString();
-            _upscaleLevel.Value                  = ConfigurationState.Instance.Graphics.UpscaleLevel.Value;
+            _scalingFilterLevel.Value                  = ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value;
             _resScaleText.Visible                = _resScaleCombo.ActiveId == "-1";
-            _upscaleSlider.Visible               = _upscaleType.ActiveId == "2";
+            _scalingFilterSlider.Visible               = _scalingFilter.ActiveId == "2";
             _graphicsShadersDumpPath.Buffer.Text = ConfigurationState.Instance.Graphics.ShadersDumpPath;
             _fsLogSpinAdjustment.Value           = ConfigurationState.Instance.System.FsGlobalAccessLogMode;
             _systemTimeOffset                    = ConfigurationState.Instance.System.SystemTimeOffset;
@@ -615,8 +615,8 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.Graphics.ResScaleCustom.Value             = resScaleCustom;
             ConfigurationState.Instance.System.AudioVolume.Value                  = (float)_audioVolumeSlider.Value / 100.0f;
             ConfigurationState.Instance.Graphics.AntiAliasing.Value               = Enum.Parse<AntiAliasing>(_antiAliasing.ActiveId);
-            ConfigurationState.Instance.Graphics.UpscaleType.Value                = Enum.Parse<UpscaleType>(_upscaleType.ActiveId);
-            ConfigurationState.Instance.Graphics.UpscaleLevel.Value               = (float) _upscaleLevel.Value;
+            ConfigurationState.Instance.Graphics.ScalingFilter.Value                = Enum.Parse<ScalingFilter>(_scalingFilter.ActiveId);
+            ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value               = (float) _scalingFilterLevel.Value;
 
             _previousVolumeLevel = ConfigurationState.Instance.System.AudioVolume.Value;
 

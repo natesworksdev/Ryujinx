@@ -4,9 +4,6 @@ using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Shader.Translation;
 using Silk.NET.Vulkan;
 using System;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Format = Ryujinx.Graphics.GAL.Format;
 
 namespace Ryujinx.Graphics.Vulkan.Effects
@@ -81,9 +78,9 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             _blendPipeline.Initialize();
             _neighbourPipleline.Initialize();
 
-            var edgeShader = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/smaa_edge.spirv");
-            var blendShader = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/smaa_blend.spirv");
-            var neighbourShader = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/smaa_neighbour.spirv");
+            var edgeShader = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Effects/Shaders/SmaaEdge.spv");
+            var blendShader = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Effects/Shaders/SmaaBlend.spv");
+            var neighbourShader = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Effects/Shaders/SmaaNeighbour.spv");
 
             var edgeBindings = new ShaderBindings(
                 new[] { 2 },
@@ -183,14 +180,14 @@ namespace Ryujinx.Graphics.Vulkan.Effects
                 SwizzleComponent.Blue,
                 SwizzleComponent.Alpha);
 
-            var areaTexture = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Effects/Textures/smaa_area_texture");
-            var searchTextue = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Effects/Textures/smaa_search_texture");
+            var areaTexture = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Effects/Textures/SmaaAreaTexture.bin");
+            var searchTexture = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Effects/Textures/SmaaSearchTexture.bin");
 
             _areaTexture = _renderer.CreateTexture(areaInfo, 1) as TextureView;
             _searchTexture = _renderer.CreateTexture(searchInfo, 1) as TextureView;
 
             _areaTexture.SetData(areaTexture);
-            _searchTexture.SetData(searchTextue);
+            _searchTexture.SetData(searchTexture);
         }
 
         public TextureView Run(TextureView view, CommandBufferScoped cbs, int width, int height)
@@ -263,6 +260,8 @@ namespace Ryujinx.Graphics.Vulkan.Effects
                 ComponentType.UnsignedInteger,
                 scissors[0]);
 
+            _renderer.Pipeline.TextureBarrier();
+
             var dispatchX = BitUtils.DivRoundUp(view.Width, IPostProcessingEffect.LocalGroupSize);
             var dispatchY = BitUtils.DivRoundUp(view.Height, IPostProcessingEffect.LocalGroupSize);
 
@@ -272,7 +271,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             _edgePipeline.SetTextureAndSampler(ShaderStage.Compute, 1, view, _samplerLinear);
             _edgePipeline.Specialize(_specConstants);
 
-            ReadOnlySpan<float> resolutionBuffer =stackalloc float[] { view.Width, view.Height };
+            ReadOnlySpan<float> resolutionBuffer = stackalloc float[] { view.Width, view.Height };
             int rangeSize = resolutionBuffer.Length * sizeof(float);
             var bufferHandle = _renderer.BufferManager.CreateWithHandle(_renderer, rangeSize, false);
 

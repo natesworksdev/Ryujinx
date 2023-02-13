@@ -1,9 +1,10 @@
 using Silk.NET.Vulkan;
 using System;
+using Extent2D = Ryujinx.Graphics.GAL.Extents2D;
 
 namespace Ryujinx.Graphics.Vulkan.Effects
 {
-    internal interface IScaler : IDisposable
+    internal interface IScalingFilter : IDisposable
     {
         float Level { get; set; }
         void Run(
@@ -13,13 +14,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             Format format,
             int width,
             int height,
-            int srcX0,
-            int srcX1,
-            int srcY0,
-            int srcY1,
-            int dstX0,
-            int dstX1,
-            int dstY0,
-            int dstY1);
+            Extent2D source,
+            Extent2D destination);
     }
 }

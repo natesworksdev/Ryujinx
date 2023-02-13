@@ -4,10 +4,11 @@ using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Shader.Translation;
 using Silk.NET.Vulkan;
 using System;
+using Extent2D = Ryujinx.Graphics.GAL.Extents2D;
 
 namespace Ryujinx.Graphics.Vulkan.Effects
 {
-    internal partial class FsrUpscaler : IScaler
+    internal partial class FsrScalingFIlter : IScalingFilter
     {
         private readonly VulkanRenderer _renderer;
         private PipelineHelperShader _scalingPipeline;
@@ -28,7 +29,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             }
         }
 
-        public FsrUpscaler(VulkanRenderer renderer, Device device)
+        public FsrScalingFIlter(VulkanRenderer renderer, Device device)
         {
             _device = device;
             _renderer = renderer;
@@ -54,8 +55,8 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             _scalingPipeline.Initialize();
             _sharpeningPipeline.Initialize();
 
-            var scalingShader = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/fsr_scaling.spirv");
-            var sharpeningShader = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/fsr_sharpening.spirv");
+            var scalingShader = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Effects/Shaders/FsrScaling.spv");
+            var sharpeningShader = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Effects/Shaders/FsrSharpening.spv");
 
             var computeBindings = new ShaderBindings(
                 new[] { 2 },
@@ -89,16 +90,13 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             Silk.NET.Vulkan.Format format,
             int width,
             int height,
-            int srcX0,
-            int srcX1,
-            int srcY0,
-            int srcY1,
-            int dstX0,
-            int dstX1,
-            int dstY0,
-            int dstY1)
+            Extent2D source,
+            Extent2D destination)
         {
-            if (_intermediaryTexture == null || _intermediaryTexture.Info.Width != width || _intermediaryTexture.Info.Height != height && !_intermediaryTexture.Info.Equals(view.Info))
+            if (_intermediaryTexture == null
+                || _intermediaryTexture.Info.Width != width
+                || _intermediaryTexture.Info.Height != height
+                || !_intermediaryTexture.Info.Equals(view.Info))
             {
                 var originalInfo = view.Info;
 
@@ -142,21 +140,21 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             _scalingPipeline.SetProgram(_scalingProgram);
             _scalingPipeline.SetTextureAndSampler(ShaderStage.Compute, 1, view, _sampler);
 
-            float srcWidth = Math.Abs(srcX1 - srcX0);
-            float srcHeight = Math.Abs(srcY1 - srcY0);
+            float srcWidth = Math.Abs(source.X2 - source.X1);
+            float srcHeight = Math.Abs(source.Y2 - source.Y1);
             float scaleX = srcWidth / view.Width;
             float scaleY = srcHeight / view.Height;
 
             ReadOnlySpan<float> dimensionsBuffer = stackalloc float[]
             {
-                srcX0,
-                srcX1,
-                srcY0,
-                srcY1,
-                dstX0,
-                dstX1,
-                dstY0,
-                dstY1,
+                source.X1,
+                source.X2,
+                source.Y1,
+                source.Y2,
+                destination.X1,
+                destination.X2,
+                destination.Y1,
+                destination.Y2,
                 scaleX,
                 scaleY
             };

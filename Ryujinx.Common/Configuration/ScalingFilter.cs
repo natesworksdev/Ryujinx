@@ -1,6 +1,6 @@
 namespace Ryujinx.Common.Configuration
 {
-    public enum UpscaleType
+    public enum ScalingFilter
     {
         Bilinear,
         Nearest,

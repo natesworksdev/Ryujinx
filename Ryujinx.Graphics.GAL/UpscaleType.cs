@@ -1,6 +1,6 @@
 namespace Ryujinx.Graphics.GAL
 {
-    public enum UpscaleType
+    public enum ScalingFilter
     {
         Bilinear,
         Nearest,

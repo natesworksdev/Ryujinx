@@ -59,12 +59,12 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// Sets the framebuffer upscaling type.
         /// </summary>
-        public UpscaleType UpscaleType { get; set; }
+        public ScalingFilter ScalingFilter { get; set; }
 
         /// <summary>
         /// Sets the framebuffer upscaling level.
         /// </summary>
-        public float UpscaleLevel { get; set; }
+        public float ScalingFilterLevel { get; set; }
 
         /// <summary>
         /// Dumps shaders in this local directory

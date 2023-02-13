@@ -4,7 +4,6 @@ using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Shader.Translation;
 using Silk.NET.Vulkan;
 using System;
-using System.IO;
 
 namespace Ryujinx.Graphics.Vulkan.Effects
 {
@@ -37,7 +36,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
         {
             _pipeline.Initialize();
 
-            var shader = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/fxaa.spirv");
+            var shader = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Effects/Shaders/Fxaa.spv");
 
             var computeBindings = new ShaderBindings(
                 new[] { 2 },
@@ -61,10 +60,10 @@ namespace Ryujinx.Graphics.Vulkan.Effects
 
                 var info = view.Info;
 
-                if(view.Info.Format.IsBgr())
+                if (view.Info.Format.IsBgr())
                 {
                     info = new TextureCreateInfo(info.Width,
-                        info.Height, 
+                        info.Height,
                         info.Depth,
                         info.Levels,
                         info.Samples,
@@ -111,8 +110,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             var dispatchX = BitUtils.DivRoundUp(view.Width, IPostProcessingEffect.LocalGroupSize);
             var dispatchY = BitUtils.DivRoundUp(view.Height, IPostProcessingEffect.LocalGroupSize);
 
-            scissors[0] = new Rectangle<int>(0, 0, view.Width, view.Height);
-            _pipeline.SetScissors(scissors);
+            _pipeline.SetScissors(stackalloc[] { new Rectangle<int>(0, 0, view.Width, view.Height) });
             _pipeline.SetViewports(viewports, false);
 
             _pipeline.SetImage(0, _texture, GAL.Format.R8G8B8A8Unorm);

@@ -7,7 +7,7 @@ using static Ryujinx.Graphics.OpenGL.Effects.ShaderHelper;
 
 namespace Ryujinx.Graphics.OpenGL.Effects
 {
-    internal class FsrUpscaler : IScaler
+    internal class FsrScalingFilter : IScalingFilter
     {
         private readonly OpenGLRenderer _renderer;
         private int _inputUniform;
@@ -37,7 +37,7 @@ namespace Ryujinx.Graphics.OpenGL.Effects
             }
         }
 
-        public FsrUpscaler(OpenGLRenderer renderer, IPostProcessingEffect filter)
+        public FsrScalingFilter(OpenGLRenderer renderer, IPostProcessingEffect filter)
         {
             Initialize();
 
@@ -91,14 +91,8 @@ namespace Ryujinx.Graphics.OpenGL.Effects
             TextureView destinationTexture,
             int width,
             int height,
-            int srcX0,
-            int srcX1,
-            int srcY0,
-            int srcY1,
-            int dstX0,
-            int dstX1,
-            int dstY0,
-            int dstY1)
+            Extents2D source,
+            Extents2D destination)
         {
             if (_intermediaryTexture == null || _intermediaryTexture.Info.Width != width || _intermediaryTexture.Info.Height != height)
             {
@@ -138,22 +132,22 @@ namespace Ryujinx.Graphics.OpenGL.Effects
             int dispatchY = (height + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
 
             // Scaling pass
-            float srcWidth = Math.Abs(srcX1 - srcX0);
-            float srcHeight = Math.Abs(srcY1 - srcY0);
+            float srcWidth = Math.Abs(source.X2 - source.X1);
+            float srcHeight = Math.Abs(source.Y2 - source.Y1);
             float scaleX = srcWidth / view.Width;
             float scaleY = srcHeight / view.Height;
             GL.UseProgram(_scalingShaderProgram);
             view.Bind(0);
             GL.Uniform1(_inputUniform, 0);
             GL.Uniform1(_outputUniform, 0);
-            GL.Uniform1(_srcX0Uniform, (float)srcX0);
-            GL.Uniform1(_srcX1Uniform, (float)srcX1);
-            GL.Uniform1(_srcY0Uniform, (float)srcY0);
-            GL.Uniform1(_srcY1Uniform, (float)srcY1);
-            GL.Uniform1(_dstX0Uniform, (float)dstX0);
-            GL.Uniform1(_dstX1Uniform, (float)dstX1);
-            GL.Uniform1(_dstY0Uniform, (float)dstY0);
-            GL.Uniform1(_dstY1Uniform, (float)dstY1);
+            GL.Uniform1(_srcX0Uniform, (float)source.X1);
+            GL.Uniform1(_srcX1Uniform, (float)source.X2);
+            GL.Uniform1(_srcY0Uniform, (float)source.Y1);
+            GL.Uniform1(_srcY1Uniform, (float)source.Y2);
+            GL.Uniform1(_dstX0Uniform, (float)destination.X1);
+            GL.Uniform1(_dstX1Uniform, (float)destination.X2);
+            GL.Uniform1(_dstY0Uniform, (float)destination.Y1);
+            GL.Uniform1(_dstY1Uniform, (float)destination.Y2);
             GL.Uniform1(_scaleXUniform, scaleX);
             GL.Uniform1(_scaleYUniform, scaleY);
             GL.DispatchCompute(dispatchX, dispatchY, 1);

@@ -1,8 +1,6 @@
 ﻿using OpenTK.Graphics.OpenGL;
-using OpenTK.Mathematics;
 using Ryujinx.Common;
 using Ryujinx.Graphics.OpenGL.Image;
-using System;
 
 namespace Ryujinx.Graphics.OpenGL.Effects
 {

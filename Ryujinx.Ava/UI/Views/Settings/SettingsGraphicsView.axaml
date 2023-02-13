@@ -237,13 +237,13 @@
                     Spacing="10">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock VerticalAlignment="Center"
-                                   ToolTip.Tip="{locale:Locale GraphicsUpscalingTooltip}"
-                                   Text="{locale:Locale GraphicsUpscalingLabel}"
+                                   ToolTip.Tip="{locale:Locale GraphicsScalingFilterTooltip}"
+                                   Text="{locale:Locale GraphicsScalingFilterLabel}"
                                    Width="250" />
                         <ComboBox Width="350"
                                   HorizontalContentAlignment="Left"
-                                  ToolTip.Tip="{locale:Locale GraphicsUpscalingTooltip}"
-                                  SelectedIndex="{Binding UpscaleType}">
+                                  ToolTip.Tip="{locale:Locale GraphicsScalingFilterTooltip}"
+                                  SelectedIndex="{Binding ScalingFilter}">
                             <ComboBoxItem>
                                 <TextBlock Text="Bilinear" />
                             </ComboBoxItem>
@@ -254,11 +254,11 @@
                                 <TextBlock Text="FSR" />
                             </ComboBoxItem>
                         </ComboBox>
-                        <Slider Value="{Binding UpscaleLevel}"
-                                ToolTip.Tip="{locale:Locale GraphicsUpscalingLevelTooltip}"
+                        <Slider Value="{Binding ScalingFilterLevel}"
+                                ToolTip.Tip="{locale:Locale GraphicsScalingFilterLevelTooltip}"
                                 MinWidth="150"
                                 Margin="10,0,0,0"
-                                IsVisible="{Binding IsUpscalingActive}"
+                                IsVisible="{Binding IsScalingFilterActive}"
                                 TickFrequency="0.01"
                                 IsSnapToTickEnabled="True"
                                 LargeChange="0.1"
@@ -267,8 +267,8 @@
                                 Maximum="1.5" />
                         <TextBlock Margin="5,0"
                                    Width="40"
-                                   IsVisible="{Binding IsUpscalingActive}"
-                                   Text="{Binding UpscaleLevelText}"/>
+                                   IsVisible="{Binding IsScalingFilterActive}"
+                                   Text="{Binding ScalingFilterLevelText}"/>
                     </StackPanel>
                 </StackPanel>
                 <Separator Height="1" />

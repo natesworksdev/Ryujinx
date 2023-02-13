@@ -18,13 +18,13 @@ namespace Ryujinx.Graphics.OpenGL
         private bool _updateSize;
         private int _copyFramebufferHandle;
         private IPostProcessingEffect _antiAliasing;
-        private IScaler _upscaler;
+        private IScalingFilter _scalingFilter;
         private bool _isLinear;
         private AntiAliasing _currentAntiAliasing;
         private bool _updateEffect;
-        private UpscaleType _currentUpscaler;
-        private float _upscalerLevel;
-        private bool _updateUpscaler;
+        private ScalingFilter _currentScalingFilter;
+        private float _scalingFilterLevel;
+        private bool _updateScalingFilter;
         private bool _isBgra;
         private TextureView _upscaledTexture;
 
@@ -165,26 +165,29 @@ namespace Ryujinx.Graphics.OpenGL
                 ScreenCaptureRequested = false;
             }
 
-            if (_upscaler != null)
+            if (_scalingFilter != null)
             {
-                if(viewConverted.Format.IsBgr() && !_isBgra)
+                if (viewConverted.Format.IsBgr() && !_isBgra)
                 {
                     RecreateUpscalingTexture(true);
                 }
 
-                _upscaler.Run(
+                _scalingFilter.Run(
                     viewConverted,
                     _upscaledTexture,
                     _width,
                     _height,
-                    srcX0,
-                    srcX1,
-                    srcY0,
-                    srcY1,
-                    dstX0,
-                    dstX1,
-                    dstY0,
-                    dstY1);
+                    new Extents2D(
+                        srcX0,
+                        srcY0,
+                        srcX1,
+                        srcY1),
+                    new Extents2D(
+                        dstX0,
+                        dstY0,
+                        dstX1,
+                        dstY1)
+                    );
 
                 srcX0 = dstX0;
                 srcY0 = dstY0;
@@ -284,7 +287,7 @@ namespace Ryujinx.Graphics.OpenGL
             }
 
             _antiAliasing?.Dispose();
-            _upscaler?.Dispose();
+            _scalingFilter?.Dispose();
             _upscaledTexture?.Dispose();
         }
 
@@ -300,16 +303,16 @@ namespace Ryujinx.Graphics.OpenGL
             _updateEffect = true;
         }
 
-        public void SetUpscaler(UpscaleType type)
+        public void SetScalingFilter(ScalingFilter type)
         {
-            if (_currentUpscaler == type && _antiAliasing != null)
+            if (_currentScalingFilter == type && _antiAliasing != null)
             {
                 return;
             }
 
-            _currentUpscaler = type;
+            _currentScalingFilter = type;
 
-            _updateUpscaler = true;
+            _updateScalingFilter = true;
         }
 
         private void UpdateEffect()
@@ -346,35 +349,35 @@ namespace Ryujinx.Graphics.OpenGL
                 }
             }
 
-            if (_updateSize && !_updateUpscaler)
+            if (_updateSize && !_updateScalingFilter)
             {
                 RecreateUpscalingTexture();
             }
 
             _updateSize = false;
 
-            if (_updateUpscaler)
+            if (_updateScalingFilter)
             {
-                _updateUpscaler = false;
+                _updateScalingFilter = false;
 
-                switch (_currentUpscaler)
+                switch (_currentScalingFilter)
                 {
-                    case UpscaleType.Bilinear:
-                    case UpscaleType.Nearest:
-                        _upscaler?.Dispose();
-                        _upscaler = null;
-                        _isLinear = _currentUpscaler == UpscaleType.Bilinear;
+                    case ScalingFilter.Bilinear:
+                    case ScalingFilter.Nearest:
+                        _scalingFilter?.Dispose();
+                        _scalingFilter = null;
+                        _isLinear = _currentScalingFilter == ScalingFilter.Bilinear;
                         _upscaledTexture?.Dispose();
                         _upscaledTexture = null;
                         break;
-                    case UpscaleType.Fsr:
-                        if (_upscaler is not FsrUpscaler)
+                    case ScalingFilter.Fsr:
+                        if (_scalingFilter is not FsrScalingFilter)
                         {
-                            _upscaler?.Dispose();
-                            _upscaler = new FsrUpscaler(_renderer, _antiAliasing);
+                            _scalingFilter?.Dispose();
+                            _scalingFilter = new FsrScalingFilter(_renderer, _antiAliasing);
                         }
                         _isLinear = false;
-                        _upscaler.Level = _upscalerLevel;
+                        _scalingFilter.Level = _scalingFilterLevel;
 
                         RecreateUpscalingTexture();
                         break;
@@ -407,10 +410,10 @@ namespace Ryujinx.Graphics.OpenGL
             _upscaledTexture = _renderer.CreateTexture(info, 1) as TextureView;
         }
 
-        public void SetUpscalerLevel(float level)
+        public void SetScalingFilterLevel(float level)
         {
-            _upscalerLevel = level;
-            _updateUpscaler = true;
+            _scalingFilterLevel = level;
+            _updateScalingFilter = true;
         }
     }
 }
