@@ -84,7 +84,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
                 {
                     // Do SIMD-accelerated block operations where possible.
                     // Only about a 2x speedup since filter bank length is short
-                    while(curIdx < stopIdx)
+                    while (curIdx < stopIdx)
                     {
                         result += Vector.Dot(
                             new Vector<float>(bank.AsSpan().Slice(curIdx, Vector<float>.Count)),
@@ -93,7 +93,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
                     }
                 }
 
-                while(curIdx < FilterBankLength)
+                while (curIdx < FilterBankLength)
                 {
                     result += bank[curIdx] * state.History[curIdx];
                     curIdx++;
