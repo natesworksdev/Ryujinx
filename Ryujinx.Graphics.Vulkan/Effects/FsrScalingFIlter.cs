@@ -11,8 +11,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
     internal partial class FsrScalingFIlter : IScalingFilter
     {
         private readonly VulkanRenderer _renderer;
-        private PipelineHelperShader _scalingPipeline;
-        private PipelineHelperShader _sharpeningPipeline;
+        private PipelineHelperShader _pipeline;
         private ISampler _sampler;
         private ShaderCollection _scalingProgram;
         private ShaderCollection _sharpeningProgram;
@@ -39,9 +38,8 @@ namespace Ryujinx.Graphics.Vulkan.Effects
 
         public void Dispose()
         {
-            _scalingPipeline.Dispose();
+            _pipeline.Dispose();
             _scalingProgram.Dispose();
-            _sharpeningPipeline.Dispose();
             _sharpeningProgram.Dispose();
             _sampler.Dispose();
             _intermediaryTexture?.Dispose();
@@ -49,11 +47,9 @@ namespace Ryujinx.Graphics.Vulkan.Effects
 
         public void Initialize()
         {
-            _scalingPipeline = new PipelineHelperShader(_renderer, _device);
-            _sharpeningPipeline = new PipelineHelperShader(_renderer, _device);
+            _pipeline = new PipelineHelperShader(_renderer, _device);
 
-            _scalingPipeline.Initialize();
-            _sharpeningPipeline.Initialize();
+            _pipeline.Initialize();
 
             var scalingShader = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Effects/Shaders/FsrScaling.spv");
             var sharpeningShader = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Effects/Shaders/FsrSharpening.spv");
@@ -136,9 +132,9 @@ namespace Ryujinx.Graphics.Vulkan.Effects
 
             scissors[0] = new Rectangle<int>(0, 0, view.Width, view.Height);
 
-            _scalingPipeline.SetCommandBuffer(cbs);
-            _scalingPipeline.SetProgram(_scalingProgram);
-            _scalingPipeline.SetTextureAndSampler(ShaderStage.Compute, 1, view, _sampler);
+            _pipeline.SetCommandBuffer(cbs);
+            _pipeline.SetProgram(_scalingProgram);
+            _pipeline.SetTextureAndSampler(ShaderStage.Compute, 1, view, _sampler);
 
             float srcWidth = Math.Abs(source.X2 - source.X1);
             float srcHeight = Math.Abs(source.Y2 - source.Y1);
@@ -172,12 +168,12 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             int dispatchY = (height + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
 
             var bufferRanges = new BufferRange(bufferHandle, 0, rangeSize);
-            _scalingPipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(2, bufferRanges) });
-            _scalingPipeline.SetScissors(scissors);
-            _scalingPipeline.SetViewports(viewports, false);
-            _scalingPipeline.SetImage(0, _intermediaryTexture, GAL.Format.R8G8B8A8Unorm);
-            _scalingPipeline.DispatchCompute(dispatchX, dispatchY, 1);
-            _scalingPipeline.ComputeBarrier();
+            _pipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(2, bufferRanges) });
+            _pipeline.SetScissors(scissors);
+            _pipeline.SetViewports(viewports, false);
+            _pipeline.SetImage(0, _intermediaryTexture, GAL.Format.R8G8B8A8Unorm);
+            _pipeline.DispatchCompute(dispatchX, dispatchY, 1);
+            _pipeline.ComputeBarrier();
 
             viewports[0] = new GAL.Viewport(
                 new Rectangle<float>(0, 0, width, height),
@@ -191,17 +187,17 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             scissors[0] = new Rectangle<int>(0, 0, width, height);
 
             // Sharpening pass
-            _sharpeningPipeline.SetCommandBuffer(cbs);
-            _sharpeningPipeline.SetProgram(_sharpeningProgram);
-            _sharpeningPipeline.SetTextureAndSampler(ShaderStage.Compute, 1, _intermediaryTexture, _sampler);
-            _sharpeningPipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(2, bufferRanges) });
+            _pipeline.SetCommandBuffer(cbs);
+            _pipeline.SetProgram(_sharpeningProgram);
+            _pipeline.SetTextureAndSampler(ShaderStage.Compute, 1, _intermediaryTexture, _sampler);
+            _pipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(2, bufferRanges) });
             var sharpeningRange = new BufferRange(sharpeningBufferHandle, 0, sizeof(float));
-            _sharpeningPipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(4, sharpeningRange) });
-            _sharpeningPipeline.SetScissors(scissors);
-            _sharpeningPipeline.SetViewports(viewports, false);
-            _sharpeningPipeline.SetImage(0, destinationTexture);
-            _sharpeningPipeline.DispatchCompute(dispatchX, dispatchY, 1);
-            _sharpeningPipeline.ComputeBarrier();
+            _pipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(4, sharpeningRange) });
+            _pipeline.SetScissors(scissors);
+            _pipeline.SetViewports(viewports, false);
+            _pipeline.SetImage(0, destinationTexture);
+            _pipeline.DispatchCompute(dispatchX, dispatchY, 1);
+            _pipeline.ComputeBarrier();
 
             _renderer.BufferManager.Delete(bufferHandle);
             _renderer.BufferManager.Delete(sharpeningBufferHandle);

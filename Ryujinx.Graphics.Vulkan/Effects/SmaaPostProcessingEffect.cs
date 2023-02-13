@@ -22,9 +22,8 @@ namespace Ryujinx.Graphics.Vulkan.Effects
         private ShaderCollection _blendProgram;
         private ShaderCollection _neighbourProgram;
 
-        private PipelineHelperShader _edgePipeline;
-        private PipelineHelperShader _blendPipeline;
-        private PipelineHelperShader _neighbourPipleline;
+        private PipelineHelperShader _pipeline;
+
         private TextureView _outputTexture;
         private TextureView _edgeOutputTexture;
         private TextureView _blendOutputTexture;
@@ -70,13 +69,9 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             _recreatePipelines = false;
 
             DeletePipelines();
-            _edgePipeline = new PipelineHelperShader(_renderer, _device);
-            _blendPipeline = new PipelineHelperShader(_renderer, _device);
-            _neighbourPipleline = new PipelineHelperShader(_renderer, _device);
+            _pipeline = new PipelineHelperShader(_renderer, _device);
 
-            _edgePipeline.Initialize();
-            _blendPipeline.Initialize();
-            _neighbourPipleline.Initialize();
+            _pipeline.Initialize();
 
             var edgeShader = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Effects/Shaders/SmaaEdge.spv");
             var blendShader = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Effects/Shaders/SmaaBlend.spv");
@@ -138,9 +133,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
 
         public void DeletePipelines()
         {
-            _edgePipeline?.Dispose();
-            _blendPipeline?.Dispose();
-            _neighbourPipleline?.Dispose();
+            _pipeline?.Dispose();
             _edgeProgram?.Dispose();
             _blendProgram?.Dispose();
             _neighbourProgram?.Dispose();
@@ -266,10 +259,10 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             var dispatchY = BitUtils.DivRoundUp(view.Height, IPostProcessingEffect.LocalGroupSize);
 
             // Edge pass
-            _edgePipeline.SetCommandBuffer(cbs);
-            _edgePipeline.SetProgram(_edgeProgram);
-            _edgePipeline.SetTextureAndSampler(ShaderStage.Compute, 1, view, _samplerLinear);
-            _edgePipeline.Specialize(_specConstants);
+            _pipeline.SetCommandBuffer(cbs);
+            _pipeline.SetProgram(_edgeProgram);
+            _pipeline.SetTextureAndSampler(ShaderStage.Compute, 1, view, _samplerLinear);
+            _pipeline.Specialize(_specConstants);
 
             ReadOnlySpan<float> resolutionBuffer = stackalloc float[] { view.Width, view.Height };
             int rangeSize = resolutionBuffer.Length * sizeof(float);
@@ -277,39 +270,39 @@ namespace Ryujinx.Graphics.Vulkan.Effects
 
             _renderer.BufferManager.SetData(bufferHandle, 0, resolutionBuffer);
             var bufferRanges = new BufferRange(bufferHandle, 0, rangeSize);
-            _edgePipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(2, bufferRanges) });
-            _edgePipeline.SetScissors(scissors);
-            _edgePipeline.SetViewports(viewports, false);
-            _edgePipeline.SetImage(0, _edgeOutputTexture, GAL.Format.R8G8B8A8Unorm);
-            _edgePipeline.DispatchCompute(dispatchX, dispatchY, 1);
-            _edgePipeline.ComputeBarrier();
+            _pipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(2, bufferRanges) });
+            _pipeline.SetScissors(scissors);
+            _pipeline.SetViewports(viewports, false);
+            _pipeline.SetImage(0, _edgeOutputTexture, GAL.Format.R8G8B8A8Unorm);
+            _pipeline.DispatchCompute(dispatchX, dispatchY, 1);
+            _pipeline.ComputeBarrier();
 
             // Blend pass
-            _blendPipeline.SetCommandBuffer(cbs);
-            _blendPipeline.SetProgram(_blendProgram);
-            _blendPipeline.Specialize(_specConstants);
-            _blendPipeline.SetTextureAndSampler(ShaderStage.Compute, 1, _edgeOutputTexture, _samplerLinear);
-            _blendPipeline.SetTextureAndSampler(ShaderStage.Compute, 3, _areaTexture, _samplerLinear);
-            _blendPipeline.SetTextureAndSampler(ShaderStage.Compute, 4, _searchTexture, _samplerLinear);
-            _blendPipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(2, bufferRanges) });
-            _blendPipeline.SetScissors(scissors);
-            _blendPipeline.SetViewports(viewports, false);
-            _blendPipeline.SetImage(0, _blendOutputTexture, GAL.Format.R8G8B8A8Unorm);
-            _blendPipeline.DispatchCompute(dispatchX, dispatchY, 1);
-            _blendPipeline.ComputeBarrier();
+            _pipeline.SetCommandBuffer(cbs);
+            _pipeline.SetProgram(_blendProgram);
+            _pipeline.Specialize(_specConstants);
+            _pipeline.SetTextureAndSampler(ShaderStage.Compute, 1, _edgeOutputTexture, _samplerLinear);
+            _pipeline.SetTextureAndSampler(ShaderStage.Compute, 3, _areaTexture, _samplerLinear);
+            _pipeline.SetTextureAndSampler(ShaderStage.Compute, 4, _searchTexture, _samplerLinear);
+            _pipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(2, bufferRanges) });
+            _pipeline.SetScissors(scissors);
+            _pipeline.SetViewports(viewports, false);
+            _pipeline.SetImage(0, _blendOutputTexture, GAL.Format.R8G8B8A8Unorm);
+            _pipeline.DispatchCompute(dispatchX, dispatchY, 1);
+            _pipeline.ComputeBarrier();
 
             // Neighbour pass
-            _neighbourPipleline.SetCommandBuffer(cbs);
-            _neighbourPipleline.SetProgram(_neighbourProgram);
-            _neighbourPipleline.Specialize(_specConstants);
-            _neighbourPipleline.SetTextureAndSampler(ShaderStage.Compute, 3, _blendOutputTexture, _samplerLinear);
-            _neighbourPipleline.SetTextureAndSampler(ShaderStage.Compute, 1, view, _samplerLinear);
-            _neighbourPipleline.SetUniformBuffers(stackalloc[] { new BufferAssignment(2, bufferRanges) });
-            _neighbourPipleline.SetScissors(scissors);
-            _neighbourPipleline.SetViewports(viewports, false);
-            _neighbourPipleline.SetImage(0, _outputTexture, GAL.Format.R8G8B8A8Unorm);
-            _neighbourPipleline.DispatchCompute(dispatchX, dispatchY, 1);
-            _neighbourPipleline.ComputeBarrier();
+            _pipeline.SetCommandBuffer(cbs);
+            _pipeline.SetProgram(_neighbourProgram);
+            _pipeline.Specialize(_specConstants);
+            _pipeline.SetTextureAndSampler(ShaderStage.Compute, 3, _blendOutputTexture, _samplerLinear);
+            _pipeline.SetTextureAndSampler(ShaderStage.Compute, 1, view, _samplerLinear);
+            _pipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(2, bufferRanges) });
+            _pipeline.SetScissors(scissors);
+            _pipeline.SetViewports(viewports, false);
+            _pipeline.SetImage(0, _outputTexture, GAL.Format.R8G8B8A8Unorm);
+            _pipeline.DispatchCompute(dispatchX, dispatchY, 1);
+            _pipeline.ComputeBarrier();
 
             _renderer.BufferManager.Delete(bufferHandle);
 
