@@ -251,7 +251,7 @@ namespace Ryujinx.Graphics.Vulkan
                 return Array.Empty<DeviceInfo>();
             }
 
-            // We currently assumes that the instance is compatible with Vulkan 1.2
+            // We currently assume that the instance is compatible with Vulkan 1.2
             // TODO: Remove this once we relax our initialization codepaths.
             uint instanceApiVerison = 0;
             api.EnumerateInstanceVersion(ref instanceApiVerison).ThrowOnError();
