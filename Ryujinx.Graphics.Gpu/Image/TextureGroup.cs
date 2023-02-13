@@ -349,11 +349,45 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="regionCount">The number of handles to synchronize</param>
         private void SynchronizePartial(int baseHandle, int regionCount)
         {
+            int spanEndIndex = -1;
+            int spanBase = 0;
+            ReadOnlySpan<byte> span = ReadOnlySpan<byte>.Empty;
+
             for (int i = 0; i < regionCount; i++)
             {
                 if (_loadNeeded[baseHandle + i])
                 {
                     var info = GetHandleInformation(baseHandle + i);
+
+                    if (spanEndIndex <= i - 1)
+                    {
+                        spanEndIndex = i;
+
+                        if (_is3D)
+                        {
+                            // Look ahead to see how many handles need loaded.
+                            for (int j = i + 1; j < regionCount; j++)
+                            {
+                                if (_loadNeeded[baseHandle + j])
+                                {
+                                    spanEndIndex = j;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                        }
+
+                        var endInfo = spanEndIndex == i ? info : GetHandleInformation(baseHandle + spanEndIndex);
+
+                        spanBase = _allOffsets[info.Index];
+                        int spanLast = _allOffsets[endInfo.Index + endInfo.Layers * endInfo.Levels - 1];
+                        int endOffset = Math.Min(spanLast + _sliceSizes[endInfo.BaseLevel + endInfo.Levels - 1], (int)Storage.Size);
+                        int size = endOffset - spanBase;
+
+                        span = _physicalMemory.GetSpan(Storage.Range.GetSlice((ulong)spanBase, (ulong)size));
+                    }
 
                     // Only one of these will be greater than 1, as partial sync is only called when there are sub-image views.
                     for (int layer = 0; layer < info.Layers; layer++)
@@ -361,12 +395,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                         for (int level = 0; level < info.Levels; level++)
                         {
                             int offsetIndex = GetOffsetIndex(info.BaseLayer + layer, info.BaseLevel + level);
-
                             int offset = _allOffsets[offsetIndex];
-                            int endOffset = Math.Min(offset + _sliceSizes[info.BaseLevel + level], (int)Storage.Size);
-                            int size = endOffset - offset;
 
-                            ReadOnlySpan<byte> data = _physicalMemory.GetSpan(Storage.Range.GetSlice((ulong)offset, (ulong)size));
+                            ReadOnlySpan<byte> data = span.Slice(offset - spanBase);
 
                             SpanOrArray<byte> result = Storage.ConvertToHostCompatibleFormat(data, info.BaseLevel + level, true);
 
