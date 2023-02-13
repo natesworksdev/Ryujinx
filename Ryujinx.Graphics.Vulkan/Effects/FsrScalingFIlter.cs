@@ -199,6 +199,8 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             _pipeline.DispatchCompute(dispatchX, dispatchY, 1);
             _pipeline.ComputeBarrier();
 
+            _pipeline.Finish();
+
             _renderer.BufferManager.Delete(bufferHandle);
             _renderer.BufferManager.Delete(sharpeningBufferHandle);
         }

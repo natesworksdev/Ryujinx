@@ -119,6 +119,8 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             _renderer.BufferManager.Delete(bufferHandle);
             _pipeline.ComputeBarrier();
 
+            _pipeline.Finish();
+
             return _texture;
         }
     }
