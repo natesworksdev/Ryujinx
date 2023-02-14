@@ -234,14 +234,11 @@ namespace Ryujinx.Graphics.Vulkan
             Api.GetPhysicalDeviceFeatures2(_physicalDevice, &features2);
 
             var portabilityFlags = PortabilitySubsetFlags.None;
-            uint vertexBufferAlignment = 0;
+            uint vertexBufferAlignment = 1;
 
             if (usePortability)
             {
-                if ((propertiesPortabilitySubset.MinVertexInputBindingStrideAlignment % 2) != 0)
-                {
-                    vertexBufferAlignment = propertiesPortabilitySubset.MinVertexInputBindingStrideAlignment;
-                }
+                vertexBufferAlignment = propertiesPortabilitySubset.MinVertexInputBindingStrideAlignment;
 
                 portabilityFlags |= featuresPortabilitySubset.TriangleFans ? 0 : PortabilitySubsetFlags.NoTriangleFans;
                 portabilityFlags |= featuresPortabilitySubset.PointPolygons ? 0 : PortabilitySubsetFlags.NoPointMode;
@@ -644,7 +641,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public bool NeedsVertexBufferAlignment(int attrScalarAlignment, out int alignment)
         {
-            if (Capabilities.VertexBufferAlignment != 0)
+            if (Capabilities.VertexBufferAlignment > 1)
             {
                 alignment = (int)Capabilities.VertexBufferAlignment;
 

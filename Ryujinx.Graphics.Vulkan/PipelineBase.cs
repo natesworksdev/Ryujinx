@@ -1137,7 +1137,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                         buffer.Dispose();
 
-                        if (Gd.Capabilities.VertexBufferAlignment == 0 &&
+                        if (Gd.Capabilities.VertexBufferAlignment < 2 &&
                             (vertexBuffer.Stride % FormatExtensions.MaxBufferFormatScalarSize) == 0)
                         {
                             buffer = new VertexBufferState(
