@@ -71,7 +71,7 @@ body:
   - type: textarea
     id: mods
     attributes:
-      label: List of Applied mods
+      label: List of applied mods
       placeholder: You can list applied mods here.
     validations:
       required: false
