@@ -76,7 +76,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         private ReadOnlySpan<byte> AsSpan()
         {
-            return MemoryMarshal.AsBytes(SpanHelpers.CreateReadOnlySpan(ref this, 1));
+            return SpanHelpers.AsReadOnlyByteSpan(ref this);
         }
 
         private ReadOnlySpan<byte> AsSpanWithoutDeviceCrc()
