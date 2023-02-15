@@ -202,8 +202,6 @@ namespace Ryujinx.Memory.Tracking
 
         /// <summary>
         /// Signal that a virtual memory event happened at the given location.
-        /// This can be flagged as a precise event, which will avoid reprotection and call special handlers if possible.
-        /// A precise event has an exact address and size, rather than triggering on page granularity.
         /// </summary>
         /// <param name="address">Virtual address accessed</param>
         /// <param name="size">Size of the region affected in bytes</param>
