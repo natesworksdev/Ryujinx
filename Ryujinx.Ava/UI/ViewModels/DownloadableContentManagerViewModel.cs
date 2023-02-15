@@ -31,10 +31,10 @@ namespace Ryujinx.Ava.UI.ViewModels
         private readonly List<DownloadableContentContainer> _downloadableContentContainerList;
         private readonly string                             _downloadableContentJsonPath;
 
-        private VirtualFileSystem                           _virtualFileSystem;
-        private AvaloniaList<DownloadableContentModel>      _downloadableContents = new();
-        private AvaloniaList<DownloadableContentModel>      _views = new();
-        private AvaloniaList<DownloadableContentModel>      _selectedDownloadableContents = new();
+        private VirtualFileSystem                      _virtualFileSystem;
+        private AvaloniaList<DownloadableContentModel> _downloadableContents = new();
+        private AvaloniaList<DownloadableContentModel> _views = new();
+        private AvaloniaList<DownloadableContentModel> _selectedDownloadableContents = new();
 
         private string _search;
 
