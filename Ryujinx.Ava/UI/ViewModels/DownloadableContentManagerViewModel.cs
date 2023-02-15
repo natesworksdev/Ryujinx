@@ -37,7 +37,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         private AvaloniaList<DownloadableContentModel> _selectedDownloadableContents = new();
 
         private string _search;
-
         private ulong _titleId;
         private string _titleName;
 
