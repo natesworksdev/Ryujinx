@@ -639,7 +639,7 @@ namespace Ryujinx.Graphics.Vulkan
             PrintGpuInformation();
         }
 
-        public bool NeedsVertexBufferAlignment(int attrScalarAlignment, out int alignment)
+        internal bool NeedsVertexBufferAlignment(int attrScalarAlignment, out int alignment)
         {
             if (Capabilities.VertexBufferAlignment > 1)
             {
