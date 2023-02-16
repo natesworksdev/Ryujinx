@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Mono.Unix" />
     <PackageReference Include="MsgPack.Cli" />
     <PackageReference Include="System.Management" />
   </ItemGroup>

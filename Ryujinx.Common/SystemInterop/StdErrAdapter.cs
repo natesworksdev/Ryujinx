@@ -2,15 +2,16 @@ using System;
 using System.IO;
 using System.Runtime.Versioning;
 using System.Threading;
-using Mono.Unix;
 using Ryujinx.Common.Logging;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Common.SystemInterop
 {
-    public class StdErrAdapter : IDisposable
+    public partial class StdErrAdapter : IDisposable
     {
         private bool _disposable = false;
-        private UnixPipes _stdErrPipe;
+        private UnixStream _pipeReader;
+        private UnixStream _pipeWriter;
         private Thread _worker;
 
         public StdErrAdapter()
@@ -27,8 +28,12 @@ namespace Ryujinx.Common.SystemInterop
         {
             const int stdErrFileno = 2;
 
-            _stdErrPipe = UnixPipes.CreatePipes();
-            Mono.Unix.Native.Syscall.dup2(_stdErrPipe.Writing.Handle, stdErrFileno);
+            (int readFd, int writeFd) = MakePipe();
+            dup2(writeFd, stdErrFileno);
+
+            _pipeReader = new UnixStream(readFd);
+            _pipeWriter = new UnixStream(writeFd);
+
             _worker = new Thread(EventWorker);
             _disposable = true;
             _worker.Start();
@@ -38,7 +43,7 @@ namespace Ryujinx.Common.SystemInterop
         [SupportedOSPlatform("macos")]
         private void EventWorker()
         {
-            TextReader reader = new StreamReader(_stdErrPipe.Reading);
+            TextReader reader = new StreamReader(_pipeReader);
             string line;
             while ((line = reader.ReadLine()) != null)
             {
@@ -46,14 +51,12 @@ namespace Ryujinx.Common.SystemInterop
             }
         }
 
-        protected virtual void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (_disposable)
             {
-                _stdErrPipe.Reading.Close();
-                _stdErrPipe.Writing.Close();
-                _stdErrPipe.Reading.Dispose();
-                _stdErrPipe.Writing.Dispose();
+                _pipeReader?.Close();
+                _pipeWriter?.Close();
 
                 _disposable = false;
             }
@@ -62,6 +65,28 @@ namespace Ryujinx.Common.SystemInterop
         public void Dispose()
         {
             Dispose(true);
+        }
+
+        [LibraryImport("libc", SetLastError = true)]
+        private static partial int dup2 (int fd, int fd2);
+
+        [LibraryImport("libc", SetLastError = true)]
+        private static unsafe partial int pipe(int* pipefd);
+
+        private static unsafe (int, int) MakePipe()
+        {
+            Span<int> pipefd = stackalloc int[2];
+            fixed (int* ptr = pipefd)
+            {
+                if (pipe(ptr) == 0)
+                {
+                    return (pipefd[0], pipefd[1]);
+                }
+                else
+                {
+                    throw new ();
+                }
+            }
         }
     }
 }
