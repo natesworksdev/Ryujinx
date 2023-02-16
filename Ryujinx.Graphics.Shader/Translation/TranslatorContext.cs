@@ -138,7 +138,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             _config.MergeFromtNextStage(nextStage._config);
         }
 
-        public void SetGeomtryShaderLayerInputAttribute(int attr)
+        public void SetGeometryShaderLayerInputAttribute(int attr)
         {
             _config.SetGeometryShaderLayerInputAttribute(attr);
         }
