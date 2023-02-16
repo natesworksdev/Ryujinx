@@ -161,6 +161,7 @@ namespace Ryujinx.Ui
             DefaultWidth  = monitorWidth  < 1280 ? monitorWidth  : ConfigurationState.Instance.Ui.WindowSizeWidth;
             DefaultHeight = monitorHeight < 760  ? monitorHeight : ConfigurationState.Instance.Ui.WindowSizeHeight;
             Move(ConfigurationState.Instance.Ui.WindowPositionX,ConfigurationState.Instance.Ui.WindowPositionY);
+            if (ConfigurationState.Instance.Ui.WindowMaximized == true) { Maximize(); };
 
             Icon  = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
             Title = $"Ryujinx {Program.Version}";
@@ -1323,6 +1324,7 @@ namespace Ryujinx.Ui
                 GetSize(out windowWidth, out windowHeight);
                 GetPosition(out windowXPos, out windowYPos);
 
+                ConfigurationState.Instance.Ui.WindowMaximized.Value = IsMaximized;
                 ConfigurationState.Instance.Ui.WindowSizeWidth.Value = windowWidth;
                 ConfigurationState.Instance.Ui.WindowSizeHeight.Value = windowHeight;
                 ConfigurationState.Instance.Ui.WindowPositionX.Value = windowXPos;
@@ -1345,6 +1347,7 @@ namespace Ryujinx.Ui
                 GetSize(out windowWidth, out windowHeight);
                 GetPosition(out windowXPos, out windowYPos);
 
+                ConfigurationState.Instance.Ui.WindowMaximized.Value = IsMaximized;
                 ConfigurationState.Instance.Ui.WindowSizeWidth.Value = windowWidth;
                 ConfigurationState.Instance.Ui.WindowSizeHeight.Value = windowHeight;
                 ConfigurationState.Instance.Ui.WindowPositionX.Value = windowXPos;
