@@ -95,7 +95,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <summary>
         /// Indicates whether dual source blend is enabled.
         /// </summary>
-        public readonly bool DualSourceBlendEnable;
+        public bool DualSourceBlendEnable;
 
         /// <summary>
         /// Creates a new GPU graphics state.
