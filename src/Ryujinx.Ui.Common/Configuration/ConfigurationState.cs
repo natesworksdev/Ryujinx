@@ -202,7 +202,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 ShowConsole       = new ReactiveObject<bool>();
                 ShowConsole.Event += static (s, e) => { ConsoleHelper.SetConsoleWindowState(e.NewValue); };
                 WindowSizeWidth   = new ReactiveObject<int>();
-                WindowSizeHeight   = new ReactiveObject<int>();
+                WindowSizeHeight  = new ReactiveObject<int>();
                 WindowPositionX   = new ReactiveObject<int>();
                 WindowPositionY   = new ReactiveObject<int>();
                 WindowMaximized   = new ReactiveObject<bool>();
