@@ -132,6 +132,26 @@ namespace Ryujinx.Ui.Common.Configuration
             /// Hide / Show Console Window
             /// </summary>
             public ReactiveObject<bool> ShowConsole { get; private set; }
+            
+            /// <summary>
+            /// Width of the main window in pixels. 
+            /// </summary>
+            public ReactiveObject<int> WindowSizeWidth { get; private set; }
+
+            /// <summary>
+            /// Height of the main window in pixels. 
+            /// </summary>
+            public ReactiveObject<int> WindowSizeHeight { get; private set; }
+
+            /// <summary>
+            /// Horizontal position of the main window in pixels. 
+            /// </summary>
+            public ReactiveObject<int> WindowPositionX { get; private set; }
+
+            /// <summary>
+            /// Vertical position of the main window in pixels. 
+            /// </summary>
+            public ReactiveObject<int> WindowPositionY { get; private set; }
 
             /// <summary>
             /// View Mode of the Game list
@@ -176,6 +196,10 @@ namespace Ryujinx.Ui.Common.Configuration
                 LanguageCode      = new ReactiveObject<string>();
                 ShowConsole       = new ReactiveObject<bool>();
                 ShowConsole.Event += static (s, e) => { ConsoleHelper.SetConsoleWindowState(e.NewValue); };
+                WindowSizeWidth   = new ReactiveObject<int>();
+                WindowSizeHeight   = new ReactiveObject<int>();
+                WindowPositionX   = new ReactiveObject<int>();
+                WindowPositionY   = new ReactiveObject<int>();
             }
         }
 
@@ -689,6 +713,10 @@ namespace Ryujinx.Ui.Common.Configuration
                 IsAscendingOrder           = Ui.IsAscendingOrder,
                 StartFullscreen            = Ui.StartFullscreen,
                 ShowConsole                = Ui.ShowConsole,
+                WindowSizeWidth            = Ui.WindowSizeWidth,
+                WindowSizeHeight           = Ui.WindowSizeHeight,
+                WindowPositionX            = Ui.WindowPositionX,
+                WindowPositionY            = Ui.WindowPositionY,
                 EnableKeyboard             = Hid.EnableKeyboard,
                 EnableMouse                = Hid.EnableMouse,
                 Hotkeys                    = Hid.Hotkeys,
@@ -781,6 +809,8 @@ namespace Ryujinx.Ui.Common.Configuration
             Ui.IsAscendingOrder.Value                 = true;
             Ui.StartFullscreen.Value                  = false;
             Ui.ShowConsole.Value                      = true;
+            Ui.WindowSizeWidth.Value                  = 1280;
+            Ui.WindowSizeHeight.Value                 = 760;
             Hid.EnableKeyboard.Value                  = false;
             Hid.EnableMouse.Value                     = false;
             Hid.Hotkeys.Value = new KeyboardHotkeys
@@ -1416,6 +1446,10 @@ namespace Ryujinx.Ui.Common.Configuration
             Ui.ApplicationSort.Value                  = configurationFileFormat.ApplicationSort;
             Ui.StartFullscreen.Value                  = configurationFileFormat.StartFullscreen;
             Ui.ShowConsole.Value                      = configurationFileFormat.ShowConsole;
+            Ui.WindowSizeWidth.Value                  = configurationFileFormat.WindowSizeWidth;
+            Ui.WindowSizeHeight.Value                 = configurationFileFormat.WindowSizeHeight;
+            Ui.WindowPositionX.Value                  = configurationFileFormat.WindowPositionX;
+            Ui.WindowPositionY.Value                  = configurationFileFormat.WindowPositionY;
             Hid.EnableKeyboard.Value                  = configurationFileFormat.EnableKeyboard;
             Hid.EnableMouse.Value                     = configurationFileFormat.EnableMouse;
             Hid.Hotkeys.Value                         = configurationFileFormat.Hotkeys;
