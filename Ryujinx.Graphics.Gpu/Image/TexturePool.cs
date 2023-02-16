@@ -99,7 +99,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     }
                 }
 
-                texture.IncrementReferenceCount(this, id);
+                texture.IncrementReferenceCount(this, id, descriptor.UnpackAddress());
 
                 Items[id] = texture;
 
@@ -225,15 +225,14 @@ namespace Ryujinx.Graphics.Gpu.Image
                 // Unmapped storage textures can swap their ranges. The texture must be storage with no views.
                 // TODO: Would need to update ranges on views, or guarantee that ones where the range changes can be instantly deleted.
 
-                // TODO: Needs to behave differently if a texture's mapping has already changed - must remove from cache if
-                // the mapping is different again, as the mapping cannot be different on two entries of the pool.
-
                 if (request.IsUnmapped && texture.Group.Storage == texture && !texture.HasViews)
                 {
                     // Has the mapping for this texture changed?
                     ref readonly TextureDescriptor descriptor = ref GetDescriptorRef(request.ID);
 
-                    MultiRange range = _channel.MemoryManager.GetPhysicalRegions(descriptor.UnpackAddress(), texture.Size);
+                    ulong address = descriptor.UnpackAddress();
+
+                    MultiRange range = _channel.MemoryManager.GetPhysicalRegions(address, texture.Size);
 
                     // If the texture is not mapped at all, delete its reference.
 
@@ -247,18 +246,24 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     // Create a new pool reference, as the last one was removed on unmap.
 
-                    texture.IncrementReferenceCount(this, request.ID);
+                    texture.IncrementReferenceCount(this, request.ID, address);
                     texture.DecrementReferenceCount();
 
                     // Refetch the range. Changes since the last check could have been lost
                     // as the cache entry was not restored (required to queue mapping change)
 
-                    range = _channel.MemoryManager.GetPhysicalRegions(descriptor.UnpackAddress(), texture.Size);
+                    range = _channel.MemoryManager.GetPhysicalRegions(address, texture.Size);
 
                     if (!range.Equals(texture.Range))
                     {
                         // Part of the texture was mapped or unmapped. Replace the range and regenerate tracking handles.
-                        _channel.MemoryManager.Physical.TextureCache.UpdateMapping(texture, range);
+                        if (!_channel.MemoryManager.Physical.TextureCache.UpdateMapping(texture, range))
+                        {
+                            // Texture could not be remapped due to a collision, just delete it.
+                            texture.DecrementReferenceCount(this, request.ID);
+                            Items[request.ID] = null;
+                            continue;
+                        }
                     }
 
                     if (request.ID == id)

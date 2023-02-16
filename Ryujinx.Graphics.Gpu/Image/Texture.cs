@@ -36,6 +36,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             public TexturePool Pool;
             public int ID;
+            public ulong GpuAddress;
         }
 
         private GpuContext _context;
@@ -1502,11 +1503,12 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="pool">The texture pool this texture has been added to</param>
         /// <param name="id">The ID of the reference to this texture in the pool</param>
-        public void IncrementReferenceCount(TexturePool pool, int id)
+        /// <param name="gpuVa">GPU VA of the pool reference</param>
+        public void IncrementReferenceCount(TexturePool pool, int id, ulong gpuVa)
         {
             lock (_poolOwners)
             {
-                _poolOwners.Add(new TexturePoolOwner { Pool = pool, ID = id });
+                _poolOwners.Add(new TexturePoolOwner { Pool = pool, ID = id, GpuAddress = gpuVa });
             }
             _referenceCount++;
 
@@ -1610,9 +1612,21 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             lock (_poolOwners)
             {
+                ulong address = 0;
+
                 foreach (var owner in _poolOwners)
                 {
-                    owner.Pool.QueueUpdateMapping(this, owner.ID);
+                    if (address == 0 || address == owner.GpuAddress)
+                    {
+                        address = owner.GpuAddress;
+
+                        owner.Pool.QueueUpdateMapping(this, owner.ID);
+                    }
+                    else
+                    {
+                        // If there is a different GPU va mapping, prefer the first and delete the others.
+                        owner.Pool.ForceRemove(this, owner.ID, true);
+                    }
                 }
 
                 _poolOwners.Clear();

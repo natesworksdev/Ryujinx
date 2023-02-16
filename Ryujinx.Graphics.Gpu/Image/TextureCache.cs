@@ -1,4 +1,5 @@
 using Ryujinx.Common;
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Engine.Threed;
 using Ryujinx.Graphics.Gpu.Engine.Twod;
@@ -195,17 +196,36 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Update a texture's physical memory range.
+        /// Attempts to update a texture's physical memory range.
+        /// Returns false if there is an existing texture that matches with the updated range.
         /// </summary>
         /// <param name="texture">Texture to update</param>
         /// <param name="range">New physical memory range</param>
-        public void UpdateMapping(Texture texture, MultiRange range)
+        /// <returns>True if the mapping was updated, false otherwise</returns>
+        public bool UpdateMapping(Texture texture, MultiRange range)
         {
+            // There cannot be an existing texture compatible with this mapping in the texture cache already.
+            int overlapCount = _textures.FindOverlaps(range, ref _textureOverlaps);
+
+            for (int i = 0; i < overlapCount; i++)
+            {
+                var other = _textureOverlaps[i];
+                
+                if (texture != other &&
+                    (texture.IsViewCompatible(other.Info, other.Range, true, other.LayerSize, _context.Capabilities, out int _, out int _) != TextureViewCompatibility.Incompatible ||
+                    other.IsViewCompatible(texture.Info, texture.Range, true, texture.LayerSize, _context.Capabilities, out int _, out int _) != TextureViewCompatibility.Incompatible))
+                {
+                    return false;
+                }
+            }
+
             _textures.Remove(texture);
 
             texture.ReplaceRange(range);
 
             _textures.Add(texture);
+
+            return true;
         }
 
         /// <summary>
