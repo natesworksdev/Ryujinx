@@ -356,11 +356,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             Size lhsSize = GetSizeInBlocks(lhs, level);
             Size rhsSize = GetSizeInBlocks(rhs);
 
-            bool sizeMatchesIncompatibleFormat = false;
+            bool alignedWidthMatches = lhsAlignedSize.Width == rhsAlignedSize.Width;
 
-            if (IsIncompatibleFormatAliasingAllowed(lhs.FormatInfo, rhs.FormatInfo))
+            if (lhs.FormatInfo.BytesPerPixel != rhs.FormatInfo.BytesPerPixel && IsIncompatibleFormatAliasingAllowed(lhs.FormatInfo, rhs.FormatInfo))
             {
-                sizeMatchesIncompatibleFormat = lhsSize.Width * lhs.FormatInfo.BytesPerPixel == rhsSize.Width * rhs.FormatInfo.BytesPerPixel;
+                alignedWidthMatches = lhsSize.Width * lhs.FormatInfo.BytesPerPixel == rhsSize.Width * rhs.FormatInfo.BytesPerPixel;
             }
 
             TextureViewCompatibility result = TextureViewCompatibility.Full;
@@ -376,7 +376,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             // so the width may not match in this case for different uses of the same texture.
             // To account for this, we compare the aligned width here.
             // We expect height to always match exactly, if the texture is the same.
-            if ((lhsAlignedSize.Width == rhsAlignedSize.Width || sizeMatchesIncompatibleFormat) && lhsSize.Height == rhsSize.Height)
+            if (alignedWidthMatches && lhsSize.Height == rhsSize.Height)
             {
                 return (exact && lhsSize.Width != rhsSize.Width) || lhsSize.Width < rhsSize.Width
                     ? TextureViewCompatibility.CopyOnly
@@ -684,17 +684,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 (lhsFormat, rhsFormat) = (rhsFormat, lhsFormat);
             }
 
-            bool isValidShortFormat = lhsFormat.Format == Format.R8Unorm ||
-                                      lhsFormat.Format == Format.R8Snorm ||
-                                      lhsFormat.Format == Format.R8Uint ||
-                                      lhsFormat.Format == Format.R8Sint;
-
-            bool isValidLongFormat = rhsFormat.Format == Format.R8G8B8A8Unorm ||
-                                     rhsFormat.Format == Format.R8G8B8A8Snorm ||
-                                     rhsFormat.Format == Format.R8G8B8A8Uint ||
-                                     rhsFormat.Format == Format.R8G8B8A8Sint;
-
-            return isValidShortFormat && isValidLongFormat;
+            return lhsFormat.Format == Format.R8Unorm && rhsFormat.Format == Format.R8G8B8A8Unorm;
         }
 
         /// <summary>
