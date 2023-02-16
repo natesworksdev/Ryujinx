@@ -123,6 +123,11 @@ namespace Ryujinx.Ui.Common.Configuration
             /// Vertical position of the main window in pixels. 
             /// </summary>
             public ReactiveObject<int> WindowPositionY { get; private set; }
+            
+            /// <summary>
+            /// Whether the main window is maximized or not. 
+            /// </summary>
+            public ReactiveObject<bool> WindowMaximized { get; private set; }
 
             /// <summary>
             /// View Mode of the Game list
@@ -170,6 +175,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 WindowSizeHeight   = new ReactiveObject<int>();
                 WindowPositionX   = new ReactiveObject<int>();
                 WindowPositionY   = new ReactiveObject<int>();
+                WindowMaximized   = new ReactiveObject<bool>();
             }
         }
 
@@ -632,6 +638,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 WindowSizeHeight           = Ui.WindowSizeHeight,
                 WindowPositionX            = Ui.WindowPositionX,
                 WindowPositionY            = Ui.WindowPositionY,
+                WindowMaximized            = Ui.WindowMaximized,
                 EnableKeyboard             = Hid.EnableKeyboard,
                 EnableMouse                = Hid.EnableMouse,
                 Hotkeys                    = Hid.Hotkeys,
@@ -715,6 +722,7 @@ namespace Ryujinx.Ui.Common.Configuration
             Ui.ShowConsole.Value                      = true;
             Ui.WindowSizeWidth.Value                  = 1280;
             Ui.WindowSizeHeight.Value                 = 760;
+            Ui.WindowMaximized.Value                  = false;
             Hid.EnableKeyboard.Value                  = false;
             Hid.EnableMouse.Value                     = false;
             Hid.Hotkeys.Value = new KeyboardHotkeys
@@ -1308,6 +1316,7 @@ namespace Ryujinx.Ui.Common.Configuration
             Ui.WindowSizeHeight.Value                 = configurationFileFormat.WindowSizeHeight;
             Ui.WindowPositionX.Value                  = configurationFileFormat.WindowPositionX;
             Ui.WindowPositionY.Value                  = configurationFileFormat.WindowPositionY;
+            Ui.WindowMaximized.Value                  = configurationFileFormat.WindowMaximized;
             Hid.EnableKeyboard.Value                  = configurationFileFormat.EnableKeyboard;
             Hid.EnableMouse.Value                     = configurationFileFormat.EnableMouse;
             Hid.Hotkeys.Value                         = configurationFileFormat.Hotkeys;
