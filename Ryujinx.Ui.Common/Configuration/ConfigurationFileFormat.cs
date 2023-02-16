@@ -305,6 +305,11 @@ namespace Ryujinx.Ui.Common.Configuration
         /// Vertical position of the main window in pixels. 
         /// </summary>
         public int WindowPositionY { get; set;}
+        
+        /// <summary>
+        /// Whether the main window is maximized or not.
+        /// </summary>
+        public bool WindowMaximized { get; set;}
 
         /// <summary>
         /// Enable or disable keyboard support (Independent from controllers binding)
