@@ -152,8 +152,9 @@ namespace Ryujinx.Ui
             int monitorWidth  = monitor.Geometry.Width  * monitor.ScaleFactor;
             int monitorHeight = monitor.Geometry.Height * monitor.ScaleFactor;
 
-            DefaultWidth  = monitorWidth  < 1280 ? monitorWidth  : 1280;
-            DefaultHeight = monitorHeight < 760  ? monitorHeight : 760;
+            DefaultWidth  = monitorWidth  < 1280 ? monitorWidth  : ConfigurationState.Instance.Ui.WindowSizeWidth;
+            DefaultHeight = monitorHeight < 760  ? monitorHeight : ConfigurationState.Instance.Ui.WindowSizeHeight;
+            Move(ConfigurationState.Instance.Ui.WindowPositionX,ConfigurationState.Instance.Ui.WindowPositionY);
 
             Icon  = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
             Title = $"Ryujinx {Program.Version}";
@@ -1308,6 +1309,20 @@ namespace Ryujinx.Ui
         {
             if (!_gameLoaded || !ConfigurationState.Instance.ShowConfirmExit || GtkDialog.CreateExitDialog())
             {
+                int windowWidth;
+                int windowHeight;
+                int windowXPos;
+                int windowYPos;
+
+                GetSize(out windowWidth, out windowHeight);
+                GetPosition(out windowXPos, out windowYPos);
+
+                ConfigurationState.Instance.Ui.WindowSizeWidth.Value = windowWidth;
+                ConfigurationState.Instance.Ui.WindowSizeHeight.Value = windowHeight;
+                ConfigurationState.Instance.Ui.WindowPositionX.Value = windowXPos;
+                ConfigurationState.Instance.Ui.WindowPositionY.Value = windowYPos;
+
+                SaveConfig();        
                 End();
             }
         }
@@ -1316,6 +1331,20 @@ namespace Ryujinx.Ui
         {
             if (!_gameLoaded || !ConfigurationState.Instance.ShowConfirmExit || GtkDialog.CreateExitDialog())
             {
+                int windowWidth;
+                int windowHeight;
+                int windowXPos;
+                int windowYPos;
+
+                GetSize(out windowWidth, out windowHeight);
+                GetPosition(out windowXPos, out windowYPos);
+
+                ConfigurationState.Instance.Ui.WindowSizeWidth.Value = windowWidth;
+                ConfigurationState.Instance.Ui.WindowSizeHeight.Value = windowHeight;
+                ConfigurationState.Instance.Ui.WindowPositionX.Value = windowXPos;
+                ConfigurationState.Instance.Ui.WindowPositionY.Value = windowYPos;
+
+                SaveConfig();        
                 End();
             }
             else
