@@ -79,11 +79,11 @@ namespace Ryujinx.Audio.Renderer.Dsp
                 Debug.Assert(bank.Length == FilterBankLength);
 
                 int curIdx = 0;
-                int stopIdx = FilterBankLength - (FilterBankLength % Vector<float>.Count);
                 if (Vector.IsHardwareAccelerated)
                 {
                     // Do SIMD-accelerated block operations where possible.
                     // Only about a 2x speedup since filter bank length is short
+                    int stopIdx = FilterBankLength - (FilterBankLength % Vector<float>.Count);
                     while (curIdx < stopIdx)
                     {
                         result += Vector.Dot(
