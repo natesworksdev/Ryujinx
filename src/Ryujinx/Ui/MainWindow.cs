@@ -160,7 +160,7 @@ namespace Ryujinx.Ui
 
             DefaultWidth  = monitorWidth  < 1280 ? monitorWidth  : ConfigurationState.Instance.Ui.WindowSizeWidth;
             DefaultHeight = monitorHeight < 760  ? monitorHeight : ConfigurationState.Instance.Ui.WindowSizeHeight;
-            Move(ConfigurationState.Instance.Ui.WindowPositionX,ConfigurationState.Instance.Ui.WindowPositionY);
+            Move(ConfigurationState.Instance.Ui.WindowPositionX, ConfigurationState.Instance.Ui.WindowPositionY);
             if (ConfigurationState.Instance.Ui.WindowMaximized) 
             { 
                 Maximize(); 
