@@ -39,6 +39,11 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// </summary>
     class TextureGroup : IDisposable
     {
+        /// <summary>
+        /// Threshold of layers to force granular handles (and thus partial loading) on array/3d textures.
+        /// </summary>
+        private const int GranularLayerThreshold = 8;
+
         private delegate void HandlesCallbackDelegate(int baseHandle, int regionCount, bool split = false);
 
         /// <summary>
@@ -116,7 +121,15 @@ namespace Ryujinx.Graphics.Gpu.Image
             _allOffsets = size.AllOffsets;
             _sliceSizes = size.SliceSizes;
 
-            (_hasLayerViews, _hasMipViews) = PropagateGranularity(hasLayerViews, hasMipViews);
+            if (Storage.Target.HasDepthOrLayers() && Storage.Info.GetSlices() > GranularLayerThreshold)
+            {
+                _hasLayerViews = true;
+                _hasMipViews = true;
+            }
+            else
+            {
+                (_hasLayerViews, _hasMipViews) = PropagateGranularity(hasLayerViews, hasMipViews);
+            }
 
             // If the texture is partially mapped, fully subdivide handles immediately.
 
@@ -263,8 +276,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 bool dirty = false;
                 bool anyModified = false;
-                bool anyUnmapped = false;
-                bool anyNonDirty = false;
+                bool anyNotDirty = false;
 
                 for (int i = 0; i < regionCount; i++)
                 {
@@ -309,8 +321,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                         dirty |= handleDirty;
                     }
 
-                    anyUnmapped |= handleUnmapped;
-
                     if (group.NeedsCopy)
                     {
                         // The texture we copied from is still being written to. Copy from it again the next time this texture is used.
@@ -319,13 +329,13 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     bool loadNeeded = handleDirty && !handleUnmapped;
 
-                    anyNonDirty |= !loadNeeded;
+                    anyNotDirty |= !loadNeeded;
                     _loadNeeded[baseHandle + i] = loadNeeded;
                 }
 
                 if (dirty)
                 {
-                    if (anyUnmapped || anyNonDirty || (_handles.Length > 1 && (anyModified || split)))
+                    if (anyNotDirty || (_handles.Length > 1 && (anyModified || split)))
                     {
                         // Partial texture invalidation. Only update the layers/levels with dirty flags of the storage.
 

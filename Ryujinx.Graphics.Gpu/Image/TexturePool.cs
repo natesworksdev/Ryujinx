@@ -222,10 +222,10 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 Texture texture = request.Texture;
 
-                // Unmapped storage textures can swap their ranges. The texture must be storage with no views.
+                // Unmapped storage textures can swap their ranges. The texture must be storage with no views or dependencies.
                 // TODO: Would need to update ranges on views, or guarantee that ones where the range changes can be instantly deleted.
 
-                if (request.IsUnmapped && texture.Group.Storage == texture && !texture.HasViews)
+                if (request.IsUnmapped && texture.Group.Storage == texture && !texture.HasViews && !texture.Group.HasCopyDependencies)
                 {
                     // Has the mapping for this texture changed?
                     ref readonly TextureDescriptor descriptor = ref GetDescriptorRef(request.ID);
