@@ -46,6 +46,7 @@ namespace Ryujinx.Graphics.GAL
 
         void SetBindlessTexture(int textureId, ITexture texture, int samplerId, ISampler sampler);
 
+        void SetBlendState(AdvancedBlendDescriptor blend);
         void SetBlendState(int index, BlendDescriptor blend);
 
         void SetDepthBias(PolygonModeMask enables, float factor, float units, float clamp);

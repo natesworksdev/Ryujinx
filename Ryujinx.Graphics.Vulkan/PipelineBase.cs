@@ -116,11 +116,9 @@ namespace Ryujinx.Graphics.Vulkan
             var defaultScale = new Vector4<float> { X = 1f, Y = 0f, Z = 0f, W = 0f };
             new Span<Vector4<float>>(_renderScale).Fill(defaultScale);
 
-            _newState.Initialize();
-            _newState.LineWidth = 1f;
-            _newState.SamplesCount = 1;
+            _storedBlend = new PipelineColorBlendAttachmentState[Constants.MaxRenderTargets];
 
-            _storedBlend = new PipelineColorBlendAttachmentState[8];
+            _newState.Initialize();
         }
 
         public void Initialize()
@@ -708,6 +706,49 @@ namespace Ryujinx.Graphics.Vulkan
             _descriptorSetUpdater.SetBindlessTexture(textureId, texture);
             _descriptorSetUpdater.SetBindlessSampler(samplerId, sampler);
         }
+        
+        public void SetBlendState(AdvancedBlendDescriptor blend)
+        {
+            for (int index = 0; index < Constants.MaxRenderTargets; index++)
+            {
+                ref var vkBlend = ref _newState.Internal.ColorBlendAttachmentState[index];
+
+                if (index == 0)
+                {
+                    var blendOp = blend.Op.Convert();
+
+                    vkBlend = new PipelineColorBlendAttachmentState(
+                        blendEnable: true,
+                        colorBlendOp: blendOp,
+                        alphaBlendOp: blendOp,
+                        colorWriteMask: vkBlend.ColorWriteMask);
+
+                    if (Gd.Capabilities.SupportsBlendEquationAdvancedNonPreMultipliedSrcColor)
+                    {
+                        _newState.AdvancedBlendSrcPreMultiplied = blend.SrcPreMultiplied;
+                    }
+
+                    if (Gd.Capabilities.SupportsBlendEquationAdvancedCorrelatedOverlap)
+                    {
+                        _newState.AdvancedBlendOverlap = blend.Overlap.Convert();
+                    }
+                }
+                else
+                {
+                    vkBlend = new PipelineColorBlendAttachmentState(
+                        colorWriteMask: vkBlend.ColorWriteMask);
+                }
+
+                if (vkBlend.ColorWriteMask == 0)
+                {
+                    _storedBlend[index] = vkBlend;
+
+                    vkBlend = new PipelineColorBlendAttachmentState();
+                }
+            }
+
+            SignalStateChange();
+        }
 
         public void SetBlendState(int index, BlendDescriptor blend)
         {
@@ -741,6 +782,11 @@ namespace Ryujinx.Graphics.Vulkan
                 blend.BlendConstant.Green,
                 blend.BlendConstant.Blue,
                 blend.BlendConstant.Alpha);
+
+            // Reset advanced blend state back defaults to the cache to help the pipeline cache.
+            _newState.AdvancedBlendSrcPreMultiplied = true;
+            _newState.AdvancedBlendDstPreMultiplied = true;
+            _newState.AdvancedBlendOverlap = BlendOverlapEXT.UncorrelatedExt;
 
             SignalStateChange();
         }

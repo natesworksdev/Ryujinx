@@ -99,6 +99,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             Register<EndTransformFeedbackCommand>(CommandType.EndTransformFeedback);
             Register<SetAlphaTestCommand>(CommandType.SetAlphaTest);
             Register<SetBindlessTextureCommand>(CommandType.SetBindlessTexture);
+            Register<SetBlendStateAdvancedCommand>(CommandType.SetBlendStateAdvanced);
             Register<SetBlendStateCommand>(CommandType.SetBlendState);
             Register<SetDepthBiasCommand>(CommandType.SetDepthBias);
             Register<SetDepthClampCommand>(CommandType.SetDepthClamp);

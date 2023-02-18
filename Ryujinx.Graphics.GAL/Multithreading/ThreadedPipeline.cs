@@ -134,6 +134,11 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         public void SetBindlessTexture(int textureId, ITexture texture, int samplerId, ISampler sampler)
         {
             _renderer.New<SetBindlessTextureCommand>().Set(textureId, Ref(texture), samplerId, Ref(sampler));
+        }
+        
+        public void SetBlendState(AdvancedBlendDescriptor blend)
+        {
+            _renderer.New<SetBlendStateAdvancedCommand>().Set(blend);
             _renderer.QueueCommand();
         }
 

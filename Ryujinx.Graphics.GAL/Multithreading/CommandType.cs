@@ -61,6 +61,7 @@
         EndTransformFeedback,
         SetAlphaTest,
         SetBindlessTexture,
+        SetBlendStateAdvanced,
         SetBlendState,
         SetDepthBias,
         SetDepthClamp,
