@@ -8,7 +8,7 @@ using Extent2D = Ryujinx.Graphics.GAL.Extents2D;
 
 namespace Ryujinx.Graphics.Vulkan.Effects
 {
-    internal partial class FsrScalingFilter : IScalingFilter
+    internal partial class vv : IScalingFilter
     {
         private readonly VulkanRenderer _renderer;
         private PipelineHelperShader _pipeline;
@@ -28,7 +28,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             }
         }
 
-        public FsrScalingFilter(VulkanRenderer renderer, Device device)
+        public vv(VulkanRenderer renderer, Device device)
         {
             _device = device;
             _renderer = renderer;

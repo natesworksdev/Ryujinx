@@ -502,10 +502,10 @@ namespace Ryujinx.Graphics.Vulkan
                         _isLinear = _currentScalingFilter == ScalingFilter.Bilinear;
                         break;
                     case ScalingFilter.Fsr:
-                        if (_scalingFilter is not FsrScalingFilter)
+                        if (_scalingFilter is not vv)
                         {
                             _scalingFilter?.Dispose();
-                            _scalingFilter = new FsrScalingFilter(_gd, _device);
+                            _scalingFilter = new vv(_gd, _device);
                         }
 
                         _scalingFilter.Level = _scalingFilterLevel;
