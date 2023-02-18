@@ -1141,7 +1141,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                             {
                                 foreach (var oldHandle in oldGroup.Handles)
                                 {
-                                    if (oldHandle.Equals(handle))
+                                    if (oldHandle.RangeEquals(handle))
                                     {
                                         hasMatch = true;
                                         break;
