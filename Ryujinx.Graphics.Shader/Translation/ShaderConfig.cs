@@ -9,9 +9,6 @@ namespace Ryujinx.Graphics.Shader.Translation
 {
     class ShaderConfig
     {
-        // TODO: Non-hardcoded array size.
-        public const int SamplerArraySize = 4;
-
         private const int ThreadsPerWarp = 32;
 
         public ShaderStage Stage { get; }
@@ -46,6 +43,8 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public FeatureFlags UsedFeatures { get; private set; }
 
+        public BindlessTextureFlags BindlessTextureFlags { get; set; }
+
         public int Cb1DataSize { get; private set; }
 
         public bool LayerOutputWritten { get; private set; }
@@ -72,7 +71,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         private int _usedStorageBuffers;
         private int _usedStorageBuffersWrite;
 
-        private readonly record struct TextureInfo(int CbufSlot, int Handle, bool Indexed, TextureFormat Format);
+        private readonly record struct TextureInfo(int CbufSlot, int Handle, TextureFormat Format);
 
         private struct TextureMeta
         {
@@ -215,6 +214,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             ClipDistancesWritten |= other.ClipDistancesWritten;
             UsedFeatures |= other.UsedFeatures;
+            BindlessTextureFlags |= other.BindlessTextureFlags;
 
             UsedInputAttributes |= other.UsedInputAttributes;
             UsedOutputAttributes |= other.UsedOutputAttributes;
@@ -472,7 +472,6 @@ namespace Ryujinx.Graphics.Shader.Translation
             bool coherent)
         {
             var dimensions = type.GetDimensions();
-            var isIndexed = type.HasFlag(SamplerType.Indexed);
 
             var usageFlags = TextureUsageFlags.None;
 
@@ -480,7 +479,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             {
                 usageFlags |= TextureUsageFlags.NeedsScaleValue;
 
-                var canScale = Stage.SupportsRenderScale() && !isIndexed && !write && dimensions == 2;
+                var canScale = Stage.SupportsRenderScale() && !write && dimensions == 2;
 
                 if (!canScale)
                 {
@@ -500,26 +499,21 @@ namespace Ryujinx.Graphics.Shader.Translation
                 usageFlags |= TextureUsageFlags.ImageCoherent;
             }
 
-            int arraySize = isIndexed ? SamplerArraySize : 1;
-
-            for (int layer = 0; layer < arraySize; layer++)
+            var info = new TextureInfo(cbufSlot, handle, format);
+            var meta = new TextureMeta()
             {
-                var info = new TextureInfo(cbufSlot, handle + layer * 2, isIndexed, format);
-                var meta = new TextureMeta()
-                {
-                    AccurateType = accurateType,
-                    Type = type,
-                    UsageFlags = usageFlags
-                };
+                AccurateType = accurateType,
+                Type = type,
+                UsageFlags = usageFlags
+            };
 
-                if (dict.TryGetValue(info, out var existingMeta))
-                {
-                    dict[info] = MergeTextureMeta(meta, existingMeta);
-                }
-                else
-                {
-                    dict.Add(info, meta);
-                }
+            if (dict.TryGetValue(info, out var existingMeta))
+            {
+                dict[info] = MergeTextureMeta(meta, existingMeta);
+            }
+            else
+            {
+                dict.Add(info, meta);
             }
         }
 
@@ -643,7 +637,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             var descriptors = new TextureDescriptor[dict.Count];
 
             int i = 0;
-            foreach (var kv in dict.OrderBy(x => x.Key.Indexed).OrderBy(x => x.Key.Handle))
+            foreach (var kv in dict.OrderBy(x => x.Key.Handle))
             {
                 var info = kv.Key;
                 var meta = kv.Value;
@@ -714,6 +708,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 GetTextureDescriptors(),
                 GetImageDescriptors(),
                 Stage,
+                BindlessTextureFlags,
                 UsedFeatures.HasFlag(FeatureFlags.InstanceId),
                 UsedFeatures.HasFlag(FeatureFlags.DrawParameters),
                 UsedFeatures.HasFlag(FeatureFlags.RtLayer),

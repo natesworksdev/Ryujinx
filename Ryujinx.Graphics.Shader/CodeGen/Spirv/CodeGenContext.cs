@@ -34,6 +34,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         public Dictionary<TextureMeta, SamplerType> SamplersTypes { get; } = new Dictionary<TextureMeta, SamplerType>();
         public Dictionary<TextureMeta, (Instruction, Instruction, Instruction)> Samplers { get; } = new Dictionary<TextureMeta, (Instruction, Instruction, Instruction)>();
         public Dictionary<TextureMeta, (Instruction, Instruction)> Images { get; } = new Dictionary<TextureMeta, (Instruction, Instruction)>();
+        public Dictionary<SamplerType, (Instruction, Instruction, Instruction, Instruction)> BindlessTextures { get; } = new Dictionary<SamplerType, (Instruction, Instruction, Instruction, Instruction)>();
+        public Dictionary<SamplerType, (Instruction, Instruction, Instruction)> BindlessImages { get; } = new Dictionary<SamplerType, (Instruction, Instruction, Instruction)>();
+        public Instruction SamplerType { get; set; }
+        public Instruction SamplerPointerType { get; set; }
+        public Instruction BindlessSamplersArray { get; set; }
+        public Instruction BindlessTable { get; set; }
         public Dictionary<int, Instruction> Inputs { get; } = new Dictionary<int, Instruction>();
         public Dictionary<int, Instruction> Outputs { get; } = new Dictionary<int, Instruction>();
         public Dictionary<int, Instruction> InputsPerPatch { get; } = new Dictionary<int, Instruction>();

@@ -11,6 +11,7 @@ namespace Ryujinx.Graphics.Shader
         public ReadOnlyCollection<TextureDescriptor> Images { get; }
 
         public ShaderStage Stage { get; }
+        public BindlessTextureFlags BindlessTextureFlags { get; }
         public bool UsesInstanceId { get; }
         public bool UsesDrawParameters { get; }
         public bool UsesRtLayer { get; }
@@ -23,6 +24,7 @@ namespace Ryujinx.Graphics.Shader
             TextureDescriptor[] textures,
             TextureDescriptor[] images,
             ShaderStage stage,
+            BindlessTextureFlags bindlessTextureFlags,
             bool usesInstanceId,
             bool usesDrawParameters,
             bool usesRtLayer,
@@ -35,6 +37,7 @@ namespace Ryujinx.Graphics.Shader
             Images = Array.AsReadOnly(images);
 
             Stage = stage;
+            BindlessTextureFlags = bindlessTextureFlags;
             UsesInstanceId = usesInstanceId;
             UsesDrawParameters = usesDrawParameters;
             UsesRtLayer = usesRtLayer;

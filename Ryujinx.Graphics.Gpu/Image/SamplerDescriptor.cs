@@ -113,6 +113,16 @@ namespace Ryujinx.Graphics.Gpu.Image
             return (CompareOp)(((Word0 >> 10) & 7) + 1);
         }
 
+        public int UnpackFontFilterWidth()
+        {
+            return (int)(Word0 >> 14) & 7;
+        }
+
+        public int UnpackFontFilterHeight()
+        {
+            return (int)(Word0 >> 17) & 7;
+        }
+
         /// <summary>
         /// Unpacks and converts the maximum anisotropy value used for texture anisotropic filtering.
         /// </summary>

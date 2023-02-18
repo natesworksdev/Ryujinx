@@ -14,7 +14,10 @@ namespace Ryujinx.Graphics.Gpu.Image
     {
         private readonly GpuChannel _channel;
         private readonly ConcurrentQueue<Texture> _dereferenceQueue = new ConcurrentQueue<Texture>();
+
         private TextureDescriptor _defaultDescriptor;
+        private readonly List<(int, Texture)> _bindlessList = new List<(int, Texture)>();
+        private bool _bindlessDisable;
 
         /// <summary>
         /// Linked list node used on the texture pool cache.
@@ -147,6 +150,118 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Loads all the textures currently registered by the guest application on the pool.
+        /// This is required for bindless access, as it's not possible to predict which textures will be used.
+        /// </summary>
+        /// <param name="renderer">Renderer of the current GPU context</param>
+        /// <param name="activeSamplerPool">The currently active sampler pool</param>
+        public void LoadAll(IRenderer renderer, SamplerPool activeSamplerPool)
+        {
+            if (activeSamplerPool == null || _bindlessDisable)
+            {
+                return;
+            }
+
+            activeSamplerPool.LoadAll();
+
+            if (SequenceNumber != Context.SequenceNumber)
+            {
+                SequenceNumber = Context.SequenceNumber;
+
+                SynchronizeMemory();
+            }
+
+            var list = _bindlessList;
+
+            ModifiedEntries.BeginIterating();
+
+            int id;
+
+            while ((id = ModifiedEntries.GetNextAndClear()) >= 0)
+            {
+                Texture texture = Items[id] ?? GetValidated(id, true);
+
+                if (texture != null)
+                {
+                    list.Add((id, texture));
+                }
+            }
+
+            // If the total amount of textures and samplers combination would be higher
+            // than the maximum number of handles we can create, then disable bindless emulation.
+            if (activeSamplerPool.Samplers.Count * list.Count > 0x80000)
+            {
+                _bindlessDisable = true;
+                list.Clear();
+                Logger.Warning?.Print(LogClass.Gpu, "Too many textures, full bindless texture emulation has been disabled.");
+                return;
+            }
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                (id, Texture texture) = list[i];
+
+                foreach (var kv in activeSamplerPool.Samplers)
+                {
+                    Sampler sampler = kv.Key;
+                    int samplerId = kv.Value;
+
+                    renderer.Pipeline.SetBindlessTexture(id, texture.HostTexture, samplerId, sampler.GetHostSampler(texture));
+                }
+            }
+
+            list.Clear();
+        }
+
+        /// <summary>
+        /// Gets the texture at the given <paramref name="id"/> from the cache,
+        /// or creates a new one if not found.
+        /// </summary>
+        /// <param name="id">Index of the texture on the pool</param>
+        /// <param name="forBindless">Indicates that the texture is only used for bindless access</param>
+        /// <returns>Texture for the given pool index</returns>
+        private Texture GetValidated(int id, bool forBindless = false)
+        {
+            TextureDescriptor descriptor = GetDescriptor(id);
+
+            if (!FormatTable.TryGetTextureFormat(descriptor.UnpackFormat(), descriptor.UnpackSrgb(), out _))
+            {
+                return null;
+            }
+
+            TextureInfo info = GetInfo(descriptor, out int layerSize);
+
+            // For bindless, we exclude 3D textures due to the current method used for 2D to 3D
+            // slice copies, that only happens when the 3D texture is created for the first time.
+            if (forBindless && info.Target == Target.Texture3D)
+            {
+                return null;
+            }
+
+            TextureValidationResult validationResult = TextureValidation.Validate(ref info);
+
+            if (validationResult != TextureValidationResult.Valid)
+            {
+                return null;
+            }
+
+            // TODO: Eventually get rid of that...
+            if (forBindless && (info.Width > 8192 || info.Height > 8192 || info.DepthOrLayers > 8192))
+            {
+                return null;
+            }
+
+            try
+            {
+                return Get(id);
+            }
+            catch (Ryujinx.Memory.InvalidMemoryRegionException)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Forcibly remove a texture from this pool's items.
         /// If deferred, the dereference will be queued to occur on the render thread.
         /// </summary>
@@ -217,6 +332,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     Items[id] = null;
                 }
+
+                ModifiedEntries.Set(id);
             }
         }
 

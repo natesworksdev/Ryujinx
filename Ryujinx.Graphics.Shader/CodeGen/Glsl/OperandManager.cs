@@ -341,44 +341,28 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             return $"{GetShaderStagePrefix(stage)}_{DefaultNames.UniformNamePrefix}[{slotExpr}].{DefaultNames.DataName}";
         }
 
-        public static string GetSamplerName(ShaderStage stage, AstTextureOperation texOp, string indexExpr)
+        public static string GetSamplerName(ShaderStage stage, AstTextureOperation texOp)
         {
-            return GetSamplerName(stage, texOp.CbufSlot, texOp.Handle, texOp.Type.HasFlag(SamplerType.Indexed), indexExpr);
+            return GetSamplerName(stage, texOp.CbufSlot, texOp.Handle);
         }
 
-        public static string GetSamplerName(ShaderStage stage, int cbufSlot, int handle, bool indexed, string indexExpr)
+        public static string GetSamplerName(ShaderStage stage, int cbufSlot, int handle)
         {
             string suffix = cbufSlot < 0 ? $"_tcb_{handle:X}" : $"_cb{cbufSlot}_{handle:X}";
-
-            if (indexed)
-            {
-                suffix += $"a[{indexExpr}]";
-            }
 
             return GetShaderStagePrefix(stage) + "_" + DefaultNames.SamplerNamePrefix + suffix;
         }
 
-        public static string GetImageName(ShaderStage stage, AstTextureOperation texOp, string indexExpr)
+        public static string GetImageName(ShaderStage stage, AstTextureOperation texOp)
         {
-            return GetImageName(stage, texOp.CbufSlot, texOp.Handle, texOp.Format, texOp.Type.HasFlag(SamplerType.Indexed), indexExpr);
+            return GetImageName(stage, texOp.CbufSlot, texOp.Handle, texOp.Format);
         }
 
-        public static string GetImageName(
-            ShaderStage stage,
-            int cbufSlot,
-            int handle,
-            TextureFormat format,
-            bool indexed,
-            string indexExpr)
+        public static string GetImageName(ShaderStage stage, int cbufSlot, int handle, TextureFormat format)
         {
             string suffix = cbufSlot < 0
                 ? $"_tcb_{handle:X}_{format.ToGlslFormat()}"
                 : $"_cb{cbufSlot}_{handle:X}_{format.ToGlslFormat()}";
-
-            if (indexed)
-            {
-                suffix += $"a[{indexExpr}]";
-            }
 
             return GetShaderStagePrefix(stage) + "_" + DefaultNames.ImageNamePrefix + suffix;
         }

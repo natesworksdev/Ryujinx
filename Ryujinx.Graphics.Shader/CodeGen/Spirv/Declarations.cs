@@ -99,6 +99,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 DeclareLocalMemory(context, localMemorySize);
             }
 
+            if (context.Config.BindlessTextureFlags != BindlessTextureFlags.None)
+            {
+                DeclareBindlessArrays(context);
+            }
+
             DeclareSupportBuffer(context);
             DeclareUniformBuffers(context, context.Config.GetConstantBufferDescriptors());
             DeclareStorageBuffers(context, context.Config.GetStorageBufferDescriptors());
@@ -129,6 +134,114 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             context.AddGlobalVariable(variable);
 
             return variable;
+        }
+
+        private static void DeclareBindlessArrays(CodeGenContext context)
+        {
+            DeclareBindlessTextureArray(context, SamplerType.Texture1D);
+            DeclareBindlessTextureArray(context, SamplerType.Texture2D);
+            DeclareBindlessTextureArray(context, SamplerType.Texture3D);
+            DeclareBindlessTextureArray(context, SamplerType.TextureCube);
+            DeclareBindlessTextureArray(context, SamplerType.Texture1D | SamplerType.Array);
+            DeclareBindlessTextureArray(context, SamplerType.Texture2D | SamplerType.Array);
+            DeclareBindlessTextureArray(context, SamplerType.Texture2D | SamplerType.Multisample);
+            DeclareBindlessTextureArray(context, SamplerType.Texture2D | SamplerType.Multisample | SamplerType.Array);
+            DeclareBindlessTextureArray(context, SamplerType.TextureCube | SamplerType.Array);
+
+            var samplerType = context.TypeSampler();
+            var samplerArrayType = context.TypeRuntimeArray(samplerType);
+            var samplerArrayPointerType = context.TypePointer(StorageClass.UniformConstant, samplerArrayType);
+            var samplerVariable = context.Variable(samplerArrayPointerType, StorageClass.UniformConstant);
+            var samplerPointerType = context.TypePointer(StorageClass.UniformConstant, samplerType);
+
+            context.Decorate(samplerVariable, Decoration.DescriptorSet, (LiteralInteger)5);
+            context.Decorate(samplerVariable, Decoration.Binding, (LiteralInteger)0);
+
+            context.AddGlobalVariable(samplerVariable);
+
+            context.SamplerType = samplerType;
+            context.SamplerPointerType = samplerPointerType;
+            context.BindlessSamplersArray = samplerVariable;
+
+            DeclareBindlessImageArray(context, SamplerType.Texture1D);
+            DeclareBindlessImageArray(context, SamplerType.Texture2D);
+            DeclareBindlessImageArray(context, SamplerType.Texture3D);
+            DeclareBindlessImageArray(context, SamplerType.TextureCube);
+            DeclareBindlessImageArray(context, SamplerType.Texture1D | SamplerType.Array);
+            DeclareBindlessImageArray(context, SamplerType.Texture2D | SamplerType.Array);
+            DeclareBindlessImageArray(context, SamplerType.Texture2D | SamplerType.Multisample);
+            DeclareBindlessImageArray(context, SamplerType.Texture2D | SamplerType.Multisample | SamplerType.Array);
+            DeclareBindlessImageArray(context, SamplerType.TextureCube | SamplerType.Array);
+
+            var vector2UintType = context.TypeVector(context.TypeU32(), 2);
+            var arrayVector2UintType = context.TypeArray(vector2UintType, context.Constant(context.TypeU32(), 4096));
+            var bindlessTableStruct = context.TypeStruct(false, arrayVector2UintType);
+            var bindlessTableStructPointer = context.TypePointer(StorageClass.Uniform, bindlessTableStruct);
+            var bindlessTableVariable = context.Variable(bindlessTableStructPointer, StorageClass.Uniform);
+
+            context.Decorate(arrayVector2UintType, Decoration.ArrayStride, (LiteralInteger)16);
+            context.MemberDecorate(bindlessTableStruct, 0, Decoration.Offset, (LiteralInteger)0);
+            context.Decorate(bindlessTableStruct, Decoration.Block);
+            context.Decorate(bindlessTableVariable, Decoration.DescriptorSet, (LiteralInteger)4);
+            context.Decorate(bindlessTableVariable, Decoration.Binding, (LiteralInteger)0);
+
+            context.AddGlobalVariable(bindlessTableVariable);
+
+            context.BindlessTable = bindlessTableVariable;
+        }
+
+        private static void DeclareBindlessTextureArray(CodeGenContext context, SamplerType samplerType)
+        {
+            var dim = GetDim(samplerType);
+
+            var imageType = context.TypeImage(
+                context.TypeFP32(),
+                dim,
+                samplerType.HasFlag(SamplerType.Shadow),
+                samplerType.HasFlag(SamplerType.Array),
+                samplerType.HasFlag(SamplerType.Multisample),
+                1,
+                ImageFormat.Unknown);
+
+            var sampledImageType = context.TypeSampledImage(imageType);
+
+            var imageArrayType = context.TypeRuntimeArray(imageType);
+            var imageArrayPointerType = context.TypePointer(StorageClass.UniformConstant, imageArrayType);
+            var imageVariable = context.Variable(imageArrayPointerType, StorageClass.UniformConstant);
+            var imagePointerType = context.TypePointer(StorageClass.UniformConstant, imageType);
+
+            context.Decorate(imageVariable, Decoration.DescriptorSet, (LiteralInteger)4);
+            context.Decorate(imageVariable, Decoration.Binding, (LiteralInteger)1);
+
+            context.AddGlobalVariable(imageVariable);
+
+            context.BindlessTextures.Add(samplerType, (imageType, sampledImageType, imagePointerType, imageVariable));
+        }
+
+        private static void DeclareBindlessImageArray(CodeGenContext context, SamplerType samplerType)
+        {
+            var dim = GetDim(samplerType);
+
+            var imageType = context.TypeImage(
+                context.TypeFP32(),
+                dim,
+                samplerType.HasFlag(SamplerType.Shadow),
+                samplerType.HasFlag(SamplerType.Array),
+                samplerType.HasFlag(SamplerType.Multisample),
+                2,
+                ImageFormat.Unknown);
+
+            var imageArrayType = context.TypeRuntimeArray(imageType);
+            var imageArrayPointerType = context.TypePointer(StorageClass.UniformConstant, imageArrayType);
+            var imageVariable = context.Variable(imageArrayPointerType, StorageClass.UniformConstant);
+            var imagePointerType = context.TypePointer(StorageClass.UniformConstant, imageType);
+
+            context.Decorate(imageVariable, Decoration.DescriptorSet, (LiteralInteger)6);
+            context.Decorate(imageVariable, Decoration.Binding, (LiteralInteger)0);
+
+            context.AddGlobalVariable(imageVariable);
+
+            context.BindlessImages.Add(samplerType, (imageType, imagePointerType, imageVariable));
         }
 
         private static void DeclareSupportBuffer(CodeGenContext context)
@@ -252,15 +365,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                 int setIndex = context.Config.Options.TargetApi == TargetApi.Vulkan ? 2 : 0;
 
-                var dim = (descriptor.Type & SamplerType.Mask) switch
-                {
-                    SamplerType.Texture1D => Dim.Dim1D,
-                    SamplerType.Texture2D => Dim.Dim2D,
-                    SamplerType.Texture3D => Dim.Dim3D,
-                    SamplerType.TextureCube => Dim.Cube,
-                    SamplerType.TextureBuffer => Dim.Buffer,
-                    _ => throw new InvalidOperationException($"Invalid sampler type \"{descriptor.Type & SamplerType.Mask}\".")
-                };
+                var dim = GetDim(descriptor.Type);
 
                 var imageType = context.TypeImage(
                     context.TypeFP32(),
@@ -308,7 +413,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     descriptor.Type.HasFlag(SamplerType.Shadow),
                     descriptor.Type.HasFlag(SamplerType.Array),
                     descriptor.Type.HasFlag(SamplerType.Multisample),
-                    AccessQualifier.ReadWrite,
+                    2,
                     GetImageFormat(meta.Format));
 
                 var nameSuffix = meta.CbufSlot < 0 ?

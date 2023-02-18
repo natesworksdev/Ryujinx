@@ -12,6 +12,14 @@ namespace Ryujinx.Graphics.Vulkan
             ShaderStageFlags.FragmentBit |
             ShaderStageFlags.ComputeBit;
 
+        private const ShaderStageFlags AllStages =
+            ShaderStageFlags.VertexBit |
+            ShaderStageFlags.TessellationControlBit |
+            ShaderStageFlags.TessellationEvaluationBit |
+            ShaderStageFlags.GeometryBit |
+            ShaderStageFlags.FragmentBit |
+            ShaderStageFlags.ComputeBit;
+
         public static unsafe DescriptorSetLayout[] Create(VulkanRenderer gd, Device device, uint stages, bool usePd, out PipelineLayout layout)
         {
             int stagesCount = BitOperations.PopCount(stages);
@@ -31,6 +39,41 @@ namespace Ryujinx.Graphics.Vulkan
                 DescriptorType = DescriptorType.UniformBuffer,
                 DescriptorCount = 1,
                 StageFlags = SupportBufferStages
+            };
+
+            DescriptorSetLayoutBinding* btLayoutBindings = stackalloc DescriptorSetLayoutBinding[2];
+
+            btLayoutBindings[0] = new DescriptorSetLayoutBinding()
+            {
+                Binding = 0,
+                DescriptorType = DescriptorType.UniformBuffer,
+                DescriptorCount = 1,
+                StageFlags = AllStages
+            };
+
+            // TODO: Query maximum count supported by the device and use that instead.
+            btLayoutBindings[1] = new DescriptorSetLayoutBinding()
+            {
+                Binding = 1,
+                DescriptorType = DescriptorType.SampledImage,
+                DescriptorCount = 16384,
+                StageFlags = AllStages
+            };
+
+            DescriptorSetLayoutBinding bsLayoutBinding = new DescriptorSetLayoutBinding()
+            {
+                Binding = 0,
+                DescriptorType = DescriptorType.Sampler,
+                DescriptorCount = 16384,
+                StageFlags = AllStages
+            };
+
+            DescriptorSetLayoutBinding biLayoutBinding = new DescriptorSetLayoutBinding()
+            {
+                Binding = 0,
+                DescriptorType = DescriptorType.StorageImage,
+                DescriptorCount = 16384,
+                StageFlags = AllStages
             };
 
             int iter = 0;
@@ -86,7 +129,7 @@ namespace Ryujinx.Graphics.Vulkan
                 iter++;
             }
 
-            DescriptorSetLayout[] layouts = new DescriptorSetLayout[PipelineBase.DescriptorSetLayouts];
+            DescriptorSetLayout[] layouts = new DescriptorSetLayout[PipelineBase.DescriptorSetLayoutsBindless];
 
             var uDescriptorSetLayoutCreateInfo = new DescriptorSetLayoutCreateInfo()
             {
@@ -117,10 +160,58 @@ namespace Ryujinx.Graphics.Vulkan
                 BindingCount = (uint)iCount
             };
 
+            var btBindingsFlags = stackalloc DescriptorBindingFlags[] { 0, DescriptorBindingFlags.UpdateAfterBindBit };
+
+            var btDescriptorSetLayoutFlagsCreateInfo = new DescriptorSetLayoutBindingFlagsCreateInfo()
+            {
+                SType = StructureType.DescriptorSetLayoutBindingFlagsCreateInfo,
+                PBindingFlags = btBindingsFlags,
+                BindingCount = 2
+            };
+
+            var btDescriptorSetLayoutCreateInfo = new DescriptorSetLayoutCreateInfo()
+            {
+                SType = StructureType.DescriptorSetLayoutCreateInfo,
+                PNext = &btDescriptorSetLayoutFlagsCreateInfo,
+                Flags = DescriptorSetLayoutCreateFlags.UpdateAfterBindPoolBit,
+                PBindings = btLayoutBindings,
+                BindingCount = 2
+            };
+
+            var bsBindingFlag = DescriptorBindingFlags.UpdateAfterBindBit;
+
+            var bsDescriptorSetLayoutFlagsCreateInfo = new DescriptorSetLayoutBindingFlagsCreateInfo()
+            {
+                SType = StructureType.DescriptorSetLayoutBindingFlagsCreateInfo,
+                PBindingFlags = &bsBindingFlag,
+                BindingCount = 1
+            };
+
+            var bsDescriptorSetLayoutCreateInfo = new DescriptorSetLayoutCreateInfo()
+            {
+                SType = StructureType.DescriptorSetLayoutCreateInfo,
+                PNext = &bsDescriptorSetLayoutFlagsCreateInfo,
+                Flags = DescriptorSetLayoutCreateFlags.UpdateAfterBindPoolBit,
+                PBindings = &bsLayoutBinding,
+                BindingCount = 1
+            };
+
+            var biDescriptorSetLayoutCreateInfo = new DescriptorSetLayoutCreateInfo()
+            {
+                SType = StructureType.DescriptorSetLayoutCreateInfo,
+                PNext = &bsDescriptorSetLayoutFlagsCreateInfo,
+                Flags = DescriptorSetLayoutCreateFlags.UpdateAfterBindPoolBit,
+                PBindings = &biLayoutBinding,
+                BindingCount = 1
+            };
+
             gd.Api.CreateDescriptorSetLayout(device, uDescriptorSetLayoutCreateInfo, null, out layouts[PipelineBase.UniformSetIndex]).ThrowOnError();
             gd.Api.CreateDescriptorSetLayout(device, sDescriptorSetLayoutCreateInfo, null, out layouts[PipelineBase.StorageSetIndex]).ThrowOnError();
             gd.Api.CreateDescriptorSetLayout(device, tDescriptorSetLayoutCreateInfo, null, out layouts[PipelineBase.TextureSetIndex]).ThrowOnError();
             gd.Api.CreateDescriptorSetLayout(device, iDescriptorSetLayoutCreateInfo, null, out layouts[PipelineBase.ImageSetIndex]).ThrowOnError();
+            gd.Api.CreateDescriptorSetLayout(device, btDescriptorSetLayoutCreateInfo, null, out layouts[PipelineBase.BindlessTexturesSetIndex]).ThrowOnError();
+            gd.Api.CreateDescriptorSetLayout(device, bsDescriptorSetLayoutCreateInfo, null, out layouts[PipelineBase.BindlessSamplersSetIndex]).ThrowOnError();
+            gd.Api.CreateDescriptorSetLayout(device, biDescriptorSetLayoutCreateInfo, null, out layouts[PipelineBase.BindlessImagesSetIndex]).ThrowOnError();
 
             fixed (DescriptorSetLayout* pLayouts = layouts)
             {
@@ -128,7 +219,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     SType = StructureType.PipelineLayoutCreateInfo,
                     PSetLayouts = pLayouts,
-                    SetLayoutCount = PipelineBase.DescriptorSetLayouts
+                    SetLayoutCount = PipelineBase.DescriptorSetLayoutsBindless
                 };
 
                 gd.Api.CreatePipelineLayout(device, &pipelineLayoutCreateInfo, null, out layout).ThrowOnError();

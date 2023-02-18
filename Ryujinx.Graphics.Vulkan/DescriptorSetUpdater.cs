@@ -30,6 +30,8 @@ namespace Ryujinx.Graphics.Vulkan
         private BufferView[] _bufferTextures;
         private BufferView[] _bufferImages;
 
+        private readonly BindlessManager _bindlessManager;
+
         private bool[] _uniformSet;
         private bool[] _storageSet;
         private Silk.NET.Vulkan.Buffer _cachedSupportBuffer;
@@ -42,7 +44,8 @@ namespace Ryujinx.Graphics.Vulkan
             Storage = 1 << 1,
             Texture = 1 << 2,
             Image = 1 << 3,
-            All = Uniform | Storage | Texture | Image
+            Bindless = 1 << 4,
+            All = Uniform | Storage | Texture | Image | Bindless
         }
 
         private DirtyFlags _dirty;
@@ -82,6 +85,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             _textures.AsSpan().Fill(initialImageInfo);
             _images.AsSpan().Fill(initialImageInfo);
+
+            _bindlessManager = new BindlessManager();
 
             _uniformSet = new bool[Constants.MaxUniformBufferBindings];
             _storageSet = new bool[Constants.MaxStorageBufferBindings];
@@ -281,6 +286,25 @@ namespace Ryujinx.Graphics.Vulkan
             SignalDirty(DirtyFlags.Uniform);
         }
 
+        public void SetBindlessTexture(int textureId, ITexture texture)
+        {
+            if (texture is TextureBuffer)
+            {
+                return;
+            }
+
+            _bindlessManager.SetBindlessTexture(textureId, (TextureView)texture);
+
+            SignalDirty(DirtyFlags.Bindless);
+        }
+
+        public void SetBindlessSampler(int samplerId, ISampler sampler)
+        {
+            _bindlessManager.SetBindlessSampler(samplerId, ((SamplerHolder)sampler)?.GetSampler());
+
+            SignalDirty(DirtyFlags.Bindless);
+        }
+
         private void SignalDirty(DirtyFlags flag)
         {
             _dirty |= flag;
@@ -318,6 +342,11 @@ namespace Ryujinx.Graphics.Vulkan
             if (_dirty.HasFlag(DirtyFlags.Image))
             {
                 UpdateAndBind(cbs, PipelineBase.ImageSetIndex, pbp);
+            }
+
+            if (_dirty.HasFlag(DirtyFlags.Bindless) && !_program.HasMinimalLayout)
+            {
+                _bindlessManager.UpdateAndBind(_gd, _program, cbs, pbp, _dummySampler);
             }
 
             _dirty = DirtyFlags.None;

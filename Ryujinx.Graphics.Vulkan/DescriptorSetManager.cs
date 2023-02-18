@@ -31,7 +31,9 @@ namespace Ryujinx.Graphics.Vulkan
                     new DescriptorPoolSize(DescriptorType.CombinedImageSampler, Constants.MaxTextureBindings * DescriptorPoolMultiplier),
                     new DescriptorPoolSize(DescriptorType.StorageImage, Constants.MaxImageBindings * DescriptorPoolMultiplier),
                     new DescriptorPoolSize(DescriptorType.UniformTexelBuffer, Constants.MaxTextureBindings * DescriptorPoolMultiplier),
-                    new DescriptorPoolSize(DescriptorType.StorageTexelBuffer, Constants.MaxImageBindings * DescriptorPoolMultiplier)
+                    new DescriptorPoolSize(DescriptorType.StorageTexelBuffer, Constants.MaxImageBindings * DescriptorPoolMultiplier),
+                    new DescriptorPoolSize(DescriptorType.SampledImage, 16384),
+                    new DescriptorPoolSize(DescriptorType.Sampler, 16384),
                 };
 
                 uint maxSets = (uint)poolSizes.Length * DescriptorPoolMultiplier;
@@ -43,6 +45,7 @@ namespace Ryujinx.Graphics.Vulkan
                     var descriptorPoolCreateInfo = new DescriptorPoolCreateInfo()
                     {
                         SType = StructureType.DescriptorPoolCreateInfo,
+                        Flags = DescriptorPoolCreateFlags.UpdateAfterBindBit,
                         MaxSets = maxSets,
                         PoolSizeCount = (uint)poolSizes.Length,
                         PPoolSizes = pPoolsSize

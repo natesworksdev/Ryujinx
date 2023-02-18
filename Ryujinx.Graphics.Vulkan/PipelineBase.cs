@@ -13,11 +13,15 @@ namespace Ryujinx.Graphics.Vulkan
     class PipelineBase : IDisposable
     {
         public const int DescriptorSetLayouts = 4;
+        public const int DescriptorSetLayoutsBindless = 7;
 
         public const int UniformSetIndex = 0;
         public const int StorageSetIndex = 1;
         public const int TextureSetIndex = 2;
         public const int ImageSetIndex = 3;
+        public const int BindlessTexturesSetIndex = 4;
+        public const int BindlessSamplersSetIndex = 5;
+        public const int BindlessImagesSetIndex = 6;
 
         protected readonly VulkanRenderer Gd;
         protected readonly Device Device;
@@ -697,6 +701,12 @@ namespace Ryujinx.Graphics.Vulkan
             // This is currently handled using shader specialization, as Vulkan does not support alpha test.
             // In the future, we may want to use this to write the reference value into the support buffer,
             // to avoid creating one version of the shader per reference value used.
+        }
+
+        public void SetBindlessTexture(int textureId, ITexture texture, int samplerId, ISampler sampler)
+        {
+            _descriptorSetUpdater.SetBindlessTexture(textureId, texture);
+            _descriptorSetUpdater.SetBindlessSampler(samplerId, sampler);
         }
 
         public void SetBlendState(int index, BlendDescriptor blend)

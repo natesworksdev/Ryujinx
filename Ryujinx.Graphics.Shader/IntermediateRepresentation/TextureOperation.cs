@@ -41,19 +41,11 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
         {
         }
 
-        public void TurnIntoIndexed(int handle)
-        {
-            Type |= SamplerType.Indexed;
-            Flags &= ~TextureFlags.Bindless;
-            Handle = handle;
-        }
-
         public void SetHandle(int handle, int cbufSlot = DefaultCbufSlot)
         {
             if ((Flags & TextureFlags.Bindless) != 0)
             {
                 Flags &= ~TextureFlags.Bindless;
-
                 RemoveSource(0);
             }
 
@@ -64,6 +56,15 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
         public void SetLodLevelFlag()
         {
             Flags |= TextureFlags.LodLevel;
+        }
+
+        public void TurnIntoBindless(Operand handle)
+        {
+            if ((Flags & TextureFlags.Bindless) == 0)
+            {
+                Flags |= TextureFlags.Bindless;
+                PrependSources(new Operand[] { handle });
+            }
         }
     }
 }

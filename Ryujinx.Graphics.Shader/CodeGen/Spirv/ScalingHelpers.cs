@@ -15,15 +15,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             SpvInstruction vector,
             bool intCoords,
             bool isBindless,
-            bool isIndexed,
             bool isArray,
             int pCount)
         {
             if (intCoords)
             {
-                if (context.Config.Stage.SupportsRenderScale() &&
-                    !isBindless &&
-                    !isIndexed)
+                if (context.Config.Stage.SupportsRenderScale() && !isBindless)
                 {
                     int index = texOp.Inst == Instruction.ImageLoad
                         ? context.Config.GetTextureDescriptors().Length + context.Config.FindImageDescriptorIndex(texOp)
@@ -185,12 +182,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             CodeGenContext context,
             AstTextureOperation texOp,
             SpvInstruction size,
-            bool isBindless,
-            bool isIndexed)
+            bool isBindless)
         {
-            if (context.Config.Stage.SupportsRenderScale() &&
-                !isBindless &&
-                !isIndexed)
+            if (context.Config.Stage.SupportsRenderScale() && !isBindless)
             {
                 int index = context.Config.FindTextureDescriptorIndex(texOp);
 

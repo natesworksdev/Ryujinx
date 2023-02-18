@@ -17,33 +17,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
 
-            // TODO: Bindless texture support. For now we just return 0/do nothing.
-            if (isBindless)
-            {
-                switch (texOp.Inst)
-                {
-                    case Instruction.ImageStore:
-                        return "// imageStore(bindless)";
-                    case Instruction.ImageLoad:
-                        AggregateType componentType = texOp.Format.GetComponentType();
-
-                        NumberFormatter.TryFormat(0, componentType, out string imageConst);
-
-                        AggregateType outputType = texOp.GetVectorType(componentType);
-
-                        if ((outputType & AggregateType.ElementCountMask) != 0)
-                        {
-                            return $"{Declarations.GetVarTypeName(context, outputType, precise: false)}({imageConst})";
-                        }
-
-                        return imageConst;
-                    default:
-                        return NumberFormatter.FormatInt(0);
-                }
-            }
-
-            bool isArray   = (texOp.Type & SamplerType.Array)   != 0;
-            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
+            bool isArray = (texOp.Type & SamplerType.Array) != 0;
 
             var texCallBuilder = new StringBuilder();
 
@@ -68,24 +42,28 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 texCallBuilder.Append(texOp.Inst == Instruction.ImageLoad ? "imageLoad" : "imageStore");
             }
 
-            int srcIndex = isBindless ? 1 : 0;
+            int srcIndex = 0;
 
             string Src(AggregateType type)
             {
                 return GetSoureExpr(context, texOp.GetSource(srcIndex++), type);
             }
 
-            string indexExpr = null;
+            AggregateType type = texOp.Format.GetComponentType();
 
-            if (isIndexed)
+            string bindlessHandle = null;
+
+            if (isBindless)
             {
-                indexExpr = Src(AggregateType.S32);
+                bindlessHandle = Src(AggregateType.S32);
+                texCallBuilder.Append('(');
+                texCallBuilder.Append(GetBindlessImage(context, texOp.Type, type, bindlessHandle));
             }
-
-            string imageName = OperandManager.GetImageName(context.Config.Stage, texOp, indexExpr);
-
-            texCallBuilder.Append('(');
-            texCallBuilder.Append(imageName);
+            else
+            {
+                texCallBuilder.Append('(');
+                texCallBuilder.Append(OperandManager.GetImageName(context.Config.Stage, texOp));
+            }
 
             int coordsCount = texOp.Type.GetDimensions();
 
@@ -101,20 +79,32 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             {
                 if (context.Config.Stage.SupportsRenderScale() &&
                     texOp.Inst == Instruction.ImageLoad &&
-                    !isBindless &&
-                    !isIndexed)
+                    !isBindless)
                 {
                     // Image scales start after texture ones.
                     int scaleIndex = context.Config.GetTextureDescriptors().Length + context.Config.FindImageDescriptorIndex(texOp);
 
+                    string scaleFunc;
+
+                    if (isBindless)
+                    {
+                        scaleFunc = "Helper_TexelFetchScaleBindless";
+                        bindlessHandle = ", " + bindlessHandle;
+                    }
+                    else
+                    {
+                        scaleFunc = "Helper_TexelFetchScale";
+                        bindlessHandle = string.Empty;
+                    }
+
                     if (pCount == 3 && isArray)
                     {
                         // The array index is not scaled, just x and y.
-                        vector = $"ivec3(Helper_TexelFetchScale(({vector}).xy, {scaleIndex}), ({vector}).z)";
+                        vector = $"ivec3({scaleFunc}(({vector}).xy{bindlessHandle}, {scaleIndex}), ({vector}).z)";
                     }
                     else if (pCount == 2 && !isArray)
                     {
-                        vector = $"Helper_TexelFetchScale({vector}, {scaleIndex})";
+                        vector = $"{scaleFunc}({vector}{bindlessHandle}, {scaleIndex})";
                     }
                 }
 
@@ -139,8 +129,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             if (texOp.Inst == Instruction.ImageStore)
             {
-                AggregateType type = texOp.Format.GetComponentType();
-
                 string[] cElems = new string[4];
 
                 for (int index = 0; index < 4; index++)
@@ -172,8 +160,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             if (texOp.Inst == Instruction.ImageAtomic)
             {
-                AggregateType type = texOp.Format.GetComponentType();
-
                 if ((texOp.Flags & TextureFlags.AtomicMask) == TextureFlags.CAS)
                 {
                     Append(Src(type)); // Compare value.
@@ -303,18 +289,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 return NumberFormatter.FormatFloat(0);
             }
 
-            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
+            string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp);
 
-            string indexExpr = null;
-
-            if (isIndexed)
-            {
-                indexExpr = GetSoureExpr(context, texOp.GetSource(0), AggregateType.S32);
-            }
-
-            string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp, indexExpr);
-
-            int coordsIndex = isBindless || isIndexed ? 1 : 0;
+            int coordsIndex = isBindless ? 1 : 0;
 
             string coordsExpr;
 
@@ -486,7 +463,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             bool hasOffsets     = (texOp.Flags & TextureFlags.Offsets)     != 0;
 
             bool isArray       = (texOp.Type & SamplerType.Array)       != 0;
-            bool isIndexed     = (texOp.Type & SamplerType.Indexed)     != 0;
             bool isMultisample = (texOp.Type & SamplerType.Multisample) != 0;
             bool isShadow      = (texOp.Type & SamplerType.Shadow)      != 0;
 
@@ -510,24 +486,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             if (isShadow && isCube && !context.Config.GpuAccessor.QueryHostSupportsTextureShadowLod())
             {
                 hasLodLevel = false;
-            }
-
-            // TODO: Bindless texture support. For now we just return 0.
-            if (isBindless)
-            {
-                string scalarValue = NumberFormatter.FormatFloat(0);
-
-                if (colorIsVector)
-                {
-                    AggregateType outputType = texOp.GetVectorType(AggregateType.FP32);
-
-                    if ((outputType & AggregateType.ElementCountMask) != 0)
-                    {
-                        return $"{Declarations.GetVarTypeName(context, outputType, precise: false)}({scalarValue})";
-                    }
-                }
-
-                return scalarValue;
             }
 
             string texCall = intCoords ? "texelFetch" : "texture";
@@ -554,23 +512,24 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 texCall += "Offsets";
             }
 
-            int srcIndex = isBindless ? 1 : 0;
+            int srcIndex = 0;
 
             string Src(AggregateType type)
             {
                 return GetSoureExpr(context, texOp.GetSource(srcIndex++), type);
             }
 
-            string indexExpr = null;
+            string bindlessHandle = null;
 
-            if (isIndexed)
+            if (isBindless)
             {
-                indexExpr = Src(AggregateType.S32);
+                bindlessHandle = Src(AggregateType.S32);
+                texCall += "(" + GetBindlessSampler(context, texOp.Type, bindlessHandle);
             }
-
-            string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp, indexExpr);
-
-            texCall += "(" + samplerName;
+            else
+            {
+                texCall += "(" + OperandManager.GetSamplerName(context.Config.Stage, texOp);
+            }
 
             int coordsCount = texOp.Type.GetDimensions();
 
@@ -656,20 +615,31 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             {
                 if (intCoords)
                 {
-                    if (context.Config.Stage.SupportsRenderScale() &&
-                        !isBindless &&
-                        !isIndexed)
+                    if (context.Config.Stage.SupportsRenderScale() && !isBindless)
                     {
                         int index = context.Config.FindTextureDescriptorIndex(texOp);
+
+                        string scaleFunc;
+
+                        if (isBindless)
+                        {
+                            scaleFunc = "Helper_TexelFetchScaleBindless";
+                            bindlessHandle = ", " + bindlessHandle;
+                        }
+                        else
+                        {
+                            scaleFunc = "Helper_TexelFetchScale";
+                            bindlessHandle = string.Empty;
+                        }
 
                         if (pCount == 3 && isArray)
                         {
                             // The array index is not scaled, just x and y.
-                            vector = "ivec3(Helper_TexelFetchScale((" + vector + ").xy, " + index + "), (" + vector + ").z)";
+                            vector = $"ivec3({scaleFunc}(({vector}).xy{bindlessHandle}, {index}), ({vector}).z)";
                         }
                         else if (pCount == 2 && !isArray)
                         {
-                            vector = "Helper_TexelFetchScale(" + vector + ", " + index + ")";
+                            vector = $"{scaleFunc}({vector}{bindlessHandle}, {index})";
                         }
                     }
                 }
@@ -780,16 +750,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 return NumberFormatter.FormatInt(0);
             }
 
-            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
-
-            string indexExpr = null;
-
-            if (isIndexed)
-            {
-                indexExpr = GetSoureExpr(context, texOp.GetSource(0), AggregateType.S32);
-            }
-
-            string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp, indexExpr);
+            string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp);
 
             if (texOp.Index == 3)
             {
@@ -803,7 +764,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                 if (hasLod)
                 {
-                    int lodSrcIndex = isBindless || isIndexed ? 1 : 0;
+                    int lodSrcIndex = isBindless ? 1 : 0;
                     IAstNode lod = operation.GetSource(lodSrcIndex);
                     string lodExpr = GetSoureExpr(context, lod, GetSrcVarType(operation.Inst, lodSrcIndex));
 
@@ -816,13 +777,71 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                 if (context.Config.Stage.SupportsRenderScale() &&
                     (texOp.Index < 2 || (texOp.Type & SamplerType.Mask) == SamplerType.Texture3D) &&
-                    !isBindless &&
-                    !isIndexed)
+                    !isBindless)
                 {
                     texCall = $"Helper_TextureSizeUnscale({texCall}, {descriptorIndex})";
                 }
 
                 return texCall;
+            }
+        }
+
+        private static string GetBindlessSampler(CodeGenContext context, SamplerType type, string bindlessHandle)
+        {
+            string samplerType = type.ToGlslSamplerType();
+
+            if (context.Config.Options.TargetApi == TargetApi.Vulkan)
+            {
+                string textureIndex = $"{HelperFunctionNames.GetBindlessTextureIndexVk}({bindlessHandle})";
+                string samplerIndex = $"{HelperFunctionNames.GetBindlessSamplerIndexVk}({bindlessHandle})";
+
+                string bindlessTextureArrayName = (type & ~SamplerType.Shadow) switch
+                {
+                    SamplerType.Texture1D => DefaultNames.BindlessTextureArray1DName,
+                    SamplerType.Texture2D => DefaultNames.BindlessTextureArray2DName,
+                    SamplerType.Texture3D => DefaultNames.BindlessTextureArray3DName,
+                    SamplerType.TextureCube => DefaultNames.BindlessTextureArrayCubeName,
+                    SamplerType.Texture1D | SamplerType.Array => DefaultNames.BindlessTextureArray1DArrayName,
+                    SamplerType.Texture2D | SamplerType.Array => DefaultNames.BindlessTextureArray2DArrayName,
+                    SamplerType.Texture2D | SamplerType.Multisample => DefaultNames.BindlessTextureArray2DMSName,
+                    SamplerType.Texture2D | SamplerType.Multisample | SamplerType.Array => DefaultNames.BindlessTextureArray2DMSArrayName,
+                    _ => DefaultNames.BindlessTextureArray2DName
+                };
+
+                return $"{samplerType}({bindlessTextureArrayName}[{textureIndex}], {DefaultNames.BindlessSamplerArrayName}[{samplerIndex}])";
+            }
+            else
+            {
+                return $"{samplerType}({HelperFunctionNames.GetBindlessHandle}({bindlessHandle}))";
+            }
+        }
+
+        private static string GetBindlessImage(CodeGenContext context, SamplerType type, AggregateType componentType, string bindlessHandle)
+        {
+            string imageType = type.ToGlslImageType(componentType);
+
+            if (context.Config.Options.TargetApi == TargetApi.Vulkan)
+            {
+                string textureIndex = $"{HelperFunctionNames.GetBindlessTextureIndexVk}({bindlessHandle})";
+
+                string bindlessImageArrayName = (type & ~SamplerType.Shadow) switch
+                {
+                    SamplerType.Texture1D => DefaultNames.BindlessImageArray1DName,
+                    SamplerType.Texture2D => DefaultNames.BindlessImageArray2DName,
+                    SamplerType.Texture3D => DefaultNames.BindlessImageArray3DName,
+                    SamplerType.TextureCube => DefaultNames.BindlessImageArrayCubeName,
+                    SamplerType.Texture1D | SamplerType.Array => DefaultNames.BindlessImageArray1DArrayName,
+                    SamplerType.Texture2D | SamplerType.Array => DefaultNames.BindlessImageArray2DArrayName,
+                    SamplerType.Texture2D | SamplerType.Multisample => DefaultNames.BindlessImageArray2DMSName,
+                    SamplerType.Texture2D | SamplerType.Multisample | SamplerType.Array => DefaultNames.BindlessImageArray2DMSArrayName,
+                    _ => DefaultNames.BindlessImageArray2DName
+                };
+
+                return $"{bindlessImageArrayName}[{textureIndex}]";
+            }
+            else
+            {
+                return $"{imageType}({HelperFunctionNames.GetBindlessHandle}({bindlessHandle}))";
             }
         }
 

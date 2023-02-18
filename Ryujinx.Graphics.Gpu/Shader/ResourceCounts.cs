@@ -31,6 +31,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public ResourceCounts()
         {
             UniformBuffersCount = 1; // The first binding is reserved for the support buffer.
+            TexturesCount = 2; // Reserved for bindless tables.
         }
     }
 }

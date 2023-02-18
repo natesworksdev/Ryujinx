@@ -5,6 +5,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         public static string AtomicMaxS32 = "Helper_AtomicMaxS32";
         public static string AtomicMinS32 = "Helper_AtomicMinS32";
 
+        public static string GetBindlessHandle = "Helper_GetBindlessHandle";
+        public static string GetBindlessTextureIndexVk = "Helper_GetBindlessTextureIndex";
+        public static string GetBindlessSamplerIndexVk = "Helper_GetBindlessSamplerIndex";
+
         public static string MultiplyHighS32 = "Helper_MultiplyHighS32";
         public static string MultiplyHighU32 = "Helper_MultiplyHighU32";
 
