@@ -446,7 +446,7 @@ namespace Ryujinx.Ui.Common.Configuration
             /// <summary>
             /// Sets the framebuffer upscaling level.
             /// </summary>
-            public ReactiveObject<float> ScalingFilterLevel { get; private set; }
+            public ReactiveObject<int> ScalingFilterLevel { get; private set; }
 
             /// <summary>
             /// Preferred GPU
@@ -480,10 +480,10 @@ namespace Ryujinx.Ui.Common.Configuration
                 EnableMacroHLE.Event             += static (sender, e) => LogValueChange(sender, e, nameof(EnableMacroHLE));
                 AntiAliasing                     = new ReactiveObject<AntiAliasing>();
                 AntiAliasing.Event               += static (sender, e) => LogValueChange(sender, e, nameof(AntiAliasing));
-                ScalingFilter                      = new ReactiveObject<ScalingFilter>();
-                ScalingFilter.Event                += static (sender, e) => LogValueChange(sender, e, nameof(ScalingFilter));
-                ScalingFilterLevel                     = new ReactiveObject<float>();
-                ScalingFilterLevel.Event               += static (sender, e) => LogValueChange(sender, e, nameof(ScalingFilterLevel));
+                ScalingFilter                    = new ReactiveObject<ScalingFilter>();
+                ScalingFilter.Event              += static (sender, e) => LogValueChange(sender, e, nameof(ScalingFilter));
+                ScalingFilterLevel               = new ReactiveObject<int>();
+                ScalingFilterLevel.Event         += static (sender, e) => LogValueChange(sender, e, nameof(ScalingFilterLevel));
             }
         }
 
@@ -562,8 +562,8 @@ namespace Ryujinx.Ui.Common.Configuration
                 MaxAnisotropy              = Graphics.MaxAnisotropy,
                 AspectRatio                = Graphics.AspectRatio,
                 AntiAliasing               = Graphics.AntiAliasing,
-                ScalingFilter                = Graphics.ScalingFilter,
-                ScalingFilterLevel               = Graphics.ScalingFilterLevel,
+                ScalingFilter              = Graphics.ScalingFilter,
+                ScalingFilterLevel         = Graphics.ScalingFilterLevel,
                 GraphicsShadersDumpPath    = Graphics.ShadersDumpPath,
                 LoggingEnableDebug         = Logger.EnableDebug,
                 LoggingEnableStub          = Logger.EnableStub,
@@ -676,8 +676,8 @@ namespace Ryujinx.Ui.Common.Configuration
             Graphics.EnableTextureRecompression.Value = false;
             Graphics.EnableMacroHLE.Value             = true;
             Graphics.AntiAliasing.Value               = AntiAliasing.None;
-            Graphics.ScalingFilter.Value                = ScalingFilter.Bilinear;
-            Graphics.ScalingFilterLevel.Value               = 0.3f;
+            Graphics.ScalingFilter.Value              = ScalingFilter.Bilinear;
+            Graphics.ScalingFilterLevel.Value         = 80;
             System.EnablePtc.Value                    = true;
             System.EnableInternetAccess.Value         = false;
             System.EnableFsIntegrityChecks.Value      = true;
@@ -1241,7 +1241,7 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 configurationFileFormat.AntiAliasing = AntiAliasing.None;
                 configurationFileFormat.ScalingFilter = ScalingFilter.Bilinear;
-                configurationFileFormat.ScalingFilterLevel = 0.3f;
+                configurationFileFormat.ScalingFilterLevel = 80;
 
                 configurationFileUpdated = true;
             }
@@ -1256,8 +1256,8 @@ namespace Ryujinx.Ui.Common.Configuration
             Graphics.GraphicsBackend.Value            = configurationFileFormat.GraphicsBackend;
             Graphics.PreferredGpu.Value               = configurationFileFormat.PreferredGpu;
             Graphics.AntiAliasing.Value               = configurationFileFormat.AntiAliasing;
-            Graphics.ScalingFilter.Value                = configurationFileFormat.ScalingFilter;
-            Graphics.ScalingFilterLevel.Value               = configurationFileFormat.ScalingFilterLevel;
+            Graphics.ScalingFilter.Value              = configurationFileFormat.ScalingFilter;
+            Graphics.ScalingFilterLevel.Value         = configurationFileFormat.ScalingFilterLevel;
             Logger.EnableDebug.Value                  = configurationFileFormat.LoggingEnableDebug;
             Logger.EnableStub.Value                   = configurationFileFormat.LoggingEnableStub;
             Logger.EnableInfo.Value                   = configurationFileFormat.LoggingEnableInfo;

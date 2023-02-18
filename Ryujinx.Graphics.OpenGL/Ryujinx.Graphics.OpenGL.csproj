@@ -12,15 +12,15 @@
   <ItemGroup>
     <EmbeddedResource Include="Effects\Textures\SmaaAreaTexture.bin" />
     <EmbeddedResource Include="Effects\Textures\SmaaSearchTexture.bin" />
-    <EmbeddedResource Include="Shaders\fsr_sharpening.glsl" />
-    <EmbeddedResource Include="Shaders\fxaa.glsl" />
-    <EmbeddedResource Include="Shaders\smaa.hlsl" />
-    <EmbeddedResource Include="Shaders\smaa_blend.glsl" />
-    <EmbeddedResource Include="Shaders\smaa_edge.glsl" />
-    <EmbeddedResource Include="Shaders\smaa_neighbour.glsl" />
-    <EmbeddedResource Include="Shaders\ffx_fsr1.h" />
-    <EmbeddedResource Include="Shaders\ffx_a.h" />
-    <EmbeddedResource Include="Shaders\fsr_scaling.glsl" />
+    <EmbeddedResource Include="Effects\Shaders\fsr_sharpening.glsl" />
+    <EmbeddedResource Include="Effects\Shaders\fxaa.glsl" />
+    <EmbeddedResource Include="Effects\Shaders\smaa.hlsl" />
+    <EmbeddedResource Include="Effects\Shaders\smaa_blend.glsl" />
+    <EmbeddedResource Include="Effects\Shaders\smaa_edge.glsl" />
+    <EmbeddedResource Include="Effects\Shaders\smaa_neighbour.glsl" />
+    <EmbeddedResource Include="Effects\Shaders\ffx_fsr1.h" />
+    <EmbeddedResource Include="Effects\Shaders\ffx_a.h" />
+    <EmbeddedResource Include="Effects\Shaders\fsr_scaling.glsl" />
   </ItemGroup>
 
   <ItemGroup>

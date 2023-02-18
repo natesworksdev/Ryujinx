@@ -57,10 +57,10 @@ namespace Ryujinx.Graphics.OpenGL.Effects
 
         private void Initialize()
         {
-            var scalingShader = EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Shaders/fsr_scaling.glsl");
-            var sharpeningShader = EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Shaders/fsr_sharpening.glsl");
-            var fsrA = EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Shaders/ffx_a.h");
-            var fsr1 = EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Shaders/ffx_fsr1.h");
+            var scalingShader = EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Effects/Shaders/fsr_scaling.glsl");
+            var sharpeningShader = EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Effects/Shaders/fsr_sharpening.glsl");
+            var fsrA = EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Effects/Shaders/ffx_a.h");
+            var fsr1 = EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Effects/Shaders/ffx_fsr1.h");
 
             scalingShader = scalingShader.Replace("#include \"ffx_a.h\"", fsrA);
             scalingShader = scalingShader.Replace("#include \"ffx_fsr1.h\"", fsr1);
@@ -160,7 +160,7 @@ namespace Ryujinx.Graphics.OpenGL.Effects
             textureView.Bind(0);
             GL.Uniform1(_inputUniform, 0);
             GL.Uniform1(_outputUniform, 0);
-            GL.Uniform1(_sharpeningUniform, Level);
+            GL.Uniform1(_sharpeningUniform, 1.5f - (Level * 0.01f * 1.5f));
             GL.DispatchCompute(dispatchX, dispatchY, 1);
 
             GL.UseProgram(previousProgram);

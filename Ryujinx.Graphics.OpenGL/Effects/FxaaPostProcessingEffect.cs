@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.OpenGL.Effects
 
         private void Initialize()
         {
-            _shaderProgram = ShaderHelper.CompileProgram(EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Shaders/fxaa.glsl"), ShaderType.ComputeShader);
+            _shaderProgram = ShaderHelper.CompileProgram(EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Effects/Shaders/fxaa.glsl"), ShaderType.ComputeShader);
 
             _resolutionUniform = GL.GetUniformLocation(_shaderProgram, "invResolution");
             _inputUniform = GL.GetUniformLocation(_shaderProgram, "inputTexture");

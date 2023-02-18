@@ -8,7 +8,7 @@ using Extent2D = Ryujinx.Graphics.GAL.Extents2D;
 
 namespace Ryujinx.Graphics.Vulkan.Effects
 {
-    internal partial class FsrScalingFIlter : IScalingFilter
+    internal partial class FsrScalingFilter : IScalingFilter
     {
         private readonly VulkanRenderer _renderer;
         private PipelineHelperShader _pipeline;
@@ -28,7 +28,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             }
         }
 
-        public FsrScalingFIlter(VulkanRenderer renderer, Device device)
+        public FsrScalingFilter(VulkanRenderer renderer, Device device)
         {
             _device = device;
             _renderer = renderer;
@@ -159,7 +159,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             var bufferHandle = _renderer.BufferManager.CreateWithHandle(_renderer, rangeSize, false);
             _renderer.BufferManager.SetData(bufferHandle, 0, dimensionsBuffer);
 
-            ReadOnlySpan<float> sharpeningBuffer = stackalloc float[] { Level };
+            ReadOnlySpan<float> sharpeningBuffer = stackalloc float[] { 1.5f - (Level * 0.01f * 1.5f)};
             var sharpeningBufferHandle = _renderer.BufferManager.CreateWithHandle(_renderer, sizeof(float), false);
             _renderer.BufferManager.SetData(sharpeningBufferHandle, 0, sharpeningBuffer);
 

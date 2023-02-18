@@ -76,7 +76,7 @@ namespace Ryujinx.Graphics.OpenGL.Effects.Smaa
 
         private unsafe void RecreateShaders(int width, int height)
         {
-            string baseShader = EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Shaders/smaa.hlsl");
+            string baseShader = EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Effects/Shaders/smaa.hlsl");
             var pixelSizeDefine = $"#define SMAA_RT_METRICS float4(1.0 / {width}.0, 1.0 / {height}.0, {width}, {height}) \n";
 
             _edgeShaderPrograms = new int[_qualities.Length];
@@ -87,9 +87,9 @@ namespace Ryujinx.Graphics.OpenGL.Effects.Smaa
             {
                 var presets = $"#version 430 core \n#define {_qualities[i]} 1 \n{pixelSizeDefine}#define SMAA_GLSL_4 1 \nlayout (local_size_x = 16, local_size_y = 16) in;\n{baseShader}";
 
-                var edgeShaderData = EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Shaders/smaa_edge.glsl");
-                var blendShaderData = EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Shaders/smaa_blend.glsl");
-                var neighbourShaderData = EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Shaders/smaa_neighbour.glsl");
+                var edgeShaderData = EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Effects/Shaders/smaa_edge.glsl");
+                var blendShaderData = EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Effects/Shaders/smaa_blend.glsl");
+                var neighbourShaderData = EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Effects/Shaders/smaa_neighbour.glsl");
 
                 var shaders = new string[] { presets, edgeShaderData };
                 var edgeProgram = ShaderHelper.CompileProgram(shaders, ShaderType.ComputeShader);

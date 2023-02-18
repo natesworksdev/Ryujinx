@@ -122,7 +122,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.Graphics.ScalingFilterLevel.Event += UpdateScalingFilterLevel;
         }
 
-        private void UpdateScalingFilterLevel(object sender, ReactiveEventArgs<float> e)
+        private void UpdateScalingFilterLevel(object sender, ReactiveEventArgs<int> e)
         {
             Renderer.Window.SetScalingFilter((ScalingFilter)ConfigurationState.Instance.Graphics.ScalingFilter.Value);
             Renderer.Window.SetScalingFilterLevel(ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value);

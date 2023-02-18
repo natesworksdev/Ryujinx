@@ -64,7 +64,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// Sets the framebuffer upscaling level.
         /// </summary>
-        public float ScalingFilterLevel { get; set; }
+        public int ScalingFilterLevel { get; set; }
 
         /// <summary>
         /// Dumps shaders in this local directory

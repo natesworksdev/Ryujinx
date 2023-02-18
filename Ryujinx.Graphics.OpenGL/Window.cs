@@ -88,7 +88,7 @@ namespace Ryujinx.Graphics.OpenGL
                     viewConverted = swappedView;
                 }
 
-                if(viewConverted != oldView && oldView != view)
+                if (viewConverted != oldView && oldView != view)
                 {
                     oldView.Dispose();
                 }

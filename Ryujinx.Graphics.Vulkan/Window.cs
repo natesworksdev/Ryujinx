@@ -372,16 +372,8 @@ namespace Ryujinx.Graphics.Vulkan
                     _format,
                     _width,
                     _height,
-                    new Extents2D(
-                        srcX0,
-                        srcY0,
-                        srcX1,
-                        srcY1),
-                    new Extents2D(
-                        dstX0,
-                        dstY0,
-                        dstX1,
-                        dstY1)
+                    new Extents2D(srcX0, srcY0, srcX1, srcY1),
+                    new Extents2D(dstX0, dstY0, dstX1, dstY1)
                     );
             }
             else
@@ -510,10 +502,10 @@ namespace Ryujinx.Graphics.Vulkan
                         _isLinear = _currentScalingFilter == ScalingFilter.Bilinear;
                         break;
                     case ScalingFilter.Fsr:
-                        if (_scalingFilter is not FsrScalingFIlter)
+                        if (_scalingFilter is not FsrScalingFilter)
                         {
                             _scalingFilter?.Dispose();
-                            _scalingFilter = new FsrScalingFIlter(_gd, _device);
+                            _scalingFilter = new FsrScalingFilter(_gd, _device);
                         }
 
                         _scalingFilter.Level = _scalingFilterLevel;

@@ -46,7 +46,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private int _graphicsBackendIndex;
         private string _customThemePath;
         private int _scalingFilter;
-        private float _scalingFilterLevel;
+        private int _scalingFilterLevel;
 
         public event Action CloseWindow;
         public event Action SaveSettingsEvent;
@@ -185,7 +185,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public int AspectRatio { get; set; }
         public int AntiAliasingEffect { get; set; }
         public string ScalingFilterLevelText => ScalingFilterLevel.ToString("0.00");
-        public float ScalingFilterLevel
+        public int ScalingFilterLevel
         {
             get => _scalingFilterLevel;
             set

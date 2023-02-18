@@ -111,6 +111,80 @@
                             Minimum="0.1"
                             Value="{Binding CustomResolutionScale}" />
                     </StackPanel>
+                    <StackPanel
+                        HorizontalAlignment="Stretch"
+                        Orientation="Vertical"
+                        Spacing="10">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center"
+                                       ToolTip.Tip="{locale:Locale GraphicsAATooltip}"
+                                       Text="{locale:Locale GraphicsAALabel}"
+                                       Width="250" />
+                            <ComboBox Width="350"
+                                      HorizontalContentAlignment="Left"
+                                      ToolTip.Tip="{locale:Locale GraphicsAATooltip}"
+                                      SelectedIndex="{Binding AntiAliasingEffect}">
+                                <ComboBoxItem>
+                                    <TextBlock Text="{locale:Locale SettingsTabLoggingGraphicsBackendLogLevelNone}" />
+                                </ComboBoxItem>
+                                <ComboBoxItem>
+                                    <TextBlock Text="FXAA" />
+                                </ComboBoxItem>
+                                <ComboBoxItem>
+                                    <TextBlock Text="{locale:Locale SmaaLow}" />
+                                </ComboBoxItem>
+                                <ComboBoxItem>
+                                    <TextBlock Text="{locale:Locale SmaaMedium}" />
+                                </ComboBoxItem>
+                                <ComboBoxItem>
+                                    <TextBlock Text="{locale:Locale SmaaHigh}" />
+                                </ComboBoxItem>
+                                <ComboBoxItem>
+                                    <TextBlock Text="{locale:Locale SmaaUltra}" />
+                                </ComboBoxItem>
+                            </ComboBox>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel
+                        HorizontalAlignment="Stretch"
+                        Orientation="Vertical"
+                        Spacing="10">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center"
+                                       ToolTip.Tip="{locale:Locale GraphicsScalingFilterTooltip}"
+                                       Text="{locale:Locale GraphicsScalingFilterLabel}"
+                                       Width="250" />
+                            <ComboBox Width="350"
+                                      HorizontalContentAlignment="Left"
+                                      ToolTip.Tip="{locale:Locale GraphicsScalingFilterTooltip}"
+                                      SelectedIndex="{Binding ScalingFilter}">
+                                <ComboBoxItem>
+                                    <TextBlock Text="Bilinear" />
+                                </ComboBoxItem>
+                                <ComboBoxItem>
+                                    <TextBlock Text="Nearest" />
+                                </ComboBoxItem>
+                                <ComboBoxItem>
+                                    <TextBlock Text="FSR" />
+                                </ComboBoxItem>
+                            </ComboBox>
+                            <Slider Value="{Binding ScalingFilterLevel}"
+                                    ToolTip.Tip="{locale:Locale GraphicsScalingFilterLevelTooltip}"
+                                    MinWidth="150"
+                                    Margin="10,0,0,0"
+                                    IsVisible="{Binding IsScalingFilterActive}"
+                                    TickFrequency="11"
+                                    IsSnapToTickEnabled="True"
+                                    LargeChange="1"
+                                    SmallChange="10"
+                                    Minimum="0"
+                                    Maximum="100" />
+                            <TextBlock Margin="5,0"
+                                       Width="40"
+                                       IsVisible="{Binding IsScalingFilterActive}"
+                                       Text="{Binding ScalingFilterLevelText}"/>
+                        </StackPanel>
+                    </StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock VerticalAlignment="Center"
                                    ToolTip.Tip="{locale:Locale AnisotropyTooltip}"
@@ -193,82 +267,6 @@
                                 <TextBlock Text="{locale:Locale CommonOn}" />
                             </ComboBoxItem>
                         </ComboBox>
-                    </StackPanel>
-                </StackPanel>
-                <StackPanel
-                    Margin="10,0,0,0"
-                    HorizontalAlignment="Stretch"
-                    Orientation="Vertical"
-                    Spacing="10">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center"
-                                   ToolTip.Tip="{locale:Locale GraphicsAATooltip}"
-                                   Text="{locale:Locale GraphicsAALabel}"
-                                   Width="250" />
-                        <ComboBox Width="350"
-                                  HorizontalContentAlignment="Left"
-                                  ToolTip.Tip="{locale:Locale GraphicsAATooltip}"
-                                  SelectedIndex="{Binding AntiAliasingEffect}">
-                            <ComboBoxItem>
-                                <TextBlock Text="{locale:Locale SettingsTabLoggingGraphicsBackendLogLevelNone}" />
-                            </ComboBoxItem>
-                            <ComboBoxItem>
-                                <TextBlock Text="FXAA" />
-                            </ComboBoxItem>
-                            <ComboBoxItem>
-                                <TextBlock Text="{locale:Locale SmaaLow}" />
-                            </ComboBoxItem>
-                            <ComboBoxItem>
-                                <TextBlock Text="{locale:Locale SmaaMedium}" />
-                            </ComboBoxItem>
-                            <ComboBoxItem>
-                                <TextBlock Text="{locale:Locale SmaaHigh}" />
-                            </ComboBoxItem>
-                            <ComboBoxItem>
-                                <TextBlock Text="{locale:Locale SmaaUltra}" />
-                            </ComboBoxItem>
-                        </ComboBox>
-                    </StackPanel>
-                </StackPanel>
-                <StackPanel
-                    Margin="10,0,0,0"
-                    HorizontalAlignment="Stretch"
-                    Orientation="Vertical"
-                    Spacing="10">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center"
-                                   ToolTip.Tip="{locale:Locale GraphicsScalingFilterTooltip}"
-                                   Text="{locale:Locale GraphicsScalingFilterLabel}"
-                                   Width="250" />
-                        <ComboBox Width="350"
-                                  HorizontalContentAlignment="Left"
-                                  ToolTip.Tip="{locale:Locale GraphicsScalingFilterTooltip}"
-                                  SelectedIndex="{Binding ScalingFilter}">
-                            <ComboBoxItem>
-                                <TextBlock Text="Bilinear" />
-                            </ComboBoxItem>
-                            <ComboBoxItem>
-                                <TextBlock Text="Nearest" />
-                            </ComboBoxItem>
-                            <ComboBoxItem>
-                                <TextBlock Text="FSR" />
-                            </ComboBoxItem>
-                        </ComboBox>
-                        <Slider Value="{Binding ScalingFilterLevel}"
-                                ToolTip.Tip="{locale:Locale GraphicsScalingFilterLevelTooltip}"
-                                MinWidth="150"
-                                Margin="10,0,0,0"
-                                IsVisible="{Binding IsScalingFilterActive}"
-                                TickFrequency="0.01"
-                                IsSnapToTickEnabled="True"
-                                LargeChange="0.1"
-                                SmallChange="0.01"
-                                Minimum="0.01"
-                                Maximum="1.5" />
-                        <TextBlock Margin="5,0"
-                                   Width="40"
-                                   IsVisible="{Binding IsScalingFilterActive}"
-                                   Text="{Binding ScalingFilterLevelText}"/>
                     </StackPanel>
                 </StackPanel>
                 <Separator Height="1" />

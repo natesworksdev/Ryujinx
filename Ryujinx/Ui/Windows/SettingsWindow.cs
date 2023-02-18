@@ -352,9 +352,9 @@ namespace Ryujinx.Ui.Windows
 
             _custThemePath.Buffer.Text           = ConfigurationState.Instance.Ui.CustomThemePath;
             _resScaleText.Buffer.Text            = ConfigurationState.Instance.Graphics.ResScaleCustom.Value.ToString();
-            _scalingFilterLevel.Value                  = ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value;
+            _scalingFilterLevel.Value            = ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value;
             _resScaleText.Visible                = _resScaleCombo.ActiveId == "-1";
-            _scalingFilterSlider.Visible               = _scalingFilter.ActiveId == "2";
+            _scalingFilterSlider.Visible         = _scalingFilter.ActiveId == "2";
             _graphicsShadersDumpPath.Buffer.Text = ConfigurationState.Instance.Graphics.ShadersDumpPath;
             _fsLogSpinAdjustment.Value           = ConfigurationState.Instance.System.FsGlobalAccessLogMode;
             _systemTimeOffset                    = ConfigurationState.Instance.System.SystemTimeOffset;
@@ -615,8 +615,8 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.Graphics.ResScaleCustom.Value             = resScaleCustom;
             ConfigurationState.Instance.System.AudioVolume.Value                  = (float)_audioVolumeSlider.Value / 100.0f;
             ConfigurationState.Instance.Graphics.AntiAliasing.Value               = Enum.Parse<AntiAliasing>(_antiAliasing.ActiveId);
-            ConfigurationState.Instance.Graphics.ScalingFilter.Value                = Enum.Parse<ScalingFilter>(_scalingFilter.ActiveId);
-            ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value               = (float) _scalingFilterLevel.Value;
+            ConfigurationState.Instance.Graphics.ScalingFilter.Value              = Enum.Parse<ScalingFilter>(_scalingFilter.ActiveId);
+            ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value         = (int)_scalingFilterLevel.Value;
 
             _previousVolumeLevel = ConfigurationState.Instance.System.AudioVolume.Value;
 

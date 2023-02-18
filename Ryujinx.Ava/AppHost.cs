@@ -175,7 +175,7 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.System.AudioVolume.Event           += UpdateAudioVolumeState;
             ConfigurationState.Instance.Graphics.AntiAliasing.Event        += UpdateAntiAliasing;
             ConfigurationState.Instance.Graphics.ScalingFilter.Event       += UpdateScalingFilter;
-            ConfigurationState.Instance.Graphics.ScalingFilterLevel.Event        += UpdateScalingFilterLevel;
+            ConfigurationState.Instance.Graphics.ScalingFilterLevel.Event  += UpdateScalingFilterLevel;
 
             _gpuCancellationTokenSource = new CancellationTokenSource();
         }
@@ -198,7 +198,7 @@ namespace Ryujinx.Ava
                 }
             }
         }
-        private void UpdateScalingFilterLevel(object sender, ReactiveEventArgs<float> e)
+        private void UpdateScalingFilterLevel(object sender, ReactiveEventArgs<int> e)
         {
             _renderer.Window?.SetScalingFilter((Graphics.GAL.ScalingFilter)ConfigurationState.Instance.Graphics.ScalingFilter.Value);
             _renderer.Window?.SetScalingFilterLevel(ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value);
@@ -432,8 +432,8 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.Graphics.AspectRatio.Event         -= UpdateAspectRatioState;
             ConfigurationState.Instance.System.EnableDockedMode.Event      -= UpdateDockedModeState;
             ConfigurationState.Instance.System.AudioVolume.Event           -= UpdateAudioVolumeState;
-            ConfigurationState.Instance.Graphics.ScalingFilter.Event         -= UpdateScalingFilter;
-            ConfigurationState.Instance.Graphics.ScalingFilterLevel.Event        -= UpdateScalingFilterLevel;
+            ConfigurationState.Instance.Graphics.ScalingFilter.Event       -= UpdateScalingFilter;
+            ConfigurationState.Instance.Graphics.ScalingFilterLevel.Event  -= UpdateScalingFilterLevel;
             ConfigurationState.Instance.Graphics.AntiAliasing.Event        -= UpdateAntiAliasing;
 
             _topLevel.PointerMoved -= TopLevel_PointerMoved;

@@ -171,7 +171,6 @@ namespace Ryujinx.Graphics.Vulkan
                 0,
                 ReadOnlySpan<BufferMemoryBarrier>.Empty,
                 0,
-
                 ReadOnlySpan<ImageMemoryBarrier>.Empty);
         }
 
