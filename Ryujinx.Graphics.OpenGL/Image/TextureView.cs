@@ -127,6 +127,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 int layers = Math.Min(Info.GetLayers(), destinationView.Info.GetLayers() - firstLayer);
                 _renderer.TextureCopyMS.CopyNonMSToMS(this, destinationView, 0, firstLayer, layers);
             }
+
             else if (destinationView.Format.IsDepthOrStencil() != Format.IsDepthOrStencil())
             {
                 int layers = Math.Min(Info.GetLayers(), destinationView.Info.GetLayers() - firstLayer);
@@ -148,6 +149,13 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         _renderer.TextureCopy.PboCopy(this, destinationView, 0, firstLayer + layer, 0, firstLevel + level, minWidth, minHeight);
                     }
                 }
+            }
+            
+            else if (destinationView.Info.BytesPerPixel != Info.BytesPerPixel)
+            {
+                int layers = Math.Min(Info.GetLayers(), destinationView.Info.GetLayers() - firstLayer);
+                int levels = Math.Min(Info.Levels, destinationView.Info.Levels - firstLevel);
+                _renderer.TextureCopyIncompatible.CopyIncompatibleFormats(this, destinationView, 0, firstLayer, 0, firstLevel, layers, levels);
             }
             else
             {
@@ -173,6 +181,10 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 int minHeight = Math.Min(Height, destinationView.Height);
 
                 _renderer.TextureCopy.PboCopy(this, destinationView, srcLayer, dstLayer, srcLevel, dstLevel, minWidth, minHeight);
+            }
+            else if (destinationView.Info.BytesPerPixel != Info.BytesPerPixel)
+            {
+                _renderer.TextureCopyIncompatible.CopyIncompatibleFormats(this, destinationView, srcLayer, dstLayer, srcLevel, dstLevel, 1, 1);
             }
             else
             {
