@@ -215,41 +215,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Checks if two formats are compatible, according to the host API copy format compatibility rules.
-        /// </summary>
-        /// <param name="lhsFormat">First comparand</param>
-        /// <param name="rhsFormat">Second comparand</param>
-        /// <param name="caps">Host GPU capabilities</param>
-        /// <returns>True if the formats are compatible, false otherwise</returns>
-        public static bool FormatCompatible(TextureInfo lhs, TextureInfo rhs, Capabilities caps)
-        {
-            FormatInfo lhsFormat = lhs.FormatInfo;
-            FormatInfo rhsFormat = rhs.FormatInfo;
-
-            if (lhsFormat.Format.IsDepthOrStencil() || rhsFormat.Format.IsDepthOrStencil())
-            {
-                return lhsFormat.Format == rhsFormat.Format;
-            }
-
-            if (IsFormatHostIncompatible(lhs, caps) || IsFormatHostIncompatible(rhs, caps))
-            {
-                return lhsFormat.Format == rhsFormat.Format;
-            }
-
-            if (lhsFormat.IsCompressed && rhsFormat.IsCompressed)
-            {
-                FormatClass lhsClass = GetFormatClass(lhsFormat.Format);
-                FormatClass rhsClass = GetFormatClass(rhsFormat.Format);
-
-                return lhsClass == rhsClass;
-            }
-            else
-            {
-                return lhsFormat.BytesPerPixel == rhsFormat.BytesPerPixel;
-            }
-        }
-
-        /// <summary>
         /// Checks if the texture format matches with the specified texture information.
         /// </summary>
         /// <param name="lhs">Texture information to compare</param>
@@ -261,7 +226,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             // D32F and R32F texture have the same representation internally,
             // however the R32F format is used to sample from depth textures.
-            if (lhs.FormatInfo.Format == Format.D32Float && rhs.FormatInfo.Format == Format.R32Float && (forSampler || forCopy))
+            if (IsValidDepthAsColorAlias(lhs.FormatInfo.Format, rhs.FormatInfo.Format) && (forSampler || forCopy))
             {
                 return TextureMatchQuality.FormatAlias;
             }
@@ -274,14 +239,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     return TextureMatchQuality.FormatAlias;
                 }
-
-                if (lhs.FormatInfo.Format == Format.D16Unorm && rhs.FormatInfo.Format == Format.R16Unorm)
-                {
-                    return TextureMatchQuality.FormatAlias;
-                }
-
-                if ((lhs.FormatInfo.Format == Format.D24UnormS8Uint ||
-                     lhs.FormatInfo.Format == Format.S8UintD24Unorm) && rhs.FormatInfo.Format == Format.B8G8R8A8Unorm)
+                else if ((lhs.FormatInfo.Format == Format.D24UnormS8Uint ||
+                          lhs.FormatInfo.Format == Format.S8UintD24Unorm) && rhs.FormatInfo.Format == Format.B8G8R8A8Unorm)
                 {
                     return TextureMatchQuality.FormatAlias;
                 }
@@ -659,19 +618,73 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>The view compatibility level of the texture formats</returns>
         public static TextureViewCompatibility ViewFormatCompatible(TextureInfo lhs, TextureInfo rhs, Capabilities caps)
         {
-            if (FormatCompatible(lhs, rhs, caps))
+            FormatInfo lhsFormat = lhs.FormatInfo;
+            FormatInfo rhsFormat = rhs.FormatInfo;
+
+            if (lhsFormat.Format.IsDepthOrStencil() || rhsFormat.Format.IsDepthOrStencil())
             {
-                if (lhs.FormatInfo.IsCompressed != rhs.FormatInfo.IsCompressed)
+                if (lhsFormat.Format == rhsFormat.Format)
+                {
+                    return TextureViewCompatibility.Full;
+                }
+                else if (IsValidColorAsDepthAlias(lhsFormat.Format, rhsFormat.Format) ||
+                         IsValidDepthAsColorAlias(lhsFormat.Format, rhsFormat.Format))
                 {
                     return TextureViewCompatibility.CopyOnly;
                 }
                 else
                 {
-                    return TextureViewCompatibility.Full;
+                    return TextureViewCompatibility.Incompatible;
                 }
             }
 
-            return TextureViewCompatibility.Incompatible;
+            if (IsFormatHostIncompatible(lhs, caps) || IsFormatHostIncompatible(rhs, caps))
+            {
+                return lhsFormat.Format == rhsFormat.Format ? TextureViewCompatibility.Full : TextureViewCompatibility.Incompatible;
+            }
+
+            bool lhsCompressed = lhsFormat.IsCompressed;
+            bool rhsCompressed = rhsFormat.IsCompressed;
+
+            if (lhsCompressed && rhsCompressed)
+            {
+                FormatClass lhsClass = GetFormatClass(lhsFormat.Format);
+                FormatClass rhsClass = GetFormatClass(rhsFormat.Format);
+
+                return lhsClass == rhsClass ? TextureViewCompatibility.Full : TextureViewCompatibility.Incompatible;
+            }
+            else if (lhsFormat.BytesPerPixel == rhsFormat.BytesPerPixel)
+            {
+                return lhsCompressed == rhsCompressed ? TextureViewCompatibility.Full : TextureViewCompatibility.CopyOnly;
+            }
+            else
+            {
+                return TextureViewCompatibility.Incompatible;
+            }
+        }
+
+        /// <summary>
+        /// Checks if it's valid to alias a color format as a depth format.
+        /// </summary>
+        /// <param name="lhsFormat">Source format to be checked</param>
+        /// <param name="rhsFormat">Target format to be checked</param>
+        /// <returns>True if it's valid to alias the formats</returns>
+        private static bool IsValidColorAsDepthAlias(Format lhsFormat, Format rhsFormat)
+        {
+            return (lhsFormat == Format.R32Float && rhsFormat == Format.D32Float) ||
+                   (lhsFormat == Format.R16Unorm && rhsFormat == Format.D16Unorm);
+        }
+
+        /// <summary>
+        /// Checks if it's valid to alias a depth format as a color format.
+        /// </summary>
+        /// <param name="lhsFormat">Source format to be checked</param>
+        /// <param name="rhsFormat">Target format to be checked</param>
+        /// <returns>True if it's valid to alias the formats</returns>
+        private static bool IsValidDepthAsColorAlias(Format lhsFormat, Format rhsFormat)
+        {
+            return (lhsFormat == Format.D32Float && rhsFormat == Format.R32Float) ||
+                   (lhsFormat == Format.D16Unorm && rhsFormat == Format.R16Unorm);
         }
 
         /// <summary>

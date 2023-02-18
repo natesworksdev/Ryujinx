@@ -199,6 +199,13 @@ namespace Ryujinx.Graphics.Vulkan
                 int layers = Math.Min(Info.GetLayers(), dst.Info.GetLayers() - firstLayer);
                 _gd.HelperShader.CopyNonMSToMS(_gd, cbs, src, dst, 0, firstLayer, layers);
             }
+            else if (src.Info.Format.IsDepthOrStencil() != dst.Info.Format.IsDepthOrStencil())
+            {
+                int layers = Math.Min(Info.GetLayers(), dst.Info.GetLayers() - firstLayer);
+                int levels = Math.Min(Info.Levels, dst.Info.Levels - firstLevel);
+
+                _gd.HelperShader.CopyColor(_gd, cbs, src, dst, 0, firstLayer, 0, FirstLevel, layers, levels);
+            }
             else
             {
                 TextureCopy.Copy(
@@ -243,6 +250,10 @@ namespace Ryujinx.Graphics.Vulkan
             else if (dst.Info.Target.IsMultisample() && !Info.Target.IsMultisample())
             {
                 _gd.HelperShader.CopyNonMSToMS(_gd, cbs, src, dst, srcLayer, dstLayer, 1);
+            }
+            else if (src.Info.Format.IsDepthOrStencil() != dst.Info.Format.IsDepthOrStencil())
+            {
+                _gd.HelperShader.CopyColor(_gd, cbs, src, dst, srcLayer, dstLayer, srcLevel, dstLevel, 1, 1);
             }
             else
             {
