@@ -184,7 +184,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public int MaxAnisotropy { get; set; }
         public int AspectRatio { get; set; }
         public int AntiAliasingEffect { get; set; }
-        public string ScalingFilterLevelText => ScalingFilterLevel.ToString("0.00");
+        public string ScalingFilterLevelText => ScalingFilterLevel.ToString("0");
         public int ScalingFilterLevel
         {
             get => _scalingFilterLevel;

@@ -173,10 +173,10 @@
                                     MinWidth="150"
                                     Margin="10,0,0,0"
                                     IsVisible="{Binding IsScalingFilterActive}"
-                                    TickFrequency="11"
+                                    TickFrequency="1"
                                     IsSnapToTickEnabled="True"
-                                    LargeChange="1"
-                                    SmallChange="10"
+                                    LargeChange="10"
+                                    SmallChange="1"
                                     Minimum="0"
                                     Maximum="100" />
                             <TextBlock Margin="5,0"
