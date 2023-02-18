@@ -15,6 +15,7 @@ namespace Ryujinx.Cpu.Tracking
             _impl = impl;
         }
 
+        public void ClearVolatile(ulong mask) => _impl.ClearVolatile(mask);
         public void Dispose() => _impl.Dispose();
         public void ForceDirty(ulong address, ulong size) => _impl.ForceDirty(address, size);
         public IEnumerable<IRegionHandle> GetHandles() => _impl.GetHandles();

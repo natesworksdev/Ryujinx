@@ -75,6 +75,10 @@ namespace Ryujinx.Graphics.Gpu
         /// </summary>
         internal List<BufferMigration> BufferMigrations { get; }
 
+        /// Total number of presented frames. Used by some cleanup operations.
+        /// </summary>
+        internal ulong FrameNumber { get; private set; }
+
         /// <summary>
         /// Queue with deferred actions that must run on the render thread.
         /// </summary>
@@ -270,6 +274,14 @@ namespace Ryujinx.Graphics.Gpu
             {
                 physicalMemory.ShaderCache.ProcessShaderCacheQueue();
             }
+        }
+
+        /// <summary>
+        /// Advances internal frame number.
+        /// </summary>
+        internal void AdvanceFrame()
+        {
+            FrameNumber++;
         }
 
         /// <summary>

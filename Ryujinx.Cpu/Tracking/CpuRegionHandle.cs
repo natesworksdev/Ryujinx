@@ -18,6 +18,7 @@ namespace Ryujinx.Cpu.Tracking
             _impl = impl;
         }
 
+        public void ClearVolatile() => _impl.ClearVolatile();
         public void Dispose() => _impl.Dispose();
         public bool DirtyOrVolatile() => _impl.DirtyOrVolatile();
         public void ForceDirty() => _impl.ForceDirty();
