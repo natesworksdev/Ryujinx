@@ -132,6 +132,7 @@ namespace Ryujinx.Common.Configuration
                 {
                     continue;
                 }
+
                 file.CopyTo(Path.Combine(destinationDir, file.Name));
             }
 
