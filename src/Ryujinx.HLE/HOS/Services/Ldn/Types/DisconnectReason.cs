@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Ldn.Types
 {
-    enum DisconnectReason
+    enum DisconnectReason : uint
     {
         None,
         DisconnectedByUser,
