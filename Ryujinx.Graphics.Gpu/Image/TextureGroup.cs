@@ -40,7 +40,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     class TextureGroup : IDisposable
     {
         /// <summary>
-        /// Threshold of layers to force granular handles (and thus partial loading) on array/3d textures.
+        /// Threshold of layers to force granular handles (and thus partial loading) on array/3D textures.
         /// </summary>
         private const int GranularLayerThreshold = 8;
 
@@ -375,7 +375,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                         if (_is3D)
                         {
-                            // Look ahead to see how many handles need loaded.
+                            // Look ahead to see how many handles need to be loaded.
                             for (int j = i + 1; j < regionCount; j++)
                             {
                                 if (_loadNeeded[baseHandle + j])
@@ -1139,18 +1139,21 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                             foreach (var oldGroup in _handles)
                             {
-                                foreach (var oldHandle in oldGroup.Handles)
+                                if (groupHandle.OverlapsWith(oldGroup.Offset, oldGroup.Size))
                                 {
-                                    if (oldHandle.RangeEquals(handle))
+                                    foreach (var oldHandle in oldGroup.Handles)
                                     {
-                                        hasMatch = true;
+                                        if (oldHandle.RangeEquals(handle))
+                                        {
+                                            hasMatch = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (hasMatch)
+                                    {
                                         break;
                                     }
-                                }
-
-                                if (hasMatch)
-                                {
-                                    break;
                                 }
                             }
 

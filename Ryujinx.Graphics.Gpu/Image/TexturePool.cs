@@ -10,34 +10,55 @@ using System.Collections.Generic;
 namespace Ryujinx.Graphics.Gpu.Image
 {
     /// <summary>
-    /// A request to dereference a texture from a pool.
-    /// </summary>
-    struct DereferenceRequest
-    {
-        public readonly bool IsUnmapped;
-        public readonly Texture Texture;
-        public readonly int ID;
-
-        public DereferenceRequest(Texture texture)
-        {
-            Texture = texture;
-            IsUnmapped = false;
-            ID = 0;
-        }
-
-        public DereferenceRequest(bool isUnmapped, Texture texture, int id)
-        {
-            IsUnmapped = isUnmapped;
-            Texture = texture;
-            ID = id;
-        }
-    }
-
-    /// <summary>
     /// Texture pool.
     /// </summary>
     class TexturePool : Pool<Texture, TextureDescriptor>, IPool<TexturePool>
     {
+        /// <summary>
+        /// A request to dereference a texture from a pool.
+        /// </summary>
+        private struct DereferenceRequest
+        {
+            /// <summary>
+            /// Whether the dereference is due to a mapping change or not.
+            /// </summary>
+            public readonly bool IsRemapped;
+
+            /// <summary>
+            /// The texture being dereferenced.
+            /// </summary>
+            public readonly Texture Texture;
+
+            /// <summary>
+            /// The ID of the pool entry this reference belonged to.
+            /// </summary>
+            public readonly int ID;
+
+            /// <summary>
+            /// Create a dereference request for a texture.
+            /// </summary>
+            /// <param name="texture">The texture being dereferenced</param>
+            public DereferenceRequest(Texture texture)
+            {
+                Texture = texture;
+                IsRemapped = false;
+                ID = 0;
+            }
+
+            /// <summary>
+            /// Create a dereference request for a texture with a specific pool ID, and remapped flag.
+            /// </summary>
+            /// <param name="isRemapped">Whether the dereference is due to a mapping change or not</param>
+            /// <param name="texture">The texture being dereferenced</param>
+            /// <param name="id">The ID of the pool entry, used to restore remapped textures</param>
+            public DereferenceRequest(bool isRemapped, Texture texture, int id)
+            {
+                IsRemapped = isRemapped;
+                Texture = texture;
+                ID = id;
+            }
+        }
+
         private readonly GpuChannel _channel;
         private readonly ConcurrentQueue<DereferenceRequest> _dereferenceQueue = new ConcurrentQueue<DereferenceRequest>();
         private TextureDescriptor _defaultDescriptor;
@@ -225,7 +246,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 // Unmapped storage textures can swap their ranges. The texture must be storage with no views or dependencies.
                 // TODO: Would need to update ranges on views, or guarantee that ones where the range changes can be instantly deleted.
 
-                if (request.IsUnmapped && texture.Group.Storage == texture && !texture.HasViews && !texture.Group.HasCopyDependencies)
+                if (request.IsRemapped && texture.Group.Storage == texture && !texture.HasViews && !texture.Group.HasCopyDependencies)
                 {
                     // Has the mapping for this texture changed?
                     ref readonly TextureDescriptor descriptor = ref GetDescriptorRef(request.ID);
@@ -250,7 +271,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     texture.DecrementReferenceCount();
 
                     // Refetch the range. Changes since the last check could have been lost
-                    // as the cache entry was not restored (required to queue mapping change)
+                    // as the cache entry was not restored (required to queue mapping change).
 
                     range = _channel.MemoryManager.GetPhysicalRegions(address, texture.Size);
 

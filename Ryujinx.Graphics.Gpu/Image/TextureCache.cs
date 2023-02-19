@@ -212,8 +212,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                 var other = _textureOverlaps[i];
                 
                 if (texture != other &&
-                    (texture.IsViewCompatible(other.Info, other.Range, true, other.LayerSize, _context.Capabilities, out int _, out int _) != TextureViewCompatibility.Incompatible ||
-                    other.IsViewCompatible(texture.Info, texture.Range, true, texture.LayerSize, _context.Capabilities, out int _, out int _) != TextureViewCompatibility.Incompatible))
+                    (texture.IsViewCompatible(other.Info, other.Range, true, other.LayerSize, _context.Capabilities, out _, out _) != TextureViewCompatibility.Incompatible ||
+                    other.IsViewCompatible(texture.Info, texture.Range, true, texture.LayerSize, _context.Capabilities, out _, out _) != TextureViewCompatibility.Incompatible))
                 {
                     return false;
                 }
