@@ -1055,6 +1055,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                     if (System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
                     {
                         MultiplayerMode mode = context.Device.Configuration.MultiplayerMode;
+
+                        Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"Initializing with multiplayer mode: {mode}");
+
                         switch (mode)
                         {
                             case MultiplayerMode.LdnMitm:
