@@ -129,19 +129,19 @@ namespace Ryujinx.Graphics.Gpu.Image
             else
             {
                 (_hasLayerViews, _hasMipViews) = PropagateGranularity(hasLayerViews, hasMipViews);
-            }
 
-            // If the texture is partially mapped, fully subdivide handles immediately.
+                // If the texture is partially mapped, fully subdivide handles immediately.
 
-            MultiRange range = Storage.Range;
-            for (int i = 0; i < range.Count; i++)
-            {
-                if (range.GetSubRange(i).Address == MemoryManager.PteUnmapped)
+                MultiRange range = Storage.Range;
+                for (int i = 0; i < range.Count; i++)
                 {
-                    _hasLayerViews = true;
-                    _hasMipViews = true;
+                    if (range.GetSubRange(i).Address == MemoryManager.PteUnmapped)
+                    {
+                        _hasLayerViews = true;
+                        _hasMipViews = true;
 
-                    break;
+                        break;
+                    }
                 }
             }
 
