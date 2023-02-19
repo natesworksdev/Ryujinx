@@ -1,4 +1,6 @@
 ﻿using Ryujinx.Common.Logging;
+using Ryujinx.Common.Memory;
+using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm.Proxy;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm.Types;
@@ -54,20 +56,20 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
                     // UDP
                     if (_discovery.IsHost)
                     {
-                        Scan?.Invoke(endPoint, LanPacketType.ScanResponse, LdnHelper.StructureToByteArray(_discovery.NetworkInfo));
+                        Scan?.Invoke(endPoint, LanPacketType.ScanResponse, SpanHelpers.AsSpan<NetworkInfo, byte>(ref _discovery.NetworkInfo).ToArray());
                     }
                     break;
                 case LanPacketType.ScanResponse:
                     // UDP
-                    ScanResponse?.Invoke(LdnHelper.FromBytes<NetworkInfo>(data));
+                    ScanResponse?.Invoke(MemoryMarshal.Cast<byte, NetworkInfo>(data)[0]);
                     break;
                 case LanPacketType.SyncNetwork:
                     // TCP
-                    SyncNetwork?.Invoke(LdnHelper.FromBytes<NetworkInfo>(data));
+                    SyncNetwork?.Invoke(MemoryMarshal.Cast<byte, NetworkInfo>(data)[0]);
                     break;
                 case LanPacketType.Connect:
                     // TCP Session / Station
-                    Connect?.Invoke(LdnHelper.FromBytes<NodeInfo>(data), endPoint);
+                    Connect?.Invoke(MemoryMarshal.Cast<byte, NodeInfo>(data)[0], endPoint);
                     break;
                 default:
                     Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"Decode error: Unhandled type {header.Type}");
@@ -97,7 +99,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
 
                 if (bufferEnd >= _headerSize)
                 {
-                    LanPacketHeader header = LdnHelper.FromBytes<LanPacketHeader>(buffer);
+                    LanPacketHeader header = MemoryMarshal.Cast<byte, LanPacketHeader>(buffer)[0];
                     if (header.Magic != LanMagic)
                     {
                         bufferEnd = 0;
@@ -181,7 +183,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
             header.Compressed = 0;
             header.Length = 0;
             header.DecompressLength = 0;
-            header.Reserved = new byte[2];
+            header.Reserved = new Array2<byte>();
 
             return header;
         }
@@ -202,7 +204,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
 
                     buf = new byte[compressed.Length + _headerSize];
 
-                    LdnHelper.StructureToByteArray(header).CopyTo(buf, 0);
+                    SpanHelpers.AsSpan<LanPacketHeader, byte>(ref header).ToArray().CopyTo(buf, 0);
                     compressed.CopyTo(buf, _headerSize);
                 }
                 else
@@ -211,14 +213,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
 
                     Logger.Error?.PrintMsg(LogClass.ServiceLdn, "Compressing packet data failed.");
 
-                    LdnHelper.StructureToByteArray(header).CopyTo(buf, 0);
+                    SpanHelpers.AsSpan<LanPacketHeader, byte>(ref header).ToArray().CopyTo(buf, 0);
                     data.CopyTo(buf, _headerSize);
                 }
             }
             else
             {
                 buf = new byte[_headerSize];
-                LdnHelper.StructureToByteArray(header).CopyTo(buf, 0);
+                SpanHelpers.AsSpan<LanPacketHeader, byte>(ref header).ToArray().CopyTo(buf, 0);
             }
 
             return buf;

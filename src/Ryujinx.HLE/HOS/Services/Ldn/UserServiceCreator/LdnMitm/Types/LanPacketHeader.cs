@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using Ryujinx.Common.Memory;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm.Types
 {
@@ -10,7 +11,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm.Types
         public byte Compressed;
         public ushort Length;
         public ushort DecompressLength;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
-        public byte[] Reserved;
+        public Array2<byte> Reserved;
     }
 }
