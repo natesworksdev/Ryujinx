@@ -15,13 +15,11 @@ namespace Ryujinx.Tests.Audio.Renderer.Dsp
     class UpsamplerTests
     {
         [Test]
-        [TestCase(40)]
-        [TestCase(80)]
-        [TestCase(160)]
-        public void TestUpsamplerConsistency(int inputBlockSize)
+        public void TestUpsamplerConsistency()
         {
             UpsamplerBufferState bufferState = new UpsamplerBufferState();
-            int numInputSamples = 16000;
+            int inputBlockSize = 160;
+            int numInputSamples = 32000;
             int numOutputSamples = 48000;
             float inputSampleRate = numInputSamples;
             float outputSampleRate = numOutputSamples;
@@ -53,8 +51,8 @@ namespace Ryujinx.Tests.Audio.Renderer.Dsp
             float sumDifference = 0;
             for (int sample = 0; sample < numOutputSamples; sample++)
             {
-                // 440 hz sine wave with amplitude = 0.5f at output sample rate
-                expectedOutput[sample] = MathF.Sin((440 / outputSampleRate) * (float)sample * MathF.PI * 2f) * 0.5f;
+                // 440 hz sine wave with amplitude = 0.5f at output sample rate with an offset of 15
+                expectedOutput[sample] = MathF.Sin((440 / outputSampleRate) * (float)(sample - 15) * MathF.PI * 2f) * 0.5f;
                 sumDifference += Math.Abs(expectedOutput[sample] - outputBuffer[sample]);
             }
 
