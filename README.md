@@ -75,7 +75,7 @@ Either use `git clone https://github.com/Ryujinx/Ryujinx` on the command line to
 
 ### Step 3
 
-To build Ryujinx, open a command prompt inside the project directory. You can quickly access it on Windows by holding shift in File Explorer, then right clicking and selecting `Open command window here`. Then type the following command (the path must not contain spaces):
+To build Ryujinx, open a command prompt inside the project directory. You can quickly access it on Windows by holding shift in File Explorer, then right clicking and selecting `Open command window here`. Then type the following command:
 `dotnet build -c Release -o build`
 the built files will be found in the newly created build directory.
 
