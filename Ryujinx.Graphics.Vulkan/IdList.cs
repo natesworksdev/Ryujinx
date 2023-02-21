@@ -80,7 +80,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             try
             {
-                if (id >= 0 && id < _list.Count)
+                if ((uint)id < (uint)_list.Count)
                 {
                     value = _list[id];
                     return value != null;
