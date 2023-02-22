@@ -308,14 +308,17 @@ namespace Ryujinx.Modules
                         executablePath = Path.Combine(executableDirectory, OperatingSystem.IsWindows() ? "Ryujinx.exe" : "Ryujinx");
                     }
 
-                    // On macOS we perform the update at relaunch
+                    // On macOS we perform the update at relaunch.
                     if (OperatingSystem.IsMacOS())
                     {
                         string baseBundlePath = Path.GetFullPath(Path.Combine(executableDirectory, "..", ".."));
-                        string updaterScriptPath = Path.Combine(UpdateDir, "Ryujinx.app", "Contents", "Resources", "updater.sh");
+                        string newBundlePath = Path.Combine(UpdateDir, "Ryujinx.app");
+                        string updaterScriptPath = Path.Combine(newBundlePath, "Contents", "Resources", "updater.sh");
+                        string currentPid = Process.GetCurrentProcess().Id.ToString();
+
 
                         executablePath = "/bin/bash";
-                        arguments.InsertRange(0, new List<string> { updaterScriptPath, baseBundlePath, UpdateDir});
+                        arguments.InsertRange(0, new List<string> { updaterScriptPath, baseBundlePath, newBundlePath, currentPid });
                     }
 
                     Process.Start(executablePath, arguments);
@@ -508,7 +511,10 @@ namespace Ryujinx.Modules
 
             while ((tarEntry = tarStream.GetNextEntry()) is not null)
             {
-                if (tarEntry.IsDirectory) continue;
+                if (tarEntry.IsDirectory)
+                {
+                    continue;
+                }
 
                 string outPath = Path.Combine(outputDirectoryPath, tarEntry.Name);
 
@@ -564,7 +570,6 @@ namespace Ryujinx.Modules
             }
         }
 
-
         private static async void InstallUpdate(TaskDialog taskDialog, string updateFile)
         {
             // Extract Update
@@ -595,7 +600,7 @@ namespace Ryujinx.Modules
             taskDialog.SubHeader = LocaleManager.Instance[LocaleKeys.UpdaterRenaming];
             taskDialog.SetProgressBarState(0, TaskDialogProgressState.Normal);
 
-            // NOTE: On macOS replacement is delayed to the restart phase.
+            // NOTE: On macOS, replacement is delayed to the restart phase.
             if (!OperatingSystem.IsMacOS())
             {
                 // Replace old files
