@@ -68,7 +68,7 @@ namespace Ryujinx.Common.SystemInterop
         }
 
         [LibraryImport("libc", SetLastError = true)]
-        private static partial int dup2 (int fd, int fd2);
+        private static partial int dup2(int fd, int fd2);
 
         [LibraryImport("libc", SetLastError = true)]
         private static unsafe partial int pipe(int* pipefd);
@@ -84,7 +84,7 @@ namespace Ryujinx.Common.SystemInterop
                 }
                 else
                 {
-                    throw new ();
+                    throw new();
                 }
             }
         }
