@@ -34,6 +34,6 @@ lsof -p $APP_PID +r 1 &>/dev/null
 sleep 1
 
 # Now replace and reopen.
-rm -rf $INSTALL_DIRECTORY
-mv $NEW_APP_DIRECTORY $INSTALL_DIRECTORY
-open -a $INSTALL_DIRECTORY --args $APP_ARGUMENTS
+rm -rf "$INSTALL_DIRECTORY"
+mv "$NEW_APP_DIRECTORY" "$INSTALL_DIRECTORY"
+open -a "$INSTALL_DIRECTORY" --args "$APP_ARGUMENTS"
