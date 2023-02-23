@@ -401,10 +401,10 @@ namespace Ryujinx.Modules
 
                         File.WriteAllBytes(updateFile, mergedFileBytes);
 
-                        // On macOS ensure we remove the quarantine bit so we don't have Gatekeeper being annoying.
+                        // On macOS, ensure we remove the quarantine bit so we don't have Gatekeeper being annoying.
                         if (OperatingSystem.IsMacOS())
                         {
-                            using (Process xattrProcess = Process.Start("xattr", new List<string> { "-d", "com.apple.quarantine", updateFile}))
+                            using (Process xattrProcess = Process.Start("xattr", new List<string> { "-d", "com.apple.quarantine", updateFile }))
                             {
                                 xattrProcess.WaitForExit();
                             }
