@@ -35,27 +35,35 @@ namespace Ryujinx.Graphics.Gpu.Image
             public readonly int ID;
 
             /// <summary>
-            /// Create a dereference request for a texture.
-            /// </summary>
-            /// <param name="texture">The texture being dereferenced</param>
-            public DereferenceRequest(Texture texture)
-            {
-                Texture = texture;
-                IsRemapped = false;
-                ID = 0;
-            }
-
-            /// <summary>
             /// Create a dereference request for a texture with a specific pool ID, and remapped flag.
             /// </summary>
             /// <param name="isRemapped">Whether the dereference is due to a mapping change or not</param>
             /// <param name="texture">The texture being dereferenced</param>
             /// <param name="id">The ID of the pool entry, used to restore remapped textures</param>
-            public DereferenceRequest(bool isRemapped, Texture texture, int id)
+            private DereferenceRequest(bool isRemapped, Texture texture, int id)
             {
                 IsRemapped = isRemapped;
                 Texture = texture;
                 ID = id;
+            }
+
+            /// <summary>
+            /// Create a dereference request for a texture removal.
+            /// </summary>
+            /// <param name="texture">The texture being removed</param>
+            public static DereferenceRequest Remove(Texture texture)
+            {
+                return new DereferenceRequest(false, texture, 0);
+            }
+
+            /// <summary>
+            /// Create a dereference request for a texture remapping with a specific pool ID.
+            /// </summary>
+            /// <param name="texture">The texture being remapped</param>
+            /// <param name="id">The ID of the pool entry, used to restore remapped textures</param>
+            public static DereferenceRequest Remap(Texture texture, int id)
+            {
+                return new DereferenceRequest(true, texture, id);
             }
         }
 
@@ -210,7 +218,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (deferred)
             {
-                _dereferenceQueue.Enqueue(new DereferenceRequest(texture));
+                _dereferenceQueue.Enqueue(DereferenceRequest.Remove(texture));
             }
             else
             {
@@ -228,7 +236,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             Items[id] = null;
 
-            _dereferenceQueue.Enqueue(new DereferenceRequest(true, texture, id));
+            _dereferenceQueue.Enqueue(DereferenceRequest.Remap(texture, id));
         }
 
         /// <summary>
