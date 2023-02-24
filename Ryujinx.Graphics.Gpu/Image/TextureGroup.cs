@@ -7,6 +7,7 @@ using Ryujinx.Memory;
 using Ryujinx.Memory.Range;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.Gpu.Image
@@ -1128,41 +1129,43 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 foreach (TextureGroupHandle groupHandle in handles)
                 {
-                    foreach (CpuRegionHandle handle in groupHandle.Handles)
+                    if (rangeChanged)
                     {
-                        if (rangeChanged)
-                        {
-                            // When the storage range changes, this becomes a little different.
-                            // If a range does not match one in the original, treat it as modified.
-                            // It has been newly mapped and its data must be synchronized.
-                            bool hasMatch = false;
+                        // When the storage range changes, this becomes a little different.
+                        // If a range does not match one in the original, treat it as modified.
+                        // It has been newly mapped and its data must be synchronized.
 
+                        if (groupHandle.Handles.Length != 0)
+                        {
                             foreach (var oldGroup in _handles)
                             {
                                 if (groupHandle.OverlapsWith(oldGroup.Offset, oldGroup.Size))
                                 {
-                                    foreach (var oldHandle in oldGroup.Handles)
+                                    foreach (CpuRegionHandle handle in groupHandle.Handles)
                                     {
-                                        if (oldHandle.RangeEquals(handle))
-                                        {
-                                            hasMatch = true;
-                                            break;
-                                        }
-                                    }
+                                        bool hasMatch = false;
 
-                                    if (hasMatch)
-                                    {
-                                        break;
+                                        foreach (var oldHandle in oldGroup.Handles)
+                                        {
+                                            if (oldHandle.RangeEquals(handle))
+                                            {
+                                                hasMatch = true;
+                                                break;
+                                            }
+                                        }
+
+                                        if (hasMatch)
+                                        {
+                                            handle.Reprotect();
+                                        }
                                     }
                                 }
                             }
-
-                            if (hasMatch)
-                            {
-                                handle.Reprotect();
-                            }
                         }
-                        else
+                    }
+                    else
+                    {
+                        foreach (CpuRegionHandle handle in groupHandle.Handles)
                         {
                             handle.Reprotect();
                         }
