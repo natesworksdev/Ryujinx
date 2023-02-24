@@ -362,7 +362,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             int spanEndIndex = -1;
             int spanBase = 0;
-            ReadOnlySpan<byte> span = ReadOnlySpan<byte>.Empty;
+            ReadOnlySpan<byte> dataSpan = ReadOnlySpan<byte>.Empty;
 
             for (int i = 0; i < regionCount; i++)
             {
@@ -370,6 +370,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     var info = GetHandleInformation(baseHandle + i);
 
+                    // Ensure the data for this handle is loaded in the span.
                     if (spanEndIndex <= i - 1)
                     {
                         spanEndIndex = i;
@@ -397,7 +398,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         int endOffset = Math.Min(spanLast + _sliceSizes[endInfo.BaseLevel + endInfo.Levels - 1], (int)Storage.Size);
                         int size = endOffset - spanBase;
 
-                        span = _physicalMemory.GetSpan(Storage.Range.GetSlice((ulong)spanBase, (ulong)size));
+                        dataSpan = _physicalMemory.GetSpan(Storage.Range.GetSlice((ulong)spanBase, (ulong)size));
                     }
 
                     // Only one of these will be greater than 1, as partial sync is only called when there are sub-image views.
@@ -408,7 +409,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                             int offsetIndex = GetOffsetIndex(info.BaseLayer + layer, info.BaseLevel + level);
                             int offset = _allOffsets[offsetIndex];
 
-                            ReadOnlySpan<byte> data = span.Slice(offset - spanBase);
+                            ReadOnlySpan<byte> data = dataSpan.Slice(offset - spanBase);
 
                             SpanOrArray<byte> result = Storage.ConvertToHostCompatibleFormat(data, info.BaseLevel + level, true);
 
