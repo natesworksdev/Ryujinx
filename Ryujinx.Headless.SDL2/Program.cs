@@ -447,10 +447,10 @@ namespace Ryujinx.Headless.SDL2
 
         private static void SetupProgressHandler()
         {
-            if (_emulationContext.Application.DiskCacheLoadState != null)
+            if (_emulationContext.Processes.ActiveProcess.DiskCacheLoadState != null)
             {
-                _emulationContext.Application.DiskCacheLoadState.StateChanged -= ProgressHandler;
-                _emulationContext.Application.DiskCacheLoadState.StateChanged += ProgressHandler;
+                _emulationContext.Processes.ActiveProcess.DiskCacheLoadState.StateChanged -= ProgressHandler;
+                _emulationContext.Processes.ActiveProcess.DiskCacheLoadState.StateChanged += ProgressHandler;
             }
 
             _emulationContext.Gpu.ShaderCacheStateChanged -= ProgressHandler;
