@@ -77,7 +77,7 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
                 if (ulong.TryParse(mainNca.Header.TitleId.ToString("x16"), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ulong titleIdBase))
                 {
                     // Clear the program index part.
-                    titleIdBase &= 0xFFFFFFFFFFFFFFF0;
+                    titleIdBase &= ~0xFUL;
 
                     // Load update informations if existing.
                     string titleUpdateMetadataPath = System.IO.Path.Combine(AppDataManager.GamesDirPath, titleIdBase.ToString("x16"), "updates.json");

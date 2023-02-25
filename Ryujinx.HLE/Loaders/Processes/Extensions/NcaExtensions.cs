@@ -63,7 +63,7 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
 
             ProcessResult processResult = exeFs.Load(device, nacpData, metaLoader);
 
-            // Load RomFs.
+            // Load RomFS.
             if (romFs == null)
             {
                 Logger.Warning?.Print(LogClass.Loader, "No RomFS found in NCA");
@@ -79,7 +79,7 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
             if (processResult.Informations.ProgramId != 0 && (processResult.Informations.ProgramId < SystemProgramId.Start.Value || processResult.Informations.ProgramId > SystemAppletId.End.Value))
             {
                 // Multi-program applications can technically use any program ID for the main program, but in practice they always use 0 in the low nibble.
-                // We'll know if this changes in the future because stuff will get errors when trying to mount the correct save.
+                // We'll know if this changes in the future because applications will get errors when trying to mount the correct save.
                 ProcessLoaderHelper.EnsureSaveData(device, new ApplicationId(processResult.Informations.ProgramId & ~0xFul), nacpData);
             }
 

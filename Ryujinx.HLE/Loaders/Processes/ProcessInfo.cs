@@ -18,7 +18,6 @@ namespace Ryujinx.HLE.Loaders.Processes
         public readonly bool DiskCacheEnabled;
         public readonly bool AllowCodeMemoryForJit;
 
-
         public ProcessInfo(MetaLoader metaLoader, ApplicationControlProperty applicationControlProperties, bool diskCacheEnabled, bool allowCodeMemoryForJit)
         {
             MetaLoader                   = metaLoader;

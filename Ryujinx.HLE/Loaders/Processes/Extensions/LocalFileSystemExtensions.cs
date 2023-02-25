@@ -28,7 +28,7 @@ namespace Ryujinx.HLE.Loaders.Processes
 
             ProcessResult processResult = exeFs.Load(device, nacpData, metaLoader);
 
-            // Load RomFs.
+            // Load RomFS.
             if (string.IsNullOrEmpty(romFsPath))
             {
                 device.Configuration.VirtualFileSystem.LoadRomFs(processResult.ProcessId, romFsPath);

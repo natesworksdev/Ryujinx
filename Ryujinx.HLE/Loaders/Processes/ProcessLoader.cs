@@ -124,7 +124,7 @@ namespace Ryujinx.HLE.Loaders.Processes
 
                 executable = nro;
 
-                // Open RomFs if exists.
+                // Open RomFS if exists.
                 IStorage romFsStorage = nro.OpenNroAssetSection(LibHac.Tools.Ro.NroAssetType.RomFs, false);
                 romFsStorage.GetSize(out long romFsSize).ThrowIfFailure();
                 if (romFsSize != 0)
@@ -177,7 +177,7 @@ namespace Ryujinx.HLE.Loaders.Processes
 
             ProcessResult processResult = ProcessLoaderHelper.LoadNsos(_device, _device.System.KernelContext, processInfo, null, executable);
 
-            // Load RomFs.
+            // Load RomFS.
             if (romfsStream != null)
             {
                 _device.Configuration.VirtualFileSystem.SetRomFs(processResult.ProcessId, romfsStream);

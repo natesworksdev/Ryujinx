@@ -884,7 +884,7 @@ namespace Ryujinx.Ui.App.Common
             if (ulong.TryParse(titleId, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ulong titleIdBase))
             {
                 // Clear the program index part.
-                titleIdBase &= 0xFFFFFFFFFFFFFFF0;
+                titleIdBase &= ~0xFUL;
 
                 // Load update informations if existing.
                 string titleUpdateMetadataPath = Path.Combine(AppDataManager.GamesDirPath, titleIdBase.ToString("x16"), "updates.json");

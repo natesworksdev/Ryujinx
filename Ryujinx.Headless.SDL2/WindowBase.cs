@@ -145,16 +145,14 @@ namespace Ryujinx.Headless.SDL2
 
         private void InitializeWindow()
         {
-            string titleNameSection = string.IsNullOrWhiteSpace(Device.Processes.ActiveProcess.Informations.ApplicationControlProperties.Title[(int)Device.System.State.DesiredTitleLanguage].NameString.ToString()) ? string.Empty
-                : $" - {Device.Processes.ActiveProcess.Informations.ApplicationControlProperties.Title[(int)Device.System.State.DesiredTitleLanguage].NameString.ToString()}";
+            var activeProcess = Device.Processes.ActiveProcess;
+            var nacp = activeProcess.Informations.ApplicationControlProperties;
+            int desiredLanguage = (int)Device.System.State.DesiredTitleLanguage;
 
-            string titleVersionSection = string.IsNullOrWhiteSpace(Device.Processes.ActiveProcess.Informations.ApplicationControlProperties.DisplayVersionString.ToString()) ? string.Empty
-                : $" v{Device.Processes.ActiveProcess.Informations.ApplicationControlProperties.DisplayVersionString.ToString()}";
-
-            string titleIdSection = string.IsNullOrWhiteSpace(Device.Processes.ActiveProcess.Informations.ProgramIdText) ? string.Empty
-                : $" ({Device.Processes.ActiveProcess.Informations.ProgramIdText.ToUpper()})";
-
-            string titleArchSection = Device.Processes.ActiveProcess.Informations.Is64Bit ? " (64-bit)" : " (32-bit)";
+            string titleNameSection = string.IsNullOrWhiteSpace(nacp.Title[desiredLanguage].NameString.ToString()) ? string.Empty : $" - {nacp.Title[desiredLanguage].NameString.ToString()}";
+            string titleVersionSection = string.IsNullOrWhiteSpace(nacp.DisplayVersionString.ToString()) ? string.Empty : $" v{nacp.DisplayVersionString.ToString()}";
+            string titleIdSection = string.IsNullOrWhiteSpace(activeProcess.Informations.ProgramIdText) ? string.Empty : $" ({activeProcess.Informations.ProgramIdText.ToUpper()})";
+            string titleArchSection = activeProcess.Informations.Is64Bit ? " (64-bit)" : " (32-bit)";
 
             WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DefaultWidth, DefaultHeight, DefaultFlags | GetWindowFlags());
 

@@ -10,6 +10,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Loaders.Mods;
+using Ryujinx.HLE.Loaders.Processes;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -17,7 +18,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Path = System.IO.Path;
-using Ryujinx.HLE.Loaders.Processes;
 
 namespace Ryujinx.HLE.HOS
 {

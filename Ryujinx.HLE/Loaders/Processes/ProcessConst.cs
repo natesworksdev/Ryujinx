@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.Loaders.Processes
 {
-    public class ProcessConst
+    static class ProcessConst
     {
         // Binaries from exefs are loaded into mem in this order. Do not change.
         public static readonly string[] ExeFsPrefixes =
