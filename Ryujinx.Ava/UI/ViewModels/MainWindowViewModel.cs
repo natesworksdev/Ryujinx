@@ -1705,8 +1705,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 if (string.IsNullOrWhiteSpace(titleName))
                 {
-                    LoadHeading = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.LoadingHeading, AppHost.Device.Processes.ActiveProcess.Informations.Name);
-                    TitleName   = AppHost.Device.Processes.ActiveProcess.Informations.Name;
+                    LoadHeading = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.LoadingHeading, AppHost.Device.Processes.ActiveProcess.Name);
+                    TitleName   = AppHost.Device.Processes.ActiveProcess.Name;
                 }
 
                 SwitchToRenderer(startFullscreen);

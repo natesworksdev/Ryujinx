@@ -81,7 +81,7 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
             // Apply Nsos patches.
             device.Configuration.VirtualFileSystem.ModLoader.ApplyNsoPatches(programId, nsoExecutables);
 
-            // Don't use PTC if ExeFs files have been replaced.
+            // Don't use PTC if ExeFS files have been replaced.
             bool enablePtc = device.System.EnablePtc && !modLoadResult.Modified;
             if (!enablePtc)
             {
@@ -91,20 +91,20 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
             // We allow it for nx-hbloader because it can be used to launch homebrew.
             bool allowCodeMemoryForJit = programId == 0x010000000000100DUL || isHomebrew;
 
-            ProcessInfo processInfo = new(metaLoader, nacpData.Value, enablePtc, allowCodeMemoryForJit);
+            string programName = "";
 
-            if (!isHomebrew && processInfo.ProgramId > 0x010000000000FFFF)
+            if (!isHomebrew && programId > 0x010000000000FFFF)
             {
-                processInfo.Name = processInfo.ApplicationControlProperties.Title[(int)device.System.State.DesiredTitleLanguage].NameString.ToString();
+                programName = nacpData.Value.Title[(int)device.System.State.DesiredTitleLanguage].NameString.ToString();
 
-                if (string.IsNullOrWhiteSpace(processInfo.Name))
+                if (string.IsNullOrWhiteSpace(programName))
                 {
-                    processInfo.Name = processInfo.ApplicationControlProperties.Title.ItemsRo.ToArray().FirstOrDefault(x => x.Name[0] != 0).NameString.ToString();
+                    programName = nacpData.Value.Title.ItemsRo.ToArray().FirstOrDefault(x => x.Name[0] != 0).NameString.ToString();
                 }
             }
 
             // Initialize GPU.
-            Graphics.Gpu.GraphicsConfig.TitleId = processInfo.ProgramIdText;
+            Graphics.Gpu.GraphicsConfig.TitleId = $"{programId:x16}";
             device.Gpu.HostInitalized.Set();
 
             if (!MemoryBlock.SupportsFlags(MemoryAllocationFlags.ViewCompatible))
@@ -112,7 +112,17 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
                 device.Configuration.MemoryManagerMode = MemoryManagerMode.SoftwarePageTable;
             }
 
-            ProcessResult processResult = ProcessLoaderHelper.LoadNsos(device, device.System.KernelContext, processInfo, null, nsoExecutables);
+
+            ProcessResult processResult = ProcessLoaderHelper.LoadNsos(device, 
+                                                                       device.System.KernelContext,
+                                                                       metaLoader,
+                                                                       nacpData.Value,
+                                                                       enablePtc,
+                                                                       allowCodeMemoryForJit,
+                                                                       programName,
+                                                                       metaLoader.GetProgramId(),
+                                                                       null,
+                                                                       nsoExecutables);
 
             // TODO: This should be stored using ProcessId instead.
             device.System.LibHacHorizonManager.ArpIReader.ApplicationId = new LibHac.ApplicationId(metaLoader.GetProgramId());

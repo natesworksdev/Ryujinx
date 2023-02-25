@@ -321,13 +321,13 @@ namespace Ryujinx.Ava
             _viewModel.IsGameRunning = true;
 
             var activeProcess   = Device.Processes.ActiveProcess;
-            var nacp            = activeProcess.Informations.ApplicationControlProperties;
+            var nacp            = activeProcess.ApplicationControlProperties;
             int desiredLanguage = (int)Device.System.State.DesiredTitleLanguage;
 
             string titleNameSection    = string.IsNullOrWhiteSpace(nacp.Title[desiredLanguage].NameString.ToString()) ? string.Empty : $" - {nacp.Title[desiredLanguage].NameString.ToString()}";
             string titleVersionSection = string.IsNullOrWhiteSpace(nacp.DisplayVersionString.ToString())              ? string.Empty : $" v{nacp.DisplayVersionString.ToString()}";
-            string titleIdSection      = string.IsNullOrWhiteSpace(activeProcess.Informations.ProgramIdText)          ? string.Empty : $" ({activeProcess.Informations.ProgramIdText.ToUpper()})";
-            string titleArchSection    = activeProcess.Informations.Is64Bit                                           ? " (64-bit)"  : " (32-bit)";
+            string titleIdSection      = string.IsNullOrWhiteSpace(activeProcess.ProgramIdText)                       ? string.Empty : $" ({activeProcess.ProgramIdText.ToUpper()})";
+            string titleArchSection    = activeProcess.Is64Bit                                                        ? " (64-bit)"  : " (32-bit)";
 
             Dispatcher.UIThread.InvokeAsync(() =>
             {
@@ -429,7 +429,7 @@ namespace Ryujinx.Ava
         {
             if (Device.Processes != null)
             {
-                _viewModel.UpdateGameMetadata(Device.Processes.ActiveProcess.Informations.ProgramIdText);
+                _viewModel.UpdateGameMetadata(Device.Processes.ActiveProcess.ProgramIdText);
             }
 
             ConfigurationState.Instance.System.IgnoreMissingServices.Event -= UpdateIgnoreMissingServicesState;
@@ -626,9 +626,9 @@ namespace Ryujinx.Ava
                 return false;
             }
 
-            DiscordIntegrationModule.SwitchToPlayingState(Device.Processes.ActiveProcess.Informations.ProgramIdText, Device.Processes.ActiveProcess.Informations.Name);
+            DiscordIntegrationModule.SwitchToPlayingState(Device.Processes.ActiveProcess.ProgramIdText, Device.Processes.ActiveProcess.Name);
 
-            _viewModel.ApplicationLibrary.LoadAndSaveMetaData(Device.Processes.ActiveProcess.Informations.ProgramIdText, appMetadata =>
+            _viewModel.ApplicationLibrary.LoadAndSaveMetaData(Device.Processes.ActiveProcess.ProgramIdText, appMetadata =>
             {
                 appMetadata.LastPlayed = DateTime.UtcNow.ToString();
             });

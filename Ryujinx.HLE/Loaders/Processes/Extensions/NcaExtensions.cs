@@ -70,17 +70,17 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
             }
             else
             {
-                romFs = device.Configuration.VirtualFileSystem.ModLoader.ApplyRomFsMods(processResult.Informations.ProgramId, romFs);
+                romFs = device.Configuration.VirtualFileSystem.ModLoader.ApplyRomFsMods(processResult.ProgramId, romFs);
 
                 device.Configuration.VirtualFileSystem.SetRomFs(processResult.ProcessId, romFs.AsStream(FileAccess.Read));
             }
 
             // Don't create save data for system programs.
-            if (processResult.Informations.ProgramId != 0 && (processResult.Informations.ProgramId < SystemProgramId.Start.Value || processResult.Informations.ProgramId > SystemAppletId.End.Value))
+            if (processResult.ProgramId != 0 && (processResult.ProgramId < SystemProgramId.Start.Value || processResult.ProgramId > SystemAppletId.End.Value))
             {
                 // Multi-program applications can technically use any program ID for the main program, but in practice they always use 0 in the low nibble.
                 // We'll know if this changes in the future because applications will get errors when trying to mount the correct save.
-                ProcessLoaderHelper.EnsureSaveData(device, new ApplicationId(processResult.Informations.ProgramId & ~0xFul), nacpData);
+                ProcessLoaderHelper.EnsureSaveData(device, new ApplicationId(processResult.ProgramId & ~0xFul), nacpData);
             }
 
             return processResult;

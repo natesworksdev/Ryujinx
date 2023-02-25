@@ -86,7 +86,7 @@ namespace Ryujinx.HLE.Loaders.Processes
                 if (processResult.Start(_device))
                 {
                     // NOTE: Check if process is SystemApplicationId or ApplicationId
-                    if (processResult.Informations.ProgramId > 0x0100000000000FFF)
+                    if (processResult.ProgramId > 0x0100000000000FFF)
                     {
                         _latestPid = processResult.ProcessId;
                     }
@@ -111,8 +111,10 @@ namespace Ryujinx.HLE.Loaders.Processes
         {
             var         nacpData    = new BlitStruct<ApplicationControlProperty>(1);
             IFileSystem dummyExeFs  = null;
-            ProcessInfo processInfo = new(dummyExeFs.GetNpdm(), nacpData.Value, diskCacheEnabled: false, allowCodeMemoryForJit: true);
             Stream      romfsStream = null;
+
+            string programName = "";
+            ulong  programId   = 0000000000000000;
 
             // Load executable.
             IExecutable executable;
@@ -139,28 +141,24 @@ namespace Ryujinx.HLE.Loaders.Processes
                 {
                     nacpStorage.Read(0, nacpData.ByteSpan);
 
-                    processInfo.Name = nacpData.Value.Title[(int)_device.System.State.DesiredTitleLanguage].NameString.ToString();
+                    programName = nacpData.Value.Title[(int)_device.System.State.DesiredTitleLanguage].NameString.ToString();
 
-                    if (string.IsNullOrWhiteSpace(processInfo.Name))
+                    if (string.IsNullOrWhiteSpace(programName))
                     {
-                        processInfo.Name = nacpData.Value.Title.ItemsRo.ToArray().FirstOrDefault(x => x.Name[0] != 0).NameString.ToString();
+                        programName = nacpData.Value.Title.ItemsRo.ToArray().FirstOrDefault(x => x.Name[0] != 0).NameString.ToString();
                     }
 
                     if (nacpData.Value.PresenceGroupId != 0)
                     {
-                        processInfo.ProgramId = nacpData.Value.PresenceGroupId;
+                        programId = nacpData.Value.PresenceGroupId;
                     }
                     else if (nacpData.Value.SaveDataOwnerId != 0)
                     {
-                        processInfo.ProgramId = nacpData.Value.SaveDataOwnerId;
+                        programId = nacpData.Value.SaveDataOwnerId;
                     }
                     else if (nacpData.Value.AddOnContentBaseId != 0)
                     {
-                        processInfo.ProgramId = nacpData.Value.AddOnContentBaseId - 0x1000;
-                    }
-                    else
-                    {
-                        processInfo.ProgramId = 0000000000000000;
+                        programId = nacpData.Value.AddOnContentBaseId - 0x1000;
                     }
                 }
 
@@ -168,14 +166,25 @@ namespace Ryujinx.HLE.Loaders.Processes
             }
             else
             {
-                executable = new NsoExecutable(new LocalStorage(path, FileAccess.Read), System.IO.Path.GetFileNameWithoutExtension(path));
+                programName = System.IO.Path.GetFileNameWithoutExtension(path);
+
+                executable = new NsoExecutable(new LocalStorage(path, FileAccess.Read), programName);
             }
 
             // Explicitly null TitleId to disable the shader cache.
             Graphics.Gpu.GraphicsConfig.TitleId = null;
             _device.Gpu.HostInitalized.Set();
 
-            ProcessResult processResult = ProcessLoaderHelper.LoadNsos(_device, _device.System.KernelContext, processInfo, null, executable);
+            ProcessResult processResult = ProcessLoaderHelper.LoadNsos(_device, 
+                                                                       _device.System.KernelContext,
+                                                                       dummyExeFs.GetNpdm(),
+                                                                       nacpData.Value,
+                                                                       diskCacheEnabled: false,
+                                                                       allowCodeMemoryForJit: true,
+                                                                       programName,
+                                                                       programId,
+                                                                       null,
+                                                                       executable);
 
             // Load RomFS.
             if (romfsStream != null)

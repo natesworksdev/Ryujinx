@@ -3,6 +3,7 @@ using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Shim;
 using LibHac.FsSystem;
+using LibHac.Loader;
 using LibHac.Ncm;
 using LibHac.Ns;
 using LibHac.Tools.Fs;
@@ -214,11 +215,20 @@ namespace Ryujinx.HLE.Loaders.Processes
             return true;
         }
 
-        public static ProcessResult LoadNsos(Switch device, KernelContext context, ProcessInfo processInfo, byte[] arguments = null, params IExecutable[] executables)
+        public static ProcessResult LoadNsos(Switch device,
+                                             KernelContext context,
+                                             MetaLoader metaLoader,
+                                             ApplicationControlProperty applicationControlProperties,
+                                             bool diskCacheEnabled,
+                                             bool allowCodeMemoryForJit,
+                                             string name,
+                                             ulong programId,
+                                             byte[] arguments = null,
+                                             params IExecutable[] executables)
         {
             context.Device.System.ServiceTable.WaitServicesReady();
 
-            if (processInfo.MetaLoader.GetNpdm(out var npdm).IsFailure())
+            if (metaLoader.GetNpdm(out var npdm).IsFailure())
             {
                 return ProcessResult.Failed;
             }
@@ -275,21 +285,20 @@ namespace Ryujinx.HLE.Loaders.Processes
                 }
             }
 
-            int codePagesCount = (int)(codeSize / KPageTableBase.PageSize);
-
+            int codePagesCount           = (int)(codeSize / KPageTableBase.PageSize);
             int personalMmHeapPagesCount = (int)(meta.SystemResourceSize / KPageTableBase.PageSize);
 
             ProcessCreationInfo creationInfo = new(
-                processInfo.Name,
+                name,
                 (int)meta.Version,
-                processInfo.ProgramId,
+                programId,
                 codeStart,
                 codePagesCount,
                 (ProcessCreationFlags)meta.Flags | ProcessCreationFlags.IsApplication,
                 0,
                 personalMmHeapPagesCount);
 
-            context.Device.System.LibHacHorizonManager.InitializeApplicationClient(new ProgramId(processInfo.ProgramId), in npdm);
+            context.Device.System.LibHacHorizonManager.InitializeApplicationClient(new ProgramId(programId), in npdm);
 
             Result result;
 
@@ -326,8 +335,9 @@ namespace Ryujinx.HLE.Loaders.Processes
                 return ProcessResult.Failed;
             }
 
-            KProcess process = new(context, processInfo.AllowCodeMemoryForJit);
+            KProcess process = new(context, allowCodeMemoryForJit);
 
+            // NOTE: This field doesn't exists one firmware pre-5.0.0, a workaround have to be found.
             MemoryRegion memoryRegion = (MemoryRegion)(npdm.Acid.Flags >> 2 & 0xf);
             if (memoryRegion > MemoryRegion.NvServices)
             {
@@ -339,9 +349,9 @@ namespace Ryujinx.HLE.Loaders.Processes
             var processContextFactory = new ArmProcessContextFactory(
                 context.Device.System.TickSource,
                 context.Device.Gpu,
-                processInfo.ProgramIdText,
-                processInfo.ApplicationControlProperties.DisplayVersionString.ToString(),
-                processInfo.DiskCacheEnabled,
+                $"{programId:x16}",
+                applicationControlProperties.DisplayVersionString.ToString(),
+                diskCacheEnabled,
                 codeStart,
                 codeSize);
 
@@ -388,9 +398,9 @@ namespace Ryujinx.HLE.Loaders.Processes
                 process.MemoryManager.CodeRegionStart);
 
             // Once everything is loaded, we can load cheats.
-            device.Configuration.VirtualFileSystem.ModLoader.LoadCheats(processInfo.ProgramId, tamperInfo, device.TamperMachine);
+            device.Configuration.VirtualFileSystem.ModLoader.LoadCheats(programId, tamperInfo, device.TamperMachine);
 
-            return new ProcessResult(processInfo, processContextFactory.DiskCacheLoadState, process.Pid, meta.MainThreadPriority, meta.MainThreadStackSize);
+            return new ProcessResult(metaLoader, applicationControlProperties, diskCacheEnabled, allowCodeMemoryForJit, processContextFactory.DiskCacheLoadState, process.Pid, meta.MainThreadPriority, meta.MainThreadStackSize);
         }
 
         public static Result LoadIntoMemory(KProcess process, IExecutable image, ulong baseAddress)

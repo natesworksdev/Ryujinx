@@ -1,28 +1,59 @@
-﻿using Ryujinx.Common.Logging;
+﻿using LibHac.Loader;
+using LibHac.Ns;
+using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
+using Ryujinx.HLE.Loaders.Processes.Extensions;
 using Ryujinx.Horizon.Common;
 
 namespace Ryujinx.HLE.Loaders.Processes
 {
     public struct ProcessResult
     {
-        public static ProcessResult Failed => new(new ProcessInfo(), null, 0, 0, 0);
+        public static ProcessResult Failed => new(null, new ApplicationControlProperty(), false, false, null, 0, 0, 0);
 
         private readonly byte _mainThreadPriority;
         private readonly uint _mainThreadStackSize;
 
-        public readonly ProcessInfo         Informations;
         public readonly IDiskCacheLoadState DiskCacheLoadState;
-        public readonly ulong               ProcessId;
 
-        public ProcessResult(ProcessInfo processInfo, IDiskCacheLoadState diskCacheLoadState, ulong pid, byte mainThreadPriority, uint mainThreadStackSize)
+        public readonly MetaLoader                 MetaLoader;
+        public readonly ApplicationControlProperty ApplicationControlProperties;
+
+        public readonly ulong  ProcessId;
+        public string          Name;
+        public ulong           ProgramId;
+        public readonly string ProgramIdText;
+        public readonly bool   Is64Bit;
+        public readonly bool   DiskCacheEnabled;
+        public readonly bool   AllowCodeMemoryForJit;
+
+        public ProcessResult(MetaLoader                 metaLoader, 
+                             ApplicationControlProperty applicationControlProperties,
+                             bool                       diskCacheEnabled,
+                             bool                       allowCodeMemoryForJit,
+                             IDiskCacheLoadState        diskCacheLoadState,
+                             ulong                      pid,
+                             byte                       mainThreadPriority,
+                             uint                       mainThreadStackSize)
         {
             _mainThreadPriority  = mainThreadPriority;
             _mainThreadStackSize = mainThreadStackSize;
 
-            Informations       = processInfo;
             DiskCacheLoadState = diskCacheLoadState;
             ProcessId          = pid;
+
+            MetaLoader                   = metaLoader;
+            ApplicationControlProperties = applicationControlProperties;
+
+            ulong programId = metaLoader.GetProgramId();
+
+            Name          = MetaLoader.GetProgramName();
+            ProgramId     = programId;
+            ProgramIdText = $"{programId:x16}";
+            Is64Bit       = metaLoader.IsProgram64Bit();
+
+            DiskCacheEnabled      = diskCacheEnabled;
+            AllowCodeMemoryForJit = allowCodeMemoryForJit;
         }
 
         public bool Start(Switch device)
@@ -40,16 +71,16 @@ namespace Ryujinx.HLE.Loaders.Processes
             // TODO: LibHac npdm currently doesn't support version field.
             string version;
 
-            if (Informations.ProgramId > 0x010000000000FFFF)
+            if (ProgramId > 0x010000000000FFFF)
             {
-                version = Informations.ApplicationControlProperties.DisplayVersionString.ToString();
+                version = ApplicationControlProperties.DisplayVersionString.ToString();
             }
             else
             {
                 version = device.System.ContentManager.GetCurrentFirmwareVersion().VersionString;
             }
 
-            Logger.Info?.Print(LogClass.Loader, $"Application Loaded: {Informations.Name} v{version} [{Informations.ProgramIdText}] [{(Informations.Is64Bit ? "64-bit" : "32-bit")}]");
+            Logger.Info?.Print(LogClass.Loader, $"Application Loaded: {Name} v{version} [{ProgramIdText}] [{(Is64Bit ? "64-bit" : "32-bit")}]");
 
             return true;
         }

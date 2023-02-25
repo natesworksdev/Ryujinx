@@ -126,7 +126,7 @@ namespace Ryujinx.Ava.UI.Views.Main
 
             if (ViewModel.AppHost.Device.System.SearchingForAmiibo(out int deviceId))
             {
-                string titleId = ViewModel.AppHost.Device.Processes.ActiveProcess.Informations.ProgramIdText.ToUpper();
+                string titleId = ViewModel.AppHost.Device.Processes.ActiveProcess.ProgramIdText.ToUpper();
                 AmiiboWindow window = new(ViewModel.ShowAll, ViewModel.LastScannedAmiiboId, titleId);
 
                 await window.ShowDialog(Window);
@@ -148,9 +148,9 @@ namespace Ryujinx.Ava.UI.Views.Main
                 return;
             }
 
-            string name = ViewModel.AppHost.Device.Processes.ActiveProcess.Informations.ApplicationControlProperties.Title[(int)ViewModel.AppHost.Device.System.State.DesiredTitleLanguage].NameString.ToString();
+            string name = ViewModel.AppHost.Device.Processes.ActiveProcess.ApplicationControlProperties.Title[(int)ViewModel.AppHost.Device.System.State.DesiredTitleLanguage].NameString.ToString();
 
-            await new CheatWindow(Window.VirtualFileSystem, ViewModel.AppHost.Device.Processes.ActiveProcess.Informations.ProgramIdText, name).ShowDialog(Window);
+            await new CheatWindow(Window.VirtualFileSystem, ViewModel.AppHost.Device.Processes.ActiveProcess.ProgramIdText, name).ShowDialog(Window);
 
             ViewModel.AppHost.Device.EnableCheats();
         }

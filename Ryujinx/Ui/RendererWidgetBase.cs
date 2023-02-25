@@ -496,13 +496,13 @@ namespace Ryujinx.Ui
                 parent.Present();
 
                 var activeProcess   = Device.Processes.ActiveProcess;
-                var nacp            = activeProcess.Informations.ApplicationControlProperties;
+                var nacp            = activeProcess.ApplicationControlProperties;
                 int desiredLanguage = (int)Device.System.State.DesiredTitleLanguage;
 
                 string titleNameSection    = string.IsNullOrWhiteSpace(nacp.Title[desiredLanguage].NameString.ToString()) ? string.Empty : $" - {nacp.Title[desiredLanguage].NameString.ToString()}";
                 string titleVersionSection = string.IsNullOrWhiteSpace(nacp.DisplayVersionString.ToString())              ? string.Empty : $" v{nacp.DisplayVersionString.ToString()}";
-                string titleIdSection      = string.IsNullOrWhiteSpace(activeProcess.Informations.ProgramIdText)          ? string.Empty : $" ({activeProcess.Informations.ProgramIdText.ToUpper()})";
-                string titleArchSection    = activeProcess.Informations.Is64Bit                                           ? " (64-bit)"  : " (32-bit)";
+                string titleIdSection      = string.IsNullOrWhiteSpace(activeProcess.ProgramIdText)                       ? string.Empty : $" ({activeProcess.ProgramIdText.ToUpper()})";
+                string titleArchSection    = activeProcess.Is64Bit                                                        ? " (64-bit)"  : " (32-bit)";
 
                 parent.Title = $"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}";
             });
