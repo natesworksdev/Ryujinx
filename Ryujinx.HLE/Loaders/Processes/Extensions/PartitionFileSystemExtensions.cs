@@ -79,7 +79,7 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
                     // Clear the program index part.
                     titleIdBase &= ~0xFUL;
 
-                    // Load update informations if existing.
+                    // Load update information if exists.
                     string titleUpdateMetadataPath = System.IO.Path.Combine(AppDataManager.GamesDirPath, titleIdBase.ToString("x16"), "updates.json");
                     if (File.Exists(titleUpdateMetadataPath))
                     {
