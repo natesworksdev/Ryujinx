@@ -1,5 +1,4 @@
 ﻿using LibHac.Common;
-using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
 using LibHac.Loader;
 using LibHac.Ns;
@@ -12,7 +11,7 @@ namespace Ryujinx.HLE.Loaders.Processes
     {
         public static ProcessResult Load(this LocalFileSystem exeFs, Switch device, string romFsPath = "")
         {
-            MetaLoader metaLoader = (exeFs as IFileSystem).GetNpdm();
+            MetaLoader metaLoader = exeFs.GetNpdm();
             var        nacpData   = new BlitStruct<ApplicationControlProperty>(1);
             ulong      programId  = metaLoader.GetProgramId();
 
