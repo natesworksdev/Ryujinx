@@ -1,6 +1,5 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
-using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.Horizon.Common;
 
 namespace Ryujinx.HLE.Loaders.Processes

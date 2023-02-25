@@ -6,7 +6,6 @@ using LibHac.Ns;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.Memory;
 using System.Linq;
@@ -96,7 +95,12 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
 
             if (!isHomebrew && processInfo.ProgramId > 0x010000000000FFFF)
             {
-                processInfo.Name = processInfo.ApplicationControlProperties.Title[(int)TitleLanguage.AmericanEnglish].NameString.ToString();
+                processInfo.Name = processInfo.ApplicationControlProperties.Title[(int)device.System.State.DesiredTitleLanguage].NameString.ToString();
+
+                if (string.IsNullOrWhiteSpace(processInfo.Name))
+                {
+                    processInfo.Name = processInfo.ApplicationControlProperties.Title.ItemsRo.ToArray().FirstOrDefault(x => x.Name[0] != 0).NameString.ToString();
+                }
             }
 
             // Initialize GPU.
