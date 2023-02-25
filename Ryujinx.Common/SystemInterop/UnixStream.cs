@@ -1,9 +1,12 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace Ryujinx.Common.SystemInterop
 {
+    [SupportedOSPlatform("linux")]
+    [SupportedOSPlatform("macos")]
     public partial class UnixStream : Stream, IDisposable
     {
         private const int InvalidFd = -1;
@@ -23,7 +26,7 @@ namespace Ryujinx.Common.SystemInterop
         {
             if (InvalidFd == fd)
             {
-                throw new ArgumentException("invalid fd");
+                throw new ArgumentException("Invalid file descriptor");
             }
 
             _fd = fd;
@@ -32,7 +35,7 @@ namespace Ryujinx.Common.SystemInterop
             CanWrite = write(fd, IntPtr.Zero, 0) != -1;  
         }
 
-        ~UnixStream ()
+        ~UnixStream()
         {
             Close();
         }
@@ -143,7 +146,7 @@ namespace Ryujinx.Common.SystemInterop
                     return true;
                 }
 
-                throw new SystemException($"errno {errno}");
+                throw new SystemException($"Operation failed with error 0x{errno:X}");
             }
 
             return false;

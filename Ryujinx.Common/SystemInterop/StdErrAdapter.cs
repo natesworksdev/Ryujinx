@@ -55,8 +55,11 @@ namespace Ryujinx.Common.SystemInterop
         {
             if (_disposable)
             {
-                _pipeReader?.Close();
-                _pipeWriter?.Close();
+                if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+                {
+                    _pipeReader?.Close();
+                    _pipeWriter?.Close();
+                }
 
                 _disposable = false;
             }
@@ -75,17 +78,15 @@ namespace Ryujinx.Common.SystemInterop
 
         private static unsafe (int, int) MakePipe()
         {
-            Span<int> pipefd = stackalloc int[2];
-            fixed (int* ptr = pipefd)
+            int *pipefd = stackalloc int[2];
+
+            if (pipe(pipefd) == 0)
             {
-                if (pipe(ptr) == 0)
-                {
-                    return (pipefd[0], pipefd[1]);
-                }
-                else
-                {
-                    throw new();
-                }
+                return (pipefd[0], pipefd[1]);
+            }
+            else
+            {
+                throw new();
             }
         }
     }
