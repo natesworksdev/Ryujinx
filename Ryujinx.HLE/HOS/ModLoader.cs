@@ -17,6 +17,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Path = System.IO.Path;
+using Ryujinx.HLE.Loaders.Processes;
 
 namespace Ryujinx.HLE.HOS
 {
@@ -547,7 +548,7 @@ namespace Ryujinx.HLE.HOS
                 return modLoadResult;
             }
 
-            if (nsos.Length != ApplicationLoader.ExeFsPrefixes.Length)
+            if (nsos.Length != ProcessConst.ExeFsPrefixes.Length)
             {
                 throw new ArgumentOutOfRangeException("NSO Count is incorrect");
             }
@@ -556,9 +557,9 @@ namespace Ryujinx.HLE.HOS
 
             foreach (var mod in exeMods)
             {
-                for (int i = 0; i < ApplicationLoader.ExeFsPrefixes.Length; ++i)
+                for (int i = 0; i < ProcessConst.ExeFsPrefixes.Length; ++i)
                 {
-                    var nsoName = ApplicationLoader.ExeFsPrefixes[i];
+                    var nsoName = ProcessConst.ExeFsPrefixes[i];
 
                     FileInfo nsoFile = new FileInfo(Path.Combine(mod.Path.FullName, nsoName));
                     if (nsoFile.Exists)
@@ -596,7 +597,7 @@ namespace Ryujinx.HLE.HOS
                 }
             }
 
-            for (int i = ApplicationLoader.ExeFsPrefixes.Length - 1; i >= 0; --i)
+            for (int i = ProcessConst.ExeFsPrefixes.Length - 1; i >= 0; --i)
             {
                 if (modLoadResult.Stubs[1 << i] && !modLoadResult.Replaces[1 << i]) // Prioritizes replacements over stubs
                 {

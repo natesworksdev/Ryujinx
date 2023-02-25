@@ -495,16 +495,16 @@ namespace Ryujinx.Ui
             {
                 parent.Present();
 
-                string titleNameSection = string.IsNullOrWhiteSpace(Device.Application.TitleName) ? string.Empty
-                    : $" - {Device.Application.TitleName}";
+                string titleNameSection = string.IsNullOrWhiteSpace(Device.Processes.ActiveProcess.Informations.ApplicationControlProperties.Title[(int)Device.System.State.DesiredTitleLanguage].NameString.ToString()) ? string.Empty
+                    : $" - {Device.Processes.ActiveProcess.Informations.ApplicationControlProperties.Title[(int)Device.System.State.DesiredTitleLanguage].NameString.ToString()}";
 
-                string titleVersionSection = string.IsNullOrWhiteSpace(Device.Application.DisplayVersion) ? string.Empty
-                    : $" v{Device.Application.DisplayVersion}";
+                string titleVersionSection = string.IsNullOrWhiteSpace(Device.Processes.ActiveProcess.Informations.ApplicationControlProperties.DisplayVersionString.ToString()) ? string.Empty
+                    : $" v{Device.Processes.ActiveProcess.Informations.ApplicationControlProperties.DisplayVersionString.ToString()}";
 
-                string titleIdSection = string.IsNullOrWhiteSpace(Device.Application.TitleIdText) ? string.Empty
-                    : $" ({Device.Application.TitleIdText.ToUpper()})";
+                string titleIdSection = string.IsNullOrWhiteSpace(Device.Processes.ActiveProcess.Informations.ProgramIdText) ? string.Empty
+                    : $" ({Device.Processes.ActiveProcess.Informations.ProgramIdText.ToUpper()})";
 
-                string titleArchSection = Device.Application.TitleIs64Bit ? " (64-bit)" : " (32-bit)";
+                string titleArchSection = Device.Processes.ActiveProcess.Informations.Is64Bit ? " (64-bit)" : " (32-bit)";
 
                 parent.Title = $"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}";
             });
@@ -612,7 +612,7 @@ namespace Ryujinx.Ui
                     {
                         if (!ParentWindow.State.HasFlag(WindowState.Fullscreen))
                         {
-                            Device.Application.DiskCacheLoadState?.Cancel();
+                            Device.Processes.ActiveProcess.DiskCacheLoadState?.Cancel();
                         }
                     }
                 });

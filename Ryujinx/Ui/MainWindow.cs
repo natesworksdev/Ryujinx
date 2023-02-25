@@ -590,10 +590,10 @@ namespace Ryujinx.Ui
 
         private void SetupProgressUiHandlers()
         {
-            if (_emulationContext.Application.DiskCacheLoadState != null)
+            if (_emulationContext.Processes.ActiveProcess.DiskCacheLoadState != null)
             {
-                _emulationContext.Application.DiskCacheLoadState.StateChanged -= ProgressHandler;
-                _emulationContext.Application.DiskCacheLoadState.StateChanged += ProgressHandler;
+                _emulationContext.Processes.ActiveProcess.DiskCacheLoadState.StateChanged -= ProgressHandler;
+                _emulationContext.Processes.ActiveProcess.DiskCacheLoadState.StateChanged += ProgressHandler;
             }
 
             _emulationContext.Gpu.ShaderCacheStateChanged -= ProgressHandler;
@@ -871,9 +871,10 @@ namespace Ryujinx.Ui
                 _firmwareInstallFile.Sensitive      = false;
                 _firmwareInstallDirectory.Sensitive = false;
 
-                DiscordIntegrationModule.SwitchToPlayingState(_emulationContext.Application.TitleIdText, _emulationContext.Application.TitleName);
+                DiscordIntegrationModule.SwitchToPlayingState(_emulationContext.Processes.ActiveProcess.Informations.ProgramIdText,
+                                                              _emulationContext.Processes.ActiveProcess.Informations.ApplicationControlProperties.Title[(int)_emulationContext.System.State.DesiredTitleLanguage].NameString.ToString());
 
-                _applicationLibrary.LoadAndSaveMetaData(_emulationContext.Application.TitleIdText, appMetadata =>
+                _applicationLibrary.LoadAndSaveMetaData(_emulationContext.Processes.ActiveProcess.Informations.ProgramIdText, appMetadata =>
                 {
                     appMetadata.LastPlayed = DateTime.UtcNow.ToString();
                 });
@@ -1055,7 +1056,7 @@ namespace Ryujinx.Ui
 
             if (_emulationContext != null)
             {
-                UpdateGameMetadata(_emulationContext.Application.TitleIdText);
+                UpdateGameMetadata(_emulationContext.Processes.ActiveProcess.Informations.ProgramIdText);
 
                 if (RendererWidget != null)
                 {
@@ -1328,7 +1329,7 @@ namespace Ryujinx.Ui
         {
             if (_emulationContext != null)
             {
-                UpdateGameMetadata(_emulationContext.Application.TitleIdText);
+                UpdateGameMetadata(_emulationContext.Processes.ActiveProcess.Informations.ProgramIdText);
             }
 
             _pauseEmulation.Sensitive = false;
@@ -1596,7 +1597,9 @@ namespace Ryujinx.Ui
 
         private void ManageCheats_Pressed(object sender, EventArgs args)
         {
-           var window = new CheatWindow(_virtualFileSystem, _emulationContext.Application.TitleId, _emulationContext.Application.TitleName);
+           var window = new CheatWindow(_virtualFileSystem,
+                                        _emulationContext.Processes.ActiveProcess.Informations.ProgramId,
+                                        _emulationContext.Processes.ActiveProcess.Informations.ApplicationControlProperties.Title[(int)_emulationContext.System.State.DesiredTitleLanguage].NameString.ToString());
 
             window.Destroyed += CheatWindow_Destroyed;
             window.Show();
@@ -1639,7 +1642,7 @@ namespace Ryujinx.Ui
                     LastScannedAmiiboShowAll = _lastScannedAmiiboShowAll,
                     LastScannedAmiiboId      = _lastScannedAmiiboId,
                     DeviceId                 = deviceId,
-                    TitleId                  = _emulationContext.Application.TitleIdText.ToUpper()
+                    TitleId                  = _emulationContext.Processes.ActiveProcess.Informations.ProgramIdText.ToUpper()
                 };
 
                 amiiboWindow.DeleteEvent += AmiiboWindow_DeleteEvent;

@@ -320,10 +320,16 @@ namespace Ryujinx.Ava
 
             _viewModel.IsGameRunning = true;
 
-            string titleNameSection    = string.IsNullOrWhiteSpace(Device.Application.TitleName)      ? string.Empty : $" - {Device.Application.TitleName}";
-            string titleVersionSection = string.IsNullOrWhiteSpace(Device.Application.DisplayVersion) ? string.Empty : $" v{Device.Application.DisplayVersion}";
-            string titleIdSection      = string.IsNullOrWhiteSpace(Device.Application.TitleIdText)    ? string.Empty : $" ({Device.Application.TitleIdText.ToUpper()})";
-            string titleArchSection    = Device.Application.TitleIs64Bit                              ? " (64-bit)"  : " (32-bit)";
+            string titleNameSection = string.IsNullOrWhiteSpace(Device.Processes.ActiveProcess.Informations.ApplicationControlProperties.Title[(int)Device.System.State.DesiredTitleLanguage].NameString.ToString()) ? string.Empty
+                : $" - {Device.Processes.ActiveProcess.Informations.ApplicationControlProperties.Title[(int)Device.System.State.DesiredTitleLanguage].NameString.ToString()}";
+
+            string titleVersionSection = string.IsNullOrWhiteSpace(Device.Processes.ActiveProcess.Informations.ApplicationControlProperties.DisplayVersionString.ToString()) ? string.Empty
+                : $" v{Device.Processes.ActiveProcess.Informations.ApplicationControlProperties.DisplayVersionString.ToString()}";
+
+            string titleIdSection = string.IsNullOrWhiteSpace(Device.Processes.ActiveProcess.Informations.ProgramIdText) ? string.Empty
+                : $" ({Device.Processes.ActiveProcess.Informations.ProgramIdText.ToUpper()})";
+
+            string titleArchSection = Device.Processes.ActiveProcess.Informations.Is64Bit ? " (64-bit)" : " (32-bit)";
 
             Dispatcher.UIThread.InvokeAsync(() =>
             {
@@ -423,9 +429,9 @@ namespace Ryujinx.Ava
 
         private void Dispose()
         {
-            if (Device.Application != null)
+            if (Device.Processes != null)
             {
-                _viewModel.UpdateGameMetadata(Device.Application.TitleIdText);
+                _viewModel.UpdateGameMetadata(Device.Processes.ActiveProcess.Informations.ProgramIdText);
             }
 
             ConfigurationState.Instance.System.IgnoreMissingServices.Event -= UpdateIgnoreMissingServicesState;
@@ -622,9 +628,9 @@ namespace Ryujinx.Ava
                 return false;
             }
 
-            DiscordIntegrationModule.SwitchToPlayingState(Device.Application.TitleIdText, Device.Application.TitleName);
+            DiscordIntegrationModule.SwitchToPlayingState(Device.Processes.ActiveProcess.Informations.ProgramIdText, Device.Processes.ActiveProcess.Informations.Name);
 
-            _viewModel.ApplicationLibrary.LoadAndSaveMetaData(Device.Application.TitleIdText, appMetadata =>
+            _viewModel.ApplicationLibrary.LoadAndSaveMetaData(Device.Processes.ActiveProcess.Informations.ProgramIdText, appMetadata =>
             {
                 appMetadata.LastPlayed = DateTime.UtcNow.ToString();
             });
@@ -950,7 +956,7 @@ namespace Ryujinx.Ava
                 {
                     if (_keyboardInterface.GetKeyboardStateSnapshot().IsPressed(Key.Delete) && _viewModel.WindowState != WindowState.FullScreen)
                     {
-                        Device.Application.DiskCacheLoadState?.Cancel();
+                        Device.Processes.ActiveProcess.DiskCacheLoadState?.Cancel();
                     }
                 });
 
