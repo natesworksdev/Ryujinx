@@ -6,6 +6,7 @@ using Ryujinx.Memory.Range;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
@@ -128,9 +129,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                     }
                 }
 
-                texture.IncrementReferenceCount(this, id, descriptor.UnpackAddress());
-
                 Items[id] = texture;
+
+                texture.IncrementReferenceCount(this, id, descriptor.UnpackAddress());
 
                 DescriptorCache[id] = descriptor;
             }
@@ -214,11 +215,14 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="deferred">If true, queue the dereference to happen on the render thread, otherwise dereference immediately</param>
         public void ForceRemove(Texture texture, int id, bool deferred)
         {
-            Items[id] = null;
+            var previous = Interlocked.Exchange(ref Items[id], null);
 
             if (deferred)
             {
-                _dereferenceQueue.Enqueue(DereferenceRequest.Remove(texture));
+                if (previous != null)
+                {
+                    _dereferenceQueue.Enqueue(DereferenceRequest.Remove(texture));
+                }
             }
             else
             {
@@ -234,9 +238,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="id">ID in cache of texture with potential mapping change</param>
         public void QueueUpdateMapping(Texture texture, int id)
         {
-            Items[id] = null;
-
-            _dereferenceQueue.Enqueue(DereferenceRequest.Remap(texture, id));
+            if (Interlocked.Exchange(ref Items[id], null) != null)
+            {
+                _dereferenceQueue.Enqueue(DereferenceRequest.Remap(texture, id));
+            }
         }
 
         /// <summary>
@@ -289,8 +294,11 @@ namespace Ryujinx.Graphics.Gpu.Image
                         if (!_channel.MemoryManager.Physical.TextureCache.UpdateMapping(texture, range))
                         {
                             // Texture could not be remapped due to a collision, just delete it.
-                            texture.DecrementReferenceCount(this, request.ID);
-                            Items[request.ID] = null;
+                            if (Interlocked.Exchange(ref Items[request.ID], null) != null)
+                            {
+                                // If this is null, a request was already queued to decrement reference.
+                                texture.DecrementReferenceCount(this, request.ID);
+                            }
                             continue;
                         }
                     }
@@ -343,9 +351,10 @@ namespace Ryujinx.Graphics.Gpu.Image
                         _channel.MemoryManager.Physical.TextureCache.AddShortCache(texture, ref cachedDescriptor);
                     }
 
-                    texture.DecrementReferenceCount(this, id);
-
-                    Items[id] = null;
+                    if (Interlocked.Exchange(ref Items[id], null) != null)
+                    {
+                        texture.DecrementReferenceCount(this, id);
+                    }
                 }
             }
         }
