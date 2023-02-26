@@ -1,6 +1,7 @@
 using ARMeilleure.CodeGen.RegisterAllocators;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
+using System;
 using System.Diagnostics;
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 using static ARMeilleure.IntermediateRepresentation.Operation.Factory;
@@ -12,6 +13,8 @@ namespace ARMeilleure.CodeGen.X86
         public static void RunPass(CompilerContext cctx, StackAllocator stackAlloc, out int maxCallArgs)
         {
             maxCallArgs = -1;
+
+            Span<Operation> buffer = default;
 
             CallConvName callConv = CallingConvention.GetCurrentCallConv();
 
@@ -72,11 +75,11 @@ namespace ARMeilleure.CodeGen.X86
                         case Instruction.LoadArgument:
                             if (callConv == CallConvName.Windows)
                             {
-                                nextNode = PreAllocatorWindows.InsertLoadArgumentCopy(cctx, block.Operations, preservedArgs, node);
+                                nextNode = PreAllocatorWindows.InsertLoadArgumentCopy(cctx, ref buffer, block.Operations, preservedArgs, node);
                             }
                             else /* if (callConv == CallConvName.SystemV) */
                             {
-                                nextNode = PreAllocatorSystemV.InsertLoadArgumentCopy(cctx, block.Operations, preservedArgs, node);
+                                nextNode = PreAllocatorSystemV.InsertLoadArgumentCopy(cctx, ref buffer, block.Operations, preservedArgs, node);
                             }
                             break;
 

@@ -193,6 +193,7 @@ namespace ARMeilleure.CodeGen.X86
 
         public static Operation InsertLoadArgumentCopy(
             CompilerContext cctx,
+            ref Span<Operation> buffer,
             IntrusiveList<Operation> nodes,
             Operand[] preservedArgs,
             Operation node)
@@ -277,13 +278,22 @@ namespace ARMeilleure.CodeGen.X86
                     }
                 }
 
-                Operation argCopyOp = Operation(Instruction.Copy, dest, preservedArgs[index]);
+                Operation nextNode;
 
-                Operation newNode = nodes.AddBefore(node, argCopyOp);
+                if (dest.AssignmentsCount == 1)
+                {
+                    // Let's propagate the argument if we can to avoid copies.
+                    PreAllocatorCommon.Propagate(ref buffer, dest, preservedArgs[index]);
+                    nextNode = node.ListNext;
+                }
+                else
+                {
+                    Operation argCopyOp = Operation(Instruction.Copy, dest, preservedArgs[index]);
+                    nextNode = nodes.AddBefore(node, argCopyOp);
+                }
 
                 Delete(nodes, node);
-
-                return newNode;
+                return nextNode;
             }
             else
             {
