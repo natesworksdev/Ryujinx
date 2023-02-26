@@ -16,11 +16,11 @@ void main() {
             vec2 pixCoord;
             vec4 offset[3];
 
-            SMAABlendingWeightCalculationVS( coord, pixCoord, offset);
+            SMAABlendingWeightCalculationVS(coord, pixCoord, offset);
 
             vec4 oColor = SMAABlendingWeightCalculationPS(coord, pixCoord, offset, inputTexture, samplerArea, samplerSearch, ivec4(0));    
 
-            imageStore(imgOutput,  texelCoord, oColor);
+            imageStore(imgOutput, texelCoord, oColor);
         }
     }
 }

@@ -17,7 +17,7 @@ void main() {
             
             SMAANeighborhoodBlendingVS(coord, offset);
 
-            vec4 oColor  = SMAANeighborhoodBlendingPS(coord, offset, inputTexture, samplerBlend);
+            vec4 oColor = SMAANeighborhoodBlendingPS(coord, offset, inputTexture, samplerBlend);
 
             imageStore(imgOutput,  texelCoord, oColor);
         }
