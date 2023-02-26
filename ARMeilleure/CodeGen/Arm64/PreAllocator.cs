@@ -54,8 +54,8 @@ namespace ARMeilleure.CodeGen.Arm64
                         continue;
                     }
 
-                    HandleConstantRegCopy(constants, block.Operations, node);
-                    HandleDestructiveRegCopy(block.Operations, node);
+                    InsertConstantRegCopies(constants, block.Operations, node);
+                    InsertDestructiveRegCopies(block.Operations, node);
 
                     switch (node.Instruction)
                     {
@@ -78,28 +78,28 @@ namespace ARMeilleure.CodeGen.Arm64
 
                             // Copy values to registers expected by the function
                             // being called, as mandated by the ABI.
-                            HandleCall(constants, block.Operations, node);
+                            InsertCallCopies(constants, block.Operations, node);
                             break;
                         case Instruction.CompareAndSwap:
                         case Instruction.CompareAndSwap16:
                         case Instruction.CompareAndSwap8:
-                            nextNode = HandleCompareAndSwap(block.Operations, node);
+                            nextNode = GenerateCompareAndSwap(block.Operations, node);
                             break;
                         case Instruction.LoadArgument:
-                            nextNode = HandleLoadArgument(cctx, ref buffer, block.Operations, preservedArgs, node);
+                            nextNode = InsertLoadArgumentCopy(cctx, ref buffer, block.Operations, preservedArgs, node);
                             break;
                         case Instruction.Return:
-                            HandleReturn(block.Operations, node);
+                            InsertReturnCopy(block.Operations, node);
                             break;
                         case Instruction.Tailcall:
-                            HandleTailcall(constants, block.Operations, stackAlloc, node, node);
+                            InsertTailcallCopies(constants, block.Operations, stackAlloc, node, node);
                             break;
                     }
                 }
             }
         }
 
-        private static void HandleConstantRegCopy(ConstantDict constants, IntrusiveList<Operation> nodes, Operation node)
+        private static void InsertConstantRegCopies(ConstantDict constants, IntrusiveList<Operation> nodes, Operation node)
         {
             if (node.SourcesCount == 0 || IsIntrinsicWithConst(node))
             {
@@ -211,7 +211,7 @@ namespace ARMeilleure.CodeGen.Arm64
             }
         }
 
-        private static void HandleDestructiveRegCopy(IntrusiveList<Operation> nodes, Operation node)
+        private static void InsertDestructiveRegCopies(IntrusiveList<Operation> nodes, Operation node)
         {
             if (node.Destination == default || node.SourcesCount == 0)
             {
@@ -259,7 +259,7 @@ namespace ARMeilleure.CodeGen.Arm64
             }
         }
 
-        private static void HandleCall(ConstantDict constants, IntrusiveList<Operation> nodes, Operation node)
+        private static void InsertCallCopies(ConstantDict constants, IntrusiveList<Operation> nodes, Operation node)
         {
             Operation operation = node;
 
@@ -319,7 +319,7 @@ namespace ARMeilleure.CodeGen.Arm64
 
                     Operation copyOp = Operation(Instruction.Copy, argReg, source);
 
-                    HandleConstantRegCopy(constants, nodes, nodes.AddBefore(node, copyOp));
+                    InsertConstantRegCopies(constants, nodes, nodes.AddBefore(node, copyOp));
 
                     sources.Add(argReg);
                 }
@@ -329,7 +329,7 @@ namespace ARMeilleure.CodeGen.Arm64
 
                     Operation spillOp = Operation(Instruction.SpillArg, default, offset, source);
 
-                    HandleConstantRegCopy(constants, nodes, nodes.AddBefore(node, spillOp));
+                    InsertConstantRegCopies(constants, nodes, nodes.AddBefore(node, spillOp));
 
                     stackOffset += source.Type.GetSizeInBytes();
                 }
@@ -364,7 +364,7 @@ namespace ARMeilleure.CodeGen.Arm64
             operation.SetSources(sources.ToArray());
         }
 
-        private static void HandleTailcall(
+        private static void InsertTailcallCopies(
             ConstantDict constants,
             IntrusiveList<Operation> nodes,
             StackAllocator stackAlloc,
@@ -420,7 +420,7 @@ namespace ARMeilleure.CodeGen.Arm64
 
                     Operation copyOp = Operation(Instruction.Copy, argReg, source);
 
-                    HandleConstantRegCopy(constants, nodes, nodes.AddBefore(node, copyOp));
+                    InsertConstantRegCopies(constants, nodes, nodes.AddBefore(node, copyOp));
 
                     sources.Add(argReg);
                 }
@@ -444,7 +444,7 @@ namespace ARMeilleure.CodeGen.Arm64
             operation.SetSources(sources.ToArray());
         }
 
-        private static Operation HandleCompareAndSwap(IntrusiveList<Operation> nodes, Operation node)
+        private static Operation GenerateCompareAndSwap(IntrusiveList<Operation> nodes, Operation node)
         {
             Operand expected = node.GetSource(1);
 
@@ -508,7 +508,7 @@ namespace ARMeilleure.CodeGen.Arm64
             return node.ListNext;
         }
 
-        private static void HandleReturn(IntrusiveList<Operation> nodes, Operation node)
+        private static void InsertReturnCopy(IntrusiveList<Operation> nodes, Operation node)
         {
             if (node.SourcesCount == 0)
             {
@@ -537,7 +537,7 @@ namespace ARMeilleure.CodeGen.Arm64
             }
         }
 
-        private static Operation HandleLoadArgument(
+        private static Operation InsertLoadArgumentCopy(
             CompilerContext cctx,
             ref Span<Operation> buffer,
             IntrusiveList<Operation> nodes,
