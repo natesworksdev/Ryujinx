@@ -1624,7 +1624,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     }
                     else
                     {
-                        // If there is a different GPU va mapping, prefer the first and delete the others.
+                        // If there is a different GPU VA mapping, prefer the first and delete the others.
                         owner.Pool.ForceRemove(this, owner.ID, true);
                     }
                 }

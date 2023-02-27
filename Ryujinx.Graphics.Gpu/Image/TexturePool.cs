@@ -52,6 +52,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             /// Create a dereference request for a texture removal.
             /// </summary>
             /// <param name="texture">The texture being removed</param>
+            /// <returns>A texture removal dereference request</returns>
             public static DereferenceRequest Remove(Texture texture)
             {
                 return new DereferenceRequest(false, texture, 0);
@@ -62,6 +63,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             /// </summary>
             /// <param name="texture">The texture being remapped</param>
             /// <param name="id">The ID of the pool entry, used to restore remapped textures</param>
+            /// <returns>A remap dereference request</returns>
             public static DereferenceRequest Remap(Texture texture, int id)
             {
                 return new DereferenceRequest(true, texture, id);

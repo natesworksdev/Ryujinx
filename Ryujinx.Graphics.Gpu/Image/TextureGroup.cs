@@ -7,7 +7,6 @@ using Ryujinx.Memory;
 using Ryujinx.Memory.Range;
 using System;
 using System.Collections.Generic;
-using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.Gpu.Image
@@ -1136,30 +1135,34 @@ namespace Ryujinx.Graphics.Gpu.Image
                         // If a range does not match one in the original, treat it as modified.
                         // It has been newly mapped and its data must be synchronized.
 
-                        if (groupHandle.Handles.Length != 0)
+                        if (groupHandle.Handles.Length == 0)
                         {
-                            foreach (var oldGroup in _handles)
+                            continue;
+                        }
+
+                        foreach (var oldGroup in _handles)
+                        {
+                            if (!groupHandle.OverlapsWith(oldGroup.Offset, oldGroup.Size))
                             {
-                                if (groupHandle.OverlapsWith(oldGroup.Offset, oldGroup.Size))
+                                continue;
+                            }
+
+                            foreach (CpuRegionHandle handle in groupHandle.Handles)
+                            {
+                                bool hasMatch = false;
+
+                                foreach (var oldHandle in oldGroup.Handles)
                                 {
-                                    foreach (CpuRegionHandle handle in groupHandle.Handles)
+                                    if (oldHandle.RangeEquals(handle))
                                     {
-                                        bool hasMatch = false;
-
-                                        foreach (var oldHandle in oldGroup.Handles)
-                                        {
-                                            if (oldHandle.RangeEquals(handle))
-                                            {
-                                                hasMatch = true;
-                                                break;
-                                            }
-                                        }
-
-                                        if (hasMatch)
-                                        {
-                                            handle.Reprotect();
-                                        }
+                                        hasMatch = true;
+                                        break;
                                     }
+                                }
+
+                                if (hasMatch)
+                                {
+                                    handle.Reprotect();
                                 }
                             }
                         }
