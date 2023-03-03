@@ -314,7 +314,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// Hotkey Keyboard Bindings
         /// </summary>
-        public KeyboardHotkeys Hotkeys { get; set; }
+        public KeyboardHotkeys HotkeysConfig { get; set; }
 
         /// <summary>
         /// Legacy keyboard control bindings

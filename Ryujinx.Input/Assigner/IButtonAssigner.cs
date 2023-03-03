@@ -36,9 +36,9 @@ namespace Ryujinx.Input.Assigner
         string GetPressedButton();
 
         /// <summary>
-        /// Get the pressed button that was read in <see cref="ReadInput"/> by the button assigner.
+        /// Get the pressed buttons that was read in <see cref="ReadInput"/> by the button assigner.
         /// </summary>
-        /// <returns>The pressed button that was read</returns>
+        /// <returns>The pressed buttons that was read</returns>
         IEnumerable<PressedButton> GetPressedButtons();
     }
 }
