@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Common.Configuration.Hid
 {
-    public class KeyboardHotkeys
+    public struct KeyboardHotkeys
     {
         public Hotkey Exit { get; set; }
         public Hotkey Pause { get; set; }
