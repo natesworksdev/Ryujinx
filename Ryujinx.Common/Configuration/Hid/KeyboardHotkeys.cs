@@ -2,14 +2,17 @@
 {
     public class KeyboardHotkeys
     {
-        public Key ToggleVsync { get; set; }
-        public Key Screenshot { get; set; }
-        public Key ShowUi { get; set; }
-        public Key Pause { get; set; }
-        public Key ToggleMute { get; set; }
-        public Key ResScaleUp { get; set; }
-        public Key ResScaleDown { get; set; }
-        public Key VolumeUp { get; set; }
-        public Key VolumeDown { get; set; }
+        public Hotkey Exit { get; set; }
+        public Hotkey Pause { get; set; }
+        public Hotkey ResScaleUp { get; set; }
+        public Hotkey ResScaleDown { get; set; }
+        public Hotkey Screenshot { get; set; }
+        public Hotkey ShowUi { get; set; }
+        public Hotkey ToggleDockedMode { get; set; }
+        public Hotkey ToggleFullscreen { get; set; }
+        public Hotkey ToggleMute { get; set; }
+        public Hotkey ToggleVsync { get; set; }
+        public Hotkey VolumeUp { get; set; }
+        public Hotkey VolumeDown { get; set; }
     }
 }

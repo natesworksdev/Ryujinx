@@ -3,7 +3,7 @@
     /// <summary>
     /// Represent a key from a keyboard.
     /// </summary>
-    public enum Key
+    public enum Key : byte
     {
         Unknown,
         ShiftLeft,

@@ -112,6 +112,18 @@ namespace Ryujinx.Ava.Input
             }
         }
 
+        public bool IsPressed(Key key, KeyModifier modifier)
+        {
+            try
+            {
+                return _driver.IsPressed(key, modifier);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public void SetConfiguration(InputConfig configuration)
         {
             lock (_userMappingLock)

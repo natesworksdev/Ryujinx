@@ -11,6 +11,7 @@ using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Vulkan;
@@ -22,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using TimeZone = Ryujinx.Ava.UI.Models.TimeZone;
 
@@ -240,6 +242,19 @@ namespace Ryujinx.Ava.UI.ViewModels
         public AvaloniaList<string> GameDirectories { get; set; }
         public ObservableCollection<ComboBoxItem> AvailableGpus { get; set; }
 
+        public string ExitHotkey => GetButtonName(_keyboardHotkeys.Exit);
+        public string PauseHotkey => GetButtonName(_keyboardHotkeys.Pause);
+        public string ResScaleUpHotkey => GetButtonName(_keyboardHotkeys.ResScaleUp);
+        public string ResScaleDownHotkey => GetButtonName(_keyboardHotkeys.ResScaleDown);
+        public string ScreenshotHotkey => GetButtonName(_keyboardHotkeys.Screenshot);
+        public string ShowUiHotkey => GetButtonName(_keyboardHotkeys.ShowUi);
+        public string ToggleDockedModeHotkey => GetButtonName(_keyboardHotkeys.ToggleDockedMode);
+        public string ToggleFullscreenHotkey => GetButtonName(_keyboardHotkeys.ToggleFullscreen);
+        public string ToggleMuteHotkey => GetButtonName(_keyboardHotkeys.ToggleMute);
+        public string ToggleVsyncHotkey => GetButtonName(_keyboardHotkeys.ToggleVsync);
+        public string VolumeUpHotkey => GetButtonName(_keyboardHotkeys.VolumeUp);
+        public string VolumeDownHotkey => GetButtonName(_keyboardHotkeys.VolumeDown);
+
         public KeyboardHotkeys KeyboardHotkeys
         {
             get => _keyboardHotkeys;
@@ -275,6 +290,135 @@ namespace Ryujinx.Ava.UI.ViewModels
                 LoadAvailableGpus();
                 LoadCurrentConfiguration();
             }
+        }
+
+        public void UpdateHotkey(string name, Hotkey hotkey)
+        {
+            switch (name)
+            {
+                case "ExitHotkey":
+                    _keyboardHotkeys.Exit = UpdateHotkey(_keyboardHotkeys.Exit, hotkey);
+                    break;
+                case "PauseHotkey":
+                    _keyboardHotkeys.Pause = UpdateHotkey(_keyboardHotkeys.Pause, hotkey);
+                    break;
+                case "ResScaleUpHotkey":
+                    _keyboardHotkeys.ResScaleUp = UpdateHotkey(_keyboardHotkeys.ResScaleUp, hotkey);
+                    break;
+                case "ResScaleDownHotkey":
+                    _keyboardHotkeys.ResScaleDown = UpdateHotkey(_keyboardHotkeys.ResScaleDown, hotkey);
+                    break;
+                case "ScreenshotHotkey":
+                    _keyboardHotkeys.Screenshot = UpdateHotkey(_keyboardHotkeys.Screenshot, hotkey);
+                    break;
+                case "ShowUiHotkey":
+                    _keyboardHotkeys.ShowUi = UpdateHotkey(_keyboardHotkeys.ShowUi, hotkey);
+                    break;
+                case "ToggleDockedModeHotkey":
+                    _keyboardHotkeys.ToggleDockedMode = UpdateHotkey(_keyboardHotkeys.ToggleDockedMode, hotkey);
+                    break;
+                case "ToggleFullscreenHotkey":
+                    _keyboardHotkeys.ToggleFullscreen = UpdateHotkey(_keyboardHotkeys.ToggleFullscreen, hotkey);
+                    break;
+                case "ToggleMuteHotkey":
+                    _keyboardHotkeys.ToggleMute = UpdateHotkey(_keyboardHotkeys.ToggleMute, hotkey);
+                    break;
+                case "ToggleVsyncHotkey":
+                    _keyboardHotkeys.ToggleVsync = UpdateHotkey(_keyboardHotkeys.ToggleVsync, hotkey);
+                    break;
+                case "VolumeUpHotkey":
+                    _keyboardHotkeys.VolumeUp = UpdateHotkey(_keyboardHotkeys.VolumeUp, hotkey);
+                    break;
+                case "VolumeDownHotkey":
+                    _keyboardHotkeys.VolumeDown = UpdateHotkey(_keyboardHotkeys.VolumeDown, hotkey);
+                    break;
+            }
+
+            OnPropertyChanged(name);
+        }
+
+        private Hotkey UpdateHotkey(Hotkey hotkey, Hotkey newHotkey)
+        {
+            if (newHotkey.HasKeyboard())
+            {
+                hotkey.Key = newHotkey.Key;
+                hotkey.Modifier = newHotkey.Modifier;
+            }
+            else if (newHotkey.HasGamepad())
+            {
+                hotkey.GamepadInputMask = newHotkey.GamepadInputMask;
+            }
+            else
+            {
+                hotkey = new Hotkey(Key.Unbound);
+            }
+
+            return hotkey;
+        }
+
+        private static string GetButtonName(Hotkey hotkey)
+        {
+            string keyboardBinding = null;
+            string gamepadBinding = null;
+
+            if (hotkey.HasKeyboard())
+            {
+                int keyCount = 1 + BitOperations.PopCount((uint)hotkey.Modifier);
+                int index = 0;
+
+                string[] keys = new string[keyCount];
+
+                if (hotkey.Modifier.HasFlag(KeyModifier.Control))
+                {
+                    keys[index++] = KeyModifier.Control.ToString();
+                }
+
+                if (hotkey.Modifier.HasFlag(KeyModifier.Meta))
+                {
+                    keys[index++] = KeyModifier.Meta.ToString();
+                }
+
+                if (hotkey.Modifier.HasFlag(KeyModifier.Alt))
+                {
+                    keys[index++] = KeyModifier.Alt.ToString();
+                }
+
+                if (hotkey.Modifier.HasFlag(KeyModifier.Shift))
+                {
+                    keys[index++] = KeyModifier.Shift.ToString();
+                }
+
+                keys[index] = hotkey.Key.ToString();
+
+                keyboardBinding = string.Join(" + ", keys);
+            }
+
+            if (hotkey.HasGamepad())
+            {
+                int buttonCount = BitOperations.PopCount(hotkey.GamepadInputMask);
+                int index = 0;
+
+                string[] buttons = new string[buttonCount];
+                ulong mask = hotkey.GamepadInputMask;
+
+                while (mask != 0UL)
+                {
+                    int bit = BitOperations.TrailingZeroCount(mask);
+
+                    buttons[index++] = ((GamepadInputId)bit).ToString();
+
+                    mask &= ~(1UL << bit);
+                }
+
+                gamepadBinding = string.Join(" + ", buttons);
+            }
+
+            if (keyboardBinding != null && gamepadBinding != null)
+            {
+                return $"{keyboardBinding} or {gamepadBinding}";
+            }
+
+            return keyboardBinding ?? gamepadBinding ?? "Unbound";
         }
 
         public void CheckSoundBackends()

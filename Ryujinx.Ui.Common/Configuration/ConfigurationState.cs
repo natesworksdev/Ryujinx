@@ -716,15 +716,15 @@ namespace Ryujinx.Ui.Common.Configuration
             Hid.EnableMouse.Value                     = false;
             Hid.Hotkeys.Value = new KeyboardHotkeys
             {
-                ToggleVsync = Key.F1,
-                ToggleMute = Key.F2,
-                Screenshot = Key.F8,
-                ShowUi = Key.F4,
-                Pause = Key.F5,
-                ResScaleUp = Key.Unbound,
-                ResScaleDown = Key.Unbound,
-                VolumeUp = Key.Unbound,
-                VolumeDown = Key.Unbound
+                ToggleVsync = new Hotkey(Key.F1),
+                ToggleMute = new Hotkey(Key.F2),
+                Screenshot = new Hotkey(Key.F8),
+                ShowUi = new Hotkey(Key.F4),
+                Pause = new Hotkey(Key.F5),
+                ResScaleUp = new Hotkey(Key.Unbound),
+                ResScaleDown = new Hotkey(Key.Unbound),
+                VolumeUp = new Hotkey(Key.Unbound),
+                VolumeDown = new Hotkey(Key.Unbound)
             };
             Hid.InputConfig.Value = new List<InputConfig>
             {
@@ -854,7 +854,7 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 configurationFileFormat.Hotkeys = new KeyboardHotkeys
                 {
-                    ToggleVsync = Key.F1
+                    ToggleVsync = new Hotkey(Key.F1)
                 };
 
                 configurationFileUpdated = true;
@@ -1035,8 +1035,8 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 configurationFileFormat.Hotkeys = new KeyboardHotkeys
                 {
-                    ToggleVsync = Key.F1,
-                    Screenshot = Key.F8
+                    ToggleVsync = new Hotkey(Key.F1),
+                    Screenshot = new Hotkey(Key.F8)
                 };
 
                 configurationFileUpdated = true;
@@ -1048,9 +1048,9 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 configurationFileFormat.Hotkeys = new KeyboardHotkeys
                 {
-                    ToggleVsync = Key.F1,
-                    Screenshot = Key.F8,
-                    ShowUi = Key.F4
+                    ToggleVsync = new Hotkey(Key.F1),
+                    Screenshot = new Hotkey(Key.F8),
+                    ShowUi = new Hotkey(Key.F4)
                 };
 
                 configurationFileUpdated = true;
@@ -1094,7 +1094,7 @@ namespace Ryujinx.Ui.Common.Configuration
                     ToggleVsync = configurationFileFormat.Hotkeys.ToggleVsync,
                     Screenshot = configurationFileFormat.Hotkeys.Screenshot,
                     ShowUi = configurationFileFormat.Hotkeys.ShowUi,
-                    Pause = Key.F5
+                    Pause = new Hotkey(Key.F5)
                 };
 
                 configurationFileUpdated = true;
@@ -1110,7 +1110,7 @@ namespace Ryujinx.Ui.Common.Configuration
                     Screenshot = configurationFileFormat.Hotkeys.Screenshot,
                     ShowUi = configurationFileFormat.Hotkeys.ShowUi,
                     Pause = configurationFileFormat.Hotkeys.Pause,
-                    ToggleMute = Key.F2
+                    ToggleMute = new Hotkey(Key.F2)
                 };
 
                 configurationFileFormat.AudioVolume = 1;
@@ -1185,8 +1185,8 @@ namespace Ryujinx.Ui.Common.Configuration
                     ShowUi = configurationFileFormat.Hotkeys.ShowUi,
                     Pause = configurationFileFormat.Hotkeys.Pause,
                     ToggleMute = configurationFileFormat.Hotkeys.ToggleMute,
-                    ResScaleUp = Key.Unbound,
-                    ResScaleDown = Key.Unbound
+                    ResScaleUp = new Hotkey(Key.Unbound),
+                    ResScaleDown = new Hotkey(Key.Unbound)
                 };
 
                 configurationFileUpdated = true;
@@ -1216,8 +1216,8 @@ namespace Ryujinx.Ui.Common.Configuration
                     ToggleMute = configurationFileFormat.Hotkeys.ToggleMute,
                     ResScaleUp = configurationFileFormat.Hotkeys.ResScaleUp,
                     ResScaleDown = configurationFileFormat.Hotkeys.ResScaleDown,
-                    VolumeUp = Key.Unbound,
-                    VolumeDown = Key.Unbound
+                    VolumeUp = new Hotkey(Key.Unbound),
+                    VolumeDown = new Hotkey(Key.Unbound)
                 };
             }
 

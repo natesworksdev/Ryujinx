@@ -21,8 +21,8 @@ namespace Ryujinx.Input
 
         /// <summary>
         /// Motion
-        /// <remarks>Also named sixaxis</remarks>
         /// </summary>
+        /// <remarks>Also named sixaxis</remarks>
         Motion
     }
 }

@@ -13,7 +13,6 @@ namespace Ryujinx.Input.Assigner
         private IGamepad _gamepad;
 
         private GamepadStateSnapshot _currState;
-
         private GamepadStateSnapshot _prevState;
 
         private JoystickButtonDetector _detector;
@@ -35,7 +34,7 @@ namespace Ryujinx.Input.Assigner
             {
                 _currState = _gamepad.GetStateSnapshot();
                 _prevState = _currState;
-            }    
+            }
         }
 
         public void ReadInput()
@@ -69,6 +68,15 @@ namespace Ryujinx.Input.Assigner
             }
 
             return "";
+        }
+
+        public IEnumerable<PressedButton> GetPressedButtons()
+        {
+            IEnumerable<GamepadButtonInputId> pressedButtons = _detector.GetPressedButtons();
+
+            return _forStick
+                ? pressedButtons.Select(x => new PressedButton((StickInputId)x))
+                : pressedButtons.Select(x => new PressedButton(x));
         }
 
         private void CollectButtonStats()

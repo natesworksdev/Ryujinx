@@ -19,6 +19,7 @@ using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.SystemInterop;
 using Ryujinx.Graphics.GAL;
@@ -44,6 +45,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using static Ryujinx.Ava.UI.Helpers.Win32NativeInterop;
@@ -77,12 +79,15 @@ namespace Ryujinx.Ava
 
         private readonly MainWindowViewModel _viewModel;
         private readonly IKeyboard           _keyboardInterface;
+        private readonly List<IGamepad>      _gamepadInterfaces;
         private readonly TopLevel            _topLevel;
         public           RendererHost        _rendererHost;
 
         private readonly GraphicsDebugLevel _glLogLevel;
         private float                       _newVolume;
         private KeyboardHotkeyState         _prevHotkeyState;
+
+        private int _gamepadsChanged;
 
         private long _lastCursorMoveTime;
         private bool _isCursorInRenderer;
@@ -138,6 +143,13 @@ namespace Ryujinx.Ava
             _inputManager.SetMouseDriver(new AvaloniaMouseDriver(_topLevel, renderer));
 
             _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad("0");
+
+            _gamepadInterfaces = new List<IGamepad>();
+
+            _inputManager.GamepadDriver.OnGamepadConnected += GamepadConnected;
+            _inputManager.GamepadDriver.OnGamepadDisconnected += GamepadDisconnected;
+
+            RefreshGamepads();
 
             NpadManager        = _inputManager.CreateNpadManager();
             TouchScreenManager = _inputManager.CreateTouchScreenManager();
@@ -916,6 +928,11 @@ namespace Ryujinx.Ava
                 return false;
             }
 
+            if (Interlocked.Exchange(ref _gamepadsChanged, 0) == 1)
+            {
+                RefreshGamepads();
+            }
+
             NpadManager.Update(ConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat());
 
             if (_viewModel.IsActive)
@@ -960,15 +977,11 @@ namespace Ryujinx.Ava
                 {
                     switch (currentHotkeyState)
                     {
-                        case KeyboardHotkeyState.ToggleVSync:
-                            Device.EnableDeviceVsync = !Device.EnableDeviceVsync;
-
+                        case KeyboardHotkeyState.None:
+                            (_keyboardInterface as AvaloniaKeyboard).Clear();
                             break;
-                        case KeyboardHotkeyState.Screenshot:
-                            ScreenshotRequested = true;
-                            break;
-                        case KeyboardHotkeyState.ShowUi:
-                            _viewModel.ShowMenuAndStatusBar = true;
+                        case KeyboardHotkeyState.Exit:
+                            _viewModel.ExitCurrentState();
                             break;
                         case KeyboardHotkeyState.Pause:
                             if (_viewModel.IsPaused)
@@ -979,6 +992,24 @@ namespace Ryujinx.Ava
                             {
                                 Pause();
                             }
+                            break;
+                        case KeyboardHotkeyState.ResScaleUp:
+                            GraphicsConfig.ResScale = GraphicsConfig.ResScale % MaxResolutionScale + 1;
+                            break;
+                        case KeyboardHotkeyState.ResScaleDown:
+                            GraphicsConfig.ResScale = (MaxResolutionScale + GraphicsConfig.ResScale - 2) % MaxResolutionScale + 1;
+                            break;
+                        case KeyboardHotkeyState.Screenshot:
+                            ScreenshotRequested = true;
+                            break;
+                        case KeyboardHotkeyState.ShowUi:
+                            _viewModel.ShowMenuAndStatusBar = true;
+                            break;
+                        case KeyboardHotkeyState.ToggleDockedMode:
+                            _viewModel.ToggleDockMode();
+                            break;
+                        case KeyboardHotkeyState.ToggleFullscreen:
+                            _viewModel.ToggleFullscreen();
                             break;
                         case KeyboardHotkeyState.ToggleMute:
                             if (Device.IsAudioMuted())
@@ -992,12 +1023,8 @@ namespace Ryujinx.Ava
 
                             _viewModel.Volume = Device.GetVolume();
                             break;
-                        case KeyboardHotkeyState.ResScaleUp:
-                            GraphicsConfig.ResScale = GraphicsConfig.ResScale % MaxResolutionScale + 1;
-                            break;
-                        case KeyboardHotkeyState.ResScaleDown:
-                            GraphicsConfig.ResScale =
-                            (MaxResolutionScale + GraphicsConfig.ResScale - 2) % MaxResolutionScale + 1;
+                        case KeyboardHotkeyState.ToggleVSync:
+                            Device.EnableDeviceVsync = !Device.EnableDeviceVsync;
                             break;
                         case KeyboardHotkeyState.VolumeUp:
                             _newVolume = MathF.Round((Device.GetVolume() + VolumeDelta), 2);
@@ -1010,9 +1037,6 @@ namespace Ryujinx.Ava
                             Device.SetVolume(_newVolume);
 
                             _viewModel.Volume = Device.GetVolume();
-                            break;
-                        case KeyboardHotkeyState.None:
-                            (_keyboardInterface as AvaloniaKeyboard).Clear();
                             break;
                     }
                 }
@@ -1048,44 +1072,112 @@ namespace Ryujinx.Ava
         {
             KeyboardHotkeyState state = KeyboardHotkeyState.None;
 
-            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleVsync))
+            if (IsHotkeyPressed(ConfigurationState.Instance.Hid.Hotkeys.Value.Exit))
             {
-                state = KeyboardHotkeyState.ToggleVSync;
+                state = KeyboardHotkeyState.Exit;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot))
-            {
-                state = KeyboardHotkeyState.Screenshot;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi))
-            {
-                state = KeyboardHotkeyState.ShowUi;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Pause))
+            else if (IsHotkeyPressed(ConfigurationState.Instance.Hid.Hotkeys.Value.Pause))
             {
                 state = KeyboardHotkeyState.Pause;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleMute))
-            {
-                state = KeyboardHotkeyState.ToggleMute;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ResScaleUp))
+            else if (IsHotkeyPressed(ConfigurationState.Instance.Hid.Hotkeys.Value.ResScaleUp))
             {
                 state = KeyboardHotkeyState.ResScaleUp;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ResScaleDown))
+            else if (IsHotkeyPressed(ConfigurationState.Instance.Hid.Hotkeys.Value.ResScaleDown))
             {
                 state = KeyboardHotkeyState.ResScaleDown;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.VolumeUp))
+            else if (IsHotkeyPressed(ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot))
+            {
+                state = KeyboardHotkeyState.Screenshot;
+            }
+            else if (IsHotkeyPressed(ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi))
+            {
+                state = KeyboardHotkeyState.ShowUi;
+            }
+            else if (IsHotkeyPressed(ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleDockedMode))
+            {
+                state = KeyboardHotkeyState.ToggleDockedMode;
+            }
+            else if (IsHotkeyPressed(ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleFullscreen))
+            {
+                state = KeyboardHotkeyState.ToggleFullscreen;
+            }
+            else if (IsHotkeyPressed(ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleMute))
+            {
+                state = KeyboardHotkeyState.ToggleMute;
+            }
+            else if (IsHotkeyPressed(ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleVsync))
+            {
+                state = KeyboardHotkeyState.ToggleVSync;
+            }
+            else if (IsHotkeyPressed(ConfigurationState.Instance.Hid.Hotkeys.Value.VolumeUp))
             {
                 state = KeyboardHotkeyState.VolumeUp;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.VolumeDown))
+            else if (IsHotkeyPressed(ConfigurationState.Instance.Hid.Hotkeys.Value.VolumeDown))
             {
                 state = KeyboardHotkeyState.VolumeDown;
             }
 
             return state;
+        }
+
+        private void GamepadConnected(string id)
+        {
+            Interlocked.Exchange(ref _gamepadsChanged, 1);
+        }
+
+        private void GamepadDisconnected(string id)
+        {
+            Interlocked.Exchange(ref _gamepadsChanged, 1);
+        }
+
+        private void RefreshGamepads()
+        {
+            _gamepadInterfaces.Clear();
+
+            foreach (string id in _inputManager.GamepadDriver.GamepadsIds)
+            {
+                _gamepadInterfaces.Add(_inputManager.GamepadDriver.GetGamepad(id));
+            }
+        }
+
+        private bool IsHotkeyPressed(Hotkey hotkey)
+        {
+            if (hotkey.HasKeyboard() &&
+                (_keyboardInterface as AvaloniaKeyboard).IsPressed((Ryujinx.Input.Key)hotkey.Key, hotkey.Modifier))
+            {
+                return true;
+            }
+
+            if (hotkey.HasGamepad())
+            {
+                foreach (IGamepad gamepad in _gamepadInterfaces)
+                {
+                    ulong mask = hotkey.GamepadInputMask;
+
+                    while (mask != 0UL)
+                    {
+                        int bit = BitOperations.TrailingZeroCount(mask);
+
+                        if (!gamepad.IsPressed((GamepadButtonInputId)bit))
+                        {
+                            break;
+                        }
+
+                        mask &= ~(1UL << bit);
+                    }
+
+                    if (mask == 0UL)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }

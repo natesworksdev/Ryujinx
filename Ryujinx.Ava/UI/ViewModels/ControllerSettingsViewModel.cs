@@ -3,11 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Svg.Skia;
 using Avalonia.Threading;
-using LibHac.Bcat;
-using LibHac.Tools.Fs;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Input;
-using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.Windows;
@@ -238,9 +235,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             if (Program.PreviewerDetached)
             {
-                _mainWindow =
-                    (MainWindow)((IClassicDesktopStyleApplicationLifetime)Avalonia.Application.Current
-                        .ApplicationLifetime).MainWindow;
+                _mainWindow = (MainWindow)((IClassicDesktopStyleApplicationLifetime)Avalonia.Application.Current.ApplicationLifetime).MainWindow;
 
                 AvaloniaKeyboardDriver = new AvaloniaKeyboardDriver(owner);
 
