@@ -145,7 +145,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
             
             long lowestTimePoint = long.MaxValue;
 
-            for (int index = 0; index < _waitingObjects.Count; index++)
+            for (int index = _waitingObjects.Count - 1; index >= 0; index--)
             {
                 WaitingObject current = _waitingObjects[index];
 
