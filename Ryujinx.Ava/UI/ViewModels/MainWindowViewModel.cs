@@ -1208,10 +1208,10 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void SetUIProgressHandlers(Switch emulationContext)
         {
-            if (emulationContext.Processes.ActiveProcess.DiskCacheLoadState != null)
+            if (emulationContext.Processes.ActiveApplication.DiskCacheLoadState != null)
             {
-                emulationContext.Processes.ActiveProcess.DiskCacheLoadState.StateChanged -= ProgressHandler;
-                emulationContext.Processes.ActiveProcess.DiskCacheLoadState.StateChanged += ProgressHandler;
+                emulationContext.Processes.ActiveApplication.DiskCacheLoadState.StateChanged -= ProgressHandler;
+                emulationContext.Processes.ActiveApplication.DiskCacheLoadState.StateChanged += ProgressHandler;
             }
 
             emulationContext.Gpu.ShaderCacheStateChanged -= ProgressHandler;
@@ -1705,8 +1705,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 if (string.IsNullOrWhiteSpace(titleName))
                 {
-                    LoadHeading = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.LoadingHeading, AppHost.Device.Processes.ActiveProcess.Name);
-                    TitleName   = AppHost.Device.Processes.ActiveProcess.Name;
+                    LoadHeading = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.LoadingHeading, AppHost.Device.Processes.ActiveApplication.Name);
+                    TitleName   = AppHost.Device.Processes.ActiveApplication.Name;
                 }
 
                 SwitchToRenderer(startFullscreen);

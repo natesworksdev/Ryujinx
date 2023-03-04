@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
         public ILibraryAppletSelfAccessor(ServiceCtx context)
         {
-            if (context.Device.Processes.ActiveProcess.ProgramId == 0x0100000000001009)
+            if (context.Device.Processes.ActiveApplication.ProgramId == 0x0100000000001009)
             {
                 // Create MiiEdit data.
                 _appletStandalone = new AppletStandalone()
@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
             }
             else
             {
-                throw new NotImplementedException($"{context.Device.Processes.ActiveProcess.ProgramId} applet is not implemented.");
+                throw new NotImplementedException($"{context.Device.Processes.ActiveApplication.ProgramId} applet is not implemented.");
             }
         }
 

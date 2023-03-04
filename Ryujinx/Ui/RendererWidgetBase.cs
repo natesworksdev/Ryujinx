@@ -495,7 +495,7 @@ namespace Ryujinx.Ui
             {
                 parent.Present();
 
-                var activeProcess   = Device.Processes.ActiveProcess;
+                var activeProcess   = Device.Processes.ActiveApplication;
                 var nacp            = activeProcess.ApplicationControlProperties;
                 int desiredLanguage = (int)Device.System.State.DesiredTitleLanguage;
 
@@ -610,7 +610,7 @@ namespace Ryujinx.Ui
                     {
                         if (!ParentWindow.State.HasFlag(WindowState.Fullscreen))
                         {
-                            Device.Processes.ActiveProcess.DiskCacheLoadState?.Cancel();
+                            Device.Processes.ActiveApplication.DiskCacheLoadState?.Cancel();
                         }
                     }
                 });

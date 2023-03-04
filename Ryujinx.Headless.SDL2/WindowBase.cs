@@ -145,7 +145,7 @@ namespace Ryujinx.Headless.SDL2
 
         private void InitializeWindow()
         {
-            var activeProcess = Device.Processes.ActiveProcess;
+            var activeProcess = Device.Processes.ActiveApplication;
             var nacp = activeProcess.ApplicationControlProperties;
             int desiredLanguage = (int)Device.System.State.DesiredTitleLanguage;
 

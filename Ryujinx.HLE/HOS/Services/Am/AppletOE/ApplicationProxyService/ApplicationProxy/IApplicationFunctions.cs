@@ -115,9 +115,9 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             Uid userId = context.RequestData.ReadStruct<AccountUid>().ToLibHacUid();
 
             // Mask out the low nibble of the program ID to get the application ID
-            ApplicationId applicationId = new ApplicationId(context.Device.Processes.ActiveProcess.ProgramId & ~0xFul);
+            ApplicationId applicationId = new ApplicationId(context.Device.Processes.ActiveApplication.ProgramId & ~0xFul);
 
-            ApplicationControlProperty nacp = context.Device.Processes.ActiveProcess.ApplicationControlProperties;
+            ApplicationControlProperty nacp = context.Device.Processes.ActiveApplication.ApplicationControlProperties;
 
             LibHac.HorizonClient hos = context.Device.System.LibHacHorizonManager.AmClient;
             LibHac.Result result = hos.Fs.EnsureApplicationSaveData(out long requiredSize, applicationId, in nacp, in userId);
@@ -137,7 +137,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             // TODO: When above calls are implemented, switch to using ns:am
 
             long desiredLanguageCode = context.Device.System.State.DesiredLanguageCode;
-            int  supportedLanguages  = (int)context.Device.Processes.ActiveProcess.ApplicationControlProperties.SupportedLanguageFlag;
+            int  supportedLanguages  = (int)context.Device.Processes.ActiveApplication.ApplicationControlProperties.SupportedLanguageFlag;
             int  firstSupported      = BitOperations.TrailingZeroCount(supportedLanguages);
 
             if (firstSupported > (int)TitleLanguage.BrazilianPortuguese)
@@ -180,7 +180,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         public ResultCode GetDisplayVersion(ServiceCtx context)
         {
             // If an NACP isn't found, the buffer will be all '\0' which seems to be the correct implementation.
-            context.ResponseData.Write(context.Device.Processes.ActiveProcess.ApplicationControlProperties.DisplayVersion);
+            context.ResponseData.Write(context.Device.Processes.ActiveApplication.ApplicationControlProperties.DisplayVersion);
 
             return ResultCode.Success;
         }
@@ -235,9 +235,9 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             long journalSize = context.RequestData.ReadInt64();
 
             // Mask out the low nibble of the program ID to get the application ID
-            ApplicationId applicationId = new ApplicationId(context.Device.Processes.ActiveProcess.ProgramId & ~0xFul);
+            ApplicationId applicationId = new ApplicationId(context.Device.Processes.ActiveApplication.ProgramId & ~0xFul);
 
-            ApplicationControlProperty nacp = context.Device.Processes.ActiveProcess.ApplicationControlProperties;
+            ApplicationControlProperty nacp = context.Device.Processes.ActiveApplication.ApplicationControlProperties;
 
             LibHac.Result result = _horizon.Fs.CreateApplicationCacheStorage(out long requiredSize,
                 out CacheStorageTargetMedia storageTarget, applicationId, in nacp, index, saveSize, journalSize);

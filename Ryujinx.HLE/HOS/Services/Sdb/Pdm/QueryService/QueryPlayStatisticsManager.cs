@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pdm.QueryService
                 }
             }
 
-            PlayLogQueryCapability queryCapability = (PlayLogQueryCapability)context.Device.Processes.ActiveProcess.ApplicationControlProperties.PlayLogQueryCapability;
+            PlayLogQueryCapability queryCapability = (PlayLogQueryCapability)context.Device.Processes.ActiveApplication.ApplicationControlProperties.PlayLogQueryCapability;
 
             List<ulong> titleIds = new List<ulong>();
 
@@ -45,7 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pdm.QueryService
                 // Check if input title ids are in the whitelist.
                 foreach (ulong titleId in titleIds)
                 {
-                    if (!context.Device.Processes.ActiveProcess.ApplicationControlProperties.PlayLogQueryableApplicationId.ItemsRo.Contains(titleId))
+                    if (!context.Device.Processes.ActiveApplication.ApplicationControlProperties.PlayLogQueryableApplicationId.ItemsRo.Contains(titleId))
                     {
                         return (ResultCode)Am.ResultCode.ObjectInvalid;
                     }

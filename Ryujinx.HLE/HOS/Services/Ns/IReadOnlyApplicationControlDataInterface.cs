@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns
 
             ulong position = context.Request.ReceiveBuff[0].Position;
 
-            ApplicationControlProperty nacp = context.Device.Processes.ActiveProcess.ApplicationControlProperties;
+            ApplicationControlProperty nacp = context.Device.Processes.ActiveApplication.ApplicationControlProperties;
 
             context.Memory.Write(position, SpanHelpers.AsByteSpan(ref nacp).ToArray());
 

@@ -320,7 +320,7 @@ namespace Ryujinx.Ava
 
             _viewModel.IsGameRunning = true;
 
-            var activeProcess   = Device.Processes.ActiveProcess;
+            var activeProcess   = Device.Processes.ActiveApplication;
             var nacp            = activeProcess.ApplicationControlProperties;
             int desiredLanguage = (int)Device.System.State.DesiredTitleLanguage;
 
@@ -429,7 +429,7 @@ namespace Ryujinx.Ava
         {
             if (Device.Processes != null)
             {
-                _viewModel.UpdateGameMetadata(Device.Processes.ActiveProcess.ProgramIdText);
+                _viewModel.UpdateGameMetadata(Device.Processes.ActiveApplication.ProgramIdText);
             }
 
             ConfigurationState.Instance.System.IgnoreMissingServices.Event -= UpdateIgnoreMissingServicesState;
@@ -626,9 +626,9 @@ namespace Ryujinx.Ava
                 return false;
             }
 
-            DiscordIntegrationModule.SwitchToPlayingState(Device.Processes.ActiveProcess.ProgramIdText, Device.Processes.ActiveProcess.Name);
+            DiscordIntegrationModule.SwitchToPlayingState(Device.Processes.ActiveApplication.ProgramIdText, Device.Processes.ActiveApplication.Name);
 
-            _viewModel.ApplicationLibrary.LoadAndSaveMetaData(Device.Processes.ActiveProcess.ProgramIdText, appMetadata =>
+            _viewModel.ApplicationLibrary.LoadAndSaveMetaData(Device.Processes.ActiveApplication.ProgramIdText, appMetadata =>
             {
                 appMetadata.LastPlayed = DateTime.UtcNow.ToString();
             });
@@ -954,7 +954,7 @@ namespace Ryujinx.Ava
                 {
                     if (_keyboardInterface.GetKeyboardStateSnapshot().IsPressed(Key.Delete) && _viewModel.WindowState != WindowState.FullScreen)
                     {
-                        Device.Processes.ActiveProcess.DiskCacheLoadState?.Cancel();
+                        Device.Processes.ActiveApplication.DiskCacheLoadState?.Cancel();
                     }
                 });
 

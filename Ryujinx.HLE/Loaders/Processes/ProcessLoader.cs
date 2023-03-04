@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.Loaders.Processes
 
         private ulong _latestPid;
 
-        public ProcessResult ActiveProcess => _processesByPid[_latestPid];
+        public ProcessResult ActiveApplication => _processesByPid[_latestPid];
 
         public ProcessLoader(Switch device)
         {
@@ -86,7 +86,7 @@ namespace Ryujinx.HLE.Loaders.Processes
                 if (processResult.Start(_device))
                 {
                     // NOTE: Check if process is SystemApplicationId or ApplicationId
-                    if (processResult.ProgramId > 0x0100000000000FFF)
+                    if (processResult.ProgramId > 0x01000000000007FF)
                     {
                         _latestPid = processResult.ProcessId;
                     }
