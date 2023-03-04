@@ -9,9 +9,8 @@ using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm;
-using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnRyu;
-using Ryujinx.Horizon.Common;
 using Ryujinx.Memory;
+using Ryujinx.Horizon.Common;
 using System;
 using System.IO;
 using System.Net;
@@ -848,7 +847,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
                 context.Memory.Read(bufferPosition, networkInfoBytes);
 
-                networkInfo = MemoryMarshal.Cast<byte, NetworkInfo>(networkInfoBytes)[0];
+                networkInfo = MemoryMarshal.Read<NetworkInfo>(networkInfoBytes);
             }
 
             if (networkInfo.NetworkId.IntentId.LocalCommunicationId == -1 && NetworkClient.NeedsRealId)

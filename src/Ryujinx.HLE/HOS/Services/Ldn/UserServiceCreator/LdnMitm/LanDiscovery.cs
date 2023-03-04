@@ -4,7 +4,7 @@ using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm.Proxy;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm.Types;
-using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn.Types;
+using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -324,7 +324,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
                 // NOTE: Linux won't receive any broadcast packets if the socket is not bound to the broadcast address.
                 //       Windows only works if bound to localhost or the local address.
                 //       See this discussion: https://stackoverflow.com/questions/13666789/receiving-udp-broadcast-packets-on-linux
-                if (OperatingSystem.IsLinux())
+                if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
                 {
                     _udp2 = new LdnProxyUdpServer(_protocol, LocalBroadcastAddr, DEFAULT_PORT);
                 }
