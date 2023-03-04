@@ -152,6 +152,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
                 if (current.TimePoint < lowestTimePoint)
                 {
                     selected = current;
+                    lowestTimePoint = current.TimePoint;
                 }
             }
 
