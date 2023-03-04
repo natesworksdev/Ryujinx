@@ -71,7 +71,7 @@ namespace Ryujinx.HLE.Loaders.Processes
             // TODO: LibHac npdm currently doesn't support version field.
             string version;
 
-            if (ProgramId > 0x010000000000FFFF)
+            if (ProgramId > 0x0100000000007FFF)
             {
                 version = ApplicationControlProperties.DisplayVersionString.ToString();
             }
