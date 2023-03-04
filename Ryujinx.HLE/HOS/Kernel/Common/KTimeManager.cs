@@ -1,7 +1,6 @@
 using Ryujinx.Common;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel.Common
@@ -86,7 +85,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
                     {
                         Interlocked.Exchange(ref _enforceWakeupFromSpinWait, 0);
 
-                        next = _waitingObjects.OrderBy(x => x.TimePoint).FirstOrDefault();
+                        next = GetNextWaitingObject();
                     }
 
                     if (next != null)
@@ -138,6 +137,25 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
                     }
                 }
             }
+        }
+
+        private WaitingObject GetNextWaitingObject()
+        {
+            WaitingObject selected = null;
+            
+            long lowestTimePoint = long.MaxValue;
+
+            for (int index = 0; index < _waitingObjects.Count; index++)
+            {
+                WaitingObject current = _waitingObjects[index];
+
+                if (current.TimePoint < lowestTimePoint)
+                {
+                    selected = current;
+                }
+            }
+
+            return selected;
         }
 
         public static long ConvertNanosecondsToMilliseconds(long time)
