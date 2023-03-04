@@ -19,7 +19,7 @@ cp "$PUBLISH_DIRECTORY/Ryujinx.Ava" "$APP_BUNDLE_DIRECTORY/Contents/MacOS/Ryujin
 chmod u+x "$APP_BUNDLE_DIRECTORY/Contents/MacOS/Ryujinx"
 
 # Then all libraries
-cp "$PUBLISH_DIRECTORY/*.dylib" "$APP_BUNDLE_DIRECTORY/Contents/Frameworks"
+cp "$PUBLISH_DIRECTORY"/*.dylib "$APP_BUNDLE_DIRECTORY/Contents/Frameworks"
 
 # Then resources
 cp Info.plist "$APP_BUNDLE_DIRECTORY/Contents"
