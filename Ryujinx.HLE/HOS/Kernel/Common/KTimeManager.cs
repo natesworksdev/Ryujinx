@@ -149,7 +149,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
             {
                 WaitingObject current = _waitingObjects[index];
 
-                if (current.TimePoint < lowestTimePoint)
+                if (current.TimePoint <= lowestTimePoint)
                 {
                     selected = current;
                     lowestTimePoint = current.TimePoint;
