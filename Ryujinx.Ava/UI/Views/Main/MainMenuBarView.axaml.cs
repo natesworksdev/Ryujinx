@@ -100,7 +100,7 @@ namespace Ryujinx.Ava.UI.Views.Main
 
         public async void OpenSettings(object sender, RoutedEventArgs e)
         {
-            Window.SettingsWindow = new(Window.VirtualFileSystem, Window.ContentManager);
+            Window.SettingsWindow = new(Window.VirtualFileSystem, Window.ContentManager, ViewModel.CartridgeInfo);
 
             await Window.SettingsWindow.ShowDialog(Window);
 
