@@ -47,6 +47,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private string _customThemePath;
         private int _scalingFilter;
         private int _scalingFilterLevel;
+        private CartridgeInfo _cartridgeInfo;
 
         public event Action CloseWindow;
         public event Action SaveSettingsEvent;
@@ -228,7 +229,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 _volume = value;
 
-                ConfigurationState.Instance.System.AudioVolume.Value = _volume / 100;
+                ConfigurationStateManager.System.AudioVolume.Value = _volume / 100;
 
                 OnPropertyChanged();
             }
@@ -251,10 +252,11 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager) : this()
+        public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager, CartridgeInfo cartridgeInfo = null) : this()
         {
             _virtualFileSystem = virtualFileSystem;
             _contentManager = contentManager;
+            _cartridgeInfo = cartridgeInfo;
             if (Program.PreviewerDetached)
             {
                 LoadTimeZones();
@@ -337,7 +339,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void LoadCurrentConfiguration()
         {
-            ConfigurationState config = ConfigurationState.Instance;
+            ConfigurationState config = ConfigurationStateManager.Instance;
 
             // User Interface
             EnableDiscordIntegration = config.EnableDiscordIntegration;
@@ -418,7 +420,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void SaveSettings()
         {
-            ConfigurationState config = ConfigurationState.Instance;
+            ConfigurationState config = ConfigurationStateManager.Instance;
 
             // User Interface
             config.EnableDiscordIntegration.Value = EnableDiscordIntegration;
@@ -515,7 +517,14 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.System.FsGlobalAccessLogMode.Value = FsGlobalAccessLogMode;
             config.Logger.GraphicsDebugLevel.Value = (GraphicsDebugLevel)OpenglDebugLevel;
 
-            config.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            if (ConfigurationStateManager.IsGameConfiguration)
+            {
+                config.ToFileFormat().SaveConfig(ConfigurationStateManager.ConfigPathForApplication(_cartridgeInfo.Id));
+            }
+            else
+            {
+                config.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            }
 
             MainWindow.UpdateGraphicsConfig();
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,26 +9,51 @@ namespace Ryujinx.Ui.Common.Configuration
 {
     public class ConfigurationStateManager
     {
-        public static ConfigurationState.LoggerSection LoggerSection
+        public static ConfigurationState Instance
         {
             get
             {
-                return ConfigurationState.GameInstance.Logger ?? ConfigurationState.Instance.Logger;
+                return ConfigurationState.GameInstance ?? ConfigurationState.Instance;
             }
         }
-        public static ConfigurationState.HidSection HidSection
+        public static ConfigurationState.LoggerSection Logger
         {
             get
             {
-                return ConfigurationState.GameInstance.Hid ?? ConfigurationState.Instance.Hid;
+                return Instance.Logger;
             }
         }
-        public static ConfigurationState.GraphicsSection GraphicsSection
+        public static ConfigurationState.HidSection Hid
         {
             get
             {
-                return ConfigurationState.GameInstance.Graphics ?? ConfigurationState.Instance.Graphics;
+                return Instance.Hid;
             }
+        }
+        public static ConfigurationState.GraphicsSection Graphics
+        {
+            get
+            {
+                return Instance.Graphics;
+            }
+        }
+        public static ConfigurationState.SystemSection System
+        {
+            get
+            {
+                return Instance.System;
+            }
+        }
+        public static bool IsGameConfiguration
+        {
+            get
+            {
+                return Instance == ConfigurationState.GameInstance;
+            }
+        }
+        public static string ConfigPathForApplication(string applicationId)
+        {
+            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{applicationId}.json");
         }
     }
 }

@@ -44,6 +44,7 @@ namespace Ryujinx.Ava.UI.Windows
         public ContentManager ContentManager { get; private set; }
         public AccountManager AccountManager { get; private set; }
 
+        public CartridgeInfo CartridgeInfo { get; private set; }
         public LibHacHorizonManager LibHacHorizonManager { get; private set; }
 
         public InputManager InputManager { get; private set; }
@@ -319,12 +320,12 @@ namespace Ryujinx.Ava.UI.Windows
 
         public static void UpdateGraphicsConfig()
         {
-            GraphicsConfig.ResScale                   = ConfigurationState.Instance.Graphics.ResScale == -1 ? ConfigurationState.Instance.Graphics.ResScaleCustom : ConfigurationState.Instance.Graphics.ResScale;
-            GraphicsConfig.MaxAnisotropy              = ConfigurationState.Instance.Graphics.MaxAnisotropy;
-            GraphicsConfig.ShadersDumpPath            = ConfigurationState.Instance.Graphics.ShadersDumpPath;
-            GraphicsConfig.EnableShaderCache          = ConfigurationState.Instance.Graphics.EnableShaderCache;
-            GraphicsConfig.EnableTextureRecompression = ConfigurationState.Instance.Graphics.EnableTextureRecompression;
-            GraphicsConfig.EnableMacroHLE             = ConfigurationState.Instance.Graphics.EnableMacroHLE;
+            GraphicsConfig.ResScale                   = ConfigurationStateManager.Graphics.ResScale == -1 ? ConfigurationStateManager.Graphics.ResScaleCustom : ConfigurationStateManager.Graphics.ResScale;
+            GraphicsConfig.MaxAnisotropy              = ConfigurationStateManager.Graphics.MaxAnisotropy;
+            GraphicsConfig.ShadersDumpPath            = ConfigurationStateManager.Graphics.ShadersDumpPath;
+            GraphicsConfig.EnableShaderCache          = ConfigurationStateManager.Graphics.EnableShaderCache;
+            GraphicsConfig.EnableTextureRecompression = ConfigurationStateManager.Graphics.EnableTextureRecompression;
+            GraphicsConfig.EnableMacroHLE             = ConfigurationStateManager.Graphics.EnableMacroHLE;
         }
 
         public void LoadHotKeys()
