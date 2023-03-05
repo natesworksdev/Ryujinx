@@ -739,6 +739,16 @@ namespace Ryujinx.Ava
                     ConfigurationState.GameInstance.LoadDefault();
                 }
             }
+
+            ConfigurationStateManager.Instance.System.IgnoreMissingServices.Event += UpdateIgnoreMissingServicesState;
+            ConfigurationStateManager.Instance.Graphics.AspectRatio.Event         += UpdateAspectRatioState;
+            ConfigurationStateManager.Instance.System.EnableDockedMode.Event      += UpdateDockedModeState;
+            ConfigurationStateManager.Instance.System.AudioVolume.Event           += UpdateAudioVolumeState;
+            ConfigurationStateManager.Instance.System.EnableDockedMode.Event      += UpdateDockedModeState;
+            ConfigurationStateManager.Instance.System.AudioVolume.Event           += UpdateAudioVolumeState;
+            ConfigurationStateManager.Instance.Graphics.AntiAliasing.Event        += UpdateAntiAliasing;
+            ConfigurationStateManager.Instance.Graphics.ScalingFilter.Event       += UpdateScalingFilter;
+            ConfigurationStateManager.Instance.Graphics.ScalingFilterLevel.Event  += UpdateScalingFilterLevel;
         }
 
         private static IHardwareDeviceDriver InitializeAudio()
@@ -751,7 +761,7 @@ namespace Ryujinx.Ava
                 AudioBackend.Dummy
             };
 
-            AudioBackend preferredBackend = ConfigurationState.Instance.System.AudioBackend.Value;
+            AudioBackend preferredBackend = ConfigurationStateManager.System.AudioBackend.Value;
 
             for (int i = 0; i < availableBackends.Count; i++)
             {
@@ -794,7 +804,7 @@ namespace Ryujinx.Ava
 
                 if (deviceDriver != null)
                 {
-                    ConfigurationState.Instance.System.AudioBackend.Value = currentBackend;
+                    ConfigurationStateManager.System.AudioBackend.Value = currentBackend;
                     break;
                 }
             }
@@ -846,9 +856,9 @@ namespace Ryujinx.Ava
 
             Device.Gpu.Renderer.Initialize(_glLogLevel);
 
-            _renderer?.Window?.SetAntiAliasing((Graphics.GAL.AntiAliasing)ConfigurationState.Instance.Graphics.AntiAliasing.Value);
-            _renderer?.Window?.SetScalingFilter((Graphics.GAL.ScalingFilter)ConfigurationState.Instance.Graphics.ScalingFilter.Value);
-            _renderer?.Window?.SetScalingFilterLevel(ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value);
+            _renderer?.Window?.SetAntiAliasing((Graphics.GAL.AntiAliasing)ConfigurationStateManager.Graphics.AntiAliasing.Value);
+            _renderer?.Window?.SetScalingFilter((Graphics.GAL.ScalingFilter)ConfigurationStateManager.Graphics.ScalingFilter.Value);
+            _renderer?.Window?.SetScalingFilterLevel(ConfigurationStateManager.Graphics.ScalingFilterLevel.Value);
 
             Width = (int)_rendererHost.Bounds.Width;
             Height = (int)_rendererHost.Bounds.Height;
@@ -902,7 +912,7 @@ namespace Ryujinx.Ava
         public void UpdateStatus()
         {
             // Run a status update only when a frame is to be drawn. This prevents from updating the ui and wasting a render when no frame is queued.
-            string dockedMode = ConfigurationState.Instance.System.EnableDockedMode ? LocaleManager.Instance[LocaleKeys.Docked] : LocaleManager.Instance[LocaleKeys.Handheld];
+            string dockedMode = ConfigurationStateManager.System.EnableDockedMode ? LocaleManager.Instance[LocaleKeys.Docked] : LocaleManager.Instance[LocaleKeys.Handheld];
 
             if (GraphicsConfig.ResScale != 1)
             {
@@ -912,9 +922,9 @@ namespace Ryujinx.Ava
             StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
                 Device.EnableDeviceVsync,
                 LocaleManager.Instance[LocaleKeys.VolumeShort] + $": {(int)(Device.GetVolume() * 100)}%",
-                ConfigurationState.Instance.Graphics.GraphicsBackend.Value == GraphicsBackend.Vulkan ? "Vulkan" : "OpenGL",
+                ConfigurationStateManager.Graphics.GraphicsBackend.Value == GraphicsBackend.Vulkan ? "Vulkan" : "OpenGL",
                 dockedMode,
-                ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
+                ConfigurationStateManager.Graphics.AspectRatio.Value.ToText(),
                 LocaleManager.Instance[LocaleKeys.Game] + $": {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
                 $"FIFO: {Device.Statistics.GetFifoPercent():00.00} %",
                 $"GPU: {_renderer.GetHardwareInfo().GpuVendor}"));
@@ -950,7 +960,7 @@ namespace Ryujinx.Ava
                 return false;
             }
 
-            NpadManager.Update(ConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat());
+            NpadManager.Update(ConfigurationStateManager.Graphics.AspectRatio.Value.ToFloat());
 
             if (_viewModel.IsActive)
             {
@@ -1017,7 +1027,7 @@ namespace Ryujinx.Ava
                         case KeyboardHotkeyState.ToggleMute:
                             if (Device.IsAudioMuted())
                             {
-                                Device.SetVolume(ConfigurationState.Instance.System.AudioVolume);
+                                Device.SetVolume(ConfigurationStateManager.System.AudioVolume);
                             }
                             else
                             {
@@ -1063,9 +1073,9 @@ namespace Ryujinx.Ava
             // Touchscreen.
             bool hasTouch = false;
 
-            if (_viewModel.IsActive && !ConfigurationState.Instance.Hid.EnableMouse)
+            if (_viewModel.IsActive && !ConfigurationStateManager.Hid.EnableMouse)
             {
-                hasTouch = TouchScreenManager.Update(true, (_inputManager.MouseDriver as AvaloniaMouseDriver).IsButtonPressed(MouseButton.Button1), ConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat());
+                hasTouch = TouchScreenManager.Update(true, (_inputManager.MouseDriver as AvaloniaMouseDriver).IsButtonPressed(MouseButton.Button1), ConfigurationStateManager.Graphics.AspectRatio.Value.ToFloat());
             }
 
             if (!hasTouch)
@@ -1082,39 +1092,39 @@ namespace Ryujinx.Ava
         {
             KeyboardHotkeyState state = KeyboardHotkeyState.None;
 
-            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleVsync))
+            if (_keyboardInterface.IsPressed((Key)ConfigurationStateManager.Hid.Hotkeys.Value.ToggleVsync))
             {
                 state = KeyboardHotkeyState.ToggleVSync;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot))
+            else if (_keyboardInterface.IsPressed((Key)ConfigurationStateManager.Hid.Hotkeys.Value.Screenshot))
             {
                 state = KeyboardHotkeyState.Screenshot;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi))
+            else if (_keyboardInterface.IsPressed((Key)ConfigurationStateManager.Hid.Hotkeys.Value.ShowUi))
             {
                 state = KeyboardHotkeyState.ShowUi;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Pause))
+            else if (_keyboardInterface.IsPressed((Key)ConfigurationStateManager.Hid.Hotkeys.Value.Pause))
             {
                 state = KeyboardHotkeyState.Pause;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleMute))
+            else if (_keyboardInterface.IsPressed((Key)ConfigurationStateManager.Hid.Hotkeys.Value.ToggleMute))
             {
                 state = KeyboardHotkeyState.ToggleMute;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ResScaleUp))
+            else if (_keyboardInterface.IsPressed((Key)ConfigurationStateManager.Hid.Hotkeys.Value.ResScaleUp))
             {
                 state = KeyboardHotkeyState.ResScaleUp;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ResScaleDown))
+            else if (_keyboardInterface.IsPressed((Key)ConfigurationStateManager.Hid.Hotkeys.Value.ResScaleDown))
             {
                 state = KeyboardHotkeyState.ResScaleDown;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.VolumeUp))
+            else if (_keyboardInterface.IsPressed((Key)ConfigurationStateManager.Hid.Hotkeys.Value.VolumeUp))
             {
                 state = KeyboardHotkeyState.VolumeUp;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.VolumeDown))
+            else if (_keyboardInterface.IsPressed((Key)ConfigurationStateManager.Hid.Hotkeys.Value.VolumeDown))
             {
                 state = KeyboardHotkeyState.VolumeDown;
             }
