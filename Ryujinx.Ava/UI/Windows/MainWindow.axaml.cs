@@ -44,6 +44,7 @@ namespace Ryujinx.Ava.UI.Windows
         public ContentManager ContentManager { get; private set; }
         public AccountManager AccountManager { get; private set; }
 
+        public CartridgeInfo CartridgeInfo { get; private set; }
         public LibHacHorizonManager LibHacHorizonManager { get; private set; }
 
         public InputManager InputManager { get; private set; }

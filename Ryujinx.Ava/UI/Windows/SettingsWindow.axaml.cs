@@ -13,6 +13,7 @@ namespace Ryujinx.Ava.UI.Windows
     public partial class SettingsWindow : StyleableWindow
     {
         internal SettingsViewModel ViewModel { get; set; }
+        internal CartridgeInfo CartridgeInfo { get; set; }
 
         public SettingsWindow(VirtualFileSystem virtualFileSystem, ContentManager contentManager)
         {
@@ -26,7 +27,7 @@ namespace Ryujinx.Ava.UI.Windows
                 Title = $"Ryujinx {Program.Version} - {LocaleManager.Instance[LocaleKeys.Settings]} - Global";
             }
 
-            ViewModel   = new SettingsViewModel(virtualFileSystem, contentManager);
+            ViewModel   = new SettingsViewModel(virtualFileSystem, contentManager, cartridgeInfo);
             DataContext = ViewModel;
 
             ViewModel.CloseWindow += Close;
