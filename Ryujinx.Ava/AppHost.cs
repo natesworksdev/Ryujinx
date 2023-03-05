@@ -621,34 +621,7 @@ namespace Ryujinx.Ava
                 return false;
             }
 
-            // Set up the Game Configuration Instance
-            ConfigurationState.GameInstance = null;
-            string applicationConfigurationPath = ConfigurationStateManager.ConfigPathForApplication(Device.Application.TitleIdText);
-            ConfigurationStateManager.ApplicationTitle = Device.Application.TitleName;
-            ConfigurationStateManager.ApplicationId = Device.Application.TitleIdText;
-
-            ConfigurationState.InitializeGameConfig();
-            ConfigurationFileFormat.TryLoad(applicationConfigurationPath, out ConfigurationFileFormat applicationConfigurationFileFormat);
-
-            if (applicationConfigurationFileFormat == null)
-            {
-                ConfigurationFileFormat.TryLoad(Program.ConfigurationPath, out ConfigurationFileFormat globalConfigurationFileFormat);
-                ConfigurationLoadResult result = ConfigurationState.GameInstance.Load(globalConfigurationFileFormat, Program.ConfigurationPath);
-
-                if (result == ConfigurationLoadResult.NotLoaded)
-                {
-                    ConfigurationState.GameInstance.LoadDefault();
-                }
-            }
-            else
-            {
-                ConfigurationLoadResult result = ConfigurationState.GameInstance.Load(applicationConfigurationFileFormat, applicationConfigurationPath);
-
-                if (result == ConfigurationLoadResult.NotLoaded)
-                {
-                    ConfigurationState.GameInstance.LoadDefault();
-                }
-            }
+            InitializeGameConfiguration();
 
             MainWindow.UpdateGraphicsConfig();
 
@@ -735,6 +708,37 @@ namespace Ryujinx.Ava
                                                      ConfigurationState.Instance.System.UseHypervisor);
 
             Device = new Switch(configuration);
+        }
+
+        private void InitializeGameConfiguration()
+        {
+            ConfigurationState.GameInstance = null;
+            string applicationConfigurationPath = ConfigurationStateManager.ConfigPathForApplication(Device.Application.TitleIdText);
+            ConfigurationStateManager.ApplicationTitle = Device.Application.TitleName;
+            ConfigurationStateManager.ApplicationId = Device.Application.TitleIdText;
+
+            ConfigurationState.InitializeGameConfig();
+            ConfigurationFileFormat.TryLoad(applicationConfigurationPath, out ConfigurationFileFormat applicationConfigurationFileFormat);
+
+            if (applicationConfigurationFileFormat == null)
+            {
+                ConfigurationFileFormat.TryLoad(Program.ConfigurationPath, out ConfigurationFileFormat globalConfigurationFileFormat);
+                ConfigurationLoadResult result = ConfigurationState.GameInstance.Load(globalConfigurationFileFormat, Program.ConfigurationPath);
+
+                if (result == ConfigurationLoadResult.NotLoaded)
+                {
+                    ConfigurationState.GameInstance.LoadDefault();
+                }
+            }
+            else
+            {
+                ConfigurationLoadResult result = ConfigurationState.GameInstance.Load(applicationConfigurationFileFormat, applicationConfigurationPath);
+
+                if (result == ConfigurationLoadResult.NotLoaded)
+                {
+                    ConfigurationState.GameInstance.LoadDefault();
+                }
+            }
         }
 
         private static IHardwareDeviceDriver InitializeAudio()
