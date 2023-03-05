@@ -436,6 +436,8 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.Graphics.ScalingFilterLevel.Event  -= UpdateScalingFilterLevel;
             ConfigurationState.Instance.Graphics.AntiAliasing.Event        -= UpdateAntiAliasing;
 
+            ConfigurationState.GameInstance = null;
+
             _topLevel.PointerMoved -= TopLevel_PointerMoved;
 
             _gpuCancellationTokenSource.Cancel();
@@ -745,7 +747,6 @@ namespace Ryujinx.Ava
             ConfigurationStateManager.Instance.System.EnableDockedMode.Event      += UpdateDockedModeState;
             ConfigurationStateManager.Instance.System.AudioVolume.Event           += UpdateAudioVolumeState;
             ConfigurationStateManager.Instance.System.EnableDockedMode.Event      += UpdateDockedModeState;
-            ConfigurationStateManager.Instance.System.AudioVolume.Event           += UpdateAudioVolumeState;
             ConfigurationStateManager.Instance.Graphics.AntiAliasing.Event        += UpdateAntiAliasing;
             ConfigurationStateManager.Instance.Graphics.ScalingFilter.Event       += UpdateScalingFilter;
             ConfigurationStateManager.Instance.Graphics.ScalingFilterLevel.Event  += UpdateScalingFilterLevel;
@@ -964,7 +965,7 @@ namespace Ryujinx.Ava
 
             if (_viewModel.IsActive)
             {
-                if (ConfigurationState.Instance.Hid.EnableMouse)
+                if (ConfigurationStateManager.Hid.EnableMouse)
                 {
                     if (_isCursorInRenderer)
                     {
