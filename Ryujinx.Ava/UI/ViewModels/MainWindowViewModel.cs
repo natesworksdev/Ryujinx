@@ -1723,34 +1723,6 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 _currentEmulatedGamePath = path;
 
-                ConfigurationState.GameInstance = null;
-                string applicationConfigurationPath = ConfigurationStateManager.ConfigPathForApplication(AppHost.Device.Application.TitleIdText);
-                ConfigurationStateManager.ApplicationTitle = AppHost.Device.Application.TitleName;
-                ConfigurationStateManager.ApplicationId = AppHost.Device.Application.TitleIdText;
-
-                ConfigurationState.InitializeGameConfig();
-                ConfigurationFileFormat.TryLoad(applicationConfigurationPath, out ConfigurationFileFormat applicationConfigurationFileFormat);
-
-                if(applicationConfigurationFileFormat == null)
-                {
-                    ConfigurationFileFormat.TryLoad(Program.ConfigurationPath, out ConfigurationFileFormat globalConfigurationFileFormat);
-                    ConfigurationLoadResult result = ConfigurationState.GameInstance.Load(globalConfigurationFileFormat, Program.ConfigurationPath);
-
-                    if(result == ConfigurationLoadResult.NotLoaded)
-                    {
-                        ConfigurationState.GameInstance.LoadDefault();
-                    }
-                }
-                else
-                {
-                    ConfigurationLoadResult result = ConfigurationState.GameInstance.Load(applicationConfigurationFileFormat, applicationConfigurationPath);
-
-                    if (result == ConfigurationLoadResult.NotLoaded)
-                    {
-                        ConfigurationState.GameInstance.LoadDefault();
-                    }
-                }
-
                 Thread gameThread = new(InitializeGame) { Name = "GUI.WindowThread" };
                 gameThread.Start();
             }
