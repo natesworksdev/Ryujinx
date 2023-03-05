@@ -493,6 +493,11 @@ namespace Ryujinx.Ui.Common.Configuration
         public static ConfigurationState Instance { get; private set; }
 
         /// <summary>
+        /// The per-game configuration instance
+        /// </summary>
+        public static ConfigurationState GameInstance { get; set; }
+
+        /// <summary>
         /// The Ui section
         /// </summary>
         public UiSection Ui { get; private set; }
