@@ -4,6 +4,7 @@ using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.HLE.FileSystem;
+using Ryujinx.Ui.Common.Configuration;
 using System;
 using System.ComponentModel;
 
@@ -12,22 +13,19 @@ namespace Ryujinx.Ava.UI.Windows
     public partial class SettingsWindow : StyleableWindow
     {
         internal SettingsViewModel ViewModel { get; set; }
-        internal CartridgeInfo CartridgeInfo { get; set; }
 
-        public SettingsWindow(VirtualFileSystem virtualFileSystem, ContentManager contentManager, CartridgeInfo cartridgeInfo = null)
+        public SettingsWindow(VirtualFileSystem virtualFileSystem, ContentManager contentManager)
         {
-            CartridgeInfo = cartridgeInfo;
-
-            if(CartridgeInfo != null)
+            if(ConfigurationStateManager.ApplicationTitle != null)
             {
-                Title = $"Ryujinx {Program.Version} - {LocaleManager.Instance[LocaleKeys.Settings]} - {CartridgeInfo.Title}";
+                Title = $"Ryujinx {Program.Version} - {LocaleManager.Instance[LocaleKeys.Settings]} - {ConfigurationStateManager.ApplicationTitle}";
             }
             else
             {
                 Title = $"Ryujinx {Program.Version} - {LocaleManager.Instance[LocaleKeys.Settings]}";
             }
 
-            ViewModel   = new SettingsViewModel(virtualFileSystem, contentManager, cartridgeInfo);
+            ViewModel   = new SettingsViewModel(virtualFileSystem, contentManager);
             DataContext = ViewModel;
 
             ViewModel.CloseWindow += Close;
