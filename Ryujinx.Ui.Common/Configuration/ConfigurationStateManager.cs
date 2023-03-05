@@ -1,12 +1,17 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.IO;
 
 namespace Ryujinx.Ui.Common.Configuration
 {
     public class ConfigurationStateManager
     {
+        public static ConfigurationState.LoggerSection LoggerSection
         public static string ApplicationTitle { get; set; }
         public static string ApplicationId { get; set; }
 
@@ -208,6 +213,7 @@ namespace Ryujinx.Ui.Common.Configuration
         {
             get
             {
+                return ConfigurationState.GameInstance.Logger ?? ConfigurationState.Instance.Logger;
                 if (GameInstance?.Graphics.ScalingFilterLevel.Value == null)
                 {
                     return ConfigurationState.Instance.Graphics.ScalingFilterLevel;
@@ -215,6 +221,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 return GameInstance.Graphics.ScalingFilterLevel;
             }
         }
+        public static ConfigurationState.HidSection HidSection
         /*
          *  System
          */
@@ -222,13 +229,16 @@ namespace Ryujinx.Ui.Common.Configuration
         {
             get
             {
+                return ConfigurationState.GameInstance.Hid ?? ConfigurationState.Instance.Hid;
                 return Instance.System;
             }
         }
+        public static ConfigurationState.GraphicsSection GraphicsSection
         public static bool IsGameConfiguration
         {
             get
             {
+                return ConfigurationState.GameInstance.Graphics ?? ConfigurationState.Instance.Graphics;
                 return Instance == ConfigurationState.GameInstance;
             }
         }
@@ -265,7 +275,7 @@ namespace Ryujinx.Ui.Common.Configuration
                     ConfigurationState.ResetGameConfig();
                 }
             }
-        }
+            }
         public static string ConfigPathForApplication(string applicationId)
         {
             return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{applicationId}.json");
