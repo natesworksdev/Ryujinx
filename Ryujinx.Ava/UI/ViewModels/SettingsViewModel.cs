@@ -258,11 +258,10 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager, CartridgeInfo cartridgeInfo = null) : this()
+        public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager) : this()
         {
             _virtualFileSystem = virtualFileSystem;
             _contentManager = contentManager;
-            _cartridgeInfo = cartridgeInfo;
             if (Program.PreviewerDetached)
             {
                 LoadTimeZones();
