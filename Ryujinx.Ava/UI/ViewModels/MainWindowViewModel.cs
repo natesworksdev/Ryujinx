@@ -99,7 +99,6 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public ApplicationData ListSelectedApplication;
         public ApplicationData GridSelectedApplication;
-        public CartridgeInfo CartridgeInfo;
 
         public event Action ReloadGameList;
 
@@ -121,7 +120,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 LoadConfigurableHotKeys();
 
-                Volume = ConfigurationState.Instance.System.AudioVolume;
+                Volume = ConfigurationStateManager.System.AudioVolume;
             }
         }
 
@@ -1716,9 +1715,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 ConfigurationState.GameInstance = null;
                 string applicationConfigurationPath = ConfigurationStateManager.ConfigPathForApplication(AppHost.Device.Application.TitleIdText);
-                CartridgeInfo = new CartridgeInfo();
-                CartridgeInfo.Title = AppHost.Device.Application.TitleName;
-                CartridgeInfo.Id = AppHost.Device.Application.TitleIdText;
+                ConfigurationStateManager.ApplicationTitle = AppHost.Device.Application.TitleName;
+                ConfigurationStateManager.ApplicationId = AppHost.Device.Application.TitleIdText;
 
                 ConfigurationState.InitializeGameConfig();
                 ConfigurationFileFormat.TryLoad(applicationConfigurationPath, out ConfigurationFileFormat applicationConfigurationFileFormat);
@@ -1808,6 +1806,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
 
             IsGameRunning = false;
+            ConfigurationStateManager.ApplicationTitle = null;
+            ConfigurationStateManager.ApplicationId = null;
 
             Dispatcher.UIThread.InvokeAsync(() =>
             {
@@ -1821,7 +1821,6 @@ namespace Ryujinx.Ava.UI.ViewModels
                 SetMainContent(null);
 
                 AppHost = null;
-                CartridgeInfo = null;
 
                 HandleRelaunch();
             });

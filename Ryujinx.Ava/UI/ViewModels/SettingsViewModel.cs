@@ -47,7 +47,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         private string _customThemePath;
         private int _scalingFilter;
         private int _scalingFilterLevel;
-        private CartridgeInfo _cartridgeInfo;
 
         public event Action CloseWindow;
         public event Action SaveSettingsEvent;
@@ -252,11 +251,10 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager, CartridgeInfo cartridgeInfo = null) : this()
+        public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager) : this()
         {
             _virtualFileSystem = virtualFileSystem;
             _contentManager = contentManager;
-            _cartridgeInfo = cartridgeInfo;
             if (Program.PreviewerDetached)
             {
                 LoadTimeZones();
@@ -519,7 +517,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             if (ConfigurationStateManager.IsGameConfiguration)
             {
-                config.ToFileFormat().SaveConfig(ConfigurationStateManager.ConfigPathForApplication(_cartridgeInfo.Id));
+                config.ToFileFormat().SaveConfig(ConfigurationStateManager.ConfigPathForApplication(ConfigurationStateManager.ApplicationId));
             }
             else
             {

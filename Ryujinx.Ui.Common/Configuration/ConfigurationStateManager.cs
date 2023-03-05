@@ -9,6 +9,10 @@ namespace Ryujinx.Ui.Common.Configuration
 {
     public class ConfigurationStateManager
     {
+
+        public static string ApplicationTitle { get; set; }
+        public static string ApplicationId { get; set; }
+
         public static ConfigurationState Instance
         {
             get
