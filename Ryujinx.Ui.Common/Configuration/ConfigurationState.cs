@@ -1354,5 +1354,15 @@ namespace Ryujinx.Ui.Common.Configuration
 
             Instance = new ConfigurationState();
         }
+
+        public static void InitializeGameConfig()
+        {
+            if (GameInstance != null)
+            {
+                throw new InvalidOperationException("Game Configuration is already initialized");
+            }
+
+            GameInstance = new ConfigurationState();
+        }
     }
 }
