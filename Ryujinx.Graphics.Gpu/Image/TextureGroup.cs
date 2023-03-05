@@ -336,24 +336,23 @@ namespace Ryujinx.Graphics.Gpu.Image
                 if (_loadNeeded[baseHandle + i])
                 {
                     var info = GetHandleInformation(baseHandle + i);
-                    int offsetIndex = info.Index;
 
                     // Only one of these will be greater than 1, as partial sync is only called when there are sub-image views.
                     for (int layer = 0; layer < info.Layers; layer++)
                     {
                         for (int level = 0; level < info.Levels; level++)
                         {
+                            int offsetIndex = GetOffsetIndex(info.BaseLayer + layer, info.BaseLevel + level);
+
                             int offset = _allOffsets[offsetIndex];
                             int endOffset = Math.Min(offset + _sliceSizes[info.BaseLevel + level], (int)Storage.Size);
                             int size = endOffset - offset;
 
                             ReadOnlySpan<byte> data = _physicalMemory.GetSpan(Storage.Range.GetSlice((ulong)offset, (ulong)size));
 
-                            SpanOrArray<byte> result = Storage.ConvertToHostCompatibleFormat(data, info.BaseLevel, true);
+                            SpanOrArray<byte> result = Storage.ConvertToHostCompatibleFormat(data, info.BaseLevel + level, true);
 
-                            Storage.SetData(result, info.BaseLayer, info.BaseLevel);
-
-                            offsetIndex++;
+                            Storage.SetData(result, info.BaseLayer + layer, info.BaseLevel + level);
                         }
                     }
                 }
@@ -855,7 +854,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>A CpuRegionHandle covering the given range</returns>
         private CpuRegionHandle GenerateHandle(ulong address, ulong size)
         {
-            return _physicalMemory.BeginTracking(address, size);
+            return _physicalMemory.BeginTracking(address, size, ResourceKind.Texture);
         }
 
         /// <summary>

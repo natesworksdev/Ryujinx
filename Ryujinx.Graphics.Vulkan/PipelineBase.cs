@@ -1,4 +1,5 @@
-﻿using Ryujinx.Graphics.GAL;
+﻿using Ryujinx.Common;
+using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
 using Silk.NET.Vulkan;
 using System;
@@ -111,11 +112,9 @@ namespace Ryujinx.Graphics.Vulkan
             var defaultScale = new Vector4<float> { X = 1f, Y = 0f, Z = 0f, W = 0f };
             new Span<Vector4<float>>(_renderScale).Fill(defaultScale);
 
-            _newState.Initialize();
-            _newState.LineWidth = 1f;
-            _newState.SamplesCount = 1;
+            _storedBlend = new PipelineColorBlendAttachmentState[Constants.MaxRenderTargets];
 
-            _storedBlend = new PipelineColorBlendAttachmentState[8];
+            _newState.Initialize();
         }
 
         public void Initialize()
@@ -149,6 +148,28 @@ namespace Ryujinx.Graphics.Vulkan
                 null,
                 0,
                 null);
+        }
+
+        public void ComputeBarrier()
+        {
+            MemoryBarrier memoryBarrier = new MemoryBarrier()
+            {
+                SType = StructureType.MemoryBarrier,
+                SrcAccessMask = AccessFlags.MemoryReadBit | AccessFlags.MemoryWriteBit,
+                DstAccessMask = AccessFlags.MemoryReadBit | AccessFlags.MemoryWriteBit
+            };
+
+            Gd.Api.CmdPipelineBarrier(
+                CommandBuffer,
+                PipelineStageFlags.ComputeShaderBit,
+                PipelineStageFlags.AllCommandsBit,
+                0,
+                1,
+                new ReadOnlySpan<MemoryBarrier>(memoryBarrier),
+                0,
+                ReadOnlySpan<BufferMemoryBarrier>.Empty,
+                0,
+                ReadOnlySpan<ImageMemoryBarrier>.Empty);
         }
 
         public void BeginTransformFeedback(GAL.PrimitiveTopology topology)
@@ -650,9 +671,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _newState.DepthWriteEnable = oldDepthWriteEnable;
                 _newState.Topology = oldTopology;
 
-                DynamicState.Viewports = oldViewports;
-                DynamicState.ViewportsCount = (int)oldViewportsCount;
-                DynamicState.SetViewportsDirty();
+                DynamicState.SetViewports(ref oldViewports, oldViewportsCount);
 
                 _newState.ViewportsCount = oldViewportsCount;
                 SignalStateChange();
@@ -675,6 +694,49 @@ namespace Ryujinx.Graphics.Vulkan
             // This is currently handled using shader specialization, as Vulkan does not support alpha test.
             // In the future, we may want to use this to write the reference value into the support buffer,
             // to avoid creating one version of the shader per reference value used.
+        }
+
+        public void SetBlendState(AdvancedBlendDescriptor blend)
+        {
+            for (int index = 0; index < Constants.MaxRenderTargets; index++)
+            {
+                ref var vkBlend = ref _newState.Internal.ColorBlendAttachmentState[index];
+
+                if (index == 0)
+                {
+                    var blendOp = blend.Op.Convert();
+
+                    vkBlend = new PipelineColorBlendAttachmentState(
+                        blendEnable: true,
+                        colorBlendOp: blendOp,
+                        alphaBlendOp: blendOp,
+                        colorWriteMask: vkBlend.ColorWriteMask);
+
+                    if (Gd.Capabilities.SupportsBlendEquationAdvancedNonPreMultipliedSrcColor)
+                    {
+                        _newState.AdvancedBlendSrcPreMultiplied = blend.SrcPreMultiplied;
+                    }
+
+                    if (Gd.Capabilities.SupportsBlendEquationAdvancedCorrelatedOverlap)
+                    {
+                        _newState.AdvancedBlendOverlap = blend.Overlap.Convert();
+                    }
+                }
+                else
+                {
+                    vkBlend = new PipelineColorBlendAttachmentState(
+                        colorWriteMask: vkBlend.ColorWriteMask);
+                }
+
+                if (vkBlend.ColorWriteMask == 0)
+                {
+                    _storedBlend[index] = vkBlend;
+
+                    vkBlend = new PipelineColorBlendAttachmentState();
+                }
+            }
+
+            SignalStateChange();
         }
 
         public void SetBlendState(int index, BlendDescriptor blend)
@@ -709,6 +771,11 @@ namespace Ryujinx.Graphics.Vulkan
                 blend.BlendConstant.Green,
                 blend.BlendConstant.Blue,
                 blend.BlendConstant.Alpha);
+
+            // Reset advanced blend state back defaults to the cache to help the pipeline cache.
+            _newState.AdvancedBlendSrcPreMultiplied = true;
+            _newState.AdvancedBlendDstPreMultiplied = true;
+            _newState.AdvancedBlendOverlap = BlendOverlapEXT.UncorrelatedExt;
 
             SignalStateChange();
         }
@@ -756,6 +823,11 @@ namespace Ryujinx.Graphics.Vulkan
         public void SetImage(int binding, ITexture image, GAL.Format imageFormat)
         {
             _descriptorSetUpdater.SetImage(binding, image, imageFormat);
+        }
+
+        public void SetImage(int binding, Auto<DisposableImageView> image)
+        {
+            _descriptorSetUpdater.SetImage(binding, image);
         }
 
         public void SetIndexBuffer(BufferRange buffer, GAL.IndexType type)
@@ -1138,7 +1210,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                         buffer.Dispose();
 
-                        if (!Gd.Capabilities.PortabilitySubset.HasFlag(PortabilitySubsetFlags.VertexBufferAlignment4B) &&
+                        if (Gd.Capabilities.VertexBufferAlignment < 2 &&
                             (vertexBuffer.Stride % FormatExtensions.MaxBufferFormatScalarSize) == 0)
                         {
                             buffer = new VertexBufferState(
@@ -1183,6 +1255,8 @@ namespace Ryujinx.Graphics.Vulkan
                 return Math.Clamp(value, 0f, 1f);
             }
 
+            DynamicState.ViewportsCount = (uint)count;
+
             for (int i = 0; i < count; i++)
             {
                 var viewport = viewports[i];
@@ -1195,8 +1269,6 @@ namespace Ryujinx.Graphics.Vulkan
                     Clamp(viewport.DepthNear),
                     Clamp(viewport.DepthFar)));
             }
-
-            DynamicState.ViewportsCount = count;
 
             float disableTransformF = disableTransform ? 1.0f : 0.0f;
             if (SupportBufferUpdater.Data.ViewportInverse.W != disableTransformF || disableTransform)

@@ -14,6 +14,9 @@ namespace Ryujinx.Graphics.Vulkan
     public unsafe static class VulkanInitialization
     {
         private const uint InvalidIndex = uint.MaxValue;
+        private static uint MinimalVulkanVersion = Vk.Version11.Value;
+        private static uint MinimalInstanceVulkanVersion = Vk.Version12.Value;
+        private static uint MaximumVulkanVersion = Vk.Version12.Value;
         private const string AppName = "Ryujinx.Graphics.Vulkan";
         private const int QueuesCount = 2;
 
@@ -24,16 +27,19 @@ namespace Ryujinx.Graphics.Vulkan
             ExtTransformFeedback.ExtensionName,
             KhrDrawIndirectCount.ExtensionName,
             KhrPushDescriptor.ExtensionName,
+            "VK_EXT_blend_operation_advanced",
             "VK_EXT_custom_border_color",
             "VK_EXT_descriptor_indexing", // Enabling this works around an issue with disposed buffer bindings on RADV.
             "VK_EXT_fragment_shader_interlock",
             "VK_EXT_index_type_uint8",
+            "VK_EXT_primitive_topology_list_restart",
             "VK_EXT_robustness2",
             "VK_EXT_shader_stencil_export",
             "VK_KHR_shader_float16_int8",
             "VK_EXT_shader_subgroup_ballot",
             "VK_EXT_subgroup_size_control",
-            "VK_NV_geometry_shader_passthrough"
+            "VK_NV_geometry_shader_passthrough",
+            "VK_KHR_portability_subset", // By spec, we should enable this if present.
         };
 
         public static string[] RequiredExtensions { get; } = new string[]
@@ -99,7 +105,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ApplicationVersion = 1,
                 PEngineName = (byte*)appName,
                 EngineVersion = 1,
-                ApiVersion = Vk.Version12.Value
+                ApiVersion = MaximumVulkanVersion
             };
 
             IntPtr* ppEnabledExtensions = stackalloc IntPtr[enabledExtensions.Length];
@@ -224,7 +230,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ApplicationVersion = 1,
                 PEngineName = (byte*)appName,
                 EngineVersion = 1,
-                ApiVersion = Vk.Version12.Value
+                ApiVersion = MaximumVulkanVersion
             };
 
             var instanceCreateInfo = new InstanceCreateInfo
@@ -238,6 +244,27 @@ namespace Ryujinx.Graphics.Vulkan
             };
 
             api.CreateInstance(in instanceCreateInfo, null, out var instance).ThrowOnError();
+
+            // We ensure that vkEnumerateInstanceVersion is present (added in 1.1).
+            // If the instance doesn't support it, no device is going to be 1.1 compatible.
+            if (api.GetInstanceProcAddr(instance, "vkEnumerateInstanceVersion") == IntPtr.Zero)
+            {
+                api.DestroyInstance(instance, null);
+
+                return Array.Empty<DeviceInfo>();
+            }
+
+            // We currently assume that the instance is compatible with Vulkan 1.2
+            // TODO: Remove this once we relax our initialization codepaths.
+            uint instanceApiVerison = 0;
+            api.EnumerateInstanceVersion(ref instanceApiVerison).ThrowOnError();
+
+            if (instanceApiVerison < MinimalInstanceVulkanVersion)
+            {
+                api.DestroyInstance(instance, null);
+
+                return Array.Empty<DeviceInfo>();
+            }
 
             Marshal.FreeHGlobal(appName);
 
@@ -258,6 +285,11 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 var physicalDevice = physicalDevices[i];
                 api.GetPhysicalDeviceProperties(physicalDevice, out var properties);
+
+                if (properties.ApiVersion < MinimalVulkanVersion)
+                {
+                    continue;
+                }
 
                 devices[i] = new DeviceInfo(
                     StringFromIdPair(properties.VendorID, properties.DeviceID),
@@ -398,6 +430,17 @@ namespace Ryujinx.Graphics.Vulkan
                 features2.PNext = &supportedFeaturesCustomBorderColor;
             }
 
+            PhysicalDevicePrimitiveTopologyListRestartFeaturesEXT supportedFeaturesPrimitiveTopologyListRestart = new PhysicalDevicePrimitiveTopologyListRestartFeaturesEXT()
+            {
+                SType = StructureType.PhysicalDevicePrimitiveTopologyListRestartFeaturesExt,
+                PNext = features2.PNext
+            };
+
+            if (supportedExtensions.Contains("VK_EXT_primitive_topology_list_restart"))
+            {
+                features2.PNext = &supportedFeaturesPrimitiveTopologyListRestart;
+            }
+
             PhysicalDeviceTransformFeedbackFeaturesEXT supportedFeaturesTransformFeedback = new PhysicalDeviceTransformFeedbackFeaturesEXT()
             {
                 SType = StructureType.PhysicalDeviceTransformFeedbackFeaturesExt,
@@ -464,6 +507,21 @@ namespace Ryujinx.Graphics.Vulkan
                 };
 
                 pExtendedFeatures = &featuresTransformFeedback;
+            }
+
+            PhysicalDevicePrimitiveTopologyListRestartFeaturesEXT featuresPrimitiveTopologyListRestart;
+
+            if (supportedExtensions.Contains("VK_EXT_primitive_topology_list_restart"))
+            {
+                featuresPrimitiveTopologyListRestart = new PhysicalDevicePrimitiveTopologyListRestartFeaturesEXT()
+                {
+                    SType = StructureType.PhysicalDevicePrimitiveTopologyListRestartFeaturesExt,
+                    PNext = pExtendedFeatures,
+                    PrimitiveTopologyListRestart = supportedFeaturesPrimitiveTopologyListRestart.PrimitiveTopologyListRestart,
+                    PrimitiveTopologyPatchListRestart = supportedFeaturesPrimitiveTopologyListRestart.PrimitiveTopologyPatchListRestart
+                };
+
+                pExtendedFeatures = &featuresPrimitiveTopologyListRestart;
             }
 
             PhysicalDeviceRobustness2FeaturesEXT featuresRobustness2;
