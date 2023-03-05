@@ -14,6 +14,7 @@ using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
 using System;
@@ -103,6 +104,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
             catch
             {
+                Logger.Error?.Print(LogClass.Configuration, "Downloadable Content JSON failed to deserialize.");
                 _downloadableContentContainerList = new List<DownloadableContentContainer>();
             }
 
