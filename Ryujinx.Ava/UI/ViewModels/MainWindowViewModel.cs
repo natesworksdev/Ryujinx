@@ -1220,17 +1220,17 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void LoadConfigurableHotKeys()
         {
-            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Ryujinx.Input.Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi, out var showUiKey))
+            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Ryujinx.Input.Key)ConfigurationStateManager.Hid.Hotkeys.Value.ShowUi, out var showUiKey))
             {
                 ShowUiKey = new KeyGesture(showUiKey);
             }
 
-            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Ryujinx.Input.Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot, out var screenshotKey))
+            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Ryujinx.Input.Key)ConfigurationStateManager.Hid.Hotkeys.Value.Screenshot, out var screenshotKey))
             {
                 ScreenshotKey = new KeyGesture(screenshotKey);
             }
 
-            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Ryujinx.Input.Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Pause, out var pauseKey))
+            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Ryujinx.Input.Key)ConfigurationStateManager.Hid.Hotkeys.Value.Pause, out var pauseKey))
             {
                 PauseKey = new KeyGesture(pauseKey);
             }
@@ -1307,7 +1307,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             if (IsGameRunning)
             {
-                ConfigurationState.Instance.System.EnableDockedMode.Value = !ConfigurationState.Instance.System.EnableDockedMode.Value;
+                ConfigurationStateManager.System.EnableDockedMode.Value = !ConfigurationStateManager.System.EnableDockedMode.Value;
             }
         }
 
@@ -1713,34 +1713,6 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 _currentEmulatedGamePath = path;
 
-                ConfigurationState.GameInstance = null;
-                string applicationConfigurationPath = ConfigurationStateManager.ConfigPathForApplication(AppHost.Device.Application.TitleIdText);
-                ConfigurationStateManager.ApplicationTitle = AppHost.Device.Application.TitleName;
-                ConfigurationStateManager.ApplicationId = AppHost.Device.Application.TitleIdText;
-
-                ConfigurationState.InitializeGameConfig();
-                ConfigurationFileFormat.TryLoad(applicationConfigurationPath, out ConfigurationFileFormat applicationConfigurationFileFormat);
-
-                if(applicationConfigurationFileFormat == null)
-                {
-                    ConfigurationFileFormat.TryLoad(Program.ConfigurationPath, out ConfigurationFileFormat globalConfigurationFileFormat);
-                    ConfigurationLoadResult result = ConfigurationState.GameInstance.Load(globalConfigurationFileFormat, Program.ConfigurationPath);
-
-                    if(result == ConfigurationLoadResult.NotLoaded)
-                    {
-                        ConfigurationState.GameInstance.LoadDefault();
-                    }
-                }
-                else
-                {
-                    ConfigurationLoadResult result = ConfigurationState.GameInstance.Load(applicationConfigurationFileFormat, applicationConfigurationPath);
-
-                    if (result == ConfigurationLoadResult.NotLoaded)
-                    {
-                        ConfigurationState.GameInstance.LoadDefault();
-                    }
-                }
-
                 Thread gameThread = new(InitializeGame) { Name = "GUI.WindowThread" };
                 gameThread.Start();
             }
@@ -1869,12 +1841,19 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public static void SaveConfig()
         {
-            ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            if (ConfigurationStateManager.IsGameConfiguration)
+            {
+                ConfigurationStateManager.Instance.ToFileFormat().SaveConfig(ConfigurationStateManager.ConfigPathForApplication(ConfigurationStateManager.ApplicationId));
+            }
+            else
+            {
+                ConfigurationStateManager.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            }
         }
 
         public static async Task PerformanceCheck()
         {
-            if (ConfigurationState.Instance.Logger.EnableTrace.Value)
+            if (ConfigurationStateManager.Logger.EnableTrace.Value)
             {
                 string mainMessage = LocaleManager.Instance[LocaleKeys.DialogPerformanceCheckLoggingEnabledMessage];
                 string secondaryMessage = LocaleManager.Instance[LocaleKeys.DialogPerformanceCheckLoggingEnabledConfirmMessage];
@@ -1888,13 +1867,13 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 if (result == UserResult.Yes)
                 {
-                    ConfigurationState.Instance.Logger.EnableTrace.Value = false;
+                    ConfigurationStateManager.Logger.EnableTrace.Value = false;
 
                     SaveConfig();
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(ConfigurationState.Instance.Graphics.ShadersDumpPath.Value))
+            if (!string.IsNullOrWhiteSpace(ConfigurationStateManager.Graphics.ShadersDumpPath.Value))
             {
                 string mainMessage = LocaleManager.Instance[LocaleKeys.DialogPerformanceCheckShaderDumpEnabledMessage];
                 string secondaryMessage = LocaleManager.Instance[LocaleKeys.DialogPerformanceCheckShaderDumpEnabledConfirmMessage];
@@ -1908,7 +1887,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 if (result == UserResult.Yes)
                 {
-                    ConfigurationState.Instance.Graphics.ShadersDumpPath.Value = "";
+                    ConfigurationStateManager.Graphics.ShadersDumpPath.Value = "";
 
                     SaveConfig();
                 }

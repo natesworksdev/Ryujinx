@@ -343,7 +343,7 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 if (!volumeSplitButton.IsChecked)
                 {
-                    ViewModel.AppHost.Device.SetVolume(ConfigurationState.Instance.System.AudioVolume);
+                    ViewModel.AppHost.Device.SetVolume(ConfigurationStateManager.System.AudioVolume);
                 }
                 else
                 {
@@ -356,7 +356,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            if (!ViewModel.IsClosing && ViewModel.AppHost != null && ConfigurationState.Instance.ShowConfirmExit)
+            if (!ViewModel.IsClosing && ViewModel.AppHost != null && ConfigurationStateManager.Instance.ShowConfirmExit)
             {
                 e.Cancel = true;
 
