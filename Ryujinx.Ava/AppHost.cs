@@ -629,11 +629,7 @@ namespace Ryujinx.Ava
                 return false;
             }
 
-            // Set up the Game Configuration Instance
-            ConfigurationState.GameInstance = null;
-            string applicationConfigurationPath = ConfigurationStateManager.ConfigPathForApplication(Device.Application.TitleIdText);
-            ConfigurationStateManager.ApplicationTitle = Device.Application.TitleName;
-            ConfigurationStateManager.ApplicationId = Device.Application.TitleIdText;
+            InitializeGameConfiguration();
 
             ConfigurationState.InitializeGameConfig();
             ConfigurationFileFormat.TryLoad(applicationConfigurationPath, out ConfigurationFileFormat applicationConfigurationFileFormat);
