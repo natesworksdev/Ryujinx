@@ -240,7 +240,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="id">ID in cache of texture with potential mapping change</param>
         public void QueueUpdateMapping(Texture texture, int id)
         {
-            if (Interlocked.Exchange(ref Items[id], null) != null)
+            if (Interlocked.Exchange(ref Items[id], null) == texture)
             {
                 _dereferenceQueue.Enqueue(DereferenceRequest.Remap(texture, id));
             }
