@@ -14,8 +14,10 @@ namespace Ryujinx.Graphics.Vulkan
         private const int MaxUpdateBufferSize = 0x10000;
 
         private const int SetCountThreshold = 100;
-        private const int WriteCountThreshold = 10;
+        private const int WriteCountThreshold = 50;
         private const int FlushCountThreshold = 5;
+
+        public const int DeviceLocalSizeThreshold = 256 * 1024; // 256kb
 
         public const AccessFlags DefaultAccessFlags =
             AccessFlags.IndirectCommandReadBit |
@@ -51,6 +53,7 @@ namespace Ryujinx.Graphics.Vulkan
         private int _setCount;
         private int _writeCount;
         private int _flushCount;
+        private int _flushTemp;
 
         private ReaderWriterLock _flushLock;
         private FenceHolder _flushFence;
@@ -158,10 +161,18 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 if (_writeCount >= WriteCountThreshold || _setCount >= SetCountThreshold || _flushCount >= FlushCountThreshold)
                 {
-                    if (_flushCount > 0 || _currentType == BufferAllocationType.DeviceLocalMapped)
+                    if (_flushCount > 0 || _flushTemp-- > 0)
                     {
-                        // Buffers that flush often should ideally be in the locally mapped heap.
-                        DesiredType = BufferAllocationType.DeviceLocalMapped;
+                        // Buffers that flush should ideally be mapped in host address space for easy copies.
+                        // If the buffer is large it will do better on GPU memory, as there will be more writes than data flushes (typically individual pages).
+                        // If it is small, then it's likely most of the buffer will be flushed so we want it on host memory, as access is cached.
+                        DesiredType = Size > DeviceLocalSizeThreshold ? BufferAllocationType.DeviceLocalMapped : BufferAllocationType.HostMapped;
+
+                        // It's harder for a buffer that is flushed to revert to another type of mapping.
+                        if (_flushCount > 0)
+                        {
+                            _flushTemp = 1000;
+                        }
                     }
                     else if (_writeCount >= WriteCountThreshold)
                     {
@@ -174,9 +185,9 @@ namespace Ryujinx.Graphics.Vulkan
                         DesiredType = BufferAllocationType.HostMapped;
                     }
 
+                    _flushCount = 0;
                     _writeCount = 0;
                     _setCount = 0;
-                    _flushCount = 0;
                 }
 
                 TrySwapBacking();
@@ -199,6 +210,14 @@ namespace Ryujinx.Graphics.Vulkan
             (_swapActions ??= new List<Action>()).Add(invalidateView);
 
             return new Auto<DisposableBufferView>(new DisposableBufferView(_gd.Api, _device, bufferView), _waitable, _buffer);
+        }
+
+        public void InheritMetrics(BufferHolder other)
+        {
+            _setCount = other._setCount;
+            _writeCount = other._writeCount;
+            _flushCount = other._flushCount;
+            _flushTemp = other._flushTemp;
         }
 
         public unsafe void InsertBarrier(CommandBuffer commandBuffer, bool isWrite)

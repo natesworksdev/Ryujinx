@@ -44,8 +44,6 @@ namespace Ryujinx.Graphics.Vulkan
             BufferUsageFlags.VertexBufferBit |
             BufferUsageFlags.TransformFeedbackBufferBitExt;
 
-        private const int BufferSizeDeviceLocalThreshold = 512 * 1024; // 512kb
-
         private readonly Device _device;
 
         private readonly IdList<BufferHolder> _buffers;
@@ -155,6 +153,7 @@ namespace Ryujinx.Graphics.Vulkan
         public unsafe BufferHolder Create(VulkanRenderer gd, int size, bool forConditionalRendering = false, BufferAllocationType baseType = BufferAllocationType.HostMapped, BufferHandle storageHint = default)
         {
             BufferAllocationType type = baseType;
+            BufferHolder storageHintHolder = null;
 
             if (baseType == BufferAllocationType.Auto)
             {
@@ -165,14 +164,14 @@ namespace Ryujinx.Graphics.Vulkan
                 }
                 else
                 {
-                    type = size >= BufferSizeDeviceLocalThreshold ? BufferAllocationType.DeviceLocal : BufferAllocationType.HostMapped;
+                    type = size >= BufferHolder.DeviceLocalSizeThreshold ? BufferAllocationType.DeviceLocal : BufferAllocationType.HostMapped;
                 }
 
                 if (storageHint != BufferHandle.Null)
                 {
-                    if (TryGetBuffer(storageHint, out var holder))
+                    if (TryGetBuffer(storageHint, out storageHintHolder))
                     {
-                        type = holder.DesiredType;
+                        type = storageHintHolder.DesiredType;
                     }
                 }
             }
@@ -182,7 +181,14 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (buffer.Handle != 0)
             {
-                return new BufferHolder(gd, _device, buffer, allocation, size, baseType, resultType);
+                var holder = new BufferHolder(gd, _device, buffer, allocation, size, baseType, resultType);
+
+                if (storageHintHolder != null)
+                {
+                    holder.InheritMetrics(storageHintHolder);
+                }
+
+                return holder;
             }
 
             return null;
