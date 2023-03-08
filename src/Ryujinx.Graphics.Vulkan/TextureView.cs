@@ -1,6 +1,5 @@
 ﻿using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.GAL;
-using shaderc;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;

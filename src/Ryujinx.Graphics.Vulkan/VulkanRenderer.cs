@@ -763,13 +763,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void WaitSync(ulong id)
         {
-            long preTime = System.Diagnostics.Stopwatch.GetTimestamp();
-
             SyncManager.Wait(id);
-
-            long waitTime = System.Diagnostics.Stopwatch.GetTimestamp();
-
-            //Common.Logging.Logger.Warning?.PrintMsg(Common.Logging.LogClass.Gpu, $" > Wait Time (id) {(waitTime - preTime) / (System.Diagnostics.Stopwatch.Frequency / 1000f)}ms");
         }
 
         public ulong GetCurrentSync()
