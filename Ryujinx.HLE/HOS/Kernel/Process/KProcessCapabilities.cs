@@ -22,7 +22,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public KProcessCapabilities()
         {
-            SvcAccessMask = new byte[0x10];
+            // length / number of bits of the underlying type
+            SvcAccessMask = new byte[KernelConstants.SupervisorCallCount / 8];
             IrqAccessMask = new byte[0x80];
         }
 
@@ -203,7 +204,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
                         int svcId = baseSvc + index;
 
-                        if (svcId > 0x7f)
+                        if (svcId >= KernelConstants.SupervisorCallCount)
                         {
                             return KernelResult.MaximumExceeded;
                         }
