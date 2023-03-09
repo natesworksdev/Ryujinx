@@ -120,13 +120,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         private Result ParseCapability(int cap, ref int mask0, ref int mask1, KPageTableBase memoryManager)
         {
-            int code = (cap + 1) & ~cap;
+            CapabilityType code = (CapabilityType)((cap + 1) & ~cap);
 
-            if (code == 1)
+            if (code == CapabilityType.Invalid)
             {
                 return KernelResult.InvalidCapability;
             }
-            else if (code == 0)
+            else if (code == CapabilityType.Padding)
             {
                 return Result.Success;
             }
@@ -143,7 +143,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             switch (code)
             {
-                case 8:
+                case CapabilityType.CorePriority:
                 {
                     if (AllowedCpuCoresMask != 0 || AllowedThreadPriosMask != 0)
                     {
@@ -177,7 +177,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                     break;
                 }
 
-                case 0x10:
+                case CapabilityType.SyscallMask:
                 {
                     int slot = (cap >> 29) & 7;
 
@@ -214,7 +214,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                     break;
                 }
 
-                case 0x80:
+                case CapabilityType.MapRange:
+                {
+                    // TODO: Implement capabilities for MapRange
+                    break;
+                }
+
+                case CapabilityType.MapIoPage:
                 {
                     long address = ((long)(uint)cap << 4) & 0xffffff000;
 
@@ -223,7 +229,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                     break;
                 }
 
-                case 0x800:
+                case CapabilityType.MapRegion:
+                {
+                    // TODO: Implement capabilities for MapRegion
+                    break;
+                }
+
+                case CapabilityType.InterruptPair:
                 {
                     // TODO: GIC distributor check.
                     int irq0 = (cap >> 12) & 0x3ff;
@@ -242,7 +254,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                     break;
                 }
 
-                case 0x2000:
+                case CapabilityType.ProgramType:
                 {
                     int applicationType = cap >> 14;
 
@@ -256,7 +268,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                     break;
                 }
 
-                case 0x4000:
+                case CapabilityType.KernelVersion:
                 {
                     // Note: This check is bugged on kernel too, we are just replicating the bug here.
                     if ((KernelReleaseVersion >> 17) != 0 || cap < 0x80000)
@@ -269,7 +281,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                     break;
                 }
 
-                case 0x8000:
+                case CapabilityType.HandleTable:
                 {
                     int handleTableSize = cap >> 26;
 
@@ -283,7 +295,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                     break;
                 }
 
-                case 0x10000:
+                case CapabilityType.DebugFlags:
                 {
                     int debuggingFlags = cap >> 19;
 
