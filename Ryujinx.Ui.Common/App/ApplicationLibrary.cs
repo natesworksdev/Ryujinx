@@ -132,11 +132,19 @@ namespace Ryujinx.Ui.App.Common
                 }
 
                 // Loops through applications list, creating a struct and then firing an event containing the struct for each application
-                foreach (string applicationPath in applications)
+                foreach (string appPath in applications)
                 {
                     if (_cancellationToken.Token.IsCancellationRequested)
                     {
                         return;
+                    }
+
+                    string applicationPath = appPath;
+
+                    // Follows eventual symlink
+                    var tempFile = Directory.ResolveLinkTarget(appPath, true);
+                    if(tempFile != null) {
+                        applicationPath = tempFile.FullName;
                     }
 
                     double fileSize = new FileInfo(applicationPath).Length * 0.000000000931;
