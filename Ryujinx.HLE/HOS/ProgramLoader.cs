@@ -318,7 +318,7 @@ namespace Ryujinx.HLE.HOS
 
             result = process.Initialize(
                 creationInfo,
-                MemoryMarshal.Cast<byte, int>(npdm.KernelCapabilityData).ToArray(),
+                MemoryMarshal.Cast<byte, uint>(npdm.KernelCapabilityData).ToArray(),
                 resourceLimit,
                 memoryRegion,
                 processContextFactory);
