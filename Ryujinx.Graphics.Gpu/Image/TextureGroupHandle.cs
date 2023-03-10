@@ -168,9 +168,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             // Overlaps can be accessed from the memory tracking signal handler, so access must be atomic.
 
-            int endOffset = Offset + Size;
-
-            if (offset < endOffset && Offset < offset + (int)view.Size)
+            if (OverlapsWith(offset, (int)view.Size))
             {
                 lock (Overlaps)
                 {
@@ -188,9 +186,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             // Overlaps can be accessed from the memory tracking signal handler, so access must be atomic.
 
-            int endOffset = Offset + Size;
-
-            if (offset < endOffset && Offset < offset + (int)view.Size)
+            if (OverlapsWith(offset, (int)view.Size))
             {
                 lock (Overlaps)
                 {
