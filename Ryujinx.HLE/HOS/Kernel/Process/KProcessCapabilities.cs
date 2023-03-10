@@ -8,8 +8,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 {
     class KProcessCapabilities
     {
-        public byte[] SvcAccessMask { get; private set; }
-        public byte[] IrqAccessMask { get; private set; }
+        public byte[] SvcAccessMask { get; }
+        public byte[] IrqAccessMask { get; }
 
         public ulong AllowedCpuCoresMask    { get; private set; }
         public ulong AllowedThreadPriosMask { get; private set; }
@@ -226,6 +226,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 case CapabilityType.MapRegion:
                 {
                     // TODO: Implement capabilities for MapRegion
+
                     break;
                 }
 
