@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using GUI        = Gtk.Builder.ObjectAttribute;
+using GUI         = Gtk.Builder.ObjectAttribute;
 using SpanHelpers = LibHac.Common.SpanHelpers;
 
 namespace Ryujinx.Ui.Windows
