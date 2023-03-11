@@ -360,11 +360,13 @@ namespace Ryujinx.Ui.Common.Configuration
             try
             {
                 configurationFileFormat = JsonHelper.DeserializeFromFile(path, ConfigurationFileFormatSettings.SerializerContext.ConfigurationFileFormat);
+                
                 return configurationFileFormat.Version != 0;
             }
             catch
             {
                 configurationFileFormat = null;
+                
                 return false;
             }
         }
