@@ -112,7 +112,7 @@ namespace Ryujinx.Modules
                 // Fetch latest build information
                 string  fetchedJson = await jsonClient.GetStringAsync(buildInfoURL);
                 var fetched = JsonHelper.Deserialize(fetchedJson, SerializerContext.GithubReleasesJsonResponse);
-                    _buildVer = fetched.Name;
+                _buildVer = fetched.Name;
 
                 foreach (var asset in fetched.Assets)
                 {
