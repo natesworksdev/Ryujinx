@@ -136,7 +136,7 @@ namespace Ryujinx.Graphics.Vulkan
                             _flushFence.Get();
                         }
 
-                        Common.Logging.Logger.Error?.PrintMsg(Common.Logging.LogClass.Gpu, $"Converted {Size} buffer {_currentType} to {resultType}");
+                        Logger.Debug?.PrintMsg(LogClass.Gpu, $"Converted {Size} buffer {_currentType} to {resultType}");
 
                         _currentType = resultType;
 
