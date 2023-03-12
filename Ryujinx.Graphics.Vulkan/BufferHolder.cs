@@ -1,4 +1,5 @@
-﻿using Ryujinx.Graphics.GAL;
+﻿using Ryujinx.Common.Logging;
+using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
@@ -46,6 +47,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private BufferAllocationType _baseType;
         private BufferAllocationType _currentType;
+        private bool _swapQueued;
 
         public BufferAllocationType DesiredType { get; private set; }
 
@@ -79,9 +81,9 @@ namespace Ryujinx.Graphics.Vulkan
             _flushLock = new ReaderWriterLock();
         }
 
-        private void TrySwapBacking()
+        public bool TryBackingSwap(ref CommandBufferScoped? cbs)
         {
-            if (DesiredType != _currentType)
+            if (_swapQueued && DesiredType != _currentType)
             {
                 // Only swap if the buffer is not used in any queued command buffer.
                 bool isRented = _buffer.HasRentedCommandBufferDependency(_gd.CommandBufferPool);
@@ -119,13 +121,18 @@ namespace Ryujinx.Graphics.Vulkan
                         }
                         else
                         {
-                            using var cbs = _gd.CommandBufferPool.Rent();
+                            if (cbs == null)
+                            {
+                                cbs = _gd.CommandBufferPool.Rent();
+                            }
 
-                            Copy(_gd, cbs, currentBuffer, _buffer, 0, 0, Size);
+                            CommandBufferScoped cbsV = cbs.Value;
+
+                            Copy(_gd, cbsV, currentBuffer, _buffer, 0, 0, Size);
 
                             // Need to wait for the data to reach the new buffer before data can be flushed.
 
-                            _flushFence = _gd.CommandBufferPool.GetFence(cbs.CommandBufferIndex);
+                            _flushFence = _gd.CommandBufferPool.GetFence(cbsV.CommandBufferIndex);
                             _flushFence.Get();
                         }
 
@@ -150,7 +157,21 @@ namespace Ryujinx.Graphics.Vulkan
 
                         _flushLock.ReleaseWriterLock();
                     }
+
+                    _swapQueued = false;
+
+                    return true;
                 }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                _swapQueued = false;
+
+                return true;
             }
         }
 
@@ -189,7 +210,12 @@ namespace Ryujinx.Graphics.Vulkan
                     _setCount = 0;
                 }
 
-                TrySwapBacking();
+                if (!_swapQueued && DesiredType != _currentType)
+                {
+                    _swapQueued = true;
+
+                    _gd.PipelineInternal.AddBackingSwap(this);
+                }
             }
         }
 
@@ -748,6 +774,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Dispose()
         {
+            _swapQueued = false;
+
             _gd.PipelineInternal?.FlushCommandsIfWeightExceeding(_buffer, (ulong)Size);
 
             _buffer.Dispose();
