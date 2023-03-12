@@ -27,7 +27,7 @@ namespace Ryujinx.HLE.Loaders.Processes
         public readonly bool   DiskCacheEnabled;
         public readonly bool   AllowCodeMemoryForJit;
 
-        public ProcessResult(MetaLoader                 metaLoader, 
+        public ProcessResult(MetaLoader                 metaLoader,
                              ApplicationControlProperty applicationControlProperties,
                              bool                       diskCacheEnabled,
                              bool                       allowCodeMemoryForJit,
@@ -45,12 +45,15 @@ namespace Ryujinx.HLE.Loaders.Processes
             MetaLoader                   = metaLoader;
             ApplicationControlProperties = applicationControlProperties;
 
-            ulong programId = metaLoader.GetProgramId();
+            if (metaLoader is not null)
+            {
+                ulong programId = metaLoader.GetProgramId();
 
-            Name          = MetaLoader.GetProgramName();
-            ProgramId     = programId;
-            ProgramIdText = $"{programId:x16}";
-            Is64Bit       = metaLoader.IsProgram64Bit();
+                Name          = metaLoader.GetProgramName();
+                ProgramId     = programId;
+                ProgramIdText = $"{programId:x16}";
+                Is64Bit       = metaLoader.IsProgram64Bit();
+            }
 
             DiskCacheEnabled      = diskCacheEnabled;
             AllowCodeMemoryForJit = allowCodeMemoryForJit;
