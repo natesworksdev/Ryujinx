@@ -29,7 +29,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly VulkanRenderer _gd;
         private readonly Device _device;
-
         private MemoryAllocation _allocation;
         private Auto<DisposableBuffer> _buffer;
         private Auto<MemoryAllocation> _allocationAuto;
