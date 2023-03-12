@@ -4,6 +4,7 @@ using Ryujinx.Memory;
 using Ryujinx.Memory.Range;
 using Ryujinx.Memory.Tracking;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -246,6 +247,19 @@ namespace Ryujinx.Cpu.AppleHv
         }
 
         /// <inheritdoc/>
+        public void Write(ulong va, ReadOnlySequence<byte> data)
+        {
+            if (data.Length == 0)
+            {
+                return;
+            }
+
+            SignalMemoryTracking(va, (ulong)data.Length, true);
+
+            WriteImpl(va, data);
+        }
+
+        /// <inheritdoc/>
         public void WriteUntracked(ulong va, ReadOnlySpan<byte> data)
         {
             if (data.Length == 0)
@@ -330,6 +344,51 @@ namespace Ryujinx.Cpu.AppleHv
                 }
             }
         }
+
+        private void WriteImpl(ulong va, ReadOnlySequence<byte> data)
+        {
+            try
+            {
+                AssertValidAddressAndSize(va, (ulong)data.Length);
+
+                if (IsContiguousAndMapped(va, (int)data.Length))
+                {
+                    data.CopyTo(_backingMemory.GetSpan(GetPhysicalAddressInternal(va), (int)data.Length));
+                }
+                else
+                {
+                    int offset = 0, size;
+
+                    if ((va & PageMask) != 0)
+                    {
+                        ulong pa = GetPhysicalAddressChecked(va);
+
+                        size = Math.Min((int)data.Length, PageSize - (int)(va & PageMask));
+
+                        data.Slice(0, size).CopyTo(_backingMemory.GetSpan(pa, size));
+
+                        offset += size;
+                    }
+
+                    for (; offset < data.Length; offset += size)
+                    {
+                        ulong pa = GetPhysicalAddressChecked(va + (ulong)offset);
+
+                        size = Math.Min((int)data.Length - offset, PageSize);
+
+                        data.Slice(offset, size).CopyTo(_backingMemory.GetSpan(pa, size));
+                    }
+                }
+            }
+            catch (InvalidMemoryRegionException)
+            {
+                if (_invalidAccessHandler == null || !_invalidAccessHandler(va))
+                {
+                    throw;
+                }
+            }
+        }
+
 
         /// <inheritdoc/>
         public ReadOnlySpan<byte> GetSpan(ulong va, int size, bool tracked = false)

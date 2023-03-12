@@ -1,6 +1,8 @@
 ﻿using Ryujinx.Memory.Range;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Ryujinx.Memory
 {
@@ -76,6 +78,14 @@ namespace Ryujinx.Memory
         /// <param name="data">Data to be written</param>
         /// <exception cref="InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
         void Write(ulong va, ReadOnlySpan<byte> data);
+
+        /// <summary>
+        /// Writes data to CPU mapped memory, with write tracking.
+        /// </summary>
+        /// <param name="va">Virtual address to write the data into</param>
+        /// <param name="data">Data to be written</param>
+        /// <exception cref="InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
+        void Write(ulong va, ReadOnlySequence<byte> data);
 
         /// <summary>
         /// Writes data to the application process, returning false if the data was not changed.
