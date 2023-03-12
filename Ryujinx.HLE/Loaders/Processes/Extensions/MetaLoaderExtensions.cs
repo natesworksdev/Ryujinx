@@ -33,7 +33,7 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
 
         public static void LoadDefault(this MetaLoader metaLoader)
         {
-            byte[] npdmBuffer = EmbeddedResources.Read("Ryujinx.HLE.Homebrew.npdm");
+            byte[] npdmBuffer = EmbeddedResources.Read("Ryujinx.HLE/Homebrew.npdm");
 
             metaLoader.Load(npdmBuffer).ThrowIfFailure();
         }
