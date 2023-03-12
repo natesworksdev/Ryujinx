@@ -37,12 +37,85 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             return Iterate(_suggestedThreadsPerPrioPerCore, _suggestedPrioritiesPerCore, core);
         }
 
-        public IEnumerable<KThread> ScheduledThreads(int core)
+        public KThread ScheduledThreadsElementAtOrDefault(int core, int index)
         {
-            return Iterate(_scheduledThreadsPerPrioPerCore, _scheduledPrioritiesPerCore, core);
+            return GetElementAtOrDefault(_scheduledThreadsPerPrioPerCore, _scheduledPrioritiesPerCore, core, index);
         }
 
-        private IEnumerable<KThread> Iterate(LinkedList<KThread>[][] listPerPrioPerCore, long[] prios, int core)
+        public KThread ScheduledThreadsFirstOrDefault(int core)
+        {
+            return GetElementAtOrDefault(_scheduledThreadsPerPrioPerCore, _scheduledPrioritiesPerCore, core, 0);
+        }
+
+        public KThread ScheduledThreadsFirstOrDefaultWithDynamicPriority(int core, int prio)
+        {
+            return GetFirstOrDefaultWithDynamicPriority(_scheduledThreadsPerPrioPerCore, _scheduledPrioritiesPerCore, core, prio);
+        }
+
+        public bool HasScheduledThreads(int core)
+        {
+            return ScheduledThreadsFirstOrDefault(core) != null;
+        }
+
+        private static KThread GetElementAtOrDefault(LinkedList<KThread>[][] listPerPrioPerCore, long[] prios, int core, int index)
+        {
+            long prioMask = prios[core];
+
+            int prio = BitOperations.TrailingZeroCount(prioMask);
+
+            prioMask &= ~(1L << prio);
+
+            int count = 0;
+            while (prio < KScheduler.PrioritiesCount)
+            {
+                LinkedList<KThread> list = listPerPrioPerCore[prio][core];
+
+                LinkedListNode<KThread> node = list.First;
+
+                if (node != null)
+                {
+                    if (count == index)
+                        return node.Value;
+                    else
+                        count++;
+                }
+
+                prio = BitOperations.TrailingZeroCount(prioMask);
+
+                prioMask &= ~(1L << prio);
+            }
+
+            return null;
+        }
+
+        private static KThread GetFirstOrDefaultWithDynamicPriority(LinkedList<KThread>[][] listPerPrioPerCore, long[] prios, int core, int dynamicPriority)
+        {
+            long prioMask = prios[core];
+
+            int prio = BitOperations.TrailingZeroCount(prioMask);
+
+            prioMask &= ~(1L << prio);
+
+            while (prio < KScheduler.PrioritiesCount)
+            {
+                LinkedList<KThread> list = listPerPrioPerCore[prio][core];
+
+                LinkedListNode<KThread> node = list.First;
+
+                if (node != null && node.Value.DynamicPriority == dynamicPriority)
+                {
+                    return node.Value;
+                }
+
+                prio = BitOperations.TrailingZeroCount(prioMask);
+
+                prioMask &= ~(1L << prio);
+            }
+
+            return null;
+        }
+
+        private static IEnumerable<KThread> Iterate(LinkedList<KThread>[][] listPerPrioPerCore, long[] prios, int core)
         {
             long prioMask = prios[core];
 
