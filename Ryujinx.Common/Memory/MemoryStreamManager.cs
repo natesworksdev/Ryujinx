@@ -1,6 +1,5 @@
 ﻿using Microsoft.IO;
 using System;
-using System.IO;
 
 namespace Ryujinx.Common.Memory
 {
@@ -8,20 +7,37 @@ namespace Ryujinx.Common.Memory
     {
         private static readonly RecyclableMemoryStreamManager _shared = new RecyclableMemoryStreamManager();
 
-        //public static RecyclableMemoryStreamManager Shared => _shared;
-
         /// <summary>
-        /// Exists until RecyclableMemoryStream version 3x is released, which has API improvements.
+        /// We don't expose the <c>RecyclableMemoryStreamManager</c> directly because version 2.x
+        /// returns them as <c>MemoryStream</c>. This Shared class is here to a) offer only the GetStream() versions we use
+        /// and b) return them as <c>RecyclableMemoryStream</c> so we don't have to cast.
         /// </summary>
         public static class Shared
         {
-
+            /// <summary>
+            /// Retrieve a new <c>MemoryStream</c> object with no tag and a default initial capacity.
+            /// </summary>
+            /// <returns>A <c>RecyclableMemoryStream</c></returns>
             public static RecyclableMemoryStream GetStream()
                 => new RecyclableMemoryStream(_shared);
 
+            /// <summary>
+            /// Retrieve a new <c>MemoryStream</c> object with the contents copied from the provided
+            /// buffer. The provided buffer is not wrapped or used after construction.
+            /// </summary>
+            /// <remarks>The new stream's position is set to the beginning of the stream when returned.</remarks>
+            /// <param name="buffer">The byte buffer to copy data from</param>
+            /// <returns>A <c>RecyclableMemoryStream</c></returns>
             public static RecyclableMemoryStream GetStream(byte[] buffer)
                 => GetStream(Guid.NewGuid(), null, buffer, 0, buffer.Length);
 
+            /// <summary>
+            /// Retrieve a new <c>MemoryStream</c> object with the given tag and with contents copied from the provided
+            /// buffer. The provided buffer is not wrapped or used after construction.
+            /// </summary>
+            /// <remarks>The new stream's position is set to the beginning of the stream when returned.</remarks>
+            /// <param name="buffer">The byte buffer to copy data from</param>
+            /// <returns>A <c>RecyclableMemoryStream</c></returns>
             public static RecyclableMemoryStream GetStream(ReadOnlySpan<byte> buffer)
                 => GetStream(Guid.NewGuid(), null, buffer);
 
@@ -30,10 +46,10 @@ namespace Ryujinx.Common.Memory
             /// buffer. The provided buffer is not wrapped or used after construction.
             /// </summary>
             /// <remarks>The new stream's position is set to the beginning of the stream when returned.</remarks>
-            /// <param name="id">A unique identifier which can be used to trace usages of the stream.</param>
-            /// <param name="tag">A tag which can be used to track the source of the stream.</param>
-            /// <param name="buffer">The byte buffer to copy data from.</param>
-            /// <returns>A <c>RecyclableMemoryStream</c>.</returns>
+            /// <param name="id">A unique identifier which can be used to trace usages of the stream</param>
+            /// <param name="tag">A tag which can be used to track the source of the stream</param>
+            /// <param name="buffer">The byte buffer to copy data from</param>
+            /// <returns>A <c>RecyclableMemoryStream</c></returns>
             public static RecyclableMemoryStream GetStream(Guid id, string tag, ReadOnlySpan<byte> buffer)
             {
                 RecyclableMemoryStream stream = null;
@@ -55,13 +71,13 @@ namespace Ryujinx.Common.Memory
             /// Retrieve a new <c>RecyclableMemoryStream</c> object with the given tag and with contents copied from the provided
             /// buffer. The provided buffer is not wrapped or used after construction.
             /// </summary>
-            /// <remarks>The new stream's position is set to the beginning of the stream when returned.</remarks>
-            /// <param name="id">A unique identifier which can be used to trace usages of the stream.</param>
-            /// <param name="tag">A tag which can be used to track the source of the stream.</param>
-            /// <param name="buffer">The byte buffer to copy data from.</param>
-            /// <param name="offset">The offset from the start of the buffer to copy from.</param>
-            /// <param name="count">The number of bytes to copy from the buffer.</param>
-            /// <returns>A <c>RecyclableMemoryStream</c>.</returns>
+            /// <remarks>The new stream's position is set to the beginning of the stream when returned</remarks>
+            /// <param name="id">A unique identifier which can be used to trace usages of the stream</param>
+            /// <param name="tag">A tag which can be used to track the source of the stream</param>
+            /// <param name="buffer">The byte buffer to copy data from</param>
+            /// <param name="offset">The offset from the start of the buffer to copy from</param>
+            /// <param name="count">The number of bytes to copy from the buffer</param>
+            /// <returns>A <c>RecyclableMemoryStream</c></returns>
             public static RecyclableMemoryStream GetStream(Guid id, string tag, byte[] buffer, int offset, int count)
             {
                 RecyclableMemoryStream stream = null;
@@ -78,7 +94,6 @@ namespace Ryujinx.Common.Memory
                     throw;
                 }
             }
-
         }
     }
 }
