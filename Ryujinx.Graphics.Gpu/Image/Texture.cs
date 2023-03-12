@@ -1022,7 +1022,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// This method should be used to retrieve data that was modified by the host GPU.
         /// This is not cheap, avoid doing that unless strictly needed.
         /// </remarks>
-        /// <param name="output">An output span to place the texture data into. If empty, one is generated</param>
+        /// <param name="output">An output span to place the texture data into</param>
         /// <param name="blacklist">True if the texture should be blacklisted, false otherwise</param>
         /// <param name="texture">The specific host texture to flush. Defaults to this texture</param>
         private void GetTextureDataFromGpu(Span<byte> output, bool blacklist, ITexture texture = null)

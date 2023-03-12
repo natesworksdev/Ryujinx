@@ -102,7 +102,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             for (int i = 0; i < properties.MemoryHeapCount; i++)
             {
-                if (!properties.MemoryHeaps[i].Flags.HasFlag(MemoryHeapFlags.MemoryHeapDeviceLocalBit))
+                if (!properties.MemoryHeaps[i].Flags.HasFlag(MemoryHeapFlags.DeviceLocalBit))
                 {
                     return false;
                 }

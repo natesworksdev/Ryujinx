@@ -385,13 +385,9 @@ namespace Ryujinx.Graphics.Vulkan
                     }
 
                     _flushFence = null;
+                }
 
-                    _flushLock.DowngradeFromWriterLock(ref cookie);
-                }
-                else
-                {
-                    _flushLock.DowngradeFromWriterLock(ref cookie);
-                }
+                _flushLock.DowngradeFromWriterLock(ref cookie);
             }
         }
 
@@ -414,7 +410,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 _flushLock.ReleaseReaderLock();
 
-                return new PinnedSpan<byte>(result, () => { _buffer.DecrementReferenceCount(); });
+                return new PinnedSpan<byte>(result, _buffer.DecrementReferenceCount);
             }
             else
             {

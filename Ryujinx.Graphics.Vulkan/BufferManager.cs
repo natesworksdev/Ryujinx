@@ -4,6 +4,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using VkFormat = Silk.NET.Vulkan.Format;
+using VkBuffer = Silk.NET.Vulkan.Buffer;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -27,11 +28,6 @@ namespace Ryujinx.Graphics.Vulkan
             MemoryPropertyFlags.DeviceLocalBit |
             MemoryPropertyFlags.HostVisibleBit |
             MemoryPropertyFlags.HostCoherentBit;
-
-        private const MemoryPropertyFlags FlushableDeviceLocalBufferMemoryFlags =
-            MemoryPropertyFlags.HostVisibleBit |
-            MemoryPropertyFlags.HostCoherentBit |
-            MemoryPropertyFlags.DeviceLocalBit;
 
         private const BufferUsageFlags DefaultBufferUsageFlags =
             BufferUsageFlags.TransferSrcBit |
@@ -79,13 +75,12 @@ namespace Ryujinx.Graphics.Vulkan
             return Unsafe.As<ulong, BufferHandle>(ref handle64);
         }
 
-        public unsafe (Silk.NET.Vulkan.Buffer buffer, MemoryAllocation allocation, BufferAllocationType resultType) CreateBacking(
+        public unsafe (VkBuffer buffer, MemoryAllocation allocation, BufferAllocationType resultType) CreateBacking(
             VulkanRenderer gd,
             int size,
             BufferAllocationType type,
             bool forConditionalRendering = false,
-            BufferAllocationType fallbackType = BufferAllocationType.Auto
-            )
+            BufferAllocationType fallbackType = BufferAllocationType.Auto)
         {
             var usage = DefaultBufferUsageFlags;
 
@@ -150,7 +145,12 @@ namespace Ryujinx.Graphics.Vulkan
             return (buffer, allocation, type);
         }
 
-        public unsafe BufferHolder Create(VulkanRenderer gd, int size, bool forConditionalRendering = false, BufferAllocationType baseType = BufferAllocationType.HostMapped, BufferHandle storageHint = default)
+        public unsafe BufferHolder Create(
+            VulkanRenderer gd,
+            int size,
+            bool forConditionalRendering = false,
+            BufferAllocationType baseType = BufferAllocationType.HostMapped,
+            BufferHandle storageHint = default)
         {
             BufferAllocationType type = baseType;
             BufferHolder storageHintHolder = null;
@@ -176,7 +176,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            (Silk.NET.Vulkan.Buffer buffer, MemoryAllocation allocation, BufferAllocationType resultType) =
+            (VkBuffer buffer, MemoryAllocation allocation, BufferAllocationType resultType) =
                 CreateBacking(gd, size, type, forConditionalRendering);
 
             if (buffer.Handle != 0)
