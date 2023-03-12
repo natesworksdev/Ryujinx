@@ -6,7 +6,6 @@ namespace Ryujinx.Common
 {
     public static class BinaryWriterExtensions
     {
-
         public unsafe static void WriteStruct<T>(this BinaryWriter writer, T value)
             where T : unmanaged
         {

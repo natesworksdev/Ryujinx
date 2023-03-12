@@ -389,7 +389,6 @@ namespace Ryujinx.Cpu.AppleHv
             }
         }
 
-
         /// <inheritdoc/>
         public ReadOnlySpan<byte> GetSpan(ulong va, int size, bool tracked = false)
         {

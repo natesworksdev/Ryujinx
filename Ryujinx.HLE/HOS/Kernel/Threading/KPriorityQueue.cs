@@ -75,9 +75,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 if (node != null)
                 {
                     if (count == index)
+                    {
                         return node.Value;
+                    }
                     else
+                    {
                         count++;
+                    }
                 }
 
                 prio = BitOperations.TrailingZeroCount(prioMask);
