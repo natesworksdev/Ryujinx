@@ -105,7 +105,7 @@ namespace Ryujinx.Common
             if (count <= 16)
             {
                 Span<byte> span = stackalloc byte[count];
-                @this.Write(span);
+                span.Fill(value);
                 stream.Write(span);
             }
             else
