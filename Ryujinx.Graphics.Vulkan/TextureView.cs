@@ -539,11 +539,11 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 _gd.FlushAllCommands();
 
-                return new PinnedSpan<byte>(GetData(_gd.CommandBufferPool, resources.GetFlushBuffer()));
+                return PinnedSpan<byte>.UnsafeFromSpan(GetData(_gd.CommandBufferPool, resources.GetFlushBuffer()));
             }
             else
             {
-                return new PinnedSpan<byte>(GetData(resources.GetPool(), resources.GetFlushBuffer()));
+                return PinnedSpan<byte>.UnsafeFromSpan(GetData(resources.GetPool(), resources.GetFlushBuffer()));
             }
         }
 
@@ -555,11 +555,11 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 _gd.FlushAllCommands();
 
-                return new PinnedSpan<byte>(GetData(_gd.CommandBufferPool, resources.GetFlushBuffer(), layer, level));
+                return PinnedSpan<byte>.UnsafeFromSpan(GetData(_gd.CommandBufferPool, resources.GetFlushBuffer(), layer, level));
             }
             else
             {
-                return new PinnedSpan<byte>(GetData(resources.GetPool(), resources.GetFlushBuffer(), layer, level));
+                return PinnedSpan<byte>.UnsafeFromSpan(GetData(resources.GetPool(), resources.GetFlushBuffer(), layer, level));
             }
         }
 

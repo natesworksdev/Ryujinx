@@ -62,7 +62,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (HwCapabilities.UsePersistentBufferForFlush)
             {
-                return new PinnedSpan<byte>(renderer.PersistentBuffers.Default.GetBufferData(buffer, offset, size));
+                return PinnedSpan<byte>.UnsafeFromSpan(renderer.PersistentBuffers.Default.GetBufferData(buffer, offset, size));
             }
             else
             {
@@ -72,7 +72,7 @@ namespace Ryujinx.Graphics.OpenGL
 
                 GL.GetBufferSubData(BufferTarget.CopyReadBuffer, (IntPtr)offset, size, target);
 
-                return new PinnedSpan<byte>(new ReadOnlySpan<byte>(target.ToPointer(), size));
+                return new PinnedSpan<byte>(target.ToPointer(), size);
             }
         }
 

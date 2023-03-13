@@ -410,7 +410,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 _flushLock.ReleaseReaderLock();
 
-                return new PinnedSpan<byte>(result, _buffer.DecrementReferenceCount);
+                return PinnedSpan<byte>.UnsafeFromSpan(result, _buffer.DecrementReferenceCount);
             }
             else
             {
@@ -430,7 +430,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _flushLock.ReleaseReaderLock();
 
                 // Flush buffer is pinned until the next GetBufferData on the thread, which is fine for current uses.
-                return new PinnedSpan<byte>(result);
+                return PinnedSpan<byte>.UnsafeFromSpan(result);
             }
         }
 
