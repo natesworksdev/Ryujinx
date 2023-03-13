@@ -359,11 +359,11 @@ namespace Ryujinx.HLE.HOS
             }
         }
 
-        public void LoadKip(string kipPath)
+        public bool LoadKip(string kipPath)
         {
             using var kipFile = new SharedRef<IStorage>(new LocalStorage(kipPath, FileAccess.Read));
 
-            ProcessLoaderHelper.LoadKip(KernelContext, new KipExecutable(in kipFile));
+            return ProcessLoaderHelper.LoadKip(KernelContext, new KipExecutable(in kipFile));
         }
 
         public void ChangeDockedModeState(bool newState)
