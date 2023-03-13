@@ -7,17 +7,19 @@ namespace Ryujinx.Common
     public static class StreamExtensions
     {
         /// <summary>
-        /// Writes a Span of int to this stream.
+        /// Writes a <cref="ReadOnlySpan<int>" /> to this stream.
         ///
-        /// This default implementation calls the Write(Object, int, int)
-        /// method to write the byte array.
+        /// This default implementation converts each buffer value to a stack-allocated
+        /// byte array, then writes it to the Stream using <cref="System.Stream.Write(byte[])" />.
         /// </summary>
         /// <param name="stream">The stream to be written to</param>
         /// <param name="buffer">The buffer of values to be written</param>
         public static void Write(this Stream stream, ReadOnlySpan<int> buffer)
         {
             if (buffer.Length == 0)
+            {
                 return;
+            }
 
             Span<byte> byteBuffer = stackalloc byte[sizeof(int)];
 
@@ -100,21 +102,27 @@ namespace Ryujinx.Common
         public static void WriteByte(this Stream stream, byte value, int count)
         {
             if (count <= 0)
+            {
                 return;
-
-            if (count <= 16)
-            {
-                Span<byte> span = stackalloc byte[count];
-                span.Fill(value);
-                stream.Write(span);
             }
-            else
+
+            const int BlockSize = 16;
+
+            int blockCount = count / BlockSize;
+            if (blockCount > 0)
             {
-                // TODO make this better - maybe stackalloc a small Span<byte> and write it in a loop, then handle remainder
-                for (int x = 0; x < count; x++)
+                Span<byte> span = stackalloc byte[BlockSize];
+                span.Fill(value);
+                for (int x = 0; x < blockCount; x++)
                 {
-                    stream.WriteByte(value);
+                    stream.Write(span);
                 }
+            }
+
+            int nonBlockBytes = count % BlockSize;
+            for (int x = 0; x < nonBlockBytes; x++)
+            {
+                stream.WriteByte(value);
             }
         }
     }
