@@ -68,6 +68,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         private int _referenceCount = 1;
 
+        private ulong _dirtyStart = ulong.MaxValue;
+        private ulong _dirtyEnd = ulong.MaxValue;
+
         /// <summary>
         /// Creates a new instance of the buffer.
         /// </summary>
@@ -221,6 +224,18 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     }
 
                     _sequenceNumber = _context.SequenceNumber;
+                }
+            }
+
+            if (_dirtyStart != ulong.MaxValue)
+            {
+                ulong end = address + size;
+
+                if (end > _dirtyStart && address < _dirtyEnd)
+                {
+                    LoadRegion(_dirtyStart, _dirtyEnd - _dirtyStart);
+
+                    _dirtyStart = ulong.MaxValue;
                 }
             }
         }
@@ -384,18 +399,35 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="mAddress">Start address of the modified region</param>
         /// <param name="mSize">Size of the region to force dirty</param>
-        public void ForceDirty(ulong mAddress, ulong mSize)
+        /// <param name="precise">Whether the dirty range should retain its precision or be page granular</param>
+        public void ForceDirty(ulong mAddress, ulong mSize, bool precise = false)
         {
             _modifiedRanges?.Clear(mAddress, mSize);
 
-            if (_useGranular)
+            if (precise)
             {
-                _memoryTrackingGranular.ForceDirty(mAddress, mSize);
+                if (_dirtyStart == ulong.MaxValue)
+                {
+                    _dirtyStart = mAddress;
+                    _dirtyEnd = mAddress + mSize;
+                }
+                else
+                {
+                    _dirtyStart = Math.Min(_dirtyStart, mAddress);
+                    _dirtyEnd = Math.Max(_dirtyEnd, mAddress + mSize);
+                }
             }
             else
             {
-                _memoryTracking.ForceDirty();
-                _sequenceNumber--;
+                if (_useGranular)
+                {
+                    _memoryTrackingGranular.ForceDirty(mAddress, mSize);
+                }
+                else
+                {
+                    _memoryTracking.ForceDirty();
+                    _sequenceNumber--;
+                }
             }
         }
 
