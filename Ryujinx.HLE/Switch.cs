@@ -65,29 +65,29 @@ namespace Ryujinx.HLE
             System.GlobalAccessLogMode              = Configuration.FsGlobalAccessLogMode;
         }
 
-        public void LoadCart(string exeFsDir, string romFsFile = null)
+        public bool LoadCart(string exeFsDir, string romFsFile = null)
         {
-            Processes.LoadUnpackedNca(exeFsDir, romFsFile);
+            return Processes.LoadUnpackedNca(exeFsDir, romFsFile);
         }
 
-        public void LoadXci(string xciFile)
+        public bool LoadXci(string xciFile)
         {
-            Processes.LoadXci(xciFile);
+            return Processes.LoadXci(xciFile);
         }
 
-        public void LoadNca(string ncaFile)
+        public bool LoadNca(string ncaFile)
         {
-            Processes.LoadNca(ncaFile);
+            return Processes.LoadNca(ncaFile);
         }
 
-        public void LoadNsp(string nspFile)
+        public bool LoadNsp(string nspFile)
         {
-            Processes.LoadNsp(nspFile);
+            return Processes.LoadNsp(nspFile);
         }
 
-        public void LoadProgram(string fileName)
+        public bool LoadProgram(string fileName)
         {
-            Processes.LoadNxo(fileName);
+            return Processes.LoadNxo(fileName);
         }
 
         public bool WaitFifo()

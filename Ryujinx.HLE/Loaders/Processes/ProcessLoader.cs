@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.Loaders.Processes
             _processesByPid = new ConcurrentDictionary<ulong, ProcessResult>();
         }
 
-        public void LoadXci(string path)
+        public bool LoadXci(string path)
         {
             FileStream stream = new(path, FileMode.Open, FileAccess.Read);
             Xci        xci    = new(_device.Configuration.VirtualFileSystem.KeySet, stream.AsStorage());
@@ -40,48 +40,57 @@ namespace Ryujinx.HLE.Loaders.Processes
             {
                 Logger.Error?.Print(LogClass.Loader, "Unable to load XCI: Could not find XCI Secure partition");
 
-                return;
+                return false;
             }
 
             ProcessResult processResult = xci.OpenPartition(XciPartitionType.Secure).Load(_device, path);
-
-            if (_processesByPid.TryAdd(processResult.ProcessId, processResult))
-            {
-                if (processResult.Start(_device))
-                {
-                    _latestPid = processResult.ProcessId;
-                }
-            }
-        }
-
-        public void LoadNsp(string path)
-        {
-            FileStream          file                = new(path, FileMode.Open, FileAccess.Read);
-            PartitionFileSystem partitionFileSystem = new(file.AsStorage());
-            ProcessResult       processResult       = partitionFileSystem.Load(_device, path);
 
             if (processResult.ProcessId != 0 && _processesByPid.TryAdd(processResult.ProcessId, processResult))
             {
                 if (processResult.Start(_device))
                 {
                     _latestPid = processResult.ProcessId;
-                }
 
-                return;
+                    return true;
+                }
             }
 
-            // This is not a normal NSP, it's actually a ExeFS as a NSP
-            partitionFileSystem.Load(_device, new BlitStruct<ApplicationControlProperty>(1), partitionFileSystem.GetNpdm(), true);
+            return false;
         }
 
-        public void LoadNca(string path)
+        public bool LoadNsp(string path)
+        {
+            FileStream          file                = new(path, FileMode.Open, FileAccess.Read);
+            PartitionFileSystem partitionFileSystem = new(file.AsStorage());
+            ProcessResult       processResult       = partitionFileSystem.Load(_device, path);
+
+            if (processResult.ProcessId == 0)
+            {
+                // This is not a normal NSP, it's actually a ExeFS as a NSP
+                processResult = partitionFileSystem.Load(_device, new BlitStruct<ApplicationControlProperty>(1), partitionFileSystem.GetNpdm(), true);
+            }
+
+            if (processResult.ProcessId != 0 && _processesByPid.TryAdd(processResult.ProcessId, processResult))
+            {
+                if (processResult.Start(_device))
+                {
+                    _latestPid = processResult.ProcessId;
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool LoadNca(string path)
         {
             FileStream file = new(path, FileMode.Open, FileAccess.Read);
             Nca        nca  = new(_device.Configuration.VirtualFileSystem.KeySet, file.AsStorage(false));
 
             ProcessResult processResult = nca.Load(_device, null, null);
 
-            if (_processesByPid.TryAdd(processResult.ProcessId, processResult))
+            if (processResult.ProcessId != 0 && _processesByPid.TryAdd(processResult.ProcessId, processResult))
             {
                 if (processResult.Start(_device))
                 {
@@ -90,24 +99,32 @@ namespace Ryujinx.HLE.Loaders.Processes
                     {
                         _latestPid = processResult.ProcessId;
                     }
+
+                    return true;
                 }
             }
+
+            return false;
         }
 
-        public void LoadUnpackedNca(string exeFsDirPath, string romFsPath = null)
+        public bool LoadUnpackedNca(string exeFsDirPath, string romFsPath = null)
         {
             ProcessResult processResult = new LocalFileSystem(exeFsDirPath).Load(_device, romFsPath);
 
-            if (_processesByPid.TryAdd(processResult.ProcessId, processResult))
+            if (processResult.ProcessId != 0 && _processesByPid.TryAdd(processResult.ProcessId, processResult))
             {
                 if (processResult.Start(_device))
                 {
                     _latestPid = processResult.ProcessId;
+
+                    return true;
                 }
             }
+
+            return false;
         }
 
-        public void LoadNxo(string path)
+        public bool LoadNxo(string path)
         {
             var         nacpData    = new BlitStruct<ApplicationControlProperty>(1);
             IFileSystem dummyExeFs  = null;
@@ -175,7 +192,7 @@ namespace Ryujinx.HLE.Loaders.Processes
             Graphics.Gpu.GraphicsConfig.TitleId = null;
             _device.Gpu.HostInitalized.Set();
 
-            ProcessResult processResult = ProcessLoaderHelper.LoadNsos(_device, 
+            ProcessResult processResult = ProcessLoaderHelper.LoadNsos(_device,
                                                                        _device.System.KernelContext,
                                                                        dummyExeFs.GetNpdm(),
                                                                        nacpData.Value,
@@ -186,20 +203,28 @@ namespace Ryujinx.HLE.Loaders.Processes
                                                                        null,
                                                                        executable);
 
-            // Load RomFS.
-            if (romfsStream != null)
+            // Make sure the process id is valid.
+            if (processResult.ProcessId != 0)
             {
-                _device.Configuration.VirtualFileSystem.SetRomFs(processResult.ProcessId, romfsStream);
-            }
-
-            // Start process.
-            if (_processesByPid.TryAdd(processResult.ProcessId, processResult))
-            {
-                if (processResult.Start(_device))
+                // Load RomFS.
+                if (romfsStream != null)
                 {
-                    _latestPid = processResult.ProcessId;
+                    _device.Configuration.VirtualFileSystem.SetRomFs(processResult.ProcessId, romfsStream);
+                }
+
+                // Start process.
+                if (_processesByPid.TryAdd(processResult.ProcessId, processResult))
+                {
+                    if (processResult.Start(_device))
+                    {
+                        _latestPid = processResult.ProcessId;
+
+                        return true;
+                    }
                 }
             }
+
+            return false;
         }
     }
 }
