@@ -543,7 +543,12 @@ namespace Ryujinx.Ava
             {
                 Logger.Info?.Print(LogClass.Application, "Loading as Firmware Title (NCA).");
 
-                Device.LoadNca(ApplicationPath);
+                if (!Device.LoadNca(ApplicationPath))
+                {
+                    Device.Dispose();
+
+                    return false;
+                }
             }
             else if (Directory.Exists(ApplicationPath))
             {
@@ -558,13 +563,23 @@ namespace Ryujinx.Ava
                 {
                     Logger.Info?.Print(LogClass.Application, "Loading as cart with RomFS.");
 
-                    Device.LoadCart(ApplicationPath, romFsFiles[0]);
+                    if (!Device.LoadCart(ApplicationPath, romFsFiles[0]))
+                    {
+                        Device.Dispose();
+
+                        return false;
+                    }
                 }
                 else
                 {
                     Logger.Info?.Print(LogClass.Application, "Loading as cart WITHOUT RomFS.");
 
-                    Device.LoadCart(ApplicationPath);
+                    if (!Device.LoadCart(ApplicationPath))
+                    {
+                        Device.Dispose();
+
+                        return false;
+                    }
                 }
             }
             else if (File.Exists(ApplicationPath))
@@ -575,7 +590,12 @@ namespace Ryujinx.Ava
                         {
                             Logger.Info?.Print(LogClass.Application, "Loading as XCI.");
 
-                            Device.LoadXci(ApplicationPath);
+                            if (!Device.LoadXci(ApplicationPath))
+                            {
+                                Device.Dispose();
+
+                                return false;
+                            }
 
                             break;
                         }
@@ -583,7 +603,12 @@ namespace Ryujinx.Ava
                         {
                             Logger.Info?.Print(LogClass.Application, "Loading as NCA.");
 
-                            Device.LoadNca(ApplicationPath);
+                            if (!Device.LoadNca(ApplicationPath))
+                            {
+                                Device.Dispose();
+
+                                return false;
+                            }
 
                             break;
                         }
@@ -592,7 +617,12 @@ namespace Ryujinx.Ava
                         {
                             Logger.Info?.Print(LogClass.Application, "Loading as NSP.");
 
-                            Device.LoadNsp(ApplicationPath);
+                            if (!Device.LoadNsp(ApplicationPath))
+                            {
+                                Device.Dispose();
+
+                                return false;
+                            }
 
                             break;
                         }
@@ -602,13 +632,18 @@ namespace Ryujinx.Ava
 
                             try
                             {
-                                Device.LoadProgram(ApplicationPath);
+                                if (!Device.LoadProgram(ApplicationPath))
+                                {
+                                    Device.Dispose();
+
+                                    return false;
+                                }
                             }
                             catch (ArgumentOutOfRangeException)
                             {
                                 Logger.Error?.Print(LogClass.Application, "The specified file is not supported by Ryujinx.");
 
-                                Dispose();
+                                Device.Dispose();
 
                                 return false;
                             }
@@ -621,7 +656,7 @@ namespace Ryujinx.Ava
             {
                 Logger.Warning?.Print(LogClass.Application, "Please specify a valid XCI/NCA/NSP/PFS0/NRO file.");
 
-                Dispose();
+                Device.Dispose();
 
                 return false;
             }

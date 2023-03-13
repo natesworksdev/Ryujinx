@@ -722,6 +722,14 @@ namespace Ryujinx.Ui
                     isFirmwareTitle = true;
                 }
 
+                void ErrorDispose()
+                {
+                    _emulationContext.Dispose();
+                    RendererWidget.Dispose();
+
+                    SwitchToGameTable();
+                }
+
                 if (!SetupValidator.CanStartApplication(_contentManager, path, out UserError userError))
                 {
                     if (SetupValidator.CanFixStartApplication(_contentManager, path, userError, out firmwareVersion))
@@ -736,8 +744,7 @@ namespace Ryujinx.Ui
                             {
                                 UserErrorDialog.CreateUserErrorDialog(userError);
 
-                                _emulationContext.Dispose();
-                                SwitchToGameTable();
+                                ErrorDispose();
 
                                 return;
                             }
@@ -747,8 +754,7 @@ namespace Ryujinx.Ui
                         {
                             UserErrorDialog.CreateUserErrorDialog(userError);
 
-                            _emulationContext.Dispose();
-                            SwitchToGameTable();
+                            ErrorDispose();
 
                             return;
                         }
@@ -769,8 +775,7 @@ namespace Ryujinx.Ui
                     {
                         UserErrorDialog.CreateUserErrorDialog(userError);
 
-                        _emulationContext.Dispose();
-                        SwitchToGameTable();
+                        ErrorDispose();
 
                         return;
                     }
@@ -782,7 +787,12 @@ namespace Ryujinx.Ui
                 {
                     Logger.Info?.Print(LogClass.Application, "Loading as Firmware Title (NCA).");
 
-                    _emulationContext.LoadNca(path);
+                    if (!_emulationContext.LoadNca(path))
+                    {
+                        ErrorDispose();
+
+                        return;
+                    }
                 }
                 else if (Directory.Exists(path))
                 {
@@ -796,12 +806,24 @@ namespace Ryujinx.Ui
                     if (romFsFiles.Length > 0)
                     {
                         Logger.Info?.Print(LogClass.Application, "Loading as cart with RomFS.");
-                        _emulationContext.LoadCart(path, romFsFiles[0]);
+
+                        if (!_emulationContext.LoadCart(path, romFsFiles[0]))
+                        {
+                            ErrorDispose();
+
+                            return;
+                        }
                     }
                     else
                     {
                         Logger.Info?.Print(LogClass.Application, "Loading as cart WITHOUT RomFS.");
-                        _emulationContext.LoadCart(path);
+
+                        if (!_emulationContext.LoadCart(path))
+                        {
+                            ErrorDispose();
+
+                            return;
+                        }
                     }
                 }
                 else if (File.Exists(path))
@@ -810,26 +832,53 @@ namespace Ryujinx.Ui
                     {
                         case ".xci":
                             Logger.Info?.Print(LogClass.Application, "Loading as XCI.");
-                            _emulationContext.LoadXci(path);
+
+                            if (!_emulationContext.LoadXci(path))
+                            {
+                                ErrorDispose();
+
+                                return;
+                            }
                             break;
                         case ".nca":
                             Logger.Info?.Print(LogClass.Application, "Loading as NCA.");
-                            _emulationContext.LoadNca(path);
+
+                            if (!_emulationContext.LoadNca(path))
+                            {
+                                ErrorDispose();
+
+                                return;
+                            }
                             break;
                         case ".nsp":
                         case ".pfs0":
                             Logger.Info?.Print(LogClass.Application, "Loading as NSP.");
-                            _emulationContext.LoadNsp(path);
+
+                            if (!_emulationContext.LoadNsp(path))
+                            {
+                                ErrorDispose();
+
+                                return;
+                            }
                             break;
                         default:
                             Logger.Info?.Print(LogClass.Application, "Loading as Homebrew.");
                             try
                             {
-                                _emulationContext.LoadProgram(path);
+                                if (!_emulationContext.LoadProgram(path))
+                                {
+                                    ErrorDispose();
+
+                                    return;
+                                }
                             }
                             catch (ArgumentOutOfRangeException)
                             {
                                 Logger.Error?.Print(LogClass.Application, "The specified file is not supported by Ryujinx.");
+
+                                ErrorDispose();
+
+                                return;
                             }
                             break;
                     }
@@ -838,8 +887,7 @@ namespace Ryujinx.Ui
                 {
                     Logger.Warning?.Print(LogClass.Application, "Please specify a valid XCI/NCA/NSP/PFS0/NRO file.");
 
-                    _emulationContext.Dispose();
-                    RendererWidget.Dispose();
+                    ErrorDispose();
 
                     return;
                 }
