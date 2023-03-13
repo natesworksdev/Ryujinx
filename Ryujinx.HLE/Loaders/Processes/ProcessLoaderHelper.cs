@@ -228,8 +228,12 @@ namespace Ryujinx.HLE.Loaders.Processes
         {
             context.Device.System.ServiceTable.WaitServicesReady();
 
-            if (metaLoader.GetNpdm(out var npdm).IsFailure())
+            LibHac.Result resultCode = metaLoader.GetNpdm(out var npdm);
+
+            if (resultCode.IsFailure())
             {
+                Logger.Error?.Print(LogClass.Loader, $"Process initialization failed getting npdm. Result Code {resultCode.ToStringWithName()}");
+
                 return ProcessResult.Failed;
             }
 
