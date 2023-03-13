@@ -43,7 +43,14 @@ namespace Ryujinx.HLE.Loaders.Processes
                 return false;
             }
 
-            ProcessResult processResult = xci.OpenPartition(XciPartitionType.Secure).Load(_device, path);
+            (bool success ,ProcessResult processResult) = xci.OpenPartition(XciPartitionType.Secure).TryLoad(_device, path, out string errorMessage);
+
+            if (!success)
+            {
+                Logger.Error?.Print(LogClass.Loader, errorMessage, "TryLoad");
+
+                return false;
+            }
 
             if (processResult.ProcessId != 0 && _processesByPid.TryAdd(processResult.ProcessId, processResult))
             {
@@ -62,7 +69,8 @@ namespace Ryujinx.HLE.Loaders.Processes
         {
             FileStream          file                = new(path, FileMode.Open, FileAccess.Read);
             PartitionFileSystem partitionFileSystem = new(file.AsStorage());
-            ProcessResult       processResult       = partitionFileSystem.Load(_device, path);
+
+            (bool success, ProcessResult processResult) = partitionFileSystem.TryLoad(_device, path, out string errorMessage);
 
             if (processResult.ProcessId == 0)
             {
@@ -78,6 +86,11 @@ namespace Ryujinx.HLE.Loaders.Processes
 
                     return true;
                 }
+            }
+
+            if (!success)
+            {
+                Logger.Error?.Print(LogClass.Loader, errorMessage, "TryLoad");
             }
 
             return false;

@@ -10,6 +10,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 
@@ -17,9 +18,11 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
 {
     public static class PartitionFileSystemExtensions
     {
-        internal static ProcessResult Load(this PartitionFileSystem partitionFileSystem, Switch device, string path)
+        internal static (bool, ProcessResult) TryLoad(this PartitionFileSystem partitionFileSystem, Switch device, string path, [NotNullWhen(false)] out string errorMessage)
         {
-            // Load needed NCAs.
+            errorMessage = null;
+
+            // Load required NCAs.
             Nca mainNca    = null;
             Nca patchNca   = null;
             Nca controlNca = null;
@@ -56,18 +59,18 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
             }
             catch (Exception ex)
             {
-                Logger.Error?.Print(LogClass.Loader, $"Unable to load: {ex.Message}");
+                errorMessage = $"Unable to load: {ex.Message}";
 
-                return ProcessResult.Failed;
+                return (false, ProcessResult.Failed);
             }
 
             if (mainNca != null)
             {
                 if (mainNca.Header.ContentType != NcaContentType.Program)
                 {
-                    Logger.Error?.Print(LogClass.Loader, "Selected NCA file is not a \"Program\" NCA");
+                    errorMessage = "Selected NCA file is not a \"Program\" NCA";
 
-                    return ProcessResult.Failed;
+                    return (false, ProcessResult.Failed);
                 }
 
                 // Load Update NCAs.
@@ -129,7 +132,7 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
                 }
 
                 // Load contained DownloadableContents.
-                // TODO: If we want to support multiprocesses in future, we shouldn't clear AddOnContent data here.
+                // TODO: If we want to support multi-processes in future, we shouldn't clear AddOnContent data here.
                 device.Configuration.ContentManager.ClearAocData();
                 device.Configuration.ContentManager.AddAocData(partitionFileSystem, path, mainNca.Header.TitleId, device.Configuration.FsIntegrityCheckLevel);
 
@@ -155,12 +158,12 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
                     }
                 }
 
-                return mainNca.Load(device, patchNca, controlNca);
+                return (true, mainNca.Load(device, patchNca, controlNca));
             }
 
-            Logger.Error?.Print(LogClass.Loader, "Unable to load: Could not find Main NCA");
+            errorMessage = "Unable to load: Could not find Main NCA";
 
-            return ProcessResult.Failed;
+            return (false, ProcessResult.Failed);
         }
 
         public static Nca GetNca(this IFileSystem fileSystem, Switch device, string path)
