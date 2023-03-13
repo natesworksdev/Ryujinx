@@ -88,7 +88,7 @@ namespace Ryujinx.Graphics.Vulkan
                 // Only swap if the buffer is not used in any queued command buffer.
                 bool isRented = _buffer.HasRentedCommandBufferDependency(_gd.CommandBufferPool);
 
-                if (!isRented && _gd.CommandBufferPool.OwnedByCurrentThread)
+                if (!isRented && _gd.CommandBufferPool.OwnedByCurrentThread && !_flushLock.IsReaderLockHeld)
                 {
                     var currentAllocation = _allocationAuto;
                     var currentBuffer = _buffer;
