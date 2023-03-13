@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Buffers.Binary;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Common
 {
@@ -21,12 +22,20 @@ namespace Ryujinx.Common
                 return;
             }
 
-            Span<byte> byteBuffer = stackalloc byte[sizeof(int)];
-
-            foreach (int value in buffer)
+            if (BitConverter.IsLittleEndian)
             {
-                BinaryPrimitives.WriteInt32LittleEndian(byteBuffer, value);
+                ReadOnlySpan<byte> byteBuffer = MemoryMarshal.Cast<int, byte>(buffer);
                 stream.Write(byteBuffer);
+            }
+            else
+            {
+                Span<byte> byteBuffer = stackalloc byte[sizeof(int)];
+
+                foreach (int value in buffer)
+                {
+                    BinaryPrimitives.WriteInt32LittleEndian(byteBuffer, value);
+                    stream.Write(byteBuffer);
+                }
             }
         }
 
