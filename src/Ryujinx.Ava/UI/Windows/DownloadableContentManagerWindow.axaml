@@ -71,7 +71,6 @@
             Padding="2.5">
             <ListBox
                 AutoScrollToSelectedItem="False"
-                VirtualizationMode="None"
                 SelectionMode="Multiple, Toggle"
                 Background="Transparent"
                 SelectionChanged="OnSelectionChanged"
