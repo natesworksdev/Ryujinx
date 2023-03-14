@@ -1,6 +1,5 @@
 ﻿using Ryujinx.Memory.Range;
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -145,42 +144,6 @@ namespace Ryujinx.Memory
                 for (; offset < data.Length; offset += size)
                 {
                     size = Math.Min(data.Length - offset, PageSize);
-
-                    data.Slice(offset, size).CopyTo(GetHostSpanContiguous(va + (ulong)offset, size));
-                }
-            }
-        }
-
-        /// <inheritdoc/>
-        public void Write(ulong va, ReadOnlySequence<byte> data)
-        {
-            if (data.Length == 0)
-            {
-                return;
-            }
-
-            AssertValidAddressAndSize(va, (ulong)data.Length);
-
-            if (IsContiguousAndMapped(va, (int)data.Length))
-            {
-                data.CopyTo(GetHostSpanContiguous(va, (int)data.Length));
-            }
-            else
-            {
-                int offset = 0, size;
-
-                if ((va & PageMask) != 0)
-                {
-                    size = Math.Min((int)data.Length, PageSize - (int)(va & PageMask));
-
-                    data.Slice(0, size).CopyTo(GetHostSpanContiguous(va, size));
-
-                    offset += size;
-                }
-
-                for (; offset < data.Length; offset += size)
-                {
-                    size = Math.Min((int)data.Length - offset, PageSize);
 
                     data.Slice(offset, size).CopyTo(GetHostSpanContiguous(va + (ulong)offset, size));
                 }

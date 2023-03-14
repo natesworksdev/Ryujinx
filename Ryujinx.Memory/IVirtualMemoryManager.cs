@@ -2,7 +2,6 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Ryujinx.Memory
 {
@@ -85,7 +84,14 @@ namespace Ryujinx.Memory
         /// <param name="va">Virtual address to write the data into</param>
         /// <param name="data">Data to be written</param>
         /// <exception cref="InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
-        void Write(ulong va, ReadOnlySequence<byte> data);
+        public void Write(ulong va, ReadOnlySequence<byte> data)
+        {
+            foreach (ReadOnlyMemory<byte> segment in data)
+            {
+                Write(va, segment.Span);
+                va += (ulong)segment.Length;
+            }
+        }
 
         /// <summary>
         /// Writes data to the application process, returning false if the data was not changed.

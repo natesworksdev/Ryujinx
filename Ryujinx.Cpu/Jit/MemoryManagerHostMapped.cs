@@ -4,7 +4,6 @@ using Ryujinx.Memory;
 using Ryujinx.Memory.Range;
 using Ryujinx.Memory.Tracking;
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -276,24 +275,6 @@ namespace Ryujinx.Cpu.Jit
 
         /// <inheritdoc/>
         public void Write(ulong va, ReadOnlySpan<byte> data)
-        {
-            try
-            {
-                SignalMemoryTracking(va, (ulong)data.Length, write: true);
-
-                _addressSpace.Mirror.Write(va, data);
-            }
-            catch (InvalidMemoryRegionException)
-            {
-                if (_invalidAccessHandler == null || !_invalidAccessHandler(va))
-                {
-                    throw;
-                }
-            }
-        }
-
-        /// <inheritdoc/>
-        public void Write(ulong va, ReadOnlySequence<byte> data)
         {
             try
             {

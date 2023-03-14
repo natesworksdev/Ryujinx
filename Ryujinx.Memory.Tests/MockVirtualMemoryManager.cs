@@ -1,6 +1,5 @@
 ﻿using Ryujinx.Memory.Range;
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 
 namespace Ryujinx.Memory.Tests
@@ -48,11 +47,6 @@ namespace Ryujinx.Memory.Tests
         }
 
         public void Write(ulong va, ReadOnlySpan<byte> data)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Write(ulong va, ReadOnlySequence<byte> data)
         {
             throw new NotImplementedException();
         }

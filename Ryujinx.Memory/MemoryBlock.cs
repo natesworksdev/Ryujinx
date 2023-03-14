@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -208,19 +207,6 @@ namespace Ryujinx.Memory
         public void Write(ulong offset, ReadOnlySpan<byte> data)
         {
             data.CopyTo(GetSpan(offset, data.Length));
-        }
-
-        /// <summary>
-        /// Writes bytes to the memory block.
-        /// </summary>
-        /// <param name="offset">Starting offset of the range being written</param>
-        /// <param name="data">Span where the bytes being written will be copied from</param>
-        /// <exception cref="ObjectDisposedException">Throw when the memory block has already been disposed</exception>
-        /// <exception cref="InvalidMemoryRegionException">Throw when the memory region specified for the the data is out of range</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Write(ulong offset, ReadOnlySequence<byte> data)
-        {
-            data.CopyTo(GetSpan(offset, (int)data.Length));
         }
 
         /// <summary>
