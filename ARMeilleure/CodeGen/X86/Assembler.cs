@@ -1194,7 +1194,7 @@ namespace ARMeilleure.CodeGen.X86
                 case 0xf38: mm = 0b10; break;
                 case 0xf3a: mm = 0b11; break;
 
-                default: Debug.Assert(false, $"Failed to EVEX encode opcode 0x{opCode:X}."); break;
+                default: Debug.Fail($"Failed to EVEX encode opcode 0x{opCode:X}."); break;
             }
 
             WriteByte(
@@ -1236,7 +1236,7 @@ namespace ARMeilleure.CodeGen.X86
                 case 256: ll = 0b01; break;
                 case 512: ll = 0b10; break;
 
-                default: Debug.Assert(false, $"Invalid EVEX vector register width {registerWidth}."); break;
+                default: Debug.Fail($"Invalid EVEX vector register width {registerWidth}."); break;
             }
             // Embedded broadcast in the case of a memory operand
             bool bcast = broadcast;
