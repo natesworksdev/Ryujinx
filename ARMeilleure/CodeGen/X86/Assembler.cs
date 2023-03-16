@@ -1208,7 +1208,7 @@ namespace ARMeilleure.CodeGen.X86
             // P1
             // Specify 64-bit lane mode
             bool w = Is64Bits(type);
-            // operand 2 register index
+            // Operand 2 register index
             byte vvvv = (byte)(~op2Idx & 0b1111);
             // Opcode prefix
             byte pp = (flags & InstructionFlags.PrefixMask) switch
