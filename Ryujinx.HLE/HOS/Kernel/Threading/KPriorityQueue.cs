@@ -5,11 +5,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 {
     class KPriorityQueue
     {
-        private LinkedList<KThread>[][] _scheduledThreadsPerPrioPerCore;
-        private LinkedList<KThread>[][] _suggestedThreadsPerPrioPerCore;
+        private readonly LinkedList<KThread>[][] _scheduledThreadsPerPrioPerCore;
+        private readonly LinkedList<KThread>[][] _suggestedThreadsPerPrioPerCore;
 
-        private long[] _scheduledPrioritiesPerCore;
-        private long[] _suggestedPrioritiesPerCore;
+        private readonly long[] _scheduledPrioritiesPerCore;
+        private readonly long[] _suggestedPrioritiesPerCore;
 
         public KPriorityQueue()
         {
@@ -32,118 +32,132 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             _suggestedPrioritiesPerCore = new long[KScheduler.CpuCoresCount];
         }
 
-        public IEnumerable<KThread> SuggestedThreads(int core)
+        public readonly ref struct KThreadEnumerable
         {
-            return Iterate(_suggestedThreadsPerPrioPerCore, _suggestedPrioritiesPerCore, core);
+            readonly LinkedList<KThread>[][] _listPerPrioPerCore;
+            readonly long[] _prios;
+            readonly int _core;
+
+            public KThreadEnumerable(LinkedList<KThread>[][] listPerPrioPerCore, long[] prios, int core)
+            {
+                _listPerPrioPerCore = listPerPrioPerCore;
+                _prios = prios;
+                _core = core;
+            }
+
+            public Enumerator GetEnumerator()
+            {
+                return new Enumerator(_listPerPrioPerCore, _prios, _core);
+            }
+
+            public ref struct Enumerator
+            {
+                private readonly LinkedList<KThread>[][] _listPerPrioPerCore;
+                private readonly int _core;
+                private long _prioMask;
+                private int _prio;
+                private LinkedList<KThread> _list;
+                private LinkedListNode<KThread> _node;
+
+                public Enumerator(LinkedList<KThread>[][] listPerPrioPerCore, long[] prios, int core)
+                {
+                    _listPerPrioPerCore = listPerPrioPerCore;
+                    _core = core;
+                    _prioMask = prios[core];
+                    _prio = BitOperations.TrailingZeroCount(_prioMask);
+                    _prioMask &= ~(1L << _prio);
+                }
+
+                public KThread Current => _node?.Value;
+
+                public bool MoveNext()
+                {
+                    _node = _node?.Next;
+
+                    if (_node == null)
+                    {
+                        if (!MoveNextListAndFirstNode())
+                        {
+                            return false;
+                        }
+                    }
+
+                    return _node != null;
+                }
+
+                private bool MoveNextListAndFirstNode()
+                {
+                    if (_prio < KScheduler.PrioritiesCount)
+                    {
+                        _list = _listPerPrioPerCore[_prio][_core];
+
+                        _node = _list.First;
+
+                        _prio = BitOperations.TrailingZeroCount(_prioMask);
+
+                        _prioMask &= ~(1L << _prio);
+
+                        return true;
+                    }
+                    else
+                    {
+                        _list = null;
+                        _node = null;
+                        return false;
+                    }
+                }
+            }
         }
 
-        public KThread ScheduledThreadsElementAtOrDefault(int core, int index)
+        public KThreadEnumerable ScheduledThreads(int core)
         {
-            return GetElementAtOrDefault(_scheduledThreadsPerPrioPerCore, _scheduledPrioritiesPerCore, core, index);
+            return new KThreadEnumerable(_scheduledThreadsPerPrioPerCore, _scheduledPrioritiesPerCore, core);
+        }
+
+        public KThreadEnumerable SuggestedThreads(int core)
+        {
+            return new KThreadEnumerable(_suggestedThreadsPerPrioPerCore, _suggestedPrioritiesPerCore, core);
         }
 
         public KThread ScheduledThreadsFirstOrDefault(int core)
         {
-            return GetElementAtOrDefault(_scheduledThreadsPerPrioPerCore, _scheduledPrioritiesPerCore, core, 0);
+            return ScheduledThreadsElementAtOrDefault(core, 0);
         }
 
-        public KThread ScheduledThreadsFirstOrDefaultWithDynamicPriority(int core, int prio)
+        public KThread ScheduledThreadsElementAtOrDefault(int core, int index)
         {
-            return GetFirstOrDefaultWithDynamicPriority(_scheduledThreadsPerPrioPerCore, _scheduledPrioritiesPerCore, core, prio);
+            int currentIndex = 0;
+            foreach (var scheduledThread in ScheduledThreads(core))
+            {
+                if (currentIndex == index)
+                {
+                    return scheduledThread;
+                }
+                else
+                {
+                    currentIndex++;
+                }
+            }
+
+            return null;
+        }
+
+        public KThread ScheduledThreadsWithDynamicPriorityFirstOrDefault(int core, int dynamicPriority)
+        {
+            foreach (var scheduledThread in ScheduledThreads(core))
+            {
+                if (scheduledThread.DynamicPriority == dynamicPriority)
+                {
+                    return scheduledThread;
+                }
+            }
+
+            return null;
         }
 
         public bool HasScheduledThreads(int core)
         {
             return ScheduledThreadsFirstOrDefault(core) != null;
-        }
-
-        private static KThread GetElementAtOrDefault(LinkedList<KThread>[][] listPerPrioPerCore, long[] prios, int core, int index)
-        {
-            long prioMask = prios[core];
-
-            int prio = BitOperations.TrailingZeroCount(prioMask);
-
-            prioMask &= ~(1L << prio);
-
-            int count = 0;
-            while (prio < KScheduler.PrioritiesCount)
-            {
-                LinkedList<KThread> list = listPerPrioPerCore[prio][core];
-
-                LinkedListNode<KThread> node = list.First;
-
-                if (node != null)
-                {
-                    if (count == index)
-                    {
-                        return node.Value;
-                    }
-                    else
-                    {
-                        count++;
-                    }
-                }
-
-                prio = BitOperations.TrailingZeroCount(prioMask);
-
-                prioMask &= ~(1L << prio);
-            }
-
-            return null;
-        }
-
-        private static KThread GetFirstOrDefaultWithDynamicPriority(LinkedList<KThread>[][] listPerPrioPerCore, long[] prios, int core, int dynamicPriority)
-        {
-            long prioMask = prios[core];
-
-            int prio = BitOperations.TrailingZeroCount(prioMask);
-
-            prioMask &= ~(1L << prio);
-
-            while (prio < KScheduler.PrioritiesCount)
-            {
-                LinkedList<KThread> list = listPerPrioPerCore[prio][core];
-
-                LinkedListNode<KThread> node = list.First;
-
-                if (node != null && node.Value.DynamicPriority == dynamicPriority)
-                {
-                    return node.Value;
-                }
-
-                prio = BitOperations.TrailingZeroCount(prioMask);
-
-                prioMask &= ~(1L << prio);
-            }
-
-            return null;
-        }
-
-        private static IEnumerable<KThread> Iterate(LinkedList<KThread>[][] listPerPrioPerCore, long[] prios, int core)
-        {
-            long prioMask = prios[core];
-
-            int prio = BitOperations.TrailingZeroCount(prioMask);
-
-            prioMask &= ~(1L << prio);
-
-            while (prio < KScheduler.PrioritiesCount)
-            {
-                LinkedList<KThread> list = listPerPrioPerCore[prio][core];
-
-                LinkedListNode<KThread> node = list.First;
-
-                while (node != null)
-                {
-                    yield return node.Value;
-
-                    node = node.Next;
-                }
-
-                prio = BitOperations.TrailingZeroCount(prioMask);
-
-                prioMask &= ~(1L << prio);
-            }
         }
 
         public void TransferToCore(int prio, int dstCore, KThread thread)

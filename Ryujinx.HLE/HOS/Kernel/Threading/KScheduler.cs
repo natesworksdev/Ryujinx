@@ -1,8 +1,6 @@
 using Ryujinx.Common;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using System.Threading;
 
@@ -424,7 +422,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         private static void RotateScheduledQueue(KernelContext context, int core, int prio)
         {
-            KThread selectedThread = context.PriorityQueue.ScheduledThreadsFirstOrDefaultWithDynamicPriority(core, prio);
+            KThread selectedThread = context.PriorityQueue.ScheduledThreadsWithDynamicPriorityFirstOrDefault(core, prio);
             KThread nextThread = null;
 
             // Yield priority queue.
@@ -433,7 +431,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 nextThread = context.PriorityQueue.Reschedule(prio, core, selectedThread);
             }
 
-            IEnumerable<KThread> SuitableCandidates()
+            static KThread FirstSuitableCandidateOrDefault(KernelContext context, int core, KThread selectedThread, KThread nextThread, Predicate< KThread> predicate)
             {
                 foreach (KThread suggested in context.PriorityQueue.SuggestedThreads(core))
                 {
@@ -453,14 +451,19 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                         nextThread == null ||
                         nextThread.LastScheduledTime >= suggested.LastScheduledTime)
                     {
-                        yield return suggested;
+                        if (predicate(suggested))
+                        {
+                            return suggested;
+                        }
                     }
                 }
+
+                return null;
             }
 
             // Select candidate threads that could run on this core.
             // Only take into account threads that are not yet selected.
-            KThread dst = SuitableCandidates().FirstOrDefault(x => x.DynamicPriority == prio);
+            KThread dst = FirstSuitableCandidateOrDefault(context, core, selectedThread, nextThread, x => x.DynamicPriority == prio);
 
             if (dst != null)
             {
@@ -473,7 +476,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             if (bestCandidate != null && bestCandidate.DynamicPriority >= prio)
             {
-                dst = SuitableCandidates().FirstOrDefault(x => x.DynamicPriority < bestCandidate.DynamicPriority);
+                dst = FirstSuitableCandidateOrDefault(context, core, selectedThread, nextThread, x => x.DynamicPriority < bestCandidate.DynamicPriority);
 
                 if (dst != null)
                 {
@@ -534,7 +537,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             // Move current thread to the end of the queue.
             KThread nextThread = context.PriorityQueue.Reschedule(prio, core, currentThread);
 
-            IEnumerable<KThread> SuitableCandidates()
+            static KThread FirstSuitableCandidateOrDefault(KernelContext context, int core, KThread nextThread, int lessThanOrEqualPriority)
             {
                 foreach (KThread suggested in context.PriorityQueue.SuggestedThreads(core))
                 {
@@ -554,12 +557,17 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                     if (suggested.LastScheduledTime <= nextThread.LastScheduledTime ||
                         suggested.DynamicPriority < nextThread.DynamicPriority)
                     {
-                        yield return suggested;
+                        if (suggested.DynamicPriority <= lessThanOrEqualPriority)
+                        {
+                            return suggested;
+                        }
                     }
                 }
+
+                return null;
             }
 
-            KThread dst = SuitableCandidates().FirstOrDefault(x => x.DynamicPriority <= prio);
+            KThread dst = FirstSuitableCandidateOrDefault(context, core, nextThread, prio);
 
             if (dst != null)
             {
