@@ -167,10 +167,10 @@ namespace Ryujinx.HLE.HOS.Ipc
                 ms.Write(handleDataStream);
             }
 
-            for (int index = 0; index < PtrBuff.Count; index++)
+            foreach (IpcPtrBuffDesc ptrBuffDesc in PtrBuff)
             {
-                ms.Write(PtrBuff[index].GetWord0());
-                ms.Write(PtrBuff[index].GetWord1());
+                ms.Write(ptrBuffDesc.GetWord0());
+                ms.Write(ptrBuffDesc.GetWord1());
             }
 
             ms.WriteByte(0, pad0);
@@ -186,6 +186,7 @@ namespace Ryujinx.HLE.HOS.Ipc
             ms.Write(recvListAddr);
 
             ms.Position = 0;
+
             return ms;
         }
 

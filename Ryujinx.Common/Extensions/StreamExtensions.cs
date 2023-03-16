@@ -103,7 +103,7 @@ namespace Ryujinx.Common
         }
 
         /// <summary>
-        /// Writes a sequence of zero bytes to the Stream.
+        /// Writes a sequence of bytes to the Stream.
         /// </summary>
         /// <param name="stream">The stream to be written to.</param>
         /// <param name="value">The byte to be written</param>
