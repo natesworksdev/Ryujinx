@@ -149,6 +149,19 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PhysicalDeviceProperties2
             };
 
+            PhysicalDeviceBlendOperationAdvancedPropertiesEXT propertiesBlendOperationAdvanced = new PhysicalDeviceBlendOperationAdvancedPropertiesEXT()
+            {
+                SType = StructureType.PhysicalDeviceBlendOperationAdvancedPropertiesExt
+            };
+
+            bool supportsBlendOperationAdvanced = supportedExtensions.Contains("VK_EXT_blend_operation_advanced");
+
+            if (supportsBlendOperationAdvanced)
+            {
+                propertiesBlendOperationAdvanced.PNext = properties2.PNext;
+                properties2.PNext = &propertiesBlendOperationAdvanced;
+            }
+
             PhysicalDeviceSubgroupSizeControlPropertiesEXT propertiesSubgroupSizeControl = new PhysicalDeviceSubgroupSizeControlPropertiesEXT()
             {
                 SType = StructureType.PhysicalDeviceSubgroupSizeControlPropertiesExt
@@ -182,6 +195,11 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PhysicalDeviceFeatures2
             };
 
+            PhysicalDevicePrimitiveTopologyListRestartFeaturesEXT featuresPrimitiveTopologyListRestart = new PhysicalDevicePrimitiveTopologyListRestartFeaturesEXT()
+            {
+                SType = StructureType.PhysicalDevicePrimitiveTopologyListRestartFeaturesExt
+            };
+
             PhysicalDeviceRobustness2FeaturesEXT featuresRobustness2 = new PhysicalDeviceRobustness2FeaturesEXT()
             {
                 SType = StructureType.PhysicalDeviceRobustness2FeaturesExt
@@ -202,8 +220,14 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PhysicalDevicePortabilitySubsetFeaturesKhr
             };
 
+            if (supportedExtensions.Contains("VK_EXT_primitive_topology_list_restart"))
+            {
+                features2.PNext = &featuresPrimitiveTopologyListRestart;
+            }
+
             if (supportedExtensions.Contains("VK_EXT_robustness2"))
             {
+                featuresRobustness2.PNext = features2.PNext;
                 features2.PNext = &featuresRobustness2;
             }
 
@@ -246,9 +270,9 @@ namespace Ryujinx.Graphics.Vulkan
                 portabilityFlags |= featuresPortabilitySubset.SamplerMipLodBias ? 0 : PortabilitySubsetFlags.NoLodBias;
             }
 
-            bool customBorderColorSupported = supportedExtensions.Contains("VK_EXT_custom_border_color") &&
-                                              featuresCustomBorderColor.CustomBorderColors &&
-                                              featuresCustomBorderColor.CustomBorderColorWithoutFormat;
+            bool supportsCustomBorderColor = supportedExtensions.Contains("VK_EXT_custom_border_color") &&
+                                             featuresCustomBorderColor.CustomBorderColors &&
+                                             featuresCustomBorderColor.CustomBorderColorWithoutFormat;
 
             ref var properties = ref properties2.Properties;
 
@@ -259,7 +283,11 @@ namespace Ryujinx.Graphics.Vulkan
 
             Capabilities = new HardwareCapabilities(
                 supportedExtensions.Contains("VK_EXT_index_type_uint8"),
-                customBorderColorSupported,
+                supportsCustomBorderColor,
+                supportsBlendOperationAdvanced,
+                propertiesBlendOperationAdvanced.AdvancedBlendCorrelatedOverlap,
+                propertiesBlendOperationAdvanced.AdvancedBlendNonPremultipliedSrcColor,
+                propertiesBlendOperationAdvanced.AdvancedBlendNonPremultipliedDstColor,
                 supportedExtensions.Contains(KhrDrawIndirectCount.ExtensionName),
                 supportedExtensions.Contains("VK_EXT_fragment_shader_interlock"),
                 supportedExtensions.Contains("VK_NV_geometry_shader_passthrough"),
@@ -271,6 +299,8 @@ namespace Ryujinx.Graphics.Vulkan
                 features2.Features.MultiViewport,
                 featuresRobustness2.NullDescriptor || IsMoltenVk,
                 supportedExtensions.Contains(KhrPushDescriptor.ExtensionName),
+                featuresPrimitiveTopologyListRestart.PrimitiveTopologyListRestart,
+                featuresPrimitiveTopologyListRestart.PrimitiveTopologyPatchListRestart,
                 supportsTransformFeedback,
                 propertiesTransformFeedback.TransformFeedbackQueries,
                 features2.Features.OcclusionQueryPrecise,
@@ -526,8 +556,10 @@ namespace Ryujinx.Graphics.Vulkan
                 supportsR4G4B4A4Format: supportsR4G4B4A4Format,
                 supportsSnormBufferTextureFormat: true,
                 supports5BitComponentFormat: supports5BitComponentFormat,
+                supportsBlendEquationAdvanced: Capabilities.SupportsBlendEquationAdvanced,
                 supportsFragmentShaderInterlock: Capabilities.SupportsFragmentShaderInterlock,
                 supportsFragmentShaderOrderingIntel: false,
+                supportsGeometryShader: Capabilities.SupportsGeometryShader,
                 supportsGeometryShaderPassthrough: Capabilities.SupportsGeometryShaderPassthrough,
                 supportsImageLoadFormatted: features2.Features.ShaderStorageImageReadWithoutFormat,
                 supportsLayerVertexTessellation: featuresVk12.ShaderOutputLayer,

@@ -54,7 +54,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         public Result CreateProcess(
             out int handle,
             ProcessCreationInfo info,
-            ReadOnlySpan<int> capabilities,
+            ReadOnlySpan<uint> capabilities,
             IProcessContextFactory contextFactory,
             ThreadStart customThreadStart = null)
         {
@@ -553,7 +553,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             KProcess currentProcess = KernelStatic.GetCurrentProcess();
 
-            KSynchronizationObject[] syncObjs = new KSynchronizationObject[handles.Length];
+            KSynchronizationObject[] syncObjs = handles.Length == 0 ? Array.Empty<KSynchronizationObject>() : new KSynchronizationObject[handles.Length];
 
             for (int index = 0; index < handles.Length; index++)
             {

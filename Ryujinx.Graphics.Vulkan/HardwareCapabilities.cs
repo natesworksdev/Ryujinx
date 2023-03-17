@@ -18,6 +18,10 @@ namespace Ryujinx.Graphics.Vulkan
     {
         public readonly bool SupportsIndexTypeUint8;
         public readonly bool SupportsCustomBorderColor;
+        public readonly bool SupportsBlendEquationAdvanced;
+        public readonly bool SupportsBlendEquationAdvancedCorrelatedOverlap;
+        public readonly bool SupportsBlendEquationAdvancedNonPreMultipliedSrcColor;
+        public readonly bool SupportsBlendEquationAdvancedNonPreMultipliedDstColor;
         public readonly bool SupportsIndirectParameters;
         public readonly bool SupportsFragmentShaderInterlock;
         public readonly bool SupportsGeometryShaderPassthrough;
@@ -29,6 +33,8 @@ namespace Ryujinx.Graphics.Vulkan
         public readonly bool SupportsMultiView;
         public readonly bool SupportsNullDescriptors;
         public readonly bool SupportsPushDescriptors;
+        public readonly bool SupportsPrimitiveTopologyListRestart;
+        public readonly bool SupportsPrimitiveTopologyPatchListRestart;
         public readonly bool SupportsTransformFeedback;
         public readonly bool SupportsTransformFeedbackQueries;
         public readonly bool SupportsPreciseOcclusionQueries;
@@ -44,6 +50,10 @@ namespace Ryujinx.Graphics.Vulkan
         public HardwareCapabilities(
             bool supportsIndexTypeUint8,
             bool supportsCustomBorderColor,
+            bool supportsBlendEquationAdvanced,
+            bool supportsBlendEquationAdvancedCorrelatedOverlap,
+            bool supportsBlendEquationAdvancedNonPreMultipliedSrcColor,
+            bool supportsBlendEquationAdvancedNonPreMultipliedDstColor,
             bool supportsIndirectParameters,
             bool supportsFragmentShaderInterlock,
             bool supportsGeometryShaderPassthrough,
@@ -55,6 +65,8 @@ namespace Ryujinx.Graphics.Vulkan
             bool supportsMultiView,
             bool supportsNullDescriptors,
             bool supportsPushDescriptors,
+            bool supportsPrimitiveTopologyListRestart,
+            bool supportsPrimitiveTopologyPatchListRestart,
             bool supportsTransformFeedback,
             bool supportsTransformFeedbackQueries,
             bool supportsPreciseOcclusionQueries,
@@ -69,6 +81,10 @@ namespace Ryujinx.Graphics.Vulkan
         {
             SupportsIndexTypeUint8 = supportsIndexTypeUint8;
             SupportsCustomBorderColor = supportsCustomBorderColor;
+            SupportsBlendEquationAdvanced = supportsBlendEquationAdvanced;
+            SupportsBlendEquationAdvancedCorrelatedOverlap = supportsBlendEquationAdvancedCorrelatedOverlap;
+            SupportsBlendEquationAdvancedNonPreMultipliedSrcColor = supportsBlendEquationAdvancedNonPreMultipliedSrcColor;
+            SupportsBlendEquationAdvancedNonPreMultipliedDstColor = supportsBlendEquationAdvancedNonPreMultipliedDstColor;
             SupportsIndirectParameters = supportsIndirectParameters;
             SupportsFragmentShaderInterlock = supportsFragmentShaderInterlock;
             SupportsGeometryShaderPassthrough = supportsGeometryShaderPassthrough;
@@ -80,6 +96,8 @@ namespace Ryujinx.Graphics.Vulkan
             SupportsMultiView = supportsMultiView;
             SupportsNullDescriptors = supportsNullDescriptors;
             SupportsPushDescriptors = supportsPushDescriptors;
+            SupportsPrimitiveTopologyListRestart = supportsPrimitiveTopologyListRestart;
+            SupportsPrimitiveTopologyPatchListRestart = supportsPrimitiveTopologyPatchListRestart;
             SupportsTransformFeedback = supportsTransformFeedback;
             SupportsTransformFeedbackQueries = supportsTransformFeedbackQueries;
             SupportsPreciseOcclusionQueries = supportsPreciseOcclusionQueries;

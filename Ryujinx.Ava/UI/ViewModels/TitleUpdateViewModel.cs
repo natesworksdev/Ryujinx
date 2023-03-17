@@ -105,12 +105,12 @@ public class TitleUpdateViewModel : BaseModel
             AddUpdate(path);
         }
 
-        // NOTE: Save the list again to remove leftovers.
-        Save();
-
         TitleUpdateModel selected = TitleUpdates.FirstOrDefault(x => x.Path == _titleUpdateWindowData.Selected, null);
 
         SelectedUpdate = selected;
+
+        // NOTE: Save the list again to remove leftovers.
+        Save();
 
         SortUpdates();
     }
@@ -170,7 +170,7 @@ public class TitleUpdateViewModel : BaseModel
 
                     using UniqueRef<IFile> nacpFile = new();
 
-                    controlNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None).OpenFile(ref nacpFile.Ref(), "/control.nacp".ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                    controlNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None).OpenFile(ref nacpFile.Ref, "/control.nacp".ToU8Span(), OpenMode.Read).ThrowIfFailure();
                     nacpFile.Get.Read(out _, 0, SpanHelpers.AsByteSpan(ref controlData), ReadOption.None).ThrowIfFailure();
 
                     TitleUpdates.Add(new TitleUpdateModel(controlData, path));

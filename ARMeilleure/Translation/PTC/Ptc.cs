@@ -6,6 +6,7 @@ using ARMeilleure.Memory;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Memory;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -29,7 +30,7 @@ namespace ARMeilleure.Translation.PTC
         private const string OuterHeaderMagicString = "PTCohd\0\0";
         private const string InnerHeaderMagicString = "PTCihd\0\0";
 
-        private const uint InternalVersion = 4328; //! To be incremented manually for each change to the ARMeilleure project.
+        private const uint InternalVersion = 4484; //! To be incremented manually for each change to the ARMeilleure project.
 
         private const string ActualDir = "0";
         private const string BackupDir = "1";
@@ -150,10 +151,10 @@ namespace ARMeilleure.Translation.PTC
 
         private void InitializeCarriers()
         {
-            _infosStream = new MemoryStream();
+            _infosStream = MemoryStreamManager.Shared.GetStream();
             _codesList = new List<byte[]>();
-            _relocsStream = new MemoryStream();
-            _unwindInfosStream = new MemoryStream();
+            _relocsStream = MemoryStreamManager.Shared.GetStream();
+            _unwindInfosStream = MemoryStreamManager.Shared.GetStream();
         }
 
         private void DisposeCarriers()
