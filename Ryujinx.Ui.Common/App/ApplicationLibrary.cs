@@ -14,9 +14,11 @@ using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Npdm;
+using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Configuration.System;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -106,7 +108,18 @@ namespace Ryujinx.Ui.App.Common
 
                     try
                     {
-                        foreach (string app in Directory.EnumerateFiles(appDir, "*", SearchOption.AllDirectories))
+                        IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", SearchOption.AllDirectories).Where(file =>
+                        {
+                            return
+                            (Path.GetExtension(file).ToLower() is ".nsp"  && !ConfigurationState.Instance.Ui.HiddenFileTypes.NSP.Value)  ||
+                            (Path.GetExtension(file).ToLower() is ".pfs0" && !ConfigurationState.Instance.Ui.HiddenFileTypes.PFS0.Value) ||
+                            (Path.GetExtension(file).ToLower() is ".xci"  && !ConfigurationState.Instance.Ui.HiddenFileTypes.XCI.Value)  ||
+                            (Path.GetExtension(file).ToLower() is ".nca"  && !ConfigurationState.Instance.Ui.HiddenFileTypes.NCA.Value)  ||
+                            (Path.GetExtension(file).ToLower() is ".nro"  && !ConfigurationState.Instance.Ui.HiddenFileTypes.NRO.Value)  ||
+                            (Path.GetExtension(file).ToLower() is ".nso"  && !ConfigurationState.Instance.Ui.HiddenFileTypes.NSO.Value);
+                        });
+                        
+                        foreach (string app in files)
                         {
                             if (_cancellationToken.Token.IsCancellationRequested)
                             {

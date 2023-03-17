@@ -59,6 +59,26 @@ namespace Ryujinx.Ui.Common.Configuration
                 }
             }
 
+            public class HiddenFileTypesSettings
+            {
+                public ReactiveObject<bool> NSP { get; private set; }
+                public ReactiveObject<bool> PFS0 { get; private set; }
+                public ReactiveObject<bool> XCI { get; private set; }
+                public ReactiveObject<bool> NCA { get; private set; }
+                public ReactiveObject<bool> NRO { get; private set; }
+                public ReactiveObject<bool> NSO { get; private set; }
+
+                public HiddenFileTypesSettings()
+                {
+                    NSP = new ReactiveObject<bool>();
+                    PFS0 = new ReactiveObject<bool>();
+                    XCI = new ReactiveObject<bool>();
+                    NCA = new ReactiveObject<bool>();
+                    NRO = new ReactiveObject<bool>();
+                    NSO= new ReactiveObject<bool>();
+                }
+            }
+
             /// <summary>
             /// Used to toggle columns in the GUI
             /// </summary>
@@ -73,6 +93,11 @@ namespace Ryujinx.Ui.Common.Configuration
             /// A list of directories containing games to be used to load games into the games list
             /// </summary>
             public ReactiveObject<List<string>> GameDirs { get; private set; }
+
+            /// <summary>
+            /// A list of file types to be hidden in the games List
+            /// </summary>
+            public HiddenFileTypesSettings HiddenFileTypes { get; private set; }
 
             /// <summary>
             /// Language Code for the UI
@@ -134,6 +159,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 GuiColumns        = new Columns();
                 ColumnSort        = new ColumnSortSettings();
                 GameDirs          = new ReactiveObject<List<string>>();
+                HiddenFileTypes   = new HiddenFileTypesSettings();
                 EnableCustomTheme = new ReactiveObject<bool>();
                 CustomThemePath   = new ReactiveObject<string>();
                 BaseStyle         = new ReactiveObject<string>();
@@ -617,6 +643,15 @@ namespace Ryujinx.Ui.Common.Configuration
                     SortAscending = Ui.ColumnSort.SortAscending
                 },
                 GameDirs                   = Ui.GameDirs,
+                HiddenFileTypes            = new HiddenFileTypes
+                {
+                    NSP = Ui.HiddenFileTypes.NSP,
+                    PFS0 = Ui.HiddenFileTypes.PFS0,
+                    XCI = Ui.HiddenFileTypes.XCI,
+                    NCA = Ui.HiddenFileTypes.NCA,
+                    NRO = Ui.HiddenFileTypes.NRO,
+                    NSO = Ui.HiddenFileTypes.NSO,
+                },
                 LanguageCode               = Ui.LanguageCode,
                 EnableCustomTheme          = Ui.EnableCustomTheme,
                 CustomThemePath            = Ui.CustomThemePath,
@@ -701,6 +736,12 @@ namespace Ryujinx.Ui.Common.Configuration
             Ui.ColumnSort.SortColumnId.Value          = 0;
             Ui.ColumnSort.SortAscending.Value         = false;
             Ui.GameDirs.Value                         = new List<string>();
+            Ui.HiddenFileTypes.NSP.Value              = false;
+            Ui.HiddenFileTypes.PFS0.Value             = false;
+            Ui.HiddenFileTypes.XCI.Value              = false;
+            Ui.HiddenFileTypes.NCA.Value              = false;
+            Ui.HiddenFileTypes.NRO.Value              = false;
+            Ui.HiddenFileTypes.NSO.Value              = false;
             Ui.EnableCustomTheme.Value                = false;
             Ui.LanguageCode.Value                     = "en_US";
             Ui.CustomThemePath.Value                  = "";
@@ -1237,11 +1278,28 @@ namespace Ryujinx.Ui.Common.Configuration
 
             if (configurationFileFormat.Version < 44)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 42.");
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 44.");
 
                 configurationFileFormat.AntiAliasing = AntiAliasing.None;
                 configurationFileFormat.ScalingFilter = ScalingFilter.Bilinear;
                 configurationFileFormat.ScalingFilterLevel = 80;
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 45)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 45.");
+
+                configurationFileFormat.HiddenFileTypes = new HiddenFileTypes
+                {
+                    NSP = false,
+                    PFS0 = false,
+                    XCI = false,
+                    NCA = false,
+                    NRO = false,
+                    NSO = false
+                };
 
                 configurationFileUpdated = true;
             }
@@ -1304,6 +1362,12 @@ namespace Ryujinx.Ui.Common.Configuration
             Ui.ColumnSort.SortColumnId.Value          = configurationFileFormat.ColumnSort.SortColumnId;
             Ui.ColumnSort.SortAscending.Value         = configurationFileFormat.ColumnSort.SortAscending;
             Ui.GameDirs.Value                         = configurationFileFormat.GameDirs;
+            Ui.HiddenFileTypes.NSP.Value              = configurationFileFormat.HiddenFileTypes.NSP;
+            Ui.HiddenFileTypes.PFS0.Value             = configurationFileFormat.HiddenFileTypes.PFS0;
+            Ui.HiddenFileTypes.XCI.Value              = configurationFileFormat.HiddenFileTypes.XCI;
+            Ui.HiddenFileTypes.NCA.Value              = configurationFileFormat.HiddenFileTypes.NCA;
+            Ui.HiddenFileTypes.NRO.Value              = configurationFileFormat.HiddenFileTypes.NRO;
+            Ui.HiddenFileTypes.NSO.Value              = configurationFileFormat.HiddenFileTypes.NSO;
             Ui.EnableCustomTheme.Value                = configurationFileFormat.EnableCustomTheme;
             Ui.LanguageCode.Value                     = configurationFileFormat.LanguageCode;
             Ui.CustomThemePath.Value                  = configurationFileFormat.CustomThemePath;
