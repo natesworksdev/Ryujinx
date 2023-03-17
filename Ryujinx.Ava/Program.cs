@@ -92,6 +92,9 @@ namespace Ryujinx.Ava
             // Initialize the configuration.
             ConfigurationState.Initialize();
 
+            // Initialize Game Configuration
+            ConfigurationState.InitializeGameConfig();
+
             // Initialize the logger system.
             LoggerModule.Initialize();
 

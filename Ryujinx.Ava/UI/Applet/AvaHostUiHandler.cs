@@ -9,6 +9,7 @@ using Ryujinx.HLE;
 using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy.Types;
 using Ryujinx.HLE.Ui;
+using Ryujinx.Ui.Common.Configuration;
 using System;
 using System.Threading;
 
@@ -71,6 +72,7 @@ namespace Ryujinx.Ava.UI.Applet
 
                            opened = true;
 
+                           ConfigurationStateManager.UseGameConfiguration = false;
                            _parent.SettingsWindow = new SettingsWindow(_parent.VirtualFileSystem, _parent.ContentManager);
 
                            await _parent.SettingsWindow.ShowDialog(window);

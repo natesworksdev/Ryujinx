@@ -1552,6 +1552,16 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        public async void OpenGameConfiguration()
+        {
+            if (SelectedApplication != null)
+            {
+                ConfigurationStateManager.ApplicationId = SelectedApplication.TitleId;
+                ConfigurationStateManager.ApplicationTitle = SelectedApplication.TitleName;
+                ConfigurationStateManager.UseGameConfiguration = true;
+                await new SettingsWindow(VirtualFileSystem, ContentManager).ShowDialog(TopLevel as Window);
+            }
+        }
         public async void OpenTitleUpdateManager()
         {
             if (SelectedApplication != null)

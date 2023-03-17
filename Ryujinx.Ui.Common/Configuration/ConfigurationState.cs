@@ -381,27 +381,27 @@ namespace Ryujinx.Ui.Common.Configuration
             /// <summary>
             /// Whether or not backend threading is enabled. The "Auto" setting will determine whether threading should be enabled at runtime.
             /// </summary>
-            public ReactiveObject<BackendThreading> BackendThreading { get; private set; }
+            public ReactiveObject<BackendThreading?> BackendThreading { get; private set; }
 
             /// <summary>
             /// Max Anisotropy. Values range from 0 - 16. Set to -1 to let the game decide.
             /// </summary>
-            public ReactiveObject<float> MaxAnisotropy { get; private set; }
+            public ReactiveObject<float?> MaxAnisotropy { get; private set; }
 
             /// <summary>
             /// Aspect Ratio applied to the renderer window.
             /// </summary>
-            public ReactiveObject<AspectRatio> AspectRatio { get; private set; }
+            public ReactiveObject<AspectRatio?> AspectRatio { get; private set; }
 
             /// <summary>
             /// Resolution Scale. An integer scale applied to applicable render targets. Values 1-4, or -1 to use a custom floating point scale instead.
             /// </summary>
-            public ReactiveObject<int> ResScale { get; private set; }
+            public ReactiveObject<int?> ResScale { get; private set; }
 
             /// <summary>
             /// Custom Resolution Scale. A custom floating point scale applied to applicable render targets. Only active when Resolution Scale is -1.
             /// </summary>
-            public ReactiveObject<float> ResScaleCustom { get; private set; }
+            public ReactiveObject<float?> ResScaleCustom { get; private set; }
 
             /// <summary>
             /// Dumps shaders in this local directory
@@ -411,42 +411,42 @@ namespace Ryujinx.Ui.Common.Configuration
             /// <summary>
             /// Enables or disables Vertical Sync
             /// </summary>
-            public ReactiveObject<bool> EnableVsync { get; private set; }
+            public ReactiveObject<bool?> EnableVsync { get; private set; }
 
             /// <summary>
             /// Enables or disables Shader cache
             /// </summary>
-            public ReactiveObject<bool> EnableShaderCache { get; private set; }
+            public ReactiveObject<bool?> EnableShaderCache { get; private set; }
 
             /// <summary>
             /// Enables or disables texture recompression
             /// </summary>
-            public ReactiveObject<bool> EnableTextureRecompression { get; private set; }
+            public ReactiveObject<bool?> EnableTextureRecompression { get; private set; }
 
             /// <summary>
             /// Enables or disables Macro high-level emulation
             /// </summary>
-            public ReactiveObject<bool> EnableMacroHLE { get; private set; }
+            public ReactiveObject<bool?> EnableMacroHLE { get; private set; }
 
             /// <summary>
             /// Graphics backend
             /// </summary>
-            public ReactiveObject<GraphicsBackend> GraphicsBackend { get; private set; }
+            public ReactiveObject<GraphicsBackend?> GraphicsBackend { get; private set; }
 
             /// <summary>
             /// Applies anti-aliasing to the renderer.
             /// </summary>
-            public ReactiveObject<AntiAliasing> AntiAliasing { get; private set; }
+            public ReactiveObject<AntiAliasing?> AntiAliasing { get; private set; }
 
             /// <summary>
             /// Sets the framebuffer upscaling type.
             /// </summary>
-            public ReactiveObject<ScalingFilter> ScalingFilter { get; private set; }
+            public ReactiveObject<ScalingFilter?> ScalingFilter { get; private set; }
 
             /// <summary>
             /// Sets the framebuffer upscaling level.
             /// </summary>
-            public ReactiveObject<int> ScalingFilterLevel { get; private set; }
+            public ReactiveObject<int?> ScalingFilterLevel { get; private set; }
 
             /// <summary>
             /// Preferred GPU
@@ -455,34 +455,34 @@ namespace Ryujinx.Ui.Common.Configuration
 
             public GraphicsSection()
             {
-                BackendThreading                 = new ReactiveObject<BackendThreading>();
+                BackendThreading                 = new ReactiveObject<BackendThreading?>();
                 BackendThreading.Event           += static (sender, e) => LogValueChange(sender, e, nameof(BackendThreading));
-                ResScale                         = new ReactiveObject<int>();
+                ResScale                         = new ReactiveObject<int?>();
                 ResScale.Event                   += static (sender, e) => LogValueChange(sender, e, nameof(ResScale));
-                ResScaleCustom                   = new ReactiveObject<float>();
+                ResScaleCustom                   = new ReactiveObject<float?>();
                 ResScaleCustom.Event             += static (sender, e) => LogValueChange(sender, e, nameof(ResScaleCustom));
-                MaxAnisotropy                    = new ReactiveObject<float>();
+                MaxAnisotropy                    = new ReactiveObject<float?>();
                 MaxAnisotropy.Event              += static (sender, e) => LogValueChange(sender, e, nameof(MaxAnisotropy));
-                AspectRatio                      = new ReactiveObject<AspectRatio>();
+                AspectRatio                      = new ReactiveObject<AspectRatio?>();
                 AspectRatio.Event                += static (sender, e) => LogValueChange(sender, e, nameof(AspectRatio));
                 ShadersDumpPath                  = new ReactiveObject<string>();
-                EnableVsync                      = new ReactiveObject<bool>();
+                EnableVsync                      = new ReactiveObject<bool?>();
                 EnableVsync.Event                += static (sender, e) => LogValueChange(sender, e, nameof(EnableVsync));
-                EnableShaderCache                = new ReactiveObject<bool>();
+                EnableShaderCache                = new ReactiveObject<bool?>();
                 EnableShaderCache.Event          += static (sender, e) => LogValueChange(sender, e, nameof(EnableShaderCache));
-                EnableTextureRecompression       = new ReactiveObject<bool>();
+                EnableTextureRecompression       = new ReactiveObject<bool?>();
                 EnableTextureRecompression.Event += static (sender, e) => LogValueChange(sender, e, nameof(EnableTextureRecompression));
-                GraphicsBackend                  = new ReactiveObject<GraphicsBackend>();
+                GraphicsBackend                  = new ReactiveObject<GraphicsBackend?>();
                 GraphicsBackend.Event            += static (sender, e) => LogValueChange(sender, e, nameof(GraphicsBackend));
                 PreferredGpu                     = new ReactiveObject<string>();
                 PreferredGpu.Event               += static (sender, e) => LogValueChange(sender, e, nameof(PreferredGpu));
-                EnableMacroHLE                   = new ReactiveObject<bool>();
+                EnableMacroHLE                   = new ReactiveObject<bool?>();
                 EnableMacroHLE.Event             += static (sender, e) => LogValueChange(sender, e, nameof(EnableMacroHLE));
-                AntiAliasing                     = new ReactiveObject<AntiAliasing>();
+                AntiAliasing                     = new ReactiveObject<AntiAliasing?>();
                 AntiAliasing.Event               += static (sender, e) => LogValueChange(sender, e, nameof(AntiAliasing));
-                ScalingFilter                    = new ReactiveObject<ScalingFilter>();
+                ScalingFilter                    = new ReactiveObject<ScalingFilter?>();
                 ScalingFilter.Event              += static (sender, e) => LogValueChange(sender, e, nameof(ScalingFilter));
-                ScalingFilterLevel               = new ReactiveObject<int>();
+                ScalingFilterLevel               = new ReactiveObject<int?>();
                 ScalingFilterLevel.Event         += static (sender, e) => LogValueChange(sender, e, nameof(ScalingFilterLevel));
             }
         }
@@ -1362,6 +1362,11 @@ namespace Ryujinx.Ui.Common.Configuration
                 throw new InvalidOperationException("Game Configuration is already initialized");
             }
 
+            GameInstance = new ConfigurationState();
+        }
+
+        public static void ResetGameConfig()
+        {
             GameInstance = new ConfigurationState();
         }
     }

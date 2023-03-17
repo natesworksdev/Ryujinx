@@ -35,8 +35,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private readonly List<string> _validTzRegions;
 
-        private float _customResolutionScale;
-        private int _resolutionScale;
+        private float? _customResolutionScale;
+        private int? _resolutionScale;
         private int _graphicsBackendMultithreadingIndex;
         private float _volume;
         private bool _isVulkanAvailable = true;
@@ -45,13 +45,13 @@ namespace Ryujinx.Ava.UI.ViewModels
         private KeyboardHotkeys _keyboardHotkeys;
         private int _graphicsBackendIndex;
         private string _customThemePath;
-        private int _scalingFilter;
-        private int _scalingFilterLevel;
+        private int? _scalingFilter;
+        private int? _scalingFilterLevel;
 
         public event Action CloseWindow;
         public event Action SaveSettingsEvent;
 
-        public int ResolutionScale
+        public int? ResolutionScale
         {
             get => _resolutionScale;
             set
@@ -86,14 +86,16 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public float CustomResolutionScale
+        public float? CustomResolutionScale
         {
             get => _customResolutionScale;
             set
             {
-                _customResolutionScale = MathF.Round(value, 1);
+                if (value != null) {
+                    _customResolutionScale = MathF.Round((float)value, 1);
 
-                OnPropertyChanged();
+                    OnPropertyChanged();
+                }
             }
         }
 
@@ -106,6 +108,11 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 OnPropertyChanged();
             }
+        }
+
+        public bool IsGameSpecific
+        {
+            get => ConfigurationStateManager.UseGameConfiguration;
         }
 
         public bool IsOpenGLAvailable => !OperatingSystem.IsMacOS();
@@ -132,15 +139,15 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool EnableDockedMode { get; set; }
         public bool EnableKeyboard { get; set; }
         public bool EnableMouse { get; set; }
-        public bool EnableVsync { get; set; }
+        public bool? EnableVsync { get; set; }
         public bool EnablePptc { get; set; }
         public bool EnableInternetAccess { get; set; }
         public bool EnableFsIntegrityChecks { get; set; }
         public bool IgnoreMissingServices { get; set; }
         public bool ExpandDramSize { get; set; }
-        public bool EnableShaderCache { get; set; }
-        public bool EnableTextureRecompression { get; set; }
-        public bool EnableMacroHLE { get; set; }
+        public bool? EnableShaderCache { get; set; }
+        public bool? EnableTextureRecompression { get; set; }
+        public bool? EnableMacroHLE { get; set; }
         public bool EnableFileLog { get; set; }
         public bool EnableStub { get; set; }
         public bool EnableInfo { get; set; }
@@ -157,7 +164,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool IsCustomResolutionScaleActive => _resolutionScale == 4;
         public bool IsScalingFilterActive => _scalingFilter == (int)Ryujinx.Common.Configuration.ScalingFilter.Fsr;
 
-        public bool IsVulkanSelected => GraphicsBackendIndex == 0;
+        public bool IsVulkanSelected => GraphicsBackendIndex == 1;
         public bool UseHypervisor { get; set; }
 
         public string TimeZone { get; set; }
@@ -181,11 +188,11 @@ namespace Ryujinx.Ava.UI.ViewModels
         public int Region { get; set; }
         public int FsGlobalAccessLogMode { get; set; }
         public int AudioBackend { get; set; }
-        public int MaxAnisotropy { get; set; }
-        public int AspectRatio { get; set; }
-        public int AntiAliasingEffect { get; set; }
-        public string ScalingFilterLevelText => ScalingFilterLevel.ToString("0");
-        public int ScalingFilterLevel
+        public int? MaxAnisotropy { get; set; }
+        public int? AspectRatio { get; set; }
+        public int? AntiAliasingEffect { get; set; }
+        public string ScalingFilterLevelText => ScalingFilterLevel?.ToString("0");
+        public int? ScalingFilterLevel
         {
             get => _scalingFilterLevel;
             set
@@ -208,7 +215,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged(nameof(IsVulkanSelected));
             }
         }
-        public int ScalingFilter
+        public int? ScalingFilter
         {
             get => _scalingFilter;
             set
@@ -337,7 +344,15 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void LoadCurrentConfiguration()
         {
-            ConfigurationState config = ConfigurationStateManager.Instance;
+            ConfigurationState config;
+            if (ConfigurationStateManager.UseGameConfiguration)
+            {
+                config = ConfigurationStateManager.GameInstance;
+            }
+            else
+            {
+                config = ConfigurationStateManager.Instance;
+            }
 
             // User Interface
             EnableDiscordIntegration = config.EnableDiscordIntegration;
@@ -346,7 +361,10 @@ namespace Ryujinx.Ava.UI.ViewModels
             HideCursorOnIdle = config.HideCursorOnIdle;
 
             GameDirectories.Clear();
-            GameDirectories.AddRange(config.Ui.GameDirs.Value);
+            if (config.Ui.GameDirs.Value != null)
+            {
+                GameDirectories.AddRange(config.Ui.GameDirs.Value);
+            }
 
             EnableCustomTheme = config.Ui.EnableCustomTheme;
             CustomThemePath = config.Ui.CustomThemePath;
@@ -380,19 +398,19 @@ namespace Ryujinx.Ava.UI.ViewModels
             UseHypervisor = config.System.UseHypervisor;
 
             // Graphics
-            GraphicsBackendIndex = (int)config.Graphics.GraphicsBackend.Value;
+            GraphicsBackendIndex = config.Graphics.GraphicsBackend.Value == null ? 0 : (int)config.Graphics.GraphicsBackend.Value; // TODO: Update indexes.
             PreferredGpuIndex = _gpuIds.Contains(config.Graphics.PreferredGpu) ? _gpuIds.IndexOf(config.Graphics.PreferredGpu) : 0;
             EnableShaderCache = config.Graphics.EnableShaderCache;
             EnableTextureRecompression = config.Graphics.EnableTextureRecompression;
             EnableMacroHLE = config.Graphics.EnableMacroHLE;
-            ResolutionScale = config.Graphics.ResScale == -1 ? 4 : config.Graphics.ResScale - 1;
+            ResolutionScale = config.Graphics.ResScale.Value == null ? 0 : config.Graphics.ResScale == -1 ? 4 : config.Graphics.ResScale - 1;
             CustomResolutionScale = config.Graphics.ResScaleCustom;
-            MaxAnisotropy = config.Graphics.MaxAnisotropy == -1 ? 0 : (int)(MathF.Log2(config.Graphics.MaxAnisotropy));
-            AspectRatio = (int)config.Graphics.AspectRatio.Value;
-            GraphicsBackendMultithreadingIndex = (int)config.Graphics.BackendThreading.Value;
+            MaxAnisotropy = config.Graphics.MaxAnisotropy == -1 || config.Graphics.MaxAnisotropy.Value == null ? 0 : (int?)config.Graphics.MaxAnisotropy.Value;
+            AspectRatio = config.Graphics.AspectRatio.Value == null ? 0 : (int)config.Graphics.AspectRatio.Value;
+            GraphicsBackendMultithreadingIndex = config.Graphics.BackendThreading.Value == null ? 0 : (int)config.Graphics.BackendThreading.Value;
             ShaderDumpPath = config.Graphics.ShadersDumpPath;
-            AntiAliasingEffect = (int)config.Graphics.AntiAliasing.Value;
-            ScalingFilter = (int)config.Graphics.ScalingFilter.Value;
+            AntiAliasingEffect = config.Graphics.AntiAliasing.Value == null ? 0 : (int)config.Graphics.AntiAliasing.Value;
+            ScalingFilter = config.Graphics.ScalingFilter.Value == null ? 0 : (int)config.Graphics.ScalingFilter.Value;
             ScalingFilterLevel = config.Graphics.ScalingFilterLevel.Value;
 
             // Audio
@@ -474,7 +492,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.Graphics.EnableMacroHLE.Value = EnableMacroHLE;
             config.Graphics.ResScale.Value = ResolutionScale == 4 ? -1 : ResolutionScale + 1;
             config.Graphics.ResScaleCustom.Value = CustomResolutionScale;
-            config.Graphics.MaxAnisotropy.Value = MaxAnisotropy == 0 ? -1 : MathF.Pow(2, MaxAnisotropy);
+            config.Graphics.MaxAnisotropy.Value = MaxAnisotropy == 0 ? -1 : MaxAnisotropy ?? MathF.Pow(2, (float)MaxAnisotropy);
             config.Graphics.AspectRatio.Value = (AspectRatio)AspectRatio;
             config.Graphics.AntiAliasing.Value = (AntiAliasing)AntiAliasingEffect;
             config.Graphics.ScalingFilter.Value = (ScalingFilter)ScalingFilter;

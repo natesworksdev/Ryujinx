@@ -574,6 +574,7 @@
   "ControllerRumbleTitle": "Rumble Settings",
   "SettingsSelectThemeFileDialogTitle": "Select Theme File",
   "SettingsXamlThemeFile": "Xaml Theme File",
+  "SettingsUseGlobalConfiguration": "Use Global Configuration",
   "AvatarWindowTitle": "Manage Accounts - Avatar",
   "Amiibo": "Amiibo",
   "Unknown": "Unknown",
