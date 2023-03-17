@@ -29,42 +29,42 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// Whether or not backend threading is enabled. The "Auto" setting will determine whether threading should be enabled at runtime.
         /// </summary>
-        public BackendThreading BackendThreading { get; set; }
+        public BackendThreading? BackendThreading { get; set; }
 
         /// <summary>
         /// Resolution Scale. An integer scale applied to applicable render targets. Values 1-4, or -1 to use a custom floating point scale instead.
         /// </summary>
-        public int ResScale { get; set; }
+        public int? ResScale { get; set; }
 
         /// <summary>
         /// Custom Resolution Scale. A custom floating point scale applied to applicable render targets. Only active when Resolution Scale is -1.
         /// </summary>
-        public float ResScaleCustom { get; set; }
+        public float? ResScaleCustom { get; set; }
 
         /// <summary>
         /// Max Anisotropy. Values range from 0 - 16. Set to -1 to let the game decide.
         /// </summary>
-        public float MaxAnisotropy { get; set; }
+        public float? MaxAnisotropy { get; set; }
 
         /// <summary>
         /// Aspect Ratio applied to the renderer window.
         /// </summary>
-        public AspectRatio AspectRatio { get; set; }
+        public AspectRatio? AspectRatio { get; set; }
 
         /// <summary>
         /// Applies anti-aliasing to the renderer.
         /// </summary>
-        public AntiAliasing AntiAliasing { get; set; }
+        public AntiAliasing? AntiAliasing { get; set; }
 
         /// <summary>
         /// Sets the framebuffer upscaling type.
         /// </summary>
-        public ScalingFilter ScalingFilter { get; set; }
+        public ScalingFilter? ScalingFilter { get; set; }
 
         /// <summary>
         /// Sets the framebuffer upscaling level.
         /// </summary>
-        public int ScalingFilterLevel { get; set; }
+        public int? ScalingFilterLevel { get; set; }
 
         /// <summary>
         /// Dumps shaders in this local directory
@@ -169,22 +169,22 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// Enables or disables Vertical Sync
         /// </summary>
-        public bool EnableVsync { get; set; }
+        public bool? EnableVsync { get; set; }
 
         /// <summary>
         /// Enables or disables Shader cache
         /// </summary>
-        public bool EnableShaderCache { get; set; }
+        public bool? EnableShaderCache { get; set; }
 
         /// <summary>
         /// Enables or disables texture recompression
         /// </summary>
-        public bool EnableTextureRecompression { get; set; }
+        public bool? EnableTextureRecompression { get; set; }
 
         /// <summary>
         /// Enables or disables Macro high-level emulation
         /// </summary>
-        public bool EnableMacroHLE { get; set; }
+        public bool? EnableMacroHLE { get; set; }
 
         /// <summary>
         /// Enables or disables profiled translation cache persistency
@@ -338,7 +338,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// Graphics backend
         /// </summary>
-        public GraphicsBackend GraphicsBackend { get; set; }
+        public GraphicsBackend? GraphicsBackend { get; set; }
 
         /// <summary>
         /// Preferred GPU

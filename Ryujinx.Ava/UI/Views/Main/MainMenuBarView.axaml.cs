@@ -11,6 +11,7 @@ using Ryujinx.Common;
 using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.HOS;
 using Ryujinx.Modules;
+using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.Generic;
@@ -100,6 +101,7 @@ namespace Ryujinx.Ava.UI.Views.Main
 
         public async void OpenSettings(object sender, RoutedEventArgs e)
         {
+            ConfigurationStateManager.UseGameConfiguration = false;
             Window.SettingsWindow = new(Window.VirtualFileSystem, Window.ContentManager);
 
             await Window.SettingsWindow.ShowDialog(Window);

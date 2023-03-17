@@ -198,16 +198,20 @@ namespace Ryujinx.Ava
                 }
             }
         }
-        private void UpdateScalingFilterLevel(object sender, ReactiveEventArgs<int> e)
+        private void UpdateScalingFilterLevel(object sender, ReactiveEventArgs<int?> e)
         {
-            _renderer.Window?.SetScalingFilter((Graphics.GAL.ScalingFilter)ConfigurationState.Instance.Graphics.ScalingFilter.Value);
-            _renderer.Window?.SetScalingFilterLevel(ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value);
+            if (e.NewValue == null) return;
+
+            _renderer.Window?.SetScalingFilter((Graphics.GAL.ScalingFilter)ConfigurationStateManager.ScalingFilter.Value);
+            _renderer.Window?.SetScalingFilterLevel((int)ConfigurationStateManager.ScalingFilterLevel);
         }
 
-        private void UpdateScalingFilter(object sender, ReactiveEventArgs<Ryujinx.Common.Configuration.ScalingFilter> e)
+        private void UpdateScalingFilter(object sender, ReactiveEventArgs<Ryujinx.Common.Configuration.ScalingFilter?> e)
         {
-            _renderer.Window?.SetScalingFilter((Graphics.GAL.ScalingFilter)ConfigurationState.Instance.Graphics.ScalingFilter.Value);
-            _renderer.Window?.SetScalingFilterLevel(ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value);
+            if (e.NewValue == null) return;
+
+            _renderer.Window?.SetScalingFilter((Graphics.GAL.ScalingFilter)e.NewValue);
+            _renderer.Window?.SetScalingFilterLevel((int)ConfigurationStateManager.ScalingFilterLevel);
         }
 
         private void ShowCursor()
@@ -353,16 +357,18 @@ namespace Ryujinx.Ava
             }
         }
 
-        private void UpdateAspectRatioState(object sender, ReactiveEventArgs<AspectRatio> args)
+        private void UpdateAspectRatioState(object sender, ReactiveEventArgs<AspectRatio?> args)
         {
+            if (args.NewValue == null) return;
             if (Device != null)
             {
-                Device.Configuration.AspectRatio = args.NewValue;
+                Device.Configuration.AspectRatio = (AspectRatio)args.NewValue;
             }
         }
 
-        private void UpdateAntiAliasing(object sender, ReactiveEventArgs<Ryujinx.Common.Configuration.AntiAliasing> e)
+        private void UpdateAntiAliasing(object sender, ReactiveEventArgs<Ryujinx.Common.Configuration.AntiAliasing?> e)
         {
+            if (e.NewValue == null) return;
             _renderer?.Window?.SetAntiAliasing((Graphics.GAL.AntiAliasing)e.NewValue);
         }
 
@@ -671,7 +677,7 @@ namespace Ryujinx.Ava
                 renderer = new OpenGLRenderer();
             }
 
-            BackendThreading threadingMode = ConfigurationState.Instance.Graphics.BackendThreading;
+            BackendThreading threadingMode = (BackendThreading)ConfigurationState.Instance.Graphics.BackendThreading;
 
             var isGALthreaded = threadingMode == BackendThreading.On || (threadingMode == BackendThreading.Auto && renderer.PreferThreading);
             if (isGALthreaded)
@@ -695,7 +701,7 @@ namespace Ryujinx.Ava
                                                      _viewModel.UiHandler,
                                                      (SystemLanguage)ConfigurationState.Instance.System.Language.Value,
                                                      (RegionCode)ConfigurationState.Instance.System.Region.Value,
-                                                     ConfigurationState.Instance.Graphics.EnableVsync,
+                                                     (bool)ConfigurationState.Instance.Graphics.EnableVsync,
                                                      ConfigurationState.Instance.System.EnableDockedMode,
                                                      ConfigurationState.Instance.System.EnablePtc,
                                                      ConfigurationState.Instance.System.EnableInternetAccess,
@@ -705,7 +711,7 @@ namespace Ryujinx.Ava
                                                      ConfigurationState.Instance.System.TimeZone,
                                                      ConfigurationState.Instance.System.MemoryManagerMode,
                                                      ConfigurationState.Instance.System.IgnoreMissingServices,
-                                                     ConfigurationState.Instance.Graphics.AspectRatio,
+                                                     (AspectRatio)ConfigurationState.Instance.Graphics.AspectRatio,
                                                      ConfigurationState.Instance.System.AudioVolume,
                                                      ConfigurationState.Instance.System.UseHypervisor);
 
@@ -714,33 +720,7 @@ namespace Ryujinx.Ava
 
         private void InitializeGameConfiguration()
         {
-            ConfigurationState.GameInstance = null;
-            string applicationConfigurationPath = ConfigurationStateManager.ConfigPathForApplication(Device.Application.TitleIdText);
-            ConfigurationStateManager.ApplicationTitle = Device.Application.TitleName;
-            ConfigurationStateManager.ApplicationId = Device.Application.TitleIdText;
-
-            ConfigurationState.InitializeGameConfig();
-            ConfigurationFileFormat.TryLoad(applicationConfigurationPath, out ConfigurationFileFormat applicationConfigurationFileFormat);
-
-            if (applicationConfigurationFileFormat == null)
-            {
-                ConfigurationFileFormat.TryLoad(Program.ConfigurationPath, out ConfigurationFileFormat globalConfigurationFileFormat);
-                ConfigurationLoadResult result = ConfigurationState.GameInstance.Load(globalConfigurationFileFormat, Program.ConfigurationPath);
-
-                if (result == ConfigurationLoadResult.NotLoaded)
-                {
-                    ConfigurationState.GameInstance.LoadDefault();
-                }
-            }
-            else
-            {
-                ConfigurationLoadResult result = ConfigurationState.GameInstance.Load(applicationConfigurationFileFormat, applicationConfigurationPath);
-
-                if (result == ConfigurationLoadResult.NotLoaded)
-                {
-                    ConfigurationState.GameInstance.LoadDefault();
-                }
-            }
+            ConfigurationStateManager.InitializeGameConfiguration(Device.Application.TitleName, Device.Application.TitleIdText);
 
             ConfigurationStateManager.Instance.System.IgnoreMissingServices.Event += UpdateIgnoreMissingServicesState;
             ConfigurationStateManager.Instance.Graphics.AspectRatio.Event         += UpdateAspectRatioState;
@@ -857,9 +837,9 @@ namespace Ryujinx.Ava
 
             Device.Gpu.Renderer.Initialize(_glLogLevel);
 
-            _renderer?.Window?.SetAntiAliasing((Graphics.GAL.AntiAliasing)ConfigurationStateManager.Graphics.AntiAliasing.Value);
-            _renderer?.Window?.SetScalingFilter((Graphics.GAL.ScalingFilter)ConfigurationStateManager.Graphics.ScalingFilter.Value);
-            _renderer?.Window?.SetScalingFilterLevel(ConfigurationStateManager.Graphics.ScalingFilterLevel.Value);
+            _renderer?.Window?.SetAntiAliasing((Graphics.GAL.AntiAliasing)ConfigurationStateManager.AntiAliasing.Value);
+            _renderer?.Window?.SetScalingFilter((Graphics.GAL.ScalingFilter)ConfigurationStateManager.ScalingFilter.Value);
+            _renderer?.Window?.SetScalingFilterLevel((int)ConfigurationStateManager.ScalingFilterLevel);
 
             Width = (int)_rendererHost.Bounds.Width;
             Height = (int)_rendererHost.Bounds.Height;
@@ -923,9 +903,9 @@ namespace Ryujinx.Ava
             StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
                 Device.EnableDeviceVsync,
                 LocaleManager.Instance[LocaleKeys.VolumeShort] + $": {(int)(Device.GetVolume() * 100)}%",
-                ConfigurationStateManager.Graphics.GraphicsBackend.Value == GraphicsBackend.Vulkan ? "Vulkan" : "OpenGL",
+                ConfigurationStateManager.GraphicsBackend == GraphicsBackend.Vulkan ? "Vulkan" : "OpenGL",
                 dockedMode,
-                ConfigurationStateManager.Graphics.AspectRatio.Value.ToText(),
+                ((AspectRatio)ConfigurationStateManager.AspectRatio).ToText(),
                 LocaleManager.Instance[LocaleKeys.Game] + $": {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
                 $"FIFO: {Device.Statistics.GetFifoPercent():00.00} %",
                 $"GPU: {_renderer.GetHardwareInfo().GpuVendor}"));
@@ -961,7 +941,7 @@ namespace Ryujinx.Ava
                 return false;
             }
 
-            NpadManager.Update(ConfigurationStateManager.Graphics.AspectRatio.Value.ToFloat());
+            NpadManager.Update(((AspectRatio)ConfigurationStateManager.AspectRatio).ToFloat());
 
             if (_viewModel.IsActive)
             {
@@ -1076,7 +1056,7 @@ namespace Ryujinx.Ava
 
             if (_viewModel.IsActive && !ConfigurationStateManager.Hid.EnableMouse)
             {
-                hasTouch = TouchScreenManager.Update(true, (_inputManager.MouseDriver as AvaloniaMouseDriver).IsButtonPressed(MouseButton.Button1), ConfigurationStateManager.Graphics.AspectRatio.Value.ToFloat());
+                hasTouch = TouchScreenManager.Update(true, (_inputManager.MouseDriver as AvaloniaMouseDriver).IsButtonPressed(MouseButton.Button1), ((AspectRatio)ConfigurationStateManager.AspectRatio).ToFloat());
             }
 
             if (!hasTouch)
