@@ -319,12 +319,12 @@ namespace Ryujinx.Ava.UI.Windows
 
         public static void UpdateGraphicsConfig()
         {
-            GraphicsConfig.ResScale                   = ConfigurationStateManager.Graphics.ResScale == -1 ? ConfigurationStateManager.Graphics.ResScaleCustom : ConfigurationStateManager.Graphics.ResScale;
-            GraphicsConfig.MaxAnisotropy              = ConfigurationStateManager.Graphics.MaxAnisotropy;
-            GraphicsConfig.ShadersDumpPath            = ConfigurationStateManager.Graphics.ShadersDumpPath;
-            GraphicsConfig.EnableShaderCache          = ConfigurationStateManager.Graphics.EnableShaderCache;
-            GraphicsConfig.EnableTextureRecompression = ConfigurationStateManager.Graphics.EnableTextureRecompression;
-            GraphicsConfig.EnableMacroHLE             = ConfigurationStateManager.Graphics.EnableMacroHLE;
+            GraphicsConfig.ResScale                   = ConfigurationStateManager.ResScale == -1 ? (float)ConfigurationStateManager.ResScaleCustom : (int)ConfigurationStateManager.ResScale;
+            GraphicsConfig.MaxAnisotropy              = (int)ConfigurationStateManager.MaxAnisotropy;
+            GraphicsConfig.ShadersDumpPath            = ConfigurationStateManager.ShadersDumpPath;
+            GraphicsConfig.EnableShaderCache          = (bool)ConfigurationStateManager.EnableShaderCache;
+            GraphicsConfig.EnableTextureRecompression = (bool)ConfigurationStateManager.EnableTextureRecompression;
+            GraphicsConfig.EnableMacroHLE             = (bool)ConfigurationStateManager.EnableMacroHLE;
         }
 
         public void LoadHotKeys()

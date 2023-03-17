@@ -16,13 +16,14 @@ namespace Ryujinx.Ava.UI.Windows
 
         public SettingsWindow(VirtualFileSystem virtualFileSystem, ContentManager contentManager)
         {
-            if(ConfigurationStateManager.ApplicationTitle != null)
+            if(ConfigurationStateManager.UseGameConfiguration)
             {
                 Title = $"Ryujinx {Program.Version} - {LocaleManager.Instance[LocaleKeys.Settings]} - {ConfigurationStateManager.ApplicationTitle}";
             }
             else
             {
-                Title = $"Ryujinx {Program.Version} - {LocaleManager.Instance[LocaleKeys.Settings]}";
+                // TODO: Locale for "Global"
+                Title = $"Ryujinx {Program.Version} - {LocaleManager.Instance[LocaleKeys.Settings]} - Global";
             }
 
             ViewModel   = new SettingsViewModel(virtualFileSystem, contentManager);

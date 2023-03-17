@@ -2,6 +2,7 @@
 {
     public enum GraphicsBackend
     {
+        Unset,
         Vulkan,
         OpenGl
     }
