@@ -10,7 +10,6 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 
@@ -18,7 +17,7 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
 {
     public static class PartitionFileSystemExtensions
     {
-        internal static (bool, ProcessResult) TryLoad(this PartitionFileSystem partitionFileSystem, Switch device, string path, [NotNullWhen(false)] out string errorMessage)
+        internal static (bool, ProcessResult) TryLoad(this PartitionFileSystem partitionFileSystem, Switch device, string path, out string errorMessage)
         {
             errorMessage = null;
 

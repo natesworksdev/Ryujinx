@@ -27,14 +27,15 @@ namespace Ryujinx.HLE.Loaders.Processes
         public readonly bool   DiskCacheEnabled;
         public readonly bool   AllowCodeMemoryForJit;
 
-        public ProcessResult(MetaLoader                 metaLoader,
-                             ApplicationControlProperty applicationControlProperties,
-                             bool                       diskCacheEnabled,
-                             bool                       allowCodeMemoryForJit,
-                             IDiskCacheLoadState        diskCacheLoadState,
-                             ulong                      pid,
-                             byte                       mainThreadPriority,
-                             uint                       mainThreadStackSize)
+        public ProcessResult(
+            MetaLoader                 metaLoader,
+            ApplicationControlProperty applicationControlProperties,
+            bool                       diskCacheEnabled,
+            bool                       allowCodeMemoryForJit,
+            IDiskCacheLoadState        diskCacheLoadState,
+            ulong                      pid,
+            byte                       mainThreadPriority,
+            uint                       mainThreadStackSize)
         {
             _mainThreadPriority  = mainThreadPriority;
             _mainThreadStackSize = mainThreadStackSize;

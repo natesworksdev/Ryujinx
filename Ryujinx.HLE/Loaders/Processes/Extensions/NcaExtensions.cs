@@ -49,7 +49,7 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
             /* TODO: Rework this since it's wrong and doesn't work as it takes the DisplayVersion from a "potential" inexistant update.
 
             // Load program 0 control NCA as we are going to need it for display version.
-            //(_, Nca updateProgram0ControlNca) = GetGameUpdateData(_device.Configuration.VirtualFileSystem, mainNca.Header.TitleId.ToString("x16"), 0, out _);
+            (_, Nca updateProgram0ControlNca) = GetGameUpdateData(_device.Configuration.VirtualFileSystem, mainNca.Header.TitleId.ToString("x16"), 0, out _);
 
             // NOTE: Nintendo doesn't guarantee that the display version will be updated on sub programs when updating a multi program application.
             //       As such, to avoid PTC cache confusion, we only trust the program 0 display version when launching a sub program.

@@ -12,6 +12,7 @@ using Ryujinx.HLE.Loaders.Processes.Extensions;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
+using Path = System.IO.Path;
 
 namespace Ryujinx.HLE.Loaders.Processes
 {
@@ -43,11 +44,11 @@ namespace Ryujinx.HLE.Loaders.Processes
                 return false;
             }
 
-            (bool success ,ProcessResult processResult) = xci.OpenPartition(XciPartitionType.Secure).TryLoad(_device, path, out string errorMessage);
+            (bool success, ProcessResult processResult) = xci.OpenPartition(XciPartitionType.Secure).TryLoad(_device, path, out string errorMessage);
 
             if (!success)
             {
-                Logger.Error?.Print(LogClass.Loader, errorMessage, "TryLoad");
+                Logger.Error?.Print(LogClass.Loader, errorMessage, nameof(PartitionFileSystemExtensions.TryLoad));
 
                 return false;
             }
@@ -90,7 +91,7 @@ namespace Ryujinx.HLE.Loaders.Processes
 
             if (!success)
             {
-                Logger.Error?.Print(LogClass.Loader, errorMessage, "TryLoad");
+                Logger.Error?.Print(LogClass.Loader, errorMessage, nameof(PartitionFileSystemExtensions.TryLoad));
             }
 
             return false;
@@ -149,7 +150,7 @@ namespace Ryujinx.HLE.Loaders.Processes
             // Load executable.
             IExecutable executable;
 
-            if (System.IO.Path.GetExtension(path).ToLower() == ".nro")
+            if (Path.GetExtension(path).ToLower() == ".nro")
             {
                 FileStream    input = new(path, FileMode.Open);
                 NroExecutable nro   = new(input.AsStorage());

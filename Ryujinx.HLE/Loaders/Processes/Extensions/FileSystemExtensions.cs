@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
         {
             ulong programId = metaLoader.GetProgramId();
 
-            // Replace the whole ExeFs partition by modded one.
+            // Replace the whole ExeFs partition by the modded one.
             if (device.Configuration.VirtualFileSystem.ModLoader.ReplaceExefsPartition(programId, ref exeFs))
             {
                 metaLoader = null;
@@ -113,7 +113,7 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
             }
 
 
-            ProcessResult processResult = ProcessLoaderHelper.LoadNsos(device, 
+            ProcessResult processResult = ProcessLoaderHelper.LoadNsos(device,
                                                                        device.System.KernelContext,
                                                                        metaLoader,
                                                                        nacpData.Value,
