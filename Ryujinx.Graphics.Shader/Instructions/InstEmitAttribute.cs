@@ -162,6 +162,12 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     // because the shader code is not expecting scaled values.
                     res = context.FPDivide(res, context.Load(StorageKind.Input, IoVariable.SupportBlockRenderScale, null, Const(0)));
                 }
+                else if (op.Imm10 == AttributeConsts.FrontFacing && context.Config.GpuAccessor.QueryHostHasFrontFacingBug())
+                {
+                    // gl_FrontFacing sometimes has incorrect (flipped) values depending how it is accessed on Intel GPUs.
+                    // This weird trick makes it behave.
+                    res = context.ICompareLess(context.INegate(context.IConvertS32ToFP32(res)), Const(0));
+                }
             }
 
             if (op.IpaOp == IpaOp.Multiply && !isFixedFunc)

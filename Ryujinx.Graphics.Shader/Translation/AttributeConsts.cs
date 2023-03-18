@@ -24,6 +24,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         public const int TexCoordCount = 10;
         public const int TexCoordBase = 0x300;
         public const int TexCoordEnd = TexCoordBase + TexCoordCount * 16;
+        public const int FrontFacing = 0x3fc;
 
         public const int UserAttributesCount = 32;
         public const int UserAttributeBase = 0x80;
