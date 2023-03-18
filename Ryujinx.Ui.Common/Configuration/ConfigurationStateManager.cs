@@ -275,7 +275,7 @@ namespace Ryujinx.Ui.Common.Configuration
                     ConfigurationState.ResetGameConfig();
                 }
             }
-            }
+        }
         public static string ConfigPathForApplication(string applicationId)
         {
             return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{applicationId}.json");
