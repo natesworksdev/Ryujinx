@@ -303,6 +303,13 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             EnsureTransformFeedbackInitialized();
 
+            // If we have a fragment shader, let's just make it use one component for everything,
+            // so that the VTG output matches the fragment inputs.
+            if (!LastInPipeline)
+            {
+                return 1;
+            }
+
             int baseIndex = (AttributeConsts.UserAttributeBase / 4) + location * 4;
             int index = baseIndex + component;
             int count = 1;
