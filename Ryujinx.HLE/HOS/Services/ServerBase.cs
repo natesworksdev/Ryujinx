@@ -32,6 +32,8 @@ namespace Ryujinx.HLE.HOS.Services
             0x01007FFF
         };
 
+        private readonly object _handleLock = new();
+
         private readonly KernelContext _context;
         private KProcess _selfProcess;
 
@@ -77,7 +79,7 @@ namespace Ryujinx.HLE.HOS.Services
 
         private void AddPort(int serverPortHandle, Func<IpcService> objectFactory)
         {
-            lock (_portHandles)
+            lock (_handleLock)
             {
                 _portHandles.Add(serverPortHandle);
             }
@@ -95,7 +97,7 @@ namespace Ryujinx.HLE.HOS.Services
 
         public void AddSessionObj(int serverSessionHandle, IpcService obj)
         {
-            lock (_sessionHandles)
+            lock (_handleLock)
             {
                 _sessionHandles.Add(serverSessionHandle);
             }
@@ -132,8 +134,7 @@ namespace Ryujinx.HLE.HOS.Services
 
             while (true)
             {
-                lock (_portHandles)
-                lock (_sessionHandles)
+                lock (_handleLock)
                 {
                     int handleCount = _portHandles.Count + _sessionHandles.Count;
 
@@ -288,7 +289,7 @@ namespace Ryujinx.HLE.HOS.Services
             else if (request.Type == IpcMessageType.HipcCloseSession || request.Type == IpcMessageType.TipcCloseSession)
             {
                 _context.Syscall.CloseHandle(serverSessionHandle);
-                lock (_sessionHandles)
+                lock (_handleLock)
                 {
                     _sessionHandles.Remove(serverSessionHandle);
                 }
