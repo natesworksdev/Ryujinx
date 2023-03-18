@@ -32,9 +32,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Common
 
             ReadOnlySpan<byte> byteSpan = MemoryMarshal.Cast<T, byte>(structSpan);
 
-            ulong value = BitConverter.IsLittleEndian
-                ? BinaryPrimitives.ReadUInt64LittleEndian(byteSpan)
-                : BinaryPrimitives.ReadUInt64BigEndian(byteSpan);
+            ulong value = BinaryPrimitives.ReadUInt64LittleEndian(byteSpan);
 
             return value;
         }
