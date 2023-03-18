@@ -77,7 +77,10 @@ namespace Ryujinx.HLE.HOS.Services
 
         private void AddPort(int serverPortHandle, Func<IpcService> objectFactory)
         {
-            _portHandles.Add(serverPortHandle);
+            lock (_portHandles)
+            {
+                _portHandles.Add(serverPortHandle);
+            }
             _ports.Add(serverPortHandle, objectFactory);
         }
 
@@ -92,7 +95,10 @@ namespace Ryujinx.HLE.HOS.Services
 
         public void AddSessionObj(int serverSessionHandle, IpcService obj)
         {
-            _sessionHandles.Add(serverSessionHandle);
+            lock (_sessionHandles)
+            {
+                _sessionHandles.Add(serverSessionHandle);
+            }
             _sessions.Add(serverSessionHandle, obj);
         }
 
@@ -282,7 +288,10 @@ namespace Ryujinx.HLE.HOS.Services
             else if (request.Type == IpcMessageType.HipcCloseSession || request.Type == IpcMessageType.TipcCloseSession)
             {
                 _context.Syscall.CloseHandle(serverSessionHandle);
-                _sessionHandles.Remove(serverSessionHandle);
+                lock (_sessionHandles)
+                {
+                    _sessionHandles.Remove(serverSessionHandle);
+                }
                 IpcService service = _sessions[serverSessionHandle];
                 (service as IDisposable)?.Dispose();
                 _sessions.Remove(serverSessionHandle);
