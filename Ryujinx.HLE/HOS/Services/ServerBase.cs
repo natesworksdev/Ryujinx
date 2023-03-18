@@ -126,56 +126,60 @@ namespace Ryujinx.HLE.HOS.Services
 
             while (true)
             {
-                int portHandlesCount = _portHandles.Count;
-                int sessionHandlesCount = _sessionHandles.Count;
-                int handleCount = portHandlesCount + sessionHandlesCount;
-
-                int[] handles = ArrayPool<int>.Shared.Rent(handleCount);
-
-                _portHandles.CopyTo(0, handles, 0, portHandlesCount);
-                _sessionHandles.CopyTo(0, handles, portHandlesCount, sessionHandlesCount);
-
-                // We still need a timeout here to allow the service to pick up and listen new sessions...
-                var rc = _context.Syscall.ReplyAndReceive(out int signaledIndex, handles.AsSpan(0, handleCount), replyTargetHandle, 1000000L);
-
-                thread.HandlePostSyscall();
-
-                if (!thread.Context.Running)
+                lock (_portHandles)
                 {
-                    break;
-                }
-
-                replyTargetHandle = 0;
-
-                if (rc == Result.Success && signaledIndex >= portHandlesCount)
-                {
-                    // We got a IPC request, process it, pass to the appropriate service if needed.
-                    int signaledHandle = handles[signaledIndex];
-
-                    if (Process(signaledHandle, heapAddr))
+                    lock (_sessionHandles)
                     {
-                        replyTargetHandle = signaledHandle;
-                    }
-                }
-                else
-                {
-                    if (rc == Result.Success)
-                    {
-                        // We got a new connection, accept the session to allow servicing future requests.
-                        if (_context.Syscall.AcceptSession(out int serverSessionHandle, handles[signaledIndex]) == Result.Success)
+                        int handleCount = _portHandles.Count + _sessionHandles.Count;
+
+                        int[] handles = ArrayPool<int>.Shared.Rent(handleCount);
+
+                        _portHandles.CopyTo(handles, 0);
+                        _sessionHandles.CopyTo(handles, _portHandles.Count);
+
+                        // We still need a timeout here to allow the service to pick up and listen new sessions...
+                        var rc = _context.Syscall.ReplyAndReceive(out int signaledIndex, handles.AsSpan(0, handleCount), replyTargetHandle, 1000000L);
+
+                        thread.HandlePostSyscall();
+
+                        if (!thread.Context.Running)
                         {
-                            IpcService obj = _ports[handles[signaledIndex]].Invoke();
-
-                            AddSessionObj(serverSessionHandle, obj);
+                            break;
                         }
+
+                        replyTargetHandle = 0;
+
+                        if (rc == Result.Success && signaledIndex >= _portHandles.Count)
+                        {
+                            // We got a IPC request, process it, pass to the appropriate service if needed.
+                            int signaledHandle = handles[signaledIndex];
+
+                            if (Process(signaledHandle, heapAddr))
+                            {
+                                replyTargetHandle = signaledHandle;
+                            }
+                        }
+                        else
+                        {
+                            if (rc == Result.Success)
+                            {
+                                // We got a new connection, accept the session to allow servicing future requests.
+                                if (_context.Syscall.AcceptSession(out int serverSessionHandle, handles[signaledIndex]) == Result.Success)
+                                {
+                                    IpcService obj = _ports[handles[signaledIndex]].Invoke();
+
+                                    AddSessionObj(serverSessionHandle, obj);
+                                }
+                            }
+
+                            _selfProcess.CpuMemory.Write(messagePtr + 0x0, 0);
+                            _selfProcess.CpuMemory.Write(messagePtr + 0x4, 2 << 10);
+                            _selfProcess.CpuMemory.Write(messagePtr + 0x8, heapAddr | ((ulong)PointerBufferSize << 48));
+                        }
+
+                        ArrayPool<int>.Shared.Return(handles);
                     }
-
-                    _selfProcess.CpuMemory.Write(messagePtr + 0x0, 0);
-                    _selfProcess.CpuMemory.Write(messagePtr + 0x4, 2 << 10);
-                    _selfProcess.CpuMemory.Write(messagePtr + 0x8, heapAddr | ((ulong)PointerBufferSize << 48));
                 }
-
-                ArrayPool<int>.Shared.Return(handles);
             }
 
             Dispose();
