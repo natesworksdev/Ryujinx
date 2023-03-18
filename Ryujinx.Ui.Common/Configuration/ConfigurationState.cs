@@ -787,7 +787,146 @@ namespace Ryujinx.Ui.Common.Configuration
             };
         }
 
+        public void LoadGameDefault()
+        {
+            Logger.EnableFileLog.Value = true;
+            Graphics.BackendThreading.Value = BackendThreading.Auto;
+            Graphics.ResScale.Value = 1;
+            Graphics.ResScaleCustom.Value = 1.0f;
+            Graphics.MaxAnisotropy.Value = -1.0f;
+            Graphics.AspectRatio.Value = AspectRatio.Fixed16x9;
+            Graphics.GraphicsBackend.Value = OperatingSystem.IsMacOS() ? GraphicsBackend.Vulkan : GraphicsBackend.OpenGl;
+            Graphics.PreferredGpu.Value = "";
+            Graphics.ShadersDumpPath.Value = "";
+            Logger.EnableDebug.Value = false;
+            Logger.EnableStub.Value = true;
+            Logger.EnableInfo.Value = true;
+            Logger.EnableWarn.Value = true;
+            Logger.EnableError.Value = true;
+            Logger.EnableTrace.Value = false;
+            Logger.EnableGuest.Value = true;
+            Logger.EnableFsAccessLog.Value = false;
+            Logger.FilteredClasses.Value = Array.Empty<LogClass>();
+            Logger.GraphicsDebugLevel.Value = GraphicsDebugLevel.None;
+            System.Language.Value = Language.AmericanEnglish;
+            System.Region.Value = Region.USA;
+            System.TimeZone.Value = "UTC";
+            System.SystemTimeOffset.Value = 0;
+            System.EnableDockedMode.Value = true;
+            EnableDiscordIntegration.Value = true;
+            CheckUpdatesOnStart.Value = true;
+            ShowConfirmExit.Value = true;
+            HideCursorOnIdle.Value = false;
+            Graphics.EnableVsync.Value = true;
+            Graphics.EnableShaderCache.Value = true;
+            Graphics.EnableTextureRecompression.Value = false;
+            Graphics.EnableMacroHLE.Value = true;
+            Graphics.AntiAliasing.Value = AntiAliasing.None;
+            Graphics.ScalingFilter.Value = ScalingFilter.Bilinear;
+            Graphics.ScalingFilterLevel.Value = 80;
+            System.EnablePtc.Value = true;
+            System.EnableInternetAccess.Value = false;
+            System.EnableFsIntegrityChecks.Value = true;
+            System.FsGlobalAccessLogMode.Value = 0;
+            System.AudioBackend.Value = AudioBackend.SDL2;
+            System.AudioVolume.Value = 1;
+            System.MemoryManagerMode.Value = MemoryManagerMode.HostMappedUnsafe;
+            System.ExpandRam.Value = false;
+            System.IgnoreMissingServices.Value = false;
+            System.UseHypervisor.Value = true;
+            Ui.GuiColumns.FavColumn.Value = true;
+            Ui.GuiColumns.IconColumn.Value = true;
+            Ui.GuiColumns.AppColumn.Value = true;
+            Ui.GuiColumns.DevColumn.Value = true;
+            Ui.GuiColumns.VersionColumn.Value = true;
+            Ui.GuiColumns.TimePlayedColumn.Value = true;
+            Ui.GuiColumns.LastPlayedColumn.Value = true;
+            Ui.GuiColumns.FileExtColumn.Value = true;
+            Ui.GuiColumns.FileSizeColumn.Value = true;
+            Ui.GuiColumns.PathColumn.Value = true;
+            Ui.ColumnSort.SortColumnId.Value = 0;
+            Ui.ColumnSort.SortAscending.Value = false;
+            Ui.GameDirs.Value = new List<string>();
+            Ui.EnableCustomTheme.Value = false;
+            Ui.LanguageCode.Value = "en_US";
+            Ui.CustomThemePath.Value = "";
+            Ui.BaseStyle.Value = "Dark";
+            Ui.GameListViewMode.Value = 0;
+            Ui.ShowNames.Value = true;
+            Ui.GridSize.Value = 2;
+            Ui.ApplicationSort.Value = 0;
+            Ui.IsAscendingOrder.Value = true;
+            Ui.StartFullscreen.Value = false;
+            Ui.ShowConsole.Value = true;
+            Hid.EnableKeyboard.Value = false;
+            Hid.EnableMouse.Value = false;
+            Hid.Hotkeys.Value = new KeyboardHotkeys
+            {
+                ToggleVsync = Key.F1,
+                ToggleMute = Key.F2,
+                Screenshot = Key.F8,
+                ShowUi = Key.F4,
+                Pause = Key.F5,
+                ResScaleUp = Key.Unbound,
+                ResScaleDown = Key.Unbound,
+                VolumeUp = Key.Unbound,
+                VolumeDown = Key.Unbound
+            };
+            Hid.InputConfig.Value = new List<InputConfig>
+            {
+                 new StandardKeyboardInputConfig
+                 {
+                        Version          = InputConfig.CurrentVersion,
+                        Backend          = InputBackendType.WindowKeyboard,
+                        Id               = "0",
+                        PlayerIndex      = PlayerIndex.Player1,
+                        ControllerType   = ControllerType.JoyconPair,
+                        LeftJoycon       = new LeftJoyconCommonConfig<Key>
+                        {
+                            DpadUp       = Key.Up,
+                            DpadDown     = Key.Down,
+                            DpadLeft     = Key.Left,
+                            DpadRight    = Key.Right,
+                            ButtonMinus  = Key.Minus,
+                            ButtonL      = Key.E,
+                            ButtonZl     = Key.Q,
+                            ButtonSl     = Key.Unbound,
+                            ButtonSr     = Key.Unbound
+                        },
 
+                        LeftJoyconStick  = new JoyconConfigKeyboardStick<Key>
+                        {
+                            StickUp      = Key.W,
+                            StickDown    = Key.S,
+                            StickLeft    = Key.A,
+                            StickRight   = Key.D,
+                            StickButton  = Key.F,
+                        },
+
+                        RightJoycon      = new RightJoyconCommonConfig<Key>
+                        {
+                            ButtonA      = Key.Z,
+                            ButtonB      = Key.X,
+                            ButtonX      = Key.C,
+                            ButtonY      = Key.V,
+                            ButtonPlus   = Key.Plus,
+                            ButtonR      = Key.U,
+                            ButtonZr     = Key.O,
+                            ButtonSl     = Key.Unbound,
+                            ButtonSr     = Key.Unbound
+                        },
+
+                        RightJoyconStick = new JoyconConfigKeyboardStick<Key>
+                        {
+                            StickUp      = Key.I,
+                            StickDown    = Key.K,
+                            StickLeft    = Key.J,
+                            StickRight   = Key.L,
+                            StickButton  = Key.H,
+                        }
+                 }
+            };
+        }
 
         public ConfigurationLoadResult Load(ConfigurationFileFormat configurationFileFormat, string configurationFilePath)
         {
