@@ -151,7 +151,7 @@ namespace Ryujinx.Ava
                 // No configuration, we load the default values and save it to disk
                 ConfigurationPath = appDataConfigurationPath;
 
-                ConfigurationState.Instance.LoadDefault();
+                ConfigurationState.Instance.LoadGlobalDefault();
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
             }
             else
@@ -162,7 +162,7 @@ namespace Ryujinx.Ava
                 }
                 else
                 {
-                    ConfigurationState.Instance.LoadDefault();
+                    ConfigurationState.Instance.LoadGlobalDefault();
 
                     Logger.Warning?.PrintMsg(LogClass.Application, $"Failed to load config! Loading the default config instead.\nFailed config location {ConfigurationPath}");
                 }

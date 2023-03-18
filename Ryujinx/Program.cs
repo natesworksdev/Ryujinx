@@ -181,7 +181,7 @@ namespace Ryujinx
                 // No configuration, we load the default values and save it to disk
                 ConfigurationPath = appDataConfigurationPath;
 
-                ConfigurationState.Instance.LoadDefault();
+                ConfigurationState.Instance.LoadGlobalDefault();
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
 
                 showVulkanPrompt = true;
@@ -199,7 +199,7 @@ namespace Ryujinx
                 }
                 else
                 {
-                    ConfigurationState.Instance.LoadDefault();
+                    ConfigurationState.Instance.LoadGlobalDefault();
 
                     showVulkanPrompt = true;
 

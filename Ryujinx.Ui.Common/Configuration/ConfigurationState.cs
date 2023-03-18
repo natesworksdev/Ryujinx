@@ -646,7 +646,7 @@ namespace Ryujinx.Ui.Common.Configuration
             return configurationFile;
         }
 
-        public void LoadDefault()
+        public void LoadGlobalDefault()
         {
             Logger.EnableFileLog.Value                = true;
             Graphics.BackendThreading.Value           = BackendThreading.Auto;
@@ -787,6 +787,8 @@ namespace Ryujinx.Ui.Common.Configuration
             };
         }
 
+
+
         public ConfigurationLoadResult Load(ConfigurationFileFormat configurationFileFormat, string configurationFilePath)
         {
             bool configurationFileUpdated = false;
@@ -795,7 +797,7 @@ namespace Ryujinx.Ui.Common.Configuration
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Unsupported configuration version {configurationFileFormat.Version}, loading default.");
 
-                LoadDefault();
+                LoadGlobalDefault();
 
                 return ConfigurationLoadResult.NotLoaded;
             }
