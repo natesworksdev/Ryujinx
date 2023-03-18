@@ -53,35 +53,64 @@ namespace Ryujinx.Graphics.Shader.Translation
                         return false;
                     }
 
-                    if (operation.Inst == Instruction.StoreAttribute)
-                    {
-                        return false;
-                    }
-
-                    if (operation.Inst == Instruction.Copy && operation.Dest.Type == OperandType.Attribute)
+                    if (operation.Inst == Instruction.Store && operation.StorageKind == StorageKind.Output)
                     {
                         Operand src = operation.GetSource(0);
+                        Operation srcAttributeAsgOp = null;
 
-                        if (src.Type == OperandType.LocalVariable && src.AsgOp is Operation asgOp && asgOp.Inst == Instruction.LoadAttribute)
+                        if (src.Type == OperandType.LocalVariable &&
+                            src.AsgOp is Operation asgOp &&
+                            asgOp.Inst == Instruction.Load &&
+                            asgOp.StorageKind.IsInputOrOutput())
                         {
-                            src = Attribute(asgOp.GetSource(0).Value);
+                            if (asgOp.StorageKind != StorageKind.Input)
+                            {
+                                return false;
+                            }
+
+                            srcAttributeAsgOp = asgOp;
                         }
 
-                        if (src.Type == OperandType.Attribute)
+                        if (srcAttributeAsgOp != null)
                         {
-                            if (operation.Dest.Value == AttributeConsts.Layer)
+                            for (int i = 0; i < srcAttributeAsgOp.SourcesCount; i++)
                             {
-                                if ((src.Value & AttributeConsts.LoadOutputMask) != 0)
+                                if (srcAttributeAsgOp.GetSource(i).Type != OperandType.Constant)
+                                {
+                                    return false;
+                                }
+                            }
+
+                            IoVariable dstAttribute = (IoVariable)operation.GetSource(0).Value;
+                            IoVariable srcAttribute = (IoVariable)srcAttributeAsgOp.GetSource(0).Value;
+
+                            if (dstAttribute == IoVariable.Layer && srcAttribute == IoVariable.UserDefined)
+                            {
+                                if (srcAttributeAsgOp.SourcesCount != 3)
                                 {
                                     return false;
                                 }
 
                                 writesLayer = true;
-                                layerInputAttr = src.Value;
+                                layerInputAttr = AttributeConsts.UserAttributeBase +
+                                    srcAttributeAsgOp.GetSource(1).Value * 16 +
+                                    srcAttributeAsgOp.GetSource(2).Value * 4;;
                             }
-                            else if (src.Value != operation.Dest.Value)
+                            else
                             {
-                                return false;
+                                if (srcAttributeAsgOp.SourcesCount != operation.SourcesCount)
+                                {
+                                    return false;
+                                }
+
+                                for (int i = 0; i < srcAttributeAsgOp.SourcesCount; i++)
+                                {
+                                    if (operation.GetSource(i).Type != OperandType.Constant ||
+                                        operation.GetSource(i).Value != srcAttributeAsgOp.GetSource(i).Value)
+                                    {
+                                        return false;
+                                    }
+                                }
                             }
                         }
                         else if (src.Type == OperandType.Constant)
