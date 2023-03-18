@@ -119,6 +119,12 @@ namespace Ryujinx.Ui
         [GUI] CheckMenuItem   _fileExtToggle;
         [GUI] CheckMenuItem   _pathToggle;
         [GUI] CheckMenuItem   _fileSizeToggle;
+        [GUI] CheckMenuItem   _nspHidden;
+        [GUI] CheckMenuItem   _pfs0Hidden;
+        [GUI] CheckMenuItem   _xciHidden;
+        [GUI] CheckMenuItem   _ncaHidden;
+        [GUI] CheckMenuItem   _nroHidden;
+        [GUI] CheckMenuItem   _nsoHidden;
         [GUI] Label           _gpuBackend;
         [GUI] Label           _dockedMode;
         [GUI] Label           _aspectRatio;
@@ -219,6 +225,20 @@ namespace Ryujinx.Ui
             _actionMenu.Sensitive = false;
             _pauseEmulation.Sensitive = false;
             _resumeEmulation.Sensitive = false;
+
+            if (ConfigurationState.Instance.Ui.HiddenFileTypes.NSP)  _nspHidden.Active  = true;
+            if (ConfigurationState.Instance.Ui.HiddenFileTypes.PFS0) _pfs0Hidden.Active = true;
+            if (ConfigurationState.Instance.Ui.HiddenFileTypes.XCI)  _xciHidden.Active  = true;
+            if (ConfigurationState.Instance.Ui.HiddenFileTypes.NCA)  _ncaHidden.Active  = true;
+            if (ConfigurationState.Instance.Ui.HiddenFileTypes.NRO)  _nroHidden.Active  = true;
+            if (ConfigurationState.Instance.Ui.HiddenFileTypes.NSO)  _nsoHidden.Active  = true;
+
+            _nspHidden.Toggled  += NSP_Hidden_Toggled;
+            _pfs0Hidden.Toggled += PFS0_Hidden_Toggled;
+            _xciHidden.Toggled  += XCI_Hidden_Toggled;
+            _ncaHidden.Toggled  += NCA_Hidden_Toggled;
+            _nroHidden.Toggled  += NRO_Hidden_Toggled;
+            _nsoHidden.Toggled  += NSO_Hidden_Toggled;
 
             _fileTypesSubMenu.Visible = FileAssociationHelper.IsTypeAssociationSupported;
 
@@ -1768,6 +1788,54 @@ namespace Ryujinx.Ui
 
             SaveConfig();
             UpdateColumns();
+        }
+
+        private void NSP_Hidden_Toggled(object sender, EventArgs args)
+        {
+            ConfigurationState.Instance.Ui.HiddenFileTypes.NSP.Value = _nspHidden.Active;
+
+            SaveConfig();
+            UpdateGameTable();
+        }
+
+        private void PFS0_Hidden_Toggled(object sender, EventArgs args)
+        {
+            ConfigurationState.Instance.Ui.HiddenFileTypes.PFS0.Value = _pfs0Hidden.Active;
+
+            SaveConfig();
+            UpdateGameTable();
+        }
+
+        private void XCI_Hidden_Toggled (object sender, EventArgs args)
+        {
+            ConfigurationState.Instance.Ui.HiddenFileTypes.XCI.Value = _xciHidden.Active;
+
+            SaveConfig();
+            UpdateGameTable();
+        }
+
+        private void NCA_Hidden_Toggled (object sender, EventArgs args)
+        {
+            ConfigurationState.Instance.Ui.HiddenFileTypes.NCA.Value = _ncaHidden.Active;
+
+            SaveConfig();
+            UpdateGameTable();
+        }
+
+        private void NRO_Hidden_Toggled (object sender, EventArgs args)
+        {
+            ConfigurationState.Instance.Ui.HiddenFileTypes.NRO.Value = _nroHidden.Active;
+
+            SaveConfig();
+            UpdateGameTable();
+        }
+
+        private void NSO_Hidden_Toggled (object sender, EventArgs args)
+        {
+            ConfigurationState.Instance.Ui.HiddenFileTypes.NSO.Value = _nsoHidden.Active;
+
+            SaveConfig();
+            UpdateGameTable();
         }
 
         private void RefreshList_Pressed(object sender, ButtonReleaseEventArgs args)
