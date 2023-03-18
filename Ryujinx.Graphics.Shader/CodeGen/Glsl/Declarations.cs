@@ -59,6 +59,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 context.AppendLine("#extension GL_NV_geometry_shader_passthrough : enable");
             }
 
+            if (context.Config.GpuAccessor.QueryHostSupportsViewportMask())
+            {
+                context.AppendLine("#extension GL_NV_viewport_array2 : enable");
+            }
+
             context.AppendLine("#pragma optionNV(fastmath off)");
             context.AppendLine();
 

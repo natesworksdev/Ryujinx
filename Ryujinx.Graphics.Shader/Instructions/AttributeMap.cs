@@ -77,7 +77,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             Add(map, 0x2f8, AggregateType.S32, IoVariable.InstanceId, StagesMask.Vertex, StagesMask.None);
             Add(map, 0x2fc, AggregateType.S32, IoVariable.VertexId, StagesMask.Vertex, StagesMask.None);
             Add(map, 0x300, AggregateType.Vector4 | AggregateType.FP32, IoVariable.TextureCoord, StagesMask.TessellationGeomtryFragment, StagesMask.VertexTessellationGeometry);
-            Add(map, 0x3a0, AggregateType.S32, IoVariable.ViewportMask, StagesMask.Fragment, StagesMask.VertexTessellationGeometry);
+            Add(map, 0x3a0, AggregateType.Array | AggregateType.S32, IoVariable.ViewportMask, StagesMask.Fragment, StagesMask.VertexTessellationGeometry);
             Add(map, 0x3fc, AggregateType.Bool, IoVariable.FrontFacing, StagesMask.Fragment, StagesMask.None);
 
             return map;
@@ -262,12 +262,11 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             if (ioVariable == IoVariable.ViewportIndex && stage != ShaderStage.Geometry && stage != ShaderStage.Fragment)
             {
-                return gpuAccessor.QueryHostSupportsViewportIndex();
+                return gpuAccessor.QueryHostSupportsViewportIndexVertexTessellation();
             }
             else if (ioVariable == IoVariable.ViewportMask)
             {
-                // TODO: Check extension.
-                return false;
+                return gpuAccessor.QueryHostSupportsViewportMask();
             }
 
             return true;

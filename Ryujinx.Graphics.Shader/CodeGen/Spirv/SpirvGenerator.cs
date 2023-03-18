@@ -93,12 +93,18 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 context.AddCapability(Capability.DrawParameters);
             }
 
-            Declarations.DeclareAll(context, info);
+            if (context.Info.IoDefinitions.Contains(new IoDefinition(StorageKind.Output, IoVariable.ViewportMask)))
+            {
+                context.AddExtension("SPV_NV_viewport_array2");
+                context.AddCapability(Capability.ShaderViewportMaskNV);
+            }
 
             if ((info.HelperFunctionsMask & NeedsInvocationIdMask) != 0)
             {
-                Declarations.DeclareInvocationId(context);
+                info.IoDefinitions.Add(new IoDefinition(StorageKind.Input, IoVariable.SubgroupLaneId));
             }
+
+            Declarations.DeclareAll(context, info);
 
             for (int funcIndex = 0; funcIndex < info.Functions.Count; funcIndex++)
             {

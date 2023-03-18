@@ -353,7 +353,16 @@ namespace Ryujinx.Graphics.Shader
         /// Queries host GPU shader viewport index output support.
         /// </summary>
         /// <returns>True if the GPU and driver supports shader viewport index output, false otherwise</returns>
-        bool QueryHostSupportsViewportIndex()
+        bool QueryHostSupportsViewportIndexVertexTessellation()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Queries host GPU shader viewport mask output support.
+        /// </summary>
+        /// <returns>True if the GPU and driver supports shader viewport mask output, false otherwise</returns>
+        bool QueryHostSupportsViewportMask()
         {
             return true;
         }
