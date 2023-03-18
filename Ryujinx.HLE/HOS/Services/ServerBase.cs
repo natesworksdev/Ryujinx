@@ -126,12 +126,14 @@ namespace Ryujinx.HLE.HOS.Services
 
             while (true)
             {
-                int handleCount = _portHandles.Count + _sessionHandles.Count;
+                int portHandlesCount = _portHandles.Count;
+                int sessionHandlesCount = _sessionHandles.Count;
+                int handleCount = portHandlesCount + sessionHandlesCount;
 
                 int[] handles = ArrayPool<int>.Shared.Rent(handleCount);
-                
-                _portHandles.CopyTo(handles, 0);
-                _sessionHandles.CopyTo(handles, _portHandles.Count);
+
+                _portHandles.CopyTo(0, handles, 0, portHandlesCount);
+                _sessionHandles.CopyTo(0, handles, portHandlesCount, sessionHandlesCount);
 
                 // We still need a timeout here to allow the service to pick up and listen new sessions...
                 var rc = _context.Syscall.ReplyAndReceive(out int signaledIndex, handles.AsSpan(0, handleCount), replyTargetHandle, 1000000L);
@@ -145,7 +147,7 @@ namespace Ryujinx.HLE.HOS.Services
 
                 replyTargetHandle = 0;
 
-                if (rc == Result.Success && signaledIndex >= _portHandles.Count)
+                if (rc == Result.Success && signaledIndex >= portHandlesCount)
                 {
                     // We got a IPC request, process it, pass to the appropriate service if needed.
                     int signaledHandle = handles[signaledIndex];
