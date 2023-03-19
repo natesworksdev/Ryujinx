@@ -17,9 +17,11 @@ namespace Ryujinx.Common.Logging
             }
 
             StringBuilder sb = StringBuilderPool.Allocate();
+            
             try
             {
                 Format(sb, dynamicObject);
+
                 return sb.ToString();
             }
             finally
@@ -47,6 +49,7 @@ namespace Ryujinx.Common.Logging
                 if (typeof(Array).IsAssignableFrom(prop.PropertyType))
                 {
                     Array? array = (Array?) prop.GetValue(dynamicObject);
+
                     if (array is not null)
                     {
                         foreach (var item in array)
