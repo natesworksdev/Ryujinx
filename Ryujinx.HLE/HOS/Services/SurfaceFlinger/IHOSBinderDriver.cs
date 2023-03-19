@@ -2,6 +2,7 @@
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Horizon.Common;
 using System;
+using System.Buffers;
 
 namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
@@ -83,16 +84,21 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             ReadOnlySpan<byte> inputParcel = context.Memory.GetSpan(dataPos, (int)dataSize);
 
-            Span<byte> outputParcel = new Span<byte>(new byte[replySize]);
-
-            ResultCode result = OnTransact(binderId, code, flags, inputParcel, outputParcel);
-
-            if (result == ResultCode.Success)
+            using (IMemoryOwner<byte> outputParcelOwner = MemoryPool<byte>.Shared.Rent((int)replySize))
             {
-                context.Memory.Write(replyPos, outputParcel);
-            }
+                Span<byte> outputParcel = outputParcelOwner.Memory.Span.Slice(0, (int)replySize);
+                
+                outputParcel.Clear();
 
-            return result;
+                ResultCode result = OnTransact(binderId, code, flags, inputParcel, outputParcel);
+
+                if (result == ResultCode.Success)
+                {
+                    context.Memory.Write(replyPos, outputParcel);
+                }
+
+                return result;
+            }
         }
 
         protected abstract ResultCode AdjustRefcount(int binderId, int addVal, int type);
