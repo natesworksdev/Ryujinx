@@ -55,7 +55,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                     if (operation.Inst == Instruction.Store && operation.StorageKind == StorageKind.Output)
                     {
-                        Operand src = operation.GetSource(0);
+                        Operand src = operation.GetSource(operation.SourcesCount - 1);
                         Operation srcAttributeAsgOp = null;
 
                         if (src.Type == OperandType.LocalVariable &&
@@ -73,40 +73,51 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                         if (srcAttributeAsgOp != null)
                         {
-                            for (int i = 0; i < srcAttributeAsgOp.SourcesCount; i++)
-                            {
-                                if (srcAttributeAsgOp.GetSource(i).Type != OperandType.Constant)
-                                {
-                                    return false;
-                                }
-                            }
-
                             IoVariable dstAttribute = (IoVariable)operation.GetSource(0).Value;
                             IoVariable srcAttribute = (IoVariable)srcAttributeAsgOp.GetSource(0).Value;
 
                             if (dstAttribute == IoVariable.Layer && srcAttribute == IoVariable.UserDefined)
                             {
-                                if (srcAttributeAsgOp.SourcesCount != 3)
+                                if (srcAttributeAsgOp.SourcesCount != 4)
                                 {
                                     return false;
                                 }
 
                                 writesLayer = true;
-                                layerInputAttr = AttributeConsts.UserAttributeBase +
-                                    srcAttributeAsgOp.GetSource(1).Value * 16 +
-                                    srcAttributeAsgOp.GetSource(2).Value * 4;;
+                                layerInputAttr = srcAttributeAsgOp.GetSource(1).Value * 4 + srcAttributeAsgOp.GetSource(3).Value;;
                             }
                             else
                             {
-                                if (srcAttributeAsgOp.SourcesCount != operation.SourcesCount)
+                                if (dstAttribute != srcAttribute)
                                 {
                                     return false;
                                 }
 
-                                for (int i = 0; i < srcAttributeAsgOp.SourcesCount; i++)
+                                int inputsCount = operation.SourcesCount - 2;
+
+                                if (dstAttribute == IoVariable.UserDefined)
                                 {
-                                    if (operation.GetSource(i).Type != OperandType.Constant ||
-                                        operation.GetSource(i).Value != srcAttributeAsgOp.GetSource(i).Value)
+                                    if (operation.GetSource(1).Value != srcAttributeAsgOp.GetSource(1).Value)
+                                    {
+                                        return false;
+                                    }
+
+                                    inputsCount--;
+                                }
+
+                                for (int i = 0; i < inputsCount; i++)
+                                {
+                                    int dstIndex = operation.SourcesCount - 2 - i;
+                                    int srcIndex = srcAttributeAsgOp.SourcesCount - 1 - i;
+
+                                    if ((dstIndex | srcIndex) < 0)
+                                    {
+                                        return false;
+                                    }
+
+                                    if (operation.GetSource(dstIndex).Type != OperandType.Constant ||
+                                        srcAttributeAsgOp.GetSource(srcIndex).Type != OperandType.Constant ||
+                                        operation.GetSource(dstIndex).Value != srcAttributeAsgOp.GetSource(srcIndex).Value)
                                     {
                                         return false;
                                     }
@@ -115,7 +126,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                         }
                         else if (src.Type == OperandType.Constant)
                         {
-                            int dstComponent = (operation.Dest.Value >> 2) & 3;
+                            int dstComponent = operation.GetSource(operation.SourcesCount - 2).Value;
                             float expectedValue = dstComponent == 3 ? 1f : 0f;
 
                             if (src.AsFloat() != expectedValue)

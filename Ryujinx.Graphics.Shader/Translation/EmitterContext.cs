@@ -255,10 +255,10 @@ namespace Ryujinx.Graphics.Shader.Translation
             {
                 Config.SetUsedFeature(FeatureFlags.RtLayer);
 
-                int attrVecIndex = Config.GpLayerInputAttribute >> 4;
-                int attrComponentIndex = (Config.GpLayerInputAttribute >> 2) & 3;
+                int attrVecIndex = Config.GpLayerInputAttribute >> 2;
+                int attrComponentIndex = Config.GpLayerInputAttribute & 3;
 
-                Operand layer = this.Load(StorageKind.Input, IoVariable.UserDefined, null, Const(attrVecIndex), Const(attrComponentIndex));
+                Operand layer = this.Load(StorageKind.Output, IoVariable.UserDefined, null, Const(attrVecIndex), Const(attrComponentIndex));
 
                 this.Store(StorageKind.Output, IoVariable.Layer, null, layer);
             }
