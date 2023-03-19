@@ -233,11 +233,6 @@ namespace Ryujinx.Ava.UI.Helpers
                 primaryButtonResult);
         }
 
-        internal static UpdateWaitWindow CreateWaitingDialog(string mainText, string secondaryText)
-        {
-            return new(mainText, secondaryText);
-        }
-
         internal static async Task CreateUpdaterInfoDialog(string primary, string secondaryText)
         {
             await ShowTextDialog(

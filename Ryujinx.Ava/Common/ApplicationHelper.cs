@@ -13,6 +13,7 @@ using LibHac.Tools.Fs;
 using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Ava.Common.Locale;
+using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Logging;
@@ -151,25 +152,17 @@ namespace Ryujinx.Ava.Common
             string destination       = await folderDialog.ShowAsync(_owner);
             var    cancellationToken = new CancellationTokenSource();
 
+            UpdateWaitWindow waitingDialog = new(
+                LocaleManager.Instance[LocaleKeys.DialogNcaExtractionTitle],
+                LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogNcaExtractionMessage, ncaSectionType, Path.GetFileName(titleFilePath)),
+                cancellationToken);
+
             if (!string.IsNullOrWhiteSpace(destination))
             {
                 Thread extractorThread = new(() =>
                 {
-                    Dispatcher.UIThread.Post(async () =>
-                    {
-                        UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
-                            LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogNcaExtractionMessage, ncaSectionType, Path.GetFileName(titleFilePath)),
-                            "",
-                            "",
-                            LocaleManager.Instance[LocaleKeys.InputDialogCancel],
-                            LocaleManager.Instance[LocaleKeys.DialogNcaExtractionTitle]);
+                    Dispatcher.UIThread.Post(waitingDialog.Show);
 
-                        if (result == UserResult.Cancel)
-                        {
-                            cancellationToken.Cancel();
-                        }
-                    });
-                    
                     using FileStream file = new(titleFilePath, FileMode.Open, FileAccess.Read);
 
                     Nca mainNca  = null;
@@ -221,6 +214,8 @@ namespace Ryujinx.Ava.Common
 
                         Dispatcher.UIThread.InvokeAsync(async () =>
                         {
+                            waitingDialog.Close();
+
                             await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogNcaExtractionMainNcaNotFoundErrorMessage]);
                         });
 
@@ -262,11 +257,15 @@ namespace Ryujinx.Ava.Common
 
                                 Dispatcher.UIThread.InvokeAsync(async () =>
                                 {
+                                    waitingDialog.Close();
+
                                     await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogNcaExtractionCheckLogErrorMessage]);
                                 });
                             }
                             else if (resultCode.Value.IsSuccess())
                             {
+                                Dispatcher.UIThread.Post(waitingDialog.Close);
+
                                 NotificationHelper.Show(
                                     LocaleManager.Instance[LocaleKeys.DialogNcaExtractionTitle],
                                     $"{titleName}\n\n{LocaleManager.Instance[LocaleKeys.DialogNcaExtractionSuccessMessage]}",
@@ -283,6 +282,8 @@ namespace Ryujinx.Ava.Common
 
                         Dispatcher.UIThread.InvokeAsync(async () =>
                         {
+                            waitingDialog.Close();
+
                             await ContentDialogHelper.CreateErrorDialog(ex.Message);
                         });
                     }
