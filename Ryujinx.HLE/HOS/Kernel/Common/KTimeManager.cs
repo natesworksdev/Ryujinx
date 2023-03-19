@@ -71,7 +71,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
         {
             lock (_context.CriticalSection.Lock)
             {
-                _waitingObjects.RemoveAll(x => x.Object == schedulerObj);
+                for (int index = _waitingObjects.Count - 1; index >= 0; index--)
+                {
+                    if (_waitingObjects[index].Object == schedulerObj)
+                    {
+                        _waitingObjects.RemoveAt(index);
+                    }
+                }
             }
         }
 
