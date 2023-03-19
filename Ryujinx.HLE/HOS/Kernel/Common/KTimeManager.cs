@@ -111,7 +111,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
                             }
                             else
                             {
-                                while (Interlocked.Read(ref _enforceWakeupFromSpinWait) != 1 && PerformanceCounter.ElapsedTicks <= next.TimePoint)
+                                while (Interlocked.Read(ref _enforceWakeupFromSpinWait) != 1 && PerformanceCounter.ElapsedTicks < next.TimePoint)
                                 {
                                     if (spinWait.NextSpinWillYield)
                                     {
