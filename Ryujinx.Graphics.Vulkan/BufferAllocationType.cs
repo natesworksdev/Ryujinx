@@ -4,6 +4,7 @@
     {
         Auto = 0,
 
+        HostMappedNoCache,
         HostMapped,
         DeviceLocal,
         DeviceLocalMapped

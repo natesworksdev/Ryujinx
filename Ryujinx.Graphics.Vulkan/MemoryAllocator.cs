@@ -28,18 +28,10 @@ namespace Ryujinx.Graphics.Vulkan
 
         public MemoryAllocation AllocateDeviceMemory(
             MemoryRequirements requirements,
-            MemoryPropertyFlags flags = 0)
-        {
-            return AllocateDeviceMemory(requirements, flags, flags);
-        }
-
-        public MemoryAllocation AllocateDeviceMemory(
-            MemoryRequirements requirements,
-            MemoryPropertyFlags flags,
-            MemoryPropertyFlags alternativeFlags,
+            MemoryPropertyFlags flags = 0,
             bool isBuffer = false)
         {
-            int memoryTypeIndex = FindSuitableMemoryTypeIndex(requirements.MemoryTypeBits, flags, alternativeFlags);
+            int memoryTypeIndex = FindSuitableMemoryTypeIndex(requirements.MemoryTypeBits, flags);
             if (memoryTypeIndex < 0)
             {
                 return default;
@@ -70,8 +62,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private int FindSuitableMemoryTypeIndex(
             uint memoryTypeBits,
-            MemoryPropertyFlags flags,
-            MemoryPropertyFlags alternativeFlags)
+            MemoryPropertyFlags flags)
         {
             int bestCandidateIndex = -1;
 
@@ -84,10 +75,6 @@ namespace Ryujinx.Graphics.Vulkan
                     if (type.PropertyFlags.HasFlag(flags))
                     {
                         return i;
-                    }
-                    else if (type.PropertyFlags.HasFlag(alternativeFlags))
-                    {
-                        bestCandidateIndex = i;
                     }
                 }
             }

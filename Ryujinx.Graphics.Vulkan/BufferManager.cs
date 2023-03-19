@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         // Some drivers don't expose a "HostCached" memory type,
         // so we need those alternative flags for the allocation to succeed there.
-        private const MemoryPropertyFlags DefaultBufferMemoryAltFlags =
+        private const MemoryPropertyFlags DefaultBufferMemoryNoCacheFlags =
             MemoryPropertyFlags.HostVisibleBit |
             MemoryPropertyFlags.HostCoherentBit;
 
@@ -110,22 +110,17 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 var allocateFlags = type switch
                 {
+                    BufferAllocationType.HostMappedNoCache => DefaultBufferMemoryNoCacheFlags,
                     BufferAllocationType.HostMapped => DefaultBufferMemoryFlags,
                     BufferAllocationType.DeviceLocal => DeviceLocalBufferMemoryFlags,
                     BufferAllocationType.DeviceLocalMapped => DeviceLocalMappedBufferMemoryFlags,
                     _ => DefaultBufferMemoryFlags
                 };
 
-                var allocateFlagsAlt = type switch
-                {
-                    BufferAllocationType.HostMapped => DefaultBufferMemoryAltFlags,
-                    _ => allocateFlags
-                };
-
                 // If an allocation with this memory type fails, fall back to the previous one.
                 try
                 {
-                    allocation = gd.MemoryAllocator.AllocateDeviceMemory(requirements, allocateFlags, allocateFlagsAlt, true);
+                    allocation = gd.MemoryAllocator.AllocateDeviceMemory(requirements, allocateFlags, true);
                 }
                 catch (VulkanException)
                 {
