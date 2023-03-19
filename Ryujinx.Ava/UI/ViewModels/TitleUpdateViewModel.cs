@@ -114,7 +114,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             SelectedUpdate = selected;
 
             // NOTE: Save the list again to remove leftovers.
-        Save();SortUpdates();
+        Save();
+        SortUpdates();
         }
 
         public void SortUpdates()
