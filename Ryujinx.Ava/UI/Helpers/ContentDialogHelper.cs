@@ -27,7 +27,6 @@ namespace Ryujinx.Ava.UI.Helpers
              string closeButton,
              UserResult primaryButtonResult = UserResult.Ok,
              ManualResetEvent deferResetEvent = null,
-             Func<Window, Task> doWhileDeferred = null,
              TypedEventHandler<ContentDialog, ContentDialogButtonClickEventArgs> deferCloseAction = null)
         {
             UserResult result = UserResult.None;
@@ -78,12 +77,11 @@ namespace Ryujinx.Ava.UI.Helpers
             int iconSymbol,
             UserResult primaryButtonResult = UserResult.Ok,
             ManualResetEvent deferResetEvent = null,
-            Func<Window, Task> doWhileDeferred = null,
             TypedEventHandler<ContentDialog, ContentDialogButtonClickEventArgs> deferCloseAction = null)
         {
             Grid content = CreateTextDialogContent(primaryText, secondaryText, iconSymbol);
 
-            return await ShowContentDialog(title, content, primaryButton, secondaryButton, closeButton, primaryButtonResult, deferResetEvent, doWhileDeferred, deferCloseAction);
+            return await ShowContentDialog(title, content, primaryButton, secondaryButton, closeButton, primaryButtonResult, deferResetEvent, deferCloseAction);
         }
 
         public async static Task<UserResult> ShowDeferredContentDialog(
@@ -111,7 +109,6 @@ namespace Ryujinx.Ava.UI.Helpers
                 iconSymbol,
                 primaryButton == LocaleManager.Instance[LocaleKeys.InputDialogYes] ? UserResult.Yes : UserResult.Ok,
                 deferResetEvent,
-                doWhileDeferred,
                 DeferClose);
 
             async void DeferClose(ContentDialog sender, ContentDialogButtonClickEventArgs args)
