@@ -1299,6 +1299,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SwapBuffer(Auto<DisposableBuffer> from, Auto<DisposableBuffer> to)
         {
+            _indexBuffer.Swap(from, to);
+
             for (int i = 0; i < _vertexBuffers.Length; i++)
             {
                 _vertexBuffers[i].Swap(from, to);

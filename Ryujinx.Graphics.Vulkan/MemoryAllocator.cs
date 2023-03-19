@@ -36,7 +36,8 @@ namespace Ryujinx.Graphics.Vulkan
         public MemoryAllocation AllocateDeviceMemory(
             MemoryRequirements requirements,
             MemoryPropertyFlags flags,
-            MemoryPropertyFlags alternativeFlags)
+            MemoryPropertyFlags alternativeFlags,
+            bool isBuffer = false)
         {
             int memoryTypeIndex = FindSuitableMemoryTypeIndex(requirements.MemoryTypeBits, flags, alternativeFlags);
             if (memoryTypeIndex < 0)
@@ -45,15 +46,15 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             bool map = flags.HasFlag(MemoryPropertyFlags.HostVisibleBit);
-            return Allocate(memoryTypeIndex, requirements.Size, requirements.Alignment, map);
+            return Allocate(memoryTypeIndex, requirements.Size, requirements.Alignment, map, isBuffer);
         }
 
-        private MemoryAllocation Allocate(int memoryTypeIndex, ulong size, ulong alignment, bool map)
+        private MemoryAllocation Allocate(int memoryTypeIndex, ulong size, ulong alignment, bool map, bool isBuffer)
         {
             for (int i = 0; i < _blockLists.Count; i++)
             {
                 var bl = _blockLists[i];
-                if (bl.MemoryTypeIndex == memoryTypeIndex)
+                if (bl.MemoryTypeIndex == memoryTypeIndex && bl.ForBuffer == isBuffer)
                 {
                     lock (bl)
                     {
@@ -62,7 +63,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            var newBl = new MemoryAllocatorBlockList(_api, _device, memoryTypeIndex, _blockAlignment);
+            var newBl = new MemoryAllocatorBlockList(_api, _device, memoryTypeIndex, _blockAlignment, isBuffer);
             _blockLists.Add(newBl);
             return newBl.Allocate(size, alignment, map);
         }

@@ -125,7 +125,7 @@ namespace Ryujinx.Graphics.Vulkan
                 // If an allocation with this memory type fails, fall back to the previous one.
                 try
                 {
-                    allocation = gd.MemoryAllocator.AllocateDeviceMemory(requirements, allocateFlags, allocateFlagsAlt);
+                    allocation = gd.MemoryAllocator.AllocateDeviceMemory(requirements, allocateFlags, allocateFlagsAlt, true);
                 }
                 catch (VulkanException)
                 {
