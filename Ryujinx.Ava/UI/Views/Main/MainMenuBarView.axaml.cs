@@ -11,6 +11,7 @@ using Ryujinx.Common;
 using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.HOS;
 using Ryujinx.Modules;
+using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,55 @@ namespace Ryujinx.Ava.UI.Views.Main
         {
             InitializeComponent();
 
+            HideFileTypesMenuItem.Items = GenerateHideFileTypeItems();
+            ChangeLanguageMenuItem.Items = GenerateLanguageMenuItems();
+        }
+
+        private CheckBox[] GenerateHideFileTypeItems()
+        {
+            return new List<CheckBox>()
+            {
+                new CheckBox()
+                {
+                    Content = ".NSP",
+                    IsChecked = ConfigurationState.Instance.Ui.HiddenFileTypes.NSP.Value,
+                    Command = MiniCommand.Create(() => ViewModel.HideFileType("nsp"))
+                },
+                new CheckBox()
+                {
+                    Content = ".PFS0",
+                    IsChecked = ConfigurationState.Instance.Ui.HiddenFileTypes.PFS0.Value,
+                    Command = MiniCommand.Create(() => ViewModel.HideFileType("pfs0"))
+                },
+                new CheckBox()
+                {
+                    Content = ".XCI",
+                    IsChecked = ConfigurationState.Instance.Ui.HiddenFileTypes.XCI.Value,
+                    Command = MiniCommand.Create(() => ViewModel.HideFileType("xci"))
+                },
+                new CheckBox()
+                {
+                    Content = ".NCA",
+                    IsChecked = ConfigurationState.Instance.Ui.HiddenFileTypes.NCA.Value,
+                    Command = MiniCommand.Create(() => ViewModel.HideFileType("nca"))
+                },
+                new CheckBox()
+                {
+                    Content = ".NRO",
+                    IsChecked = ConfigurationState.Instance.Ui.HiddenFileTypes.NRO.Value,
+                    Command = MiniCommand.Create(() => ViewModel.HideFileType("nro"))
+                },
+                new CheckBox()
+                {
+                    Content = ".NSO",
+                    IsChecked = ConfigurationState.Instance.Ui.HiddenFileTypes.NSO.Value,
+                    Command = MiniCommand.Create(() => ViewModel.HideFileType("nso"))
+                }
+            }.ToArray();
+        }
+
+        private MenuItem[] GenerateLanguageMenuItems()
+        {
             List<MenuItem> menuItems = new();
 
             string localePath = "Ryujinx.Ava/Assets/Locales";
@@ -61,7 +111,7 @@ namespace Ryujinx.Ava.UI.Views.Main
                 menuItems.Add(menuItem);
             }
 
-            ChangeLanguageMenuItem.Items = menuItems.ToArray();
+            return menuItems.ToArray();
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

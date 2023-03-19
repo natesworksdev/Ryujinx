@@ -1336,6 +1336,22 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        public void HideFileType(string fileType)
+        {
+            _ = fileType switch
+            {
+                "nsp" => ConfigurationState.Instance.Ui.HiddenFileTypes.NSP.Value = !ConfigurationState.Instance.Ui.HiddenFileTypes.NSP,
+                "pfs0" => ConfigurationState.Instance.Ui.HiddenFileTypes.PFS0.Value = !ConfigurationState.Instance.Ui.HiddenFileTypes.PFS0,
+                "xci" => ConfigurationState.Instance.Ui.HiddenFileTypes.XCI.Value = !ConfigurationState.Instance.Ui.HiddenFileTypes.XCI,
+                "nca" => ConfigurationState.Instance.Ui.HiddenFileTypes.NCA.Value = !ConfigurationState.Instance.Ui.HiddenFileTypes.NCA,
+                "nro" => ConfigurationState.Instance.Ui.HiddenFileTypes.NRO.Value = !ConfigurationState.Instance.Ui.HiddenFileTypes.NRO,
+                "nso" => ConfigurationState.Instance.Ui.HiddenFileTypes.NSO.Value = !ConfigurationState.Instance.Ui.HiddenFileTypes.NSO
+            };
+
+            ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            LoadApplications();
+        }
+
         public async void ManageProfiles()
         {
             await NavigationDialogHost.Show(AccountManager, ContentManager, VirtualFileSystem, LibHacHorizonManager.RyujinxClient);
