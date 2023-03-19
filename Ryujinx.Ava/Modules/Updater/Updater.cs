@@ -24,7 +24,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -33,7 +32,7 @@ namespace Ryujinx.Modules
     internal static class Updater
     {
         private const string GitHubApiURL = "https://api.github.com";
-        private static readonly GithubReleasesJsonSerializerContext SerializerContext = new(new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        private static readonly GithubReleasesJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
         private static readonly string HomeDir          = AppDomain.CurrentDomain.BaseDirectory;
         private static readonly string UpdateDir        = Path.Combine(Path.GetTempPath(), "Ryujinx", "update");

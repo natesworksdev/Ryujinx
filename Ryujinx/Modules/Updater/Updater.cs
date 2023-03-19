@@ -10,7 +10,6 @@ using Ryujinx.Ui.Common.Models.Github;
 using Ryujinx.Ui.Widgets;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -18,7 +17,6 @@ using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -40,7 +38,7 @@ namespace Ryujinx.Modules
         private static string _buildUrl;
         private static long   _buildSize;
 
-        private static readonly GithubReleasesJsonSerializerContext SerializerContext = new(new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        private static readonly GithubReleasesJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
         // On Windows, GtkSharp.Dependencies adds these extra dirs that must be cleaned during updates.
         private static readonly string[] WindowsDependencyDirs = new string[] { "bin", "etc", "lib", "share" };
