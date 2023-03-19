@@ -1,0 +1,30 @@
+name: Perform checks
+
+on:
+  pull_request:
+
+permissions:
+  pull-requests: write
+  checks: write
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Run super-linter
+        uses: github/super-linter@v4
+        env:
+          VALIDATE_CSHARP: true
+          VALIDATE_BASH: true
+          VALIDATE_BASH_EXEC: true
+          VALIDATE_EDITORCONFIG: true
+          VALIDATE_GITHUB_ACTIONS: true
+          VALIDATE_JSON: true
+          VALIDATE_MARKDOWN: true
+          VALIDATE_NATURAL_LANGUAGE: true
+          VALIDATE_PYTHON: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
