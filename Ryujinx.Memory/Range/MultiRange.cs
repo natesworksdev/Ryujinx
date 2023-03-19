@@ -48,7 +48,7 @@ namespace Ryujinx.Memory.Range
         /// <param name="offset">Offset of the slice into the multi-range in bytes</param>
         /// <param name="size">Size of the slice in bytes</param>
         /// <returns>A new multi-range representing the given slice of this one</returns>
-        public MultiRange GetSlice(ulong offset, ulong size)
+        public MultiRange Slice(ulong offset, ulong size)
         {
             if (HasSingleRange)
             {
