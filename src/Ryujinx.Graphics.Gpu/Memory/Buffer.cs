@@ -556,7 +556,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 return false;
             }
 
-            ForceDirty(maxAddress, minEndAddress - maxAddress);
+            ForceDirty(maxAddress, minEndAddress - maxAddress, true);
 
             return true;
         }
