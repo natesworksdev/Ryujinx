@@ -44,6 +44,13 @@ namespace Ryujinx.Ava.UI.Controls
             InitializeComponent();
         }
 
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            // FIXME: This does not work. Might be a bug in Avalonia with DialogHost
+            //        Currently focus will be redirected to the overlay window instead.
+            Input.Focus();
+        }
+
         public string Message { get; set; } = "";
         public string MainText { get; set; } = "";
         public string SecondaryText { get; set; } = "";
@@ -60,24 +67,6 @@ namespace Ryujinx.Ava.UI.Controls
             };
 
             string input = string.Empty;
-
-            var overlay = new ContentDialogOverlayWindow()
-            {
-                Height = window.Bounds.Height,
-                Width = window.Bounds.Width,
-                Position = window.PointToScreen(new Point())
-            };
-
-            window.PositionChanged += OverlayOnPositionChanged;
-
-            void OverlayOnPositionChanged(object sender, PixelPointEventArgs e)
-            {
-                overlay.Position = window.PointToScreen(new Point());
-            }
-
-            contentDialog = overlay.ContentDialog;
-
-            bool opened = false;
 
             content.SetInputLengthValidation(args.StringLengthMin, args.StringLengthMax);
 
@@ -99,25 +88,7 @@ namespace Ryujinx.Ava.UI.Controls
             };
             contentDialog.Closed += handler;
 
-            overlay.Opened += OverlayOnActivated;
-
-            async void OverlayOnActivated(object sender, EventArgs e)
-            {
-                if (opened)
-                {
-                    return;
-                }
-
-                opened = true;
-
-                overlay.Position = window.PointToScreen(new Point());
-
-                await contentDialog.ShowAsync(overlay);
-                contentDialog.Closed -= handler;
-                overlay.Close();
-            };
-
-            await overlay.ShowDialog(window);
+            await ContentDialogHelper.ShowAsync(contentDialog);
 
             return (result, input);
         }

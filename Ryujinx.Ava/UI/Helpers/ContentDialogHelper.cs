@@ -316,28 +316,6 @@ namespace Ryujinx.Ava.UI.Helpers
                 LocaleManager.Instance[LocaleKeys.DialogExitSubMessage]);
         }
 
-        internal static async Task<string> CreateInputDialog(
-            string title,
-            string mainText,
-            string subText,
-            uint maxLength = int.MaxValue,
-            string input = "")
-        {
-            var result = await InputDialog.ShowInputDialog(
-                title,
-                mainText,
-                input,
-                subText,
-                maxLength);
-
-            if (result.Result == UserResult.Ok)
-            {
-                return result.Input;
-            }
-
-            return string.Empty;
-        }
-
         public static async Task<ContentDialogResult> ShowAsync(ContentDialog contentDialog)
         {
             ContentDialogResult result;
