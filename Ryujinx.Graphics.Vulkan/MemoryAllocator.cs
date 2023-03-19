@@ -64,8 +64,6 @@ namespace Ryujinx.Graphics.Vulkan
             uint memoryTypeBits,
             MemoryPropertyFlags flags)
         {
-            int bestCandidateIndex = -1;
-
             for (int i = 0; i < _physicalDeviceMemoryProperties.MemoryTypeCount; i++)
             {
                 var type = _physicalDeviceMemoryProperties.MemoryTypes[i];
@@ -79,7 +77,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            return bestCandidateIndex;
+            return -1;
         }
 
         public static bool IsDeviceMemoryShared(Vk api, PhysicalDevice physicalDevice)
