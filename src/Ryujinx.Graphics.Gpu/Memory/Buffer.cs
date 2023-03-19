@@ -224,6 +224,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     }
 
                     _sequenceNumber = _context.SequenceNumber;
+                    _dirtyStart = ulong.MaxValue;
                 }
             }
 
@@ -354,6 +355,44 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Clear the dirty range that overlaps with the given region.
+        /// </summary>
+        /// <param name="address">Start address of the modified region</param>
+        /// <param name="size">Size of the modified region</param>
+        private void ClearDirty(ulong address, ulong size)
+        {
+            if (_dirtyStart != ulong.MaxValue)
+            {
+                ulong end = address + size;
+
+                if (end > _dirtyStart && address < _dirtyEnd)
+                {
+                    if (address <= _dirtyStart)
+                    {
+                        // Cut off the start.
+
+                        if (end < _dirtyEnd)
+                        {
+                            _dirtyStart = end;
+                        }
+                        else
+                        {
+                            _dirtyStart = ulong.MaxValue;
+                        }
+                    }
+                    else if (end >= _dirtyEnd)
+                    {
+                        // Cut off the end.
+
+                        _dirtyEnd = address;
+                    }
+
+                    // If fully contained, do nothing.
+                }
+            }
+        }
+
+        /// <summary>
         /// Indicate that a region of the buffer was modified, and must be loaded from memory.
         /// </summary>
         /// <param name="mAddress">Start address of the modified region</param>
@@ -371,6 +410,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
             {
                 mSize = maxSize;
             }
+
+            ClearDirty(mAddress, mSize);
 
             if (_modifiedRanges != null)
             {
