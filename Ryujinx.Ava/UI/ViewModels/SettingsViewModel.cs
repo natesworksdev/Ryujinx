@@ -16,6 +16,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Vulkan;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Time.TimeZone;
+using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Configuration.System;
 using System;
@@ -31,6 +32,8 @@ namespace Ryujinx.Ava.UI.ViewModels
     {
         private readonly VirtualFileSystem _virtualFileSystem;
         private readonly ContentManager _contentManager;
+        private readonly ApplicationData _applicationData;
+
         private TimeZoneContentManager _timeZoneContentManager;
 
         private readonly List<string> _validTzRegions;
@@ -70,7 +73,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 _graphicsBackendMultithreadingIndex = value;
 
-                if (_graphicsBackendMultithreadingIndex != (int)ConfigurationState.Instance.Graphics.BackendThreading.Value)
+                if (_graphicsBackendMultithreadingIndex != (int)ConfigurationState.Shared.Graphics.BackendThreading.Value)
                 {
                     Dispatcher.UIThread.Post(async () =>
                     {
@@ -228,7 +231,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 _volume = value;
 
-                ConfigurationState.Instance.System.AudioVolume.Value = _volume / 100;
+                ConfigurationState.Shared.System.AudioVolume.Value = _volume / 100;
 
                 OnPropertyChanged();
             }
@@ -239,6 +242,12 @@ namespace Ryujinx.Ava.UI.ViewModels
         internal AvaloniaList<TimeZone> TimeZones { get; set; }
         public AvaloniaList<string> GameDirectories { get; set; }
         public ObservableCollection<ComboBoxItem> AvailableGpus { get; set; }
+
+        public bool IsTitleSpecificSettings { get 
+            {
+                return _applicationData != null;
+            } 
+        }
 
         public KeyboardHotkeys KeyboardHotkeys
         {
@@ -255,6 +264,18 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             _virtualFileSystem = virtualFileSystem;
             _contentManager = contentManager;
+            if (Program.PreviewerDetached)
+            {
+                LoadTimeZones();
+            }
+        }
+
+        public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager, ApplicationData applicationData) : this()
+        {
+            _virtualFileSystem = virtualFileSystem;
+            _contentManager = contentManager;
+            _applicationData = applicationData;
+
             if (Program.PreviewerDetached)
             {
                 LoadTimeZones();
@@ -337,7 +358,13 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void LoadCurrentConfiguration()
         {
-            ConfigurationState config = ConfigurationState.Instance;
+
+            if(_applicationData != null)
+            {
+                ConfigurationState.LoadConfigurationStateForTitle(_applicationData.TitleId);
+            }
+
+            ConfigurationState config = ConfigurationState.Shared;
 
             // User Interface
             EnableDiscordIntegration = config.EnableDiscordIntegration;
@@ -418,7 +445,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void SaveSettings()
         {
-            ConfigurationState config = ConfigurationState.Instance;
+            ConfigurationState config = ConfigurationState.Shared;
 
             // User Interface
             config.EnableDiscordIntegration.Value = EnableDiscordIntegration;
@@ -480,7 +507,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.Graphics.ScalingFilter.Value = (ScalingFilter)ScalingFilter;
             config.Graphics.ScalingFilterLevel.Value = ScalingFilterLevel;
 
-            if (ConfigurationState.Instance.Graphics.BackendThreading != (BackendThreading)GraphicsBackendMultithreadingIndex)
+            if (ConfigurationState.Shared.Graphics.BackendThreading != (BackendThreading)GraphicsBackendMultithreadingIndex)
             {
                 DriverUtilities.ToggleOGLThreading(GraphicsBackendMultithreadingIndex == (int)BackendThreading.Off);
             }
@@ -515,7 +542,14 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.System.FsGlobalAccessLogMode.Value = FsGlobalAccessLogMode;
             config.Logger.GraphicsDebugLevel.Value = (GraphicsDebugLevel)OpenglDebugLevel;
 
-            config.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            if (_applicationData != null)
+            {
+                config.ToFileFormat().SaveConfig(ConfigurationState.ConfigurationFilePathForTitle(_applicationData.TitleId));
+            }
+            else
+            {
+                config.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            }
 
             MainWindow.UpdateGraphicsConfig();
 

@@ -111,7 +111,7 @@ namespace Ryujinx.Ava
             PrintSystemInfo();
 
             // Enable OGL multithreading on the driver, when available.
-            DriverUtilities.ToggleOGLThreading(ConfigurationState.Instance.Graphics.BackendThreading == BackendThreading.Off);
+            DriverUtilities.ToggleOGLThreading(ConfigurationState.Shared.Graphics.BackendThreading == BackendThreading.Off);
 
             // Check if keys exists.
             if (!File.Exists(Path.Combine(AppDataManager.KeysDirPath, "prod.keys")))
@@ -148,18 +148,18 @@ namespace Ryujinx.Ava
                 // No configuration, we load the default values and save it to disk
                 ConfigurationPath = appDataConfigurationPath;
 
-                ConfigurationState.Instance.LoadDefault();
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
+                ConfigurationState.Shared.LoadDefault();
+                ConfigurationState.Shared.ToFileFormat().SaveConfig(ConfigurationPath);
             }
             else
             {
                 if (ConfigurationFileFormat.TryLoad(ConfigurationPath, out ConfigurationFileFormat configurationFileFormat))
                 {
-                    ConfigurationState.Instance.Load(configurationFileFormat, ConfigurationPath);
+                    ConfigurationState.Shared.Load(configurationFileFormat, ConfigurationPath);
                 }
                 else
                 {
-                    ConfigurationState.Instance.LoadDefault();
+                    ConfigurationState.Shared.LoadDefault();
 
                     Logger.Warning?.PrintMsg(LogClass.Application, $"Failed to load config! Loading the default config instead.\nFailed config location {ConfigurationPath}");
                 }
@@ -170,18 +170,18 @@ namespace Ryujinx.Ava
             {
                 if (CommandLineState.OverrideGraphicsBackend.ToLower() == "opengl")
                 {
-                    ConfigurationState.Instance.Graphics.GraphicsBackend.Value = GraphicsBackend.OpenGl;
+                    ConfigurationState.Shared.Graphics.GraphicsBackend.Value = GraphicsBackend.OpenGl;
                 }
                 else if (CommandLineState.OverrideGraphicsBackend.ToLower() == "vulkan")
                 {
-                    ConfigurationState.Instance.Graphics.GraphicsBackend.Value = GraphicsBackend.Vulkan;
+                    ConfigurationState.Shared.Graphics.GraphicsBackend.Value = GraphicsBackend.Vulkan;
                 }
             }
 
             // Check if docked mode was overriden.
             if (CommandLineState.OverrideDockedMode.HasValue)
             {
-                ConfigurationState.Instance.System.EnableDockedMode.Value = CommandLineState.OverrideDockedMode.Value;
+                ConfigurationState.Shared.System.EnableDockedMode.Value = CommandLineState.OverrideDockedMode.Value;
             }
         }
 
