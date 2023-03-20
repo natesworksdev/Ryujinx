@@ -273,7 +273,7 @@ namespace Ryujinx.Ava.UI.Windows
                 ViewModel.LoadApplication(_launchPath, _startFullscreen);
             }
 
-            if (ConfigurationState.Instance.CheckUpdatesOnStart.Value && Updater.CanUpdate(false))
+            if (ConfigurationState.Shared.CheckUpdatesOnStart.Value && Updater.CanUpdate(false))
             {
                 Updater.BeginParse(this, false).ContinueWith(task =>
                 {
@@ -319,12 +319,12 @@ namespace Ryujinx.Ava.UI.Windows
 
         public static void UpdateGraphicsConfig()
         {
-            GraphicsConfig.ResScale                   = ConfigurationState.Instance.Graphics.ResScale == -1 ? ConfigurationState.Instance.Graphics.ResScaleCustom : ConfigurationState.Instance.Graphics.ResScale;
-            GraphicsConfig.MaxAnisotropy              = ConfigurationState.Instance.Graphics.MaxAnisotropy;
-            GraphicsConfig.ShadersDumpPath            = ConfigurationState.Instance.Graphics.ShadersDumpPath;
-            GraphicsConfig.EnableShaderCache          = ConfigurationState.Instance.Graphics.EnableShaderCache;
-            GraphicsConfig.EnableTextureRecompression = ConfigurationState.Instance.Graphics.EnableTextureRecompression;
-            GraphicsConfig.EnableMacroHLE             = ConfigurationState.Instance.Graphics.EnableMacroHLE;
+            GraphicsConfig.ResScale                   = ConfigurationState.Shared.Graphics.ResScale == -1 ? ConfigurationState.Shared.Graphics.ResScaleCustom : ConfigurationState.Shared.Graphics.ResScale;
+            GraphicsConfig.MaxAnisotropy              = ConfigurationState.Shared.Graphics.MaxAnisotropy;
+            GraphicsConfig.ShadersDumpPath            = ConfigurationState.Shared.Graphics.ShadersDumpPath;
+            GraphicsConfig.EnableShaderCache          = ConfigurationState.Shared.Graphics.EnableShaderCache;
+            GraphicsConfig.EnableTextureRecompression = ConfigurationState.Shared.Graphics.EnableTextureRecompression;
+            GraphicsConfig.EnableMacroHLE             = ConfigurationState.Shared.Graphics.EnableMacroHLE;
         }
 
         public void LoadHotKeys()
@@ -343,7 +343,7 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 if (!volumeSplitButton.IsChecked)
                 {
-                    ViewModel.AppHost.Device.SetVolume(ConfigurationState.Instance.System.AudioVolume);
+                    ViewModel.AppHost.Device.SetVolume(ConfigurationState.Shared.System.AudioVolume);
                 }
                 else
                 {
@@ -356,7 +356,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            if (!ViewModel.IsClosing && ViewModel.AppHost != null && ConfigurationState.Instance.ShowConfirmExit)
+            if (!ViewModel.IsClosing && ViewModel.AppHost != null && ConfigurationState.Shared.ShowConfirmExit)
             {
                 e.Cancel = true;
 
@@ -433,7 +433,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             _isLoading = true;
 
-            ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs.Value, ConfigurationState.Instance.System.Language);
+            ApplicationLibrary.LoadApplications(ConfigurationState.Shared.Ui.GameDirs.Value, ConfigurationState.Shared.System.Language);
 
             _isLoading = false;
         }

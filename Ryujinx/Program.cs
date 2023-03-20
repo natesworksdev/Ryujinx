@@ -181,8 +181,8 @@ namespace Ryujinx
                 // No configuration, we load the default values and save it to disk
                 ConfigurationPath = appDataConfigurationPath;
 
-                ConfigurationState.Instance.LoadDefault();
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
+                ConfigurationState.Shared.LoadDefault();
+                ConfigurationState.Shared.ToFileFormat().SaveConfig(ConfigurationPath);
 
                 showVulkanPrompt = true;
             }
@@ -190,7 +190,7 @@ namespace Ryujinx
             {
                 if (ConfigurationFileFormat.TryLoad(ConfigurationPath, out ConfigurationFileFormat configurationFileFormat))
                 {
-                    ConfigurationLoadResult result = ConfigurationState.Instance.Load(configurationFileFormat, ConfigurationPath);
+                    ConfigurationLoadResult result = ConfigurationState.Shared.Load(configurationFileFormat, ConfigurationPath);
 
                     if ((result & ConfigurationLoadResult.MigratedFromPreVulkan) != 0)
                     {
@@ -199,7 +199,7 @@ namespace Ryujinx
                 }
                 else
                 {
-                    ConfigurationState.Instance.LoadDefault();
+                    ConfigurationState.Shared.LoadDefault();
 
                     showVulkanPrompt = true;
 
@@ -212,12 +212,12 @@ namespace Ryujinx
             {
                 if (CommandLineState.OverrideGraphicsBackend.ToLower() == "opengl")
                 {
-                    ConfigurationState.Instance.Graphics.GraphicsBackend.Value = GraphicsBackend.OpenGl;
+                    ConfigurationState.Shared.Graphics.GraphicsBackend.Value = GraphicsBackend.OpenGl;
                     showVulkanPrompt = false;
                 }
                 else if (CommandLineState.OverrideGraphicsBackend.ToLower() == "vulkan")
                 {
-                    ConfigurationState.Instance.Graphics.GraphicsBackend.Value = GraphicsBackend.Vulkan;
+                    ConfigurationState.Shared.Graphics.GraphicsBackend.Value = GraphicsBackend.Vulkan;
                     showVulkanPrompt = false;
                 }
             }
@@ -225,14 +225,14 @@ namespace Ryujinx
             // Check if docked mode was overriden.
             if (CommandLineState.OverrideDockedMode.HasValue)
             {
-                ConfigurationState.Instance.System.EnableDockedMode.Value = CommandLineState.OverrideDockedMode.Value;
+                ConfigurationState.Shared.System.EnableDockedMode.Value = CommandLineState.OverrideDockedMode.Value;
             }
 
             // Logging system information.
             PrintSystemInfo();
 
             // Enable OGL multithreading on the driver, when available.
-            BackendThreading threadingMode = ConfigurationState.Instance.Graphics.BackendThreading;
+            BackendThreading threadingMode = ConfigurationState.Shared.Graphics.BackendThreading;
             DriverUtilities.ToggleOGLThreading(threadingMode == BackendThreading.Off);
 
             // Initialize Gtk.
@@ -255,7 +255,7 @@ namespace Ryujinx
                 mainWindow.RunApplication(CommandLineState.LaunchPathArg, CommandLineState.StartFullscreenArg);
             }
 
-            if (ConfigurationState.Instance.CheckUpdatesOnStart.Value && Updater.CanUpdate(false))
+            if (ConfigurationState.Shared.CheckUpdatesOnStart.Value && Updater.CanUpdate(false))
             {
                 Updater.BeginParse(mainWindow, false).ContinueWith(task =>
                 {
@@ -285,11 +285,11 @@ namespace Ryujinx
                     buttonTexts,
                     MessageType.Question);
 
-                ConfigurationState.Instance.Graphics.GraphicsBackend.Value = response == 0
+                ConfigurationState.Shared.Graphics.GraphicsBackend.Value = response == 0
                     ? GraphicsBackend.Vulkan
                     : GraphicsBackend.OpenGl;
 
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
+                ConfigurationState.Shared.ToFileFormat().SaveConfig(ConfigurationPath);
             }
 
             Application.Run();

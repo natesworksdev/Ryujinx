@@ -40,9 +40,9 @@ namespace Ryujinx.Ava
             {
                 ApplyConfiguredTheme();
 
-                ConfigurationState.Instance.Ui.BaseStyle.Event += ThemeChanged_Event;
-                ConfigurationState.Instance.Ui.CustomThemePath.Event += ThemeChanged_Event;
-                ConfigurationState.Instance.Ui.EnableCustomTheme.Event += CustomThemeChanged_Event;
+                ConfigurationState.Shared.Ui.BaseStyle.Event += ThemeChanged_Event;
+                ConfigurationState.Shared.Ui.CustomThemePath.Event += ThemeChanged_Event;
+                ConfigurationState.Shared.Ui.EnableCustomTheme.Event += CustomThemeChanged_Event;
             }
         }
 
@@ -86,17 +86,17 @@ namespace Ryujinx.Ava
         {
             try
             {
-                string baseStyle = ConfigurationState.Instance.Ui.BaseStyle;
-                string themePath = ConfigurationState.Instance.Ui.CustomThemePath;
-                bool enableCustomTheme = ConfigurationState.Instance.Ui.EnableCustomTheme;
+                string baseStyle = ConfigurationState.Shared.Ui.BaseStyle;
+                string themePath = ConfigurationState.Shared.Ui.CustomThemePath;
+                bool enableCustomTheme = ConfigurationState.Shared.Ui.EnableCustomTheme;
 
                 const string BaseStyleUrl = "avares://Ryujinx.Ava/Assets/Styles/Base{0}.xaml";
 
                 if (string.IsNullOrWhiteSpace(baseStyle))
                 {
-                    ConfigurationState.Instance.Ui.BaseStyle.Value = "Dark";
+                    ConfigurationState.Shared.Ui.BaseStyle.Value = "Dark";
 
-                    baseStyle = ConfigurationState.Instance.Ui.BaseStyle;
+                    baseStyle = ConfigurationState.Shared.Ui.BaseStyle;
                 }
 
                 var theme = AvaloniaLocator.Current.GetService<FluentAvaloniaTheme>();
