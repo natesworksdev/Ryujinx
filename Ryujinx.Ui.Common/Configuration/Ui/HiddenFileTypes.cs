@@ -1,6 +1,6 @@
 namespace Ryujinx.Ui.Common.Configuration.Ui
 {
-    public struct HiddenFileTypes
+    public struct ShownFileTypes
     {
         public bool NSP  { get; set; }
         public bool PFS0 { get; set; }

@@ -41,37 +41,37 @@ namespace Ryujinx.Ava.UI.Views.Main
                 new CheckBox()
                 {
                     Content = ".NSP",
-                    IsChecked = ConfigurationState.Instance.Ui.HiddenFileTypes.NSP.Value,
+                    IsChecked = ConfigurationState.Instance.Ui.ShownFileTypes.NSP.Value,
                     Command = MiniCommand.Create(() => ViewModel.HideFileType("nsp"))
                 },
                 new CheckBox()
                 {
                     Content = ".PFS0",
-                    IsChecked = ConfigurationState.Instance.Ui.HiddenFileTypes.PFS0.Value,
+                    IsChecked = ConfigurationState.Instance.Ui.ShownFileTypes.PFS0.Value,
                     Command = MiniCommand.Create(() => ViewModel.HideFileType("pfs0"))
                 },
                 new CheckBox()
                 {
                     Content = ".XCI",
-                    IsChecked = ConfigurationState.Instance.Ui.HiddenFileTypes.XCI.Value,
+                    IsChecked = ConfigurationState.Instance.Ui.ShownFileTypes.XCI.Value,
                     Command = MiniCommand.Create(() => ViewModel.HideFileType("xci"))
                 },
                 new CheckBox()
                 {
                     Content = ".NCA",
-                    IsChecked = ConfigurationState.Instance.Ui.HiddenFileTypes.NCA.Value,
+                    IsChecked = ConfigurationState.Instance.Ui.ShownFileTypes.NCA.Value,
                     Command = MiniCommand.Create(() => ViewModel.HideFileType("nca"))
                 },
                 new CheckBox()
                 {
                     Content = ".NRO",
-                    IsChecked = ConfigurationState.Instance.Ui.HiddenFileTypes.NRO.Value,
+                    IsChecked = ConfigurationState.Instance.Ui.ShownFileTypes.NRO.Value,
                     Command = MiniCommand.Create(() => ViewModel.HideFileType("nro"))
                 },
                 new CheckBox()
                 {
                     Content = ".NSO",
-                    IsChecked = ConfigurationState.Instance.Ui.HiddenFileTypes.NSO.Value,
+                    IsChecked = ConfigurationState.Instance.Ui.ShownFileTypes.NSO.Value,
                     Command = MiniCommand.Create(() => ViewModel.HideFileType("nso"))
                 }
             }.ToArray();

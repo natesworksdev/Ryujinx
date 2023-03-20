@@ -249,7 +249,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// A list of file types to be hidden in the games List
         /// </summary>
-        public HiddenFileTypes HiddenFileTypes { get; set; }
+        public ShownFileTypes ShownFileTypes { get; set; }
 
         /// <summary>
         /// Language Code for the UI

@@ -263,7 +263,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="HiddenFileTypes">
+                      <object class="GtkMenuItem" id="ShownFileTypes">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="tooltip-text" translatable="yes">Select which file types to show</property>
@@ -274,7 +274,7 @@
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <child>
-                              <object class="GtkCheckMenuItem" id="_nspHidden">
+                              <object class="GtkCheckMenuItem" id="_nspShown">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="tooltip-text" translatable="yes">Shows .NSP files in the games list</property>
@@ -283,7 +283,7 @@
                               </object>
                             </child>
                             <child>
-                              <object class="GtkCheckMenuItem" id="_pfs0Hidden">
+                              <object class="GtkCheckMenuItem" id="_pfs0Shown">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="tooltip-text" translatable="yes">Shows .PFS0 files in the games list</property>
@@ -292,7 +292,7 @@
                               </object>
                             </child>
                             <child>
-                              <object class="GtkCheckMenuItem" id="_xciHidden">
+                              <object class="GtkCheckMenuItem" id="_xciShown">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="tooltip-text" translatable="yes">Shows .XCI files in the games list</property>
@@ -301,7 +301,7 @@
                               </object>
                             </child>
                             <child>
-                              <object class="GtkCheckMenuItem" id="_ncaHidden">
+                              <object class="GtkCheckMenuItem" id="_ncaShown">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="tooltip-text" translatable="yes">Shows .NCA files in the games list</property>
@@ -310,7 +310,7 @@
                               </object>
                             </child>
                             <child>
-                              <object class="GtkCheckMenuItem" id="_nroHidden">
+                              <object class="GtkCheckMenuItem" id="_nroShown">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="tooltip-text" translatable="yes">Shows .NRO files in the games list</property>
@@ -319,7 +319,7 @@
                               </object>
                             </child>
                             <child>
-                              <object class="GtkCheckMenuItem" id="_nsoHidden">
+                              <object class="GtkCheckMenuItem" id="_nsoShown">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="tooltip-text" translatable="yes">Shows .NSO files in the games list</property>
