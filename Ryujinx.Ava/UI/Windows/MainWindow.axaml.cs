@@ -321,7 +321,7 @@ namespace Ryujinx.Ava.UI.Windows
         {
             bool useTitleConfig = ConfigurationState.HasConfigurationForTitle(MainWindowViewModel.SelectedApplication.TitleId);
 
-            GraphicsConfig.ResScale                   = ConfigurationState.Instance(useTitleConfig).Graphics.ResScale == -1 ? ConfigurationState.Shared.Graphics.ResScaleCustom : ConfigurationState.Shared.Graphics.ResScale;
+            GraphicsConfig.ResScale                   = ConfigurationState.Instance(useTitleConfig).Graphics.ResScale == -1 ? ConfigurationState.Instance(useTitleConfig).Graphics.ResScaleCustom : ConfigurationState.Instance(useTitleConfig).Graphics.ResScale;
             GraphicsConfig.MaxAnisotropy              = ConfigurationState.Instance(useTitleConfig).Graphics.MaxAnisotropy;
             GraphicsConfig.ShadersDumpPath            = ConfigurationState.Instance(useTitleConfig).Graphics.ShadersDumpPath;
             GraphicsConfig.EnableShaderCache          = ConfigurationState.Instance(useTitleConfig).Graphics.EnableShaderCache;
