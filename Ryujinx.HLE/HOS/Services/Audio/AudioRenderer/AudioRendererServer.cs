@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Common.Logging;
+using Ryujinx.Common.Memory;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Horizon.Common;
@@ -68,14 +69,11 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 
             ReadOnlyMemory<byte> input = context.Memory.GetSpan(inputPosition, (int)inputSize).ToArray();
 
-            using (IMemoryOwner<byte> outputOwner = MemoryPool<byte>.Shared.Rent((int)outputSize))
-            using (IMemoryOwner<byte> performanceOutputOwner = MemoryPool<byte>.Shared.Rent((int)performanceOutputSize))
+            using (MemoryBuffer outputOwner = MemoryBuffer.Rent(outputSize, true))
+            using (MemoryBuffer performanceOutputOwner = MemoryBuffer.Rent(performanceOutputSize, true))
             {
-                Memory<byte> output = outputOwner.Memory.Slice(0, (int)outputSize);
-                Memory<byte> performanceOutput = performanceOutputOwner.Memory.Slice(0, (int)performanceOutputSize);
-
-                output.Span.Fill(0);
-                performanceOutput.Span.Fill(0);
+                Memory<byte> output = outputOwner.Memory;
+                Memory<byte> performanceOutput = performanceOutputOwner.Memory;
 
                 using MemoryHandle outputHandle = output.Pin();
                 using MemoryHandle performanceOutputHandle = performanceOutput.Pin();

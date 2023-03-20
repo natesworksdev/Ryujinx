@@ -1,4 +1,5 @@
-﻿using Ryujinx.HLE.HOS.Ipc;
+﻿using Ryujinx.Common.Memory;
+using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Horizon.Common;
 using System;
@@ -84,12 +85,10 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             ReadOnlySpan<byte> inputParcel = context.Memory.GetSpan(dataPos, (int)dataSize);
 
-            using (IMemoryOwner<byte> outputParcelOwner = MemoryPool<byte>.Shared.Rent((int)replySize))
+            using (MemoryBuffer outputParcelOwner = MemoryBuffer.Rent((int)replySize, true))
             {
-                Span<byte> outputParcel = outputParcelOwner.Memory.Span.Slice(0, (int)replySize);
+                Span<byte> outputParcel = outputParcelOwner.Memory.Span;
                 
-                outputParcel.Clear();
-
                 ResultCode result = OnTransact(binderId, code, flags, inputParcel, outputParcel);
 
                 if (result == ResultCode.Success)
