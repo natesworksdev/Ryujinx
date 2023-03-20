@@ -1352,8 +1352,13 @@ namespace Ryujinx.Ui.Common.Configuration
             {
                 throw new InvalidOperationException("Shared Configuration is already initialized");
             }
+            if (Title != null)
+            {
+                throw new InvalidOperationException("Title Configuration is already initalized");
+            }
 
             Shared = new ConfigurationState();
+            Title = new ConfigurationState();
         }
 
         public static string ConfigurationFilePathForTitle(string titleId)
@@ -1371,7 +1376,7 @@ namespace Ryujinx.Ui.Common.Configuration
 
         public static void LoadConfigurationStateForTitle(string titleId)
         {
-            Title = new ConfigurationState();
+            if (Title == null) return;
 
             // Now load the configuration as the other subsystems are now registered
             string gameConfigurationPath = ConfigurationFilePathForTitle(titleId);
@@ -1386,7 +1391,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 // No configuration, we load the shared config values and save it to disk.
                 if (ConfigurationFileFormat.TryLoad(globalConfigurationPath, out ConfigurationFileFormat configurationFileFormat))
                 {
-                    ConfigurationLoadResult result = ConfigurationState.Title.Load(configurationFileFormat, gameConfigurationPath);
+                    ConfigurationLoadResult result = ConfigurationState.Shared.Load(configurationFileFormat, gameConfigurationPath);
 
                     if (result == ConfigurationLoadResult.NotLoaded)
                     {
