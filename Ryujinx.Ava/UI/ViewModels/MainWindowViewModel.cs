@@ -1659,6 +1659,13 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async void LoadApplication(string path, bool startFullscreen = false, string titleName = "")
         {
+            if(SelectedApplication?.TitleId != null)
+            {
+                if (ConfigurationState.HasConfigurationForTitle(SelectedApplication.TitleId))
+                {
+                    ConfigurationState.LoadConfigurationStateForTitle(SelectedApplication.TitleId);
+                }
+            }
             if (AppHost != null)
             {
                 await ContentDialogHelper.CreateInfoDialog(
@@ -1715,6 +1722,11 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     LoadHeading = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.LoadingHeading, AppHost.Device.Processes.ActiveApplication.Name);
                     TitleName   = AppHost.Device.Processes.ActiveApplication.Name;
+                }
+
+                if (ConfigurationState.HasConfigurationForTitle(AppHost.Device.Application.TitleIdText))
+                {
+                    ConfigurationState.LoadConfigurationStateForTitle(AppHost.Device.Application.TitleIdText);
                 }
 
                 SwitchToRenderer(startFullscreen);

@@ -1413,20 +1413,19 @@ namespace Ryujinx.Ui.Common.Configuration
         /// If there is an issue with the Global configuration, the default values will be used instead.
         /// </summary>
         /// <param name="titleId">Id of the selected title</param>
-        public static void LoadConfigurationStateForTitle(string titleId)
+        public static void LoadOrCreateConfigurationStateForTitle(string titleId)
         {
-            if (Title == null) return;
-
-            // Now load the configuration as the other subsystems are now registered
-            string gameConfigurationPath = ConfigurationFilePathForTitle(titleId);
-
-            string globalLocalConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"Config.json");
-            string globalAppDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, $"Config.json");
-
-            string globalConfigurationPath = File.Exists(globalLocalConfigurationPath) ? globalLocalConfigurationPath : File.Exists(globalAppDataConfigurationPath) ? globalAppDataConfigurationPath : null;
-
-            if (!File.Exists(gameConfigurationPath))
+            if (!HasConfigurationForTitle(titleId))
             {
+                string gameConfigurationPath = ConfigurationFilePathForTitle(titleId);
+
+                // Program.ConfigurationPath is not visible, so we need to mimic it here..
+                string globalLocalConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"Config.json");
+                string globalAppDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, $"Config.json");
+                string globalConfigurationPath = File.Exists(globalLocalConfigurationPath) ? globalLocalConfigurationPath : File.Exists(globalAppDataConfigurationPath) ? globalAppDataConfigurationPath : null;
+
+                Title = new ConfigurationState();
+
                 // No configuration, we load the shared config values and save it to disk.
                 if (ConfigurationFileFormat.TryLoad(globalConfigurationPath, out ConfigurationFileFormat configurationFileFormat))
                 {
@@ -1434,22 +1433,45 @@ namespace Ryujinx.Ui.Common.Configuration
 
                     if (result == ConfigurationLoadResult.NotLoaded)
                     {
-                        ConfigurationState.Title.LoadDefault();
+                        Title.LoadDefault();
                     }
-                }
-                ConfigurationState.Title.ToFileFormat().SaveConfig(gameConfigurationPath);
-            }
-            else
-            {
-                if (ConfigurationFileFormat.TryLoad(gameConfigurationPath, out ConfigurationFileFormat configurationFileFormat))
-                {
-                    ConfigurationLoadResult result = ConfigurationState.Title.Load(configurationFileFormat, gameConfigurationPath);
                 }
                 else
                 {
-                    ConfigurationState.Title.LoadDefault();
+                    Title.LoadDefault();
+                }
+                Title.ToFileFormat().SaveConfig(gameConfigurationPath);
+            }
+            else
+            {
+                if (!LoadConfigurationStateForTitle(titleId))
+                {
+                    Title = new ConfigurationState();
+                    Title.LoadDefault();
                 }
             }
+        }
+
+        /// <summary>
+        /// Loads the configuration for the specified title.
+        /// </summary>
+        /// <param name="titleId">Id of the title</param>
+        /// <returns>True if loading was successful, false otherwise.</returns>
+        public static bool LoadConfigurationStateForTitle(string titleId)
+        {
+            if (!HasConfigurationForTitle(titleId)) return false;
+
+            string gameConfigurationPath = ConfigurationFilePathForTitle(titleId);
+
+            if (ConfigurationFileFormat.TryLoad(gameConfigurationPath, out ConfigurationFileFormat configurationFileFormat))
+            {
+                Title = new ConfigurationState();
+                ConfigurationLoadResult result = ConfigurationState.Title.Load(configurationFileFormat, gameConfigurationPath);
+
+                return result == ConfigurationLoadResult.Success || result == ConfigurationLoadResult.MigratedFromPreVulkan;
+            }
+
+            return false;
         }
     }
 }

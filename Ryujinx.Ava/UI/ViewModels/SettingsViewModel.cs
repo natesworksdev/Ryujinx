@@ -231,7 +231,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 _volume = value;
 
-                ConfigurationState.Shared.System.AudioVolume.Value = _volume / 100;
+                ConfigurationState.Instance(IsTitleSpecificSettings).System.AudioVolume.Value = _volume / 100;
 
                 OnPropertyChanged();
             }
@@ -359,14 +359,19 @@ namespace Ryujinx.Ava.UI.ViewModels
         public void LoadCurrentConfiguration()
         {
 
-            if(_applicationData != null)
+            ConfigurationState config;
+            if(IsTitleSpecificSettings)
             {
-                ConfigurationState.LoadConfigurationStateForTitle(_applicationData.TitleId);
+                ConfigurationState.LoadOrCreateConfigurationStateForTitle(_applicationData.TitleId);
+                config = ConfigurationState.Title;
+            }
+            else
+            {
+                config = ConfigurationState.Shared;
             }
 
-            ConfigurationState config = ConfigurationState.Shared;
-
-            // User Interface
+            // User Interface 
+            // Note: These settings are ignored if set in title specific configurations, only the shared config's Ui settings will be used.
             EnableDiscordIntegration = config.EnableDiscordIntegration;
             CheckUpdatesOnStart = config.CheckUpdatesOnStart;
             ShowConfirmExit = config.ShowConfirmExit;
@@ -445,7 +450,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void SaveSettings()
         {
-            ConfigurationState config = ConfigurationState.Shared;
+            ConfigurationState config = ConfigurationState.Instance(IsTitleSpecificSettings);
 
             // User Interface
             config.EnableDiscordIntegration.Value = EnableDiscordIntegration;
@@ -542,7 +547,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.System.FsGlobalAccessLogMode.Value = FsGlobalAccessLogMode;
             config.Logger.GraphicsDebugLevel.Value = (GraphicsDebugLevel)OpenglDebugLevel;
 
-            if (_applicationData != null)
+            if (IsTitleSpecificSettings)
             {
                 config.ToFileFormat().SaveConfig(ConfigurationState.ConfigurationFilePathForTitle(_applicationData.TitleId));
             }
