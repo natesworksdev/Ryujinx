@@ -1399,6 +1399,8 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <returns>True is a file exists, false otherwise.</returns>
         public static bool HasConfigurationForTitle(string titleId)
         {
+            if (titleId == null) return false;
+
             string localConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{titleId}.json");
             string appDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, $"{titleId}.json");
 
@@ -1415,6 +1417,8 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <param name="titleId">Id of the selected title</param>
         public static void LoadOrCreateConfigurationStateForTitle(string titleId)
         {
+            if (titleId == null) return;
+
             if (!HasConfigurationForTitle(titleId))
             {
                 string gameConfigurationPath = ConfigurationFilePathForTitle(titleId);
