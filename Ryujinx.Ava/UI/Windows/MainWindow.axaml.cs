@@ -319,12 +319,14 @@ namespace Ryujinx.Ava.UI.Windows
 
         public static void UpdateGraphicsConfig()
         {
-            GraphicsConfig.ResScale                   = ConfigurationState.Shared.Graphics.ResScale == -1 ? ConfigurationState.Shared.Graphics.ResScaleCustom : ConfigurationState.Shared.Graphics.ResScale;
-            GraphicsConfig.MaxAnisotropy              = ConfigurationState.Shared.Graphics.MaxAnisotropy;
-            GraphicsConfig.ShadersDumpPath            = ConfigurationState.Shared.Graphics.ShadersDumpPath;
-            GraphicsConfig.EnableShaderCache          = ConfigurationState.Shared.Graphics.EnableShaderCache;
-            GraphicsConfig.EnableTextureRecompression = ConfigurationState.Shared.Graphics.EnableTextureRecompression;
-            GraphicsConfig.EnableMacroHLE             = ConfigurationState.Shared.Graphics.EnableMacroHLE;
+            bool useTitleConfig = ConfigurationState.HasConfigurationForTitle(MainWindowViewModel.SelectedApplication.TitleId);
+
+            GraphicsConfig.ResScale                   = ConfigurationState.Instance(useTitleConfig).Graphics.ResScale == -1 ? ConfigurationState.Shared.Graphics.ResScaleCustom : ConfigurationState.Shared.Graphics.ResScale;
+            GraphicsConfig.MaxAnisotropy              = ConfigurationState.Instance(useTitleConfig).Graphics.MaxAnisotropy;
+            GraphicsConfig.ShadersDumpPath            = ConfigurationState.Instance(useTitleConfig).Graphics.ShadersDumpPath;
+            GraphicsConfig.EnableShaderCache          = ConfigurationState.Instance(useTitleConfig).Graphics.EnableShaderCache;
+            GraphicsConfig.EnableTextureRecompression = ConfigurationState.Instance(useTitleConfig).Graphics.EnableTextureRecompression;
+            GraphicsConfig.EnableMacroHLE             = ConfigurationState.Instance(useTitleConfig).Graphics.EnableMacroHLE;
         }
 
         public void LoadHotKeys()
