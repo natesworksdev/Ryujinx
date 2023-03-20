@@ -59,6 +59,9 @@ namespace Ryujinx.Ui.Common.Configuration
                 }
             }
 
+            /// <summary>
+            /// Used to toggle which file types are shown in the UI
+            /// </summary>
             public class HiddenFileTypesSettings
             {
                 public ReactiveObject<bool> NSP { get; private set; }
@@ -736,13 +739,13 @@ namespace Ryujinx.Ui.Common.Configuration
             Ui.ColumnSort.SortColumnId.Value          = 0;
             Ui.ColumnSort.SortAscending.Value         = false;
             Ui.GameDirs.Value                         = new List<string>();
-            Ui.HiddenFileTypes.NSP.Value              = false;
-            Ui.HiddenFileTypes.PFS0.Value             = false;
-            Ui.HiddenFileTypes.XCI.Value              = false;
-            Ui.HiddenFileTypes.NCA.Value              = false;
-            Ui.HiddenFileTypes.NRO.Value              = false;
-            Ui.HiddenFileTypes.NSO.Value              = false;
-            Ui.EnableCustomTheme.Value                = false;
+            Ui.HiddenFileTypes.NSP.Value              = true;
+            Ui.HiddenFileTypes.PFS0.Value             = true;
+            Ui.HiddenFileTypes.XCI.Value              = true;
+            Ui.HiddenFileTypes.NCA.Value              = true;
+            Ui.HiddenFileTypes.NRO.Value              = true;
+            Ui.HiddenFileTypes.NSO.Value              = true;
+            Ui.EnableCustomTheme.Value                = true;
             Ui.LanguageCode.Value                     = "en_US";
             Ui.CustomThemePath.Value                  = "";
             Ui.BaseStyle.Value                        = "Dark";
@@ -1293,12 +1296,12 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 configurationFileFormat.HiddenFileTypes = new HiddenFileTypes
                 {
-                    NSP = false,
-                    PFS0 = false,
-                    XCI = false,
-                    NCA = false,
-                    NRO = false,
-                    NSO = false
+                    NSP  = true,
+                    PFS0 = true,
+                    XCI  = true,
+                    NCA  = true,
+                    NRO  = true,
+                    NSO  = true
                 };
 
                 configurationFileUpdated = true;

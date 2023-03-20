@@ -429,7 +429,7 @@
   "DlcManagerEnableAllButton": "Enable All",
   "DlcManagerDisableAllButton": "Disable All",
   "MenuBarOptionsChangeLanguage": "Change Language",
-  "MenuBarHiddenFileTypes": "Hide File Types",
+  "MenuBarHiddenFileTypes": "Show File Types",
   "CommonSort": "Sort",
   "CommonShowNames": "Show Names",
   "CommonFavorite": "Favorite",
