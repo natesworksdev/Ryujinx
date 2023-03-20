@@ -114,14 +114,14 @@ jobs:
 
       - name: Update Tag
         uses: actions/github-script@v5
-          with:
-            script: |
-              github.rest.git.createRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: 'refs/tags/${{ steps.version_info.outputs.build_version }}',
-                sha: context.sha
-              })
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/${{ steps.version_info.outputs.build_version }}',
+              sha: context.sha
+            })
 
   flatpak_release:
     uses: ./.github/workflows/flatpak.yml
