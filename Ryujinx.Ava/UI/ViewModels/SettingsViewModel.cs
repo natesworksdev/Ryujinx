@@ -270,11 +270,10 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager, ApplicationData applicationData) : this()
+        public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager, ApplicationData applicationData) : this(applicationData)
         {
             _virtualFileSystem = virtualFileSystem;
             _contentManager = contentManager;
-            _applicationData = applicationData;
 
             if (Program.PreviewerDetached)
             {
@@ -282,12 +281,13 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public SettingsViewModel()
+        public SettingsViewModel(ApplicationData applicationData = null)
         {
             GameDirectories = new AvaloniaList<string>();
             TimeZones = new AvaloniaList<TimeZone>();
             AvailableGpus = new ObservableCollection<ComboBoxItem>();
             _validTzRegions = new List<string>();
+            _applicationData = applicationData;
 
             CheckSoundBackends();
 
