@@ -1393,6 +1393,10 @@ namespace Ryujinx.Ui.Common.Configuration
                         ConfigurationState.Title.LoadDefault();
                     }
                 }
+                else
+                {
+                    ConfigurationState.Title.LoadDefault();
+                }
                 ConfigurationState.Title.ToFileFormat().SaveConfig(gameConfigurationPath);
             }
             else
@@ -1400,6 +1404,11 @@ namespace Ryujinx.Ui.Common.Configuration
                 if (ConfigurationFileFormat.TryLoad(gameConfigurationPath, out ConfigurationFileFormat configurationFileFormat))
                 {
                     ConfigurationLoadResult result = ConfigurationState.Title.Load(configurationFileFormat, gameConfigurationPath);
+
+                    if (result == ConfigurationLoadResult.NotLoaded)
+                    {
+                        ConfigurationState.Title.LoadDefault();
+                    }
                 }
                 else
                 {
