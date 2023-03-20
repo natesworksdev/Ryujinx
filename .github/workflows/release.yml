@@ -112,7 +112,7 @@ jobs:
           repo: ${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}
           token: ${{ secrets.RELEASE_TOKEN }}
 
-      - name: Update Tag
+      - name: Create Tag
         uses: actions/github-script@v5
         with:
           script: |
