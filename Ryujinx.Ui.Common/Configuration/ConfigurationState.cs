@@ -1356,6 +1356,24 @@ namespace Ryujinx.Ui.Common.Configuration
             Shared = new ConfigurationState();
         }
 
+        public static ConfigurationState Instance(bool titleSpecific = false)
+        {
+            if(titleSpecific)
+            {
+                if (Title == null)
+                {
+                    throw new InvalidOperationException("Title Configuration is not initialized!");
+                }
+                return Title;
+            }
+            return Shared;
+        }
+
+        /// <summary>
+        /// Returns the configuration path on disk for the specified title.
+        /// </summary>
+        /// <param name="titleId">Id of the selected title</param>
+        /// <returns>Disk path for the title's configuration file.</returns>
         public static string ConfigurationFilePathForTitle(string titleId)
         {
             string localConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{titleId}.json");
@@ -1369,6 +1387,27 @@ namespace Ryujinx.Ui.Common.Configuration
             return gameConfigurationPath;
         }
 
+        /// <summary>
+        /// Returns true if a configuration file exists for the specified title.
+        /// </summary>
+        /// <param name="titleId">Id of the selected title</param>
+        /// <returns>True is a file exists, false otherwise.</returns>
+        public static bool HasConfigurationForTitle(string titleId)
+        {
+            string localConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{titleId}.json");
+            string appDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, $"{titleId}.json");
+
+            return File.Exists(localConfigurationPath) || File.Exists(appDataConfigurationPath);
+        }
+
+        /// <summary>
+        /// Loads the configuration for the specific title into the Title singleton.
+        /// <br/>
+        /// If no configuration exists, a new one will be written to disk with the same configuration as the Global configuration.
+        /// <br/>
+        /// If there is an issue with the Global configuration, the default values will be used instead.
+        /// </summary>
+        /// <param name="titleId">Id of the selected title</param>
         public static void LoadConfigurationStateForTitle(string titleId)
         {
             Title = new ConfigurationState();
