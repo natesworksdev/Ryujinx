@@ -319,7 +319,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         public static void UpdateGraphicsConfig()
         {
-            bool useTitleConfig = ConfigurationState.HasConfigurationForTitle(MainWindowViewModel.SelectedApplication.TitleId);
+            bool useTitleConfig = ConfigurationState.HasConfigurationForTitle(MainWindowViewModel.SelectedApplication?.TitleId);
 
             GraphicsConfig.ResScale                   = ConfigurationState.Instance(useTitleConfig).Graphics.ResScale == -1 ? ConfigurationState.Instance(useTitleConfig).Graphics.ResScaleCustom : ConfigurationState.Instance(useTitleConfig).Graphics.ResScale;
             GraphicsConfig.MaxAnisotropy              = ConfigurationState.Instance(useTitleConfig).Graphics.MaxAnisotropy;

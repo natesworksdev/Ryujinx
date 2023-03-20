@@ -1691,7 +1691,9 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             PrepareLoadScreen();
 
-            RendererHostControl = new RendererHost();
+            bool useTitleConfiguration = ConfigurationState.HasConfigurationForTitle(SelectedApplication?.TitleId);
+
+            RendererHostControl = new RendererHost(ConfigurationState.Instance(useTitleConfiguration).Graphics.GraphicsBackend);
 
             AppHost = new AppHost(
                 RendererHostControl,
@@ -1722,11 +1724,6 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     LoadHeading = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.LoadingHeading, AppHost.Device.Application.TitleName);
                     TitleName   = AppHost.Device.Application.TitleName;
-                }
-
-                if (ConfigurationState.HasConfigurationForTitle(AppHost.Device.Application.TitleIdText))
-                {
-                    ConfigurationState.LoadConfigurationStateForTitle(AppHost.Device.Application.TitleIdText);
                 }
 
                 SwitchToRenderer(startFullscreen);
