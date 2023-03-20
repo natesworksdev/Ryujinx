@@ -56,11 +56,13 @@
             OpenPaneLength="200">
             <ui:NavigationView.MenuItems>
                 <ui:NavigationViewItem
-                    IsSelected="True"
+                    IsSelected="{Binding !IsTitleSpecificSettings}"
+                    IsVisible="{Binding !IsTitleSpecificSettings}"
                     Content="{locale:Locale SettingsTabGeneral}"
                     Tag="UiPage"
                     Icon="New" />
                 <ui:NavigationViewItem
+                    IsSelected="{Binding IsTitleSpecificSettings}"
                     Content="{locale:Locale SettingsTabInput}"
                     Tag="InputPage"
                     Icon="Games" />

@@ -9,6 +9,7 @@ using Ryujinx.Ui.Common.Configuration.Ui;
 using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Ryujinx.Ui.Common.Configuration
 {
@@ -488,9 +489,14 @@ namespace Ryujinx.Ui.Common.Configuration
         }
 
         /// <summary>
-        /// The default configuration instance
+        /// The shared configuration instance
         /// </summary>
-        public static ConfigurationState Instance { get; private set; }
+        public static ConfigurationState Shared { get; private set; }
+
+        /// <summary>
+        /// The title specific configuration instance
+        /// </summary>
+        public static ConfigurationState Title { get; private set; }
 
         /// <summary>
         /// The Ui section
@@ -1342,12 +1348,69 @@ namespace Ryujinx.Ui.Common.Configuration
 
         public static void Initialize()
         {
-            if (Instance != null)
+            if (Shared != null)
             {
-                throw new InvalidOperationException("Configuration is already initialized");
+                throw new InvalidOperationException("Shared Configuration is already initialized");
+            }
+            if (Title != null)
+            {
+                throw new InvalidOperationException("Title Configuration is already initalized");
             }
 
-            Instance = new ConfigurationState();
+            Shared = new ConfigurationState();
+            Title = new ConfigurationState();
+        }
+
+        public static string ConfigurationFilePathForTitle(string titleId)
+        {
+            string localConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{titleId}.json");
+            string appDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, $"{titleId}.json");
+
+            // Now load the configuration as the other subsystems are now registered
+            string gameConfigurationPath = File.Exists(localConfigurationPath)
+                ? localConfigurationPath
+                : appDataConfigurationPath;
+
+            return gameConfigurationPath;
+        }
+
+        public static void LoadConfigurationStateForTitle(string titleId)
+        {
+            if (Title == null) return;
+
+            // Now load the configuration as the other subsystems are now registered
+            string gameConfigurationPath = ConfigurationFilePathForTitle(titleId);
+
+            string globalLocalConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"Config.json");
+            string globalAppDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, $"Config.json");
+
+            string globalConfigurationPath = File.Exists(globalLocalConfigurationPath) ? globalLocalConfigurationPath : File.Exists(globalAppDataConfigurationPath) ? globalAppDataConfigurationPath : null;
+
+            if (!File.Exists(gameConfigurationPath))
+            {
+                // No configuration, we load the shared config values and save it to disk.
+                if (ConfigurationFileFormat.TryLoad(globalConfigurationPath, out ConfigurationFileFormat configurationFileFormat))
+                {
+                    ConfigurationLoadResult result = ConfigurationState.Shared.Load(configurationFileFormat, gameConfigurationPath);
+
+                    if (result == ConfigurationLoadResult.NotLoaded)
+                    {
+                        ConfigurationState.Title.LoadDefault();
+                    }
+                }
+                ConfigurationState.Title.ToFileFormat().SaveConfig(gameConfigurationPath);
+            }
+            else
+            {
+                if (ConfigurationFileFormat.TryLoad(gameConfigurationPath, out ConfigurationFileFormat configurationFileFormat))
+                {
+                    ConfigurationLoadResult result = ConfigurationState.Title.Load(configurationFileFormat, gameConfigurationPath);
+                }
+                else
+                {
+                    ConfigurationState.Title.LoadDefault();
+                }
+            }
         }
     }
 }

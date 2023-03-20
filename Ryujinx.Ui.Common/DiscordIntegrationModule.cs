@@ -34,7 +34,7 @@ namespace Ryujinx.Ui.Common
                 }
             };
 
-            ConfigurationState.Instance.EnableDiscordIntegration.Event += Update;
+            ConfigurationState.Shared.EnableDiscordIntegration.Event += Update;
         }
 
         private static void Update(object sender, ReactiveEventArgs<bool> evnt)

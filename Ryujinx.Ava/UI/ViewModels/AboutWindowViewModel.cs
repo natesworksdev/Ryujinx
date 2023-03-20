@@ -89,7 +89,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             var assets = AvaloniaLocator.Current.GetService<Avalonia.Platform.IAssetLoader>();
 
-            if (ConfigurationState.Instance.Ui.BaseStyle.Value == "Light")
+            if (ConfigurationState.Shared.Ui.BaseStyle.Value == "Light")
             {
                 GithubLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_GitHub_Light.png?assembly=Ryujinx.Ui.Common")));
                 DiscordLogo = new Bitmap(assets.Open(new Uri("resm:Ryujinx.Ui.Common.Resources.Logo_Discord_Light.png?assembly=Ryujinx.Ui.Common")));
