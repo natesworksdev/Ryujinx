@@ -1336,7 +1336,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public void HideFileType(string fileType)
+        public void ToggleFileType(string fileType)
         {
             _ = fileType switch
             {

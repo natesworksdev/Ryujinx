@@ -30,11 +30,11 @@ namespace Ryujinx.Ava.UI.Views.Main
         {
             InitializeComponent();
 
-            HideFileTypesMenuItem.Items = GenerateHideFileTypeItems();
+            ToggleFileTypesMenuItem.Items = GenerateToggleFileTypeItems();
             ChangeLanguageMenuItem.Items = GenerateLanguageMenuItems();
         }
 
-        private CheckBox[] GenerateHideFileTypeItems()
+        private CheckBox[] GenerateToggleFileTypeItems()
         {
             return new List<CheckBox>()
             {
@@ -42,37 +42,37 @@ namespace Ryujinx.Ava.UI.Views.Main
                 {
                     Content = ".NSP",
                     IsChecked = ConfigurationState.Instance.Ui.ShownFileTypes.NSP.Value,
-                    Command = MiniCommand.Create(() => ViewModel.HideFileType("nsp"))
+                    Command = MiniCommand.Create(() => ViewModel.ToggleFileType("nsp"))
                 },
                 new CheckBox()
                 {
                     Content = ".PFS0",
                     IsChecked = ConfigurationState.Instance.Ui.ShownFileTypes.PFS0.Value,
-                    Command = MiniCommand.Create(() => ViewModel.HideFileType("pfs0"))
+                    Command = MiniCommand.Create(() => ViewModel.ToggleFileType("pfs0"))
                 },
                 new CheckBox()
                 {
                     Content = ".XCI",
                     IsChecked = ConfigurationState.Instance.Ui.ShownFileTypes.XCI.Value,
-                    Command = MiniCommand.Create(() => ViewModel.HideFileType("xci"))
+                    Command = MiniCommand.Create(() => ViewModel.ToggleFileType("xci"))
                 },
                 new CheckBox()
                 {
                     Content = ".NCA",
                     IsChecked = ConfigurationState.Instance.Ui.ShownFileTypes.NCA.Value,
-                    Command = MiniCommand.Create(() => ViewModel.HideFileType("nca"))
+                    Command = MiniCommand.Create(() => ViewModel.ToggleFileType("nca"))
                 },
                 new CheckBox()
                 {
                     Content = ".NRO",
                     IsChecked = ConfigurationState.Instance.Ui.ShownFileTypes.NRO.Value,
-                    Command = MiniCommand.Create(() => ViewModel.HideFileType("nro"))
+                    Command = MiniCommand.Create(() => ViewModel.ToggleFileType("nro"))
                 },
                 new CheckBox()
                 {
                     Content = ".NSO",
                     IsChecked = ConfigurationState.Instance.Ui.ShownFileTypes.NSO.Value,
-                    Command = MiniCommand.Create(() => ViewModel.HideFileType("nso"))
+                    Command = MiniCommand.Create(() => ViewModel.ToggleFileType("nso"))
                 }
             }.ToArray();
         }

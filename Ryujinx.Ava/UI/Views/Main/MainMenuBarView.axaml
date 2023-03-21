@@ -78,7 +78,7 @@
                 </MenuItem>
                 <Separator />
                 <MenuItem Name="ChangeLanguageMenuItem" Header="{locale:Locale MenuBarOptionsChangeLanguage}" />
-				<MenuItem Name="HideFileTypesMenuItem" Header="{locale:Locale MenuBarShownFileTypes}" />
+				<MenuItem Name="ToggleFileTypesMenuItem" Header="{locale:Locale MenuBarShowFileTypes}" />
                 <Separator />
                 <MenuItem
                     Click="OpenSettings"

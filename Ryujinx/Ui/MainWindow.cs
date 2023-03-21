@@ -226,12 +226,12 @@ namespace Ryujinx.Ui
             _pauseEmulation.Sensitive = false;
             _resumeEmulation.Sensitive = false;
 
-            if (ConfigurationState.Instance.Ui.ShownFileTypes.NSP)  _nspShown.Active  = true;
-            if (ConfigurationState.Instance.Ui.ShownFileTypes.PFS0) _pfs0Shown.Active = true;
-            if (ConfigurationState.Instance.Ui.ShownFileTypes.XCI)  _xciShown.Active  = true;
-            if (ConfigurationState.Instance.Ui.ShownFileTypes.NCA)  _ncaShown.Active  = true;
-            if (ConfigurationState.Instance.Ui.ShownFileTypes.NRO)  _nroShown.Active  = true;
-            if (ConfigurationState.Instance.Ui.ShownFileTypes.NSO)  _nsoShown.Active  = true;
+            _nspShown.Active  = ConfigurationState.Instance.Ui.ShownFileTypes.NSP.Value;
+            _pfs0Shown.Active = ConfigurationState.Instance.Ui.ShownFileTypes.PFS0.Value;
+            _xciShown.Active  = ConfigurationState.Instance.Ui.ShownFileTypes.XCI.Value;
+            _ncaShown.Active  = ConfigurationState.Instance.Ui.ShownFileTypes.NCA.Value;
+            _nroShown.Active  = ConfigurationState.Instance.Ui.ShownFileTypes.NRO.Value;
+            _nsoShown.Active  = ConfigurationState.Instance.Ui.ShownFileTypes.NSO.Value;
 
             _nspShown.Toggled  += NSP_Shown_Toggled;
             _pfs0Shown.Toggled += PFS0_Shown_Toggled;

@@ -73,12 +73,12 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 public ShownFileTypeSettings()
                 {
-                    NSP = new ReactiveObject<bool>();
+                    NSP  = new ReactiveObject<bool>();
                     PFS0 = new ReactiveObject<bool>();
-                    XCI = new ReactiveObject<bool>();
-                    NCA = new ReactiveObject<bool>();
-                    NRO = new ReactiveObject<bool>();
-                    NSO= new ReactiveObject<bool>();
+                    XCI  = new ReactiveObject<bool>();
+                    NCA  = new ReactiveObject<bool>();
+                    NRO  = new ReactiveObject<bool>();
+                    NSO  = new ReactiveObject<bool>();
                 }
             }
 
