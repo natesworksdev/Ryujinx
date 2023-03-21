@@ -116,10 +116,12 @@ namespace Ryujinx.Ui.App.Common
                                 return;
                             }
 
-                            string extension = Path.GetExtension(app).ToLower();
+                            var fileInfo = new FileInfo(app);
+                            string extension = fileInfo.Extension.ToLower();
 
-                            if (!File.GetAttributes(app).HasFlag(FileAttributes.Hidden) && extension is ".nsp" or ".pfs0" or ".xci" or ".nca" or ".nro" or ".nso")
+                            if (!fileInfo.Attributes.HasFlag(FileAttributes.Hidden) && extension is ".nsp" or ".pfs0" or ".xci" or ".nca" or ".nro" or ".nso")
                             {
+                                var fullPath = fileInfo.ResolveLinkTarget(true)?.FullName ?? fileInfo.FullName;
                                 applications.Add(app);
                                 numApplicationsFound++;
                             }
@@ -132,19 +134,11 @@ namespace Ryujinx.Ui.App.Common
                 }
 
                 // Loops through applications list, creating a struct and then firing an event containing the struct for each application
-                foreach (string appPath in applications)
+                foreach (string applicationPath in applications)
                 {
                     if (_cancellationToken.Token.IsCancellationRequested)
                     {
                         return;
-                    }
-
-                    string applicationPath = appPath;
-
-                    // Follows eventual symlink
-                    var tempFile = Directory.ResolveLinkTarget(appPath, true);
-                    if(tempFile != null) {
-                        applicationPath = tempFile.FullName;
                     }
 
                     double fileSize = new FileInfo(applicationPath).Length * 0.000000000931;
