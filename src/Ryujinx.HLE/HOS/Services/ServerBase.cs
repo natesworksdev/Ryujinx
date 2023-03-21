@@ -1,16 +1,20 @@
+using LibHac.Diag;
 using Ryujinx.Common;
+using Ryujinx.Common.Logging;
 using Ryujinx.Common.Memory;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.Loaders.Elf;
 using Ryujinx.Horizon.Common;
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services
@@ -32,6 +36,9 @@ namespace Ryujinx.HLE.HOS.Services
             0x01007FFF
         };
 
+        // The amount of time that Dispose() will wait on the _threadStopped wait handle.
+        private static readonly TimeSpan ThreadStoppedWaitTimeout = TimeSpan.FromSeconds(3);
+
         private readonly object _handleLock = new();
 
         private readonly KernelContext _context;
@@ -47,6 +54,9 @@ namespace Ryujinx.HLE.HOS.Services
 
         private readonly MemoryStream _responseDataStream;
         private readonly BinaryWriter _responseDataWriter;
+
+        private readonly ManualResetEventSlim _threadStopped;
+        private int _isDisposed = 0;
 
         public ManualResetEvent InitDone { get; }
         public string Name { get; }
@@ -65,6 +75,8 @@ namespace Ryujinx.HLE.HOS.Services
             InitDone = new ManualResetEvent(false);
             Name = name;
             SmObjectFactory = smObjectFactory;
+
+            _threadStopped = new ManualResetEventSlim(false);
 
             const ProcessCreationFlags flags =
                 ProcessCreationFlags.EnableAslr |
@@ -111,6 +123,7 @@ namespace Ryujinx.HLE.HOS.Services
 
         private void ServerLoop()
         {
+            _threadStopped.Reset();
             _selfProcess = KernelStatic.GetCurrentProcess();
 
             if (SmObjectFactory != null)
@@ -192,6 +205,7 @@ namespace Ryujinx.HLE.HOS.Services
                 ArrayPool<int>.Shared.Return(handles);
             }
 
+            _threadStopped.Set();
             Dispose();
         }
 
@@ -394,24 +408,32 @@ namespace Ryujinx.HLE.HOS.Services
         {
             if (disposing)
             {
-                foreach (IpcService service in _sessions.Values)
+                if (!_threadStopped.Wait(ThreadStoppedWaitTimeout))
                 {
-                    if (service is IDisposable disposableObj)
+                    Logger.Warning.Value.PrintRawMsg($"the ServerBase thread didn't signal as stopped within {ThreadStoppedWaitTimeout:g}, resources will be leaked!");
+                }
+                else if (Interlocked.Exchange(ref _isDisposed, 1) == 0)
+                {
+                    foreach (IpcService service in _sessions.Values)
                     {
-                        disposableObj.Dispose();
+                        if (service is IDisposable disposableObj)
+                        {
+                            disposableObj.Dispose();
+                        }
+
+                        service.DestroyAtExit();
                     }
 
-                    service.DestroyAtExit();
+                    _sessions.Clear();
+
+                    _requestDataReader.Dispose();
+                    _requestDataStream.Dispose();
+                    _responseDataWriter.Dispose();
+                    _responseDataStream.Dispose();
+
+                    _threadStopped.Dispose();
+                    InitDone.Dispose();
                 }
-
-                _sessions.Clear();
-
-                _requestDataReader.Dispose();
-                _requestDataStream.Dispose();
-                _responseDataWriter.Dispose();
-                _responseDataStream.Dispose();
-
-                InitDone.Dispose();
             }
         }
 
