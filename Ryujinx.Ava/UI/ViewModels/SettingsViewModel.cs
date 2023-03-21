@@ -73,7 +73,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 _graphicsBackendMultithreadingIndex = value;
 
-                if (_graphicsBackendMultithreadingIndex != (int)ConfigurationState.Shared.Graphics.BackendThreading.Value)
+                if (_graphicsBackendMultithreadingIndex != (int)ConfigurationState.Instance(IsTitleSpecificSettings).Graphics.BackendThreading.Value)
                 {
                     Dispatcher.UIThread.Post(async () =>
                     {
@@ -512,7 +512,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.Graphics.ScalingFilter.Value = (ScalingFilter)ScalingFilter;
             config.Graphics.ScalingFilterLevel.Value = ScalingFilterLevel;
 
-            if (ConfigurationState.Shared.Graphics.BackendThreading != (BackendThreading)GraphicsBackendMultithreadingIndex)
+            if (ConfigurationState.Instance(IsTitleSpecificSettings).Graphics.BackendThreading != (BackendThreading)GraphicsBackendMultithreadingIndex)
             {
                 DriverUtilities.ToggleOGLThreading(GraphicsBackendMultithreadingIndex == (int)BackendThreading.Off);
             }
