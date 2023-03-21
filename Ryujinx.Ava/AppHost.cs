@@ -752,7 +752,7 @@ namespace Ryujinx.Ava
             Device = new Switch(configuration);
         }
 
-        private static IHardwareDeviceDriver InitializeAudio()
+        private IHardwareDeviceDriver InitializeAudio()
         {
             var availableBackends = new List<AudioBackend>()
             {
@@ -762,7 +762,7 @@ namespace Ryujinx.Ava
                 AudioBackend.Dummy
             };
 
-            AudioBackend preferredBackend = ConfigurationState.Shared.System.AudioBackend.Value;
+            AudioBackend preferredBackend = ConfigurationState.Instance(UseTitleConfiguration).System.AudioBackend.Value;
 
             for (int i = 0; i < availableBackends.Count; i++)
             {
@@ -774,7 +774,7 @@ namespace Ryujinx.Ava
                 }
             }
 
-            static IHardwareDeviceDriver InitializeAudioBackend<T>(AudioBackend backend, AudioBackend nextBackend) where T : IHardwareDeviceDriver, new()
+            IHardwareDeviceDriver InitializeAudioBackend<T>(AudioBackend backend, AudioBackend nextBackend) where T : IHardwareDeviceDriver, new()
             {
                 if (T.IsSupported)
                 {
@@ -805,7 +805,7 @@ namespace Ryujinx.Ava
 
                 if (deviceDriver != null)
                 {
-                    ConfigurationState.Shared.System.AudioBackend.Value = currentBackend;
+                    ConfigurationState.Instance(UseTitleConfiguration).System.AudioBackend.Value = currentBackend;
                     break;
                 }
             }
