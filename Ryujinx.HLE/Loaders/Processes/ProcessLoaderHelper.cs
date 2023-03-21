@@ -54,8 +54,8 @@ namespace Ryujinx.HLE.Loaders.Processes
 
                 if (applicationId != currentMainProgramId)
                 {
-                    // As far as I know there aren't any multi-application game cards containing multi-program applications,
-                    // so because multi-application game cards are the only way we should run into multiple applications
+                    // Currently there aren't any known multi-application game cards containing multi-program applications,
+                    // so because multi-application game cards are the only way we could run into multiple applications
                     // we'll just return that there's a single program.
                     programCount = 1;
 
@@ -215,16 +215,17 @@ namespace Ryujinx.HLE.Loaders.Processes
             return true;
         }
 
-        public static ProcessResult LoadNsos(Switch device,
-                                             KernelContext context,
-                                             MetaLoader metaLoader,
-                                             ApplicationControlProperty applicationControlProperties,
-                                             bool diskCacheEnabled,
-                                             bool allowCodeMemoryForJit,
-                                             string name,
-                                             ulong programId,
-                                             byte[] arguments = null,
-                                             params IExecutable[] executables)
+        public static ProcessResult LoadNsos(
+            Switch device,
+            KernelContext context,
+            MetaLoader metaLoader,
+            ApplicationControlProperty applicationControlProperties,
+            bool diskCacheEnabled,
+            bool allowCodeMemoryForJit,
+            string name,
+            ulong programId,
+            byte[] arguments = null,
+            params IExecutable[] executables)
         {
             context.Device.System.ServiceTable.WaitServicesReady();
 

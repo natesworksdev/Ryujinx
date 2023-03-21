@@ -112,17 +112,17 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
                 device.Configuration.MemoryManagerMode = MemoryManagerMode.SoftwarePageTable;
             }
 
-
-            ProcessResult processResult = ProcessLoaderHelper.LoadNsos(device,
-                                                                       device.System.KernelContext,
-                                                                       metaLoader,
-                                                                       nacpData.Value,
-                                                                       enablePtc,
-                                                                       allowCodeMemoryForJit,
-                                                                       programName,
-                                                                       metaLoader.GetProgramId(),
-                                                                       null,
-                                                                       nsoExecutables);
+            ProcessResult processResult = ProcessLoaderHelper.LoadNsos(
+                device,
+                device.System.KernelContext,
+                metaLoader,
+                nacpData.Value,
+                enablePtc,
+                allowCodeMemoryForJit,
+                programName,
+                metaLoader.GetProgramId(),
+                null,
+                nsoExecutables);
 
             // TODO: This should be stored using ProcessId instead.
             device.System.LibHacHorizonManager.ArpIReader.ApplicationId = new LibHac.ApplicationId(metaLoader.GetProgramId());

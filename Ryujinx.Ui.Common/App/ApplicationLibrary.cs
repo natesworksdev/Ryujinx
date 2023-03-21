@@ -266,7 +266,6 @@ namespace Ryujinx.Ui.App.Common
                                             icon.Get.AsStream().CopyTo(stream);
                                             applicationIcon = stream.ToArray();
 
-
                                             if (applicationIcon != null)
                                             {
                                                 break;
