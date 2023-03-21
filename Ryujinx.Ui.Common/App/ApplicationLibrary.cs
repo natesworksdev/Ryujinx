@@ -907,3 +907,4 @@ namespace Ryujinx.Ui.App.Common
         }
     }
 }
+
