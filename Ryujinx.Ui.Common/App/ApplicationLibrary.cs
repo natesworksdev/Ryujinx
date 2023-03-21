@@ -122,7 +122,7 @@ namespace Ryujinx.Ui.App.Common
                             if (!fileInfo.Attributes.HasFlag(FileAttributes.Hidden) && extension is ".nsp" or ".pfs0" or ".xci" or ".nca" or ".nro" or ".nso")
                             {
                                 var fullPath = fileInfo.ResolveLinkTarget(true)?.FullName ?? fileInfo.FullName;
-                                applications.Add(app);
+                                applications.Add(fullPath);
                                 numApplicationsFound++;
                             }
                         }
