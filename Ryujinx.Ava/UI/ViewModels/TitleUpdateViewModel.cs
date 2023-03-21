@@ -107,15 +107,13 @@ namespace Ryujinx.Ava.UI.ViewModels
                 AddUpdate(path);
             }
 
-            
-
             TitleUpdateModel selected = TitleUpdates.FirstOrDefault(x => x.Path == _titleUpdateWindowData.Selected, null);
 
             SelectedUpdate = selected;
 
             // NOTE: Save the list again to remove leftovers.
-        Save();
-        SortUpdates();
+            Save();
+            SortUpdates();
         }
 
         public void SortUpdates()
