@@ -36,45 +36,20 @@ namespace Ryujinx.Ava.UI.Views.Main
 
         private CheckBox[] GenerateToggleFileTypeItems()
         {
-            return new List<CheckBox>()
+            List<CheckBox> checkBoxes = new();
+
+            foreach (var item in Enum.GetValues(typeof (FileTypes)))
             {
-                new CheckBox()
+                string fileName = Enum.GetName(typeof (FileTypes), item);
+                checkBoxes.Add(new CheckBox()
                 {
-                    Content = ".NSP",
-                    IsChecked = ConfigurationState.Instance.Ui.ShownFileTypes.NSP.Value,
-                    Command = MiniCommand.Create(() => ViewModel.ToggleFileType("nsp"))
-                },
-                new CheckBox()
-                {
-                    Content = ".PFS0",
-                    IsChecked = ConfigurationState.Instance.Ui.ShownFileTypes.PFS0.Value,
-                    Command = MiniCommand.Create(() => ViewModel.ToggleFileType("pfs0"))
-                },
-                new CheckBox()
-                {
-                    Content = ".XCI",
-                    IsChecked = ConfigurationState.Instance.Ui.ShownFileTypes.XCI.Value,
-                    Command = MiniCommand.Create(() => ViewModel.ToggleFileType("xci"))
-                },
-                new CheckBox()
-                {
-                    Content = ".NCA",
-                    IsChecked = ConfigurationState.Instance.Ui.ShownFileTypes.NCA.Value,
-                    Command = MiniCommand.Create(() => ViewModel.ToggleFileType("nca"))
-                },
-                new CheckBox()
-                {
-                    Content = ".NRO",
-                    IsChecked = ConfigurationState.Instance.Ui.ShownFileTypes.NRO.Value,
-                    Command = MiniCommand.Create(() => ViewModel.ToggleFileType("nro"))
-                },
-                new CheckBox()
-                {
-                    Content = ".NSO",
-                    IsChecked = ConfigurationState.Instance.Ui.ShownFileTypes.NSO.Value,
-                    Command = MiniCommand.Create(() => ViewModel.ToggleFileType("nso"))
-                }
-            }.ToArray();
+                    Content = $".{fileName}",
+                    IsChecked = ((FileTypes)item).GetConfigValue(ConfigurationState.Instance.Ui.ShownFileTypes),
+                    Command = MiniCommand.Create(() => ViewModel.ToggleFileType(fileName))
+                });
+            }
+
+            return checkBoxes.ToArray();
         }
 
         private MenuItem[] GenerateLanguageMenuItems()
