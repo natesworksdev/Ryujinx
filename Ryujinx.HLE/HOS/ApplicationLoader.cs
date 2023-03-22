@@ -25,7 +25,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Text.Json;
 using static Ryujinx.HLE.HOS.ModLoader;
 using ApplicationId = LibHac.Ncm.ApplicationId;
 using Path = System.IO.Path;
@@ -57,9 +56,8 @@ namespace Ryujinx.HLE.HOS
         private string _displayVersion;
         private BlitStruct<ApplicationControlProperty> _controlData;
 
-        private static readonly JsonSerializerOptions SerializerOptions = JsonHelper.GetDefaultSerializerOptions();
-        private static readonly DownloadableContentJsonSerializerContext ContentSerializerContext = new(SerializerOptions);
-        private static readonly TitleUpdateMetadataJsonSerializerContext TitleSerializerContext = new(SerializerOptions);
+        private static readonly DownloadableContentJsonSerializerContext ContentSerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
+        private static readonly TitleUpdateMetadataJsonSerializerContext TitleSerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
         public BlitStruct<ApplicationControlProperty> ControlData => _controlData;
         public string TitleName => _titleName;
