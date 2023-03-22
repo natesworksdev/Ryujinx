@@ -488,7 +488,7 @@ namespace Ryujinx.HLE.HOS.Services
             {
                 if (!_threadStopped.Wait(ThreadStoppedWaitTimeout))
                 {
-                    Logger.Warning.Value.PrintRawMsg($"the ServerBase thread didn't signal as stopped within {ThreadStoppedWaitTimeout:g}, resources will be leaked!");
+                    Logger.Warning?.Print(LogClass.Service, $"the ServerBase thread didn't signal it has stopped within {ThreadStoppedWaitTimeout:g}, resources may be leaked!");
                 }
                 else if (Interlocked.Exchange(ref _isDisposed, 1) == 0)
                 {
