@@ -11,6 +11,7 @@ using Ryujinx.Common;
 using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.HOS;
 using Ryujinx.Modules;
+using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
 using System;
