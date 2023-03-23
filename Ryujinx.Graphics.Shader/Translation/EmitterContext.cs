@@ -465,7 +465,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             Operand ditherMask = Const(unchecked((int)0xfbb99110u));
 
             Operand fragCoordX = this.Load(StorageKind.Input, IoVariable.FragmentCoord, null, Const(0));
-            Operand fragCoordY = this.Load(StorageKind.Input, IoVariable.FragmentCoord, null, Const(0));
+            Operand fragCoordY = this.Load(StorageKind.Input, IoVariable.FragmentCoord, null, Const(1));
 
             Operand x = this.BitwiseAnd(this.FP32ConvertToU32(fragCoordX), Const(1));
             Operand y = this.BitwiseAnd(this.FP32ConvertToU32(fragCoordY), Const(1));

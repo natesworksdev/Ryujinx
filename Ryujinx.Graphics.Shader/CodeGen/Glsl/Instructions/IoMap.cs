@@ -22,7 +22,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 IoVariable.BaseVertex => ("gl_BaseVertexARB", AggregateType.S32),
                 IoVariable.ClipDistance => ("gl_ClipDistance", AggregateType.Array | AggregateType.FP32),
                 IoVariable.CtaId => ("gl_WorkGroupID", AggregateType.Vector3 | AggregateType.U32),
-                IoVariable.DrawIndex=> ("gl_DrawIDARB", AggregateType.S32),
+                IoVariable.DrawIndex => ("gl_DrawIDARB", AggregateType.S32),
                 IoVariable.FogCoord => ("gl_FogFragCoord", AggregateType.FP32), // Deprecated.
                 IoVariable.FragmentCoord => ("gl_FragCoord", AggregateType.Vector4 | AggregateType.FP32),
                 IoVariable.FragmentOutputColor => GetFragmentOutputColorVariableName(config, location),

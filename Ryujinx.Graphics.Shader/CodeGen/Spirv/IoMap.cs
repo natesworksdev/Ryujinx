@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 IoVariable.BaseVertex => (BuiltIn.BaseVertex, AggregateType.S32),
                 IoVariable.ClipDistance => (BuiltIn.ClipDistance, AggregateType.Array | AggregateType.FP32),
                 IoVariable.CtaId => (BuiltIn.WorkgroupId, AggregateType.Vector3 | AggregateType.U32),
-                IoVariable.DrawIndex=> (BuiltIn.DrawIndex, AggregateType.S32),
+                IoVariable.DrawIndex => (BuiltIn.DrawIndex, AggregateType.S32),
                 IoVariable.FragmentCoord => (BuiltIn.FragCoord, AggregateType.Vector4 | AggregateType.FP32),
                 IoVariable.FragmentOutputDepth => (BuiltIn.FragDepth, AggregateType.FP32),
                 IoVariable.FrontFacing => (BuiltIn.FrontFacing, AggregateType.Bool),

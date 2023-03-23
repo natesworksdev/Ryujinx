@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             Tessellation = TessellationControl | TessellationEvaluation,
             VertexTessellationGeometry = Vertex | Tessellation | Geometry,
-            TessellationGeomtryFragment = Tessellation | Geometry | Fragment,
+            TessellationGeometryFragment = Tessellation | Geometry | Fragment,
             AllGraphics = Vertex | Tessellation | Geometry | Fragment
         }
 
@@ -60,23 +60,23 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             var map = new Dictionary<int, AttributeEntry>();
 
-            Add(map, 0x060, AggregateType.S32, IoVariable.PrimitiveId, StagesMask.TessellationGeomtryFragment, StagesMask.Geometry);
+            Add(map, 0x060, AggregateType.S32, IoVariable.PrimitiveId, StagesMask.TessellationGeometryFragment, StagesMask.Geometry);
             Add(map, 0x064, AggregateType.S32, IoVariable.Layer, StagesMask.Fragment, StagesMask.VertexTessellationGeometry);
             Add(map, 0x068, AggregateType.S32, IoVariable.ViewportIndex, StagesMask.Fragment, StagesMask.VertexTessellationGeometry);
             Add(map, 0x06c, AggregateType.FP32, IoVariable.PointSize, StagesMask.None, StagesMask.VertexTessellationGeometry);
-            Add(map, 0x070, AggregateType.Vector4 | AggregateType.FP32, IoVariable.Position, StagesMask.TessellationGeomtryFragment, StagesMask.VertexTessellationGeometry);
+            Add(map, 0x070, AggregateType.Vector4 | AggregateType.FP32, IoVariable.Position, StagesMask.TessellationGeometryFragment, StagesMask.VertexTessellationGeometry);
             Add(map, 0x080, AggregateType.Vector4 | AggregateType.FP32, IoVariable.UserDefined, StagesMask.AllGraphics, StagesMask.VertexTessellationGeometry, 32);
-            Add(map, 0x280, AggregateType.Vector4 | AggregateType.FP32, IoVariable.FrontColorDiffuse, StagesMask.TessellationGeomtryFragment, StagesMask.VertexTessellationGeometry);
-            Add(map, 0x290, AggregateType.Vector4 | AggregateType.FP32, IoVariable.FrontColorSpecular, StagesMask.TessellationGeomtryFragment, StagesMask.VertexTessellationGeometry);
-            Add(map, 0x2a0, AggregateType.Vector4 | AggregateType.FP32, IoVariable.BackColorDiffuse, StagesMask.TessellationGeomtryFragment, StagesMask.VertexTessellationGeometry);
-            Add(map, 0x2b0, AggregateType.Vector4 | AggregateType.FP32, IoVariable.BackColorSpecular, StagesMask.TessellationGeomtryFragment, StagesMask.VertexTessellationGeometry);
-            Add(map, 0x2c0, AggregateType.Array | AggregateType.FP32, IoVariable.ClipDistance, StagesMask.TessellationGeomtryFragment, StagesMask.VertexTessellationGeometry, 8);
+            Add(map, 0x280, AggregateType.Vector4 | AggregateType.FP32, IoVariable.FrontColorDiffuse, StagesMask.TessellationGeometryFragment, StagesMask.VertexTessellationGeometry);
+            Add(map, 0x290, AggregateType.Vector4 | AggregateType.FP32, IoVariable.FrontColorSpecular, StagesMask.TessellationGeometryFragment, StagesMask.VertexTessellationGeometry);
+            Add(map, 0x2a0, AggregateType.Vector4 | AggregateType.FP32, IoVariable.BackColorDiffuse, StagesMask.TessellationGeometryFragment, StagesMask.VertexTessellationGeometry);
+            Add(map, 0x2b0, AggregateType.Vector4 | AggregateType.FP32, IoVariable.BackColorSpecular, StagesMask.TessellationGeometryFragment, StagesMask.VertexTessellationGeometry);
+            Add(map, 0x2c0, AggregateType.Array | AggregateType.FP32, IoVariable.ClipDistance, StagesMask.TessellationGeometryFragment, StagesMask.VertexTessellationGeometry, 8);
             Add(map, 0x2e0, AggregateType.Vector2 | AggregateType.FP32, IoVariable.PointCoord, StagesMask.Fragment, StagesMask.None);
-            Add(map, 0x2e8, AggregateType.FP32, IoVariable.FogCoord, StagesMask.TessellationGeomtryFragment, StagesMask.VertexTessellationGeometry);
+            Add(map, 0x2e8, AggregateType.FP32, IoVariable.FogCoord, StagesMask.TessellationGeometryFragment, StagesMask.VertexTessellationGeometry);
             Add(map, 0x2f0, AggregateType.Vector2 | AggregateType.FP32, IoVariable.TessellationCoord, StagesMask.TessellationEvaluation, StagesMask.None);
             Add(map, 0x2f8, AggregateType.S32, IoVariable.InstanceId, StagesMask.Vertex, StagesMask.None);
             Add(map, 0x2fc, AggregateType.S32, IoVariable.VertexId, StagesMask.Vertex, StagesMask.None);
-            Add(map, 0x300, AggregateType.Vector4 | AggregateType.FP32, IoVariable.TextureCoord, StagesMask.TessellationGeomtryFragment, StagesMask.VertexTessellationGeometry);
+            Add(map, 0x300, AggregateType.Vector4 | AggregateType.FP32, IoVariable.TextureCoord, StagesMask.TessellationGeometryFragment, StagesMask.VertexTessellationGeometry);
             Add(map, 0x3a0, AggregateType.Array | AggregateType.S32, IoVariable.ViewportMask, StagesMask.Fragment, StagesMask.VertexTessellationGeometry);
             Add(map, 0x3fc, AggregateType.Bool, IoVariable.FrontFacing, StagesMask.Fragment, StagesMask.None);
 
