@@ -105,12 +105,12 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
             for (int index = 0; index < operation.SourcesCount; index++)
             {
-                sources[index] = context.GetOperandUse(operation.GetSource(index));
+                sources[index] = context.GetOperand(operation.GetSource(index));
             }
 
             for (int index = 0; index < outDestsCount; index++)
             {
-                AstOperand oper = context.GetOperandDef(operation.GetDest(1 + index));
+                AstOperand oper = context.GetOperand(operation.GetDest(1 + index));
 
                 oper.VarType = InstructionInfo.GetSrcVarType(inst, sourcesCount + index);
 
@@ -167,7 +167,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
                 for (int i = 0; i < operation.DestsCount; i++)
                 {
-                    AstOperand dest = context.GetOperandDef(operation.GetDest(i));
+                    AstOperand dest = context.GetOperand(operation.GetDest(i));
                     AstOperand index = new AstOperand(OperandType.Constant, i);
 
                     dest.VarType = destElemType;
@@ -177,7 +177,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             }
             else if (operation.Dest != null)
             {
-                AstOperand dest = context.GetOperandDef(operation.Dest);
+                AstOperand dest = context.GetOperand(operation.Dest);
 
                 // If all the sources are bool, it's better to use short-circuiting
                 // logical operations, rather than forcing a cast to int and doing

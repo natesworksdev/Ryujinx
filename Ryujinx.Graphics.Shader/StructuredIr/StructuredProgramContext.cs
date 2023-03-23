@@ -264,7 +264,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             }
             else
             {
-                cond = GetOperandUse(branchOp.GetSource(0));
+                cond = GetOperand(branchOp.GetSource(0));
 
                 Instruction invInst = type == AstBlockType.If
                     ? Instruction.BranchIfTrue
@@ -298,17 +298,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             return newTemp;
         }
 
-        public AstOperand GetOperandDef(Operand operand)
-        {
-            return GetOperand(operand);
-        }
-
-        public AstOperand GetOperandUse(Operand operand)
-        {
-            return GetOperand(operand);
-        }
-
-        private AstOperand GetOperand(Operand operand)
+        public AstOperand GetOperand(Operand operand)
         {
             if (operand == null)
             {
