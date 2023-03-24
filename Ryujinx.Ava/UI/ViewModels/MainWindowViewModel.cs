@@ -1346,6 +1346,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 "NCA"  => ConfigurationState.Instance.Ui.ShownFileTypes.NCA.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.NCA,
                 "NRO"  => ConfigurationState.Instance.Ui.ShownFileTypes.NRO.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.NRO,
                 "NSO"  => ConfigurationState.Instance.Ui.ShownFileTypes.NSO.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.NSO,
+                    _  => throw new NotImplementedException(),
             };
 
             ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
