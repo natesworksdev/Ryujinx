@@ -2,6 +2,7 @@
 using Silk.NET.Vulkan;
 using System;
 using System.Linq;
+using System.Reflection;
 using VkFormat = Silk.NET.Vulkan.Format;
 
 namespace Ryujinx.Graphics.Vulkan
@@ -217,6 +218,24 @@ namespace Ryujinx.Graphics.Vulkan
             _depthStencil?.Storage.SetModification(
                 AccessFlags.DepthStencilAttachmentWriteBit,
                 PipelineStageFlags.ColorAttachmentOutputBit);
+        }
+
+        public void InsertClearBarrier(CommandBufferScoped cbs, int index)
+        {
+            if (_colors != null)
+            {
+                int realIndex = Array.IndexOf(AttachmentIndices, index);
+
+                if (realIndex != -1)
+                {
+                    _colors[realIndex].Storage?.InsertReadToWriteBarrier(cbs, AccessFlags.ColorAttachmentWriteBit, PipelineStageFlags.ColorAttachmentOutputBit);
+                }
+            }
+        }
+
+        public void InsertClearBarrierDS(CommandBufferScoped cbs)
+        {
+            _depthStencil?.Storage?.InsertReadToWriteBarrier(cbs, AccessFlags.ColorAttachmentWriteBit, PipelineStageFlags.ColorAttachmentOutputBit);
         }
     }
 }
