@@ -2,7 +2,6 @@
 using Silk.NET.Vulkan;
 using System;
 using System.Linq;
-using System.Reflection;
 using VkFormat = Silk.NET.Vulkan.Format;
 
 namespace Ryujinx.Graphics.Vulkan
