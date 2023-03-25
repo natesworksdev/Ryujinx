@@ -518,6 +518,22 @@ namespace Ryujinx.Ui.Common.Configuration
         }
 
         /// <summary>
+        /// Multiplayer configuration section
+        /// </summary>
+        public class MultiplayerSection
+        {
+            /// <summary>
+            /// GUID for the network interface used by LAN (or 0 for default)
+            /// </summary>
+            public ReactiveObject<string> LanInterfaceId { get; private set; }
+
+            public MultiplayerSection()
+            {
+                LanInterfaceId = new ReactiveObject<string>();
+            }
+        }
+
+        /// <summary>
         /// The default configuration instance
         /// </summary>
         public static ConfigurationState Instance { get; private set; }
@@ -548,6 +564,11 @@ namespace Ryujinx.Ui.Common.Configuration
         public HidSection Hid { get; private set; }
 
         /// <summary>
+        /// The Multiplayer section
+        /// </summary>
+        public MultiplayerSection Multiplayer { get; private set; }
+
+        /// <summary>
         /// Enables or disables Discord Rich Presence
         /// </summary>
         public ReactiveObject<bool> EnableDiscordIntegration { get; private set; }
@@ -574,6 +595,7 @@ namespace Ryujinx.Ui.Common.Configuration
             System                   = new SystemSection();
             Graphics                 = new GraphicsSection();
             Hid                      = new HidSection();
+            Multiplayer              = new MultiplayerSection();
             EnableDiscordIntegration = new ReactiveObject<bool>();
             CheckUpdatesOnStart      = new ReactiveObject<bool>();
             ShowConfirmExit          = new ReactiveObject<bool>();
@@ -674,7 +696,8 @@ namespace Ryujinx.Ui.Common.Configuration
                 ControllerConfig           = new List<JsonObject>(),
                 InputConfig                = Hid.InputConfig,
                 GraphicsBackend            = Graphics.GraphicsBackend,
-                PreferredGpu               = Graphics.PreferredGpu
+                PreferredGpu               = Graphics.PreferredGpu,
+                MultiplayerLanInterfaceId  = Multiplayer.LanInterfaceId
             };
 
             return configurationFile;
@@ -727,6 +750,7 @@ namespace Ryujinx.Ui.Common.Configuration
             System.ExpandRam.Value                    = false;
             System.IgnoreMissingServices.Value        = false;
             System.UseHypervisor.Value                = true;
+            Multiplayer.LanInterfaceId.Value          = "0";
             Ui.GuiColumns.FavColumn.Value             = true;
             Ui.GuiColumns.IconColumn.Value            = true;
             Ui.GuiColumns.AppColumn.Value             = true;
@@ -1392,6 +1416,8 @@ namespace Ryujinx.Ui.Common.Configuration
             {
                 Hid.InputConfig.Value = new List<InputConfig>();
             }
+
+            Multiplayer.LanInterfaceId.Value = configurationFileFormat.MultiplayerLanInterfaceId;
 
             if (configurationFileUpdated)
             {

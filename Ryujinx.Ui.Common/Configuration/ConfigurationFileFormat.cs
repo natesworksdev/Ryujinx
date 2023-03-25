@@ -351,6 +351,11 @@ namespace Ryujinx.Ui.Common.Configuration
         public string PreferredGpu { get; set; }
 
         /// <summary>
+        /// GUID for the network interface used by LAN (or 0 for default)
+        /// </summary>
+        public string MultiplayerLanInterfaceId { get; set; }
+
+        /// <summary>
         /// Uses Hypervisor over JIT if available
         /// </summary>
         public bool UseHypervisor { get; set; }
