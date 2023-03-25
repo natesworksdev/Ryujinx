@@ -446,7 +446,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (_lastReadAccess != AccessFlags.NoneKhr)
             {
-                ImageAspectFlags aspectFlags = EnumConversion.ConvertAspectFlags(Info.Format);
+                ImageAspectFlags aspectFlags = Info.Format.ConvertAspectFlags();
 
                 TextureView.InsertImageBarrier(
                     _gd.Api,
@@ -474,7 +474,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_lastModificationAccess != AccessFlags.NoneKhr)
             {
-                ImageAspectFlags aspectFlags = EnumConversion.ConvertAspectFlags(Info.Format);
+                ImageAspectFlags aspectFlags = Info.Format.ConvertAspectFlags();
 
                 TextureView.InsertImageBarrier(
                     _gd.Api,
