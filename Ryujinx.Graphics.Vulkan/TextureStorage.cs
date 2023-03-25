@@ -421,33 +421,6 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        private ImageAspectFlags GetAspectFlags()
-        {
-            ImageAspectFlags aspectFlags;
-
-            if (_info.Format.IsDepthOrStencil())
-            {
-                if (_info.Format == GAL.Format.S8Uint)
-                {
-                    aspectFlags = ImageAspectFlags.StencilBit;
-                }
-                else if (_info.Format == GAL.Format.D16Unorm || _info.Format == GAL.Format.D32Float)
-                {
-                    aspectFlags = ImageAspectFlags.DepthBit;
-                }
-                else
-                {
-                    aspectFlags = ImageAspectFlags.DepthBit | ImageAspectFlags.StencilBit;
-                }
-            }
-            else
-            {
-                aspectFlags = ImageAspectFlags.ColorBit;
-            }
-
-            return aspectFlags;
-        }
-
         private int GetBufferDataLength(int length)
         {
             if (NeedsD24S8Conversion())
@@ -473,7 +446,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (_lastReadAccess != AccessFlags.NoneKhr)
             {
-                ImageAspectFlags aspectFlags = GetAspectFlags();
+                ImageAspectFlags aspectFlags = EnumConversion.ConvertAspectFlags(Info.Format);
 
                 TextureView.InsertImageBarrier(
                     _gd.Api,
@@ -501,7 +474,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_lastModificationAccess != AccessFlags.NoneKhr)
             {
-                ImageAspectFlags aspectFlags = GetAspectFlags();
+                ImageAspectFlags aspectFlags = EnumConversion.ConvertAspectFlags(Info.Format);
 
                 TextureView.InsertImageBarrier(
                     _gd.Api,
