@@ -352,9 +352,10 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             _networkInterfaces.Clear();
             _networkInterfaces.Add(LocaleManager.Instance[LocaleKeys.NetworkInterfaceDefault], "0");
-            foreach (NetworkInterface nif in NetworkInterface.GetAllNetworkInterfaces())
+
+            foreach (NetworkInterface networkInterface in NetworkInterface.GetAllNetworkInterfaces())
             {
-                _networkInterfaces.Add(nif.Name, nif.Id);
+                _networkInterfaces.Add(networkInterface.Name, networkInterface.Id);
             }
         }
 
