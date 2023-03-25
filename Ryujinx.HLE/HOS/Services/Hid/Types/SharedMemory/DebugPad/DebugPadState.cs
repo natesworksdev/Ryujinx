@@ -3,12 +3,10 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.DebugPad
 {
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
     struct DebugPadState : ISampledDataStruct
     {
-        // MUST BE THE 1st MEMBER
         public ulong SamplingNumber;
-
         public DebugPadAttribute Attributes;
         public DebugPadButton Buttons;
         public AnalogStickState AnalogStickR;

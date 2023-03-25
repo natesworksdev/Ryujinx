@@ -6,18 +6,27 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Common
 {
     /// <summary>
     /// This is a "marker interface" to add some compile-time safety to a convention-based optimization.
-    /// Any struct implementing this interface must use its first 8 bytes as a "Sampling Number".
-    /// This is most often accomplished by using <c>StructLayoutAttribute</c> and careful member ordering,
-    /// such that the first member is a <c>ulong</c> (.NET type: <c>System.UInt64</c>) field.
+    ///
+    /// Any struct implementing this interface should:
+    ///   - use <c>StructLayoutAttribute</c> (and related attribtues) to explicity control how the struct is laid out in memory.
+    ///   - ensure that the method <c>ISampledDataStruct.GetSamplingNumberFieldOffset()</c> correctly returns the offset, in bytes,
+    ///     to the ulong "Sampling Number" field within the struct. Most types have it as the first field, so the default offset is 0.
     /// 
     /// Example:
     /// 
     /// <c>
-    ///         [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    ///         [StructLayout(LayoutKind.Sequential, Pack = 8)]
     ///         struct DebugPadState : ISampledDataStruct
     ///         {
-    ///             public ulong SamplingNumber;
-    ///             
+    ///             public ulong SamplingNumber;    // 1st field, so no need to add special handling to GetSamplingNumberFieldOffset()
+    ///             // other members...
+    ///         }
+    ///
+    ///         [StructLayout(LayoutKind.Sequential, Pack = 8)]
+    ///         struct SixAxisSensorState : ISampledDataStruct
+    ///         {
+    ///             public ulong DeltaTime;
+    ///             public ulong SamplingNumber;    // Not the first field - needs special handling in GetSamplingNumberFieldOffset()
     ///             // other members...
     ///         }
     /// </c>
@@ -32,9 +41,25 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Common
 
             ReadOnlySpan<byte> byteSpan = MemoryMarshal.Cast<T, byte>(structSpan);
 
+            int fieldOffset = GetSamplingNumberFieldOffset(ref sampledDataStruct);
+
+            if (fieldOffset > 0)
+            {
+                byteSpan = byteSpan.Slice(fieldOffset);
+            }
+
             ulong value = BinaryPrimitives.ReadUInt64LittleEndian(byteSpan);
 
             return value;
+        }
+
+        private static int GetSamplingNumberFieldOffset<T>(ref T sampledDataStruct) where T : unmanaged, ISampledDataStruct
+        {
+            return sampledDataStruct switch
+            {
+                Npad.SixAxisSensorState _ => sizeof(ulong),
+                _ => 0
+            };
         }
     }
 }

@@ -3,13 +3,11 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Npad
 {
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
     struct NpadGcTriggerState : ISampledDataStruct
     {
 #pragma warning disable CS0649
-        // MUST BE THE 1st MEMBER
         public ulong SamplingNumber;
-
         public uint TriggerL;
         public uint TriggerR;
 #pragma warning restore CS0649
