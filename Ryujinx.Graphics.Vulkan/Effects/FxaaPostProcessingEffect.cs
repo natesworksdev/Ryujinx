@@ -113,7 +113,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             _pipeline.SetScissors(stackalloc[] { new Rectangle<int>(0, 0, view.Width, view.Height) });
             _pipeline.SetViewports(viewports, false);
 
-            _pipeline.SetImage(0, _texture, GAL.Format.R8G8B8A8Unorm);
+            _pipeline.SetImage(ShaderStage.Compute, 0, _texture, GAL.Format.R8G8B8A8Unorm);
             _pipeline.DispatchCompute(dispatchX, dispatchY, 1);
 
             _renderer.BufferManager.Delete(bufferHandle);

@@ -834,9 +834,9 @@ namespace Ryujinx.Graphics.Vulkan
             SignalStateChange();
         }
 
-        public void SetImage(int binding, ITexture image, GAL.Format imageFormat)
+        public void SetImage(ShaderStage stage, int binding, ITexture image, GAL.Format imageFormat)
         {
-            _descriptorSetUpdater.SetImage(binding, image, imageFormat);
+            _descriptorSetUpdater.SetImage(Cbs, stage, binding, image, imageFormat);
         }
 
         public void SetImage(int binding, Auto<DisposableImageView> image)
