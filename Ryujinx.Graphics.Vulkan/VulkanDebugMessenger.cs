@@ -1,5 +1,6 @@
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Utilities;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 using System;
@@ -73,25 +74,28 @@ namespace Ryujinx.Graphics.Vulkan
                     _ => throw new ArgumentException($"Invalid log level \"{_logLevel}\".")
                 };
 
+                var debugUtilsMessengerCreateInfo = new DebugUtilsMessengerCreateInfoEXT()
+                {
+                    SType = StructureType.DebugUtilsMessengerCreateInfoExt,
+                    MessageType = messageType,
+                    MessageSeverity = messageSeverity
+                };
+
                 unsafe
                 {
-                    var debugUtilsMessengerCreateInfo = new DebugUtilsMessengerCreateInfoEXT()
-                    {
-                        SType = StructureType.DebugUtilsMessengerCreateInfoExt,
-                        MessageType = messageType,
-                        MessageSeverity = messageSeverity,
-                        PfnUserCallback = new PfnDebugUtilsMessengerCallbackEXT(UserCallback)
-                    };
-
-                    Result result = _debugUtils.CreateDebugUtilsMessenger(_instance, in debugUtilsMessengerCreateInfo, null, out var messengerHandle);
-
-                    if (result == Result.Success)
-                    {
-                        debugUtilsMessengerHandle = messengerHandle;
-                    }
-
-                    return result;
+                    debugUtilsMessengerCreateInfo.PfnUserCallback = new PfnDebugUtilsMessengerCallbackEXT(UserCallback);
                 }
+
+                DebugUtilsMessengerEXT messengerHandle = default;
+
+                Result result = _debugUtils.CreateDebugUtilsMessenger(_instance, SpanHelpers.AsReadOnlySpan(ref debugUtilsMessengerCreateInfo), ReadOnlySpan<AllocationCallbacks>.Empty, SpanHelpers.AsSpan(ref messengerHandle));
+
+                if (result == Result.Success)
+                {
+                    debugUtilsMessengerHandle = messengerHandle;
+                }
+
+                return result;
             }
 
             return Result.Success;
