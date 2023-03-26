@@ -39,13 +39,12 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         public unsafe bool TryImport(
-            PhysicalDevice physicalDevice,
             MemoryRequirements requirements,
             MemoryPropertyFlags flags,
             IntPtr pointer,
             ulong size)
         {
-            int memoryTypeIndex = _allocator.FindSuitableMemoryTypeIndex(requirements.MemoryTypeBits, flags, flags);
+            int memoryTypeIndex = _allocator.FindSuitableMemoryTypeIndex(requirements.MemoryTypeBits, flags);
             if (memoryTypeIndex < 0)
             {
                 return default;
