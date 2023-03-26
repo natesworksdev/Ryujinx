@@ -139,10 +139,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 if (_debugUtilsMessenger.HasValue)
                 {
-                    unsafe
-                    {
-                        _debugUtils.DestroyDebugUtilsMessenger(_instance, _debugUtilsMessenger.Value, null);
-                    }
+                    _debugUtils.DestroyDebugUtilsMessenger(_instance, _debugUtilsMessenger.Value, Span<AllocationCallbacks>.Empty);
                 }
 
                 _disposed = true;
