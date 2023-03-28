@@ -157,7 +157,7 @@ namespace Ryujinx.Ava
                 _isFirmwareTitle = true;
             }
 
-            ConfigurationState.Instance.HideCursorOnIdle.Event += HideCursorState_Changed;
+            ConfigurationState.Instance.HideCursor.Event += HideCursorState_Changed;
 
             _topLevel.PointerMoved += TopLevel_PointerMoved;
 
@@ -468,9 +468,9 @@ namespace Ryujinx.Ava
             (_rendererHost.EmbeddedWindow as EmbeddedWindowOpenGL)?.MakeCurrent(null);
         }
 
-        private void HideCursorState_Changed(object sender, ReactiveEventArgs<bool> state)
+        private void HideCursorState_Changed(object sender, ReactiveEventArgs<HideCursorMode> state)
         {
-            if (state.NewValue)
+            if (state.NewValue == HideCursorMode.OnIdle)
             {
                 _lastCursorMoveTime = Stopwatch.GetTimestamp();
             }
@@ -978,16 +978,25 @@ namespace Ryujinx.Ava
                 }
                 else
                 {
-                    if (ConfigurationState.Instance.HideCursorOnIdle)
+                    switch (ConfigurationState.Instance.HideCursor.Value)
                     {
-                        if (Stopwatch.GetTimestamp() - _lastCursorMoveTime >= CursorHideIdleTime * Stopwatch.Frequency)
-                        {
-                            HideCursor();
-                        }
-                        else
-                        {
+                        case HideCursorMode.Never:
                             ShowCursor();
-                        }
+                            break;
+                        case HideCursorMode.OnIdle:
+                            if (Stopwatch.GetTimestamp() - _lastCursorMoveTime >= CursorHideIdleTime * Stopwatch.Frequency)
+                            {
+                                HideCursor();
+                            }
+                            else
+                            {
+                                ShowCursor();
+                            }
+
+                            break;
+                        case HideCursorMode.Always:
+                            HideCursor();
+                            break;
                     }
                 }
 
