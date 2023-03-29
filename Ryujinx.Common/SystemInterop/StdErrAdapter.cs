@@ -58,6 +58,8 @@ namespace Ryujinx.Common.SystemInterop
         {
             if (_disposable)
             {
+                _disposable = false;
+                
                 if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
                 {
                     _cancellationTokenSource.Cancel();
@@ -65,8 +67,6 @@ namespace Ryujinx.Common.SystemInterop
                     _pipeReader?.Close();
                     _pipeWriter?.Close();
                 }
-
-                _disposable = false;
             }
         }
 
