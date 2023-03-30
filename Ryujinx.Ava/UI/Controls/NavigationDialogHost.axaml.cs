@@ -16,9 +16,9 @@ using Ryujinx.Ava.UI.Views.User;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using System;
-using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UserProfile = Ryujinx.Ava.UI.Models.UserProfile;
 
 namespace Ryujinx.Ava.UI.Controls
@@ -121,7 +121,7 @@ namespace Ryujinx.Ava.UI.Controls
 
             using var saveDataIterator = new UniqueRef<SaveDataIterator>();
 
-            HorizonClient.Fs.OpenSaveDataIterator(ref saveDataIterator.Ref(), SaveDataSpaceId.User, in saveDataFilter).ThrowIfFailure();
+            HorizonClient.Fs.OpenSaveDataIterator(ref saveDataIterator.Ref, SaveDataSpaceId.User, in saveDataFilter).ThrowIfFailure();
 
             Span<SaveDataInfo> saveDataInfo = stackalloc SaveDataInfo[10];
 

@@ -7,15 +7,15 @@ using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.RomFs;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.Loaders.Mods;
+using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.Loaders.Executables;
+using Ryujinx.HLE.Loaders.Mods;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
-using System.IO;
-using Ryujinx.HLE.HOS.Kernel.Process;
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using Path = System.IO.Path;
 
 namespace Ryujinx.HLE.HOS
@@ -475,7 +475,7 @@ namespace Ryujinx.HLE.HOS
             {
                 using var file = new UniqueRef<IFile>();
 
-                baseRom.OpenFile(ref file.Ref(), entry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                baseRom.OpenFile(ref file.Ref, entry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
                 builder.AddFile(entry.FullPath, file.Release());
             }
 
@@ -494,7 +494,7 @@ namespace Ryujinx.HLE.HOS
             {
                 using var file = new UniqueRef<IFile>();
 
-                fs.OpenFile(ref file.Ref(), entry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                fs.OpenFile(ref file.Ref, entry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
                 if (fileSet.Add(entry.FullPath))
                 {
                     builder.AddFile(entry.FullPath, file.Release());
@@ -696,8 +696,8 @@ namespace Ryujinx.HLE.HOS
 
             var buildIds = programs.Select(p => p switch
             {
-                NsoExecutable nso => BitConverter.ToString(nso.BuildId.ItemsRo.ToArray()).Replace("-", "").TrimEnd('0'),
-                NroExecutable nro => BitConverter.ToString(nro.Header.BuildId).Replace("-", "").TrimEnd('0'),
+                NsoExecutable nso => Convert.ToHexString(nso.BuildId.ItemsRo.ToArray()).TrimEnd('0'),
+                NroExecutable nro => Convert.ToHexString(nro.Header.BuildId).TrimEnd('0'),
                 _ => string.Empty
             }).ToList();
 

@@ -215,41 +215,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Checks if two formats are compatible, according to the host API copy format compatibility rules.
-        /// </summary>
-        /// <param name="lhsFormat">First comparand</param>
-        /// <param name="rhsFormat">Second comparand</param>
-        /// <param name="caps">Host GPU capabilities</param>
-        /// <returns>True if the formats are compatible, false otherwise</returns>
-        public static bool FormatCompatible(TextureInfo lhs, TextureInfo rhs, Capabilities caps)
-        {
-            FormatInfo lhsFormat = lhs.FormatInfo;
-            FormatInfo rhsFormat = rhs.FormatInfo;
-
-            if (lhsFormat.Format.IsDepthOrStencil() || rhsFormat.Format.IsDepthOrStencil())
-            {
-                return lhsFormat.Format == rhsFormat.Format;
-            }
-
-            if (IsFormatHostIncompatible(lhs, caps) || IsFormatHostIncompatible(rhs, caps))
-            {
-                return lhsFormat.Format == rhsFormat.Format;
-            }
-
-            if (lhsFormat.IsCompressed && rhsFormat.IsCompressed)
-            {
-                FormatClass lhsClass = GetFormatClass(lhsFormat.Format);
-                FormatClass rhsClass = GetFormatClass(rhsFormat.Format);
-
-                return lhsClass == rhsClass;
-            }
-            else
-            {
-                return lhsFormat.BytesPerPixel == rhsFormat.BytesPerPixel;
-            }
-        }
-
-        /// <summary>
         /// Checks if the texture format matches with the specified texture information.
         /// </summary>
         /// <param name="lhs">Texture information to compare</param>
@@ -380,42 +345,44 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="lhs">Texture information of the texture view</param>
         /// <param name="rhs">Texture information of the texture view to match against</param>
+        /// <param name="exact">Indicates if the sizes must be exactly equal</param>
         /// <param name="level">Mipmap level of the texture view in relation to this texture</param>
         /// <returns>The view compatibility level of the view sizes</returns>
-        public static TextureViewCompatibility ViewSizeMatches(TextureInfo lhs, TextureInfo rhs, int level)
+        public static TextureViewCompatibility ViewSizeMatches(TextureInfo lhs, TextureInfo rhs, bool exact, int level)
         {
-            Size size = GetAlignedSize(lhs, level);
+            Size lhsAlignedSize = GetAlignedSize(lhs, level);
+            Size rhsAlignedSize = GetAlignedSize(rhs);
 
-            Size otherSize = GetAlignedSize(rhs);
+            Size lhsSize = GetSizeInBlocks(lhs, level);
+            Size rhsSize = GetSizeInBlocks(rhs);
+
+            bool alignedWidthMatches = lhsAlignedSize.Width == rhsAlignedSize.Width;
+
+            if (lhs.FormatInfo.BytesPerPixel != rhs.FormatInfo.BytesPerPixel && IsIncompatibleFormatAliasingAllowed(lhs.FormatInfo, rhs.FormatInfo))
+            {
+                alignedWidthMatches = lhsSize.Width * lhs.FormatInfo.BytesPerPixel == rhsSize.Width * rhs.FormatInfo.BytesPerPixel;
+            }
 
             TextureViewCompatibility result = TextureViewCompatibility.Full;
 
             // For copies, we can copy a subset of the 3D texture slices,
             // so the depth may be different in this case.
-            if (rhs.Target == Target.Texture3D && size.Depth != otherSize.Depth)
+            if (rhs.Target == Target.Texture3D && lhsSize.Depth != rhsSize.Depth)
             {
                 result = TextureViewCompatibility.CopyOnly;
             }
 
-            if (size.Width == otherSize.Width && size.Height == otherSize.Height)
+            // Some APIs align the width for copy and render target textures,
+            // so the width may not match in this case for different uses of the same texture.
+            // To account for this, we compare the aligned width here.
+            // We expect height to always match exactly, if the texture is the same.
+            if (alignedWidthMatches && lhsSize.Height == rhsSize.Height)
             {
-                if (level > 0 && result == TextureViewCompatibility.Full)
-                {
-                    // A resize should not change the aligned size of the largest mip.
-                    // If it would, then create a copy dependency rather than a full view.
-
-                    Size mip0SizeLhs = GetAlignedSize(lhs);
-                    Size mip0SizeRhs = GetLargestAlignedSize(rhs, level);
-
-                    if (mip0SizeLhs.Width != mip0SizeRhs.Width || mip0SizeLhs.Height != mip0SizeRhs.Height)
-                    {
-                        result = TextureViewCompatibility.CopyOnly;
-                    }
-                }
-
-                return result;
+                return (exact && lhsSize.Width != rhsSize.Width) || lhsSize.Width < rhsSize.Width
+                    ? TextureViewCompatibility.CopyOnly
+                    : result;
             }
-            else if (lhs.IsLinear && rhs.IsLinear)
+            else if (lhs.IsLinear && rhs.IsLinear && lhsSize.Height == rhsSize.Height)
             {
                 // Copy between linear textures with matching stride.
                 int stride = BitUtils.AlignUp(Math.Max(1, lhs.Stride >> level), Constants.StrideAlignment);
@@ -454,57 +421,33 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="lhs">Texture information to compare</param>
         /// <param name="rhs">Texture information to compare with</param>
-        /// <returns>True if the size matches, false otherwise</returns>
-        public static bool SizeMatches(TextureInfo lhs, TextureInfo rhs)
-        {
-            return SizeMatches(lhs, rhs, alignSizes: false);
-        }
-
-        /// <summary>
-        /// Checks if the texture sizes of the supplied texture informations match the given level
-        /// </summary>
-        /// <param name="lhs">Texture information to compare</param>
-        /// <param name="rhs">Texture information to compare with</param>
-        /// <param name="level">Mipmap level of this texture to compare with</param>
-        /// <returns>True if the size matches with the level, false otherwise</returns>
-        public static bool SizeMatches(TextureInfo lhs, TextureInfo rhs, int level)
-        {
-            return Math.Max(1, lhs.Width >> level)      == rhs.Width &&
-                   Math.Max(1, lhs.Height >> level)     == rhs.Height &&
-                   Math.Max(1, lhs.GetDepth() >> level) == rhs.GetDepth();
-        }
-
-        /// <summary>
-        /// Checks if the texture sizes of the supplied texture informations match.
-        /// </summary>
-        /// <param name="lhs">Texture information to compare</param>
-        /// <param name="rhs">Texture information to compare with</param>
-        /// <param name="alignSizes">True to align the sizes according to the texture layout for comparison</param>
-        /// <param name="lhsLevel">Mip level of the lhs texture. Aligned sizes are compared for the largest mip</param>
+        /// <param name="exact">Indicates if the size must be exactly equal between the textures, or if <paramref name="rhs"/> is allowed to be larger</param>
         /// <returns>True if the sizes matches, false otherwise</returns>
-        public static bool SizeMatches(TextureInfo lhs, TextureInfo rhs, bool alignSizes, int lhsLevel = 0)
+        public static bool SizeMatches(TextureInfo lhs, TextureInfo rhs, bool exact)
         {
             if (lhs.GetLayers() != rhs.GetLayers())
             {
                 return false;
             }
 
-            bool isTextureBuffer = lhs.Target == Target.TextureBuffer || rhs.Target == Target.TextureBuffer;
+            Size lhsSize = GetSizeInBlocks(lhs);
+            Size rhsSize = GetSizeInBlocks(rhs);
 
-            if (alignSizes && !isTextureBuffer)
+            if (exact || lhs.IsLinear || rhs.IsLinear)
             {
-                Size size0 = GetLargestAlignedSize(lhs, lhsLevel);
-                Size size1 = GetLargestAlignedSize(rhs, lhsLevel);
-
-                return size0.Width  == size1.Width &&
-                       size0.Height == size1.Height &&
-                       size0.Depth  == size1.Depth;
+                return lhsSize.Width == rhsSize.Width &&
+                       lhsSize.Height == rhsSize.Height &&
+                       lhsSize.Depth == rhsSize.Depth;
             }
             else
             {
-                return lhs.Width      == rhs.Width &&
-                       lhs.Height     == rhs.Height &&
-                       lhs.GetDepth() == rhs.GetDepth();
+                Size lhsAlignedSize = GetAlignedSize(lhs);
+                Size rhsAlignedSize = GetAlignedSize(rhs);
+
+                return lhsAlignedSize.Width == rhsAlignedSize.Width &&
+                       lhsSize.Width >= rhsSize.Width &&
+                       lhsSize.Height == rhsSize.Height &&
+                       lhsSize.Depth == rhsSize.Depth;
             }
         }
 
@@ -544,22 +487,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Gets the aligned sizes of the specified texture information, shifted to the largest mip from a given level.
-        /// The alignment depends on the texture layout and format bytes per pixel.
-        /// </summary>
-        /// <param name="info">Texture information to calculate the aligned size from</param>
-        /// <param name="level">Mipmap level for texture views. Shifts the aligned size to represent the largest mip level</param>
-        /// <returns>The aligned texture size of the largest mip level</returns>
-        public static Size GetLargestAlignedSize(TextureInfo info, int level)
-        {
-            int width = info.Width << level;
-            int height = info.Height << level;
-            int depth = info.GetDepth() << level;
-
-            return GetAlignedSize(info, width, height, depth);
-        }
-
-        /// <summary>
         /// Gets the aligned sizes of the specified texture information.
         /// The alignment depends on the texture layout and format bytes per pixel.
         /// </summary>
@@ -573,6 +500,25 @@ namespace Ryujinx.Graphics.Gpu.Image
             int depth = Math.Max(1, info.GetDepth() >> level);
 
             return GetAlignedSize(info, width, height, depth);
+        }
+
+        /// <summary>
+        /// Gets the size in blocks for the given texture information.
+        /// For non-compressed formats, that's the same as the regular size.
+        /// </summary>
+        /// <param name="info">Texture information to calculate the aligned size from</param>
+        /// <param name="level">Mipmap level for texture views</param>
+        /// <returns>The texture size in blocks</returns>
+        public static Size GetSizeInBlocks(TextureInfo info, int level = 0)
+        {
+            int width = Math.Max(1, info.Width >> level);
+            int height = Math.Max(1, info.Height >> level);
+            int depth = Math.Max(1, info.GetDepth() >> level);
+
+            return new Size(
+                BitUtils.DivRoundUp(width, info.FormatInfo.BlockWidth),
+                BitUtils.DivRoundUp(height, info.FormatInfo.BlockHeight),
+                depth);
         }
 
         /// <summary>
@@ -685,19 +631,60 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>The view compatibility level of the texture formats</returns>
         public static TextureViewCompatibility ViewFormatCompatible(TextureInfo lhs, TextureInfo rhs, Capabilities caps)
         {
-            if (FormatCompatible(lhs, rhs, caps))
+            FormatInfo lhsFormat = lhs.FormatInfo;
+            FormatInfo rhsFormat = rhs.FormatInfo;
+
+            if (lhsFormat.Format.IsDepthOrStencil() || rhsFormat.Format.IsDepthOrStencil())
             {
-                if (lhs.FormatInfo.IsCompressed != rhs.FormatInfo.IsCompressed)
-                {
-                    return TextureViewCompatibility.CopyOnly;
-                }
-                else
-                {
-                    return TextureViewCompatibility.Full;
-                }
+                return lhsFormat.Format == rhsFormat.Format ? TextureViewCompatibility.Full : TextureViewCompatibility.Incompatible;
+            }
+
+            if (IsFormatHostIncompatible(lhs, caps) || IsFormatHostIncompatible(rhs, caps))
+            {
+                return lhsFormat.Format == rhsFormat.Format ? TextureViewCompatibility.Full : TextureViewCompatibility.Incompatible;
+            }
+
+            if (lhsFormat.IsCompressed && rhsFormat.IsCompressed)
+            {
+                FormatClass lhsClass = GetFormatClass(lhsFormat.Format);
+                FormatClass rhsClass = GetFormatClass(rhsFormat.Format);
+
+                return lhsClass == rhsClass ? TextureViewCompatibility.Full : TextureViewCompatibility.Incompatible;
+            }
+            else if (lhsFormat.BytesPerPixel == rhsFormat.BytesPerPixel)
+            {
+                return lhs.FormatInfo.IsCompressed == rhs.FormatInfo.IsCompressed
+                    ? TextureViewCompatibility.Full
+                    : TextureViewCompatibility.CopyOnly;
+            }
+            else if (IsIncompatibleFormatAliasingAllowed(lhsFormat, rhsFormat))
+            {
+                return TextureViewCompatibility.CopyOnly;
             }
 
             return TextureViewCompatibility.Incompatible;
+        }
+
+        /// <summary>
+        /// Checks if aliasing of two formats that would normally be considered incompatible be allowed,
+        /// using copy dependencies.
+        /// </summary>
+        /// <param name="lhsFormat">Format information of the first texture</param
+        /// <param name="rhsFormat">Format information of the second texture</param>
+        /// <returns>True if aliasing should be allowed, false otherwise</returns>
+        private static bool IsIncompatibleFormatAliasingAllowed(FormatInfo lhsFormat, FormatInfo rhsFormat)
+        {
+            // Some games will try to alias textures with incompatible foramts, with different BPP (bytes per pixel).
+            // We allow that in some cases as long Width * BPP is equal on both textures.
+            // This is very conservative right now as we want to avoid copies as much as possible,
+            // so we only consider the formats we have seen being aliased.
+
+            if (rhsFormat.BytesPerPixel < lhsFormat.BytesPerPixel)
+            {
+                (lhsFormat, rhsFormat) = (rhsFormat, lhsFormat);
+            }
+
+            return lhsFormat.Format == Format.R8Unorm && rhsFormat.Format == Format.R8G8B8A8Unorm;
         }
 
         /// <summary>

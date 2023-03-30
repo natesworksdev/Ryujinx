@@ -24,6 +24,7 @@ namespace Ryujinx.Graphics.OpenGL
         private TextureCopy _textureCopy;
         private TextureCopy _backgroundTextureCopy;
         internal TextureCopy TextureCopy => BackgroundContextWorker.InBackground ? _backgroundTextureCopy : _textureCopy;
+        internal TextureCopyIncompatible TextureCopyIncompatible { get; }
         internal TextureCopyMS TextureCopyMS { get; }
 
         private Sync _sync;
@@ -49,13 +50,14 @@ namespace Ryujinx.Graphics.OpenGL
             _window = new Window(this);
             _textureCopy = new TextureCopy(this);
             _backgroundTextureCopy = new TextureCopy(this);
+            TextureCopyIncompatible = new TextureCopyIncompatible(this);
             TextureCopyMS = new TextureCopyMS(this);
             _sync = new Sync();
             PersistentBuffers = new PersistentBuffers();
             ResourcePool = new ResourcePool();
         }
 
-        public BufferHandle CreateBuffer(int size)
+        public BufferHandle CreateBuffer(int size, BufferHandle storageHint)
         {
             BufferCount++;
 
@@ -94,7 +96,7 @@ namespace Ryujinx.Graphics.OpenGL
             return new HardwareInfo(GpuVendor, GpuRenderer);
         }
 
-        public ReadOnlySpan<byte> GetBufferData(BufferHandle buffer, int offset, int size)
+        public PinnedSpan<byte> GetBufferData(BufferHandle buffer, int offset, int size)
         {
             return Buffer.GetData(this, buffer, offset, size);
         }
@@ -119,8 +121,10 @@ namespace Ryujinx.Graphics.OpenGL
                 supportsR4G4B4A4Format: true,
                 supportsSnormBufferTextureFormat: false,
                 supports5BitComponentFormat: true,
+                supportsBlendEquationAdvanced: HwCapabilities.SupportsBlendEquationAdvanced,
                 supportsFragmentShaderInterlock: HwCapabilities.SupportsFragmentShaderInterlock,
                 supportsFragmentShaderOrderingIntel: HwCapabilities.SupportsFragmentShaderOrdering,
+                supportsGeometryShader: true,
                 supportsGeometryShaderPassthrough: HwCapabilities.SupportsGeometryShaderPassthrough,
                 supportsImageLoadFormatted: HwCapabilities.SupportsImageLoadFormatted,
                 supportsLayerVertexTessellation: HwCapabilities.SupportsShaderViewportLayerArray,
@@ -174,7 +178,7 @@ namespace Ryujinx.Graphics.OpenGL
             }
 
             _pipeline.Initialize(this);
-            _counters.Initialize();
+            _counters.Initialize(_pipeline);
 
             // This is required to disable [0, 1] clamping for SNorm outputs on compatibility profiles.
             // This call is expected to fail if we're running with a core profile,

@@ -80,6 +80,7 @@ namespace Ryujinx.Graphics.Vulkan
         internal bool IsAmdGcn { get; private set; }
         internal bool IsMoltenVk { get; private set; }
         internal bool IsTBDR { get; private set; }
+        internal bool IsSharedMemory { get; private set; }
         public string GpuVendor { get; private set; }
         public string GpuRenderer { get; private set; }
         public string GpuVersion { get; private set; }
@@ -149,12 +150,27 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PhysicalDeviceProperties2
             };
 
+            PhysicalDeviceBlendOperationAdvancedPropertiesEXT propertiesBlendOperationAdvanced = new PhysicalDeviceBlendOperationAdvancedPropertiesEXT()
+            {
+                SType = StructureType.PhysicalDeviceBlendOperationAdvancedPropertiesExt
+            };
+
+            bool supportsBlendOperationAdvanced = supportedExtensions.Contains("VK_EXT_blend_operation_advanced");
+
+            if (supportsBlendOperationAdvanced)
+            {
+                propertiesBlendOperationAdvanced.PNext = properties2.PNext;
+                properties2.PNext = &propertiesBlendOperationAdvanced;
+            }
+
             PhysicalDeviceSubgroupSizeControlPropertiesEXT propertiesSubgroupSizeControl = new PhysicalDeviceSubgroupSizeControlPropertiesEXT()
             {
                 SType = StructureType.PhysicalDeviceSubgroupSizeControlPropertiesExt
             };
 
-            if (Capabilities.SupportsSubgroupSizeControl)
+            bool supportsSubgroupSizeControl = supportedExtensions.Contains("VK_EXT_subgroup_size_control");
+
+            if (supportsSubgroupSizeControl)
             {
                 properties2.PNext = &propertiesSubgroupSizeControl;
             }
@@ -182,6 +198,11 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PhysicalDeviceFeatures2
             };
 
+            PhysicalDevicePrimitiveTopologyListRestartFeaturesEXT featuresPrimitiveTopologyListRestart = new PhysicalDevicePrimitiveTopologyListRestartFeaturesEXT()
+            {
+                SType = StructureType.PhysicalDevicePrimitiveTopologyListRestartFeaturesExt
+            };
+
             PhysicalDeviceRobustness2FeaturesEXT featuresRobustness2 = new PhysicalDeviceRobustness2FeaturesEXT()
             {
                 SType = StructureType.PhysicalDeviceRobustness2FeaturesExt
@@ -202,8 +223,14 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PhysicalDevicePortabilitySubsetFeaturesKhr
             };
 
+            if (supportedExtensions.Contains("VK_EXT_primitive_topology_list_restart"))
+            {
+                features2.PNext = &featuresPrimitiveTopologyListRestart;
+            }
+
             if (supportedExtensions.Contains("VK_EXT_robustness2"))
             {
+                featuresRobustness2.PNext = features2.PNext;
                 features2.PNext = &featuresRobustness2;
             }
 
@@ -234,19 +261,21 @@ namespace Ryujinx.Graphics.Vulkan
             Api.GetPhysicalDeviceFeatures2(_physicalDevice, &features2);
 
             var portabilityFlags = PortabilitySubsetFlags.None;
+            uint vertexBufferAlignment = 1;
 
             if (usePortability)
             {
-                portabilityFlags |= propertiesPortabilitySubset.MinVertexInputBindingStrideAlignment > 1 ? PortabilitySubsetFlags.VertexBufferAlignment4B : 0;
+                vertexBufferAlignment = propertiesPortabilitySubset.MinVertexInputBindingStrideAlignment;
+
                 portabilityFlags |= featuresPortabilitySubset.TriangleFans ? 0 : PortabilitySubsetFlags.NoTriangleFans;
                 portabilityFlags |= featuresPortabilitySubset.PointPolygons ? 0 : PortabilitySubsetFlags.NoPointMode;
                 portabilityFlags |= featuresPortabilitySubset.ImageView2DOn3DImage ? 0 : PortabilitySubsetFlags.No3DImageView;
                 portabilityFlags |= featuresPortabilitySubset.SamplerMipLodBias ? 0 : PortabilitySubsetFlags.NoLodBias;
             }
 
-            bool customBorderColorSupported = supportedExtensions.Contains("VK_EXT_custom_border_color") &&
-                                              featuresCustomBorderColor.CustomBorderColors &&
-                                              featuresCustomBorderColor.CustomBorderColorWithoutFormat;
+            bool supportsCustomBorderColor = supportedExtensions.Contains("VK_EXT_custom_border_color") &&
+                                             featuresCustomBorderColor.CustomBorderColors &&
+                                             featuresCustomBorderColor.CustomBorderColorWithoutFormat;
 
             ref var properties = ref properties2.Properties;
 
@@ -257,11 +286,15 @@ namespace Ryujinx.Graphics.Vulkan
 
             Capabilities = new HardwareCapabilities(
                 supportedExtensions.Contains("VK_EXT_index_type_uint8"),
-                customBorderColorSupported,
+                supportsCustomBorderColor,
+                supportsBlendOperationAdvanced,
+                propertiesBlendOperationAdvanced.AdvancedBlendCorrelatedOverlap,
+                propertiesBlendOperationAdvanced.AdvancedBlendNonPremultipliedSrcColor,
+                propertiesBlendOperationAdvanced.AdvancedBlendNonPremultipliedDstColor,
                 supportedExtensions.Contains(KhrDrawIndirectCount.ExtensionName),
                 supportedExtensions.Contains("VK_EXT_fragment_shader_interlock"),
                 supportedExtensions.Contains("VK_NV_geometry_shader_passthrough"),
-                supportedExtensions.Contains("VK_EXT_subgroup_size_control"),
+                supportsSubgroupSizeControl,
                 featuresShaderInt8.ShaderInt8,
                 supportedExtensions.Contains("VK_EXT_shader_stencil_export"),
                 supportedExtensions.Contains(ExtConditionalRendering.ExtensionName),
@@ -269,6 +302,8 @@ namespace Ryujinx.Graphics.Vulkan
                 features2.Features.MultiViewport,
                 featuresRobustness2.NullDescriptor || IsMoltenVk,
                 supportedExtensions.Contains(KhrPushDescriptor.ExtensionName),
+                featuresPrimitiveTopologyListRestart.PrimitiveTopologyListRestart,
+                featuresPrimitiveTopologyListRestart.PrimitiveTopologyPatchListRestart,
                 supportsTransformFeedback,
                 propertiesTransformFeedback.TransformFeedbackQueries,
                 features2.Features.OcclusionQueryPrecise,
@@ -278,11 +313,14 @@ namespace Ryujinx.Graphics.Vulkan
                 propertiesSubgroupSizeControl.MaxSubgroupSize,
                 propertiesSubgroupSizeControl.RequiredSubgroupSizeStages,
                 supportedSampleCounts,
-                portabilityFlags);
+                portabilityFlags,
+                vertexBufferAlignment);
 
-            MemoryAllocator = new MemoryAllocator(Api, _device, properties.Limits.MaxMemoryAllocationCount);
+            IsSharedMemory = MemoryAllocator.IsDeviceMemoryShared(Api, _physicalDevice);
 
-            CommandBufferPool = VulkanInitialization.CreateCommandBufferPool(Api, _device, Queue, QueueLock, queueFamilyIndex);
+            MemoryAllocator = new MemoryAllocator(Api, _physicalDevice, _device, properties.Limits.MaxMemoryAllocationCount);
+
+            CommandBufferPool = new CommandBufferPool(Api, _device, Queue, QueueLock, queueFamilyIndex);
 
             DescriptorSetManager = new DescriptorSetManager(_device);
 
@@ -290,7 +328,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             BackgroundResources = new BackgroundResources(this, _device);
 
-            BufferManager = new BufferManager(this, _physicalDevice, _device);
+            BufferManager = new BufferManager(this, _device);
 
             _syncManager = new SyncManager(this, _device);
             _pipeline = new PipelineFull(this, _device);
@@ -340,9 +378,9 @@ namespace Ryujinx.Graphics.Vulkan
             _initialized = true;
         }
 
-        public BufferHandle CreateBuffer(int size)
+        public BufferHandle CreateBuffer(int size, BufferHandle storageHint)
         {
-            return BufferManager.CreateWithHandle(this, size, false);
+            return BufferManager.CreateWithHandle(this, size, BufferAllocationType.Auto, storageHint);
         }
 
         public IProgram CreateProgram(ShaderSource[] sources, ShaderInfo info)
@@ -388,7 +426,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         internal TextureStorage CreateTextureStorage(TextureCreateInfo info, float scale)
         {
-            return new TextureStorage(this, _physicalDevice, _device, info, scale);
+            return new TextureStorage(this, _device, info, scale);
         }
 
         public void DeleteBuffer(BufferHandle buffer)
@@ -406,7 +444,7 @@ namespace Ryujinx.Graphics.Vulkan
             _syncManager.RegisterFlush();
         }
 
-        public ReadOnlySpan<byte> GetBufferData(BufferHandle buffer, int offset, int size)
+        public PinnedSpan<byte> GetBufferData(BufferHandle buffer, int offset, int size)
         {
             return BufferManager.GetData(buffer, offset, size);
         }
@@ -523,8 +561,10 @@ namespace Ryujinx.Graphics.Vulkan
                 supportsR4G4B4A4Format: supportsR4G4B4A4Format,
                 supportsSnormBufferTextureFormat: true,
                 supports5BitComponentFormat: supports5BitComponentFormat,
+                supportsBlendEquationAdvanced: Capabilities.SupportsBlendEquationAdvanced,
                 supportsFragmentShaderInterlock: Capabilities.SupportsFragmentShaderInterlock,
                 supportsFragmentShaderOrderingIntel: false,
+                supportsGeometryShader: Capabilities.SupportsGeometryShader,
                 supportsGeometryShaderPassthrough: Capabilities.SupportsGeometryShaderPassthrough,
                 supportsImageLoadFormatted: features2.Features.ShaderStorageImageReadWithoutFormat,
                 supportsLayerVertexTessellation: featuresVk12.ShaderOutputLayer,
@@ -636,11 +676,11 @@ namespace Ryujinx.Graphics.Vulkan
             PrintGpuInformation();
         }
 
-        public bool NeedsVertexBufferAlignment(int attrScalarAlignment, out int alignment)
+        internal bool NeedsVertexBufferAlignment(int attrScalarAlignment, out int alignment)
         {
-            if (Capabilities.PortabilitySubset.HasFlag(PortabilitySubsetFlags.VertexBufferAlignment4B))
+            if (Capabilities.VertexBufferAlignment > 1)
             {
-                alignment = 4;
+                alignment = (int)Capabilities.VertexBufferAlignment;
 
                 return true;
             }

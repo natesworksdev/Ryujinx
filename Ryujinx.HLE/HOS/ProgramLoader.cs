@@ -28,9 +28,9 @@ namespace Ryujinx.HLE.HOS
 
         public ProgramInfo(in Npdm npdm, string displayVersion, bool diskCacheEnabled, bool allowCodeMemoryForJit)
         {
-            ulong programId = npdm.Aci.Value.ProgramId.Value;
+            ulong programId = npdm.Aci.ProgramId.Value;
 
-            Name = StringUtils.Utf8ZToString(npdm.Meta.Value.ProgramName);
+            Name = StringUtils.Utf8ZToString(npdm.Meta.ProgramName);
             ProgramId = programId;
             TitleIdText = programId.ToString("x16");
             DisplayVersion = displayVersion;
@@ -80,7 +80,7 @@ namespace Ryujinx.HLE.HOS
 
             ulong codeBaseAddress = kip.Is64BitAddressSpace ? 0x8000000UL : 0x200000UL;
 
-            ulong codeAddress = codeBaseAddress + (ulong)kip.TextOffset;
+            ulong codeAddress = codeBaseAddress + kip.TextOffset;
 
             ProcessCreationFlags flags = 0;
 
@@ -193,7 +193,7 @@ namespace Ryujinx.HLE.HOS
                 return ProgramLoadResult.Failed;
             }
 
-            ref readonly var meta = ref npdm.Meta.Value;
+            ref readonly var meta = ref npdm.Meta;
 
             ulong argsStart = 0;
             uint  argsSize  = 0;
@@ -231,13 +231,13 @@ namespace Ryujinx.HLE.HOS
 
                 nsoSize = BitUtils.AlignUp<uint>(nsoSize, KPageTableBase.PageSize);
 
-                nsoBase[index] = codeStart + (ulong)codeSize;
+                nsoBase[index] = codeStart + codeSize;
 
                 codeSize += nsoSize;
 
                 if (arguments != null && argsSize == 0)
                 {
-                    argsStart = (ulong)codeSize;
+                    argsStart = codeSize;
 
                     argsSize = (uint)BitUtils.AlignDown(arguments.Length * 2 + ArgsTotalSize - 1, KPageTableBase.PageSize);
 
@@ -298,7 +298,7 @@ namespace Ryujinx.HLE.HOS
 
             KProcess process = new KProcess(context, programInfo.AllowCodeMemoryForJit);
 
-            MemoryRegion memoryRegion = (MemoryRegion)((npdm.Acid.Value.Flags >> 2) & 0xf);
+            MemoryRegion memoryRegion = (MemoryRegion)((npdm.Acid.Flags >> 2) & 0xf);
 
             if (memoryRegion > MemoryRegion.NvServices)
             {
@@ -318,7 +318,7 @@ namespace Ryujinx.HLE.HOS
 
             result = process.Initialize(
                 creationInfo,
-                MemoryMarshal.Cast<byte, int>(npdm.KernelCapabilityData).ToArray(),
+                MemoryMarshal.Cast<byte, uint>(npdm.KernelCapabilityData),
                 resourceLimit,
                 memoryRegion,
                 processContextFactory);
