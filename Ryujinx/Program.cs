@@ -11,6 +11,7 @@ using Ryujinx.Ui;
 using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
+using Ryujinx.Ui.Helper;
 using Ryujinx.Ui.Widgets;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using System;
@@ -148,6 +149,9 @@ namespace Ryujinx
 
             // Initialize Discord integration.
             DiscordIntegrationModule.Initialize();
+
+            // Initialize Titlebar helper
+            TitlebarHelper.Initialize();
 
             // Initialize SDL2 driver
             SDL2Driver.MainThreadDispatcher = action =>

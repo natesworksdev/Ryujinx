@@ -21,6 +21,8 @@ namespace Ryujinx.Ui.Helper
                 cssProvider.LoadFromPath(ConfigurationState.Instance.Ui.CustomThemePath);
 
                 StyleContext.AddProviderForScreen(Gdk.Screen.Default, cssProvider, 800);
+
+                TitlebarHelper.ThemeChanged(); // Change The Titlebar Color
             }
             else
             {
