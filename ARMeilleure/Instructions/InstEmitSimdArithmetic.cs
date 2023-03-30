@@ -4738,11 +4738,7 @@ namespace ARMeilleure.Instructions
             Operand nCopy = n == default ? context.Copy(GetVec(((OpCodeSimdReg)context.CurrOp).Rn)) : n;
             Operand mCopy = m == default ? context.Copy(GetVec(((OpCodeSimdReg)context.CurrOp).Rm)) : m;
 
-            EmitSseOrAvxEnterFtzAndDazModesOpF(context, out Operand isTrue);
-
             Operand res = emit(nCopy, mCopy);
-
-            EmitSseOrAvxExitFtzAndDazModesOpF(context, isTrue);
 
             if (n != default || m != default)
             {

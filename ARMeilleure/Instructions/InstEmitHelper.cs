@@ -259,6 +259,11 @@ namespace ARMeilleure.Instructions
         public static void SetFpFlag(ArmEmitterContext context, FPState stateFlag, Operand value)
         {
             context.Copy(GetFpFlag(stateFlag), value);
+
+            if (stateFlag == FPState.FzFlag)
+            {
+                context.UpdateFtzAndDazMode();
+            }
         }
     }
 }

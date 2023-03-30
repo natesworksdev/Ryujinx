@@ -465,9 +465,11 @@ namespace ARMeilleure.Instructions
                 ? typeof(SoftFloat32).GetMethod(name)
                 : typeof(SoftFloat64).GetMethod(name);
 
+            context.ExitFtzAndDazMode();
             context.StoreToContext();
             Operand res = context.Call(info, callArgs);
             context.LoadFromContext();
+            context.EnterFtzAndDazMode();
 
             return res;
         }
@@ -1356,39 +1358,6 @@ namespace ARMeilleure.Instructions
 
                 context.Copy(GetVec(op.Rd), emit(part0, part1));
             }
-        }
-
-        [Flags]
-        public enum Mxcsr
-        {
-            Ftz = 1 << 15, // Flush To Zero.
-            Um  = 1 << 11, // Underflow Mask.
-            Dm  = 1 << 8,  // Denormal Mask.
-            Daz = 1 << 6   // Denormals Are Zero.
-        }
-
-        public static void EmitSseOrAvxEnterFtzAndDazModesOpF(ArmEmitterContext context, out Operand isTrue)
-        {
-            isTrue = GetFpFlag(FPState.FzFlag);
-
-            Operand lblTrue = Label();
-            context.BranchIfFalse(lblTrue, isTrue);
-
-            context.AddIntrinsicNoRet(Intrinsic.X86Mxcsrmb, Const((int)(Mxcsr.Ftz | Mxcsr.Um | Mxcsr.Dm | Mxcsr.Daz)));
-
-            context.MarkLabel(lblTrue);
-        }
-
-        public static void EmitSseOrAvxExitFtzAndDazModesOpF(ArmEmitterContext context, Operand isTrue = default)
-        {
-            isTrue = isTrue == default ? GetFpFlag(FPState.FzFlag) : isTrue;
-
-            Operand lblTrue = Label();
-            context.BranchIfFalse(lblTrue, isTrue);
-
-            context.AddIntrinsicNoRet(Intrinsic.X86Mxcsrub, Const((int)(Mxcsr.Ftz | Mxcsr.Daz)));
-
-            context.MarkLabel(lblTrue);
         }
 
         public enum CmpCondition

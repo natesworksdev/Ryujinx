@@ -1,4 +1,5 @@
 using ARMeilleure.CodeGen.Linking;
+using ARMeilleure.CodeGen.X86;
 using ARMeilleure.Common;
 using ARMeilleure.Decoders;
 using ARMeilleure.Diagnostics;
@@ -185,6 +186,57 @@ namespace ARMeilleure.Translation
             if (_pendingQcFlagSync && Optimizations.UseAdvSimd)
             {
                 AddIntrinsicNoRet(Intrinsic.Arm64MsrFpsr, Const(0));
+            }
+        }
+
+        public void EnterFtzAndDazMode()
+        {
+            if (Optimizations.UseSse2)
+            {
+                Operand isTrue = InstEmitHelper.GetFpFlag(FPState.FzFlag);
+
+                Operand lblTrue = Label();
+                BranchIfFalse(lblTrue, isTrue);
+
+                AddIntrinsicNoRet(Intrinsic.X86Mxcsrmb, Const((int)(Mxcsr.Ftz | Mxcsr.Um | Mxcsr.Dm | Mxcsr.Daz)));
+
+                MarkLabel(lblTrue);
+            }
+        }
+
+        public void UpdateFtzAndDazMode()
+        {
+            if (Optimizations.UseSse2)
+            {
+                Operand isTrue = InstEmitHelper.GetFpFlag(FPState.FzFlag);
+
+                Operand lblTrue = Label();
+                Operand end = Label();
+                BranchIfFalse(lblTrue, isTrue);
+
+                AddIntrinsicNoRet(Intrinsic.X86Mxcsrmb, Const((int)(Mxcsr.Ftz | Mxcsr.Um | Mxcsr.Dm | Mxcsr.Daz)));
+                Branch(end);
+
+                MarkLabel(lblTrue);
+
+                AddIntrinsicNoRet(Intrinsic.X86Mxcsrub, Const((int)(Mxcsr.Ftz | Mxcsr.Daz)));
+
+                MarkLabel(end);
+            }
+        }
+
+        public void ExitFtzAndDazMode()
+        {
+            if (Optimizations.UseSse2)
+            {
+                Operand isTrue = InstEmitHelper.GetFpFlag(FPState.FzFlag);
+
+                Operand lblTrue = Label();
+                BranchIfFalse(lblTrue, isTrue);
+
+                AddIntrinsicNoRet(Intrinsic.X86Mxcsrub, Const((int)(Mxcsr.Ftz | Mxcsr.Daz)));
+
+                MarkLabel(lblTrue);
             }
         }
 
