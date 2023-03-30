@@ -98,6 +98,9 @@ namespace Ryujinx.Ava
             // Initialize Discord integration.
             DiscordIntegrationModule.Initialize();
 
+            // Initialize Titlebar helper
+            TitlebarHelper.Initialize();
+
             // Initialize SDL2 driver
             SDL2Driver.MainThreadDispatcher = action => Dispatcher.UIThread.InvokeAsync(action, DispatcherPriority.Input);
 

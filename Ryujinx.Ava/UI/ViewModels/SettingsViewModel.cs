@@ -435,6 +435,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.Ui.EnableCustomTheme.Value = EnableCustomTheme;
             config.Ui.CustomThemePath.Value = CustomThemePath;
             config.Ui.BaseStyle.Value = BaseStyleIndex == 0 ? "Light" : "Dark";
+            TitlebarHelper.ThemeChanged();
 
             // Input
             config.System.EnableDockedMode.Value = EnableDockedMode;
