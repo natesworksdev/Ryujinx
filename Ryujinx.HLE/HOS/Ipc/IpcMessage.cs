@@ -126,6 +126,7 @@ namespace Ryujinx.HLE.HOS.Ipc
                 ObjectIds = new List<int>(0);
             }
         }
+
         public RecyclableMemoryStream GetStream(long cmdPtr, ulong recvListAddr)
         {
             RecyclableMemoryStream ms = MemoryStreamManager.Shared.GetStream();
