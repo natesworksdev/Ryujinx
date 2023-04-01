@@ -9,8 +9,10 @@ using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Utilities;
+using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.Modules;
+using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.Generic;
@@ -100,7 +102,14 @@ namespace Ryujinx.Ava.UI.Views.Main
 
         public async void OpenSettings(object sender, RoutedEventArgs e)
         {
-            Window.SettingsWindow = new(Window.VirtualFileSystem, Window.ContentManager);
+            if (ViewModel.SelectedApplication != null && ConfigurationState.HasConfigurationForTitle(ViewModel.SelectedApplication.TitleId))
+            {
+                Window.SettingsWindow = new(Window.VirtualFileSystem, Window.ContentManager, ViewModel.SelectedApplication);
+            }
+            else
+            {
+                Window.SettingsWindow = new(Window.VirtualFileSystem, Window.ContentManager);
+            }
 
             await Window.SettingsWindow.ShowDialog(Window);
 
