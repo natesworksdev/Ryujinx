@@ -58,13 +58,13 @@ namespace Ryujinx.HLE.Exceptions
                 var ipcCommands = Request.Type > IpcMessageType.TipcCloseSession ? Service.TipcCommands : Service.CmifCommands;
 
                 // Find the handler for the method called
-                var ipcHandler   = ipcCommands.FirstOrDefault(x => x.Value.Method == callingMethod);
+                var ipcHandler   = ipcCommands.FirstOrDefault(x => x.Value == callingMethod);
                 var ipcCommandId = ipcHandler.Key;
                 var ipcMethod    = ipcHandler.Value;
 
                 if (ipcMethod != null)
                 {
-                    sb.AppendLine($"Service Command: {Service.GetType().FullName}: {ipcCommandId} ({ipcMethod.Method.Name})");
+                    sb.AppendLine($"Service Command: {Service.GetType().FullName}: {ipcCommandId} ({ipcMethod.Name})");
                     sb.AppendLine();
                 }
             }

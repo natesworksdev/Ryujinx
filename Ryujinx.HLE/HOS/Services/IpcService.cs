@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 
 namespace Ryujinx.HLE.HOS.Services
 {
@@ -36,7 +35,7 @@ namespace Ryujinx.HLE.HOS.Services
                 .SelectMany(type => type.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public))
                 .SelectMany(methodInfo => methodInfo.GetCustomAttributes(typeof(CommandTipcAttribute))
                 .Select(command => (((CommandTipcAttribute)command).Id, methodInfo)))
-                .ToDictionary(command => command.Id, command => CreateIpcServiceMethodDelegate(command.methodInfo));
+                .ToDictionary(command => command.Id, command => command.methodInfo);
 
             Server = server;
 
@@ -120,9 +119,9 @@ namespace Ryujinx.HLE.HOS.Services
 
                 if (serviceExists)
                 {
-                    Logger.Trace?.Print(LogClass.KernelIpc, $"{service.GetType().Name}: {processRequest.Method.Name}");
+                    Logger.Trace?.Print(LogClass.KernelIpc, $"{service.GetType().Name}: {processRequest.Name}");
 
-                    result = processRequest(service, context);
+                    result = (ResultCode)processRequest.Invoke(service, new object[] { context });
                 }
                 else
                 {
@@ -164,7 +163,7 @@ namespace Ryujinx.HLE.HOS.Services
         {
             int commandId = (int)context.Request.Type - 0x10;
 
-            bool serviceExists = TipcCommands.TryGetValue(commandId, out IpcServiceMethodDelegate processRequest);
+            bool serviceExists = TipcCommands.TryGetValue(commandId, out MethodInfo processRequest);
 
             if (context.Device.Configuration.IgnoreMissingServices || serviceExists)
             {
@@ -174,9 +173,9 @@ namespace Ryujinx.HLE.HOS.Services
 
                 if (serviceExists)
                 {
-                    Logger.Debug?.Print(LogClass.KernelIpc, $"{GetType().Name}: {processRequest.Method.Name}");
+                    Logger.Debug?.Print(LogClass.KernelIpc, $"{GetType().Name}: {processRequest.Name}");
 
-                    result = processRequest(this, context);
+                    result = (ResultCode)processRequest.Invoke(this, new object[] { context });
                 }
                 else
                 {
@@ -280,23 +279,6 @@ namespace Ryujinx.HLE.HOS.Services
             }
 
             _domainObjects.Clear();
-        }
-
-        private static IpcServiceMethodDelegate CreateIpcServiceMethodDelegate(MethodInfo methodInfo)
-        {
-            var dynamicMethod = new DynamicMethod(methodInfo.Name, methodInfo.ReturnType, new[] { typeof(IpcService), typeof(ServiceCtx) });
-            dynamicMethod.DefineParameter(1, ParameterAttributes.In, "ipcService");
-            dynamicMethod.DefineParameter(2, ParameterAttributes.In, "context");
-
-            var il = dynamicMethod.GetILGenerator(256);
-
-            il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Ldarg_1);
-            il.EmitCall(OpCodes.Callvirt, methodInfo, null);
-            il.Emit(OpCodes.Ret);
-
-            var result = dynamicMethod.CreateDelegate<IpcServiceMethodDelegate>();
-            return result;
         }
     }
 }
