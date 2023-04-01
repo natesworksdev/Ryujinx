@@ -499,6 +499,11 @@ namespace Ryujinx.Ui.Common.Configuration
         public static ConfigurationState Title { get; private set; }
 
         /// <summary>
+        /// The title specific configuration instance
+        /// </summary>
+        public static ConfigurationState Title { get; private set; }
+
+        /// <summary>
         /// The Ui section
         /// </summary>
         public UiSection Ui { get; private set; }
