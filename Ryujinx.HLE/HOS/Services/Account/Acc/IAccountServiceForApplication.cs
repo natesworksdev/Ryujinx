@@ -137,7 +137,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             return resultCode;
         }
-        
+
         [CommandHipc(110)]
         // StoreSaveDataThumbnail(nn::account::Uid, buffer<bytes, 5>)
         public ResultCode StoreSaveDataThumbnail(ServiceCtx context)
@@ -153,10 +153,17 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         }
 
         [CommandHipc(130)] // 5.0.0+
-        // LoadOpenContext(nn::account::Uid)
+        // LoadOpenContext(nn::account::Uid) -> object<nn::account::baas::IManagerForApplication>
         public ResultCode LoadOpenContext(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceAcc);
+            ResultCode resultCode = _applicationServiceServer.CheckUserId(context, out UserId userId);
+
+            if (resultCode != ResultCode.Success)
+            {
+                return resultCode;
+            }
+
+            MakeObject(context, new IManagerForApplication(userId));
 
             return ResultCode.Success;
         }
@@ -183,7 +190,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             // TODO: Account actually calls nn::arp::detail::IReader::GetApplicationControlProperty() with the current Pid and store the result (NACP file) internally.
             //       But since we use LibHac and we load one Application at a time, it's not necessary.
 
-            context.ResponseData.Write((byte)context.Device.Application.ControlData.Value.UserAccountSwitchLock);
+            context.ResponseData.Write((byte)context.Device.Processes.ActiveApplication.ApplicationControlProperties.UserAccountSwitchLock);
 
             Logger.Stub?.PrintStub(LogClass.ServiceAcc);
 

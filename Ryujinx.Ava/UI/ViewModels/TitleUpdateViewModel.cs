@@ -17,6 +17,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
+using Ryujinx.Ui.App.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -105,12 +106,12 @@ public class TitleUpdateViewModel : BaseModel
             AddUpdate(path);
         }
 
-        // NOTE: Save the list again to remove leftovers.
-        Save();
-
         TitleUpdateModel selected = TitleUpdates.FirstOrDefault(x => x.Path == _titleUpdateWindowData.Selected, null);
 
         SelectedUpdate = selected;
+
+        // NOTE: Save the list again to remove leftovers.
+        Save();
 
         SortUpdates();
     }
@@ -162,7 +163,7 @@ public class TitleUpdateViewModel : BaseModel
 
             try
             {
-                (Nca patchNca, Nca controlNca) = ApplicationLoader.GetGameUpdateDataFromPartition(_virtualFileSystem, new PartitionFileSystem(file.AsStorage()), _titleId.ToString("x16"), 0);
+                (Nca patchNca, Nca controlNca) = ApplicationLibrary.GetGameUpdateDataFromPartition(_virtualFileSystem, new PartitionFileSystem(file.AsStorage()), _titleId.ToString("x16"), 0);
 
                 if (controlNca != null && patchNca != null)
                 {
@@ -170,7 +171,7 @@ public class TitleUpdateViewModel : BaseModel
 
                     using UniqueRef<IFile> nacpFile = new();
 
-                    controlNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None).OpenFile(ref nacpFile.Ref(), "/control.nacp".ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                    controlNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None).OpenFile(ref nacpFile.Ref, "/control.nacp".ToU8Span(), OpenMode.Read).ThrowIfFailure();
                     nacpFile.Get.Read(out _, 0, SpanHelpers.AsByteSpan(ref controlData), ReadOption.None).ThrowIfFailure();
 
                     TitleUpdates.Add(new TitleUpdateModel(controlData, path));

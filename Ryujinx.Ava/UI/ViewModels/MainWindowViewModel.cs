@@ -7,8 +7,7 @@ using DynamicData;
 using DynamicData.Binding;
 using LibHac.Common;
 using LibHac.Fs;
-using LibHac.FsSystem;
-using LibHac.Tools.Fs;
+using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Input;
@@ -1209,10 +1208,10 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void SetUIProgressHandlers(Switch emulationContext)
         {
-            if (emulationContext.Application.DiskCacheLoadState != null)
+            if (emulationContext.Processes.ActiveApplication.DiskCacheLoadState != null)
             {
-                emulationContext.Application.DiskCacheLoadState.StateChanged -= ProgressHandler;
-                emulationContext.Application.DiskCacheLoadState.StateChanged += ProgressHandler;
+                emulationContext.Processes.ActiveApplication.DiskCacheLoadState.StateChanged -= ProgressHandler;
+                emulationContext.Processes.ActiveApplication.DiskCacheLoadState.StateChanged += ProgressHandler;
             }
 
             emulationContext.Gpu.ShaderCacheStateChanged -= ProgressHandler;
@@ -1565,7 +1564,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             if (SelectedApplication != null)
             {
-                await new DownloadableContentManagerWindow(VirtualFileSystem, ulong.Parse(SelectedApplication.TitleId, NumberStyles.HexNumber), SelectedApplication.TitleName).ShowDialog(TopLevel as Window);
+                await DownloadableContentManagerWindow.Show(VirtualFileSystem, ulong.Parse(SelectedApplication.TitleId, NumberStyles.HexNumber), SelectedApplication.TitleName);
             }
         }
 
@@ -1707,8 +1706,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 if (string.IsNullOrWhiteSpace(titleName))
                 {
-                    LoadHeading = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.LoadingHeading, AppHost.Device.Application.TitleName);
-                    TitleName   = AppHost.Device.Application.TitleName;
+                    LoadHeading = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.LoadingHeading, AppHost.Device.Processes.ActiveApplication.Name);
+                    TitleName   = AppHost.Device.Processes.ActiveApplication.Name;
                 }
 
                 SwitchToRenderer(startFullscreen);

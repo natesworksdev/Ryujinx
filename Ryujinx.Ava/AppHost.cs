@@ -53,7 +53,6 @@ using Key = Ryujinx.Input.Key;
 using MouseButton = Ryujinx.Input.MouseButton;
 using Size = Avalonia.Size;
 using Switch = Ryujinx.HLE.Switch;
-using WindowState = Avalonia.Controls.WindowState;
 
 namespace Ryujinx.Ava
 {
@@ -172,6 +171,11 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.Graphics.AspectRatio.Event         += UpdateAspectRatioState;
             ConfigurationState.Instance.System.EnableDockedMode.Event      += UpdateDockedModeState;
             ConfigurationState.Instance.System.AudioVolume.Event           += UpdateAudioVolumeState;
+            ConfigurationState.Instance.System.EnableDockedMode.Event      += UpdateDockedModeState;
+            ConfigurationState.Instance.System.AudioVolume.Event           += UpdateAudioVolumeState;
+            ConfigurationState.Instance.Graphics.AntiAliasing.Event        += UpdateAntiAliasing;
+            ConfigurationState.Instance.Graphics.ScalingFilter.Event       += UpdateScalingFilter;
+            ConfigurationState.Instance.Graphics.ScalingFilterLevel.Event  += UpdateScalingFilterLevel;
 
             _gpuCancellationTokenSource = new CancellationTokenSource();
         }
@@ -193,6 +197,17 @@ namespace Ryujinx.Ava
                                           point.Y <= bounds.Height + bounds.Y;
                 }
             }
+        }
+        private void UpdateScalingFilterLevel(object sender, ReactiveEventArgs<int> e)
+        {
+            _renderer.Window?.SetScalingFilter((Graphics.GAL.ScalingFilter)ConfigurationState.Instance.Graphics.ScalingFilter.Value);
+            _renderer.Window?.SetScalingFilterLevel(ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value);
+        }
+
+        private void UpdateScalingFilter(object sender, ReactiveEventArgs<Ryujinx.Common.Configuration.ScalingFilter> e)
+        {
+            _renderer.Window?.SetScalingFilter((Graphics.GAL.ScalingFilter)ConfigurationState.Instance.Graphics.ScalingFilter.Value);
+            _renderer.Window?.SetScalingFilterLevel(ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value);
         }
 
         private void ShowCursor()
@@ -241,7 +256,7 @@ namespace Ryujinx.Ava
                     {
                         DateTime currentTime = DateTime.Now;
                         string   filename    = $"ryujinx_capture_{currentTime.Year}-{currentTime.Month:D2}-{currentTime.Day:D2}_{currentTime.Hour:D2}-{currentTime.Minute:D2}-{currentTime.Second:D2}.png";
-                        
+
                         string directory = AppDataManager.Mode switch
                         {
                             AppDataManager.LaunchMode.Portable => Path.Combine(AppDataManager.BaseDirPath, "screenshots"),
@@ -305,10 +320,14 @@ namespace Ryujinx.Ava
 
             _viewModel.IsGameRunning = true;
 
-            string titleNameSection    = string.IsNullOrWhiteSpace(Device.Application.TitleName)      ? string.Empty : $" - {Device.Application.TitleName}";
-            string titleVersionSection = string.IsNullOrWhiteSpace(Device.Application.DisplayVersion) ? string.Empty : $" v{Device.Application.DisplayVersion}";
-            string titleIdSection      = string.IsNullOrWhiteSpace(Device.Application.TitleIdText)    ? string.Empty : $" ({Device.Application.TitleIdText.ToUpper()})";
-            string titleArchSection    = Device.Application.TitleIs64Bit                              ? " (64-bit)"  : " (32-bit)";
+            var activeProcess   = Device.Processes.ActiveApplication;
+            var nacp            = activeProcess.ApplicationControlProperties;
+            int desiredLanguage = (int)Device.System.State.DesiredTitleLanguage;
+
+            string titleNameSection    = string.IsNullOrWhiteSpace(nacp.Title[desiredLanguage].NameString.ToString()) ? string.Empty : $" - {nacp.Title[desiredLanguage].NameString.ToString()}";
+            string titleVersionSection = string.IsNullOrWhiteSpace(nacp.DisplayVersionString.ToString())              ? string.Empty : $" v{nacp.DisplayVersionString.ToString()}";
+            string titleIdSection      = string.IsNullOrWhiteSpace(activeProcess.ProgramIdText)                       ? string.Empty : $" ({activeProcess.ProgramIdText.ToUpper()})";
+            string titleArchSection    = activeProcess.Is64Bit                                                        ? " (64-bit)"  : " (32-bit)";
 
             Dispatcher.UIThread.InvokeAsync(() =>
             {
@@ -344,6 +363,11 @@ namespace Ryujinx.Ava
             {
                 Device.Configuration.AspectRatio = args.NewValue;
             }
+        }
+
+        private void UpdateAntiAliasing(object sender, ReactiveEventArgs<Ryujinx.Common.Configuration.AntiAliasing> e)
+        {
+            _renderer?.Window?.SetAntiAliasing((Graphics.GAL.AntiAliasing)e.NewValue);
         }
 
         private void UpdateDockedModeState(object sender, ReactiveEventArgs<bool> e)
@@ -403,15 +427,18 @@ namespace Ryujinx.Ava
 
         private void Dispose()
         {
-            if (Device.Application != null)
+            if (Device.Processes != null)
             {
-                _viewModel.UpdateGameMetadata(Device.Application.TitleIdText);
+                _viewModel.UpdateGameMetadata(Device.Processes.ActiveApplication.ProgramIdText);
             }
 
             ConfigurationState.Instance.System.IgnoreMissingServices.Event -= UpdateIgnoreMissingServicesState;
             ConfigurationState.Instance.Graphics.AspectRatio.Event         -= UpdateAspectRatioState;
             ConfigurationState.Instance.System.EnableDockedMode.Event      -= UpdateDockedModeState;
             ConfigurationState.Instance.System.AudioVolume.Event           -= UpdateAudioVolumeState;
+            ConfigurationState.Instance.Graphics.ScalingFilter.Event       -= UpdateScalingFilter;
+            ConfigurationState.Instance.Graphics.ScalingFilterLevel.Event  -= UpdateScalingFilterLevel;
+            ConfigurationState.Instance.Graphics.AntiAliasing.Event        -= UpdateAntiAliasing;
 
             _topLevel.PointerMoved -= TopLevel_PointerMoved;
 
@@ -516,7 +543,12 @@ namespace Ryujinx.Ava
             {
                 Logger.Info?.Print(LogClass.Application, "Loading as Firmware Title (NCA).");
 
-                Device.LoadNca(ApplicationPath);
+                if (!Device.LoadNca(ApplicationPath))
+                {
+                    Device.Dispose();
+
+                    return false;
+                }
             }
             else if (Directory.Exists(ApplicationPath))
             {
@@ -531,13 +563,23 @@ namespace Ryujinx.Ava
                 {
                     Logger.Info?.Print(LogClass.Application, "Loading as cart with RomFS.");
 
-                    Device.LoadCart(ApplicationPath, romFsFiles[0]);
+                    if (!Device.LoadCart(ApplicationPath, romFsFiles[0]))
+                    {
+                        Device.Dispose();
+
+                        return false;
+                    }
                 }
                 else
                 {
                     Logger.Info?.Print(LogClass.Application, "Loading as cart WITHOUT RomFS.");
 
-                    Device.LoadCart(ApplicationPath);
+                    if (!Device.LoadCart(ApplicationPath))
+                    {
+                        Device.Dispose();
+
+                        return false;
+                    }
                 }
             }
             else if (File.Exists(ApplicationPath))
@@ -548,7 +590,12 @@ namespace Ryujinx.Ava
                         {
                             Logger.Info?.Print(LogClass.Application, "Loading as XCI.");
 
-                            Device.LoadXci(ApplicationPath);
+                            if (!Device.LoadXci(ApplicationPath))
+                            {
+                                Device.Dispose();
+
+                                return false;
+                            }
 
                             break;
                         }
@@ -556,7 +603,12 @@ namespace Ryujinx.Ava
                         {
                             Logger.Info?.Print(LogClass.Application, "Loading as NCA.");
 
-                            Device.LoadNca(ApplicationPath);
+                            if (!Device.LoadNca(ApplicationPath))
+                            {
+                                Device.Dispose();
+
+                                return false;
+                            }
 
                             break;
                         }
@@ -565,7 +617,12 @@ namespace Ryujinx.Ava
                         {
                             Logger.Info?.Print(LogClass.Application, "Loading as NSP.");
 
-                            Device.LoadNsp(ApplicationPath);
+                            if (!Device.LoadNsp(ApplicationPath))
+                            {
+                                Device.Dispose();
+
+                                return false;
+                            }
 
                             break;
                         }
@@ -575,13 +632,18 @@ namespace Ryujinx.Ava
 
                             try
                             {
-                                Device.LoadProgram(ApplicationPath);
+                                if (!Device.LoadProgram(ApplicationPath))
+                                {
+                                    Device.Dispose();
+
+                                    return false;
+                                }
                             }
                             catch (ArgumentOutOfRangeException)
                             {
                                 Logger.Error?.Print(LogClass.Application, "The specified file is not supported by Ryujinx.");
 
-                                Dispose();
+                                Device.Dispose();
 
                                 return false;
                             }
@@ -594,14 +656,14 @@ namespace Ryujinx.Ava
             {
                 Logger.Warning?.Print(LogClass.Application, "Please specify a valid XCI/NCA/NSP/PFS0/NRO file.");
 
-                Dispose();
+                Device.Dispose();
 
                 return false;
             }
 
-            DiscordIntegrationModule.SwitchToPlayingState(Device.Application.TitleIdText, Device.Application.TitleName);
+            DiscordIntegrationModule.SwitchToPlayingState(Device.Processes.ActiveApplication.ProgramIdText, Device.Processes.ActiveApplication.Name);
 
-            _viewModel.ApplicationLibrary.LoadAndSaveMetaData(Device.Application.TitleIdText, appMetadata =>
+            _viewModel.ApplicationLibrary.LoadAndSaveMetaData(Device.Processes.ActiveApplication.ProgramIdText, appMetadata =>
             {
                 appMetadata.LastPlayed = DateTime.UtcNow.ToString();
             });
@@ -678,7 +740,8 @@ namespace Ryujinx.Ava
                                                      ConfigurationState.Instance.System.MemoryManagerMode,
                                                      ConfigurationState.Instance.System.IgnoreMissingServices,
                                                      ConfigurationState.Instance.Graphics.AspectRatio,
-                                                     ConfigurationState.Instance.System.AudioVolume);
+                                                     ConfigurationState.Instance.System.AudioVolume,
+                                                     ConfigurationState.Instance.System.UseHypervisor);
 
             Device = new Switch(configuration);
         }
@@ -765,7 +828,7 @@ namespace Ryujinx.Ava
             }
         }
 
-        private unsafe void RenderLoop()
+        private void RenderLoop()
         {
             Dispatcher.UIThread.InvokeAsync(() =>
             {
@@ -788,6 +851,10 @@ namespace Ryujinx.Ava
 
             Device.Gpu.Renderer.Initialize(_glLogLevel);
 
+            _renderer?.Window?.SetAntiAliasing((Graphics.GAL.AntiAliasing)ConfigurationState.Instance.Graphics.AntiAliasing.Value);
+            _renderer?.Window?.SetScalingFilter((Graphics.GAL.ScalingFilter)ConfigurationState.Instance.Graphics.ScalingFilter.Value);
+            _renderer?.Window?.SetScalingFilterLevel(ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value);
+
             Width = (int)_rendererHost.Bounds.Width;
             Height = (int)_rendererHost.Bounds.Height;
 
@@ -800,6 +867,8 @@ namespace Ryujinx.Ava
                 Device.Gpu.SetGpuThread();
                 Device.Gpu.InitializeShaderCache(_gpuCancellationTokenSource.Token);
                 Translator.IsReadyForTranslation.Set();
+
+                _renderer.Window.ChangeVSyncMode(Device.EnableDeviceVsync);
 
                 while (_isActive)
                 {
@@ -839,7 +908,7 @@ namespace Ryujinx.Ava
         {
             // Run a status update only when a frame is to be drawn. This prevents from updating the ui and wasting a render when no frame is queued.
             string dockedMode = ConfigurationState.Instance.System.EnableDockedMode ? LocaleManager.Instance[LocaleKeys.Docked] : LocaleManager.Instance[LocaleKeys.Handheld];
-            
+
             if (GraphicsConfig.ResScale != 1)
             {
                 dockedMode += $" ({GraphicsConfig.ResScale}x)";
@@ -920,7 +989,7 @@ namespace Ryujinx.Ava
                 {
                     if (_keyboardInterface.GetKeyboardStateSnapshot().IsPressed(Key.Delete) && _viewModel.WindowState != WindowState.FullScreen)
                     {
-                        Device.Application.DiskCacheLoadState?.Cancel();
+                        Device.Processes.ActiveApplication.DiskCacheLoadState?.Cancel();
                     }
                 });
 

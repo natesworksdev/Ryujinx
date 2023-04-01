@@ -12,7 +12,6 @@ using Ryujinx.Audio.Renderer.Device;
 using Ryujinx.Audio.Renderer.Server;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Cpu;
-using Ryujinx.Cpu.Jit;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Memory;
@@ -36,6 +35,7 @@ using Ryujinx.HLE.HOS.Services.SurfaceFlinger;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Executables;
+using Ryujinx.HLE.Loaders.Processes;
 using Ryujinx.Horizon;
 using System;
 using System.Collections.Generic;
@@ -61,7 +61,6 @@ namespace Ryujinx.HLE.HOS
         internal Switch Device { get; private set; }
 
         internal ITickSource TickSource { get; }
-        internal ICpuEngine CpuEngine { get; }
 
         internal SurfaceFlinger SurfaceFlinger { get; private set; }
         internal AudioManager AudioManager { get; private set; }
@@ -130,7 +129,6 @@ namespace Ryujinx.HLE.HOS
         public Horizon(Switch device)
         {
             TickSource = new TickSource(KernelConstants.CounterFrequency);
-            CpuEngine = new JitEngine(TickSource);
 
             KernelContext = new KernelContext(
                 TickSource,
@@ -341,7 +339,7 @@ namespace Ryujinx.HLE.HOS
 
                 ProcessCreationInfo creationInfo = new ProcessCreationInfo("Service", 1, 0, 0x8000000, 1, flags, 0, 0);
 
-                int[] defaultCapabilities = new int[]
+                uint[] defaultCapabilities = new uint[]
                 {
                     0x030363F7,
                     0x1FFFFFCF,
@@ -361,11 +359,11 @@ namespace Ryujinx.HLE.HOS
             }
         }
 
-        public void LoadKip(string kipPath)
+        public bool LoadKip(string kipPath)
         {
             using var kipFile = new SharedRef<IStorage>(new LocalStorage(kipPath, FileAccess.Read));
 
-            ProgramLoader.LoadKip(KernelContext, new KipExecutable(in kipFile));
+            return ProcessLoaderHelper.LoadKip(KernelContext, new KipExecutable(in kipFile));
         }
 
         public void ChangeDockedModeState(bool newState)

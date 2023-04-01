@@ -94,7 +94,7 @@ namespace Ryujinx.Graphics.Vulkan
             else
             {
                 // If null descriptors are not supported, we need to pass the handle of a dummy buffer on unused bindings.
-                _dummyBuffer = gd.BufferManager.Create(gd, 0x10000, forConditionalRendering: false, deviceLocal: true);
+                _dummyBuffer = gd.BufferManager.Create(gd, 0x10000, forConditionalRendering: false, baseType: BufferAllocationType.DeviceLocal);
             }
 
             _dummyTexture = gd.CreateTextureView(new TextureCreateInfo(
@@ -163,6 +163,13 @@ namespace Ryujinx.Graphics.Vulkan
             SignalDirty(DirtyFlags.Image);
         }
 
+        public void SetImage(int binding, Auto<DisposableImageView> image)
+        {
+            _imageRefs[binding] = image;
+
+            SignalDirty(DirtyFlags.Image);
+        }
+
         public void SetStorageBuffers(CommandBuffer commandBuffer, ReadOnlySpan<BufferAssignment> buffers)
         {
             for (int i = 0; i < buffers.Length; i++)
@@ -171,7 +178,7 @@ namespace Ryujinx.Graphics.Vulkan
                 var buffer = assignment.Range;
                 int index = assignment.Binding;
 
-                Auto<DisposableBuffer> vkBuffer = _gd.BufferManager.GetBuffer(commandBuffer, buffer.Handle, false);
+                Auto<DisposableBuffer> vkBuffer = _gd.BufferManager.GetBuffer(commandBuffer, buffer.Handle, false, isSSBO: true);
                 ref Auto<DisposableBuffer> currentVkBuffer = ref _storageBufferRefs[index];
 
                 DescriptorBufferInfo info = new DescriptorBufferInfo()
@@ -229,7 +236,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
             else if (texture is TextureView view)
             {
-                view.Storage.InsertBarrier(cbs, AccessFlags.ShaderReadBit, stage.ConvertToPipelineStageFlags());
+                view.Storage.InsertWriteToReadBarrier(cbs, AccessFlags.ShaderReadBit, stage.ConvertToPipelineStageFlags());
 
                 _textureRefs[binding] = view.GetImageView();
                 _samplerRefs[binding] = ((SamplerHolder)sampler)?.GetSampler();
@@ -631,6 +638,23 @@ namespace Ryujinx.Graphics.Vulkan
 
             Array.Clear(_uniformSet);
             Array.Clear(_storageSet);
+        }
+
+        private void SwapBuffer(Auto<DisposableBuffer>[] list, Auto<DisposableBuffer> from, Auto<DisposableBuffer> to)
+        {
+            for (int i = 0; i < list.Length; i++)
+            {
+                if (list[i] == from)
+                {
+                    list[i] = to;
+                }
+            }
+        }
+
+        public void SwapBuffer(Auto<DisposableBuffer> from, Auto<DisposableBuffer> to)
+        {
+            SwapBuffer(_uniformBufferRefs, from, to);
+            SwapBuffer(_storageBufferRefs, from, to);
         }
 
         protected virtual void Dispose(bool disposing)

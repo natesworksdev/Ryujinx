@@ -1,4 +1,5 @@
-﻿using Ryujinx.Graphics.GAL;
+﻿using Ryujinx.Common;
+using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
 
@@ -27,18 +28,17 @@ namespace Ryujinx.Graphics.Vulkan
 
             int attachmentCount = 0;
             int colorCount = 0;
-            int maxColorAttachmentIndex = 0;
+            int maxColorAttachmentIndex = -1;
 
             for (int i = 0; i < state.AttachmentEnable.Length; i++)
             {
                 if (state.AttachmentEnable[i])
                 {
-                    maxColorAttachmentIndex = i;
-
                     attachmentFormats[attachmentCount] = gd.FormatCapabilities.ConvertToVkFormat(state.AttachmentFormats[i]);
 
                     attachmentIndices[attachmentCount++] = i;
                     colorCount++;
+                    maxColorAttachmentIndex = i;
                 }
             }
 
@@ -76,12 +76,11 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (colorAttachmentsCount != 0)
                 {
-                    int maxAttachmentIndex = Constants.MaxRenderTargets - 1;
-                    subpass.ColorAttachmentCount = (uint)maxAttachmentIndex + 1;
+                    subpass.ColorAttachmentCount = (uint)maxColorAttachmentIndex + 1;
                     subpass.PColorAttachments = &attachmentReferences[0];
 
                     // Fill with VK_ATTACHMENT_UNUSED to cover any gaps.
-                    for (int i = 0; i <= maxAttachmentIndex; i++)
+                    for (int i = 0; i <= maxColorAttachmentIndex; i++)
                     {
                         subpass.PColorAttachments[i] = new AttachmentReference(Vk.AttachmentUnused, ImageLayout.Undefined);
                     }
@@ -255,7 +254,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                     if (gd.NeedsVertexBufferAlignment(vbScalarSizes[i], out int alignment))
                     {
-                        alignedStride = (vertexBuffer.Stride + (alignment - 1)) & -alignment;
+                        alignedStride = BitUtils.AlignUp(vertexBuffer.Stride, alignment);
                     }
 
                     // TODO: Support divisor > 1
@@ -270,7 +269,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             // NOTE: Viewports, Scissors are dynamic.
 
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < Constants.MaxRenderTargets; i++)
             {
                 var blend = state.BlendDescriptors[i];
 
@@ -293,21 +292,24 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            int maxAttachmentIndex = 0;
-            for (int i = 0; i < 8; i++)
+            int attachmentCount = 0;
+            int maxColorAttachmentIndex = -1;
+
+            for (int i = 0; i < Constants.MaxRenderTargets; i++)
             {
                 if (state.AttachmentEnable[i])
                 {
-                    pipeline.Internal.AttachmentFormats[maxAttachmentIndex++] = gd.FormatCapabilities.ConvertToVkFormat(state.AttachmentFormats[i]);
+                    pipeline.Internal.AttachmentFormats[attachmentCount++] = gd.FormatCapabilities.ConvertToVkFormat(state.AttachmentFormats[i]);
+                    maxColorAttachmentIndex = i;
                 }
             }
 
             if (state.DepthStencilEnable)
             {
-                pipeline.Internal.AttachmentFormats[maxAttachmentIndex++] = gd.FormatCapabilities.ConvertToVkFormat(state.DepthStencilFormat);
+                pipeline.Internal.AttachmentFormats[attachmentCount++] = gd.FormatCapabilities.ConvertToVkFormat(state.DepthStencilFormat);
             }
 
-            pipeline.ColorBlendAttachmentStateCount = 8;
+            pipeline.ColorBlendAttachmentStateCount = (uint)(maxColorAttachmentIndex + 1);
             pipeline.VertexAttributeDescriptionsCount = (uint)Math.Min(Constants.MaxVertexAttributes, state.VertexAttribCount);
 
             return pipeline;

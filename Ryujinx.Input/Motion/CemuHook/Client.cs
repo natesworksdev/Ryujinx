@@ -1,14 +1,15 @@
-﻿using Force.Crc32;
-using Ryujinx.Common;
+﻿using Ryujinx.Common;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Controller.Motion;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Memory;
 using Ryujinx.Input.HLE;
 using Ryujinx.Input.Motion.CemuHook.Protocol;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Hashing;
 using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
@@ -381,7 +382,7 @@ namespace Ryujinx.Input.Motion.CemuHook
 
             Header header = GenerateHeader(clientId);
 
-            using (MemoryStream stream = new MemoryStream())
+            using (MemoryStream stream = MemoryStreamManager.Shared.GetStream())
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 writer.WriteStruct(header);
@@ -401,10 +402,10 @@ namespace Ryujinx.Input.Motion.CemuHook
                 writer.Seek(6, SeekOrigin.Begin);
                 writer.Write(header.Length);
 
-                header.Crc32 = Crc32Algorithm.Compute(stream.ToArray());
+                Crc32.Hash(stream.ToArray(), header.Crc32.AsSpan());
 
                 writer.Seek(8, SeekOrigin.Begin);
-                writer.Write(header.Crc32);
+                writer.Write(header.Crc32.AsSpan());
 
                 byte[] data = stream.ToArray();
 
@@ -421,7 +422,7 @@ namespace Ryujinx.Input.Motion.CemuHook
 
             Header header = GenerateHeader(clientId);
 
-            using (MemoryStream stream = new MemoryStream())
+            using (MemoryStream stream = MemoryStreamManager.Shared.GetStream())
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 writer.WriteStruct(header);
@@ -440,10 +441,10 @@ namespace Ryujinx.Input.Motion.CemuHook
                 writer.Seek(6, SeekOrigin.Begin);
                 writer.Write(header.Length);
 
-                header.Crc32 = Crc32Algorithm.Compute(stream.ToArray());
+                Crc32.Hash(stream.ToArray(), header.Crc32.AsSpan());
 
                 writer.Seek(8, SeekOrigin.Begin);
-                writer.Write(header.Crc32);
+                writer.Write(header.Crc32.AsSpan());
 
                 byte[] data = stream.ToArray();
 
@@ -458,8 +459,7 @@ namespace Ryujinx.Input.Motion.CemuHook
                 Id          = (uint)clientId,
                 MagicString = Magic,
                 Version     = Version,
-                Length      = 0,
-                Crc32       = 0
+                Length      = 0
             };
 
             return header;

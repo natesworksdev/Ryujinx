@@ -7,15 +7,16 @@ using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.RomFs;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.Loaders.Mods;
+using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.Loaders.Executables;
+using Ryujinx.HLE.Loaders.Mods;
+using Ryujinx.HLE.Loaders.Processes;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
-using System.IO;
-using Ryujinx.HLE.HOS.Kernel.Process;
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using Path = System.IO.Path;
 
 namespace Ryujinx.HLE.HOS
@@ -475,7 +476,7 @@ namespace Ryujinx.HLE.HOS
             {
                 using var file = new UniqueRef<IFile>();
 
-                baseRom.OpenFile(ref file.Ref(), entry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                baseRom.OpenFile(ref file.Ref, entry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
                 builder.AddFile(entry.FullPath, file.Release());
             }
 
@@ -494,7 +495,7 @@ namespace Ryujinx.HLE.HOS
             {
                 using var file = new UniqueRef<IFile>();
 
-                fs.OpenFile(ref file.Ref(), entry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                fs.OpenFile(ref file.Ref, entry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
                 if (fileSet.Add(entry.FullPath))
                 {
                     builder.AddFile(entry.FullPath, file.Release());
@@ -547,7 +548,7 @@ namespace Ryujinx.HLE.HOS
                 return modLoadResult;
             }
 
-            if (nsos.Length != ApplicationLoader.ExeFsPrefixes.Length)
+            if (nsos.Length != ProcessConst.ExeFsPrefixes.Length)
             {
                 throw new ArgumentOutOfRangeException("NSO Count is incorrect");
             }
@@ -556,9 +557,9 @@ namespace Ryujinx.HLE.HOS
 
             foreach (var mod in exeMods)
             {
-                for (int i = 0; i < ApplicationLoader.ExeFsPrefixes.Length; ++i)
+                for (int i = 0; i < ProcessConst.ExeFsPrefixes.Length; ++i)
                 {
-                    var nsoName = ApplicationLoader.ExeFsPrefixes[i];
+                    var nsoName = ProcessConst.ExeFsPrefixes[i];
 
                     FileInfo nsoFile = new FileInfo(Path.Combine(mod.Path.FullName, nsoName));
                     if (nsoFile.Exists)
@@ -596,7 +597,7 @@ namespace Ryujinx.HLE.HOS
                 }
             }
 
-            for (int i = ApplicationLoader.ExeFsPrefixes.Length - 1; i >= 0; --i)
+            for (int i = ProcessConst.ExeFsPrefixes.Length - 1; i >= 0; --i)
             {
                 if (modLoadResult.Stubs[1 << i] && !modLoadResult.Replaces[1 << i]) // Prioritizes replacements over stubs
                 {
@@ -696,8 +697,8 @@ namespace Ryujinx.HLE.HOS
 
             var buildIds = programs.Select(p => p switch
             {
-                NsoExecutable nso => BitConverter.ToString(nso.BuildId.ItemsRo.ToArray()).Replace("-", "").TrimEnd('0'),
-                NroExecutable nro => BitConverter.ToString(nro.Header.BuildId).Replace("-", "").TrimEnd('0'),
+                NsoExecutable nso => Convert.ToHexString(nso.BuildId.ItemsRo.ToArray()).TrimEnd('0'),
+                NroExecutable nro => Convert.ToHexString(nro.Header.BuildId).TrimEnd('0'),
                 _ => string.Empty
             }).ToList();
 

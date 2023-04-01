@@ -13,14 +13,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Effects\Textures\SmaaAreaTexture.bin" />
+    <EmbeddedResource Include="Effects\Textures\SmaaSearchTexture.bin" />
+    <EmbeddedResource Include="Effects\Shaders\FsrScaling.spv" />
+    <EmbeddedResource Include="Effects\Shaders\FsrSharpening.spv" />
+    <EmbeddedResource Include="Effects\Shaders\Fxaa.spv" />
+    <EmbeddedResource Include="Effects\Shaders\SmaaBlend.spv" />
+    <EmbeddedResource Include="Effects\Shaders\SmaaEdge.spv" />
+    <EmbeddedResource Include="Effects\Shaders\SmaaNeighbour.spv" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="OpenTK.Windowing.GraphicsLibraryFramework" />
     <PackageReference Include="shaderc.net" />
     <PackageReference Include="Silk.NET.Vulkan" />
     <PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" />
     <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" />
-    <PackageReference Include="System.IO.FileSystem.Primitives" />
-    <PackageReference Include="System.Net.NameResolution" />
-    <PackageReference Include="System.Threading.ThreadPool" />
   </ItemGroup>
 
   <ItemGroup>
