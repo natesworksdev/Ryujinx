@@ -8,7 +8,7 @@ using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
-using Ryujinx.HLE.HOS;
+using Ryujinx.Ui.App.Common;
 using System;
 using System.IO;
 using Path = System.IO.Path;
@@ -45,7 +45,7 @@ public static class GameDataExtractor
             {
                 using var ncaFile = new UniqueRef<IFile>();
 
-                pfs.OpenFile(ref ncaFile.Ref(), fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                pfs.OpenFile(ref ncaFile.Ref, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
                 Nca nca = new(virtualFileSystem.KeySet, ncaFile.Get.AsStorage());
 
@@ -79,7 +79,7 @@ public static class GameDataExtractor
             return string.Empty;
         }
 
-        (Nca updatePatchNca, _) = ApplicationLoader.GetGameUpdateData(virtualFileSystem,
+        (Nca updatePatchNca, _) = ApplicationLibrary.GetGameUpdateData(virtualFileSystem,
             mainNca.Header.TitleId.ToString("x16"), 0, out _);
 
         if (updatePatchNca != null)
@@ -123,7 +123,7 @@ public static class GameDataExtractor
 
         using var nsoFile = new UniqueRef<IFile>();
 
-        codeFs.OpenFile(ref nsoFile.Ref(), $"/{mainExeFs}".ToU8Span(), OpenMode.Read).ThrowIfFailure();
+        codeFs.OpenFile(ref nsoFile.Ref, $"/{mainExeFs}".ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
         NsoReader reader = new NsoReader();
         reader.Initialize(nsoFile.Release().AsStorage().AsFile(OpenMode.Read)).ThrowIfFailure();
