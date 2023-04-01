@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
@@ -95,6 +96,10 @@ namespace Ryujinx.Ava.UI.ViewModels
         private string _currentEmulatedGamePath;
         private AutoResetEvent _rendererWaitEvent;
         private WindowState _windowState;
+        private int _windowWidth = 1920;
+        private int _windowHeight = 1080;
+        private PixelPoint _windowXY = new PixelPoint(10000,10000);
+
         private bool _isActive;
 
         public ApplicationData ListSelectedApplication;
@@ -618,6 +623,41 @@ namespace Ryujinx.Ava.UI.ViewModels
             internal set
             {
                 _windowState = value;
+
+                OnPropertyChanged();
+            }
+        }
+
+        public int WindowWidth
+        {
+            get => _windowWidth;
+            internal set
+            {
+                // TODO: Check if value is equal or less than monitor dimensions
+                _windowWidth = value;
+
+                OnPropertyChanged();
+            }
+        }
+
+        public int WindowHeight
+        {
+            get => _windowHeight;
+            internal set
+            {
+                // TODO: Check if value is equal or less than monitor dimensions
+                _windowHeight = value;
+
+                OnPropertyChanged();
+            }
+        }
+
+        public PixelPoint WindowXY
+        {
+            get => _windowXY;
+            internal set
+            {
+                _windowXY = value;
 
                 OnPropertyChanged();
             }
