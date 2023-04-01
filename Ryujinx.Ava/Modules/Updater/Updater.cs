@@ -594,6 +594,14 @@ namespace Ryujinx.Modules
             // Delete downloaded zip
             File.Delete(updateFile);
 
+            // If desktop.ini exists in the installation folder, copy it to the update directory
+            string desktopIniPath = Path.Combine(HomeDir, "desktop.ini");
+            
+            if (File.Exists(desktopIniPath))
+            {
+                File.Copy(desktopIniPath, Path.Combine(UpdatePublishDir, "desktop.ini"), true);
+            }
+
             List<string> allFiles = EnumerateFilesToDelete().ToList();
 
             taskDialog.SubHeader = LocaleManager.Instance[LocaleKeys.UpdaterRenaming];
