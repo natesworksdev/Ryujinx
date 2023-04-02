@@ -2,6 +2,7 @@
 using LibHac.Ns;
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
+using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Processes.Extensions;
 using Ryujinx.Horizon.Common;
 
@@ -9,7 +10,7 @@ namespace Ryujinx.HLE.Loaders.Processes
 {
     public struct ProcessResult
     {
-        public static ProcessResult Failed => new(null, new ApplicationControlProperty(), false, false, null, 0, 0, 0);
+        public static ProcessResult Failed => new(null, new ApplicationControlProperty(), false, false, null, 0, 0, 0, TitleLanguage.AmericanEnglish);
 
         private readonly byte _mainThreadPriority;
         private readonly uint _mainThreadStackSize;
@@ -35,7 +36,9 @@ namespace Ryujinx.HLE.Loaders.Processes
             IDiskCacheLoadState        diskCacheLoadState,
             ulong                      pid,
             byte                       mainThreadPriority,
-            uint                       mainThreadStackSize)
+            uint                       mainThreadStackSize,
+            TitleLanguage              titleLanguage
+            )
         {
             _mainThreadPriority  = mainThreadPriority;
             _mainThreadStackSize = mainThreadStackSize;
@@ -50,7 +53,7 @@ namespace Ryujinx.HLE.Loaders.Processes
             {
                 ulong programId = metaLoader.GetProgramId();
 
-                Name          = metaLoader.GetProgramName();
+                Name          = ApplicationControlProperties.Title[(int)titleLanguage].NameString.ToString();
                 ProgramId     = programId;
                 ProgramIdText = $"{programId:x16}";
                 Is64Bit       = metaLoader.IsProgram64Bit();
