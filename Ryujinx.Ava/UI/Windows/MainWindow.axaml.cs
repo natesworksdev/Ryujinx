@@ -69,6 +69,8 @@ namespace Ryujinx.Ava.UI.Windows
 
             ViewModel.Title = $"Ryujinx {Program.Version}";
 
+            this.Position = ViewModel.WindowXY;
+
             // NOTE: Height of MenuBar and StatusBar is not usable here, since it would still be 0 at this point.
             double barHeight = MenuBar.MinHeight + StatusBarView.StatusBar.MinHeight;
             Height = ((Height - barHeight) / Program.WindowScaleFactor) + barHeight;
