@@ -19,6 +19,7 @@ using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.SystemInterop;
 using Ryujinx.Graphics.GAL;
@@ -29,6 +30,7 @@ using Ryujinx.Graphics.Vulkan;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.Input;
 using Ryujinx.Input.HLE;
@@ -1093,39 +1095,45 @@ namespace Ryujinx.Ava
         {
             KeyboardHotkeyState state = KeyboardHotkeyState.None;
 
-            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance(UseTitleConfiguration).Hid.Hotkeys.Value.ToggleVsync))
+            KeyboardHotkeys hotkeys = ConfigurationState.Instance(UseTitleConfiguration).Hid.Hotkeys.Value;
+
+            if (hotkeys == null)
+            {
+                return state;
+            }
+            if (_keyboardInterface.IsPressed((Key)hotkeys.ToggleVsync))
             {
                 state = KeyboardHotkeyState.ToggleVSync;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance(UseTitleConfiguration).Hid.Hotkeys.Value.Screenshot))
+            else if (_keyboardInterface.IsPressed((Key)hotkeys.Screenshot))
             {
                 state = KeyboardHotkeyState.Screenshot;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance(UseTitleConfiguration).Hid.Hotkeys.Value.ShowUi))
+            else if (_keyboardInterface.IsPressed((Key)hotkeys.ShowUi))
             {
                 state = KeyboardHotkeyState.ShowUi;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance(UseTitleConfiguration).Hid.Hotkeys.Value.Pause))
+            else if (_keyboardInterface.IsPressed((Key)hotkeys.Pause))
             {
                 state = KeyboardHotkeyState.Pause;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance(UseTitleConfiguration).Hid.Hotkeys.Value.ToggleMute))
+            else if (_keyboardInterface.IsPressed((Key)hotkeys.ToggleMute))
             {
                 state = KeyboardHotkeyState.ToggleMute;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance(UseTitleConfiguration).Hid.Hotkeys.Value.ResScaleUp))
+            else if (_keyboardInterface.IsPressed((Key)hotkeys.ResScaleUp))
             {
                 state = KeyboardHotkeyState.ResScaleUp;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance(UseTitleConfiguration).Hid.Hotkeys.Value.ResScaleDown))
+            else if (_keyboardInterface.IsPressed((Key)hotkeys.ResScaleDown))
             {
                 state = KeyboardHotkeyState.ResScaleDown;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance(UseTitleConfiguration).Hid.Hotkeys.Value.VolumeUp))
+            else if (_keyboardInterface.IsPressed((Key)hotkeys.VolumeUp))
             {
                 state = KeyboardHotkeyState.VolumeUp;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance(UseTitleConfiguration).Hid.Hotkeys.Value.VolumeDown))
+            else if (_keyboardInterface.IsPressed((Key)hotkeys.VolumeDown))
             {
                 state = KeyboardHotkeyState.VolumeDown;
             }
