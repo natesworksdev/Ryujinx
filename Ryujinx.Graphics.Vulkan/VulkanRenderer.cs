@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Vulkan
 {
     public sealed class VulkanRenderer : IRenderer
     {
-        private Instance _instance;
+        private VulkanInstance _instance;
         private SurfaceKHR _surface;
         private VulkanPhysicalDevice _physicalDevice;
         private Device _device;
@@ -110,27 +110,27 @@ namespace Ryujinx.Graphics.Vulkan
         {
             FormatCapabilities = new FormatCapabilities(Api, _physicalDevice.PhysicalDevice);
 
-            if (Api.TryGetDeviceExtension(_instance, _device, out ExtConditionalRendering conditionalRenderingApi))
+            if (Api.TryGetDeviceExtension(_instance.Instance, _device, out ExtConditionalRendering conditionalRenderingApi))
             {
                 ConditionalRenderingApi = conditionalRenderingApi;
             }
 
-            if (Api.TryGetDeviceExtension(_instance, _device, out ExtExtendedDynamicState extendedDynamicStateApi))
+            if (Api.TryGetDeviceExtension(_instance.Instance, _device, out ExtExtendedDynamicState extendedDynamicStateApi))
             {
                 ExtendedDynamicStateApi = extendedDynamicStateApi;
             }
 
-            if (Api.TryGetDeviceExtension(_instance, _device, out KhrPushDescriptor pushDescriptorApi))
+            if (Api.TryGetDeviceExtension(_instance.Instance, _device, out KhrPushDescriptor pushDescriptorApi))
             {
                 PushDescriptorApi = pushDescriptorApi;
             }
 
-            if (Api.TryGetDeviceExtension(_instance, _device, out ExtTransformFeedback transformFeedbackApi))
+            if (Api.TryGetDeviceExtension(_instance.Instance, _device, out ExtTransformFeedback transformFeedbackApi))
             {
                 TransformFeedbackApi = transformFeedbackApi;
             }
 
-            if (Api.TryGetDeviceExtension(_instance, _device, out KhrDrawIndirectCount drawIndirectCountApi))
+            if (Api.TryGetDeviceExtension(_instance.Instance, _device, out KhrDrawIndirectCount drawIndirectCountApi))
             {
                 DrawIndirectCountApi = drawIndirectCountApi;
             }
@@ -343,21 +343,21 @@ namespace Ryujinx.Graphics.Vulkan
             Api = api;
 
             _instance = VulkanInitialization.CreateInstance(api, logLevel, _getRequiredExtensions());
-            _debugMessenger = new VulkanDebugMessenger(api, _instance, logLevel);
+            _debugMessenger = new VulkanDebugMessenger(api, _instance.Instance, logLevel);
 
-            if (api.TryGetInstanceExtension(_instance, out KhrSurface surfaceApi))
+            if (api.TryGetInstanceExtension(_instance.Instance, out KhrSurface surfaceApi))
             {
                 SurfaceApi = surfaceApi;
             }
 
-            _surface = _getSurface(_instance, api);
+            _surface = _getSurface(_instance.Instance, api);
             _physicalDevice = VulkanInitialization.FindSuitablePhysicalDevice(api, _instance, _surface, _preferredGpuId);
 
             var queueFamilyIndex = VulkanInitialization.FindSuitableQueueFamily(api, _physicalDevice, _surface, out uint maxQueueCount);
 
             _device = VulkanInitialization.CreateDevice(api, _physicalDevice, queueFamilyIndex, maxQueueCount);
 
-            if (api.TryGetDeviceExtension(_instance, _device, out KhrSwapchain swapchainApi))
+            if (api.TryGetDeviceExtension(_instance.Instance, _device, out KhrSwapchain swapchainApi))
             {
                 SwapchainApi = swapchainApi;
             }
@@ -803,14 +803,14 @@ namespace Ryujinx.Graphics.Vulkan
                 sampler.Dispose();
             }
 
-            SurfaceApi.DestroySurface(_instance, _surface, null);
+            SurfaceApi.DestroySurface(_instance.Instance, _surface, null);
 
             Api.DestroyDevice(_device, null);
 
             _debugMessenger.Dispose();
 
             // Last step destroy the instance
-            Api.DestroyInstance(_instance, null);
+            _instance.Dispose();
         }
     }
 }

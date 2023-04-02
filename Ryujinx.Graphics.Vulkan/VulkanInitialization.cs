@@ -47,35 +47,23 @@ namespace Ryujinx.Graphics.Vulkan
             KhrSwapchain.ExtensionName
         };
 
-        internal static Instance CreateInstance(Vk api, GraphicsDebugLevel logLevel, string[] requiredExtensions)
+        internal static VulkanInstance CreateInstance(Vk api, GraphicsDebugLevel logLevel, string[] requiredExtensions)
         {
             var enabledLayers = new List<string>();
 
+            var instanceExtensions = VulkanInstance.GetInstanceExtensions(api);
+            var instanceLayers = VulkanInstance.GetInstanceLayers(api);
+
             void AddAvailableLayer(string layerName)
             {
-                uint layerPropertiesCount;
-
-                api.EnumerateInstanceLayerProperties(&layerPropertiesCount, null).ThrowOnError();
-
-                LayerProperties[] layerProperties = new LayerProperties[layerPropertiesCount];
-
-                fixed (LayerProperties* pLayerProperties = layerProperties)
+                if (instanceLayers.Contains(layerName))
                 {
-                    api.EnumerateInstanceLayerProperties(&layerPropertiesCount, layerProperties).ThrowOnError();
-
-                    for (int i = 0; i < layerPropertiesCount; i++)
-                    {
-                        string currentLayerName = Marshal.PtrToStringAnsi((IntPtr)pLayerProperties[i].LayerName);
-
-                        if (currentLayerName == layerName)
-                        {
-                            enabledLayers.Add(layerName);
-                            return;
-                        }
-                    }
+                    enabledLayers.Add(layerName);
                 }
-
-                Logger.Warning?.Print(LogClass.Gpu, $"Missing layer {layerName}");
+                else
+                {
+                    Logger.Warning?.Print(LogClass.Gpu, $"Missing layer {layerName}");
+                }
             }
 
             if (logLevel != GraphicsDebugLevel.None)
@@ -85,7 +73,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             var enabledExtensions = requiredExtensions;
 
-            if (api.IsInstanceExtensionPresent("VK_EXT_debug_utils"))
+            if (instanceExtensions.Contains("VK_EXT_debug_utils"))
             {
                 enabledExtensions = enabledExtensions.Append(ExtDebugUtils.ExtensionName).ToArray();
             }
@@ -124,7 +112,7 @@ namespace Ryujinx.Graphics.Vulkan
                 EnabledLayerCount = (uint)enabledLayers.Count
             };
 
-            api.CreateInstance(in instanceCreateInfo, null, out var instance).ThrowOnError();
+            Result result = VulkanInstance.Create(api, ref instanceCreateInfo, out var instance);
 
             Marshal.FreeHGlobal(appName);
 
@@ -138,41 +126,30 @@ namespace Ryujinx.Graphics.Vulkan
                 Marshal.FreeHGlobal(ppEnabledLayers[i]);
             }
 
+            result.ThrowOnError();
+
             return instance;
         }
 
-        internal static VulkanPhysicalDevice FindSuitablePhysicalDevice(Vk api, Instance instance, SurfaceKHR surface, string preferredGpuId)
+        internal static VulkanPhysicalDevice FindSuitablePhysicalDevice(Vk api, VulkanInstance instance, SurfaceKHR surface, string preferredGpuId)
         {
-            uint physicalDeviceCount;
-
-            api.EnumeratePhysicalDevices(instance, &physicalDeviceCount, null).ThrowOnError();
-
-            PhysicalDevice[] physicalDevices = new PhysicalDevice[physicalDeviceCount];
-
-            fixed (PhysicalDevice* pPhysicalDevices = physicalDevices)
-            {
-                api.EnumeratePhysicalDevices(instance, &physicalDeviceCount, pPhysicalDevices).ThrowOnError();
-            }
+            instance.EnumeratePhysicalDevices(out var physicalDevices).ThrowOnError();
 
             // First we try to pick the the user preferred GPU.
             for (int i = 0; i < physicalDevices.Length; i++)
             {
-                VulkanPhysicalDevice physicalDevice = new VulkanPhysicalDevice(api, physicalDevices[i]);
-
-                if (IsPreferredAndSuitableDevice(api, physicalDevice, surface, preferredGpuId))
+                if (IsPreferredAndSuitableDevice(api, physicalDevices[i], surface, preferredGpuId))
                 {
-                    return physicalDevice;
+                    return physicalDevices[i];
                 }
             }
 
             // If we fail to do that, just use the first compatible GPU.
             for (int i = 0; i < physicalDevices.Length; i++)
             {
-                VulkanPhysicalDevice physicalDevice = new VulkanPhysicalDevice(api, physicalDevices[i]);
-
-                if (IsSuitableDevice(api, physicalDevice, surface))
+                if (IsSuitableDevice(api, physicalDevices[i], surface))
                 {
-                    return physicalDevice;
+                    return physicalDevices[i];
                 }
             }
 
@@ -202,54 +179,37 @@ namespace Ryujinx.Graphics.Vulkan
                 EnabledLayerCount = 0
             };
 
-            api.CreateInstance(in instanceCreateInfo, null, out var instance).ThrowOnError();
 
-            // We ensure that vkEnumerateInstanceVersion is present (added in 1.1).
-            // If the instance doesn't support it, no device is going to be 1.1 compatible.
-            if (api.GetInstanceProcAddr(instance, "vkEnumerateInstanceVersion") == IntPtr.Zero)
-            {
-                api.DestroyInstance(instance, null);
-
-                return Array.Empty<DeviceInfo>();
-            }
-
-            // We currently assume that the instance is compatible with Vulkan 1.2
-            // TODO: Remove this once we relax our initialization codepaths.
-            uint instanceApiVerison = 0;
-            api.EnumerateInstanceVersion(ref instanceApiVerison).ThrowOnError();
-
-            if (instanceApiVerison < MinimalInstanceVulkanVersion)
-            {
-                api.DestroyInstance(instance, null);
-
-                return Array.Empty<DeviceInfo>();
-            }
+            Result result = VulkanInstance.Create(api, ref instanceCreateInfo, out var rawInstance);
 
             Marshal.FreeHGlobal(appName);
 
-            uint physicalDeviceCount;
+            result.ThrowOnError();
 
-            api.EnumeratePhysicalDevices(instance, &physicalDeviceCount, null).ThrowOnError();
+            using VulkanInstance instance = rawInstance;
 
-            PhysicalDevice[] physicalDevices = new PhysicalDevice[physicalDeviceCount];
-
-            fixed (PhysicalDevice* pPhysicalDevices = physicalDevices)
+            // We currently assume that the instance is compatible with Vulkan 1.2
+            // TODO: Remove this once we relax our initialization codepaths.
+            if (instance.InstanceVersion < MinimalInstanceVulkanVersion)
             {
-                api.EnumeratePhysicalDevices(instance, &physicalDeviceCount, pPhysicalDevices).ThrowOnError();
+                return Array.Empty<DeviceInfo>();
             }
 
-            DeviceInfo[] devices = new DeviceInfo[physicalDevices.Length];
+            instance.EnumeratePhysicalDevices(out VulkanPhysicalDevice[] physicalDevices).ThrowOnError();
 
-            for (int i = 0; i < physicalDevices.Length; i++)
+            List<DeviceInfo> deviceInfos = new List<DeviceInfo>();
+
+            foreach (VulkanPhysicalDevice physicalDevice in physicalDevices)
             {
-                VulkanPhysicalDevice physicalDevice = new VulkanPhysicalDevice(api, physicalDevices[i]);
+                if (physicalDevice.PhysicalDeviceProperties.ApiVersion < MinimalVulkanVersion)
+                {
+                    continue;
+                }
 
-                devices[i] = physicalDevice.ToDeviceInfo();
+                deviceInfos.Add(physicalDevice.ToDeviceInfo());
             }
 
-            api.DestroyInstance(instance, null);
-
-            return devices;
+            return deviceInfos.ToArray();
         }
 
         private static bool IsPreferredAndSuitableDevice(Vk api, VulkanPhysicalDevice physicalDevice, SurfaceKHR surface, string preferredGpuId)
