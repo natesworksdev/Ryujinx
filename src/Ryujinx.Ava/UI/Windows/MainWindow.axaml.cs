@@ -62,14 +62,14 @@ namespace Ryujinx.Ava.UI.Windows
 
             DataContext = ViewModel;
 
+            SetWindowSizePosition(this);
+
             InitializeComponent();
             Load();
 
             UiHandler = new AvaHostUiHandler(this);
 
             ViewModel.Title = $"Ryujinx {Program.Version}";
-
-            this.Position = ViewModel.WindowXY;
 
             // NOTE: Height of MenuBar and StatusBar is not usable here, since it would still be 0 at this point.
             double barHeight = MenuBar.MinHeight + StatusBarView.StatusBar.MinHeight;
@@ -101,6 +101,8 @@ namespace Ryujinx.Ava.UI.Windows
                 LoadGameList();
 
                 this.GetObservable(IsActiveProperty).Subscribe(IsActiveChanged);
+                this.GetObservable(WidthProperty).Subscribe(GetWidthChange);
+                this.GetObservable(HeightProperty).Subscribe(GetHeightChange);
             }
 
             ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
@@ -113,6 +115,18 @@ namespace Ryujinx.Ava.UI.Windows
         private void IsActiveChanged(bool obj)
         {
             ViewModel.IsActive = obj;
+        }
+
+        private void GetWidthChange(double obj)
+        {
+            ConfigurationState.Instance.Ui.WindowSizeWidth.Value = (int)obj;
+            MainWindowViewModel.SaveConfig();
+        }
+
+        private void GetHeightChange(double obj)
+        {
+            ConfigurationState.Instance.Ui.WindowSizeHeight.Value = (int)obj;
+            MainWindowViewModel.SaveConfig();
         }
 
         public void LoadGameList()
@@ -297,6 +311,24 @@ namespace Ryujinx.Ava.UI.Windows
             GameList.DataContext = ViewModel;
 
             LoadHotKeys();
+        }
+
+        private void SetWindowSizePosition(MainWindow parent)
+        {
+            ViewModel.WindowHeight = ConfigurationState.Instance.Ui.WindowSizeHeight * Program.WindowScaleFactor;
+            ViewModel.WindowWidth = ConfigurationState.Instance.Ui.WindowSizeWidth * Program.WindowScaleFactor;
+            ViewModel.WindowXY = new PixelPoint(ConfigurationState.Instance.Ui.WindowPositionX, 
+                                                ConfigurationState.Instance.Ui.WindowPositionY);
+
+            parent.Position = ViewModel.WindowXY;
+        }
+
+        private void SaveWindowSizePosition(MainWindow parent)
+        {
+            ConfigurationState.Instance.Ui.WindowSizeHeight.Value = (int)parent.Height;
+            ConfigurationState.Instance.Ui.WindowSizeWidth.Value = (int)parent.Width;
+
+            MainWindowViewModel.SaveConfig();
         }
 
         protected override void OnOpened(EventArgs e)

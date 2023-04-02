@@ -96,10 +96,9 @@ namespace Ryujinx.Ava.UI.ViewModels
         private string _currentEmulatedGamePath;
         private AutoResetEvent _rendererWaitEvent;
         private WindowState _windowState;
-        private double _windowWidth = ConfigurationState.Instance.Ui.WindowSizeWidth / Program.WindowScaleFactor;
-        private double _windowHeight = ConfigurationState.Instance.Ui.WindowSizeHeight / Program.WindowScaleFactor;
-        private PixelPoint _windowXY = new PixelPoint(ConfigurationState.Instance.Ui.WindowPositionX, 
-                                                      ConfigurationState.Instance.Ui.WindowPositionY);
+        private double _windowWidth;
+        private double _windowHeight;
+        private PixelPoint _windowXY;
 
         private bool _isActive;
 
