@@ -37,8 +37,8 @@
             <Separator />
            <MenuItem
                 Command="{Binding OpenTitleSettingsWindow}"
-                Header="Open Title Settings"
-                ToolTip.Tip="Open Title Specific Settings" />
+                Header="{locale:Locale GameListContextMenuManageTitleSettings}"
+                ToolTip.Tip="{locale:Locale GameListContextMenuManageTitleSettingsTooltip}" />
             <MenuItem
                 Command="{Binding OpenTitleUpdateManager}"
                 Header="{locale:Locale GameListContextMenuManageTitleUpdates}"

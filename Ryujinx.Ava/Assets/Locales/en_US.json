@@ -50,6 +50,8 @@
   "GameListContextMenuOpenDeviceSaveDirectoryToolTip": "Opens the directory which contains Application's Device Save",
   "GameListContextMenuOpenBcatSaveDirectory": "Open BCAT Save Directory",
   "GameListContextMenuOpenBcatSaveDirectoryToolTip": "Opens the directory which contains Application's BCAT Save",
+  "GameListContextMenuManageTitleSettings": "Manage Title Settings",
+  "GameListContextMenuManageTitleSettingsTooltip": "Opens the title settings window",
   "GameListContextMenuManageTitleUpdates": "Manage Title Updates",
   "GameListContextMenuManageTitleUpdatesToolTip": "Opens the Title Update management window",
   "GameListContextMenuManageDlc": "Manage DLC",
@@ -624,7 +626,7 @@
   "Search": "Search",
   "UserProfilesRecoverLostAccounts": "Recover Lost Accounts",
   "Recover": "Recover",
-  "UserProfilesRecoverHeading" : "Saves were found for the following accounts",
+  "UserProfilesRecoverHeading": "Saves were found for the following accounts",
   "UserProfilesRecoverEmptyList": "No profiles to recover",
   "GraphicsAATooltip": "Applies anti-aliasing to the game render",
   "GraphicsAALabel": "Anti-Aliasing:",
@@ -636,6 +638,6 @@
   "SmaaMedium": "SMAA Medium",
   "SmaaHigh": "SMAA High",
   "SmaaUltra": "SMAA Ultra",
-  "UserEditorTitle" : "Edit User",
-  "UserEditorTitleCreate" : "Create User"
+  "UserEditorTitle": "Edit User",
+  "UserEditorTitleCreate": "Create User"
 }
