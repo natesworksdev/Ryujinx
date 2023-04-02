@@ -52,7 +52,17 @@ namespace Ryujinx.HLE.Loaders.Processes
             {
                 ulong programId = metaLoader.GetProgramId();
 
-                Name          = ApplicationControlProperties.Title[(int)titleLanguage].NameString.ToString();
+                if (ApplicationControlProperties.Title.ItemsRo.Length > 0)
+                {
+                    var langIndex = ApplicationControlProperties.Title.ItemsRo.Length > (int)titleLanguage ? (int)titleLanguage : 0;
+
+                    Name = ApplicationControlProperties.Title[langIndex].NameString.ToString();
+                }
+                else
+                {
+                    Name = metaLoader.GetProgramName();
+                }
+
                 ProgramId     = programId;
                 ProgramIdText = $"{programId:x16}";
                 Is64Bit       = metaLoader.IsProgram64Bit();
