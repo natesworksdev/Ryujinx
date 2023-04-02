@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ryujinx.Common.Logging;
+using System;
 using System.Diagnostics;
 using System.Linq;
 
@@ -8,6 +9,9 @@ namespace Ryujinx.Graphics.Vulkan
     {
         // How often to flush on framebuffer change.
         private readonly static long FramebufferFlushTimer = Stopwatch.Frequency / 1000;
+
+        // How often to flush on draw.
+        private readonly static long DrawFlushTimer = Stopwatch.Frequency / 666;
 
         private const int MinDrawCountForFlush = 10;
         private const int MinConsecutiveQueryForFlush = 10;
@@ -25,6 +29,19 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void RegisterFlush(ulong drawCount)
         {
+            /*
+            long delta = Stopwatch.GetTimestamp() - _lastFlush;
+            long drawDiff = (long)(drawCount - _lastDrawCount);
+            if (drawDiff > 0)
+            {
+                Logger.Error?.PrintMsg(LogClass.Gpu, $"Time since last flush: {delta / (Stopwatch.Frequency / 1000f)}ms {drawDiff} draws");
+            }
+            else
+            {
+                Logger.Warning?.PrintMsg(LogClass.Gpu, $"Time since last flush: {delta / (Stopwatch.Frequency / 1000f)}ms {drawDiff} draws");
+            }
+            */
+
             _lastFlush = Stopwatch.GetTimestamp();
             _lastDrawCount = drawCount;
 
@@ -67,6 +84,27 @@ namespace Ryujinx.Graphics.Vulkan
         public bool ShouldFlushQuery()
         {
             return _hasPendingQuery;
+        }
+
+        public bool ShouldFlushDraw(ulong drawCount)
+        {
+            long draws = (long)(drawCount - _lastDrawCount);
+
+            if (draws < MinDrawCountForFlush)
+            {
+                if (draws == 0)
+                {
+                    _lastFlush = Stopwatch.GetTimestamp();
+                }
+
+                return false;
+            }
+
+            long flushTimeout = DrawFlushTimer;
+
+            long now = Stopwatch.GetTimestamp();
+
+            return now > _lastFlush + flushTimeout;
         }
 
         public bool ShouldFlushAttachmentChange(ulong drawCount)
