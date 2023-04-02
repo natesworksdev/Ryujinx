@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Ryujinx.Input.Assigner
 {
     /// <summary>
@@ -32,5 +34,11 @@ namespace Ryujinx.Input.Assigner
         /// </summary>
         /// <returns>The pressed button that was read</returns>
         string GetPressedButton();
+
+        /// <summary>
+        /// Get the pressed buttons that was read in <see cref="ReadInput"/> by the button assigner.
+        /// </summary>
+        /// <returns>The pressed buttons that was read</returns>
+        IEnumerable<PressedButton> GetPressedButtons();
     }
 }

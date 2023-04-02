@@ -66,6 +66,7 @@ namespace Ryujinx.Ava.UI.Windows
                         NavPanel.Content = InputPage;
                         break;
                     case "HotkeysPage":
+                        HotkeysPage.ViewModel = ViewModel;
                         NavPanel.Content = HotkeysPage;
                         break;
                     case "SystemPage":

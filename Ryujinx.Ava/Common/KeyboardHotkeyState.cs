@@ -3,13 +3,16 @@
     public enum KeyboardHotkeyState
     {
         None,
-        ToggleVSync,
-        Screenshot,
-        ShowUi,
+        Exit,
         Pause,
-        ToggleMute,
         ResScaleUp,
         ResScaleDown,
+        Screenshot,
+        ShowUi,
+        ToggleDockedMode,
+        ToggleFullscreen,
+        ToggleMute,
+        ToggleVSync,
         VolumeUp,
         VolumeDown
     }

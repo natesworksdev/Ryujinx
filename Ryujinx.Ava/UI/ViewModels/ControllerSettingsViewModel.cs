@@ -235,9 +235,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             if (Program.PreviewerDetached)
             {
-                _mainWindow =
-                    (MainWindow)((IClassicDesktopStyleApplicationLifetime)Avalonia.Application.Current
-                        .ApplicationLifetime).MainWindow;
+                _mainWindow = (MainWindow)((IClassicDesktopStyleApplicationLifetime)Avalonia.Application.Current.ApplicationLifetime).MainWindow;
 
                 AvaloniaKeyboardDriver = new AvaloniaKeyboardDriver(owner);
 
