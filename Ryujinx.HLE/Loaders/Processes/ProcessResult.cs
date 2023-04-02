@@ -37,8 +37,7 @@ namespace Ryujinx.HLE.Loaders.Processes
             ulong                      pid,
             byte                       mainThreadPriority,
             uint                       mainThreadStackSize,
-            TitleLanguage              titleLanguage
-            )
+            TitleLanguage              titleLanguage)
         {
             _mainThreadPriority  = mainThreadPriority;
             _mainThreadStackSize = mainThreadStackSize;
