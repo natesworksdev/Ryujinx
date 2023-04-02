@@ -20,7 +20,6 @@
     d:DesignWidth="1280"
     x:CompileBindings="True"
     x:DataType="viewModels:MainWindowViewModel"
-    WindowStartupLocation="{Binding WindowXY}"
     mc:Ignorable="d"
     Focusable="True">
     <Window.Styles>

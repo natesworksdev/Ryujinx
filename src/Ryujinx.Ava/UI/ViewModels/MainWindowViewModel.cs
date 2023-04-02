@@ -96,9 +96,10 @@ namespace Ryujinx.Ava.UI.ViewModels
         private string _currentEmulatedGamePath;
         private AutoResetEvent _rendererWaitEvent;
         private WindowState _windowState;
-        private int _windowWidth = 1920;
-        private int _windowHeight = 1080;
-        private PixelPoint _windowXY = new PixelPoint(10000,10000);
+        private double _windowWidth = ConfigurationState.Instance.Ui.WindowSizeWidth / Program.WindowScaleFactor;
+        private double _windowHeight = ConfigurationState.Instance.Ui.WindowSizeHeight / Program.WindowScaleFactor;
+        private PixelPoint _windowXY = new PixelPoint(ConfigurationState.Instance.Ui.WindowPositionX, 
+                                                      ConfigurationState.Instance.Ui.WindowPositionY);
 
         private bool _isActive;
 
@@ -627,25 +628,23 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged();
             }
         }
-
-        public int WindowWidth
+        
+        public double WindowWidth
         {
             get => _windowWidth;
-            internal set
+            set
             {
-                // TODO: Check if value is equal or less than monitor dimensions
                 _windowWidth = value;
 
                 OnPropertyChanged();
             }
         }
 
-        public int WindowHeight
+        public double WindowHeight
         {
             get => _windowHeight;
-            internal set
+            set
             {
-                // TODO: Check if value is equal or less than monitor dimensions
                 _windowHeight = value;
 
                 OnPropertyChanged();
@@ -655,10 +654,10 @@ namespace Ryujinx.Ava.UI.ViewModels
         public PixelPoint WindowXY
         {
             get => _windowXY;
-            internal set
+            set
             {
                 _windowXY = value;
-
+                
                 OnPropertyChanged();
             }
         }
