@@ -102,7 +102,7 @@ namespace Ryujinx.Ava.UI.Views.Main
 
         public async void OpenSettings(object sender, RoutedEventArgs e)
         {
-            if (ViewModel.SelectedApplication != null && ConfigurationState.HasConfigurationForTitle(ViewModel.SelectedApplication.TitleId))
+            if (ViewModel.IsGameRunning && ViewModel.SelectedApplication != null && ConfigurationState.HasConfigurationForTitle(ViewModel.SelectedApplication.TitleId))
             {
                 Window.SettingsWindow = new(Window.VirtualFileSystem, Window.ContentManager, ViewModel.SelectedApplication);
             }
