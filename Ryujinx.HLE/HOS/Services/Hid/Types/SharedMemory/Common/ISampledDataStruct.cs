@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Common
     /// This is a "marker interface" to add some compile-time safety to a convention-based optimization.
     ///
     /// Any struct implementing this interface should:
-    ///   - use <c>StructLayoutAttribute</c> (and related attribtues) to explicity control how the struct is laid out in memory.
+    ///   - use <c>StructLayoutAttribute</c> (and related attributes) to explicity control how the struct is laid out in memory.
     ///   - ensure that the method <c>ISampledDataStruct.GetSamplingNumberFieldOffset()</c> correctly returns the offset, in bytes,
     ///     to the ulong "Sampling Number" field within the struct. Most types have it as the first field, so the default offset is 0.
     /// 
