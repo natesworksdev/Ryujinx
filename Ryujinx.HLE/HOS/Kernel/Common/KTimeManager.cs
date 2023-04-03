@@ -113,7 +113,17 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
                             {
                                 while (Interlocked.Read(ref _enforceWakeupFromSpinWait) != 1 && PerformanceCounter.ElapsedTicks < next.TimePoint)
                                 {
-                                    spinWait.SpinOnce();
+                                    // Our time is close - don't let SpinWait go off and potentially Thread.Sleep().
+                                    if (spinWait.NextSpinWillYield)
+                                    {
+                                        Thread.Yield();
+
+                                        spinWait.Reset();
+                                    }
+                                    else
+                                    {
+                                        spinWait.SpinOnce();
+                                    }
                                 }
 
                                 spinWait.Reset();
