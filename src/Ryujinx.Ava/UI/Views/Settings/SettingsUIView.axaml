@@ -40,7 +40,6 @@
                     <StackPanel Orientation="Horizontal">
                         <TextBlock VerticalAlignment="Center"
                                    Text="{locale:Locale SettingsTabGeneralHideCursor}"
-                                   ToolTip.Tip="{locale:Locale MemoryManagerTooltip}"
                                    Width="150" />
                         <ComboBox SelectedIndex="{Binding HideCursor}"
                                   HorizontalContentAlignment="Left"
