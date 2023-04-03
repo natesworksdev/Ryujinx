@@ -2,7 +2,6 @@ name: Release job
 
 on:
   workflow_dispatch:
-    inputs: {}
   push:
     branches: [ stable ]
     paths-ignore:

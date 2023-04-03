@@ -2,7 +2,6 @@ name: Release staging build
 
 on:
   workflow_dispatch:
-    inputs: {}
   push:
     branches: [ master ]
     paths-ignore:

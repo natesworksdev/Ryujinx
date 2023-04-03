@@ -1,0 +1,44 @@
+name: Update stable branch
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Daily at 14:20 UTC
+    - cron: "20 14 * * *"
+
+jobs:
+  update_stable:
+    runs-on: ubuntu-latest
+
+    env:
+      GIT_COMMITTER_NAME: "RyujinxBot"
+      GIT_COMMITTER_EMAIL: "61127645+RyujinxBot@users.noreply.github.com"
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: stable
+          fetch-depth: 0
+          token: ${{ secrets.RYUJINX_BOT_PAT }}
+
+      - name: Get version info
+        id: version_info
+        run: |
+          echo "git_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Check for changes
+        id: check
+        run: |
+          echo "no_changes="gh api /repos/$REPO/commits/$COMMIT/branches-where-head --jq 'any(.name == "master")' >> $GITHUB_OUTPUT
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          COMMIT: ${{ steps.version_info.outputs.git_hash }}
+
+      - name: Merge changes from master
+        if: steps.check.outputs.no_changes == 'false'
+        run: |
+          git config user.name "${{ env.GIT_COMMITTER_NAME }}"
+          git config user.email "${{ env.GIT_COMMITTER_EMAIL }}"
+          git merge origin/master
+          git push
