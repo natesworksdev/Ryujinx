@@ -3,6 +3,7 @@ using Silk.NET.Core;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.InteropServices;
 
@@ -81,7 +82,7 @@ namespace Ryujinx.Graphics.Vulkan
             return Result.Success;
         }
 
-        public static HashSet<string> GetInstanceExtensions(Vk api)
+        public static IReadOnlySet<string> GetInstanceExtensions(Vk api)
         {
             uint propertiesCount = 0;
 
@@ -93,11 +94,11 @@ namespace Ryujinx.Graphics.Vulkan
 
             unsafe
             {
-                return extensionProperties.Select(x => Marshal.PtrToStringAnsi((IntPtr)x.ExtensionName)).ToHashSet();
+                return extensionProperties.Select(x => Marshal.PtrToStringAnsi((IntPtr)x.ExtensionName)).ToImmutableHashSet();
             }
         }
 
-        public static HashSet<string> GetInstanceLayers(Vk api)
+        public static IReadOnlySet<string> GetInstanceLayers(Vk api)
         {
             uint propertiesCount = 0;
 
@@ -109,7 +110,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             unsafe
             {
-                return layerProperties.Select(x => Marshal.PtrToStringAnsi((IntPtr)x.LayerName)).ToHashSet();
+                return layerProperties.Select(x => Marshal.PtrToStringAnsi((IntPtr)x.LayerName)).ToImmutableHashSet();
             }
         }
 
@@ -117,10 +118,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (!_disposed)
             {
-                unsafe
-                {
-                    _api.DestroyInstance(Instance, null);
-                }
+                _api.DestroyInstance(Instance, ReadOnlySpan<AllocationCallbacks>.Empty);
 
                 _disposed = true;
             }

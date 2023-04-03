@@ -3,6 +3,7 @@ using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.InteropServices;
 
@@ -16,7 +17,7 @@ namespace Ryujinx.Graphics.Vulkan
         public readonly PhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties;
         public readonly QueueFamilyProperties[] QueueFamilyProperties;
         public readonly string DeviceName;
-        public readonly HashSet<string> DeviceExtensions;
+        public readonly IReadOnlySet<string> DeviceExtensions;
 
         public VulkanPhysicalDevice(Vk api, PhysicalDevice physicalDevice)
         {
@@ -49,7 +50,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             unsafe
             {
-                DeviceExtensions = extensionProperties.Select(x => Marshal.PtrToStringAnsi((IntPtr)x.ExtensionName)).ToHashSet();
+                DeviceExtensions = extensionProperties.Select(x => Marshal.PtrToStringAnsi((IntPtr)x.ExtensionName)).ToImmutableHashSet();
             }
         }
 
@@ -60,10 +61,10 @@ namespace Ryujinx.Graphics.Vulkan
         public DeviceInfo ToDeviceInfo()
         {
             return new DeviceInfo(
-                    Id,
-                    VendorUtils.GetNameFromId(PhysicalDeviceProperties.VendorID),
-                    DeviceName,
-                    PhysicalDeviceProperties.DeviceType == PhysicalDeviceType.DiscreteGpu);
+                Id,
+                VendorUtils.GetNameFromId(PhysicalDeviceProperties.VendorID),
+                DeviceName,
+                PhysicalDeviceProperties.DeviceType == PhysicalDeviceType.DiscreteGpu);
         }
     }
 }

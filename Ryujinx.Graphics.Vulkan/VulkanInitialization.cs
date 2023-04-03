@@ -179,7 +179,6 @@ namespace Ryujinx.Graphics.Vulkan
                 EnabledLayerCount = 0
             };
 
-
             Result result = VulkanInstance.Create(api, ref instanceCreateInfo, out var rawInstance);
 
             Marshal.FreeHGlobal(appName);
