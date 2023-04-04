@@ -321,15 +321,28 @@ namespace Ryujinx.Ui
 
             _toggleDockedMode = toggleDockedMode;
 
-            if (_hideCursorMode == HideCursorMode.OnIdle && !ConfigurationState.Instance.Hid.EnableMouse)
+            if (ConfigurationState.Instance.Hid.EnableMouse.Value)
             {
-                long cursorMoveDelta = Stopwatch.GetTimestamp() - _lastCursorMoveTime;
-                Window.Cursor = (cursorMoveDelta >= CursorHideIdleTime * Stopwatch.Frequency) ? _invisibleCursor : null;
+                if (_isMouseInClient)
+                {
+                    Window.Cursor = _invisibleCursor;
+                }
             }
-
-            if (ConfigurationState.Instance.Hid.EnableMouse && _isMouseInClient)
+            else
             {
-                Window.Cursor = _invisibleCursor;
+                switch (_hideCursorMode)
+                {
+                    case HideCursorMode.OnIdle:
+                        long cursorMoveDelta = Stopwatch.GetTimestamp() - _lastCursorMoveTime;
+                        Window.Cursor = (cursorMoveDelta >= CursorHideIdleTime * Stopwatch.Frequency) ? _invisibleCursor : null;
+                        break;
+                    case HideCursorMode.Always:
+                        Window.Cursor = _invisibleCursor;
+                        break;
+                    case HideCursorMode.Never:
+                        Window.Cursor = null;
+                        break;
+                }
             }
         }
 
