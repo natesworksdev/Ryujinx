@@ -1,10 +1,10 @@
-name: Update stable branch
+name: Update weekly branch
 
 on:
   workflow_dispatch:
   schedule:
-    # Daily at 14:20 UTC
-    - cron: "20 14 * * *"
+    # At 14:20 UTC on Saturday
+    - cron: "20 14 * * 6"
 
 jobs:
   update_stable:
