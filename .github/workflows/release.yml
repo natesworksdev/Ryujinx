@@ -16,12 +16,27 @@ concurrency: release-stable
 env:
   POWERSHELL_TELEMETRY_OPTOUT: 1
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
-  RYUJINX_BASE_VERSION: "1.1"
+  RYUJINX_VERSION: "1.1.${{ github.run_number }}"
   RYUJINX_TARGET_RELEASE_CHANNEL_NAME: "stable"
   RYUJINX_TARGET_RELEASE_CHANNEL_OWNER: "Ryujinx"
   RYUJINX_TARGET_RELEASE_CHANNEL_REPO: "release-channel-master"
 
 jobs:
+  tag:
+    name: Create tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create tag
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/${{ env.RYUJINX_VERSION }}',
+              sha: context.sha
+            })
+
   release:
     name: Release ${{ matrix.OS_NAME }}
     runs-on: ${{ matrix.os }}
@@ -67,7 +82,7 @@ jobs:
         id: release
         uses: ./.github/actions/ryujinx-release
         with:
-          base_version: ${{ env.RYUJINX_BASE_VERSION }}
+          version: ${{ env.RYUJINX_VERSION }}
           rid: ${{ matrix.DOTNET_RUNTIME_IDENTIFIER }}
           channel: ${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_NAME }}
           owner: ${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}
@@ -76,9 +91,9 @@ jobs:
       - name: Pushing new release
         uses: ncipollo/release-action@v1
         with:
-          name: ${{ steps.release.outputs.build_version }}
+          name: ${{ env.RYUJINX_VERSION }}
           artifacts: "release_output/*.tar.gz,release_output/*.zip"
-          tag: ${{ steps.release.outputs.build_version }}
+          tag: ${{ env.RYUJINX_VERSION }}
           body: "For more information about this release please check out the official [Changelog](https://github.com/Ryujinx/Ryujinx/wiki/Changelog)."
           omitBodyDuringUpdate: true
           allowUpdates: true
@@ -91,5 +106,5 @@ jobs:
     uses: ./.github/workflows/flatpak.yml
     needs: release
     with:
-      ryujinx_version: "1.1.${{ github.run_number }}"
+      ryujinx_version: ${{ env.RYUJINX_VERSION }}
     secrets: inherit
