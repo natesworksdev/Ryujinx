@@ -37,7 +37,7 @@
                     <CheckBox IsChecked="{Binding ShowConfirmExit}">
                         <TextBlock Text="{locale:Locale SettingsTabGeneralShowConfirmExitDialog}" />
                     </CheckBox>
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel Margin="0, 15, 0, 10" Orientation="Horizontal">
                         <TextBlock VerticalAlignment="Center"
                                    Text="{locale:Locale SettingsTabGeneralHideCursor}"
                                    Width="150" />
