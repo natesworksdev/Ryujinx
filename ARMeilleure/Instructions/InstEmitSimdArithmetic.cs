@@ -1937,13 +1937,22 @@ namespace ARMeilleure.Instructions
 
                 int sizeF = op.Size & 1;
 
+                Operand res;
+
                 if (sizeF == 0)
                 {
                     Operand mask = X86GetScalar(context, 2f);
 
-                    Operand res = context.AddIntrinsic(Intrinsic.X86Mulss, n, m);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfnmadd231ss, mask, n, m);
+                    }
+                    else
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Mulss, n, m);
+                        res = context.AddIntrinsic(Intrinsic.X86Subss, mask, res);
+                    }
 
-                    res = context.AddIntrinsic(Intrinsic.X86Subss, mask, res);
                     res = EmitSse41RecipStepSelectOpF(context, n, m, res, mask, scalar: true, sizeF);
 
                     context.Copy(GetVec(op.Rd), context.VectorZeroUpper96(res));
@@ -1952,9 +1961,16 @@ namespace ARMeilleure.Instructions
                 {
                     Operand mask = X86GetScalar(context, 2d);
 
-                    Operand res = context.AddIntrinsic(Intrinsic.X86Mulsd, n, m);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfnmadd231sd, mask, n, m);
+                    }
+                    else
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Mulsd, n, m);
+                        res = context.AddIntrinsic(Intrinsic.X86Subsd, mask, res);
+                    }
 
-                    res = context.AddIntrinsic(Intrinsic.X86Subsd, mask, res);
                     res = EmitSse41RecipStepSelectOpF(context, n, m, res, mask, scalar: true, sizeF);
 
                     context.Copy(GetVec(op.Rd), context.VectorZeroUpper64(res));
@@ -1984,14 +2000,23 @@ namespace ARMeilleure.Instructions
 
                 int sizeF = op.Size & 1;
 
+                Operand res;
+
                 if (sizeF == 0)
                 {
                     Operand mask = X86GetAllElements(context, 2f);
 
-                    Operand res = context.AddIntrinsic(Intrinsic.X86Mulps, n, m);
-                    res = EmitSse41RecipStepSelectOpF(context, n, m, res, mask, scalar: false, sizeF);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfnmadd231ps, mask, n, m);
+                    }
+                    else
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Mulps, n, m);
+                        res = context.AddIntrinsic(Intrinsic.X86Subps, mask, res);
+                    }
 
-                    res = context.AddIntrinsic(Intrinsic.X86Subps, mask, res);
+                    res = EmitSse41RecipStepSelectOpF(context, n, m, res, mask, scalar: false, sizeF);
 
                     if (op.RegisterSize == RegisterSize.Simd64)
                     {
@@ -2004,10 +2029,17 @@ namespace ARMeilleure.Instructions
                 {
                     Operand mask = X86GetAllElements(context, 2d);
 
-                    Operand res = context.AddIntrinsic(Intrinsic.X86Mulpd, n, m);
-                    res = EmitSse41RecipStepSelectOpF(context, n, m, res, mask, scalar: false, sizeF);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfnmadd231pd, mask, n, m);
+                    }
+                    else
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Mulpd, n, m);
+                        res = context.AddIntrinsic(Intrinsic.X86Subpd, mask, res);
+                    }
 
-                    res = context.AddIntrinsic(Intrinsic.X86Subpd, mask, res);
+                    res = EmitSse41RecipStepSelectOpF(context, n, m, res, mask, scalar: false, sizeF);
 
                     context.Copy(GetVec(op.Rd), res);
                 }
@@ -2344,16 +2376,25 @@ namespace ARMeilleure.Instructions
 
                 int sizeF = op.Size & 1;
 
+                Operand res;
+
                 if (sizeF == 0)
                 {
                     Operand maskHalf    = X86GetScalar(context, 0.5f);
                     Operand maskThree   = X86GetScalar(context, 3f);
                     Operand maskOneHalf = X86GetScalar(context, 1.5f);
 
-                    Operand res = context.AddIntrinsic(Intrinsic.X86Mulss, n, m);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfnmadd231ss, maskThree, n, m);
+                    }
+                    else
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Mulss, n, m);
+                        res = context.AddIntrinsic(Intrinsic.X86Subss, maskThree, res);
+                    }
 
-                    res = context.AddIntrinsic(Intrinsic.X86Subss, maskThree, res);
-                    res = context.AddIntrinsic(Intrinsic.X86Mulss, maskHalf,  res);
+                    res = context.AddIntrinsic(Intrinsic.X86Mulss, maskHalf, res);
                     res = EmitSse41RecipStepSelectOpF(context, n, m, res, maskOneHalf, scalar: true, sizeF);
 
                     context.Copy(GetVec(op.Rd), context.VectorZeroUpper96(res));
@@ -2364,10 +2405,17 @@ namespace ARMeilleure.Instructions
                     Operand maskThree   = X86GetScalar(context, 3d);
                     Operand maskOneHalf = X86GetScalar(context, 1.5d);
 
-                    Operand res = context.AddIntrinsic(Intrinsic.X86Mulsd, n, m);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfnmadd231sd, maskThree, n, m);
+                    }
+                    else
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Mulsd, n, m);
+                        res = context.AddIntrinsic(Intrinsic.X86Subsd, maskThree, res);
+                    }
 
-                    res = context.AddIntrinsic(Intrinsic.X86Subsd, maskThree, res);
-                    res = context.AddIntrinsic(Intrinsic.X86Mulsd, maskHalf,  res);
+                    res = context.AddIntrinsic(Intrinsic.X86Mulsd, maskHalf, res);
                     res = EmitSse41RecipStepSelectOpF(context, n, m, res, maskOneHalf, scalar: true, sizeF);
 
                     context.Copy(GetVec(op.Rd), context.VectorZeroUpper64(res));
@@ -2397,15 +2445,24 @@ namespace ARMeilleure.Instructions
 
                 int sizeF = op.Size & 1;
 
+                Operand res;
+
                 if (sizeF == 0)
                 {
                     Operand maskHalf    = X86GetAllElements(context, 0.5f);
                     Operand maskThree   = X86GetAllElements(context, 3f);
                     Operand maskOneHalf = X86GetAllElements(context, 1.5f);
 
-                    Operand res = context.AddIntrinsic(Intrinsic.X86Mulps, n, m);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfnmadd231ps, maskThree, n, m);
+                    }
+                    else
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Mulps, n, m);
+                        res = context.AddIntrinsic(Intrinsic.X86Subps, maskThree, res);
+                    }
 
-                    res = context.AddIntrinsic(Intrinsic.X86Subps, maskThree, res);
                     res = context.AddIntrinsic(Intrinsic.X86Mulps, maskHalf,  res);
                     res = EmitSse41RecipStepSelectOpF(context, n, m, res, maskOneHalf, scalar: false, sizeF);
 
@@ -2422,9 +2479,16 @@ namespace ARMeilleure.Instructions
                     Operand maskThree   = X86GetAllElements(context, 3d);
                     Operand maskOneHalf = X86GetAllElements(context, 1.5d);
 
-                    Operand res = context.AddIntrinsic(Intrinsic.X86Mulpd, n, m);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfnmadd231pd, maskThree, n, m);
+                    }
+                    else
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Mulpd, n, m);
+                        res = context.AddIntrinsic(Intrinsic.X86Subpd, maskThree, res);
+                    }
 
-                    res = context.AddIntrinsic(Intrinsic.X86Subpd, maskThree, res);
                     res = context.AddIntrinsic(Intrinsic.X86Mulpd, maskHalf,  res);
                     res = EmitSse41RecipStepSelectOpF(context, n, m, res, maskOneHalf, scalar: false, sizeF);
 
