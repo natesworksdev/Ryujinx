@@ -832,7 +832,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public bool PrepareHostMapping(nint address, ulong size)
         {
-            return HostMemoryAllocator.TryImport(_physicalDevice, BufferManager.GlobalRequirementsTest, BufferManager.DefaultBufferMemoryFlags, address, size);
+            return HostMemoryAllocator.TryImport(BufferManager.GlobalRequirementsTest, BufferManager.DefaultBufferMemoryFlags, address, size);
         }
     }
 }
