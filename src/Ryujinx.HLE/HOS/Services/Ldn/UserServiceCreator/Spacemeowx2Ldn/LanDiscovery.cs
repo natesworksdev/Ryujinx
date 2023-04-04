@@ -125,7 +125,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             {
                 networkInfo = info;
 
-                LogMsg($"OnSyncNetwork: Received NetworkInfo:\n{JsonHelper.Serialize(info, true)}");
+                // LogMsg($"OnSyncNetwork: Received NetworkInfo:\n{JsonHelper.Serialize(info, true)}");
                 LogMsg($"OnSyncNetwork: hostIP: {UintToIPAddress(info.Ldn.Nodes[0].Ipv4Address)}");
                 //if (commState == NetworkState.Station)
                 //{
@@ -201,7 +201,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
             LogMsg($"LanDiscovery SetAdvertiseData done: {BitConverter.ToString(advertiseData.AsSpan().ToArray())}");
 
-            LogMsg($"LanDiscovery SetAdvertiseData NetworkInfo:\n{JsonHelper.Serialize(networkInfo, true)}");
+            // LogMsg($"LanDiscovery SetAdvertiseData NetworkInfo:\n{JsonHelper.Serialize(networkInfo, true)}");
 
             // results in SessionKeepFailed or MasterDisconnected
             if (networkInfo.Ldn.Nodes[0].IsConnected == 1)
