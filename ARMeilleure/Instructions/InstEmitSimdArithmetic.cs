@@ -693,17 +693,33 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
+                Operand res;
+
                 if (op.Size == 0)
                 {
-                    Operand res = context.AddIntrinsic(Intrinsic.X86Mulss, n, m);
-                            res = context.AddIntrinsic(Intrinsic.X86Addss, a, res);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfmadd231ss, a, n, m);
+                    }
+                    else
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Mulss, n, m);
+                        res = context.AddIntrinsic(Intrinsic.X86Addss, a, res);
+                    }
 
                     context.Copy(d, context.VectorZeroUpper96(res));
                 }
                 else /* if (op.Size == 1) */
                 {
-                    Operand res = context.AddIntrinsic(Intrinsic.X86Mulsd, n, m);
-                            res = context.AddIntrinsic(Intrinsic.X86Addsd, a, res);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfmadd231sd, a, n, m);
+                    }
+                    else
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Mulsd, n, m);
+                        res = context.AddIntrinsic(Intrinsic.X86Addsd, a, res);
+                    }
 
                     context.Copy(d, context.VectorZeroUpper64(res));
                 }
@@ -1119,6 +1135,15 @@ namespace ARMeilleure.Instructions
             {
                 InstEmitSimdHelperArm64.EmitScalarTernaryOpFRdByElem(context, Intrinsic.Arm64FmlaSe);
             }
+            else if (Optimizations.UseFma)
+            {
+                EmitScalarTernaryOpByElemF(context, (op1, op2, op3) =>
+                {
+                    OpCodeSimdRegElemF op = (OpCodeSimdRegElemF)context.CurrOp;
+
+                    return context.AddIntrinsic((op.Size & 1) != 0 ? Intrinsic.X86Vfmadd231sd : Intrinsic.X86Vfmadd231ss, op1, op2, op3);
+                });
+            }
             else
             {
                 EmitScalarTernaryOpByElemF(context, (op1, op2, op3) =>
@@ -1144,11 +1169,19 @@ namespace ARMeilleure.Instructions
 
                 int sizeF = op.Size & 1;
 
+                Operand res;
+
                 if (sizeF == 0)
                 {
-                    Operand res = context.AddIntrinsic(Intrinsic.X86Mulps, n, m);
-
-                    res = context.AddIntrinsic(Intrinsic.X86Addps, d, res);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfmadd231ps, d, n, m);
+                    }
+                    else
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Mulps, n, m);
+                        res = context.AddIntrinsic(Intrinsic.X86Addps, d, res);
+                    }
 
                     if (op.RegisterSize == RegisterSize.Simd64)
                     {
@@ -1159,9 +1192,15 @@ namespace ARMeilleure.Instructions
                 }
                 else /* if (sizeF == 1) */
                 {
-                    Operand res = context.AddIntrinsic(Intrinsic.X86Mulpd, n, m);
-
-                    res = context.AddIntrinsic(Intrinsic.X86Addpd, d, res);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfmadd231pd, d, n, m);
+                    }
+                    else
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Mulpd, n, m);
+                        res = context.AddIntrinsic(Intrinsic.X86Addpd, d, res);
+                    }
 
                     context.Copy(d, res);
                 }
@@ -1197,8 +1236,15 @@ namespace ARMeilleure.Instructions
 
                     Operand res = context.AddIntrinsic(Intrinsic.X86Shufps, m, m, Const(shuffleMask));
 
-                    res = context.AddIntrinsic(Intrinsic.X86Mulps, n, res);
-                    res = context.AddIntrinsic(Intrinsic.X86Addps, d, res);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfmadd231ps, d, n, res);
+                    }
+                    else
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Mulps, n, res);
+                        res = context.AddIntrinsic(Intrinsic.X86Addps, d, res);
+                    }
 
                     if (op.RegisterSize == RegisterSize.Simd64)
                     {
@@ -1213,8 +1259,15 @@ namespace ARMeilleure.Instructions
 
                     Operand res = context.AddIntrinsic(Intrinsic.X86Shufpd, m, m, Const(shuffleMask));
 
-                    res = context.AddIntrinsic(Intrinsic.X86Mulpd, n, res);
-                    res = context.AddIntrinsic(Intrinsic.X86Addpd, d, res);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfmadd231pd, d, n, res);
+                    }
+                    else
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Mulpd, n, res);
+                        res = context.AddIntrinsic(Intrinsic.X86Addpd, d, res);
+                    }
 
                     context.Copy(d, res);
                 }
@@ -1233,6 +1286,15 @@ namespace ARMeilleure.Instructions
             if (Optimizations.UseAdvSimd)
             {
                 InstEmitSimdHelperArm64.EmitScalarTernaryOpFRdByElem(context, Intrinsic.Arm64FmlsSe);
+            }
+            else if (Optimizations.UseFma)
+            {
+                EmitScalarTernaryOpByElemF(context, (op1, op2, op3) =>
+                {
+                    OpCodeSimdRegElemF op = (OpCodeSimdRegElemF)context.CurrOp;
+
+                    return context.AddIntrinsic((op.Size & 1) != 0 ? Intrinsic.X86Vfnmadd231sd : Intrinsic.X86Vfnmadd231ss, op1, op2, op3);
+                });
             }
             else
             {
@@ -1259,11 +1321,19 @@ namespace ARMeilleure.Instructions
 
                 int sizeF = op.Size & 1;
 
+                Operand res;
+
                 if (sizeF == 0)
                 {
-                    Operand res = context.AddIntrinsic(Intrinsic.X86Mulps, n, m);
-
-                    res = context.AddIntrinsic(Intrinsic.X86Subps, d, res);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfnmadd231ps, d, n, m);
+                    }
+                    else
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Mulps, n, m);
+                        res = context.AddIntrinsic(Intrinsic.X86Subps, d, res);
+                    }
 
                     if (op.RegisterSize == RegisterSize.Simd64)
                     {
@@ -1274,9 +1344,15 @@ namespace ARMeilleure.Instructions
                 }
                 else /* if (sizeF == 1) */
                 {
-                    Operand res = context.AddIntrinsic(Intrinsic.X86Mulpd, n, m);
-
-                    res = context.AddIntrinsic(Intrinsic.X86Subpd, d, res);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfnmadd231pd, d, n, m);
+                    }
+                    else
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Mulpd, n, m);
+                        res = context.AddIntrinsic(Intrinsic.X86Subpd, d, res);
+                    }
 
                     context.Copy(d, res);
                 }
@@ -1312,8 +1388,15 @@ namespace ARMeilleure.Instructions
 
                     Operand res = context.AddIntrinsic(Intrinsic.X86Shufps, m, m, Const(shuffleMask));
 
-                    res = context.AddIntrinsic(Intrinsic.X86Mulps, n, res);
-                    res = context.AddIntrinsic(Intrinsic.X86Subps, d, res);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfnmadd231ps, d, n, res);
+                    }
+                    else
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Mulps, n, res);
+                        res = context.AddIntrinsic(Intrinsic.X86Subps, d, res);
+                    }
 
                     if (op.RegisterSize == RegisterSize.Simd64)
                     {
@@ -1328,8 +1411,15 @@ namespace ARMeilleure.Instructions
 
                     Operand res = context.AddIntrinsic(Intrinsic.X86Shufpd, m, m, Const(shuffleMask));
 
-                    res = context.AddIntrinsic(Intrinsic.X86Mulpd, n, res);
-                    res = context.AddIntrinsic(Intrinsic.X86Subpd, d, res);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfnmadd231pd, d, n, res);
+                    }
+                    else
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Mulpd, n, res);
+                        res = context.AddIntrinsic(Intrinsic.X86Subpd, d, res);
+                    }
 
                     context.Copy(d, res);
                 }
@@ -1358,17 +1448,33 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
+                Operand res;
+
                 if (op.Size == 0)
                 {
-                    Operand res = context.AddIntrinsic(Intrinsic.X86Mulss, n, m);
-                            res = context.AddIntrinsic(Intrinsic.X86Subss, a, res);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfnmadd231ss, a, n, m);
+                    }
+                    else
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Mulss, n, m);
+                        res = context.AddIntrinsic(Intrinsic.X86Subss, a, res);
+                    }
 
                     context.Copy(d, context.VectorZeroUpper96(res));
                 }
                 else /* if (op.Size == 1) */
                 {
-                    Operand res = context.AddIntrinsic(Intrinsic.X86Mulsd, n, m);
-                            res = context.AddIntrinsic(Intrinsic.X86Subsd, a, res);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfnmadd231sd, a, n, m);
+                    }
+                    else
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Mulsd, n, m);
+                        res = context.AddIntrinsic(Intrinsic.X86Subsd, a, res);
+                    }
 
                     context.Copy(d, context.VectorZeroUpper64(res));
                 }
@@ -1642,25 +1748,39 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
+                Operand res;
+
                 if (op.Size == 0)
                 {
-                    Operand mask = X86GetScalar(context, -0f);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfnmsub231ss, a, n, m);
+                    }
+                    else
+                    {
+                        Operand mask = X86GetScalar(context, -0f);
+                        Operand aNeg = context.AddIntrinsic(Intrinsic.X86Xorps, mask, a);
 
-                    Operand aNeg = context.AddIntrinsic(Intrinsic.X86Xorps, mask, a);
-
-                    Operand res = context.AddIntrinsic(Intrinsic.X86Mulss, n, m);
-                            res = context.AddIntrinsic(Intrinsic.X86Subss, aNeg, res);
+                        res = context.AddIntrinsic(Intrinsic.X86Mulss, n, m);
+                        res = context.AddIntrinsic(Intrinsic.X86Subss, aNeg, res);
+                    }
 
                     context.Copy(d, context.VectorZeroUpper96(res));
                 }
                 else /* if (op.Size == 1) */
                 {
-                    Operand mask = X86GetScalar(context, -0d);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfnmsub231sd, a, n, m);
+                    }
+                    else
+                    {
+                        Operand mask = X86GetScalar(context, -0d);
+                        Operand aNeg = context.AddIntrinsic(Intrinsic.X86Xorpd, mask, a);
 
-                    Operand aNeg = context.AddIntrinsic(Intrinsic.X86Xorpd, mask, a);
-
-                    Operand res = context.AddIntrinsic(Intrinsic.X86Mulsd, n, m);
-                            res = context.AddIntrinsic(Intrinsic.X86Subsd, aNeg, res);
+                        res = context.AddIntrinsic(Intrinsic.X86Mulsd, n, m);
+                        res = context.AddIntrinsic(Intrinsic.X86Subsd, aNeg, res);
+                    }
 
                     context.Copy(d, context.VectorZeroUpper64(res));
                 }
@@ -1689,25 +1809,39 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
+                Operand res;
+
                 if (op.Size == 0)
                 {
-                    Operand mask = X86GetScalar(context, -0f);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfmsub231ss, a, n, m);
+                    }
+                    else
+                    {
+                        Operand mask = X86GetScalar(context, -0f);
+                        Operand aNeg = context.AddIntrinsic(Intrinsic.X86Xorps, mask, a);
 
-                    Operand aNeg = context.AddIntrinsic(Intrinsic.X86Xorps, mask, a);
-
-                    Operand res = context.AddIntrinsic(Intrinsic.X86Mulss, n, m);
-                            res = context.AddIntrinsic(Intrinsic.X86Addss, aNeg, res);
+                        res = context.AddIntrinsic(Intrinsic.X86Mulss, n, m);
+                        res = context.AddIntrinsic(Intrinsic.X86Addss, aNeg, res);
+                    }
 
                     context.Copy(d, context.VectorZeroUpper96(res));
                 }
                 else /* if (op.Size == 1) */
                 {
-                    Operand mask = X86GetScalar(context, -0d);
+                    if (Optimizations.UseFma)
+                    {
+                        res = context.AddIntrinsic(Intrinsic.X86Vfmsub231sd, a, n, m);
+                    }
+                    else
+                    {
+                        Operand mask = X86GetScalar(context, -0d);
+                        Operand aNeg = context.AddIntrinsic(Intrinsic.X86Xorpd, mask, a);
 
-                    Operand aNeg = context.AddIntrinsic(Intrinsic.X86Xorpd, mask, a);
-
-                    Operand res = context.AddIntrinsic(Intrinsic.X86Mulsd, n, m);
-                            res = context.AddIntrinsic(Intrinsic.X86Addsd, aNeg, res);
+                        res = context.AddIntrinsic(Intrinsic.X86Mulsd, n, m);
+                        res = context.AddIntrinsic(Intrinsic.X86Addsd, aNeg, res);
+                    }
 
                     context.Copy(d, context.VectorZeroUpper64(res));
                 }
