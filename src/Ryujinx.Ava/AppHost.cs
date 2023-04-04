@@ -965,39 +965,38 @@ namespace Ryujinx.Ava
 
             if (_viewModel.IsActive)
             {
-                if (ConfigurationState.Instance.Hid.EnableMouse)
+                if (_isCursorInRenderer)
                 {
-                    if (_isCursorInRenderer)
+                    if (ConfigurationState.Instance.Hid.EnableMouse)
                     {
                         HideCursor();
                     }
                     else
                     {
-                        ShowCursor();
+                        switch (ConfigurationState.Instance.HideCursor.Value)
+                        {
+                            case HideCursorMode.Never:
+                                ShowCursor();
+                                break;
+                            case HideCursorMode.OnIdle:
+                                if (Stopwatch.GetTimestamp() - _lastCursorMoveTime >= CursorHideIdleTime * Stopwatch.Frequency)
+                                {
+                                    HideCursor();
+                                }
+                                else
+                                {
+                                    ShowCursor();
+                                }
+                                break;
+                            case HideCursorMode.Always:
+                                HideCursor();
+                                break;
+                        }
                     }
                 }
                 else
                 {
-                    switch (ConfigurationState.Instance.HideCursor.Value)
-                    {
-                        case HideCursorMode.Never:
-                            ShowCursor();
-                            break;
-                        case HideCursorMode.OnIdle:
-                            if (Stopwatch.GetTimestamp() - _lastCursorMoveTime >= CursorHideIdleTime * Stopwatch.Frequency)
-                            {
-                                HideCursor();
-                            }
-                            else
-                            {
-                                ShowCursor();
-                            }
-
-                            break;
-                        case HideCursorMode.Always:
-                            HideCursor();
-                            break;
-                    }
+                    ShowCursor();
                 }
 
                 Dispatcher.UIThread.Post(() =>
