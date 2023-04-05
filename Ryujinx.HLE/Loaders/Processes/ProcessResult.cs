@@ -54,20 +54,11 @@ namespace Ryujinx.HLE.Loaders.Processes
             {
                 ulong programId = metaLoader.GetProgramId();
 
-                if (ApplicationControlProperties.Title.ItemsRo.Length > 0)
-                {
-                    var langIndex = ApplicationControlProperties.Title.ItemsRo.Length > (int)titleLanguage ? (int)titleLanguage : 0;
+                Name = ApplicationControlProperties.Title[(int)titleLanguage].NameString.ToString();
 
-                    Name = ApplicationControlProperties.Title[langIndex].NameString.ToString();
-
-                    if (string.IsNullOrWhiteSpace(Name))
-                    {
-                        Name = ApplicationControlProperties.Title.ItemsRo.ToArray().FirstOrDefault(x => x.Name[0] != 0).NameString.ToString();
-                    }
-                }
-                else
+                if (string.IsNullOrWhiteSpace(Name))
                 {
-                    Name = metaLoader.GetProgramName();
+                    Name = ApplicationControlProperties.Title.ItemsRo.ToArray().FirstOrDefault(x => x.Name[0] != 0).NameString.ToString();
                 }
 
                 DisplayVersion = ApplicationControlProperties.DisplayVersionString.ToString();
