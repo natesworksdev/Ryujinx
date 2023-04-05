@@ -1,3 +1,4 @@
+using ARMeilleure.CodeGen.X86;
 using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
@@ -157,6 +158,54 @@ namespace ARMeilleure.Instructions
             Intrinsic.X86Punpcklqdq
         };
 #endregion
+
+        public static void EnterArmFpMode(EmitterContext context, Func<FPState, Operand> getFpFlag)
+        {
+            if (Optimizations.UseSse2)
+            {
+                Operand mxcsr = context.AddIntrinsic(Intrinsic.X86Stmxcsr);
+
+                Operand fzTrue = getFpFlag(FPState.FzFlag);
+                Operand r0True = getFpFlag(FPState.RMode0Flag);
+                Operand r1True = getFpFlag(FPState.RMode1Flag);
+
+                mxcsr = context.BitwiseAnd(mxcsr, Const(~(int)(Mxcsr.Ftz | Mxcsr.Rhi | Mxcsr.Rlo)));
+
+                mxcsr = context.BitwiseOr(mxcsr, context.ConditionalSelect(fzTrue, Const((int)(Mxcsr.Ftz | Mxcsr.Um | Mxcsr.Dm)), Const(0)));
+
+                // X86 round modes in order: nearest, negative, positive, zero
+                // ARM round modes in order: nearest, positive, negative, zero
+                // Read the bits backwards to correct this.
+
+                mxcsr = context.BitwiseOr(mxcsr, context.ConditionalSelect(r0True, Const((int)Mxcsr.Rhi), Const(0)));
+                mxcsr = context.BitwiseOr(mxcsr, context.ConditionalSelect(r1True, Const((int)Mxcsr.Rlo), Const(0)));
+
+                context.AddIntrinsicNoRet(Intrinsic.X86Ldmxcsr, mxcsr);
+            }
+            else if (Optimizations.UseAdvSimd)
+            {
+                // TODO: Restore FPCR/FPSR
+            }
+        }
+
+        public static void ExitArmFpMode(EmitterContext context, Action<FPState, Operand> setFpFlag)
+        {
+            if (Optimizations.UseSse2)
+            {
+                Operand mxcsr = context.AddIntrinsic(Intrinsic.X86Stmxcsr);
+
+                // Unset round mode (to nearest) and ftz.
+                mxcsr = context.BitwiseAnd(mxcsr, Const(~(int)(Mxcsr.Ftz | Mxcsr.Rhi | Mxcsr.Rlo)));
+
+                context.AddIntrinsicNoRet(Intrinsic.X86Ldmxcsr, mxcsr);
+
+                // Status flags would be stored here if they were used.
+            }
+            else if (Optimizations.UseAdvSimd)
+            {
+                // TODO: Store FPCR/FPSR
+            }
+        }
 
         public static int GetImmShl(OpCodeSimdShImm op)
         {

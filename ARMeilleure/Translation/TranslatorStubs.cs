@@ -227,26 +227,21 @@ namespace ARMeilleure.Translation
         /// <param name="enter">True if entering guest code, false otherwise</param>
         private void EmitSyncFpContext(EmitterContext context, Operand nativeContext, bool enter)
         {
-            if (Optimizations.UseSse2)
+            if (enter)
             {
-                Operand endLabel = Label();
-
-                // Sync Fz flag before entering guest code.
-                Operand fzFlagAddress = context.Add(nativeContext, Const((ulong)NativeContext.GetRegisterOffset(new Register((int)FPState.FzFlag, RegisterType.FpFlag))));
-                Operand fzSet = context.Load(OperandType.I32, fzFlagAddress);
-
-                context.BranchIfFalse(endLabel, fzSet);
-
-                if (enter)
+                InstEmitSimdHelper.EnterArmFpMode(context, (flag) =>
                 {
-                    context.AddIntrinsicNoRet(Intrinsic.X86Mxcsrmb, Const((int)(Mxcsr.Ftz | Mxcsr.Um | Mxcsr.Dm)));
-                }
-                else
+                    Operand flagAddress = context.Add(nativeContext, Const((ulong)NativeContext.GetRegisterOffset(new Register((int)flag, RegisterType.FpFlag))));
+                    return context.Load(OperandType.I32, flagAddress);
+                });
+            }
+            else
+            {
+                InstEmitSimdHelper.ExitArmFpMode(context, (flag, value) =>
                 {
-                    context.AddIntrinsicNoRet(Intrinsic.X86Mxcsrub, Const((int)Mxcsr.Ftz));
-                }
-
-                context.MarkLabel(endLabel);
+                    Operand flagAddress = context.Add(nativeContext, Const((ulong)NativeContext.GetRegisterOffset(new Register((int)flag, RegisterType.FpFlag))));
+                    context.Store(flagAddress, value);
+                });
             }
         }
 

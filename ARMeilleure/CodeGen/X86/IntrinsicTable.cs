@@ -60,6 +60,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Intrinsic.X86Haddpd,        new IntrinsicInfo(X86Instruction.Haddpd,        IntrinsicType.Binary));
             Add(Intrinsic.X86Haddps,        new IntrinsicInfo(X86Instruction.Haddps,        IntrinsicType.Binary));
             Add(Intrinsic.X86Insertps,      new IntrinsicInfo(X86Instruction.Insertps,      IntrinsicType.TernaryImm));
+            Add(Intrinsic.X86Ldmxcsr,       new IntrinsicInfo(X86Instruction.None,          IntrinsicType.Mxcsr));
             Add(Intrinsic.X86Maxpd,         new IntrinsicInfo(X86Instruction.Maxpd,         IntrinsicType.Binary));
             Add(Intrinsic.X86Maxps,         new IntrinsicInfo(X86Instruction.Maxps,         IntrinsicType.Binary));
             Add(Intrinsic.X86Maxsd,         new IntrinsicInfo(X86Instruction.Maxsd,         IntrinsicType.Binary));
@@ -75,8 +76,6 @@ namespace ARMeilleure.CodeGen.X86
             Add(Intrinsic.X86Mulps,         new IntrinsicInfo(X86Instruction.Mulps,         IntrinsicType.Binary));
             Add(Intrinsic.X86Mulsd,         new IntrinsicInfo(X86Instruction.Mulsd,         IntrinsicType.Binary));
             Add(Intrinsic.X86Mulss,         new IntrinsicInfo(X86Instruction.Mulss,         IntrinsicType.Binary));
-            Add(Intrinsic.X86Mxcsrmb,       new IntrinsicInfo(X86Instruction.None,          IntrinsicType.Mxcsr)); // Mask bits.
-            Add(Intrinsic.X86Mxcsrub,       new IntrinsicInfo(X86Instruction.None,          IntrinsicType.Mxcsr)); // Unmask bits.
             Add(Intrinsic.X86Paddb,         new IntrinsicInfo(X86Instruction.Paddb,         IntrinsicType.Binary));
             Add(Intrinsic.X86Paddd,         new IntrinsicInfo(X86Instruction.Paddd,         IntrinsicType.Binary));
             Add(Intrinsic.X86Paddq,         new IntrinsicInfo(X86Instruction.Paddq,         IntrinsicType.Binary));
@@ -160,6 +159,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Intrinsic.X86Sqrtps,        new IntrinsicInfo(X86Instruction.Sqrtps,        IntrinsicType.Unary));
             Add(Intrinsic.X86Sqrtsd,        new IntrinsicInfo(X86Instruction.Sqrtsd,        IntrinsicType.Unary));
             Add(Intrinsic.X86Sqrtss,        new IntrinsicInfo(X86Instruction.Sqrtss,        IntrinsicType.Unary));
+            Add(Intrinsic.X86Stmxcsr,       new IntrinsicInfo(X86Instruction.None,          IntrinsicType.Mxcsr));
             Add(Intrinsic.X86Subpd,         new IntrinsicInfo(X86Instruction.Subpd,         IntrinsicType.Binary));
             Add(Intrinsic.X86Subps,         new IntrinsicInfo(X86Instruction.Subps,         IntrinsicType.Binary));
             Add(Intrinsic.X86Subsd,         new IntrinsicInfo(X86Instruction.Subsd,         IntrinsicType.Binary));

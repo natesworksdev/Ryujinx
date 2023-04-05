@@ -191,55 +191,17 @@ namespace ARMeilleure.Translation
 
         public void EnterArmFpMode()
         {
-            if (Optimizations.UseSse2)
-            {
-                Operand isTrue = InstEmitHelper.GetFpFlag(FPState.FzFlag);
-
-                Operand lblTrue = Label();
-                // Ftz is already disabled coming from outside ARM FP mode.
-                BranchIfFalse(lblTrue, isTrue);
-
-                AddIntrinsicNoRet(Intrinsic.X86Mxcsrmb, Const((int)(Mxcsr.Ftz | Mxcsr.Um | Mxcsr.Dm)));
-
-                MarkLabel(lblTrue);
-            }
+            InstEmitSimdHelper.EnterArmFpMode(this, InstEmitHelper.GetFpFlag);
         }
 
         public void UpdateArmFpMode()
         {
-            if (Optimizations.UseSse2)
-            {
-                Operand isTrue = InstEmitHelper.GetFpFlag(FPState.FzFlag);
-
-                Operand lblTrue = Label();
-                Operand end = Label();
-                BranchIfFalse(lblTrue, isTrue);
-
-                AddIntrinsicNoRet(Intrinsic.X86Mxcsrmb, Const((int)(Mxcsr.Ftz | Mxcsr.Um | Mxcsr.Dm)));
-                Branch(end);
-
-                MarkLabel(lblTrue);
-
-                AddIntrinsicNoRet(Intrinsic.X86Mxcsrub, Const((int)Mxcsr.Ftz));
-
-                MarkLabel(end);
-            }
+            EnterArmFpMode();
         }
 
         public void ExitArmFpMode()
         {
-            if (Optimizations.UseSse2)
-            {
-                Operand isTrue = InstEmitHelper.GetFpFlag(FPState.FzFlag);
-
-                Operand lblTrue = Label();
-                BranchIfFalse(lblTrue, isTrue);
-
-                // Clear Ftz flag for exiting ARM FP mode.
-                AddIntrinsicNoRet(Intrinsic.X86Mxcsrub, Const((int)Mxcsr.Ftz));
-
-                MarkLabel(lblTrue);
-            }
+            InstEmitSimdHelper.ExitArmFpMode(this, (flag, value) => InstEmitHelper.SetFpFlag(this, flag, value));
         }
 
         public Operand TryGetComparisonResult(Condition condition)
