@@ -8,7 +8,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Keyboard
     {
         public ulong SamplingNumber;
         public KeyboardModifier Modifiers;
-        public uint Unknown;
         public KeyboardKey Keys;
     }
 }
