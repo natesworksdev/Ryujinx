@@ -163,7 +163,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse2)
             {
-                Operand mxcsr = context.AddIntrinsic(Intrinsic.X86Stmxcsr);
+                Operand mxcsr = context.AddIntrinsicInt(Intrinsic.X86Stmxcsr);
 
                 Operand fzTrue = getFpFlag(FPState.FzFlag);
                 Operand r0True = getFpFlag(FPState.RMode0Flag);
@@ -192,7 +192,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse2)
             {
-                Operand mxcsr = context.AddIntrinsic(Intrinsic.X86Stmxcsr);
+                Operand mxcsr = context.AddIntrinsicInt(Intrinsic.X86Stmxcsr);
 
                 // Unset round mode (to nearest) and ftz.
                 mxcsr = context.BitwiseAnd(mxcsr, Const(~(int)(Mxcsr.Ftz | Mxcsr.Rhi | Mxcsr.Rlo)));
