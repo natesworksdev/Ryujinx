@@ -189,22 +189,23 @@ namespace ARMeilleure.Translation
             }
         }
 
-        public void EnterFtzAndDazMode()
+        public void EnterArmFpMode()
         {
             if (Optimizations.UseSse2)
             {
                 Operand isTrue = InstEmitHelper.GetFpFlag(FPState.FzFlag);
 
                 Operand lblTrue = Label();
+                // Ftz is already disabled coming from outside ARM FP mode.
                 BranchIfFalse(lblTrue, isTrue);
 
-                AddIntrinsicNoRet(Intrinsic.X86Mxcsrmb, Const((int)(Mxcsr.Ftz | Mxcsr.Um | Mxcsr.Dm | Mxcsr.Daz)));
+                AddIntrinsicNoRet(Intrinsic.X86Mxcsrmb, Const((int)(Mxcsr.Ftz | Mxcsr.Um | Mxcsr.Dm)));
 
                 MarkLabel(lblTrue);
             }
         }
 
-        public void UpdateFtzAndDazMode()
+        public void UpdateArmFpMode()
         {
             if (Optimizations.UseSse2)
             {
@@ -214,18 +215,18 @@ namespace ARMeilleure.Translation
                 Operand end = Label();
                 BranchIfFalse(lblTrue, isTrue);
 
-                AddIntrinsicNoRet(Intrinsic.X86Mxcsrmb, Const((int)(Mxcsr.Ftz | Mxcsr.Um | Mxcsr.Dm | Mxcsr.Daz)));
+                AddIntrinsicNoRet(Intrinsic.X86Mxcsrmb, Const((int)(Mxcsr.Ftz | Mxcsr.Um | Mxcsr.Dm)));
                 Branch(end);
 
                 MarkLabel(lblTrue);
 
-                AddIntrinsicNoRet(Intrinsic.X86Mxcsrub, Const((int)(Mxcsr.Ftz | Mxcsr.Daz)));
+                AddIntrinsicNoRet(Intrinsic.X86Mxcsrub, Const((int)Mxcsr.Ftz));
 
                 MarkLabel(end);
             }
         }
 
-        public void ExitFtzAndDazMode()
+        public void ExitArmFpMode()
         {
             if (Optimizations.UseSse2)
             {
@@ -234,7 +235,8 @@ namespace ARMeilleure.Translation
                 Operand lblTrue = Label();
                 BranchIfFalse(lblTrue, isTrue);
 
-                AddIntrinsicNoRet(Intrinsic.X86Mxcsrub, Const((int)(Mxcsr.Ftz | Mxcsr.Daz)));
+                // Clear Ftz flag for exiting ARM FP mode.
+                AddIntrinsicNoRet(Intrinsic.X86Mxcsrub, Const((int)Mxcsr.Ftz));
 
                 MarkLabel(lblTrue);
             }

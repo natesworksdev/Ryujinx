@@ -1197,11 +1197,11 @@ namespace ARMeilleure.Instructions
             Array.Resize(ref callArgs, callArgs.Length + 1);
             callArgs[callArgs.Length - 1] = Const(1);
 
-            context.ExitFtzAndDazMode();
+            context.ExitArmFpMode();
             context.StoreToContext();
             Operand res = context.Call(info, callArgs);
             context.LoadFromContext();
-            context.EnterFtzAndDazMode();
+            context.EnterArmFpMode();
 
             return res;
         }

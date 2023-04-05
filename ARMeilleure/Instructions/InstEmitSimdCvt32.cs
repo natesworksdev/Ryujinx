@@ -356,11 +356,11 @@ namespace ARMeilleure.Instructions
                         ? typeof(SoftFloat64_16).GetMethod(nameof(SoftFloat64_16.FPConvert))
                         : typeof(SoftFloat32_16).GetMethod(nameof(SoftFloat32_16.FPConvert));
 
-                    context.ExitFtzAndDazMode();
+                    context.ExitArmFpMode();
                     context.StoreToContext();
                     Operand res = context.Call(method, src);
                     context.LoadFromContext();
-                    context.EnterFtzAndDazMode();
+                    context.EnterArmFpMode();
 
                     InsertScalar16(context, op.Vd, op.T, res);
                 }
@@ -375,11 +375,11 @@ namespace ARMeilleure.Instructions
                         : typeof(SoftFloat16_32).GetMethod(nameof(SoftFloat16_32.FPConvert));
 
 
-                    context.ExitFtzAndDazMode();
+                    context.ExitArmFpMode();
                     context.StoreToContext();
                     Operand res = context.Call(method, src);
                     context.LoadFromContext();
-                    context.EnterFtzAndDazMode();
+                    context.EnterArmFpMode();
 
                     InsertScalar(context, op.Vd, res);
                 }

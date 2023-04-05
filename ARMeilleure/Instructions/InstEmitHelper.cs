@@ -262,7 +262,7 @@ namespace ARMeilleure.Instructions
 
             if (stateFlag == FPState.FzFlag)
             {
-                context.UpdateFtzAndDazMode();
+                context.UpdateArmFpMode();
             }
         }
     }

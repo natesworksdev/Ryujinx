@@ -220,12 +220,12 @@ namespace ARMeilleure.Translation
         }
 
         /// <summary>
-        /// Emits code that syncs the state of the Fz flag before executing guest code, or returns it to normal.
+        /// Emits code that syncs FP state before executing guest code, or returns it to normal.
         /// </summary>
         /// <param name="context">Emitter context for the method</param>
         /// <param name="nativeContext">Pointer to the native context</param>
         /// <param name="enter">True if entering guest code, false otherwise</param>
-        private void EmitSyncFzContext(EmitterContext context, Operand nativeContext, bool enter)
+        private void EmitSyncFpContext(EmitterContext context, Operand nativeContext, bool enter)
         {
             if (Optimizations.UseSse2)
             {
@@ -239,11 +239,11 @@ namespace ARMeilleure.Translation
 
                 if (enter)
                 {
-                    context.AddIntrinsicNoRet(Intrinsic.X86Mxcsrmb, Const((int)(Mxcsr.Ftz | Mxcsr.Um | Mxcsr.Dm | Mxcsr.Daz)));
+                    context.AddIntrinsicNoRet(Intrinsic.X86Mxcsrmb, Const((int)(Mxcsr.Ftz | Mxcsr.Um | Mxcsr.Dm)));
                 }
                 else
                 {
-                    context.AddIntrinsicNoRet(Intrinsic.X86Mxcsrub, Const((int)(Mxcsr.Ftz | Mxcsr.Daz)));
+                    context.AddIntrinsicNoRet(Intrinsic.X86Mxcsrub, Const((int)Mxcsr.Ftz));
                 }
 
                 context.MarkLabel(endLabel);
@@ -269,7 +269,7 @@ namespace ARMeilleure.Translation
             Operand runningAddress = context.Add(nativeContext, Const((ulong)NativeContext.GetRunningOffset()));
             Operand dispatchAddress = context.Add(nativeContext, Const((ulong)NativeContext.GetDispatchAddressOffset()));
 
-            EmitSyncFzContext(context, nativeContext, true);
+            EmitSyncFpContext(context, nativeContext, true);
 
             context.MarkLabel(beginLbl);
             context.Store(dispatchAddress, guestAddress);
@@ -280,7 +280,7 @@ namespace ARMeilleure.Translation
 
             context.MarkLabel(endLbl);
 
-            EmitSyncFzContext(context, nativeContext, false);
+            EmitSyncFpContext(context, nativeContext, false);
 
             context.Return();
 
@@ -302,9 +302,9 @@ namespace ARMeilleure.Translation
             Operand nativeContext = context.LoadArgument(OperandType.I64, 0);
             Operand guestMethod = context.LoadArgument(OperandType.I64, 1);
 
-            EmitSyncFzContext(context, nativeContext, true);
+            EmitSyncFpContext(context, nativeContext, true);
             Operand returnValue = context.Call(guestMethod, OperandType.I64, nativeContext);
-            EmitSyncFzContext(context, nativeContext, false);
+            EmitSyncFpContext(context, nativeContext, false);
 
             context.Return(returnValue);
 

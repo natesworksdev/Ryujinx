@@ -465,11 +465,11 @@ namespace ARMeilleure.Instructions
                 ? typeof(SoftFloat32).GetMethod(name)
                 : typeof(SoftFloat64).GetMethod(name);
 
-            context.ExitFtzAndDazMode();
+            context.ExitArmFpMode();
             context.StoreToContext();
             Operand res = context.Call(info, callArgs);
             context.LoadFromContext();
-            context.EnterFtzAndDazMode();
+            context.EnterArmFpMode();
 
             return res;
         }
