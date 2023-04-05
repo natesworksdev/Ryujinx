@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Memory.Range;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 
 namespace Ryujinx.Memory
@@ -76,6 +77,21 @@ namespace Ryujinx.Memory
         /// <param name="data">Data to be written</param>
         /// <exception cref="InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
         void Write(ulong va, ReadOnlySpan<byte> data);
+
+        /// <summary>
+        /// Writes data to CPU mapped memory, with write tracking.
+        /// </summary>
+        /// <param name="va">Virtual address to write the data into</param>
+        /// <param name="data">Data to be written</param>
+        /// <exception cref="InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
+        public void Write(ulong va, ReadOnlySequence<byte> data)
+        {
+            foreach (ReadOnlyMemory<byte> segment in data)
+            {
+                Write(va, segment.Span);
+                va += (ulong)segment.Length;
+            }
+        }
 
         /// <summary>
         /// Writes data to the application process, returning false if the data was not changed.
@@ -175,7 +191,8 @@ namespace Ryujinx.Memory
         /// <param name="size">Size of the region</param>
         /// <param name="write">True if the region was written, false if read</param>
         /// <param name="precise">True if the access is precise, false otherwise</param>
-        void SignalMemoryTracking(ulong va, ulong size, bool write, bool precise = false);
+        /// <param name="exemptId">Optional ID of the handles that should not be signalled</param>
+        void SignalMemoryTracking(ulong va, ulong size, bool write, bool precise = false, int? exemptId = null);
 
         /// <summary>
         /// Reprotect a region of virtual memory for tracking.

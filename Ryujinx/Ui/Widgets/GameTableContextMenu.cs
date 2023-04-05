@@ -15,6 +15,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
 using Ryujinx.Ui.Windows;
@@ -224,7 +225,7 @@ namespace Ryujinx.Ui.Widgets
                             {
                                 using var ncaFile = new UniqueRef<IFile>();
 
-                                pfs.OpenFile(ref ncaFile.Ref(), fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                                pfs.OpenFile(ref ncaFile.Ref, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
                                 Nca nca = new Nca(_virtualFileSystem.KeySet, ncaFile.Release().AsStorage());
 
@@ -260,7 +261,7 @@ namespace Ryujinx.Ui.Widgets
                             return;
                         }
 
-                        (Nca updatePatchNca, _) = ApplicationLoader.GetGameUpdateData(_virtualFileSystem, mainNca.Header.TitleId.ToString("x16"), programIndex, out _);
+                        (Nca updatePatchNca, _) = ApplicationLibrary.GetGameUpdateData(_virtualFileSystem, mainNca.Header.TitleId.ToString("x16"), programIndex, out _);
 
                         if (updatePatchNca != null)
                         {
@@ -280,8 +281,8 @@ namespace Ryujinx.Ui.Widgets
                         using var uniqueSourceFs = new UniqueRef<IFileSystem>(ncaFileSystem);
                         using var uniqueOutputFs = new UniqueRef<IFileSystem>(new LocalFileSystem(destination));
 
-                        fsClient.Register(source.ToU8Span(), ref uniqueSourceFs.Ref());
-                        fsClient.Register(output.ToU8Span(), ref uniqueOutputFs.Ref());
+                        fsClient.Register(source.ToU8Span(), ref uniqueSourceFs.Ref);
+                        fsClient.Register(output.ToU8Span(), ref uniqueOutputFs.Ref);
 
                         (Result? resultCode, bool canceled) = CopyDirectory(fsClient, $"{source}:/", $"{output}:/");
 

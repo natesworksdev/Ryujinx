@@ -127,6 +127,12 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 int layers = Math.Min(Info.GetLayers(), destinationView.Info.GetLayers() - firstLayer);
                 _renderer.TextureCopyMS.CopyNonMSToMS(this, destinationView, 0, firstLayer, layers);
             }
+            else if (destinationView.Info.BytesPerPixel != Info.BytesPerPixel)
+            {
+                int layers = Math.Min(Info.GetLayers(), destinationView.Info.GetLayers() - firstLayer);
+                int levels = Math.Min(Info.Levels, destinationView.Info.Levels - firstLevel);
+                _renderer.TextureCopyIncompatible.CopyIncompatibleFormats(this, destinationView, 0, firstLayer, 0, firstLevel, layers, levels);
+            }
             else
             {
                 _renderer.TextureCopy.CopyUnscaled(this, destinationView, 0, firstLayer, 0, firstLevel);
@@ -145,6 +151,10 @@ namespace Ryujinx.Graphics.OpenGL.Image
             {
                 _renderer.TextureCopyMS.CopyNonMSToMS(this, destinationView, srcLayer, dstLayer, 1);
             }
+            else if (destinationView.Info.BytesPerPixel != Info.BytesPerPixel)
+            {
+                _renderer.TextureCopyIncompatible.CopyIncompatibleFormats(this, destinationView, srcLayer, dstLayer, srcLevel, dstLevel, 1, 1);
+            }
             else
             {
                 _renderer.TextureCopy.CopyUnscaled(this, destinationView, srcLayer, dstLayer, srcLevel, dstLevel, 1, 1);
@@ -156,7 +166,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             _renderer.TextureCopy.Copy(this, (TextureView)destination, srcRegion, dstRegion, linearFilter);
         }
 
-        public unsafe ReadOnlySpan<byte> GetData()
+        public unsafe PinnedSpan<byte> GetData()
         {
             int size = 0;
             int levels = Info.GetLevelsClamped();
@@ -186,16 +196,16 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 data = FormatConverter.ConvertD24S8ToS8D24(data);
             }
 
-            return data;
+            return PinnedSpan<byte>.UnsafeFromSpan(data);
         }
 
-        public unsafe ReadOnlySpan<byte> GetData(int layer, int level)
+        public unsafe PinnedSpan<byte> GetData(int layer, int level)
         {
             int size = Info.GetMipSize(level);
 
             if (HwCapabilities.UsePersistentBufferForFlush)
             {
-                return _renderer.PersistentBuffers.Default.GetTextureData(this, size, layer, level);
+                return PinnedSpan<byte>.UnsafeFromSpan(_renderer.PersistentBuffers.Default.GetTextureData(this, size, layer, level));
             }
             else
             {
@@ -203,7 +213,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
                 int offset = WriteTo2D(target, layer, level);
 
-                return new ReadOnlySpan<byte>(target.ToPointer(), size).Slice(offset);
+                return new PinnedSpan<byte>((byte*)target.ToPointer() + offset, size);
             }
         }
 

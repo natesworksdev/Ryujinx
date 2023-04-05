@@ -5,7 +5,7 @@ using Ryujinx.Common.Utilities;
 using Ryujinx.Ui.Common.Configuration.System;
 using Ryujinx.Ui.Common.Configuration.Ui;
 using System.Collections.Generic;
-using System.IO;
+using System.Text.Json.Nodes;
 
 namespace Ryujinx.Ui.Common.Configuration
 {
@@ -14,7 +14,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 43;
+        public const int CurrentVersion = 44;
 
         /// <summary>
         /// Version of the configuration file format
@@ -50,6 +50,21 @@ namespace Ryujinx.Ui.Common.Configuration
         /// Aspect Ratio applied to the renderer window.
         /// </summary>
         public AspectRatio AspectRatio { get; set; }
+
+        /// <summary>
+        /// Applies anti-aliasing to the renderer.
+        /// </summary>
+        public AntiAliasing AntiAliasing { get; set; }
+
+        /// <summary>
+        /// Sets the framebuffer upscaling type.
+        /// </summary>
+        public ScalingFilter ScalingFilter { get; set; }
+
+        /// <summary>
+        /// Sets the framebuffer upscaling level.
+        /// </summary>
+        public int ScalingFilterLevel { get; set; }
 
         /// <summary>
         /// Dumps shaders in this local directory
@@ -306,14 +321,14 @@ namespace Ryujinx.Ui.Common.Configuration
         /// </summary>
         /// <remarks>Kept for file format compatibility (to avoid possible failure when parsing configuration on old versions)</remarks>
         /// TODO: Remove this when those older versions aren't in use anymore.
-        public List<object> KeyboardConfig { get; set; }
+        public List<JsonObject> KeyboardConfig { get; set; }
 
         /// <summary>
         /// Legacy controller control bindings
         /// </summary>
         /// <remarks>Kept for file format compatibility (to avoid possible failure when parsing configuration on old versions)</remarks>
         /// TODO: Remove this when those older versions aren't in use anymore.
-        public List<object> ControllerConfig { get; set; }
+        public List<JsonObject> ControllerConfig { get; set; }
 
         /// <summary>
         /// Input configurations
@@ -339,11 +354,12 @@ namespace Ryujinx.Ui.Common.Configuration
         /// Loads a configuration file from disk
         /// </summary>
         /// <param name="path">The path to the JSON configuration file</param>
+        /// <param name="configurationFileFormat">Parsed configuration file</param>
         public static bool TryLoad(string path, out ConfigurationFileFormat configurationFileFormat)
         {
             try
             {
-                configurationFileFormat = JsonHelper.DeserializeFromFile<ConfigurationFileFormat>(path);
+                configurationFileFormat = JsonHelper.DeserializeFromFile(path, ConfigurationFileFormatSettings.SerializerContext.ConfigurationFileFormat);
 
                 return configurationFileFormat.Version != 0;
             }
@@ -361,8 +377,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <param name="path">The path to the JSON configuration file</param>
         public void SaveConfig(string path)
         {
-            using FileStream fileStream = File.Create(path, 4096, FileOptions.WriteThrough);
-            JsonHelper.Serialize(fileStream, this, true);
+            JsonHelper.SerializeToFile(path, this, ConfigurationFileFormatSettings.SerializerContext.ConfigurationFileFormat);
         }
     }
 }

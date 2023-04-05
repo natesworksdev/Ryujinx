@@ -2,11 +2,14 @@ using Gtk;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
+using Ryujinx.Common.Configuration.Hid.Controller.Motion;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
+using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
-using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Input;
+using Ryujinx.Input.Assigner;
 using Ryujinx.Input.GTK3;
+using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Widgets;
 using System;
 using System.Collections.Generic;
@@ -14,15 +17,10 @@ using System.IO;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
-
-using GUI = Gtk.Builder.ObjectAttribute;
-using Key = Ryujinx.Common.Configuration.Hid.Key;
-
 using ConfigGamepadInputId = Ryujinx.Common.Configuration.Hid.Controller.GamepadInputId;
 using ConfigStickInputId = Ryujinx.Common.Configuration.Hid.Controller.StickInputId;
-using Ryujinx.Common.Configuration.Hid.Controller.Motion;
-using Ryujinx.Common.Logging;
-using Ryujinx.Input.Assigner;
+using GUI = Gtk.Builder.ObjectAttribute;
+using Key = Ryujinx.Common.Configuration.Hid.Key;
 
 namespace Ryujinx.Ui.Windows
 {
@@ -116,6 +114,8 @@ namespace Ryujinx.Ui.Windows
         private IGamepad _selectedGamepad;
         private bool _mousePressed;
         private bool _middleMousePressed;
+
+        private static readonly InputConfigJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
         public ControllerWindow(MainWindow mainWindow, PlayerIndex controllerId) : this(mainWindow, new Builder("Ryujinx.Ui.Windows.ControllerWindow.glade"), controllerId) { }
 
@@ -1122,10 +1122,7 @@ namespace Ryujinx.Ui.Windows
 
                 try
                 {
-                    using (Stream stream = File.OpenRead(path))
-                    {
-                        config = JsonHelper.Deserialize<InputConfig>(stream);
-                    }
+                    config = JsonHelper.DeserializeFromFile(path, SerializerContext.InputConfig);
                 }
                 catch (JsonException) { }
             }
@@ -1147,9 +1144,7 @@ namespace Ryujinx.Ui.Windows
             if (profileDialog.Run() == (int)ResponseType.Ok)
             {
                 string path = System.IO.Path.Combine(GetProfileBasePath(), profileDialog.FileName);
-                string jsonString;
-
-                jsonString = JsonHelper.Serialize(inputConfig, true);
+                string jsonString = JsonHelper.Serialize(inputConfig, SerializerContext.InputConfig);
 
                 File.WriteAllText(path, jsonString);
             }

@@ -78,7 +78,7 @@ namespace Ryujinx.Memory.Tests
 
         IEnumerable<MemoryRange> IVirtualMemoryManager.GetPhysicalRegions(ulong va, ulong size)
         {
-            return NoMappings ? new MemoryRange[0] : new MemoryRange[] { new MemoryRange(va, size) };
+            return NoMappings ? Array.Empty<MemoryRange>() : new MemoryRange[] { new MemoryRange(va, size) };
         }
 
         public bool IsMapped(ulong va)
@@ -96,7 +96,7 @@ namespace Ryujinx.Memory.Tests
             throw new NotImplementedException();
         }
 
-        public void SignalMemoryTracking(ulong va, ulong size, bool write, bool precise = false)
+        public void SignalMemoryTracking(ulong va, ulong size, bool write, bool precise = false, int? exemptId = null)
         {
             throw new NotImplementedException();
         }

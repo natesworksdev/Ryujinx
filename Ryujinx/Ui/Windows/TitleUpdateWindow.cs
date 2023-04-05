@@ -7,17 +7,17 @@ using LibHac.Ns;
 using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
+using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Widgets;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-
-using GUI        = Gtk.Builder.ObjectAttribute;
-using JsonHelper = Ryujinx.Common.Utilities.JsonHelper;
+using GUI         = Gtk.Builder.ObjectAttribute;
+using SpanHelpers = LibHac.Common.SpanHelpers;
 
 namespace Ryujinx.Ui.Windows
 {
@@ -31,6 +31,7 @@ namespace Ryujinx.Ui.Windows
         private TitleUpdateMetadata _titleUpdateWindowData;
 
         private readonly Dictionary<RadioButton, string> _radioButtonToPathDictionary;
+        private static readonly TitleUpdateMetadataJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
 #pragma warning disable CS0649, IDE0044
         [GUI] Label       _baseTitleInfoLabel;
@@ -53,7 +54,7 @@ namespace Ryujinx.Ui.Windows
 
             try
             {
-                _titleUpdateWindowData = JsonHelper.DeserializeFromFile<TitleUpdateMetadata>(_updateJsonPath);
+                _titleUpdateWindowData = JsonHelper.DeserializeFromFile(_updateJsonPath, SerializerContext.TitleUpdateMetadata);
             }
             catch
             {
@@ -94,7 +95,7 @@ namespace Ryujinx.Ui.Windows
 
                     try
                     {
-                        (Nca patchNca, Nca controlNca) = ApplicationLoader.GetGameUpdateDataFromPartition(_virtualFileSystem, nsp, _titleId, 0);
+                        (Nca patchNca, Nca controlNca) = ApplicationLibrary.GetGameUpdateDataFromPartition(_virtualFileSystem, nsp, _titleId, 0);
 
                         if (controlNca != null && patchNca != null)
                         {
@@ -102,7 +103,7 @@ namespace Ryujinx.Ui.Windows
 
                             using var nacpFile = new UniqueRef<IFile>();
 
-                            controlNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None).OpenFile(ref nacpFile.Ref(), "/control.nacp".ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                            controlNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None).OpenFile(ref nacpFile.Ref, "/control.nacp".ToU8Span(), OpenMode.Read).ThrowIfFailure();
                             nacpFile.Get.Read(out _, 0, SpanHelpers.AsByteSpan(ref controlData), ReadOption.None).ThrowIfFailure();
 
                             RadioButton radioButton = new RadioButton($"Version {controlData.DisplayVersionString.ToString()} - {path}");
@@ -192,10 +193,7 @@ namespace Ryujinx.Ui.Windows
                 }
             }
 
-            using (FileStream dlcJsonStream = File.Create(_updateJsonPath, 4096, FileOptions.WriteThrough))
-            {
-                dlcJsonStream.Write(Encoding.UTF8.GetBytes(JsonHelper.Serialize(_titleUpdateWindowData, true)));
-            }
+            JsonHelper.SerializeToFile(_updateJsonPath, _titleUpdateWindowData, SerializerContext.TitleUpdateMetadata);
 
             _parent.UpdateGameTable();
 

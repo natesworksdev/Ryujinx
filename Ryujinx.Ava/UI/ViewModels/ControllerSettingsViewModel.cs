@@ -3,11 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Svg.Skia;
 using Avalonia.Threading;
-using LibHac.Bcat;
-using LibHac.Tools.Fs;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Input;
-using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.Windows;
@@ -53,6 +50,8 @@ namespace Ryujinx.Ava.UI.ViewModels
         private string _profileName;
         private bool _isLoaded;
         private readonly UserControl _owner;
+
+        private static readonly InputConfigJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
         public IGamepadDriver AvaloniaKeyboardDriver { get; }
         public IGamepad SelectedGamepad { get; private set; }
@@ -709,10 +708,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 try
                 {
-                    using (Stream stream = File.OpenRead(path))
-                    {
-                        config = JsonHelper.Deserialize<InputConfig>(stream);
-                    }
+                    config = JsonHelper.DeserializeFromFile(path, SerializerContext.InputConfig);
                 }
                 catch (JsonException) { }
                 catch (InvalidOperationException)
@@ -778,7 +774,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                     config.ControllerType = Controllers[_controller].Type;
 
-                    string jsonString = JsonHelper.Serialize(config, true);
+                    string jsonString = JsonHelper.Serialize(config, SerializerContext.InputConfig);
 
                     await File.WriteAllTextAsync(path, jsonString);
 

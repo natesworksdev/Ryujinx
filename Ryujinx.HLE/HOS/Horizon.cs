@@ -35,6 +35,7 @@ using Ryujinx.HLE.HOS.Services.SurfaceFlinger;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Executables;
+using Ryujinx.HLE.Loaders.Processes;
 using Ryujinx.Horizon;
 using System;
 using System.Collections.Generic;
@@ -338,7 +339,7 @@ namespace Ryujinx.HLE.HOS
 
                 ProcessCreationInfo creationInfo = new ProcessCreationInfo("Service", 1, 0, 0x8000000, 1, flags, 0, 0);
 
-                int[] defaultCapabilities = new int[]
+                uint[] defaultCapabilities = new uint[]
                 {
                     0x030363F7,
                     0x1FFFFFCF,
@@ -358,11 +359,11 @@ namespace Ryujinx.HLE.HOS
             }
         }
 
-        public void LoadKip(string kipPath)
+        public bool LoadKip(string kipPath)
         {
             using var kipFile = new SharedRef<IStorage>(new LocalStorage(kipPath, FileAccess.Read));
 
-            ProgramLoader.LoadKip(KernelContext, new KipExecutable(in kipFile));
+            return ProcessLoaderHelper.LoadKip(KernelContext, new KipExecutable(in kipFile));
         }
 
         public void ChangeDockedModeState(bool newState)

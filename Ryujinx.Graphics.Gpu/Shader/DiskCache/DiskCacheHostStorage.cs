@@ -774,6 +774,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 sBuffers,
                 textures,
                 images,
+                ShaderIdentification.None,
+                0,
                 dataInfo.Stage,
                 dataInfo.UsesInstanceId,
                 dataInfo.UsesDrawParameters,

@@ -14,46 +14,40 @@ namespace Ryujinx.Graphics.Vulkan
     public unsafe static class VulkanInitialization
     {
         private const uint InvalidIndex = uint.MaxValue;
+        private static uint MinimalVulkanVersion = Vk.Version11.Value;
+        private static uint MinimalInstanceVulkanVersion = Vk.Version12.Value;
+        private static uint MaximumVulkanVersion = Vk.Version12.Value;
         private const string AppName = "Ryujinx.Graphics.Vulkan";
         private const int QueuesCount = 2;
 
-        public static string[] DesirableExtensions { get; } = new string[]
+        private static readonly string[] _desirableExtensions = new string[]
         {
             ExtConditionalRendering.ExtensionName,
             ExtExtendedDynamicState.ExtensionName,
             ExtTransformFeedback.ExtensionName,
             KhrDrawIndirectCount.ExtensionName,
             KhrPushDescriptor.ExtensionName,
+            "VK_EXT_blend_operation_advanced",
             "VK_EXT_custom_border_color",
             "VK_EXT_descriptor_indexing", // Enabling this works around an issue with disposed buffer bindings on RADV.
             "VK_EXT_fragment_shader_interlock",
             "VK_EXT_index_type_uint8",
+            "VK_EXT_primitive_topology_list_restart",
             "VK_EXT_robustness2",
             "VK_EXT_shader_stencil_export",
             "VK_KHR_shader_float16_int8",
             "VK_EXT_shader_subgroup_ballot",
             "VK_EXT_subgroup_size_control",
-            "VK_NV_geometry_shader_passthrough"
+            "VK_NV_geometry_shader_passthrough",
+            "VK_KHR_portability_subset", // By spec, we should enable this if present.
         };
 
-        public static string[] RequiredExtensions { get; } = new string[]
+        private static readonly string[] _requiredExtensions = new string[]
         {
             KhrSwapchain.ExtensionName
         };
 
-        private static string[] _excludedMessages = new string[]
-        {
-            // NOTE: Done on purpose right now.
-            "UNASSIGNED-CoreValidation-Shader-OutputNotConsumed",
-            // TODO: Figure out if fixable
-            "VUID-vkCmdDrawIndexed-None-04584",
-            // TODO: Might be worth looking into making this happy to possibly optimize copies.
-            "UNASSIGNED-CoreValidation-DrawState-InvalidImageLayout",
-            // TODO: Fix this, it's causing too much noise right now.
-            "VUID-VkSubpassDependency-srcSubpass-00867"
-        };
-
-        internal static Instance CreateInstance(Vk api, GraphicsDebugLevel logLevel, string[] requiredExtensions, out ExtDebugUtils debugUtils, out DebugUtilsMessengerEXT debugUtilsMessenger)
+        internal static Instance CreateInstance(Vk api, GraphicsDebugLevel logLevel, string[] requiredExtensions)
         {
             var enabledLayers = new List<string>();
 
@@ -89,7 +83,12 @@ namespace Ryujinx.Graphics.Vulkan
                 AddAvailableLayer("VK_LAYER_KHRONOS_validation");
             }
 
-            var enabledExtensions = requiredExtensions.Append(ExtDebugUtils.ExtensionName).ToArray();
+            var enabledExtensions = requiredExtensions;
+
+            if (api.IsInstanceExtensionPresent("VK_EXT_debug_utils"))
+            {
+                enabledExtensions = enabledExtensions.Append(ExtDebugUtils.ExtensionName).ToArray();
+            }
 
             var appName = Marshal.StringToHGlobalAnsi(AppName);
 
@@ -99,7 +98,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ApplicationVersion = 1,
                 PEngineName = (byte*)appName,
                 EngineVersion = 1,
-                ApiVersion = Vk.Version12.Value
+                ApiVersion = MaximumVulkanVersion
             };
 
             IntPtr* ppEnabledExtensions = stackalloc IntPtr[enabledExtensions.Length];
@@ -139,45 +138,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Marshal.FreeHGlobal(ppEnabledLayers[i]);
             }
 
-            CreateDebugMessenger(api, logLevel, instance, out debugUtils, out debugUtilsMessenger);
-
             return instance;
-        }
-
-        private unsafe static uint DebugMessenger(
-            DebugUtilsMessageSeverityFlagsEXT messageSeverity,
-            DebugUtilsMessageTypeFlagsEXT messageTypes,
-            DebugUtilsMessengerCallbackDataEXT* pCallbackData,
-            void* pUserData)
-        {
-            var msg = Marshal.PtrToStringAnsi((IntPtr)pCallbackData->PMessage);
-
-            foreach (string excludedMessagePart in _excludedMessages)
-            {
-                if (msg.Contains(excludedMessagePart))
-                {
-                    return 0;
-                }
-            }
-
-            if (messageSeverity.HasFlag(DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt))
-            {
-                Logger.Error?.Print(LogClass.Gpu, msg);
-            }
-            else if (messageSeverity.HasFlag(DebugUtilsMessageSeverityFlagsEXT.WarningBitExt))
-            {
-                Logger.Warning?.Print(LogClass.Gpu, msg);
-            }
-            else if (messageSeverity.HasFlag(DebugUtilsMessageSeverityFlagsEXT.InfoBitExt))
-            {
-                Logger.Info?.Print(LogClass.Gpu, msg);
-            }
-            else // if (messageSeverity.HasFlag(DebugUtilsMessageSeverityFlagsEXT.VerboseBitExt))
-            {
-                Logger.Debug?.Print(LogClass.Gpu, msg);
-            }
-
-            return 0;
         }
 
         internal static PhysicalDevice FindSuitablePhysicalDevice(Vk api, Instance instance, SurfaceKHR surface, string preferredGpuId)
@@ -224,7 +185,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ApplicationVersion = 1,
                 PEngineName = (byte*)appName,
                 EngineVersion = 1,
-                ApiVersion = Vk.Version12.Value
+                ApiVersion = MaximumVulkanVersion
             };
 
             var instanceCreateInfo = new InstanceCreateInfo
@@ -238,6 +199,27 @@ namespace Ryujinx.Graphics.Vulkan
             };
 
             api.CreateInstance(in instanceCreateInfo, null, out var instance).ThrowOnError();
+
+            // We ensure that vkEnumerateInstanceVersion is present (added in 1.1).
+            // If the instance doesn't support it, no device is going to be 1.1 compatible.
+            if (api.GetInstanceProcAddr(instance, "vkEnumerateInstanceVersion") == IntPtr.Zero)
+            {
+                api.DestroyInstance(instance, null);
+
+                return Array.Empty<DeviceInfo>();
+            }
+
+            // We currently assume that the instance is compatible with Vulkan 1.2
+            // TODO: Remove this once we relax our initialization codepaths.
+            uint instanceApiVerison = 0;
+            api.EnumerateInstanceVersion(ref instanceApiVerison).ThrowOnError();
+
+            if (instanceApiVerison < MinimalInstanceVulkanVersion)
+            {
+                api.DestroyInstance(instance, null);
+
+                return Array.Empty<DeviceInfo>();
+            }
 
             Marshal.FreeHGlobal(appName);
 
@@ -258,6 +240,11 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 var physicalDevice = physicalDevices[i];
                 api.GetPhysicalDeviceProperties(physicalDevice, out var properties);
+
+                if (properties.ApiVersion < MinimalVulkanVersion)
+                {
+                    continue;
+                }
 
                 devices[i] = new DeviceInfo(
                     StringFromIdPair(properties.VendorID, properties.DeviceID),
@@ -305,14 +292,14 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     string extensionName = Marshal.PtrToStringAnsi((IntPtr)pExtensionProperties[i].ExtensionName);
 
-                    if (RequiredExtensions.Contains(extensionName))
+                    if (_requiredExtensions.Contains(extensionName))
                     {
                         extensionMatches++;
                     }
                 }
             }
 
-            return extensionMatches == RequiredExtensions.Length && FindSuitableQueueFamily(api, physicalDevice, surface, out _) != InvalidIndex;
+            return extensionMatches == _requiredExtensions.Length && FindSuitableQueueFamily(api, physicalDevice, surface, out _) != InvalidIndex;
         }
 
         internal static uint FindSuitableQueueFamily(Vk api, PhysicalDevice physicalDevice, SurfaceKHR surface, out uint queueCount)
@@ -398,6 +385,17 @@ namespace Ryujinx.Graphics.Vulkan
                 features2.PNext = &supportedFeaturesCustomBorderColor;
             }
 
+            PhysicalDevicePrimitiveTopologyListRestartFeaturesEXT supportedFeaturesPrimitiveTopologyListRestart = new PhysicalDevicePrimitiveTopologyListRestartFeaturesEXT()
+            {
+                SType = StructureType.PhysicalDevicePrimitiveTopologyListRestartFeaturesExt,
+                PNext = features2.PNext
+            };
+
+            if (supportedExtensions.Contains("VK_EXT_primitive_topology_list_restart"))
+            {
+                features2.PNext = &supportedFeaturesPrimitiveTopologyListRestart;
+            }
+
             PhysicalDeviceTransformFeedbackFeaturesEXT supportedFeaturesTransformFeedback = new PhysicalDeviceTransformFeedbackFeaturesEXT()
             {
                 SType = StructureType.PhysicalDeviceTransformFeedbackFeaturesExt,
@@ -464,6 +462,21 @@ namespace Ryujinx.Graphics.Vulkan
                 };
 
                 pExtendedFeatures = &featuresTransformFeedback;
+            }
+
+            PhysicalDevicePrimitiveTopologyListRestartFeaturesEXT featuresPrimitiveTopologyListRestart;
+
+            if (supportedExtensions.Contains("VK_EXT_primitive_topology_list_restart"))
+            {
+                featuresPrimitiveTopologyListRestart = new PhysicalDevicePrimitiveTopologyListRestartFeaturesEXT()
+                {
+                    SType = StructureType.PhysicalDevicePrimitiveTopologyListRestartFeaturesExt,
+                    PNext = pExtendedFeatures,
+                    PrimitiveTopologyListRestart = supportedFeaturesPrimitiveTopologyListRestart.PrimitiveTopologyListRestart,
+                    PrimitiveTopologyPatchListRestart = supportedFeaturesPrimitiveTopologyListRestart.PrimitiveTopologyPatchListRestart
+                };
+
+                pExtendedFeatures = &featuresPrimitiveTopologyListRestart;
             }
 
             PhysicalDeviceRobustness2FeaturesEXT featuresRobustness2;
@@ -568,7 +581,7 @@ namespace Ryujinx.Graphics.Vulkan
                 pExtendedFeatures = &featuresCustomBorderColor;
             }
 
-            var enabledExtensions = RequiredExtensions.Union(DesirableExtensions.Intersect(supportedExtensions)).ToArray();
+            var enabledExtensions = _requiredExtensions.Union(_desirableExtensions.Intersect(supportedExtensions)).ToArray();
 
             IntPtr* ppEnabledExtensions = stackalloc IntPtr[enabledExtensions.Length];
 
@@ -612,67 +625,6 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             return extensionProperties.Select(x => Marshal.PtrToStringAnsi((IntPtr)x.ExtensionName)).ToArray();
-        }
-
-        internal static CommandBufferPool CreateCommandBufferPool(Vk api, Device device, Queue queue, object queueLock, uint queueFamilyIndex)
-        {
-            return new CommandBufferPool(api, device, queue, queueLock, queueFamilyIndex);
-        }
-
-        internal unsafe static void CreateDebugMessenger(
-            Vk api,
-            GraphicsDebugLevel logLevel,
-            Instance instance,
-            out ExtDebugUtils debugUtils,
-            out DebugUtilsMessengerEXT debugUtilsMessenger)
-        {
-            debugUtils = default;
-
-            if (logLevel != GraphicsDebugLevel.None)
-            {
-                if (!api.TryGetInstanceExtension(instance, out debugUtils))
-                {
-                    debugUtilsMessenger = default;
-                    return;
-                }
-
-                var filterLogType = logLevel switch
-                {
-                    GraphicsDebugLevel.Error => DebugUtilsMessageTypeFlagsEXT.ValidationBitExt,
-                    GraphicsDebugLevel.Slowdowns => DebugUtilsMessageTypeFlagsEXT.ValidationBitExt |
-                                                    DebugUtilsMessageTypeFlagsEXT.PerformanceBitExt,
-                    GraphicsDebugLevel.All => DebugUtilsMessageTypeFlagsEXT.GeneralBitExt |
-                                              DebugUtilsMessageTypeFlagsEXT.ValidationBitExt |
-                                              DebugUtilsMessageTypeFlagsEXT.PerformanceBitExt,
-                    _ => throw new ArgumentException($"Invalid log level \"{logLevel}\".")
-                };
-
-                var filterLogSeverity = logLevel switch
-                {
-                    GraphicsDebugLevel.Error => DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt,
-                    GraphicsDebugLevel.Slowdowns => DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt |
-                                                    DebugUtilsMessageSeverityFlagsEXT.WarningBitExt,
-                    GraphicsDebugLevel.All => DebugUtilsMessageSeverityFlagsEXT.InfoBitExt |
-                                              DebugUtilsMessageSeverityFlagsEXT.WarningBitExt |
-                                              DebugUtilsMessageSeverityFlagsEXT.VerboseBitExt |
-                                              DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt,
-                    _ => throw new ArgumentException($"Invalid log level \"{logLevel}\".")
-                };
-
-                var debugUtilsMessengerCreateInfo = new DebugUtilsMessengerCreateInfoEXT()
-                {
-                    SType = StructureType.DebugUtilsMessengerCreateInfoExt,
-                    MessageType = filterLogType,
-                    MessageSeverity = filterLogSeverity,
-                    PfnUserCallback = new PfnDebugUtilsMessengerCallbackEXT(DebugMessenger)
-                };
-
-                debugUtils.CreateDebugUtilsMessenger(instance, in debugUtilsMessengerCreateInfo, null, out debugUtilsMessenger).ThrowOnError();
-            }
-            else
-            {
-                debugUtilsMessenger = default;
-            }
         }
     }
 }
