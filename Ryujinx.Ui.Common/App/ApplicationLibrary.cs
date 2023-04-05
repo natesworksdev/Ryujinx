@@ -10,8 +10,8 @@ using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
-using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Npdm;
 using Ryujinx.Ui.Common.Configuration;
@@ -19,12 +19,12 @@ using Ryujinx.Ui.Common.Configuration.System;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
-using JsonHelper = Ryujinx.Common.Utilities.JsonHelper;
 using Path = System.IO.Path;
 
 namespace Ryujinx.Ui.App.Common
@@ -43,6 +43,9 @@ namespace Ryujinx.Ui.App.Common
         private readonly VirtualFileSystem _virtualFileSystem;
         private Language                   _desiredTitleLanguage;
         private CancellationTokenSource    _cancellationToken;
+
+        private static readonly ApplicationJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
+        private static readonly TitleUpdateMetadataJsonSerializerContext TitleSerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
         public ApplicationLibrary(VirtualFileSystem virtualFileSystem)
         {
@@ -125,9 +128,9 @@ namespace Ryujinx.Ui.App.Common
                             {
                                 return;
                             }
-                        
+
                             string extension = Path.GetExtension(app).ToLower();
-                        
+
                             if (!File.GetAttributes(app).HasFlag(FileAttributes.Hidden) && extension is ".nsp" or ".pfs0" or ".xci" or ".nca" or ".nro" or ".nso")
                             {
                                 applications.Add(app);
@@ -275,10 +278,9 @@ namespace Ryujinx.Ui.App.Common
                                             controlFs.OpenFile(ref icon.Ref, entry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
                                             using MemoryStream stream = new();
-                                            
+
                                             icon.Get.AsStream().CopyTo(stream);
                                             applicationIcon = stream.ToArray();
-                                            
 
                                             if (applicationIcon != null)
                                             {
@@ -413,7 +415,7 @@ namespace Ryujinx.Ui.App.Common
                     });
 
                     if (appMetadata.LastPlayed != "Never")
-                    { 
+                    {
                         if (!DateTime.TryParse(appMetadata.LastPlayed, out _))
                         {
                             Logger.Warning?.Print(LogClass.Application, $"Last played datetime \"{appMetadata.LastPlayed}\" is invalid for current system culture, skipping (did current culture change?)");
@@ -483,7 +485,7 @@ namespace Ryujinx.Ui.App.Common
 
         private void GetControlFsAndTitleId(PartitionFileSystem pfs, out IFileSystem controlFs, out string titleId)
         {
-            (_, _, Nca controlNca) = ApplicationLoader.GetGameData(_virtualFileSystem, pfs, 0);
+            (_, _, Nca controlNca) = GetGameData(_virtualFileSystem, pfs, 0);
 
             // Return the ControlFS
             controlFs = controlNca?.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None);
@@ -503,14 +505,12 @@ namespace Ryujinx.Ui.App.Common
 
                 appMetadata = new ApplicationMetadata();
 
-                using FileStream stream = File.Create(metadataFile, 4096, FileOptions.WriteThrough);
-
-                JsonHelper.Serialize(stream, appMetadata, true);
+                JsonHelper.SerializeToFile(metadataFile, appMetadata, SerializerContext.ApplicationMetadata);
             }
 
             try
             {
-                appMetadata = JsonHelper.DeserializeFromFile<ApplicationMetadata>(metadataFile);
+                appMetadata = JsonHelper.DeserializeFromFile(metadataFile, SerializerContext.ApplicationMetadata);
             }
             catch (JsonException)
             {
@@ -523,9 +523,7 @@ namespace Ryujinx.Ui.App.Common
             {
                 modifyFunction(appMetadata);
 
-                using FileStream stream = File.Create(metadataFile, 4096, FileOptions.WriteThrough);
-
-                JsonHelper.Serialize(stream, appMetadata, true);
+                JsonHelper.SerializeToFile(metadataFile, appMetadata, SerializerContext.ApplicationMetadata);
             }
 
             return appMetadata;
@@ -779,12 +777,12 @@ namespace Ryujinx.Ui.App.Common
         private bool IsUpdateApplied(string titleId, out IFileSystem updatedControlFs)
         {
             updatedControlFs = null;
-            
+
             string updatePath = "(unknown)";
 
             try
             {
-                (Nca patchNca, Nca controlNca) = ApplicationLoader.GetGameUpdateData(_virtualFileSystem, titleId, 0, out updatePath);
+                (Nca patchNca, Nca controlNca) = GetGameUpdateData(_virtualFileSystem, titleId, 0, out updatePath);
 
                 if (patchNca != null && controlNca != null)
                 {
@@ -803,6 +801,120 @@ namespace Ryujinx.Ui.App.Common
             }
 
             return false;
+        }
+
+        public static (Nca main, Nca patch, Nca control) GetGameData(VirtualFileSystem fileSystem, PartitionFileSystem pfs, int programIndex)
+        {
+            Nca mainNca = null;
+            Nca patchNca = null;
+            Nca controlNca = null;
+
+            fileSystem.ImportTickets(pfs);
+
+            foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
+            {
+                using var ncaFile = new UniqueRef<IFile>();
+
+                pfs.OpenFile(ref ncaFile.Ref, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+
+                Nca nca = new Nca(fileSystem.KeySet, ncaFile.Release().AsStorage());
+
+                int ncaProgramIndex = (int)(nca.Header.TitleId & 0xF);
+
+                if (ncaProgramIndex != programIndex)
+                {
+                    continue;
+                }
+
+                if (nca.Header.ContentType == NcaContentType.Program)
+                {
+                    int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
+
+                    if (nca.SectionExists(NcaSectionType.Data) && nca.Header.GetFsHeader(dataIndex).IsPatchSection())
+                    {
+                        patchNca = nca;
+                    }
+                    else
+                    {
+                        mainNca = nca;
+                    }
+                }
+                else if (nca.Header.ContentType == NcaContentType.Control)
+                {
+                    controlNca = nca;
+                }
+            }
+
+            return (mainNca, patchNca, controlNca);
+        }
+
+        public static (Nca patch, Nca control) GetGameUpdateDataFromPartition(VirtualFileSystem fileSystem, PartitionFileSystem pfs, string titleId, int programIndex)
+        {
+            Nca patchNca = null;
+            Nca controlNca = null;
+
+            fileSystem.ImportTickets(pfs);
+
+            foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
+            {
+                using var ncaFile = new UniqueRef<IFile>();
+
+                pfs.OpenFile(ref ncaFile.Ref, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+
+                Nca nca = new Nca(fileSystem.KeySet, ncaFile.Release().AsStorage());
+
+                int ncaProgramIndex = (int)(nca.Header.TitleId & 0xF);
+
+                if (ncaProgramIndex != programIndex)
+                {
+                    continue;
+                }
+
+                if ($"{nca.Header.TitleId.ToString("x16")[..^3]}000" != titleId)
+                {
+                    break;
+                }
+
+                if (nca.Header.ContentType == NcaContentType.Program)
+                {
+                    patchNca = nca;
+                }
+                else if (nca.Header.ContentType == NcaContentType.Control)
+                {
+                    controlNca = nca;
+                }
+            }
+
+            return (patchNca, controlNca);
+        }
+
+        public static (Nca patch, Nca control) GetGameUpdateData(VirtualFileSystem fileSystem, string titleId, int programIndex, out string updatePath)
+        {
+            updatePath = null;
+
+            if (ulong.TryParse(titleId, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ulong titleIdBase))
+            {
+                // Clear the program index part.
+                titleIdBase &= ~0xFUL;
+
+                // Load update information if exists.
+                string titleUpdateMetadataPath = Path.Combine(AppDataManager.GamesDirPath, titleIdBase.ToString("x16"), "updates.json");
+
+                if (File.Exists(titleUpdateMetadataPath))
+                {
+                    updatePath = JsonHelper.DeserializeFromFile(titleUpdateMetadataPath, TitleSerializerContext.TitleUpdateMetadata).Selected;
+
+                    if (File.Exists(updatePath))
+                    {
+                        FileStream file = new FileStream(updatePath, FileMode.Open, FileAccess.Read);
+                        PartitionFileSystem nsp = new PartitionFileSystem(file.AsStorage());
+
+                        return GetGameUpdateDataFromPartition(fileSystem, nsp, titleIdBase.ToString("x16"), programIndex);
+                    }
+                }
+            }
+
+            return (null, null);
         }
     }
 }
