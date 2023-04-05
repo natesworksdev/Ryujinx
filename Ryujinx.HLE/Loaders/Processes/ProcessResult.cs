@@ -22,8 +22,9 @@ namespace Ryujinx.HLE.Loaders.Processes
         public readonly ApplicationControlProperty ApplicationControlProperties;
 
         public readonly ulong  ProcessId;
-        public string          Name;
-        public ulong           ProgramId;
+        public readonly string Name;
+        public readonly string DisplayVersion;
+        public readonly ulong  ProgramId;
         public readonly string ProgramIdText;
         public readonly bool   Is64Bit;
         public readonly bool   DiskCacheEnabled;
@@ -69,9 +70,10 @@ namespace Ryujinx.HLE.Loaders.Processes
                     Name = metaLoader.GetProgramName();
                 }
 
-                ProgramId     = programId;
-                ProgramIdText = $"{programId:x16}";
-                Is64Bit       = metaLoader.IsProgram64Bit();
+                DisplayVersion = ApplicationControlProperties.DisplayVersionString.ToString();
+                ProgramId      = programId;
+                ProgramIdText  = $"{programId:x16}";
+                Is64Bit        = metaLoader.IsProgram64Bit();
             }
 
             DiskCacheEnabled      = diskCacheEnabled;
@@ -91,16 +93,7 @@ namespace Ryujinx.HLE.Loaders.Processes
             }
 
             // TODO: LibHac npdm currently doesn't support version field.
-            string version;
-
-            if (ProgramId > 0x0100000000007FFF)
-            {
-                version = ApplicationControlProperties.DisplayVersionString.ToString();
-            }
-            else
-            {
-                version = device.System.ContentManager.GetCurrentFirmwareVersion().VersionString;
-            }
+            string version = ProgramId > 0x0100000000007FFF ? DisplayVersion : device.System.ContentManager.GetCurrentFirmwareVersion().VersionString;
 
             Logger.Info?.Print(LogClass.Loader, $"Application Loaded: {Name} v{version} [{ProgramIdText}] [{(Is64Bit ? "64-bit" : "32-bit")}]");
 
