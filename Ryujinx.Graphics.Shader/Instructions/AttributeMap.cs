@@ -146,7 +146,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return Const(0);
             }
 
-            if (HasInvocationId(context.Config.Stage, isOutput))
+            if (HasInvocationId(context.Config.Stage, isOutput) && !isPerPatch)
             {
                 primVertex = context.Load(StorageKind.Input, IoVariable.InvocationId);
             }
