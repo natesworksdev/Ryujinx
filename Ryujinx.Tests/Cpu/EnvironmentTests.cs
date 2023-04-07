@@ -75,6 +75,9 @@ namespace Ryujinx.Tests.Cpu
 
             var method = TranslatorTestMethods.GenerateFpFlagsPInvokeTest();
 
+            // This method sets flush-to-zero and then calls the managed method.
+            // Before and after setting the flags, it ensures subnormal addition works as expected.
+            // It returns a positive result if any tests fail, and 0 on success (or if the platform cannot change FP flags)
             int result = method(Marshal.GetFunctionPointerForDelegate(managedMethod));
 
             // Subnormal results are not flushed to zero by default, which we should have returned to exiting the method.
