@@ -1473,7 +1473,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             Logger.RestartTime();
 
-            SelectedIcon ??= ApplicationLibrary.GetApplicationIcon(path);
+            SelectedIcon ??= ApplicationLibrary.GetApplicationIcon(path, ConfigurationState.Instance.System.Language);
 
             PrepareLoadScreen();
 
