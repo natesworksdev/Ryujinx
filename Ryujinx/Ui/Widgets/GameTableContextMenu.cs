@@ -26,6 +26,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Threading;
+using System.Drawing;
 
 namespace Ryujinx.Ui.Widgets
 {
@@ -596,6 +597,47 @@ namespace Ryujinx.Ui.Widgets
                         GtkDialog.CreateErrorDialog($"Error purging shader cache at {file.Name}: {e}");
                     }
                 }
+            }
+        }
+
+        private void CreateShortcut_Clicked(object sender, EventArgs args)
+        {
+            // Add the logic for the shortcut creating here
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            string appPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx");
+            string cleanedTitleName = string.Join("_", _titleName.Split(System.IO.Path.GetInvalidFileNameChars()));
+            string iconPath = System.IO.Path.Combine(AppDataManager.BaseDirPath, "games", _titleIdText, cleanedTitleName + ".bmp");
+            MemoryStream iconData = new(new ApplicationLibrary(_virtualFileSystem).GetApplicationIcon(_titleFilePath, ConfigurationState.Instance.System.Language));
+
+            if (OperatingSystem.IsWindows())
+            {
+                iconData.Seek(0, SeekOrigin.Begin);
+                Bitmap ico = new Bitmap(iconData);
+                if (!File.Exists(iconPath))
+                {
+                    ico.Save(iconPath);
+                }
+
+                //var icon = System.Drawing.Icon.FromHandle(((Bitmap)new Bitmap(iconData)).GetHicon());
+                //using (var fs = new FileStream(iconPath, FileMode.CreateNew))
+                //{
+                //    icon.Save(fs);
+                //}
+
+                IWshRuntimeLibrary.IWshShortcut shortcut = new IWshRuntimeLibrary.WshShell().CreateShortcut(System.IO.Path.Combine(desktopPath, cleanedTitleName + ".lnk"));
+                shortcut.Description = _titleName;
+                shortcut.TargetPath = appPath + ".exe";
+                shortcut.IconLocation = iconPath;
+                shortcut.Arguments = $"""{appPath} "{_titleFilePath}" --fullscreen""";
+                shortcut.Save();
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+
+            }
+            else if (OperatingSystem.IsMacOS())
+            {
+
             }
         }
     }
