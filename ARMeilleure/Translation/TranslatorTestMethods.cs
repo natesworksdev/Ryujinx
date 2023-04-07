@@ -1,5 +1,6 @@
 ﻿using ARMeilleure.CodeGen.X86;
 using ARMeilleure.IntermediateRepresentation;
+using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
 using System.Runtime.InteropServices;
@@ -23,10 +24,27 @@ namespace ARMeilleure.Translation
                 }
                 else
                 {
-                    mxcsr = context.BitwiseAnd(mxcsr, Const(~(int)(Mxcsr.Ftz)));
+                    mxcsr = context.BitwiseAnd(mxcsr, Const(~(int)Mxcsr.Ftz));
                 }
 
                 context.AddIntrinsicNoRet(Intrinsic.X86Ldmxcsr, mxcsr);
+
+                return true;
+            }
+            else if (Optimizations.UseAdvSimd)
+            {
+                Operand fpcr = context.AddIntrinsicInt(Intrinsic.Arm64MrsFpcr);
+
+                if (ftz)
+                {
+                    fpcr = context.BitwiseOr(fpcr, Const((int)FPCR.Fz));
+                }
+                else
+                {
+                    fpcr = context.BitwiseAnd(fpcr, Const(~(int)FPCR.Fz));
+                }
+
+                context.AddIntrinsicNoRet(Intrinsic.Arm64MsrFpcr, fpcr);
 
                 return true;
             }

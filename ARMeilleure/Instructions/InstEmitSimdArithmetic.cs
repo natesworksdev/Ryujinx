@@ -2252,20 +2252,32 @@ namespace ARMeilleure.Instructions
 
         public static void Frintx_S(ArmEmitterContext context)
         {
-            // TODO Arm64: Fast path. Should we set host FPCR?
-            EmitScalarUnaryOpF(context, (op1) =>
+            if (Optimizations.UseAdvSimd)
             {
-                return EmitRoundByRMode(context, op1);
-            });
+                InstEmitSimdHelperArm64.EmitVectorUnaryOpF(context, Intrinsic.Arm64FrintxS);
+            }
+            else
+            {
+                EmitScalarUnaryOpF(context, (op1) =>
+                {
+                    return EmitRoundByRMode(context, op1);
+                });
+            }
         }
 
         public static void Frintx_V(ArmEmitterContext context)
         {
-            // TODO Arm64: Fast path. Should we set host FPCR?
-            EmitVectorUnaryOpF(context, (op1) =>
+            if (Optimizations.UseAdvSimd)
             {
-                return EmitRoundByRMode(context, op1);
-            });
+                InstEmitSimdHelperArm64.EmitVectorUnaryOpF(context, Intrinsic.Arm64FrintxV);
+            }
+            else
+            {
+                EmitVectorUnaryOpF(context, (op1) =>
+                {
+                    return EmitRoundByRMode(context, op1);
+                });
+            }
         }
 
         public static void Frintz_S(ArmEmitterContext context)

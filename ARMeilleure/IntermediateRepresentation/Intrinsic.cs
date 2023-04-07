@@ -396,6 +396,8 @@ namespace ARMeilleure.IntermediateRepresentation
         Arm64MlsVe,
         Arm64MlsV,
         Arm64MoviV,
+        Arm64MrsFpcr,
+        Arm64MsrFpcr,
         Arm64MrsFpsr,
         Arm64MsrFpsr,
         Arm64MulVe,

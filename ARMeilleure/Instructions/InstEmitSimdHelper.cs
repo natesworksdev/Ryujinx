@@ -184,7 +184,21 @@ namespace ARMeilleure.Instructions
             }
             else if (Optimizations.UseAdvSimd)
             {
-                // TODO: Restore FPCR/FPSR
+                Operand fpcr = context.AddIntrinsicInt(Intrinsic.Arm64MrsFpcr);
+
+                Operand fzTrue = getFpFlag(FPState.FzFlag);
+                Operand r0True = getFpFlag(FPState.RMode0Flag);
+                Operand r1True = getFpFlag(FPState.RMode1Flag);
+
+                fpcr = context.BitwiseAnd(fpcr, Const(~(int)(FPCR.Fz | FPCR.RMode0 | FPCR.RMode1)));
+
+                fpcr = context.BitwiseOr(fpcr, context.ConditionalSelect(fzTrue, Const((int)FPCR.Fz), Const(0)));
+                fpcr = context.BitwiseOr(fpcr, context.ConditionalSelect(r0True, Const((int)FPCR.RMode0), Const(0)));
+                fpcr = context.BitwiseOr(fpcr, context.ConditionalSelect(r1True, Const((int)FPCR.RMode1), Const(0)));
+
+                context.AddIntrinsicNoRet(Intrinsic.Arm64MsrFpcr, fpcr);
+
+                // TODO: Restore FPSR
             }
         }
 
@@ -203,7 +217,14 @@ namespace ARMeilleure.Instructions
             }
             else if (Optimizations.UseAdvSimd)
             {
-                // TODO: Store FPCR/FPSR
+                Operand fpcr = context.AddIntrinsicInt(Intrinsic.Arm64MrsFpcr);
+
+                // Unset round mode (to nearest) and fz.
+                fpcr = context.BitwiseAnd(fpcr, Const(~(int)(FPCR.Fz | FPCR.RMode0 | FPCR.RMode1)));
+
+                context.AddIntrinsicNoRet(Intrinsic.Arm64MsrFpcr, fpcr);
+
+                // TODO: Store FPSR
             }
         }
 
