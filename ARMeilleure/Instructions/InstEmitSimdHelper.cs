@@ -169,9 +169,9 @@ namespace ARMeilleure.Instructions
                 Operand r0True = getFpFlag(FPState.RMode0Flag);
                 Operand r1True = getFpFlag(FPState.RMode1Flag);
 
-                mxcsr = context.BitwiseAnd(mxcsr, Const(~(int)(Mxcsr.Ftz | Mxcsr.Rhi | Mxcsr.Rlo)));
+                mxcsr = context.BitwiseAnd(mxcsr, Const(~(int)(Mxcsr.Ftz | Mxcsr.Daz | Mxcsr.Rhi | Mxcsr.Rlo)));
 
-                mxcsr = context.BitwiseOr(mxcsr, context.ConditionalSelect(fzTrue, Const((int)(Mxcsr.Ftz | Mxcsr.Um | Mxcsr.Dm)), Const(0)));
+                mxcsr = context.BitwiseOr(mxcsr, context.ConditionalSelect(fzTrue, Const((int)(Mxcsr.Ftz | Mxcsr.Daz | Mxcsr.Um | Mxcsr.Dm)), Const(0)));
 
                 // X86 round modes in order: nearest, negative, positive, zero
                 // ARM round modes in order: nearest, positive, negative, zero
@@ -209,7 +209,7 @@ namespace ARMeilleure.Instructions
                 Operand mxcsr = context.AddIntrinsicInt(Intrinsic.X86Stmxcsr);
 
                 // Unset round mode (to nearest) and ftz.
-                mxcsr = context.BitwiseAnd(mxcsr, Const(~(int)(Mxcsr.Ftz | Mxcsr.Rhi | Mxcsr.Rlo)));
+                mxcsr = context.BitwiseAnd(mxcsr, Const(~(int)(Mxcsr.Ftz | Mxcsr.Daz | Mxcsr.Rhi | Mxcsr.Rlo)));
 
                 context.AddIntrinsicNoRet(Intrinsic.X86Ldmxcsr, mxcsr);
 

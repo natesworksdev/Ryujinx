@@ -3,7 +3,7 @@
 namespace ARMeilleure.CodeGen.X86
 {
     [Flags]
-    public enum Mxcsr
+    enum Mxcsr
     {
         Ftz = 1 << 15, // Flush To Zero.
         Rhi = 1 << 14, // Round Mode high bit.
