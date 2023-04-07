@@ -1455,7 +1455,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             if (SelectedIcon == null)
             {
-                SelectedIcon = ApplicationLibrary.GetApplicationIcon(path);
+                SelectedIcon = ApplicationLibrary.GetApplicationIcon(path, ConfigurationState.Instance.System.Language);
             }
 
             PrepareLoadScreen();
