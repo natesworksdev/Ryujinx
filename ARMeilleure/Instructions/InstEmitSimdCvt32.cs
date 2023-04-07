@@ -547,10 +547,17 @@ namespace ARMeilleure.Instructions
         // VRINTX (floating-point).
         public static void Vrintx_S(ArmEmitterContext context)
         {
-            EmitScalarUnaryOpF32(context, (op1) =>
+            if (Optimizations.UseAdvSimd)
             {
-                return EmitRoundByRMode(context, op1);
-            });
+                InstEmitSimdHelper32Arm64.EmitScalarUnaryOpF32(context, Intrinsic.Arm64FrintxS);
+            }
+            else
+            {
+                EmitScalarUnaryOpF32(context, (op1) =>
+                {
+                    return EmitRoundByRMode(context, op1);
+                });
+            }
         }
 
         private static Operand EmitFPConvert(ArmEmitterContext context, Operand value, OperandType type, bool signed)
