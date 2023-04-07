@@ -1,5 +1,4 @@
 using ARMeilleure.CodeGen.Linking;
-using ARMeilleure.CodeGen.X86;
 using ARMeilleure.Common;
 using ARMeilleure.Decoders;
 using ARMeilleure.Diagnostics;
