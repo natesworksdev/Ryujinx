@@ -37,7 +37,7 @@
     <PackageVersion Include="Ryujinx.SDL2-CS" Version="2.26.3-build25" />
     <PackageVersion Include="shaderc.net" Version="0.1.0" />
     <PackageVersion Include="SharpZipLib" Version="1.4.2" />
-    <PackageVersion Include="Silk.NET.Vulkan" Version="2.16.0" />
+    <PackageVersion Include="Silk.NET.Vulkan" Version="2.17.0" />
     <PackageVersion Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.16.0" />
     <PackageVersion Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.16.0" />
     <PackageVersion Include="SixLabors.ImageSharp" Version="1.0.4" />
