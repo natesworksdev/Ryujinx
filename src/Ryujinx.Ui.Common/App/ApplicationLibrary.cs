@@ -840,7 +840,7 @@ namespace Ryujinx.Ui.App.Common
 
                 pfs.OpenFile(ref ncaFile.Ref, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
-                Nca nca = new Nca(fileSystem.KeySet, ncaFile.Release().AsStorage());
+                Nca nca = new(fileSystem.KeySet, ncaFile.Release().AsStorage());
 
                 int ncaProgramIndex = (int)(nca.Header.TitleId & 0xF);
 
@@ -884,7 +884,7 @@ namespace Ryujinx.Ui.App.Common
 
                 pfs.OpenFile(ref ncaFile.Ref, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
-                Nca nca = new Nca(fileSystem.KeySet, ncaFile.Release().AsStorage());
+                Nca nca = new(fileSystem.KeySet, ncaFile.Release().AsStorage());
 
                 int ncaProgramIndex = (int)(nca.Header.TitleId & 0xF);
 
@@ -929,8 +929,8 @@ namespace Ryujinx.Ui.App.Common
 
                     if (File.Exists(updatePath))
                     {
-                        FileStream file = new FileStream(updatePath, FileMode.Open, FileAccess.Read);
-                        PartitionFileSystem nsp = new PartitionFileSystem(file.AsStorage());
+                        FileStream file = new(updatePath, FileMode.Open, FileAccess.Read);
+                        PartitionFileSystem nsp = new(file.AsStorage());
 
                         return GetGameUpdateDataFromPartition(fileSystem, nsp, titleIdBase.ToString("x16"), programIndex);
                     }

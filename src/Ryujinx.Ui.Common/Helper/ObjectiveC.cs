@@ -45,7 +45,7 @@ namespace Ryujinx.Ui.Common.Helper
         [return: MarshalAs(UnmanagedType.Bool)]
         public static partial bool bool_objc_msgSend(IntPtr receiver, Selector selector, IntPtr param);
 
-        public struct Selector
+        public readonly struct Selector
         {
             public readonly IntPtr SelPtr;
 
@@ -57,7 +57,7 @@ namespace Ryujinx.Ui.Common.Helper
             public static implicit operator Selector(string value) => new(value);
         }
 
-        public struct NSString
+        public readonly struct NSString
         {
             public readonly IntPtr StrPtr;
 
