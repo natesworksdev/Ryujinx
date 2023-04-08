@@ -134,8 +134,10 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         };
 
         // These are used for masking the left and above borders.
+#pragma warning disable IDE0051
         private const ulong LeftBorder = 0x1111111111111111UL;
         private const ulong AboveBorder = 0x000000ff000000ffUL;
+#pragma warning restore IDE0051
 
         // 16 bit masks for uv transform sizes.
         private static readonly ushort[] Left64X64TxformMaskUv = new ushort[]
@@ -208,8 +210,10 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             0xffff,  // BLOCK_64X64
         };
 
+#pragma warning disable IDE0051
         private const ushort LeftBorderUv = 0x1111;
         private const ushort AboveBorderUv = 0x000f;
+#pragma warning restore IDE0051
 
         private static readonly int[] ModeLfLut = new int[]
         {
