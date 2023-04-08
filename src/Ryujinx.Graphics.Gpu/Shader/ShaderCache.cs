@@ -241,7 +241,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="pipeline">Shader pipeline state to be updated</param>
         /// <param name="graphicsState">Current graphics state</param>
         /// <param name="channel">Current GPU channel</param>
-        private void UpdatePipelineInfo(
+        private static void UpdatePipelineInfo(
             ref ThreedClassState state,
             ref ProgramPipelineState pipeline,
             GpuChannelGraphicsState graphicsState,

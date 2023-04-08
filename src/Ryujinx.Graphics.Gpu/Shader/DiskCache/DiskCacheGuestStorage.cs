@@ -322,7 +322,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// </summary>
         /// <param name="tocFileStream">Guest TOC file stream</param>
         /// <param name="header">Set to the TOC header</param>
-        private void CreateToc(Stream tocFileStream, ref TocHeader header)
+        private static void CreateToc(Stream tocFileStream, ref TocHeader header)
         {
             BinarySerializer writer = new(tocFileStream);
 

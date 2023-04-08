@@ -694,7 +694,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="descriptor">Texture descriptor</param>
         /// <returns>True if the state matches, false otherwise</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool MatchesTexture(Box<TextureSpecializationState> specializationState, in Image.TextureDescriptor descriptor)
+        private static bool MatchesTexture(Box<TextureSpecializationState> specializationState, in Image.TextureDescriptor descriptor)
         {
             if (specializationState != null)
             {

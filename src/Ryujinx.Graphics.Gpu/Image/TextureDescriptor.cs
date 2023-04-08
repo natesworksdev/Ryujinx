@@ -269,5 +269,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             return Unsafe.As<TextureDescriptor, Vector256<byte>>(ref this).GetHashCode();
         }
+
+        public override bool Equals(object obj)
+        {
+            return obj is TextureDescriptor descriptor && Equals(descriptor);
+        }
     }
 }

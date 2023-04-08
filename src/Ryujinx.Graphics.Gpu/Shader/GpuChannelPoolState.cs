@@ -46,5 +46,10 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 TexturePoolMaximumId == other.TexturePoolMaximumId &&
                 TextureBufferIndex == other.TextureBufferIndex;
         }
+
+        public override bool Equals(object obj)
+        {
+            return obj is GpuChannelPoolState state && Equals(state);
+        }
     }
 }

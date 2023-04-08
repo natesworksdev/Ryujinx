@@ -226,7 +226,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
         /// </summary>
         /// <param name="bucket">Bucket to add the entry into</param>
         /// <param name="entry">Entry to be added</param>
-        private void AddToBucket(ref Bucket bucket, ref Entry entry)
+        private static void AddToBucket(ref Bucket bucket, ref Entry entry)
         {
             if (bucket.InlineEntry.Data == null)
             {

@@ -380,7 +380,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
         /// <param name="state">Current GPU state</param>
         /// <param name="reg">Register offset to read</param>
         /// <returns>GPU register value</returns>
-        private int Read(IDeviceState state, int reg)
+        private static int Read(IDeviceState state, int reg)
         {
             return state.Read(reg * 4);
         }

@@ -57,7 +57,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         /// <param name="lhsFormat">Format of the first texture</param>
         /// <param name="rhsFormat">Format of the second texture</param>
         /// <returns>True if the data is compatible, false otherwise</returns>
-        private bool IsDataCompatible(TwodTexture lhs, TwodTexture rhs, FormatInfo lhsFormat, FormatInfo rhsFormat)
+        private static bool IsDataCompatible(TwodTexture lhs, TwodTexture rhs, FormatInfo lhsFormat, FormatInfo rhsFormat)
         {
             if (lhsFormat.BytesPerPixel != rhsFormat.BytesPerPixel ||
                 lhs.Height != rhs.Height ||
@@ -88,7 +88,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         /// <param name="x2">Region end x</param>
         /// <param name="y2">Region end y</param>
         /// <returns>True if the region covers the full texture, false otherwise</returns>
-        private bool IsCopyRegionComplete(TwodTexture texture, FormatInfo formatInfo, int x1, int y1, int x2, int y2)
+        private static bool IsCopyRegionComplete(TwodTexture texture, FormatInfo formatInfo, int x1, int y1, int x2, int y2)
         {
             if (x1 != 0 || y1 != 0 || y2 != texture.Height)
             {

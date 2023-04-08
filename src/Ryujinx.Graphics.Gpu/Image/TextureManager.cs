@@ -139,7 +139,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="texture">The texture to check</param>
         /// <returns>True if the scale needs updating, false if the scale is up to date</returns>
-        private bool ScaleNeedsUpdated(Texture texture)
+        private static bool ScaleNeedsUpdated(Texture texture)
         {
             return texture != null && !(texture.ScaleMode == TextureScaleMode.Blacklisted || texture.ScaleMode == TextureScaleMode.Undesired) && texture.ScaleFactor != GraphicsConfig.ResScale;
         }
@@ -445,7 +445,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </remarks>
         public void UpdateRenderTargetDepthStencil()
         {
-            new Span<ITexture>(_rtHostColors).Fill(null);
+            new Span<ITexture>(_rtHostColors).Clear();
             _rtHostDs = _rtDepthStencil?.HostTexture;
 
             _context.Renderer.Pipeline.SetRenderTargets(_rtHostColors, _rtHostDs);

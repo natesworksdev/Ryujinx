@@ -379,7 +379,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="descriptor">The texture descriptor</param>
         /// <param name="layerSize">Layer size for textures using a sub-range of mipmap levels, otherwise 0</param>
         /// <returns>The texture information</returns>
-        private TextureInfo GetInfo(in TextureDescriptor descriptor, out int layerSize)
+        private static TextureInfo GetInfo(in TextureDescriptor descriptor, out int layerSize)
         {
             int depthOrLayers = descriptor.UnpackDepth();
             int levels        = descriptor.UnpackLevels();

@@ -446,7 +446,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="dictionary">Dictionary to prune</param>
         /// <param name="toDelete">List used to track entries to delete</param>
-        private void Prune(Dictionary<ulong, BufferCacheEntry> dictionary, ref List<ulong> toDelete)
+        private static void Prune(Dictionary<ulong, BufferCacheEntry> dictionary, ref List<ulong> toDelete)
         {
             foreach (var entry in dictionary)
             {
