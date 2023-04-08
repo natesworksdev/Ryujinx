@@ -10,6 +10,7 @@ namespace Ryujinx.Tests.Cpu
 #if Mul32
 
 #region "ValueSource (Opcodes)"
+#pragma warning disable IDE0051, IDE1006
         private static uint[] _Smlabb_Smlabt_Smlatb_Smlatt_()
         {
             return new[]
@@ -49,6 +50,7 @@ namespace Ryujinx.Tests.Cpu
                 0xe12000e0u, // SMULWT R0, R0, R0
             };
         }
+#pragma warning restore IDE0051, IDE1006
 #endregion
 
         [Test, Pairwise, Description("SMLA<x><y> <Rd>, <Rn>, <Rm>, <Ra>")]

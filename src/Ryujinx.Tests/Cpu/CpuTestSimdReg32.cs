@@ -13,6 +13,7 @@ namespace Ryujinx.Tests.Cpu
 #if SimdReg32
 
 #region "ValueSource (Opcodes)"
+#pragma warning disable IDE1006
         private static uint[] _V_Add_Sub_Long_Wide_I_()
         {
             return new[]
@@ -264,6 +265,7 @@ namespace Ryujinx.Tests.Cpu
                 yield return rnd2;
             }
         }
+#pragma warning restore IDE1006
 #endregion
 
         private const int RndCnt = 2;

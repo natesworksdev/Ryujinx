@@ -11,6 +11,7 @@ namespace Ryujinx.Tests.Cpu
 #if SimdShImm32
 
 #region "ValueSource (Types)"
+#pragma warning disable IDE1006
         private static ulong[] _1D_()
         {
             return new[] { 0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
@@ -95,6 +96,7 @@ namespace Ryujinx.Tests.Cpu
                 0xf3800850u  // VMOV.I16 Q0, #0x80 (immediate value changes it into QRSHRUN)
             };
         }
+#pragma warning restore IDE1006
 #endregion
 
         private const int RndCnt = 2;

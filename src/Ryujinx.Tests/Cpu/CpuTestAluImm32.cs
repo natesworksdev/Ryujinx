@@ -10,6 +10,7 @@ namespace Ryujinx.Tests.Cpu
 #if AluRs32
 
 #region "ValueSource (Opcodes)"
+#pragma warning disable IDE1006
         private static uint[] _opcodes()
         {
             return new[]
@@ -30,6 +31,7 @@ namespace Ryujinx.Tests.Cpu
                 0xe2500000u, // SUBS R0, R0, #0
             };
         }
+#pragma warning restore IDE1006
 #endregion
 
         private const int RndCnt = 2;

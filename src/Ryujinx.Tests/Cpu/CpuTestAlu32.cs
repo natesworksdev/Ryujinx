@@ -10,6 +10,7 @@ namespace Ryujinx.Tests.Cpu
 #if Alu32
 
 #region "ValueSource (Opcodes)"
+#pragma warning disable IDE1006
         private static uint[] _SU_H_AddSub_8_()
         {
             return new[]
@@ -55,6 +56,7 @@ namespace Ryujinx.Tests.Cpu
                 0xe1b00070u  // RORS R0, R0, R0
             };
         }
+#pragma warning restore IDE1006
 #endregion
 
         private const int RndCnt = 2;

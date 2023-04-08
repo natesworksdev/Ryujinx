@@ -28,6 +28,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
 #region "ValueSource (CRC32/CRC32C)"
+#pragma warning disable IDE1006
         private static CrcTest32[] _CRC32_Test_Values_()
         {
             // Created with http://www.sunshine2k.de/coding/javascript/crc/crc_js.html, with:
@@ -63,6 +64,7 @@ namespace Ryujinx.Tests.Cpu
                 new CrcTest32(0xffffffffu, 0x9d_cb_12_f0u, true, 0x5eecc3db, 0xbb6111cb, 0xcfb54fc9)
             };
         }
+#pragma warning restore IDE1006
 #endregion
 
         [Test, Combinatorial]

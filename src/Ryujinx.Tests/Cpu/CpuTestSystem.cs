@@ -12,6 +12,7 @@ namespace Ryujinx.Tests.Cpu
 #if System
 
 #region "ValueSource (Types)"
+#pragma warning disable IDE0051, IDE1006
         private static IEnumerable<ulong> _GenNzcv_()
         {
             yield return 0x0000000000000000ul;
@@ -44,6 +45,7 @@ namespace Ryujinx.Tests.Cpu
                 0xD51B4200u  // MSR NZCV, X0
             };
         }
+#pragma warning restore IDE0051, IDE1006
 #endregion
 
         [Test, Pairwise]

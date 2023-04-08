@@ -13,6 +13,7 @@ namespace Ryujinx.Tests.Cpu
 #if SimdCvt
 
 #region "ValueSource (Types)"
+#pragma warning disable IDE1006
         private static uint[] _W_()
         {
             return new[] { 0x00000000u, 0x7FFFFFFFu,
@@ -362,6 +363,7 @@ namespace Ryujinx.Tests.Cpu
                 0x9E430000u  // UCVTF D0, X0, #64
             };
         }
+#pragma warning restore IDE1006
 #endregion
 
         private const int RndCnt      = 2;

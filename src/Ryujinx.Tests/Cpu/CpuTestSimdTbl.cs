@@ -36,6 +36,7 @@ namespace Ryujinx.Tests.Cpu
 #endregion
 
 #region "ValueSource (Types)"
+#pragma warning disable IDE1006
         private static ulong[] _8B_()
         {
             return new[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
@@ -131,6 +132,7 @@ namespace Ryujinx.Tests.Cpu
                 0x0E006000u  // TBX V0.8B, { V0.16B, V1.16B, V2.16B, V3.16B }, V0.8B
             };
         }
+#pragma warning restore IDE1006
 #endregion
 
         private const int RndCntIdxs = 2;

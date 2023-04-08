@@ -55,6 +55,7 @@ namespace Ryujinx.Tests.Cpu
 #endregion
 
 #region "ValueSource (Types)"
+#pragma warning disable IDE1006
         private static IEnumerable<ulong> _GenLeadingSignsX_()
         {
             for (int cnt = 0; cnt <= 63; cnt++)
@@ -88,6 +89,7 @@ namespace Ryujinx.Tests.Cpu
                 yield return GenLeadingZeros32(cnt);
             }
         }
+#pragma warning restore IDE1006
 #endregion
 
         [Test, Pairwise, Description("CLS <Xd>, <Xn>")]

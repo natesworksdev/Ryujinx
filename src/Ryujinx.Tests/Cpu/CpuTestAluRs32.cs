@@ -10,6 +10,7 @@ namespace Ryujinx.Tests.Cpu
 #if AluRs32
 
 #region "ValueSource (Opcodes)"
+#pragma warning disable IDE0051, IDE1006
         private static uint[] _Add_Adds_Rsb_Rsbs_()
         {
             return new[]
@@ -33,6 +34,7 @@ namespace Ryujinx.Tests.Cpu
                 0xe0d00000u  // SBCS R0, R0, R0
             };
         }
+#pragma warning restore IDE0051, IDE1006
 #endregion
 
 

@@ -12,6 +12,7 @@ namespace Ryujinx.Tests.Cpu
 #if SimdRegElemF
 
 #region "ValueSource (Types)"
+#pragma warning disable IDE1006
         private static IEnumerable<ulong> _1S_F_()
         {
             yield return 0x00000000FF7FFFFFul; // -Max Normal    (float.MinValue)
@@ -209,6 +210,7 @@ namespace Ryujinx.Tests.Cpu
                 0x6FC09000u  // FMULX V0.2D, V0.2D, V0.D[0]
             };
         }
+#pragma warning restore IDE1006
 #endregion
 
         private const int RndCnt = 2;

@@ -12,6 +12,7 @@ namespace Ryujinx.Tests.Cpu
 #if SimdReg
 
 #region "ValueSource (Types)"
+#pragma warning disable IDE1006
         private static ulong[] _1B1H1S1D_()
         {
             return new[] { 0x0000000000000000ul, 0x000000000000007Ful,
@@ -578,6 +579,7 @@ namespace Ryujinx.Tests.Cpu
                 0x6E204400u  // USHL   V0.16B, V0.16B, V0.16B
             };
         }
+#pragma warning restore IDE1006
 #endregion
 
         private const int RndCnt = 2;

@@ -11,6 +11,7 @@ namespace Ryujinx.Tests.Cpu
 #if SimdFmov
 
 #region "ValueSource"
+#pragma warning disable IDE1006
         private static uint[] _F_Mov_Si_S_()
         {
             return new[]
@@ -26,6 +27,7 @@ namespace Ryujinx.Tests.Cpu
                 0x1E601000u // FMOV D0, #2.0
             };
         }
+#pragma warning restore IDE1006
 #endregion
 
         [Test, Pairwise] [Explicit]
