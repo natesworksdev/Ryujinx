@@ -299,7 +299,7 @@ namespace ARMeilleure.State
             return $"0x{_e1:X16}{_e0:X16}";
         }
 
-        private uint GetElementCount<T>() where T : unmanaged
+        private static uint GetElementCount<T>() where T : unmanaged
         {
             return (uint)(Unsafe.SizeOf<V128>() / Unsafe.SizeOf<T>());
         }

@@ -231,12 +231,12 @@ namespace ARMeilleure.Translation.PTC
             return DeserializeDictionary<ulong, FuncProfile>(stream, (stream) => DeserializeStructure<FuncProfile>(stream));
         }
 
-        private ReadOnlySpan<byte> GetReadOnlySpan(MemoryStream memoryStream)
+        private static ReadOnlySpan<byte> GetReadOnlySpan(MemoryStream memoryStream)
         {
             return new(memoryStream.GetBuffer(), (int)memoryStream.Position, (int)memoryStream.Length - (int)memoryStream.Position);
         }
 
-        private void InvalidateCompressedStream(FileStream compressedStream)
+        private static void InvalidateCompressedStream(FileStream compressedStream)
         {
             compressedStream.SetLength(0L);
         }
@@ -331,7 +331,7 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        private void Serialize(Stream stream, Dictionary<ulong, FuncProfile> profiledFuncs)
+        private static void Serialize(Stream stream, Dictionary<ulong, FuncProfile> profiledFuncs)
         {
             SerializeDictionary(stream, profiledFuncs, (stream, structure) => SerializeStructure(stream, structure));
         }

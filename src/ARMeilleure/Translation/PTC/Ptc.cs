@@ -388,7 +388,7 @@ namespace ARMeilleure.Translation.PTC
             return true;
         }
 
-        private void InvalidateCompressedStream(FileStream compressedStream)
+        private static void InvalidateCompressedStream(FileStream compressedStream)
         {
             compressedStream.SetLength(0L);
         }
@@ -643,7 +643,7 @@ namespace ARMeilleure.Translation.PTC
             return _codesList[index];
         }
 
-        private RelocEntry[] GetRelocEntries(BinaryReader relocsReader, int relocEntriesCount)
+        private static RelocEntry[] GetRelocEntries(BinaryReader relocsReader, int relocEntriesCount)
         {
             RelocEntry[] relocEntries = new RelocEntry[relocEntriesCount];
 
@@ -659,7 +659,7 @@ namespace ARMeilleure.Translation.PTC
             return relocEntries;
         }
 
-        private void PatchCode(Translator translator, Span<byte> code, RelocEntry[] relocEntries, out Counter<uint> callCounter)
+        private static void PatchCode(Translator translator, Span<byte> code, RelocEntry[] relocEntries, out Counter<uint> callCounter)
         {
             callCounter = null;
 
@@ -710,7 +710,7 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        private UnwindInfo ReadUnwindInfo(BinaryReader unwindInfosReader)
+        private static UnwindInfo ReadUnwindInfo(BinaryReader unwindInfosReader)
         {
             int pushEntriesLength = unwindInfosReader.ReadInt32();
 
@@ -731,7 +731,7 @@ namespace ARMeilleure.Translation.PTC
             return new UnwindInfo(pushEntries, prologueSize);
         }
 
-        private TranslatedFunction FastTranslate(
+        private static TranslatedFunction FastTranslate(
             byte[] code,
             Counter<uint> callCounter,
             ulong guestSize,

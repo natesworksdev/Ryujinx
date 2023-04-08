@@ -17,8 +17,10 @@ namespace ARMeilleure.State
 
         public ulong Pc => _nativeContext.GetPc();
 
+#pragma warning disable CA1822
         public uint CtrEl0 => 0x8444c004;
         public uint DczidEl0 => 0x00000004;
+#pragma warning restore CA1822
 
         public ulong CntfrqEl0 => _counter.Frequency;
         public ulong CntpctEl0 => _counter.Counter;
