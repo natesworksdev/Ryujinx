@@ -218,42 +218,20 @@ namespace Ryujinx.Audio.Renderer.Server
         {
             effect.ForceUnmapBuffers(mapper);
 
-            switch (parameter.Type)
+            effect = parameter.Type switch
             {
-                case EffectType.Invalid:
-                    effect = new BaseEffect();
-                    break;
-                case EffectType.BufferMix:
-                    effect = new BufferMixEffect();
-                    break;
-                case EffectType.AuxiliaryBuffer:
-                    effect = new AuxiliaryBufferEffect();
-                    break;
-                case EffectType.Delay:
-                    effect = new DelayEffect();
-                    break;
-                case EffectType.Reverb:
-                    effect = new ReverbEffect();
-                    break;
-                case EffectType.Reverb3d:
-                    effect = new Reverb3dEffect();
-                    break;
-                case EffectType.BiquadFilter:
-                    effect = new BiquadFilterEffect();
-                    break;
-                case EffectType.Limiter:
-                    effect = new LimiterEffect();
-                    break;
-                case EffectType.CaptureBuffer:
-                    effect = new CaptureBufferEffect();
-                    break;
-                case EffectType.Compressor:
-                    effect = new CompressorEffect();
-                    break;
-
-                default:
-                    throw new NotImplementedException($"EffectType {parameter.Type} not implemented!");
-            }
+                EffectType.Invalid => new BaseEffect(),
+                EffectType.BufferMix => new BufferMixEffect(),
+                EffectType.AuxiliaryBuffer => new AuxiliaryBufferEffect(),
+                EffectType.Delay => new DelayEffect(),
+                EffectType.Reverb => new ReverbEffect(),
+                EffectType.Reverb3d => new Reverb3dEffect(),
+                EffectType.BiquadFilter => new BiquadFilterEffect(),
+                EffectType.Limiter => new LimiterEffect(),
+                EffectType.CaptureBuffer => new CaptureBufferEffect(),
+                EffectType.Compressor => new CompressorEffect(),
+                _ => throw new NotImplementedException($"EffectType {parameter.Type} not implemented!"),
+            };
         }
 
         public ResultCode UpdateEffects(EffectContext context, bool isAudioRendererActive, Memory<MemoryPoolState> memoryPools)
@@ -506,20 +484,13 @@ namespace Ryujinx.Audio.Renderer.Server
         {
             sink.CleanUp();
 
-            switch (parameter.Type)
+            sink = parameter.Type switch
             {
-                case SinkType.Invalid:
-                    sink = new BaseSink();
-                    break;
-                case SinkType.CircularBuffer:
-                    sink = new CircularBufferSink();
-                    break;
-                case SinkType.Device:
-                    sink = new DeviceSink();
-                    break;
-                default:
-                    throw new NotImplementedException($"SinkType {parameter.Type} not implemented!");
-            }
+                SinkType.Invalid => new BaseSink(),
+                SinkType.CircularBuffer => new CircularBufferSink(),
+                SinkType.Device => new DeviceSink(),
+                _ => throw new NotImplementedException($"SinkType {parameter.Type} not implemented!"),
+            };
         }
 
         public ResultCode UpdateSinks(SinkContext context, Memory<MemoryPoolState> memoryPools)

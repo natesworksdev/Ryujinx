@@ -72,17 +72,13 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
         private static CommandType GetCommandTypeBySampleFormat(SampleFormat sampleFormat)
         {
-            switch (sampleFormat)
+            return sampleFormat switch
             {
-                case SampleFormat.Adpcm:
-                    return CommandType.AdpcmDataSourceVersion2;
-                case SampleFormat.PcmInt16:
-                    return CommandType.PcmInt16DataSourceVersion2;
-                case SampleFormat.PcmFloat:
-                    return CommandType.PcmFloatDataSourceVersion2;
-                default:
-                    throw new NotImplementedException($"{sampleFormat}");
-            }
+                SampleFormat.Adpcm => CommandType.AdpcmDataSourceVersion2,
+                SampleFormat.PcmInt16 => CommandType.PcmInt16DataSourceVersion2,
+                SampleFormat.PcmFloat => CommandType.PcmFloatDataSourceVersion2,
+                _ => throw new NotImplementedException($"{sampleFormat}"),
+            };
         }
 
         public void Process(CommandList context)

@@ -341,27 +341,15 @@ namespace Ryujinx.Audio.Renderer.Server
             _elapsedFrameCount = 0;
             _voiceDropParameter = 1.0f;
 
-            switch (_behaviourContext.GetCommandProcessingTimeEstimatorVersion())
+            _commandProcessingTimeEstimator = _behaviourContext.GetCommandProcessingTimeEstimatorVersion() switch
             {
-                case 1:
-                    _commandProcessingTimeEstimator = new CommandProcessingTimeEstimatorVersion1(_sampleCount, _mixBufferCount);
-                    break;
-                case 2:
-                    _commandProcessingTimeEstimator = new CommandProcessingTimeEstimatorVersion2(_sampleCount, _mixBufferCount);
-                    break;
-                case 3:
-                    _commandProcessingTimeEstimator = new CommandProcessingTimeEstimatorVersion3(_sampleCount, _mixBufferCount);
-                    break;
-                case 4:
-                    _commandProcessingTimeEstimator = new CommandProcessingTimeEstimatorVersion4(_sampleCount, _mixBufferCount);
-                    break;
-                case 5:
-                    _commandProcessingTimeEstimator = new CommandProcessingTimeEstimatorVersion5(_sampleCount, _mixBufferCount);
-                    break;
-                default:
-                    throw new NotImplementedException($"Unsupported processing time estimator version {_behaviourContext.GetCommandProcessingTimeEstimatorVersion()}.");
-            }
-
+                1 => new CommandProcessingTimeEstimatorVersion1(_sampleCount, _mixBufferCount),
+                2 => new CommandProcessingTimeEstimatorVersion2(_sampleCount, _mixBufferCount),
+                3 => new CommandProcessingTimeEstimatorVersion3(_sampleCount, _mixBufferCount),
+                4 => new CommandProcessingTimeEstimatorVersion4(_sampleCount, _mixBufferCount),
+                5 => new CommandProcessingTimeEstimatorVersion5(_sampleCount, _mixBufferCount),
+                _ => throw new NotImplementedException($"Unsupported processing time estimator version {_behaviourContext.GetCommandProcessingTimeEstimatorVersion()}."),
+            };
             return ResultCode.Success;
         }
 

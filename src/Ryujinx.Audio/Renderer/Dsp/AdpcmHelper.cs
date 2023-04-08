@@ -12,7 +12,9 @@ namespace Ryujinx.Audio.Renderer.Dsp
         private const int SamplesPerFrame = 14;
         private const int NibblesPerFrame = SamplesPerFrame + 2;
         private const int BytesPerFrame = 8;
+#pragma warning disable IDE0051
         private const int BitsPerFrame = BytesPerFrame * 8;
+#pragma warning restore IDE0051
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint GetAdpcmDataSize(int sampleCount)
