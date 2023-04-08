@@ -28,7 +28,9 @@ namespace Ryujinx.Graphics.Texture
 
             for (int l = 0; l < levels; l++)
             {
+#pragma warning disable IDE0059
                 int rgba8Size = width * height * depth * layers * 4;
+#pragma warning restore IDE0059
 
                 int w = BitUtils.DivRoundUp(width, BlockWidth);
                 int h = BitUtils.DivRoundUp(height, BlockHeight);
