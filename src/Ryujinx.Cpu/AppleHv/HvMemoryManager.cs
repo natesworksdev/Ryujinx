@@ -126,6 +126,7 @@ namespace Ryujinx.Cpu.AppleHv
             }
         }
 
+#pragma warning disable IDE0051
         /// <summary>
         /// Ensures the combination of virtual address and size is part of the addressable space and fully mapped.
         /// </summary>
@@ -138,6 +139,7 @@ namespace Ryujinx.Cpu.AppleHv
                 throw new InvalidMemoryRegionException($"Not mapped: va=0x{va:X16}, size=0x{size:X16}");
             }
         }
+#pragma warning restore IDE0051
 
         /// <inheritdoc/>
         public void Map(ulong va, ulong pa, ulong size, MemoryMapFlags flags)

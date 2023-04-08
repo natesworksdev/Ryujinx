@@ -7,7 +7,9 @@ namespace Ryujinx.Cpu
 {
     public class AddressSpace : IDisposable
     {
+#pragma warning disable IDE0051
         private const ulong PageSize = 0x1000;
+#pragma warning restore IDE0051
 
         private const int DefaultBlockAlignment = 1 << 20;
 
@@ -391,7 +393,9 @@ namespace Ryujinx.Cpu
             ulong vaAligned = BitUtils.AlignDown(va, alignment);
             ulong endAddressAligned = BitUtils.AlignUp(endAddress, alignment);
 
+#pragma warning disable IDE0059
             ulong sizeAligned = endAddressAligned - vaAligned;
+#pragma warning restore IDE0059
 
             PrivateMapping map = _privateTree.GetNode(new PrivateMapping(va, 1UL, default));
 
@@ -436,7 +440,9 @@ namespace Ryujinx.Cpu
                 return;
             }
 
+#pragma warning disable IDE0059
             ulong alignedSize = endAddressAligned - vaAligned;
+#pragma warning restore IDE0059
 
             PrivateMapping map = _privateTree.GetNode(new PrivateMapping(va, 1UL, default));
 

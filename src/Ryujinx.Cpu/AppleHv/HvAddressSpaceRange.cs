@@ -129,7 +129,9 @@ namespace Ryujinx.Cpu.AppleHv
             ulong endVa = (va + size + PageMask) & ~((ulong)PageMask);
             va &= ~((ulong)PageMask);
 
+#pragma warning disable IDE0059
             (ulong blockSize, int blockShift) = GetBlockSizeAndShift(depth);
+#pragma warning restore IDE0059
 
             while (va < endVa)
             {
@@ -190,7 +192,9 @@ namespace Ryujinx.Cpu.AppleHv
             ulong endVa = (va + size + PageSize - 1) & ~((ulong)PageSize - 1);
             va &= ~((ulong)PageSize - 1);
 
+#pragma warning disable IDE0059
             (ulong blockSize, int blockShift) = GetBlockSizeAndShift(depth);
+#pragma warning restore IDE0059
 
             while (va < endVa)
             {
@@ -243,7 +247,9 @@ namespace Ryujinx.Cpu.AppleHv
             PtLevel level = new(_blockAllocator, LevelCount, depth < 2);
             Span<ulong> currentLevel = level.AsSpan();
 
+#pragma warning disable IDE0059
             (ulong blockSize, int blockShift) = GetBlockSizeAndShift(depth);
+#pragma warning restore IDE0059
 
             // Fill in the blocks.
             for (int i = 0; i < LevelCount; i++)
