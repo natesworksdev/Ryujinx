@@ -69,7 +69,9 @@ namespace Ryujinx.HLE.HOS.Services.Audio
             ulong deviceNameInputSize = context.Request.SendBuff[0].Size;
 
             ulong deviceNameOutputPosition = context.Request.ReceiveBuff[0].Position;
+#pragma warning disable IDE0059
             ulong deviceNameOutputSize = context.Request.ReceiveBuff[0].Size;
+#pragma warning restore IDE0059
 
             uint processHandle = (uint)context.Request.HandleDesc.ToCopy[0];
 
@@ -136,7 +138,9 @@ namespace Ryujinx.HLE.HOS.Services.Audio
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
 
             (ulong deviceNameInputPosition, ulong deviceNameInputSize) = context.Request.GetBufferType0x21();
+#pragma warning disable IDE0059
             (ulong deviceNameOutputPosition, ulong deviceNameOutputSize) = context.Request.GetBufferType0x22();
+#pragma warning restore IDE0059
 
             uint processHandle = (uint)context.Request.HandleDesc.ToCopy[0];
 

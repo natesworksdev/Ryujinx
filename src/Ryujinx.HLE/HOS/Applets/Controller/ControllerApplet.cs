@@ -82,8 +82,10 @@ namespace Ryujinx.HLE.HOS.Applets
                 playerMin = playerMax = 1;
             }
 
+#pragma warning disable IDE0059
             int configuredCount = 0;
             PlayerIndex primaryIndex = PlayerIndex.Unknown;
+#pragma warning restore IDE0059
             while (!_system.Device.Hid.Npads.Validate(playerMin, playerMax, (ControllerType)privateArg.NpadStyleSet, out configuredCount, out primaryIndex))
             {
                 ControllerAppletUiArgs uiArgs = new()

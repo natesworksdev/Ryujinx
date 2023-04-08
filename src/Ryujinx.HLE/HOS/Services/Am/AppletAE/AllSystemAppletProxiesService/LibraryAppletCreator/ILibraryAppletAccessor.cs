@@ -81,13 +81,16 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
         [CommandCmif(10)]
         // Start()
+#pragma warning disable IDE0060
         public ResultCode Start(ServiceCtx context)
         {
             return (ResultCode)_applet.Start(_normalSession.GetConsumer(), _interactiveSession.GetConsumer());
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(20)]
         // RequestExit()
+#pragma warning disable IDE0060
         public ResultCode RequestExit(ServiceCtx context)
         {
             // TODO: Since we don't support software Applet for now, we can just signals the changed state of the applet.
@@ -97,16 +100,20 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(30)]
         // GetResult()
+#pragma warning disable IDE0060
         public ResultCode GetResult(ServiceCtx context)
         {
             return (ResultCode)_applet.GetResult();
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(60)]
         // PresetLibraryAppletGpuTimeSliceZero()
+#pragma warning disable IDE0060
         public static ResultCode PresetLibraryAppletGpuTimeSliceZero(ServiceCtx context)
         {
             // NOTE: This call reset two internal fields to 0 and one internal field to "true".
@@ -117,6 +124,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(100)]
         // PushInData(object<nn::am::service::IStorage>)
@@ -208,17 +216,21 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
         [CommandCmif(110)]
         // NeedsToExitProcess()
+#pragma warning disable IDE0060
         public static ResultCode NeedsToExitProcess(ServiceCtx context)
         {
             return ResultCode.Stubbed;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(150)]
         // RequestForAppletToGetForeground()
+#pragma warning disable IDE0060
         public static ResultCode RequestForAppletToGetForeground(ServiceCtx context)
         {
             return ResultCode.Stubbed;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(160)] // 2.0.0+
         // GetIndirectLayerConsumerHandle() -> u64 indirect_layer_consumer_handle

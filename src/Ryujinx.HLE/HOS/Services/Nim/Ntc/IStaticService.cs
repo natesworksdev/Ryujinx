@@ -6,7 +6,9 @@ namespace Ryujinx.HLE.HOS.Services.Nim.Ntc
     [Service("ntc")]
     class IStaticService : IpcService
     {
+#pragma warning disable IDE0060
         public IStaticService(ServiceCtx context) { }
+#pragma warning restore IDE0060
 
         [CommandCmif(0)]
         // OpenEnsureNetworkClockAvailabilityService(u64) -> object<nn::ntc::detail::service::IEnsureNetworkClockAvailabilityService>

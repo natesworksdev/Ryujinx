@@ -355,6 +355,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             _entrypoint = creationInfo.CodeAddress;
             _imageSize = (ulong)creationInfo.CodePagesCount * KPageTableBase.PageSize;
 
+#pragma warning disable IDE0066
             switch (Flags & ProcessCreationFlags.AddressSpaceMask)
             {
                 case ProcessCreationFlags.AddressSpace32Bit:
@@ -373,6 +374,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
                 default: throw new InvalidOperationException($"Invalid MMU flags value 0x{Flags:x2}.");
             }
+#pragma warning restore IDE0066
 
             GenerateRandomEntropy();
 

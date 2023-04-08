@@ -483,7 +483,9 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
         // Flush(bytes<8, 4>)
         public static ResultCode Flush(ServiceCtx context)
         {
+#pragma warning disable IDE0059
             uint deviceHandle = (uint)context.RequestData.ReadUInt64();
+#pragma warning restore IDE0059
 
             if (context.Device.System.NfpDevices.Count == 0)
             {

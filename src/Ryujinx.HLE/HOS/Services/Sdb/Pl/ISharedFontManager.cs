@@ -17,7 +17,9 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
         // RequestLoad(u32)
         public static ResultCode RequestLoad(ServiceCtx context)
         {
+#pragma warning disable IDE0059
             SharedFontType fontType = (SharedFontType)context.RequestData.ReadInt32();
+#pragma warning restore IDE0059
 
             // We don't need to do anything here because we do lazy initialization
             // on SharedFontManager (the font is loaded when necessary).
@@ -28,7 +30,9 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
         // GetLoadState(u32) -> u32
         public static ResultCode GetLoadState(ServiceCtx context)
         {
+#pragma warning disable IDE0059
             SharedFontType fontType = (SharedFontType)context.RequestData.ReadInt32();
+#pragma warning restore IDE0059
 
             // 1 (true) indicates that the font is already loaded.
             // All fonts are already loaded.
@@ -82,7 +86,9 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
         // GetSharedFontInOrderOfPriority(bytes<8, 1>) -> (u8, u32, buffer<unknown, 6>, buffer<unknown, 6>, buffer<unknown, 6>)
         public ResultCode GetSharedFontInOrderOfPriority(ServiceCtx context)
         {
+#pragma warning disable IDE0059
             long languageCode = context.RequestData.ReadInt64();
+#pragma warning restore IDE0059
             int  loadedCount  = 0;
 
             for (SharedFontType type = 0; type < SharedFontType.Count; type++)

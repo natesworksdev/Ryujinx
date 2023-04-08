@@ -8,7 +8,9 @@ namespace Ryujinx.HLE.HOS.Services.Settings
     [Service("set")]
     class ISettingsServer : IpcService
     {
+#pragma warning disable IDE0060
         public ISettingsServer(ServiceCtx context) { }
+#pragma warning restore IDE0060
 
         [CommandCmif(0)]
         // GetLanguageCode() -> nn::settings::LanguageCode

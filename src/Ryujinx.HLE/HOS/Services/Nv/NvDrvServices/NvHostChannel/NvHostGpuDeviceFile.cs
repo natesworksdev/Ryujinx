@@ -55,22 +55,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
         public override NvInternalResult QueryEvent(out int eventHandle, uint eventId)
         {
             // TODO: accurately represent and implement those events.
-            switch (eventId)
+            eventHandle = eventId switch
             {
-                case 0x1:
-                    eventHandle = _smExceptionBptIntReportEventHandle;
-                    break;
-                case 0x2:
-                    eventHandle = _smExceptionBptPauseReportEventHandle;
-                    break;
-                case 0x3:
-                    eventHandle = _errorNotifierEventHandle;
-                    break;
-                default:
-                    eventHandle = 0;
-                    break;
-            }
-
+                0x1 => _smExceptionBptIntReportEventHandle,
+                0x2 => _smExceptionBptPauseReportEventHandle,
+                0x3 => _errorNotifierEventHandle,
+                _ => 0,
+            };
             return eventHandle != 0 ? NvInternalResult.Success : NvInternalResult.InvalidInput;
         }
 

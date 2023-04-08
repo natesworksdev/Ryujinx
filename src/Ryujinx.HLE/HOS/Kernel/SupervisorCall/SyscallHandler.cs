@@ -12,6 +12,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             _context = context;
         }
 
+#pragma warning disable IDE0060
         public void SvcCall(IExecutionContext context, ulong address, int id)
         {
             KThread currentThread = KernelStatic.GetCurrentThread();
@@ -40,5 +41,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             currentThread.HandlePostSyscall();
         }
+#pragma warning restore IDE0060
     }
 }

@@ -30,6 +30,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         [CommandCmif(1)]
         // Cancel()
+#pragma warning disable IDE0060
         public ResultCode Cancel(ServiceCtx context)
         {
             if (!AsyncExecution.IsInitialized)
@@ -44,6 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(2)]
         // HasDone() -> b8
@@ -61,6 +63,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         [CommandCmif(3)]
         // GetResult()
+#pragma warning disable IDE0060
         public ResultCode GetResult(ServiceCtx context)
         {
             if (!AsyncExecution.IsInitialized)
@@ -75,5 +78,6 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
     }
 }

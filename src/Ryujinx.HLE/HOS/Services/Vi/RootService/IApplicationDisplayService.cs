@@ -205,11 +205,13 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
         [CommandCmif(1101)]
         // SetDisplayEnabled(u32 enabled_bool, u64 display_id)
+#pragma warning disable IDE0060
         public static ResultCode SetDisplayEnabled(ServiceCtx context)
         {
             // NOTE: Stubbed in original service.
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(1102)]
         // GetDisplayResolution(u64 display_id) -> (u64 width, u64 height)
@@ -232,10 +234,14 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         public static ResultCode OpenLayer(ServiceCtx context)
         {
             // TODO: support multi display.
+#pragma warning disable IDE0059
             byte[] displayName = context.RequestData.ReadBytes(0x40);
+#pragma warning restore IDE0059
 
             long  layerId   = context.RequestData.ReadInt64();
+#pragma warning disable IDE0059
             long  userId    = context.RequestData.ReadInt64();
+#pragma warning restore IDE0059
             ulong parcelPtr = context.Request.ReceiveBuff[0].Position;
 
             ResultCode result = context.Device.System.SurfaceFlinger.OpenLayer(context.Request.HandleDesc.PId, layerId, out IBinder producer);
@@ -247,7 +253,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
             context.Device.System.SurfaceFlinger.SetRenderLayer(layerId);
 
-            Parcel parcel = new Parcel(0x28, 0x4);
+            Parcel parcel = new(0x28, 0x4);
 
             parcel.WriteObject(producer, "dispdrv\0");
 
@@ -273,8 +279,9 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         // CreateStrayLayer(u32, u64) -> (u64, u64, buffer<bytes, 6>)
         public static ResultCode CreateStrayLayer(ServiceCtx context)
         {
-            long layerFlags = context.RequestData.ReadInt64();
-            long displayId  = context.RequestData.ReadInt64();
+            _ = context.RequestData.ReadInt64();
+
+            _ = context.RequestData.ReadInt64();
 
             ulong parcelPtr = context.Request.ReceiveBuff[0].Position;
 
@@ -308,6 +315,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
         [CommandCmif(2101)]
         // SetLayerScalingMode(u32, u64)
+#pragma warning disable IDE0060
         public static ResultCode SetLayerScalingMode(ServiceCtx context)
         {
             /*
@@ -318,6 +326,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(2102)] // 5.0.0+
         // ConvertScalingMode(u32 source_scaling_mode) -> u64 destination_scaling_mode

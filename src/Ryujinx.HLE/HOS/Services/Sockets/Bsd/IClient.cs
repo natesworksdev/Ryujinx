@@ -46,19 +46,14 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         private static AddressFamily ConvertBsdAddressFamily(BsdAddressFamily family)
         {
-            switch (family)
+            return family switch
             {
-                case BsdAddressFamily.Unspecified:
-                    return AddressFamily.Unspecified;
-                case BsdAddressFamily.InterNetwork:
-                    return AddressFamily.InterNetwork;
-                case BsdAddressFamily.InterNetworkV6:
-                    return AddressFamily.InterNetworkV6;
-                case BsdAddressFamily.Unknown:
-                    return AddressFamily.Unknown;
-                default:
-                    throw new NotImplementedException(family.ToString());
-            }
+                BsdAddressFamily.Unspecified => AddressFamily.Unspecified,
+                BsdAddressFamily.InterNetwork => AddressFamily.InterNetwork,
+                BsdAddressFamily.InterNetworkV6 => AddressFamily.InterNetworkV6,
+                BsdAddressFamily.Unknown => AddressFamily.Unknown,
+                _ => throw new NotImplementedException(family.ToString()),
+            };
         }
 
         private static LinuxError SetResultErrno(IFileDescriptor socket, int result)
@@ -335,7 +330,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             int timeout  = context.RequestData.ReadInt32();
 
             (ulong inputBufferPosition, ulong inputBufferSize) = context.Request.GetBufferType0x21();
+#pragma warning disable IDE0059
             (ulong outputBufferPosition, ulong outputBufferSize) = context.Request.GetBufferType0x22();
+#pragma warning restore IDE0059
 
             if (timeout < -1 || fdsCount < 0 || (ulong)(fdsCount * 8) > inputBufferSize)
             {
@@ -582,7 +579,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             BsdSocketFlags socketFlags = (BsdSocketFlags)context.RequestData.ReadInt32();
 
             (ulong sendPosition,   ulong sendSize)   = context.Request.GetBufferType0x21(0);
+#pragma warning disable IDE0059
             (ulong bufferPosition, ulong bufferSize) = context.Request.GetBufferType0x21(1);
+#pragma warning restore IDE0059
 
             ReadOnlySpan<byte> sendBuffer = context.Memory.GetSpan(sendPosition, (int)sendSize);
 
@@ -611,7 +610,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         {
             int socketFd = context.RequestData.ReadInt32();
 
+#pragma warning disable IDE0059
             (ulong bufferPos, ulong bufferSize) = context.Request.GetBufferType0x22();
+#pragma warning restore IDE0059
 
             LinuxError errno  = LinuxError.EBADF;
             ISocket    socket = _context.RetrieveSocket(socketFd);
@@ -654,7 +655,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         {
             int socketFd = context.RequestData.ReadInt32();
 
+#pragma warning disable IDE0059
             (ulong bufferPosition, ulong bufferSize) = context.Request.GetBufferType0x21();
+#pragma warning restore IDE0059
 
             LinuxError errno  = LinuxError.EBADF;
             ISocket    socket = _context.RetrieveSocket(socketFd);
@@ -675,7 +678,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         {
             int socketFd = context.RequestData.ReadInt32();
 
+#pragma warning disable IDE0059
             (ulong bufferPosition, ulong bufferSize) = context.Request.GetBufferType0x21();
+#pragma warning restore IDE0059
 
             LinuxError errno  = LinuxError.EBADF;
             ISocket    socket = _context.RetrieveSocket(socketFd);
@@ -696,7 +701,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         {
             int socketFd = context.RequestData.ReadInt32();
 
+#pragma warning disable IDE0059
             (ulong bufferPosition, ulong bufferSize) = context.Request.GetBufferType0x22();
+#pragma warning restore IDE0059
 
             LinuxError errno  = LinuxError.EBADF;
             ISocket    socket = _context.RetrieveSocket(socketFd);
@@ -723,7 +730,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         {
             int socketFd = context.RequestData.ReadInt32();
 
+#pragma warning disable IDE0059
             (ulong bufferPos, ulong bufferSize) = context.Request.GetBufferType0x22();
+#pragma warning restore IDE0059
 
             LinuxError errno  = LinuxError.EBADF;
             ISocket    socket = _context.RetrieveSocket(socketFd);
@@ -791,7 +800,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         {
             int      socketFd    = context.RequestData.ReadInt32();
             BsdIoctl cmd         = (BsdIoctl)context.RequestData.ReadInt32();
+#pragma warning disable IDE0059
             int      bufferCount = context.RequestData.ReadInt32();
+#pragma warning restore IDE0059
 
             LinuxError errno  = LinuxError.EBADF;
             ISocket    socket = _context.RetrieveSocket(socketFd);
@@ -803,7 +814,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                     case BsdIoctl.AtMark:
                         errno = LinuxError.SUCCESS;
 
+#pragma warning disable IDE0059
                         (ulong bufferPosition, ulong bufferSize) = context.Request.GetBufferType0x22();
+#pragma warning restore IDE0059
 
                         // FIXME: OOB not implemented.
                         context.Memory.Write(bufferPosition, 0);
@@ -993,7 +1006,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         public ResultCode DuplicateSocket(ServiceCtx context)
         {
             int   fd       = context.RequestData.ReadInt32();
+#pragma warning disable IDE0059
             ulong reserved = context.RequestData.ReadUInt64();
+#pragma warning restore IDE0059
 
             LinuxError errno = LinuxError.ENOENT;
             int newSockFd = -1;
@@ -1021,7 +1036,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             int            socketFd    = context.RequestData.ReadInt32();
             int            vlen        = context.RequestData.ReadInt32();
             BsdSocketFlags socketFlags = (BsdSocketFlags)context.RequestData.ReadInt32();
+#pragma warning disable IDE0059
             uint           reserved    = context.RequestData.ReadUInt32();
+#pragma warning restore IDE0059
             TimeVal        timeout     = context.RequestData.ReadStruct<TimeVal>();
 
             ulong receivePosition = context.Request.ReceiveBuff[0].Position;

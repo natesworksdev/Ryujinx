@@ -9,6 +9,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
         public int   Version            { get; private set; }
         public ulong PermissionsBitmask { get; private set; }
 
+#pragma warning disable IDE0060
         public FsAccessHeader(Stream stream, int offset, int size)
         {
             stream.Seek(offset, SeekOrigin.Begin);
@@ -24,8 +25,9 @@ namespace Ryujinx.HLE.Loaders.Npdm
             {
                 throw new InvalidNpdmException("FsAccessHeader is corrupted!");
             }
-
+#pragma warning disable IDE0059
             int contentOwnerIdSize        = reader.ReadInt32();
+#pragma warning restore IDE0059
             int dataAndContentOwnerIdSize = reader.ReadInt32();
 
             if (dataAndContentOwnerIdSize != 0x1c)
@@ -33,5 +35,6 @@ namespace Ryujinx.HLE.Loaders.Npdm
                 throw new NotImplementedException("ContentOwnerId section is not implemented!");
             }
         }
+#pragma warning restore IDE0060
     }
 }

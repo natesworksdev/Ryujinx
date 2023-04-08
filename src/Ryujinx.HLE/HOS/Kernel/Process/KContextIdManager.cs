@@ -65,6 +65,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             }
         }
 
+#pragma warning disable IDE0060
         private bool TestBit(int bit)
         {
             return (_idMasks[_nextFreeBitHint / 32] & (1 << (_nextFreeBitHint & 31))) != 0;
@@ -79,5 +80,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         {
             _idMasks[_nextFreeBitHint / 32] &= ~(1 << (_nextFreeBitHint & 31));
         }
+#pragma warning restore IDE0060
     }
 }

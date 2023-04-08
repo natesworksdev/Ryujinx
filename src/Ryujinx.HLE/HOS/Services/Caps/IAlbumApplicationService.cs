@@ -7,7 +7,9 @@ namespace Ryujinx.HLE.HOS.Services.Caps
     [Service("caps:u")]
     class IAlbumApplicationService : IpcService
     {
+#pragma warning disable IDE0060
         public IAlbumApplicationService(ServiceCtx context) { }
+#pragma warning restore IDE0060
 
         [CommandCmif(32)] // 7.0.0+
         // SetShimLibraryVersion(pid, u64, nn::applet::AppletResourceUserId)

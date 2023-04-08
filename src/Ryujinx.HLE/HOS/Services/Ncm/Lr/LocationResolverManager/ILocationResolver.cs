@@ -229,7 +229,9 @@ namespace Ryujinx.HLE.HOS.Services.Ncm.Lr.LocationResolverManager
             if (!string.IsNullOrWhiteSpace(contentPath))
             {
                 ulong position = context.Request.RecvListBuff[0].Position;
+#pragma warning disable IDE0059
                 ulong size     = context.Request.RecvListBuff[0].Size;
+#pragma warning restore IDE0059
 
                 byte[] contentPathBuffer = Encoding.UTF8.GetBytes(contentPath);
 
@@ -246,7 +248,9 @@ namespace Ryujinx.HLE.HOS.Services.Ncm.Lr.LocationResolverManager
         private void DeleteContentPath(ServiceCtx context, ulong titleId, NcaContentType contentType)
         {
             ContentManager contentManager = context.Device.System.ContentManager;
+#pragma warning disable IDE0059
             string         contentPath    = contentManager.GetInstalledContentPath(titleId, _storageId, NcaContentType.Manual);
+#pragma warning restore IDE0059
 
             contentManager.ClearEntry(titleId, NcaContentType.Manual, _storageId);
         }

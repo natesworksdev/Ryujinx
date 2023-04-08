@@ -310,7 +310,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         {
             rule = new Rule();
 
+#pragma warning disable IDE0059
             bool isValid = false;
+#pragma warning restore IDE0059
 
             if (name[namePosition] == 'J')
             {
@@ -650,18 +652,24 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                         }
                     }
 
+#pragma warning disable IDE0059
                     long theirDstOffset = 0;
+#pragma warning restore IDE0059
                     for (int i = 0; i < outRules.TimeCount; i++)
                     {
                         int j = outRules.Types[i];
                         if (outRules.Ttis[j].IsDaySavingTime)
                         {
+#pragma warning disable IDE0059
                             theirDstOffset = -outRules.Ttis[j].GmtOffset;
+#pragma warning restore IDE0059
                         }
                     }
 
                     bool isDaySavingTime = false;
+#pragma warning disable IDE0059
                     long theirOffset     = theirStdOffset;
+#pragma warning restore IDE0059
                     for (int i = 0; i < outRules.TimeCount; i++)
                     {
                         int j = outRules.Types[i];
@@ -681,7 +689,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                         theirOffset = -outRules.Ttis[j].GmtOffset;
                         if (outRules.Ttis[j].IsDaySavingTime)
                         {
+#pragma warning disable IDE0059
                             theirDstOffset = theirOffset;
+#pragma warning restore IDE0059
                         }
                         else
                         {

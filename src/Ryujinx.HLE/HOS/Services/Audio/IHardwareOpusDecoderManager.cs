@@ -8,7 +8,9 @@ namespace Ryujinx.HLE.HOS.Services.Audio
     [Service("hwopus")]
     class IHardwareOpusDecoderManager : IpcService
     {
+#pragma warning disable IDE0060
         public IHardwareOpusDecoderManager(ServiceCtx context) { }
+#pragma warning restore IDE0060
 
         [CommandCmif(0)]
         // Initialize(bytes<8, 4>, u32, handle<copy>) -> object<nn::codec::detail::IHardwareOpusDecoder>

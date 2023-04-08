@@ -8,7 +8,9 @@ namespace Ryujinx.HLE.HOS.Services.Mnpp
     [Service("mnpp:app")] // 13.0.0+
     class IServiceForApplication : IpcService
     {
+#pragma warning disable IDE0060
         public IServiceForApplication(ServiceCtx context) { }
+#pragma warning restore IDE0060
 
         [CommandCmif(0)]
         // Initialize(pid)

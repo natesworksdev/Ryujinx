@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
             ulong address = InstructionHelper.GetImmediate(instruction, OffsetImmediateIndex, OffsetImmediateSize);
 
             Pointer sourceMemory;
-
+#pragma warning disable IDE0066
             switch (useDestinationAsSourceIndex)
             {
                 case 0:
@@ -51,6 +51,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
                 default:
                     throw new TamperCompilationException($"Invalid source mode {useDestinationAsSourceIndex} in Atmosphere cheat");
             }
+#pragma warning restore IDE0066
 
             InstructionHelper.EmitMov(operationWidth, context, destinationRegister, sourceMemory);
         }

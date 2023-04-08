@@ -13,13 +13,17 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
         public event EventHandler AppletStateChanged;
 
         private AppletSession _normalSession;
+#pragma warning disable IDE0052
         private AppletSession _interactiveSession;
+#pragma warning restore IDE0052
 
         private CommonArguments _commonArguments;
         private List<BrowserArgument> _arguments;
         private ShimKind _shimKind;
 
+#pragma warning disable IDE0060
         public BrowserApplet(Horizon system) {}
+#pragma warning restore IDE0060
 
         public ResultCode GetResult()
         {

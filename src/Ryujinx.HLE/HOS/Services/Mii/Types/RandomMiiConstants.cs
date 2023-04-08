@@ -45,7 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             public int Race;
             public int ValuesCount;
             
-            private RandomMiiValues _values;
+            private readonly RandomMiiValues _values;
 
             public ReadOnlySpan<int> Values => _values.Values[..ValuesCount];
         }
@@ -58,7 +58,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
             public int ValuesCount;
             
-            private RandomMiiValues _values;
+            private readonly RandomMiiValues _values;
 
             public ReadOnlySpan<int> Values => _values.Values[..ValuesCount];
         }
@@ -69,7 +69,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             private readonly int _argument;
             public int ValuesCount;
 
-            private RandomMiiValues _values;
+            private readonly RandomMiiValues _values;
 
             public ReadOnlySpan<int> Values => _values.Values[..ValuesCount];
         }

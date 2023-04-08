@@ -215,9 +215,10 @@ namespace Ryujinx.HLE.HOS.Services.Sm
 
             context.RequestData.BaseStream.Seek(namePosition + 8, SeekOrigin.Begin);
 
+#pragma warning disable IDE0059
             bool isLight = (context.RequestData.ReadInt32() & 1) != 0;
-
             int maxSessions = context.RequestData.ReadInt32();
+#pragma warning restore IDE0059
 
             if (string.IsNullOrEmpty(name))
             {

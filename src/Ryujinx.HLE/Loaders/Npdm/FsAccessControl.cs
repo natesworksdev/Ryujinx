@@ -11,6 +11,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
         public int   Unknown3           { get; private set; }
         public int   Unknown4           { get; private set; }
 
+#pragma warning disable IDE0060
         public FsAccessControl(Stream stream, int offset, int size)
         {
             stream.Seek(offset, SeekOrigin.Begin);
@@ -24,5 +25,6 @@ namespace Ryujinx.HLE.Loaders.Npdm
             Unknown3           = reader.ReadInt32();
             Unknown4           = reader.ReadInt32();
         }
+#pragma warning restore IDE0060
     }
 }

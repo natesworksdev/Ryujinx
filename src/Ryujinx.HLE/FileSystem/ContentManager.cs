@@ -48,7 +48,7 @@ namespace Ryujinx.HLE.FileSystem
             }
         }
 
-        private SortedList<ulong, AocItem> _aocData { get; }
+        private SortedList<ulong, AocItem> AocData { get; }
 
         private readonly VirtualFileSystem _virtualFileSystem;
 
@@ -91,7 +91,7 @@ namespace Ryujinx.HLE.FileSystem
 
             _virtualFileSystem = virtualFileSystem;
 
-            _aocData = new SortedList<ulong, AocItem>();
+            AocData = new SortedList<ulong, AocItem>();
         }
 
         public void LoadEntries(Switch device = null)
@@ -235,7 +235,7 @@ namespace Ryujinx.HLE.FileSystem
         public void AddAocItem(ulong titleId, string containerPath, string ncaPath, bool mergedToContainer = false)
         {
             // TODO: Check Aoc version.
-            if (!_aocData.TryAdd(titleId, new AocItem(containerPath, ncaPath)))
+            if (!AocData.TryAdd(titleId, new AocItem(containerPath, ncaPath)))
             {
                 Logger.Warning?.Print(LogClass.Application, $"Duplicate AddOnContent detected. TitleId {titleId:X16}");
             }
@@ -253,17 +253,17 @@ namespace Ryujinx.HLE.FileSystem
             }
         }
 
-        public void ClearAocData() => _aocData.Clear();
+        public void ClearAocData() => AocData.Clear();
 
-        public int GetAocCount() => _aocData.Count;
+        public int GetAocCount() => AocData.Count;
 
-        public IList<ulong> GetAocTitleIds() => _aocData.Select(e => e.Key).ToList();
+        public IList<ulong> GetAocTitleIds() => AocData.Select(e => e.Key).ToList();
 
         public bool GetAocDataStorage(ulong aocTitleId, out IStorage aocStorage, IntegrityCheckLevel integrityCheckLevel)
         {
             aocStorage = null;
 
-            if (_aocData.TryGetValue(aocTitleId, out AocItem aoc))
+            if (AocData.TryGetValue(aocTitleId, out AocItem aoc))
             {
                 var file = new FileStream(aoc.ContainerPath, FileMode.Open, FileAccess.Read);
                 using var ncaFile = new UniqueRef<IFile>();

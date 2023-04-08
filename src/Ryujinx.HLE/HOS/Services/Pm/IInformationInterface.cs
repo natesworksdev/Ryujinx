@@ -5,7 +5,9 @@ namespace Ryujinx.HLE.HOS.Services.Pm
     [Service("pm:info")]
     class IInformationInterface : IpcService
     {
+#pragma warning disable IDE0060
         public IInformationInterface(ServiceCtx context) { }
+#pragma warning restore IDE0060
 
         [CommandCmif(0)]
         // GetProgramId(os::ProcessId process_id) -> sf::Out<ncm::ProgramId> out

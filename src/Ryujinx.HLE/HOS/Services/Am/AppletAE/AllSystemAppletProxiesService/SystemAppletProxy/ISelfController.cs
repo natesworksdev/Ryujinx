@@ -24,17 +24,21 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         private readonly ulong _accumulatedSuspendedTickValue = 0;
 
         // TODO: Determine where those fields are used.
+#pragma warning disable IDE0052
         private bool _screenShotPermission               = false;
         private bool _operationModeChangedNotification   = false;
         private bool _performanceModeChangedNotification = false;
         private bool _restartMessageEnabled              = false;
         private bool _outOfFocusSuspendingEnabled        = false;
         private bool _handlesRequestToDisplay            = false;
+#pragma warning restore IDE0052
         private bool _autoSleepDisabled                  = false;
+#pragma warning disable IDE0052
         private bool _albumImageTakenNotificationEnabled = false;
         private bool _recordVolumeMuted = false;
 
         private uint _screenShotImageOrientation = 0;
+#pragma warning restore IDE0052
         private uint _idleTimeDetectionExtension = 0;
 
         public ISelfController(ServiceCtx context, ulong pid)
@@ -45,33 +49,40 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(0)]
         // Exit()
+#pragma warning disable IDE0060
         public static ResultCode Exit(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(1)]
         // LockExit()
+#pragma warning disable IDE0060
         public static ResultCode LockExit(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(2)]
         // UnlockExit()
+#pragma warning disable IDE0060
         public static ResultCode UnlockExit(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(3)] // 2.0.0+
         // EnterFatalSection()
+#pragma warning disable IDE0060
         public ResultCode EnterFatalSection(ServiceCtx context)
         {
             lock (_fatalSectionLock)
@@ -81,9 +92,11 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(4)] // 2.0.0+
         // LeaveFatalSection()
+#pragma warning disable IDE0060
         public ResultCode LeaveFatalSection(ServiceCtx context)
         {
             ResultCode result = ResultCode.Success;
@@ -102,6 +115,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
             return result;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(9)]
         // GetLibraryAppletLaunchableEvent() -> handle<copy>
@@ -229,12 +243,14 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(41)] // 4.0.0+
         // IsSystemBufferSharingEnabled()
+#pragma warning disable IDE0060
         public static ResultCode IsSystemBufferSharingEnabled(ServiceCtx context)
         {
             // NOTE: Service checks a private field and return an error if the SystemBufferSharing is disabled.
 
             return ResultCode.NotImplemented;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(44)] // 10.0.0+
         // CreateManagedDisplaySeparableLayer() -> (u64, u64)
@@ -289,6 +305,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(65)]
         // ReportUserIsActive()
+#pragma warning disable IDE0060
         public static ResultCode ReportUserIsActive(ServiceCtx context)
         {
             // TODO: Call idle:sys ReportUserIsActive when implemented.
@@ -297,6 +314,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(67)] //3.0.0+
         // IsIlluminanceAvailable() -> bool

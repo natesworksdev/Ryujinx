@@ -116,7 +116,9 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         // GetAppletInfo(u32) -> (u32, u32, u32, buffer<bytes, 6>)
         public ResultCode GetAppletInfo(ServiceCtx context)
         {
+#pragma warning disable IDE0059
             uint themeColor = context.RequestData.ReadUInt32();
+#pragma warning restore IDE0059
 
             Logger.Stub?.PrintStub(LogClass.ServiceNifm);
 

@@ -16,7 +16,9 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
         // TODO: Determine where and how NetworkServiceAccountId is set.
         private const long NetworkServiceAccountId = 0xcafe;
 
+#pragma warning disable IDE0052
         private readonly UserId _userId;
+#pragma warning restore IDE0052
 
         public ManagerServer(UserId userId)
         {
@@ -68,6 +70,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
             return new JwtSecurityTokenHandler().WriteToken(securityToken);
         }
 
+#pragma warning disable IDE0060
         public static ResultCode CheckAvailability(ServiceCtx context)
         {
             // NOTE: This opens the file at "su/baas/USERID_IN_UUID_STRING.dat" where USERID_IN_UUID_STRING is formatted as "%08x-%04x-%04x-%02x%02x-%08x%04x".
@@ -78,6 +81,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
             // NOTE: Even if we try to return different error codes here, the guest still needs other calls.
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         public static ResultCode GetAccountId(ServiceCtx context)
         {
@@ -123,7 +127,9 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
         public static ResultCode LoadIdTokenCache(ServiceCtx context)
         {
             ulong bufferPosition = context.Request.ReceiveBuff[0].Position;
+#pragma warning disable IDE0059
             ulong bufferSize     = context.Request.ReceiveBuff[0].Size;
+#pragma warning restore IDE0059
 
             // NOTE: This opens the file at "su/cache/USERID_IN_UUID_STRING.dat" (where USERID_IN_UUID_STRING is formatted as "%08x-%04x-%04x-%02x%02x-%08x%04x")
             //       in the "account:/" savedata and writes some data in the buffer.

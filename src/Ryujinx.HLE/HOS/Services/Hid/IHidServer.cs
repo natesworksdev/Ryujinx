@@ -63,7 +63,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // CreateAppletResource(nn::applet::AppletResourceUserId) -> object<nn::hid::IAppletResource>
         public ResultCode CreateAppletResource(ServiceCtx context)
         {
+#pragma warning disable IDE0059
             long appletResourceUserId = context.RequestData.ReadInt64();
+#pragma warning restore IDE0059
 
             MakeObject(context, new IAppletResource(context.Device.System.HidSharedMem));
 
@@ -700,7 +702,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // GetSupportedNpadStyleSet(pid, nn::applet::AppletResourceUserId) -> uint nn::hid::NpadStyleTag
         public static ResultCode GetSupportedNpadStyleSet(ServiceCtx context)
         {
+#pragma warning disable IDE0059
             ulong pid                  = context.Request.HandleDesc.PId;
+#pragma warning restore IDE0059
             long  appletResourceUserId = context.RequestData.ReadInt64();
 
             context.ResponseData.Write((int)context.Device.Hid.Npads.SupportedStyleSets);
@@ -714,7 +718,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // SetSupportedNpadIdType(nn::applet::AppletResourceUserId, array<NpadIdType, 9>)
         public static ResultCode SetSupportedNpadIdType(ServiceCtx context)
         {
+#pragma warning disable IDE0059
             long  appletResourceUserId = context.RequestData.ReadInt64();
+#pragma warning restore IDE0059
             ulong arrayPosition        = context.Request.PtrBuff[0].Position;
             ulong arraySize            = context.Request.PtrBuff[0].Size;
 
@@ -833,13 +839,13 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             // Initialize entries to avoid issues with some games.
 
-            List<GamepadInput> emptyGamepadInputs = new List<GamepadInput>();
-            List<SixAxisInput> emptySixAxisInputs = new List<SixAxisInput>();
+            List<GamepadInput> emptyGamepadInputs = new();
+            List<SixAxisInput> emptySixAxisInputs = new();
 
             for (int player = 0; player < NpadDevices.MaxControllers; player++)
             {
-                GamepadInput gamepadInput = new GamepadInput();
-                SixAxisInput sixaxisInput = new SixAxisInput();
+                GamepadInput gamepadInput = new();
+                SixAxisInput sixaxisInput = new();
 
                 gamepadInput.PlayerId = (PlayerIndex)player;
                 sixaxisInput.PlayerId = (PlayerIndex)player;
@@ -865,7 +871,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // SetNpadJoyHoldType(nn::applet::AppletResourceUserId, ulong NpadJoyHoldType)
         public static ResultCode SetNpadJoyHoldType(ServiceCtx context)
         {
+#pragma warning disable IDE0059
             long appletResourceUserId = context.RequestData.ReadInt64();
+#pragma warning restore IDE0059
 
             NpadJoyHoldType npadJoyHoldType = (NpadJoyHoldType)context.RequestData.ReadUInt64();
 
@@ -891,7 +899,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // GetNpadJoyHoldType(nn::applet::AppletResourceUserId) -> ulong NpadJoyHoldType
         public static ResultCode GetNpadJoyHoldType(ServiceCtx context)
         {
+#pragma warning disable IDE0059
             long appletResourceUserId = context.RequestData.ReadInt64();
+#pragma warning restore IDE0059
 
             foreach (PlayerIndex playerIndex in context.Device.Hid.Npads.GetSupportedPlayers())
             {
@@ -912,7 +922,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             NpadIdType npadIdType = (NpadIdType)context.RequestData.ReadUInt32();
             context.RequestData.BaseStream.Position += 4; // Padding
+#pragma warning disable IDE0059
             long appletResourceUserId = context.RequestData.ReadInt64();
+#pragma warning restore IDE0059
 
             if (HidUtils.IsValidNpadIdType(npadIdType))
             {
@@ -945,7 +957,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             NpadIdType npadIdType = (NpadIdType)context.RequestData.ReadUInt32();
             context.RequestData.BaseStream.Position += 4; // Padding
+#pragma warning disable IDE0059
             long appletResourceUserId = context.RequestData.ReadInt64();
+#pragma warning restore IDE0059
 
             if (HidUtils.IsValidNpadIdType(npadIdType))
             {
@@ -1176,7 +1190,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 FrequencyHigh = context.RequestData.ReadSingle()
             };
 
+#pragma warning disable IDE0059
             long appletResourceUserId = context.RequestData.ReadInt64();
+#pragma warning restore IDE0059
 
             Dictionary<byte, VibrationValue> dualVibrationValues = new()
             {
@@ -1200,7 +1216,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 Reserved   = context.RequestData.ReadByte()
             };
 
+#pragma warning disable IDE0059
             long appletResourceUserId = context.RequestData.ReadInt64();
+#pragma warning restore IDE0059
 
             VibrationValue vibrationValue = context.Device.Hid.Npads.GetLastVibrationValue((PlayerIndex)deviceHandle.PlayerId, deviceHandle.Position);
 
@@ -1245,7 +1263,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // SendVibrationValues(nn::applet::AppletResourceUserId, buffer<array<nn::hid::VibrationDeviceHandle>, type: 9>, buffer<array<nn::hid::VibrationValue>, type: 9>)
         public static ResultCode SendVibrationValues(ServiceCtx context)
         {
+#pragma warning disable IDE0059
             long appletResourceUserId = context.RequestData.ReadInt64();
+#pragma warning restore IDE0059
 
             byte[] vibrationDeviceHandleBuffer = new byte[context.Request.PtrBuff[0].Size];
 
@@ -1335,8 +1355,10 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // IsVibrationDeviceMounted(nn::hid::VibrationDeviceHandle, nn::applet::AppletResourceUserId)
         public static ResultCode IsVibrationDeviceMounted(ServiceCtx context)
         {
+#pragma warning disable IDE0059
             int  vibrationDeviceHandle = context.RequestData.ReadInt32();
             long appletResourceUserId  = context.RequestData.ReadInt64();
+#pragma warning restore IDE0059
 
             // NOTE: Service use vibrationDeviceHandle to get the PlayerIndex.
             //       And return false if (npadIdType >= (NpadIdType)8 && npadIdType != NpadIdType.Handheld && npadIdType != NpadIdType.Unknown)

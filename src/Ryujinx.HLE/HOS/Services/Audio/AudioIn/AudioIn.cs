@@ -80,9 +80,9 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioIn
         {
             IWritableEvent outEvent = _system.RegisterBufferEvent();
 
-            if (outEvent is AudioKernelEvent)
+            if (outEvent is AudioKernelEvent kernelEvent)
             {
-                return ((AudioKernelEvent)outEvent).Event;
+                return kernelEvent.Event;
             }
             else
             {

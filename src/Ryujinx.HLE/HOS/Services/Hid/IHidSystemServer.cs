@@ -7,7 +7,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
     [Service("hid:sys")]
     class IHidSystemServer : IpcService
     {
+#pragma warning disable IDE0060
         public IHidSystemServer(ServiceCtx context) { }
+#pragma warning restore IDE0060
 
         [CommandCmif(303)]
         // ApplyNpadSystemCommonPolicy(u64)

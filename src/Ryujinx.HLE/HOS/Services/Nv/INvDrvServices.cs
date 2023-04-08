@@ -92,7 +92,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         private static NvResult GetIoctlArgument(ServiceCtx context, NvIoctl ioctlCommand, out Span<byte> arguments)
         {
             (ulong inputDataPosition,  ulong inputDataSize)  = context.Request.GetBufferType0x21(0);
+#pragma warning disable IDE0059
             (ulong outputDataPosition, ulong outputDataSize) = context.Request.GetBufferType0x22(0);
+#pragma warning restore IDE0059
 
             NvIoctl.Direction ioctlDirection = ioctlCommand.DirectionValue;
             uint              ioctlSize      = ioctlCommand.Size;
@@ -188,51 +190,27 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
         private static NvResult ConvertInternalErrorCode(NvInternalResult errorCode)
         {
-            switch (errorCode)
+            return errorCode switch
             {
-                case NvInternalResult.Success:
-                    return NvResult.Success;
-                case NvInternalResult.Unknown0x72:
-                    return NvResult.AlreadyAllocated;
-                case NvInternalResult.TimedOut:
-                case NvInternalResult.TryAgain:
-                case NvInternalResult.Interrupted:
-                    return NvResult.Timeout;
-                case NvInternalResult.InvalidAddress:
-                    return NvResult.InvalidAddress;
-                case NvInternalResult.NotSupported:
-                case NvInternalResult.Unknown0x18:
-                    return NvResult.NotSupported;
-                case NvInternalResult.InvalidState:
-                    return NvResult.InvalidState;
-                case NvInternalResult.ReadOnlyAttribute:
-                    return NvResult.ReadOnlyAttribute;
-                case NvInternalResult.NoSpaceLeft:
-                case NvInternalResult.FileTooBig:
-                    return NvResult.InvalidSize;
-                case NvInternalResult.FileTableOverflow:
-                case NvInternalResult.BadFileNumber:
-                    return NvResult.FileOperationFailed;
-                case NvInternalResult.InvalidInput:
-                    return NvResult.InvalidValue;
-                case NvInternalResult.NotADirectory:
-                    return NvResult.DirectoryOperationFailed;
-                case NvInternalResult.Busy:
-                    return NvResult.Busy;
-                case NvInternalResult.BadAddress:
-                    return NvResult.InvalidAddress;
-                case NvInternalResult.AccessDenied:
-                case NvInternalResult.OperationNotPermitted:
-                    return NvResult.AccessDenied;
-                case NvInternalResult.OutOfMemory:
-                    return NvResult.InsufficientMemory;
-                case NvInternalResult.DeviceNotFound:
-                    return NvResult.ModuleNotPresent;
-                case NvInternalResult.IoError:
-                    return NvResult.ResourceError;
-                default:
-                    return NvResult.IoctlFailed;
-            }
+                NvInternalResult.Success => NvResult.Success,
+                NvInternalResult.Unknown0x72 => NvResult.AlreadyAllocated,
+                NvInternalResult.TimedOut or NvInternalResult.TryAgain or NvInternalResult.Interrupted => NvResult.Timeout,
+                NvInternalResult.InvalidAddress => NvResult.InvalidAddress,
+                NvInternalResult.NotSupported or NvInternalResult.Unknown0x18 => NvResult.NotSupported,
+                NvInternalResult.InvalidState => NvResult.InvalidState,
+                NvInternalResult.ReadOnlyAttribute => NvResult.ReadOnlyAttribute,
+                NvInternalResult.NoSpaceLeft or NvInternalResult.FileTooBig => NvResult.InvalidSize,
+                NvInternalResult.FileTableOverflow or NvInternalResult.BadFileNumber => NvResult.FileOperationFailed,
+                NvInternalResult.InvalidInput => NvResult.InvalidValue,
+                NvInternalResult.NotADirectory => NvResult.DirectoryOperationFailed,
+                NvInternalResult.Busy => NvResult.Busy,
+                NvInternalResult.BadAddress => NvResult.InvalidAddress,
+                NvInternalResult.AccessDenied or NvInternalResult.OperationNotPermitted => NvResult.AccessDenied,
+                NvInternalResult.OutOfMemory => NvResult.InsufficientMemory,
+                NvInternalResult.DeviceNotFound => NvResult.ModuleNotPresent,
+                NvInternalResult.IoError => NvResult.ResourceError,
+                _ => NvResult.IoctlFailed,
+            };
         }
 
         [CommandCmif(0)]
@@ -328,7 +306,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         // Initialize(u32 transfer_memory_size, handle<copy, process> current_process, handle<copy, transfer_memory> transfer_memory) -> u32 error_code
         public ResultCode Initialize(ServiceCtx context)
         {
+#pragma warning disable IDE0059
             long transferMemSize   = context.RequestData.ReadInt64();
+#pragma warning restore IDE0059
             int  transferMemHandle = context.Request.HandleDesc.ToCopy[1];
 
             // TODO: When transfer memory will be implemented, this could be removed.
@@ -450,7 +430,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         // SetClientPID(u64, pid) -> u32 error_code
         public static ResultCode SetClientPid(ServiceCtx context)
         {
+#pragma warning disable IDE0059
             long pid = context.RequestData.ReadInt64();
+#pragma warning restore IDE0059
 
             context.ResponseData.Write(0);
 

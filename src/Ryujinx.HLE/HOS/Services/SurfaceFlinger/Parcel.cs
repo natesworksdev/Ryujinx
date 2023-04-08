@@ -47,7 +47,9 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         public string ReadInterfaceToken()
         {
             // Ignore the policy flags
+#pragma warning disable IDE0059
             int strictPolicy = ReadInt32();
+#pragma warning restore IDE0059
 
             return ReadString16();
         }

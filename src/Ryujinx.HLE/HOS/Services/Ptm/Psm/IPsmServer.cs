@@ -5,7 +5,9 @@ namespace Ryujinx.HLE.HOS.Services.Ptm.Psm
     [Service("psm")]
     class IPsmServer : IpcService
     {
+#pragma warning disable IDE0060
         public IPsmServer(ServiceCtx context) { }
+#pragma warning restore IDE0060
 
         [CommandCmif(0)]
         // GetBatteryChargePercentage() -> u32

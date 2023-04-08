@@ -2,7 +2,9 @@
 {
     abstract class ILblController : IpcService
     {
+#pragma warning disable IDE0060
         public ILblController(ServiceCtx context) { }
+#pragma warning restore IDE0060
 
         protected abstract void SetCurrentBrightnessSettingForVrMode(float currentBrightnessSettingForVrMode);
         protected abstract float GetCurrentBrightnessSettingForVrMode();

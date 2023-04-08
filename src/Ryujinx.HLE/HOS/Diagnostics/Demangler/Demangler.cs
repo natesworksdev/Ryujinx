@@ -418,7 +418,9 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
             // Temporary context
             context ??= new NameParserContext();
 
+#pragma warning disable IDE0059
             BaseNode result = null;
+#pragma warning restore IDE0059
             switch (Peek())
             {
                 case 'r':
@@ -1321,12 +1323,12 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
         //                  ::= C3  # complete object allocating constructor
         //                  ::= D0  # deleting destructor
         //                  ::= D1  # complete object destructor
-        //                  ::= D2  # base object destructor 
+        //                  ::= D2  # base object destructor
         private BaseNode ParseCtorDtorName(NameParserContext context, BaseNode prev)
         {
-            if (prev.Type == NodeType.SpecialSubstitution && prev is SpecialSubstitution)
+            if (prev.Type == NodeType.SpecialSubstitution && prev is SpecialSubstitution substitution)
             {
-                ((SpecialSubstitution)prev).SetExtended();
+                substitution.SetExtended();
             }
 
             if (ConsumeIf("C"))
@@ -1442,7 +1444,9 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
 
             _position++;
 
+#pragma warning disable IDE0059
             string operatorName = null;
+#pragma warning restore IDE0059
 
             switch (PeekString(0, 2))
             {
@@ -1819,7 +1823,9 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
         private BaseNode ParseExpression()
         {
             bool isGlobal = ConsumeIf("gs");
+#pragma warning disable IDE0059
             BaseNode expression = null;
+#pragma warning restore IDE0059
             if (Count() < 2)
             {
                 return null;
@@ -1924,8 +1930,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                     }
                     return null;
                 case 'd':
+#pragma warning disable IDE0059
                     BaseNode leftNode = null;
                     BaseNode rightNode = null;
+#pragma warning restore IDE0059
                     switch (Peek(1))
                     {
                         case 'a':
@@ -2305,7 +2313,9 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                             return new EnclosedExpression("sizeof (", expression, ")");
                         case 'Z':
                             _position += 2;
+#pragma warning disable IDE0059
                             BaseNode sizeofParamNode = null;
+#pragma warning restore IDE0059
                             switch (Peek())
                             {
                                 case 'T':
@@ -2799,6 +2809,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
             return operatorName;
         }
 
+#pragma warning disable IDE0060
         // <unresolved-name> ::= [gs] <base-unresolved-name>                     # x or (with "gs") ::x
         //                   ::= sr <unresolved-type> <base-unresolved-name>     # T::x / decltype(p)::x
         //                   ::= srN <unresolved-type> <unresolved-qualifier-level>+ E <base-unresolved-name>
@@ -2942,6 +2953,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
 
             return new QualifiedName(result, baseUnresolvedName);
         }
+#pragma warning restore IDE0060
 
         //    <unscoped-name> ::= <unqualified-name>
         //                    ::= St <unqualified-name>   # ::std::

@@ -8,10 +8,12 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
     {
         private readonly ApplicationServiceServer _applicationServiceServer;
 
+#pragma warning disable IDE0060
         public IAccountServiceForSystemService(ServiceCtx context, AccountServiceFlag serviceFlag)
         {
             _applicationServiceServer = new ApplicationServiceServer(serviceFlag);
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(0)]
         // GetUserCount() -> i32

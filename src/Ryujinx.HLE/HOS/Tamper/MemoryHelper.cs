@@ -7,23 +7,18 @@ namespace Ryujinx.HLE.HOS.Tamper
     {
         public static ulong GetAddressShift(MemoryRegion source, CompilationContext context)
         {
-            switch (source)
+            return source switch
             {
-                case MemoryRegion.NSO:
-                    // Memory address is relative to the code start.
-                    return context.ExeAddress;
-                case MemoryRegion.Heap:
-                    // Memory address is relative to the heap.
-                    return context.HeapAddress;
-                case MemoryRegion.Alias:
-                    // Memory address is relative to the alias region.
-                    return context.AliasAddress;
-                case MemoryRegion.Asrl:
-                    // Memory address is relative to the asrl region, which matches the code region.
-                    return context.AslrAddress;
-                default:
-                    throw new TamperCompilationException($"Invalid memory source {source} in Atmosphere cheat");
-            }
+                // Memory address is relative to the code start.
+                MemoryRegion.NSO => context.ExeAddress,
+                // Memory address is relative to the heap.
+                MemoryRegion.Heap => context.HeapAddress,
+                // Memory address is relative to the alias region.
+                MemoryRegion.Alias => context.AliasAddress,
+                // Memory address is relative to the asrl region, which matches the code region.
+                MemoryRegion.Asrl => context.AslrAddress,
+                _ => throw new TamperCompilationException($"Invalid memory source {source} in Atmosphere cheat"),
+            };
         }
 
         private static void EmitAdd(Value<ulong> finalValue, IOperand firstOperand, IOperand secondOperand, CompilationContext context)

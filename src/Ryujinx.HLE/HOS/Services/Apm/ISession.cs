@@ -2,7 +2,9 @@ namespace Ryujinx.HLE.HOS.Services.Apm
 {
     abstract class ISession : IpcService
     {
+#pragma warning disable IDE0060
         public ISession(ServiceCtx context) { }
+#pragma warning restore IDE0060
 
         protected abstract ResultCode SetPerformanceConfiguration(PerformanceMode performanceMode, PerformanceConfiguration performanceConfiguration);
         protected abstract ResultCode GetPerformanceConfiguration(PerformanceMode performanceMode, out PerformanceConfiguration performanceConfiguration);

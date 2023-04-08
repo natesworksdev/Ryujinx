@@ -48,8 +48,10 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         // -> object<nn::fssrv::sf::IFileSystem> contentFs
         public ResultCode OpenFileSystemWithId(ServiceCtx context)
         {
+#pragma warning disable IDE0059
             FileSystemType fileSystemType = (FileSystemType)context.RequestData.ReadInt32();
             ulong titleId = context.RequestData.ReadUInt64();
+#pragma warning restore IDE0059
             string switchPath = ReadUtf8String(context);
             string fullPath = context.Device.FileSystem.SwitchPathToSystemPath(switchPath);
 
@@ -718,7 +720,9 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         public ResultCode OpenDataStorageByDataId(ServiceCtx context)
         {
             StorageId storageId = (StorageId)context.RequestData.ReadByte();
+#pragma warning disable IDE0059
             byte[] padding = context.RequestData.ReadBytes(7);
+#pragma warning restore IDE0059
             ulong titleId = context.RequestData.ReadUInt64();
 
             // We do a mitm here to find if the request is for an AOC.

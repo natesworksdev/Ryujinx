@@ -42,9 +42,11 @@ namespace Ryujinx.HLE.HOS.Applets
         private SoftwareKeyboardConfig _keyboardForegroundConfig;
 
         // Configuration for background (inline) mode.
+#pragma warning disable IDE0052
         private SoftwareKeyboardInitialize   _keyboardBackgroundInitialize;
         private SoftwareKeyboardCustomizeDic _keyboardBackgroundDic;
         private SoftwareKeyboardDictSet      _keyboardBackgroundDictSet;
+#pragma warning restore IDE0052
         private SoftwareKeyboardUserWord[]   _keyboardBackgroundUserWords;
 
         private byte[] _transferMemory;
@@ -282,6 +284,7 @@ namespace Ryujinx.HLE.HOS.Applets
             }
         }
 
+#pragma warning disable IDE0060
         private void OnForegroundInteractiveData(byte[] data)
         {
             if (_foregroundState == SoftwareKeyboardState.ValidationPending)
@@ -312,6 +315,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 throw new InvalidOperationException("Software Keyboard is in an invalid state.");
             }
         }
+#pragma warning restore IDE0060
 
         private void OnBackgroundInteractiveData(byte[] data)
         {

@@ -314,15 +314,19 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
             // Pid placeholder
             context.RequestData.ReadInt64();
+#pragma warning disable IDE0059
             ulong pid = context.Request.HandleDesc.PId;
 
             ulong playHistoryRegistrationKeyPosition = context.Request.PtrBuff[0].Position;
             ulong PlayHistoryRegistrationKeySize     = context.Request.PtrBuff[0].Size;
 
             ulong inAppScreenName1Position = context.Request.PtrBuff[1].Position;
+#pragma warning restore IDE0059
             ulong inAppScreenName1Size     = context.Request.PtrBuff[1].Size;
 
+#pragma warning disable IDE0059
             ulong inAppScreenName2Position = context.Request.PtrBuff[2].Position;
+#pragma warning restore IDE0059
             ulong inAppScreenName2Size     = context.Request.PtrBuff[2].Size;
 
             if (userId.IsNull || inAppScreenName1Size > 0x48 || inAppScreenName2Size > 0x48)
@@ -331,7 +335,9 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
             }
 
             // TODO: Call nn::arp::GetApplicationControlProperty here when implemented.
+#pragma warning disable IDE0059
             ApplicationControlProperty controlProperty = context.Device.Processes.ActiveApplication.ApplicationControlProperties;
+#pragma warning restore IDE0059
 
             /*
 

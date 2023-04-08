@@ -10,11 +10,13 @@ namespace Ryujinx.HLE.HOS.Services.Bluetooth
     [Service("btdrv")]
     class IBluetoothDriver : IpcService
     {
-#pragma warning disable CS0414
+#pragma warning disable CS0414, IDE0052
         private string _unknownLowEnergy;
-#pragma warning restore CS0414
+#pragma warning restore CS0414, IDE0052
 
+#pragma warning disable IDE0060
         public IBluetoothDriver(ServiceCtx context) { }
+#pragma warning restore IDE0060
 
         [CommandCmif(46)]
         // InitializeBluetoothLe() -> handle<copy>

@@ -17,7 +17,9 @@ namespace Ryujinx.HLE.HOS.Services.Settings
     [Service("set:sys")]
     class ISystemSettingsServer : IpcService
     {
+#pragma warning disable IDE0060
         public ISystemSettingsServer(ServiceCtx context) { }
+#pragma warning restore IDE0060
 
         [CommandCmif(3)]
         // GetFirmwareVersion() -> buffer<nn::settings::system::FirmwareVersion, 0x1a, 0x100>

@@ -6,7 +6,9 @@ namespace Ryujinx.HLE.HOS.Services.Caps
     [Service("caps:su")] // 6.0.0+
     class IScreenShotApplicationService : IpcService
     {
+#pragma warning disable IDE0060
         public IScreenShotApplicationService(ServiceCtx context) { }
+#pragma warning restore IDE0060
 
         [CommandCmif(32)] // 7.0.0+
         // SetShimLibraryVersion(pid, u64, nn::applet::AppletResourceUserId)
@@ -20,11 +22,15 @@ namespace Ryujinx.HLE.HOS.Services.Caps
         public static ResultCode SaveScreenShotEx0(ServiceCtx context)
         {
             // TODO: Use the ScreenShotAttribute.
+#pragma warning disable IDE0059
             ScreenShotAttribute screenShotAttribute = context.RequestData.ReadStruct<ScreenShotAttribute>();
 
             uint  unknown              = context.RequestData.ReadUInt32();
+#pragma warning restore IDE0059
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
+#pragma warning disable IDE0059
             ulong pidPlaceholder       = context.RequestData.ReadUInt64();
+#pragma warning restore IDE0059
 
             ulong screenshotDataPosition = context.Request.SendBuff[0].Position;
             ulong screenshotDataSize     = context.Request.SendBuff[0].Size;
@@ -43,11 +49,12 @@ namespace Ryujinx.HLE.HOS.Services.Caps
         public static ResultCode SaveScreenShotEx1(ServiceCtx context)
         {
             // TODO: Use the ScreenShotAttribute.
-            ScreenShotAttribute screenShotAttribute = context.RequestData.ReadStruct<ScreenShotAttribute>();
+            _ = context.RequestData.ReadStruct<ScreenShotAttribute>();
 
-            uint  unknown              = context.RequestData.ReadUInt32();
+            _ = context.RequestData.ReadUInt32();
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
-            ulong pidPlaceholder       = context.RequestData.ReadUInt64();
+
+            _ = context.RequestData.ReadUInt64();
 
             ulong applicationDataPosition = context.Request.SendBuff[0].Position;
             ulong applicationDataSize     = context.Request.SendBuff[0].Size;
@@ -55,8 +62,9 @@ namespace Ryujinx.HLE.HOS.Services.Caps
             ulong screenshotDataPosition = context.Request.SendBuff[1].Position;
             ulong screenshotDataSize     = context.Request.SendBuff[1].Size;
 
+
             // TODO: Parse the application data: At 0x00 it's UserData (Size of 0x400), at 0x404 it's a uint UserDataSize (Always empty for now).
-            byte[] applicationData = context.Memory.GetSpan(applicationDataPosition, (int)applicationDataSize).ToArray();
+            _ = context.Memory.GetSpan(applicationDataPosition, (int)applicationDataSize).ToArray();
 
             byte[] screenshotData = context.Memory.GetSpan(screenshotDataPosition, (int)screenshotDataSize, true).ToArray();
 
@@ -72,9 +80,9 @@ namespace Ryujinx.HLE.HOS.Services.Caps
         public static ResultCode SaveScreenShotEx2(ServiceCtx context)
         {
             // TODO: Use the ScreenShotAttribute.
-            ScreenShotAttribute screenShotAttribute = context.RequestData.ReadStruct<ScreenShotAttribute>();
+            _ = context.RequestData.ReadStruct<ScreenShotAttribute>();
 
-            uint  unknown              = context.RequestData.ReadUInt32();
+            _ = context.RequestData.ReadUInt32();
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
 
             ulong userIdListPosition = context.Request.SendBuff[0].Position;
@@ -83,8 +91,9 @@ namespace Ryujinx.HLE.HOS.Services.Caps
             ulong screenshotDataPosition = context.Request.SendBuff[1].Position;
             ulong screenshotDataSize     = context.Request.SendBuff[1].Size;
 
+
             // TODO: Parse the UserIdList.
-            byte[] userIdList = context.Memory.GetSpan(userIdListPosition, (int)userIdListSize).ToArray();
+            _ = context.Memory.GetSpan(userIdListPosition, (int)userIdListSize).ToArray();
 
             byte[] screenshotData = context.Memory.GetSpan(screenshotDataPosition, (int)screenshotDataSize, true).ToArray();
 

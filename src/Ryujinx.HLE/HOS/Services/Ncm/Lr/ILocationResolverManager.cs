@@ -6,7 +6,9 @@ namespace Ryujinx.HLE.HOS.Services.Ncm.Lr
     [Service("lr")]
     class ILocationResolverManager : IpcService
     {
+#pragma warning disable IDE0060
         public ILocationResolverManager(ServiceCtx context) { }
+#pragma warning restore IDE0060
 
         [CommandCmif(0)]
         // OpenLocationResolver()

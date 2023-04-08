@@ -8,7 +8,9 @@ namespace Ryujinx.HLE.HOS.Services.Pm
     [Service("pm:dmnt")]
     class IDebugMonitorInterface : IpcService
     {
+#pragma warning disable IDE0060
         public IDebugMonitorInterface(ServiceCtx context) { }
+#pragma warning restore IDE0060
 
         [CommandCmif(4)]
         // GetProgramId() -> sf::Out<ncm::ProgramId> out_process_id
