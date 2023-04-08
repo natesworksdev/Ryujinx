@@ -17,7 +17,7 @@ namespace Ryujinx.Tests.Audio.Renderer.Dsp
         [Test]
         public void TestUpsamplerConsistency()
         {
-            UpsamplerBufferState bufferState = new UpsamplerBufferState();
+            UpsamplerBufferState bufferState = new();
             int inputBlockSize = 160;
             int numInputSamples = 32000;
             int numOutputSamples = 48000;
@@ -56,7 +56,7 @@ namespace Ryujinx.Tests.Audio.Renderer.Dsp
                 sumDifference += Math.Abs(expectedOutput[sample] - outputBuffer[sample]);
             }
 
-            sumDifference = sumDifference / (float)expectedOutput.Length;
+            sumDifference /= (float)expectedOutput.Length;
             // Expect the output to be 98% similar to the expected resampled sine wave
             Assert.IsTrue(sumDifference < 0.02f);
         }

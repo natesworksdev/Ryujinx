@@ -217,10 +217,10 @@ namespace Ryujinx.Tests.Cpu
             opcode |= ((vd & 0x10) << 18);
             opcode |= ((vd & 0xf) << 12);
 
-            V128 v0 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v1 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v2 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v3 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v0 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v1 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v2 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v3 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, v3: v3);
 
@@ -247,10 +247,10 @@ namespace Ryujinx.Tests.Cpu
                 opcode |= 1 << 24;
             }
 
-            V128 v0 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v1 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v2 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v3 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v0 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v1 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v2 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v3 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, v3: v3);
 
@@ -279,10 +279,10 @@ namespace Ryujinx.Tests.Cpu
             opcode |= (vd & 0x10) << 18;
             opcode |= (vd & 0xf) << 12;
 
-            V128 v0 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v1 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v2 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v3 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v0 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v1 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v2 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v3 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, v3: v3);
 
@@ -356,10 +356,10 @@ namespace Ryujinx.Tests.Cpu
             opcode |= (vd & 0xf) << 12;
             opcode |= (size & 0x3) << 18;
 
-            V128 v0 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v1 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v2 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v3 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v0 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v1 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v2 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v3 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, v3: v3);
 
@@ -389,10 +389,10 @@ namespace Ryujinx.Tests.Cpu
             opcode |= (vd & 0xf) << 12;
             opcode |= (size & 0x3) << 18;
 
-            V128 v0 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v1 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v2 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v3 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v0 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v1 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v2 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v3 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, v3: v3);
 
@@ -422,10 +422,10 @@ namespace Ryujinx.Tests.Cpu
             opcode |= (vd & 0xf) << 12;
             opcode |= (size & 0x3) << 18;
 
-            V128 v0 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v1 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v2 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v3 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v0 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v1 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v2 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v3 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, v3: v3);
 
@@ -459,10 +459,10 @@ namespace Ryujinx.Tests.Cpu
             opcode |= (length & 0x3) << 8;
 
             var rnd = TestContext.CurrentContext.Random;
-            V128 v2 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v3 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v4 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v5 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v2 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v3 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v4 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v5 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
 
             byte maxIndex = (byte)(length * 8 - 1);
             byte[] b0 = new byte[16];
@@ -473,8 +473,8 @@ namespace Ryujinx.Tests.Cpu
                 b1[i] = rnd.NextByte(maxIndex);
             }
 
-            V128 v0 = new V128(b0);
-            V128 v1 = new V128(b1);
+            V128 v0 = new(b0);
+            V128 v1 = new(b1);
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, v3: v3, v4: v4, v5: v5);
 
@@ -507,10 +507,10 @@ namespace Ryujinx.Tests.Cpu
             opcode |= (vn & 0xf) << 16;
             opcode |= (imm4 & 0xf) << 8;
 
-            V128 v0 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v1 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v2 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v3 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v0 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v1 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v2 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v3 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, v3: v3);
 
@@ -541,7 +541,7 @@ namespace Ryujinx.Tests.Cpu
             opcode |= (size & 1) << 5; // E
             opcode |= (size & 2) << 21; // B
 
-            V128 v1 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v1 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
 
             SingleOpcode(opcode, r0: valueRn, r1: valueRn, r2: valueRn, r3: valueRn, v0: new V128(valueVn1, valueVn2), v1: v1);
 
@@ -586,9 +586,9 @@ namespace Ryujinx.Tests.Cpu
 
             opcode |= imm4 << 16;
 
-            V128 v1 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v2 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
-            V128 v3 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v1 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v2 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v3 = new(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
 
             SingleOpcode(opcode, v0: new V128(valueVn1, valueVn2), v1: v1, v2: v2, v3: v3);
 

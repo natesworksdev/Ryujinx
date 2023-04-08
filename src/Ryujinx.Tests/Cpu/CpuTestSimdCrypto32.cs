@@ -92,8 +92,8 @@ namespace Ryujinx.Tests.Cpu
 
             ExecutionContext context = SingleOpcode(
                 opcode,
-                v0: rm == 0u ? v : default(V128),
-                v1: rm == 2u ? v : default(V128),
+                v0: rm == 0u ? v : default,
+                v1: rm == 2u ? v : default,
                 runUnicorn: false);
 
             Assert.Multiple(() =>
@@ -130,8 +130,8 @@ namespace Ryujinx.Tests.Cpu
 
             ExecutionContext context = SingleOpcode(
                 opcode,
-                v0: rm == 0u ? v : default(V128),
-                v1: rm == 2u ? v : default(V128),
+                v0: rm == 0u ? v : default,
+                v1: rm == 2u ? v : default,
                 runUnicorn: false);
 
             Assert.Multiple(() =>

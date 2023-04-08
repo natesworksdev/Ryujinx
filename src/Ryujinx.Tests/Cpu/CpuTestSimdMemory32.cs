@@ -13,7 +13,7 @@ namespace Ryujinx.Tests.Cpu
         private static readonly uint TestOffset = DataBaseAddress + 0x500;
 #if SimdMemory32
 
-        private uint[] _ldStModes =
+        private readonly uint[] _ldStModes =
         {
             // LD1
             0b0111,
@@ -212,7 +212,7 @@ namespace Ryujinx.Tests.Cpu
 
             opcode |= ((uint)(single ? 0 : 1) << 8);
 
-            if (!single) regs = (regs << 1); // Low bit must be 0 - must be even number of registers.
+            if (!single) regs <<= 1; // Low bit must be 0 - must be even number of registers.
             uint regSize = single ? 1u : 2u;
 
             if (vd + (regs / regSize) > 32) // Can't address further than S31 or D31.

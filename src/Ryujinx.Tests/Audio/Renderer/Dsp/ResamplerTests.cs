@@ -85,7 +85,7 @@ namespace Ryujinx.Tests.Audio.Renderer.Dsp
                 sumDifference += thisDelta;
             }
 
-            sumDifference = sumDifference / (float)outputSampleCount;
+            sumDifference /= (float)outputSampleCount;
             // Expect the output to be 99% similar to the expected resampled sine wave
             Assert.IsTrue(sumDifference < 0.01f);
         }

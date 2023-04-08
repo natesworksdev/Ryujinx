@@ -291,7 +291,7 @@ namespace Ryujinx.Tests.Cpu
         [Test, Ignore("The Tester supports only one return point.")]
         public void MiscF([Range(0u, 92u, 1u)] uint a)
         {
-            ulong Fn(uint n)
+            static ulong Fn(uint n)
             {
                 ulong x = 0, y = 1, z;
 

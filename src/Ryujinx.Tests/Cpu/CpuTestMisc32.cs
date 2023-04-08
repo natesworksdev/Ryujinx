@@ -75,10 +75,10 @@ namespace Ryujinx.Tests.Cpu
                 ? TestContext.CurrentContext.Random.NextUInt(0xf) << 28
                 : TestContext.CurrentContext.Random.NextUInt();
 
-            bool v = mode3 ? TestContext.CurrentContext.Random.NextBool() : false;
-            bool c = mode3 ? TestContext.CurrentContext.Random.NextBool() : false;
-            bool z = mode3 ? TestContext.CurrentContext.Random.NextBool() : false;
-            bool n = mode3 ? TestContext.CurrentContext.Random.NextBool() : false;
+            bool v = mode3 && TestContext.CurrentContext.Random.NextBool();
+            bool c = mode3 && TestContext.CurrentContext.Random.NextBool();
+            bool z = mode3 && TestContext.CurrentContext.Random.NextBool();
+            bool n = mode3 && TestContext.CurrentContext.Random.NextBool();
 
             int fpscr = mode1
                 ? (int)TestContext.CurrentContext.Random.NextUInt()

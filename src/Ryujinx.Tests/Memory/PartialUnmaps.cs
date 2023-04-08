@@ -239,7 +239,7 @@ namespace Ryujinx.Tests.Memory
                 var writeFunc = TestMethods.GenerateDebugNativeWriteLoop();
                 IntPtr writePtr = mainMemory.GetPointer(vaSize - 0x1000, 4);
 
-                Thread testThread = new Thread(() =>
+                Thread testThread = new(() =>
                 {
                     writeFunc(statePtr, writePtr);
                 });

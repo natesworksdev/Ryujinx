@@ -17,10 +17,10 @@ namespace Ryujinx.Tests.Cpu
         protected static ulong CodeBaseAddress = Size;
         protected static ulong DataBaseAddress = CodeBaseAddress + Size;
 
-        private static bool Ignore_FpcrFz = false;
-        private static bool Ignore_FpcrDn = false;
+        private static readonly bool Ignore_FpcrFz = false;
+        private static readonly bool Ignore_FpcrDn = false;
 
-        private static bool IgnoreAllExcept_FpsrQc = false;
+        private static readonly bool IgnoreAllExcept_FpsrQc = false;
 
         private ulong _currAddress;
 
@@ -513,13 +513,13 @@ namespace Ryujinx.Tests.Cpu
             return new SimdValue(value.Extract<ulong>(0), value.Extract<ulong>(1));
         }
 
-        protected static V128 MakeVectorScalar(float value)  => new V128(value);
-        protected static V128 MakeVectorScalar(double value) => new V128(value);
+        protected static V128 MakeVectorScalar(float value)  => new(value);
+        protected static V128 MakeVectorScalar(double value) => new(value);
 
-        protected static V128 MakeVectorE0(ulong e0) => new V128(e0, 0);
-        protected static V128 MakeVectorE1(ulong e1) => new V128(0, e1);
+        protected static V128 MakeVectorE0(ulong e0) => new(e0, 0);
+        protected static V128 MakeVectorE1(ulong e1) => new(0, e1);
 
-        protected static V128 MakeVectorE0E1(ulong e0, ulong e1) => new V128(e0, e1);
+        protected static V128 MakeVectorE0E1(ulong e0, ulong e1) => new(e0, e1);
 
         protected static ulong GetVectorE0(V128 vector) => vector.Extract<ulong>(0);
         protected static ulong GetVectorE1(V128 vector) => vector.Extract<ulong>(1);

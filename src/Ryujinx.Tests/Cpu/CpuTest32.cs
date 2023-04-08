@@ -294,10 +294,10 @@ namespace Ryujinx.Tests.Cpu
                 FinalRegs = test.FinalRegs,
             });
 
-            foreach (var delta in test.MemoryDelta)
+            foreach (var (Address, Value) in test.MemoryDelta)
             {
-                testMem[delta.Address - DataBaseAddress + 0] = (byte)(delta.Value >> 0);
-                testMem[delta.Address - DataBaseAddress + 1] = (byte)(delta.Value >> 8);
+                testMem[Address - DataBaseAddress + 0] = (byte)(Value >> 0);
+                testMem[Address - DataBaseAddress + 1] = (byte)(Value >> 8);
             }
 
             byte[] mem = _memory.GetSpan(DataBaseAddress, (int)Size).ToArray();
@@ -554,13 +554,13 @@ namespace Ryujinx.Tests.Cpu
             return new SimdValue(value.Extract<ulong>(0), value.Extract<ulong>(1));
         }
 
-        protected static V128 MakeVectorScalar(float value) => new V128(value);
-        protected static V128 MakeVectorScalar(double value) => new V128(value);
+        protected static V128 MakeVectorScalar(float value) => new(value);
+        protected static V128 MakeVectorScalar(double value) => new(value);
 
-        protected static V128 MakeVectorE0(ulong e0) => new V128(e0, 0);
-        protected static V128 MakeVectorE1(ulong e1) => new V128(0, e1);
+        protected static V128 MakeVectorE0(ulong e0) => new(e0, 0);
+        protected static V128 MakeVectorE1(ulong e1) => new(0, e1);
 
-        protected static V128 MakeVectorE0E1(ulong e0, ulong e1) => new V128(e0, e1);
+        protected static V128 MakeVectorE0E1(ulong e0, ulong e1) => new(e0, e1);
 
         protected static V128 MakeVectorE0E1E2E3(uint e0, uint e1, uint e2, uint e3)
         {
