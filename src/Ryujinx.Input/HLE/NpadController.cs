@@ -221,7 +221,7 @@ namespace Ryujinx.Input.HLE
 
         public string Id => _id;
 
-        private CemuHookClient _cemuHookClient;
+        private readonly CemuHookClient _cemuHookClient;
 
         public NpadController(CemuHookClient cemuHookClient)
         {
@@ -347,7 +347,7 @@ namespace Ryujinx.Input.HLE
 
         public GamepadInput GetHLEInputState()
         {
-            GamepadInput state = new GamepadInput();
+            GamepadInput state = new();
 
             // First update all buttons
             foreach (HLEButtonMappingEntry entry in _hleButtonMapping)
@@ -502,7 +502,7 @@ namespace Ryujinx.Input.HLE
             {
                 KeyboardStateSnapshot keyboardState = keyboard.GetKeyboardStateSnapshot();
 
-                KeyboardInput hidKeyboard = new KeyboardInput
+                KeyboardInput hidKeyboard = new()
                 {
                     Modifier = 0,
                     Keys = new ulong[0x4]

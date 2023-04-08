@@ -31,7 +31,7 @@ namespace Ryujinx.Input.HLE
                     MouseStateSnapshot snapshot = IMouse.GetMouseStateSnapshot(_mouse);
                     var touchPosition = IMouse.GetScreenPosition(snapshot.Position, _mouse.ClientSize, aspectRatio);
 
-                    TouchPoint currentPoint = new TouchPoint
+                    TouchPoint currentPoint = new()
                     {
                         Attribute = TouchAttribute.End,
 
@@ -71,7 +71,7 @@ namespace Ryujinx.Input.HLE
                     attribute = TouchAttribute.End;
                 }
 
-                TouchPoint currentPoint = new TouchPoint
+                TouchPoint currentPoint = new()
                 {
                     Attribute = attribute,
 

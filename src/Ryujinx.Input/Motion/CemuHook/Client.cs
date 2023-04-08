@@ -30,7 +30,7 @@ namespace Ryujinx.Input.Motion.CemuHook
 
         private readonly bool[] _clientErrorStatus = new bool[Enum.GetValues<PlayerIndex>().Length];
         private readonly long[] _clientRetryTimer  = new long[Enum.GetValues<PlayerIndex>().Length];
-        private NpadManager _npadManager;
+        private readonly NpadManager _npadManager;
 
         public Client(NpadManager npadManager)
         {
@@ -84,7 +84,7 @@ namespace Ryujinx.Input.Motion.CemuHook
 
                 try
                 {
-                    IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse(host), port);
+                    IPEndPoint endPoint = new(IPAddress.Parse(host), port);
 
                     client = new UdpClient(host, port);
 
@@ -297,8 +297,8 @@ namespace Ryujinx.Input.Motion.CemuHook
 
             data = data.AsSpan()[16..].ToArray();
 
-            using MemoryStream stream = new MemoryStream(data);
-            using BinaryReader reader = new BinaryReader(stream);
+            using MemoryStream stream = new(data);
+            using BinaryReader reader = new(stream);
 
             switch (type)
             {
@@ -310,14 +310,14 @@ namespace Ryujinx.Input.Motion.CemuHook
                 case MessageType.Data:
                     ControllerDataResponse inputData = reader.ReadStruct<ControllerDataResponse>();
 
-                    Vector3 accelerometer = new Vector3()
+                    Vector3 accelerometer = new()
                     {
                         X = -inputData.AccelerometerX,
                         Y = inputData.AccelerometerZ,
                         Z = -inputData.AccelerometerY
                     };
 
-                    Vector3 gyroscrope = new Vector3()
+                    Vector3 gyroscrope = new()
                     {
                         X = inputData.GyroscopePitch,
                         Y = inputData.GyroscopeRoll,
@@ -346,7 +346,7 @@ namespace Ryujinx.Input.Motion.CemuHook
                                 }
                                 else
                                 {
-                                    MotionInput input = new MotionInput();
+                                    MotionInput input = new();
 
                                     input.Update(accelerometer, gyroscrope, timestamp, cemuHookConfig.Sensitivity, (float)cemuHookConfig.GyroDeadzone);
 
@@ -355,7 +355,7 @@ namespace Ryujinx.Input.Motion.CemuHook
                             }
                             else
                             {
-                                MotionInput input = new MotionInput();
+                                MotionInput input = new();
 
                                 input.Update(accelerometer, gyroscrope, timestamp, cemuHookConfig.Sensitivity, (float)cemuHookConfig.GyroDeadzone);
 
@@ -380,35 +380,33 @@ namespace Ryujinx.Input.Motion.CemuHook
 
             Header header = GenerateHeader(clientId);
 
-            using (MemoryStream stream = MemoryStreamManager.Shared.GetStream())
-            using (BinaryWriter writer = new BinaryWriter(stream))
+            using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+            using BinaryWriter writer = new(stream);
+            writer.WriteStruct(header);
+
+            ControllerInfoRequest request = new()
             {
-                writer.WriteStruct(header);
+                Type       = MessageType.Info,
+                PortsCount = 4
+            };
 
-                ControllerInfoRequest request = new ControllerInfoRequest()
-                {
-                    Type       = MessageType.Info,
-                    PortsCount = 4
-                };
+            request.PortIndices[0] = (byte)slot;
 
-                request.PortIndices[0] = (byte)slot;
+            writer.WriteStruct(request);
 
-                writer.WriteStruct(request);
+            header.Length = (ushort)(stream.Length - 16);
 
-                header.Length = (ushort)(stream.Length - 16);
+            writer.Seek(6, SeekOrigin.Begin);
+            writer.Write(header.Length);
 
-                writer.Seek(6, SeekOrigin.Begin);
-                writer.Write(header.Length);
+            Crc32.Hash(stream.ToArray(), header.Crc32.AsSpan());
 
-                Crc32.Hash(stream.ToArray(), header.Crc32.AsSpan());
+            writer.Seek(8, SeekOrigin.Begin);
+            writer.Write(header.Crc32.AsSpan());
 
-                writer.Seek(8, SeekOrigin.Begin);
-                writer.Write(header.Crc32.AsSpan());
+            byte[] data = stream.ToArray();
 
-                byte[] data = stream.ToArray();
-
-                Send(data, clientId);
-            }
+            Send(data, clientId);
         }
 
         public unsafe void RequestData(int clientId, int slot)
@@ -420,39 +418,37 @@ namespace Ryujinx.Input.Motion.CemuHook
 
             Header header = GenerateHeader(clientId);
 
-            using (MemoryStream stream = MemoryStreamManager.Shared.GetStream())
-            using (BinaryWriter writer = new BinaryWriter(stream))
+            using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+            using BinaryWriter writer = new(stream);
+            writer.WriteStruct(header);
+
+            ControllerDataRequest request = new()
             {
-                writer.WriteStruct(header);
+                Type           = MessageType.Data,
+                Slot           = (byte)slot,
+                SubscriberType = SubscriberType.Slot
+            };
 
-                ControllerDataRequest request = new ControllerDataRequest()
-                {
-                    Type           = MessageType.Data,
-                    Slot           = (byte)slot,
-                    SubscriberType = SubscriberType.Slot
-                };
+            writer.WriteStruct(request);
 
-                writer.WriteStruct(request);
+            header.Length = (ushort)(stream.Length - 16);
 
-                header.Length = (ushort)(stream.Length - 16);
+            writer.Seek(6, SeekOrigin.Begin);
+            writer.Write(header.Length);
 
-                writer.Seek(6, SeekOrigin.Begin);
-                writer.Write(header.Length);
+            Crc32.Hash(stream.ToArray(), header.Crc32.AsSpan());
 
-                Crc32.Hash(stream.ToArray(), header.Crc32.AsSpan());
+            writer.Seek(8, SeekOrigin.Begin);
+            writer.Write(header.Crc32.AsSpan());
 
-                writer.Seek(8, SeekOrigin.Begin);
-                writer.Write(header.Crc32.AsSpan());
+            byte[] data = stream.ToArray();
 
-                byte[] data = stream.ToArray();
-
-                Send(data, clientId);
-            }
+            Send(data, clientId);
         }
 
         private Header GenerateHeader(int clientId)
         {
-            Header header = new Header()
+            Header header = new()
             {
                 Id          = (uint)clientId,
                 MagicString = Magic,

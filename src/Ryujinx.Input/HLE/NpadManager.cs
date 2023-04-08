@@ -13,7 +13,7 @@ namespace Ryujinx.Input.HLE
 {
     public class NpadManager : IDisposable
     {
-        private CemuHookClient _cemuHookClient;
+        private readonly CemuHookClient _cemuHookClient;
 
         private readonly object _lock = new();
 
@@ -21,7 +21,7 @@ namespace Ryujinx.Input.HLE
 
         private const int MaxControllers = 9;
 
-        private NpadController[] _controllers;
+        private readonly NpadController[] _controllers;
 
         private readonly IGamepadDriver _keyboardDriver;
         private readonly IGamepadDriver _gamepadDriver;
@@ -51,7 +51,7 @@ namespace Ryujinx.Input.HLE
         {
             lock (_lock)
             {
-                List<InputConfig> validInputs = new List<InputConfig>();
+                List<InputConfig> validInputs = new();
                 foreach (var inputConfigEntry in _inputConfig)
                 {
                     if (_controllers[(int)inputConfigEntry.PlayerIndex] != null)
@@ -112,11 +112,11 @@ namespace Ryujinx.Input.HLE
                     _controllers[i] = null;
                 }
 
-                List<InputConfig> validInputs = new List<InputConfig>();
+                List<InputConfig> validInputs = new();
 
                 foreach (InputConfig inputConfigEntry in inputConfig)
                 {
-                    NpadController controller = new NpadController(_cemuHookClient);
+                    NpadController controller = new(_cemuHookClient);
 
                     bool isValid = DriverConfigurationUpdate(ref controller, inputConfigEntry);
 
@@ -167,8 +167,8 @@ namespace Ryujinx.Input.HLE
         {
             lock (_lock)
             {
-                List<GamepadInput> hleInputStates = new List<GamepadInput>();
-                List<SixAxisInput> hleMotionStates = new List<SixAxisInput>(NpadDevices.MaxControllers);
+                List<GamepadInput> hleInputStates = new();
+                List<SixAxisInput> hleMotionStates = new(NpadDevices.MaxControllers);
 
                 KeyboardInput? hleKeyboardInput = null;
 
