@@ -37,7 +37,7 @@ namespace Ryujinx.Cpu
                 ulong leftSize = splitAddress - Address;
                 ulong rightSize = EndAddress - splitAddress;
 
-                Mapping left = new Mapping(Address, leftSize, Type);
+                Mapping left = new(Address, leftSize, Type);
 
                 Address = splitAddress;
                 Size = rightSize;
@@ -93,7 +93,7 @@ namespace Ryujinx.Cpu
 
                 (var leftAllocation, PrivateAllocation) = PrivateAllocation.Split(leftSize);
 
-                PrivateMapping left = new PrivateMapping(Address, leftSize, leftAllocation);
+                PrivateMapping left = new(Address, leftSize, leftAllocation);
 
                 Address = splitAddress;
                 Size = rightSize;

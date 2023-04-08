@@ -138,7 +138,7 @@ namespace Ryujinx.Cpu.AppleHv
 
                 int l = (int)(va >> (PageBits + (2 - depth) * LevelBits)) & LevelMask;
 
-                PtLevel nextTable = level.Next != null ? level.Next[l] : null;
+                PtLevel nextTable = level.Next?[l];
 
                 if (nextTable != null)
                 {
@@ -204,7 +204,7 @@ namespace Ryujinx.Cpu.AppleHv
                 // First check if the region is mapped.
                 if ((pte & 3) != 0)
                 {
-                    PtLevel nextTable = level.Next != null ? level.Next[l] : null;
+                    PtLevel nextTable = level.Next?[l];
 
                     if (nextTable != null)
                     {
@@ -240,7 +240,7 @@ namespace Ryujinx.Cpu.AppleHv
             pte &= ~3UL;
             pte |= (depth == 2 ? 3UL : 1UL);
 
-            PtLevel level = new PtLevel(_blockAllocator, LevelCount, depth < 2);
+            PtLevel level = new(_blockAllocator, LevelCount, depth < 2);
             Span<ulong> currentLevel = level.AsSpan();
 
             (ulong blockSize, int blockShift) = GetBlockSizeAndShift(depth);
@@ -334,7 +334,7 @@ namespace Ryujinx.Cpu.AppleHv
 
             if ((currentTable[index] & 1) == 0)
             {
-                PtLevel nextLevel = new PtLevel(_blockAllocator, LevelCount, hasNext);
+                PtLevel nextLevel = new(_blockAllocator, LevelCount, hasNext);
 
                 currentTable[index] = (nextLevel.Address & ~(ulong)PageMask) | 3UL;
                 level.Next[index] = nextLevel;

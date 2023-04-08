@@ -17,10 +17,10 @@ namespace Ryujinx.Cpu.AppleHv
 
         private const int MaxActiveVcpus = 4;
 
-        public static readonly HvVcpuPool Instance = new HvVcpuPool();
+        public static readonly HvVcpuPool Instance = new();
 
         private int _totalVcpus;
-        private int _maxVcpus;
+        private readonly int _maxVcpus;
 
         public HvVcpuPool()
         {
@@ -77,9 +77,9 @@ namespace Ryujinx.Cpu.AppleHv
 
             addressSpace.InitializeMmu(vcpuHandle);
 
-            HvExecutionContextVcpu nativeContext = new HvExecutionContextVcpu(vcpuHandle);
+            HvExecutionContextVcpu nativeContext = new(vcpuHandle);
 
-            HvVcpu vcpu = new HvVcpu(vcpuHandle, exitInfo, shadowContext, nativeContext, isEphemeral);
+            HvVcpu vcpu = new(vcpuHandle, exitInfo, shadowContext, nativeContext, isEphemeral);
 
             return vcpu;
         }

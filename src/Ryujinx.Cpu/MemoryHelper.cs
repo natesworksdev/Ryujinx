@@ -42,22 +42,20 @@ namespace Ryujinx.Cpu
 
         public static string ReadAsciiString(IVirtualMemoryManager memory, ulong position, long maxSize = -1)
         {
-            using (RecyclableMemoryStream ms = MemoryStreamManager.Shared.GetStream())
+            using RecyclableMemoryStream ms = MemoryStreamManager.Shared.GetStream();
+            for (long offs = 0; offs < maxSize || maxSize == -1; offs++)
             {
-                for (long offs = 0; offs < maxSize || maxSize == -1; offs++)
+                byte value = memory.Read<byte>(position + (ulong)offs);
+
+                if (value == 0)
                 {
-                    byte value = memory.Read<byte>(position + (ulong)offs);
-
-                    if (value == 0)
-                    {
-                        break;
-                    }
-
-                    ms.WriteByte(value);
+                    break;
                 }
 
-                return Encoding.ASCII.GetString(ms.GetReadOnlySequence());
+                ms.WriteByte(value);
             }
+
+            return Encoding.ASCII.GetString(ms.GetReadOnlySequence());
         }
     }
 }

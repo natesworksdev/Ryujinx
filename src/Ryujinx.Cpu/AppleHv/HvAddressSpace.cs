@@ -24,7 +24,7 @@ namespace Ryujinx.Cpu.AppleHv
         private readonly HvAddressSpaceRange _userRange;
         private readonly HvAddressSpaceRange _kernelRange;
 
-        private MemoryBlock _kernelCodeBlock;
+        private readonly MemoryBlock _kernelCodeBlock;
 
         public HvAddressSpace(MemoryBlock backingMemory, ulong asSize)
         {
