@@ -141,7 +141,7 @@ namespace Ryujinx.Audio.Backends.SoundIo
                 throw new NotImplementedException("Input direction is currently not implemented on SoundIO backend!");
             }
 
-            SoundIoHardwareDeviceSession session = new SoundIoHardwareDeviceSession(this, memoryManager, sampleFormat, sampleRate, channelCount, volume);
+            SoundIoHardwareDeviceSession session = new(this, memoryManager, sampleFormat, sampleRate, channelCount, volume);
 
             _sessions.TryAdd(session, 0);
 
