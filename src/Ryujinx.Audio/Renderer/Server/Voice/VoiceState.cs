@@ -202,7 +202,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
             Pitch = 0.0f;
             Volume = 0.0f;
             PreviousVolume = 0.0f;
-            BiquadFilters.AsSpan().Fill(new BiquadFilterParameter());
+            BiquadFilters.AsSpan().Clear();
             WaveBuffersCount = 0;
             WaveBuffersIndex = 0;
             MixId = Constants.UnusedMixId;
@@ -434,7 +434,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
 
                 for (int i = 0; i < parameter.ChannelCount; i++)
                 {
-                    voiceUpdateStates[i].Span[0].IsWaveBufferValid.Fill(false);
+                    voiceUpdateStates[i].Span[0].IsWaveBufferValid.Clear();
                 }
             }
 
@@ -530,7 +530,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
 
                 Memory<VoiceUpdateState> dspSharedState = context.GetUpdateStateForDsp(channelResourceId);
 
-                MemoryMarshal.Cast<VoiceUpdateState, byte>(dspSharedState.Span).Fill(0);
+                MemoryMarshal.Cast<VoiceUpdateState, byte>(dspSharedState.Span).Clear();
 
                 voiceChannelResource.UpdateState();
             }
@@ -638,7 +638,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
 
                         voiceUpdateState.Offset = 0;
                         voiceUpdateState.PlayedSampleCount = 0;
-                        voiceUpdateState.Pitch.AsSpan().Fill(0);
+                        voiceUpdateState.Pitch.AsSpan().Clear();
                         voiceUpdateState.Fraction = 0;
                         voiceUpdateState.LoopContext = new Dsp.State.AdpcmLoopContext();
                     }

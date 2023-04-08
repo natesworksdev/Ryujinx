@@ -311,7 +311,7 @@ namespace Ryujinx.Audio.Common
             return false;
         }
 
-        public bool AppendUacBuffer(AudioBuffer buffer, uint handle)
+        public static bool AppendUacBuffer(AudioBuffer buffer, uint handle)
         {
             // NOTE: On hardware, there is another RegisterBuffer method taking an handle.
             // This variant of the call always return false (stubbed?) as a result this logic will never succeed.

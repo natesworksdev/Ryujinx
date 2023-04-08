@@ -109,7 +109,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
             for (int sampleIndex = 0; sampleIndex < sampleCount; sampleIndex++)
             {
-                outputValues.Fill(0);
+                outputValues.Clear();
 
                 float tapOut = state.PreDelayLine.TapUnsafe(state.ReflectionDelayTime, DelayLineSampleIndexOffset);
 

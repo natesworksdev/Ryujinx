@@ -220,7 +220,7 @@ namespace Ryujinx.Audio.Input
                     DataSize = userBuffer.DataSize
                 };
 
-                if (_session.AppendUacBuffer(buffer, handle))
+                if (AudioDeviceSession.AppendUacBuffer(buffer, handle))
                 {
                     return ResultCode.Success;
                 }

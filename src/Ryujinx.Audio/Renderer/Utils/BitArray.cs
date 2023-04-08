@@ -97,7 +97,7 @@ namespace Ryujinx.Audio.Renderer.Utils
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset()
         {
-            _storage.Span.Fill(0);
+            _storage.Span.Clear();
         }
     }
 }

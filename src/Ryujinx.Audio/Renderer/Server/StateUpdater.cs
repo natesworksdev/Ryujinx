@@ -386,7 +386,7 @@ namespace Ryujinx.Audio.Renderer.Server
             }
         }
 
-        private bool CheckMixParametersValidity(MixContext mixContext, uint mixBufferCount, uint inputMixCount, ReadOnlySpan<MixParameter> parameters)
+        private static bool CheckMixParametersValidity(MixContext mixContext, uint mixBufferCount, uint inputMixCount, ReadOnlySpan<MixParameter> parameters)
         {
             uint maxMixStateCount = mixContext.GetCount();
             uint totalRequiredMixBufferCount = 0;

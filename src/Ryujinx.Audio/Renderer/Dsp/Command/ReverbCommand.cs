@@ -143,7 +143,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
             for (int sampleIndex = 0; sampleIndex < sampleCount; sampleIndex++)
             {
-                outputValues.Fill(0);
+                outputValues.Clear();
 
                 for (int i = 0; i < targetEarlyDelayLineIndicesTable.Length; i++)
                 {

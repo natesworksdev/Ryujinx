@@ -93,12 +93,12 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
 
         private const int FixedPointPrecision = 14;
 
-        private ReadOnlySpan<float> GetFdnDelayTimesByLateMode(ReverbLateMode lateMode)
+        private static ReadOnlySpan<float> GetFdnDelayTimesByLateMode(ReverbLateMode lateMode)
         {
             return FdnDelayTimes.AsSpan((int)lateMode * 4, 4);
         }
 
-        private ReadOnlySpan<float> GetDecayDelayTimesByLateMode(ReverbLateMode lateMode)
+        private static ReadOnlySpan<float> GetDecayDelayTimesByLateMode(ReverbLateMode lateMode)
         {
             return DecayDelayTimes.AsSpan((int)lateMode * 4, 4);
         }

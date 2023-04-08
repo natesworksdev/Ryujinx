@@ -32,7 +32,7 @@ namespace Ryujinx.Audio.Renderer.Common
                     Offset = alignedOffset + size;
 
                     // Clear the memory to be sure that is does not contain any garbage.
-                    result.Span.Fill(0);
+                    result.Span.Clear();
 
                     return result;
                 }

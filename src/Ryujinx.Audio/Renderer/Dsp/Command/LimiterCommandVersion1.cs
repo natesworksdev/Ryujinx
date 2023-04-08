@@ -56,7 +56,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                 }
                 else if (Parameter.Status == Server.Effect.UsageState.New)
                 {
-                    state.UpdateParameter(ref _parameter);
+                    LimiterState.UpdateParameter(ref _parameter);
                 }
             }
 

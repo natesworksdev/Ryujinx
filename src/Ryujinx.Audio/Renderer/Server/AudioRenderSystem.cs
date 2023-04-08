@@ -143,7 +143,7 @@ namespace Ryujinx.Audio.Renderer.Server
 
             WorkBufferAllocator workBufferAllocator;
 
-            workBufferMemory.Span.Fill(0);
+            workBufferMemory.Span.Clear();
             _workBufferMemoryPin = workBufferMemory.Pin();
 
             workBufferAllocator = new WorkBufferAllocator(workBufferMemory);
@@ -402,7 +402,7 @@ namespace Ryujinx.Audio.Renderer.Server
             {
                 ulong updateStartTicks = GetSystemTicks();
 
-                output.Span.Fill(0);
+                output.Span.Clear();
 
                 StateUpdater stateUpdater = new(input, output, _processHandle, _behaviourContext);
 

@@ -160,8 +160,8 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
         /// </summary>
         public void ClearVolumes()
         {
-            MixBufferVolume.Fill(0);
-            PreviousMixBufferVolume.Fill(0);
+            MixBufferVolume.Clear();
+            PreviousMixBufferVolume.Clear();
         }
 
         /// <summary>

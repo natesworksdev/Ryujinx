@@ -17,7 +17,7 @@ namespace Ryujinx.Audio.Renderer.Device
         /// The default <see cref="VirtualDevice"/>.
         /// </summary>
         /// <remarks>This is used when the USB device is the default one on older revision.</remarks>
-        public VirtualDevice DefaultDevice => VirtualDevice.Devices[0];
+        public static VirtualDevice DefaultDevice => VirtualDevice.Devices[0];
 
         /// <summary>
         /// The current active <see cref="VirtualDevice"/>.

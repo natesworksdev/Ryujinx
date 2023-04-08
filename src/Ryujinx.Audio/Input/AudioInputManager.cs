@@ -166,7 +166,7 @@ namespace Ryujinx.Audio.Input
         /// </summary>
         /// <param name="filtered">If true, filter disconnected devices</param>
         /// <returns>The list of all audio inputs name</returns>
-        public string[] ListAudioIns(bool filtered)
+        public static string[] ListAudioIns(bool filtered)
         {
             if (filtered)
             {

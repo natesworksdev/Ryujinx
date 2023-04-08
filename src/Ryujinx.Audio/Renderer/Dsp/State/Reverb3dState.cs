@@ -63,7 +63,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
 
             EarlyDelayTime = new uint[20];
             DryGain = parameter.DryGain;
-            PreviousFeedbackOutputDecayed.AsSpan().Fill(0);
+            PreviousFeedbackOutputDecayed.AsSpan().Clear();
             PreviousPreDelayValue = 0;
 
             EarlyReflectionsGain = FloatingPointHelper.Pow10(Math.Min(parameter.RoomGain + parameter.ReflectionsGain, 5000.0f) / 2000.0f);

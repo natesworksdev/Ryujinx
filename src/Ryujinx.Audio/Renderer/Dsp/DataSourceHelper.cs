@@ -233,7 +233,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
                     {
                         Span<short> tempSpan = tempBuffer[(tempBufferIndex + y)..];
 
-                        tempSpan[..(sampleCountToDecode - y)].Fill(0);
+                        tempSpan[..(sampleCountToDecode - y)].Clear();
 
                         ToFloat(outputBuffer, outputSpanInt, sampleCountToProcess);
 
