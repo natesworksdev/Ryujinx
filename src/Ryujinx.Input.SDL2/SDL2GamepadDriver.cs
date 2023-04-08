@@ -7,8 +7,8 @@ namespace Ryujinx.Input.SDL2
 {
     public class SDL2GamepadDriver : IGamepadDriver
     {
-        private Dictionary<int, string> _gamepadsInstanceIdsMapping;
-        private List<string> _gamepadsIds;
+        private readonly Dictionary<int, string> _gamepadsInstanceIdsMapping;
+        private readonly List<string> _gamepadsIds;
 
         public ReadOnlySpan<string> GamepadsIds => _gamepadsIds.ToArray();
 

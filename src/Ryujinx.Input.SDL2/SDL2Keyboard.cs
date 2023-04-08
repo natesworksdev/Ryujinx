@@ -28,7 +28,7 @@ namespace Ryujinx.Input.SDL2
 
         private readonly SDL2KeyboardDriver _driver;
         private StandardKeyboardInputConfig _configuration;
-        private List<ButtonMappingEntry> _buttonsUserMapping;
+        private readonly List<ButtonMappingEntry> _buttonsUserMapping;
 
         private static readonly SDL_Keycode[] _keysDriverMapping = new SDL_Keycode[(int)Key.Count]
         {
