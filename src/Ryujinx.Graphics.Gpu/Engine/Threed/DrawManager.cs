@@ -200,7 +200,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             }
             else
             {
+#pragma warning disable IDE0059
                 var drawState = _state.State.VertexBufferDrawState;
+#pragma warning restore IDE0059
 
                 _context.Renderer.Pipeline.Draw(drawVertexCount, 1, drawFirstVertex, firstInstance);
             }

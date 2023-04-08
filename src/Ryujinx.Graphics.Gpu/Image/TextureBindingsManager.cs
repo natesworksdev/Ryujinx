@@ -418,6 +418,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
         }
 
+#pragma warning disable IDE0051
         /// <summary>
         /// Counts the total number of texture bindings used by all shader stages.
         /// </summary>
@@ -436,6 +437,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             return count;
         }
+#pragma warning restore IDE0051
 
         /// <summary>
         /// Ensures that the texture bindings are visible to the host GPU.

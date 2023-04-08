@@ -16,7 +16,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
         private const int ColorStructSize = 0x40;
         private const int ZetaLayerCountOffset = 0x1230;
 
+#pragma warning disable IDE0051
         private const int IndirectDataEntrySize = 0x10;
+#pragma warning restore IDE0051
         private const int IndirectIndexedDataEntrySize = 0x14;
 
         private readonly GPFifoProcessor _processor;
@@ -262,10 +264,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
             for (int i = 0; i < maxDrawCount; i++)
             {
                 var count = FetchParam();
+#pragma warning disable IDE0059
                 var instanceCount = FetchParam();
                 var firstIndex = FetchParam();
                 var firstVertex = FetchParam();
                 var firstInstance = FetchParam();
+#pragma warning restore IDE0059
 
                 if (i == 0)
                 {

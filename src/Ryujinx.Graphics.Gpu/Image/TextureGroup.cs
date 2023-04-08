@@ -1500,13 +1500,17 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             for (int i = 0; i < _allOffsets.Length; i++)
             {
+#pragma warning disable IDE0059
                 (int layer, int level) = GetLayerLevelForView(i);
+#pragma warning restore IDE0059
                 MultiRange handleRange = Storage.Range.Slice((ulong)_allOffsets[i], 1);
                 ulong handleBase = handleRange.GetSubRange(0).Address;
 
                 for (int j = 0; j < other._handles.Length; j++)
                 {
+#pragma warning disable IDE0059
                     (int otherLayer, int otherLevel) = other.GetLayerLevelForView(j);
+#pragma warning restore IDE0059
                     MultiRange otherHandleRange = other.Storage.Range.Slice((ulong)other._allOffsets[j], 1);
                     ulong otherHandleBase = otherHandleRange.GetSubRange(0).Address;
 

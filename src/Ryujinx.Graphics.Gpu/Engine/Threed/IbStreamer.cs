@@ -17,7 +17,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private int _inlineIndexBufferSize;
         private int _inlineIndexCount;
         private uint[] _buffer;
+#pragma warning disable IDE0051
         private readonly int _bufferOffset;
+#pragma warning restore IDE0051
 
         /// <summary>
         /// Indicates if any index buffer data has been pushed.

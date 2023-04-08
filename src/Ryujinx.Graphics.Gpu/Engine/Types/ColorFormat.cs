@@ -138,6 +138,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Types
         /// <returns>True if the format has no alpha component (RGBX), false if it does (RGBA)</returns>
         public static bool NoAlpha(this ColorFormat format)
         {
+#pragma warning disable IDE0066
             switch (format)
             {
                 case ColorFormat.R32G32B32X32Float:
@@ -157,9 +158,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Types
                 case ColorFormat.R8G8B8X8Unorm:
                 case ColorFormat.R8G8B8X8Srgb:
                     return true;
+                default:
+                    return false;
             }
-
-            return false;
+#pragma warning restore IDE0066
         }
     }
 }
