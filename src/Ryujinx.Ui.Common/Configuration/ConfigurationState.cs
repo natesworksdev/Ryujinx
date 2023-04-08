@@ -1366,9 +1366,21 @@ namespace Ryujinx.Ui.Common.Configuration
                     NRO  = true,
                     NSO  = true
                 };
+            }
+
+            if (configurationFileFormat.Version < 46)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 46.");
+
+                configurationFileFormat.WindowPositionX = 0;
+                configurationFileFormat.WindowPositionY = 0;
+                configurationFileFormat.WindowSizeHeight = 760;
+                configurationFileFormat.WindowSizeWidth = 1280;
+                configurationFileFormat.WindowMaximized = false;
+            }
+                
 
                 configurationFileUpdated = true;
-            }
 
             if (configurationFileFormat.Version < 46)
             {
