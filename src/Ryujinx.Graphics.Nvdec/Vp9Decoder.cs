@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Nvdec
 {
     static class Vp9Decoder
     {
-        private static Decoder _decoder = new Decoder();
+        private static readonly Decoder _decoder = new();
 
         public unsafe static void Decode(ResourceManager rm, ref NvdecRegisters state)
         {
