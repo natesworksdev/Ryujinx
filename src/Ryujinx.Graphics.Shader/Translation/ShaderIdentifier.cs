@@ -156,6 +156,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private static bool IsResourceWrite(Instruction inst, StorageKind storageKind)
         {
+#pragma warning disable IDE0066
             switch (inst)
             {
                 case Instruction.AtomicAdd:
@@ -176,6 +177,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                            storageKind == StorageKind.SharedMemory ||
                            storageKind == StorageKind.LocalMemory;
             }
+#pragma warning restore IDE0066
 
             return false;
         }

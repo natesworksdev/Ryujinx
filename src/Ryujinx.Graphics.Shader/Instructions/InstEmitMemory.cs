@@ -482,16 +482,12 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
         private static int GetVectorCount(LsSize size)
         {
-            switch (size)
+            return size switch
             {
-                case LsSize.B64:
-                    return 2;
-                case LsSize.B128:
-                case LsSize.UB128:
-                    return 4;
-            }
-
-            return 1;
+                LsSize.B64 => 2,
+                LsSize.B128 or LsSize.UB128 => 4,
+                _ => 1,
+            };
         }
 
         private static (Operand, Operand) Get40BitsAddress(

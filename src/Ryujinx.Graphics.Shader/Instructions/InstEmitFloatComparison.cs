@@ -546,20 +546,16 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
             else
             {
-                Instruction inst;
-
-                switch (cond & ~FComp.Nan)
+                var inst = (cond & ~FComp.Nan) switch
                 {
-                    case FComp.Lt: inst = Instruction.CompareLess; break;
-                    case FComp.Eq: inst = Instruction.CompareEqual; break;
-                    case FComp.Le: inst = Instruction.CompareLessOrEqual; break;
-                    case FComp.Gt: inst = Instruction.CompareGreater; break;
-                    case FComp.Ne: inst = Instruction.CompareNotEqual; break;
-                    case FComp.Ge: inst = Instruction.CompareGreaterOrEqual; break;
-
-                    default: throw new ArgumentException($"Unexpected condition \"{cond}\".");
-                }
-
+                    FComp.Lt => Instruction.CompareLess,
+                    FComp.Eq => Instruction.CompareEqual,
+                    FComp.Le => Instruction.CompareLessOrEqual,
+                    FComp.Gt => Instruction.CompareGreater,
+                    FComp.Ne => Instruction.CompareNotEqual,
+                    FComp.Ge => Instruction.CompareGreaterOrEqual,
+                    _ => throw new ArgumentException($"Unexpected condition \"{cond}\"."),
+                };
                 res = context.Add(inst | fpType, Local(), srcA, srcB);
 
                 if ((cond & FComp.Nan) != 0)

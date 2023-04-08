@@ -1201,6 +1201,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
         private static SamplerType ConvertSamplerType(TexsTarget type)
         {
+#pragma warning disable IDE0066
             switch (type)
             {
                 case TexsTarget.Texture1DLodZero:
@@ -1231,12 +1232,14 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 case TexsTarget.TextureCubeLodLevel:
                     return SamplerType.TextureCube;
             }
+#pragma warning restore IDE0066
 
             return SamplerType.None;
         }
 
         private static SamplerType ConvertSamplerType(TldsTarget type)
         {
+#pragma warning disable IDE0066
             switch (type)
             {
                 case TldsTarget.Texture1DLodZero:
@@ -1258,12 +1261,14 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 case TldsTarget.Texture2DArrayLodZero:
                     return SamplerType.Texture2D | SamplerType.Array;
             }
+#pragma warning restore IDE0066
 
             return SamplerType.None;
         }
 
         private static TextureFlags ConvertTextureFlags(TexsTarget type)
         {
+#pragma warning disable IDE0066
             switch (type)
             {
                 case TexsTarget.Texture1DLodZero:
@@ -1284,12 +1289,14 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 case TexsTarget.TextureCube:
                     return TextureFlags.None;
             }
+#pragma warning restore IDE0066
 
             return TextureFlags.None;
         }
 
         private static TextureFlags ConvertTextureFlags(TldsTarget type)
         {
+#pragma warning disable IDE0066
             switch (type)
             {
                 case TldsTarget.Texture1DLodZero:
@@ -1305,6 +1312,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 case TldsTarget.Texture2DLodLevelOffset:
                     return TextureFlags.LodLevel | TextureFlags.Offset;
             }
+#pragma warning restore IDE0066
 
             return TextureFlags.None;
         }

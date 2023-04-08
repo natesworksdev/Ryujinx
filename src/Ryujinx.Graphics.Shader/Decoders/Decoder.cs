@@ -557,7 +557,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             Sync
         }
 
-        private struct PathBlockState
+        private readonly struct PathBlockState
         {
             public Block Block { get; }
 

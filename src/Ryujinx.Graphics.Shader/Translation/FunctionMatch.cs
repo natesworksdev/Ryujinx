@@ -1,6 +1,7 @@
 using Ryujinx.Graphics.Shader.Decoders;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.Shader.Translation
@@ -308,6 +309,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             return nodes.ToArray();
         }
 
+        [SuppressMessage("Style", "IDE0066:Use switch expression")]
         private static bool IsOrderDependant(InstName name)
         {
             switch (name)
@@ -806,7 +808,9 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             private static PatternTreeNodeUse PT => PTOrRZ();
             private static PatternTreeNodeUse RZ => PTOrRZ();
+#pragma warning disable IDE0051
             private static PatternTreeNodeUse Undef => new(0, null);
+#pragma warning restore IDE0051
 
             private static PatternTreeNodeUse CallArg(int index)
             {

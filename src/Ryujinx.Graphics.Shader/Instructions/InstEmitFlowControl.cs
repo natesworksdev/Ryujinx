@@ -2,6 +2,7 @@ using Ryujinx.Graphics.Shader.Decoders;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.Translation;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 using static Ryujinx.Graphics.Shader.Instructions.InstEmitHelper;
@@ -9,6 +10,7 @@ using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
 namespace Ryujinx.Graphics.Shader.Instructions
 {
+    [SuppressMessage("Style", "IDE0059:Remove unnecessary value assignment")]
     static partial class InstEmit
     {
         public static void Bra(EmitterContext context)

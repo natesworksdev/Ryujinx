@@ -139,33 +139,26 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
         public static Operand[] GetHalfUnpacked(EmitterContext context, Operand src, HalfSwizzle swizzle)
         {
-            switch (swizzle)
+            return swizzle switch
             {
-                case HalfSwizzle.F16:
-                    return new Operand[]
-                    {
+                HalfSwizzle.F16 => new Operand[]
+                                    {
                         context.UnpackHalf2x16Low (src),
                         context.UnpackHalf2x16High(src)
-                    };
-
-                case HalfSwizzle.F32: return new Operand[] { src, src };
-
-                case HalfSwizzle.H0H0:
-                    return new Operand[]
+                                    },
+                HalfSwizzle.F32 => new Operand[] { src, src },
+                HalfSwizzle.H0H0 => new Operand[]
                     {
                         context.UnpackHalf2x16Low(src),
                         context.UnpackHalf2x16Low(src)
-                    };
-
-                case HalfSwizzle.H1H1:
-                    return new Operand[]
+                    },
+                HalfSwizzle.H1H1 => new Operand[]
                     {
                         context.UnpackHalf2x16High(src),
                         context.UnpackHalf2x16High(src)
-                    };
-            }
-
-            throw new ArgumentException($"Invalid swizzle \"{swizzle}\".");
+                    },
+                _ => throw new ArgumentException($"Invalid swizzle \"{swizzle}\"."),
+            };
         }
 
         public static Operand GetHalfPacked(EmitterContext context, OFmt swizzle, Operand[] results, int rd)

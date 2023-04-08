@@ -97,6 +97,7 @@ namespace Ryujinx.Graphics.Shader
 
         public static AggregateType GetComponentType(this TextureFormat format)
         {
+#pragma warning disable IDE0066
             switch (format)
             {
                 case TextureFormat.R8Uint:
@@ -121,6 +122,7 @@ namespace Ryujinx.Graphics.Shader
                 case TextureFormat.R32G32B32A32Sint:
                     return AggregateType.S32;
             }
+#pragma warning restore IDE0066
 
             return AggregateType.FP32;
         }

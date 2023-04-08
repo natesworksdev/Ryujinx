@@ -244,6 +244,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
         }
 
+#pragma warning disable IDE0051
         private static string GetTfLayout(TransformFeedbackOutput tfOutput)
         {
             if (tfOutput.Valid)
@@ -253,6 +254,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
             return string.Empty;
         }
+#pragma warning restore IDE0051
 
         public static void DeclareLocals(CodeGenContext context, StructuredFunction function)
         {
