@@ -35,7 +35,7 @@ namespace Ryujinx.Input.SDL2
             }
         }
 
-        private string GenerateGamepadId(int joystickIndex)
+        private static string GenerateGamepadId(int joystickIndex)
         {
             Guid guid = SDL_JoystickGetDeviceGUID(joystickIndex);
 
@@ -47,7 +47,7 @@ namespace Ryujinx.Input.SDL2
             return joystickIndex + "-" + guid.ToString();
         }
 
-        private int GetJoystickIndexByGamepadId(string id)
+        private static int GetJoystickIndexByGamepadId(string id)
         {
             string[] data = id.Split("-");
 
