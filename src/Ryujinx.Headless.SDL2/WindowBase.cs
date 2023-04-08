@@ -309,7 +309,7 @@ namespace Ryujinx.Headless.SDL2
             _exitEvent.Dispose();
         }
 
-        public void ProcessMainThreadQueue()
+        public static void ProcessMainThreadQueue()
         {
             while (MainThreadActions.TryDequeue(out Action action))
             {

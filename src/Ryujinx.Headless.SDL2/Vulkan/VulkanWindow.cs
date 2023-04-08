@@ -33,7 +33,7 @@ namespace Ryujinx.Headless.SDL2.Vulkan
             MouseDriver.SetClientSize(DefaultWidth, DefaultHeight);
         }
 
-        private void BasicInvoke(Action action)
+        private static void BasicInvoke(Action action)
         {
             action();
         }
