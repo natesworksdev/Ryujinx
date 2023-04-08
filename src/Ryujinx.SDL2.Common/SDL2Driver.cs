@@ -19,10 +19,7 @@ namespace Ryujinx.SDL2.Common
         {
             get
             {
-                if (_instance == null)
-                {
-                    _instance = new SDL2Driver();
-                }
+                _instance ??= new SDL2Driver();
 
                 return _instance;
             }
@@ -153,7 +150,7 @@ namespace Ryujinx.SDL2.Common
         {
             const int WaitTimeMs = 10;
 
-            using ManualResetEventSlim waitHandle = new ManualResetEventSlim(false);
+            using ManualResetEventSlim waitHandle = new(false);
 
             while (_isRunning)
             {
