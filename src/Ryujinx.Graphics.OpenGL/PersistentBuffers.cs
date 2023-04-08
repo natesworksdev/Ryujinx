@@ -91,7 +91,7 @@ namespace Ryujinx.Graphics.OpenGL
             return _dataMap;
         }
 
-        private void Sync()
+        private static void Sync()
         {
             GL.MemoryBarrier(MemoryBarrierFlags.ClientMappedBufferBarrierBit);
 

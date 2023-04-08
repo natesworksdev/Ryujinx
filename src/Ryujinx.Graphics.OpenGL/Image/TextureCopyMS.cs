@@ -219,7 +219,7 @@ void main()
             return GetShader(ComputeShaderNonMSToMS, _nonMSToMSProgramHandles, bytesPerPixel);
         }
 
-        private int GetShader(string code, int[] programHandles, int bytesPerPixel)
+        private static int GetShader(string code, int[] programHandles, int bytesPerPixel)
         {
             int index = BitOperations.Log2((uint)bytesPerPixel);
 

@@ -260,7 +260,7 @@ namespace Ryujinx.Graphics.OpenGL
             PostDraw();
         }
 
-        private void DrawQuadsImpl(
+        private static void DrawQuadsImpl(
             int vertexCount,
             int instanceCount,
             int firstVertex,
@@ -285,7 +285,7 @@ namespace Ryujinx.Graphics.OpenGL
                 quadsCount);
         }
 
-        private void DrawQuadStripImpl(
+        private static void DrawQuadStripImpl(
             int vertexCount,
             int instanceCount,
             int firstVertex,
@@ -1471,7 +1471,7 @@ namespace Ryujinx.Graphics.OpenGL
             GL.MemoryBarrier(MemoryBarrierFlags.TextureFetchBarrierBit);
         }
 
-        private void SetBuffers(ReadOnlySpan<BufferAssignment> buffers, bool isStorage)
+        private static void SetBuffers(ReadOnlySpan<BufferAssignment> buffers, bool isStorage)
         {
             BufferRangeTarget target = isStorage ? BufferRangeTarget.ShaderStorageBuffer : BufferRangeTarget.UniformBuffer;
 

@@ -64,7 +64,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
             }
         }
 
-        private bool WaitingForValue(long data)
+        private static bool WaitingForValue(long data)
         {
             return data == DefaultValue ||
                 ((ulong)data & HighMask) == (unchecked((ulong)DefaultValue) & HighMask);

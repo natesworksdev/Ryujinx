@@ -176,7 +176,7 @@ void main()
             return GetShader(ComputeShaderWidening, _wideningProgramHandles, componentSize, srcComponentsCount, dstComponentsCount);
         }
 
-        private int GetShader(
+        private static int GetShader(
             string code,
             Dictionary<int, int> programHandles,
             int componentSize,

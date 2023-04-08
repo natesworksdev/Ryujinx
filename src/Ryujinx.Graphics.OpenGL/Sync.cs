@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.OpenGL
         }
 
         private ulong _firstHandle = 0;
-        private ClientWaitSyncFlags _syncFlags => HwCapabilities.RequiresSyncFlush ? ClientWaitSyncFlags.None : ClientWaitSyncFlags.SyncFlushCommandsBit;
+        private static ClientWaitSyncFlags _syncFlags => HwCapabilities.RequiresSyncFlush ? ClientWaitSyncFlags.None : ClientWaitSyncFlags.SyncFlushCommandsBit;
 
         private readonly List<SyncHandle> _handles = new();
 
