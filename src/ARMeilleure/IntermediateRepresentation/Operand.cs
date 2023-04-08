@@ -270,7 +270,7 @@ namespace ARMeilleure.IntermediateRepresentation
 
             uses.CopyTo(buffer);
 
-            return buffer.Slice(0, uses.Length);
+            return buffer[..uses.Length];
         }
 
         private static void New<T>(ref T* data, ref ushort count, ref ushort capacity, ushort initialCapacity) where T : unmanaged
@@ -360,7 +360,7 @@ namespace ARMeilleure.IntermediateRepresentation
                 {
                     if (i + 1 < count)
                     {
-                        span.Slice(i + 1).CopyTo(span.Slice(i));
+                        span[(i + 1)..].CopyTo(span[i..]);
                     }
 
                     count--;
@@ -380,7 +380,7 @@ namespace ARMeilleure.IntermediateRepresentation
                 {
                     if (i + 1 < count)
                     {
-                        span.Slice(i + 1).CopyTo(span.Slice(i));
+                        span[(i + 1)..].CopyTo(span[i..]);
                     }
 
                     count--;
@@ -453,8 +453,10 @@ namespace ARMeilleure.IntermediateRepresentation
                     // Look in the next InternTableProbeLength slots for a match.
                     for (uint i = 0; i < InternTableProbeLength; i++)
                     {
-                        Operand interned = new();
-                        interned._data = &InternTable[(hash + i) % InternTableSize];
+                        Operand interned = new()
+                        {
+                            _data = &InternTable[(hash + i) % InternTableSize]
+                        };
 
                         // If slot matches the allocation request then return that slot.
                         if (interned.Kind == kind && interned.Type == type && interned.Value == value && interned.Symbol == symbol)
@@ -479,11 +481,13 @@ namespace ARMeilleure.IntermediateRepresentation
 
                 *data = default;
 
-                Operand result = new();
-                result._data = data;
-                result.Value = value;
-                result.Kind = kind;
-                result.Type = type;
+                Operand result = new()
+                {
+                    _data = data,
+                    Value = value,
+                    Kind = kind,
+                    Type = type
+                };
 
                 if (kind != OperandKind.Memory)
                 {

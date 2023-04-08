@@ -15,7 +15,7 @@ namespace ARMeilleure.CodeGen.X86
         {
             Operand dest = node.Destination;
 
-            List<Operand> sources = new List<Operand>
+            List<Operand> sources = new()
             {
                 node.GetSource(0)
             };
@@ -118,7 +118,7 @@ namespace ARMeilleure.CodeGen.X86
 
         public static void InsertTailcallCopies(IntrusiveList<Operation> nodes, StackAllocator stackAlloc, Operation node)
         {
-            List<Operand> sources = new List<Operand>
+            List<Operand> sources = new()
             {
                 node.GetSource(0)
             };

@@ -426,7 +426,7 @@ namespace ARMeilleure.Instructions
             ulong t2 = w4_7.Extract<ulong>(0);
             ulong t1 = w0_3.Extract<ulong>(1);
 
-            V128 result = new V128(t1, t2);
+            V128 result = new(t1, t2);
 
             return result ^ (w0_3 ^ w8_11);
         }
@@ -487,7 +487,7 @@ namespace ARMeilleure.Instructions
 
         public static V128 Sha256SchedulePart1(V128 w0_3, V128 w4_7)
         {
-            V128 result = new V128();
+            V128 result = new();
 
             for (int e = 0; e <= 3; e++)
             {
@@ -505,7 +505,7 @@ namespace ARMeilleure.Instructions
 
         public static V128 Sha256SchedulePart2(V128 w0_3, V128 w8_11, V128 w12_15)
         {
-            V128 result = new V128();
+            V128 result = new();
 
             ulong t1 = w12_15.Extract<ulong>(1);
 
@@ -608,7 +608,7 @@ namespace ARMeilleure.Instructions
         {
             V128 result = V128.Zero;
 
-            V128 op2_128 = new V128(op2, 0);
+            V128 op2_128 = new(op2, 0);
 
             for (int i = 0; i < 64; i++)
             {

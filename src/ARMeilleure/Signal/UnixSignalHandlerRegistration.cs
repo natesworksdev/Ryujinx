@@ -47,7 +47,7 @@ namespace ARMeilleure.Signal
 
         public static SigAction RegisterExceptionHandler(IntPtr action)
         {
-            SigAction sig = new SigAction
+            SigAction sig = new()
             {
                 sa_handler = action,
                 sa_flags = SA_SIGINFO

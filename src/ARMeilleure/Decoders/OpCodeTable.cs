@@ -29,13 +29,13 @@ namespace ARMeilleure.Decoders
             }
         }
 
-        private static List<InstInfo> AllInstA32 = new();
-        private static List<InstInfo> AllInstT32 = new();
-        private static List<InstInfo> AllInstA64 = new();
+        private static readonly List<InstInfo> AllInstA32 = new();
+        private static readonly List<InstInfo> AllInstT32 = new();
+        private static readonly List<InstInfo> AllInstA64 = new();
 
-        private static InstInfo[][] InstA32FastLookup = new InstInfo[FastLookupSize][];
-        private static InstInfo[][] InstT32FastLookup = new InstInfo[FastLookupSize][];
-        private static InstInfo[][] InstA64FastLookup = new InstInfo[FastLookupSize][];
+        private static readonly InstInfo[][] InstA32FastLookup = new InstInfo[FastLookupSize][];
+        private static readonly InstInfo[][] InstT32FastLookup = new InstInfo[FastLookupSize][];
+        private static readonly InstInfo[][] InstA64FastLookup = new InstInfo[FastLookupSize][];
 
         static OpCodeTable()
         {
@@ -1347,8 +1347,7 @@ namespace ARMeilleure.Decoders
         private static void SetT32(string encoding, InstName name, InstEmitter emitter, MakeOp makeOp)
         {
             string reversedEncoding = $"{encoding.AsSpan(16)}{encoding.AsSpan(0, 16)}";
-            MakeOp reversedMakeOp =
-                (inst, address, opCode)
+            OpCode reversedMakeOp(InstDescriptor inst, ulong address, int opCode)
                     => makeOp(inst, address, (int)BitOperations.RotateRight((uint)opCode, 16));
             Set(reversedEncoding, AllInstT32, new InstDescriptor(name, emitter), reversedMakeOp);
         }

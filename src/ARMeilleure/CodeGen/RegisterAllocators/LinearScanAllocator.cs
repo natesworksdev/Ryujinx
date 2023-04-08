@@ -561,7 +561,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         private void InsertSplitCopies()
         {
-            Dictionary<int, CopyResolver> copyResolvers = new Dictionary<int, CopyResolver>();
+            Dictionary<int, CopyResolver> copyResolvers = new();
 
             CopyResolver GetCopyResolver(int position)
             {
@@ -676,10 +676,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                         if (left != default && right != default && left != right)
                         {
-                            if (copyResolver == null)
-                            {
-                                copyResolver = new CopyResolver();
-                            }
+                            copyResolver ??= new CopyResolver();
 
                             copyResolver.AddSplit(left, right);
                         }
@@ -862,8 +859,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             // Compute local live sets.
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                BitMap liveGen  = new BitMap(Allocators.Default, mapSize);
-                BitMap liveKill = new BitMap(Allocators.Default, mapSize);
+                BitMap liveGen  = new(Allocators.Default, mapSize);
+                BitMap liveKill = new(Allocators.Default, mapSize);
 
                 for (Operation node = block.Operations.First; node != default; node = node.ListNext)
                 {
@@ -1061,7 +1058,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             {
                 int regIndex = BitOperations.TrailingZeroCount(mask);
 
-                Register callerSavedReg = new Register(regIndex, regType);
+                Register callerSavedReg = new(regIndex, regType);
 
                 LiveInterval interval = _intervals[GetRegisterId(callerSavedReg)];
 

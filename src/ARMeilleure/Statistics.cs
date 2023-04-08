@@ -16,7 +16,7 @@ namespace ARMeilleure
         private static Stopwatch _executionTimer;
 #pragma warning restore CS0169
 
-        private static ConcurrentDictionary<ulong, long> _ticksPerFunction;
+        private static readonly ConcurrentDictionary<ulong, long> _ticksPerFunction;
 
         static Statistics()
         {
@@ -69,7 +69,7 @@ namespace ARMeilleure
         {
             int count = 0;
 
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
 
             sb.AppendLine(" Function address   | Time");
             sb.AppendLine("--------------------------");

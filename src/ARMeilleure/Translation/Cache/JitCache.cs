@@ -24,7 +24,7 @@ namespace ARMeilleure.Translation.Cache
 
         private static CacheMemoryAllocator _cacheAllocator;
 
-        private static readonly List<CacheEntry> _cacheEntries = new List<CacheEntry>();
+        private static readonly List<CacheEntry> _cacheEntries = new();
 
         private static readonly object _lock = new();
         private static bool _initialized;
@@ -163,7 +163,7 @@ namespace ARMeilleure.Translation.Cache
 
         private static void Add(int offset, int size, UnwindInfo unwindInfo)
         {
-            CacheEntry entry = new CacheEntry(offset, size, unwindInfo);
+            CacheEntry entry = new(offset, size, unwindInfo);
 
             int index = _cacheEntries.BinarySearch(entry);
 

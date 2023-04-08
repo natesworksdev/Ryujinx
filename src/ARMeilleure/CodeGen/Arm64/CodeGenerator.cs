@@ -34,7 +34,7 @@ namespace ARMeilleure.CodeGen.Arm64
             Auto
         }
 
-        private static Action<CodeGenContext, Operation>[] _instTable;
+        private static readonly Action<CodeGenContext, Operation>[] _instTable;
 
         static CodeGenerator()
         {
@@ -1078,7 +1078,7 @@ namespace ARMeilleure.CodeGen.Arm64
 
         private static UnwindInfo WritePrologue(CodeGenContext context)
         {
-            List<UnwindPushEntry> pushEntries = new List<UnwindPushEntry>();
+            List<UnwindPushEntry> pushEntries = new();
 
             Operand rsp = Register(SpRegister);
 

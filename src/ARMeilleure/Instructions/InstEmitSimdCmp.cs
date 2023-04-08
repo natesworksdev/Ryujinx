@@ -510,7 +510,7 @@ namespace ARMeilleure.Instructions
 
         private static void EmitSetNzcv(ArmEmitterContext context, int nzcv)
         {
-            Operand Extract(int value, int bit)
+            static Operand Extract(int value, int bit)
             {
                 if (bit != 0)
                 {
@@ -532,7 +532,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
-            bool cmpWithZero = !(op is OpCodeSimdFcond) ? op.Bit3 : false;
+            bool cmpWithZero = op is not OpCodeSimdFcond && op.Bit3;
 
             if (Optimizations.FastFP && (signalNaNs ? Optimizations.UseAvx : Optimizations.UseSse2))
             {

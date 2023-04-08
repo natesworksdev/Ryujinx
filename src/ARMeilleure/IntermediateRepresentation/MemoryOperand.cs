@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
-    unsafe struct MemoryOperand
+    readonly unsafe struct MemoryOperand
     {
         private struct Data
         {
@@ -18,7 +18,7 @@ namespace ARMeilleure.IntermediateRepresentation
             public int Displacement;
         }
 
-        private Data* _data;
+        private readonly Data* _data;
 
         public MemoryOperand(Operand operand)
         {

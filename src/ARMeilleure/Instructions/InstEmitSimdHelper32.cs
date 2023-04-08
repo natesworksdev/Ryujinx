@@ -1195,7 +1195,7 @@ namespace ARMeilleure.Instructions
                 : typeof(SoftFloat64).GetMethod(name);
 
             Array.Resize(ref callArgs, callArgs.Length + 1);
-            callArgs[callArgs.Length - 1] = Const(1);
+            callArgs[^1] = Const(1);
 
             context.ExitArmFpMode();
             context.StoreToContext();

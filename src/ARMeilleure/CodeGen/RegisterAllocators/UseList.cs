@@ -69,14 +69,16 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             // Since the list is in descending order, the new split list takes the front of the list and the current
             // list takes the back of the list.
-            UseList result = new();
-            result._count = index + 1;
+            UseList result = new()
+            {
+                _count = index + 1
+            };
             result._capacity = result._count;
             result._items = _items;
 
-            _count = _count - result._count;
+            _count -= result._count;
             _capacity = _count;
-            _items = _items + result._count;
+            _items += result._count;
 
             return result;
         }

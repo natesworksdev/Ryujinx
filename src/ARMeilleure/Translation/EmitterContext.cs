@@ -635,7 +635,7 @@ namespace ARMeilleure.Translation
 
         private void NewNextBlock()
         {
-            BasicBlock block = new BasicBlock(_irBlocks.Count);
+            BasicBlock block = new(_irBlocks.Count);
 
             _irBlocks.AddLast(block);
 

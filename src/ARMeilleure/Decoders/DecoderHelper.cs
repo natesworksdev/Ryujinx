@@ -40,7 +40,7 @@ namespace ARMeilleure.Decoders
         // abcdefgh -> aBbbbbbc defgh000 00000000 00000000 (B = ~b)
         private static uint ExpandImm8ToFP32(uint imm)
         {
-            uint MoveBit(uint bits, int from, int to)
+            static uint MoveBit(uint bits, int from, int to)
             {
                 return ((bits >> from) & 1U) << to;
             }
@@ -57,7 +57,7 @@ namespace ARMeilleure.Decoders
         // abcdefgh -> aBbbbbbb bbcdefgh 00000000 00000000 00000000 00000000 00000000 00000000 (B = ~b)
         private static ulong ExpandImm8ToFP64(ulong imm)
         {
-            ulong MoveBit(ulong bits, int from, int to)
+            static ulong MoveBit(ulong bits, int from, int to)
             {
                 return ((bits >> from) & 1UL) << to;
             }
@@ -80,7 +80,7 @@ namespace ARMeilleure.Decoders
             public int  Shift;
             public bool IsUndefined;
 
-            public static BitMask Invalid => new BitMask { IsUndefined = true };
+            public static BitMask Invalid => new() { IsUndefined = true };
         }
 
         public static BitMask DecodeBitMask(int opCode, bool immediate)

@@ -20,11 +20,11 @@ namespace ARMeilleure.Decoders
 
         public static Block[] Decode(IMemoryManager memory, ulong address, ExecutionMode mode, bool highCq, DecoderMode dMode)
         {
-            List<Block> blocks = new List<Block>();
+            List<Block> blocks = new();
 
-            Queue<Block> workQueue = new Queue<Block>();
+            Queue<Block> workQueue = new();
 
-            Dictionary<ulong, Block> visited = new Dictionary<ulong, Block>();
+            Dictionary<ulong, Block> visited = new();
 
             Debug.Assert(MaxInstsPerFunctionLowCq <= MaxInstsPerFunction);
 
@@ -246,7 +246,7 @@ namespace ARMeilleure.Decoders
 
         private static bool IsAarch32UnconditionalBranch(OpCode opCode)
         {
-            if (!(opCode is OpCode32 op))
+            if (opCode is not OpCode32 op)
             {
                 return false;
             }

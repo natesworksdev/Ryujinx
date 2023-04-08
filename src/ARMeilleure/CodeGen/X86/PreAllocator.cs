@@ -177,10 +177,7 @@ namespace ARMeilleure.CodeGen.X86
                     {
                         src2 = node.GetSource(1);
 
-                        Operand temp = src1;
-
-                        src1 = src2;
-                        src2 = temp;
+                        (src2, src1) = (src1, src2);
 
                         node.SetSource(0, src1);
                         node.SetSource(1, src2);

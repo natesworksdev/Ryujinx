@@ -138,7 +138,7 @@ namespace ARMeilleure.Common
                 var newSpan = new Span<long>(_masks, _count);
 
                 oldSpan.CopyTo(newSpan);
-                newSpan.Slice(oldSpan.Length).Clear();
+                newSpan[oldSpan.Length..].Clear();
 
                 _allocator.Free(oldMask);
             }

@@ -1,6 +1,6 @@
 namespace ARMeilleure.CodeGen.Arm64
 {
-    struct IntrinsicInfo
+    readonly struct IntrinsicInfo
     {
         public uint          Inst { get; }
         public IntrinsicType Type { get; }

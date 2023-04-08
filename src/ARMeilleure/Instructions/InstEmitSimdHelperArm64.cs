@@ -695,7 +695,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
-            bool cmpWithZero = !(op is OpCodeSimdFcond) ? op.Bit3 : false;
+            bool cmpWithZero = op is not OpCodeSimdFcond && op.Bit3;
 
             Intrinsic inst = signalNaNs ? Intrinsic.Arm64FcmpeS : Intrinsic.Arm64FcmpS;
 

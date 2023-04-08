@@ -5,7 +5,7 @@ namespace ARMeilleure.CodeGen.X86
 {
     static class IntrinsicTable
     {
-        private static IntrinsicInfo[] _intrinTable;
+        private static readonly IntrinsicInfo[] _intrinTable;
 
         static IntrinsicTable()
         {

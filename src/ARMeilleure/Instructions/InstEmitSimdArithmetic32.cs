@@ -1654,7 +1654,7 @@ namespace ARMeilleure.Instructions
         {
             IOpCode32Simd op = (IOpCode32Simd)context.CurrOp;
 
-            Func<Operand, Operand, Operand> genericEmit = (n, m) =>
+            Operand genericEmit(Operand n, Operand m)
             {
                 Operand nNum = context.Copy(n);
                 Operand mNum = context.Copy(m);
@@ -1688,7 +1688,7 @@ namespace ARMeilleure.Instructions
 
                     return context.AddIntrinsic(isMaxNum ? Intrinsic.X86Maxpd : Intrinsic.X86Minpd, nNum, mNum);
                 }
-            };
+            }
 
             if (scalar)
             {

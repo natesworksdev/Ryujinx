@@ -134,7 +134,7 @@ namespace ARMeilleure.Translation
                 {
                     bool last = i != 0 && i == unboundedThreadCount - 1;
 
-                    backgroundTranslationThreads[i] = new Thread(BackgroundTranslate)
+                    backgroundTranslationThreads[i] = new(BackgroundTranslate)
                     {
                         Name = "CPU.BackgroundTranslatorThread." + i,
                         Priority = last ? ThreadPriority.Lowest : ThreadPriority.Normal

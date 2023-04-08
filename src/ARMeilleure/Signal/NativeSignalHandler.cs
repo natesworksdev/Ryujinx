@@ -74,7 +74,7 @@ namespace ARMeilleure.Signal
         private static ulong _pageSize;
         private static ulong _pageMask;
 
-        private static IntPtr _handlerConfig;
+        private static readonly IntPtr _handlerConfig;
         private static IntPtr _signalHandlerPtr;
         private static IntPtr _signalHandlerHandle;
 
@@ -319,7 +319,7 @@ namespace ARMeilleure.Signal
 
         private static UnixExceptionHandler GenerateUnixSignalHandler(IntPtr signalStructPtr)
         {
-            EmitterContext context = new EmitterContext();
+            EmitterContext context = new();
 
             // (int sig, SigInfo* sigInfo, void* ucontext)
             Operand sigInfoPtr = context.LoadArgument(OperandType.I64, 1);
@@ -367,7 +367,7 @@ namespace ARMeilleure.Signal
 
         private static VectoredExceptionHandler GenerateWindowsSignalHandler(IntPtr signalStructPtr)
         {
-            EmitterContext context = new EmitterContext();
+            EmitterContext context = new();
 
             // (ExceptionPointers* exceptionInfo)
             Operand exceptionInfoPtr = context.LoadArgument(OperandType.I64, 0);

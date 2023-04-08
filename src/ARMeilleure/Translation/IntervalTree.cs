@@ -69,7 +69,7 @@ namespace ARMeilleure.Translation
         {
             ArgumentNullException.ThrowIfNull(value);
 
-            return BSTInsert(start, end, value, updateFactoryCallback, out IntervalTreeNode<K, V> node);
+            return BSTInsert(start, end, value, updateFactoryCallback, out _);
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace ARMeilleure.Translation
         /// <returns>A list of all values sorted by Key Order</returns>
         public List<V> AsList()
         {
-            List<V> list = new List<V>();
+            List<V> list = new();
 
             AddToList(_root, list);
 
@@ -311,7 +311,7 @@ namespace ARMeilleure.Translation
                     return false;
                 }
             }
-            IntervalTreeNode<K, V> newNode = new IntervalTreeNode<K, V>(start, end, value, parent);
+            IntervalTreeNode<K, V> newNode = new(start, end, value, parent);
             if (newNode.Parent == null)
             {
                 _root = newNode;

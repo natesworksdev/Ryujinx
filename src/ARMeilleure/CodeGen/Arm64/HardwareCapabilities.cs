@@ -143,7 +143,7 @@ namespace ARMeilleure.CodeGen.Arm64
             return false;
         }
 
-        private static string[] _sysctlNames = new string[]
+        private static readonly string[] _sysctlNames = new string[]
         {
             "hw.optional.floatingpoint",
             "hw.optional.AdvSIMD",

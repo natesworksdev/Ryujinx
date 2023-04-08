@@ -41,7 +41,7 @@ namespace ARMeilleure.CodeGen.Arm64
 
             for (BasicBlock block = cctx.Cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                ConstantDict constants = new ConstantDict();
+                ConstantDict constants = new();
 
                 Operation nextNode;
 
@@ -138,10 +138,7 @@ namespace ARMeilleure.CodeGen.Arm64
                     {
                         src2 = node.GetSource(1);
 
-                        Operand temp = src1;
-
-                        src1 = src2;
-                        src2 = temp;
+                        (src2, src1) = (src1, src2);
 
                         node.SetSource(0, src1);
                         node.SetSource(1, src2);
@@ -265,7 +262,7 @@ namespace ARMeilleure.CodeGen.Arm64
 
             Operand dest = operation.Destination;
 
-            List<Operand> sources = new List<Operand>
+            List<Operand> sources = new()
             {
                 operation.GetSource(0)
             };
@@ -371,7 +368,7 @@ namespace ARMeilleure.CodeGen.Arm64
             Operation node,
             Operation operation)
         {
-            List<Operand> sources = new List<Operand>
+            List<Operand> sources = new()
             {
                 operation.GetSource(0)
             };

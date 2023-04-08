@@ -19,7 +19,7 @@ namespace ARMeilleure.State
         /// <summary>
         /// Gets a new <see cref="V128"/> with all bits set to zero.
         /// </summary>
-        public static V128 Zero => new V128(0, 0);
+        public static V128 Zero => new(0, 0);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="V128"/> struct with the specified <see cref="double"/> value
@@ -173,7 +173,7 @@ namespace ARMeilleure.State
             Span<byte> span = data;
 
             BitConverter.TryWriteBytes(span, _e0);
-            BitConverter.TryWriteBytes(span.Slice(8), _e1);
+            BitConverter.TryWriteBytes(span[8..], _e1);
 
             return data;
         }
@@ -225,7 +225,7 @@ namespace ARMeilleure.State
         /// </summary>
         /// <param name="x">Target <see cref="V128"/></param>
         /// <returns>Result of not operation</returns>
-        public static V128 operator ~(V128 x) => new V128(~x._e0, ~x._e1);
+        public static V128 operator ~(V128 x) => new(~x._e0, ~x._e1);
 
         /// <summary>
         /// Performs a bitwise and on the specified <see cref="V128"/> instances.
@@ -233,7 +233,7 @@ namespace ARMeilleure.State
         /// <param name="x">First instance</param>
         /// <param name="y">Second instance</param>
         /// <returns>Result of and operation</returns>
-        public static V128 operator &(V128 x, V128 y) => new V128(x._e0 & y._e0, x._e1 & y._e1);
+        public static V128 operator &(V128 x, V128 y) => new(x._e0 & y._e0, x._e1 & y._e1);
 
         /// <summary>
         /// Performs a bitwise or on the specified <see cref="V128"/> instances.
@@ -241,7 +241,7 @@ namespace ARMeilleure.State
         /// <param name="x">First instance</param>
         /// <param name="y">Second instance</param>
         /// <returns>Result of or operation</returns>
-        public static V128 operator |(V128 x, V128 y) => new V128(x._e0 | y._e0, x._e1 | y._e1);
+        public static V128 operator |(V128 x, V128 y) => new(x._e0 | y._e0, x._e1 | y._e1);
 
         /// <summary>
         /// Performs a bitwise exlusive or on the specified <see cref="V128"/> instances.
@@ -249,7 +249,7 @@ namespace ARMeilleure.State
         /// <param name="x">First instance</param>
         /// <param name="y">Second instance</param>
         /// <returns>Result of exclusive or operation</returns>
-        public static V128 operator ^(V128 x, V128 y) => new V128(x._e0 ^ y._e0, x._e1 ^ y._e1);
+        public static V128 operator ^(V128 x, V128 y) => new(x._e0 ^ y._e0, x._e1 ^ y._e1);
 
         /// <summary>
         /// Determines if the specified <see cref="V128"/> instances are equal.

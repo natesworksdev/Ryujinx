@@ -63,7 +63,7 @@ namespace ARMeilleure.Instructions
 
                 while (src * (aux + 1u) * (aux + 1u) < (1u << 28))
                 {
-                    aux = aux + 1u;
+                    aux++;
                 }
 
                 uint dst = (aux + 1u) >> 1;
@@ -840,8 +840,8 @@ namespace ARMeilleure.Instructions
             ExecutionContext context = NativeInterface.GetContext();
             FPCR fpcr = context.Fpcr;
 
-            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out _, context, fpcr);
-            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out _, context, fpcr);
+            value1 = value1.FPUnpack(out FPType type1, out _, out _, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out _, out _, context, fpcr);
 
             int result;
 
@@ -1518,8 +1518,8 @@ namespace ARMeilleure.Instructions
             ExecutionContext context = NativeInterface.GetContext();
             FPCR fpcr = context.StandardFpcrValue;
 
-            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1, context, fpcr);
-            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2, context, fpcr);
+            value1 = value1.FPUnpack(out FPType type1, out _, out uint op1, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out _, out uint op2, context, fpcr);
 
             float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, fpcr);
 
@@ -1733,8 +1733,8 @@ namespace ARMeilleure.Instructions
             ExecutionContext context = NativeInterface.GetContext();
             FPCR fpcr = context.StandardFpcrValue;
 
-            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1, context, fpcr);
-            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2, context, fpcr);
+            value1 = value1.FPUnpack(out FPType type1, out _, out uint op1, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out _, out uint op2, context, fpcr);
 
             float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, fpcr);
 
@@ -2265,8 +2265,8 @@ namespace ARMeilleure.Instructions
             ExecutionContext context = NativeInterface.GetContext();
             FPCR fpcr = context.Fpcr;
 
-            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out _, context, fpcr);
-            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out _, context, fpcr);
+            value1 = value1.FPUnpack(out FPType type1, out _, out _, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out _, out _, context, fpcr);
 
             int result;
 
@@ -2943,8 +2943,8 @@ namespace ARMeilleure.Instructions
             ExecutionContext context = NativeInterface.GetContext();
             FPCR fpcr = context.StandardFpcrValue;
 
-            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1, context, fpcr);
-            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2, context, fpcr);
+            value1 = value1.FPUnpack(out FPType type1, out _, out ulong op1, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out _, out ulong op2, context, fpcr);
 
             double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, fpcr);
 
@@ -3158,8 +3158,8 @@ namespace ARMeilleure.Instructions
             ExecutionContext context = NativeInterface.GetContext();
             FPCR fpcr = context.StandardFpcrValue;
 
-            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1, context, fpcr);
-            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2, context, fpcr);
+            value1 = value1.FPUnpack(out FPType type1, out _, out ulong op1, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out _, out ulong op2, context, fpcr);
 
             double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, fpcr);
 

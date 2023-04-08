@@ -47,7 +47,7 @@ namespace ARMeilleure.CodeGen.X86
                 0xc3, // ret
             };
 
-            using MemoryBlock memGetXcr0 = new MemoryBlock((ulong)asmGetXcr0.Length);
+            using MemoryBlock memGetXcr0 = new((ulong)asmGetXcr0.Length);
 
             memGetXcr0.Write(0, asmGetXcr0);
 

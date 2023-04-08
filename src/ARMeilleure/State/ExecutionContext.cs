@@ -7,7 +7,7 @@ namespace ARMeilleure.State
     {
         private const int MinCountForCheck = 4000;
 
-        private NativeContext _nativeContext;
+        private readonly NativeContext _nativeContext;
 
         internal IntPtr NativeContextPtr => _nativeContext.BasePtr;
 

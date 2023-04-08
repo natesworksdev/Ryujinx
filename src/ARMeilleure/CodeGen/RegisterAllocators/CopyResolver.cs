@@ -42,13 +42,13 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             public void Sequence(List<Operation> sequence)
             {
-                Dictionary<Register, Register> locations = new Dictionary<Register, Register>();
-                Dictionary<Register, Register> sources   = new Dictionary<Register, Register>();
+                Dictionary<Register, Register> locations = new();
+                Dictionary<Register, Register> sources   = new();
 
-                Dictionary<Register, OperandType> types = new Dictionary<Register, OperandType>();
+                Dictionary<Register, OperandType> types = new();
 
-                Queue<Register> pendingQueue = new Queue<Register>();
-                Queue<Register> readyQueue   = new Queue<Register>();
+                Queue<Register> pendingQueue = new();
+                Queue<Register> readyQueue   = new();
 
                 foreach (Copy copy in _copies)
                 {
@@ -186,10 +186,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         private void AddSplitFill(LiveInterval left, LiveInterval right, OperandType type)
         {
-            if (_fillQueue == null)
-            {
-                _fillQueue = new Queue<Operation>();
-            }
+            _fillQueue ??= new Queue<Operation>();
 
             Operand register = GetRegister(right.Register, type);
             Operand offset = Const(left.SpillOffset);
@@ -201,10 +198,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         private void AddSplitSpill(LiveInterval left, LiveInterval right, OperandType type)
         {
-            if (_spillQueue == null)
-            {
-                _spillQueue = new Queue<Operation>();
-            }
+            _spillQueue ??= new Queue<Operation>();
 
             Operand offset = Const(right.SpillOffset);
             Operand register = GetRegister(left.Register, type);
@@ -216,10 +210,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         private void AddSplitCopy(LiveInterval left, LiveInterval right, OperandType type)
         {
-            if (_parallelCopy == null)
-            {
-                _parallelCopy = new ParallelCopy();
-            }
+            _parallelCopy ??= new ParallelCopy();
 
             _parallelCopy.AddCopy(right.Register, left.Register, type);
 
@@ -228,7 +219,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public Operation[] Sequence()
         {
-            List<Operation> sequence = new List<Operation>();
+            List<Operation> sequence = new();
 
             if (_spillQueue != null)
             {

@@ -96,7 +96,7 @@ namespace ARMeilleure.Translation
 
                 OperandType returnType = GetOperandType(info.ReturnType);
 
-                Symbol symbol = new Symbol(SymbolType.DelegateTable, (ulong)index);
+                Symbol symbol = new(SymbolType.DelegateTable, (ulong)index);
 
                 Symbols.Add((ulong)funcPtr.ToInt64(), info.Name);
 

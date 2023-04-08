@@ -1315,10 +1315,7 @@ namespace ARMeilleure.CodeGen.X86
                     ref Jump jump = ref jumps[i];
 
                     // If jump target not resolved yet, resolve it.
-                    if (jump.JumpTarget == null)
-                    {
-                        jump.JumpTarget = _labels[jump.JumpLabel];
-                    }
+                    jump.JumpTarget ??= _labels[jump.JumpLabel];
 
                     long jumpTarget = jump.JumpTarget.Value;
                     long offset = jumpTarget - jump.JumpPosition;

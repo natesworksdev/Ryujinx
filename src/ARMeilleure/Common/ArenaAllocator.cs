@@ -82,8 +82,10 @@ namespace ARMeilleure.Common
             }
             else
             {
-                _page = new PageInfo();
-                _page.Pointer = (byte*)NativeAllocator.Instance.Allocate(_pageSize);
+                _page = new PageInfo
+                {
+                    Pointer = (byte*)NativeAllocator.Instance.Allocate(_pageSize)
+                };
 
                 _pages.Add(_page);
             }
@@ -106,7 +108,7 @@ namespace ARMeilleure.Common
             // Free excess pages that was allocated.
             while (_pages.Count > _pageCount)
             {
-                NativeAllocator.Instance.Free(_pages[_pages.Count - 1].Pointer);
+                NativeAllocator.Instance.Free(_pages[^1].Pointer);
 
                 _pages.RemoveAt(_pages.Count - 1);
             }

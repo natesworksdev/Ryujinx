@@ -160,7 +160,7 @@ namespace ARMeilleure.Instructions
         {
             switch (context.CurrOp)
             {
-                case IOpCode32MemMult op:
+                case IOpCode32MemMult:
                     return true; // Setting PC using LDM is nearly always a return.
                 case OpCode32AluRsImm op:
                     return op.Rm == RegisterAlias.Aarch32Lr;

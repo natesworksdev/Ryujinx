@@ -267,9 +267,11 @@ namespace ARMeilleure.IntermediateRepresentation
                 Data* data = Allocators.Operations.Allocate<Data>();
                 *data = default;
 
-                Operation result = new();
-                result._data = data;
-                result.Instruction = inst;
+                Operation result = new()
+                {
+                    _data = data,
+                    Instruction = inst
+                };
 
                 EnsureCapacity(ref result._data->Destinations, ref result._data->DestinationsCount, destCount);
                 EnsureCapacity(ref result._data->Sources, ref result._data->SourcesCount, srcCount);
