@@ -17,8 +17,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         public KEvent           Event;
         public int              EventHandle;
 
-        private uint                  _eventId;
-        private NvHostSyncpt          _syncpointManager;
+        private readonly uint                  _eventId;
+        private readonly NvHostSyncpt          _syncpointManager;
         private SyncpointWaiterHandle _waiterInformation;
 
         private NvFence _previousFailingFence;

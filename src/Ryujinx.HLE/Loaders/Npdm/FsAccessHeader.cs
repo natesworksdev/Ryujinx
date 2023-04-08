@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
         {
             stream.Seek(offset, SeekOrigin.Begin);
 
-            BinaryReader reader = new BinaryReader(stream);
+            BinaryReader reader = new(stream);
 
             Version            = reader.ReadInt32();
             PermissionsBitmask = reader.ReadUInt64();

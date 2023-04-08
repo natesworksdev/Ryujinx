@@ -5,8 +5,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
     public class IntegerLiteral : BaseNode
     {
-        private string _literalName;
-        private string _literalValue;
+        private readonly string _literalName;
+        private readonly string _literalValue;
 
         public IntegerLiteral(string literalName, string literalValue) : base(NodeType.IntegerLiteral)
         {

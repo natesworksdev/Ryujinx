@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
     abstract class SystemClockCore
     {
-        private SteadyClockCore                  _steadyClockCore;
+        private readonly SteadyClockCore                  _steadyClockCore;
         private SystemClockContext               _context;
         private bool                             _isInitialized;
         private SystemClockContextUpdateCallback _systemClockContextUpdateCallback;
@@ -52,7 +52,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         {
             SteadyClockTimePoint currentTimePoint = _steadyClockCore.GetCurrentTimePoint(tickSource);
 
-            SystemClockContext clockContext = new SystemClockContext()
+            SystemClockContext clockContext = new()
             {
                 Offset          = posixTime - currentTimePoint.TimePoint,
                 SteadyTimePoint = currentTimePoint
@@ -99,10 +99,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
         public void RegisterOperationEvent(KWritableEvent writableEvent)
         {
-            if (_systemClockContextUpdateCallback != null)
-            {
-                _systemClockContextUpdateCallback.RegisterOperationEvent(writableEvent);
-            }
+            _systemClockContextUpdateCallback?.RegisterOperationEvent(writableEvent);
         }
 
         public ResultCode SetSystemClockContext(SystemClockContext context)

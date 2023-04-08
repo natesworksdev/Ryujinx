@@ -40,7 +40,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
             void AddDisplayInfo(string name, bool layerLimitEnabled, ulong layerLimitMax, ulong width, ulong height)
             {
-                DisplayInfo displayInfo = new DisplayInfo()
+                DisplayInfo displayInfo = new()
                 {
                     Name              = new Array64<byte>(),
                     LayerLimitEnabled = layerLimitEnabled,
@@ -283,7 +283,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
             context.Device.System.SurfaceFlinger.SetRenderLayer(layerId);
 
-            Parcel parcel = new Parcel(0x28, 0x4);
+            Parcel parcel = new(0x28, 0x4);
 
             parcel.WriteObject(producer, "dispdrv\0");
 
@@ -384,7 +384,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
             Debug.Assert(layerBuffSize == size);
 
-            RenderingSurfaceInfo surfaceInfo = new RenderingSurfaceInfo(ColorFormat.A8B8G8R8, (uint)layerWidth, (uint)layerHeight, (uint)pitch, (uint)layerBuffSize);
+            RenderingSurfaceInfo surfaceInfo = new(ColorFormat.A8B8G8R8, (uint)layerWidth, (uint)layerHeight, (uint)pitch, (uint)layerBuffSize);
 
             // Get the applet associated with the handle.
             object appletObject = context.Device.System.AppletState.IndirectLayerHandles.GetData((int)layerHandle);
@@ -445,7 +445,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
                 // NOTE: The official service setup a A8B8G8R8 texture with a linear layout and then query its size.
                 //       As we don't need this texture on the emulator, we can just simplify this logic and directly
                 //       do a linear layout size calculation. (stride * height * bytePerPixel)
-                ulong size = GetA8B8G8R8LayerSize(width, height, out int pitch, out int alignment);
+                ulong size = GetA8B8G8R8LayerSize(width, height, out _, out int alignment);
 
                 context.ResponseData.Write(size);
                 context.ResponseData.Write(alignment);

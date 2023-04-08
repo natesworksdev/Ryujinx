@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Applets
 {
     static class AppletManager
     {
-        private static Dictionary<AppletId, Type> _appletMapping;
+        private static readonly Dictionary<AppletId, Type> _appletMapping;
 
         static AppletManager()
         {

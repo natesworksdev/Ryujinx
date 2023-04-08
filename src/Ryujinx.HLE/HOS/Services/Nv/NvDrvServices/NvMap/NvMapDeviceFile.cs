@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
     {
         private const int FlagNotFreedYet = 1;
 
-        private static NvMapIdDictionary _maps = new NvMapIdDictionary();
+        private static readonly NvMapIdDictionary _maps = new();
 
         public NvMapDeviceFile(ServiceCtx context, IVirtualMemoryManager memory, ulong owner) : base(context, owner)
         {

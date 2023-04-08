@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.HidServer
 {
     class IAppletResource : IpcService
     {
-        private KSharedMemory _hidSharedMem;
+        private readonly KSharedMemory _hidSharedMem;
         private int           _hidSharedMemHandle;
 
         public IAppletResource(KSharedMemory hidSharedMem)

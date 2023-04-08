@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         private bool _skipDefaultVerify;
         private bool _enableAlpn;
 
-        private SslVersion _sslVersion;
+        private readonly SslVersion _sslVersion;
         private IoMode _ioMode;
         private VerifyOption _verifyOption;
         private SessionCacheMode _sessionCacheMode;
@@ -206,13 +206,11 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
             {
                 if (_getServerCertChain)
                 {
-                    using (WritableRegion region = context.Memory.GetWritableRegion(context.Request.ReceiveBuff[0].Position, (int)context.Request.ReceiveBuff[0].Size))
-                    {
-                        result = _connection.GetServerCertificate(_hostName, region.Memory.Span, out uint bufferSize, out uint certificateCount);
+                    using WritableRegion region = context.Memory.GetWritableRegion(context.Request.ReceiveBuff[0].Position, (int)context.Request.ReceiveBuff[0].Size);
+                    result = _connection.GetServerCertificate(_hostName, region.Memory.Span, out uint bufferSize, out uint certificateCount);
 
-                        context.ResponseData.Write(bufferSize);
-                        context.ResponseData.Write(certificateCount);
-                    }
+                    context.ResponseData.Write(bufferSize);
+                    context.ResponseData.Write(certificateCount);
                 }
                 else
                 {

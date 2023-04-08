@@ -248,7 +248,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         private ReadOnlySpan<byte> AsSpanWithoutCrc()
         {
-            return AsReadOnlySpan().Slice(0, Unsafe.SizeOf<NintendoFigurineDatabase>() - 2);
+            return AsReadOnlySpan()[..(Unsafe.SizeOf<NintendoFigurineDatabase>() - 2)];
         }
     }
 }

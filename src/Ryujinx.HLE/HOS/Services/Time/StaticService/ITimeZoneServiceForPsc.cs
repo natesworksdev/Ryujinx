@@ -14,8 +14,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 {
     class ITimeZoneServiceForPsc : IpcService
     {
-        private TimeZoneManager _timeZoneManager;
-        private bool            _writePermission;
+        private readonly TimeZoneManager _timeZoneManager;
+        private readonly bool            _writePermission;
 
         public ITimeZoneServiceForPsc(TimeZoneManager timeZoneManager, bool writePermission)
         {
@@ -134,7 +134,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 
             context.Memory.Read(bufferPosition, temp);
 
-            using (MemoryStream timeZoneBinaryStream = new MemoryStream(temp))
+            using (MemoryStream timeZoneBinaryStream = new(temp))
             {
                 result = _timeZoneManager.SetDeviceLocationNameWithTimeZoneRule(locationName, timeZoneBinaryStream);
             }
@@ -165,14 +165,12 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 
             context.Memory.Read(bufferPosition, temp);
 
-            using (MemoryStream timeZoneBinaryStream = new MemoryStream(temp))
+            using (MemoryStream timeZoneBinaryStream = new(temp))
             {
-                using (WritableRegion region = context.Memory.GetWritableRegion(timeZoneRuleBufferPosition, Unsafe.SizeOf<TimeZoneRule>()))
-                {
-                    ref TimeZoneRule rule = ref MemoryMarshal.Cast<byte, TimeZoneRule>(region.Memory.Span)[0];
+                using WritableRegion region = context.Memory.GetWritableRegion(timeZoneRuleBufferPosition, Unsafe.SizeOf<TimeZoneRule>());
+                ref TimeZoneRule rule = ref MemoryMarshal.Cast<byte, TimeZoneRule>(region.Memory.Span)[0];
 
-                    result = _timeZoneManager.ParseTimeZoneRuleBinary(ref rule, timeZoneBinaryStream);
-                }
+                result = _timeZoneManager.ParseTimeZoneRuleBinary(ref rule, timeZoneBinaryStream);
             }
 
             return result;

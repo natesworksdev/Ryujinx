@@ -38,93 +38,91 @@ namespace Ryujinx.HLE.HOS.Ipc
 
         public IpcMessage(ReadOnlySpan<byte> data, long cmdPtr)
         {
-            using (RecyclableMemoryStream ms = MemoryStreamManager.Shared.GetStream(data))
+            using RecyclableMemoryStream ms = MemoryStreamManager.Shared.GetStream(data);
+            BinaryReader reader = new(ms);
+
+            int word0 = reader.ReadInt32();
+            int word1 = reader.ReadInt32();
+
+            Type = (IpcMessageType)(word0 & 0xffff);
+
+            int  ptrBuffCount  = (word0 >> 16) & 0xf;
+            int  sendBuffCount = (word0 >> 20) & 0xf;
+            int  recvBuffCount = (word0 >> 24) & 0xf;
+            int  xchgBuffCount = (word0 >> 28) & 0xf;
+
+            int  rawDataSize   = (word1 >> 0) & 0x3ff;
+            int  recvListFlags = (word1 >> 10) & 0xf;
+            bool hndDescEnable = ((word1 >> 31) & 0x1) != 0;
+
+            if (hndDescEnable)
             {
-                BinaryReader reader = new BinaryReader(ms);
+                HandleDesc = new IpcHandleDesc(reader);
+            }
 
-                int word0 = reader.ReadInt32();
-                int word1 = reader.ReadInt32();
+            PtrBuff = new List<IpcPtrBuffDesc>(ptrBuffCount);
 
-                Type = (IpcMessageType)(word0 & 0xffff);
+            for (int index = 0; index < ptrBuffCount; index++)
+            {
+                PtrBuff.Add(new IpcPtrBuffDesc(reader));
+            }
 
-                int  ptrBuffCount  = (word0 >> 16) & 0xf;
-                int  sendBuffCount = (word0 >> 20) & 0xf;
-                int  recvBuffCount = (word0 >> 24) & 0xf;
-                int  xchgBuffCount = (word0 >> 28) & 0xf;
+            static List<IpcBuffDesc> ReadBuff(BinaryReader reader, int count)
+            {
+                List<IpcBuffDesc> buff = new List<IpcBuffDesc>(count);
 
-                int  rawDataSize   = (word1 >> 0) & 0x3ff;
-                int  recvListFlags = (word1 >> 10) & 0xf;
-                bool hndDescEnable = ((word1 >> 31) & 0x1) != 0;
-
-                if (hndDescEnable)
+                for (int index = 0; index < count; index++)
                 {
-                    HandleDesc = new IpcHandleDesc(reader);
+                    buff.Add(new IpcBuffDesc(reader));
                 }
 
-                PtrBuff = new List<IpcPtrBuffDesc>(ptrBuffCount);
+                return buff;
+            }
 
-                for (int index = 0; index < ptrBuffCount; index++)
-                {
-                    PtrBuff.Add(new IpcPtrBuffDesc(reader));
-                }
+            SendBuff = ReadBuff(reader, sendBuffCount);
+            ReceiveBuff = ReadBuff(reader, recvBuffCount);
+            ExchangeBuff = ReadBuff(reader, xchgBuffCount);
 
-                static List<IpcBuffDesc> ReadBuff(BinaryReader reader, int count)
-                {
-                    List<IpcBuffDesc> buff = new List<IpcBuffDesc>(count);
-                    
-                    for (int index = 0; index < count; index++)
-                    {
-                        buff.Add(new IpcBuffDesc(reader));
-                    }
-                    
-                    return buff;
-                }
+            rawDataSize *= 4;
 
-                SendBuff = ReadBuff(reader, sendBuffCount);
-                ReceiveBuff = ReadBuff(reader, recvBuffCount);
-                ExchangeBuff = ReadBuff(reader, xchgBuffCount);
-
-                rawDataSize *= 4;
-
-                long recvListPos = reader.BaseStream.Position + rawDataSize;
+            long recvListPos = reader.BaseStream.Position + rawDataSize;
 
             // Only CMIF has the padding requirements.
             if (Type < IpcMessageType.TipcCloseSession)
             {
                 long pad0 = GetPadSize16(reader.BaseStream.Position + cmdPtr);
 
-                    if (rawDataSize != 0)
-                    {
-                        rawDataSize -= (int)pad0;
-                    }
-
-                    reader.BaseStream.Seek(pad0, SeekOrigin.Current);
-                }
-
-                int recvListCount = recvListFlags - 2;
-
-                if (recvListCount == 0)
+                if (rawDataSize != 0)
                 {
-                    recvListCount = 1;
-                }
-                else if (recvListCount < 0)
-                {
-                    recvListCount = 0;
+                    rawDataSize -= (int)pad0;
                 }
 
-                RawData = reader.ReadBytes(rawDataSize);
-
-                reader.BaseStream.Seek(recvListPos, SeekOrigin.Begin);
-
-                RecvListBuff = new List<IpcRecvListBuffDesc>(recvListCount);
-
-                for (int index = 0; index < recvListCount; index++)
-                {
-                    RecvListBuff.Add(new IpcRecvListBuffDesc(reader.ReadUInt64()));
-                }
-
-                ObjectIds = new List<int>(0);
+                reader.BaseStream.Seek(pad0, SeekOrigin.Current);
             }
+
+            int recvListCount = recvListFlags - 2;
+
+            if (recvListCount == 0)
+            {
+                recvListCount = 1;
+            }
+            else if (recvListCount < 0)
+            {
+                recvListCount = 0;
+            }
+
+            RawData = reader.ReadBytes(rawDataSize);
+
+            reader.BaseStream.Seek(recvListPos, SeekOrigin.Begin);
+
+            RecvListBuff = new List<IpcRecvListBuffDesc>(recvListCount);
+
+            for (int index = 0; index < recvListCount; index++)
+            {
+                RecvListBuff.Add(new IpcRecvListBuffDesc(reader.ReadUInt64()));
+            }
+
+            ObjectIds = new List<int>(0);
         }
 
         public RecyclableMemoryStream GetStream(long cmdPtr, ulong recvListAddr)

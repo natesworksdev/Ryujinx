@@ -12,8 +12,8 @@ namespace Ryujinx.HLE.HOS.Services.Time
     [Service("time:u", TimePermissions.User)]
     class IStaticServiceForGlue : IpcService
     {
-        private IStaticServiceForPsc _inner;
-        private TimePermissions      _permissions;
+        private readonly IStaticServiceForPsc _inner;
+        private readonly TimePermissions      _permissions;
 
         public IStaticServiceForGlue(ServiceCtx context, TimePermissions permissions) : base(context.Device.System.TimeServer)
         {

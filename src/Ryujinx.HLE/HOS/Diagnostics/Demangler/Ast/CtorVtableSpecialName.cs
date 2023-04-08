@@ -4,8 +4,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
     public class CtorVtableSpecialName : BaseNode
     {
-        private BaseNode _firstType;
-        private BaseNode _secondType;
+        private readonly BaseNode _firstType;
+        private readonly BaseNode _secondType;
 
         public CtorVtableSpecialName(BaseNode firstType, BaseNode secondType) : base(NodeType.CtorVtableSpecialName)
         {

@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator.FriendService
         public bool IsNew;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 0x6)]
-        char[] Unknown;
+        readonly char[] Unknown;
 
         [MarshalAs(UnmanagedType.I1)]
         public bool IsValid;

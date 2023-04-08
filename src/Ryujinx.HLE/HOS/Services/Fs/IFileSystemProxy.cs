@@ -70,7 +70,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
                 return ResultCode.PathDoesNotExist;
             }
 
-            FileStream fileStream = new FileStream(fullPath, FileMode.Open, FileAccess.Read);
+            FileStream fileStream = new(fullPath, FileMode.Open, FileAccess.Read);
             string extension = System.IO.Path.GetExtension(fullPath);
 
             if (extension == ".nca")
@@ -761,7 +761,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
                         try
                         {
                             LibHac.Fs.IStorage ncaStorage = new LocalStorage(ncaPath, FileAccess.Read, FileMode.Open);
-                            Nca nca = new Nca(context.Device.System.KeySet, ncaStorage);
+                            Nca nca = new(context.Device.System.KeySet, ncaStorage);
                             LibHac.Fs.IStorage romfsStorage = nca.OpenStorage(NcaSectionType.Data, context.Device.System.FsIntegrityCheckLevel);
                             using var sharedStorage = new SharedRef<LibHac.Fs.IStorage>(romfsStorage);
                             using var sfStorage = new SharedRef<IStorage>(new StorageInterfaceAdapter(ref sharedStorage.Ref));

@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pdm.QueryService
 {
     static class QueryPlayStatisticsManager
     {
-        private static Dictionary<UserId, ApplicationPlayStatistics> applicationPlayStatistics = new Dictionary<UserId, ApplicationPlayStatistics>();
+        private static readonly Dictionary<UserId, ApplicationPlayStatistics> applicationPlayStatistics = new();
 
         internal static ResultCode GetPlayStatistics(ServiceCtx context, bool byUserId = false)
         {
@@ -33,7 +33,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pdm.QueryService
 
             PlayLogQueryCapability queryCapability = (PlayLogQueryCapability)context.Device.Processes.ActiveApplication.ApplicationControlProperties.PlayLogQueryCapability;
 
-            List<ulong> titleIds = new List<ulong>();
+            List<ulong> titleIds = new();
 
             for (ulong i = 0; i < inputSize / sizeof(ulong); i++)
             {

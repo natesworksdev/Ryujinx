@@ -40,9 +40,9 @@ namespace Ryujinx.HLE.HOS.Services
         private KProcess _selfProcess;
         private KThread _selfThread;
 
-        private readonly ReaderWriterLockSlim _handleLock = new ReaderWriterLockSlim();
-        private readonly Dictionary<int, IpcService> _sessions = new Dictionary<int, IpcService>();
-        private readonly Dictionary<int, Func<IpcService>> _ports = new Dictionary<int, Func<IpcService>>();
+        private readonly ReaderWriterLockSlim _handleLock = new();
+        private readonly Dictionary<int, IpcService> _sessions = new();
+        private readonly Dictionary<int, Func<IpcService>> _ports = new();
 
         private readonly MemoryStream _requestDataStream;
         private readonly BinaryReader _requestDataReader;
@@ -76,7 +76,7 @@ namespace Ryujinx.HLE.HOS.Services
                 ProcessCreationFlags.Is64Bit |
                 ProcessCreationFlags.PoolPartitionSystem;
 
-            ProcessCreationInfo creationInfo = new ProcessCreationInfo("Service", 1, 0, 0x8000000, 1, Flags, 0, 0);
+            ProcessCreationInfo creationInfo = new("Service", 1, 0, 0x8000000, 1, Flags, 0, 0);
 
             KernelStatic.StartInitialProcess(context, creationInfo, DefaultCapabilities, 44, Main);
         }
@@ -281,7 +281,7 @@ namespace Ryujinx.HLE.HOS.Services
         {
             IpcMessage request = ReadRequest();
 
-            IpcMessage response = new IpcMessage();
+            IpcMessage response = new();
 
             ulong tempAddr = recvListAddr;
             int sizesOffset = request.RawData.Length - ((request.RecvListBuff.Count * 2 + 3) & ~3);
@@ -323,7 +323,7 @@ namespace Ryujinx.HLE.HOS.Services
 
                 _responseDataStream.SetLength(0);
 
-                ServiceCtx context = new ServiceCtx(
+                ServiceCtx context = new(
                     _context.Device,
                     _selfProcess,
                     _selfProcess.CpuMemory,
@@ -404,7 +404,7 @@ namespace Ryujinx.HLE.HOS.Services
 
                 _responseDataStream.SetLength(0);
 
-                ServiceCtx context = new ServiceCtx(
+                ServiceCtx context = new(
                     _context.Device,
                     _selfProcess,
                     _selfProcess.CpuMemory,
@@ -445,7 +445,7 @@ namespace Ryujinx.HLE.HOS.Services
 
             _selfProcess.CpuMemory.Read(_selfThread.TlsAddress, reqDataSpan);
 
-            IpcMessage request = new IpcMessage(reqDataSpan, (long)_selfThread.TlsAddress);
+            IpcMessage request = new(reqDataSpan, (long)_selfThread.TlsAddress);
 
             return request;
         }

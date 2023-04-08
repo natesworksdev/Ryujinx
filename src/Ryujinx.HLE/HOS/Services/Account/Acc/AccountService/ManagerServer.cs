@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
         // TODO: Determine where and how NetworkServiceAccountId is set.
         private const long NetworkServiceAccountId = 0xcafe;
 
-        private UserId _userId;
+        private readonly UserId _userId;
 
         public ManagerServer(UserId userId)
         {
@@ -29,9 +29,9 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
 
             RSAParameters parameters = provider.ExportParameters(true);
 
-            RsaSecurityKey secKey = new RsaSecurityKey(parameters);
+            RsaSecurityKey secKey = new(parameters);
 
-            SigningCredentials credentials = new SigningCredentials(secKey, "RS256");
+            SigningCredentials credentials = new(secKey, "RS256");
 
             credentials.Key.KeyId = parameters.ToString();
 
@@ -63,7 +63,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
                 { "exp", (DateTimeOffset.UtcNow + TimeSpan.FromHours(3)).ToUnixTimeSeconds() }
             };
 
-            JwtSecurityToken securityToken = new JwtSecurityToken(header, payload);
+            JwtSecurityToken securityToken = new(header, payload);
 
             return new JwtSecurityTokenHandler().WriteToken(securityToken);
         }
@@ -94,8 +94,8 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
 
         public ResultCode EnsureIdTokenCacheAsync(ServiceCtx context, out IAsyncContext asyncContext)
         {
-            KEvent         asyncEvent     = new KEvent(context.Device.System.KernelContext);
-            AsyncExecution asyncExecution = new AsyncExecution(asyncEvent);
+            KEvent         asyncEvent     = new(context.Device.System.KernelContext);
+            AsyncExecution asyncExecution = new(asyncEvent);
 
             asyncExecution.Initialize(1000, EnsureIdTokenCacheAsyncImpl);
 
@@ -169,8 +169,8 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
 
         public ResultCode LoadNetworkServiceLicenseKindAsync(ServiceCtx context, out IAsyncNetworkServiceLicenseKindContext asyncContext)
         {
-            KEvent asyncEvent = new KEvent(context.Device.System.KernelContext);
-            AsyncExecution asyncExecution = new AsyncExecution(asyncEvent);
+            KEvent asyncEvent = new(context.Device.System.KernelContext);
+            AsyncExecution asyncExecution = new(asyncEvent);
 
             Logger.Stub?.PrintStub(LogClass.ServiceAcc);
 

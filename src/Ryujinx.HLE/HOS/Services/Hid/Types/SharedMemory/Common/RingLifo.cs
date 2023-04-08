@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Common
         private const ulong MaxEntries = 17;
 
 #pragma warning disable CS0169
-        private ulong _unused;
+        private readonly ulong _unused;
 #pragma warning restore CS0169
 #pragma warning disable CS0414
         private ulong _bufferCount;

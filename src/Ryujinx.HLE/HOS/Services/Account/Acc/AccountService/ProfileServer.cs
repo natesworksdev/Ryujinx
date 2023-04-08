@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
 {
     class ProfileServer
     {
-        private UserProfile _profile;
+        private readonly UserProfile _profile;
 
         public ProfileServer(UserProfile profile)
         {

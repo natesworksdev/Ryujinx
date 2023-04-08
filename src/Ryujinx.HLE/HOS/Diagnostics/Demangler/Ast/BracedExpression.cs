@@ -4,9 +4,9 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
     public class BracedExpression : BaseNode
     {
-        private BaseNode _element;
-        private BaseNode _expression;
-        private bool     _isArrayExpression;
+        private readonly BaseNode _element;
+        private readonly BaseNode _expression;
+        private readonly bool     _isArrayExpression;
 
         public BracedExpression(BaseNode element, BaseNode expression, bool isArrayExpression) : base(NodeType.BracedExpression)
         {

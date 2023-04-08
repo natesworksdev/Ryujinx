@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
     {
         private class Block
         {
-            private KPageBitmap _bitmap = new KPageBitmap();
+            private readonly KPageBitmap _bitmap = new();
             private ulong _heapAddress;
             private ulong _endOffset;
 

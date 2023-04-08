@@ -19,9 +19,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         public const int MaxControllers = 9; // Players 1-8 and Handheld
         private ControllerType[] _configuredTypes;
-        private KEvent[] _styleSetUpdateEvents;
-        private bool[] _supportedPlayers;
-        private static VibrationValue _neutralVibrationValue = new VibrationValue
+        private readonly KEvent[] _styleSetUpdateEvents;
+        private readonly bool[] _supportedPlayers;
+        private static VibrationValue _neutralVibrationValue = new()
         {
             AmplitudeLow = 0f,
             FrequencyLow = 160f,
@@ -33,8 +33,8 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         internal bool SixAxisActive = false; // TODO: link to hidserver when implemented
         internal ControllerType SupportedStyleSets { get; set; }
 
-        public Dictionary<PlayerIndex, ConcurrentQueue<(VibrationValue, VibrationValue)>> RumbleQueues = new Dictionary<PlayerIndex, ConcurrentQueue<(VibrationValue, VibrationValue)>>();
-        public Dictionary<PlayerIndex, (VibrationValue, VibrationValue)> LastVibrationValues = new Dictionary<PlayerIndex, (VibrationValue, VibrationValue)>();
+        public Dictionary<PlayerIndex, ConcurrentQueue<(VibrationValue, VibrationValue)>> RumbleQueues = new();
+        public Dictionary<PlayerIndex, (VibrationValue, VibrationValue)> LastVibrationValues = new();
 
         public NpadDevices(Switch device, bool active = true) : base(device, active)
         {
@@ -329,7 +329,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             if (!Unsafe.AreSame(ref currentlyUsed, ref possiblyUnused))
             {
-                NpadCommonState newState = new NpadCommonState();
+                NpadCommonState newState = new();
 
                 WriteNewInputEntry(ref possiblyUnused, ref newState);
             }
@@ -348,7 +348,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             if (!Unsafe.AreSame(ref currentlyUsed, ref possiblyUnused))
             {
-                SixAxisSensorState newState = new SixAxisSensorState();
+                SixAxisSensorState newState = new();
 
                 WriteNewSixInputEntry(ref possiblyUnused, ref newState);
             }
@@ -379,7 +379,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             ref RingLifo<NpadCommonState> lifo = ref GetCommonStateLifo(ref currentNpad);
 
-            NpadCommonState newState = new NpadCommonState
+            NpadCommonState newState = new()
             {
                 Buttons      = (NpadButton)state.Buttons,
                 AnalogStickL = new AnalogStickState
@@ -391,10 +391,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 {
                     X        = state.RStick.Dx,
                     Y        = state.RStick.Dy,
-                }
+                },
+                Attributes   = NpadAttribute.IsConnected
             };
-
-            newState.Attributes = NpadAttribute.IsConnected;
 
             switch (currentNpad.StyleSet)
             {
@@ -434,7 +433,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             ref NpadInternalState currentNpad = ref _device.Hid.SharedMemory.Npads[(int)index].InternalState;
 
-            NpadCommonState newState = new NpadCommonState();
+            NpadCommonState newState = new();
 
             WriteNewInputEntry(ref currentNpad.FullKey, ref newState);
             WriteNewInputEntry(ref currentNpad.Handheld, ref newState);
@@ -514,28 +513,28 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 return false;
             }
 
-            HidVector accel = new HidVector()
+            HidVector accel = new()
             {
                 X = state.Accelerometer.X,
                 Y = state.Accelerometer.Y,
                 Z = state.Accelerometer.Z
             };
 
-            HidVector gyro = new HidVector()
+            HidVector gyro = new()
             {
                 X = state.Gyroscope.X,
                 Y = state.Gyroscope.Y,
                 Z = state.Gyroscope.Z
             };
 
-            HidVector rotation = new HidVector()
+            HidVector rotation = new()
             {
                 X = state.Rotation.X,
                 Y = state.Rotation.Y,
                 Z = state.Rotation.Z
             };
 
-            SixAxisSensorState newState = new SixAxisSensorState
+            SixAxisSensorState newState = new()
             {
                 Acceleration    = accel,
                 AngularVelocity = gyro,
@@ -562,9 +561,10 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             if (!needUpdateRight && !isRightPair)
             {
-                SixAxisSensorState emptyState = new SixAxisSensorState();
-
-                emptyState.Attributes = SixAxisSensorAttribute.IsConnected;
+                SixAxisSensorState emptyState = new()
+                {
+                    Attributes = SixAxisSensorAttribute.IsConnected
+                };
 
                 WriteNewSixInputEntry(ref currentNpad.JoyDualRightSixAxisSensor, ref emptyState);
             }
@@ -576,9 +576,10 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             ref NpadInternalState currentNpad = ref _device.Hid.SharedMemory.Npads[(int)index].InternalState;
 
-            SixAxisSensorState newState = new SixAxisSensorState();
-
-            newState.Attributes = SixAxisSensorAttribute.IsConnected;
+            SixAxisSensorState newState = new()
+            {
+                Attributes = SixAxisSensorAttribute.IsConnected
+            };
 
             WriteNewSixInputEntry(ref currentNpad.FullKeySixAxisSensor, ref newState);
             WriteNewSixInputEntry(ref currentNpad.HandheldSixAxisSensor, ref newState);

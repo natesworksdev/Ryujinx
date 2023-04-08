@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
             IOStream
         }
 
-        private SpecialType _specialSubstitutionKey;
+        private readonly SpecialType _specialSubstitutionKey;
 
         public SpecialSubstitution(SpecialType specialSubstitutionKey) : base(NodeType.SpecialSubstitution)
         {

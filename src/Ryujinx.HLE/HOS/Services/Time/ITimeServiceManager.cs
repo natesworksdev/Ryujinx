@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
     [Service("time:m")] // 9.0.0+
     class ITimeServiceManager : IpcService
     {
-        private TimeManager _timeManager;
+        private readonly TimeManager _timeManager;
         private int         _automaticCorrectionEvent;
 
         public ITimeServiceManager(ServiceCtx context)
@@ -133,7 +133,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             context.Memory.Read(bufferPosition, temp);
 
-            using (MemoryStream timeZoneBinaryStream = new MemoryStream(temp))
+            using (MemoryStream timeZoneBinaryStream = new(temp))
             {
                 _timeManager.SetupTimeZoneManager(locationName, timeZoneUpdateTimePoint, totalLocationNameCount, timeZoneRuleVersion, timeZoneBinaryStream);
             }

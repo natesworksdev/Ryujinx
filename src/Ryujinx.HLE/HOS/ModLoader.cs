@@ -352,7 +352,7 @@ namespace Ryujinx.HLE.HOS
                     }
 
                     // Start a new cheat section.
-                    cheatName = line.Substring(1, line.Length - 2);
+                    cheatName = line[1..^1];
                     instructions = new List<string>();
                 }
                 else if (line.Length > 0)

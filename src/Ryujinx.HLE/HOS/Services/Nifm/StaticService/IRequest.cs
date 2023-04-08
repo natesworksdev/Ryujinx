@@ -15,13 +15,13 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
             Available = 3
         }
 
-        private KEvent _event0;
-        private KEvent _event1;
+        private readonly KEvent _event0;
+        private readonly KEvent _event1;
 
         private int _event0Handle;
         private int _event1Handle;
 
-        private uint _version;
+        private readonly uint _version;
 
         public IRequest(Horizon system, uint version)
         {

@@ -4,8 +4,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
     public class QualifiedName : BaseNode
     {
-        private BaseNode _qualifier;
-        private BaseNode _name;
+        private readonly BaseNode _qualifier;
+        private readonly BaseNode _name;
 
         public QualifiedName(BaseNode qualifier, BaseNode name) : base(NodeType.QualifiedName)
         {

@@ -33,7 +33,7 @@ namespace Ryujinx.HLE.HOS.Tamper
 
         public static Pointer EmitPointer(ulong addressImmediate, CompilationContext context)
         {
-            Value<ulong> addressImmediateValue = new Value<ulong>(addressImmediate);
+            Value<ulong> addressImmediateValue = new(addressImmediate);
 
             return new Pointer(addressImmediateValue, context.Process);
         }
@@ -45,8 +45,8 @@ namespace Ryujinx.HLE.HOS.Tamper
 
         public static Pointer EmitPointer(Register addressRegister, ulong offsetImmediate, CompilationContext context)
         {
-            Value<ulong> offsetImmediateValue = new Value<ulong>(offsetImmediate);
-            Value<ulong> finalAddressValue = new Value<ulong>(0);
+            Value<ulong> offsetImmediateValue = new(offsetImmediate);
+            Value<ulong> finalAddressValue = new(0);
             EmitAdd(finalAddressValue, addressRegister, offsetImmediateValue, context);
 
             return new Pointer(finalAddressValue, context.Process);
@@ -54,7 +54,7 @@ namespace Ryujinx.HLE.HOS.Tamper
 
         public static Pointer EmitPointer(Register addressRegister, Register offsetRegister, CompilationContext context)
         {
-            Value<ulong> finalAddressValue = new Value<ulong>(0);
+            Value<ulong> finalAddressValue = new(0);
             EmitAdd(finalAddressValue, addressRegister, offsetRegister, context);
 
             return new Pointer(finalAddressValue, context.Process);
@@ -62,10 +62,10 @@ namespace Ryujinx.HLE.HOS.Tamper
 
         public static Pointer EmitPointer(Register addressRegister, Register offsetRegister, ulong offsetImmediate, CompilationContext context)
         {
-            Value<ulong> offsetImmediateValue = new Value<ulong>(offsetImmediate);
-            Value<ulong> finalOffsetValue = new Value<ulong>(0);
+            Value<ulong> offsetImmediateValue = new(offsetImmediate);
+            Value<ulong> finalOffsetValue = new(0);
             EmitAdd(finalOffsetValue, offsetRegister, offsetImmediateValue, context);
-            Value<ulong> finalAddressValue = new Value<ulong>(0);
+            Value<ulong> finalAddressValue = new(0);
             EmitAdd(finalAddressValue, addressRegister, finalOffsetValue, context);
 
             return new Pointer(finalAddressValue, context.Process);

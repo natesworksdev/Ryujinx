@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
     {
         private const int IdMasksCount = 8;
 
-        private int[] _idMasks;
+        private readonly int[] _idMasks;
 
         private int _nextFreeBitHint;
 

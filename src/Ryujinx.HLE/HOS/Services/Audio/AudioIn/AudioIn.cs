@@ -10,9 +10,9 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioIn
 {
     class AudioIn : IAudioIn
     {
-        private AudioInputSystem _system;
-        private uint _processHandle;
-        private KernelContext _kernelContext;
+        private readonly AudioInputSystem _system;
+        private readonly uint _processHandle;
+        private readonly KernelContext _kernelContext;
 
         public AudioIn(AudioInputSystem system, KernelContext kernelContext, uint processHandle)
         {

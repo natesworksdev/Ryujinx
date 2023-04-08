@@ -4,8 +4,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
     public class ConversionExpression : BaseNode
     {
-        private BaseNode _typeNode;
-        private BaseNode _expressions;
+        private readonly BaseNode _typeNode;
+        private readonly BaseNode _expressions;
 
         public ConversionExpression(BaseNode typeNode, BaseNode expressions) : base(NodeType.ConversionExpression)
         {

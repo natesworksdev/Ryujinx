@@ -16,10 +16,10 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
         private readonly object _lock = new();
 
-        private KEvent _notificationEvent;
+        private readonly KEvent _notificationEvent;
         private int    _notificationEventHandle = 0;
 
-        private LinkedList<NotificationInfo> _notifications;
+        private readonly LinkedList<NotificationInfo> _notifications;
 
         private bool _hasNewFriendRequest;
         private bool _hasFriendListUpdate;
@@ -106,7 +106,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
                 {
                     if (!_hasFriendListUpdate)
                     {
-                        NotificationInfo friendListNotification = new NotificationInfo();
+                        NotificationInfo friendListNotification = new();
 
                         if (_notifications.Count != 0)
                         {
@@ -119,7 +119,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
                         if (_hasNewFriendRequest)
                         {
-                            NotificationInfo newFriendRequestNotification = new NotificationInfo();
+                            NotificationInfo newFriendRequestNotification = new();
 
                             if (_notifications.Count != 0)
                             {
@@ -153,7 +153,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
                             SignalFriendListUpdate(targetId);
                         }
 
-                        NotificationInfo newFriendRequestNotification = new NotificationInfo
+                        NotificationInfo newFriendRequestNotification = new()
                         {
                             Type = NotificationEventType.NewFriendRequest
                         };

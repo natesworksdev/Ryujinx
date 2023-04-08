@@ -29,7 +29,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
                     foreach (var profile in profilesJson.Profiles)
                     {
-                        UserProfile addedProfile = new UserProfile(new UserId(profile.UserId), profile.Name, profile.Image, profile.LastModifiedTimestamp);
+                        UserProfile addedProfile = new(new UserId(profile.UserId), profile.Name, profile.Image, profile.LastModifiedTimestamp);
 
                         profiles.AddOrUpdate(profile.UserId, addedProfile, (key, old) => addedProfile);
                     }
@@ -51,7 +51,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         public void Save(ConcurrentDictionary<string, UserProfile> profiles)
         {
-            ProfilesJson profilesJson = new ProfilesJson()
+            ProfilesJson profilesJson = new()
             {
                 Profiles   = new List<UserProfileJson>(),
                 LastOpened = LastOpened.ToString()

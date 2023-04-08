@@ -45,7 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Common
 
             if (fieldOffset > 0)
             {
-                byteSpan = byteSpan.Slice(fieldOffset);
+                byteSpan = byteSpan[fieldOffset..];
             }
 
             ulong value = BinaryPrimitives.ReadUInt64LittleEndian(byteSpan);

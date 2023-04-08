@@ -350,7 +350,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     return Status.BadValue;
             }
 
-            BufferItem item = new BufferItem();
+            BufferItem item = new();
 
             IConsumerListener frameAvailableListener = null;
             IConsumerListener frameReplaceListener   = null;

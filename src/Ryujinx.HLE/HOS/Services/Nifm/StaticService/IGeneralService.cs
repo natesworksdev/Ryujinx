@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 {
     class IGeneralService : DisposableIpcService
     {
-        private GeneralServiceDetail _generalServiceDetail;
+        private readonly GeneralServiceDetail _generalServiceDetail;
 
         private IPInterfaceProperties _targetPropertiesCache = null;
         private UnicastIPAddressInformation _targetAddressInfoCache = null;
@@ -76,7 +76,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
             context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize((uint)Unsafe.SizeOf<NetworkProfileData>());
 
-            NetworkProfileData networkProfile = new NetworkProfileData
+            NetworkProfileData networkProfile = new()
             {
                 Uuid = UInt128Utils.CreateRandom()
             };
@@ -137,7 +137,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
                 return ResultCode.NoInternetConnection;
             }
 
-            InternetConnectionStatus internetConnectionStatus = new InternetConnectionStatus
+            InternetConnectionStatus internetConnectionStatus = new()
             {
                 Type         = InternetConnectionType.WiFi,
                 WifiStrength = 3,

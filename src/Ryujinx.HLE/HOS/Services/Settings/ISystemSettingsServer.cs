@@ -56,9 +56,9 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             const string Build      = "NintendoSDK Firmware for NX 3.0.0-10.0";
 
             // http://switchbrew.org/index.php?title=System_Version_Title
-            using (MemoryStream ms = new MemoryStream(0x100))
+            using (MemoryStream ms = new(0x100))
             {
-                BinaryWriter writer = new BinaryWriter(ms);
+                BinaryWriter writer = new(ms);
 
                 writer.Write(MajorFwVersion);
                 writer.Write(MinorFwVersion);
@@ -308,41 +308,39 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
             string firmwareTitlePath = device.FileSystem.SwitchPathToSystemPath(contentPath);
 
-            using(IStorage firmwareStorage = new LocalStorage(firmwareTitlePath, FileAccess.Read))
+            using IStorage firmwareStorage = new LocalStorage(firmwareTitlePath, FileAccess.Read);
+            Nca firmwareContent = new(device.System.KeySet, firmwareStorage);
+
+            if (!firmwareContent.CanOpenSection(NcaSectionType.Data))
             {
-                Nca firmwareContent = new Nca(device.System.KeySet, firmwareStorage);
-
-                if (!firmwareContent.CanOpenSection(NcaSectionType.Data))
-                {
-                    return null;
-                }
-
-                IFileSystem firmwareRomFs = firmwareContent.OpenFileSystem(NcaSectionType.Data, device.System.FsIntegrityCheckLevel);
-
-                using var firmwareFile = new UniqueRef<IFile>();
-
-                Result result = firmwareRomFs.OpenFile(ref firmwareFile.Ref, "/file".ToU8Span(), OpenMode.Read);
-                if (result.IsFailure())
-                {
-                    return null;
-                }
-
-                result = firmwareFile.Get.GetSize(out long fileSize);
-                if (result.IsFailure())
-                {
-                    return null;
-                }
-
-                byte[] data = new byte[fileSize];
-
-                result = firmwareFile.Get.Read(out _, 0, data);
-                if (result.IsFailure())
-                {
-                    return null;
-                }
-
-                return data;
+                return null;
             }
+
+            IFileSystem firmwareRomFs = firmwareContent.OpenFileSystem(NcaSectionType.Data, device.System.FsIntegrityCheckLevel);
+
+            using var firmwareFile = new UniqueRef<IFile>();
+
+            Result result = firmwareRomFs.OpenFile(ref firmwareFile.Ref, "/file".ToU8Span(), OpenMode.Read);
+            if (result.IsFailure())
+            {
+                return null;
+            }
+
+            result = firmwareFile.Get.GetSize(out long fileSize);
+            if (result.IsFailure())
+            {
+                return null;
+            }
+
+            byte[] data = new byte[fileSize];
+
+            result = firmwareFile.Get.Read(out _, 0, data);
+            if (result.IsFailure())
+            {
+                return null;
+            }
+
+            return data;
         }
     }
 }

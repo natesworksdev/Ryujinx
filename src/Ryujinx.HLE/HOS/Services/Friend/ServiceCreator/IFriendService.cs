@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 {
     class IFriendService : IpcService
     {
-        private FriendServicePermissionLevel _permissionLevel;
+        private readonly FriendServicePermissionLevel _permissionLevel;
         private KEvent                       _completionEvent;
 
         public IFriendService(FriendServicePermissionLevel permissionLevel)
@@ -27,10 +27,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
         // GetCompletionEvent() -> handle<copy>
         public ResultCode GetCompletionEvent(ServiceCtx context)
         {
-            if (_completionEvent == null)
-            {
-                _completionEvent = new KEvent(context.Device.System.KernelContext);
-            }
+            _completionEvent ??= new KEvent(context.Device.System.KernelContext);
 
             if (context.Process.HandleTable.GenerateHandle(_completionEvent.ReadableEvent, out int completionEventHandle) != Result.Success)
             {
@@ -274,11 +271,11 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
             //       Then it checks if an Uuid is already stored for the UserId, if not it generates a random Uuid.
             //       And store it in the savedata 8000000000000080 in the friends:/uid.bin file.
 
-            Array16<byte> randomGuid = new Array16<byte>();
+            Array16<byte> randomGuid = new();
 
             Guid.NewGuid().ToByteArray().AsSpan().CopyTo(randomGuid.AsSpan());
 
-            PlayHistoryRegistrationKey playHistoryRegistrationKey = new PlayHistoryRegistrationKey
+            PlayHistoryRegistrationKey playHistoryRegistrationKey = new()
             {
                 Type        = 0x101,
                 KeyIndex    = (byte)(randomBytes[0] & 7),

@@ -65,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         public Nickname Nickname
         {
             get => Nickname.FromBytes(NicknameStorage);
-            set => value.Raw.Slice(0, 20).CopyTo(NicknameStorage);
+            set => value.Raw[..20].CopyTo(NicknameStorage);
         }
 
         public static ReadOnlySpan<DefaultMii> Table => MemoryMarshal.Cast<byte, DefaultMii>(TableRawArray);

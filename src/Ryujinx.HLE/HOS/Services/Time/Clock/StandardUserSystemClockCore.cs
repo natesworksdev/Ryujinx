@@ -6,8 +6,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
     class StandardUserSystemClockCore : SystemClockCore
     {
-        private StandardLocalSystemClockCore   _localSystemClockCore;
-        private StandardNetworkSystemClockCore _networkSystemClockCore;
+        private readonly StandardLocalSystemClockCore   _localSystemClockCore;
+        private readonly StandardNetworkSystemClockCore _networkSystemClockCore;
         private bool                           _autoCorrectionEnabled;
         private SteadyClockTimePoint           _autoCorrectionTime;
         private KEvent                         _autoCorrectionEvent;

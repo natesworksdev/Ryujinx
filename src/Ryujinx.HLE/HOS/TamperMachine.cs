@@ -17,16 +17,18 @@ namespace Ryujinx.HLE.HOS
         private const int TamperMachineSleepMs = 1000 / 12;
 
         private Thread _tamperThread = null;
-        private ConcurrentQueue<ITamperProgram> _programs = new ConcurrentQueue<ITamperProgram>();
+        private readonly ConcurrentQueue<ITamperProgram> _programs = new();
         private long _pressedKeys = 0;
-        private Dictionary<string, ITamperProgram> _programDictionary = new Dictionary<string, ITamperProgram>();
+        private readonly Dictionary<string, ITamperProgram> _programDictionary = new();
 
         private void Activate()
         {
             if (_tamperThread == null || !_tamperThread.IsAlive)
             {
-                _tamperThread = new Thread(this.TamperRunner);
-                _tamperThread.Name = "HLE.TamperMachine";
+                _tamperThread = new Thread(this.TamperRunner)
+                {
+                    Name = "HLE.TamperMachine"
+                };
                 _tamperThread.Start();
             }
         }
@@ -39,7 +41,7 @@ namespace Ryujinx.HLE.HOS
             }
 
             ITamperedProcess tamperedProcess = new TamperedKProcess(info.Process);
-            AtmosphereCompiler compiler = new AtmosphereCompiler(exeAddress, info.HeapAddress, info.AliasAddress, info.AslrAddress, tamperedProcess);
+            AtmosphereCompiler compiler = new(exeAddress, info.HeapAddress, info.AliasAddress, info.AslrAddress, tamperedProcess);
             ITamperProgram program = compiler.Compile(name, rawInstructions);
 
             if (program != null)

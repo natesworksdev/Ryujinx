@@ -25,13 +25,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv
     [Service("nvdrv:t")]
     class INvDrvServices : IpcService
     {
-        private static readonly List<string> _deviceFileDebugRegistry = new List<string>()
+        private static readonly List<string> _deviceFileDebugRegistry = new()
         {
             "/dev/nvhost-dbg-gpu",
             "/dev/nvhost-prof-gpu"
         };
 
-        private static readonly Dictionary<string, Type> _deviceFileRegistry = new Dictionary<string, Type>()
+        private static readonly Dictionary<string, Type> _deviceFileRegistry = new()
         {
             { "/dev/nvmap",           typeof(NvMapDeviceFile)         },
             { "/dev/nvhost-ctrl",     typeof(NvHostCtrlDeviceFile)    },
@@ -47,7 +47,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
             { "/dev/nvhost-prof-gpu", typeof(NvHostProfGpuDeviceFile) },
         };
 
-        public static IdDictionary DeviceFileIdRegistry = new IdDictionary();
+        public static IdDictionary DeviceFileIdRegistry = new();
 
         private IVirtualMemoryManager _clientMemory;
         private ulong _owner;
@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         private bool _transferMemInitialized = false;
 
         // TODO: This should call set:sys::GetDebugModeFlag
-        private bool _debugModeEnabled = false;
+        private readonly bool _debugModeEnabled = false;
 
         public INvDrvServices(ServiceCtx context) : base(context.Device.System.NvDrvServer)
         {
@@ -418,7 +418,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
             if (_transferMemInitialized)
             {
                 // TODO: Populate values when more RE will be done.
-                NvStatus nvStatus = new NvStatus
+                NvStatus nvStatus = new()
                 {
                     MemoryValue1 = 0, // GetMemStats(transfer_memory + 0x60, 3)
                     MemoryValue2 = 0, // GetMemStats(transfer_memory + 0x60, 5)
@@ -492,7 +492,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
                 context.Memory.Read(inlineInBufferPosition, temp);
 
-                Span<byte> inlineInBuffer = new Span<byte>(temp);
+                Span<byte> inlineInBuffer = new(temp);
 
                 if (errorCode == NvResult.Success)
                 {
@@ -541,7 +541,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
                 context.Memory.Read(inlineOutBufferPosition, temp);
 
-                Span<byte> inlineOutBuffer = new Span<byte>(temp);
+                Span<byte> inlineOutBuffer = new(temp);
 
                 if (errorCode == NvResult.Success)
                 {

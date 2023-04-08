@@ -408,7 +408,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                 {
                     namePosition++;
 
-                    stdName = name.Slice(namePosition);
+                    stdName = name[namePosition..];
 
                     int stdNamePosition = namePosition;
 
@@ -445,7 +445,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             int destLen   = 0;
             int dstOffset = 0;
 
-            ReadOnlySpan<byte> destName = name.Slice(namePosition);
+            ReadOnlySpan<byte> destName = name[namePosition..];
 
             if (TzCharsArraySize < charCount)
             {
@@ -456,7 +456,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             {
                 if (name[namePosition] == '<')
                 {
-                    destName = name.Slice(++namePosition);
+                    destName = name[++namePosition..];
                     int destNamePosition = namePosition;
 
                     namePosition = GetQZName(name.ToArray(), namePosition, '>');
@@ -471,7 +471,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                 }
                 else
                 {
-                    destName     = name.Slice(namePosition);
+                    destName     = name[namePosition..];
                     namePosition = GetTZName(name, namePosition);
                     destLen      = namePosition;
                 }
@@ -580,10 +580,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                         bool isReversed = endTime < startTime;
                         if (isReversed)
                         {
-                            int swap = startTime;
-
-                            startTime = endTime;
-                            endTime   = swap;
+                            (endTime, startTime) = (startTime, endTime);
                         }
 
                         if (isReversed || (startTime < endTime && (endTime - startTime < (yearSeconds + (stdOffset - dstOffset)))))
@@ -887,7 +884,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         {
             outRules = new TimeZoneRule();
 
-            BinaryReader reader = new BinaryReader(inputData);
+            BinaryReader reader = new(inputData);
 
             long streamLength = reader.BaseStream.Length;
 
@@ -1077,7 +1074,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                     byte[] name = new byte[TzNameMax];
                     Array.Copy(tempName, 1, name, 0, nRead - 1);
 
-                    Box<TimeZoneRule> tempRulesBox = new Box<TimeZoneRule>();
+                    Box<TimeZoneRule> tempRulesBox = new();
                     ref TimeZoneRule tempRules = ref tempRulesBox.Data;
 
                     if (ParsePosixName(name, ref tempRulesBox.Data, false))
@@ -1686,7 +1683,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
         internal static ResultCode ToPosixTime(in TimeZoneRule rules, CalendarTime calendarTime, out long posixTime)
         {
-            CalendarTimeInternal calendarTimeInternal = new CalendarTimeInternal()
+            CalendarTimeInternal calendarTimeInternal = new()
             {
                 Year   = calendarTime.Year,
                 // NOTE: Nintendo's month range is 1-12, internal range is 0-11.

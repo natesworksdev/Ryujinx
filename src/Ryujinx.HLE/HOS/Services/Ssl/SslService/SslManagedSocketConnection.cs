@@ -15,8 +15,8 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
         public ISocket Socket { get; }
 
-        private BsdContext _bsdContext;
-        private SslVersion _sslVersion;
+        private readonly BsdContext _bsdContext;
+        private readonly SslVersion _sslVersion;
         private SslStream _stream;
         private bool _isBlockingSocket;
         private int _previousReadTimeout;

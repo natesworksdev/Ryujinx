@@ -2,7 +2,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 {
     class IDaemonSuspendSessionService : IpcService
     {
-        private FriendServicePermissionLevel PermissionLevel;
+        private readonly FriendServicePermissionLevel PermissionLevel;
 
         public IDaemonSuspendSessionService(FriendServicePermissionLevel permissionLevel)
         {

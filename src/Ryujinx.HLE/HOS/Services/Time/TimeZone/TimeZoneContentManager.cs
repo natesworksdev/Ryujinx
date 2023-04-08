@@ -90,27 +90,25 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         {
             if (HasTimeZoneBinaryTitle())
             {
-                using (IStorage ncaFileStream = new LocalStorage(_virtualFileSystem.SwitchPathToSystemPath(GetTimeZoneBinaryTitleContentPath()), FileAccess.Read, FileMode.Open))
+                using IStorage ncaFileStream = new LocalStorage(_virtualFileSystem.SwitchPathToSystemPath(GetTimeZoneBinaryTitleContentPath()), FileAccess.Read, FileMode.Open);
+                Nca         nca              = new(_virtualFileSystem.KeySet, ncaFileStream);
+                IFileSystem romfs            = nca.OpenFileSystem(NcaSectionType.Data, _fsIntegrityCheckLevel);
+
+                using var binaryListFile = new UniqueRef<IFile>();
+
+                romfs.OpenFile(ref binaryListFile.Ref, "/binaryList.txt".ToU8Span(), OpenMode.Read).ThrowIfFailure();
+
+                StreamReader reader = new(binaryListFile.Get.AsStream());
+
+                List<string> locationNameList = new();
+
+                string locationName;
+                while ((locationName = reader.ReadLine()) != null)
                 {
-                    Nca         nca              = new Nca(_virtualFileSystem.KeySet, ncaFileStream);
-                    IFileSystem romfs            = nca.OpenFileSystem(NcaSectionType.Data, _fsIntegrityCheckLevel);
-
-                    using var binaryListFile = new UniqueRef<IFile>();
-
-                    romfs.OpenFile(ref binaryListFile.Ref, "/binaryList.txt".ToU8Span(), OpenMode.Read).ThrowIfFailure();
-
-                    StreamReader reader = new StreamReader(binaryListFile.Get.AsStream());
-
-                    List<string> locationNameList = new List<string>();
-
-                    string locationName;
-                    while ((locationName = reader.ReadLine()) != null)
-                    {
-                        locationNameList.Add(locationName);
-                    }
-
-                    LocationNameCache = locationNameList.ToArray();
+                    locationNameList.Add(locationName);
                 }
+
+                LocationNameCache = locationNameList.ToArray();
             }
             else
             {
@@ -129,7 +127,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                 return new[] { (0, "UTC", "UTC") };
             }
 
-            List<(int Offset, string Location, string Abbr)> outList = new List<(int Offset, string Location, string Abbr)>();
+            List<(int Offset, string Location, string Abbr)> outList = new();
             var now = DateTimeOffset.Now.ToUnixTimeSeconds();
             using (IStorage ncaStorage = new LocalStorage(_virtualFileSystem.SwitchPathToSystemPath(tzBinaryContentPath), FileAccess.Read, FileMode.Open))
             using (IFileSystem romfs = new Nca(_virtualFileSystem.KeySet, ncaStorage).OpenFileSystem(NcaSectionType.Data, _fsIntegrityCheckLevel))
@@ -149,7 +147,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                         continue;
                     }
 
-                    TimeZoneRuleBox tzRuleBox = new TimeZoneRuleBox();
+                    TimeZoneRuleBox tzRuleBox = new();
                     ref TimeZoneRule tzRule = ref tzRuleBox.Data;
 
                     TimeZone.ParseTimeZoneBinary(ref tzRule, tzif.Get.AsStream());
@@ -219,7 +217,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
         public ResultCode LoadLocationNameList(uint index, out string[] outLocationNameArray, uint maxLength)
         {
-            List<string> locationNameList = new List<string>();
+            List<string> locationNameList = new();
 
             for (int i = 0; i < LocationNameCache.Length && i < maxLength; i++)
             {
@@ -268,7 +266,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
             ncaFile = new LocalStorage(_virtualFileSystem.SwitchPathToSystemPath(GetTimeZoneBinaryTitleContentPath()), FileAccess.Read, FileMode.Open);
 
-            Nca         nca   = new Nca(_virtualFileSystem.KeySet, ncaFile);
+            Nca         nca   = new(_virtualFileSystem.KeySet, ncaFile);
             IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, _fsIntegrityCheckLevel);
 
             using var timeZoneBinaryFile = new UniqueRef<IFile>();

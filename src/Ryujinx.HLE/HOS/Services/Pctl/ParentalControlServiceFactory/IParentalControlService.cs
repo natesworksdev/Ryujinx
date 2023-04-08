@@ -8,18 +8,18 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 {
     class IParentalControlService : IpcService
     {
-        private ulong                    _pid;
-        private int                      _permissionFlag;
+        private readonly ulong                    _pid;
+        private readonly int                      _permissionFlag;
         private ulong                    _titleId;
         private ParentalControlFlagValue _parentalControlFlag;
         private int[]                    _ratingAge;
 
 #pragma warning disable CS0414
         // TODO: Find where they are set.
-        private bool _restrictionEnabled                  = false;
-        private bool _featuresRestriction                 = false;
+        private readonly bool _restrictionEnabled                  = false;
+        private readonly bool _featuresRestriction                 = false;
         private bool _freeCommunicationEnabled            = false;
-        private bool _stereoVisionRestrictionConfigurable = true;
+        private readonly bool _stereoVisionRestrictionConfigurable = true;
         private bool _stereoVisionRestriction             = false;
 #pragma warning restore CS0414
 

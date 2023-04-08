@@ -24,7 +24,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             get
             {
-                AndroidFence fence = new AndroidFence
+                AndroidFence fence = new()
                 {
                     FenceCount = 0
                 };

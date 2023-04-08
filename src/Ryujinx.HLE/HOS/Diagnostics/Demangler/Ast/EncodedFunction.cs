@@ -4,12 +4,12 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
     public class EncodedFunction : BaseNode
     {
-        private BaseNode _name;
-        private BaseNode _params;
-        private BaseNode _cv;
-        private BaseNode _ref;
-        private BaseNode _attrs;
-        private BaseNode _ret;
+        private readonly BaseNode _name;
+        private readonly BaseNode _params;
+        private readonly BaseNode _cv;
+        private readonly BaseNode _ref;
+        private readonly BaseNode _attrs;
+        private readonly BaseNode _ret;
 
         public EncodedFunction(BaseNode name, BaseNode Params, BaseNode cv, BaseNode Ref, BaseNode attrs, BaseNode ret) : base(NodeType.NameType)
         {
@@ -46,32 +46,17 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         {
             writer.Write("(");
 
-            if (_params != null)
-            {
-                _params.Print(writer);
-            }
+            _params?.Print(writer);
 
             writer.Write(")");
 
-            if (_ret != null)
-            {
-                _ret.PrintRight(writer);
-            }
+            _ret?.PrintRight(writer);
 
-            if (_cv != null)
-            {
-                _cv.Print(writer);
-            }
+            _cv?.Print(writer);
 
-            if (_ref != null)
-            {
-                _ref.Print(writer);
-            }
+            _ref?.Print(writer);
 
-            if (_attrs != null)
-            {
-                _attrs.Print(writer);
-            }
+            _attrs?.Print(writer);
         }
     }
 }

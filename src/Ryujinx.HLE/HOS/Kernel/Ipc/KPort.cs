@@ -8,9 +8,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
         public KServerPort ServerPort { get; }
         public KClientPort ClientPort { get; }
 
-        private string _name;
+        private readonly string _name;
 
-        private ChannelState _state;
+        private readonly ChannelState _state;
 
         public bool IsLight { get; private set; }
 

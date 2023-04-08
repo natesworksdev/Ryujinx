@@ -13,9 +13,9 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
     {
         private readonly ServiceCtx _context;
 
-        private Apm.ManagerServer       _apmManagerServer;
-        private Apm.SystemManagerServer _apmSystemManagerServer;
-        private Lbl.LblControllerServer _lblControllerServer;
+        private readonly Apm.ManagerServer       _apmManagerServer;
+        private readonly Apm.SystemManagerServer _apmSystemManagerServer;
+        private readonly Lbl.LblControllerServer _lblControllerServer;
 
         private bool _vrModeEnabled;
 #pragma warning disable CS0414

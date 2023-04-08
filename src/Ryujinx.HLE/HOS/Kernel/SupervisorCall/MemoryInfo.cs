@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         public int IpcRefCount;
         public int DeviceRefCount;
 #pragma warning disable CS0414
-        private int _padding;
+        private readonly int _padding;
 #pragma warning restore CS0414
 
         public MemoryInfo(

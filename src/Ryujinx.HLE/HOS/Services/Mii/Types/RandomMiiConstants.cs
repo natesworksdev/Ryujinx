@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         {
             private const int ValuesArraySize = 0xbc;
 
-            private int _firstValueByte;
+            private readonly int _firstValueByte;
 
             public ReadOnlySpan<int> Values => SpanHelpers.AsSpan<RandomMiiValues, int>(ref this);
         }
@@ -47,31 +47,31 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             
             private RandomMiiValues _values;
 
-            public ReadOnlySpan<int> Values => _values.Values.Slice(0, ValuesCount);
+            public ReadOnlySpan<int> Values => _values.Values[..ValuesCount];
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 0xC8)]
         public struct RandomMiiData3
         {
-            private int _argument1;
-            private int _argument2;
+            private readonly int _argument1;
+            private readonly int _argument2;
 
             public int ValuesCount;
             
             private RandomMiiValues _values;
 
-            public ReadOnlySpan<int> Values => _values.Values.Slice(0, ValuesCount);
+            public ReadOnlySpan<int> Values => _values.Values[..ValuesCount];
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 0xC4)]
         public struct RandomMiiData2
         {
-            private int _argument;
+            private readonly int _argument;
             public int ValuesCount;
 
             private RandomMiiValues _values;
 
-            public ReadOnlySpan<int> Values => _values.Values.Slice(0, ValuesCount);
+            public ReadOnlySpan<int> Values => _values.Values[..ValuesCount];
         }
 
         public static ReadOnlySpan<RandomMiiData4> RandomMiiFacelineArray => MemoryMarshal.Cast<byte, RandomMiiData4>(RandomMiiFacelineRawArray);

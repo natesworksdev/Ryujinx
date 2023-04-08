@@ -67,7 +67,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         private MemoryRegion _memRegion;
 
         private bool _allocateFromBack;
-        private bool _isKernel;
+        private readonly bool _isKernel;
 
         private bool _aslrEnabled;
 
@@ -77,8 +77,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
         private MersenneTwister _randomNumberGenerator;
 
-        private MemoryFillValue _heapFillValue;
-        private MemoryFillValue _ipcFillValue;
+        private readonly MemoryFillValue _heapFillValue;
+        private readonly MemoryFillValue _ipcFillValue;
 
         private ulong _reservedAddressSpaceSize;
 
@@ -157,10 +157,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         {
             ulong endAddr = address + size;
 
-            Region aliasRegion = new Region();
-            Region heapRegion = new Region();
-            Region stackRegion = new Region();
-            Region tlsIoRegion = new Region();
+            Region aliasRegion = new();
+            Region heapRegion = new();
+            Region stackRegion = new();
+            Region tlsIoRegion = new();
 
             ulong codeRegionSize;
             ulong stackAndTlsIoStart;
@@ -374,10 +374,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
         private long GetRandomValue(long min, long max)
         {
-            if (_randomNumberGenerator == null)
-            {
-                _randomNumberGenerator = new MersenneTwister(0);
-            }
+            _randomNumberGenerator ??= new MersenneTwister(0);
 
             return _randomNumberGenerator.GenRandomNumber(min, max);
         }
@@ -442,7 +439,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             lock (_blockManager)
             {
-                KPageList currentPageList = new KPageList();
+                KPageList currentPageList = new();
 
                 GetPhysicalRegions(address, size, currentPageList);
 
@@ -1174,8 +1171,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         return KernelResult.InvalidMemState;
                     }
 
-                    KPageList srcPageList = new KPageList();
-                    KPageList dstPageList = new KPageList();
+                    KPageList srcPageList = new();
+                    KPageList dstPageList = new();
 
                     srcPageTable.GetPhysicalRegions(src, size, srcPageList);
                     GetPhysicalRegions(dst, size, dstPageList);
@@ -1937,7 +1934,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 if (srcPageTable.Supports4KBPages)
                 {
-                    KPageList pageList = new KPageList();
+                    KPageList pageList = new();
                     srcPageTable.GetPhysicalRegions(addressRounded, alignedSize, pageList);
 
                     result = MapPages(currentVa, pageList, permission, MemoryMapFlags.None);
@@ -2392,7 +2389,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                     if (pageList != null)
                     {
-                        KPageList currentPageList = new KPageList();
+                        KPageList currentPageList = new();
 
                         GetPhysicalRegions(address, pagesCount * PageSize, currentPageList);
 

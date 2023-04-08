@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 
         public static void InitializeResourceLimit(KResourceLimit resourceLimit, MemorySize size)
         {
-            void EnsureSuccess(Result result)
+            static void EnsureSuccess(Result result)
             {
                 if (result != Result.Success)
                 {

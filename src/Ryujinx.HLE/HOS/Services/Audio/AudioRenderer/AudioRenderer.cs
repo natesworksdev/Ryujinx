@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 {
     class AudioRenderer : IAudioRenderer
     {
-        private AudioRenderSystem _impl;
+        private readonly AudioRenderSystem _impl;
 
         public AudioRenderer(AudioRenderSystem impl)
         {

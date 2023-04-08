@@ -89,11 +89,11 @@ namespace Ryujinx.HLE.FileSystem
         {
             if (fileName.StartsWith("//"))
             {
-                fileName = fileName.Substring(2);
+                fileName = fileName[2..];
             }
             else if (fileName.StartsWith('/'))
             {
-                fileName = fileName.Substring(1);
+                fileName = fileName[1..];
             }
             else
             {
@@ -185,7 +185,7 @@ namespace Ryujinx.HLE.FileSystem
 
         public void InitializeFsServer(LibHac.Horizon horizon, out HorizonClient fsServerClient)
         {
-            LocalFileSystem serverBaseFs = new LocalFileSystem(AppDataManager.BaseDirPath);
+            LocalFileSystem serverBaseFs = new(AppDataManager.BaseDirPath);
 
             fsServerClient = horizon.CreatePrivilegedHorizonClient();
             var fsServer = new FileSystemServer(fsServerClient);
@@ -391,7 +391,7 @@ namespace Ryujinx.HLE.FileSystem
 
             var mountName = "system".ToU8Span();
             DirectoryHandle handle = default;
-            List<ulong> localList = new List<ulong>();
+            List<ulong> localList = new();
 
             try
             {
@@ -401,7 +401,7 @@ namespace Ryujinx.HLE.FileSystem
                 rc = hos.Fs.OpenDirectory(out handle, "system:/save".ToU8Span(), OpenDirectoryMode.All);
                 if (rc.IsFailure()) return rc;
 
-                DirectoryEntry entry = new DirectoryEntry();
+                DirectoryEntry entry = new();
 
                 while (true)
                 {

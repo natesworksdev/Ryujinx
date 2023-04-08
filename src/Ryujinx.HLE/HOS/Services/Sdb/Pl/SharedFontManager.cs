@@ -73,7 +73,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
 
                             using (IStorage ncaFileStream = new LocalStorage(fontPath, FileAccess.Read, FileMode.Open))
                             {
-                                Nca         nca   = new Nca(_device.System.KeySet, ncaFileStream);
+                                Nca         nca   = new(_device.System.KeySet, ncaFileStream);
                                 IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, _device.System.FsIntegrityCheckLevel);
 
                                 using var fontFile = new UniqueRef<IFile>();
@@ -83,7 +83,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
                                 data = DecryptFont(fontFile.Get.AsStream());
                             }
 
-                            FontInfo info = new FontInfo((int)fontOffset, data.Length);
+                            FontInfo info = new((int)fontOffset, data.Length);
 
                             WriteMagicAndSize(fontOffset, data.Length);
 
@@ -160,24 +160,22 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
         {
             static uint KXor(uint data) => data ^ FontKey;
 
-            using (BinaryReader reader    = new BinaryReader(bfttfStream))
-            using (MemoryStream ttfStream = MemoryStreamManager.Shared.GetStream())
-            using (BinaryWriter output    = new BinaryWriter(ttfStream))
+            using BinaryReader reader    = new(bfttfStream);
+            using MemoryStream ttfStream = MemoryStreamManager.Shared.GetStream();
+            using BinaryWriter output    = new(ttfStream);
+            if (KXor(reader.ReadUInt32()) != BFTTFMagic)
             {
-                if (KXor(reader.ReadUInt32()) != BFTTFMagic)
-                {
-                    throw new InvalidDataException("Error: Input file is not in BFTTF format!");
-                }
-
-                bfttfStream.Position += 4;
-
-                for (int i = 0; i < (bfttfStream.Length - 8) / 4; i++)
-                {
-                    output.Write(KXor(reader.ReadUInt32()));
-                }
-
-                return ttfStream.ToArray();
+                throw new InvalidDataException("Error: Input file is not in BFTTF format!");
             }
+
+            bfttfStream.Position += 4;
+
+            for (int i = 0; i < (bfttfStream.Length - 8) / 4; i++)
+            {
+                output.Write(KXor(reader.ReadUInt32()));
+            }
+
+            return ttfStream.ToArray();
         }
     }
 }

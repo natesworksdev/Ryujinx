@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
         {
             stream.Seek(offset, SeekOrigin.Begin);
 
-            BinaryReader reader = new BinaryReader(stream);
+            BinaryReader reader = new(stream);
 
             if (reader.ReadInt32() != Aci0Magic)
             {
@@ -40,7 +40,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
             int kernelAccessControlOffset  = reader.ReadInt32();
             int kernelAccessControlSize    = reader.ReadInt32();
 
-            FsAccessHeader fsAccessHeader = new FsAccessHeader(stream, offset + fsAccessHeaderOffset, fsAccessHeaderSize);
+            FsAccessHeader fsAccessHeader = new(stream, offset + fsAccessHeaderOffset, fsAccessHeaderSize);
 
             FsVersion            = fsAccessHeader.Version;
             FsPermissionsBitmask = fsAccessHeader.PermissionsBitmask;

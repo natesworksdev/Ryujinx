@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Applets
 {
     internal class ControllerApplet : IApplet
     {
-        private Horizon _system;
+        private readonly Horizon _system;
 
         private AppletSession _normalSession;
 
@@ -86,7 +86,7 @@ namespace Ryujinx.HLE.HOS.Applets
             PlayerIndex primaryIndex = PlayerIndex.Unknown;
             while (!_system.Device.Hid.Npads.Validate(playerMin, playerMax, (ControllerType)privateArg.NpadStyleSet, out configuredCount, out primaryIndex))
             {
-                ControllerAppletUiArgs uiArgs = new ControllerAppletUiArgs
+                ControllerAppletUiArgs uiArgs = new()
                 {
                     PlayerCountMin = playerMin,
                     PlayerCountMax = playerMax,
@@ -101,7 +101,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 }
             }
 
-            ControllerSupportResultInfo result = new ControllerSupportResultInfo
+            ControllerSupportResultInfo result = new()
             {
                 PlayerCount = (sbyte)configuredCount,
                 SelectedId = (uint)GetNpadIdTypeFromIndex(primaryIndex)
@@ -124,24 +124,20 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private byte[] BuildResponse(ControllerSupportResultInfo result)
         {
-            using (MemoryStream stream = MemoryStreamManager.Shared.GetStream())
-            using (BinaryWriter writer = new BinaryWriter(stream))
-            {
-                writer.Write(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref result, Unsafe.SizeOf<ControllerSupportResultInfo>())));
+            using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+            using BinaryWriter writer = new(stream);
+            writer.Write(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref result, Unsafe.SizeOf<ControllerSupportResultInfo>())));
 
-                return stream.ToArray();
-            }
+            return stream.ToArray();
         }
 
         private byte[] BuildResponse()
         {
-            using (MemoryStream stream = MemoryStreamManager.Shared.GetStream())
-            using (BinaryWriter writer = new BinaryWriter(stream))
-            {
-                writer.Write((ulong)ResultCode.Success);
+            using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+            using BinaryWriter writer = new(stream);
+            writer.Write((ulong)ResultCode.Success);
 
-                return stream.ToArray();
-            }
+            return stream.ToArray();
         }
     }
 }

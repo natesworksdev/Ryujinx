@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
     {
         private const int AudioOutNameSize = 0x100;
 
-        private IAudioOutManager _impl;
+        private readonly IAudioOutManager _impl;
 
         public AudioOutManagerServer(ServiceCtx context) : this(context, new AudioOutManager(context.Device.System.AudioOutputManager)) { }
 

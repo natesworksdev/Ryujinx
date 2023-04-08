@@ -2,7 +2,7 @@
 {
     class NetworkSystemClockContextWriter : SystemClockContextUpdateCallback
     {
-        private TimeSharedMemory _sharedMemory;
+        private readonly TimeSharedMemory _sharedMemory;
 
         public NetworkSystemClockContextWriter(TimeSharedMemory sharedMemory)
         {

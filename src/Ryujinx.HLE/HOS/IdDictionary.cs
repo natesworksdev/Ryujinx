@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS
 {
     class IdDictionary
     {
-        private ConcurrentDictionary<int, object> _objs;
+        private readonly ConcurrentDictionary<int, object> _objs;
 
         public ICollection<object> Values => _objs.Values;
 
@@ -50,7 +50,7 @@ namespace Ryujinx.HLE.HOS
                 return (T)data;
             }
 
-            return default(T);
+            return default;
         }
 
         public object Delete(int id)

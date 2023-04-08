@@ -81,17 +81,17 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         private ReadOnlySpan<byte> AsSpanWithoutDeviceCrc()
         {
-            return AsSpan().Slice(0, Size - 2);
+            return AsSpan()[..(Size - 2)];
         }
 
         public static StoreData BuildDefault(UtilityImpl utilImpl, uint index)
         {
-            StoreData result = new StoreData
+            StoreData result = new()
             {
                 _createId = utilImpl.MakeCreateId()
             };
 
-            CoreData coreData = new CoreData();
+            CoreData coreData = new();
 
             DefaultMii template = DefaultMii.GetDefaultMii(index);
 
@@ -162,7 +162,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         public static StoreData BuildFromCoreData(UtilityImpl utilImpl, CoreData coreData)
         {
-            StoreData result = new StoreData
+            StoreData result = new()
             {
                 CoreData  = coreData,
                 _createId = utilImpl.MakeCreateId()
@@ -217,7 +217,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         public override int GetHashCode()
         {
-            HashCode hashCode = new HashCode();
+            HashCode hashCode = new();
 
             hashCode.Add(CreateId);
             hashCode.Add(CoreData);

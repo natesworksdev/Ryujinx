@@ -7,8 +7,8 @@ namespace Ryujinx.HLE.HOS.Services.Mm
     [Service("mm:u")]
     class IRequest : IpcService
     {
-        private static object                  _sessionListLock = new object();
-        private static List<MultiMediaSession> _sessionList     = new List<MultiMediaSession>();
+        private static readonly object                  _sessionListLock = new();
+        private static readonly List<MultiMediaSession> _sessionList     = new();
 
         private static uint _uniqueId = 1;
 
@@ -185,7 +185,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
             lock (_sessionListLock)
             {
                 // Nintendo ignore the fgm id as the other interfaces were deprecated.
-                MultiMediaSession session = new MultiMediaSession(_uniqueId++, type, isAutoClearEvent);
+                MultiMediaSession session = new(_uniqueId++, type, isAutoClearEvent);
 
                 _sessionList.Add(session);
 

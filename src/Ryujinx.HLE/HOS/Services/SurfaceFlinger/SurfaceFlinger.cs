@@ -17,22 +17,22 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
     {
         private const int TargetFps = 60;
 
-        private Switch _device;
+        private readonly Switch _device;
 
-        private Dictionary<long, Layer> _layers;
+        private readonly Dictionary<long, Layer> _layers;
 
         private bool _isRunning;
 
-        private Thread _composerThread;
+        private readonly Thread _composerThread;
 
-        private Stopwatch _chrono;
+        private readonly Stopwatch _chrono;
 
-        private ManualResetEvent _event = new ManualResetEvent(false);
-        private AutoResetEvent _nextFrameEvent = new AutoResetEvent(true);
+        private readonly ManualResetEvent _event = new(false);
+        private readonly AutoResetEvent _nextFrameEvent = new(true);
         private long _ticks;
         private long _ticksPerFrame;
-        private long _spinTicks;
-        private long _1msTicks;
+        private readonly long _spinTicks;
+        private readonly long _1msTicks;
 
         private int _swapInterval;
         private int _swapIntervalDelay;
@@ -436,7 +436,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             AspectRatio aspectRatio = _device.Configuration.AspectRatio;
             bool        isStretched = aspectRatio == AspectRatio.Stretched;
 
-            ImageCrop crop = new ImageCrop(
+            ImageCrop crop = new(
                 cropRect.Left,
                 cropRect.Right,
                 cropRect.Top,
@@ -447,7 +447,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 aspectRatio.ToFloatX(),
                 aspectRatio.ToFloatY());
 
-            TextureCallbackInformation textureCallbackInformation = new TextureCallbackInformation
+            TextureCallbackInformation textureCallbackInformation = new()
             {
                 Layer = layer,
                 Item  = item

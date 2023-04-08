@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
         {
             stream.Seek(offset, SeekOrigin.Begin);
 
-            BinaryReader reader = new BinaryReader(stream);
+            BinaryReader reader = new(stream);
 
             Rsa2048Signature = reader.ReadBytes(0x100);
             Rsa2048Modulus   = reader.ReadBytes(0x100);

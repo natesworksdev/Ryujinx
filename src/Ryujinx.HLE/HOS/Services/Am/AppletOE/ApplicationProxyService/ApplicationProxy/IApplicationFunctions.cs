@@ -28,10 +28,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         private long _defaultSaveDataSize        = 200000000;
         private long _defaultJournalSaveDataSize = 200000000;
 
-        private KEvent _gpuErrorDetectedSystemEvent;
-        private KEvent _friendInvitationStorageChannelEvent;
-        private KEvent _notificationStorageChannelEvent;
-        private KEvent _healthWarningDisappearedSystemEvent;
+        private readonly KEvent _gpuErrorDetectedSystemEvent;
+        private readonly KEvent _friendInvitationStorageChannelEvent;
+        private readonly KEvent _notificationStorageChannelEvent;
+        private readonly KEvent _healthWarningDisappearedSystemEvent;
 
         private int _gpuErrorDetectedSystemEventHandle;
         private int _friendInvitationStorageChannelEventHandle;
@@ -42,7 +42,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         private int _jitLoaded;
 
-        private LibHac.HorizonClient _horizon;
+        private readonly LibHac.HorizonClient _horizon;
 
         public IApplicationFunctions(Horizon system)
         {
@@ -115,7 +115,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             Uid userId = context.RequestData.ReadStruct<AccountUid>().ToLibHacUid();
 
             // Mask out the low nibble of the program ID to get the application ID
-            ApplicationId applicationId = new ApplicationId(context.Device.Processes.ActiveApplication.ProgramId & ~0xFul);
+            ApplicationId applicationId = new(context.Device.Processes.ActiveApplication.ProgramId & ~0xFul);
 
             ApplicationControlProperty nacp = context.Device.Processes.ActiveApplication.ApplicationControlProperties;
 
@@ -168,7 +168,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // SetTerminateResult(u32)
         public ResultCode SetTerminateResult(ServiceCtx context)
         {
-            LibHac.Result result = new LibHac.Result(context.RequestData.ReadUInt32());
+            LibHac.Result result = new(context.RequestData.ReadUInt32());
 
             Logger.Info?.Print(LogClass.ServiceAm, $"Result = 0x{result.Value:x8} ({result.ToStringWithName()}).");
 
@@ -235,7 +235,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             long journalSize = context.RequestData.ReadInt64();
 
             // Mask out the low nibble of the program ID to get the application ID
-            ApplicationId applicationId = new ApplicationId(context.Device.Processes.ActiveApplication.ProgramId & ~0xFul);
+            ApplicationId applicationId = new(context.Device.Processes.ActiveApplication.ProgramId & ~0xFul);
 
             ApplicationControlProperty nacp = context.Device.Processes.ActiveApplication.ApplicationControlProperties;
 

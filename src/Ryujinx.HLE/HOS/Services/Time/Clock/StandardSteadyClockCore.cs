@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
         public override SteadyClockTimePoint GetTimePoint(ITickSource tickSource)
         {
-            SteadyClockTimePoint result = new SteadyClockTimePoint
+            SteadyClockTimePoint result = new()
             {
                 TimePoint     = GetCurrentRawTimePoint(tickSource).ToSeconds(),
                 ClockSourceId = GetClockSourceId()
@@ -52,7 +52,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         {
             TimeSpanType ticksTimeSpan = TimeSpanType.FromTicks(tickSource.Counter, tickSource.Frequency);
 
-            TimeSpanType rawTimePoint = new TimeSpanType(_setupValue.NanoSeconds + ticksTimeSpan.NanoSeconds);
+            TimeSpanType rawTimePoint = new(_setupValue.NanoSeconds + ticksTimeSpan.NanoSeconds);
 
             if (rawTimePoint.NanoSeconds < _cachedRawTimePoint.NanoSeconds)
             {

@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl
     [Service("pctl:s", 0x838E)]
     class IParentalControlServiceFactory : IpcService
     {
-        private int _permissionFlag;
+        private readonly int _permissionFlag;
 
         public IParentalControlServiceFactory(ServiceCtx context, int permissionFlag)
         {

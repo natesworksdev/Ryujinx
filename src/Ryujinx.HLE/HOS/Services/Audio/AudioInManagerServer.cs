@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
     {
         private const int AudioInNameSize = 0x100;
 
-        private IAudioInManager _impl;
+        private readonly IAudioInManager _impl;
 
         public AudioInManagerServer(ServiceCtx context) : this(context, new AudioInManager(context.Device.System.AudioInputManager)) { }
 

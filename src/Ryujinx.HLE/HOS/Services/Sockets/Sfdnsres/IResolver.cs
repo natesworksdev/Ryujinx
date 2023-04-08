@@ -413,7 +413,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             {
                 try
                 {
-                    IPAddress address = new IPAddress(rawIp);
+                    IPAddress address = new(rawIp);
 
                     hostEntry = Dns.GetHostEntry(address);
                 }
@@ -605,33 +605,31 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
             byte[] hostName = Encoding.ASCII.GetBytes(hostEntry.HostName + '\0');
 
-            using (WritableRegion region = context.Memory.GetWritableRegion(responseBufferPosition, (int)responseBufferSize))
+            using WritableRegion region = context.Memory.GetWritableRegion(responseBufferPosition, (int)responseBufferSize);
+            Span<byte> data = region.Memory.Span;
+
+            for (int i = 0; i < hostEntry.AddressList.Length; i++)
             {
-                Span<byte> data = region.Memory.Span;
+                IPAddress ip = hostEntry.AddressList[i];
 
-                for (int i = 0; i < hostEntry.AddressList.Length; i++)
+                if (ip.AddressFamily != AddressFamily.InterNetwork)
                 {
-                    IPAddress ip = hostEntry.AddressList[i];
-
-                    if (ip.AddressFamily != AddressFamily.InterNetwork)
-                    {
-                        continue;
-                    }
-
-                    // NOTE: 0 = Any
-                    AddrInfoSerializedHeader header = new(ip, 0);
-                    AddrInfo4                addr   = new(ip, (short)port);
-                    AddrInfoSerialized       info   = new(header, addr, null, hostEntry.HostName);
-
-                    data = info.Write(data);
+                    continue;
                 }
 
-                uint sentinel = 0;
-                MemoryMarshal.Write(data, ref sentinel);
-                data = data[sizeof(uint)..];
+                // NOTE: 0 = Any
+                AddrInfoSerializedHeader header = new(ip, 0);
+                AddrInfo4                addr   = new(ip, (short)port);
+                AddrInfoSerialized       info   = new(header, addr, null, hostEntry.HostName);
 
-                return region.Memory.Span.Length - data.Length;
+                data = info.Write(data);
             }
+
+            uint sentinel = 0;
+            MemoryMarshal.Write(data, ref sentinel);
+            data = data[sizeof(uint)..];
+
+            return region.Memory.Span.Length - data.Length;
         }
 
         private static void WriteResponse(

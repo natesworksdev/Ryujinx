@@ -6,11 +6,11 @@ namespace Ryujinx.HLE.HOS.Services.Pcv.Clkrst.ClkrstManager
 {
     class IClkrstSession : IpcService
     {
-        private DeviceCode _deviceCode;
-        private uint       _unknown;
+        private readonly DeviceCode _deviceCode;
+        private readonly uint       _unknown;
         private uint       _clockRate;
 
-        private DeviceCode[] allowedDeviceCodeTable = new DeviceCode[]
+        private readonly DeviceCode[] allowedDeviceCodeTable = new DeviceCode[]
         {
             DeviceCode.Cpu,    DeviceCode.Gpu,      DeviceCode.Disp1,    DeviceCode.Disp2,
             DeviceCode.Tsec,   DeviceCode.Mselect,  DeviceCode.Sor1,     DeviceCode.Host1x,

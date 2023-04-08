@@ -91,7 +91,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             KHandleTable handleTable = KernelStatic.GetCurrentProcess().HandleTable;
 
-            KProcess process = new KProcess(_context);
+            KProcess process = new(_context);
 
             using var _ = new OnScopeExit(process.DecrementReferenceCount);
 
@@ -351,7 +351,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             }
             else
             {
-                KEvent doneEvent = new KEvent(_context);
+                KEvent doneEvent = new(_context);
 
                 result = currentProcess.HandleTable.GenerateHandle(doneEvent.ReadableEvent, out doneEventHandle);
 
@@ -408,7 +408,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             if (isLight)
             {
-                KLightSession session = new KLightSession(_context);
+                KLightSession session = new(_context);
 
                 result = currentProcess.HandleTable.GenerateHandle(session.ServerSession, out serverSessionHandle);
 
@@ -429,7 +429,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             }
             else
             {
-                KSession session = new KSession(_context);
+                KSession session = new(_context);
 
                 result = currentProcess.HandleTable.GenerateHandle(session.ServerSession, out serverSessionHandle);
 
@@ -745,7 +745,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.MaximumExceeded;
             }
 
-            KPort port = new KPort(_context, maxSessions, isLight, name);
+            KPort port = new(_context, maxSessions, isLight, name);
 
             KProcess currentProcess = KernelStatic.GetCurrentProcess();
 
@@ -798,7 +798,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KAutoObject.RemoveName(_context, name);
             }
 
-            KPort port = new KPort(_context, maxSessions, false, null);
+            KPort port = new(_context, maxSessions, false, null);
 
             KProcess currentProcess = KernelStatic.GetCurrentProcess();
 
@@ -1205,7 +1205,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidMemState;
             }
 
-            KTransferMemory transferMemory = new KTransferMemory(_context);
+            KTransferMemory transferMemory = new(_context);
 
             Result result = transferMemory.Initialize(address, size, permission);
 
@@ -1403,7 +1403,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidMemState;
             }
 
-            KCodeMemory codeMemory = new KCodeMemory(_context);
+            KCodeMemory codeMemory = new(_context);
 
             using var _ = new OnScopeExit(codeMemory.DecrementReferenceCount);
 
@@ -1580,7 +1580,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidMemRange;
             }
 
-            KPageList pageList = new KPageList();
+            KPageList pageList = new();
 
             Result result = srcProcess.MemoryManager.GetPagesIfStateEquals(
                 src,
@@ -2169,7 +2169,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         [Svc(0x45)]
         public Result CreateEvent(out int wEventHandle, out int rEventHandle)
         {
-            KEvent Event = new KEvent(_context);
+            KEvent Event = new(_context);
 
             KProcess process = KernelStatic.GetCurrentProcess();
 
@@ -2368,7 +2368,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         [Svc(0x7d)]
         public Result CreateResourceLimit(out int handle)
         {
-            KResourceLimit limit = new KResourceLimit(_context);
+            KResourceLimit limit = new(_context);
 
             KProcess process = KernelStatic.GetCurrentProcess();
 
@@ -2443,7 +2443,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.ResLimitExceeded;
             }
 
-            KThread thread = new KThread(_context);
+            KThread thread = new(_context);
 
             Result result = currentProcess.InitializeThread(
                 thread,
@@ -2758,7 +2758,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                     return KernelResult.UserCopyFailed;
                 }
 
-                Span<int> handles = new Span<int>(currentThread.WaitSyncHandles).Slice(0, handlesCount);
+                Span<int> handles = new Span<int>(currentThread.WaitSyncHandles)[..handlesCount];
 
                 if (!KernelTransfer.UserToKernelArray(handlesPtr, handles))
                 {
@@ -2782,7 +2782,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             KThread currentThread = KernelStatic.GetCurrentThread();
 
-            var syncObjs = new Span<KSynchronizationObject>(currentThread.WaitSyncObjects).Slice(0, handles.Length);
+            var syncObjs = new Span<KSynchronizationObject>(currentThread.WaitSyncObjects)[..handles.Length];
 
             if (handles.Length != 0)
             {

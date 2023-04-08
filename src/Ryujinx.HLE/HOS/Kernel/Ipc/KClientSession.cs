@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
     {
         public KProcess CreatorProcess { get; }
 
-        private KSession _parent;
+        private readonly KSession _parent;
 
         public ChannelState State { get; set; }
 
@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
         {
             KThread currentThread = KernelStatic.GetCurrentThread();
 
-            KSessionRequest request = new KSessionRequest(currentThread, customCmdBuffAddr, customCmdBuffSize);
+            KSessionRequest request = new(currentThread, customCmdBuffAddr, customCmdBuffSize);
 
             KernelContext.CriticalSection.Enter();
 
@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
         {
             KThread currentThread = KernelStatic.GetCurrentThread();
 
-            KSessionRequest request = new KSessionRequest(currentThread, customCmdBuffAddr, customCmdBuffSize, asyncEvent);
+            KSessionRequest request = new(currentThread, customCmdBuffAddr, customCmdBuffSize, asyncEvent);
 
             KernelContext.CriticalSection.Enter();
 

@@ -51,7 +51,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
 
             ResultCode result = Get(flag, out int count, elementsSpan);
 
-            elementsSpan = elementsSpan.Slice(0, count);
+            elementsSpan = elementsSpan[..count];
 
             context.ResponseData.Write(count);
 
@@ -72,7 +72,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
 
             ResultCode result = Get1(flag, out int count, elementsSpan);
 
-            elementsSpan = elementsSpan.Slice(0, count);
+            elementsSpan = elementsSpan[..count];
 
             context.ResponseData.Write(count);
 
@@ -135,7 +135,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
 
             ResultCode result = Get2(flag, out int count, elementsSpan);
 
-            elementsSpan = elementsSpan.Slice(0, count);
+            elementsSpan = elementsSpan[..count];
 
             context.ResponseData.Write(count);
 
@@ -156,7 +156,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
 
             ResultCode result = Get3(flag, out int count, elementsSpan);
 
-            elementsSpan = elementsSpan.Slice(0, count);
+            elementsSpan = elementsSpan[..count];
 
             context.ResponseData.Write(count);
 

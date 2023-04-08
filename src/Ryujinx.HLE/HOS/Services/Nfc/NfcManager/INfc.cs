@@ -4,7 +4,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.NfcManager
 {
     class INfc : IpcService
     {
-        private NfcPermissionLevel _permissionLevel;
+        private readonly NfcPermissionLevel _permissionLevel;
         private State _state;
 
         public INfc(NfcPermissionLevel permissionLevel)

@@ -10,12 +10,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         public const int VBlank0SyncpointId = 26;
         public const int VBlank1SyncpointId = 27;
 
-        private int[]  _counterMin;
-        private int[]  _counterMax;
-        private bool[] _clientManaged;
-        private bool[] _assigned;
+        private readonly int[]  _counterMin;
+        private readonly int[]  _counterMax;
+        private readonly bool[] _clientManaged;
+        private readonly bool[] _assigned;
 
-        private Switch _device;
+        private readonly Switch _device;
 
         private readonly object _syncpointAllocatorLock = new();
 

@@ -4,8 +4,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
     public class ReferenceType : BaseNode
     {
-        private string   _reference;
-        private BaseNode _child;
+        private readonly string   _reference;
+        private readonly BaseNode _child;
 
         public ReferenceType(string reference, BaseNode child) : base(NodeType.ReferenceType)
         {

@@ -10,9 +10,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 {
     class ISystemClock : IpcService
     {
-        private SystemClockCore _clockCore;
-        private bool            _writePermission;
-        private bool            _bypassUninitializedClock;
+        private readonly SystemClockCore _clockCore;
+        private readonly bool            _writePermission;
+        private readonly bool            _bypassUninitializedClock;
         private int             _operationEventReadableHandle;
 
         public ISystemClock(SystemClockCore clockCore, bool writePermission, bool bypassUninitializedClock)
@@ -113,7 +113,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
         {
             if (_operationEventReadableHandle == 0)
             {
-                KEvent kEvent = new KEvent(context.Device.System.KernelContext);
+                KEvent kEvent = new(context.Device.System.KernelContext);
 
                 _clockCore.RegisterOperationEvent(kEvent.WritableEvent);
 

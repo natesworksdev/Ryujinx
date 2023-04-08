@@ -47,7 +47,7 @@ namespace Ryujinx.HLE.Exceptions
 
         private string BuildMessage()
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
 
             // Print the IPC command details (service name, command ID, and handler)
             (Type callingType, MethodBase callingMethod) = WalkStackTrace(new StackTrace(this));

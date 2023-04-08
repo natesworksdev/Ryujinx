@@ -16,10 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         {
             get
             {
-                if (_instance == null)
-                {
-                    _instance = new TimeManager();
-                }
+                _instance ??= new TimeManager();
 
                 return _instance;
             }

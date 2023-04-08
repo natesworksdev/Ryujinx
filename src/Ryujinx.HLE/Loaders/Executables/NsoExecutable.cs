@@ -38,7 +38,7 @@ namespace Ryujinx.HLE.Loaders.Executables
 
         public NsoExecutable(IStorage inStorage, string name = null)
         {
-            NsoReader reader = new NsoReader();
+            NsoReader reader = new();
 
             reader.Initialize(inStorage.AsFile(OpenMode.Read)).ThrowIfFailure();
 
@@ -75,11 +75,11 @@ namespace Ryujinx.HLE.Loaders.Executables
         private void PrintRoSectionInfo()
         {
             string        rawTextBuffer = Encoding.ASCII.GetString(Ro);
-            StringBuilder stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new();
 
             string modulePath = null;
 
-            if (BitConverter.ToInt32(Ro.Slice(0, 4)) == 0)
+            if (BitConverter.ToInt32(Ro[..4]) == 0)
             {
                 int length = BitConverter.ToInt32(Ro.Slice(4, 4));
                 if (length > 0)

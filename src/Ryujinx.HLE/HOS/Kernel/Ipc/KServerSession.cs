@@ -166,9 +166,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             }
         }
 
-        private KSession _parent;
+        private readonly KSession _parent;
 
-        private LinkedList<KSessionRequest> _requests;
+        private readonly LinkedList<KSessionRequest> _requests;
 
         private KSessionRequest _activeRequest;
 
@@ -243,8 +243,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
             request.ServerProcess = serverProcess;
 
-            Message clientMsg = new Message(request);
-            Message serverMsg = new Message(serverThread, customCmdBuffAddr, customCmdBuffSize);
+            Message clientMsg = new(request);
+            Message serverMsg = new(serverThread, customCmdBuffAddr, customCmdBuffSize);
 
             MessageHeader clientHeader = GetClientMessageHeader(clientProcess, clientMsg);
             MessageHeader serverHeader = GetServerMessageHeader(serverMsg);
@@ -399,7 +399,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             {
                 ulong pointerDesc = clientProcess.CpuMemory.Read<ulong>(clientMsg.Address + offset * 4);
 
-                PointerBufferDesc descriptor = new PointerBufferDesc(pointerDesc);
+                PointerBufferDesc descriptor = new(pointerDesc);
 
                 if (descriptor.BufferSize != 0)
                 {
@@ -612,8 +612,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             KThread  clientThread  = request.ClientThread;
             KProcess clientProcess = clientThread.Owner;
 
-            Message clientMsg = new Message(request);
-            Message serverMsg = new Message(serverThread, customCmdBuffAddr, customCmdBuffSize);
+            Message clientMsg = new(request);
+            Message serverMsg = new(serverThread, customCmdBuffAddr, customCmdBuffSize);
 
             MessageHeader clientHeader = GetClientMessageHeader(clientProcess, clientMsg);
             MessageHeader serverHeader = GetServerMessageHeader(serverMsg);
@@ -761,7 +761,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             {
                 ulong pointerDesc = serverProcess.CpuMemory.Read<ulong>(serverMsg.Address + offset * 4);
 
-                PointerBufferDesc descriptor = new PointerBufferDesc(pointerDesc);
+                PointerBufferDesc descriptor = new(pointerDesc);
 
                 ulong recvListBufferAddress = 0;
 
@@ -973,7 +973,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             ref uint          dstOffset,
             out ulong         address)
         {
-            ulong recvListBufferAddress = address = 0;
+            ulong recvListBufferAddress;
+            address = 0;
 
             if (recvListType == 0)
             {

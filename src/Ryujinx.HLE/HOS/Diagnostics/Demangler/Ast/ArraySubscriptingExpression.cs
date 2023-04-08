@@ -4,8 +4,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
     public class ArraySubscriptingExpression : BaseNode
     {
-        private BaseNode _leftNode;
-        private BaseNode _subscript;
+        private readonly BaseNode _leftNode;
+        private readonly BaseNode _subscript;
 
         public ArraySubscriptingExpression(BaseNode leftNode, BaseNode subscript) : base(NodeType.ArraySubscriptingExpression)
         {

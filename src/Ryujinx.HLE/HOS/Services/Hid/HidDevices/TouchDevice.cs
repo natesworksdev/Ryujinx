@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             ref TouchScreenState previousEntry = ref lifo.GetCurrentEntryRef();
 
-            TouchScreenState newState = new TouchScreenState
+            TouchScreenState newState = new()
             {
                 SamplingNumber = previousEntry.SamplingNumber + 1
             };

@@ -103,7 +103,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public override string ToString()
         {
-            StringWriter writer = new StringWriter();
+            StringWriter writer = new();
 
             Print(writer);
 

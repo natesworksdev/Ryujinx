@@ -12,9 +12,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 {
     class ITimeZoneServiceForGlue : IpcService
     {
-        private TimeZoneContentManager _timeZoneContentManager;
-        private ITimeZoneServiceForPsc _inner;
-        private bool                   _writePermission;
+        private readonly TimeZoneContentManager _timeZoneContentManager;
+        private readonly ITimeZoneServiceForPsc _inner;
+        private readonly bool                   _writePermission;
 
         public ITimeZoneServiceForGlue(TimeZoneContentManager timeZoneContentManager, bool writePermission)
         {
@@ -103,12 +103,10 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 
             string locationName = StringUtils.ReadInlinedAsciiString(context.RequestData, 0x24);
 
-            using (WritableRegion region = context.Memory.GetWritableRegion(bufferPosition, Unsafe.SizeOf<TimeZoneRule>()))
-            {
-                ref TimeZoneRule rules = ref MemoryMarshal.Cast<byte, TimeZoneRule>(region.Memory.Span)[0];
+            using WritableRegion region = context.Memory.GetWritableRegion(bufferPosition, Unsafe.SizeOf<TimeZoneRule>());
+            ref TimeZoneRule rules = ref MemoryMarshal.Cast<byte, TimeZoneRule>(region.Memory.Span)[0];
 
-                return _timeZoneContentManager.LoadTimeZoneRule(ref rules, locationName);
-            }
+            return _timeZoneContentManager.LoadTimeZoneRule(ref rules, locationName);
         }
 
         [CommandCmif(100)]

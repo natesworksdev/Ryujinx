@@ -374,18 +374,18 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         public Span<byte> GetNicknameStorage()
         {
-            return Storage.Slice(0x1c);
+            return Storage[0x1c..];
         }
 
         public Nickname Nickname
         {
             get => Nickname.FromBytes(GetNicknameStorage());
-            set => value.Raw.Slice(0, 20).CopyTo(GetNicknameStorage());
+            set => value.Raw[..20].CopyTo(GetNicknameStorage());
         }
 
         public static CoreData BuildRandom(UtilityImpl utilImpl, Age age, Gender gender, Race race)
         {
-            CoreData coreData = new CoreData();
+            CoreData coreData = new();
 
             coreData.SetDefault();
 
@@ -717,7 +717,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         public override int GetHashCode()
         {
-            HashCode hashCode = new HashCode();
+            HashCode hashCode = new();
 
             hashCode.Add(Nickname);
             hashCode.Add(FontRegion);

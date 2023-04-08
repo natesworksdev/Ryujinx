@@ -4,9 +4,9 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
     public class BinaryExpression : BaseNode
     {
-        private BaseNode _leftPart;
-        private string   _name;
-        private BaseNode _rightPart;
+        private readonly BaseNode _leftPart;
+        private readonly string   _name;
+        private readonly BaseNode _rightPart;
 
         public BinaryExpression(BaseNode leftPart, string name, BaseNode rightPart) : base(NodeType.BinaryExpression)
         {

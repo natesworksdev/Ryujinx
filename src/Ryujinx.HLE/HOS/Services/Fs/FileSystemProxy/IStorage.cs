@@ -32,12 +32,10 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
                     size = bufferLen;
                 }
 
-                using (var region = context.Memory.GetWritableRegion(bufferAddress, (int)bufferLen, true))
-                {
-                    Result result = _baseStorage.Get.Read((long)offset, new OutBuffer(region.Memory.Span), (long)size);
+                using var region = context.Memory.GetWritableRegion(bufferAddress, (int)bufferLen, true);
+                Result result = _baseStorage.Get.Read((long)offset, new OutBuffer(region.Memory.Span), (long)size);
 
-                    return (ResultCode)result.Value;
-                }
+                return (ResultCode)result.Value;
             }
 
             return ResultCode.Success;

@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
     {
         private readonly byte[] _rawData;
 
-        private Span<byte> Raw => new Span<byte>(_rawData);
+        private Span<byte> Raw => new(_rawData);
 
         private ref ParcelHeader Header => ref MemoryMarshal.Cast<byte, ParcelHeader>(_rawData)[0];
 
@@ -64,7 +64,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             ReadOnlySpan<byte> data = ReadInPlace((size + 1) * 2);
 
             // Return the unicode string without the last character (null terminator)
-            return Encoding.Unicode.GetString(data.Slice(0, size * 2));
+            return Encoding.Unicode.GetString(data[..(size * 2)]);
         }
 
         public int ReadInt32() => ReadUnmanagedType<int>();
@@ -77,7 +77,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             long flattenableSize = ReadInt64();
 
-            T result = new T();
+            T result = new();
 
             Debug.Assert(flattenableSize == result.GetFlattenedSize());
 
@@ -117,7 +117,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public void WriteObject<T>(T obj, string serviceName) where T: IBinder
         {
-            FlatBinderObject flatBinderObject = new FlatBinderObject
+            FlatBinderObject flatBinderObject = new()
             {
                 Type     = 2,
                 Flags    = 0,
@@ -215,7 +215,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             UpdateHeader();
 
-            return Raw.Slice(0, (int)(Header.PayloadSize + Header.ObjectsSize + Unsafe.SizeOf<ParcelHeader>()));
+            return Raw[..(int)(Header.PayloadSize + Header.ObjectsSize + Unsafe.SizeOf<ParcelHeader>())];
         }
     }
 }

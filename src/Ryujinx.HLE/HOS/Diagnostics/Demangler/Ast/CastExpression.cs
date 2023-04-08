@@ -4,9 +4,9 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
     public class CastExpression : BaseNode
     {
-        private string   _kind;
-        private BaseNode _to;
-        private BaseNode _from;
+        private readonly string   _kind;
+        private readonly BaseNode _to;
+        private readonly BaseNode _from;
 
         public CastExpression(string kind, BaseNode to, BaseNode from) : base(NodeType.CastExpression)
         {

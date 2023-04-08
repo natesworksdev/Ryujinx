@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
 {
     class CaptureManager
     {
-        private string _sdCardPath;
+        private readonly string _sdCardPath;
 
         private uint _shimLibraryVersion;
 

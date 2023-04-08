@@ -4,8 +4,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
     public class NameTypeWithTemplateArguments : BaseNode
     {
-        private BaseNode _prev;
-        private BaseNode _templateArgument;
+        private readonly BaseNode _prev;
+        private readonly BaseNode _templateArgument;
 
         public NameTypeWithTemplateArguments(BaseNode prev, BaseNode templateArgument) : base(NodeType.NameTypeWithTemplateArguments)
         {

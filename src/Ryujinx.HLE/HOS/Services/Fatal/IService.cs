@@ -50,7 +50,7 @@ namespace Ryujinx.HLE.HOS.Services.Fatal
 
         private ResultCode ThrowFatalWithCpuContextImpl(ServiceCtx context, ResultCode resultCode, ulong pid, FatalPolicy fatalPolicy, ReadOnlySpan<byte> cpuContext)
         {
-            StringBuilder errorReport = new StringBuilder();
+            StringBuilder errorReport = new();
 
             errorReport.AppendLine();
             errorReport.AppendLine("ErrorReport log:");

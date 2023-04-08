@@ -69,7 +69,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
             lock (_lock)
             {
-                Box<TimeZoneRule> rules = new Box<TimeZoneRule>();
+                Box<TimeZoneRule> rules = new();
 
                 bool timeZoneConversionSuccess = TimeZone.ParseTimeZoneBinary(ref rules.Data, timeZoneBinaryStream);
 

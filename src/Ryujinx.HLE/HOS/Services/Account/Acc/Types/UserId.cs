@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         public bool IsNull => (Low | High) == 0;
 
-        public static UserId Null => new UserId(0, 0);
+        public static UserId Null => new(0, 0);
 
         public UserId(long low, long high)
         {

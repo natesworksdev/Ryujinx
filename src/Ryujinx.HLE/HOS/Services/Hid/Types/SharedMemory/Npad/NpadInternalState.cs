@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Npad
         public RingLifo<SixAxisSensorState> JoyLeftSixAxisSensor;
         public RingLifo<SixAxisSensorState> JoyRightSixAxisSensor;
         public DeviceType DeviceType;
-        private uint _reserved1;
+        private readonly uint _reserved1;
         public NpadSystemProperties SystemProperties;
         public NpadSystemButtonProperties SystemButtonProperties;
         public NpadBatteryLevel BatteryLevelJoyDual;
@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Npad
         public NpadBatteryLevel BatteryLevelJoyRight;
         public uint AppletFooterUiAttributes;
         public AppletFooterUiType AppletFooterUiType;
-        private Reserved2Struct _reserved2;
+        private readonly Reserved2Struct _reserved2;
         public RingLifo<NpadGcTriggerState> GcTrigger;
         public NpadLarkType LarkTypeLeftAndMain;
         public NpadLarkType LarkTypeRight;

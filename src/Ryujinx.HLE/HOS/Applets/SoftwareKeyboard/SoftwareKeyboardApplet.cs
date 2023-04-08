@@ -237,7 +237,7 @@ namespace Ryujinx.HLE.HOS.Applets
             // we truncate it.
             if (_textValue.Length > _keyboardForegroundConfig.StringLengthMax)
             {
-                _textValue = _textValue.Substring(0, _keyboardForegroundConfig.StringLengthMax);
+                _textValue = _textValue[.._keyboardForegroundConfig.StringLengthMax];
             }
 
             // Does the application want to validate the text itself?
@@ -319,172 +319,170 @@ namespace Ryujinx.HLE.HOS.Applets
             // request from the game, this is because the inline keyboard is expected to
             // keep running in the background sending data by itself.
 
-            using (MemoryStream stream = new MemoryStream(data))
-            using (BinaryReader reader = new BinaryReader(stream))
+            using MemoryStream stream = new(data);
+            using BinaryReader reader = new(stream);
+            var request = (InlineKeyboardRequest)reader.ReadUInt32();
+
+            long remaining;
+
+            Logger.Debug?.Print(LogClass.ServiceAm, $"Keyboard received command {request} in state {_backgroundState}");
+
+            switch (request)
             {
-                var request = (InlineKeyboardRequest)reader.ReadUInt32();
-
-                long remaining;
-
-                Logger.Debug?.Print(LogClass.ServiceAm, $"Keyboard received command {request} in state {_backgroundState}");
-
-                switch (request)
-                {
-                    case InlineKeyboardRequest.UseChangedStringV2:
-                        Logger.Stub?.Print(LogClass.ServiceAm, "Inline keyboard request UseChangedStringV2");
-                        break;
-                    case InlineKeyboardRequest.UseMovedCursorV2:
-                        Logger.Stub?.Print(LogClass.ServiceAm, "Inline keyboard request UseMovedCursorV2");
-                        break;
-                    case InlineKeyboardRequest.SetUserWordInfo:
-                        // Read the user word info data.
+                case InlineKeyboardRequest.UseChangedStringV2:
+                    Logger.Stub?.Print(LogClass.ServiceAm, "Inline keyboard request UseChangedStringV2");
+                    break;
+                case InlineKeyboardRequest.UseMovedCursorV2:
+                    Logger.Stub?.Print(LogClass.ServiceAm, "Inline keyboard request UseMovedCursorV2");
+                    break;
+                case InlineKeyboardRequest.SetUserWordInfo:
+                    // Read the user word info data.
+                    remaining = stream.Length - stream.Position;
+                    if (remaining < sizeof(int))
+                    {
+                        Logger.Warning?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard User Word Info of {remaining} bytes");
+                    }
+                    else
+                    {
+                        int wordsCount = reader.ReadInt32();
+                        int wordSize = Unsafe.SizeOf<SoftwareKeyboardUserWord>();
                         remaining = stream.Length - stream.Position;
-                        if (remaining < sizeof(int))
+
+                        if (wordsCount > MaxUserWords)
                         {
-                            Logger.Warning?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard User Word Info of {remaining} bytes");
+                            Logger.Warning?.Print(LogClass.ServiceAm, $"Received {wordsCount} User Words but the maximum is {MaxUserWords}");
+                        }
+                        else if (wordsCount * wordSize != remaining)
+                        {
+                            Logger.Warning?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard User Word Info data of {remaining} bytes for {wordsCount} words");
                         }
                         else
                         {
-                            int wordsCount = reader.ReadInt32();
-                            int wordSize = Unsafe.SizeOf<SoftwareKeyboardUserWord>();
-                            remaining = stream.Length - stream.Position;
+                            _keyboardBackgroundUserWords = new SoftwareKeyboardUserWord[wordsCount];
 
-                            if (wordsCount > MaxUserWords)
+                            for (int word = 0; word < wordsCount; word++)
                             {
-                                Logger.Warning?.Print(LogClass.ServiceAm, $"Received {wordsCount} User Words but the maximum is {MaxUserWords}");
-                            }
-                            else if (wordsCount * wordSize != remaining)
-                            {
-                                Logger.Warning?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard User Word Info data of {remaining} bytes for {wordsCount} words");
-                            }
-                            else
-                            {
-                                _keyboardBackgroundUserWords = new SoftwareKeyboardUserWord[wordsCount];
-
-                                for (int word = 0; word < wordsCount; word++)
-                                {
-                                    _keyboardBackgroundUserWords[word] = reader.ReadStruct<SoftwareKeyboardUserWord>();
-                                }
+                                _keyboardBackgroundUserWords[word] = reader.ReadStruct<SoftwareKeyboardUserWord>();
                             }
                         }
-                        _interactiveSession.Push(InlineResponses.ReleasedUserWordInfo(_backgroundState));
-                        break;
-                    case InlineKeyboardRequest.SetCustomizeDic:
-                        // Read the custom dic data.
-                        remaining = stream.Length - stream.Position;
-                        if (remaining != Unsafe.SizeOf<SoftwareKeyboardCustomizeDic>())
-                        {
-                            Logger.Warning?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard Customize Dic of {remaining} bytes");
-                        }
-                        else
-                        {
-                            _keyboardBackgroundDic = reader.ReadStruct<SoftwareKeyboardCustomizeDic>();
-                        }
-                        break;
-                    case InlineKeyboardRequest.SetCustomizedDictionaries:
-                        // Read the custom dictionaries data.
-                        remaining = stream.Length - stream.Position;
-                        if (remaining != Unsafe.SizeOf<SoftwareKeyboardDictSet>())
-                        {
-                            Logger.Warning?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard DictSet of {remaining} bytes");
-                        }
-                        else
-                        {
-                            _keyboardBackgroundDictSet = reader.ReadStruct<SoftwareKeyboardDictSet>();
-                        }
-                        break;
-                    case InlineKeyboardRequest.Calc:
-                        // The Calc request is used to communicate configuration changes and commands to the keyboard.
-                        // Fields in the Calc struct and operations are masked by the Flags field.
+                    }
+                    _interactiveSession.Push(InlineResponses.ReleasedUserWordInfo(_backgroundState));
+                    break;
+                case InlineKeyboardRequest.SetCustomizeDic:
+                    // Read the custom dic data.
+                    remaining = stream.Length - stream.Position;
+                    if (remaining != Unsafe.SizeOf<SoftwareKeyboardCustomizeDic>())
+                    {
+                        Logger.Warning?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard Customize Dic of {remaining} bytes");
+                    }
+                    else
+                    {
+                        _keyboardBackgroundDic = reader.ReadStruct<SoftwareKeyboardCustomizeDic>();
+                    }
+                    break;
+                case InlineKeyboardRequest.SetCustomizedDictionaries:
+                    // Read the custom dictionaries data.
+                    remaining = stream.Length - stream.Position;
+                    if (remaining != Unsafe.SizeOf<SoftwareKeyboardDictSet>())
+                    {
+                        Logger.Warning?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard DictSet of {remaining} bytes");
+                    }
+                    else
+                    {
+                        _keyboardBackgroundDictSet = reader.ReadStruct<SoftwareKeyboardDictSet>();
+                    }
+                    break;
+                case InlineKeyboardRequest.Calc:
+                    // The Calc request is used to communicate configuration changes and commands to the keyboard.
+                    // Fields in the Calc struct and operations are masked by the Flags field.
 
-                        // Read the Calc data.
-                        SoftwareKeyboardCalcEx newCalc;
-                        remaining = stream.Length - stream.Position;
-                        if (remaining == Marshal.SizeOf<SoftwareKeyboardCalc>())
-                        {
-                            var keyboardCalcData = reader.ReadBytes((int)remaining);
-                            var keyboardCalc     = ReadStruct<SoftwareKeyboardCalc>(keyboardCalcData);
+                    // Read the Calc data.
+                    SoftwareKeyboardCalcEx newCalc;
+                    remaining = stream.Length - stream.Position;
+                    if (remaining == Marshal.SizeOf<SoftwareKeyboardCalc>())
+                    {
+                        var keyboardCalcData = reader.ReadBytes((int)remaining);
+                        var keyboardCalc     = ReadStruct<SoftwareKeyboardCalc>(keyboardCalcData);
 
-                            newCalc = keyboardCalc.ToExtended();
-                        }
-                        else if (remaining == Marshal.SizeOf<SoftwareKeyboardCalcEx>() || remaining == SoftwareKeyboardCalcEx.AlternativeSize)
-                        {
-                            var keyboardCalcData = reader.ReadBytes((int)remaining);
+                        newCalc = keyboardCalc.ToExtended();
+                    }
+                    else if (remaining == Marshal.SizeOf<SoftwareKeyboardCalcEx>() || remaining == SoftwareKeyboardCalcEx.AlternativeSize)
+                    {
+                        var keyboardCalcData = reader.ReadBytes((int)remaining);
 
-                            newCalc = ReadStruct<SoftwareKeyboardCalcEx>(keyboardCalcData);
-                        }
-                        else
-                        {
-                            Logger.Error?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard Calc of {remaining} bytes");
+                        newCalc = ReadStruct<SoftwareKeyboardCalcEx>(keyboardCalcData);
+                    }
+                    else
+                    {
+                        Logger.Error?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard Calc of {remaining} bytes");
 
-                            newCalc = new SoftwareKeyboardCalcEx();
-                        }
+                        newCalc = new SoftwareKeyboardCalcEx();
+                    }
 
-                        // Process each individual operation specified in the flags.
+                    // Process each individual operation specified in the flags.
 
-                        bool updateText = false;
+                    bool updateText = false;
 
-                        if ((newCalc.Flags & KeyboardCalcFlags.Initialize) != 0)
-                        {
-                            _interactiveSession.Push(InlineResponses.FinishedInitialize(_backgroundState));
+                    if ((newCalc.Flags & KeyboardCalcFlags.Initialize) != 0)
+                    {
+                        _interactiveSession.Push(InlineResponses.FinishedInitialize(_backgroundState));
 
-                            _backgroundState = InlineKeyboardState.Initialized;
-                        }
+                        _backgroundState = InlineKeyboardState.Initialized;
+                    }
 
-                        if ((newCalc.Flags & KeyboardCalcFlags.SetCursorPos) != 0)
-                        {
-                            _cursorBegin = newCalc.CursorPos;
-                            updateText = true;
+                    if ((newCalc.Flags & KeyboardCalcFlags.SetCursorPos) != 0)
+                    {
+                        _cursorBegin = newCalc.CursorPos;
+                        updateText = true;
 
-                            Logger.Debug?.Print(LogClass.ServiceAm, $"Cursor position set to {_cursorBegin}");
-                        }
+                        Logger.Debug?.Print(LogClass.ServiceAm, $"Cursor position set to {_cursorBegin}");
+                    }
 
-                        if ((newCalc.Flags & KeyboardCalcFlags.SetInputText) != 0)
-                        {
-                            _textValue = newCalc.InputText;
-                            updateText = true;
+                    if ((newCalc.Flags & KeyboardCalcFlags.SetInputText) != 0)
+                    {
+                        _textValue = newCalc.InputText;
+                        updateText = true;
 
-                            Logger.Debug?.Print(LogClass.ServiceAm, $"Input text set to {_textValue}");
-                        }
+                        Logger.Debug?.Print(LogClass.ServiceAm, $"Input text set to {_textValue}");
+                    }
 
-                        if ((newCalc.Flags & KeyboardCalcFlags.SetUtf8Mode) != 0)
-                        {
-                            _encoding = newCalc.UseUtf8 ? Encoding.UTF8 : Encoding.Default;
+                    if ((newCalc.Flags & KeyboardCalcFlags.SetUtf8Mode) != 0)
+                    {
+                        _encoding = newCalc.UseUtf8 ? Encoding.UTF8 : Encoding.Default;
 
-                            Logger.Debug?.Print(LogClass.ServiceAm, $"Encoding set to {_encoding}");
-                        }
+                        Logger.Debug?.Print(LogClass.ServiceAm, $"Encoding set to {_encoding}");
+                    }
 
-                        if (updateText)
-                        {
-                            _dynamicTextInputHandler.SetText(_textValue, _cursorBegin);
-                            _keyboardRenderer.UpdateTextState(_textValue, _cursorBegin, _cursorBegin, null, null);
-                        }
+                    if (updateText)
+                    {
+                        _dynamicTextInputHandler.SetText(_textValue, _cursorBegin);
+                        _keyboardRenderer.UpdateTextState(_textValue, _cursorBegin, _cursorBegin, null, null);
+                    }
 
-                        if ((newCalc.Flags & KeyboardCalcFlags.MustShow) != 0)
-                        {
-                            ActivateFrontend();
+                    if ((newCalc.Flags & KeyboardCalcFlags.MustShow) != 0)
+                    {
+                        ActivateFrontend();
 
-                            _backgroundState = InlineKeyboardState.Shown;
+                        _backgroundState = InlineKeyboardState.Shown;
 
-                            PushChangedString(_textValue, (uint)_cursorBegin, _backgroundState);
-                        }
+                        PushChangedString(_textValue, (uint)_cursorBegin, _backgroundState);
+                    }
 
-                        // Send the response to the Calc
-                        _interactiveSession.Push(InlineResponses.Default(_backgroundState));
-                        break;
-                    case InlineKeyboardRequest.Finalize:
-                        // Destroy the frontend.
-                        DestroyFrontend();
-                        // The calling application wants to close the keyboard applet and will wait for a state change.
-                        _backgroundState = InlineKeyboardState.Uninitialized;
-                        AppletStateChanged?.Invoke(this, null);
-                        break;
-                    default:
-                        // We shouldn't be able to get here through standard swkbd execution.
-                        Logger.Warning?.Print(LogClass.ServiceAm, $"Invalid Software Keyboard request {request} during state {_backgroundState}");
-                        _interactiveSession.Push(InlineResponses.Default(_backgroundState));
-                        break;
-                }
+                    // Send the response to the Calc
+                    _interactiveSession.Push(InlineResponses.Default(_backgroundState));
+                    break;
+                case InlineKeyboardRequest.Finalize:
+                    // Destroy the frontend.
+                    DestroyFrontend();
+                    // The calling application wants to close the keyboard applet and will wait for a state change.
+                    _backgroundState = InlineKeyboardState.Uninitialized;
+                    AppletStateChanged?.Invoke(this, null);
+                    break;
+                default:
+                    // We shouldn't be able to get here through standard swkbd execution.
+                    Logger.Warning?.Print(LogClass.ServiceAm, $"Invalid Software Keyboard request {request} during state {_backgroundState}");
+                    _interactiveSession.Push(InlineResponses.Default(_backgroundState));
+                    break;
             }
         }
 
@@ -575,7 +573,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 if (text.Length > MaxUiTextSize)
                 {
                     // Limit the text size and change it back.
-                    text        = text.Substring(0, MaxUiTextSize);
+                    text        = text[..MaxUiTextSize];
                     cursorBegin = Math.Min(cursorBegin, MaxUiTextSize);
                     cursorEnd   = Math.Min(cursorEnd, MaxUiTextSize);
 
@@ -734,33 +732,31 @@ namespace Ryujinx.HLE.HOS.Applets
         {
             int bufferSize = interactive ? InteractiveBufferSize : StandardBufferSize;
 
-            using (MemoryStream stream = new MemoryStream(new byte[bufferSize]))
-            using (BinaryWriter writer = new BinaryWriter(stream))
+            using MemoryStream stream = new(new byte[bufferSize]);
+            using BinaryWriter writer = new(stream);
+            byte[] output = _encoding.GetBytes(_textValue);
+
+            if (!interactive)
             {
-                byte[] output = _encoding.GetBytes(_textValue);
+                // Result Code.
+                writer.Write(_lastResult == KeyboardResult.Accept ? 0U : 1U);
+            }
+            else
+            {
+                // In interactive mode, we write the length of the text as a long, rather than
+                // a result code. This field is inclusive of the 64-bit size.
+                writer.Write((long)output.Length + 8);
+            }
 
-                if (!interactive)
-                {
-                    // Result Code.
-                    writer.Write(_lastResult == KeyboardResult.Accept ? 0U : 1U);
-                }
-                else
-                {
-                    // In interactive mode, we write the length of the text as a long, rather than
-                    // a result code. This field is inclusive of the 64-bit size.
-                    writer.Write((long)output.Length + 8);
-                }
+            writer.Write(output);
 
-                writer.Write(output);
-
-                if (!interactive)
-                {
-                    _normalSession.Push(stream.ToArray());
-                }
-                else
-                {
-                    _interactiveSession.Push(stream.ToArray());
-                }
+            if (!interactive)
+            {
+                _normalSession.Push(stream.ToArray());
+            }
+            else
+            {
+                _interactiveSession.Push(stream.ToArray());
             }
         }
 
@@ -787,7 +783,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 return string.Empty;
             }
 
-            StringBuilder sb = new StringBuilder(capacity: input.Length);
+            StringBuilder sb = new(capacity: input.Length);
             foreach (char c in input)
             {
                 if (!char.IsControl(c))

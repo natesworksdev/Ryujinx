@@ -10,16 +10,16 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 {
     class ILibraryAppletAccessor : DisposableIpcService
     {
-        private KernelContext _kernelContext;
+        private readonly KernelContext _kernelContext;
 
-        private IApplet _applet;
+        private readonly IApplet _applet;
 
-        private AppletSession _normalSession;
-        private AppletSession _interactiveSession;
+        private readonly AppletSession _normalSession;
+        private readonly AppletSession _interactiveSession;
 
-        private KEvent _stateChangedEvent;
-        private KEvent _normalOutDataEvent;
-        private KEvent _interactiveOutDataEvent;
+        private readonly KEvent _stateChangedEvent;
+        private readonly KEvent _normalOutDataEvent;
+        private readonly KEvent _interactiveOutDataEvent;
 
         private int _stateChangedEventHandle;
         private int _normalOutDataEventHandle;

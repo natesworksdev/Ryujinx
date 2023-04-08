@@ -7,11 +7,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
     {
         private const int TlsEntrySize = 0x200;
 
-        private long _pagePosition;
+        private readonly long _pagePosition;
 
         private int _usedSlots;
 
-        private bool[] _slots;
+        private readonly bool[] _slots;
 
         public bool IsEmpty => _usedSlots == 0;
         public bool IsFull  => _usedSlots == _slots.Length;

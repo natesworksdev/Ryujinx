@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Applets.Error
     {
         private const long ErrorMessageBinaryTitleId = 0x0100000000000801;
 
-        private Horizon           _horizon;
+        private readonly Horizon           _horizon;
         private AppletSession     _normalSession;
         private CommonArguments   _commonArguments;
         private ErrorCommonHeader _errorCommonHeader;
@@ -111,26 +111,24 @@ namespace Ryujinx.HLE.HOS.Applets.Error
         {
             string binaryTitleContentPath = _horizon.ContentManager.GetInstalledContentPath(ErrorMessageBinaryTitleId, StorageId.BuiltInSystem, NcaContentType.Data);
 
-            using (LibHac.Fs.IStorage ncaFileStream = new LocalStorage(_horizon.Device.FileSystem.SwitchPathToSystemPath(binaryTitleContentPath), FileAccess.Read, FileMode.Open))
+            using LibHac.Fs.IStorage ncaFileStream = new LocalStorage(_horizon.Device.FileSystem.SwitchPathToSystemPath(binaryTitleContentPath), FileAccess.Read, FileMode.Open);
+            Nca         nca          = new(_horizon.Device.FileSystem.KeySet, ncaFileStream);
+            IFileSystem romfs        = nca.OpenFileSystem(NcaSectionType.Data, _horizon.FsIntegrityCheckLevel);
+            string      languageCode = SystemLanguageToLanguageKey(_horizon.State.DesiredSystemLanguage);
+            string      filePath     = $"/{module}/{description:0000}/{languageCode}_{key}";
+
+            if (romfs.FileExists(filePath))
             {
-                Nca         nca          = new Nca(_horizon.Device.FileSystem.KeySet, ncaFileStream);
-                IFileSystem romfs        = nca.OpenFileSystem(NcaSectionType.Data, _horizon.FsIntegrityCheckLevel);
-                string      languageCode = SystemLanguageToLanguageKey(_horizon.State.DesiredSystemLanguage);
-                string      filePath     = $"/{module}/{description:0000}/{languageCode}_{key}";
+                using var binaryFile = new UniqueRef<IFile>();
 
-                if (romfs.FileExists(filePath))
-                {
-                    using var binaryFile = new UniqueRef<IFile>();
+                romfs.OpenFile(ref binaryFile.Ref, filePath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                StreamReader reader = new(binaryFile.Get.AsStream(), Encoding.Unicode);
 
-                    romfs.OpenFile(ref binaryFile.Ref, filePath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-                    StreamReader reader = new StreamReader(binaryFile.Get.AsStream(), Encoding.Unicode);
-
-                    return CleanText(reader.ReadToEnd());
-                }
-                else
-                {
-                    return "";
-                }
+                return CleanText(reader.ReadToEnd());
+            }
+            else
+            {
+                return "";
             }
         }
 
@@ -188,7 +186,7 @@ namespace Ryujinx.HLE.HOS.Applets.Error
             string messageText = Encoding.ASCII.GetString(messageTextBuffer.TakeWhile(b => !b.Equals(0)).ToArray());
             string detailsText = Encoding.ASCII.GetString(detailsTextBuffer.TakeWhile(b => !b.Equals(0)).ToArray());
 
-            List<string> buttons = new List<string>();
+            List<string> buttons = new();
 
             // TODO: Handle the LanguageCode to return the translated "OK" and "Details".
 

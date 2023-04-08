@@ -155,11 +155,11 @@ namespace Ryujinx.HLE.HOS
             ulong timePa                = region.Address + HidSize + FontSize + IirsSize;
             ulong appletCaptureBufferPa = region.Address + HidSize + FontSize + IirsSize + TimeSize;
 
-            KPageList hidPageList                 = new KPageList();
-            KPageList fontPageList                = new KPageList();
-            KPageList iirsPageList                = new KPageList();
-            KPageList timePageList                = new KPageList();
-            KPageList appletCaptureBufferPageList = new KPageList();
+            KPageList hidPageList                 = new();
+            KPageList fontPageList                = new();
+            KPageList iirsPageList                = new();
+            KPageList timePageList                = new();
+            KPageList appletCaptureBufferPageList = new();
 
             hidPageList.AddRange(hidPa, HidSize / KPageTableBase.PageSize);
             fontPageList.AddRange(fontPa, FontSize / KPageTableBase.PageSize);
@@ -179,7 +179,7 @@ namespace Ryujinx.HLE.HOS
             FontSharedMem = new KSharedMemory(KernelContext, fontStorage, 0, 0, KMemoryPermission.Read);
             IirsSharedMem = new KSharedMemory(KernelContext, iirsStorage, 0, 0, KMemoryPermission.Read);
 
-            KSharedMemory timeSharedMemory = new KSharedMemory(KernelContext, timeStorage, 0, 0, KMemoryPermission.Read);
+            KSharedMemory timeSharedMemory = new(KernelContext, timeStorage, 0, 0, KMemoryPermission.Read);
 
             TimeServiceManager.Instance.Initialize(device, this, timeSharedMemory, timeStorage, TimeSize);
 
@@ -212,7 +212,7 @@ namespace Ryujinx.HLE.HOS
             // Configure and setup internal offset
             TimeSpanType internalOffset = TimeSpanType.FromSeconds(device.Configuration.SystemTimeOffset);
 
-            TimeSpanType systemTimeOffset = new TimeSpanType(systemTime.NanoSeconds + internalOffset.NanoSeconds);
+            TimeSpanType systemTimeOffset = new(systemTime.NanoSeconds + internalOffset.NanoSeconds);
 
             if (systemTime.IsDaylightSavingTime() && !systemTimeOffset.IsDaylightSavingTime())
             {
@@ -232,7 +232,7 @@ namespace Ryujinx.HLE.HOS
 
             if (NxSettings.Settings.TryGetValue("time!standard_network_clock_sufficient_accuracy_minutes", out object standardNetworkClockSufficientAccuracyMinutes))
             {
-                TimeSpanType standardNetworkClockSufficientAccuracy = new TimeSpanType((int)standardNetworkClockSufficientAccuracyMinutes * 60000000000);
+                TimeSpanType standardNetworkClockSufficientAccuracy = new((int)standardNetworkClockSufficientAccuracyMinutes * 60000000000);
 
                 // The network system clock needs a valid system clock, as such we setup this system clock using the local system clock.
                 TimeServiceManager.Instance.SetupStandardNetworkSystemClock(localSytemClockContext, standardNetworkClockSufficientAccuracy);
@@ -267,7 +267,7 @@ namespace Ryujinx.HLE.HOS
 
             for (int i = 0; i < audioOutputRegisterBufferEvents.Length; i++)
             {
-                KEvent registerBufferEvent = new KEvent(KernelContext);
+                KEvent registerBufferEvent = new(KernelContext);
 
                 audioOutputRegisterBufferEvents[i] = new AudioKernelEvent(registerBufferEvent);
             }
@@ -279,7 +279,7 @@ namespace Ryujinx.HLE.HOS
 
             for (int i = 0; i < audioInputRegisterBufferEvents.Length; i++)
             {
-                KEvent registerBufferEvent = new KEvent(KernelContext);
+                KEvent registerBufferEvent = new(KernelContext);
 
                 audioInputRegisterBufferEvents[i] = new AudioKernelEvent(registerBufferEvent);
             }
@@ -290,7 +290,7 @@ namespace Ryujinx.HLE.HOS
 
             for (int i = 0; i < systemEvents.Length; i++)
             {
-                KEvent systemEvent = new KEvent(KernelContext);
+                KEvent systemEvent = new(KernelContext);
 
                 systemEvents[i] = new AudioKernelEvent(systemEvent);
             }
@@ -338,7 +338,7 @@ namespace Ryujinx.HLE.HOS
                     ProcessCreationFlags.Is64Bit |
                     ProcessCreationFlags.PoolPartitionSystem;
 
-                ProcessCreationInfo creationInfo = new ProcessCreationInfo("Service", 1, 0, 0x8000000, 1, Flags, 0, 0);
+                ProcessCreationInfo creationInfo = new("Service", 1, 0, 0x8000000, 1, Flags, 0, 0);
 
                 uint[] defaultCapabilities = new uint[]
                 {
@@ -464,8 +464,8 @@ namespace Ryujinx.HLE.HOS
                     AudioRendererManager.StopSendingCommands();
                 }
 
-                KProcess terminationProcess = new KProcess(KernelContext);
-                KThread terminationThread = new KThread(KernelContext);
+                KProcess terminationProcess = new(KernelContext);
+                KThread terminationThread = new(KernelContext);
 
                 terminationThread.Initialize(0, 0, 0, 3, 0, terminationProcess, ThreadType.Kernel, () =>
                 {

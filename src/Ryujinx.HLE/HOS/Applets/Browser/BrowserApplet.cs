@@ -48,15 +48,16 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
 
             if ((_commonArguments.AppletVersion >= 0x80000 && _shimKind == ShimKind.Web) || (_commonArguments.AppletVersion >= 0x30000 && _shimKind == ShimKind.Share))
             {
-                List<BrowserOutput> result = new List<BrowserOutput>();
-
-                result.Add(new BrowserOutput(BrowserOutputType.ExitReason, (uint)WebExitReason.ExitButton));
+                List<BrowserOutput> result = new()
+                {
+                    new BrowserOutput(BrowserOutputType.ExitReason, (uint)WebExitReason.ExitButton)
+                };
 
                 _normalSession.Push(BuildResponseNew(result));
             }
             else
             {
-                WebCommonReturnValue result = new WebCommonReturnValue()
+                WebCommonReturnValue result = new()
                 {
                     ExitReason  = WebExitReason.ExitButton,
                 };
@@ -71,34 +72,30 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
 
         private byte[] BuildResponseOld(WebCommonReturnValue result)
         {
-            using (MemoryStream stream = MemoryStreamManager.Shared.GetStream())
-            using (BinaryWriter writer = new BinaryWriter(stream))
-            {
-                writer.WriteStruct(result);
+            using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+            using BinaryWriter writer = new(stream);
+            writer.WriteStruct(result);
 
-                return stream.ToArray();
-            }
+            return stream.ToArray();
         }
         private byte[] BuildResponseNew(List<BrowserOutput> outputArguments)
         {
-            using (MemoryStream stream = MemoryStreamManager.Shared.GetStream())
-            using (BinaryWriter writer = new BinaryWriter(stream))
+            using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+            using BinaryWriter writer = new(stream);
+            writer.WriteStruct(new WebArgHeader
             {
-                writer.WriteStruct(new WebArgHeader
-                {
-                    Count    = (ushort)outputArguments.Count,
-                    ShimKind = _shimKind
-                });
+                Count = (ushort)outputArguments.Count,
+                ShimKind = _shimKind
+            });
 
-                foreach (BrowserOutput output in outputArguments)
-                {
-                    output.Write(writer);
-                }
-
-                writer.Write(new byte[0x2000 - writer.BaseStream.Position]);
-
-                return stream.ToArray();
+            foreach (BrowserOutput output in outputArguments)
+            {
+                output.Write(writer);
             }
+
+            writer.Write(new byte[0x2000 - writer.BaseStream.Position]);
+
+            return stream.ToArray();
         }
     }
 }

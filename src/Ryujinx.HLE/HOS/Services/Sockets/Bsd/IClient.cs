@@ -17,14 +17,14 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
     [Service("bsd:u", false)]
     class IClient : IpcService
     {
-        private static readonly List<IPollManager> _pollManagers = new List<IPollManager>
+        private static readonly List<IPollManager> _pollManagers = new()
         {
             EventFileDescriptorPollManager.Instance,
             ManagedSocketPollManager.Instance
         };
 
         private BsdContext _context;
-        private bool _isPrivileged;
+        private readonly bool _isPrivileged;
 
         public IClient(ServiceCtx context, bool isPrivileged) : base(context.Device.System.BsdServer)
         {
@@ -101,8 +101,10 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 }
             }
 
-            ISocket newBsdSocket = new ManagedSocket(netDomain, (SocketType)type, protocol);
-            newBsdSocket.Blocking = !creationFlags.HasFlag(BsdSocketCreationFlags.NonBlocking);
+            ISocket newBsdSocket = new ManagedSocket(netDomain, (SocketType)type, protocol)
+            {
+                Blocking = !creationFlags.HasFlag(BsdSocketCreationFlags.NonBlocking)
+            };
 
             LinuxError errno = LinuxError.SUCCESS;
 
@@ -356,7 +358,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 events[i] = new PollEvent(pollEventData, fileDescriptor);
             }
 
-            List<PollEvent> discoveredEvents = new List<PollEvent>();
+            List<PollEvent> discoveredEvents = new();
             List<PollEvent>[] eventsByPollManager = new List<PollEvent>[_pollManagers.Count];
 
             for (int i = 0; i < eventsByPollManager.Length; i++)
@@ -389,7 +391,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
             if (fdsCount != 0)
             {
-                bool IsUnexpectedLinuxError(LinuxError error)
+                static bool IsUnexpectedLinuxError(LinuxError error)
                 {
                     return error != LinuxError.SUCCESS && error != LinuxError.ETIMEDOUT;
                 }
@@ -1104,7 +1106,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             context.RequestData.BaseStream.Position += 4; // Padding
             ulong initialValue = context.RequestData.ReadUInt64();
 
-            EventFileDescriptor newEventFile = new EventFileDescriptor(initialValue, flags);
+            EventFileDescriptor newEventFile = new(initialValue, flags);
 
             LinuxError errno = LinuxError.SUCCESS;
 

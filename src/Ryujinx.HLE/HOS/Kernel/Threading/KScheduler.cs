@@ -59,7 +59,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         private KThread CreateIdleThread(KernelContext context, int cpuCore)
         {
-            KThread idleThread = new KThread(context);
+            KThread idleThread = new(context);
 
             idleThread.Initialize(0UL, 0UL, 0UL, PrioritiesCount, cpuCore, null, ThreadType.Dummy, IdleThreadLoop);
 
@@ -378,10 +378,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
                 currentThread.AddCpuTime(ticksDelta);
 
-                if (currentProcess != null)
-                {
-                    currentProcess.AddCpuTime(ticksDelta);
-                }
+                currentProcess?.AddCpuTime(ticksDelta);
 
                 LastContextSwitchTime = currentTicks;
 
@@ -651,10 +648,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             // Ensure that the idle thread is not blocked and can exit.
             lock (_idleInterruptEventLock)
             {
-                if (_idleInterruptEvent != null)
-                {
-                    _idleInterruptEvent.Set();
-                }
+                _idleInterruptEvent?.Set();
             }
         }
     }

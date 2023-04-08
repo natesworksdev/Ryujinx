@@ -13,7 +13,7 @@
         public uint DiameterY;
         public uint RotationAngle;
 #pragma warning disable CS0169
-        private uint _reserved;
+        private readonly uint _reserved;
 #pragma warning restore CS0169
     }
 }

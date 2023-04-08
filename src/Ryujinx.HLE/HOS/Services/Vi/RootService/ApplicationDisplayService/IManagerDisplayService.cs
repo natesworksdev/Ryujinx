@@ -4,7 +4,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
 {
     class IManagerDisplayService : IpcService
     {
-        private IApplicationDisplayService _applicationDisplayService;
+        private readonly IApplicationDisplayService _applicationDisplayService;
 
         public IManagerDisplayService(IApplicationDisplayService applicationDisplayService)
         {

@@ -15,11 +15,11 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         private readonly object _stateLock  = new();
 
-        private SoftwareKeyboardUiState      _state = new SoftwareKeyboardUiState();
-        private SoftwareKeyboardRendererBase _renderer;
+        private readonly SoftwareKeyboardUiState      _state = new();
+        private readonly SoftwareKeyboardRendererBase _renderer;
 
-        private TimedAction _textBoxBlinkTimedAction = new TimedAction();
-        private TimedAction _renderAction            = new TimedAction();
+        private readonly TimedAction _textBoxBlinkTimedAction = new();
+        private readonly TimedAction _renderAction            = new();
 
         public SoftwareKeyboardRenderer(IHostUiTheme uiTheme)
         {
@@ -47,7 +47,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         private static void StartRenderer(TimedAction timedAction, SoftwareKeyboardRendererBase renderer, SoftwareKeyboardUiState state, object stateLock)
         {
-            SoftwareKeyboardUiState internalState = new SoftwareKeyboardUiState();
+            SoftwareKeyboardUiState internalState = new();
 
             bool canCreateSurface = false;
             bool needsUpdate      = true;
@@ -111,7 +111,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             lock (_stateLock)
             {
                 // Update the parameters that were provided.
-                _state.InputText     = inputText != null ? inputText : _state.InputText;
+                _state.InputText     = inputText ?? _state.InputText;
                 _state.CursorBegin   = cursorBegin.GetValueOrDefault(_state.CursorBegin);
                 _state.CursorEnd     = cursorEnd.GetValueOrDefault(_state.CursorEnd);
                 _state.OverwriteMode = overwriteMode.GetValueOrDefault(_state.OverwriteMode);

@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Services.Ncm.Lr.LocationResolverManager
 {
     class ILocationResolver : IpcService
     {
-        private StorageId _storageId;
+        private readonly StorageId _storageId;
 
         public ILocationResolver(StorageId storageId)
         {
@@ -216,7 +216,7 @@ namespace Ryujinx.HLE.HOS.Services.Ncm.Lr.LocationResolverManager
         private void RedirectPath(ServiceCtx context, ulong titleId, int flag, NcaContentType contentType)
         {
             string        contentPath = ReadUtf8String(context);
-            LocationEntry newLocation = new LocationEntry(contentPath, flag, titleId, contentType);
+            LocationEntry newLocation = new(contentPath, flag, titleId, contentType);
 
             context.Device.System.ContentManager.RedirectLocation(newLocation, _storageId);
         }

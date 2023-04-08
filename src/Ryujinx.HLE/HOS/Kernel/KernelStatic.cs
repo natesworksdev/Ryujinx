@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             int mainThreadPriority,
             ThreadStart customThreadStart)
         {
-            KProcess process = new KProcess(context);
+            KProcess process = new(context);
 
             Result result = process.Initialize(
                 creationInfo,

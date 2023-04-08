@@ -69,14 +69,14 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
         {
             VirtualAmiiboFile amiiboFile = LoadAmiiboFile(amiiboId);
 
-            UtilityImpl utilityImpl = new UtilityImpl(tickSource);
-            CharInfo    charInfo    = new CharInfo();
+            UtilityImpl utilityImpl = new(tickSource);
+            CharInfo    charInfo    = new();
 
             charInfo.SetFromStoreData(StoreData.BuildDefault(utilityImpl, 0));
 
             charInfo.Nickname = Nickname.FromString(nickname);
 
-            RegisterInfo registerInfo = new RegisterInfo()
+            RegisterInfo registerInfo = new()
             {
                 MiiCharInfo     = charInfo,
                 FirstWriteYear  = (ushort)amiiboFile.FirstWriteDate.Year,

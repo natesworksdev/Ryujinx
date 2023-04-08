@@ -8,9 +8,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 {
     internal class NvHostGpuDeviceFile : NvHostChannelDeviceFile
     {
-        private KEvent _smExceptionBptIntReportEvent;
-        private KEvent _smExceptionBptPauseReportEvent;
-        private KEvent _errorNotifierEvent;
+        private readonly KEvent _smExceptionBptIntReportEvent;
+        private readonly KEvent _smExceptionBptPauseReportEvent;
+        private readonly KEvent _errorNotifierEvent;
 
         private int _smExceptionBptIntReportEventHandle;
         private int _smExceptionBptPauseReportEventHandle;
@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private static KEvent CreateEvent(ServiceCtx context, out int handle)
         {
-            KEvent evnt = new KEvent(context.Device.System.KernelContext);
+            KEvent evnt = new(context.Device.System.KernelContext);
 
             if (context.Process.HandleTable.GenerateHandle(evnt.ReadableEvent, out handle) != Result.Success)
             {

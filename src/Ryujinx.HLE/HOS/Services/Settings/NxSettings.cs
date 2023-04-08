@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
     static class NxSettings
     {
         // Generated automatically from a Switch 3.0 config file (Tid: 0100000000000818).
-        public static Dictionary<string, object> Settings = new Dictionary<string, object>
+        public static Dictionary<string, object> Settings = new()
         {
             { "account!na_required_for_network_service", true },
             { "account.daemon!background_awaking_periodicity", 10800 },

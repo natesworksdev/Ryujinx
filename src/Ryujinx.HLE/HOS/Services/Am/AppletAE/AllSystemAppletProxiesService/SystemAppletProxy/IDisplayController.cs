@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 {
     class IDisplayController : IpcService
     {
-        private KTransferMemory _transferMem;
+        private readonly KTransferMemory _transferMem;
         private bool            _lastApplicationCaptureBufferAcquired;
         private bool            _callerAppletCaptureBufferAcquired;
 

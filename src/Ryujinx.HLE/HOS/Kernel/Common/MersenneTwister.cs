@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
     class MersenneTwister
     {
         private int _index;
-        private uint[] _mt;
+        private readonly uint[] _mt;
 
         public MersenneTwister(uint seed)
         {

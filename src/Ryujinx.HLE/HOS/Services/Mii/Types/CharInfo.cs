@@ -269,7 +269,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         public override int GetHashCode()
         {
-            HashCode hashCode = new HashCode();
+            HashCode hashCode = new();
 
             hashCode.Add(Nickname);
             hashCode.Add(CreateId);

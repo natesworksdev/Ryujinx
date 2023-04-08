@@ -15,8 +15,8 @@ namespace Ryujinx.HLE.HOS.Services.Hid
     [Service("hid")]
     class IHidServer : IpcService
     {
-        private KEvent _xpadIdEvent;
-        private KEvent _palmaOperationCompleteEvent;
+        private readonly KEvent _xpadIdEvent;
+        private readonly KEvent _palmaOperationCompleteEvent;
 
         private int _xpadIdEventHandle;
 
@@ -24,7 +24,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         private bool _unintendedHomeButtonInputProtectionEnabled;
         private bool _vibrationPermitted;
         private bool _usbFullKeyControllerEnabled;
-        private bool _isFirmwareUpdateAvailableForSixAxisSensor;
+        private readonly bool _isFirmwareUpdateAvailableForSixAxisSensor;
         private bool _isSixAxisSensorUnalteredPassthroughEnabled;
 
         private NpadHandheldActivationMode _npadHandheldActivationMode;
@@ -33,7 +33,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         private long  _npadCommunicationMode;
         private uint  _accelerometerPlayMode;
 #pragma warning disable CS0649
-        private long  _vibrationGcErmCommand;
+        private readonly long  _vibrationGcErmCommand;
 #pragma warning restore CS0649
         private float _sevenSixAxisSensorFusionStrength;
 
@@ -138,8 +138,10 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             // Initialize entries to avoid issues with some games.
 
-            KeyboardInput emptyInput = new KeyboardInput();
-            emptyInput.Keys = new ulong[4];
+            KeyboardInput emptyInput = new()
+            {
+                Keys = new ulong[4]
+            };
 
             for (int entry = 0; entry < Hid.SharedMemEntryCount; entry++)
             {
@@ -1140,7 +1142,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                     }
                 }
 
-                VibrationDeviceValue deviceInfo = new VibrationDeviceValue
+                VibrationDeviceValue deviceInfo = new()
                 {
                     DeviceType = vibrationDeviceType,
                     Position = vibrationDevicePosition
@@ -1158,7 +1160,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // SendVibrationValue(nn::hid::VibrationDeviceHandle, nn::hid::VibrationValue, nn::applet::AppletResourceUserId)
         public ResultCode SendVibrationValue(ServiceCtx context)
         {
-            VibrationDeviceHandle deviceHandle = new VibrationDeviceHandle
+            VibrationDeviceHandle deviceHandle = new()
             {
                 DeviceType = context.RequestData.ReadByte(),
                 PlayerId   = context.RequestData.ReadByte(),
@@ -1166,7 +1168,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 Reserved   = context.RequestData.ReadByte()
             };
 
-            VibrationValue vibrationValue = new VibrationValue
+            VibrationValue vibrationValue = new()
             {
                 AmplitudeLow  = context.RequestData.ReadSingle(),
                 FrequencyLow  = context.RequestData.ReadSingle(),
@@ -1176,9 +1178,10 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             long appletResourceUserId = context.RequestData.ReadInt64();
 
-            Dictionary<byte, VibrationValue> dualVibrationValues = new Dictionary<byte, VibrationValue>();
-
-            dualVibrationValues[deviceHandle.Position] = vibrationValue;
+            Dictionary<byte, VibrationValue> dualVibrationValues = new()
+            {
+                [deviceHandle.Position] = vibrationValue
+            };
 
             context.Device.Hid.Npads.UpdateRumbleQueue((PlayerIndex)deviceHandle.PlayerId, dualVibrationValues);
 
@@ -1189,7 +1192,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // GetActualVibrationValue(nn::hid::VibrationDeviceHandle, nn::applet::AppletResourceUserId) -> nn::hid::VibrationValue
         public ResultCode GetActualVibrationValue(ServiceCtx context)
         {
-            VibrationDeviceHandle deviceHandle = new VibrationDeviceHandle
+            VibrationDeviceHandle deviceHandle = new()
             {
                 DeviceType = context.RequestData.ReadByte(),
                 PlayerId   = context.RequestData.ReadByte(),
@@ -1257,7 +1260,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             if (!deviceHandles.IsEmpty && vibrationValues.Length == deviceHandles.Length)
             {
-                Dictionary<byte, VibrationValue> dualVibrationValues = new Dictionary<byte, VibrationValue>();
+                Dictionary<byte, VibrationValue> dualVibrationValues = new();
                 PlayerIndex currentIndex = (PlayerIndex)deviceHandles[0].PlayerId;
 
                 for (int deviceCounter = 0; deviceCounter < deviceHandles.Length; deviceCounter++)

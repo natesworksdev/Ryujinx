@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.Ui.Input
     class NpadReader
     {
         private readonly Switch _device;
-        private NpadCommonState[] _lastStates;
+        private readonly NpadCommonState[] _lastStates;
 
         public event NpadButtonHandler NpadButtonUpEvent;
         public event NpadButtonHandler NpadButtonDownEvent;

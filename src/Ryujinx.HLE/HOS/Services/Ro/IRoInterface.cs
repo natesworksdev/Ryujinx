@@ -26,8 +26,8 @@ namespace Ryujinx.HLE.HOS.Services.Ro
         private const uint NrrMagic = 0x3052524E;
         private const uint NroMagic = 0x304F524E;
 
-        private List<NrrInfo> _nrrInfos;
-        private List<NroInfo> _nroInfos;
+        private readonly List<NrrInfo> _nrrInfos;
+        private readonly List<NroInfo> _nroInfos;
 
         private KProcess _owner;
         private IVirtualMemoryManager _ownerMm;
@@ -64,7 +64,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
                 return ResultCode.InvalidSize;
             }
 
-            List<byte[]> hashes = new List<byte[]>();
+            List<byte[]> hashes = new();
 
             for (int i = 0; i < header.HashesCount; i++)
             {
@@ -142,7 +142,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
             _owner.CpuMemory.Read(nroAddress, nroData);
 
-            MemoryStream stream = new MemoryStream(nroData);
+            MemoryStream stream = new(nroData);
 
             byte[] nroHash = SHA256.HashData(stream);
 
@@ -158,7 +158,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
             stream.Position = 0;
 
-            NroExecutable nro = new NroExecutable(stream.AsStorage(), nroAddress, bssAddress);
+            NroExecutable nro = new(stream.AsStorage(), nroAddress, bssAddress);
 
             // Check if everything is page align.
             if ((nro.Text.Length & 0xFFF) != 0 || (nro.Ro.Length & 0xFFF) != 0 ||
@@ -442,9 +442,8 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
             if (result == ResultCode.Success)
             {
-                NroInfo info;
 
-                result = ParseNro(out info, context, nroHeapAddress, nroSize, bssHeapAddress, bssSize);
+                result = ParseNro(out NroInfo info, context, nroHeapAddress, nroSize, bssHeapAddress, bssSize);
 
                 if (result == ResultCode.Success)
                 {
@@ -507,8 +506,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
             if (result == ResultCode.Success)
             {
-                NrrInfo info;
-                result = ParseNrr(out info, context, nrrAddress, nrrSize);
+                result = ParseNrr(out NrrInfo info, context, nrrAddress, nrrSize);
 
                 if (result == ResultCode.Success)
                 {

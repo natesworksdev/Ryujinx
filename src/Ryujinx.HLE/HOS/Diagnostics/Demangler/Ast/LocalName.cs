@@ -4,8 +4,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
     public class LocalName : BaseNode
     {
-        private BaseNode _encoding;
-        private BaseNode _entity;
+        private readonly BaseNode _encoding;
+        private readonly BaseNode _entity;
 
         public LocalName(BaseNode encoding, BaseNode entity) : base(NodeType.LocalName)
         {

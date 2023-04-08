@@ -8,24 +8,24 @@ namespace Ryujinx.HLE
         private const int FrameTypeGame   = 0;
         private const int PercentTypeFifo = 0;
 
-        private double[] _frameRate;
-        private double[] _accumulatedFrameTime;
-        private double[] _previousFrameTime;
+        private readonly double[] _frameRate;
+        private readonly double[] _accumulatedFrameTime;
+        private readonly double[] _previousFrameTime;
 
-        private double[] _averagePercent;
-        private double[] _accumulatedActiveTime;
-        private double[] _percentLastEndTime;
-        private double[] _percentStartTime;
+        private readonly double[] _averagePercent;
+        private readonly double[] _accumulatedActiveTime;
+        private readonly double[] _percentLastEndTime;
+        private readonly double[] _percentStartTime;
 
-        private long[]   _framesRendered;
-        private double[] _percentTime;
+        private readonly long[]   _framesRendered;
+        private readonly double[] _percentTime;
 
-        private object[] _frameLock;
-        private object[] _percentLock;
+        private readonly object[] _frameLock;
+        private readonly object[] _percentLock;
 
-        private double _ticksToSeconds;
+        private readonly double _ticksToSeconds;
 
-        private Timer _resetTimer;
+        private readonly Timer _resetTimer;
 
         public PerformanceStatistics()
         {

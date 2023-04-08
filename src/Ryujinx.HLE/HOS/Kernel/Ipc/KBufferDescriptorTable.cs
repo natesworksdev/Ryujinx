@@ -9,9 +9,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
     {
         private const int MaxInternalBuffersCount = 8;
 
-        private List<KBufferDescriptor> _sendBufferDescriptors;
-        private List<KBufferDescriptor> _receiveBufferDescriptors;
-        private List<KBufferDescriptor> _exchangeBufferDescriptors;
+        private readonly List<KBufferDescriptor> _sendBufferDescriptors;
+        private readonly List<KBufferDescriptor> _receiveBufferDescriptors;
+        private readonly List<KBufferDescriptor> _exchangeBufferDescriptors;
 
         public KBufferDescriptorTable()
         {

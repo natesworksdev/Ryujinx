@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
     {
         private const int Mod0 = 'M' << 0 | 'O' << 8 | 'D' << 16 | '0' << 24;
 
-        private KProcess _owner;
+        private readonly KProcess _owner;
 
         private class Image
         {
@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             }
         }
 
-        private List<Image> _images;
+        private readonly List<Image> _images;
 
         private int _loaded;
 
@@ -49,7 +49,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             var context = thread.Context;
 
-            StringBuilder trace = new StringBuilder();
+            StringBuilder trace = new();
 
             trace.AppendLine($"Process: {_owner.Name}, PID: {_owner.Pid}");
 
@@ -111,7 +111,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             var context = thread.Context;
 
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
 
             string GetReg(int x)
             {
@@ -355,7 +355,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 return;
             }
 
-            Dictionary<ElfDynamicTag, ulong> dynamic = new Dictionary<ElfDynamicTag, ulong>();
+            Dictionary<ElfDynamicTag, ulong> dynamic = new();
 
             int mod0Magic = memory.Read<int>(mod0Offset + 0x0);
 
@@ -413,7 +413,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             ulong strTblAddr = textOffset + strTab;
             ulong symTblAddr = textOffset + symTab;
 
-            List<ElfSymbol> symbols = new List<ElfSymbol>();
+            List<ElfSymbol> symbols = new();
 
             while (symTblAddr < strTblAddr)
             {

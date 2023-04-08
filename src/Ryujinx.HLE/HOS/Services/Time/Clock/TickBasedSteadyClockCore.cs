@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
         public override SteadyClockTimePoint GetTimePoint(ITickSource tickSource)
         {
-            SteadyClockTimePoint result = new SteadyClockTimePoint
+            SteadyClockTimePoint result = new()
             {
                 TimePoint     = 0,
                 ClockSourceId = GetClockSourceId()

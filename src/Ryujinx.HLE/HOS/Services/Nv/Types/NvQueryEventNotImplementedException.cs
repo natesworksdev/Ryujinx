@@ -35,7 +35,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.Types
 
         private string BuildMessage()
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
 
             sb.AppendLine($"Device File: {DeviceFile.GetType().Name}");
             sb.AppendLine();
