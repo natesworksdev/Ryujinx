@@ -24,7 +24,7 @@ namespace Ryujinx.Audio.Output
         /// <summary>
         /// The session ids allocation table.
         /// </summary>
-        private int[] _sessionIds;
+        private readonly int[] _sessionIds;
 
         /// <summary>
         /// The device driver.
@@ -39,7 +39,7 @@ namespace Ryujinx.Audio.Output
         /// <summary>
         /// The <see cref="AudioOutputSystem"/> session instances.
         /// </summary>
-        private AudioOutputSystem[] _sessions;
+        private readonly AudioOutputSystem[] _sessions;
 
         /// <summary>
         /// The count of active sessions.
@@ -200,7 +200,7 @@ namespace Ryujinx.Audio.Output
 
             IHardwareDeviceSession deviceSession = _deviceDriver.OpenDeviceSession(IHardwareDeviceDriver.Direction.Output, memoryManager, sampleFormat, parameter.SampleRate, parameter.ChannelCount, volume);
 
-            AudioOutputSystem audioOut = new AudioOutputSystem(this, _lock, deviceSession, _sessionsBufferEvents[sessionId]);
+            AudioOutputSystem audioOut = new(this, _lock, deviceSession, _sessionsBufferEvents[sessionId]);
 
             ResultCode result = audioOut.Initialize(inputDeviceName, sampleFormat, ref parameter, sessionId);
 

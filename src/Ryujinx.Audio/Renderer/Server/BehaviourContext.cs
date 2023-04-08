@@ -125,7 +125,7 @@ namespace Ryujinx.Audio.Renderer.Server
         /// <summary>
         /// Error storage.
         /// </summary>
-        private ErrorInfo[] _errorInfos;
+        private readonly ErrorInfo[] _errorInfos;
 
         /// <summary>
         /// Current position in the <see cref="_errorInfos"/> array.

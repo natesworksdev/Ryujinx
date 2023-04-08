@@ -36,7 +36,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
 
         private long _lastTime;
         private long _playbackEnds;
-        private ManualResetEvent _event;
+        private readonly ManualResetEvent _event;
 
         private ManualResetEvent _pauseEvent;
 

@@ -89,7 +89,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
         {
             Span<float> outputBuffer = context.GetBuffer(OutputBufferIndex);
 
-            DataSourceHelper.WaveBufferInformation info = new DataSourceHelper.WaveBufferInformation
+            DataSourceHelper.WaveBufferInformation info = new()
             {
                 SourceSampleRate = SampleRate,
                 SampleFormat = SampleFormat,

@@ -109,7 +109,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
 
             ReadOnlySpan<byte> targetInput;
 
-            targetInput = input.Slice(nibbles / 2);
+            targetInput = input[(nibbles / 2)..];
 
             while (remaining > 0)
             {

@@ -29,7 +29,7 @@ namespace Ryujinx.Audio.Renderer.Server
         /// <summary>
         /// The session ids allocation table.
         /// </summary>
-        private int[] _sessionIds;
+        private readonly int[] _sessionIds;
 
         /// <summary>
         /// The events linked to each session.
@@ -39,7 +39,7 @@ namespace Ryujinx.Audio.Renderer.Server
         /// <summary>
         /// The <see cref="AudioRenderSystem"/> sessions instances.
         /// </summary>
-        private AudioRenderSystem[] _sessions;
+        private readonly AudioRenderSystem[] _sessions;
 
         /// <summary>
         /// The count of active sessions.
@@ -317,7 +317,7 @@ namespace Ryujinx.Audio.Renderer.Server
         {
             int sessionId = AcquireSessionId();
 
-            AudioRenderSystem audioRenderer = new AudioRenderSystem(this, _sessionsSystemEvent[sessionId]);
+            AudioRenderSystem audioRenderer = new(this, _sessionsSystemEvent[sessionId]);
 
             // TODO: Eventually, we should try to use the guest supplied work buffer instead of allocating
             // our own. However, it was causing problems on some applications that would unmap the memory

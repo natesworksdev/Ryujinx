@@ -9,8 +9,8 @@ namespace Ryujinx.Audio.Backends.Dummy
 {
     public class DummyHardwareDeviceDriver : IHardwareDeviceDriver
     {
-        private ManualResetEvent _updateRequiredEvent;
-        private ManualResetEvent _pauseEvent;
+        private readonly ManualResetEvent _updateRequiredEvent;
+        private readonly ManualResetEvent _pauseEvent;
 
         public static bool IsSupported => true;
 

@@ -57,6 +57,6 @@ namespace Ryujinx.Audio.Renderer.Parameter.Sink
         /// <summary>
         /// Reserved/padding.
         /// </summary>
-        private ushort _reserved2;
+        private readonly ushort _reserved2;
     }
 }

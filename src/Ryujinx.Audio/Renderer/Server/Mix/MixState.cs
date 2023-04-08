@@ -66,7 +66,7 @@ namespace Ryujinx.Audio.Renderer.Server.Mix
         /// <summary>
         /// The effect processing order storage.
         /// </summary>
-        private IntPtr _effectProcessingOrderArrayPointer;
+        private readonly IntPtr _effectProcessingOrderArrayPointer;
 
         /// <summary>
         /// The max element count that can be found in the effect processing order storage.

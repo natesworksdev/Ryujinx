@@ -12,8 +12,8 @@ namespace Ryujinx.Audio.Renderer.Utils
     public class FileHardwareDevice : IHardwareDevice
     {
         private FileStream _stream;
-        private uint _channelCount;
-        private uint _sampleRate;
+        private readonly uint _channelCount;
+        private readonly uint _sampleRate;
 
         private const int HeaderSize = 44;
 

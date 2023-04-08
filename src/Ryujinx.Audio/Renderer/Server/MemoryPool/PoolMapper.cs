@@ -46,17 +46,17 @@ namespace Ryujinx.Audio.Renderer.Server.MemoryPool
         /// <summary>
         /// The handle of the process owning the CPU memory manipulated.
         /// </summary>
-        private uint _processHandle;
+        private readonly uint _processHandle;
 
         /// <summary>
         /// The <see cref="Memory{MemoryPoolState}"/> that will be manipulated.
         /// </summary>
-        private Memory<MemoryPoolState> _memoryPools;
+        private readonly Memory<MemoryPoolState> _memoryPools;
 
         /// <summary>
         /// If set to true, this will try to force map memory pool even if their state are considered invalid.
         /// </summary>
-        private bool _isForceMapEnabled;
+        private readonly bool _isForceMapEnabled;
 
         /// <summary>
         /// Create a new <see cref="PoolMapper"/> used for system mapping.

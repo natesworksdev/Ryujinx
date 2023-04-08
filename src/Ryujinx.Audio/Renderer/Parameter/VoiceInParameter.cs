@@ -94,7 +94,7 @@ namespace Ryujinx.Audio.Renderer.Parameter
         /// <summary>
         /// Reserved/unused.
         /// </summary>
-        private uint _reserved1;
+        private readonly uint _reserved1;
 
         /// <summary>
         /// User state address required by the data source.
@@ -143,7 +143,7 @@ namespace Ryujinx.Audio.Renderer.Parameter
         /// <summary>
         /// Reserved/unused.
         /// </summary>
-        private ushort _reserved2;
+        private readonly ushort _reserved2;
 
         /// <summary>
         /// Change the behaviour of the voice.
@@ -222,7 +222,7 @@ namespace Ryujinx.Audio.Renderer.Parameter
             /// <summary>
             /// Reserved/unused.
             /// </summary>
-            private byte _reserved;
+            private readonly byte _reserved;
 
             /// <summary>
             /// If set to anything other than 0, specifies how many times to loop the wavebuffer.

@@ -8,9 +8,9 @@ namespace Ryujinx.Audio.Backends.CompatLayer
 {
     class CompatLayerHardwareDeviceSession : HardwareDeviceSessionOutputBase
     {
-        private HardwareDeviceSessionOutputBase _realSession;
-        private SampleFormat _userSampleFormat;
-        private uint _userChannelCount;
+        private readonly HardwareDeviceSessionOutputBase _realSession;
+        private readonly SampleFormat _userSampleFormat;
+        private readonly uint _userChannelCount;
 
         public CompatLayerHardwareDeviceSession(HardwareDeviceSessionOutputBase realSession, SampleFormat userSampleFormat, uint userChannelCount) : base(realSession.MemoryManager, realSession.RequestedSampleFormat, realSession.RequestedSampleRate, userChannelCount)
         {
@@ -116,7 +116,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
                 samples = MemoryMarshal.Cast<short, byte>(samplesPCM16).ToArray();
             }
 
-            AudioBuffer fakeBuffer = new AudioBuffer
+            AudioBuffer fakeBuffer = new()
             {
                 BufferTag = buffer.BufferTag,
                 DataPointer = buffer.DataPointer,

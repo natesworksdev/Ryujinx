@@ -53,10 +53,10 @@ namespace Ryujinx.Audio.Renderer.Common
         }
 
         private int _nodeCount;
-        private EdgeMatrix _discovered;
-        private EdgeMatrix _finished;
+        private readonly EdgeMatrix _discovered;
+        private readonly EdgeMatrix _finished;
         private Memory<int> _resultArray;
-        private Stack _stack;
+        private readonly Stack _stack;
         private int _tsortResultIndex;
 
         private enum NodeState : byte
@@ -88,16 +88,16 @@ namespace Ryujinx.Audio.Renderer.Common
 
             int edgeMatrixWorkBufferSize = EdgeMatrix.GetWorkBufferSize(nodeCount);
 
-            _discovered.Initialize(nodeStatesWorkBuffer.Slice(0, edgeMatrixWorkBufferSize), nodeCount);
+            _discovered.Initialize(nodeStatesWorkBuffer[..edgeMatrixWorkBufferSize], nodeCount);
             _finished.Initialize(nodeStatesWorkBuffer.Slice(edgeMatrixWorkBufferSize, edgeMatrixWorkBufferSize), nodeCount);
 
-            nodeStatesWorkBuffer = nodeStatesWorkBuffer.Slice(edgeMatrixWorkBufferSize * 2);
+            nodeStatesWorkBuffer = nodeStatesWorkBuffer[(edgeMatrixWorkBufferSize * 2)..];
 
-            _resultArray = SpanMemoryManager<int>.Cast(nodeStatesWorkBuffer.Slice(0, sizeof(int) * nodeCount));
+            _resultArray = SpanMemoryManager<int>.Cast(nodeStatesWorkBuffer[..(sizeof(int) * nodeCount)]);
 
-            nodeStatesWorkBuffer = nodeStatesWorkBuffer.Slice(sizeof(int) * nodeCount);
+            nodeStatesWorkBuffer = nodeStatesWorkBuffer[(sizeof(int) * nodeCount)..];
 
-            Memory<int> stackWorkBuffer = SpanMemoryManager<int>.Cast(nodeStatesWorkBuffer.Slice(0, Stack.CalcBufferSize(nodeCount * nodeCount)));
+            Memory<int> stackWorkBuffer = SpanMemoryManager<int>.Cast(nodeStatesWorkBuffer[..Stack.CalcBufferSize(nodeCount * nodeCount)]);
 
             _stack.Reset(stackWorkBuffer, nodeCount * nodeCount);
         }
@@ -158,7 +158,7 @@ namespace Ryujinx.Audio.Renderer.Common
 
         public ReadOnlySpan<int> GetTsortResult()
         {
-            return _resultArray.Span.Slice(0, _tsortResultIndex);
+            return _resultArray.Span[.._tsortResultIndex];
         }
 
         public bool Sort(EdgeMatrix edgeMatrix)

@@ -164,10 +164,10 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
                     {
                         ref SplitterState splitter = ref GetState(parameter.Id);
 
-                        splitter.Update(this, ref parameter, input.Slice(Unsafe.SizeOf<SplitterInParameter>()));
+                        splitter.Update(this, ref parameter, input[Unsafe.SizeOf<SplitterInParameter>()..]);
                     }
 
-                    input = input.Slice(0x1C + (int)parameter.DestinationCount * 4);
+                    input = input[(0x1C + (int)parameter.DestinationCount * 4)..];
                 }
             }
         }
@@ -194,7 +194,7 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
                         destination.Update(parameter);
                     }
 
-                    input = input.Slice(Unsafe.SizeOf<SplitterDestinationInParameter>());
+                    input = input[Unsafe.SizeOf<SplitterDestinationInParameter>()..];
                 }
             }
         }

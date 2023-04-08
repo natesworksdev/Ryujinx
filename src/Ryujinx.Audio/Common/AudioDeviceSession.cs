@@ -23,7 +23,7 @@ namespace Ryujinx.Audio.Common
         /// <summary>
         /// Array of all buffers currently used or released.
         /// </summary>
-        private AudioBuffer[] _buffers;
+        private readonly AudioBuffer[] _buffers;
 
         /// <summary>
         /// The server index inside <see cref="_buffers"/> (appended but not queued to device driver).
@@ -58,17 +58,17 @@ namespace Ryujinx.Audio.Common
         /// <summary>
         /// The released buffer event.
         /// </summary>
-        private IWritableEvent _bufferEvent;
+        private readonly IWritableEvent _bufferEvent;
 
         /// <summary>
         /// The session on the device driver.
         /// </summary>
-        private IHardwareDeviceSession _hardwareDeviceSession;
+        private readonly IHardwareDeviceSession _hardwareDeviceSession;
 
         /// <summary>
         /// Max number of buffers that can be registered to the device driver at a time.
         /// </summary>
-        private uint _bufferRegisteredLimit;
+        private readonly uint _bufferRegisteredLimit;
 
         /// <summary>
         /// Create a new <see cref="AudioDeviceSession"/>.

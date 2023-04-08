@@ -31,7 +31,7 @@ namespace Ryujinx.Audio.Renderer.Parameter
         /// <summary>
         /// Reserved/padding.
         /// </summary>
-        private byte _reserved1;
+        private readonly byte _reserved1;
 
         /// <summary>
         /// The target mix id of the effect.
@@ -58,7 +58,7 @@ namespace Ryujinx.Audio.Renderer.Parameter
         /// <summary>
         /// Reserved/padding.
         /// </summary>
-        private uint _reserved2;
+        private readonly uint _reserved2;
 
         /// <summary>
         /// Specific data storage.

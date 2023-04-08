@@ -9,8 +9,8 @@ namespace Ryujinx.Audio.Renderer.Server
     /// </summary>
     public class CommandProcessingTimeEstimatorVersion2 : ICommandProcessingTimeEstimator
     {
-        private uint _sampleCount;
-        private uint _bufferCount;
+        private readonly uint _sampleCount;
+        private readonly uint _bufferCount;
 
         public CommandProcessingTimeEstimatorVersion2(uint sampleCount, uint bufferCount)
         {

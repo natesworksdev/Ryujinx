@@ -33,7 +33,7 @@ namespace Ryujinx.Audio.Renderer.Parameter.Effect
         /// <summary>
         /// Reserved/unused.
         /// </summary>
-        private uint _reserved;
+        private readonly uint _reserved;
 
         /// <summary>
         /// The target sample rate.

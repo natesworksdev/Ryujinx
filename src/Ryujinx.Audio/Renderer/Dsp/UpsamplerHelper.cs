@@ -39,7 +39,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
                 return A0 + A1 * MathF.Cos(2 * MathF.PI * x) + A2 * MathF.Cos(4 * MathF.PI * x);
             }
 
-            Array20<float> result = new Array20<float>();
+            Array20<float> result = new();
 
             for (int i = 0; i < FilterBankLength; i++)
             {
@@ -105,7 +105,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             void NextInput(ref UpsamplerBufferState state, float input)
             {
-                state.History.AsSpan().Slice(1).CopyTo(state.History.AsSpan());
+                state.History.AsSpan()[1..].CopyTo(state.History.AsSpan());
                 state.History[HistoryLength - 1] = input;
             }
 

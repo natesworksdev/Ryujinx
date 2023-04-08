@@ -115,7 +115,7 @@ namespace Ryujinx.Audio.Renderer.Parameter.Effect
         /// <summary>
         /// Reserved/padding.
         /// </summary>
-        private byte _reserved;
+        private readonly byte _reserved;
 
         /// <summary>
         /// Check if the <see cref="ChannelCount"/> is valid.

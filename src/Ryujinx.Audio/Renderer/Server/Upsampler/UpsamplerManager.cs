@@ -11,7 +11,7 @@ namespace Ryujinx.Audio.Renderer.Server.Upsampler
         /// <summary>
         /// Work buffer for upsampler.
         /// </summary>
-        private Memory<float> _upSamplerWorkBuffer;
+        private readonly Memory<float> _upSamplerWorkBuffer;
 
         /// <summary>
         /// Global lock of the object.
@@ -21,12 +21,12 @@ namespace Ryujinx.Audio.Renderer.Server.Upsampler
         /// <summary>
         /// The upsamplers instances.
         /// </summary>
-        private UpsamplerState[] _upsamplers;
+        private readonly UpsamplerState[] _upsamplers;
 
         /// <summary>
         /// The count of upsamplers.
         /// </summary>
-        private uint _count;
+        private readonly uint _count;
 
         /// <summary>
         /// Create a new <see cref="UpsamplerManager"/>.
