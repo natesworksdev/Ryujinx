@@ -10,7 +10,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
     {
         private readonly SmApi _sm;
 
-        private bool _canDeferInvokeRequest;
+        private readonly bool _canDeferInvokeRequest;
 
         private readonly MultiWait _multiWait;
         private readonly MultiWait _waitList;

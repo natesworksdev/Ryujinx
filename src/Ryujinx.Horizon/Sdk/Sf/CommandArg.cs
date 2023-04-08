@@ -18,7 +18,7 @@ namespace Ryujinx.Horizon.Sdk.Sf
         ProcessId
     }
 
-    struct CommandArg
+    readonly struct CommandArg
     {
         public CommandArgType  Type            { get; }
         public HipcBufferFlags BufferFlags     { get; }

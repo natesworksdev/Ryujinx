@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 {
-    struct ManagerOptions
+    readonly struct ManagerOptions
     {
         public static ManagerOptions Default => new(0, 0, 0, false);
 

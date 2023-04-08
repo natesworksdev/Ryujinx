@@ -4,7 +4,7 @@ using System;
 
 namespace Ryujinx.Horizon
 {
-    public struct ServiceEntry
+    public readonly struct ServiceEntry
     {
         private readonly Action<ServiceTable> _entrypoint;
         private readonly ServiceTable         _serviceTable;

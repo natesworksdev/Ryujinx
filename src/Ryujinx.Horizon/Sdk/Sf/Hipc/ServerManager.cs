@@ -14,8 +14,8 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
         private readonly bool _canDeferInvokeRequest;
         private readonly int _maxSessions;
 
-        private ulong _pointerBuffersBaseAddress;
-        private ulong _savedMessagesBaseAddress;
+        private readonly ulong _pointerBuffersBaseAddress;
+        private readonly ulong _savedMessagesBaseAddress;
 
         private readonly object _resourceLock;
         private readonly ulong[] _sessionAllocationBitmap;

@@ -1,9 +1,9 @@
 ﻿namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 {
-    struct HipcReceiveListEntry
+    readonly struct HipcReceiveListEntry
     {
-        private uint _addressLow;
-        private uint _word1;
+        private readonly uint _addressLow;
+        private readonly uint _word1;
 
         public HipcReceiveListEntry(ulong address, ulong size)
         {

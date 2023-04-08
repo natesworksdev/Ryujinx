@@ -9,7 +9,7 @@ namespace Ryujinx.Horizon
     {
         private const ulong InvalidAddress = ulong.MaxValue;
 
-        private struct Range : IComparable<Range>
+        private readonly struct Range : IComparable<Range>
         {
             public ulong Offset { get; }
             public ulong Size   { get; }

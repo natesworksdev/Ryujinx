@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 {
-    struct HipcStaticDescriptor
+    readonly struct HipcStaticDescriptor
     {
         private readonly ulong _data;
 

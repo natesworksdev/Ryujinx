@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Horizon.Sdk.Sf.Cmif
 {
-    struct ServerMessageRuntimeMetadata
+    readonly struct ServerMessageRuntimeMetadata
     {
         public ushort InDataSize      { get; }
         public ushort OutDataSize     { get; }

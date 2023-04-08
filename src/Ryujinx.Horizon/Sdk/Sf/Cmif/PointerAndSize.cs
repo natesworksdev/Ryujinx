@@ -1,6 +1,6 @@
 namespace Ryujinx.Horizon.Sdk.Sf.Cmif
 {
-    struct PointerAndSize
+    readonly struct PointerAndSize
     {
         public static PointerAndSize Empty => new(0UL, 0UL);
 
