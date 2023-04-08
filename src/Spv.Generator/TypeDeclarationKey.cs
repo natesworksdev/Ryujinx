@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Spv.Generator
 {
-    internal struct TypeDeclarationKey : IEquatable<TypeDeclarationKey>
+    internal readonly struct TypeDeclarationKey : IEquatable<TypeDeclarationKey>
     {
         private readonly Instruction _typeDeclaration;
 

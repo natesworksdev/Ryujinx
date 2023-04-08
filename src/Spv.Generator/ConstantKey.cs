@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Spv.Generator
 {
-    internal struct ConstantKey : IEquatable<ConstantKey>
+    internal readonly struct ConstantKey : IEquatable<ConstantKey>
     {
         private readonly Instruction _constant;
 
