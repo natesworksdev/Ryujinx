@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Graphics.Vic.Types
 {
-    struct OutputSurfaceConfig
+    readonly struct OutputSurfaceConfig
     {
 #pragma warning disable CS0649
         private readonly long _word0;

@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Graphics.Vic.Types
 {
-    struct SlotConfig
+    readonly struct SlotConfig
     {
         private readonly long _word0;
         private readonly long _word1;
@@ -11,7 +11,9 @@ namespace Ryujinx.Graphics.Vic.Types
         private readonly long _word4;
         private readonly long _word5;
         private readonly long _word6;
+#pragma warning disable IDE0051
         private readonly long _word7;
+#pragma warning restore IDE0051
 
         public bool SlotEnable => _word0.Extract(0);
         public bool DeNoise => _word0.Extract(1);

@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Graphics.Vic.Types
 {
-    struct ClearRectStruct
+    readonly struct ClearRectStruct
     {
 #pragma warning disable CS0649
         private readonly long _word0;

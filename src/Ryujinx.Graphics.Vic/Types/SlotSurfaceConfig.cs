@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Graphics.Vic.Types
 {
-    struct SlotSurfaceConfig
+    readonly struct SlotSurfaceConfig
     {
         private readonly long _word0;
         private readonly long _word1;

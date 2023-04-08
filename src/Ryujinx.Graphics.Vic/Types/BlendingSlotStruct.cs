@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Graphics.Vic.Types
 {
-    struct BlendingSlotStruct
+    readonly struct BlendingSlotStruct
     {
         private readonly long _word0;
         private readonly long _word1;
