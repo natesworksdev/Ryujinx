@@ -451,7 +451,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             AmiiboImage = bitmap;
         }
 
-        private async void ShowInfoDialog()
+        private static async void ShowInfoDialog()
         {
             await ContentDialogHelper.CreateInfoDialog(LocaleManager.Instance[LocaleKeys.DialogAmiiboApiTitle],
                 LocaleManager.Instance[LocaleKeys.DialogAmiiboApiConnectErrorMessage],

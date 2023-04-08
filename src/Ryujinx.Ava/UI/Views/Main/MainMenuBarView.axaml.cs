@@ -79,7 +79,7 @@ namespace Ryujinx.Ava.UI.Views.Main
                     Header  = languageName,
                     Command = MiniCommand.Create(() =>
                     {
-                        ViewModel.ChangeLanguage(languageCode);
+                        MainWindowViewModel.ChangeLanguage(languageCode);
                     })
                 };
 

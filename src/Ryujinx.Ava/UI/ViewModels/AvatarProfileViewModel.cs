@@ -102,7 +102,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public int ImageCount => _avatarStore.Count;
+        public static int ImageCount => _avatarStore.Count;
 
         public int ImagesLoaded
         {

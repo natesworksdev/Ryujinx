@@ -126,7 +126,7 @@ namespace Ryujinx.Ava.Common.Locale
             }
         }
 
-        private Dictionary<LocaleKeys, string> LoadJsonLanguage(string languageCode = DefaultLanguageCode)
+        private static Dictionary<LocaleKeys, string> LoadJsonLanguage(string languageCode = DefaultLanguageCode)
         {
             var    localeStrings = new Dictionary<LocaleKeys, string>();
             string languageJson  = EmbeddedResources.ReadAllText($"Ryujinx.Ava/Assets/Locales/{languageCode}.json");

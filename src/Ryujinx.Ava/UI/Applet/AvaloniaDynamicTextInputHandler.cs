@@ -76,7 +76,7 @@ namespace Ryujinx.Ava.UI.Applet
                 return;
             }
 
-            e.RoutedEvent = _hiddenTextBox.GetKeyUpRoutedEvent();
+            e.RoutedEvent = OffscreenTextBox.GetKeyUpRoutedEvent();
 
             Dispatcher.UIThread.InvokeAsync(() =>
             {
@@ -96,7 +96,7 @@ namespace Ryujinx.Ava.UI.Applet
                 return;
             }
 
-            e.RoutedEvent = _hiddenTextBox.GetKeyUpRoutedEvent();
+            e.RoutedEvent = OffscreenTextBox.GetKeyUpRoutedEvent();
 
             Dispatcher.UIThread.InvokeAsync(() =>
             {

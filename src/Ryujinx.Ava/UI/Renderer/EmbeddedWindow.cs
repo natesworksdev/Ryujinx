@@ -280,7 +280,7 @@ namespace Ryujinx.Ava.UI.Renderer
         }
 
         [SupportedOSPlatform("macos")]
-        void DestroyMacOS()
+        static void DestroyMacOS()
         {
             // TODO
         }

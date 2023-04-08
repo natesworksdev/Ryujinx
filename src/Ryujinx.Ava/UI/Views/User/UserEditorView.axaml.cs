@@ -20,7 +20,7 @@ namespace Ryujinx.Ava.UI.Views.User
         private bool _isNewUser;
 
         public TempProfile TempProfile { get; set; }
-        public uint MaxProfileNameLength => 0x20;
+        public static uint MaxProfileNameLength => 0x20;
         public bool IsDeletable => _profile.UserId != AccountManager.DefaultUserId;
 
         public UserEditorView()

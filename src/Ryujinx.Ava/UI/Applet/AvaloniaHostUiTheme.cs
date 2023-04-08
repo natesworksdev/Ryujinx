@@ -25,7 +25,7 @@ namespace Ryujinx.Ava.UI.Applet
         public ThemeColor SelectionBackgroundColor { get; }
         public ThemeColor SelectionForegroundColor { get; }
 
-        private ThemeColor BrushToThemeColor(IBrush brush)
+        private static ThemeColor BrushToThemeColor(IBrush brush)
         {
             if (brush is SolidColorBrush solidColor)
             {

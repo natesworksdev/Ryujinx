@@ -36,7 +36,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             Heading = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.CheatWindowHeading, titleName, titleId.ToUpper());
             BuildId = ApplicationData.GetApplicationBuildId(virtualFileSystem, titlePath);
-            
+
             InitializeComponent();
 
             string modsBasePath = ModLoader.GetModsBasePath();
@@ -45,7 +45,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             _enabledCheatsPath = Path.Combine(titleModsPath, "cheats", "enabled.txt");
 
-            string[] enabled = { };
+            string[] enabled = System.Array.Empty<string>();
 
             if (File.Exists(_enabledCheatsPath))
             {
@@ -89,7 +89,7 @@ namespace Ryujinx.Ava.UI.Windows
             }
 
             DataContext = this;
-            
+
             Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance[LocaleKeys.CheatWindowTitle];
         }
 
