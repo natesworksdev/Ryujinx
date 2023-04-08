@@ -310,7 +310,7 @@ namespace Ryujinx.Memory.Range
                 return _singleRange.GetHashCode();
             }
 
-            HashCode hash = new HashCode();
+            HashCode hash = new();
 
             foreach (MemoryRange range in _ranges)
             {

@@ -238,7 +238,7 @@ namespace Ryujinx.Memory.Range
 
             if (index < 0)
             {
-                return default(T);
+                return default;
             }
 
             return _items[index].Value;

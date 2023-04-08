@@ -136,7 +136,7 @@ namespace Ryujinx.Memory
                 {
                     size = Math.Min(data.Length, PageSize - (int)(va & PageMask));
 
-                    data.Slice(0, size).CopyTo(GetHostSpanContiguous(va, size));
+                    data[..size].CopyTo(GetHostSpanContiguous(va, size));
 
                     offset += size;
                 }
@@ -361,7 +361,7 @@ namespace Ryujinx.Memory
             {
                 size = Math.Min(data.Length, PageSize - (int)(va & PageMask));
 
-                GetHostSpanContiguous(va, size).CopyTo(data.Slice(0, size));
+                GetHostSpanContiguous(va, size).CopyTo(data[..size]);
 
                 offset += size;
             }
