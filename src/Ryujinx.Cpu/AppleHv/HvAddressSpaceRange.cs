@@ -34,7 +34,7 @@ namespace Ryujinx.Cpu.AppleHv
                 ulong size = (ulong)count * sizeof(ulong);
                 Allocation = blockAllocator.Allocate(size, PageSize);
 
-                AsSpan().Fill(0UL);
+                AsSpan().Clear();
 
                 if (hasNext)
                 {
@@ -347,7 +347,7 @@ namespace Ryujinx.Cpu.AppleHv
             }
         }
 
-        private void WriteBlock(PtLevel level, int index, int depth, ulong pa, ulong attr)
+        private static void WriteBlock(PtLevel level, int index, int depth, ulong pa, ulong attr)
         {
             Span<ulong> currentTable = level.AsSpan();
 

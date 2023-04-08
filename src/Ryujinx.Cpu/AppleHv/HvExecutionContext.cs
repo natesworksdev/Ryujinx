@@ -204,7 +204,7 @@ namespace Ryujinx.Cpu.AppleHv
             }
         }
 
-        private void DataAbort(MemoryTracking tracking, ulong vcpu, uint esr)
+        private static void DataAbort(MemoryTracking tracking, ulong vcpu, uint esr)
         {
             bool write = (esr & (1u << 6)) != 0;
             bool farValid = (esr & (1u << 10)) == 0;

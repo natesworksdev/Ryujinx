@@ -14,7 +14,7 @@ namespace Ryujinx.Cpu.AppleHv
             _memoryManager = (HvMemoryManager)memory;
         }
 
-        private void UnmapHandler(ulong address, ulong size)
+        private static void UnmapHandler(ulong address, ulong size)
         {
         }
 
