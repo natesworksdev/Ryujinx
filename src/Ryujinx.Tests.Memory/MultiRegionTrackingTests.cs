@@ -85,7 +85,7 @@ namespace Ryujinx.Tests.Memory
 
         private void PreparePages(IMultiRegionHandle handle, int pageCount, ulong address = 0)
         {
-            Random random = new Random();
+            Random random = new();
 
             // Make sure the list has minimum granularity (smart region changes granularity based on requested ranges)
             RandomOrder(random, Enumerable.Range(0, pageCount).ToList(), (i) =>
@@ -105,7 +105,7 @@ namespace Ryujinx.Tests.Memory
             const int pageCount = 32;
             IMultiRegionHandle handle = GetGranular(smart, 0, PageSize * pageCount, PageSize);
 
-            Random random = new Random();
+            Random random = new();
 
             PreparePages(handle, pageCount);
 
@@ -149,7 +149,7 @@ namespace Ryujinx.Tests.Memory
 
             PreparePages(handle, pageCount);
 
-            Random random = new Random();
+            Random random = new();
 
             IEnumerable<int> halfRange = Enumerable.Range(0, pageCount / 2);
             List<int> odd = halfRange.Select(x => x * 2 + 1).ToList();
