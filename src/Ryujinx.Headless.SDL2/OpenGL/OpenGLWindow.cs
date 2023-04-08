@@ -40,9 +40,9 @@ namespace Ryujinx.Headless.SDL2.OpenGL
 
         private class SDL2OpenGLContext : IOpenGLContext
         {
-            private IntPtr _context;
-            private IntPtr _window;
-            private bool _shouldDisposeWindow;
+            private readonly IntPtr _context;
+            private readonly IntPtr _window;
+            private readonly bool _shouldDisposeWindow;
 
             public SDL2OpenGLContext(IntPtr context, IntPtr window, bool shouldDisposeWindow = true)
             {
@@ -99,7 +99,7 @@ namespace Ryujinx.Headless.SDL2.OpenGL
             }
         }
 
-        private GraphicsDebugLevel _glLogLevel;
+        private readonly GraphicsDebugLevel _glLogLevel;
         private SDL2OpenGLContext _openGLContext;
 
         public OpenGLWindow(

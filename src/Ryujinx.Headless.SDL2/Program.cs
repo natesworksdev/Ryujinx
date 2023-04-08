@@ -67,7 +67,7 @@ namespace Ryujinx.Headless.SDL2
 
             if (OperatingSystem.IsMacOS() || OperatingSystem.IsLinux())
             {
-                AutoResetEvent invoked = new AutoResetEvent(false);
+                AutoResetEvent invoked = new(false);
 
                 // MacOS must perform SDL polls from the main thread.
                 Ryujinx.SDL2.Common.SDL2Driver.MainThreadDispatcher = (Action action) =>
@@ -387,7 +387,7 @@ namespace Ryujinx.Headless.SDL2
             _enableKeyboard = option.EnableKeyboard;
             _enableMouse = option.EnableMouse;
 
-            void LoadPlayerConfiguration(string inputProfileName, string inputId, PlayerIndex index)
+            static void LoadPlayerConfiguration(string inputProfileName, string inputId, PlayerIndex index)
             {
                 InputConfig inputConfig = HandlePlayerConfiguration(inputProfileName, inputId, index);
 
@@ -472,10 +472,10 @@ namespace Ryujinx.Headless.SDL2
 
             switch (state)
             {
-                case LoadState ptcState:
+                case LoadState:
                     label = $"PTC : {current}/{total}";
                     break;
-                case ShaderCacheState shaderCacheState:
+                case ShaderCacheState:
                     label = $"Shaders : {current}/{total}";
                     break;
                 default:
@@ -537,7 +537,7 @@ namespace Ryujinx.Headless.SDL2
                 renderer = new ThreadedRenderer(renderer);
             }
 
-            HLEConfiguration configuration = new HLEConfiguration(_virtualFileSystem,
+            HLEConfiguration configuration = new(_virtualFileSystem,
                                                                   _libHacHorizonManager,
                                                                   _contentManager,
                                                                   _accountManager,

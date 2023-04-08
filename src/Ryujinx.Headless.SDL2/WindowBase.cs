@@ -30,7 +30,7 @@ namespace Ryujinx.Headless.SDL2
         private const SDL_WindowFlags DefaultFlags = SDL_WindowFlags.SDL_WINDOW_ALLOW_HIGHDPI | SDL_WindowFlags.SDL_WINDOW_RESIZABLE | SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS | SDL_WindowFlags.SDL_WINDOW_SHOWN;
         private const int TargetFps = 60;
 
-        private static ConcurrentQueue<Action> MainThreadActions = new ConcurrentQueue<Action>();
+        private static readonly ConcurrentQueue<Action> MainThreadActions = new();
 
         [LibraryImport("SDL2")]
         // TODO: Remove this as soon as SDL2-CS was updated to expose this method publicly
@@ -55,9 +55,9 @@ namespace Ryujinx.Headless.SDL2
         public int Height { get; private set; }
 
         protected SDL2MouseDriver MouseDriver;
-        private InputManager _inputManager;
-        private IKeyboard _keyboardInterface;
-        private GraphicsDebugLevel _glLogLevel;
+        private readonly InputManager _inputManager;
+        private readonly IKeyboard _keyboardInterface;
+        private readonly GraphicsDebugLevel _glLogLevel;
         private readonly Stopwatch _chrono;
         private readonly long _ticksPerFrame;
         private readonly CancellationTokenSource _gpuCancellationTokenSource;
@@ -71,8 +71,8 @@ namespace Ryujinx.Headless.SDL2
 
         private string _gpuVendorName;
 
-        private AspectRatio _aspectRatio;
-        private bool _enableMouse;
+        private readonly AspectRatio _aspectRatio;
+        private readonly bool _enableMouse;
 
         public WindowBase(
             InputManager inputManager,
@@ -396,7 +396,7 @@ namespace Ryujinx.Headless.SDL2
 
             InitializeWindow();
 
-            Thread renderLoopThread = new Thread(Render)
+            Thread renderLoopThread = new(Render)
             {
                 Name = "GUI.RenderLoop"
             };
@@ -465,7 +465,7 @@ namespace Ryujinx.Headless.SDL2
 
         public bool DisplayErrorAppletDialog(string title, string message, string[] buttonsText)
         {
-            SDL_MessageBoxData data = new SDL_MessageBoxData
+            SDL_MessageBoxData data = new()
             {
                 title = title,
                 message = message,
