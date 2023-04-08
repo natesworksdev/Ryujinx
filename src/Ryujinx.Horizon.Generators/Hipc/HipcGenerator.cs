@@ -39,7 +39,7 @@ namespace Ryujinx.Horizon.Generators.Hipc
             In
         }
 
-        private struct OutParameter
+        private readonly struct OutParameter
         {
             public readonly string Name;
             public readonly string TypeName;
