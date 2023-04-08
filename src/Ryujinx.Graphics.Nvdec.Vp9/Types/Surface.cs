@@ -27,7 +27,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         public int UvAlignedWidth { get; }
         public int UvAlignedHeight { get; }
         public int UvStride { get; }
-        public bool HighBd => false;
+        public static bool HighBd => false;
 
         private readonly IntPtr _pointer;
 

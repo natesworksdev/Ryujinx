@@ -26,8 +26,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
 
         public void ClearAllSegFeatures()
         {
-            MemoryMarshal.CreateSpan(ref FeatureData[0][0], 8 * 4).Fill(0);
-            MemoryMarshal.CreateSpan(ref FeatureMask[0], 8).Fill(0);
+            MemoryMarshal.CreateSpan(ref FeatureData[0][0], 8 * 4).Clear();
+            MemoryMarshal.CreateSpan(ref FeatureMask[0], 8).Clear();
             AqAvOffset = 0;
         }
 

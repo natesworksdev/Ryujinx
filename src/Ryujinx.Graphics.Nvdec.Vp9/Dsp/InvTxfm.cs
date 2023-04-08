@@ -182,7 +182,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
 
             if ((x0 | x1 | x2 | x3) == 0)
             {
-                output[..4].Fill(0);
+                output[..4].Clear();
                 return;
             }
 
@@ -300,7 +300,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
 
             if ((x0 | x1 | x2 | x3 | x4 | x5 | x6 | x7) == 0)
             {
-                output[..8].Fill(0);
+                output[..8].Clear();
                 return;
             }
 
@@ -464,7 +464,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             Span<int> tempIn = stackalloc int[8];
             Span<int> tempOut = stackalloc int[8];
 
-            output.Fill(0);
+            output.Clear();
 
             // First transform rows
             // Only first 4 row has non-zero coefs
@@ -533,7 +533,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
 
             if ((x0 | x1 | x2 | x3 | x4 | x5 | x6 | x7 | x8 | x9 | x10 | x11 | x12 | x13 | x14 | x15) == 0)
             {
-                output[..16].Fill(0);
+                output[..16].Clear();
                 return;
             }
 
@@ -889,7 +889,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             Span<int> tempIn = stackalloc int[16];
             Span<int> tempOut = stackalloc int[16];
 
-            output.Fill(0);
+            output.Clear();
 
             // First transform rows. Since all non-zero dct coefficients are in
             // upper-left 8x8 area, we only need to calculate first 8 rows here.
@@ -925,7 +925,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             Span<int> tempIn = stackalloc int[16];
             Span<int> tempOut = stackalloc int[16];
 
-            output.Fill(0);
+            output.Clear();
 
             // First transform rows. Since all non-zero dct coefficients are in
             // upper-left 4x4 area, we only need to calculate first 4 rows here.
@@ -1365,7 +1365,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
                 }
                 else
                 {
-                    outptr[..32].Fill(0);
+                    outptr[..32].Clear();
                 }
 
                 input = input[32..];
@@ -1397,7 +1397,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             Span<int> tempIn = stackalloc int[32];
             Span<int> tempOut = stackalloc int[32];
 
-            output.Fill(0);
+            output.Clear();
 
             // Rows
             // Only upper-left 16x16 has non-zero coeff
@@ -1433,7 +1433,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             Span<int> tempIn = stackalloc int[32];
             Span<int> tempOut = stackalloc int[32];
 
-            output.Fill(0);
+            output.Clear();
 
             // Rows
             // Only upper-left 8x8 has non-zero coeff
@@ -1576,13 +1576,13 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             if (DetectInvalidHighbdInput(input, 4) != 0)
             {
                 Debug.Assert(false, "invalid highbd txfm input");
-                output[..4].Fill(0);
+                output[..4].Clear();
                 return;
             }
 
             if ((x0 | x1 | x2 | x3) == 0)
             {
-                output[..4].Fill(0);
+                output[..4].Clear();
                 return;
             }
 
@@ -1619,7 +1619,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             if (DetectInvalidHighbdInput(input, 4) != 0)
             {
                 Debug.Assert(false, "invalid highbd txfm input");
-                output[..4].Fill(0);
+                output[..4].Clear();
                 return;
             }
 
@@ -1707,13 +1707,13 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             if (DetectInvalidHighbdInput(input, 8) != 0)
             {
                 Debug.Assert(false, "invalid highbd txfm input");
-                output[..8].Fill(0);
+                output[..8].Clear();
                 return;
             }
 
             if ((x0 | x1 | x2 | x3 | x4 | x5 | x6 | x7) == 0)
             {
-                output[..8].Fill(0);
+                output[..8].Clear();
                 return;
             }
 
@@ -1786,7 +1786,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             if (DetectInvalidHighbdInput(input, 8) != 0)
             {
                 Debug.Assert(false, "invalid highbd txfm input");
-                output[..8].Fill(0);
+                output[..8].Clear();
                 return;
             }
 
@@ -1874,7 +1874,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             Span<int> tempIn = stackalloc int[8];
             Span<int> tempOut = stackalloc int[8];
 
-            output.Fill(0);
+            output.Clear();
 
             // First transform rows
             // Only first 4 row has non-zero coefs
@@ -1943,13 +1943,13 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             if (DetectInvalidHighbdInput(input, 16) != 0)
             {
                 Debug.Assert(false, "invalid highbd txfm input");
-                output[..16].Fill(0);
+                output[..16].Clear();
                 return;
             }
 
             if ((x0 | x1 | x2 | x3 | x4 | x5 | x6 | x7 | x8 | x9 | x10 | x11 | x12 | x13 | x14 | x15) == 0)
             {
-                output[..16].Fill(0);
+                output[..16].Clear();
                 return;
             }
 
@@ -2105,7 +2105,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             if (DetectInvalidHighbdInput(input, 16) != 0)
             {
                 Debug.Assert(false, "invalid highbd txfm input");
-                output[..16].Fill(0);
+                output[..16].Clear();
                 return;
             }
 
@@ -2312,7 +2312,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             Span<int> tempIn = stackalloc int[16];
             Span<int> tempOut = stackalloc int[16];
 
-            output.Fill(0);
+            output.Clear();
 
             // First transform rows. Since all non-zero dct coefficients are in
             // upper-left 8x8 area, we only need to calculate first 8 rows here.
@@ -2350,7 +2350,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             Span<int> tempIn = stackalloc int[16];
             Span<int> tempOut = stackalloc int[16];
 
-            output.Fill(0);
+            output.Clear();
 
             // First transform rows. Since all non-zero dct coefficients are in
             // upper-left 4x4 area, we only need to calculate first 4 rows here.
@@ -2406,7 +2406,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             if (DetectInvalidHighbdInput(input, 32) != 0)
             {
                 Debug.Assert(false, "invalid highbd txfm input");
-                output[..32].Fill(0);
+                output[..32].Clear();
                 return;
             }
 
@@ -2797,7 +2797,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
                 }
                 else
                 {
-                    outptr[..32].Fill(0);
+                    outptr[..32].Clear();
                 }
 
                 input = input[32..];
@@ -2829,7 +2829,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             Span<int> tempIn = stackalloc int[32];
             Span<int> tempOut = stackalloc int[32];
 
-            output.Fill(0);
+            output.Clear();
 
             // Rows
             // Only upper-left 16x16 has non-zero coeff
@@ -2867,7 +2867,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             Span<int> tempIn = stackalloc int[32];
             Span<int> tempOut = stackalloc int[32];
 
-            output.Fill(0);
+            output.Clear();
 
             // Rows
             // Only upper-left 8x8 has non-zero coeff

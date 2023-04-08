@@ -627,7 +627,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             bool earlyBreak = mode != PredictionMode.NearMv;
 
             // Blank the reference vector list
-            mvRefList[..Constants.MaxMvRefCandidates].Fill(new Mv());
+            mvRefList[..Constants.MaxMvRefCandidates].Clear();
 
             i = 0;
             if (isSub8X8 != 0)

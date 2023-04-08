@@ -725,7 +725,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             int x = aoff * 4;
             int y = loff * 4;
 
-            if (xd.CurBuf.HighBd)
+            if (Surface.HighBd)
             {
                 BuildIntraPredictorsHigh(
                     ref xd,

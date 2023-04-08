@@ -25,7 +25,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             ref MacroBlockDPlane pd = ref xd.Plane[plane];
             ArrayPtr<int> dqcoeff = pd.DqCoeff;
             Debug.Assert(eob > 0);
-            if (xd.CurBuf.HighBd)
+            if (Surface.HighBd)
             {
                 Span<ushort> dst16 = MemoryMarshal.Cast<byte, ushort>(dst);
                 if (xd.Lossless)
@@ -79,15 +79,15 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             {
                 if (txSize <= TxSize.Tx16x16 && eob <= 10)
                 {
-                    dqcoeff.AsSpan()[..(4 * (4 << (int)txSize))].Fill(0);
+                    dqcoeff.AsSpan()[..(4 * (4 << (int)txSize))].Clear();
                 }
                 else if (txSize == TxSize.Tx32x32 && eob <= 34)
                 {
-                    dqcoeff.AsSpan()[..256].Fill(0);
+                    dqcoeff.AsSpan()[..256].Clear();
                 }
                 else
                 {
-                    dqcoeff.AsSpan()[..(16 << ((int)txSize << 1))].Fill(0);
+                    dqcoeff.AsSpan()[..(16 << ((int)txSize << 1))].Clear();
                 }
             }
         }
@@ -104,7 +104,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             ref MacroBlockDPlane pd = ref xd.Plane[plane];
             ArrayPtr<int> dqcoeff = pd.DqCoeff;
             Debug.Assert(eob > 0);
-            if (xd.CurBuf.HighBd)
+            if (Surface.HighBd)
             {
                 Span<ushort> dst16 = MemoryMarshal.Cast<byte, ushort>(dst);
                 if (xd.Lossless)
@@ -158,15 +158,15 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             {
                 if (txType == TxType.DctDct && txSize <= TxSize.Tx16x16 && eob <= 10)
                 {
-                    dqcoeff.AsSpan()[..(4 * (4 << (int)txSize))].Fill(0);
+                    dqcoeff.AsSpan()[..(4 * (4 << (int)txSize))].Clear();
                 }
                 else if (txSize == TxSize.Tx32x32 && eob <= 34)
                 {
-                    dqcoeff.AsSpan()[..256].Fill(0);
+                    dqcoeff.AsSpan()[..256].Clear();
                 }
                 else
                 {
-                    dqcoeff.AsSpan()[..(16 << ((int)txSize << 1))].Fill(0);
+                    dqcoeff.AsSpan()[..(16 << ((int)txSize << 1))].Clear();
                 }
             }
         }
@@ -400,7 +400,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             int ys)
         {
             ushort* mcBufHigh = stackalloc ushort[80 * 2 * 80 * 2];
-            if (xd.CurBuf.HighBd)
+            if (Surface.HighBd)
             {
                 HighBuildMcBorder(bufPtr1, preBufStride, mcBufHigh, bW, x0, y0, bW, bH, frameWidth, frameHeight);
                 ReconInter.HighbdInterPredictor(
@@ -592,7 +592,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     return;
                 }
             }
-            if (xd.CurBuf.HighBd)
+            if (Surface.HighBd)
             {
                 ReconInter.HighbdInterPredictor(
                     (ushort*)bufPtr,
@@ -1250,8 +1250,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             Debug.Assert(tileCols <= (1 << 6));
             Debug.Assert(tileRows == 1);
 
-            cm.AboveContext.AsSpan().Fill(0);
-            cm.AboveSegContext.AsSpan().Fill(0);
+            cm.AboveContext.AsSpan().Clear();
+            cm.AboveSegContext.AsSpan().Clear();
 
             for (n = 0; n < numWorkers; ++n)
             {
