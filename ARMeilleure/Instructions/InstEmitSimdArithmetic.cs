@@ -1137,12 +1137,34 @@ namespace ARMeilleure.Instructions
             }
             else if (Optimizations.UseFma)
             {
-                EmitScalarTernaryOpByElemF(context, (op1, op2, op3) =>
-                {
-                    OpCodeSimdRegElemF op = (OpCodeSimdRegElemF)context.CurrOp;
+                OpCodeSimdRegElemF op = (OpCodeSimdRegElemF)context.CurrOp;
 
-                    return context.AddIntrinsic((op.Size & 1) != 0 ? Intrinsic.X86Vfmadd231sd : Intrinsic.X86Vfmadd231ss, op1, op2, op3);
-                });
+                Operand d = GetVec(op.Rd);
+                Operand n = GetVec(op.Rn);
+                Operand m = GetVec(op.Rm);
+
+                int sizeF = op.Size & 1;
+
+                if (sizeF == 0)
+                {
+                    int shuffleMask = op.Index | op.Index << 2 | op.Index << 4 | op.Index << 6;
+
+                    Operand res = context.AddIntrinsic(Intrinsic.X86Shufps, m, m, Const(shuffleMask));
+
+                    res = context.AddIntrinsic(Intrinsic.X86Vfmadd231ss, d, n, res);
+
+                    context.Copy(d, context.VectorZeroUpper96(res));
+                }
+                else /* if (sizeF == 1) */
+                {
+                    int shuffleMask = op.Index | op.Index << 1;
+
+                    Operand res = context.AddIntrinsic(Intrinsic.X86Shufpd, m, m, Const(shuffleMask));
+
+                    res = context.AddIntrinsic(Intrinsic.X86Vfmadd231sd, d, n, res);
+
+                    context.Copy(d, context.VectorZeroUpper64(res));
+                }
             }
             else
             {
@@ -1289,12 +1311,34 @@ namespace ARMeilleure.Instructions
             }
             else if (Optimizations.UseFma)
             {
-                EmitScalarTernaryOpByElemF(context, (op1, op2, op3) =>
-                {
-                    OpCodeSimdRegElemF op = (OpCodeSimdRegElemF)context.CurrOp;
+                OpCodeSimdRegElemF op = (OpCodeSimdRegElemF)context.CurrOp;
 
-                    return context.AddIntrinsic((op.Size & 1) != 0 ? Intrinsic.X86Vfnmadd231sd : Intrinsic.X86Vfnmadd231ss, op1, op2, op3);
-                });
+                Operand d = GetVec(op.Rd);
+                Operand n = GetVec(op.Rn);
+                Operand m = GetVec(op.Rm);
+
+                int sizeF = op.Size & 1;
+
+                if (sizeF == 0)
+                {
+                    int shuffleMask = op.Index | op.Index << 2 | op.Index << 4 | op.Index << 6;
+
+                    Operand res = context.AddIntrinsic(Intrinsic.X86Shufps, m, m, Const(shuffleMask));
+
+                    res = context.AddIntrinsic(Intrinsic.X86Vfnmadd231ss, d, n, res);
+
+                    context.Copy(d, context.VectorZeroUpper96(res));
+                }
+                else /* if (sizeF == 1) */
+                {
+                    int shuffleMask = op.Index | op.Index << 1;
+
+                    Operand res = context.AddIntrinsic(Intrinsic.X86Shufpd, m, m, Const(shuffleMask));
+
+                    res = context.AddIntrinsic(Intrinsic.X86Vfnmadd231sd, d, n, res);
+
+                    context.Copy(d, context.VectorZeroUpper64(res));
+                }
             }
             else
             {
