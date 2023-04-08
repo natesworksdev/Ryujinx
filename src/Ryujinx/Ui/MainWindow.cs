@@ -81,7 +81,7 @@ namespace Ryujinx.Ui
 
         public bool IsFocused;
 
-#pragma warning disable CS0169, CS0649, IDE0044
+#pragma warning disable CS0169, CS0649, IDE0044, IDE0051
 
         [GUI] public MenuItem ExitMenuItem;
         [GUI] public MenuItem UpdateMenuItem;
@@ -143,7 +143,7 @@ namespace Ryujinx.Ui
         [GUI] Label           _loadingStatusLabel;
         [GUI] Gtk.ProgressBar _loadingStatusBar;
 
-#pragma warning restore CS0649, IDE0044, CS0169
+#pragma warning restore CS0649, IDE0044, CS0169, IDE0051
 
         public MainWindow() : this(new Builder("Ryujinx.Ui.MainWindow.glade")) { }
 

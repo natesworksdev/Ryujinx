@@ -193,6 +193,7 @@ namespace Ryujinx.Ui.Applet
             return showDetails;
         }
 
+#pragma warning disable IDE0051
         private static void SynchronousGtkInvoke(Action action)
         {
             var waitHandle = new ManualResetEventSlim();
@@ -205,6 +206,7 @@ namespace Ryujinx.Ui.Applet
 
             waitHandle.Wait();
         }
+#pragma warning restore IDE0051
 
         public IDynamicTextInputHandler CreateDynamicTextInputHandler()
         {
