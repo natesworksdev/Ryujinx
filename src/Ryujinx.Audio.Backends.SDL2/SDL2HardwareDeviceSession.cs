@@ -82,7 +82,7 @@ namespace Ryujinx.Audio.Backends.SDL2
             if (frameCount == 0)
             {
                 // SDL2 left the responsibility to the user to clear the buffer.
-                streamSpan.Fill(0);
+                streamSpan.Clear();
 
                 return;
             }
@@ -96,7 +96,7 @@ namespace Ryujinx.Audio.Backends.SDL2
                 IntPtr pStreamSrc = (IntPtr)p;
 
                 // Zero the dest buffer
-                streamSpan.Fill(0);
+                streamSpan.Clear();
 
                 // Apply volume to written data
                 SDL_MixAudioFormat(stream, pStreamSrc, _nativeSampleFormat, (uint)samples.Length, (int)(_volume * SDL_MIX_MAXVOLUME));
