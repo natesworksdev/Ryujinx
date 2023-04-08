@@ -148,14 +148,13 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
         private static QueryTarget GetTarget(CounterType type)
         {
-            switch (type)
+            return type switch
             {
-                case CounterType.SamplesPassed: return QueryTarget.SamplesPassed;
-                case CounterType.PrimitivesGenerated: return QueryTarget.PrimitivesGenerated;
-                case CounterType.TransformFeedbackPrimitivesWritten: return QueryTarget.TransformFeedbackPrimitivesWritten;
-            }
-
-            return QueryTarget.SamplesPassed;
+                CounterType.SamplesPassed => QueryTarget.SamplesPassed,
+                CounterType.PrimitivesGenerated => QueryTarget.PrimitivesGenerated,
+                CounterType.TransformFeedbackPrimitivesWritten => QueryTarget.TransformFeedbackPrimitivesWritten,
+                _ => QueryTarget.SamplesPassed,
+            };
         }
 
         public void Flush(bool blocking)

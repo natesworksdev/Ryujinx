@@ -42,7 +42,9 @@ namespace Ryujinx.Graphics.OpenGL
 
         private static readonly Lazy<GpuVendor> _gpuVendor = new(GetGpuVendor);
 
+#pragma warning disable IDE0051
         private static bool _isAMD   => _gpuVendor.Value == GpuVendor.AmdWindows || _gpuVendor.Value == GpuVendor.AmdUnix;
+#pragma warning restore IDE0051
         private static bool _isIntel => _gpuVendor.Value == GpuVendor.IntelWindows || _gpuVendor.Value == GpuVendor.IntelUnix;
 
         public static GpuVendor Vendor => _gpuVendor.Value;
