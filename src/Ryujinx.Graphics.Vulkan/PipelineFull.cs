@@ -119,12 +119,14 @@ namespace Ryujinx.Graphics.Vulkan
                         var buffer = evt.GetBuffer().Get(Cbs, 0, sizeof(long)).Value;
                         var flags = isEqual ? ConditionalRenderingFlagsEXT.InvertedBitExt : 0;
 
+#pragma warning disable IDE0059
                         var conditionalRenderingBeginInfo = new ConditionalRenderingBeginInfoEXT()
                         {
                             SType = StructureType.ConditionalRenderingBeginInfoExt,
                             Buffer = buffer,
                             Flags = flags
                         };
+#pragma warning restore IDE0059
 
                         // Gd.ConditionalRenderingApi.CmdBeginConditionalRendering(CommandBuffer, conditionalRenderingBeginInfo);
                     }

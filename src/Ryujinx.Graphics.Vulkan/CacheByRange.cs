@@ -147,7 +147,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
     }
 
-    struct IndirectDataCacheKey : ICacheKey
+    readonly struct IndirectDataCacheKey : ICacheKey
     {
         private readonly IndexBufferPattern _pattern;
 
