@@ -1276,11 +1276,24 @@ namespace Ryujinx.Ui.Common.Configuration
 
             if (configurationFileFormat.Version < 44)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 42.");
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 44.");
 
                 configurationFileFormat.AntiAliasing = AntiAliasing.None;
                 configurationFileFormat.ScalingFilter = ScalingFilter.Bilinear;
                 configurationFileFormat.ScalingFilterLevel = 80;
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 45)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 45.");
+
+                configurationFileFormat.WindowPositionX = 0;
+                configurationFileFormat.WindowPositionY = 0;
+                configurationFileFormat.WindowSizeHeight = 760;
+                configurationFileFormat.WindowSizeWidth = 1280;
+                configurationFileFormat.WindowMaximized = false;
 
                 configurationFileUpdated = true;
             }
