@@ -304,7 +304,7 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        private (V128, V128, V128, V128) GenerateTestVectors()
+        private static (V128, V128, V128, V128) GenerateTestVectors()
         {
             return (
                 new V128(-12.43f, 1872.23f, 4456.23f, -5622.2f),
@@ -314,7 +314,7 @@ namespace Ryujinx.Tests.Cpu
                 );
         }
 
-        private byte[] GenerateVectorSequence(int length)
+        private static byte[] GenerateVectorSequence(int length)
         {
             int floatLength = length >> 2;
             float[] data = new float[floatLength];

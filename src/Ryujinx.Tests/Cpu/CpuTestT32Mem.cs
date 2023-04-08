@@ -104,7 +104,7 @@ namespace Ryujinx.Tests.Cpu
                 Instructions = new ushort[] { 0xf889, 0xd200, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0x400001f0 },
                 FinalRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0x400001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             new PrecomputedMemoryThumbTestCase()
             {
@@ -340,28 +340,28 @@ namespace Ryujinx.Tests.Cpu
                 Instructions = new ushort[] { 0xf816, 0x1c48, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x00002cb8, 0x00002345, 0x00002ebc, 0x00002db8, 0x000021d4, 0x000026e4, 0x00002458, 0x000029e3, 0x000028d2, 0x000027f4, 0x000023d6, 0x00002def, 0x0000285c, 0x00002d06, 0x00000001, 0x600001f0 },
                 FinalRegs = new uint[] { 0x00002cb8, 0x00000010, 0x00002ebc, 0x00002db8, 0x000021d4, 0x000026e4, 0x00002458, 0x000029e3, 0x000028d2, 0x000027f4, 0x000023d6, 0x00002def, 0x0000285c, 0x00002d06, 0x00000001, 0x600001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             new PrecomputedMemoryThumbTestCase()
             {
                 Instructions = new ushort[] { 0xf815, 0x2d6e, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x000021e4, 0x00002425, 0x00002e42, 0x00002a58, 0x00002708, 0x00002965, 0x00002a1d, 0x00002ed5, 0x00002cc4, 0x000026e1, 0x00002b4b, 0x00002ade, 0x00002824, 0x00002975, 0x00000001, 0x100001f0 },
                 FinalRegs = new uint[] { 0x000021e4, 0x00002425, 0x00000028, 0x00002a58, 0x00002708, 0x000028f7, 0x00002a1d, 0x00002ed5, 0x00002cc4, 0x000026e1, 0x00002b4b, 0x00002ade, 0x00002824, 0x00002975, 0x00000001, 0x100001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             new PrecomputedMemoryThumbTestCase()
             {
                 Instructions = new ushort[] { 0xf818, 0x0d33, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x00002492, 0x0000214d, 0x00002827, 0x000021af, 0x0000215e, 0x000028d6, 0x000024ec, 0x00002984, 0x0000297b, 0x000024b5, 0x000024ca, 0x0000298f, 0x00002339, 0x00002b7e, 0x00000001, 0xd00001f0 },
                 FinalRegs = new uint[] { 0x00000048, 0x0000214d, 0x00002827, 0x000021af, 0x0000215e, 0x000028d6, 0x000024ec, 0x00002984, 0x00002948, 0x000024b5, 0x000024ca, 0x0000298f, 0x00002339, 0x00002b7e, 0x00000001, 0xd00001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             new PrecomputedMemoryThumbTestCase()
             {
                 Instructions = new ushort[] { 0xf810, 0xbff3, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x00002ea6, 0x000024fa, 0x00002346, 0x00002748, 0x0000283f, 0x00002770, 0x000023e3, 0x000021aa, 0x0000214a, 0x00002d58, 0x00002159, 0x000022e7, 0x00002242, 0x00002728, 0x00000001, 0x600001f0 },
                 FinalRegs = new uint[] { 0x00002f99, 0x000024fa, 0x00002346, 0x00002748, 0x0000283f, 0x00002770, 0x000023e3, 0x000021aa, 0x0000214a, 0x00002d58, 0x00002159, 0x0000002f, 0x00002242, 0x00002728, 0x00000001, 0x600001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             // LDRB (imm12)
             new PrecomputedMemoryThumbTestCase()
@@ -369,35 +369,35 @@ namespace Ryujinx.Tests.Cpu
                 Instructions = new ushort[] { 0xf892, 0xcc8f, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0x100001f0 },
                 FinalRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x0000002c, 0x00002000, 0x00000001, 0x100001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             new PrecomputedMemoryThumbTestCase()
             {
                 Instructions = new ushort[] { 0xf89a, 0x7fdc, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0x200001f0 },
                 FinalRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x000000dc, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0x200001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             new PrecomputedMemoryThumbTestCase()
             {
                 Instructions = new ushort[] { 0xf890, 0x5f9f, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0x800001f0 },
                 FinalRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x0000002f, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0x800001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             new PrecomputedMemoryThumbTestCase()
             {
                 Instructions = new ushort[] { 0xf894, 0xdda1, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0x900001f0 },
                 FinalRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x0000002d, 0x00000001, 0x900001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             new PrecomputedMemoryThumbTestCase()
             {
                 Instructions = new ushort[] { 0xf890, 0xc281, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0x100001f0 },
                 FinalRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000022, 0x00002000, 0x00000001, 0x100001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             // LDRH (imm8)
             new PrecomputedMemoryThumbTestCase()
@@ -405,21 +405,21 @@ namespace Ryujinx.Tests.Cpu
                 Instructions = new ushort[] { 0xf834, 0x89d8, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x00002a9e, 0x00002d84, 0x00002e9b, 0x00002e7f, 0x000024a2, 0x00002b7b, 0x00002e3b, 0x0000299a, 0x00002dff, 0x00002a9e, 0x000027b2, 0x00002a90, 0x00002883, 0x0000288d, 0x00000001, 0x500001f0 },
                 FinalRegs = new uint[] { 0x00002a9e, 0x00002d84, 0x00002e9b, 0x00002e7f, 0x000023ca, 0x00002b7b, 0x00002e3b, 0x0000299a, 0x000024a2, 0x00002a9e, 0x000027b2, 0x00002a90, 0x00002883, 0x0000288d, 0x00000001, 0x500001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             new PrecomputedMemoryThumbTestCase()
             {
                 Instructions = new ushort[] { 0xf833, 0x6be4, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x000028bd, 0x00002b0e, 0x00002bc1, 0x00002a83, 0x00002293, 0x00002c7c, 0x00002bfe, 0x00002eb7, 0x0000299b, 0x000026e6, 0x0000219c, 0x00002d5e, 0x00002cd4, 0x000026cf, 0x00000001, 0xd00001f0 },
                 FinalRegs = new uint[] { 0x000028bd, 0x00002b0e, 0x00002bc1, 0x00002b67, 0x00002293, 0x00002c7c, 0x0000842a, 0x00002eb7, 0x0000299b, 0x000026e6, 0x0000219c, 0x00002d5e, 0x00002cd4, 0x000026cf, 0x00000001, 0xd00001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             new PrecomputedMemoryThumbTestCase()
             {
                 Instructions = new ushort[] { 0xf83d, 0x1bca, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x0000250e, 0x00002776, 0x000029e5, 0x0000276e, 0x00002c6b, 0x00002712, 0x00002a85, 0x00002d56, 0x000024c0, 0x00002d86, 0x0000254a, 0x00002549, 0x00002795, 0x00002e97, 0x00000001, 0x200001f0 },
                 FinalRegs = new uint[] { 0x0000250e, 0x0000982e, 0x000029e5, 0x0000276e, 0x00002c6b, 0x00002712, 0x00002a85, 0x00002d56, 0x000024c0, 0x00002d86, 0x0000254a, 0x00002549, 0x00002795, 0x00002f61, 0x00000001, 0x200001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             // LDRH (imm12)
             new PrecomputedMemoryThumbTestCase()
@@ -427,28 +427,28 @@ namespace Ryujinx.Tests.Cpu
                 Instructions = new ushort[] { 0xf8b7, 0x92fc, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0xa00001f0 },
                 FinalRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x000022fc, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0xa00001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             new PrecomputedMemoryThumbTestCase()
             {
                 Instructions = new ushort[] { 0xf8ba, 0xadd9, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0xa00001f0 },
                 FinalRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x0000da2d, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0xa00001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             new PrecomputedMemoryThumbTestCase()
             {
                 Instructions = new ushort[] { 0xf8bb, 0x0bb0, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0xd00001f0 },
                 FinalRegs = new uint[] { 0x00002bb0, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0xd00001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             new PrecomputedMemoryThumbTestCase()
             {
                 Instructions = new ushort[] { 0xf8b8, 0xc3f8, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0x600001f0 },
                 FinalRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x000023f8, 0x00002000, 0x00000001, 0x600001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             // LDR (imm8)
             new PrecomputedMemoryThumbTestCase()
@@ -456,35 +456,35 @@ namespace Ryujinx.Tests.Cpu
                 Instructions = new ushort[] { 0xf85b, 0x3fd1, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x00002a19, 0x00002e5b, 0x0000231b, 0x000021fa, 0x00002e95, 0x00002bd5, 0x00002e9c, 0x00002dfa, 0x000021d8, 0x00002ce1, 0x00002318, 0x00002735, 0x0000247d, 0x00002436, 0x00000001, 0xf00001f0 },
                 FinalRegs = new uint[] { 0x00002a19, 0x00002e5b, 0x0000231b, 0x28082806, 0x00002e95, 0x00002bd5, 0x00002e9c, 0x00002dfa, 0x000021d8, 0x00002ce1, 0x00002318, 0x00002806, 0x0000247d, 0x00002436, 0x00000001, 0xf00001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             new PrecomputedMemoryThumbTestCase()
             {
                 Instructions = new ushort[] { 0xf854, 0xab9e, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x0000214f, 0x00002578, 0x00002a98, 0x000021b0, 0x00002ebb, 0x0000284a, 0x00002319, 0x00002581, 0x00002179, 0x00002594, 0x00002373, 0x000028f4, 0x00002ec5, 0x00002e0a, 0x00000001, 0xb00001f0 },
                 FinalRegs = new uint[] { 0x0000214f, 0x00002578, 0x00002a98, 0x000021b0, 0x00002f59, 0x0000284a, 0x00002319, 0x00002581, 0x00002179, 0x00002594, 0xbe2ebc2e, 0x000028f4, 0x00002ec5, 0x00002e0a, 0x00000001, 0xb00001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             new PrecomputedMemoryThumbTestCase()
             {
                 Instructions = new ushort[] { 0xf852, 0x6d2d, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x00002e27, 0x00002676, 0x00002bde, 0x000022d9, 0x00002362, 0x00002d4b, 0x00002dab, 0x000022b6, 0x0000229c, 0x00002507, 0x00002848, 0x0000225f, 0x00002ac2, 0x000023c3, 0x00000001, 0xf00001f0 },
                 FinalRegs = new uint[] { 0x00002e27, 0x00002676, 0x00002bb1, 0x000022d9, 0x00002362, 0x00002d4b, 0xb42bb22b, 0x000022b6, 0x0000229c, 0x00002507, 0x00002848, 0x0000225f, 0x00002ac2, 0x000023c3, 0x00000001, 0xf00001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             new PrecomputedMemoryThumbTestCase()
             {
                 Instructions = new ushort[] { 0xf850, 0x8da5, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x00002559, 0x0000285e, 0x000021de, 0x00002223, 0x000023ff, 0x00002e05, 0x00002bf3, 0x000024a5, 0x00002124, 0x00002768, 0x00002a14, 0x0000219e, 0x00002739, 0x00002e3c, 0x00000001, 0xd00001f0 },
                 FinalRegs = new uint[] { 0x000024b4, 0x0000285e, 0x000021de, 0x00002223, 0x000023ff, 0x00002e05, 0x00002bf3, 0x000024a5, 0x24b624b4, 0x00002768, 0x00002a14, 0x0000219e, 0x00002739, 0x00002e3c, 0x00000001, 0xd00001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             new PrecomputedMemoryThumbTestCase()
             {
                 Instructions = new ushort[] { 0xf857, 0x19f6, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x000027f5, 0x0000285e, 0x000025f6, 0x00002e22, 0x00002224, 0x00002870, 0x00002ecc, 0x000024cf, 0x00002711, 0x0000241b, 0x00002ddf, 0x00002545, 0x000028ca, 0x000023c5, 0x00000001, 0x400001f0 },
                 FinalRegs = new uint[] { 0x000027f5, 0xd224d024, 0x000025f6, 0x00002e22, 0x00002224, 0x00002870, 0x00002ecc, 0x000023d9, 0x00002711, 0x0000241b, 0x00002ddf, 0x00002545, 0x000028ca, 0x000023c5, 0x00000001, 0x400001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             // LDR (imm12)
             new PrecomputedMemoryThumbTestCase()
@@ -492,28 +492,28 @@ namespace Ryujinx.Tests.Cpu
                 Instructions = new ushort[] { 0xf8d1, 0xc65e, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0x000001f0 },
                 FinalRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x2660265e, 0x00002000, 0x00000001, 0x000001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             new PrecomputedMemoryThumbTestCase()
             {
                 Instructions = new ushort[] { 0xf8db, 0xd09b, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0x800001f0 },
                 FinalRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x9e209c20, 0x00000001, 0x800001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             new PrecomputedMemoryThumbTestCase()
             {
                 Instructions = new ushort[] { 0xf8d2, 0x6fde, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0x900001f0 },
                 FinalRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x2fe02fde, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0x900001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
             new PrecomputedMemoryThumbTestCase()
             {
                 Instructions = new ushort[] { 0xf8dc, 0x3de5, 0x4770, 0xe7fe },
                 StartRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0x500001f0 },
                 FinalRegs = new uint[] { 0x00002000, 0x00002000, 0x00002000, 0xe82de62d, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00002000, 0x00000001, 0x500001f0 },
-                MemoryDelta = new (ulong Address, ushort Value)[] {},
+                MemoryDelta = System.Array.Empty<(ulong Address, ushort Value)>(),
             },
         };
     }
