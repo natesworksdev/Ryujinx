@@ -468,20 +468,12 @@ namespace Ryujinx.Headless.SDL2
 
         private static void ProgressHandler<T>(T state, int current, int total) where T : Enum
         {
-            string label;
-
-            switch (state)
+            string label = state switch
             {
-                case LoadState:
-                    label = $"PTC : {current}/{total}";
-                    break;
-                case ShaderCacheState:
-                    label = $"Shaders : {current}/{total}";
-                    break;
-                default:
-                    throw new ArgumentException($"Unknown Progress Handler type {typeof(T)}");
-            }
-
+                LoadState => $"PTC : {current}/{total}",
+                ShaderCacheState => $"Shaders : {current}/{total}",
+                _ => throw new ArgumentException($"Unknown Progress Handler type {typeof(T)}"),
+            };
             Logger.Info?.Print(LogClass.Application, label);
         }
 
