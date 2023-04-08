@@ -133,7 +133,7 @@ namespace Ryujinx.Graphics.Texture.Astc
 
             AstcLevel levelInfo = GetLevelInfo(index);
 
-            WriteDecompressedBlock(decompressedBytes, OutputBuffer.Span.Slice(levelInfo.OutputByteOffset),
+            WriteDecompressedBlock(decompressedBytes, OutputBuffer.Span[levelInfo.OutputByteOffset..],
                 index - levelInfo.StartBlock, levelInfo);
         }
 
@@ -171,7 +171,7 @@ namespace Ryujinx.Graphics.Texture.Astc
             for (int i = 0; i < outputPixelsY; i++)
             {
                 ReadOnlySpan<byte> blockRow = block.Slice(inputOffset, outputPixelsX * 4);
-                Span<byte> outputRow = outputBuffer.Slice(outputOffset);
+                Span<byte> outputRow = outputBuffer[outputOffset..];
                 blockRow.CopyTo(outputRow);
 
                 inputOffset += BlockSizeX * 4;
@@ -230,7 +230,7 @@ namespace Ryujinx.Graphics.Texture.Astc
         {
             byte[] output = new byte[QueryDecompressedSize(width, height, depth, levels, layers)];
 
-            AstcDecoder decoder = new AstcDecoder(data, output, blockWidth, blockHeight, width, height, depth, levels, layers);
+            AstcDecoder decoder = new(data, output, blockWidth, blockHeight, width, height, depth, levels, layers);
 
             for (int i = 0; i < decoder.TotalBlockCount; i++)
             {
@@ -253,7 +253,7 @@ namespace Ryujinx.Graphics.Texture.Astc
             int levels,
             int layers)
         {
-            AstcDecoder decoder = new AstcDecoder(data, outputBuffer, blockWidth, blockHeight, width, height, depth, levels, layers);
+            AstcDecoder decoder = new(data, outputBuffer, blockWidth, blockHeight, width, height, depth, levels, layers);
 
             for (int i = 0; i < decoder.TotalBlockCount; i++)
             {
@@ -274,7 +274,7 @@ namespace Ryujinx.Graphics.Texture.Astc
             int levels,
             int layers)
         {
-            AstcDecoder decoder = new AstcDecoder(data, outputBuffer, blockWidth, blockHeight, width, height, depth, levels, layers);
+            AstcDecoder decoder = new(data, outputBuffer, blockWidth, blockHeight, width, height, depth, levels, layers);
 
             // Lazy parallelism
             Enumerable.Range(0, decoder.TotalBlockCount).AsParallel().ForAll(x => decoder.ProcessBlock(x));
@@ -295,7 +295,7 @@ namespace Ryujinx.Graphics.Texture.Astc
         {
             byte[] output = new byte[QueryDecompressedSize(width, height, depth, levels, layers)];
 
-            AstcDecoder decoder = new AstcDecoder(data, output, blockWidth, blockHeight, width, height, depth, levels, layers);
+            AstcDecoder decoder = new(data, output, blockWidth, blockHeight, width, height, depth, levels, layers);
 
             Enumerable.Range(0, decoder.TotalBlockCount).AsParallel().ForAll(x => decoder.ProcessBlock(x));
 
@@ -310,7 +310,7 @@ namespace Ryujinx.Graphics.Texture.Astc
             int blockWidth,
             int blockHeight)
         {
-            BitStream128 bitStream = new BitStream128(inputBlock);
+            BitStream128 bitStream = new(inputBlock);
 
             DecodeBlockInfo(ref bitStream, out TexelWeightParams texelParams);
 
@@ -359,7 +359,7 @@ namespace Ryujinx.Graphics.Texture.Astc
 
             Span<uint> colorEndpointMode = stackalloc uint[4];
 
-            BitStream128 colorEndpointStream = new BitStream128();
+            BitStream128 colorEndpointStream = new();
 
             // Read extra config data...
             uint baseColorEndpointMode = 0;
@@ -508,7 +508,7 @@ namespace Ryujinx.Graphics.Texture.Astc
             unsafe { _ = &texelWeightValues; } // Skip struct initialization
             texelWeightValues.Reset();
 
-            BitStream128 weightBitStream = new BitStream128(texelWeightData);
+            BitStream128 weightBitStream = new(texelWeightData);
 
             IntegerEncoded.DecodeIntegerSequence(ref texelWeightValues, ref weightBitStream, texelParams.MaxWeight, texelParams.GetNumWeightValues());
 
@@ -529,7 +529,7 @@ namespace Ryujinx.Graphics.Texture.Astc
                     int partition = Select2dPartition(partitionIndex, i, j, numberPartitions, ((blockHeight * blockWidth) < 32));
                     Debug.Assert(partition < numberPartitions);
 
-                    AstcPixel pixel = new AstcPixel();
+                    AstcPixel pixel = new();
                     for (int component = 0; component < 4; component++)
                     {
                         int component0 = endPoints.Get(partition)[0].GetComponent(component);

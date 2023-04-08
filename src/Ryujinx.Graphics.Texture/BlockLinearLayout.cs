@@ -20,19 +20,19 @@ namespace Ryujinx.Graphics.Texture
             }
         }
 
-        private int _texBpp;
+        private readonly int _texBpp;
 
-        private int _bhMask;
-        private int _bdMask;
+        private readonly int _bhMask;
+        private readonly int _bdMask;
 
-        private int _bhShift;
-        private int _bdShift;
-        private int _bppShift;
+        private readonly int _bhShift;
+        private readonly int _bdShift;
+        private readonly int _bppShift;
 
-        private int _xShift;
+        private readonly int _xShift;
 
-        private int _robSize;
-        private int _sliceSize;
+        private readonly int _robSize;
+        private readonly int _sliceSize;
 
         // Variables for built in iteration.
         private int _yPart;

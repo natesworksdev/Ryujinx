@@ -7,13 +7,13 @@ namespace Ryujinx.Graphics.Texture
 {
     public class OffsetCalculator
     {
-        private int  _width;
-        private int  _height;
-        private int  _stride;
-        private bool _isLinear;
-        private int  _bytesPerPixel;
+        private readonly int  _width;
+        private readonly int  _height;
+        private readonly int  _stride;
+        private readonly bool _isLinear;
+        private readonly int  _bytesPerPixel;
 
-        private BlockLinearLayout _layoutConverter;
+        private readonly BlockLinearLayout _layoutConverter;
 
         // Variables for built in iteration.
         private int _yPart;

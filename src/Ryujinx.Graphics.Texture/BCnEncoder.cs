@@ -38,8 +38,8 @@ namespace Ryujinx.Graphics.Texture
                     for (int z = 0; z < depth; z++)
                     {
                         BC7Encoder.Encode(
-                            output.AsMemory().Slice(imageBaseOOffs),
-                            data.AsMemory().Slice(imageBaseIOffs),
+                            output.AsMemory()[imageBaseOOffs..],
+                            data.AsMemory()[imageBaseIOffs..],
                             width,
                             height,
                             EncodeMode.Fast | EncodeMode.Multithreaded);

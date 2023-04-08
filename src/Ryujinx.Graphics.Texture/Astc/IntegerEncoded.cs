@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.Texture.Astc
             Trit
         }
 
-        EIntegerEncoding _encoding;
+        readonly EIntegerEncoding _encoding;
         public byte NumberBits { get; private set; }
         public byte TritValue { get; private set; }
         public byte QuintValue { get; private set; }
@@ -122,7 +122,7 @@ namespace Ryujinx.Graphics.Texture.Astc
 
             ReadOnlySpan<byte> encodings = GetTritEncoding(encoded);
 
-            IntegerEncoded intEncoded = new IntegerEncoded(EIntegerEncoding.Trit, numberBitsPerValue);
+            IntegerEncoded intEncoded = new(EIntegerEncoding.Trit, numberBitsPerValue);
 
             for (int i = 0; i < 5; i++)
             {
@@ -159,7 +159,7 @@ namespace Ryujinx.Graphics.Texture.Astc
 
             for (int i = 0; i < 3; i++)
             {
-                IntegerEncoded intEncoded = new IntegerEncoded(EIntegerEncoding.Quint, numberBitsPerValue)
+                IntegerEncoded intEncoded = new(EIntegerEncoding.Quint, numberBitsPerValue)
                 {
                     BitValue = m[i],
                     QuintValue = encodings[i]
