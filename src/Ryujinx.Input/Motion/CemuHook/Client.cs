@@ -446,7 +446,7 @@ namespace Ryujinx.Input.Motion.CemuHook
             Send(data, clientId);
         }
 
-        private Header GenerateHeader(int clientId)
+        private static Header GenerateHeader(int clientId)
         {
             Header header = new()
             {

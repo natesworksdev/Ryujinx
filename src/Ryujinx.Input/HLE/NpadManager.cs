@@ -193,7 +193,7 @@ namespace Ryujinx.Input.HLE
 
                         inputState = controller.GetHLEInputState();
 
-                        inputState.Buttons |= _device.Hid.UpdateStickButtons(inputState.LStick, inputState.RStick);
+                        inputState.Buttons |= Hid.UpdateStickButtons(inputState.LStick, inputState.RStick);
 
                         isJoyconPair = inputConfig.ControllerType == Common.Configuration.Hid.ControllerType.JoyconPair;
 
