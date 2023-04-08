@@ -141,6 +141,7 @@ namespace Ryujinx.Tests.Unicorn
             Arm.UC_ARM_REG_R15,
         };
 
+#pragma warning disable IDE0051, IDE0052
         private static readonly int[] QRegisters =
         {
             Arm.UC_ARM_REG_Q0,
@@ -160,6 +161,7 @@ namespace Ryujinx.Tests.Unicorn
             Arm.UC_ARM_REG_Q14,
             Arm.UC_ARM_REG_Q15
         };
+#pragma warning restore IDE0051, IDE0052
 
         public uint GetX(int index)
         {
