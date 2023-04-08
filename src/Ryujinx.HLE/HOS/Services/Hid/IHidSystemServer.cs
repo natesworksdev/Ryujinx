@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         [CommandCmif(303)]
         // ApplyNpadSystemCommonPolicy(u64)
-        public ResultCode ApplyNpadSystemCommonPolicy(ServiceCtx context)
+        public static ResultCode ApplyNpadSystemCommonPolicy(ServiceCtx context)
         {
             ulong commonPolicy = context.RequestData.ReadUInt64();
 
@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         [CommandCmif(307)]
         // GetNpadSystemExtStyle() -> u64
-        public ResultCode GetNpadSystemExtStyle(ServiceCtx context)
+        public static ResultCode GetNpadSystemExtStyle(ServiceCtx context)
         {
             foreach (PlayerIndex playerIndex in context.Device.Hid.Npads.GetSupportedPlayers())
             {
@@ -63,7 +63,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return resultCode;
         }
 
-        private ResultCode GetAppletFooterUiTypeImpl(ServiceCtx context, out AppletFooterUiType appletFooterUiType)
+        private static ResultCode GetAppletFooterUiTypeImpl(ServiceCtx context, out AppletFooterUiType appletFooterUiType)
         {
             NpadIdType  npadIdType  = (NpadIdType)context.RequestData.ReadUInt32();
             PlayerIndex playerIndex = HidUtils.GetIndexFromNpadIdType(npadIdType);

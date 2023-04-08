@@ -60,7 +60,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(1)]
         // ReceiveMessage() -> nn::am::AppletMessage
-        public ResultCode ReceiveMessage(ServiceCtx context)
+        public static ResultCode ReceiveMessage(ServiceCtx context)
         {
             if (!context.Device.System.AppletState.Messages.TryDequeue(out AppletMessage message))
             {
@@ -88,7 +88,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(5)]
         // GetOperationMode() -> u8
-        public ResultCode GetOperationMode(ServiceCtx context)
+        public static ResultCode GetOperationMode(ServiceCtx context)
         {
             OperationMode mode = context.Device.System.State.DockedMode
                 ? OperationMode.Docked
@@ -108,7 +108,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(8)]
         // GetBootMode() -> u8
-        public ResultCode GetBootMode(ServiceCtx context)
+        public static ResultCode GetBootMode(ServiceCtx context)
         {
             context.ResponseData.Write((byte)0); //Unknown value.
 
@@ -119,7 +119,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(9)]
         // GetCurrentFocusState() -> u8
-        public ResultCode GetCurrentFocusState(ServiceCtx context)
+        public static ResultCode GetCurrentFocusState(ServiceCtx context)
         {
             context.ResponseData.Write((byte)context.Device.System.AppletState.FocusState);
 
@@ -229,7 +229,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(60)] // 3.0.0+
         // GetDefaultDisplayResolution() -> (u32, u32)
-        public ResultCode GetDefaultDisplayResolution(ServiceCtx context)
+        public static ResultCode GetDefaultDisplayResolution(ServiceCtx context)
         {
             // NOTE: Original service calls IOperationModeManager::GetDefaultDisplayResolution of omm service.
             //       IOperationModeManager::GetDefaultDisplayResolution of omm service call IManagerDisplayService::GetDisplayResolution of vi service.
@@ -263,7 +263,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(62)] // 4.0.0+
         // GetHdcpAuthenticationState() -> s32 state
-        public ResultCode GetHdcpAuthenticationState(ServiceCtx context)
+        public static ResultCode GetHdcpAuthenticationState(ServiceCtx context)
         {
             context.ResponseData.Write(0);
 
@@ -299,7 +299,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(300)] // 9.0.0+
         // GetSettingsPlatformRegion() -> u8
-        public ResultCode GetSettingsPlatformRegion(ServiceCtx context)
+        public static ResultCode GetSettingsPlatformRegion(ServiceCtx context)
         {
             PlatformRegion platformRegion = context.Device.System.State.DesiredRegionCode == (uint)RegionCode.China ? PlatformRegion.China : PlatformRegion.Global;
 

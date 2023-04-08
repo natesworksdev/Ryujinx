@@ -20,5 +20,15 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             return HashCode.Combine(AmplitudeLow, AmplitudeHigh);
         }
+
+        public static bool operator ==(VibrationValue left, VibrationValue right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(VibrationValue left, VibrationValue right)
+        {
+            return !(left == right);
+        }
     }
 }

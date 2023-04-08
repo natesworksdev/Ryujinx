@@ -483,13 +483,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             }
         }
 
-        public Result MapNormalMemory(long address, long size, KMemoryPermission permission)
+        public static Result MapNormalMemory(long address, long size, KMemoryPermission permission)
         {
             // TODO.
             return Result.Success;
         }
 
-        public Result MapIoMemory(long address, long size, KMemoryPermission permission)
+        public static Result MapIoMemory(long address, long size, KMemoryPermission permission)
         {
             // TODO.
             return Result.Success;

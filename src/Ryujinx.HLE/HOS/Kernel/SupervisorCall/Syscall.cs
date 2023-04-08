@@ -10,11 +10,13 @@ using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Horizon.Common;
 using System;
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 {
     [SvcImpl]
+    [SuppressMessage("Performance", "CA1822:Mark members as static")]
     class Syscall : ISyscallApi
     {
         private readonly KernelContext _context;

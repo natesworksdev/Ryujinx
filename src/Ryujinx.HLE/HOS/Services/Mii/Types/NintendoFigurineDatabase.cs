@@ -209,7 +209,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             _figurineCount = 0;
 
             // Fill with empty data
-            Figurines.Fill(new StoreData());
+            Figurines.Clear();
 
             UpdateCrc();
         }

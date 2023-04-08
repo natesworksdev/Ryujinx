@@ -162,7 +162,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
         public void SetInterfaceVersion(DatabaseSessionMetadata metadata, uint interfaceVersion)
         {
-            _miiDatabase.SetInterfaceVersion(metadata, interfaceVersion);
+            MiiDatabaseManager.SetInterfaceVersion(metadata, interfaceVersion);
         }
 
         public void Format(DatabaseSessionMetadata metadata)
@@ -286,7 +286,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             return result;
         }
 
-        public ResultCode ConvertCharInfoToCoreData(CharInfo charInfo, out CoreData coreData)
+        public static ResultCode ConvertCharInfoToCoreData(CharInfo charInfo, out CoreData coreData)
         {
             coreData = new CoreData();
 

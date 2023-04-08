@@ -61,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             return (int)GetRandom((uint)start, (uint)end);
         }
 
-        public CreateId MakeCreateId()
+        public static CreateId MakeCreateId()
         {
             UInt128 value = UInt128Utils.CreateRandom();
 

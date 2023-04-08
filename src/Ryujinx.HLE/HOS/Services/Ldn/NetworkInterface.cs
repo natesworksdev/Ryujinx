@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn
             _state = NetworkState.None;
         }
 
-        public ResultCode Initialize(int unknown, int version, IPAddress ipv4Address, IPAddress subnetMaskAddress)
+        public static ResultCode Initialize(int unknown, int version, IPAddress ipv4Address, IPAddress subnetMaskAddress)
         {
             // TODO(Ac_K): Call nn::nifm::InitializeSystem().
             //             If the call failed, it returns the result code.

@@ -79,7 +79,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
                 return ResultCode.UninitializedClock;
             }
 
-            ResultCode result = _steadyClock.GetRtcValue(out ulong rtcValue);
+            ResultCode result = SteadyClockCore.GetRtcValue(out ulong rtcValue);
 
             if (result == ResultCode.Success)
             {
@@ -112,7 +112,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
                 return ResultCode.UninitializedClock;
             }
 
-            context.ResponseData.Write((uint)_steadyClock.GetSetupResultValue());
+            context.ResponseData.Write((uint)SteadyClockCore.GetSetupResultValue());
 
             return ResultCode.Success;
         }

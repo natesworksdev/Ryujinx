@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(0)]
         // GetLanguageCode() -> nn::settings::LanguageCode
-        public ResultCode GetLanguageCode(ServiceCtx context)
+        public static ResultCode GetLanguageCode(ServiceCtx context)
         {
             context.ResponseData.Write(context.Device.System.State.DesiredLanguageCode);
 
@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(2)] // 4.0.0+
         // MakeLanguageCode(nn::settings::Language language_index) -> nn::settings::LanguageCode
-        public ResultCode MakeLanguageCode(ServiceCtx context)
+        public static ResultCode MakeLanguageCode(ServiceCtx context)
         {
             int languageIndex = context.RequestData.ReadInt32();
 
@@ -48,7 +48,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(3)]
         // GetAvailableLanguageCodeCount() -> u32
-        public ResultCode GetAvailableLanguageCodeCount(ServiceCtx context)
+        public static ResultCode GetAvailableLanguageCodeCount(ServiceCtx context)
         {
             context.ResponseData.Write(Math.Min(SystemStateMgr.LanguageCodes.Length, 0xF));
 
@@ -57,7 +57,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(4)]
         // GetRegionCode() -> u32 nn::settings::RegionCode
-        public ResultCode GetRegionCode(ServiceCtx context)
+        public static ResultCode GetRegionCode(ServiceCtx context)
         {
             // NOTE: Service mount 0x8000000000000050 savedata and read the region code here.
 
@@ -86,7 +86,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(6)]
         // GetAvailableLanguageCodeCount2() -> u32
-        public ResultCode GetAvailableLanguageCodeCount2(ServiceCtx context)
+        public static ResultCode GetAvailableLanguageCodeCount2(ServiceCtx context)
         {
             context.ResponseData.Write(SystemStateMgr.LanguageCodes.Length);
 
@@ -102,7 +102,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(8)] // 5.0.0+
         // GetQuestFlag() -> bool
-        public ResultCode GetQuestFlag(ServiceCtx context)
+        public static ResultCode GetQuestFlag(ServiceCtx context)
         {
             context.ResponseData.Write(false);
 
@@ -120,7 +120,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(11)] // 10.1.0+
         // GetDeviceNickName() -> buffer<nn::settings::system::DeviceNickName, 0x16>
-        public ResultCode GetDeviceNickName(ServiceCtx context)
+        public static ResultCode GetDeviceNickName(ServiceCtx context)
         {
             ulong deviceNickNameBufferPosition = context.Request.ReceiveBuff[0].Position;
             ulong deviceNickNameBufferSize     = context.Request.ReceiveBuff[0].Size;
@@ -140,7 +140,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             return ResultCode.Success;
         }
 
-        private ResultCode GetKeyCodeMapImpl(ServiceCtx context, int version)
+        private static ResultCode GetKeyCodeMapImpl(ServiceCtx context, int version)
         {
             if (context.Request.ReceiveBuff[0].Size != 0x1000)
             {
@@ -223,7 +223,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             return ResultCode.Success;
         }
 
-        private ResultCode GetAvailableLanguagesCodesImpl(ServiceCtx context, ulong position, ulong size, int maxSize)
+        private static ResultCode GetAvailableLanguagesCodesImpl(ServiceCtx context, ulong position, ulong size, int maxSize)
         {
             int count = (int)(size / 8);
 

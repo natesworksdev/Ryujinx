@@ -71,12 +71,12 @@ namespace Ryujinx.HLE.HOS.Applets.Error
             return ResultCode.Success;
         }
 
-        private (uint module, uint description) HexToResultCode(uint resultCode)
+        private static (uint module, uint description) HexToResultCode(uint resultCode)
         {
             return ((resultCode & 0x1FF) + 2000, (resultCode >> 9) & 0x3FFF);
         }
 
-        private string SystemLanguageToLanguageKey(SystemLanguage systemLanguage)
+        private static string SystemLanguageToLanguageKey(SystemLanguage systemLanguage)
         {
             return systemLanguage switch
             {

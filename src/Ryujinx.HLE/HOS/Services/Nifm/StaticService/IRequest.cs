@@ -33,7 +33,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         [CommandCmif(0)]
         // GetRequestState() -> u32
-        public ResultCode GetRequestState(ServiceCtx context)
+        public static ResultCode GetRequestState(ServiceCtx context)
         {
             RequestState requestState = context.Device.Configuration.EnableInternetAccess
                 ? RequestState.Available
@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
             return GetResultImpl();
         }
 
-        private ResultCode GetResultImpl()
+        private static ResultCode GetResultImpl()
         {
             return ResultCode.Success;
         }
@@ -87,7 +87,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         [CommandCmif(3)]
         // Cancel()
-        public ResultCode Cancel(ServiceCtx context)
+        public static ResultCode Cancel(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNifm);
 
@@ -96,7 +96,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         [CommandCmif(4)]
         // Submit()
-        public ResultCode Submit(ServiceCtx context)
+        public static ResultCode Submit(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNifm);
 
@@ -105,7 +105,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         [CommandCmif(11)]
         // SetConnectionConfirmationOption(i8)
-        public ResultCode SetConnectionConfirmationOption(ServiceCtx context)
+        public static ResultCode SetConnectionConfirmationOption(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNifm);
 

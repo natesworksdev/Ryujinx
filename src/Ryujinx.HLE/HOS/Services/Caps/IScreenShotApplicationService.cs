@@ -10,14 +10,14 @@ namespace Ryujinx.HLE.HOS.Services.Caps
 
         [CommandCmif(32)] // 7.0.0+
         // SetShimLibraryVersion(pid, u64, nn::applet::AppletResourceUserId)
-        public ResultCode SetShimLibraryVersion(ServiceCtx context)
+        public static ResultCode SetShimLibraryVersion(ServiceCtx context)
         {
             return context.Device.System.CaptureManager.SetShimLibraryVersion(context);
         }
 
         [CommandCmif(203)]
         // SaveScreenShotEx0(bytes<0x40> ScreenShotAttribute, u32 unknown, u64 AppletResourceUserId, pid, buffer<bytes, 0x45> ScreenshotData) -> bytes<0x20> ApplicationAlbumEntry
-        public ResultCode SaveScreenShotEx0(ServiceCtx context)
+        public static ResultCode SaveScreenShotEx0(ServiceCtx context)
         {
             // TODO: Use the ScreenShotAttribute.
             ScreenShotAttribute screenShotAttribute = context.RequestData.ReadStruct<ScreenShotAttribute>();
@@ -40,7 +40,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
 
         [CommandCmif(205)] // 8.0.0+
         // SaveScreenShotEx1(bytes<0x40> ScreenShotAttribute, u32 unknown, u64 AppletResourceUserId, pid, buffer<bytes, 0x15> ApplicationData, buffer<bytes, 0x45> ScreenshotData) -> bytes<0x20> ApplicationAlbumEntry
-        public ResultCode SaveScreenShotEx1(ServiceCtx context)
+        public static ResultCode SaveScreenShotEx1(ServiceCtx context)
         {
             // TODO: Use the ScreenShotAttribute.
             ScreenShotAttribute screenShotAttribute = context.RequestData.ReadStruct<ScreenShotAttribute>();
@@ -69,7 +69,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
 
         [CommandCmif(210)]
         // SaveScreenShotEx2(bytes<0x40> ScreenShotAttribute, u32 unknown, u64 AppletResourceUserId, buffer<bytes, 0x15> UserIdList, buffer<bytes, 0x45> ScreenshotData) -> bytes<0x20> ApplicationAlbumEntry
-        public ResultCode SaveScreenShotEx2(ServiceCtx context)
+        public static ResultCode SaveScreenShotEx2(ServiceCtx context)
         {
             // TODO: Use the ScreenShotAttribute.
             ScreenShotAttribute screenShotAttribute = context.RequestData.ReadStruct<ScreenShotAttribute>();

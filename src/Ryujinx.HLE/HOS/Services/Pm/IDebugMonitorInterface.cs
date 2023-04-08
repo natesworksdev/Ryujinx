@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Pm
 
         [CommandCmif(4)]
         // GetProgramId() -> sf::Out<ncm::ProgramId> out_process_id
-        public ResultCode GetApplicationProcessId(ServiceCtx context)
+        public static ResultCode GetApplicationProcessId(ServiceCtx context)
         {
             // TODO: Not correct as it shouldn't be directly using kernel objects here
             foreach (KProcess process in context.Device.System.KernelContext.Processes.Values)
@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Services.Pm
 
         [CommandCmif(65000)]
         // AtmosphereGetProcessInfo(os::ProcessId process_id) -> sf::OutCopyHandle out_process_handle, sf::Out<ncm::ProgramLocation> out_loc, sf::Out<cfg::OverrideStatus> out_status
-        public ResultCode GetProcessInfo(ServiceCtx context)
+        public static ResultCode GetProcessInfo(ServiceCtx context)
         {
             ulong pid = context.RequestData.ReadUInt64();
 

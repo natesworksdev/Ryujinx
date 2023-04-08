@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd.Manager
     {
         private const string _dummyAddress = "unknown.dummy.nintendo.net";
 
-        public ResultCode GetEnvironmentIdentifier(out string identifier)
+        public static ResultCode GetEnvironmentIdentifier(out string identifier)
         {
             if (IManager.NsdSettings.TestMode)
             {
@@ -66,7 +66,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd.Manager
             return ResultCode.Success;
         }
 
-        public ResultCode ResolveEx(ServiceCtx context, out ResultCode resultCode, out string resolvedAddress)
+        public static ResultCode ResolveEx(ServiceCtx context, out ResultCode resultCode, out string resolvedAddress)
         {
             ulong inputPosition = context.Request.SendBuff[0].Position;
             ulong inputSize     = context.Request.SendBuff[0].Size;

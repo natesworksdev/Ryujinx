@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
         [CommandCmif(0)]
         // SetDnsAddressesPrivateRequest(u32, buffer<unknown, 5, 0>)
-        public ResultCode SetDnsAddressesPrivateRequest(ServiceCtx context)
+        public static ResultCode SetDnsAddressesPrivateRequest(ServiceCtx context)
         {
             uint cancelHandleRequest = context.RequestData.ReadUInt32();
             ulong bufferPosition     = context.Request.SendBuff[0].Position;
@@ -39,7 +39,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
         [CommandCmif(1)]
         // GetDnsAddressPrivateRequest(u32) -> buffer<unknown, 6, 0>
-        public ResultCode GetDnsAddressPrivateRequest(ServiceCtx context)
+        public static ResultCode GetDnsAddressPrivateRequest(ServiceCtx context)
         {
             uint cancelHandleRequest = context.RequestData.ReadUInt32();
             ulong bufferPosition     = context.Request.ReceiveBuff[0].Position;
@@ -53,7 +53,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
         [CommandCmif(2)]
         // GetHostByNameRequest(u8, u32, u64, pid, buffer<unknown, 5, 0>) -> (u32, u32, u32, buffer<unknown, 6, 0>)
-        public ResultCode GetHostByNameRequest(ServiceCtx context)
+        public static ResultCode GetHostByNameRequest(ServiceCtx context)
         {
             ulong inputBufferPosition = context.Request.SendBuff[0].Position;
             ulong inputBufferSize     = context.Request.SendBuff[0].Size;
@@ -66,7 +66,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
         [CommandCmif(3)]
         // GetHostByAddrRequest(u32, u32, u32, u64, pid, buffer<unknown, 5, 0>) -> (u32, u32, u32, buffer<unknown, 6, 0>)
-        public ResultCode GetHostByAddrRequest(ServiceCtx context)
+        public static ResultCode GetHostByAddrRequest(ServiceCtx context)
         {
             ulong inputBufferPosition = context.Request.SendBuff[0].Position;
             ulong inputBufferSize     = context.Request.SendBuff[0].Size;
@@ -79,7 +79,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
         [CommandCmif(4)]
         // GetHostStringErrorRequest(u32) -> buffer<unknown, 6, 0>
-        public ResultCode GetHostStringErrorRequest(ServiceCtx context)
+        public static ResultCode GetHostStringErrorRequest(ServiceCtx context)
         {
             ResultCode resultCode = ResultCode.NotAllocated;
             NetDbError errorCode  = (NetDbError)context.RequestData.ReadInt32();
@@ -109,7 +109,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
         [CommandCmif(5)]
         // GetGaiStringErrorRequest(u32) -> buffer<byte, 6, 0>
-        public ResultCode GetGaiStringErrorRequest(ServiceCtx context)
+        public static ResultCode GetGaiStringErrorRequest(ServiceCtx context)
         {
             ResultCode resultCode = ResultCode.NotAllocated;
             GaiError   errorCode  = (GaiError)context.RequestData.ReadInt32();
@@ -154,7 +154,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
         [CommandCmif(6)]
         // GetAddrInfoRequest(bool enable_nsd_resolve, u32, u64 pid_placeholder, pid, buffer<i8, 5, 0> host, buffer<i8, 5, 0> service, buffer<packed_addrinfo, 5, 0> hints) -> (i32 ret, u32 bsd_errno, u32 packed_addrinfo_size, buffer<packed_addrinfo, 6, 0> response)
-        public ResultCode GetAddrInfoRequest(ServiceCtx context)
+        public static ResultCode GetAddrInfoRequest(ServiceCtx context)
         {
             ulong responseBufferPosition = context.Request.ReceiveBuff[0].Position;
             ulong responseBufferSize     = context.Request.ReceiveBuff[0].Size;
@@ -164,7 +164,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
         [CommandCmif(8)]
         // GetCancelHandleRequest(u64, pid) -> u32
-        public ResultCode GetCancelHandleRequest(ServiceCtx context)
+        public static ResultCode GetCancelHandleRequest(ServiceCtx context)
         {
             ulong pidPlaceHolder      = context.RequestData.ReadUInt64();
             uint  cancelHandleRequest = 0;
@@ -178,7 +178,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
         [CommandCmif(9)]
         // CancelRequest(u32, u64, pid)
-        public ResultCode CancelRequest(ServiceCtx context)
+        public static ResultCode CancelRequest(ServiceCtx context)
         {
             uint  cancelHandleRequest = context.RequestData.ReadUInt32();
             ulong pidPlaceHolder      = context.RequestData.ReadUInt64();
@@ -190,7 +190,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
         [CommandCmif(10)] // 5.0.0+
         // GetHostByNameRequestWithOptions(u8, u32, u64, pid, buffer<unknown, 21, 0>, buffer<unknown, 21, 0>) -> (u32, u32, u32, buffer<unknown, 22, 0>)
-        public ResultCode GetHostByNameRequestWithOptions(ServiceCtx context)
+        public static ResultCode GetHostByNameRequestWithOptions(ServiceCtx context)
         {
             (ulong inputBufferPosition,   ulong inputBufferSize)   = context.Request.GetBufferType0x21();
             (ulong outputBufferPosition,  ulong outputBufferSize)  = context.Request.GetBufferType0x22();
@@ -209,7 +209,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
         [CommandCmif(11)] // 5.0.0+
         // GetHostByAddrRequestWithOptions(u32, u32, u32, u64, pid, buffer<unknown, 21, 0>, buffer<unknown, 21, 0>) -> (u32, u32, u32, buffer<unknown, 22, 0>)
-        public ResultCode GetHostByAddrRequestWithOptions(ServiceCtx context)
+        public static ResultCode GetHostByAddrRequestWithOptions(ServiceCtx context)
         {
             (ulong inputBufferPosition,   ulong inputBufferSize)   = context.Request.GetBufferType0x21();
             (ulong outputBufferPosition,  ulong outputBufferSize)  = context.Request.GetBufferType0x22();
@@ -228,7 +228,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
         [CommandCmif(12)] // 5.0.0+
         // GetAddrInfoRequestWithOptions(bool enable_nsd_resolve, u32, u64 pid_placeholder, pid, buffer<i8, 5, 0> host, buffer<i8, 5, 0> service, buffer<packed_addrinfo, 5, 0> hints, buffer<unknown, 21, 0>) -> (i32 ret, u32 bsd_errno, u32 unknown, u32 packed_addrinfo_size, buffer<packed_addrinfo, 22, 0> response)
-        public ResultCode GetAddrInfoRequestWithOptions(ServiceCtx context)
+        public static ResultCode GetAddrInfoRequestWithOptions(ServiceCtx context)
         {
             (ulong outputBufferPosition,  ulong outputBufferSize)  = context.Request.GetBufferType0x22();
             (ulong optionsBufferPosition, ulong optionsBufferSize) = context.Request.GetBufferType0x21();
@@ -238,7 +238,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
         [CommandCmif(14)] // 5.0.0+
         // ResolverSetOptionRequest(buffer<unknown, 5, 0>, u64 unknown, u64 pid_placeholder, pid) -> (i32 ret, u32 bsd_errno)
-        public ResultCode ResolverSetOptionRequest(ServiceCtx context)
+        public static ResultCode ResolverSetOptionRequest(ServiceCtx context)
         {
             ulong bufferPosition = context.Request.SendBuff[0].Position;
             ulong bufferSize     = context.Request.SendBuff[0].Size;
@@ -265,7 +265,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         // Atmosphère extension for dns_mitm
         [CommandCmif(65000)]
         // AtmosphereReloadHostsFile()
-        public ResultCode AtmosphereReloadHostsFile(ServiceCtx context)
+        public static ResultCode AtmosphereReloadHostsFile(ServiceCtx context)
         {
             DnsMitmResolver.Instance.ReloadEntries(context);
 

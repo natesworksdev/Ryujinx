@@ -45,7 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     return Status.NoInit;
                 }
 
-                if (slot < 0 || slot >= Core.Slots.Length || !Core.IsOwnedByProducerLocked(slot))
+                if (slot < 0 || slot >= BufferSlotArray.Length || !Core.IsOwnedByProducerLocked(slot))
                 {
                     return Status.BadValue;
                 }
@@ -74,7 +74,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     return Status.BadValue;
                 }
 
-                for (int slot = 0; slot < Core.Slots.Length; slot++)
+                for (int slot = 0; slot < BufferSlotArray.Length; slot++)
                 {
                     if (Core.Slots[slot].BufferState == BufferState.Dequeued)
                     {
@@ -239,7 +239,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     return Status.NoInit;
                 }
 
-                if (slot < 0 || slot >= Core.Slots.Length || !Core.IsOwnedByProducerLocked(slot))
+                if (slot < 0 || slot >= BufferSlotArray.Length || !Core.IsOwnedByProducerLocked(slot))
                 {
                     return Status.BadValue;
                 }
@@ -274,7 +274,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
                 int nextBufferSlot = BufferSlotArray.InvalidBufferSlot;
 
-                for (int slot = 0; slot < Core.Slots.Length; slot++)
+                for (int slot = 0; slot < BufferSlotArray.Length; slot++)
                 {
                     if (Core.Slots[slot].BufferState == BufferState.Free && !Core.Slots[slot].GraphicBuffer.IsNull)
                     {
@@ -369,7 +369,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     return Status.BadValue;
                 }
 
-                if (slot < 0 || slot >= Core.Slots.Length || !Core.IsOwnedByProducerLocked(slot))
+                if (slot < 0 || slot >= BufferSlotArray.Length || !Core.IsOwnedByProducerLocked(slot))
                 {
                     return Status.BadValue;
                 }
@@ -499,7 +499,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             lock (Core.Lock)
             {
-                if (Core.IsAbandoned || slot < 0 || slot >= Core.Slots.Length || !Core.IsOwnedByProducerLocked(slot))
+                if (Core.IsAbandoned || slot < 0 || slot >= BufferSlotArray.Length || !Core.IsOwnedByProducerLocked(slot))
                 {
                     return;
                 }
@@ -647,7 +647,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             int bufferCount = 0;
 
-            for (int i = 0; i < Core.Slots.Length; i++)
+            for (int i = 0; i < BufferSlotArray.Length; i++)
             {
                 if (Core.Slots[i].IsPreallocated)
                 {
@@ -660,7 +660,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public override Status SetPreallocatedBuffer(int slot, AndroidStrongPointer<GraphicBuffer> graphicBuffer)
         {
-            if (slot < 0 || slot >= Core.Slots.Length)
+            if (slot < 0 || slot >= BufferSlotArray.Length)
             {
                 return Status.BadValue;
             }
@@ -697,7 +697,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 {
                     bool allBufferFreed = true;
 
-                    for (int i = 0; i < Core.Slots.Length; i++)
+                    for (int i = 0; i < BufferSlotArray.Length; i++)
                     {
                         if (!Core.Slots[i].GraphicBuffer.IsNull)
                         {

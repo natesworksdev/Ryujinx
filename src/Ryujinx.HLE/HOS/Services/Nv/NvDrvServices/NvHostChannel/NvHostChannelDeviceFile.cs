@@ -174,7 +174,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             return NvInternalResult.Success;
         }
 
-        private Span<T> GetSpanAndSkip<T>(ref Span<byte> arguments, int count) where T : unmanaged
+        private static Span<T> GetSpanAndSkip<T>(ref Span<byte> arguments, int count) where T : unmanaged
         {
             Span<T> output = MemoryMarshal.Cast<byte, T>(arguments)[..count];
 
@@ -500,7 +500,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             return commandBuffer;
         }
 
-        private int[] CreateIncrementCommandBuffer(ref NvFence fence, SubmitGpfifoFlags flags)
+        private static int[] CreateIncrementCommandBuffer(ref NvFence fence, SubmitGpfifoFlags flags)
         {
             bool hasWfi = !flags.HasFlag(SubmitGpfifoFlags.SuppressWfi);
 

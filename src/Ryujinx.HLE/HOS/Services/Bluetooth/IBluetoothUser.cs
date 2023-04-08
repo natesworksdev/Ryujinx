@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Bluetooth
 
         [CommandCmif(9)]
         // RegisterBleEvent(pid) -> handle<copy>
-        public ResultCode RegisterBleEvent(ServiceCtx context)
+        public static ResultCode RegisterBleEvent(ServiceCtx context)
         {
             NxSettings.Settings.TryGetValue("bluetooth_debug!skip_boot", out object debugMode);
 

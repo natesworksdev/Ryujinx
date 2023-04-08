@@ -92,7 +92,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         [CommandCmif(51)] // 9.0.0+
         // GetStandardSteadyClockRtcValue() -> u64
-        public ResultCode GetStandardSteadyClockRtcValue(ServiceCtx context)
+        public static ResultCode GetStandardSteadyClockRtcValue(ServiceCtx context)
         {
             ResultCode result = (ResultCode)IRtcManager.GetExternalRtcValue(out ulong rtcValue);
 
@@ -120,7 +120,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         [CommandCmif(102)] // 5.0.0+
         // GetStandardUserSystemClockInitialYear() -> u32
-        public ResultCode GetStandardUserSystemClockInitialYear(ServiceCtx context)
+        public static ResultCode GetStandardUserSystemClockInitialYear(ServiceCtx context)
         {
             if (!NxSettings.Settings.TryGetValue("time!standard_user_clock_initial_year", out object standardUserSystemClockInitialYear))
             {

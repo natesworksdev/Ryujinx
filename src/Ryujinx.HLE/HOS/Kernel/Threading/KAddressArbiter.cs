@@ -170,7 +170,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             return currentThread.ObjSyncResult;
         }
 
-        private (int, KThread) MutexUnlock(KThread currentThread, ulong mutexAddress)
+        private static (int, KThread) MutexUnlock(KThread currentThread, ulong mutexAddress)
         {
             KThread newOwnerThread = currentThread.RelinquishMutex(mutexAddress, out int count);
 

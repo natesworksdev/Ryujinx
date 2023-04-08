@@ -868,7 +868,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             return serverResult;
         }
 
-        private MessageHeader GetClientMessageHeader(KProcess clientProcess, Message clientMsg)
+        private static MessageHeader GetClientMessageHeader(KProcess clientProcess, Message clientMsg)
         {
             uint word0 = clientProcess.CpuMemory.Read<uint>(clientMsg.Address + 0);
             uint word1 = clientProcess.CpuMemory.Read<uint>(clientMsg.Address + 4);
@@ -877,7 +877,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             return new MessageHeader(word0, word1, word2);
         }
 
-        private MessageHeader GetServerMessageHeader(Message serverMsg)
+        private static MessageHeader GetServerMessageHeader(Message serverMsg)
         {
             KProcess currentProcess = KernelStatic.GetCurrentProcess();
 
@@ -888,7 +888,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             return new MessageHeader(word0, word1, word2);
         }
 
-        private Result GetCopyObjectHandle(KThread srcThread, KProcess dstProcess, int srcHandle, out int dstHandle)
+        private static Result GetCopyObjectHandle(KThread srcThread, KProcess dstProcess, int srcHandle, out int dstHandle)
         {
             dstHandle = 0;
 
@@ -919,7 +919,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             }
         }
 
-        private Result GetMoveObjectHandle(KProcess srcProcess, KProcess dstProcess, int srcHandle, out int dstHandle)
+        private static Result GetMoveObjectHandle(KProcess srcProcess, KProcess dstProcess, int srcHandle, out int dstHandle)
         {
             dstHandle = 0;
 
@@ -939,7 +939,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             }
         }
 
-        private ulong[] GetReceiveList(KProcess ownerProcess, Message message, uint recvListType, uint recvListOffset)
+        private static ulong[] GetReceiveList(KProcess ownerProcess, Message message, uint recvListType, uint recvListOffset)
         {
             int recvListSize = 0;
 
@@ -964,7 +964,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             return receiveList;
         }
 
-        private Result GetReceiveListAddress(
+        private static Result GetReceiveListAddress(
             PointerBufferDesc descriptor,
             Message           message,
             uint              recvListType,
@@ -1042,7 +1042,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             return Result.Success;
         }
 
-        private void CloseAllHandles(Message message, MessageHeader header, KProcess process)
+        private static void CloseAllHandles(Message message, MessageHeader header, KProcess process)
         {
             if (header.HasHandles)
             {
@@ -1203,7 +1203,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             }
         }
 
-        private void SendResultToAsyncRequestClient(KSessionRequest request, Result result)
+        private static void SendResultToAsyncRequestClient(KSessionRequest request, Result result)
         {
             KProcess clientProcess = request.ClientThread.Owner;
 
@@ -1233,7 +1233,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             KernelContext.CriticalSection.Leave();
         }
 
-        private void WakeAndSetResult(KThread thread, Result result, KSynchronizationObject signaledObj = null)
+        private static void WakeAndSetResult(KThread thread, Result result, KSynchronizationObject signaledObj = null)
         {
             if ((thread.SchedFlags & ThreadSchedState.LowMask) == ThreadSchedState.Paused)
             {

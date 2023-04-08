@@ -64,7 +64,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // InitializeOld(u64, pid)
         public ResultCode InitializeOld(ServiceCtx context)
         {
-            return _networkInterface.Initialize(UnknownValue, 0, null, null);
+            return NetworkInterface.Initialize(UnknownValue, 0, null, null);
         }
 
         [CommandCmif(401)]
@@ -82,7 +82,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             IPAddress unknownAddress1 = new(context.RequestData.ReadUInt32());
             IPAddress unknownAddress2 = new(context.RequestData.ReadUInt32());
 
-            return _networkInterface.Initialize(UnknownValue, version: 1, unknownAddress1, unknownAddress2);
+            return NetworkInterface.Initialize(UnknownValue, version: 1, unknownAddress1, unknownAddress2);
         }
     }
 }

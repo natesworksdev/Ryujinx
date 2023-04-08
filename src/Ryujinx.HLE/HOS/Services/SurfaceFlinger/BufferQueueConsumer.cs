@@ -95,7 +95,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     return Status.NoInit;
                 }
 
-                if (slot < 0 || slot >= Core.Slots.Length || !Core.IsOwnedByConsumerLocked(slot))
+                if (slot < 0 || slot >= BufferSlotArray.Length || !Core.IsOwnedByConsumerLocked(slot))
                 {
                     return Status.BadValue;
                 }
@@ -122,7 +122,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
                 int freeSlot = BufferSlotArray.InvalidBufferSlot;
 
-                for (int i = 0; i < Core.Slots.Length; i++)
+                for (int i = 0; i < BufferSlotArray.Length; i++)
                 {
                     if (Core.Slots[i].BufferState == BufferState.Acquired)
                     {
@@ -172,7 +172,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public Status ReleaseBuffer(int slot, ulong frameNumber, ref AndroidFence fence)
         {
-            if (slot < 0 || slot >= Core.Slots.Length)
+            if (slot < 0 || slot >= BufferSlotArray.Length)
             {
                 return Status.BadValue;
             }
@@ -275,7 +275,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     return Status.BadValue;
                 }
 
-                for (int slot = 0; slot < Core.Slots.Length; slot++)
+                for (int slot = 0; slot < BufferSlotArray.Length; slot++)
                 {
                     if (!Core.Slots[slot].AcquireCalled)
                     {
@@ -386,7 +386,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public Status SetPresentTime(int slot, ulong frameNumber, TimeSpanType presentationTime)
         {
-            if (slot < 0 || slot >= Core.Slots.Length)
+            if (slot < 0 || slot >= BufferSlotArray.Length)
             {
                 return Status.BadValue;
             }

@@ -73,7 +73,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         public void SetDefault()
         {
-            Storage.Fill(0);
+            Storage.Clear();
 
             Nickname = Nickname.Default;
         }

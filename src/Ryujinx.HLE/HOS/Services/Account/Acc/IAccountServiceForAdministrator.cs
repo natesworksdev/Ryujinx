@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         // GetUserCount() -> i32
         public ResultCode GetUserCount(ServiceCtx context)
         {
-            return _applicationServiceServer.GetUserCountImpl(context);
+            return ApplicationServiceServer.GetUserCountImpl(context);
         }
 
         [CommandCmif(1)]
@@ -46,7 +46,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         // GetLastOpenedUser() -> nn::account::Uid
         public ResultCode GetLastOpenedUser(ServiceCtx context)
         {
-            return _applicationServiceServer.GetLastOpenedUser(context);
+            return ApplicationServiceServer.GetLastOpenedUser(context);
         }
 
         [CommandCmif(5)]
@@ -76,14 +76,14 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         // TrySelectUserWithoutInteraction(bool) -> nn::account::Uid
         public ResultCode TrySelectUserWithoutInteraction(ServiceCtx context)
         {
-            return _applicationServiceServer.TrySelectUserWithoutInteraction(context);
+            return ApplicationServiceServer.TrySelectUserWithoutInteraction(context);
         }
 
         [CommandCmif(102)]
         // GetBaasAccountManagerForSystemService(nn::account::Uid) -> object<nn::account::baas::IManagerForApplication>
         public ResultCode GetBaasAccountManagerForSystemService(ServiceCtx context)
         {
-            ResultCode resultCode = _applicationServiceServer.CheckUserId(context, out UserId userId);
+            ResultCode resultCode = ApplicationServiceServer.CheckUserId(context, out UserId userId);
 
             if (resultCode != ResultCode.Success)
             {

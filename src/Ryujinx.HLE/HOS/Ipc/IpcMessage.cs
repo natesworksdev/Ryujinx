@@ -236,7 +236,7 @@ namespace Ryujinx.HLE.HOS.Ipc
             return ms;
         }
 
-        private long GetPadSize16(long position)
+        private static long GetPadSize16(long position)
         {
             if ((position & 0xf) != 0)
             {

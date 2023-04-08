@@ -481,7 +481,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
         [CommandCmif(10)]
         // Flush(bytes<8, 4>)
-        public ResultCode Flush(ServiceCtx context)
+        public static ResultCode Flush(ServiceCtx context)
         {
             uint deviceHandle = (uint)context.RequestData.ReadUInt64();
 
@@ -834,7 +834,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
         [CommandCmif(17)]
         // AttachActivateEvent(bytes<8, 4>) -> handle<copy>
-        public ResultCode AttachActivateEvent(ServiceCtx context)
+        public static ResultCode AttachActivateEvent(ServiceCtx context)
         {
             uint deviceHandle = context.RequestData.ReadUInt32();
 
@@ -860,7 +860,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
         [CommandCmif(18)]
         // AttachDeactivateEvent(bytes<8, 4>) -> handle<copy>
-        public ResultCode AttachDeactivateEvent(ServiceCtx context)
+        public static ResultCode AttachDeactivateEvent(ServiceCtx context)
         {
             uint deviceHandle = context.RequestData.ReadUInt32();
 
@@ -895,7 +895,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
         [CommandCmif(20)]
         // GetDeviceState(bytes<8, 4>) -> u32
-        public ResultCode GetDeviceState(ServiceCtx context)
+        public static ResultCode GetDeviceState(ServiceCtx context)
         {
             uint deviceHandle = context.RequestData.ReadUInt32();
 
@@ -921,7 +921,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
         [CommandCmif(21)]
         // GetNpadId(bytes<8, 4>) -> u32
-        public ResultCode GetNpadId(ServiceCtx context)
+        public static ResultCode GetNpadId(ServiceCtx context)
         {
             uint deviceHandle = context.RequestData.ReadUInt32();
 
@@ -940,7 +940,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
         [CommandCmif(22)]
         // GetApplicationAreaSize() -> u32
-        public ResultCode GetApplicationAreaSize(ServiceCtx context)
+        public static ResultCode GetApplicationAreaSize(ServiceCtx context)
         {
             context.ResponseData.Write(AmiiboConstants.ApplicationAreaSize);
 
@@ -984,7 +984,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             return ResultCode.DeviceNotFound;
         }
 
-        private ResultCode CheckNfcIsEnabled()
+        private static ResultCode CheckNfcIsEnabled()
         {
             // TODO: Call nn::settings::detail::GetNfcEnableFlag when it will be implemented.
             return true ? ResultCode.Success : ResultCode.NfcDisabled;

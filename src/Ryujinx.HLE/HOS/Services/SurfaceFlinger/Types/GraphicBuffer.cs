@@ -45,7 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             NvMapDeviceFile.IncrementMapRefCount(pid, Buffer.NvMapId);
 
-            for (int i = 0; i < Buffer.Surfaces.Length; i++)
+            for (int i = 0; i < NvGraphicBufferSurfaceArray.Length; i++)
             {
                 NvMapDeviceFile.IncrementMapRefCount(pid, Buffer.Surfaces[i].NvMapHandle);
             }
@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             NvMapDeviceFile.DecrementMapRefCount(pid, Buffer.NvMapId);
 
-            for (int i = 0; i < Buffer.Surfaces.Length; i++)
+            for (int i = 0; i < NvGraphicBufferSurfaceArray.Length; i++)
             {
                 NvMapDeviceFile.DecrementMapRefCount(pid, Buffer.Surfaces[i].NvMapHandle);
             }

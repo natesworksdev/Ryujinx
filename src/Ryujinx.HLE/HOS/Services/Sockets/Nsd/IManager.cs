@@ -69,7 +69,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
             MemoryHelper.FillWithZeros(context.Memory, outputPosition, (int)outputSize);
 
-            ResultCode result = _fqdnResolver.GetEnvironmentIdentifier(out string identifier);
+            ResultCode result = FqdnResolver.GetEnvironmentIdentifier(out string identifier);
 
             if (result == ResultCode.Success)
             {
@@ -83,7 +83,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
         [CommandCmif(12)]
         // GetDeviceId() -> bytes<0x10, 1>
-        public ResultCode GetDeviceId(ServiceCtx context)
+        public static ResultCode GetDeviceId(ServiceCtx context)
         {
             // NOTE: Stubbed in system module.
 
@@ -136,7 +136,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
         [CommandCmif(15)] // 4.0.0+
         // SetChangeEnvironmentIdentifierDisabled(bytes<1>)
-        public ResultCode SetChangeEnvironmentIdentifierDisabled(ServiceCtx context)
+        public static ResultCode SetChangeEnvironmentIdentifierDisabled(ServiceCtx context)
         {
             byte disabled = context.RequestData.ReadByte();
 
@@ -160,7 +160,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
             ulong outputPosition = context.Request.ReceiveBuff[0].Position;
             ulong outputSize     = context.Request.ReceiveBuff[0].Size;
 
-            ResultCode result = _fqdnResolver.ResolveEx(context, out _, out string resolvedAddress);
+            ResultCode result = FqdnResolver.ResolveEx(context, out _, out string resolvedAddress);
 
             if ((ulong)resolvedAddress.Length > outputSize)
             {
@@ -183,7 +183,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
             ulong outputPosition = context.Request.ReceiveBuff[0].Position;
             ulong outputSize     = context.Request.ReceiveBuff[0].Size;
 
-            ResultCode result = _fqdnResolver.ResolveEx(context, out ResultCode errorCode, out string resolvedAddress);
+            ResultCode result = FqdnResolver.ResolveEx(context, out ResultCode errorCode, out string resolvedAddress);
 
             if ((ulong)resolvedAddress.Length > outputSize)
             {
@@ -344,7 +344,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
         [CommandCmif(63)] // 4.0.0+
         // IsChangeEnvironmentIdentifierDisabled() -> bytes<1>
-        public ResultCode IsChangeEnvironmentIdentifierDisabled(ServiceCtx context)
+        public static ResultCode IsChangeEnvironmentIdentifierDisabled(ServiceCtx context)
         {
             // TODO: When sys:set service calls will be implemented use nn::settings::detail::GetServiceDiscoveryControlSettings()
 
@@ -364,7 +364,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
             // TODO: Mount the savedata 0x80000000000000B0 (nsdsave:/test_parameter) and returns the environment type stored inside if the mount succeed.
             //       Returns ResultCode.NullOutputObject if failed.
 
-            ResultCode result = _fqdnResolver.GetEnvironmentIdentifier(out string identifier);
+            ResultCode result = FqdnResolver.GetEnvironmentIdentifier(out string identifier);
 
             if (result != ResultCode.Success)
             {

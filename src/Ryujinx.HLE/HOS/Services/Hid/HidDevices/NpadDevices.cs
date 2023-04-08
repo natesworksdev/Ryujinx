@@ -304,7 +304,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             Logger.Info?.Print(LogClass.Hid, $"Connected Controller {type} to {player}");
         }
 
-        private ref RingLifo<NpadCommonState> GetCommonStateLifo(ref NpadInternalState npad)
+        private static ref RingLifo<NpadCommonState> GetCommonStateLifo(ref NpadInternalState npad)
         {
             switch (npad.StyleSet)
             {
@@ -335,7 +335,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             }
         }
 
-        private void WriteNewInputEntry(ref RingLifo<NpadCommonState> lifo, ref NpadCommonState state)
+        private static void WriteNewInputEntry(ref RingLifo<NpadCommonState> lifo, ref NpadCommonState state)
         {
             ref NpadCommonState previousEntry = ref lifo.GetCurrentEntryRef();
 
@@ -354,7 +354,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             }
         }
 
-        private void WriteNewSixInputEntry(ref RingLifo<SixAxisSensorState> lifo, ref SixAxisSensorState state)
+        private static void WriteNewSixInputEntry(ref RingLifo<SixAxisSensorState> lifo, ref SixAxisSensorState state)
         {
             ref SixAxisSensorState previousEntry = ref lifo.GetCurrentEntryRef();
 
@@ -473,7 +473,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             }
         }
 
-        private ref RingLifo<SixAxisSensorState> GetSixAxisSensorLifo(ref NpadInternalState npad, bool isRightPair)
+        private static ref RingLifo<SixAxisSensorState> GetSixAxisSensorLifo(ref NpadInternalState npad, bool isRightPair)
         {
             switch (npad.StyleSet)
             {

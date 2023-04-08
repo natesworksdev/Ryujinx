@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
 
         [CommandCmif(2205)]
         // SetLayerZ(u64, u64)
-        public ResultCode SetLayerZ(ServiceCtx context)
+        public static ResultCode SetLayerZ(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceVi);
 
@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
 
         [CommandCmif(2207)]
         // SetLayerVisibility(b8, u64)
-        public ResultCode SetLayerVisibility(ServiceCtx context)
+        public static ResultCode SetLayerVisibility(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceVi);
 
@@ -35,12 +35,12 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
         {
             Logger.Stub?.PrintStub(LogClass.ServiceVi);
 
-            return _applicationDisplayService.CreateStrayLayer(context);
+            return IApplicationDisplayService.CreateStrayLayer(context);
         }
 
         [CommandCmif(3200)]
         // GetDisplayMode(u64) -> nn::vi::DisplayModeInfo
-        public ResultCode GetDisplayMode(ServiceCtx context)
+        public static ResultCode GetDisplayMode(ServiceCtx context)
         {
             ulong displayId = context.RequestData.ReadUInt64();
 

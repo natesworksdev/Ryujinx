@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             _serviceFlag = serviceFlag;
         }
 
-        public ResultCode GetUserCountImpl(ServiceCtx context)
+        public static ResultCode GetUserCountImpl(ServiceCtx context)
         {
             context.ResponseData.Write(context.Device.System.AccountManager.GetUserCount());
 
@@ -50,7 +50,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return WriteUserList(context, context.Device.System.AccountManager.GetOpenedUsers());
         }
 
-        private ResultCode WriteUserList(ServiceCtx context, IEnumerable<UserProfile> profiles)
+        private static ResultCode WriteUserList(ServiceCtx context, IEnumerable<UserProfile> profiles)
         {
             if (context.Request.RecvListBuff.Count == 0)
             {
@@ -80,7 +80,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return ResultCode.Success;
         }
 
-        public ResultCode GetLastOpenedUser(ServiceCtx context)
+        public static ResultCode GetLastOpenedUser(ServiceCtx context)
         {
             context.Device.System.AccountManager.LastOpenedUser.UserId.Write(context.ResponseData);
 
@@ -120,7 +120,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return ResultCode.Success;
         }
 
-        public ResultCode TrySelectUserWithoutInteraction(ServiceCtx context)
+        public static ResultCode TrySelectUserWithoutInteraction(ServiceCtx context)
         {
             if (context.Device.System.AccountManager.GetUserCount() < 1)
             {
@@ -239,7 +239,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return WriteUserList(context, context.Device.System.AccountManager.GetAllUsers());
         }
 
-        public ResultCode CheckUserId(ServiceCtx context, out UserId userId)
+        public static ResultCode CheckUserId(ServiceCtx context, out UserId userId)
         {
             userId = context.RequestData.ReadStruct<UserId>();
 

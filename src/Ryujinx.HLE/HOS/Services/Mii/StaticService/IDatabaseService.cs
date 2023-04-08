@@ -340,7 +340,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             return result;
         }
 
-        private Span<byte> CreateByteSpanFromBuffer(ServiceCtx context, IpcBuffDesc ipcBuff, bool isOutput)
+        private static Span<byte> CreateByteSpanFromBuffer(ServiceCtx context, IpcBuffDesc ipcBuff, bool isOutput)
         {
             byte[] rawData;
 
@@ -363,7 +363,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             return MemoryMarshal.Cast<byte, T>(CreateByteSpanFromBuffer(context, ipcBuff, isOutput));
         }
 
-        private void WriteSpanToBuffer<T>(ServiceCtx context, IpcBuffDesc ipcBuff, Span<T> span) where T: unmanaged
+        private static void WriteSpanToBuffer<T>(ServiceCtx context, IpcBuffDesc ipcBuff, Span<T> span) where T: unmanaged
         {
             Span<byte> rawData = MemoryMarshal.Cast<T, byte>(span);
 

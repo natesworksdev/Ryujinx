@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
 
         [CommandCmif(2)]
         // GetCertificates(buffer<CaCertificateId, 5> ids) -> (u32 certificates_count, buffer<bytes, 6> certificates)
-        public ResultCode GetCertificates(ServiceCtx context)
+        public static ResultCode GetCertificates(ServiceCtx context)
         {
             ReadOnlySpan<CaCertificateId> ids = MemoryMarshal.Cast<byte, CaCertificateId>(context.Memory.GetSpan(context.Request.SendBuff[0].Position, (int)context.Request.SendBuff[0].Size));
 
@@ -96,7 +96,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
 
         [CommandCmif(3)]
         // GetCertificateBufSize(buffer<CaCertificateId, 5> ids) -> u32 buffer_size;
-        public ResultCode GetCertificateBufSize(ServiceCtx context)
+        public static ResultCode GetCertificateBufSize(ServiceCtx context)
         {
             ReadOnlySpan<CaCertificateId> ids = MemoryMarshal.Cast<byte, CaCertificateId>(context.Memory.GetSpan(context.Request.SendBuff[0].Position, (int)context.Request.SendBuff[0].Size));
 
@@ -112,7 +112,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
 
         [CommandCmif(5)]
         // SetInterfaceVersion(u32)
-        public ResultCode SetInterfaceVersion(ServiceCtx context)
+        public static ResultCode SetInterfaceVersion(ServiceCtx context)
         {
             // 1 = 3.0.0+, 2 = 5.0.0+, 3 = 6.0.0+
             uint interfaceVersion = context.RequestData.ReadUInt32();

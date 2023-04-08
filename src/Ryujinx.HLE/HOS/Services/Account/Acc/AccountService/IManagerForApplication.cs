@@ -13,14 +13,14 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
         // CheckAvailability()
         public ResultCode CheckAvailability(ServiceCtx context)
         {
-            return _managerServer.CheckAvailability(context);
+            return ManagerServer.CheckAvailability(context);
         }
 
         [CommandCmif(1)]
         // GetAccountId() -> nn::account::NetworkServiceAccountId
         public ResultCode GetAccountId(ServiceCtx context)
         {
-            return _managerServer.GetAccountId(context);
+            return ManagerServer.GetAccountId(context);
         }
 
         [CommandCmif(2)]
@@ -41,21 +41,21 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
         // LoadIdTokenCache() -> (u32 id_token_cache_size, buffer<bytes, 6>)
         public ResultCode LoadIdTokenCache(ServiceCtx context)
         {
-            return _managerServer.LoadIdTokenCache(context);
+            return ManagerServer.LoadIdTokenCache(context);
         }
 
         [CommandCmif(130)]
         // GetNintendoAccountUserResourceCacheForApplication() -> (nn::account::NintendoAccountId, nn::account::nas::NasUserBaseForApplication, buffer<bytes, 6>)
         public ResultCode GetNintendoAccountUserResourceCacheForApplication(ServiceCtx context)
         {
-            return _managerServer.GetNintendoAccountUserResourceCacheForApplication(context);
+            return ManagerServer.GetNintendoAccountUserResourceCacheForApplication(context);
         }
 
         [CommandCmif(160)] // 5.0.0+
         // StoreOpenContext()
         public ResultCode StoreOpenContext(ServiceCtx context)
         {
-            return _managerServer.StoreOpenContext(context);
+            return ManagerServer.StoreOpenContext(context);
         }
 
         [CommandCmif(170)] // 6.0.0+

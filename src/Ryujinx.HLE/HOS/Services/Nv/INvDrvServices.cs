@@ -89,7 +89,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
             return NvResult.FileOperationFailed;
         }
 
-        private NvResult GetIoctlArgument(ServiceCtx context, NvIoctl ioctlCommand, out Span<byte> arguments)
+        private static NvResult GetIoctlArgument(ServiceCtx context, NvIoctl ioctlCommand, out Span<byte> arguments)
         {
             (ulong inputDataPosition,  ulong inputDataSize)  = context.Request.GetBufferType0x21(0);
             (ulong outputDataPosition, ulong outputDataSize) = context.Request.GetBufferType0x22(0);
@@ -448,7 +448,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
         [CommandCmif(8)]
         // SetClientPID(u64, pid) -> u32 error_code
-        public ResultCode SetClientPid(ServiceCtx context)
+        public static ResultCode SetClientPid(ServiceCtx context)
         {
             long pid = context.RequestData.ReadInt64();
 
@@ -459,7 +459,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
         [CommandCmif(9)]
         // DumpGraphicsMemoryInfo()
-        public ResultCode DumpGraphicsMemoryInfo(ServiceCtx context)
+        public static ResultCode DumpGraphicsMemoryInfo(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNv);
 
@@ -574,7 +574,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
         [CommandCmif(13)] // 3.0.0+
         // FinishInitialize(unknown<8>)
-        public ResultCode FinishInitialize(ServiceCtx context)
+        public static ResultCode FinishInitialize(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNv);
 

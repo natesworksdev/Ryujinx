@@ -122,7 +122,7 @@ namespace Ryujinx.HLE.HOS.Applets
             return ResultCode.Success;
         }
 
-        private byte[] BuildResponse(ControllerSupportResultInfo result)
+        private static byte[] BuildResponse(ControllerSupportResultInfo result)
         {
             using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
             using BinaryWriter writer = new(stream);
@@ -131,7 +131,7 @@ namespace Ryujinx.HLE.HOS.Applets
             return stream.ToArray();
         }
 
-        private byte[] BuildResponse()
+        private static byte[] BuildResponse()
         {
             using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
             using BinaryWriter writer = new(stream);

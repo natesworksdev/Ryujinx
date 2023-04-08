@@ -39,7 +39,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
         public virtual void SetTestOffset(TimeSpanType testOffset) {}
 
-        public ResultCode GetRtcValue(out ulong rtcValue)
+        public static ResultCode GetRtcValue(out ulong rtcValue)
         {
             rtcValue = 0;
 
@@ -51,7 +51,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             return _isRtcResetDetected;
         }
 
-        public ResultCode GetSetupResultValue()
+        public static ResultCode GetSetupResultValue()
         {
             return ResultCode.Success;
         }

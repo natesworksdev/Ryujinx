@@ -122,7 +122,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             }
 
             // Preserve all buffers already in control of the producer and the consumer.
-            for (int slot = maxBufferCount; slot < Slots.Length; slot++)
+            for (int slot = maxBufferCount; slot < BufferSlotArray.Length; slot++)
             {
                 BufferState state = Slots[slot].BufferState;
 
@@ -139,7 +139,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             int minBufferCount = UseAsyncBuffer ? 2 : 1;
 
-            if (count < minBufferCount || count > Slots.Length)
+            if (count < minBufferCount || count > BufferSlotArray.Length)
             {
                 return Status.BadValue;
             }
@@ -230,7 +230,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             BufferHasBeenQueued = false;
 
-            for (int slot = 0; slot < Slots.Length; slot++)
+            for (int slot = 0; slot < BufferSlotArray.Length; slot++)
             {
                 FreeBufferLocked(slot);
             }

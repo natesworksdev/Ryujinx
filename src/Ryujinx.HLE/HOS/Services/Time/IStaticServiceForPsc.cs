@@ -115,7 +115,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         [CommandCmif(50)] // 4.0.0+
         // SetStandardSteadyClockInternalOffset(nn::TimeSpanType internal_offset)
-        public ResultCode SetStandardSteadyClockInternalOffset(ServiceCtx context)
+        public static ResultCode SetStandardSteadyClockInternalOffset(ServiceCtx context)
         {
             // This is only implemented in glue's StaticService.
             return ResultCode.NotImplemented;
@@ -123,7 +123,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         [CommandCmif(51)] // 9.0.0+
         // GetStandardSteadyClockRtcValue() -> u64
-        public ResultCode GetStandardSteadyClockRtcValue(ServiceCtx context)
+        public static ResultCode GetStandardSteadyClockRtcValue(ServiceCtx context)
         {
             // This is only implemented in glue's StaticService.
             return ResultCode.NotImplemented;
@@ -183,7 +183,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         [CommandCmif(102)] // 5.0.0+
         // GetStandardUserSystemClockInitialYear() -> u32
-        public ResultCode GetStandardUserSystemClockInitialYear(ServiceCtx context)
+        public static ResultCode GetStandardUserSystemClockInitialYear(ServiceCtx context)
         {
             // This is only implemented in glue's StaticService.
             return ResultCode.NotImplemented;
@@ -411,7 +411,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             return result;
         }
 
-        private ClockSnapshot ReadClockSnapshotFromBuffer(ServiceCtx context, IpcPtrBuffDesc ipcDesc)
+        private static ClockSnapshot ReadClockSnapshotFromBuffer(ServiceCtx context, IpcPtrBuffDesc ipcDesc)
         {
             Debug.Assert(ipcDesc.Size == (ulong)Unsafe.SizeOf<ClockSnapshot>());
 
@@ -423,7 +423,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             return bufferReader.ReadStruct<ClockSnapshot>();
         }
 
-        private void WriteClockSnapshotFromBuffer(ServiceCtx context, IpcRecvListBuffDesc ipcDesc, ClockSnapshot clockSnapshot)
+        private static void WriteClockSnapshotFromBuffer(ServiceCtx context, IpcRecvListBuffDesc ipcDesc, ClockSnapshot clockSnapshot)
         {
             MemoryHelper.Write(context.Memory, ipcDesc.Position, clockSnapshot);
         }

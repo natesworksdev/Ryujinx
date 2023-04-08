@@ -87,7 +87,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
             return !string.IsNullOrEmpty(GetCertStoreTitleContentPath());
         }
 
-        private CertStoreEntry ReadCertStoreEntry(ReadOnlySpan<byte> buffer, CertStoreFileEntry entry)
+        private static CertStoreEntry ReadCertStoreEntry(ReadOnlySpan<byte> buffer, CertStoreFileEntry entry)
         {
             string customCertificatePath = System.IO.Path.Join(AppDataManager.BaseDirPath, "system", "ssl", $"{entry.Id}.der");
 

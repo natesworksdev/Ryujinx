@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             _isPrivileged = isPrivileged;
         }
 
-        private ResultCode WriteBsdResult(ServiceCtx context, int result, LinuxError errorCode = LinuxError.SUCCESS)
+        private static ResultCode WriteBsdResult(ServiceCtx context, int result, LinuxError errorCode = LinuxError.SUCCESS)
         {
             if (errorCode != LinuxError.SUCCESS)
             {
@@ -61,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             }
         }
 
-        private LinuxError SetResultErrno(IFileDescriptor socket, int result)
+        private static LinuxError SetResultErrno(IFileDescriptor socket, int result)
         {
             return result == 0 && !socket.Blocking ? LinuxError.EWOULDBLOCK : LinuxError.SUCCESS;
         }
@@ -123,7 +123,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             return WriteBsdResult(context, newSockFd, errno);
         }
 
-        private void WriteSockAddr(ServiceCtx context, ulong bufferPosition, ISocket socket, bool isRemote)
+        private static void WriteSockAddr(ServiceCtx context, ulong bufferPosition, ISocket socket, bool isRemote)
         {
             IPEndPoint endPoint = isRemote ? socket.RemoteEndPoint : socket.LocalEndPoint;
 
@@ -162,7 +162,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         [CommandCmif(1)]
         // StartMonitoring(u64, pid)
-        public ResultCode StartMonitoring(ServiceCtx context)
+        public static ResultCode StartMonitoring(ServiceCtx context)
         {
             ulong unknown0 = context.RequestData.ReadUInt64();
 

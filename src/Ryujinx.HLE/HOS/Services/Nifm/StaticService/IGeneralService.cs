@@ -130,7 +130,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         [CommandCmif(18)]
         // GetInternetConnectionStatus() -> nn::nifm::detail::sf::InternetConnectionStatus
-        public ResultCode GetInternetConnectionStatus(ServiceCtx context)
+        public static ResultCode GetInternetConnectionStatus(ServiceCtx context)
         {
             if (!NetworkInterface.GetIsNetworkAvailable())
             {
@@ -151,7 +151,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         [CommandCmif(21)]
         // IsAnyInternetRequestAccepted(buffer<nn::nifm::ClientId, 0x19, 4>) -> bool
-        public ResultCode IsAnyInternetRequestAccepted(ServiceCtx context)
+        public static ResultCode IsAnyInternetRequestAccepted(ServiceCtx context)
         {
             ulong position = context.Request.PtrBuff[0].Position;
             ulong size     = context.Request.PtrBuff[0].Size;

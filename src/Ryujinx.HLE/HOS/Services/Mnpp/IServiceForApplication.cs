@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Mnpp
 
         [CommandCmif(0)]
         // Initialize(pid)
-        public ResultCode Initialize(ServiceCtx context)
+        public static ResultCode Initialize(ServiceCtx context)
         {
             // Pid placeholder
             context.RequestData.ReadInt64();
@@ -29,7 +29,7 @@ namespace Ryujinx.HLE.HOS.Services.Mnpp
 
         [CommandCmif(1)]
         // SendRawTelemetryData(nn::account::Uid user_id, buffer<bytes, 5> title_id)
-        public ResultCode SendRawTelemetryData(ServiceCtx context)
+        public static ResultCode SendRawTelemetryData(ServiceCtx context)
         {
             ulong titleIdInputPosition = context.Request.SendBuff[0].Position;
             ulong titleIdInputSize     = context.Request.SendBuff[0].Size;

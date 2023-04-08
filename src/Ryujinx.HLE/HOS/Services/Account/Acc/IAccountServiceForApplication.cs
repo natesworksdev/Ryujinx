@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         // GetUserCount() -> i32
         public ResultCode GetUserCount(ServiceCtx context)
         {
-            return _applicationServiceServer.GetUserCountImpl(context);
+            return ApplicationServiceServer.GetUserCountImpl(context);
         }
 
         [CommandCmif(1)]
@@ -46,7 +46,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         // GetLastOpenedUser() -> nn::account::Uid
         public ResultCode GetLastOpenedUser(ServiceCtx context)
         {
-            return _applicationServiceServer.GetLastOpenedUser(context);
+            return ApplicationServiceServer.GetLastOpenedUser(context);
         }
 
         [CommandCmif(5)]
@@ -75,14 +75,14 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         // TrySelectUserWithoutInteraction(bool) -> nn::account::Uid
         public ResultCode TrySelectUserWithoutInteraction(ServiceCtx context)
         {
-            return _applicationServiceServer.TrySelectUserWithoutInteraction(context);
+            return ApplicationServiceServer.TrySelectUserWithoutInteraction(context);
         }
 
         [CommandCmif(100)]
         [CommandCmif(140)] // 6.0.0+
         [CommandCmif(160)] // 13.0.0+
         // InitializeApplicationInfo(u64 pid_placeholder, pid)
-        public ResultCode InitializeApplicationInfo(ServiceCtx context)
+        public static ResultCode InitializeApplicationInfo(ServiceCtx context)
         {
             // NOTE: In call 100, account service use the pid_placeholder instead of the real pid, which is wrong, call 140 fix that.
 
@@ -109,7 +109,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         // GetBaasAccountManagerForApplication(nn::account::Uid) -> object<nn::account::baas::IManagerForApplication>
         public ResultCode GetBaasAccountManagerForApplication(ServiceCtx context)
         {
-            ResultCode resultCode = _applicationServiceServer.CheckUserId(context, out UserId userId);
+            ResultCode resultCode = ApplicationServiceServer.CheckUserId(context, out UserId userId);
 
             if (resultCode != ResultCode.Success)
             {
@@ -156,7 +156,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         // LoadOpenContext(nn::account::Uid) -> object<nn::account::baas::IManagerForApplication>
         public ResultCode LoadOpenContext(ServiceCtx context)
         {
-            ResultCode resultCode = _applicationServiceServer.CheckUserId(context, out UserId userId);
+            ResultCode resultCode = ApplicationServiceServer.CheckUserId(context, out UserId userId);
 
             if (resultCode != ResultCode.Success)
             {
@@ -185,7 +185,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         [CommandCmif(150)] // 6.0.0+
         // IsUserAccountSwitchLocked() -> bool
-        public ResultCode IsUserAccountSwitchLocked(ServiceCtx context)
+        public static ResultCode IsUserAccountSwitchLocked(ServiceCtx context)
         {
             // TODO: Account actually calls nn::arp::detail::IReader::GetApplicationControlProperty() with the current Pid and store the result (NACP file) internally.
             //       But since we use LibHac and we load one Application at a time, it's not necessary.

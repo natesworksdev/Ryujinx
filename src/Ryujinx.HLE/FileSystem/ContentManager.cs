@@ -567,7 +567,7 @@ namespace Ryujinx.HLE.FileSystem
             }
         }
 
-        private void InstallFromZip(ZipArchive archive, string temporaryDirectory)
+        private static void InstallFromZip(ZipArchive archive, string temporaryDirectory)
         {
             using (archive)
             {
@@ -600,7 +600,7 @@ namespace Ryujinx.HLE.FileSystem
             }
         }
 
-        public void SaveNca(Nca nca, string ncaId, string temporaryDirectory)
+        public static void SaveNca(Nca nca, string ncaId, string temporaryDirectory)
         {
             string newPath = Path.Combine(temporaryDirectory, ncaId + ".nca");
 
@@ -610,7 +610,7 @@ namespace Ryujinx.HLE.FileSystem
             nca.BaseStorage.AsStream().CopyTo(file);
         }
 
-        private IFile OpenPossibleFragmentedFile(IFileSystem filesystem, string path, OpenMode mode)
+        private static IFile OpenPossibleFragmentedFile(IFileSystem filesystem, string path, OpenMode mode)
         {
             using var file = new UniqueRef<IFile>();
 
@@ -626,7 +626,7 @@ namespace Ryujinx.HLE.FileSystem
             return file.Release();
         }
 
-        private Stream GetZipStream(ZipArchiveEntry entry)
+        private static Stream GetZipStream(ZipArchiveEntry entry)
         {
             MemoryStream dest = MemoryStreamManager.Shared.GetStream();
 

@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
             if (!File.Exists(fullPath))
             {
-                if (fullPath.Contains("."))
+                if (fullPath.Contains('.'))
                 {
                     ResultCode result = FileSystemProxyHelper.OpenFileSystemFromInternalFile(context, fullPath, out FileSystemProxy.IFileSystem fileSystem);
 
@@ -1151,7 +1151,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
         [CommandCmif(1004)]
         // SetGlobalAccessLogMode(u32 mode)
-        public ResultCode SetGlobalAccessLogMode(ServiceCtx context)
+        public static ResultCode SetGlobalAccessLogMode(ServiceCtx context)
         {
             int mode = context.RequestData.ReadInt32();
 
@@ -1162,7 +1162,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
         [CommandCmif(1005)]
         // GetGlobalAccessLogMode() -> u32 logMode
-        public ResultCode GetGlobalAccessLogMode(ServiceCtx context)
+        public static ResultCode GetGlobalAccessLogMode(ServiceCtx context)
         {
             int mode = context.Device.System.GlobalAccessLogMode;
 
@@ -1173,7 +1173,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
         [CommandCmif(1006)]
         // OutputAccessLogToSdCard(buffer<bytes, 5> log_text)
-        public ResultCode OutputAccessLogToSdCard(ServiceCtx context)
+        public static ResultCode OutputAccessLogToSdCard(ServiceCtx context)
         {
             string message = ReadUtf8StringSend(context);
 

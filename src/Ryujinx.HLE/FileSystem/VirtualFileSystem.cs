@@ -85,7 +85,7 @@ namespace Ryujinx.HLE.FileSystem
             return _romFsByPid[pid];
         }
 
-        public string GetFullPath(string basePath, string fileName)
+        public static string GetFullPath(string basePath, string fileName)
         {
             if (fileName.StartsWith("//"))
             {
@@ -125,7 +125,7 @@ namespace Ryujinx.HLE.FileSystem
             return GetFullPath(MakeFullPath(parts[0]), parts[1]);
         }
 
-        public string SystemPathToSwitchPath(string systemPath)
+        public static string SystemPathToSwitchPath(string systemPath)
         {
             string baseSystemPath = AppDataManager.BaseDirPath + Path.DirectorySeparatorChar;
 
@@ -148,7 +148,7 @@ namespace Ryujinx.HLE.FileSystem
             return null;
         }
 
-        private string MakeFullPath(string path, bool isDirectory = true)
+        private static string MakeFullPath(string path, bool isDirectory = true)
         {
             // Handles Common Switch Content Paths
             switch (path)

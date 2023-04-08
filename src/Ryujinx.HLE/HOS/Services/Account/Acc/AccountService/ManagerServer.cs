@@ -68,7 +68,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
             return new JwtSecurityTokenHandler().WriteToken(securityToken);
         }
 
-        public ResultCode CheckAvailability(ServiceCtx context)
+        public static ResultCode CheckAvailability(ServiceCtx context)
         {
             // NOTE: This opens the file at "su/baas/USERID_IN_UUID_STRING.dat" where USERID_IN_UUID_STRING is formatted as "%08x-%04x-%04x-%02x%02x-%08x%04x".
             //       Then it searches the Availability of Online Services related to the UserId in this file and returns it.
@@ -79,7 +79,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
             return ResultCode.Success;
         }
 
-        public ResultCode GetAccountId(ServiceCtx context)
+        public static ResultCode GetAccountId(ServiceCtx context)
         {
             // NOTE: This opens the file at "su/baas/USERID_IN_UUID_STRING.dat" (where USERID_IN_UUID_STRING is formatted
             //       as "%08x-%04x-%04x-%02x%02x-%08x%04x") in the account:/ savedata.
@@ -120,7 +120,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
             await Task.CompletedTask;
         }
 
-        public ResultCode LoadIdTokenCache(ServiceCtx context)
+        public static ResultCode LoadIdTokenCache(ServiceCtx context)
         {
             ulong bufferPosition = context.Request.ReceiveBuff[0].Position;
             ulong bufferSize     = context.Request.ReceiveBuff[0].Size;
@@ -149,7 +149,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
             return ResultCode.Success;
         }
 
-        public ResultCode GetNintendoAccountUserResourceCacheForApplication(ServiceCtx context)
+        public static ResultCode GetNintendoAccountUserResourceCacheForApplication(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAcc, new { NetworkServiceAccountId });
 
@@ -160,7 +160,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
             return ResultCode.Success;
         }
 
-        public ResultCode StoreOpenContext(ServiceCtx context)
+        public static ResultCode StoreOpenContext(ServiceCtx context)
         {
             context.Device.System.AccountManager.StoreOpenedUsers();
 

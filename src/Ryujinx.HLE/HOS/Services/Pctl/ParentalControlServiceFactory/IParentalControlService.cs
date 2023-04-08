@@ -211,7 +211,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 
         [CommandCmif(1064)] // 5.0.0+
         // ResetConfirmedStereoVisionPermission()
-        public ResultCode ResetConfirmedStereoVisionPermission(ServiceCtx context)
+        public static ResultCode ResetConfirmedStereoVisionPermission(ServiceCtx context)
         {
             return ResultCode.Success;
         }

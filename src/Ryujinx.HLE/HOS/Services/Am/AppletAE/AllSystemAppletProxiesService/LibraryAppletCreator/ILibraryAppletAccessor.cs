@@ -107,7 +107,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
         [CommandCmif(60)]
         // PresetLibraryAppletGpuTimeSliceZero()
-        public ResultCode PresetLibraryAppletGpuTimeSliceZero(ServiceCtx context)
+        public static ResultCode PresetLibraryAppletGpuTimeSliceZero(ServiceCtx context)
         {
             // NOTE: This call reset two internal fields to 0 and one internal field to "true".
             //       It seems to be used only with software keyboard inline.
@@ -208,14 +208,14 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
         [CommandCmif(110)]
         // NeedsToExitProcess()
-        public ResultCode NeedsToExitProcess(ServiceCtx context)
+        public static ResultCode NeedsToExitProcess(ServiceCtx context)
         {
             return ResultCode.Stubbed;
         }
 
         [CommandCmif(150)]
         // RequestForAppletToGetForeground()
-        public ResultCode RequestForAppletToGetForeground(ServiceCtx context)
+        public static ResultCode RequestForAppletToGetForeground(ServiceCtx context)
         {
             return ResultCode.Stubbed;
         }

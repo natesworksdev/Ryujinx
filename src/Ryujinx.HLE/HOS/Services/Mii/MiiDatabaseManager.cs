@@ -270,7 +270,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             return new DatabaseSessionMetadata(UpdateCounter, miiKeyCode);
         }
 
-        public void SetInterfaceVersion(DatabaseSessionMetadata metadata, uint interfaceVersion)
+        public static void SetInterfaceVersion(DatabaseSessionMetadata metadata, uint interfaceVersion)
         {
             metadata.InterfaceVersion = interfaceVersion;
         }

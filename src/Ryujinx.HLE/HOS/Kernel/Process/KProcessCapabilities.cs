@@ -101,11 +101,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
                     if ((cap >> 31) != 0)
                     {
-                        result = memoryManager.MapNormalMemory(address, size, perm);
+                        result = KPageTableBase.MapNormalMemory(address, size, perm);
                     }
                     else
                     {
-                        result = memoryManager.MapIoMemory(address, size, perm);
+                        result = KPageTableBase.MapIoMemory(address, size, perm);
                     }
 
                     if (result != Result.Success)
@@ -218,7 +218,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 {
                     long address = ((long)cap << 4) & 0xffffff000;
 
-                    memoryManager.MapIoMemory(address, KPageTableBase.PageSize, KMemoryPermission.ReadAndWrite);
+                        KPageTableBase.MapIoMemory(address, KPageTableBase.PageSize, KMemoryPermission.ReadAndWrite);
 
                     break;
                 }

@@ -70,7 +70,7 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
             return ResultCode.Success;
         }
 
-        private byte[] BuildResponseOld(WebCommonReturnValue result)
+        private static byte[] BuildResponseOld(WebCommonReturnValue result)
         {
             using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
             using BinaryWriter writer = new(stream);

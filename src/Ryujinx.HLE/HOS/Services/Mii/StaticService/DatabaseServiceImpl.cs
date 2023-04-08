@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             _isSystem = isSystem;
         }
 
-        public bool IsDatabaseTestModeEnabled()
+        public static bool IsDatabaseTestModeEnabled()
         {
             if (NxSettings.Settings.TryGetValue("mii!is_db_test_mode_enabled", out object isDatabaseTestModeEnabled))
             {
@@ -260,7 +260,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
 
         protected override ResultCode ConvertCharInfoToCoreData(CharInfo charInfo, out CoreData coreData)
         {
-            return _database.ConvertCharInfoToCoreData(charInfo, out coreData);
+            return DatabaseImpl.ConvertCharInfoToCoreData(charInfo, out coreData);
         }
     }
 }

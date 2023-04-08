@@ -54,7 +54,7 @@ namespace Ryujinx.HLE.HOS.Services.Spl
             return (ResultCode)((int)result << 9) | ResultCode.ModuleId;
         }
 
-        private SmcResult SmcGetConfig(ServiceCtx context, out ulong configValue, ConfigItem configItem)
+        private static SmcResult SmcGetConfig(ServiceCtx context, out ulong configValue, ConfigItem configItem)
         {
             configValue = default;
 

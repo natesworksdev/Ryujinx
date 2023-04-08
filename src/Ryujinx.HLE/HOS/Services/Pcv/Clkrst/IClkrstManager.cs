@@ -47,7 +47,7 @@ namespace Ryujinx.HLE.HOS.Services.Pcv.Clkrst
 
         [CommandCmif(5)]
         // GetModuleStateTableMaxCount() -> u32 max_count
-        public ResultCode GetModuleStateTableMaxCount(ServiceCtx context)
+        public static ResultCode GetModuleStateTableMaxCount(ServiceCtx context)
         {
             context.ResponseData.Write(26u);
 

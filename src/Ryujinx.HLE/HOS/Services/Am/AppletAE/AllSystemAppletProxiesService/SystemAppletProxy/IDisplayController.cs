@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(8)] // 2.0.0+
         // TakeScreenShotOfOwnLayer(b8, s32)
-        public ResultCode TakeScreenShotOfOwnLayer(ServiceCtx context)
+        public static ResultCode TakeScreenShotOfOwnLayer(ServiceCtx context)
         {
             bool unknown1 = context.RequestData.ReadBoolean();
             int  unknown2 = context.RequestData.ReadInt32();

@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns
 
         [CommandCmif(400)]
         // GetApplicationControlData(u8, u64) -> (unknown<4>, buffer<unknown, 6>)
-        public ResultCode GetApplicationControlData(ServiceCtx context)
+        public static ResultCode GetApplicationControlData(ServiceCtx context)
         {
             byte  source  = (byte)context.RequestData.ReadInt64();
             ulong titleId = context.RequestData.ReadUInt64();

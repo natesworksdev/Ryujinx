@@ -41,7 +41,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
         [CommandCmif(1)]
         // nn::friends::Cancel()
-        public ResultCode Cancel(ServiceCtx context)
+        public static ResultCode Cancel(ServiceCtx context)
         {
             // TODO: Original service sets an internal field to 1 here. Determine usage.
             Logger.Stub?.PrintStub(LogClass.ServiceFriend);
@@ -52,7 +52,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
         [CommandCmif(10100)]
         // nn::friends::GetFriendListIds(int offset, nn::account::Uid userId, nn::friends::detail::ipc::SizedFriendFilter friendFilter, ulong pidPlaceHolder, pid)
         // -> int outCount, array<nn::account::NetworkServiceAccountId, 0xa>
-        public ResultCode GetFriendListIds(ServiceCtx context)
+        public static ResultCode GetFriendListIds(ServiceCtx context)
         {
             int offset = context.RequestData.ReadInt32();
 
@@ -91,7 +91,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
         [CommandCmif(10101)]
         // nn::friends::GetFriendList(int offset, nn::account::Uid userId, nn::friends::detail::ipc::SizedFriendFilter friendFilter, ulong pidPlaceHolder, pid)
         // -> int outCount, array<nn::friends::detail::FriendImpl, 0x6>
-        public ResultCode GetFriendList(ServiceCtx context)
+        public static ResultCode GetFriendList(ServiceCtx context)
         {
             int offset = context.RequestData.ReadInt32();
 
@@ -128,7 +128,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
         [CommandCmif(10120)] // 10.0.0+
         // nn::friends::IsFriendListCacheAvailable(nn::account::Uid userId) -> bool
-        public ResultCode IsFriendListCacheAvailable(ServiceCtx context)
+        public static ResultCode IsFriendListCacheAvailable(ServiceCtx context)
         {
             UserId userId = context.RequestData.ReadStruct<UserId>();
 
@@ -149,7 +149,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
         [CommandCmif(10121)] // 10.0.0+
         // nn::friends::EnsureFriendListAvailable(nn::account::Uid userId)
-        public ResultCode EnsureFriendListAvailable(ServiceCtx context)
+        public static ResultCode EnsureFriendListAvailable(ServiceCtx context)
         {
             UserId userId = context.RequestData.ReadStruct<UserId>();
 
@@ -167,7 +167,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
         [CommandCmif(10400)]
         // nn::friends::GetBlockedUserListIds(int offset, nn::account::Uid userId) -> (u32, buffer<nn::account::NetworkServiceAccountId, 0xa>)
-        public ResultCode GetBlockedUserListIds(ServiceCtx context)
+        public static ResultCode GetBlockedUserListIds(ServiceCtx context)
         {
             int offset = context.RequestData.ReadInt32();
 
@@ -186,7 +186,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
         [CommandCmif(10600)]
         // nn::friends::DeclareOpenOnlinePlaySession(nn::account::Uid userId)
-        public ResultCode DeclareOpenOnlinePlaySession(ServiceCtx context)
+        public static ResultCode DeclareOpenOnlinePlaySession(ServiceCtx context)
         {
             UserId userId = context.RequestData.ReadStruct<UserId>();
 
@@ -204,7 +204,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
         [CommandCmif(10601)]
         // nn::friends::DeclareCloseOnlinePlaySession(nn::account::Uid userId)
-        public ResultCode DeclareCloseOnlinePlaySession(ServiceCtx context)
+        public static ResultCode DeclareCloseOnlinePlaySession(ServiceCtx context)
         {
             UserId userId = context.RequestData.ReadStruct<UserId>();
 
@@ -222,7 +222,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
         [CommandCmif(10610)]
         // nn::friends::UpdateUserPresence(nn::account::Uid, u64, pid, buffer<nn::friends::detail::UserPresenceImpl, 0x19>)
-        public ResultCode UpdateUserPresence(ServiceCtx context)
+        public static ResultCode UpdateUserPresence(ServiceCtx context)
         {
             UserId uuid = context.RequestData.ReadStruct<UserId>();
 
@@ -246,7 +246,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
         [CommandCmif(10700)]
         // nn::friends::GetPlayHistoryRegistrationKey(b8 unknown, nn::account::Uid) -> buffer<nn::friends::PlayHistoryRegistrationKey, 0x1a>
-        public ResultCode GetPlayHistoryRegistrationKey(ServiceCtx context)
+        public static ResultCode GetPlayHistoryRegistrationKey(ServiceCtx context)
         {
             bool   unknownBool = context.RequestData.ReadBoolean();
             UserId userId      = context.RequestData.ReadStruct<UserId>();
@@ -308,7 +308,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
         [CommandCmif(10702)]
         // nn::friends::AddPlayHistory(nn::account::Uid, u64, pid, buffer<nn::friends::PlayHistoryRegistrationKey, 0x19>, buffer<nn::friends::InAppScreenName, 0x19>, buffer<nn::friends::InAppScreenName, 0x19>)
-        public ResultCode AddPlayHistory(ServiceCtx context)
+        public static ResultCode AddPlayHistory(ServiceCtx context)
         {
             UserId userId = context.RequestData.ReadStruct<UserId>();
 

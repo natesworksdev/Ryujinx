@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.HidServer
 
         [CommandCmif(0)]
         // ActivateVibrationDevice(nn::hid::VibrationDeviceHandle)
-        public ResultCode ActivateVibrationDevice(ServiceCtx context)
+        public static ResultCode ActivateVibrationDevice(ServiceCtx context)
         {
             int vibrationDeviceHandle = context.RequestData.ReadInt32();
 

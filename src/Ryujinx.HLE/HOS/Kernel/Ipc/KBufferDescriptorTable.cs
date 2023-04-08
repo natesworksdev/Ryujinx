@@ -35,7 +35,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             return Add(_exchangeBufferDescriptors, src, dst, size, state);
         }
 
-        private Result Add(List<KBufferDescriptor> list, ulong src, ulong dst, ulong size, MemoryState state)
+        private static Result Add(List<KBufferDescriptor> list, ulong src, ulong dst, ulong size, MemoryState state)
         {
             if (list.Count < MaxInternalBuffersCount)
             {
@@ -59,7 +59,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             return CopyToClient(memoryManager, _exchangeBufferDescriptors);
         }
 
-        private Result CopyToClient(KPageTableBase memoryManager, List<KBufferDescriptor> list)
+        private static Result CopyToClient(KPageTableBase memoryManager, List<KBufferDescriptor> list)
         {
             foreach (KBufferDescriptor desc in list)
             {
@@ -159,7 +159,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             return UnmapServer(memoryManager, _exchangeBufferDescriptors);
         }
 
-        private Result UnmapServer(KPageTableBase memoryManager, List<KBufferDescriptor> list)
+        private static Result UnmapServer(KPageTableBase memoryManager, List<KBufferDescriptor> list)
         {
             foreach (KBufferDescriptor descriptor in list)
             {
@@ -196,7 +196,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             return RestoreClient(memoryManager, _exchangeBufferDescriptors);
         }
 
-        private Result RestoreClient(KPageTableBase memoryManager, List<KBufferDescriptor> list)
+        private static Result RestoreClient(KPageTableBase memoryManager, List<KBufferDescriptor> list)
         {
             foreach (KBufferDescriptor descriptor in list)
             {

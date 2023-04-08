@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(10)]
         // AcquireForegroundRights()
-        public ResultCode AcquireForegroundRights(ServiceCtx context)
+        public static ResultCode AcquireForegroundRights(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 

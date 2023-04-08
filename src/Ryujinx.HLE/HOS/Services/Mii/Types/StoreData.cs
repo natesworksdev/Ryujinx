@@ -88,7 +88,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         {
             StoreData result = new()
             {
-                _createId = utilImpl.MakeCreateId()
+                _createId = UtilityImpl.MakeCreateId()
             };
 
             CoreData coreData = new();
@@ -165,7 +165,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             StoreData result = new()
             {
                 CoreData  = coreData,
-                _createId = utilImpl.MakeCreateId()
+                _createId = UtilityImpl.MakeCreateId()
             };
 
             result.UpdateCrc();

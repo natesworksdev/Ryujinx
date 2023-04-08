@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS
             Activate();
         }
 
-        private bool CanInstallOnPid(ulong pid)
+        private static bool CanInstallOnPid(ulong pid)
         {
             // Do not allow tampering of kernel processes.
             if (pid < KernelConstants.InitialProcessId)
@@ -84,7 +84,7 @@ namespace Ryujinx.HLE.HOS
             }
         }
 
-        private bool IsProcessValid(ITamperedProcess process)
+        private static bool IsProcessValid(ITamperedProcess process)
         {
             return process.State != ProcessState.Crashed && process.State != ProcessState.Exiting && process.State != ProcessState.Exited;
         }

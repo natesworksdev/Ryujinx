@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.Ui.Input
             return buttons;
         }
 
-        private ref RingLifo<NpadCommonState> GetCommonStateLifo(ref NpadInternalState npad)
+        private static ref RingLifo<NpadCommonState> GetCommonStateLifo(ref NpadInternalState npad)
         {
             switch (npad.StyleSet)
             {

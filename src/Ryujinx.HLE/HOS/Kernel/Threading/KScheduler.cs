@@ -95,7 +95,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 {
                     KThread candidate = thread.Owner.PinnedThreads[core];
 
-                    if (candidate.KernelWaitersCount == 0 && !thread.Owner.IsExceptionUserThread(candidate))
+                    if (candidate.KernelWaitersCount == 0 && !KProcess.IsExceptionUserThread(candidate))
                     {
                         if (candidate.SchedFlags == ThreadSchedState.Running)
                         {

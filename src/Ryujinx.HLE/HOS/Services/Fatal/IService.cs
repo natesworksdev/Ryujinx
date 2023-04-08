@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Kernel.SupervisorCall;
 using Ryujinx.HLE.HOS.Services.Fatal.Types;
 using System;
 using System.Runtime.InteropServices;
@@ -48,7 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.Fatal
             return ThrowFatalWithCpuContextImpl(context, resultCode, pid, fatalPolicy, cpuContextData);
         }
 
-        private ResultCode ThrowFatalWithCpuContextImpl(ServiceCtx context, ResultCode resultCode, ulong pid, FatalPolicy fatalPolicy, ReadOnlySpan<byte> cpuContext)
+        private static ResultCode ThrowFatalWithCpuContextImpl(ServiceCtx context, ResultCode resultCode, ulong pid, FatalPolicy fatalPolicy, ReadOnlySpan<byte> cpuContext)
         {
             StringBuilder errorReport = new();
 

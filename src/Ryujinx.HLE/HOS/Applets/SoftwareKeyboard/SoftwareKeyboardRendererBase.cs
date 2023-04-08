@@ -138,7 +138,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             throw new Exception($"None of these fonts were found in the system: {String.Join(", ", availableFonts)}!");
         }
 
-        private Color ToColor(ThemeColor color, byte? overrideAlpha = null, bool flipRgb = false)
+        private static Color ToColor(ThemeColor color, byte? overrideAlpha = null, bool flipRgb = false)
         {
             var a = (byte)(color.A * 255);
             var r = (byte)(color.R * 255);
@@ -162,7 +162,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             return LoadResource(resourceStream, newWidth, newHeight);
         }
 
-        private Image LoadResource(Stream resourceStream, int newWidth, int newHeight)
+        private static Image LoadResource(Stream resourceStream, int newWidth, int newHeight)
         {
             Debug.Assert(resourceStream != null);
 
@@ -176,7 +176,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             return image;
         }
 
-        private void SetGraphicsOptions(IImageProcessingContext context)
+        private static void SetGraphicsOptions(IImageProcessingContext context)
         {
             context.GetGraphicsOptions().Antialias = true;
             context.GetShapeGraphicsOptions().GraphicsOptions.Antialias = true;

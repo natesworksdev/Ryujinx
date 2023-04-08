@@ -36,6 +36,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             }
         }
 
-        public int Length => 3;
+        public static int Length => 3;
     }
 }

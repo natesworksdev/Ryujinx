@@ -145,7 +145,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             return sb.ToString();
         }
 
-        private bool TryGetSubName(Image image, ulong address, out ElfSymbol symbol)
+        private static bool TryGetSubName(Image image, ulong address, out ElfSymbol symbol)
         {
             address -= image.BaseAddress;
 
@@ -430,7 +430,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             }
         }
 
-        private ElfSymbol GetSymbol64(IVirtualMemoryManager memory, ulong address, ulong strTblAddr)
+        private static ElfSymbol GetSymbol64(IVirtualMemoryManager memory, ulong address, ulong strTblAddr)
         {
             ElfSymbol64 sym = memory.Read<ElfSymbol64>(address);
 
@@ -446,7 +446,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             return new ElfSymbol(name, sym.Info, sym.Other, sym.SectionIndex, sym.ValueAddress, sym.Size);
         }
 
-        private ElfSymbol GetSymbol32(IVirtualMemoryManager memory, ulong address, ulong strTblAddr)
+        private static ElfSymbol GetSymbol32(IVirtualMemoryManager memory, ulong address, ulong strTblAddr)
         {
             ElfSymbol32 sym = memory.Read<ElfSymbol32>(address);
 

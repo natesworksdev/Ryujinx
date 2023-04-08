@@ -879,7 +879,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
             return new SimpleReferenceType(result, null);
         }
 
-        private BaseNode CreateNameNode(BaseNode prev, BaseNode name, NameParserContext context)
+        private static BaseNode CreateNameNode(BaseNode prev, BaseNode name, NameParserContext context)
         {
             BaseNode result = name;
             if (prev != null)

@@ -54,7 +54,7 @@ namespace Ryujinx.HLE.HOS.Services.Ptm.Psm
 
         [CommandCmif(2)]
         // SetChargerTypeChangeEventEnabled(u8)
-        public ResultCode SetChargerTypeChangeEventEnabled(ServiceCtx context)
+        public static ResultCode SetChargerTypeChangeEventEnabled(ServiceCtx context)
         {
             bool chargerTypeChangeEventEnabled = context.RequestData.ReadBoolean();
 
@@ -65,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Services.Ptm.Psm
 
         [CommandCmif(3)]
         // SetPowerSupplyChangeEventEnabled(u8)
-        public ResultCode SetPowerSupplyChangeEventEnabled(ServiceCtx context)
+        public static ResultCode SetPowerSupplyChangeEventEnabled(ServiceCtx context)
         {
             bool powerSupplyChangeEventEnabled = context.RequestData.ReadBoolean();
 
@@ -76,7 +76,7 @@ namespace Ryujinx.HLE.HOS.Services.Ptm.Psm
 
         [CommandCmif(4)]
         // SetBatteryVoltageStateChangeEventEnabled(u8)
-        public ResultCode SetBatteryVoltageStateChangeEventEnabled(ServiceCtx context)
+        public static ResultCode SetBatteryVoltageStateChangeEventEnabled(ServiceCtx context)
         {
             bool batteryVoltageStateChangeEventEnabled = context.RequestData.ReadBoolean();
 

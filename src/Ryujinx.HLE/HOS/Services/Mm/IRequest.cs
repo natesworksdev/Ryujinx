@@ -154,7 +154,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
             return ResultCode.Success;
         }
 
-        private MultiMediaSession GetSessionById(uint id)
+        private static MultiMediaSession GetSessionById(uint id)
         {
             foreach (MultiMediaSession session in _sessionList)
             {
@@ -167,7 +167,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
             return null;
         }
 
-        private MultiMediaSession GetSessionByType(MultiMediaOperationType type)
+        private static MultiMediaSession GetSessionByType(MultiMediaOperationType type)
         {
             foreach (MultiMediaSession session in _sessionList)
             {
@@ -180,7 +180,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
             return null;
         }
 
-        private uint Register(MultiMediaOperationType type, int fgmId, bool isAutoClearEvent)
+        private static uint Register(MultiMediaOperationType type, int fgmId, bool isAutoClearEvent)
         {
             lock (_sessionListLock)
             {

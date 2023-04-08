@@ -72,7 +72,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
             return ResultCode.Success;
         }
 
-        public ResultCode Store(ServiceCtx context)
+        public static ResultCode Store(ServiceCtx context)
         {
             ulong userDataPosition = context.Request.PtrBuff[0].Position;
             ulong userDataSize     = context.Request.PtrBuff[0].Size;
@@ -88,7 +88,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
             return ResultCode.Success;
         }
 
-        public ResultCode StoreWithImage(ServiceCtx context)
+        public static ResultCode StoreWithImage(ServiceCtx context)
         {
             ulong userDataPosition = context.Request.PtrBuff[0].Position;
             ulong userDataSize     = context.Request.PtrBuff[0].Size;
