@@ -2298,7 +2298,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseAdvSimd)
             {
-                InstEmitSimdHelperArm64.EmitVectorUnaryOpF(context, Intrinsic.Arm64FrintxS);
+                InstEmitSimdHelperArm64.EmitScalarUnaryOpF(context, Intrinsic.Arm64FrintxS);
             }
             else
             {

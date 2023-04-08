@@ -374,7 +374,6 @@ namespace ARMeilleure.Instructions
                         ? typeof(SoftFloat16_64).GetMethod(nameof(SoftFloat16_64.FPConvert))
                         : typeof(SoftFloat16_32).GetMethod(nameof(SoftFloat16_32.FPConvert));
 
-
                     context.ExitArmFpMode();
                     context.StoreToContext();
                     Operand res = context.Call(method, src);
