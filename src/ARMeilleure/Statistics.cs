@@ -11,10 +11,10 @@ namespace ARMeilleure
     {
         private const int ReportMaxFunctions = 100;
 
-#pragma warning disable CS0169
+#pragma warning disable IDE0051
         [ThreadStatic]
         private static Stopwatch _executionTimer;
-#pragma warning restore CS0169
+#pragma warning restore IDE0051
 
         private static readonly ConcurrentDictionary<ulong, long> _ticksPerFunction;
 

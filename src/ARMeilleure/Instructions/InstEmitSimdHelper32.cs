@@ -19,18 +19,13 @@ namespace ARMeilleure.Instructions
     {
         public static (int, int) GetQuadwordAndSubindex(int index, RegisterSize size)
         {
-            switch (size)
+            return size switch
             {
-                case RegisterSize.Simd128:
-                    return (index >> 1, 0);
-                case RegisterSize.Simd64:
-                case RegisterSize.Int64:
-                    return (index >> 1, index & 1);
-                case RegisterSize.Int32:
-                    return (index >> 2, index & 3);
-            }
-
-            throw new ArgumentException("Unrecognized Vector Register Size.");
+                RegisterSize.Simd128 => (index >> 1, 0),
+                RegisterSize.Simd64 or RegisterSize.Int64 => (index >> 1, index & 1),
+                RegisterSize.Int32 => (index >> 2, index & 3),
+                _ => throw new ArgumentException("Unrecognized Vector Register Size."),
+            };
         }
 
         public static Operand ExtractScalar(ArmEmitterContext context, OperandType type, int reg)

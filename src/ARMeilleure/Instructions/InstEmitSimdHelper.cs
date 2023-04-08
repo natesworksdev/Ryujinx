@@ -310,15 +310,14 @@ namespace ARMeilleure.Instructions
 
         public static int X86GetRoundControl(FPRoundingMode roundMode)
         {
-            switch (roundMode)
+            return roundMode switch
             {
-                case FPRoundingMode.ToNearest:            return 8 | 0; // even
-                case FPRoundingMode.TowardsPlusInfinity:  return 8 | 2;
-                case FPRoundingMode.TowardsMinusInfinity: return 8 | 1;
-                case FPRoundingMode.TowardsZero:          return 8 | 3;
-            }
-
-            throw new ArgumentException($"Invalid rounding mode \"{roundMode}\".");
+                FPRoundingMode.ToNearest            => 8 | 0, // even
+                FPRoundingMode.TowardsPlusInfinity  => 8 | 2,
+                FPRoundingMode.TowardsMinusInfinity => 8 | 1,
+                FPRoundingMode.TowardsZero          => 8 | 3,
+                _ => throw new ArgumentException($"Invalid rounding mode \"{roundMode}\"."),
+            };
         }
 
         public static Operand EmitSse41RoundToNearestWithTiesToAwayOpF(ArmEmitterContext context, Operand n, bool scalar)

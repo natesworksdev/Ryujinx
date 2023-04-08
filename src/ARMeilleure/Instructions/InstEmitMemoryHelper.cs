@@ -585,18 +585,14 @@ namespace ARMeilleure.Instructions
         // ARM32 helpers.
         public static Operand GetMemM(ArmEmitterContext context, bool setCarry = true)
         {
-            switch (context.CurrOp)
+            return context.CurrOp switch
             {
-                case IOpCode32MemRsImm op: return GetMShiftedByImmediate(context, op, setCarry);
-
-                case IOpCode32MemReg op: return GetIntA32(context, op.Rm);
-
-                case IOpCode32Mem op: return Const(op.Immediate);
-
-                case OpCode32SimdMemImm op: return Const(op.Immediate);
-
-                default: throw InvalidOpCodeType(context.CurrOp);
-            }
+                IOpCode32MemRsImm op => GetMShiftedByImmediate(context, op, setCarry),
+                IOpCode32MemReg op => GetIntA32(context, op.Rm),
+                IOpCode32Mem op => Const(op.Immediate),
+                OpCode32SimdMemImm op => Const(op.Immediate),
+                _ => throw InvalidOpCodeType(context.CurrOp),
+            };
         }
 
         private static Exception InvalidOpCodeType(OpCode opCode)

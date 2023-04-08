@@ -225,24 +225,14 @@ namespace ARMeilleure.Instructions
 
         private static FPRoundingMode RMToRoundMode(int rm)
         {
-            FPRoundingMode roundMode;
-            switch (rm)
+            var roundMode = rm switch
             {
-                case 0b00:
-                    roundMode = FPRoundingMode.ToNearestAway;
-                    break;
-                case 0b01:
-                    roundMode = FPRoundingMode.ToNearest;
-                    break;
-                case 0b10:
-                    roundMode = FPRoundingMode.TowardsPlusInfinity;
-                    break;
-                case 0b11:
-                    roundMode = FPRoundingMode.TowardsMinusInfinity;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(rm));
-            }
+                0b00 => FPRoundingMode.ToNearestAway,
+                0b01 => FPRoundingMode.ToNearest,
+                0b10 => FPRoundingMode.TowardsPlusInfinity,
+                0b11 => FPRoundingMode.TowardsMinusInfinity,
+                _ => throw new ArgumentOutOfRangeException(nameof(rm)),
+            };
             return roundMode;
         }
 

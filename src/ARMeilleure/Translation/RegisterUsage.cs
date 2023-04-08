@@ -373,15 +373,14 @@ namespace ARMeilleure.Translation
 
         private static OperandType GetOperandType(RegisterType type, ExecutionMode mode)
         {
-            switch (type)
+            return type switch
             {
-                case RegisterType.Flag:    return OperandType.I32;
-                case RegisterType.FpFlag:  return OperandType.I32;
-                case RegisterType.Integer: return (mode == ExecutionMode.Aarch64) ? OperandType.I64 : OperandType.I32;
-                case RegisterType.Vector:  return OperandType.V128;
-            }
-
-            throw new ArgumentException($"Invalid register type \"{type}\".");
+                RegisterType.Flag => OperandType.I32,
+                RegisterType.FpFlag => OperandType.I32,
+                RegisterType.Integer => (mode == ExecutionMode.Aarch64) ? OperandType.I64 : OperandType.I32,
+                RegisterType.Vector => OperandType.V128,
+                _ => throw new ArgumentException($"Invalid register type \"{type}\"."),
+            };
         }
 
         private static bool EndsWithReturn(BasicBlock block)

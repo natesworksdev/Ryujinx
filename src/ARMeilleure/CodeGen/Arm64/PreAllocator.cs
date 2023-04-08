@@ -722,6 +722,7 @@ namespace ARMeilleure.CodeGen.Arm64
 
         private static bool IsSameOperandDestSrc1(Operation operation)
         {
+#pragma warning disable IDE0066
             switch (operation.Instruction)
             {
                 case Instruction.Extended:
@@ -731,6 +732,7 @@ namespace ARMeilleure.CodeGen.Arm64
                 case Instruction.VectorInsert8:
                     return true;
             }
+#pragma warning restore IDE0066
 
             return false;
         }
@@ -756,6 +758,7 @@ namespace ARMeilleure.CodeGen.Arm64
 
         private static bool HasConstSrc1(Operation node, ulong value)
         {
+#pragma warning disable IDE0066
             switch (node.Instruction)
             {
                 case Instruction.Add:
@@ -786,6 +789,7 @@ namespace ARMeilleure.CodeGen.Arm64
                 case Instruction.Extended:
                     return value == 0;
             }
+#pragma warning restore IDE0066
 
             return false;
         }
@@ -799,6 +803,7 @@ namespace ARMeilleure.CodeGen.Arm64
         {
             ulong value = operand.Value;
 
+#pragma warning disable IDE0066
             switch (inst)
             {
                 case Instruction.Add:
@@ -828,6 +833,7 @@ namespace ARMeilleure.CodeGen.Arm64
                     // Right now we only hit this case for fixed-point int <-> FP conversion instructions.
                     return true;
             }
+#pragma warning restore IDE0066
 
             return false;
         }

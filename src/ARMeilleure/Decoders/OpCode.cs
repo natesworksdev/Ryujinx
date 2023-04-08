@@ -30,15 +30,14 @@ namespace ARMeilleure.Decoders
 
         public int GetBitsCount()
         {
-            switch (RegisterSize)
+            return RegisterSize switch
             {
-                case RegisterSize.Int32:   return 32;
-                case RegisterSize.Int64:   return 64;
-                case RegisterSize.Simd64:  return 64;
-                case RegisterSize.Simd128: return 128;
-            }
-
-            throw new InvalidOperationException();
+                RegisterSize.Int32 => 32,
+                RegisterSize.Int64 => 64,
+                RegisterSize.Simd64 => 64,
+                RegisterSize.Simd128 => 128,
+                _ => throw new InvalidOperationException(),
+            };
         }
 
         public OperandType GetOperandType()
