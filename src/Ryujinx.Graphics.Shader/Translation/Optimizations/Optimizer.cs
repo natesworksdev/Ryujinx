@@ -60,7 +60,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
                         bool isUnused = IsUnused(node.Value);
 
-                        if (!(node.Value is Operation operation) || isUnused)
+                        if (node.Value is not Operation operation || isUnused)
                         {
                             if (node.Value is PhiNode phi && !isUnused)
                             {
@@ -199,7 +199,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
             foreach (INode useNode in uses)
             {
-                if (!(useNode is Operation operation) || operation.Inst != Instruction.UnpackHalf2x16)
+                if (useNode is not Operation operation || operation.Inst != Instruction.UnpackHalf2x16)
                 {
                     continue;
                 }
@@ -248,12 +248,12 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
             foreach (INode use in uses)
             {
-                if (!(use is Operation test))
+                if (use is not Operation test)
                 {
                     continue;
                 }
 
-                if (!(use is Operation useOp) || useOp.Inst != Instruction.SwizzleAdd)
+                if (use is not Operation useOp || useOp.Inst != Instruction.SwizzleAdd)
                 {
                     continue;
                 }
@@ -368,7 +368,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             // from all the use lists on the operands that this node uses.
             block.Operations.Remove(llNode);
 
-            Queue<INode> nodes = new Queue<INode>();
+            Queue<INode> nodes = new();
 
             nodes.Enqueue(llNode.Value);
 

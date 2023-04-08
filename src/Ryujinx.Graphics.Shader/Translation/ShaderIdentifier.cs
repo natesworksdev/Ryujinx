@@ -43,7 +43,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                 foreach (INode node in block.Operations)
                 {
-                    if (!(node is Operation operation))
+                    if (node is not Operation operation)
                     {
                         continue;
                     }

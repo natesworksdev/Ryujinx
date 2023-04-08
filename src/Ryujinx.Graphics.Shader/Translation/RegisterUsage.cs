@@ -128,8 +128,8 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public static FunctionRegisterUsage RunPass(ControlFlowGraph cfg)
         {
-            List<Register> inArguments  = new List<Register>();
-            List<Register> outArguments = new List<Register>();
+            List<Register> inArguments  = new();
+            List<Register> outArguments = new();
 
             // Compute local register inputs and outputs used inside blocks.
             RegisterMask[] localInputs  = new RegisterMask[cfg.Blocks.Length];
@@ -168,8 +168,8 @@ namespace Ryujinx.Graphics.Shader.Translation
             RegisterMask[] globalInputs  = new RegisterMask[cfg.Blocks.Length];
             RegisterMask[] globalOutputs = new RegisterMask[cfg.Blocks.Length];
 
-            RegisterMask allOutputs = new RegisterMask();
-            RegisterMask allCmnOutputs = new RegisterMask(-1L, -1L, -1L, -1L, -1L, -1L);
+            RegisterMask allOutputs = new();
+            RegisterMask allCmnOutputs = new(-1L, -1L, -1L, -1L, -1L, -1L);
 
             bool modified;
 
@@ -389,14 +389,14 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                     mask &= ~(1L << bit);
 
-                    Register register = new Register(baseRegIndex + bit, regType);
+                    Register register = new(baseRegIndex + bit, regType);
 
                     if (fillArgsList)
                     {
                         inArguments.Add(register);
                     }
 
-                    Operation copyOp = new Operation(Instruction.Copy, OperandHelper.Register(register), OperandHelper.Argument(argIndex++));
+                    Operation copyOp = new(Instruction.Copy, OperandHelper.Register(register), OperandHelper.Argument(argIndex++));
 
                     if (node == null)
                     {
@@ -429,14 +429,14 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                     mask &= ~(1L << bit);
 
-                    Register register = new Register(baseRegIndex + bit, regType);
+                    Register register = new(baseRegIndex + bit, regType);
 
                     if (fillArgsList)
                     {
                         outArguments.Add(register);
                     }
 
-                    Operation copyOp = new Operation(Instruction.Copy, OperandHelper.Argument(argIndex++), OperandHelper.Register(register));
+                    Operation copyOp = new(Instruction.Copy, OperandHelper.Argument(argIndex++), OperandHelper.Register(register));
 
                     if (node == null)
                     {
@@ -475,7 +475,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private static bool EndsWithReturn(BasicBlock block)
         {
-            if (!(block.GetLastOp() is Operation operation))
+            if (block.GetLastOp() is not Operation operation)
             {
                 return false;
             }

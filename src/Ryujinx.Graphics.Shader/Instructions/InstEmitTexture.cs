@@ -207,7 +207,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             Operand arrayIndex = isArray ? Ra() : null;
 
-            List<Operand> sourcesList = new List<Operand>();
+            List<Operand> sourcesList = new();
 
             if (isBindless)
             {
@@ -353,7 +353,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return;
             }
 
-            List<Operand> sourcesList = new List<Operand>();
+            List<Operand> sourcesList = new();
 
             Operand Ra()
             {
@@ -722,7 +722,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             Operand arrayIndex = isArray ? Ra() : null;
 
-            List<Operand> sourcesList = new List<Operand>();
+            List<Operand> sourcesList = new();
 
             SamplerType type = ConvertSamplerType(dimensions);
             TextureFlags flags = TextureFlags.Gather;
@@ -864,7 +864,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             TextureFlags flags = TextureFlags.None;
 
-            List<Operand> sourcesList = new List<Operand>();
+            List<Operand> sourcesList = new();
 
             if (isBindless)
             {
@@ -996,7 +996,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             TextureFlags flags = TextureFlags.Derivatives;
 
-            List<Operand> sourcesList = new List<Operand>();
+            List<Operand> sourcesList = new();
 
             if (isBindless)
             {
@@ -1126,7 +1126,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return context.Copy(Register(srcA++, RegisterType.Gpr));
             }
 
-            List<Operand> sourcesList = new List<Operand>();
+            List<Operand> sourcesList = new();
 
             if (isBindless)
             {

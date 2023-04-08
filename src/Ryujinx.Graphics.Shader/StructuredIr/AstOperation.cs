@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         public int Index { get; }
 
-        private IAstNode[] _sources;
+        private readonly IAstNode[] _sources;
 
         public int SourcesCount => _sources.Length;
 

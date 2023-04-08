@@ -19,7 +19,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             }
         }
 
-        private static InstInfo[] _infoTbl;
+        private static readonly InstInfo[] _infoTbl;
 
         static InstructionInfo()
         {

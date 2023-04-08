@@ -84,7 +84,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public Operand Add(Instruction inst, Operand dest = null, params Operand[] sources)
         {
-            Operation operation = new Operation(inst, dest, sources);
+            Operation operation = new(inst, dest, sources);
 
             _operations.Add(operation);
 
@@ -104,7 +104,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             Operand[] dests = new[] { dest.Item1, dest.Item2 };
 
-            Operation operation = new Operation(inst, 0, dests, sources);
+            Operation operation = new(inst, 0, dests, sources);
 
             Add(operation);
 

@@ -7,11 +7,11 @@ namespace Ryujinx.Graphics.Shader.Translation
 {
     static class FunctionMatch
     {
-        private static IPatternTreeNode[] _fsiGetAddressTree = PatternTrees.GetFsiGetAddress();
-        private static IPatternTreeNode[] _fsiGetAddressV2Tree = PatternTrees.GetFsiGetAddressV2();
-        private static IPatternTreeNode[] _fsiIsLastWarpThreadPatternTree = PatternTrees.GetFsiIsLastWarpThread();
-        private static IPatternTreeNode[] _fsiBeginPatternTree = PatternTrees.GetFsiBeginPattern();
-        private static IPatternTreeNode[] _fsiEndPatternTree = PatternTrees.GetFsiEndPattern();
+        private static readonly IPatternTreeNode[] _fsiGetAddressTree = PatternTrees.GetFsiGetAddress();
+        private static readonly IPatternTreeNode[] _fsiGetAddressV2Tree = PatternTrees.GetFsiGetAddressV2();
+        private static readonly IPatternTreeNode[] _fsiIsLastWarpThreadPatternTree = PatternTrees.GetFsiIsLastWarpThread();
+        private static readonly IPatternTreeNode[] _fsiBeginPatternTree = PatternTrees.GetFsiBeginPattern();
+        private static readonly IPatternTreeNode[] _fsiEndPatternTree = PatternTrees.GetFsiEndPattern();
 
         public static void RunPass(DecodedProgram program)
         {
@@ -150,9 +150,9 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private static TreeNode[] BuildTree(Block[] blocks)
         {
-            List<TreeNode> nodes = new List<TreeNode>();
+            List<TreeNode> nodes = new();
 
-            Dictionary<ulong, TreeNode> labels = new Dictionary<ulong, TreeNode>();
+            Dictionary<ulong, TreeNode> labels = new();
 
             TreeNodeUse[] predDefs = new TreeNodeUse[RegisterConsts.PredsCount];
             TreeNodeUse[] gprDefs = new TreeNodeUse[RegisterConsts.GprsCount];
@@ -223,7 +223,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                 if (block.Predecessors.Count > 1)
                 {
-                    TreeNode label = new TreeNode(order++);
+                    TreeNode label = new(order++);
                     nodes.Add(label);
                     labels.Add(block.Address, label);
                 }
@@ -232,7 +232,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 {
                     InstOp op = block.OpCodes[opIndex];
 
-                    TreeNode node = new TreeNode(op, IsOrderDependant(op.Name) ? order : (byte)0);
+                    TreeNode node = new(op, IsOrderDependant(op.Name) ? order : (byte)0);
 
                     // Add uses.
 
@@ -350,7 +350,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             public IPatternTreeNode Node { get; }
             public int Index { get; }
             public bool Inverted { get; }
-            public PatternTreeNodeUse Inv => new PatternTreeNodeUse(Index, !Inverted, Node);
+            public PatternTreeNodeUse Inv => new(Index, !Inverted, Node);
 
             private PatternTreeNodeUse(int index, bool inverted, IPatternTreeNode node)
             {
@@ -373,7 +373,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             public TreeNodeType Type { get; }
             public byte Order { get; }
             public bool IsImm { get; }
-            public PatternTreeNodeUse Out => new PatternTreeNodeUse(0, this);
+            public PatternTreeNodeUse Out => new(0, this);
 
             public PatternTreeNode(InstName name, Func<T, bool> match, TreeNodeType type = TreeNodeType.Op, byte order = 0, bool isImm = false)
             {
@@ -806,7 +806,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             private static PatternTreeNodeUse PT => PTOrRZ();
             private static PatternTreeNodeUse RZ => PTOrRZ();
-            private static PatternTreeNodeUse Undef => new PatternTreeNodeUse(0, null);
+            private static PatternTreeNodeUse Undef => new(0, null);
 
             private static PatternTreeNodeUse CallArg(int index)
             {

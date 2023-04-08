@@ -12,9 +12,9 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private class DefMap
         {
-            private Dictionary<Register, Operand> _map;
+            private readonly Dictionary<Register, Operand> _map;
 
-            private long[] _phiMasks;
+            private readonly long[] _phiMasks;
 
             public DefMap()
             {
@@ -65,8 +65,8 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private class LocalDefMap
         {
-            private Operand[] _map;
-            private int[] _uses;
+            private readonly Operand[] _map;
+            private readonly int[] _uses;
             public int UseCount { get; private set; }
 
             public LocalDefMap()
@@ -123,14 +123,14 @@ namespace Ryujinx.Graphics.Shader.Translation
         public static void Rename(BasicBlock[] blocks)
         {
             DefMap[] globalDefs = new DefMap[blocks.Length];
-            LocalDefMap localDefs = new LocalDefMap();
+            LocalDefMap localDefs = new();
 
             for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
             {
                 globalDefs[blkIndex] = new DefMap();
             }
 
-            Queue<BasicBlock> dfPhiBlocks = new Queue<BasicBlock>();
+            Queue<BasicBlock> dfPhiBlocks = new();
 
             // First pass, get all defs and locals uses.
             for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
@@ -303,7 +303,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             // then use the definition from that Phi.
             Operand local = Local();
 
-            PhiNode phi = new PhiNode(local);
+            PhiNode phi = new(local);
 
             AddPhi(block, phi);
 

@@ -85,7 +85,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             for (int index = 0; index < count; index++)
             {
-                Register dest = new Register(op.Dest + index, RegisterType.Gpr);
+                Register dest = new(op.Dest + index, RegisterType.Gpr);
 
                 if (dest.IsRZ)
                 {
@@ -316,7 +316,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             for (int index = 0; index < count; index++)
             {
-                Register dest = new Register(rd + index, RegisterType.Gpr);
+                Register dest = new(rd + index, RegisterType.Gpr);
 
                 if (dest.IsRZ)
                 {
@@ -354,7 +354,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             for (int index = 0; index < count; index++)
             {
-                Register dest = new Register(rd + index, RegisterType.Gpr);
+                Register dest = new(rd + index, RegisterType.Gpr);
 
                 if (dest.IsRZ)
                 {

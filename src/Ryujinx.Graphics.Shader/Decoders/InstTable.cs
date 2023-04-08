@@ -24,7 +24,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             }
         }
 
-        private static TableEntry[] _opCodes;
+        private static readonly TableEntry[] _opCodes;
 
         static InstTable()
         {
@@ -357,7 +357,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
             xMask = ~xMask;
 
-            TableEntry entry = new TableEntry(name, emitter, props, xBits);
+            TableEntry entry = new(name, emitter, props, xBits);
 
             for (int index = 0; index < (1 << xBits); index++)
             {

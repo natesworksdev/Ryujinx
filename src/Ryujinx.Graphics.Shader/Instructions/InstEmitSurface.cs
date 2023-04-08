@@ -221,7 +221,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             Operand destOperand = dest != RegisterConsts.RegisterZeroIndex ? Register(dest, RegisterType.Gpr) : null;
 
-            List<Operand> sourcesList = new List<Operand>();
+            List<Operand> sourcesList = new();
 
             if (isBindless)
             {
@@ -325,7 +325,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return context.Copy(Register(srcA++, RegisterType.Gpr));
             }
 
-            List<Operand> sourcesList = new List<Operand>();
+            List<Operand> sourcesList = new();
 
             if (isBindless)
             {
@@ -493,7 +493,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return context.Copy(Register(srcB++, RegisterType.Gpr));
             }
 
-            List<Operand> sourcesList = new List<Operand>();
+            List<Operand> sourcesList = new();
 
             if (isBindless)
             {
@@ -600,7 +600,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return context.Copy(Register(srcB++, RegisterType.Gpr));
             }
 
-            List<Operand> sourcesList = new List<Operand>();
+            List<Operand> sourcesList = new();
 
             if (isBindless)
             {

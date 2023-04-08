@@ -148,7 +148,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         {
             if (OpCodes.Count != 0)
             {
-                return OpCodes[OpCodes.Count - 1];
+                return OpCodes[^1];
             }
 
             return default;

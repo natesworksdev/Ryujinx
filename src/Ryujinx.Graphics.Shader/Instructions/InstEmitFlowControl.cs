@@ -275,7 +275,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
         private static void EmitBranch(EmitterContext context, ulong address)
         {
             InstOp op = context.CurrOp;
-            InstConditional opCond = new InstConditional(op.RawOpCode);
+            InstConditional opCond = new(op.RawOpCode);
 
             // If we're branching to the next instruction, then the branch
             // is useless and we can ignore it.

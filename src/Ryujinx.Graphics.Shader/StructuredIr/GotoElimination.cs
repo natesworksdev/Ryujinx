@@ -144,7 +144,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
             AstBlock[] path = BackwardsPath(block, ParentBlock(stmt.Label));
 
-            AstBlock loopFirstStmt = path[path.Length - 1];
+            AstBlock loopFirstStmt = path[^1];
 
             if (loopFirstStmt.Type == AstBlockType.Else)
             {
@@ -265,7 +265,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 else if (child.Type == AstBlockType.Else)
                 {
                     // Modify the matching if condition to force the else to be entered by the goto.
-                    if (!(Previous(child) is AstBlock ifBlock) || ifBlock.Type != AstBlockType.If)
+                    if (Previous(child) is not AstBlock ifBlock || ifBlock.Type != AstBlockType.If)
                     {
                         throw new InvalidOperationException("Found an else without a matching if.");
                     }
@@ -332,7 +332,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         {
             AstBlock block = ParentBlock(stmt.Goto);
 
-            AstBlock newBlock = new AstBlock(AstBlockType.If, stmt.Condition);
+            AstBlock newBlock = new(AstBlockType.If, stmt.Condition);
 
             block.AddAfter(stmt.Goto, newBlock);
 
@@ -367,7 +367,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 return first as AstBlock;
             }
 
-            AstBlock newBlock = new AstBlock(type, cond);
+            AstBlock newBlock = new(type, cond);
 
             block.AddBefore(first, newBlock);
 
@@ -387,7 +387,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         private static bool BlockMatches(IAstNode node, AstBlockType type, IAstNode cond)
         {
-            if (!(node is AstBlock block))
+            if (node is not AstBlock block)
             {
                 return false;
             }
@@ -399,7 +399,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         {
             if (lCond is AstOperation lCondOp && lCondOp.Inst == Instruction.LogicalNot)
             {
-                if (!(rCond is AstOperation rCondOp) || rCondOp.Inst != lCondOp.Inst)
+                if (rCond is not AstOperation rCondOp || rCondOp.Inst != lCondOp.Inst)
                 {
                     return false;
                 }
@@ -418,7 +418,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 return block.Parent;
             }
 
-            while (!(node is AstBlock))
+            while (node is not AstBlock)
             {
                 node = node.Parent;
             }
@@ -430,7 +430,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         {
             AstBlock block = bottom;
 
-            List<AstBlock> path = new List<AstBlock>();
+            List<AstBlock> path = new();
 
             while (block != top)
             {

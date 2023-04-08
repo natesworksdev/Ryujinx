@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         public static string Generate(StructuredProgramInfo info, ShaderConfig config)
         {
-            CodeGenContext context = new CodeGenContext(info, config);
+            CodeGenContext context = new(info, config);
 
             Declarations.Declare(context, info);
 
@@ -74,7 +74,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void PrintBlock(CodeGenContext context, AstBlock block, bool isMainFunction)
         {
-            AstBlockVisitor visitor = new AstBlockVisitor(block);
+            AstBlockVisitor visitor = new(block);
 
             visitor.BlockEntered += (sender, e) =>
             {

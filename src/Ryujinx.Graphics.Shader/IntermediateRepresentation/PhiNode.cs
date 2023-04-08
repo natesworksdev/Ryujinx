@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 
         public int DestsCount => _dest != null ? 1 : 0;
 
-        private HashSet<BasicBlock> _blocks;
+        private readonly HashSet<BasicBlock> _blocks;
 
         private class PhiSource
         {
@@ -29,7 +29,7 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
             }
         }
 
-        private List<PhiSource> _sources;
+        private readonly List<PhiSource> _sources;
 
         public int SourcesCount => _sources.Count;
 

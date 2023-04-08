@@ -51,7 +51,7 @@ namespace Ryujinx.Graphics.Shader
             FieldSize = Unsafe.SizeOf<Vector4<float>>();
             RequiredSize = Unsafe.SizeOf<SupportBuffer>();
 
-            SupportBuffer instance = new SupportBuffer();
+            SupportBuffer instance = new();
 
             FragmentAlphaTestOffset = OffsetOf(ref instance, ref instance.FragmentAlphaTest);
             FragmentIsBgraOffset = OffsetOf(ref instance, ref instance.FragmentIsBgra);

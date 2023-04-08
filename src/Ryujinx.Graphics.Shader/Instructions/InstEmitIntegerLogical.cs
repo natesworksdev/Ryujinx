@@ -103,9 +103,9 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             Operand res = logicOp switch
             {
-                LogicOp.And => res = context.BitwiseAnd(srcA, srcB),
-                LogicOp.Or => res = context.BitwiseOr(srcA, srcB),
-                LogicOp.Xor => res = context.BitwiseExclusiveOr(srcA, srcB),
+                LogicOp.And => context.BitwiseAnd(srcA, srcB),
+                LogicOp.Or => context.BitwiseOr(srcA, srcB),
+                LogicOp.Xor => context.BitwiseExclusiveOr(srcA, srcB),
                 _ => srcB
             };
 

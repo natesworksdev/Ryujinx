@@ -184,11 +184,11 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
                 AddNode(Assign(gotoTempAsg.Destination, cond));
 
-                AstOperation branch = new AstOperation(branchOp.Inst);
+                AstOperation branch = new(branchOp.Inst);
 
                 AddNode(branch);
 
-                GotoStatement gotoStmt = new GotoStatement(branch, gotoTempAsg, isLoop);
+                GotoStatement gotoStmt = new(branch, gotoTempAsg, isLoop);
 
                 _gotos.Add(gotoStmt);
             }
@@ -236,7 +236,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         private void NewBlock(AstBlockType type, IAstNode cond, int endIndex)
         {
-            AstBlock childBlock = new AstBlock(type, cond);
+            AstBlock childBlock = new(type, cond);
 
             AddNode(childBlock);
 

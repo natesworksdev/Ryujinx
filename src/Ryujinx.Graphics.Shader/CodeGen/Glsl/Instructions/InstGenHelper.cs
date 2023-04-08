@@ -163,7 +163,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
         {
             // If the node isn't a operation, then it can only be a operand,
             // and those never needs to be surrounded in parenthesis.
-            if (!(node is AstOperation operation))
+            if (node is not AstOperation operation)
             {
                 // This is sort of a special case, if this is a negative constant,
                 // and it is consumed by a unary operation, we need to put on the parenthesis,
@@ -208,7 +208,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
         private static bool IsNegativeConst(IAstNode node)
         {
-            if (!(node is AstOperand operand))
+            if (node is not AstOperand operand)
             {
                 return false;
             }
