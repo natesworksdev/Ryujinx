@@ -71,9 +71,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
     {
         private const int BackingInitialSize = 8;
 
-        private GpuContext _context;
-        private Buffer _parent;
-        private Action<ulong, ulong> _flushAction;
+        private readonly GpuContext _context;
+        private readonly Buffer _parent;
+        private readonly Action<ulong, ulong> _flushAction;
 
         private List<BufferMigration> _sources;
         private BufferMigration _migrationTarget;

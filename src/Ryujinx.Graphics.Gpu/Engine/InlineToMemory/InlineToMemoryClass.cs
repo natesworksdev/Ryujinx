@@ -134,7 +134,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
             if (!_finished)
             {
                 int copySize = Math.Min(data.Length, _buffer.Length - _offset);
-                data.Slice(0, copySize).CopyTo(new Span<int>(_buffer).Slice(_offset, copySize));
+                data[..copySize].CopyTo(new Span<int>(_buffer).Slice(_offset, copySize));
 
                 _offset += copySize;
 
@@ -169,11 +169,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
         {
             var memoryManager = _channel.MemoryManager;
 
-            var data = MemoryMarshal.Cast<int, byte>(_buffer).Slice(0, _size);
+            var data = MemoryMarshal.Cast<int, byte>(_buffer)[.._size];
 
             if (_isLinear && _lineCount == 1)
             {
-                memoryManager.WriteTrackedResource(_dstGpuVa, data.Slice(0, _lineLengthIn));
+                memoryManager.WriteTrackedResource(_dstGpuVa, data[.._lineLengthIn]);
                 _context.AdvanceSequence();
             }
             else

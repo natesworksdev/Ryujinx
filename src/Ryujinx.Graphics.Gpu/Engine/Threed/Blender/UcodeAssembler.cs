@@ -105,7 +105,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
     /// <summary>
     /// Floating-point RGB color values.
     /// </summary>
-    struct RgbFloat
+    readonly struct RgbFloat
     {
         /// <summary>
         /// Red component value.
@@ -139,24 +139,24 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
     /// <summary>
     /// Blend microcode destination operand, including swizzle, write mask and condition code update flag.
     /// </summary>
-    struct Dest
+    readonly struct Dest
     {
-        public static Dest Temp0 => new Dest(OpDst.Temp0, Swizzle.RGB, WriteMask.RGB, false);
-        public static Dest Temp1 => new Dest(OpDst.Temp1, Swizzle.RGB, WriteMask.RGB, false);
-        public static Dest Temp2 => new Dest(OpDst.Temp2, Swizzle.RGB, WriteMask.RGB, false);
-        public static Dest PBR => new Dest(OpDst.PBR, Swizzle.RGB, WriteMask.RGB, false);
+        public static Dest Temp0 => new(OpDst.Temp0, Swizzle.RGB, WriteMask.RGB, false);
+        public static Dest Temp1 => new(OpDst.Temp1, Swizzle.RGB, WriteMask.RGB, false);
+        public static Dest Temp2 => new(OpDst.Temp2, Swizzle.RGB, WriteMask.RGB, false);
+        public static Dest PBR => new(OpDst.PBR, Swizzle.RGB, WriteMask.RGB, false);
 
-        public Dest GBR => new Dest(Dst, Swizzle.GBR, WriteMask, WriteCC);
-        public Dest RRR => new Dest(Dst, Swizzle.RRR, WriteMask, WriteCC);
-        public Dest GGG => new Dest(Dst, Swizzle.GGG, WriteMask, WriteCC);
-        public Dest BBB => new Dest(Dst, Swizzle.BBB, WriteMask, WriteCC);
-        public Dest RToA => new Dest(Dst, Swizzle.RToA, WriteMask, WriteCC);
+        public Dest GBR => new(Dst, Swizzle.GBR, WriteMask, WriteCC);
+        public Dest RRR => new(Dst, Swizzle.RRR, WriteMask, WriteCC);
+        public Dest GGG => new(Dst, Swizzle.GGG, WriteMask, WriteCC);
+        public Dest BBB => new(Dst, Swizzle.BBB, WriteMask, WriteCC);
+        public Dest RToA => new(Dst, Swizzle.RToA, WriteMask, WriteCC);
 
-        public Dest R => new Dest(Dst, Swizzle, WriteMask.R, WriteCC);
-        public Dest G => new Dest(Dst, Swizzle, WriteMask.G, WriteCC);
-        public Dest B => new Dest(Dst, Swizzle, WriteMask.B, WriteCC);
+        public Dest R => new(Dst, Swizzle, WriteMask.R, WriteCC);
+        public Dest G => new(Dst, Swizzle, WriteMask.G, WriteCC);
+        public Dest B => new(Dst, Swizzle, WriteMask.B, WriteCC);
 
-        public Dest CC => new Dest(Dst, Swizzle, WriteMask, true);
+        public Dest CC => new(Dst, Swizzle, WriteMask, true);
 
         public OpDst Dst { get; }
         public Swizzle Swizzle { get; }
@@ -182,7 +182,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
     /// <summary>
     /// Blend microcode operaiton.
     /// </summary>
-    struct UcodeOp
+    readonly struct UcodeOp
     {
         public readonly uint Word;
 

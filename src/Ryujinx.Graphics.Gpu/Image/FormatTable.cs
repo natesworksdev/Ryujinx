@@ -357,7 +357,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             A2B10G10R10Sscaled  = (A2B10G10R10 << 21)  | (Sscaled << 27), // 0x36000000
         }
 
-        private static readonly Dictionary<TextureFormat, FormatInfo> _textureFormats = new Dictionary<TextureFormat, FormatInfo>()
+        private static readonly Dictionary<TextureFormat, FormatInfo> _textureFormats = new()
         {
             { TextureFormat.R8Unorm,                          new FormatInfo(Format.R8Unorm,           1,  1,  1,  1) },
             { TextureFormat.R8Snorm,                          new FormatInfo(Format.R8Snorm,           1,  1,  1,  1) },
@@ -467,7 +467,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             { TextureFormat.A5B5G5R1Unorm,                    new FormatInfo(Format.A1B5G5R5Unorm,     1,  1,  2,  4) }
         };
 
-        private static readonly Dictionary<VertexAttributeFormat, Format> _attribFormats = new Dictionary<VertexAttributeFormat, Format>()
+        private static readonly Dictionary<VertexAttributeFormat, Format> _attribFormats = new()
         {
             { VertexAttributeFormat.R8Unorm,             Format.R8Unorm             },
             { VertexAttributeFormat.R8Snorm,             Format.R8Snorm             },

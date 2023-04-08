@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private int _inlineIndexBufferSize;
         private int _inlineIndexCount;
         private uint[] _buffer;
-        private int _bufferOffset;
+        private readonly int _bufferOffset;
 
         /// <summary>
         /// Indicates if any index buffer data has been pushed.
@@ -114,10 +114,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// <param name="value">Index value to be written</param>
         private void PushData(IRenderer renderer, int offset, uint value)
         {
-            if (_buffer == null)
-            {
-                _buffer = new uint[BufferCapacity];
-            }
+            _buffer ??= new uint[BufferCapacity];
 
             // We upload data in chunks.
             // If we are at the start of a chunk, then the buffer might be full,
@@ -155,7 +152,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             int baseOffset = (offset - count) * sizeof(uint);
             int length = count * sizeof(uint);
             BufferHandle buffer = GetInlineIndexBuffer(renderer, baseOffset, length);
-            renderer.SetBufferData(buffer, baseOffset, MemoryMarshal.Cast<uint, byte>(_buffer).Slice(0, length));
+            renderer.SetBufferData(buffer, baseOffset, MemoryMarshal.Cast<uint, byte>(_buffer)[..length]);
         }
 
         /// <summary>

@@ -777,11 +777,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             if (isStorage)
             {
-                _context.Renderer.Pipeline.SetStorageBuffers(ranges.Slice(0, count));
+                _context.Renderer.Pipeline.SetStorageBuffers(ranges[..count]);
             }
             else
             {
-                _context.Renderer.Pipeline.SetUniformBuffers(ranges.Slice(0, count));
+                _context.Renderer.Pipeline.SetUniformBuffers(ranges[..count]);
             }
         }
 

@@ -128,12 +128,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
             ulong samplerPoolGpuVa = ((ulong)_state.State.SetTexSamplerPoolAOffsetUpper << 32) | _state.State.SetTexSamplerPoolB;
             ulong texturePoolGpuVa = ((ulong)_state.State.SetTexHeaderPoolAOffsetUpper << 32) | _state.State.SetTexHeaderPoolB;
 
-            GpuChannelPoolState poolState = new GpuChannelPoolState(
+            GpuChannelPoolState poolState = new(
                 texturePoolGpuVa,
                 _state.State.SetTexHeaderPoolCMaximumIndex,
                 _state.State.SetBindlessTextureConstantBufferSlotSelect);
 
-            GpuChannelComputeState computeState = new GpuChannelComputeState(
+            GpuChannelComputeState computeState = new(
                 qmd.CtaThreadDimension0,
                 qmd.CtaThreadDimension1,
                 qmd.CtaThreadDimension2,

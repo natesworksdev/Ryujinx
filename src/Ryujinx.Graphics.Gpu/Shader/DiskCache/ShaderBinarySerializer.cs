@@ -29,10 +29,10 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 
         public static ShaderSource[] Unpack(CachedShaderStage[] stages, byte[] code)
         {
-            using MemoryStream input = new MemoryStream(code);
-            using BinaryReader reader = new BinaryReader(input);
+            using MemoryStream input = new(code);
+            using BinaryReader reader = new(input);
 
-            List<ShaderSource> output = new List<ShaderSource>();
+            List<ShaderSource> output = new();
 
             int count = reader.ReadInt32();
 

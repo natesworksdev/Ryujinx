@@ -186,7 +186,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             {
                 int firstVertex = (int)_state.State.FirstVertex;
 
-                BufferRange br = new BufferRange(_drawState.IbStreamer.GetInlineIndexBuffer(), 0, inlineIndexCount * 4);
+                BufferRange br = new(_drawState.IbStreamer.GetInlineIndexBuffer(), 0, inlineIndexCount * 4);
 
                 _channel.BufferManager.SetIndexBuffer(br, IndexType.UInt);
 
@@ -679,7 +679,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     if (indexedInline)
                     {
                         int inlineIndexCount = _drawState.IbStreamer.GetAndResetInlineIndexCount(_context.Renderer);
-                        BufferRange br = new BufferRange(_drawState.IbStreamer.GetInlineIndexBuffer(), 0, inlineIndexCount * 4);
+                        BufferRange br = new(_drawState.IbStreamer.GetInlineIndexBuffer(), 0, inlineIndexCount * 4);
 
                         _channel.BufferManager.SetIndexBuffer(br, IndexType.UInt);
                     }
@@ -821,7 +821,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             {
                 var clearColor = _state.State.ClearColors;
 
-                ColorF color = new ColorF(clearColor.Red, clearColor.Green, clearColor.Blue, clearColor.Alpha);
+                ColorF color = new(clearColor.Red, clearColor.Green, clearColor.Blue, clearColor.Alpha);
 
                 _context.Renderer.Pipeline.ClearRenderTargetColor(index, layer, layerCount, componentMask, color);
             }

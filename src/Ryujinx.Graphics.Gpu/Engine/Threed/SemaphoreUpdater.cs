@@ -156,7 +156,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             void resultHandler(object evt, ulong result)
             {
-                CounterData counterData = new CounterData
+                CounterData counterData = new()
                 {
                     Counter = result,
                     Timestamp = ticks

@@ -257,7 +257,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                     ulong newSize = endAddress - address;
 
-                    Buffer newBuffer = new Buffer(_context, _physicalMemory, address, newSize, _bufferOverlaps.Take(overlapsCount));
+                    Buffer newBuffer = new(_context, _physicalMemory, address, newSize, _bufferOverlaps.Take(overlapsCount));
 
                     lock (_buffers)
                     {
@@ -285,7 +285,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             else
             {
                 // No overlap, just create a new buffer.
-                Buffer buffer = new Buffer(_context, _physicalMemory, address, size);
+                Buffer buffer = new(_context, _physicalMemory, address, size);
 
                 lock (_buffers)
                 {

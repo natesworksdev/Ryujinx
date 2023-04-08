@@ -144,9 +144,9 @@ namespace Ryujinx.Graphics.Gpu
                 return false;
             }
 
-            FormatInfo formatInfo = new FormatInfo(format, 1, 1, bytesPerPixel, 4);
+            FormatInfo formatInfo = new(format, 1, 1, bytesPerPixel, 4);
 
-            TextureInfo info = new TextureInfo(
+            TextureInfo info = new(
                 0UL,
                 width,
                 height,
@@ -175,7 +175,7 @@ namespace Ryujinx.Graphics.Gpu
                 1,
                 1).TotalSize;
 
-            MultiRange range = new MultiRange(address, (ulong)size);
+            MultiRange range = new(address, (ulong)size);
 
             _frameQueue.Enqueue(new PresentationTexture(
                 physicalMemory.TextureCache,

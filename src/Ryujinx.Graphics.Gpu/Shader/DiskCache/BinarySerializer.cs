@@ -34,7 +34,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             Span<byte> buffer = MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref data, 1));
             for (int offset = 0; offset < buffer.Length;)
             {
-                offset += _activeStream.Read(buffer.Slice(offset));
+                offset += _activeStream.Read(buffer[offset..]);
             }
         }
 
@@ -84,10 +84,10 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 throw new DiskCacheLoadException(DiskCacheLoadResult.FileCorruptedInvalidLength);
             }
 
-            Span<byte> buffer = MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref data, 1)).Slice(0, size);
+            Span<byte> buffer = MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref data, 1))[..size];
             for (int offset = 0; offset < buffer.Length;)
             {
-                offset += _activeStream.Read(buffer.Slice(offset));
+                offset += _activeStream.Read(buffer[offset..]);
             }
         }
 
@@ -183,7 +183,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                     stream = new DeflateStream(stream, CompressionMode.Decompress, true);
                     for (int offset = 0; offset < data.Length;)
                     {
-                        offset += stream.Read(data.Slice(offset));
+                        offset += stream.Read(data[offset..]);
                     }
                     stream.Dispose();
                     break;

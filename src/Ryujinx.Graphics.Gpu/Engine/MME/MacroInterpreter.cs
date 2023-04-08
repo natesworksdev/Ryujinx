@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
         /// </summary>
         public Queue<FifoWord> Fifo { get; }
 
-        private int[] _gprs;
+        private readonly int[] _gprs;
 
         private int _methAddr;
         private int _methIncr;

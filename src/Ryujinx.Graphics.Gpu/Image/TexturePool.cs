@@ -18,7 +18,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// A request to dereference a texture from a pool.
         /// </summary>
-        private struct DereferenceRequest
+        private readonly struct DereferenceRequest
         {
             /// <summary>
             /// Whether the dereference is due to a mapping change or not.
@@ -71,7 +71,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         private readonly GpuChannel _channel;
-        private readonly ConcurrentQueue<DereferenceRequest> _dereferenceQueue = new ConcurrentQueue<DereferenceRequest>();
+        private readonly ConcurrentQueue<DereferenceRequest> _dereferenceQueue = new();
         private TextureDescriptor _defaultDescriptor;
 
         /// <summary>

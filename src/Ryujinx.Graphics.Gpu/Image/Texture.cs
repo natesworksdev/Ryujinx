@@ -334,7 +334,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>The child texture</returns>
         public Texture CreateView(TextureInfo info, SizeInfo sizeInfo, MultiRange range, int firstLayer, int firstLevel)
         {
-            Texture texture = new Texture(
+            Texture texture = new(
                 _context,
                 _physicalMemory,
                 info,
@@ -523,7 +523,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (ScaleFactor != scale)
             {
-                Logger.Debug?.Print(LogClass.Gpu, $"Rescaling {Info.Width}x{Info.Height} {Info.FormatInfo.Format.ToString()} to ({ScaleFactor} to {scale}). ");
+                Logger.Debug?.Print(LogClass.Gpu, $"Rescaling {Info.Width}x{Info.Height} {Info.FormatInfo.Format} to ({ScaleFactor} to {scale}). ");
 
                 ScaleFactor = scale;
 
@@ -537,7 +537,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 foreach (var view in _views)
                 {
-                    Logger.Debug?.Print(LogClass.Gpu, $"  Recreating view {Info.Width}x{Info.Height} {Info.FormatInfo.Format.ToString()}.");
+                    Logger.Debug?.Print(LogClass.Gpu, $"  Recreating view {Info.Width}x{Info.Height} {Info.FormatInfo.Format}.");
                     view.ScaleFactor = scale;
 
                     TextureCreateInfo viewCreateInfo = TextureCache.GetCreateInfo(view.Info, _context.Capabilities, scale);
@@ -1254,7 +1254,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 FormatInfo formatInfo = TextureCompatibility.ToHostCompatibleFormat(Info, _context.Capabilities);
 
-                TextureCreateInfo createInfo = new TextureCreateInfo(
+                TextureCreateInfo createInfo = new(
                     Info.Width,
                     Info.Height,
                     target == Target.CubemapArray ? 6 : 1,

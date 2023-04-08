@@ -56,7 +56,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 throw new DiskCacheLoadException(DiskCacheLoadResult.InvalidCb1DataLength);
             }
 
-            return MemoryMarshal.Cast<byte, uint>(_cb1Data.Span.Slice(offset))[0];
+            return MemoryMarshal.Cast<byte, uint>(_cb1Data.Span[offset..])[0];
         }
 
         /// <inheritdoc/>
@@ -68,7 +68,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// <inheritdoc/>
         public ReadOnlySpan<ulong> GetCode(ulong address, int minimumSize)
         {
-            return MemoryMarshal.Cast<byte, ulong>(_data.Span.Slice((int)address));
+            return MemoryMarshal.Cast<byte, ulong>(_data.Span[(int)address..]);
         }
 
         /// <inheritdoc/>

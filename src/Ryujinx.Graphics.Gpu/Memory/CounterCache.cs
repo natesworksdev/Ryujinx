@@ -38,7 +38,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             int index = BinarySearch(gpuVa);
 
-            CounterEntry entry = new CounterEntry(gpuVa, evt);
+            CounterEntry entry = new(gpuVa, evt);
 
             if (index < 0)
             {

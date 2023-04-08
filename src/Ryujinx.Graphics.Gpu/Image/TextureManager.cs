@@ -41,8 +41,8 @@ namespace Ryujinx.Graphics.Gpu.Image
             _context = context;
             _channel = channel;
 
-            TexturePoolCache texturePoolCache = new TexturePoolCache(context);
-            SamplerPoolCache samplerPoolCache = new SamplerPoolCache(context);
+            TexturePoolCache texturePoolCache = new(context);
+            SamplerPoolCache samplerPoolCache = new(context);
 
             float[] scales = new float[64];
             new Span<float>(scales).Fill(1f);

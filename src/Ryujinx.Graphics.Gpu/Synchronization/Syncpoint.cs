@@ -46,7 +46,7 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
                 }
                 else
                 {
-                    SyncpointWaiterHandle waiterInformation = new SyncpointWaiterHandle
+                    SyncpointWaiterHandle waiterInformation = new()
                     {
                         Threshold = threshold,
                         Callback  = callback
@@ -92,10 +92,7 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
                         }
                         else
                         {
-                            if (expiredList == null)
-                            {
-                                expiredList = new List<SyncpointWaiterHandle>();
-                            }
+                            expiredList ??= new List<SyncpointWaiterHandle>();
 
                             expiredList.Add(item);
                         }

@@ -440,7 +440,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>Texture specialization state</returns>
         private Box<TextureSpecializationState> GetOrCreateTextureSpecState(int stageIndex, int handle, int cbufSlot)
         {
-            TextureKey key = new TextureKey(stageIndex, handle, cbufSlot);
+            TextureKey key = new(stageIndex, handle, cbufSlot);
 
             if (!_textureSpecialization.TryGetValue(key, out Box<TextureSpecializationState> state))
             {
@@ -459,7 +459,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>Texture specialization state</returns>
         private Box<TextureSpecializationState> GetTextureSpecState(int stageIndex, int handle, int cbufSlot)
         {
-            TextureKey key = new TextureKey(stageIndex, handle, cbufSlot);
+            TextureKey key = new(stageIndex, handle, cbufSlot);
 
             if (_textureSpecialization.TryGetValue(key, out Box<TextureSpecializationState> state))
             {
@@ -756,7 +756,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>Shader specialization state</returns>
         public static ShaderSpecializationState Read(ref BinarySerializer dataReader)
         {
-            ShaderSpecializationState specState = new ShaderSpecializationState();
+            ShaderSpecializationState specState = new();
 
             dataReader.Read(ref specState._queriedState);
             dataReader.Read(ref specState._compute);
@@ -812,7 +812,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             for (int index = 0; index < count; index++)
             {
                 TextureKey textureKey = default;
-                Box<TextureSpecializationState> textureState = new Box<TextureSpecializationState>();
+                Box<TextureSpecializationState> textureState = new();
 
                 dataReader.ReadWithMagicAndSize(ref textureKey, TexkMagic);
                 dataReader.ReadWithMagicAndSize(ref textureState.Value, TexsMagic);

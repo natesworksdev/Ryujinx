@@ -48,7 +48,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
 
             if (_executionEngine == null)
             {
-                if (GraphicsConfig.EnableMacroHLE && MacroHLETable.TryGetMacroHLEFunction(code.Slice(Position), context.Capabilities, out _hleFunction))
+                if (GraphicsConfig.EnableMacroHLE && MacroHLETable.TryGetMacroHLEFunction(code[Position..], context.Capabilities, out _hleFunction))
                 {
                     _executionEngine = new MacroHLE(processor, _hleFunction);
                 }
@@ -84,7 +84,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
             if (_executionPending)
             {
                 _executionPending = false;
-                _executionEngine?.Execute(code.Slice(Position), state, _argument);
+                _executionEngine?.Execute(code[Position..], state, _argument);
             }
         }
 

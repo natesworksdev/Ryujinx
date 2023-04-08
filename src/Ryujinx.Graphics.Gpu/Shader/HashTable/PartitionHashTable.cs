@@ -86,7 +86,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
             {
                 if (OwnSize != 0)
                 {
-                    return new ReadOnlySpan<byte>(Data).Slice(0, OwnSize);
+                    return new ReadOnlySpan<byte>(Data)[..OwnSize];
                 }
 
                 return Data;
@@ -139,7 +139,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
                 return existingItem;
             }
 
-            Entry entry = new Entry(dataHash, data, item);
+            Entry entry = new(dataHash, data, item);
 
             AddToBucket(dataHash, ref entry);
 
@@ -160,7 +160,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
                 return false;
             }
 
-            Entry entry = new Entry(dataHash, data, item);
+            Entry entry = new(dataHash, data, item);
 
             AddToBucket(dataHash, ref entry);
 
@@ -175,7 +175,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
         /// <returns>True if added, false otherwise</returns>
         public bool AddPartial(byte[] ownerData, int ownSize)
         {
-            ReadOnlySpan<byte> data = new ReadOnlySpan<byte>(ownerData).Slice(0, ownSize);
+            ReadOnlySpan<byte> data = new ReadOnlySpan<byte>(ownerData)[..ownSize];
 
             return AddPartial(ownerData, HashState.CalcHash(data), ownSize);
         }
@@ -189,14 +189,14 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
         /// <returns>True if added, false otherwise</returns>
         public bool AddPartial(byte[] ownerData, uint dataHash, int ownSize)
         {
-            ReadOnlySpan<byte> data = new ReadOnlySpan<byte>(ownerData).Slice(0, ownSize);
+            ReadOnlySpan<byte> data = new ReadOnlySpan<byte>(ownerData)[..ownSize];
 
             if (TryFindItem(dataHash, data, out _))
             {
                 return false;
             }
 
-            Entry entry = new Entry(dataHash, ownerData, ownSize);
+            Entry entry = new(dataHash, ownerData, ownSize);
 
             AddToBucket(dataHash, ref entry);
 

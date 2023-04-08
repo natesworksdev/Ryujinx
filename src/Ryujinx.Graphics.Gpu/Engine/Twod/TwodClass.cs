@@ -172,7 +172,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
 
                     for (int y = 0; y < height; y++)
                     {
-                        srcSpan.Slice(offset, lineSize).CopyTo(dstSpan.Slice(offset));
+                        srcSpan.Slice(offset, lineSize).CopyTo(dstSpan[offset..]);
 
                         offset += stride;
                     }
@@ -364,13 +364,13 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
             float scale = srcTexture.ScaleFactor;
             float dstScale = dstTexture.ScaleFactor;
 
-            Extents2D srcRegion = new Extents2D(
+            Extents2D srcRegion = new(
                 (int)Math.Ceiling(scale * (srcX1 / srcTexture.Info.SamplesInX)),
                 (int)Math.Ceiling(scale * (srcY1 / srcTexture.Info.SamplesInY)),
                 (int)Math.Ceiling(scale * (srcX2 / srcTexture.Info.SamplesInX)),
                 (int)Math.Ceiling(scale * (srcY2 / srcTexture.Info.SamplesInY)));
 
-            Extents2D dstRegion = new Extents2D(
+            Extents2D dstRegion = new(
                 (int)Math.Ceiling(dstScale * (dstX1 / dstTexture.Info.SamplesInX)),
                 (int)Math.Ceiling(dstScale * (dstY1 / dstTexture.Info.SamplesInY)),
                 (int)Math.Ceiling(dstScale * (dstX2 / dstTexture.Info.SamplesInX)),

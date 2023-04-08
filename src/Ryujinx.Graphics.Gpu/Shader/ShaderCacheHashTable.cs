@@ -154,7 +154,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="program">Program to be added</param>
         public void Add(CachedShaderProgram program)
         {
-            IdTable idTable = new IdTable();
+            IdTable idTable = new();
 
             foreach (var shader in program.Shaders)
             {
@@ -222,7 +222,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             out CachedGraphicsGuestCode guestCode)
         {
             var memoryManager = channel.MemoryManager;
-            IdTable idTable = new IdTable();
+            IdTable idTable = new();
             guestCode = new CachedGraphicsGuestCode();
 
             program = null;
@@ -260,7 +260,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 return true;
             }
 
-            ShaderCodeAccessor codeAccessor = new ShaderCodeAccessor(memoryManager, baseAddress);
+            ShaderCodeAccessor codeAccessor = new(memoryManager, baseAddress);
             return idCache.TryFind(codeAccessor, out id, out data);
         }
 

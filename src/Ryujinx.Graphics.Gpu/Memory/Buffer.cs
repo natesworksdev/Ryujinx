@@ -62,7 +62,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         private int _sequenceNumber;
 
-        private bool _useGranular;
+        private readonly bool _useGranular;
         private bool _syncActionRegistered;
 
         private int _referenceCount = 1;
@@ -252,10 +252,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         private void EnsureRangeList()
         {
-            if (_modifiedRanges == null)
-            {
-                _modifiedRanges = new BufferModifiedRangeList(_context, this, Flush);
-            }
+            _modifiedRanges ??= new BufferModifiedRangeList(_context, this, Flush);
         }
 
         /// <summary>
@@ -326,7 +323,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     _syncActionRegistered = true;
                 }
 
-                Action<ulong, ulong> registerRangeAction = (ulong address, ulong size) =>
+                void registerRangeAction(ulong address, ulong size)
                 {
                     if (_useGranular)
                     {
@@ -336,7 +333,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     {
                         _memoryTracking.RegisterAction(_externalFlushDelegate);
                     }
-                };
+                }
 
                 EnsureRangeList();
 

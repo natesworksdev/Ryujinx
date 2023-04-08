@@ -42,7 +42,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             CompareMode compareMode = descriptor.UnpackCompareMode();
             CompareOp   compareOp   = descriptor.UnpackCompareOp();
 
-            ColorF color = new ColorF(
+            ColorF color = new(
                 descriptor.BorderColorR,
                 descriptor.BorderColorG,
                 descriptor.BorderColorB,

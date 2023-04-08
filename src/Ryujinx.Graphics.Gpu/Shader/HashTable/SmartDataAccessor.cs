@@ -40,7 +40,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
             }
             else if (_data.Length > length)
             {
-                return _data.Slice(0, length);
+                return _data[..length];
             }
 
             return _data;

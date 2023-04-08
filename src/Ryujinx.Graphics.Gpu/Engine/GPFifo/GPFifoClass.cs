@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         private readonly GPFifoProcessor _parent;
         private readonly DeviceState<GPFifoClassState> _state;
 
-        private int _previousSubChannel;
+        private readonly int _previousSubChannel;
         private bool _createSyncPending;
 
         private const int MacrosCount = 0x80;
