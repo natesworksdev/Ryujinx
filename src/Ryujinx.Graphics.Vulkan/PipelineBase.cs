@@ -44,7 +44,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private ShaderCollection _program;
 
-        private Vector4<float>[] _renderScale = new Vector4<float>[73];
+        private readonly Vector4<float>[] _renderScale = new Vector4<float>[73];
         private int _fragmentScaleCount;
 
         protected FramebufferParams FramebufferParams;
@@ -78,7 +78,7 @@ namespace Ryujinx.Graphics.Vulkan
         private bool _tfEnabled;
         private bool _tfActive;
 
-        private PipelineColorBlendAttachmentState[] _storedBlend;
+        private readonly PipelineColorBlendAttachmentState[] _storedBlend;
 
         private ulong _drawCountSinceBarrier;
         public ulong DrawCount { get; private set; }
@@ -146,7 +146,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            MemoryBarrier memoryBarrier = new MemoryBarrier()
+            MemoryBarrier memoryBarrier = new()
             {
                 SType = StructureType.MemoryBarrier,
                 SrcAccessMask = AccessFlags.MemoryReadBit | AccessFlags.MemoryWriteBit,
@@ -168,7 +168,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void ComputeBarrier()
         {
-            MemoryBarrier memoryBarrier = new MemoryBarrier()
+            MemoryBarrier memoryBarrier = new()
             {
                 SType = StructureType.MemoryBarrier,
                 SrcAccessMask = AccessFlags.MemoryReadBit | AccessFlags.MemoryWriteBit,
@@ -281,7 +281,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public unsafe void CommandBufferBarrier()
         {
-            MemoryBarrier memoryBarrier = new MemoryBarrier()
+            MemoryBarrier memoryBarrier = new()
             {
                 SType = StructureType.MemoryBarrier,
                 SrcAccessMask = BufferHolder.DefaultAccessFlags,
@@ -950,7 +950,7 @@ namespace Ryujinx.Graphics.Vulkan
             _newState.PipelineLayout = internalProgram.PipelineLayout;
             _newState.StagesCount = (uint)stages.Length;
 
-            stages.CopyTo(_newState.Stages.AsSpan().Slice(0, stages.Length));
+            stages.CopyTo(_newState.Stages.AsSpan()[..stages.Length]);
 
             SignalStateChange();
 
@@ -1361,7 +1361,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public unsafe void TextureBarrier()
         {
-            MemoryBarrier memoryBarrier = new MemoryBarrier()
+            MemoryBarrier memoryBarrier = new()
             {
                 SType = StructureType.MemoryBarrier,
                 SrcAccessMask = AccessFlags.MemoryReadBit | AccessFlags.MemoryWriteBit,

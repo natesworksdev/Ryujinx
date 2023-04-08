@@ -8,10 +8,10 @@ namespace Ryujinx.Graphics.Vulkan
     /// </summary>
     class MultiFenceHolder
     {
-        private static int BufferUsageTrackingGranularity = 4096;
+        private static readonly int BufferUsageTrackingGranularity = 4096;
 
         private readonly FenceHolder[] _fences;
-        private BufferUsageBitmap _bufferUsageBitmap;
+        private readonly BufferUsageBitmap _bufferUsageBitmap;
 
         /// <summary>
         /// Creates a new instance of the multiple fence holder.

@@ -151,7 +151,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public static PipelineState ToVulkanPipelineState(this ProgramPipelineState state, VulkanRenderer gd)
         {
-            PipelineState pipeline = new PipelineState();
+            PipelineState pipeline = new();
             pipeline.Initialize();
 
             // It is assumed that Dynamic State is enabled when this conversion is used.

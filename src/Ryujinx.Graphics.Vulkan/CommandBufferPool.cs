@@ -10,8 +10,8 @@ namespace Ryujinx.Graphics.Vulkan
     {
         public const int MaxCommandBuffers = 16;
 
-        private int _totalCommandBuffers;
-        private int _totalCommandBuffersMask;
+        private readonly int _totalCommandBuffers;
+        private readonly int _totalCommandBuffersMask;
 
         private readonly Vk _api;
         private readonly Device _device;
@@ -291,7 +291,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     fixed (PipelineStageFlags* pWaitDstStageMask = waitDstStageMask)
                     {
-                        SubmitInfo sInfo = new SubmitInfo()
+                        SubmitInfo sInfo = new()
                         {
                             SType = StructureType.SubmitInfo,
                             WaitSemaphoreCount = waitSemaphores != null ? (uint)waitSemaphores.Length : 0,

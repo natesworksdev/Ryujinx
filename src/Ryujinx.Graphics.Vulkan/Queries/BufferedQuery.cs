@@ -23,10 +23,10 @@ namespace Ryujinx.Graphics.Vulkan.Queries
         private readonly BufferHolder _buffer;
         private readonly IntPtr _bufferMap;
         private readonly CounterType _type;
-        private bool _result32Bit;
-        private bool _isSupported;
+        private readonly bool _result32Bit;
+        private readonly bool _isSupported;
 
-        private long _defaultValue;
+        private readonly long _defaultValue;
         private int? _resetSequence;
 
         public unsafe BufferedQuery(VulkanRenderer gd, Device device, PipelineFull pipeline, CounterType type, bool result32Bit)

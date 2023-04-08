@@ -131,10 +131,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public BufferView GetBufferView(CommandBufferScoped cbs)
         {
-            if (_bufferView == null)
-            {
-                _bufferView = _gd.BufferManager.CreateView(_bufferHandle, VkFormat, _offset, _size, ReleaseImpl);
-            }
+            _bufferView ??= _gd.BufferManager.CreateView(_bufferHandle, VkFormat, _offset, _size, ReleaseImpl);
 
             return _bufferView?.Get(cbs, _offset, _size).Value ?? default;
         }

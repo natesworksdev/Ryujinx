@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Vulkan
     {
         // The shaderc.net dependency's Options constructor and dispose are not thread safe.
         // Take this lock when using them.
-        private static object _shaderOptionsLock = new object();
+        private static readonly object _shaderOptionsLock = new();
 
         private static readonly IntPtr _ptrMainEntryPointName = Marshal.StringToHGlobalAnsi("main");
 
@@ -85,7 +85,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             options.SetTargetEnvironment(TargetEnvironment.Vulkan, EnvironmentVersion.Vulkan_1_2);
-            Compiler compiler = new Compiler(options);
+            Compiler compiler = new(options);
             var scr = compiler.Compile(glsl, "Ryu", GetShaderCShaderStage(stage));
 
             lock (_shaderOptionsLock)
@@ -104,7 +104,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             byte[] code = new byte[(scr.CodeLength + 3) & ~3];
 
-            spirvBytes.CopyTo(code.AsSpan().Slice(0, (int)scr.CodeLength));
+            spirvBytes.CopyTo(code.AsSpan()[..(int)scr.CodeLength]);
 
             return code;
         }

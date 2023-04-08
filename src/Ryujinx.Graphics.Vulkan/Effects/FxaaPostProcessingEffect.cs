@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
         private ISampler _samplerLinear;
         private ShaderCollection _shaderProgram;
 
-        private PipelineHelperShader _pipeline;
+        private readonly PipelineHelperShader _pipeline;
         private TextureView _texture;
 
         public FxaaPostProcessingEffect(VulkanRenderer renderer, Device device)

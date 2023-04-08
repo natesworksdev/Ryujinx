@@ -4,7 +4,7 @@ namespace Ryujinx.Graphics.Vulkan
 {
     internal struct IndexBufferState
     {
-        public static IndexBufferState Null => new IndexBufferState(GAL.BufferHandle.Null, 0, 0);
+        public static IndexBufferState Null => new(GAL.BufferHandle.Null, 0, 0);
 
         private readonly int _offset;
         private readonly int _size;

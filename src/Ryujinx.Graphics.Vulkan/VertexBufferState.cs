@@ -4,7 +4,7 @@ namespace Ryujinx.Graphics.Vulkan
 {
     internal struct VertexBufferState
     {
-        public static VertexBufferState Null => new VertexBufferState(null, 0, 0, 0);
+        public static VertexBufferState Null => new(null, 0, 0, 0);
 
         private readonly int _offset;
         private readonly int _size;

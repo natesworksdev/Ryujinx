@@ -73,8 +73,8 @@ namespace Ryujinx.Graphics.Vulkan
 
     struct TopologyConversionCacheKey : ICacheKey
     {
-        private IndexBufferPattern _pattern;
-        private int _indexSize;
+        private readonly IndexBufferPattern _pattern;
+        private readonly int _indexSize;
 
         // Used to notify the pipeline that bindings have invalidated on dispose.
         private readonly VulkanRenderer _gd;
@@ -149,7 +149,7 @@ namespace Ryujinx.Graphics.Vulkan
 
     struct IndirectDataCacheKey : ICacheKey
     {
-        private IndexBufferPattern _pattern;
+        private readonly IndexBufferPattern _pattern;
 
         public IndirectDataCacheKey(IndexBufferPattern pattern)
         {
@@ -356,15 +356,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         private List<Entry> GetEntries(int offset, int size)
         {
-            if (_ranges == null)
-            {
-                _ranges = new Dictionary<ulong, List<Entry>>();
-            }
+            _ranges ??= new Dictionary<ulong, List<Entry>>();
 
             ulong key = PackRange(offset, size);
 
-            List<Entry> value;
-            if (!_ranges.TryGetValue(key, out value))
+            if (!_ranges.TryGetValue(key, out List<Entry> value))
             {
                 value = new List<Entry>();
                 _ranges.Add(key, value);

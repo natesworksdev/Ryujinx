@@ -47,13 +47,13 @@ namespace Ryujinx.Graphics.Vulkan
         private HashTableSlim<PipelineUid, Auto<DisposablePipeline>> _graphicsPipelineCache;
         private HashTableSlim<SpecData, Auto<DisposablePipeline>> _computePipelineCache;
 
-        private VulkanRenderer _gd;
+        private readonly VulkanRenderer _gd;
         private Device _device;
         private bool _initialized;
 
         private ProgramPipelineState _state;
         private DisposableRenderPass _dummyRenderPass;
-        private Task _compileTask;
+        private readonly Task _compileTask;
         private bool _firstBackgroundUse;
 
         public ShaderCollection(
@@ -331,7 +331,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void CreateBackgroundComputePipeline()
         {
-            PipelineState pipeline = new PipelineState();
+            PipelineState pipeline = new();
             pipeline.Initialize();
 
             pipeline.Stages[0] = _shaders[0].GetInfo();

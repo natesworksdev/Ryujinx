@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private ulong _byteWeight;
 
-        private List<BufferHolder> _backingSwaps;
+        private readonly List<BufferHolder> _backingSwaps;
 
         public PipelineFull(VulkanRenderer gd, Device device) : base(gd, device)
         {
@@ -156,10 +156,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public CommandBufferScoped GetPreloadCommandBuffer()
         {
-            if (PreloadCbs == null)
-            {
-                PreloadCbs = Gd.CommandBufferPool.Rent();
-            }
+            PreloadCbs ??= Gd.CommandBufferPool.Rent();
 
             return PreloadCbs.Value;
         }

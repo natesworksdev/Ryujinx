@@ -4,7 +4,7 @@ namespace Ryujinx.Graphics.Vulkan
 {
     internal class PersistentFlushBuffer : IDisposable
     {
-        private VulkanRenderer _gd;
+        private readonly VulkanRenderer _gd;
 
         private BufferHolder _flushStorage;
 
@@ -19,10 +19,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (flushStorage == null || size > _flushStorage.Size)
             {
-                if (flushStorage != null)
-                {
-                    flushStorage.Dispose();
-                }
+                flushStorage?.Dispose();
 
                 flushStorage = _gd.BufferManager.Create(_gd, size);
                 _flushStorage = flushStorage;

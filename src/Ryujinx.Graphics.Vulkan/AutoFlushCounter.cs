@@ -34,7 +34,7 @@ namespace Ryujinx.Graphics.Vulkan
         private int _consecutiveQueries;
         private int _queryCount;
 
-        private int[] _queryCountHistory = new int[3];
+        private readonly int[] _queryCountHistory = new int[3];
         private int _queryCountHistoryIndex;
         private int _remainingQueries;
 

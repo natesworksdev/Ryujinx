@@ -4,7 +4,7 @@ namespace Ryujinx.Graphics.Vulkan
 {
     struct BufferState : IDisposable
     {
-        public static BufferState Null => new BufferState(null, 0, 0);
+        public static BufferState Null => new(null, 0, 0);
 
         private readonly int _offset;
         private readonly int _size;

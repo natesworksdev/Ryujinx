@@ -1524,7 +1524,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             // TODO: Support conversion with primitive restart enabled.
 
-            BufferRange drawCountBufferAligned = new BufferRange(
+            BufferRange drawCountBufferAligned = new(
                 drawCountBuffer.Handle,
                 drawCountBuffer.Offset & ~(UniformBufferAlignment - 1),
                 UniformBufferAlignment);
@@ -1562,7 +1562,7 @@ namespace Ryujinx.Graphics.Vulkan
             shaderParams[22] = indirectDataStride / 4;
             shaderParams[23] = srcIndirectBufferOffset / 4;
 
-            pattern.OffsetIndex.CopyTo(shaderParams.Slice(0, pattern.OffsetIndex.Length));
+            pattern.OffsetIndex.CopyTo(shaderParams[..pattern.OffsetIndex.Length]);
 
             var patternBufferHandle = gd.BufferManager.CreateWithHandle(gd, ParamsBufferSize, out var patternBuffer);
             var patternBufferAuto = patternBuffer.GetBuffer();

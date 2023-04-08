@@ -14,24 +14,24 @@ namespace Ryujinx.Graphics.Vulkan
 
         private ShaderCollection _program;
 
-        private Auto<DisposableBuffer>[] _uniformBufferRefs;
-        private Auto<DisposableBuffer>[] _storageBufferRefs;
-        private Auto<DisposableImageView>[] _textureRefs;
-        private Auto<DisposableSampler>[] _samplerRefs;
-        private Auto<DisposableImageView>[] _imageRefs;
-        private TextureBuffer[] _bufferTextureRefs;
-        private TextureBuffer[] _bufferImageRefs;
-        private GAL.Format[] _bufferImageFormats;
+        private readonly Auto<DisposableBuffer>[] _uniformBufferRefs;
+        private readonly Auto<DisposableBuffer>[] _storageBufferRefs;
+        private readonly Auto<DisposableImageView>[] _textureRefs;
+        private readonly Auto<DisposableSampler>[] _samplerRefs;
+        private readonly Auto<DisposableImageView>[] _imageRefs;
+        private readonly TextureBuffer[] _bufferTextureRefs;
+        private readonly TextureBuffer[] _bufferImageRefs;
+        private readonly GAL.Format[] _bufferImageFormats;
 
-        private DescriptorBufferInfo[] _uniformBuffers;
-        private DescriptorBufferInfo[] _storageBuffers;
-        private DescriptorImageInfo[] _textures;
-        private DescriptorImageInfo[] _images;
-        private BufferView[] _bufferTextures;
-        private BufferView[] _bufferImages;
+        private readonly DescriptorBufferInfo[] _uniformBuffers;
+        private readonly DescriptorBufferInfo[] _storageBuffers;
+        private readonly DescriptorImageInfo[] _textures;
+        private readonly DescriptorImageInfo[] _images;
+        private readonly BufferView[] _bufferTextures;
+        private readonly BufferView[] _bufferImages;
 
-        private bool[] _uniformSet;
-        private bool[] _storageSet;
+        private readonly bool[] _uniformSet;
+        private readonly bool[] _storageSet;
         private Silk.NET.Vulkan.Buffer _cachedSupportBuffer;
 
         [Flags]
@@ -181,7 +181,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Auto<DisposableBuffer> vkBuffer = _gd.BufferManager.GetBuffer(commandBuffer, buffer.Handle, false, isSSBO: true);
                 ref Auto<DisposableBuffer> currentVkBuffer = ref _storageBufferRefs[index];
 
-                DescriptorBufferInfo info = new DescriptorBufferInfo()
+                DescriptorBufferInfo info = new()
                 {
                     Offset = (ulong)buffer.Offset,
                     Range = (ulong)buffer.Size
@@ -209,7 +209,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 ref Auto<DisposableBuffer> currentVkBuffer = ref _storageBufferRefs[index];
 
-                DescriptorBufferInfo info = new DescriptorBufferInfo()
+                DescriptorBufferInfo info = new()
                 {
                     Offset = 0,
                     Range = Vk.WholeSize
@@ -289,7 +289,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Auto<DisposableBuffer> vkBuffer = _gd.BufferManager.GetBuffer(commandBuffer, buffer.Handle, false);
                 ref Auto<DisposableBuffer> currentVkBuffer = ref _uniformBufferRefs[index];
 
-                DescriptorBufferInfo info = new DescriptorBufferInfo()
+                DescriptorBufferInfo info = new()
                 {
                     Offset = (ulong)buffer.Offset,
                     Range = (ulong)buffer.Size
@@ -474,7 +474,7 @@ namespace Ryujinx.Graphics.Vulkan
                             }
                         }
 
-                        dsc.UpdateImages(0, binding, textures.Slice(0, count), DescriptorType.CombinedImageSampler);
+                        dsc.UpdateImages(0, binding, textures[..count], DescriptorType.CombinedImageSampler);
                     }
                     else
                     {
@@ -485,7 +485,7 @@ namespace Ryujinx.Graphics.Vulkan
                             bufferTextures[i] = _bufferTextureRefs[binding + i]?.GetBufferView(cbs) ?? default;
                         }
 
-                        dsc.UpdateBufferImages(0, binding, bufferTextures.Slice(0, count), DescriptorType.UniformTexelBuffer);
+                        dsc.UpdateBufferImages(0, binding, bufferTextures[..count], DescriptorType.UniformTexelBuffer);
                     }
                 }
                 else if (setIndex == PipelineBase.ImageSetIndex)
@@ -499,7 +499,7 @@ namespace Ryujinx.Graphics.Vulkan
                             images[i].ImageView = _imageRefs[binding + i]?.Get(cbs).Value ?? default;
                         }
 
-                        dsc.UpdateImages(0, binding, images.Slice(0, count), DescriptorType.StorageImage);
+                        dsc.UpdateImages(0, binding, images[..count], DescriptorType.StorageImage);
                     }
                     else
                     {
@@ -510,7 +510,7 @@ namespace Ryujinx.Graphics.Vulkan
                             bufferImages[i] = _bufferImageRefs[binding + i]?.GetBufferView(cbs, _bufferImageFormats[binding + i]) ?? default;
                         }
 
-                        dsc.UpdateBufferImages(0, binding, bufferImages.Slice(0, count), DescriptorType.StorageTexelBuffer);
+                        dsc.UpdateBufferImages(0, binding, bufferImages[..count], DescriptorType.StorageTexelBuffer);
                     }
                 }
             }

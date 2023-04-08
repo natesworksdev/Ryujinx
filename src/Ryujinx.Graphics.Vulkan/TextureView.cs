@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Auto<DisposableImageView> _imageView2dArray;
         private Dictionary<GAL.Format, TextureView> _selfManagedViews;
 
-        private TextureCreateInfo _info;
+        private readonly TextureCreateInfo _info;
 
         public TextureCreateInfo Info => _info;
 
@@ -72,10 +72,7 @@ namespace Ryujinx.Graphics.Vulkan
                 info.Format == GAL.Format.R5G5B5X1Unorm ||
                 info.Format == GAL.Format.R5G6B5Unorm)
             {
-                var temp = swizzleR;
-
-                swizzleR = swizzleB;
-                swizzleB = temp;
+                (swizzleB, swizzleR) = (swizzleR, swizzleB);
             }
             else if (VkFormat == VkFormat.R4G4B4A4UnormPack16 || info.Format == GAL.Format.A1B5G5R5Unorm)
             {
@@ -444,7 +441,7 @@ namespace Ryujinx.Graphics.Vulkan
             int layers,
             int levels)
         {
-            ImageMemoryBarrier memoryBarrier = new ImageMemoryBarrier()
+            ImageMemoryBarrier memoryBarrier = new()
             {
                 SType = StructureType.ImageMemoryBarrier,
                 SrcAccessMask = srcAccessMask,

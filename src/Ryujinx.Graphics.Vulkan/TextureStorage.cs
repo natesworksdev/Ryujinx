@@ -50,7 +50,7 @@ namespace Ryujinx.Graphics.Vulkan
         private PipelineStageFlags _lastReadStage;
 
         private int _viewsCount;
-        private ulong _size;
+        private readonly ulong _size;
 
         public VkFormat VkFormat { get; }
         public float ScaleFactor { get; }

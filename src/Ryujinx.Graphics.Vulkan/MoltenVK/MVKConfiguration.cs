@@ -60,7 +60,7 @@ namespace Ryujinx.Graphics.Vulkan.MoltenVK
         }
 
         public static implicit operator bool(Bool32 val) => val.Value == 1;
-        public static implicit operator Bool32(bool val) => new Bool32(val);
+        public static implicit operator Bool32(bool val) => new(val);
     }
 
     [StructLayout(LayoutKind.Sequential)]

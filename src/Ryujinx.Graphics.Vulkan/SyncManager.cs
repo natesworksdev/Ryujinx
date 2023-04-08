@@ -25,7 +25,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly VulkanRenderer _gd;
         private readonly Device _device;
-        private List<SyncHandle> _handles;
+        private readonly List<SyncHandle> _handles;
         private ulong FlushId;
         private long WaitTicks;
 
@@ -44,7 +44,7 @@ namespace Ryujinx.Graphics.Vulkan
         public void Create(ulong id, bool strict)
         {
             ulong flushId = FlushId;
-            MultiFenceHolder waitable = new MultiFenceHolder();
+            MultiFenceHolder waitable = new();
             if (strict || _gd.InterruptAction == null)
             {
                 _gd.FlushAllCommands();
@@ -58,7 +58,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _gd.CommandBufferPool.AddInUseWaitable(waitable);
             }
 
-            SyncHandle handle = new SyncHandle
+            SyncHandle handle = new()
             {
                 ID = id,
                 Waitable = waitable,
