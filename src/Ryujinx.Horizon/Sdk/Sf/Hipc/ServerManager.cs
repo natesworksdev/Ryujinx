@@ -45,7 +45,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
             _servers = new HashSet<Server>();
         }
 
-        private PointerAndSize GetObjectBySessionIndex(ServerSession session, ulong baseAddress, ulong size)
+        private static PointerAndSize GetObjectBySessionIndex(ServerSession session, ulong baseAddress, ulong size)
         {
             return new PointerAndSize(baseAddress + (ulong)session.SessionIndex * size, size);
         }

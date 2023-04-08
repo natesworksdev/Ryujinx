@@ -386,7 +386,9 @@ namespace Ryujinx.Horizon.Sdk.Sf
             outRawData = MemoryMarshal.Cast<uint, byte>(response.DataWords);
         }
 
+#pragma warning disable CA1822
         public void SetOutObjects(ref ServiceDispatchContext context, HipcMessageData response, Span<IServiceObject> objects)
+#pragma warning restore CA1822
         {
             if (objects.Length == 0)
             {
@@ -411,7 +413,7 @@ namespace Ryujinx.Horizon.Sdk.Sf
             }
         }
 
-        private void SetOutObjectImpl(int index, HipcMessageData response, ServerSessionManager manager, ServiceObjectHolder obj)
+        private static void SetOutObjectImpl(int index, HipcMessageData response, ServerSessionManager manager, ServiceObjectHolder obj)
         {
             if (obj == null)
             {

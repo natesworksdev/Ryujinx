@@ -14,7 +14,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
 
         public abstract Result ProcessMessage(ref ServiceDispatchContext context, ReadOnlySpan<byte> inRawData);
 
-        protected Result ProcessMessageImpl(ref ServiceDispatchContext context, ReadOnlySpan<byte> inRawData, IReadOnlyDictionary<int, CommandHandler> entries, string objectName)
+        protected static Result ProcessMessageImpl(ref ServiceDispatchContext context, ReadOnlySpan<byte> inRawData, IReadOnlyDictionary<int, CommandHandler> entries, string objectName)
         {
             if (inRawData.Length < Unsafe.SizeOf<CmifInHeader>())
             {

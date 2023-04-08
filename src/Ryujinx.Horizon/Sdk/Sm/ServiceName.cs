@@ -10,7 +10,7 @@ namespace Ryujinx.Horizon.Sdk.Sm
 
         public bool IsValid => Packed != 0;
 
-        public int Length => sizeof(ulong);
+        public static int Length => sizeof(ulong);
 
         public ulong Packed { get; }
 

@@ -226,7 +226,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
             return ReceiveRequestImpl(session, message);
         }
 
-        private Result ReceiveRequestImpl(ServerSession session, Span<byte> message)
+        private static Result ReceiveRequestImpl(ServerSession session, Span<byte> message)
         {
             PointerAndSize pointerBuffer = session.PointerBuffer;
 
