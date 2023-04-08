@@ -199,7 +199,7 @@ namespace Ryujinx.Common.Logging
         public static IReadOnlyCollection<LogLevel> GetEnabledLevels()
         {
             var logs = new Log?[] { Debug, Info, Warning, Error, Guest, AccessLog, Stub, Trace };
-            List<LogLevel> levels = new List<LogLevel>(logs.Length);
+            List<LogLevel> levels = new(logs.Length);
             foreach (var log in logs)
             {
                 if (log.HasValue)

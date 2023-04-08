@@ -35,7 +35,7 @@ namespace Ryujinx.Common.SystemInterop
             public int StartupParameters;
 #pragma warning restore CS0649
 
-            public static StartupInputEx Default => new StartupInputEx
+            public static StartupInputEx Default => new()
             {
                 // We assume Windows 8 and upper
                 GdiplusVersion = 2,

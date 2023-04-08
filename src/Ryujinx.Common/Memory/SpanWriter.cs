@@ -18,18 +18,18 @@ namespace Ryujinx.Common.Memory
         public void Write<T>(T value) where T : unmanaged
         {
             MemoryMarshal.Cast<byte, T>(_output)[0] = value;
-            _output = _output.Slice(Unsafe.SizeOf<T>());
+            _output = _output[Unsafe.SizeOf<T>()..];
         }
 
         public void Write(ReadOnlySpan<byte> data)
         {
-            data.CopyTo(_output.Slice(0, data.Length));
-            _output = _output.Slice(data.Length);
+            data.CopyTo(_output[..data.Length]);
+            _output = _output[data.Length..];
         }
 
         public void WriteAt<T>(int offset, T value) where T : unmanaged
         {
-            MemoryMarshal.Cast<byte, T>(_output.Slice(offset))[0] = value;
+            MemoryMarshal.Cast<byte, T>(_output[offset..])[0] = value;
         }
 
         public void WriteAt(int offset, ReadOnlySpan<byte> data)
@@ -39,7 +39,7 @@ namespace Ryujinx.Common.Memory
 
         public void Skip(int size)
         {
-            _output = _output.Slice(size);
+            _output = _output[size..];
         }
     }
 }

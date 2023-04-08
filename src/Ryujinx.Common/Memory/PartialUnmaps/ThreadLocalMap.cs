@@ -26,7 +26,7 @@ namespace Ryujinx.Common.Memory.PartialUnmaps
         /// </summary>
         static ThreadLocalMap()
         {
-            ThreadLocalMap<T> instance = new ThreadLocalMap<T>();
+            ThreadLocalMap<T> instance = new();
 
             ThreadIdsOffset = OffsetOf(ref instance, ref instance.ThreadIds);
             StructsOffset = OffsetOf(ref instance, ref instance.Structs);

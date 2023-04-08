@@ -4,7 +4,7 @@ namespace Ryujinx.Common
 {
     public static class PerformanceCounter
     {
-        private static double _ticksToNs;
+        private static readonly double _ticksToNs;
 
         /// <summary>
         /// Represents the number of ticks in 1 day.

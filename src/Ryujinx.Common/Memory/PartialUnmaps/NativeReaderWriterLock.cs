@@ -22,7 +22,7 @@ namespace Ryujinx.Common.Memory.PartialUnmaps
         /// </summary>
         static NativeReaderWriterLock()
         {
-            NativeReaderWriterLock instance = new NativeReaderWriterLock();
+            NativeReaderWriterLock instance = new();
 
             WriteLockOffset = OffsetOf(ref instance, ref instance.WriteLock);
             ReaderCountOffset = OffsetOf(ref instance, ref instance.ReaderCount);

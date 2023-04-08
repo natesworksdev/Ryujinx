@@ -139,9 +139,9 @@ namespace Ryujinx.Common.Collections
         /// <param name="list">List to add the tree pairs into</param>
         public List<KeyValuePair<K, V>> AsLevelOrderList()
         {
-            List<KeyValuePair<K, V>> list = new List<KeyValuePair<K, V>>();
+            List<KeyValuePair<K, V>> list = new();
 
-            Queue<Node<K, V>> nodes = new Queue<Node<K, V>>();
+            Queue<Node<K, V>> nodes = new();
 
             if (this.Root != null)
             {
@@ -168,7 +168,7 @@ namespace Ryujinx.Common.Collections
         /// <returns>A list of all KeyValuePairs sorted by Key Order</returns>
         public List<KeyValuePair<K, V>> AsList()
         {
-            List<KeyValuePair<K, V>> list = new List<KeyValuePair<K, V>>();
+            List<KeyValuePair<K, V>> list = new();
 
             AddToList(Root, list);
 
@@ -274,7 +274,7 @@ namespace Ryujinx.Common.Collections
                     return node;
                 }
             }
-            Node<K, V> newNode = new Node<K, V>(key, value, parent);
+            Node<K, V> newNode = new(key, value, parent);
             if (newNode.Parent == null)
             {
                 Root = newNode;
@@ -571,8 +571,8 @@ namespace Ryujinx.Common.Collections
         /// <returns>List of node keys</returns>
         private SortedList<K, V> GetKeyValues()
         {
-            SortedList<K, V> set = new SortedList<K, V>();
-            Queue<Node<K, V>> queue = new Queue<Node<K, V>>();
+            SortedList<K, V> set = new();
+            Queue<Node<K, V>> queue = new();
             if (Root != null)
             {
                 queue.Enqueue(Root);

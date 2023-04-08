@@ -17,7 +17,7 @@ namespace Ryujinx.Common.SystemInfo
 
         private static (ulong Total, ulong Available) GetMemoryStats()
         {
-            MemoryStatusEx memStatus = new MemoryStatusEx();
+            MemoryStatusEx memStatus = new();
             if (GlobalMemoryStatusEx(ref memStatus))
             {
                 return (memStatus.TotalPhys, memStatus.AvailPhys); // Bytes

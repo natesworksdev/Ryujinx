@@ -56,23 +56,23 @@ namespace Ryujinx.Common.SystemInfo
 
             int count = itemDict.Count;
 
-            using (StreamReader file = new StreamReader(filePath))
+            using StreamReader file = new(filePath);
+            string line;
+            while ((line = file.ReadLine()) != null)
             {
-                string line;
-                while ((line = file.ReadLine()) != null)
+                string[] kvPair = line.Split(':', 2, StringSplitOptions.TrimEntries);
+
+                if (kvPair.Length < 2)
+                    continue;
+
+                string key = kvPair[0];
+
+                if (itemDict.TryGetValue(key, out string value) && value == null)
                 {
-                    string[] kvPair = line.Split(':', 2, StringSplitOptions.TrimEntries);
+                    itemDict[key] = kvPair[1];
 
-                    if (kvPair.Length < 2) continue;
-
-                    string key = kvPair[0];
-
-                    if (itemDict.TryGetValue(key, out string value) && value == null)
-                    {
-                        itemDict[key] = kvPair[1];
-
-                        if (--count <= 0) break;
-                    }
+                    if (--count <= 0)
+                        break;
                 }
             }
         }

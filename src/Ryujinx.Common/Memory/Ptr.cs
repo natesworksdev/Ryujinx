@@ -15,7 +15,7 @@ namespace Ryujinx.Common.Memory
         /// <summary>
         /// Null pointer.
         /// </summary>
-        public static Ptr<T> Null => new Ptr<T>() { _ptr = IntPtr.Zero };
+        public static Ptr<T> Null => new() { _ptr = IntPtr.Zero };
 
         /// <summary>
         /// True if the pointer is null, false otherwise.

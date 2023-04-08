@@ -5,7 +5,7 @@ namespace Ryujinx.Common
 {
     public class ReactiveObject<T>
     {
-        private ReaderWriterLock _readerWriterLock = new ReaderWriterLock();
+        private readonly ReaderWriterLock _readerWriterLock = new();
         private bool _isInitialized = false;
         private T _value;
 

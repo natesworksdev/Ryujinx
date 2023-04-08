@@ -33,28 +33,24 @@ namespace Ryujinx.Common
 
         public static byte[] Read(Assembly assembly, string filename)
         {
-            using (var stream = GetStream(assembly, filename))
+            using var stream = GetStream(assembly, filename);
+            if (stream == null)
             {
-                if (stream == null)
-                {
-                    return null;
-                }
-
-                return StreamUtils.StreamToBytes(stream);
+                return null;
             }
+
+            return StreamUtils.StreamToBytes(stream);
         }
 
         public async static Task<byte[]> ReadAsync(Assembly assembly, string filename)
         {
-            using (var stream = GetStream(assembly, filename))
+            using var stream = GetStream(assembly, filename);
+            if (stream == null)
             {
-                if (stream == null)
-                {
-                    return null;
-                }
-
-                return await StreamUtils.StreamToBytesAsync(stream);
+                return null;
             }
+
+            return await StreamUtils.StreamToBytesAsync(stream);
         }
 
         public static string ReadAllText(string filename)
@@ -73,34 +69,26 @@ namespace Ryujinx.Common
 
         public static string ReadAllText(Assembly assembly, string filename)
         {
-            using (var stream = GetStream(assembly, filename))
+            using var stream = GetStream(assembly, filename);
+            if (stream == null)
             {
-                if (stream == null)
-                {
-                    return null;
-                }
-
-                using (var reader = new StreamReader(stream))
-                {
-                    return reader.ReadToEnd();
-                }
+                return null;
             }
+
+            using var reader = new StreamReader(stream);
+            return reader.ReadToEnd();
         }
 
         public async static Task<string> ReadAllTextAsync(Assembly assembly, string filename)
         {
-            using (var stream = GetStream(assembly, filename))
+            using var stream = GetStream(assembly, filename);
+            if (stream == null)
             {
-                if (stream == null)
-                {
-                    return null;
-                }
-
-                using (var reader = new StreamReader(stream))
-                {
-                    return await reader.ReadToEndAsync();
-                }
+                return null;
             }
+
+            using var reader = new StreamReader(stream);
+            return await reader.ReadToEndAsync();
         }
 
         public static Stream GetStream(string filename)

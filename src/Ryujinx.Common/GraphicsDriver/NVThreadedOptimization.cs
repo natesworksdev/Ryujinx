@@ -97,15 +97,15 @@ namespace Ryujinx.Common.GraphicsDriver
 
             Check(NvAPI_DRS_LoadSettings(handle));
 
-            IntPtr profileHandle;
 
             // Check if the profile already exists.
 
-            int status = NvAPI_DRS_FindProfileByName(handle, new NvapiUnicodeString(ProfileName), out profileHandle);
+            int status = NvAPI_DRS_FindProfileByName(handle, new NvapiUnicodeString(ProfileName), out nint profileHandle);
 
             if (status != 0)
             {
-                NvdrsProfile profile = new NvdrsProfile { 
+                NvdrsProfile profile = new()
+                { 
                     Version = MakeVersion<NvdrsProfile>(1), 
                     IsPredefined = 0, 
                     GpuSupport = uint.MaxValue 
@@ -113,7 +113,7 @@ namespace Ryujinx.Common.GraphicsDriver
                 profile.ProfileName.Set(ProfileName);
                 Check(NvAPI_DRS_CreateProfile(handle, ref profile, out profileHandle));
 
-                NvdrsApplicationV4 application = new NvdrsApplicationV4
+                NvdrsApplicationV4 application = new()
                 {
                     Version = MakeVersion<NvdrsApplicationV4>(4),
                     IsPredefined = 0,
@@ -127,7 +127,7 @@ namespace Ryujinx.Common.GraphicsDriver
                 Check(NvAPI_DRS_CreateApplication(handle, profileHandle, ref application));
             }
 
-            NvdrsSetting setting = new NvdrsSetting
+            NvdrsSetting setting = new()
             {
                 Version = MakeVersion<NvdrsSetting>(1),
                 SettingId = Nvapi.OglThreadControlId,

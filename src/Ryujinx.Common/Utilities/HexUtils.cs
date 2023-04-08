@@ -39,7 +39,7 @@ namespace Ryujinx.Common
 
             int expectedLines = (bytesLength + bytesPerLine - 1) / bytesPerLine;
 
-            StringBuilder result = new StringBuilder(expectedLines * lineLength);
+            StringBuilder result = new(expectedLines * lineLength);
 
             for (int i = 0; i < bytesLength; i += bytesPerLine)
             {

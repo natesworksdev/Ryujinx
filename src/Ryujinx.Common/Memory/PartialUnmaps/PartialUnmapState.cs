@@ -48,7 +48,7 @@ namespace Ryujinx.Common.Memory.PartialUnmaps
         /// </summary>
         static unsafe PartialUnmapState()
         {
-            PartialUnmapState instance = new PartialUnmapState();
+            PartialUnmapState instance = new();
 
             PartialUnmapLockOffset = OffsetOf(ref instance, ref instance.PartialUnmapLock);
             PartialUnmapsCountOffset = OffsetOf(ref instance, ref instance.PartialUnmapsCount);

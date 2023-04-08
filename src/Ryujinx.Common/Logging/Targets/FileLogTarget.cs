@@ -20,7 +20,7 @@ namespace Ryujinx.Common.Logging.Targets
         public FileLogTarget(string path, string name, FileShare fileShare, FileMode fileMode)
         {
             // Ensure directory is present
-            DirectoryInfo logDir = new DirectoryInfo(Path.Combine(path, "Logs"));
+            DirectoryInfo logDir = new(Path.Combine(path, "Logs"));
             logDir.Create();
 
             // Clean up old logs, should only keep 3
@@ -33,7 +33,7 @@ namespace Ryujinx.Common.Logging.Targets
             string version = ReleaseInformation.GetVersion();
 
             // Get path for the current time
-            path = Path.Combine(logDir.FullName, $"Ryujinx_{version}_{DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss")}.log");
+            path = Path.Combine(logDir.FullName, $"Ryujinx_{version}_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.log");
 
             _name      = name;
             _logWriter = new StreamWriter(File.Open(path, fileMode, FileAccess.Write, fileShare));

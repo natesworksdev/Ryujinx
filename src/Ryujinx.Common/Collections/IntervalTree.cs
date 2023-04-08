@@ -106,7 +106,7 @@ namespace Ryujinx.Common.Collections
         /// <returns>A list of all RangeNodes sorted by Key Order</returns>
         public List<RangeNode<K, V>> AsList()
         {
-            List<RangeNode<K, V>> list = new List<RangeNode<K, V>>();
+            List<RangeNode<K, V>> list = new();
 
             AddToList(Root, list);
 
@@ -313,7 +313,7 @@ namespace Ryujinx.Common.Collections
                     return node;
                 }
             }
-            IntervalTreeNode<K, V> newNode = new IntervalTreeNode<K, V>(start, end, value, parent);
+            IntervalTreeNode<K, V> newNode = new(start, end, value, parent);
             if (newNode.Parent == null)
             {
                 Root = newNode;

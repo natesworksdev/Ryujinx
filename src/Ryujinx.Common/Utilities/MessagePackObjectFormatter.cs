@@ -191,7 +191,7 @@ namespace Ryujinx.Common.Utilities
 
             private int _indentCount = 0;
             private int _newLineIndex = 0;
-            private StringBuilder _builder;
+            private readonly StringBuilder _builder;
 
             public string IndentString { get; set; } = DefaultIndent;
 

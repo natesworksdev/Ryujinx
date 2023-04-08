@@ -16,7 +16,7 @@ namespace Ryujinx.Common.Memory
         /// <summary>
         /// Null pointer.
         /// </summary>
-        public static ArrayPtr<T> Null => new ArrayPtr<T>() { _ptr = IntPtr.Zero };
+        public static ArrayPtr<T> Null => new() { _ptr = IntPtr.Zero };
 
         /// <summary>
         /// True if the pointer is null, false otherwise.
@@ -81,7 +81,7 @@ namespace Ryujinx.Common.Memory
         /// </summary>
         /// <param name="start">Index where the new array should start</param>
         /// <returns>New array starting at the specified position</returns>
-        public ArrayPtr<T> Slice(int start) => new ArrayPtr<T>(ref this[start], Length - start);
+        public ArrayPtr<T> Slice(int start) => new(ref this[start], Length - start);
 
         /// <summary>
         /// Gets a span from the array.
