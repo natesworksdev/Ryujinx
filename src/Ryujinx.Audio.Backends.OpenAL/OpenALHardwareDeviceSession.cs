@@ -32,23 +32,17 @@ namespace Ryujinx.Audio.Backends.OpenAL
 
         private ALFormat GetALFormat()
         {
-            switch (RequestedSampleFormat)
+            return RequestedSampleFormat switch
             {
-                case SampleFormat.PcmInt16:
-                    switch (RequestedChannelCount)
-                    {
-                        case 1:
-                            return ALFormat.Mono16;
-                        case 2:
-                            return ALFormat.Stereo16;
-                        case 6:
-                            return ALFormat.Multi51Chn16Ext;
-                        default:
-                            throw new NotImplementedException($"Unsupported channel config {RequestedChannelCount}");
-                    }
-                default:
-                    throw new NotImplementedException($"Unsupported sample format {RequestedSampleFormat}");
-            }
+                SampleFormat.PcmInt16 => RequestedChannelCount switch
+                {
+                    1 => ALFormat.Mono16,
+                    2 => ALFormat.Stereo16,
+                    6 => ALFormat.Multi51Chn16Ext,
+                    _ => throw new NotImplementedException($"Unsupported channel config {RequestedChannelCount}"),
+                },
+                _ => throw new NotImplementedException($"Unsupported sample format {RequestedSampleFormat}"),
+            };
         }
 
         public override void PrepareToClose() { }
