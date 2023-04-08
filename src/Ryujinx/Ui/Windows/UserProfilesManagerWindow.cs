@@ -29,7 +29,7 @@ namespace Ryujinx.Ui.Windows
 
         private Gdk.RGBA _selectedColor;
 
-        private ManualResetEvent _avatarsPreloadingEvent = new ManualResetEvent(false);
+        private readonly ManualResetEvent _avatarsPreloadingEvent = new(false);
 
         public UserProfilesManagerWindow(AccountManager accountManager, ContentManager contentManager, VirtualFileSystem virtualFileSystem) : base($"Ryujinx {Program.Version} - Manage User Profiles")
         {
@@ -45,7 +45,7 @@ namespace Ryujinx.Ui.Windows
             _accountManager = accountManager;
             _contentManager = contentManager;
 
-            CellRendererToggle userSelectedToggle = new CellRendererToggle();
+            CellRendererToggle userSelectedToggle = new();
             userSelectedToggle.Toggled += UserSelectedToggle_Toggled;
 
             // NOTE: Uncomment following line when multiple selection of user profiles is supported.
@@ -178,27 +178,23 @@ namespace Ryujinx.Ui.Windows
 
         private void ProcessProfileImage(byte[] buffer)
         {
-            using (Image image = Image.Load(buffer))
-            {
-                image.Mutate(x => x.Resize(256, 256));
+            using Image image = Image.Load(buffer);
+            image.Mutate(x => x.Resize(256, 256));
 
-                using (MemoryStream streamJpg = MemoryStreamManager.Shared.GetStream())
-                {
-                    image.SaveAsJpeg(streamJpg);
+            using MemoryStream streamJpg = MemoryStreamManager.Shared.GetStream();
+            image.SaveAsJpeg(streamJpg);
 
-                    _bufferImageProfile = streamJpg.ToArray();
-                }
-            }
+            _bufferImageProfile = streamJpg.ToArray();
         }
 
         private void ProfileImageFileChooser()
         {
-            FileChooserNative fileChooser = new FileChooserNative("Import Custom Profile Image", this, FileChooserAction.Open, "Import", "Cancel")
+            FileChooserNative fileChooser = new("Import Custom Profile Image", this, FileChooserAction.Open, "Import", "Cancel")
             {
                 SelectMultiple = false
             };
 
-            FileFilter filter = new FileFilter()
+            FileFilter filter = new()
             {
                 Name = "Custom Profile Images"
             };
@@ -225,7 +221,7 @@ namespace Ryujinx.Ui.Windows
             }
             else
             {
-                Dictionary<int, string> buttons = new Dictionary<int, string>()
+                Dictionary<int, string> buttons = new()
                 {
                     { 0, "Import Image File"      },
                     { 1, "Select Firmware Avatar" }
@@ -242,7 +238,7 @@ namespace Ryujinx.Ui.Windows
                 }
                 else if (responseDialog == (ResponseType)1)
                 {
-                    AvatarWindow avatarWindow = new AvatarWindow()
+                    AvatarWindow avatarWindow = new()
                     {
                         NewUser = newUser
                     };

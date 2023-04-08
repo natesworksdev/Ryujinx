@@ -28,11 +28,11 @@ namespace Ryujinx.Ui.Windows
         public byte[] SelectedProfileImage;
         public bool   NewUser;
 
-        private static Dictionary<string, byte[]> _avatarDict = new Dictionary<string, byte[]>();
+        private static readonly Dictionary<string, byte[]> _avatarDict = new();
 
-        private ListStore _listStore;
-        private IconView  _iconView;
-        private Button    _setBackgroungColorButton;
+        private readonly ListStore _listStore;
+        private readonly IconView  _iconView;
+        private readonly Button    _setBackgroungColorButton;
         private Gdk.RGBA  _backgroundColor;
 
         public AvatarWindow() : base($"Ryujinx {Program.Version} - Manage Accounts - Avatar")
@@ -50,7 +50,7 @@ namespace Ryujinx.Ui.Windows
             Box vbox = new(Orientation.Vertical, 0);
             Add(vbox);
 
-            ScrolledWindow scrolledWindow = new ScrolledWindow
+            ScrolledWindow scrolledWindow = new()
             {
                 ShadowType = ShadowType.EtchedIn
             };
@@ -58,7 +58,7 @@ namespace Ryujinx.Ui.Windows
 
             Box hbox = new(Orientation.Horizontal, 0);
 
-            Button chooseButton = new Button()
+            Button chooseButton = new()
             {
                 Label           = "Choose",
                 CanFocus        = true,
@@ -78,7 +78,7 @@ namespace Ryujinx.Ui.Windows
             _backgroundColor.Blue  = 1;
             _backgroundColor.Alpha = 1;
 
-            Button closeButton = new Button()
+            Button closeButton = new()
             {
                 Label           = "Close",
                 CanFocus        = true
@@ -94,10 +94,12 @@ namespace Ryujinx.Ui.Windows
             _listStore = new ListStore(typeof(string), typeof(Gdk.Pixbuf));
             _listStore.SetSortColumnId(0, SortType.Ascending);
 
-            _iconView              = new IconView(_listStore);
-            _iconView.ItemWidth    = 64;
-            _iconView.ItemPadding  = 10;
-            _iconView.PixbufColumn = 1;
+            _iconView = new IconView(_listStore)
+            {
+                ItemWidth    = 64,
+                ItemPadding  = 10,
+                PixbufColumn = 1
+            };
 
             _iconView.SelectionChanged += IconView_SelectionChanged;
 
@@ -122,35 +124,31 @@ namespace Ryujinx.Ui.Windows
 
             if (!string.IsNullOrWhiteSpace(avatarPath))
             {
-                using (IStorage ncaFileStream = new LocalStorage(avatarPath, FileAccess.Read, FileMode.Open))
+                using IStorage ncaFileStream = new LocalStorage(avatarPath, FileAccess.Read, FileMode.Open);
+                Nca         nca   = new(virtualFileSystem.KeySet, ncaFileStream);
+                IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.ErrorOnInvalid);
+
+                foreach (var item in romfs.EnumerateEntries())
                 {
-                    Nca         nca   = new Nca(virtualFileSystem.KeySet, ncaFileStream);
-                    IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.ErrorOnInvalid);
+                    // TODO: Parse DatabaseInfo.bin and table.bin files for more accuracy.
 
-                    foreach (var item in romfs.EnumerateEntries())
+                    if (item.Type == DirectoryEntryType.File && item.FullPath.Contains("chara") && item.FullPath.Contains("szs"))
                     {
-                        // TODO: Parse DatabaseInfo.bin and table.bin files for more accuracy.
+                        using var file = new UniqueRef<IFile>();
 
-                        if (item.Type == DirectoryEntryType.File && item.FullPath.Contains("chara") && item.FullPath.Contains("szs"))
-                        {
-                            using var file = new UniqueRef<IFile>();
+                        romfs.OpenFile(ref file.Ref, ("/" + item.FullPath).ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
-                            romfs.OpenFile(ref file.Ref, ("/" + item.FullPath).ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                        using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+                        using MemoryStream streamPng = MemoryStreamManager.Shared.GetStream();
+                        file.Get.AsStream().CopyTo(stream);
 
-                            using (MemoryStream stream    = MemoryStreamManager.Shared.GetStream())
-                            using (MemoryStream streamPng = MemoryStreamManager.Shared.GetStream())
-                            {
-                                file.Get.AsStream().CopyTo(stream);
+                        stream.Position = 0;
 
-                                stream.Position = 0;
+                        Image avatarImage = Image.LoadPixelData<Rgba32>(DecompressYaz0(stream), 256, 256);
 
-                                Image avatarImage = Image.LoadPixelData<Rgba32>(DecompressYaz0(stream), 256, 256);
+                        avatarImage.SaveAsPng(streamPng);
 
-                                avatarImage.SaveAsPng(streamPng);
-
-                                _avatarDict.Add(item.FullPath, streamPng.ToArray());
-                            }
-                        }
+                        _avatarDict.Add(item.FullPath, streamPng.ToArray());
                     }
                 }
             }
@@ -170,18 +168,16 @@ namespace Ryujinx.Ui.Windows
 
         private byte[] ProcessImage(byte[] data)
         {
-            using (MemoryStream streamJpg = MemoryStreamManager.Shared.GetStream())
-            {
-                Image avatarImage = Image.Load(data, new PngDecoder());
+            using MemoryStream streamJpg = MemoryStreamManager.Shared.GetStream();
+            Image avatarImage = Image.Load(data, new PngDecoder());
 
-                avatarImage.Mutate(x => x.BackgroundColor(new Rgba32((byte)(_backgroundColor.Red   * 255),
-                                                                     (byte)(_backgroundColor.Green * 255),
-                                                                     (byte)(_backgroundColor.Blue  * 255),
-                                                                     (byte)(_backgroundColor.Alpha * 255))));
-                avatarImage.SaveAsJpeg(streamJpg);
+            avatarImage.Mutate(x => x.BackgroundColor(new Rgba32((byte)(_backgroundColor.Red   * 255),
+                                                                                              (byte)(_backgroundColor.Green * 255),
+                                                                                              (byte)(_backgroundColor.Blue  * 255),
+                                                                                              (byte)(_backgroundColor.Alpha * 255))));
+            avatarImage.SaveAsJpeg(streamJpg);
 
-                return streamJpg.ToArray();
-            }
+            return streamJpg.ToArray();
         }
 
         private void CloseButton_Pressed(object sender, EventArgs e)
@@ -203,20 +199,18 @@ namespace Ryujinx.Ui.Windows
 
         private void SetBackgroungColorButton_Pressed(object sender, EventArgs e)
         {
-            using (ColorChooserDialog colorChooserDialog = new ColorChooserDialog("Set Background Color", this))
+            using ColorChooserDialog colorChooserDialog = new("Set Background Color", this);
+            colorChooserDialog.UseAlpha = false;
+            colorChooserDialog.Rgba     = _backgroundColor;
+
+            if (colorChooserDialog.Run() == (int)ResponseType.Ok)
             {
-                colorChooserDialog.UseAlpha = false;
-                colorChooserDialog.Rgba     = _backgroundColor;
-                
-                if (colorChooserDialog.Run() == (int)ResponseType.Ok)
-                {
-                    _backgroundColor = colorChooserDialog.Rgba;
+                _backgroundColor = colorChooserDialog.Rgba;
 
-                    ProcessAvatars();
-                }
-
-                colorChooserDialog.Hide();
+                ProcessAvatars();
             }
+
+            colorChooserDialog.Hide();
         }
 
         private void ChooseButton_Pressed(object sender, EventArgs e)
@@ -226,69 +220,67 @@ namespace Ryujinx.Ui.Windows
 
         private static byte[] DecompressYaz0(Stream stream)
         {
-            using (BinaryReader reader = new BinaryReader(stream))
+            using BinaryReader reader = new(stream);
+            reader.ReadInt32(); // Magic
+
+            uint decodedLength = BinaryPrimitives.ReverseEndianness(reader.ReadUInt32());
+
+            reader.ReadInt64(); // Padding
+
+            byte[] input = new byte[stream.Length - stream.Position];
+            stream.Read(input, 0, input.Length);
+
+            long inputOffset = 0;
+
+            byte[] output       = new byte[decodedLength];
+            long   outputOffset = 0;
+
+            ushort mask   = 0;
+            byte   header = 0;
+
+            while (outputOffset < decodedLength)
             {
-                reader.ReadInt32(); // Magic
-                
-                uint decodedLength = BinaryPrimitives.ReverseEndianness(reader.ReadUInt32());
-
-                reader.ReadInt64(); // Padding
-
-                byte[] input = new byte[stream.Length - stream.Position];
-                stream.Read(input, 0, input.Length);
-
-                long inputOffset = 0;
-
-                byte[] output       = new byte[decodedLength];
-                long   outputOffset = 0;
-
-                ushort mask   = 0;
-                byte   header = 0;
-
-                while (outputOffset < decodedLength)
+                if ((mask >>= 1) == 0)
                 {
-                    if ((mask >>= 1) == 0)
+                    header = input[inputOffset++];
+                    mask = 0x80;
+                }
+
+                if ((header & mask) > 0)
+                {
+                    if (outputOffset == output.Length)
                     {
-                        header = input[inputOffset++];
-                        mask   = 0x80;
+                        break;
                     }
 
-                    if ((header & mask) > 0)
-                    {
-                        if (outputOffset == output.Length)
-                        {
-                            break;
-                        }
+                    output[outputOffset++] = input[inputOffset++];
+                }
+                else
+                {
+                    byte byte1 = input[inputOffset++];
+                    byte byte2 = input[inputOffset++];
 
-                        output[outputOffset++] = input[inputOffset++];
+                    int dist     = ((byte1 & 0xF) << 8) | byte2;
+                    int position = (int)outputOffset - (dist + 1);
+
+                    int length = byte1 >> 4;
+                    if (length == 0)
+                    {
+                        length = input[inputOffset++] + 0x12;
                     }
                     else
                     {
-                        byte byte1 = input[inputOffset++];
-                        byte byte2 = input[inputOffset++];
+                        length += 2;
+                    }
 
-                        int dist     = ((byte1 & 0xF) << 8) | byte2;
-                        int position = (int)outputOffset - (dist + 1);
-
-                        int length = byte1 >> 4;
-                        if (length == 0)
-                        {
-                            length = input[inputOffset++] + 0x12;
-                        }
-                        else
-                        {
-                            length += 2;
-                        }
-
-                        while (length-- > 0)
-                        {
-                            output[outputOffset++] = output[position++];
-                        }
+                    while (length-- > 0)
+                    {
+                        output[outputOffset++] = output[position++];
                     }
                 }
-
-                return output;
             }
+
+            return output;
         }
     }
 }

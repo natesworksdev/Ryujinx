@@ -118,7 +118,7 @@ namespace Ryujinx.Ui.Windows
 
         private void ParseAmiiboData()
         {
-            List<string> comboxItemList = new List<string>();
+            List<string> comboxItemList = new();
 
             for (int i = 0; i < _amiiboList.Count; i++)
             {
@@ -229,7 +229,7 @@ namespace Ryujinx.Ui.Windows
             if (response.IsSuccessStatusCode)
             {
                 byte[]     amiiboPreviewBytes = await response.Content.ReadAsByteArrayAsync();
-                Gdk.Pixbuf amiiboPreview      = new Gdk.Pixbuf(amiiboPreviewBytes);
+                Gdk.Pixbuf amiiboPreview      = new(amiiboPreviewBytes);
 
                 float ratio = Math.Min((float)_amiiboImage.AllocatedWidth  / amiiboPreview.Width,
                                        (float)_amiiboImage.AllocatedHeight / amiiboPreview.Height);
@@ -261,7 +261,7 @@ namespace Ryujinx.Ui.Windows
 
             List<AmiiboApi> amiiboSortedList = _amiiboList.Where(amiibo => amiibo.AmiiboSeries == _amiiboSeriesComboBox.ActiveId).OrderBy(amiibo => amiibo.Name).ToList();
 
-            List<string> comboxItemList = new List<string>();
+            List<string> comboxItemList = new();
 
             for (int i = 0; i < amiiboSortedList.Count; i++)
             {

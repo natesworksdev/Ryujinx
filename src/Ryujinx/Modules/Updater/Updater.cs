@@ -45,7 +45,7 @@ namespace Ryujinx.Modules
 
         private static HttpClient ConstructHttpClient()
         {
-            HttpClient result = new HttpClient();
+            HttpClient result = new();
 
             // Required by GitHub to interact with APIs.
             result.DefaultRequestHeaders.Add("User-Agent", "Ryujinx-Updater/1.0.0");
@@ -196,7 +196,7 @@ namespace Ryujinx.Modules
             }
 
             // Show a message asking the user if they want to update
-            UpdateDialog updateDialog = new UpdateDialog(mainWindow, newVersion, _buildUrl);
+            UpdateDialog updateDialog = new(mainWindow, newVersion, _buildUrl);
             updateDialog.Show();
         }
 
@@ -237,8 +237,8 @@ namespace Ryujinx.Modules
             int totalProgressPercentage = 0;
             int[] progressPercentage = new int[ConnectionCount];
 
-            List<byte[]> list = new List<byte[]>(ConnectionCount);
-            List<WebClient> webClients = new List<WebClient>(ConnectionCount);
+            List<byte[]> list = new(ConnectionCount);
+            List<WebClient> webClients = new(ConnectionCount);
 
             for (int i = 0; i < ConnectionCount; i++)
             {
@@ -249,7 +249,7 @@ namespace Ryujinx.Modules
             {
 #pragma warning disable SYSLIB0014
                 // TODO: WebClient is obsolete and need to be replaced with a more complex logic using HttpClient.
-                using WebClient client = new WebClient();
+                using WebClient client = new();
 #pragma warning restore SYSLIB0014
                 webClients.Add(client);
 
@@ -337,34 +337,32 @@ namespace Ryujinx.Modules
 
         private static void DoUpdateWithSingleThreadWorker(UpdateDialog updateDialog, string downloadUrl, string updateFile)
         {
-            using HttpClient client = new HttpClient();
+            using HttpClient client = new();
             // We do not want to timeout while downloading
             client.Timeout = TimeSpan.FromDays(1);
 
             using (HttpResponseMessage response = client.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead).Result)
             using (Stream remoteFileStream = response.Content.ReadAsStreamAsync().Result)
             {
-                using (Stream updateFileStream = File.Open(updateFile, FileMode.Create))
+                using Stream updateFileStream = File.Open(updateFile, FileMode.Create);
+                long totalBytes = response.Content.Headers.ContentLength.Value;
+                long byteWritten = 0;
+
+                byte[] buffer = new byte[32 * 1024];
+
+                while (true)
                 {
-                    long totalBytes = response.Content.Headers.ContentLength.Value;
-                    long byteWritten = 0;
+                    int readSize = remoteFileStream.Read(buffer);
 
-                    byte[] buffer = new byte[32 * 1024];
-
-                    while (true)
+                    if (readSize == 0)
                     {
-                        int readSize = remoteFileStream.Read(buffer);
-
-                        if (readSize == 0)
-                        {
-                            break;
-                        }
-
-                        byteWritten += readSize;
-
-                        updateDialog.ProgressBar.Value = ((double)byteWritten / totalBytes) * 100;
-                        updateFileStream.Write(buffer, 0, readSize);
+                        break;
                     }
+
+                    byteWritten += readSize;
+
+                    updateDialog.ProgressBar.Value = ((double)byteWritten / totalBytes) * 100;
+                    updateFileStream.Write(buffer, 0, readSize);
                 }
             }
 
@@ -373,7 +371,7 @@ namespace Ryujinx.Modules
 
         private static void DoUpdateWithSingleThread(UpdateDialog updateDialog, string downloadUrl, string updateFile)
         {
-            Thread worker = new Thread(() => DoUpdateWithSingleThreadWorker(updateDialog, downloadUrl, updateFile))
+            Thread worker = new(() => DoUpdateWithSingleThreadWorker(updateDialog, downloadUrl, updateFile))
             {
                 Name = "Updater.SingleThreadWorker"
             };
@@ -390,7 +388,7 @@ namespace Ryujinx.Modules
             {
                 using Stream         inStream   = File.OpenRead(updateFile);
                 using Stream         gzipStream = new GZipInputStream(inStream);
-                using TarInputStream tarStream  = new TarInputStream(gzipStream, Encoding.ASCII);
+                using TarInputStream tarStream  = new(gzipStream, Encoding.ASCII);
                 updateDialog.ProgressBar.MaxValue = inStream.Length;
 
                 await Task.Run(() =>
@@ -430,7 +428,7 @@ namespace Ryujinx.Modules
             else
             {
                 using Stream  inStream = File.OpenRead(updateFile);
-                using ZipFile zipFile  = new ZipFile(inStream);
+                using ZipFile zipFile  = new(inStream);
                 updateDialog.ProgressBar.MaxValue = zipFile.Count;
 
                 await Task.Run(() =>

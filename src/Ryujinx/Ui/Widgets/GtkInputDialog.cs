@@ -12,7 +12,7 @@ namespace Ryujinx.Ui.Widgets
 
             Title = title;
 
-            Label mainTextLabel = new Label
+            Label mainTextLabel = new()
             {
                 Text = mainText
             };
@@ -22,7 +22,7 @@ namespace Ryujinx.Ui.Widgets
                 MaxLength = (int)inputMax
             };
 
-            Label inputMaxTextLabel = new Label
+            Label inputMaxTextLabel = new()
             {
                 Text = $"(Max length: {inputMax})"
             };

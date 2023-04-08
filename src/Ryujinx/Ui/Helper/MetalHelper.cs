@@ -12,7 +12,7 @@ namespace Ryujinx.Ui.Helper
     {
         private const string LibObjCImport = "/usr/lib/libobjc.A.dylib";
 
-        private struct Selector
+        private readonly struct Selector
         {
             public readonly IntPtr NativePtr;
 
@@ -29,7 +29,7 @@ namespace Ryujinx.Ui.Helper
                 NativePtr = sel_registerName(data);
             }
 
-            public static implicit operator Selector(string value) => new Selector(value);
+            public static implicit operator Selector(string value) => new(value);
         }
 
         private static unsafe IntPtr GetClass(string value)

@@ -54,7 +54,7 @@ namespace Ryujinx.Ui.Windows
             
             _dlcTreeView.Model = new TreeStore(typeof(bool), typeof(string), typeof(string));
 
-            CellRendererToggle enableToggle = new CellRendererToggle();
+            CellRendererToggle enableToggle = new();
             enableToggle.Toggled += (sender, args) =>
             {
                 _dlcTreeView.Model.GetIter(out TreeIter treeIter, new TreePath(args.Path));
@@ -86,7 +86,7 @@ namespace Ryujinx.Ui.Windows
                     bool areAllContentPacksEnabled = dlcContainer.DownloadableContentNcaList.TrueForAll((nca) => nca.Enabled);
                     TreeIter parentIter = ((TreeStore)_dlcTreeView.Model).AppendValues(areAllContentPacksEnabled, "", dlcContainer.ContainerPath);
                     using FileStream containerFile = File.OpenRead(dlcContainer.ContainerPath);
-                    PartitionFileSystem pfs = new PartitionFileSystem(containerFile.AsStorage());
+                    PartitionFileSystem pfs = new(containerFile.AsStorage());
                     _virtualFileSystem.ImportTickets(pfs);
 
                     foreach (DownloadableContentNca dlcNca in dlcContainer.DownloadableContentNcaList)
@@ -126,12 +126,12 @@ namespace Ryujinx.Ui.Windows
 
         private void AddButton_Clicked(object sender, EventArgs args)
         {
-            FileChooserNative fileChooser = new FileChooserNative("Select DLC files", this, FileChooserAction.Open, "Add", "Cancel")
+            FileChooserNative fileChooser = new("Select DLC files", this, FileChooserAction.Open, "Add", "Cancel")
             {
                 SelectMultiple = true
             };
 
-            FileFilter filter = new FileFilter()
+            FileFilter filter = new()
             {
                 Name = "Switch Game DLCs"
             };
@@ -148,43 +148,42 @@ namespace Ryujinx.Ui.Windows
                         return;
                     }
 
-                    using (FileStream containerFile = File.OpenRead(containerPath))
+                    using FileStream containerFile = File.OpenRead(containerPath);
+                    PartitionFileSystem pfs = new(containerFile.AsStorage());
+                    bool containsDlc = false;
+
+                    _virtualFileSystem.ImportTickets(pfs);
+
+                    TreeIter? parentIter = null;
+
+                    foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
                     {
-                        PartitionFileSystem pfs = new PartitionFileSystem(containerFile.AsStorage());
-                        bool containsDlc = false;
+                        using var ncaFile = new UniqueRef<IFile>();
 
-                        _virtualFileSystem.ImportTickets(pfs);
+                        pfs.OpenFile(ref ncaFile.Ref, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
-                        TreeIter? parentIter = null;
+                        Nca nca = TryCreateNca(ncaFile.Get.AsStorage(), containerPath);
 
-                        foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
+                        if (nca == null)
+                            continue;
+
+                        if (nca.Header.ContentType == NcaContentType.PublicData)
                         {
-                            using var ncaFile = new UniqueRef<IFile>();
-
-                            pfs.OpenFile(ref ncaFile.Ref, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-
-                            Nca nca = TryCreateNca(ncaFile.Get.AsStorage(), containerPath);
-
-                            if (nca == null) continue;
-
-                            if (nca.Header.ContentType == NcaContentType.PublicData)
+                            if ((nca.Header.TitleId & 0xFFFFFFFFFFFFE000).ToString("x16") != _titleId)
                             {
-                                if ((nca.Header.TitleId & 0xFFFFFFFFFFFFE000).ToString("x16") != _titleId)
-                                {
-                                    break;
-                                }
-
-                                parentIter ??= ((TreeStore)_dlcTreeView.Model).AppendValues(true, "", containerPath);
-
-                                ((TreeStore)_dlcTreeView.Model).AppendValues(parentIter.Value, true, nca.Header.TitleId.ToString("X16"), fileEntry.FullPath);
-                                containsDlc = true;
+                                break;
                             }
-                        }
 
-                        if (!containsDlc)
-                        {
-                            GtkDialog.CreateErrorDialog("The specified file does not contain DLC for the selected title!");
+                            parentIter ??= ((TreeStore)_dlcTreeView.Model).AppendValues(true, "", containerPath);
+
+                            ((TreeStore)_dlcTreeView.Model).AppendValues(parentIter.Value, true, nca.Header.TitleId.ToString("X16"), fileEntry.FullPath);
+                            containsDlc = true;
                         }
+                    }
+
+                    if (!containsDlc)
+                    {
+                        GtkDialog.CreateErrorDialog("The specified file does not contain DLC for the selected title!");
                     }
                 }
             }
@@ -209,7 +208,7 @@ namespace Ryujinx.Ui.Windows
         
         private void RemoveAllButton_Clicked(object sender, EventArgs args)
         {
-            List<TreeIter> toRemove = new List<TreeIter>();
+            List<TreeIter> toRemove = new();
 
             if (_dlcTreeView.Model.GetIterFirst(out TreeIter iter))
             {
@@ -237,7 +236,7 @@ namespace Ryujinx.Ui.Windows
                 {
                     if (_dlcTreeView.Model.IterChildren(out TreeIter childIter, parentIter))
                     {
-                        DownloadableContentContainer dlcContainer = new DownloadableContentContainer
+                        DownloadableContentContainer dlcContainer = new()
                         {
                             ContainerPath              = (string)_dlcTreeView.Model.GetValue(parentIter, 2),
                             DownloadableContentNcaList = new List<DownloadableContentNca>()

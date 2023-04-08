@@ -109,8 +109,8 @@ namespace Ryujinx.Ui.Windows
         [GUI] Box          _rumbleBox;
 #pragma warning restore CS0649, IDE0044
 
-        private MainWindow _mainWindow;
-        private IGamepadDriver _gtk3KeyboardDriver;
+        private readonly MainWindow _mainWindow;
+        private readonly IGamepadDriver _gtk3KeyboardDriver;
         private IGamepad _selectedGamepad;
         private bool _mousePressed;
         private bool _middleMousePressed;
@@ -197,10 +197,7 @@ namespace Ryujinx.Ui.Windows
             mainWindow.InputManager.GamepadDriver.OnGamepadConnected += HandleOnGamepadConnected;
             mainWindow.InputManager.GamepadDriver.OnGamepadDisconnected += HandleOnGamepadDisconnected;
 
-            if (_mainWindow.RendererWidget != null)
-            {
-                _mainWindow.RendererWidget.NpadManager.BlockInputUpdates();
-            }
+            _mainWindow.RendererWidget?.NpadManager.BlockInputUpdates();
         }
 
         private void CemuHookCheckButtonPressed(object sender, EventArgs e)
@@ -229,10 +226,7 @@ namespace Ryujinx.Ui.Windows
             _mainWindow.InputManager.GamepadDriver.OnGamepadConnected -= HandleOnGamepadConnected;
             _mainWindow.InputManager.GamepadDriver.OnGamepadDisconnected -= HandleOnGamepadDisconnected;
 
-            if (_mainWindow.RendererWidget != null)
-            {
-                _mainWindow.RendererWidget.NpadManager.UnblockInputUpdates();
-            }
+            _mainWindow.RendererWidget?.NpadManager.UnblockInputUpdates();
 
             _selectedGamepad?.Dispose();
 
@@ -538,7 +532,7 @@ namespace Ryujinx.Ui.Windows
                     {
                         _controllerRangeLeft.Value  = 1.0;
                         _controllerRangeRight.Value = 1.0;
-                        
+
                         Logger.Info?.Print(LogClass.Application, $"{config.PlayerIndex} stick range reset. Save the profile now to update your configuration");
                     }
 
@@ -638,7 +632,7 @@ namespace Ryujinx.Ui.Windows
                     },
                 };
             }
-            
+
             if (_inputDevice.ActiveId.StartsWith("controller"))
             {
                 Enum.TryParse(_lStick.Label,      out ConfigStickInputId lStick);
@@ -856,7 +850,7 @@ namespace Ryujinx.Ui.Windows
             {
                 throw new Exception("Controller not supported");
             }
-            
+
             return assigner;
         }
 
@@ -880,7 +874,7 @@ namespace Ryujinx.Ui.Windows
             // Open GTK3 keyboard for cancel operations
             IKeyboard keyboard = (IKeyboard)_gtk3KeyboardDriver.GetGamepad("0");
 
-            Thread inputThread = new Thread(() =>
+            Thread inputThread = new(() =>
             {
                 assigner.Initialize();
 
@@ -916,10 +910,11 @@ namespace Ryujinx.Ui.Windows
                     button.Active = false;
                     _isWaitingForInput = false;
                 });
-            });
-
-            inputThread.Name = "GUI.InputThread";
-            inputThread.IsBackground = true;
+            })
+            {
+                Name         = "GUI.InputThread",
+                IsBackground = true
+            };
             inputThread.Start();
         }
 
@@ -1137,7 +1132,7 @@ namespace Ryujinx.Ui.Windows
             if (_inputDevice.ActiveId == "disabled") return;
 
             InputConfig   inputConfig   = GetValues();
-            ProfileDialog profileDialog = new ProfileDialog();
+            ProfileDialog profileDialog = new();
 
             if (inputConfig == null) return;
 
@@ -1200,10 +1195,7 @@ namespace Ryujinx.Ui.Windows
                 }
             }
 
-            if (_mainWindow.RendererWidget != null)
-            {
-                _mainWindow.RendererWidget.NpadManager.ReloadConfiguration(newConfig, ConfigurationState.Instance.Hid.EnableKeyboard, ConfigurationState.Instance.Hid.EnableMouse);
-            }
+            _mainWindow.RendererWidget?.NpadManager.ReloadConfiguration(newConfig, ConfigurationState.Instance.Hid.EnableKeyboard, ConfigurationState.Instance.Hid.EnableMouse);
 
             // Atomically replace and signal input change.
             // NOTE: Do not modify InputConfig.Value directly as other code depends on the on-change event.

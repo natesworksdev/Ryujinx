@@ -89,41 +89,39 @@ namespace Ryujinx.Ui.Windows
         {
             if (File.Exists(path))
             {
-                using (FileStream file = new FileStream(path, FileMode.Open, FileAccess.Read))
+                using FileStream file = new(path, FileMode.Open, FileAccess.Read);
+                PartitionFileSystem nsp = new(file.AsStorage());
+
+                try
                 {
-                    PartitionFileSystem nsp = new PartitionFileSystem(file.AsStorage());
+                    (Nca patchNca, Nca controlNca) = ApplicationLibrary.GetGameUpdateDataFromPartition(_virtualFileSystem, nsp, _titleId, 0);
 
-                    try
+                    if (controlNca != null && patchNca != null)
                     {
-                        (Nca patchNca, Nca controlNca) = ApplicationLibrary.GetGameUpdateDataFromPartition(_virtualFileSystem, nsp, _titleId, 0);
+                        ApplicationControlProperty controlData = new();
 
-                        if (controlNca != null && patchNca != null)
-                        {
-                            ApplicationControlProperty controlData = new ApplicationControlProperty();
+                        using var nacpFile = new UniqueRef<IFile>();
 
-                            using var nacpFile = new UniqueRef<IFile>();
+                        controlNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None).OpenFile(ref nacpFile.Ref, "/control.nacp".ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                        nacpFile.Get.Read(out _, 0, SpanHelpers.AsByteSpan(ref controlData), ReadOption.None).ThrowIfFailure();
 
-                            controlNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None).OpenFile(ref nacpFile.Ref, "/control.nacp".ToU8Span(), OpenMode.Read).ThrowIfFailure();
-                            nacpFile.Get.Read(out _, 0, SpanHelpers.AsByteSpan(ref controlData), ReadOption.None).ThrowIfFailure();
+                        RadioButton radioButton = new($"Version {controlData.DisplayVersionString.ToString()} - {path}");
+                        radioButton.JoinGroup(_noUpdateRadioButton);
 
-                            RadioButton radioButton = new RadioButton($"Version {controlData.DisplayVersionString.ToString()} - {path}");
-                            radioButton.JoinGroup(_noUpdateRadioButton);
+                        _availableUpdatesBox.Add(radioButton);
+                        _radioButtonToPathDictionary.Add(radioButton, path);
 
-                            _availableUpdatesBox.Add(radioButton);
-                            _radioButtonToPathDictionary.Add(radioButton, path);
-
-                            radioButton.Show();
-                            radioButton.Active = true;
-                        }
-                        else
-                        {
-                            GtkDialog.CreateErrorDialog("The specified file does not contain an update for the selected title!");
-                        }
+                        radioButton.Show();
+                        radioButton.Active = true;
                     }
-                    catch (Exception exception)
+                    else
                     {
-                        GtkDialog.CreateErrorDialog($"{exception.Message}. Errored File: {path}");
+                        GtkDialog.CreateErrorDialog("The specified file does not contain an update for the selected title!");
                     }
+                }
+                catch (Exception exception)
+                {
+                    GtkDialog.CreateErrorDialog($"{exception.Message}. Errored File: {path}");
                 }
             }
         }
@@ -143,24 +141,22 @@ namespace Ryujinx.Ui.Windows
 
         private void AddButton_Clicked(object sender, EventArgs args)
         {
-            using (FileChooserNative fileChooser = new FileChooserNative("Select update files", this, FileChooserAction.Open, "Add", "Cancel"))
+            using FileChooserNative fileChooser = new("Select update files", this, FileChooserAction.Open, "Add", "Cancel");
+            fileChooser.SelectMultiple = true;
+
+            FileFilter filter = new()
             {
-                fileChooser.SelectMultiple = true;
+                Name = "Switch Game Updates"
+            };
+            filter.AddPattern("*.nsp");
 
-                FileFilter filter = new FileFilter()
+            fileChooser.AddFilter(filter);
+
+            if (fileChooser.Run() == (int)ResponseType.Accept)
+            {
+                foreach (string path in fileChooser.Filenames)
                 {
-                    Name = "Switch Game Updates"
-                };
-                filter.AddPattern("*.nsp");
-
-                fileChooser.AddFilter(filter);
-
-                if (fileChooser.Run() == (int)ResponseType.Accept)
-                {
-                    foreach (string path in fileChooser.Filenames)
-                    {
-                        AddUpdate(path);
-                    }
+                    AddUpdate(path);
                 }
             }
         }

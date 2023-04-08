@@ -19,7 +19,7 @@ namespace Ryujinx.Ui.Applet
 
         public GtkHostUiTheme(Window parent)
         {
-            Entry entry = new Entry();
+            Entry entry = new();
             entry.SetStateFlags(StateFlags.Selected, true);
 
             // Get the font and some colors directly from GTK.
@@ -33,7 +33,7 @@ namespace Ryujinx.Ui.Applet
             DefaultForegroundColor   = new ThemeColor((float) defaultForegroundColor.Alpha, (float) defaultForegroundColor.Red, (float) defaultForegroundColor.Green, (float) defaultForegroundColor.Blue);
             SelectionForegroundColor = new ThemeColor((float)selectedForegroundColor.Alpha, (float)selectedForegroundColor.Red, (float)selectedForegroundColor.Green, (float)selectedForegroundColor.Blue);
 
-            ListBoxRow row = new ListBoxRow();
+            ListBoxRow row = new();
             row.SetStateFlags(StateFlags.Selected, true);
 
             // Request the main thread to render some UI elements to an image to get an approximation for the color.

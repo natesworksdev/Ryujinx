@@ -16,7 +16,7 @@ namespace Ryujinx.Ui.Helper
 
             if (File.Exists(ConfigurationState.Instance.Ui.CustomThemePath) && (Path.GetExtension(ConfigurationState.Instance.Ui.CustomThemePath) == ".css"))
             {
-                CssProvider cssProvider = new CssProvider();
+                CssProvider cssProvider = new();
 
                 cssProvider.LoadFromPath(ConfigurationState.Instance.Ui.CustomThemePath);
 

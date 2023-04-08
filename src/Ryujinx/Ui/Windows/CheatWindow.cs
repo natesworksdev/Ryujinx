@@ -38,7 +38,7 @@ namespace Ryujinx.Ui.Windows
 
             _cheatTreeView.Model = new TreeStore(typeof(bool), typeof(string), typeof(string), typeof(string));
 
-            CellRendererToggle enableToggle = new CellRendererToggle();
+            CellRendererToggle enableToggle = new();
             enableToggle.Toggled += (sender, args) =>
             {
                 _cheatTreeView.Model.GetIter(out TreeIter treeIter, new TreePath(args.Path));
@@ -90,7 +90,7 @@ namespace Ryujinx.Ui.Windows
                     parentIter = ((TreeStore)_cheatTreeView.Model).AppendValues(false, buildId, parentPath, "");
                 }
 
-                string cleanName = cheat.Name.Substring(1, cheat.Name.Length - 8);
+                string cleanName = cheat.Name[1..^7];
                 ((TreeStore)_cheatTreeView.Model).AppendValues(parentIter, enabled.Contains($"{buildId}-{cheat.Name}"), cleanName, "", buildId);
 
                 cheatAdded++;
@@ -116,7 +116,7 @@ namespace Ryujinx.Ui.Windows
                 return;
             }
 
-            List<string> enabledCheats = new List<string>();
+            List<string> enabledCheats = new();
 
             if (_cheatTreeView.Model.GetIterFirst(out TreeIter parentIter))
             {

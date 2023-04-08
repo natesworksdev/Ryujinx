@@ -37,7 +37,7 @@ namespace Ryujinx.Ui.Applet
 
         public bool DisplayMessageDialog(string title, string message)
         {
-            ManualResetEvent dialogCloseEvent = new ManualResetEvent(false);
+            ManualResetEvent dialogCloseEvent = new(false);
 
             bool okPressed = false;
 
@@ -84,7 +84,7 @@ namespace Ryujinx.Ui.Applet
 
         public bool DisplayInputDialog(SoftwareKeyboardUiArgs args, out string userText)
         {
-            ManualResetEvent dialogCloseEvent = new ManualResetEvent(false);
+            ManualResetEvent dialogCloseEvent = new(false);
 
             bool   okPressed = false;
             bool   error     = false;
@@ -143,7 +143,7 @@ namespace Ryujinx.Ui.Applet
 
         public bool DisplayErrorAppletDialog(string title, string message, string[] buttons)
         {
-            ManualResetEvent dialogCloseEvent = new ManualResetEvent(false);
+            ManualResetEvent dialogCloseEvent = new(false);
 
             bool showDetails = false;
 
@@ -151,7 +151,7 @@ namespace Ryujinx.Ui.Applet
             {
                 try
                 {
-                    ErrorAppletDialog msgDialog = new ErrorAppletDialog(_parent, DialogFlags.DestroyWithParent, MessageType.Error, buttons)
+                    ErrorAppletDialog msgDialog = new(_parent, DialogFlags.DestroyWithParent, MessageType.Error, buttons)
                     {
                         Title          = title,
                         Text           = message,

@@ -71,12 +71,12 @@ namespace Ryujinx.Ui
 
         // Hide Cursor
         const int CursorHideIdleTime = 5; // seconds
-        private static readonly Cursor _invisibleCursor = new Cursor(Display.Default, CursorType.BlankCursor);
+        private static readonly Cursor _invisibleCursor = new(Display.Default, CursorType.BlankCursor);
         private long _lastCursorMoveTime;
         private HideCursorMode _hideCursorMode;
-        private InputManager _inputManager;
-        private IKeyboard _keyboardInterface;
-        private GraphicsDebugLevel _glLogLevel;
+        private readonly InputManager _inputManager;
+        private readonly IKeyboard _keyboardInterface;
+        private readonly GraphicsDebugLevel _glLogLevel;
         private string _gpuBackendName;
         private string _gpuVendorName;
         private bool _isMouseInClient;
@@ -534,7 +534,7 @@ namespace Ryujinx.Ui
                 parent.Title = $"Ryujinx {Program.Version} -{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}";
             });
 
-            Thread renderLoopThread = new Thread(Render)
+            Thread renderLoopThread = new(Render)
             {
                 Name = "GUI.RenderLoop"
             };

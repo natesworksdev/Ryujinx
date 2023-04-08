@@ -121,7 +121,7 @@ namespace Ryujinx
                     resourcesDataDir = baseDirectory;
                 }
 
-                void SetEnvironmentVariableNoCaching(string key, string value)
+                static void SetEnvironmentVariableNoCaching(string key, string value)
                 {
                     int res = setenv(key, value, 1);
                     Debug.Assert(res != -1);
@@ -261,7 +261,7 @@ namespace Ryujinx
             }
 
             // Show the main window UI.
-            MainWindow mainWindow = new MainWindow();
+            MainWindow mainWindow = new();
             mainWindow.Show();
 
             if (OperatingSystem.IsLinux())

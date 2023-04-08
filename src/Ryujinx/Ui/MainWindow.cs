@@ -321,10 +321,7 @@ namespace Ryujinx.Ui
 
         private void UpdateDockedModeState(object sender, ReactiveEventArgs<bool> e)
         {
-            if (_emulationContext != null)
-            {
-                _emulationContext.System.ChangeDockedModeState(e.NewValue);
-            }
+            _emulationContext?.System.ChangeDockedModeState(e.NewValue);
         }
 
         private void UpdateAudioVolumeState(object sender, ReactiveEventArgs<float> e)
@@ -354,7 +351,7 @@ namespace Ryujinx.Ui
                 _gameTable.RemoveColumn(column);
             }
 
-            CellRendererToggle favToggle = new CellRendererToggle();
+            CellRendererToggle favToggle = new();
             favToggle.Toggled += FavToggle_Toggled;
 
             if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        _gameTable.AppendColumn("Fav",         favToggle,                "active", 0);
@@ -570,7 +567,7 @@ namespace Ryujinx.Ui
 
             IntegrityCheckLevel fsIntegrityCheckLevel = ConfigurationState.Instance.System.EnableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None;
 
-            HLE.HLEConfiguration configuration = new HLE.HLEConfiguration(_virtualFileSystem,
+            HLE.HLEConfiguration configuration = new(_virtualFileSystem,
                                                                           _libHacHorizonManager,
                                                                           _contentManager,
                                                                           _accountManager,
@@ -655,14 +652,16 @@ namespace Ryujinx.Ui
 
             _tableStore.Clear();
 
-            Thread applicationLibraryThread = new Thread(() =>
+            Thread applicationLibraryThread = new(() =>
             {
                 _applicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs, ConfigurationState.Instance.System.Language);
 
                 _updatingGameTable = false;
-            });
-            applicationLibraryThread.Name         = "GUI.ApplicationLibraryThread";
-            applicationLibraryThread.IsBackground = true;
+            })
+            {
+                Name         = "GUI.ApplicationLibraryThread",
+                IsBackground = true
+            };
             applicationLibraryThread.Start();
         }
 
@@ -671,7 +670,7 @@ namespace Ryujinx.Ui
         {
             if (ConfigurationState.Instance.Logger.EnableTrace.Value)
             {
-                MessageDialog debugWarningDialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
+                MessageDialog debugWarningDialog = new(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
                 {
                     Title         = "Ryujinx - Warning",
                     Text          = "You have trace logging enabled, which is designed to be used by developers only.",
@@ -689,7 +688,7 @@ namespace Ryujinx.Ui
 
             if (!string.IsNullOrWhiteSpace(ConfigurationState.Instance.Graphics.ShadersDumpPath.Value))
             {
-                MessageDialog shadersDumpWarningDialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
+                MessageDialog shadersDumpWarningDialog = new(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
                 {
                     Title         = "Ryujinx - Warning",
                     Text          = "You have shader dumping enabled, which is designed to be used by developers only.",
@@ -1247,36 +1246,32 @@ namespace Ryujinx.Ui
 
         private void Load_Application_File(object sender, EventArgs args)
         {
-            using (FileChooserNative fileChooser = new FileChooserNative("Choose the file to open", this, FileChooserAction.Open, "Open", "Cancel"))
+            using FileChooserNative fileChooser = new("Choose the file to open", this, FileChooserAction.Open, "Open", "Cancel");
+            FileFilter filter = new()
             {
-                FileFilter filter = new FileFilter()
-                {
-                    Name = "Switch Executables"
-                };
-                filter.AddPattern("*.xci");
-                filter.AddPattern("*.nsp");
-                filter.AddPattern("*.pfs0");
-                filter.AddPattern("*.nca");
-                filter.AddPattern("*.nro");
-                filter.AddPattern("*.nso");
+                Name = "Switch Executables"
+            };
+            filter.AddPattern("*.xci");
+            filter.AddPattern("*.nsp");
+            filter.AddPattern("*.pfs0");
+            filter.AddPattern("*.nca");
+            filter.AddPattern("*.nro");
+            filter.AddPattern("*.nso");
 
-                fileChooser.AddFilter(filter);
+            fileChooser.AddFilter(filter);
 
-                if (fileChooser.Run() == (int)ResponseType.Accept)
-                {
-                    RunApplication(fileChooser.Filename);
-                }
+            if (fileChooser.Run() == (int)ResponseType.Accept)
+            {
+                RunApplication(fileChooser.Filename);
             }
         }
 
         private void Load_Application_Folder(object sender, EventArgs args)
         {
-            using (FileChooserNative fileChooser = new FileChooserNative("Choose the folder to open", this, FileChooserAction.SelectFolder, "Open", "Cancel"))
+            using FileChooserNative fileChooser = new("Choose the folder to open", this, FileChooserAction.SelectFolder, "Open", "Cancel");
+            if (fileChooser.Run() == (int)ResponseType.Accept)
             {
-                if (fileChooser.Run() == (int)ResponseType.Accept)
-                {
-                    RunApplication(fileChooser.Filename);
-                }
+                RunApplication(fileChooser.Filename);
             }
         }
 
@@ -1399,9 +1394,9 @@ namespace Ryujinx.Ui
 
         private void Installer_File_Pressed(object o, EventArgs args)
         {
-            FileChooserNative fileChooser = new FileChooserNative("Choose the firmware file to open", this, FileChooserAction.Open, "Open", "Cancel");
+            FileChooserNative fileChooser = new("Choose the firmware file to open", this, FileChooserAction.Open, "Open", "Cancel");
 
-            FileFilter filter = new FileFilter
+            FileFilter filter = new()
             {
                 Name = "Switch Firmware Files"
             };
@@ -1415,7 +1410,7 @@ namespace Ryujinx.Ui
 
         private void Installer_Directory_Pressed(object o, EventArgs args)
         {
-            FileChooserNative directoryChooser = new FileChooserNative("Choose the firmware directory to open", this, FileChooserAction.SelectFolder, "Open", "Cancel");
+            FileChooserNative directoryChooser = new("Choose the firmware directory to open", this, FileChooserAction.SelectFolder, "Open", "Cancel");
 
             HandleInstallerDialog(directoryChooser);
         }
@@ -1460,7 +1455,7 @@ namespace Ryujinx.Ui
                     {
                         Logger.Info?.Print(LogClass.Application, $"Installing firmware {firmwareVersion.VersionString}");
 
-                        Thread thread = new Thread(() =>
+                        Thread thread = new(() =>
                         {
                             Application.Invoke(delegate
                             {
@@ -1483,7 +1478,7 @@ namespace Ryujinx.Ui
 
                                     // Purge Applet Cache.
 
-                                    DirectoryInfo miiEditorCacheFolder = new DirectoryInfo(System.IO.Path.Combine(AppDataManager.GamesDirPath, "0100000000001009", "cache"));
+                                    DirectoryInfo miiEditorCacheFolder = new(System.IO.Path.Combine(AppDataManager.GamesDirPath, "0100000000001009", "cache"));
 
                                     if (miiEditorCacheFolder.Exists)
                                     {
@@ -1504,9 +1499,10 @@ namespace Ryujinx.Ui
                             {
                                 RefreshFirmwareLabel();
                             }
-                        });
-
-                        thread.Name = "GUI.FirmwareInstallerThread";
+                        })
+                        {
+                            Name = "GUI.FirmwareInstallerThread"
+                        };
                         thread.Start();
                     }
                 }
@@ -1616,7 +1612,7 @@ namespace Ryujinx.Ui
 
         private void Settings_Pressed(object sender, EventArgs args)
         {
-            SettingsWindow settingsWindow = new SettingsWindow(this, _virtualFileSystem, _contentManager);
+            SettingsWindow settingsWindow = new(this, _virtualFileSystem, _contentManager);
 
             settingsWindow.SetSizeRequest((int)(settingsWindow.DefaultWidth * Program.WindowScaleFactor), (int)(settingsWindow.DefaultHeight * Program.WindowScaleFactor));
             settingsWindow.Show();
@@ -1648,7 +1644,7 @@ namespace Ryujinx.Ui
 
         private void ManageUserProfiles_Pressed(object sender, EventArgs args)
         {
-            UserProfilesManagerWindow userProfilesManagerWindow = new UserProfilesManagerWindow(_accountManager, _contentManager, _virtualFileSystem);
+            UserProfilesManagerWindow userProfilesManagerWindow = new(_accountManager, _contentManager, _virtualFileSystem);
 
             userProfilesManagerWindow.SetSizeRequest((int)(userProfilesManagerWindow.DefaultWidth * Program.WindowScaleFactor), (int)(userProfilesManagerWindow.DefaultHeight * Program.WindowScaleFactor));
             userProfilesManagerWindow.Show();
@@ -1656,10 +1652,7 @@ namespace Ryujinx.Ui
 
         private void Simulate_WakeUp_Message_Pressed(object sender, EventArgs args)
         {
-            if (_emulationContext != null)
-            {
-                _emulationContext.System.SimulateWakeUpMessage();
-            }
+            _emulationContext?.System.SimulateWakeUpMessage();
         }
 
         private void ActionMenu_StateChanged(object o, StateChangedArgs args)
@@ -1672,7 +1665,7 @@ namespace Ryujinx.Ui
         {
             if (_emulationContext.System.SearchingForAmiibo(out int deviceId))
             {
-                AmiiboWindow amiiboWindow = new AmiiboWindow
+                AmiiboWindow amiiboWindow = new()
                 {
                     LastScannedAmiiboShowAll = _lastScannedAmiiboShowAll,
                     LastScannedAmiiboId      = _lastScannedAmiiboId,
@@ -1722,7 +1715,7 @@ namespace Ryujinx.Ui
 
         private void About_Pressed(object sender, EventArgs args)
         {
-            AboutWindow aboutWindow = new AboutWindow();
+            AboutWindow aboutWindow = new();
 
             aboutWindow.SetSizeRequest((int)(aboutWindow.DefaultWidth * Program.WindowScaleFactor), (int)(aboutWindow.DefaultHeight * Program.WindowScaleFactor));
             aboutWindow.Show();

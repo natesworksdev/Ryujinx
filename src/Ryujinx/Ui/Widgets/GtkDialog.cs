@@ -80,7 +80,7 @@ namespace Ryujinx.Ui.Widgets
 
         internal static ResponseType CreateCustomDialog(string title, string mainText, string secondaryText, Dictionary<int, string> buttons, MessageType messageType = MessageType.Other)
         {
-            GtkDialog gtkDialog = new GtkDialog(title, mainText, secondaryText, messageType, ButtonsType.None);
+            GtkDialog gtkDialog = new(title, mainText, secondaryText, messageType, ButtonsType.None);
 
             foreach (var button in buttons)
             {
@@ -92,7 +92,7 @@ namespace Ryujinx.Ui.Widgets
 
         internal static string CreateInputDialog(Window parent, string title, string mainText, uint inputMax)
         {
-            GtkInputDialog gtkDialog    = new GtkInputDialog(parent, title, mainText, inputMax);
+            GtkInputDialog gtkDialog    = new(parent, title, mainText, inputMax);
             ResponseType   response     = (ResponseType)gtkDialog.Run();
             string         responseText = gtkDialog.InputEntry.Text.TrimEnd();
 

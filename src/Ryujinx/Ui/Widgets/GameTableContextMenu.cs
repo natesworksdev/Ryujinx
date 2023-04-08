@@ -105,7 +105,7 @@ namespace Ryujinx.Ui.Widgets
                     Logger.Warning?.Print(LogClass.Application, "No control file was found for this game. Using a dummy one instead. This may cause inaccuracies in some games.");
                 }
 
-                Uid user = new Uid((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low);
+                Uid user = new((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low);
 
                 result = _horizonClient.Fs.EnsureApplicationSaveData(out _, new LibHac.Ncm.ApplicationId(titleId), in control, in user);
 
@@ -170,7 +170,7 @@ namespace Ryujinx.Ui.Widgets
 
         private void ExtractSection(NcaSectionType ncaSectionType, int programIndex = 0)
         {
-            FileChooserNative fileChooser = new FileChooserNative("Choose the folder to extract into", _parent, FileChooserAction.SelectFolder, "Extract", "Cancel");
+            FileChooserNative fileChooser = new("Choose the folder to extract into", _parent, FileChooserAction.SelectFolder, "Extract", "Cancel");
 
             ResponseType response    = (ResponseType)fileChooser.Run();
             string       destination = fileChooser.Filename;
@@ -179,7 +179,7 @@ namespace Ryujinx.Ui.Widgets
 
             if (response == ResponseType.Accept)
             {
-                Thread extractorThread = new Thread(() =>
+                Thread extractorThread = new(() =>
                 {
                     Gtk.Application.Invoke(delegate
                     {
@@ -199,78 +199,77 @@ namespace Ryujinx.Ui.Widgets
                         }
                     });
 
-                    using (FileStream file = new FileStream(_titleFilePath, FileMode.Open, FileAccess.Read))
+                    using FileStream file = new(_titleFilePath, FileMode.Open, FileAccess.Read);
+                    Nca mainNca  = null;
+                    Nca patchNca = null;
+
+                    if ((System.IO.Path.GetExtension(_titleFilePath).ToLower() == ".nsp") ||
+                        (System.IO.Path.GetExtension(_titleFilePath).ToLower() == ".pfs0") ||
+                        (System.IO.Path.GetExtension(_titleFilePath).ToLower() == ".xci"))
                     {
-                        Nca mainNca  = null;
-                        Nca patchNca = null;
+                        PartitionFileSystem pfs;
 
-                        if ((System.IO.Path.GetExtension(_titleFilePath).ToLower() == ".nsp")  ||
-                            (System.IO.Path.GetExtension(_titleFilePath).ToLower() == ".pfs0") ||
-                            (System.IO.Path.GetExtension(_titleFilePath).ToLower() == ".xci"))
+                        if (System.IO.Path.GetExtension(_titleFilePath) == ".xci")
                         {
-                            PartitionFileSystem pfs;
+                            Xci xci = new(_virtualFileSystem.KeySet, file.AsStorage());
 
-                            if (System.IO.Path.GetExtension(_titleFilePath) == ".xci")
+                            pfs = xci.OpenPartition(XciPartitionType.Secure);
+                        }
+                        else
+                        {
+                            pfs = new PartitionFileSystem(file.AsStorage());
+                        }
+
+                        foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
+                        {
+                            using var ncaFile = new UniqueRef<IFile>();
+
+                            pfs.OpenFile(ref ncaFile.Ref, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+
+                            Nca nca = new(_virtualFileSystem.KeySet, ncaFile.Release().AsStorage());
+
+                            if (nca.Header.ContentType == NcaContentType.Program)
                             {
-                                Xci xci = new Xci(_virtualFileSystem.KeySet, file.AsStorage());
+                                int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
 
-                                pfs = xci.OpenPartition(XciPartitionType.Secure);
-                            }
-                            else
-                            {
-                                pfs = new PartitionFileSystem(file.AsStorage());
-                            }
-
-                            foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
-                            {
-                                using var ncaFile = new UniqueRef<IFile>();
-
-                                pfs.OpenFile(ref ncaFile.Ref, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-
-                                Nca nca = new Nca(_virtualFileSystem.KeySet, ncaFile.Release().AsStorage());
-
-                                if (nca.Header.ContentType == NcaContentType.Program)
+                                if (nca.SectionExists(NcaSectionType.Data) && nca.Header.GetFsHeader(dataIndex).IsPatchSection())
                                 {
-                                    int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
-
-                                    if (nca.SectionExists(NcaSectionType.Data) && nca.Header.GetFsHeader(dataIndex).IsPatchSection())
-                                    {
-                                        patchNca = nca;
-                                    }
-                                    else
-                                    {
-                                        mainNca = nca;
-                                    }
+                                    patchNca = nca;
+                                }
+                                else
+                                {
+                                    mainNca = nca;
                                 }
                             }
                         }
-                        else if (System.IO.Path.GetExtension(_titleFilePath).ToLower() == ".nca")
-                        {
-                            mainNca = new Nca(_virtualFileSystem.KeySet, file.AsStorage());
-                        }
+                    }
+                    else if (System.IO.Path.GetExtension(_titleFilePath).ToLower() == ".nca")
+                    {
+                        mainNca = new Nca(_virtualFileSystem.KeySet, file.AsStorage());
+                    }
 
-                        if (mainNca == null)
-                        {
-                            Logger.Error?.Print(LogClass.Application, "Extraction failure. The main NCA is not present in the selected file.");
+                    if (mainNca == null)
+                    {
+                        Logger.Error?.Print(LogClass.Application, "Extraction failure. The main NCA is not present in the selected file.");
 
-                            Gtk.Application.Invoke(delegate
+                        Gtk.Application.Invoke(delegate
                             {
                                 GtkDialog.CreateErrorDialog("Extraction failure. The main NCA is not present in the selected file.");
                             });
 
-                            return;
-                        }
+                        return;
+                    }
 
-                        (Nca updatePatchNca, _) = ApplicationLibrary.GetGameUpdateData(_virtualFileSystem, mainNca.Header.TitleId.ToString("x16"), programIndex, out _);
+                    (Nca updatePatchNca, _) = ApplicationLibrary.GetGameUpdateData(_virtualFileSystem, mainNca.Header.TitleId.ToString("x16"), programIndex, out _);
 
-                        if (updatePatchNca != null)
-                        {
-                            patchNca = updatePatchNca;
-                        }
+                    if (updatePatchNca != null)
+                    {
+                        patchNca = updatePatchNca;
+                    }
 
-                        int index = Nca.GetSectionIndexFromType(ncaSectionType, mainNca.Header.ContentType);
+                    int index = Nca.GetSectionIndexFromType(ncaSectionType, mainNca.Header.ContentType);
 
-                        bool sectionExistsInPatch = false;
+                    bool sectionExistsInPatch = false;
                         if (patchNca != null)
                         {
                             sectionExistsInPatch = patchNca.CanOpenSection(index);
@@ -279,39 +278,39 @@ namespace Ryujinx.Ui.Widgets
                         IFileSystem ncaFileSystem = sectionExistsInPatch ? mainNca.OpenFileSystemWithPatch(patchNca, index, IntegrityCheckLevel.ErrorOnInvalid)
                                                                          : mainNca.OpenFileSystem(index, IntegrityCheckLevel.ErrorOnInvalid);
 
-                        FileSystemClient fsClient = _horizonClient.Fs;
+                    FileSystemClient fsClient = _horizonClient.Fs;
 
-                        string source = DateTime.Now.ToFileTime().ToString()[10..];
-                        string output = DateTime.Now.ToFileTime().ToString()[10..];
+                    string source = DateTime.Now.ToFileTime().ToString()[10..];
+                    string output = DateTime.Now.ToFileTime().ToString()[10..];
 
-                        using var uniqueSourceFs = new UniqueRef<IFileSystem>(ncaFileSystem);
-                        using var uniqueOutputFs = new UniqueRef<IFileSystem>(new LocalFileSystem(destination));
+                    using var uniqueSourceFs = new UniqueRef<IFileSystem>(ncaFileSystem);
+                    using var uniqueOutputFs = new UniqueRef<IFileSystem>(new LocalFileSystem(destination));
 
-                        fsClient.Register(source.ToU8Span(), ref uniqueSourceFs.Ref);
-                        fsClient.Register(output.ToU8Span(), ref uniqueOutputFs.Ref);
+                    fsClient.Register(source.ToU8Span(), ref uniqueSourceFs.Ref);
+                    fsClient.Register(output.ToU8Span(), ref uniqueOutputFs.Ref);
 
-                        (Result? resultCode, bool canceled) = CopyDirectory(fsClient, $"{source}:/", $"{output}:/");
+                    (Result? resultCode, bool canceled) = CopyDirectory(fsClient, $"{source}:/", $"{output}:/");
 
-                        if (!canceled)
+                    if (!canceled)
+                    {
+                        if (resultCode.Value.IsFailure())
                         {
-                            if (resultCode.Value.IsFailure())
-                            {
-                                Logger.Error?.Print(LogClass.Application, $"LibHac returned error code: {resultCode.Value.ErrorCode}");
+                            Logger.Error?.Print(LogClass.Application, $"LibHac returned error code: {resultCode.Value.ErrorCode}");
 
-                                Gtk.Application.Invoke(delegate
+                            Gtk.Application.Invoke(delegate
                                 {
                                     _dialog?.Dispose();
 
                                     GtkDialog.CreateErrorDialog("Extraction failed. Read the log file for further information.");
                                 });
-                            }
-                            else if (resultCode.Value.IsSuccess())
-                            {
-                                Gtk.Application.Invoke(delegate
+                        }
+                        else if (resultCode.Value.IsSuccess())
+                        {
+                            Gtk.Application.Invoke(delegate
                                 {
                                     _dialog?.Dispose();
 
-                                    MessageDialog dialog = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Ok, null)
+                                    MessageDialog dialog = new(null, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Ok, null)
                                     {
                                         Title          = "Ryujinx - NCA Section Extractor",
                                         Icon           = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png"),
@@ -322,16 +321,16 @@ namespace Ryujinx.Ui.Widgets
                                     dialog.Run();
                                     dialog.Dispose();
                                 });
-                            }
                         }
-
-                        fsClient.Unmount(source.ToU8Span());
-                        fsClient.Unmount(output.ToU8Span());
                     }
-                });
 
-                extractorThread.Name         = "GUI.NcaSectionExtractorThread";
-                extractorThread.IsBackground = true;
+                    fsClient.Unmount(source.ToU8Span());
+                    fsClient.Unmount(output.ToU8Span());
+                })
+                {
+                    Name         = "GUI.NcaSectionExtractorThread",
+                    IsBackground = true
+                };
                 extractorThread.Start();
             }
         }
@@ -526,12 +525,12 @@ namespace Ryujinx.Ui.Widgets
 
         private void PurgePtcCache_Clicked(object sender, EventArgs args)
         {
-            DirectoryInfo mainDir   = new DirectoryInfo(System.IO.Path.Combine(AppDataManager.GamesDirPath, _titleIdText, "cache", "cpu", "0"));
-            DirectoryInfo backupDir = new DirectoryInfo(System.IO.Path.Combine(AppDataManager.GamesDirPath, _titleIdText, "cache", "cpu", "1"));
+            DirectoryInfo mainDir   = new(System.IO.Path.Combine(AppDataManager.GamesDirPath, _titleIdText, "cache", "cpu", "0"));
+            DirectoryInfo backupDir = new(System.IO.Path.Combine(AppDataManager.GamesDirPath, _titleIdText, "cache", "cpu", "1"));
 
             MessageDialog warningDialog = GtkDialog.CreateConfirmationDialog("Warning", $"You are about to queue a PPTC rebuild on the next boot of:\n\n<b>{_titleName}</b>\n\nAre you sure you want to proceed?");
 
-            List<FileInfo> cacheFiles = new List<FileInfo>();
+            List<FileInfo> cacheFiles = new();
 
             if (mainDir.Exists)
             {
@@ -563,12 +562,12 @@ namespace Ryujinx.Ui.Widgets
 
         private void PurgeShaderCache_Clicked(object sender, EventArgs args)
         {
-            DirectoryInfo shaderCacheDir = new DirectoryInfo(System.IO.Path.Combine(AppDataManager.GamesDirPath, _titleIdText, "cache", "shader"));
+            DirectoryInfo shaderCacheDir = new(System.IO.Path.Combine(AppDataManager.GamesDirPath, _titleIdText, "cache", "shader"));
 
             using MessageDialog warningDialog = GtkDialog.CreateConfirmationDialog("Warning", $"You are about to delete the shader cache for :\n\n<b>{_titleName}</b>\n\nAre you sure you want to proceed?");
 
-            List<DirectoryInfo> oldCacheDirectories = new List<DirectoryInfo>();
-            List<FileInfo> newCacheFiles = new List<FileInfo>();
+            List<DirectoryInfo> oldCacheDirectories = new();
+            List<FileInfo> newCacheFiles = new();
 
             if (shaderCacheDir.Exists)
             {

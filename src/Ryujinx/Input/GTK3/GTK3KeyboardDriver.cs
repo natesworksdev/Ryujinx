@@ -9,7 +9,7 @@ namespace Ryujinx.Input.GTK3
     public class GTK3KeyboardDriver : IGamepadDriver
     {
         private readonly Widget _widget;
-        private HashSet<GtkKey> _pressedKeys;
+        private readonly HashSet<GtkKey> _pressedKeys;
 
         public GTK3KeyboardDriver(Widget widget)
         {

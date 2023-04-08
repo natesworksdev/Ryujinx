@@ -316,11 +316,11 @@ namespace Ryujinx.Ui.Windows
             }
 
             // Custom EntryCompletion Columns. If added to glade, need to override more signals
-            ListStore tzList = new ListStore(typeof(string), typeof(string), typeof(string));
+            ListStore tzList = new(typeof(string), typeof(string), typeof(string));
             _systemTimeZoneCompletion.Model = tzList;
 
-            CellRendererText offsetCol = new CellRendererText();
-            CellRendererText abbrevCol = new CellRendererText();
+            CellRendererText offsetCol = new();
+            CellRendererText abbrevCol = new();
 
             _systemTimeZoneCompletion.PackStart(offsetCol, false);
             _systemTimeZoneCompletion.AddAttribute(offsetCol, "text", 0);
@@ -555,7 +555,7 @@ namespace Ryujinx.Ui.Windows
         {
             if (_directoryChanged)
             {
-                List<string> gameDirs = new List<string>();
+                List<string> gameDirs = new();
 
                 _gameDirsBoxStore.GetIterFirst(out TreeIter treeIter);
 
@@ -725,7 +725,7 @@ namespace Ryujinx.Ui.Windows
             }
             else
             {
-                FileChooserNative fileChooser = new FileChooserNative("Choose the game directory to add to the list", this, FileChooserAction.SelectFolder, "Add", "Cancel")
+                FileChooserNative fileChooser = new("Choose the game directory to add to the list", this, FileChooserAction.SelectFolder, "Add", "Cancel")
                 {
                     SelectMultiple = true
                 };
@@ -786,9 +786,9 @@ namespace Ryujinx.Ui.Windows
 
         private void BrowseThemeDir_Pressed(object sender, EventArgs args)
         {
-            using (FileChooserNative fileChooser = new FileChooserNative("Choose the theme to load", this, FileChooserAction.Open, "Select", "Cancel"))
+            using (FileChooserNative fileChooser = new("Choose the theme to load", this, FileChooserAction.Open, "Select", "Cancel"))
             {
-                FileFilter filter = new FileFilter()
+                FileFilter filter = new()
                 {
                     Name = "Theme Files"
                 };
@@ -809,7 +809,7 @@ namespace Ryujinx.Ui.Windows
         {
             ((ToggleButton)sender).SetStateFlags(StateFlags.Normal, true);
 
-            ControllerWindow controllerWindow = new ControllerWindow(_parent, playerIndex);
+            ControllerWindow controllerWindow = new(_parent, playerIndex);
 
             controllerWindow.SetSizeRequest((int)(controllerWindow.DefaultWidth * Program.WindowScaleFactor), (int)(controllerWindow.DefaultHeight * Program.WindowScaleFactor));
             controllerWindow.Show();

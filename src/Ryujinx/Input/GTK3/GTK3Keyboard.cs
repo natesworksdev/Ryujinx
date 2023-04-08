@@ -25,7 +25,7 @@ namespace Ryujinx.Input.GTK3
 
         private readonly GTK3KeyboardDriver _driver;
         private StandardKeyboardInputConfig _configuration;
-        private List<ButtonMappingEntry> _buttonsUserMapping;
+        private readonly List<ButtonMappingEntry> _buttonsUserMapping;
 
         public GTK3Keyboard(GTK3KeyboardDriver driver, string id, string name)
         {
@@ -87,7 +87,7 @@ namespace Ryujinx.Input.GTK3
                 stickX -= 1;
             }
 
-            OpenTK.Mathematics.Vector2 stick = new OpenTK.Mathematics.Vector2(stickX, stickY);
+            OpenTK.Mathematics.Vector2 stick = new(stickX, stickY);
 
             stick.NormalizeFast();
 
