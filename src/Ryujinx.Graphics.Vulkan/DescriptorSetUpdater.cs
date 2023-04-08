@@ -620,7 +620,7 @@ namespace Ryujinx.Graphics.Vulkan
             Array.Clear(_storageSet);
         }
 
-        private void SwapBuffer(Auto<DisposableBuffer>[] list, Auto<DisposableBuffer> from, Auto<DisposableBuffer> to)
+        private static void SwapBuffer(Auto<DisposableBuffer>[] list, Auto<DisposableBuffer> from, Auto<DisposableBuffer> to)
         {
             for (int i = 0; i < list.Length; i++)
             {

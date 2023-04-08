@@ -718,7 +718,9 @@ namespace Ryujinx.Graphics.Vulkan
             return CommandBuffer.Handle == cb.Handle;
         }
 
+#pragma warning disable CA1822
         public void SetAlphaTest(bool enable, float reference, GAL.CompareOp op)
+#pragma warning restore CA1822
         {
             // This is currently handled using shader specialization, as Vulkan does not support alpha test.
             // In the future, we may want to use this to write the reference value into the support buffer,
@@ -823,7 +825,9 @@ namespace Ryujinx.Graphics.Vulkan
             SignalStateChange();
         }
 
+#pragma warning disable CA1822
         public void SetDepthMode(DepthMode mode)
+#pragma warning restore CA1822
         {
             bool oldMode = _newState.DepthMode;
             _newState.DepthMode = mode == DepthMode.MinusOneToOne;
@@ -897,7 +901,7 @@ namespace Ryujinx.Graphics.Vulkan
             SignalStateChange();
         }
 
-        public void SetOrigin(Origin origin)
+        public static void SetOrigin(Origin origin)
         {
             // TODO.
         }
@@ -910,12 +914,16 @@ namespace Ryujinx.Graphics.Vulkan
             // TODO: Default levels (likely needs emulation on shaders?)
         }
 
+#pragma warning disable CA1822
         public void SetPointParameters(float size, bool isProgramPointSize, bool enablePointSprite, Origin origin)
+#pragma warning restore CA1822
         {
             // TODO.
         }
 
+#pragma warning disable CA1822
         public void SetPolygonMode(GAL.PolygonMode frontMode, GAL.PolygonMode backMode)
+#pragma warning restore CA1822
         {
             // TODO.
         }
@@ -1149,7 +1157,9 @@ namespace Ryujinx.Graphics.Vulkan
             _descriptorSetUpdater.SetUniformBuffers(CommandBuffer, buffers);
         }
 
+#pragma warning disable CA1822
         public void SetUserClipDistance(int index, bool enableClip)
+#pragma warning restore CA1822
         {
             // TODO.
         }

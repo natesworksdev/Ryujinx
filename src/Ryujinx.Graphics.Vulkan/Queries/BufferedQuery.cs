@@ -63,7 +63,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
             _buffer = buffer;
         }
 
-        private bool QueryTypeSupported(VulkanRenderer gd, CounterType type)
+        private static bool QueryTypeSupported(VulkanRenderer gd, CounterType type)
         {
             return type switch
             {
