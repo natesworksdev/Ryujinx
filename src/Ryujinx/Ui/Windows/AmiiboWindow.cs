@@ -245,7 +245,7 @@ namespace Ryujinx.Ui.Windows
             }
         }
 
-        private void ShowInfoDialog()
+        private static void ShowInfoDialog()
         {
             GtkDialog.CreateInfoDialog($"Amiibo API", "Unable to connect to Amiibo API server. The service may be down or you may need to verify your internet connection is online.");
         }

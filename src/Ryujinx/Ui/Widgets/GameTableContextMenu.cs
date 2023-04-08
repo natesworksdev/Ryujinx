@@ -270,12 +270,13 @@ namespace Ryujinx.Ui.Widgets
                     int index = Nca.GetSectionIndexFromType(ncaSectionType, mainNca.Header.ContentType);
 
                     bool sectionExistsInPatch = false;
-                        if (patchNca != null)
-                        {
-                            sectionExistsInPatch = patchNca.CanOpenSection(index);
-                        }
 
-                        IFileSystem ncaFileSystem = sectionExistsInPatch ? mainNca.OpenFileSystemWithPatch(patchNca, index, IntegrityCheckLevel.ErrorOnInvalid)
+                    if (patchNca != null)
+                    {
+                        sectionExistsInPatch = patchNca.CanOpenSection(index);
+                    }
+
+                    IFileSystem ncaFileSystem = sectionExistsInPatch ? mainNca.OpenFileSystemWithPatch(patchNca, index, IntegrityCheckLevel.ErrorOnInvalid)
                                                                          : mainNca.OpenFileSystem(index, IntegrityCheckLevel.ErrorOnInvalid);
 
                     FileSystemClient fsClient = _horizonClient.Fs;
@@ -376,7 +377,7 @@ namespace Ryujinx.Ui.Widgets
             return (Result.Success, false);
         }
 
-        public Result CopyFile(FileSystemClient fs, string sourcePath, string destPath)
+        public static Result CopyFile(FileSystemClient fs, string sourcePath, string destPath)
         {
             Result rc = fs.OpenFile(out FileHandle sourceHandle, sourcePath.ToU8Span(), OpenMode.Read);
             if (rc.IsFailure()) return rc;

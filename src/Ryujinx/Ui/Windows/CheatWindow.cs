@@ -62,7 +62,7 @@ namespace Ryujinx.Ui.Windows
             var buildIdColumn = _cheatTreeView.AppendColumn("Build Id", new CellRendererText(), "text", 3);
             buildIdColumn.Visible = false;
 
-            string[] enabled = { };
+            string[] enabled = Array.Empty<string>();
 
             if (File.Exists(_enabledCheatsPath))
             {

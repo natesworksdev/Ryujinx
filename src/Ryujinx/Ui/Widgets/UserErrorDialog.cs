@@ -46,12 +46,12 @@ namespace Ryujinx.Ui.Widgets
             }
         }
 
-        private string GetErrorCode(UserError error)
+        private static string GetErrorCode(UserError error)
         {
             return $"RYU-{(uint)error:X4}";
         }
 
-        private string GetErrorTitle(UserError error)
+        private static string GetErrorTitle(UserError error)
         {
             return error switch
             {
@@ -64,7 +64,7 @@ namespace Ryujinx.Ui.Widgets
             };
         }
 
-        private string GetErrorDescription(UserError error)
+        private static string GetErrorDescription(UserError error)
         {
             return error switch
             {

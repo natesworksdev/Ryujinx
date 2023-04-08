@@ -67,7 +67,7 @@ namespace Ryujinx.Ui.Applet
             SelectionBackgroundColor = DefaultBorderColor;
         }
 
-        private ThemeColor ToThemeColor(byte[] data)
+        private static ThemeColor ToThemeColor(byte[] data)
         {
             Debug.Assert(data.Length == 4 * RenderSurfaceWidth * RenderSurfaceHeight);
 

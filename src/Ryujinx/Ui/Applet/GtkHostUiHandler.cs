@@ -193,7 +193,7 @@ namespace Ryujinx.Ui.Applet
             return showDetails;
         }
 
-        private void SynchronousGtkInvoke(Action action)
+        private static void SynchronousGtkInvoke(Action action)
         {
             var waitHandle = new ManualResetEventSlim();
 
