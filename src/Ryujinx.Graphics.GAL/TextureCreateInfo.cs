@@ -160,5 +160,10 @@ namespace Ryujinx.Graphics.GAL
                    SwizzleB == other.SwizzleB &&
                    SwizzleA == other.SwizzleA;
         }
+
+        public override bool Equals(object obj)
+        {
+            return obj is TextureCreateInfo info && ((IEquatable<TextureCreateInfo>)this).Equals(info);
+        }
     }
 }
