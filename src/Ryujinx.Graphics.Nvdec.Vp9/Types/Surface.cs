@@ -11,9 +11,9 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         public ArrayPtr<byte> UBuffer;
         public ArrayPtr<byte> VBuffer;
 
-        public unsafe Plane YPlane => new Plane((IntPtr)YBuffer.ToPointer(), YBuffer.Length);
-        public unsafe Plane UPlane => new Plane((IntPtr)UBuffer.ToPointer(), UBuffer.Length);
-        public unsafe Plane VPlane => new Plane((IntPtr)VBuffer.ToPointer(), VBuffer.Length);
+        public unsafe Plane YPlane => new((IntPtr)YBuffer.ToPointer(), YBuffer.Length);
+        public unsafe Plane UPlane => new((IntPtr)UBuffer.ToPointer(), UBuffer.Length);
+        public unsafe Plane VPlane => new((IntPtr)VBuffer.ToPointer(), VBuffer.Length);
 
         public FrameField Field => FrameField.Progressive;
 

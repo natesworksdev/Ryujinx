@@ -65,7 +65,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
                 ulong bigEndianValues = BinaryPrimitives.ReadUInt64BigEndian(buffer);
                 nv = bigEndianValues >> (BdValueSize - bits);
                 count += bits;
-                buffer = buffer.Slice(bits >> 3);
+                buffer = buffer[(bits >> 3)..];
                 value = Value | (nv << (shift & 0x7));
             }
             else
@@ -84,7 +84,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
                     {
                         count += 8;
                         value |= (ulong)buffer[0] << shift;
-                        buffer = buffer.Slice(1);
+                        buffer = buffer[1..];
                         shift -= 8;
                     }
                 }
@@ -203,8 +203,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
 
             if (value >= bigsplit)
             {
-                range = range - split;
-                value = value - bigsplit;
+                range -= split;
+                value -= bigsplit;
                 {
                     int shift = Norm[range];
                     range <<= shift;

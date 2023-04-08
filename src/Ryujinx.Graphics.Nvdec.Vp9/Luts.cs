@@ -267,7 +267,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         private static Array8<short> NewArray8Short(short e0, short e1, short e2, short e3, short e4, short e5, short e6, short e7)
         {
-            Array8<short> output = new Array8<short>();
+            Array8<short> output = new();
 
             output[0] = e0;
             output[1] = e1;

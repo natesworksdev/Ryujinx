@@ -407,7 +407,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         {
             int xOffQ4 = ScaledX(x << SubpelBits) & SubpelMask;
             int yOffQ4 = ScaledY(y << SubpelBits) & SubpelMask;
-            Mv32 res = new Mv32()
+            Mv32 res = new()
             {
                 Row = ScaledY(mv.Row) + yOffQ4,
                 Col = ScaledX(mv.Col) + xOffQ4

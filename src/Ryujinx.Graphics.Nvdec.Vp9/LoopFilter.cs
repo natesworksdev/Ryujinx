@@ -269,7 +269,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 int i;
                 for (i = 0; i < bh; i++)
                 {
-                    MemoryMarshal.CreateSpan(ref lfm.LflY[index], 64 - index).Slice(0, bw).Fill((byte)filterLevel);
+                    MemoryMarshal.CreateSpan(ref lfm.LflY[index], 64 - index)[..bw].Fill((byte)filterLevel);
                     index += 8;
                 }
             }

@@ -41,7 +41,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         private unsafe delegate void IntraPredFn(byte* dst, int stride, byte* above, byte* left);
 
-        private static unsafe IntraPredFn[][] _pred = new IntraPredFn[][]
+        private static readonly unsafe IntraPredFn[][] _pred = new IntraPredFn[][]
         {
             new IntraPredFn[]
             {
@@ -115,7 +115,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
         };
 
-        private static unsafe IntraPredFn[][][] _dcPred = new IntraPredFn[][][]
+        private static readonly unsafe IntraPredFn[][][] _dcPred = new IntraPredFn[][][]
         {
             new IntraPredFn[][]
             {
@@ -155,7 +155,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         private unsafe delegate void IntraHighPredFn(ushort* dst, int stride, ushort* above, ushort* left, int bd);
 
-        private static unsafe IntraHighPredFn[][] _predHigh = new IntraHighPredFn[][]
+        private static readonly unsafe IntraHighPredFn[][] _predHigh = new IntraHighPredFn[][]
         {
             new IntraHighPredFn[]
             {
@@ -229,7 +229,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
         };
 
-        private static unsafe IntraHighPredFn[][][] _dcPredHigh = new IntraHighPredFn[][][]
+        private static readonly unsafe IntraHighPredFn[][][] _dcPredHigh = new IntraHighPredFn[][][]
         {
             new IntraHighPredFn[][]
             {

@@ -84,7 +84,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         private static Mv MiMvPredQ4(ref ModeInfo mi, int idx)
         {
-            Mv res = new Mv()
+            Mv res = new()
             {
                 Row = (short)RoundMvCompQ4(
                     mi.Bmi[0].Mv[idx].Row + mi.Bmi[1].Mv[idx].Row +
@@ -103,7 +103,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         private static Mv MiMvPredQ2(ref ModeInfo mi, int idx, int block0, int block1)
         {
-            Mv res = new Mv()
+            Mv res = new()
             {
                 Row = (short)RoundMvCompQ2(
                     mi.Bmi[block0].Mv[idx].Row +
@@ -124,7 +124,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             int spelRight = spelLeft - SubpelShifts;
             int spelTop = (Constants.Vp9InterpExtend + bh) << SubpelBits;
             int spelBottom = spelTop - SubpelShifts;
-            Mv clampedMv = new Mv()
+            Mv clampedMv = new()
             {
                 Row = (short)(srcMv.Row * (1 << (1 - ssY))),
                 Col = (short)(srcMv.Col * (1 << (1 - ssX)))
@@ -145,7 +145,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         public static Mv AverageSplitMvs(ref MacroBlockDPlane pd, ref ModeInfo mi, int refr, int block)
         {
             int ssIdx = ((pd.SubsamplingX > 0 ? 1 : 0) << 1) | (pd.SubsamplingY > 0 ? 1 : 0);
-            Mv res = new Mv();
+            Mv res = new();
             switch (ssIdx)
             {
                 case 0: res = mi.Bmi[block].Mv[refr]; break;

@@ -297,7 +297,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         {
             MvJointType jointType = (MvJointType)r.ReadTree(Luts.Vp9MvJointTree, fc.Joints.AsSpan());
             bool useHP = allowHP && refr.UseMvHp();
-            Mv diff = new Mv();
+            Mv diff = new();
 
             if (Mv.MvJointVertical(jointType))
             {
@@ -627,7 +627,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             bool earlyBreak = mode != PredictionMode.NearMv;
 
             // Blank the reference vector list
-            mvRefList.Slice(0, Constants.MaxMvRefCandidates).Fill(new Mv());
+            mvRefList[..Constants.MaxMvRefCandidates].Fill(new Mv());
 
             i = 0;
             if (isSub8X8 != 0)
@@ -883,7 +883,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         {
             BlockSize bsize = mi.SbType;
             bool allowHP = cm.AllowHighPrecisionMv;
-            Array2<Mv> bestRefMvs = new Array2<Mv>();
+            Array2<Mv> bestRefMvs = new();
             int refr, isCompound;
             byte interModeCtx;
             Span<Position> mvRefSearch = Luts.MvRefBlocks[(int)bsize];
@@ -940,7 +940,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 int num4X4H = 1 << xd.BmodeBlocksHl;
                 int idx, idy;
                 PredictionMode bMode = 0;
-                Array2<Mv> bestSub8x8 = new Array2<Mv>();
+                Array2<Mv> bestSub8x8 = new();
                 const uint invalidMv = 0x80008000;
                 // Initialize the 2nd element as even though it won't be used meaningfully
                 // if isCompound is false.
