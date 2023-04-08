@@ -67,5 +67,15 @@ namespace Ryujinx.Memory.Range
         {
             return HashCode.Combine(Address, Size);
         }
+
+        public static bool operator ==(HostMemoryRange left, HostMemoryRange right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(HostMemoryRange left, HostMemoryRange right)
+        {
+            return !(left == right);
+        }
     }
 }
