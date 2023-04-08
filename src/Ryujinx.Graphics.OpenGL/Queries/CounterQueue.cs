@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
         private readonly Pipeline _pipeline;
 
-        private Queue<CounterQueueEvent> _events = new Queue<CounterQueueEvent>();
+        private readonly Queue<CounterQueueEvent> _events = new();
         private CounterQueueEvent _current;
 
         private ulong _accumulatedCounter;
@@ -23,12 +23,12 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
         private readonly object _lock = new();
 
-        private Queue<BufferedQuery> _queryPool;
-        private AutoResetEvent _queuedEvent = new AutoResetEvent(false);
-        private AutoResetEvent _wakeSignal = new AutoResetEvent(false);
-        private AutoResetEvent _eventConsumed = new AutoResetEvent(false);
+        private readonly Queue<BufferedQuery> _queryPool;
+        private readonly AutoResetEvent _queuedEvent = new(false);
+        private readonly AutoResetEvent _wakeSignal = new(false);
+        private readonly AutoResetEvent _eventConsumed = new(false);
 
-        private Thread _consumerThread;
+        private readonly Thread _consumerThread;
 
         internal CounterQueue(Pipeline pipeline, CounterType type)
         {

@@ -44,11 +44,11 @@ namespace Ryujinx.Graphics.OpenGL
 
         private CounterQueueEvent _activeConditionalRender;
 
-        private Vector4<int>[] _fpIsBgra = new Vector4<int>[SupportBuffer.FragmentIsBgraCount];
-        private Vector4<float>[] _renderScale = new Vector4<float>[73];
+        private readonly Vector4<int>[] _fpIsBgra = new Vector4<int>[SupportBuffer.FragmentIsBgraCount];
+        private readonly Vector4<float>[] _renderScale = new Vector4<float>[73];
         private int _fragmentScaleCount;
 
-        private (TextureBase, Format)[] _images;
+        private readonly (TextureBase, Format)[] _images;
         private TextureBase _unit0Texture;
         private Sampler _unit0Sampler;
 
@@ -1701,10 +1701,9 @@ namespace Ryujinx.Graphics.OpenGL
 
         public bool TryHostConditionalRendering(ICounterEvent value, ulong compare, bool isEqual)
         {
-            if (value is CounterQueueEvent)
+            // Compare an event and a constant value.
+            if (value is CounterQueueEvent evt)
             {
-                // Compare an event and a constant value.
-                CounterQueueEvent evt = (CounterQueueEvent)value;
 
                 // Easy host conditional rendering when the check matches what GL can do:
                 //  - Event is of type samples passed.

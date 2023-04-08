@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.OpenGL
         private uint _vertexBuffersLimited;
 
         private BufferRange _indexBuffer;
-        private BufferHandle _tempIndexBuffer;
+        private readonly BufferHandle _tempIndexBuffer;
         private BufferHandle _tempVertexBuffer;
         private int _tempVertexBufferSize;
 

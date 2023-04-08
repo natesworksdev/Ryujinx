@@ -88,9 +88,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             {
                 // Swap B <-> R for BGRA formats, as OpenGL has no support for them
                 // and we need to manually swap the components on read/write on the GPU.
-                int temp = swizzleRgba[0];
-                swizzleRgba[0] = swizzleRgba[2];
-                swizzleRgba[2] = temp;
+                (swizzleRgba[2], swizzleRgba[0]) = (swizzleRgba[0], swizzleRgba[2]);
             }
 
             GL.TexParameter(target, TextureParameterName.TextureSwizzleRgba, swizzleRgba);

@@ -21,13 +21,13 @@ namespace Ryujinx.Graphics.OpenGL
 
         public IWindow Window => _window;
 
-        private TextureCopy _textureCopy;
-        private TextureCopy _backgroundTextureCopy;
+        private readonly TextureCopy _textureCopy;
+        private readonly TextureCopy _backgroundTextureCopy;
         internal TextureCopy TextureCopy => BackgroundContextWorker.InBackground ? _backgroundTextureCopy : _textureCopy;
         internal TextureCopyIncompatible TextureCopyIncompatible { get; }
         internal TextureCopyMS TextureCopyMS { get; }
 
-        private Sync _sync;
+        private readonly Sync _sync;
 
         public event EventHandler<ScreenCaptureImageInfo> ScreenCaptured;
 

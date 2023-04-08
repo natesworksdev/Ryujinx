@@ -17,11 +17,11 @@ namespace Ryujinx.Graphics.OpenGL
         private ulong _firstHandle = 0;
         private ClientWaitSyncFlags _syncFlags => HwCapabilities.RequiresSyncFlush ? ClientWaitSyncFlags.None : ClientWaitSyncFlags.SyncFlushCommandsBit;
 
-        private List<SyncHandle> _handles = new List<SyncHandle>();
+        private readonly List<SyncHandle> _handles = new();
 
         public void Create(ulong id)
         {
-            SyncHandle handle = new SyncHandle
+            SyncHandle handle = new()
             {
                 ID = id,
                 Handle = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None)

@@ -6,8 +6,8 @@ namespace Ryujinx.Graphics.OpenGL
 {
     struct FormatTable
     {
-        private static FormatInfo[] _table;
-        private static SizedInternalFormat[] _tableImage;
+        private static readonly FormatInfo[] _table;
+        private static readonly SizedInternalFormat[] _tableImage;
 
         static FormatTable()
         {

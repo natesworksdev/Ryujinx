@@ -94,8 +94,8 @@ void main()
 }";
 
         private readonly OpenGLRenderer _renderer;
-        private int[] _msToNonMSProgramHandles;
-        private int[] _nonMSToMSProgramHandles;
+        private readonly int[] _msToNonMSProgramHandles;
+        private readonly int[] _nonMSToMSProgramHandles;
 
         public TextureCopyMS(OpenGLRenderer renderer)
         {

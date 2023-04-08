@@ -5,30 +5,30 @@ namespace Ryujinx.Graphics.OpenGL
 {
     static class HwCapabilities
     {
-        private static readonly Lazy<bool> _supportsAlphaToCoverageDitherControl = new Lazy<bool>(() => HasExtension("GL_NV_alpha_to_coverage_dither_control"));
-        private static readonly Lazy<bool> _supportsAstcCompression              = new Lazy<bool>(() => HasExtension("GL_KHR_texture_compression_astc_ldr"));
-        private static readonly Lazy<bool> _supportsBlendEquationAdvanced        = new Lazy<bool>(() => HasExtension("GL_NV_blend_equation_advanced"));
-        private static readonly Lazy<bool> _supportsDrawTexture                  = new Lazy<bool>(() => HasExtension("GL_NV_draw_texture"));
-        private static readonly Lazy<bool> _supportsFragmentShaderInterlock      = new Lazy<bool>(() => HasExtension("GL_ARB_fragment_shader_interlock"));
-        private static readonly Lazy<bool> _supportsFragmentShaderOrdering       = new Lazy<bool>(() => HasExtension("GL_INTEL_fragment_shader_ordering"));
-        private static readonly Lazy<bool> _supportsGeometryShaderPassthrough    = new Lazy<bool>(() => HasExtension("GL_NV_geometry_shader_passthrough"));
-        private static readonly Lazy<bool> _supportsImageLoadFormatted           = new Lazy<bool>(() => HasExtension("GL_EXT_shader_image_load_formatted"));
-        private static readonly Lazy<bool> _supportsIndirectParameters           = new Lazy<bool>(() => HasExtension("GL_ARB_indirect_parameters"));
-        private static readonly Lazy<bool> _supportsParallelShaderCompile        = new Lazy<bool>(() => HasExtension("GL_ARB_parallel_shader_compile"));
-        private static readonly Lazy<bool> _supportsPolygonOffsetClamp           = new Lazy<bool>(() => HasExtension("GL_EXT_polygon_offset_clamp"));
-        private static readonly Lazy<bool> _supportsQuads                        = new Lazy<bool>(SupportsQuadsCheck);
-        private static readonly Lazy<bool> _supportsSeamlessCubemapPerTexture    = new Lazy<bool>(() => HasExtension("GL_ARB_seamless_cubemap_per_texture"));
-        private static readonly Lazy<bool> _supportsShaderBallot                 = new Lazy<bool>(() => HasExtension("GL_ARB_shader_ballot"));
-        private static readonly Lazy<bool> _supportsShaderViewportLayerArray     = new Lazy<bool>(() => HasExtension("GL_ARB_shader_viewport_layer_array"));
-        private static readonly Lazy<bool> _supportsViewportArray2               = new Lazy<bool>(() => HasExtension("GL_NV_viewport_array2"));
-        private static readonly Lazy<bool> _supportsTextureCompressionBptc       = new Lazy<bool>(() => HasExtension("GL_EXT_texture_compression_bptc"));
-        private static readonly Lazy<bool> _supportsTextureCompressionRgtc       = new Lazy<bool>(() => HasExtension("GL_EXT_texture_compression_rgtc"));
-        private static readonly Lazy<bool> _supportsTextureCompressionS3tc       = new Lazy<bool>(() => HasExtension("GL_EXT_texture_compression_s3tc"));
-        private static readonly Lazy<bool> _supportsTextureShadowLod             = new Lazy<bool>(() => HasExtension("GL_EXT_texture_shadow_lod"));
-        private static readonly Lazy<bool> _supportsViewportSwizzle              = new Lazy<bool>(() => HasExtension("GL_NV_viewport_swizzle"));
+        private static readonly Lazy<bool> _supportsAlphaToCoverageDitherControl = new(() => HasExtension("GL_NV_alpha_to_coverage_dither_control"));
+        private static readonly Lazy<bool> _supportsAstcCompression              = new(() => HasExtension("GL_KHR_texture_compression_astc_ldr"));
+        private static readonly Lazy<bool> _supportsBlendEquationAdvanced        = new(() => HasExtension("GL_NV_blend_equation_advanced"));
+        private static readonly Lazy<bool> _supportsDrawTexture                  = new(() => HasExtension("GL_NV_draw_texture"));
+        private static readonly Lazy<bool> _supportsFragmentShaderInterlock      = new(() => HasExtension("GL_ARB_fragment_shader_interlock"));
+        private static readonly Lazy<bool> _supportsFragmentShaderOrdering       = new(() => HasExtension("GL_INTEL_fragment_shader_ordering"));
+        private static readonly Lazy<bool> _supportsGeometryShaderPassthrough    = new(() => HasExtension("GL_NV_geometry_shader_passthrough"));
+        private static readonly Lazy<bool> _supportsImageLoadFormatted           = new(() => HasExtension("GL_EXT_shader_image_load_formatted"));
+        private static readonly Lazy<bool> _supportsIndirectParameters           = new(() => HasExtension("GL_ARB_indirect_parameters"));
+        private static readonly Lazy<bool> _supportsParallelShaderCompile        = new(() => HasExtension("GL_ARB_parallel_shader_compile"));
+        private static readonly Lazy<bool> _supportsPolygonOffsetClamp           = new(() => HasExtension("GL_EXT_polygon_offset_clamp"));
+        private static readonly Lazy<bool> _supportsQuads                        = new(SupportsQuadsCheck);
+        private static readonly Lazy<bool> _supportsSeamlessCubemapPerTexture    = new(() => HasExtension("GL_ARB_seamless_cubemap_per_texture"));
+        private static readonly Lazy<bool> _supportsShaderBallot                 = new(() => HasExtension("GL_ARB_shader_ballot"));
+        private static readonly Lazy<bool> _supportsShaderViewportLayerArray     = new(() => HasExtension("GL_ARB_shader_viewport_layer_array"));
+        private static readonly Lazy<bool> _supportsViewportArray2               = new(() => HasExtension("GL_NV_viewport_array2"));
+        private static readonly Lazy<bool> _supportsTextureCompressionBptc       = new(() => HasExtension("GL_EXT_texture_compression_bptc"));
+        private static readonly Lazy<bool> _supportsTextureCompressionRgtc       = new(() => HasExtension("GL_EXT_texture_compression_rgtc"));
+        private static readonly Lazy<bool> _supportsTextureCompressionS3tc       = new(() => HasExtension("GL_EXT_texture_compression_s3tc"));
+        private static readonly Lazy<bool> _supportsTextureShadowLod             = new(() => HasExtension("GL_EXT_texture_shadow_lod"));
+        private static readonly Lazy<bool> _supportsViewportSwizzle              = new(() => HasExtension("GL_NV_viewport_swizzle"));
 
-        private static readonly Lazy<int> _maximumComputeSharedMemorySize = new Lazy<int>(() => GetLimit(All.MaxComputeSharedMemorySize));
-        private static readonly Lazy<int> _storageBufferOffsetAlignment   = new Lazy<int>(() => GetLimit(All.ShaderStorageBufferOffsetAlignment));
+        private static readonly Lazy<int> _maximumComputeSharedMemorySize = new(() => GetLimit(All.MaxComputeSharedMemorySize));
+        private static readonly Lazy<int> _storageBufferOffsetAlignment   = new(() => GetLimit(All.ShaderStorageBufferOffsetAlignment));
 
         public enum GpuVendor
         {
@@ -40,14 +40,14 @@ namespace Ryujinx.Graphics.OpenGL
             Nvidia
         }
 
-        private static readonly Lazy<GpuVendor> _gpuVendor = new Lazy<GpuVendor>(GetGpuVendor);
+        private static readonly Lazy<GpuVendor> _gpuVendor = new(GetGpuVendor);
 
         private static bool _isAMD   => _gpuVendor.Value == GpuVendor.AmdWindows || _gpuVendor.Value == GpuVendor.AmdUnix;
         private static bool _isIntel => _gpuVendor.Value == GpuVendor.IntelWindows || _gpuVendor.Value == GpuVendor.IntelUnix;
 
         public static GpuVendor Vendor => _gpuVendor.Value;
 
-        private static Lazy<float> _maxSupportedAnisotropy = new Lazy<float>(GL.GetFloat((GetPName)All.MaxTextureMaxAnisotropy));
+        private static readonly Lazy<float> _maxSupportedAnisotropy = new(GL.GetFloat((GetPName)All.MaxTextureMaxAnisotropy));
 
         public static bool UsePersistentBufferForFlush       => _gpuVendor.Value == GpuVendor.AmdWindows || _gpuVendor.Value == GpuVendor.Nvidia;
 
