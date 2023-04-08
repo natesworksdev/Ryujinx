@@ -98,7 +98,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         private WindowState _windowState;
         private double _windowWidth;
         private double _windowHeight;
-        private PixelPoint _windowXY;
 
         private bool _isActive;
 
@@ -646,17 +645,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 _windowHeight = value;
 
-                OnPropertyChanged();
-            }
-        }
-
-        public PixelPoint WindowXY
-        {
-            get => _windowXY;
-            set
-            {
-                _windowXY = value;
-                
                 OnPropertyChanged();
             }
         }
