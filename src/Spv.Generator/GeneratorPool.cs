@@ -4,11 +4,11 @@ namespace Spv.Generator
 {
     public class GeneratorPool<T> where T : class, new()
     {
-        private List<T[]> _pool;
+        private readonly List<T[]> _pool;
         private int _chunkIndex = -1;
         private int _poolIndex = -1;
-        private int _initialSize;
-        private int _poolSizeIncrement;
+        private readonly int _initialSize;
+        private readonly int _poolSizeIncrement;
 
         public GeneratorPool(): this(1000, 200) { }
 
