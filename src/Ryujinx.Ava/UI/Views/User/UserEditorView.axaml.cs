@@ -39,12 +39,12 @@ namespace Ryujinx.Ava.UI.Views.User
                 switch (arg.NavigationMode)
                 {
                     case NavigationMode.New:
-                        var args = ((NavigationDialogHost parent, UserProfile profile, bool isNewUser))arg.Parameter;
-                        _isNewUser = args.isNewUser;
-                        _profile = args.profile;
+                        var (parent, profile, isNewUser) = ((NavigationDialogHost parent, UserProfile profile, bool isNewUser))arg.Parameter;
+                        _isNewUser = isNewUser;
+                        _profile = profile;
                         TempProfile = new TempProfile(_profile);
 
-                        _parent = args.parent;
+                        _parent = parent;
                         break;
                 }
 

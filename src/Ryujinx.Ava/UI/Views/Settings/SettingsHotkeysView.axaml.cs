@@ -12,7 +12,7 @@ namespace Ryujinx.Ava.UI.Views.Settings
     public partial class SettingsHotkeysView : UserControl
     {
         private ButtonKeyAssigner _currentAssigner;
-        private IGamepadDriver AvaloniaKeyboardDriver;
+        private readonly IGamepadDriver AvaloniaKeyboardDriver;
     
         public SettingsHotkeysView()
         {

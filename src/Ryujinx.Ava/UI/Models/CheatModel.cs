@@ -35,6 +35,6 @@ namespace Ryujinx.Ava.UI.Models
 
         public string Name { get; }
 
-        public string CleanName => Name.Substring(1, Name.Length - 8);
+        public string CleanName => Name[1..^7];
     }
 }

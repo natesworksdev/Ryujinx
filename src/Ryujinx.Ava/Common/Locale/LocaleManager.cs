@@ -13,7 +13,7 @@ namespace Ryujinx.Ava.Common.Locale
     {
         private const string DefaultLanguageCode = "en_US";
 
-        private Dictionary<LocaleKeys, string>                      _localeStrings;
+        private readonly Dictionary<LocaleKeys, string>                      _localeStrings;
         private Dictionary<LocaleKeys, string>                      _localeDefaultStrings;
         private readonly ConcurrentDictionary<LocaleKeys, object[]> _dynamicValues;
 

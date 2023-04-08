@@ -100,7 +100,7 @@ namespace Ryujinx.Ava.UI.Windows
                 return;
             }
 
-            List<string> enabledCheats = new List<string>();
+            List<string> enabledCheats = new();
 
             foreach (var cheats in LoadedCheats)
             {

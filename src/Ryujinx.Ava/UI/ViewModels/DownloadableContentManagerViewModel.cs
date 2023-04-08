@@ -31,14 +31,14 @@ namespace Ryujinx.Ava.UI.ViewModels
         private readonly List<DownloadableContentContainer> _downloadableContentContainerList;
         private readonly string                             _downloadableContentJsonPath;
 
-        private VirtualFileSystem                      _virtualFileSystem;
+        private readonly VirtualFileSystem                      _virtualFileSystem;
         private AvaloniaList<DownloadableContentModel> _downloadableContents = new();
         private AvaloniaList<DownloadableContentModel> _views = new();
         private AvaloniaList<DownloadableContentModel> _selectedDownloadableContents = new();
 
         private string _search;
-        private ulong _titleId;
-        private string _titleName;
+        private readonly ulong _titleId;
+        private readonly string _titleName;
 
         private static readonly DownloadableContentJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
@@ -196,7 +196,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async void Add()
         {
-            OpenFileDialog dialog = new OpenFileDialog()
+            OpenFileDialog dialog = new()
             {
                 Title         = LocaleManager.Instance[LocaleKeys.SelectDlcDialogTitle],
                 AllowMultiple = true

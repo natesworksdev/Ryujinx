@@ -75,7 +75,7 @@ namespace Ryujinx.Ava.UI.Controls
             VirtualFileSystem ownerVirtualFileSystem, HorizonClient ownerHorizonClient)
         {
             var content = new NavigationDialogHost(ownerAccountManager, ownerContentManager, ownerVirtualFileSystem, ownerHorizonClient);
-            ContentDialog contentDialog = new ContentDialog
+            ContentDialog contentDialog = new()
             {
                 Title = LocaleManager.Instance[LocaleKeys.UserProfileWindowTitle],
                 PrimaryButtonText = "",
@@ -166,7 +166,7 @@ namespace Ryujinx.Ava.UI.Controls
 
                 if (profile == null)
                 {
-                    async void Action()
+                    static async void Action()
                     {
                         await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogUserProfileDeletionWarningMessage]);
                     }

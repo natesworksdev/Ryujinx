@@ -425,10 +425,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void SetMainContent(Control content = null)
         {
-            if (content == null)
-            {
-                content = GameLibrary;
-            }
+            content ??= GameLibrary;
 
             if (MainContent.Content != content)
             {

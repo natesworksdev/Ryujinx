@@ -89,7 +89,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private Cursor _cursor;
         private string _title;
         private string _currentEmulatedGamePath;
-        private AutoResetEvent _rendererWaitEvent;
+        private readonly AutoResetEvent _rendererWaitEvent;
         private WindowState _windowState;
         private double _windowWidth;
         private double _windowHeight;
@@ -1023,7 +1023,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                                 // Purge Applet Cache.
 
-                                DirectoryInfo miiEditorCacheFolder = new DirectoryInfo(Path.Combine(AppDataManager.GamesDirPath, "0100000000001009", "cache"));
+                                DirectoryInfo miiEditorCacheFolder = new(Path.Combine(AppDataManager.GamesDirPath, "0100000000001009", "cache"));
 
                                 if (miiEditorCacheFolder.Exists)
                                 {
@@ -1458,10 +1458,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             Logger.RestartTime();
 
-            if (SelectedIcon == null)
-            {
-                SelectedIcon = ApplicationLibrary.GetApplicationIcon(path);
-            }
+            SelectedIcon ??= ApplicationLibrary.GetApplicationIcon(path);
 
             PrepareLoadScreen();
 

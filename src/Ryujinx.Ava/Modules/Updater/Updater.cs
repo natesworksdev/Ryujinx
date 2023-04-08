@@ -421,10 +421,8 @@ namespace Ryujinx.Modules
                         // On macOS, ensure that we remove the quarantine bit to prevent Gatekeeper from blocking execution.
                         if (OperatingSystem.IsMacOS())
                         {
-                            using (Process xattrProcess = Process.Start("xattr", new List<string> { "-d", "com.apple.quarantine", updateFile }))
-                            {
-                                xattrProcess.WaitForExit();
-                            }
+                            using Process xattrProcess = Process.Start("xattr", new List<string> { "-d", "com.apple.quarantine", updateFile });
+                            xattrProcess.WaitForExit();
                         }
 
                         try

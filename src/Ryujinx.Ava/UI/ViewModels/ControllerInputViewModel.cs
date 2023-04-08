@@ -176,11 +176,11 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             get
             {
-                SvgImage image = new SvgImage();
+                SvgImage image = new();
 
                 if (!string.IsNullOrWhiteSpace(_controllerImage))
                 {
-                    SvgSource source = new SvgSource();
+                    SvgSource source = new();
 
                     source.Load(EmbeddedResources.GetStream(_controllerImage));
 
@@ -246,10 +246,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 _mainWindow.InputManager.GamepadDriver.OnGamepadConnected += HandleOnGamepadConnected;
                 _mainWindow.InputManager.GamepadDriver.OnGamepadDisconnected += HandleOnGamepadDisconnected;
-                if (_mainWindow.ViewModel.AppHost != null)
-                {
-                    _mainWindow.ViewModel.AppHost.NpadManager.BlockInputUpdates();
-                }
+                _mainWindow.ViewModel.AppHost?.NpadManager.BlockInputUpdates();
 
                 _isLoaded = false;
 
@@ -448,7 +445,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             const string Hyphen = "-";
             const int Offset = 1;
 
-            return str.Substring(str.IndexOf(Hyphen) + Offset);
+            return str[(str.IndexOf(Hyphen) + Offset)..];
         }
 
         public void LoadDevices()

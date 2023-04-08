@@ -32,17 +32,16 @@ namespace Ryujinx.Ava.UI.Helpers
 
             ContentDialog contentDialog = new()
             {
-                Title               = title,
-                PrimaryButtonText   = primaryButton,
-                SecondaryButtonText = secondaryButton,
-                CloseButtonText     = closeButton,
-                Content             = content
+                Title                = title,
+                PrimaryButtonText    = primaryButton,
+                SecondaryButtonText  = secondaryButton,
+                CloseButtonText      = closeButton,
+                Content              = content,
+                PrimaryButtonCommand = MiniCommand.Create(() =>
+                {
+                    result = primaryButtonResult;
+                })
             };
-
-            contentDialog.PrimaryButtonCommand = MiniCommand.Create(() =>
-            {
-                result = primaryButtonResult;
-            });
 
             contentDialog.SecondaryButtonCommand = MiniCommand.Create(() =>
             {

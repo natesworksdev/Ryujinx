@@ -17,7 +17,7 @@ namespace Ryujinx.Ava.UI.Applet
     class AvaloniaDynamicTextInputHandler : IDynamicTextInputHandler
     {
         private MainWindow _parent;
-        private OffscreenTextBox _hiddenTextBox;
+        private readonly OffscreenTextBox _hiddenTextBox;
         private bool _canProcessInput;
         private IDisposable _textChangedSubscription;
         private IDisposable _selectionStartChangedSubscription;

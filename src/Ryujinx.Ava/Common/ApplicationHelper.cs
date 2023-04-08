@@ -293,10 +293,11 @@ namespace Ryujinx.Ava.Common
                             await ContentDialogHelper.CreateErrorDialog(ex.Message);
                         });
                     }
-                });
-
-                extractorThread.Name = "GUI.NcaSectionExtractorThread";
-                extractorThread.IsBackground = true;
+                })
+                {
+                    Name         = "GUI.NcaSectionExtractorThread",
+                    IsBackground = true
+                };
                 extractorThread.Start();
             }
         }

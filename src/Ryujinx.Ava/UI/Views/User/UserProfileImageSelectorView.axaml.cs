@@ -108,17 +108,13 @@ namespace Ryujinx.Ava.UI.Views.User
 
         private static byte[] ProcessProfileImage(byte[] buffer)
         {
-            using (Image image = Image.Load(buffer))
-            {
-                image.Mutate(x => x.Resize(256, 256));
+            using Image image = Image.Load(buffer);
+            image.Mutate(x => x.Resize(256, 256));
 
-                using (MemoryStream streamJpg = new())
-                {
-                    image.SaveAsJpeg(streamJpg);
+            using MemoryStream streamJpg = new();
+            image.SaveAsJpeg(streamJpg);
 
-                    return streamJpg.ToArray();
-                }
-            }
+            return streamJpg.ToArray();
         }
     }
 }
