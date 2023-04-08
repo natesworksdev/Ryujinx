@@ -90,7 +90,7 @@ namespace Ryujinx.Audio.Backends.SDL2
                 throw new NotImplementedException("Input direction is currently not implemented on SDL2 backend!");
             }
 
-            SDL2HardwareDeviceSession session = new SDL2HardwareDeviceSession(this, memoryManager, sampleFormat, sampleRate, channelCount, volume);
+            SDL2HardwareDeviceSession session = new(this, memoryManager, sampleFormat, sampleRate, channelCount, volume);
 
             _sessions.TryAdd(session, 0);
 
