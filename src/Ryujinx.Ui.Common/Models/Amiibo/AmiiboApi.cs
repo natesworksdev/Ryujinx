@@ -53,5 +53,15 @@ namespace Ryujinx.Ui.Common.Models.Amiibo
         {
             return HashCode.Combine(Head, Tail);
         }
+
+        public static bool operator ==(AmiiboApi left, AmiiboApi right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(AmiiboApi left, AmiiboApi right)
+        {
+            return !(left == right);
+        }
     }
 }
