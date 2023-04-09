@@ -189,6 +189,7 @@ namespace Ryujinx.Audio.Input
         /// <param name="appletResourceUserId">The applet resource user id of the application</param>
         /// <param name="processHandle">The process handle of the application</param>
         /// <returns>A <see cref="ResultCode"/> reporting an error or a success</returns>
+#pragma warning disable IDE0060
         public ResultCode OpenAudioIn(out string outputDeviceName,
                                       out AudioOutputConfiguration outputConfiguration,
                                       out AudioInputSystem obj,
@@ -235,6 +236,7 @@ namespace Ryujinx.Audio.Input
 
             return result;
         }
+#pragma warning restore IDE0060
 
         public void Dispose()
         {

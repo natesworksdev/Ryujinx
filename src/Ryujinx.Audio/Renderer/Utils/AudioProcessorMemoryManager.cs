@@ -18,10 +18,12 @@ namespace Ryujinx.Audio.Renderer.Utils
         /// <param name="size">The size of the CPU memory region to map.</param>
         /// <returns>The address on the <see cref="Dsp.AudioProcessor"/> address space.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#pragma warning disable IDE0060
         public static DspAddress Map(uint processHandle, CpuAddress cpuAddress, ulong size)
         {
             return cpuAddress;
         }
+#pragma warning restore IDE0060
 
         /// <summary>
         /// Unmap the given <see cref="CpuAddress"/> from the <see cref="Dsp.AudioProcessor"/> address space.
@@ -30,9 +32,11 @@ namespace Ryujinx.Audio.Renderer.Utils
         /// <param name="cpuAddress">The <see cref="CpuAddress"/> to unmap.</param>
         /// <param name="size">The size of the CPU memory region to unmap.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#pragma warning disable IDE0060
         public static void Unmap(uint processHandle, CpuAddress cpuAddress, ulong size)
         {
         }
+#pragma warning restore IDE0060
 
         /// <summary>
         /// Invalidate the <see cref="Dsp.AudioProcessor"/> data cache at the given address.
@@ -40,9 +44,11 @@ namespace Ryujinx.Audio.Renderer.Utils
         /// <param name="address">The base DSP address to invalidate</param>
         /// <param name="size">The size of the DSP memory region to invalidate.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#pragma warning disable IDE0060
         public static void InvalidateDspCache(DspAddress address, ulong size)
         {
         }
+#pragma warning restore IDE0060
 
         /// <summary>
         /// Invalidate the CPU data cache at the given address.
@@ -50,8 +56,10 @@ namespace Ryujinx.Audio.Renderer.Utils
         /// <param name="address">The base <see cref="CpuAddress"/> to invalidate</param>
         /// <param name="size">The size of the CPU memory region to invalidate.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#pragma warning disable IDE0060
         public static void InvalidateDataCache(CpuAddress address, ulong size)
         {
         }
+#pragma warning restore IDE0060
     }
 }

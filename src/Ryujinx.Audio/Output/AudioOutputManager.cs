@@ -183,6 +183,7 @@ namespace Ryujinx.Audio.Output
         /// <param name="appletResourceUserId">The applet resource user id of the application</param>
         /// <param name="processHandle">The process handle of the application</param>
         /// <returns>A <see cref="ResultCode"/> reporting an error or a success</returns>
+#pragma warning disable IDE0060
         public ResultCode OpenAudioOut(out string outputDeviceName,
                                        out AudioOutputConfiguration outputConfiguration,
                                        out AudioOutputSystem obj,
@@ -230,6 +231,7 @@ namespace Ryujinx.Audio.Output
 
             return result;
         }
+#pragma warning restore IDE0060
 
         /// <summary>
         /// Sets the volume for all output devices.

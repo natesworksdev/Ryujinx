@@ -11,6 +11,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
         public float[] DelayedSampleBuffer;
         public int[] DelayedSampleBufferPosition;
 
+#pragma warning disable IDE0060
         public LimiterState(ref LimiterParameter parameter, ulong workBuffer)
         {
             DetectorAverage = new ExponentialMovingAverage[parameter.ChannelCount];
@@ -25,7 +26,10 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
 
             UpdateParameter(ref parameter);
         }
+#pragma warning restore IDE0060
 
+#pragma warning disable IDE0060
         public static void UpdateParameter(ref LimiterParameter parameter) { }
+#pragma warning restore IDE0060
     }
 }

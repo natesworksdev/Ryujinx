@@ -11,12 +11,14 @@ namespace Ryujinx.Audio.Backends.Dummy
         private readonly IHardwareDeviceDriver _manager;
         private readonly IVirtualMemoryManager _memoryManager;
 
+#pragma warning disable IDE0060
         public DummyHardwareDeviceSessionInput(IHardwareDeviceDriver manager, IVirtualMemoryManager memoryManager, SampleFormat requestedSampleFormat, uint requestedSampleRate, uint requestedChannelCount)
         {
             _volume = 1.0f;
             _manager = manager;
             _memoryManager = memoryManager;
         }
+#pragma warning restore IDE0060
 
         public void Dispose()
         {
