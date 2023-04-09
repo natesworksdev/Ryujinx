@@ -391,12 +391,12 @@ namespace Ryujinx.Input.HLE
         private static JoystickPosition ApplyDeadzone(float x, float y, float deadzone)
         {
             float magnitudeClamped = Math.Min(MathF.Sqrt(x * x + y * y), 1f);
-            
+
             if (magnitudeClamped <= deadzone)
             {
                 return new JoystickPosition() {Dx = 0, Dy = 0};
             }
-            
+
             return new JoystickPosition()
             {
                 Dx = ClampAxis((x / magnitudeClamped) * ((magnitudeClamped - deadzone) / (1 - deadzone))),
@@ -539,6 +539,7 @@ namespace Ryujinx.Input.HLE
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             Dispose(true);
         }
 

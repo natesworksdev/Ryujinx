@@ -94,6 +94,9 @@ namespace Ryujinx.Input.HLE
             return false;
         }
 
-        public void Dispose() { }
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+        }
     }
 }

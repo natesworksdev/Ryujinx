@@ -461,6 +461,7 @@ namespace Ryujinx.Input.Motion.CemuHook
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             _active = false;
 
             CloseClients();

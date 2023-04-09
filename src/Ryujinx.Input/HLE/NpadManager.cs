@@ -314,6 +314,7 @@ namespace Ryujinx.Input.HLE
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             Dispose(true);
         }
     }
