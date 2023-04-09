@@ -85,8 +85,15 @@ namespace Ryujinx.Input.SDL2
             // Enable motion tracking
             if (Features.HasFlag(GamepadFeaturesFlag.Motion))
             {
-                SDL_GameControllerSetSensorEnabled(_gamepadHandle, SDL_SensorType.SDL_SENSOR_ACCEL, SDL_bool.SDL_TRUE);
-                SDL_GameControllerSetSensorEnabled(_gamepadHandle, SDL_SensorType.SDL_SENSOR_GYRO, SDL_bool.SDL_TRUE);
+                if (SDL_GameControllerSetSensorEnabled(_gamepadHandle, SDL_SensorType.SDL_SENSOR_ACCEL, SDL_bool.SDL_TRUE) != 0)
+                {
+                    throw new InvalidOperationException($"Could not enable data reporting for SensorType {SDL_SensorType.SDL_SENSOR_ACCEL}.");
+                }
+
+                if (SDL_GameControllerSetSensorEnabled(_gamepadHandle, SDL_SensorType.SDL_SENSOR_GYRO, SDL_bool.SDL_TRUE) != 0)
+                {
+                    throw new InvalidOperationException($"Could not enable data reporting for SensorType {SDL_SensorType.SDL_SENSOR_GYRO}.");
+                }
             }
         }
 
@@ -144,7 +151,10 @@ namespace Ryujinx.Input.SDL2
 
                 if (durationMs == uint.MaxValue)
                 {
-                    SDL_GameControllerRumble(_gamepadHandle, lowFrequencyRaw, highFrequencyRaw, SDL_HAPTIC_INFINITY);
+                    if (SDL_GameControllerRumble(_gamepadHandle, lowFrequencyRaw, highFrequencyRaw, SDL_HAPTIC_INFINITY) != 0)
+                    {
+                        throw new NotSupportedException("Rumble is not supported on this game controller.");
+                    }
                 }
                 else if (durationMs > SDL_HAPTIC_INFINITY)
                 {
@@ -152,7 +162,10 @@ namespace Ryujinx.Input.SDL2
                 }
                 else
                 {
-                    SDL_GameControllerRumble(_gamepadHandle, lowFrequencyRaw, highFrequencyRaw, durationMs);
+                    if (SDL_GameControllerRumble(_gamepadHandle, lowFrequencyRaw, highFrequencyRaw, durationMs) != 0)
+                    {
+                        throw new NotSupportedException("Rumble is not supported on this game controller.");
+                    }
                 }
             }
         }
