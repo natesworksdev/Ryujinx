@@ -52,7 +52,9 @@ namespace Ryujinx.Cpu.AppleHv
 
         private int _tlbInvalidationPending;
 
+#pragma warning disable IDE0052
         private readonly HvIpaAllocator _ipaAllocator;
+#pragma warning restore IDE0052
         private readonly HvMemoryBlockAllocator _blockAllocator;
 
         public HvAddressSpaceRange(HvIpaAllocator ipaAllocator)
