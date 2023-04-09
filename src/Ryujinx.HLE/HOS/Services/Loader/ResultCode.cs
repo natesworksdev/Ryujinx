@@ -1,5 +1,8 @@
-﻿namespace Ryujinx.HLE.HOS.Services.Loader
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Ryujinx.HLE.HOS.Services.Loader
 {
+    [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
     enum ResultCode
     {
         ModuleId       = 9,

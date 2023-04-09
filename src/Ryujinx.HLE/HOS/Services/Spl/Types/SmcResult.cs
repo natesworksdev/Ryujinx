@@ -11,7 +11,6 @@
         NotPermitted          = 6,
         NotInitialized        = 7,
 
-        PsciSuccess           = 0,
         PsciNotSupported      = -1,
         PsciInvalidParameters = -2,
         PsciDenied            = -3,

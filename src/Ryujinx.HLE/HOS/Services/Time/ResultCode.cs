@@ -1,5 +1,8 @@
-﻿namespace Ryujinx.HLE.HOS.Services.Time
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Ryujinx.HLE.HOS.Services.Time
 {
+    [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
     public enum ResultCode
     {
         ModuleId       = 116,
