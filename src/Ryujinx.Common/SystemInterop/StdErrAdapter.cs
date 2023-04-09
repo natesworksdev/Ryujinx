@@ -54,6 +54,7 @@ namespace Ryujinx.Common.SystemInterop
             }
         }
         
+#pragma warning disable IDE0060
         private void Dispose(bool disposing)
         {
             if (_disposable)
@@ -69,6 +70,7 @@ namespace Ryujinx.Common.SystemInterop
                 }
             }
         }
+#pragma warning restore IDE0060
 
         public void Dispose()
         {
