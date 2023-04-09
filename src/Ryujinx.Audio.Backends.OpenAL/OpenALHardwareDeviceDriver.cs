@@ -123,6 +123,7 @@ namespace Ryujinx.Audio.Backends.OpenAL
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             Dispose(true);
         }
 
