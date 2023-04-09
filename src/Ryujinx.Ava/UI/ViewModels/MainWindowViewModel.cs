@@ -1518,7 +1518,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             });
         }
 
-        public void UpdateGameMetadata(string titleId)
+        public static void UpdateGameMetadata(string titleId)
         {
             ApplicationLibrary.LoadAndSaveMetaData(titleId, appMetadata =>
             {

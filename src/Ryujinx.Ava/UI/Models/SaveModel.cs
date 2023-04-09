@@ -81,7 +81,7 @@ namespace Ryujinx.Ava.UI.Models
 
             Task.Run(() =>
             {
-                var saveRoot = System.IO.Path.Combine(virtualFileSystem.GetNandPath(), $"user/save/{info.SaveDataId:x16}");
+                var saveRoot = System.IO.Path.Combine(VirtualFileSystem.GetNandPath(), $"user/save/{info.SaveDataId:x16}");
 
                 long total_size = GetDirectorySize(saveRoot);
                 static long GetDirectorySize(string path)
