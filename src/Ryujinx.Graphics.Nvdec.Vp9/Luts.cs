@@ -1134,10 +1134,12 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             0, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5,
         };
 
+#pragma warning disable IDE1006
         public static ReadOnlySpan<byte> get_band_translate(TxSize txSize)
         {
             return txSize == TxSize.Tx4x4 ? Vp9CoefbandTrans4X4 : Vp9CoefbandTrans8X8Plus;
         }
+#pragma warning restore IDE1006
 
         public static readonly byte[][] Vp9Pareto8Full = new byte[][]
         {

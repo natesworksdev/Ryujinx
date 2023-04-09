@@ -1901,6 +1901,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             }
         }
 
+#pragma warning disable IDE1006
         public static void vpx_Highbdidct8x8_1_add_c(ReadOnlySpan<int> input, Span<ushort> dest, int stride, int bd)
         {
             int i, j;
@@ -1919,6 +1920,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
                 dest = dest[stride..];
             }
         }
+#pragma warning restore IDE1006
 
         public static void HighbdIadst16(ReadOnlySpan<int> input, Span<int> output, int bd)
         {
