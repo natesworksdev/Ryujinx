@@ -23,14 +23,14 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(3)]
         // GetFirmwareVersion() -> buffer<nn::settings::system::FirmwareVersion, 0x1a, 0x100>
-        public ResultCode GetFirmwareVersion(ServiceCtx context)
+        public static ResultCode GetFirmwareVersion(ServiceCtx context)
         {
             return GetFirmwareVersion2(context);
         }
 
         [CommandCmif(4)]
         // GetFirmwareVersion2() -> buffer<nn::settings::system::FirmwareVersion, 0x1a, 0x100>
-        public ResultCode GetFirmwareVersion2(ServiceCtx context)
+        public static ResultCode GetFirmwareVersion2(ServiceCtx context)
         {
             ulong replyPos  = context.Request.RecvListBuff[0].Position;
 
@@ -308,7 +308,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
                 return null;
             }
 
-            string firmwareTitlePath = device.FileSystem.SwitchPathToSystemPath(contentPath);
+            string firmwareTitlePath = FileSystem.VirtualFileSystem.SwitchPathToSystemPath(contentPath);
 
             using IStorage firmwareStorage = new LocalStorage(firmwareTitlePath, FileAccess.Read);
             Nca firmwareContent = new(device.System.KeySet, firmwareStorage);

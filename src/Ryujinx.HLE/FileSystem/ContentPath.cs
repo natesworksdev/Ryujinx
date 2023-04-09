@@ -33,7 +33,7 @@ namespace Ryujinx.HLE.FileSystem
             {
                 SystemContent => Path.Combine(AppDataManager.BaseDirPath, SystemNandPath, Contents),
                 UserContent   => Path.Combine(AppDataManager.BaseDirPath, UserNandPath,   Contents),
-                SdCardContent => Path.Combine(fileSystem.GetSdCardPath(), Nintendo,       Contents),
+                SdCardContent => Path.Combine(GetSdCardPath(), Nintendo,       Contents),
                 System        => Path.Combine(AppDataManager.BaseDirPath, SystemNandPath),
                 User          => Path.Combine(AppDataManager.BaseDirPath, UserNandPath),
                 _ => throw new NotSupportedException($"Content Path \"`{switchContentPath}`\" is not supported.")

@@ -245,7 +245,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
 
         protected override void SetInterfaceVersion(uint interfaceVersion)
         {
-            _database.SetInterfaceVersion(_metadata, interfaceVersion);
+            DatabaseImpl.SetInterfaceVersion(_metadata, interfaceVersion);
         }
 
         protected override ResultCode Convert(Ver3StoreData ver3StoreData, out CharInfo charInfo)

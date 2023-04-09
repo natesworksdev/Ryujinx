@@ -312,7 +312,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         [CommandCmif(500)] // 4.0.0+
         // CalculateStandardUserSystemClockDifferenceByUser(buffer<nn::time::sf::ClockSnapshot, 0x19>, buffer<nn::time::sf::ClockSnapshot, 0x19>) -> nn::TimeSpanType
-        public ResultCode CalculateStandardUserSystemClockDifferenceByUser(ServiceCtx context)
+        public static ResultCode CalculateStandardUserSystemClockDifferenceByUser(ServiceCtx context)
         {
             ClockSnapshot clockSnapshotA = ReadClockSnapshotFromBuffer(context, context.Request.PtrBuff[0]);
             ClockSnapshot clockSnapshotB = ReadClockSnapshotFromBuffer(context, context.Request.PtrBuff[1]);
@@ -330,7 +330,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         [CommandCmif(501)] // 4.0.0+
         // CalculateSpanBetween(buffer<nn::time::sf::ClockSnapshot, 0x19>, buffer<nn::time::sf::ClockSnapshot, 0x19>) -> nn::TimeSpanType
-        public ResultCode CalculateSpanBetween(ServiceCtx context)
+        public static ResultCode CalculateSpanBetween(ServiceCtx context)
         {
             ClockSnapshot clockSnapshotA = ReadClockSnapshotFromBuffer(context, context.Request.PtrBuff[0]);
             ClockSnapshot clockSnapshotB = ReadClockSnapshotFromBuffer(context, context.Request.PtrBuff[1]);

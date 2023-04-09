@@ -155,7 +155,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             return Color.FromRgba(r, g, b, overrideAlpha.GetValueOrDefault(a));
         }
 
-        private Image LoadResource(Assembly assembly, string resourcePath, int newWidth, int newHeight)
+        private static Image LoadResource(Assembly assembly, string resourcePath, int newWidth, int newHeight)
         {
             Stream resourceStream = assembly.GetManifestResourceStream(resourcePath);
 

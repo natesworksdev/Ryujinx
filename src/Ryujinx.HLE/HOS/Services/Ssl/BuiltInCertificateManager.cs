@@ -122,7 +122,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
 
                 if (HasCertStoreTitle())
                 {
-                    using LocalStorage ncaFile = new(_virtualFileSystem.SwitchPathToSystemPath(GetCertStoreTitleContentPath()), FileAccess.Read, FileMode.Open);
+                    using LocalStorage ncaFile = new(VirtualFileSystem.SwitchPathToSystemPath(GetCertStoreTitleContentPath()), FileAccess.Read, FileMode.Open);
 
                     Nca nca = new(_virtualFileSystem.KeySet, ncaFile);
 

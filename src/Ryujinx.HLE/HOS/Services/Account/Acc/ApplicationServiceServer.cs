@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return ResultCode.Success;
         }
 
-        public ResultCode GetUserExistenceImpl(ServiceCtx context)
+        public static ResultCode GetUserExistenceImpl(ServiceCtx context)
         {
             ResultCode resultCode = CheckUserId(context, out UserId userId);
 
@@ -40,12 +40,12 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return ResultCode.Success;
         }
 
-        public ResultCode ListAllUsers(ServiceCtx context)
+        public static ResultCode ListAllUsers(ServiceCtx context)
         {
             return WriteUserList(context, context.Device.System.AccountManager.GetAllUsers());
         }
 
-        public ResultCode ListOpenUsers(ServiceCtx context)
+        public static ResultCode ListOpenUsers(ServiceCtx context)
         {
             return WriteUserList(context, context.Device.System.AccountManager.GetOpenedUsers());
         }
@@ -87,7 +87,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return ResultCode.Success;
         }
 
-        public ResultCode GetProfile(ServiceCtx context, out IProfile profile)
+        public static ResultCode GetProfile(ServiceCtx context, out IProfile profile)
         {
             profile = default;
 
@@ -168,7 +168,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             await Task.CompletedTask;
         }
 
-        public ResultCode StoreSaveDataThumbnail(ServiceCtx context)
+        public static ResultCode StoreSaveDataThumbnail(ServiceCtx context)
         {
             ResultCode resultCode = CheckUserId(context, out UserId _);
 
@@ -202,7 +202,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return ResultCode.Success;
         }
 
-        public ResultCode ClearSaveDataThumbnail(ServiceCtx context)
+        public static ResultCode ClearSaveDataThumbnail(ServiceCtx context)
         {
             ResultCode resultCode = CheckUserId(context, out UserId _);
 
@@ -227,12 +227,12 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return ResultCode.Success;
         }
 
-        public ResultCode ListOpenContextStoredUsers(ServiceCtx context)
+        public static ResultCode ListOpenContextStoredUsers(ServiceCtx context)
         {
             return WriteUserList(context, context.Device.System.AccountManager.GetStoredOpenedUsers());
         }
 
-        public ResultCode ListQualifiedUsers(ServiceCtx context)
+        public static ResultCode ListQualifiedUsers(ServiceCtx context)
         {
             // TODO: Determine how users are "qualified". We assume all users are "qualified" for now.
 

@@ -86,7 +86,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
 
         [CommandCmif(5)]
         // GetSharedFontInOrderOfPriority(bytes<8, 1>) -> (u8, u32, buffer<unknown, 6>, buffer<unknown, 6>, buffer<unknown, 6>)
-        public ResultCode GetSharedFontInOrderOfPriority(ServiceCtx context)
+        public static ResultCode GetSharedFontInOrderOfPriority(ServiceCtx context)
         {
 #pragma warning disable IDE0059
             long languageCode = context.RequestData.ReadInt64();
@@ -113,7 +113,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
 
         [CommandCmif(6)] // 4.0.0+
         // GetSharedFontInOrderOfPriorityForSystem(bytes<8, 1>) -> (u8, u32, buffer<unknown, 6>, buffer<unknown, 6>, buffer<unknown, 6>)
-        public ResultCode GetSharedFontInOrderOfPriorityForSystem(ServiceCtx context)
+        public static ResultCode GetSharedFontInOrderOfPriorityForSystem(ServiceCtx context)
         {
             // TODO: Check the differencies with GetSharedFontInOrderOfPriority.
 

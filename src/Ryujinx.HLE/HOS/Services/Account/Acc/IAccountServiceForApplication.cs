@@ -18,35 +18,35 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         [CommandCmif(0)]
         // GetUserCount() -> i32
-        public ResultCode GetUserCount(ServiceCtx context)
+        public static ResultCode GetUserCount(ServiceCtx context)
         {
             return ApplicationServiceServer.GetUserCountImpl(context);
         }
 
         [CommandCmif(1)]
         // GetUserExistence(nn::account::Uid) -> bool
-        public ResultCode GetUserExistence(ServiceCtx context)
+        public static ResultCode GetUserExistence(ServiceCtx context)
         {
-            return _applicationServiceServer.GetUserExistenceImpl(context);
+            return ApplicationServiceServer.GetUserExistenceImpl(context);
         }
 
         [CommandCmif(2)]
         // ListAllUsers() -> array<nn::account::Uid, 0xa>
-        public ResultCode ListAllUsers(ServiceCtx context)
+        public static ResultCode ListAllUsers(ServiceCtx context)
         {
-            return _applicationServiceServer.ListAllUsers(context);
+            return ApplicationServiceServer.ListAllUsers(context);
         }
 
         [CommandCmif(3)]
         // ListOpenUsers() -> array<nn::account::Uid, 0xa>
-        public ResultCode ListOpenUsers(ServiceCtx context)
+        public static ResultCode ListOpenUsers(ServiceCtx context)
         {
-            return _applicationServiceServer.ListOpenUsers(context);
+            return ApplicationServiceServer.ListOpenUsers(context);
         }
 
         [CommandCmif(4)]
         // GetLastOpenedUser() -> nn::account::Uid
-        public ResultCode GetLastOpenedUser(ServiceCtx context)
+        public static ResultCode GetLastOpenedUser(ServiceCtx context)
         {
             return ApplicationServiceServer.GetLastOpenedUser(context);
         }
@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         // GetProfile(nn::account::Uid) -> object<nn::account::profile::IProfile>
         public ResultCode GetProfile(ServiceCtx context)
         {
-            ResultCode resultCode = _applicationServiceServer.GetProfile(context, out IProfile iProfile);
+            ResultCode resultCode = ApplicationServiceServer.GetProfile(context, out IProfile iProfile);
 
             if (resultCode == ResultCode.Success)
             {
@@ -75,7 +75,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         [CommandCmif(51)]
         // TrySelectUserWithoutInteraction(bool) -> nn::account::Uid
-        public ResultCode TrySelectUserWithoutInteraction(ServiceCtx context)
+        public static ResultCode TrySelectUserWithoutInteraction(ServiceCtx context)
         {
             return ApplicationServiceServer.TrySelectUserWithoutInteraction(context);
         }
@@ -142,16 +142,16 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         [CommandCmif(110)]
         // StoreSaveDataThumbnail(nn::account::Uid, buffer<bytes, 5>)
-        public ResultCode StoreSaveDataThumbnail(ServiceCtx context)
+        public static ResultCode StoreSaveDataThumbnail(ServiceCtx context)
         {
-            return _applicationServiceServer.StoreSaveDataThumbnail(context);
+            return ApplicationServiceServer.StoreSaveDataThumbnail(context);
         }
 
         [CommandCmif(111)]
         // ClearSaveDataThumbnail(nn::account::Uid)
-        public ResultCode ClearSaveDataThumbnail(ServiceCtx context)
+        public static ResultCode ClearSaveDataThumbnail(ServiceCtx context)
         {
-            return _applicationServiceServer.ClearSaveDataThumbnail(context);
+            return ApplicationServiceServer.ClearSaveDataThumbnail(context);
         }
 
         [CommandCmif(130)] // 5.0.0+
@@ -173,16 +173,16 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         [CommandCmif(60)] // 5.0.0-5.1.0
         [CommandCmif(131)] // 6.0.0+
         // ListOpenContextStoredUsers() -> array<nn::account::Uid, 0xa>
-        public ResultCode ListOpenContextStoredUsers(ServiceCtx context)
+        public static ResultCode ListOpenContextStoredUsers(ServiceCtx context)
         {
-            return _applicationServiceServer.ListOpenContextStoredUsers(context);
+            return ApplicationServiceServer.ListOpenContextStoredUsers(context);
         }
 
         [CommandCmif(141)] // 6.0.0+
         // ListQualifiedUsers() -> array<nn::account::Uid, 0xa>
-        public ResultCode ListQualifiedUsers(ServiceCtx context)
+        public static ResultCode ListQualifiedUsers(ServiceCtx context)
         {
-            return _applicationServiceServer.ListQualifiedUsers(context);
+            return ApplicationServiceServer.ListQualifiedUsers(context);
         }
 
         [CommandCmif(150)] // 6.0.0+

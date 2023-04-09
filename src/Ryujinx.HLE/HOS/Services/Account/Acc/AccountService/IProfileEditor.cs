@@ -39,14 +39,14 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
 
         [CommandCmif(100)]
         // Store(nn::account::profile::ProfileBase, buffer<nn::account::profile::UserData, 0x19>)
-        public ResultCode Store(ServiceCtx context)
+        public static ResultCode Store(ServiceCtx context)
         {
             return ProfileServer.Store(context);
         }
 
         [CommandCmif(101)]
         // StoreWithImage(nn::account::profile::ProfileBase, buffer<nn::account::profile::UserData, 0x19>, buffer<bytes, 5>)
-        public ResultCode StoreWithImage(ServiceCtx context)
+        public static ResultCode StoreWithImage(ServiceCtx context)
         {
             return ProfileServer.StoreWithImage(context);
         }

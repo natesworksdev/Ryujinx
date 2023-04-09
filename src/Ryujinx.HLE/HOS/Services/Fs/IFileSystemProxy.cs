@@ -53,7 +53,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             ulong titleId = context.RequestData.ReadUInt64();
 #pragma warning restore IDE0059
             string switchPath = ReadUtf8String(context);
-            string fullPath = context.Device.FileSystem.SwitchPathToSystemPath(switchPath);
+            string fullPath = FileSystem.VirtualFileSystem.SwitchPathToSystemPath(switchPath);
 
             if (!File.Exists(fullPath))
             {
@@ -760,7 +760,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             if (installedStorage != StorageId.None)
             {
                 string contentPath = context.Device.System.ContentManager.GetInstalledContentPath(titleId, storageId, contentType);
-                string installPath = context.Device.FileSystem.SwitchPathToSystemPath(contentPath);
+                string installPath = FileSystem.VirtualFileSystem.SwitchPathToSystemPath(contentPath);
 
                 if (!string.IsNullOrWhiteSpace(installPath))
                 {

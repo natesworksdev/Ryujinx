@@ -63,7 +63,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         [CommandCmif(400)]
         // InitializeOld(u64, pid)
 #pragma warning disable IDE0060
-        public ResultCode InitializeOld(ServiceCtx context)
+        public static ResultCode InitializeOld(ServiceCtx context)
         {
             return NetworkInterface.Initialize(UnknownValue, 0, null, null);
         }
@@ -80,7 +80,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         [CommandCmif(402)] // 7.0.0+
         // Initialize(u64 ip_addresses, u64, pid)
-        public ResultCode Initialize(ServiceCtx context)
+        public static ResultCode Initialize(ServiceCtx context)
         {
             // TODO(Ac_K): Determine what addresses are.
             IPAddress unknownAddress1 = new(context.RequestData.ReadUInt32());

@@ -171,16 +171,16 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         [CommandCmif(500)] // 4.0.0+
         // CalculateStandardUserSystemClockDifferenceByUser(buffer<nn::time::sf::ClockSnapshot, 0x19>, buffer<nn::time::sf::ClockSnapshot, 0x19>) -> nn::TimeSpanType
-        public ResultCode CalculateStandardUserSystemClockDifferenceByUser(ServiceCtx context)
+        public static ResultCode CalculateStandardUserSystemClockDifferenceByUser(ServiceCtx context)
         {
-            return _inner.CalculateStandardUserSystemClockDifferenceByUser(context);
+            return IStaticServiceForPsc.CalculateStandardUserSystemClockDifferenceByUser(context);
         }
 
         [CommandCmif(501)] // 4.0.0+
         // CalculateSpanBetween(buffer<nn::time::sf::ClockSnapshot, 0x19>, buffer<nn::time::sf::ClockSnapshot, 0x19>) -> nn::TimeSpanType
-        public ResultCode CalculateSpanBetween(ServiceCtx context)
+        public static ResultCode CalculateSpanBetween(ServiceCtx context)
         {
-            return _inner.CalculateSpanBetween(context);
+            return IStaticServiceForPsc.CalculateSpanBetween(context);
         }
     }
 }

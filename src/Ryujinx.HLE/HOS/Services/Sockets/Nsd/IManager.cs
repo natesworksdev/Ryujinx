@@ -67,7 +67,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
         [CommandCmif(11)]
         // GetEnvironmentIdentifier() -> buffer<bytes<8> environment_identifier, 0x16>
-        public ResultCode GetEnvironmentIdentifier(ServiceCtx context)
+        public static ResultCode GetEnvironmentIdentifier(ServiceCtx context)
         {
             (ulong outputPosition, ulong outputSize) = context.Request.GetBufferType0x22();
 
@@ -161,7 +161,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
         [CommandCmif(20)]
         // Resolve(buffer<unknown<0x100>, 0x15>) -> buffer<unknown<0x100>, 0x16>
-        public ResultCode Resolve(ServiceCtx context)
+        public static ResultCode Resolve(ServiceCtx context)
         {
             ulong outputPosition = context.Request.ReceiveBuff[0].Position;
             ulong outputSize     = context.Request.ReceiveBuff[0].Size;
@@ -184,7 +184,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
         [CommandCmif(21)]
         // ResolveEx(buffer<unknown<0x100>, 0x15>) -> (u32, buffer<unknown<0x100>, 0x16>)
-        public ResultCode ResolveEx(ServiceCtx context)
+        public static ResultCode ResolveEx(ServiceCtx context)
         {
             ulong outputPosition = context.Request.ReceiveBuff[0].Position;
             ulong outputSize     = context.Request.ReceiveBuff[0].Size;
@@ -371,7 +371,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
         [CommandCmif(100)] // 10.0.0+
         // GetApplicationServerEnvironmentType() -> bytes<1>
-        public ResultCode GetApplicationServerEnvironmentType(ServiceCtx context)
+        public static ResultCode GetApplicationServerEnvironmentType(ServiceCtx context)
         {
             // TODO: Mount the savedata 0x80000000000000B0 (nsdsave:/test_parameter) and returns the environment type stored inside if the mount succeed.
             //       Returns ResultCode.NullOutputObject if failed.

@@ -396,7 +396,7 @@ namespace Ryujinx.HLE.FileSystem
                 return false;
             }
 
-            string installedPath = _virtualFileSystem.SwitchPathToSystemPath(locationEntry.ContentPath);
+            string installedPath = VirtualFileSystem.SwitchPathToSystemPath(locationEntry.ContentPath);
 
             if (!string.IsNullOrWhiteSpace(installedPath))
             {
@@ -996,7 +996,7 @@ namespace Ryujinx.HLE.FileSystem
                 {
                     if (entry.ContentType == NcaContentType.Data)
                     {
-                        var path = _virtualFileSystem.SwitchPathToSystemPath(entry.ContentPath);
+                        var path = VirtualFileSystem.SwitchPathToSystemPath(entry.ContentPath);
 
                         using FileStream fileStream = File.OpenRead(path);
                         Nca nca = new(_virtualFileSystem.KeySet, fileStream.AsStorage());

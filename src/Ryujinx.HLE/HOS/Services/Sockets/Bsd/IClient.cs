@@ -182,7 +182,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         [CommandCmif(4)]
         // Open(u32 flags, array<unknown, 0x21> path) -> (i32 ret, u32 bsd_errno)
-        public ResultCode Open(ServiceCtx context)
+        public static ResultCode Open(ServiceCtx context)
         {
             (ulong bufferPosition, ulong bufferSize) = context.Request.GetBufferType0x21();
 
@@ -464,7 +464,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         [CommandCmif(7)]
         // Sysctl(buffer<unknown, 0x21, 0>, buffer<unknown, 0x21, 0>) -> (i32 ret, u32 bsd_errno, u32, buffer<unknown, 0x22, 0>)
-        public ResultCode Sysctl(ServiceCtx context)
+        public static ResultCode Sysctl(ServiceCtx context)
         {
             WriteBsdResult(context, -1, LinuxError.EOPNOTSUPP);
 

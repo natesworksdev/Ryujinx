@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(1)]
         // GetAvailableLanguageCodes() -> (u32, buffer<nn::settings::LanguageCode, 0xa>)
-        public ResultCode GetAvailableLanguageCodes(ServiceCtx context)
+        public static ResultCode GetAvailableLanguageCodes(ServiceCtx context)
         {
             return GetAvailableLanguagesCodesImpl(
                     context,
@@ -77,7 +77,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(5)]
         // GetAvailableLanguageCodes2() -> (u32, buffer<nn::settings::LanguageCode, 6>)
-        public ResultCode GetAvailableLanguageCodes2(ServiceCtx context)
+        public static ResultCode GetAvailableLanguageCodes2(ServiceCtx context)
         {
             return GetAvailableLanguagesCodesImpl(
                     context,
@@ -97,7 +97,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(7)] // 4.0.0+
         // GetKeyCodeMap() -> buffer<nn::kpr::KeyCodeMap, 0x16>
-        public ResultCode GetKeyCodeMap(ServiceCtx context)
+        public static ResultCode GetKeyCodeMap(ServiceCtx context)
         {
             return GetKeyCodeMapImpl(context, 1);
         }
@@ -115,7 +115,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(9)] // 6.0.0+
         // GetKeyCodeMap2() -> buffer<nn::kpr::KeyCodeMap, 0x16>
-        public ResultCode GetKeyCodeMap2(ServiceCtx context)
+        public static ResultCode GetKeyCodeMap2(ServiceCtx context)
         {
             return GetKeyCodeMapImpl(context, 2);
         }

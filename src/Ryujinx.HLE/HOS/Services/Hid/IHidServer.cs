@@ -743,7 +743,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         [CommandCmif(103)]
         // ActivateNpad(nn::applet::AppletResourceUserId)
-        public ResultCode ActivateNpad(ServiceCtx context)
+        public static ResultCode ActivateNpad(ServiceCtx context)
         {
             return ActiveNpadImpl(context);
         }
@@ -826,7 +826,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         [CommandCmif(109)] // 5.0.0+
         // ActivateNpadWithRevision(nn::applet::AppletResourceUserId, ulong revision)
-        public ResultCode ActivateNpadWithRevision(ServiceCtx context)
+        public static ResultCode ActivateNpadWithRevision(ServiceCtx context)
         {
             ulong revision = context.RequestData.ReadUInt64();
 
@@ -940,7 +940,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         [CommandCmif(123)]
         // SetNpadJoyAssignmentModeSingle(uint npadIdType, nn::applet::AppletResourceUserId, uint npadJoyDeviceType)
-        public ResultCode SetNpadJoyAssignmentModeSingle(ServiceCtx context)
+        public static ResultCode SetNpadJoyAssignmentModeSingle(ServiceCtx context)
         {
             NpadIdType npadIdType = (NpadIdType)context.RequestData.ReadUInt32();
             context.RequestData.BaseStream.Position += 4; // Padding
@@ -1078,7 +1078,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         [CommandCmif(133)] // 5.0.0+
         // SetNpadJoyAssignmentModeSingleWithDestination(uint npadIdType, uint npadJoyDeviceType, nn::applet::AppletResourceUserId) -> bool npadIdTypeIsSet, uint npadIdTypeSet
-        public ResultCode SetNpadJoyAssignmentModeSingleWithDestination(ServiceCtx context)
+        public static ResultCode SetNpadJoyAssignmentModeSingleWithDestination(ServiceCtx context)
         {
             NpadIdType        npadIdType        = (NpadIdType)context.RequestData.ReadInt32();
             NpadJoyDeviceType npadJoyDeviceType = (NpadJoyDeviceType)context.RequestData.ReadInt32();

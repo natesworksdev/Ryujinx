@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
         [CommandCmif(0)]
         // InitializeOld(u32, u32, u32)
-        public ResultCode InitializeOld(ServiceCtx context)
+        public static ResultCode InitializeOld(ServiceCtx context)
         {
             MultiMediaOperationType operationType    = (MultiMediaOperationType)context.RequestData.ReadUInt32();
             int                     fgmId            = context.RequestData.ReadInt32();
@@ -33,7 +33,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
         [CommandCmif(1)]
         // FinalizeOld(u32)
-        public ResultCode FinalizeOld(ServiceCtx context)
+        public static ResultCode FinalizeOld(ServiceCtx context)
         {
             MultiMediaOperationType operationType = (MultiMediaOperationType)context.RequestData.ReadUInt32();
 
@@ -49,7 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
         [CommandCmif(2)]
         // SetAndWaitOld(u32, u32, u32)
-        public ResultCode SetAndWaitOld(ServiceCtx context)
+        public static ResultCode SetAndWaitOld(ServiceCtx context)
         {
             MultiMediaOperationType operationType = (MultiMediaOperationType)context.RequestData.ReadUInt32();
             uint                    frequenceHz   = context.RequestData.ReadUInt32();
@@ -67,7 +67,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
         [CommandCmif(3)]
         // GetOld(u32) -> u32
-        public ResultCode GetOld(ServiceCtx context)
+        public static ResultCode GetOld(ServiceCtx context)
         {
             MultiMediaOperationType operationType = (MultiMediaOperationType)context.RequestData.ReadUInt32();
 
@@ -87,7 +87,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
         [CommandCmif(4)]
         // Initialize(u32, u32, u32) -> u32
-        public ResultCode Initialize(ServiceCtx context)
+        public static ResultCode Initialize(ServiceCtx context)
         {
             MultiMediaOperationType operationType    = (MultiMediaOperationType)context.RequestData.ReadUInt32();
             int                     fgmId            = context.RequestData.ReadInt32();
@@ -104,7 +104,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
         [CommandCmif(5)]
         // Finalize(u32)
-        public ResultCode Finalize(ServiceCtx context)
+        public static ResultCode Finalize(ServiceCtx context)
         {
             uint id = context.RequestData.ReadUInt32();
 
@@ -120,7 +120,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
         [CommandCmif(6)]
         // SetAndWait(u32, u32, u32)
-        public ResultCode SetAndWait(ServiceCtx context)
+        public static ResultCode SetAndWait(ServiceCtx context)
         {
             uint id          = context.RequestData.ReadUInt32();
             uint frequenceHz = context.RequestData.ReadUInt32();
@@ -138,7 +138,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
         [CommandCmif(7)]
         // Get(u32) -> u32
-        public ResultCode Get(ServiceCtx context)
+        public static ResultCode Get(ServiceCtx context)
         {
             uint id = context.RequestData.ReadUInt32();
 

@@ -202,7 +202,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             return ResultCode.Success;
         }
 
-        private ResultCode MapNro(KProcess process, NroInfo info, out ulong nroMappedAddress)
+        private static ResultCode MapNro(KProcess process, NroInfo info, out ulong nroMappedAddress)
         {
             KPageTableBase memMgr = process.MemoryManager;
 
@@ -266,7 +266,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             return false;
         }
 
-        private ResultCode MapCodeMemoryInProcess(KProcess process, ulong baseAddress, ulong size, out ulong targetAddress)
+        private static ResultCode MapCodeMemoryInProcess(KProcess process, ulong baseAddress, ulong size, out ulong targetAddress)
         {
             KPageTableBase memMgr = process.MemoryManager;
 

@@ -397,7 +397,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(100)] // 5.0.0+
         // InitializeApplicationCopyrightFrameBuffer(s32 width, s32 height, handle<copy, transfer_memory> transfer_memory, u64 transfer_memory_size)
-        public ResultCode InitializeApplicationCopyrightFrameBuffer(ServiceCtx context)
+        public static ResultCode InitializeApplicationCopyrightFrameBuffer(ServiceCtx context)
         {
             int   width                 = context.RequestData.ReadInt32();
             int   height                = context.RequestData.ReadInt32();
@@ -443,7 +443,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(101)] // 5.0.0+
         // SetApplicationCopyrightImage(buffer<bytes, 0x45> frame_buffer, s32 x, s32 y, s32 width, s32 height, s32 window_origin_mode)
-        public ResultCode SetApplicationCopyrightImage(ServiceCtx context)
+        public static ResultCode SetApplicationCopyrightImage(ServiceCtx context)
         {
             ulong frameBufferPos   = context.Request.SendBuff[0].Position;
             ulong frameBufferSize  = context.Request.SendBuff[0].Size;
@@ -663,7 +663,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             if (Interlocked.Exchange(ref _jitLoaded, 1) == 0)
             {
                 string jitPath = context.Device.System.ContentManager.GetInstalledContentPath(0x010000000000003B, StorageId.BuiltInSystem, NcaContentType.Program);
-                string filePath = context.Device.FileSystem.SwitchPathToSystemPath(jitPath);
+                string filePath = FileSystem.VirtualFileSystem.SwitchPathToSystemPath(jitPath);
 
                 if (string.IsNullOrWhiteSpace(filePath))
                 {

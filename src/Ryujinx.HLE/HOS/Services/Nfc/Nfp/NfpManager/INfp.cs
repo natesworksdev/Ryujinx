@@ -90,7 +90,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
         [CommandCmif(2)]
         // ListDevices() -> (u32, buffer<unknown, 0xa>)
-        public ResultCode ListDevices(ServiceCtx context)
+        public static ResultCode ListDevices(ServiceCtx context)
         {
             if (context.Request.RecvListBuff.Count == 0)
             {
@@ -205,7 +205,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
         [CommandCmif(5)]
         // Mount(bytes<8, 4>, u32, u32)
-        public ResultCode Mount(ServiceCtx context)
+        public static ResultCode Mount(ServiceCtx context)
         {
             ResultCode resultCode = CheckNfcIsEnabled();
 
@@ -263,7 +263,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
         [CommandCmif(6)]
         // Unmount(bytes<8, 4>)
-        public ResultCode Unmount(ServiceCtx context)
+        public static ResultCode Unmount(ServiceCtx context)
         {
             ResultCode resultCode = CheckNfcIsEnabled();
 
@@ -305,7 +305,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
         [CommandCmif(7)]
         // OpenApplicationArea(bytes<8, 4>, u32)
-        public ResultCode OpenApplicationArea(ServiceCtx context)
+        public static ResultCode OpenApplicationArea(ServiceCtx context)
         {
             ResultCode resultCode = CheckNfcIsEnabled();
 
@@ -361,7 +361,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
         [CommandCmif(8)]
         // GetApplicationArea(bytes<8, 4>) -> (u32, buffer<unknown, 6>)
-        public ResultCode GetApplicationArea(ServiceCtx context)
+        public static ResultCode GetApplicationArea(ServiceCtx context)
         {
             ResultCode resultCode = CheckNfcIsEnabled();
 
@@ -429,7 +429,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
         [CommandCmif(9)]
         // SetApplicationArea(bytes<8, 4>, buffer<unknown, 5>)
-        public ResultCode SetApplicationArea(ServiceCtx context)
+        public static ResultCode SetApplicationArea(ServiceCtx context)
         {
             ResultCode resultCode = CheckNfcIsEnabled();
 
@@ -508,7 +508,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
         [CommandCmif(12)]
         // CreateApplicationArea(bytes<8, 4>, u32, buffer<unknown, 5>)
-        public ResultCode CreateApplicationArea(ServiceCtx context)
+        public static ResultCode CreateApplicationArea(ServiceCtx context)
         {
             ResultCode resultCode = CheckNfcIsEnabled();
 
@@ -571,7 +571,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
         [CommandCmif(13)]
         // GetTagInfo(bytes<8, 4>) -> buffer<unknown<0x58>, 0x1a>
-        public ResultCode GetTagInfo(ServiceCtx context)
+        public static ResultCode GetTagInfo(ServiceCtx context)
         {
             ResultCode resultCode = CheckNfcIsEnabled();
 
@@ -649,7 +649,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
         [CommandCmif(14)]
         // GetRegisterInfo(bytes<8, 4>) -> buffer<unknown<0x100>, 0x1a>
-        public ResultCode GetRegisterInfo(ServiceCtx context)
+        public static ResultCode GetRegisterInfo(ServiceCtx context)
         {
             ResultCode resultCode = CheckNfcIsEnabled();
 
@@ -712,7 +712,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
         [CommandCmif(15)]
         // GetCommonInfo(bytes<8, 4>) -> buffer<unknown<0x40>, 0x1a>
-        public ResultCode GetCommonInfo(ServiceCtx context)
+        public static ResultCode GetCommonInfo(ServiceCtx context)
         {
             ResultCode resultCode = CheckNfcIsEnabled();
 
@@ -772,7 +772,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
         [CommandCmif(16)]
         // GetModelInfo(bytes<8, 4>) -> buffer<unknown<0x40>, 0x1a>
-        public ResultCode GetModelInfo(ServiceCtx context)
+        public static ResultCode GetModelInfo(ServiceCtx context)
         {
             ResultCode resultCode = CheckNfcIsEnabled();
 

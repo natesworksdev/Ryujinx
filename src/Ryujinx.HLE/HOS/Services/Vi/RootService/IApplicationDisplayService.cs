@@ -377,7 +377,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
         [CommandCmif(2450)]
         // GetIndirectLayerImageMap(s64 width, s64 height, u64 handle, nn::applet::AppletResourceUserId, pid) -> (s64, s64, buffer<bytes, 0x46>)
-        public ResultCode GetIndirectLayerImageMap(ServiceCtx context)
+        public static ResultCode GetIndirectLayerImageMap(ServiceCtx context)
         {
             // The size of the layer buffer should be an aligned multiple of width * height
             // because it was created using GetIndirectLayerImageRequiredMemoryInfo as a guide.
@@ -424,7 +424,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
         [CommandCmif(2460)]
         // GetIndirectLayerImageRequiredMemoryInfo(u64 width, u64 height) -> (u64 size, u64 alignment)
-        public ResultCode GetIndirectLayerImageRequiredMemoryInfo(ServiceCtx context)
+        public static ResultCode GetIndirectLayerImageRequiredMemoryInfo(ServiceCtx context)
         {
             /*
             // Doesn't occur in our case.

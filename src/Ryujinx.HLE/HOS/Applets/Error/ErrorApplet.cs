@@ -111,7 +111,7 @@ namespace Ryujinx.HLE.HOS.Applets.Error
         {
             string binaryTitleContentPath = _horizon.ContentManager.GetInstalledContentPath(ErrorMessageBinaryTitleId, StorageId.BuiltInSystem, NcaContentType.Data);
 
-            using LibHac.Fs.IStorage ncaFileStream = new LocalStorage(_horizon.Device.FileSystem.SwitchPathToSystemPath(binaryTitleContentPath), FileAccess.Read, FileMode.Open);
+            using LibHac.Fs.IStorage ncaFileStream = new LocalStorage(FileSystem.VirtualFileSystem.SwitchPathToSystemPath(binaryTitleContentPath), FileAccess.Read, FileMode.Open);
             Nca         nca          = new(_horizon.Device.FileSystem.KeySet, ncaFileStream);
             IFileSystem romfs        = nca.OpenFileSystem(NcaSectionType.Data, _horizon.FsIntegrityCheckLevel);
             string      languageCode = SystemLanguageToLanguageKey(_horizon.State.DesiredSystemLanguage);

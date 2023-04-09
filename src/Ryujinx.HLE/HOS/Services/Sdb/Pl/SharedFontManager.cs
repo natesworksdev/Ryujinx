@@ -65,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
                     if (contentManager.TryGetFontTitle(name, out ulong fontTitle) && contentManager.TryGetFontFilename(name, out string fontFilename))
                     {
                         string contentPath = contentManager.GetInstalledContentPath(fontTitle, StorageId.BuiltInSystem, NcaContentType.Data);
-                        string fontPath    = _device.FileSystem.SwitchPathToSystemPath(contentPath);
+                        string fontPath    = VirtualFileSystem.SwitchPathToSystemPath(contentPath);
 
                         if (!string.IsNullOrWhiteSpace(fontPath))
                         {

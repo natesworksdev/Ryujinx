@@ -51,7 +51,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         [CommandCmif(1)]
         // GetResult()
 #pragma warning disable IDE0060
-        public ResultCode GetResult(ServiceCtx context)
+        public static ResultCode GetResult(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNifm);
 
@@ -124,7 +124,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         [CommandCmif(21)]
         // GetAppletInfo(u32) -> (u32, u32, u32, buffer<bytes, 6>)
-        public ResultCode GetAppletInfo(ServiceCtx context)
+        public static ResultCode GetAppletInfo(ServiceCtx context)
         {
 #pragma warning disable IDE0059
             uint themeColor = context.RequestData.ReadUInt32();

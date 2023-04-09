@@ -110,10 +110,10 @@ namespace Ryujinx.HLE.FileSystem
             return fullPath;
         }
 
-        internal string GetSdCardPath() => MakeFullPath(AppDataManager.DefaultSdcardDir);
-        public string GetNandPath() => MakeFullPath(AppDataManager.DefaultNandDir);
+        internal static string GetSdCardPath() => MakeFullPath(AppDataManager.DefaultSdcardDir);
+        public static string GetNandPath() => MakeFullPath(AppDataManager.DefaultNandDir);
 
-        public string SwitchPathToSystemPath(string switchPath)
+        public static string SwitchPathToSystemPath(string switchPath)
         {
             string[] parts = switchPath.Split(":");
 

@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Fatal
 
         [CommandCmif(0)]
         // ThrowFatal(u64 result_code, u64 pid)
-        public ResultCode ThrowFatal(ServiceCtx context)
+        public static ResultCode ThrowFatal(ServiceCtx context)
         {
             ResultCode resultCode = (ResultCode)context.RequestData.ReadUInt64();
             ulong      pid        = context.Request.HandleDesc.PId;
@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.Fatal
 
         [CommandCmif(1)]
         // ThrowFatalWithPolicy(u64 result_code, u32 fatal_policy, u64 pid)
-        public ResultCode ThrowFatalWithPolicy(ServiceCtx context)
+        public static ResultCode ThrowFatalWithPolicy(ServiceCtx context)
         {
             ResultCode  resultCode  = (ResultCode)context.RequestData.ReadUInt64();
             FatalPolicy fatalPolicy = (FatalPolicy)context.RequestData.ReadUInt32();
@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.HOS.Services.Fatal
 
         [CommandCmif(2)]
         // ThrowFatalWithCpuContext(u64 result_code, u32 fatal_policy, u64 pid, buffer<bytes, 0x15> cpu_context)
-        public ResultCode ThrowFatalWithCpuContext(ServiceCtx context)
+        public static ResultCode ThrowFatalWithCpuContext(ServiceCtx context)
         {
             ResultCode  resultCode  = (ResultCode)context.RequestData.ReadUInt64();
             FatalPolicy fatalPolicy = (FatalPolicy)context.RequestData.ReadUInt32();

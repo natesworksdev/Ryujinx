@@ -24,7 +24,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         [CommandCmif(306)]
         // GetLastActiveNpad(u32) -> u8, u8
-        public ResultCode GetLastActiveNpad(ServiceCtx context)
+        public static ResultCode GetLastActiveNpad(ServiceCtx context)
         {
             // TODO: RequestData seems to have garbage data, reading an extra uint seems to fix the issue.
             context.RequestData.ReadUInt32();
@@ -56,7 +56,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         [CommandCmif(314)] // 9.0.0+
         // GetAppletFooterUiType(u32) -> u8
-        public ResultCode GetAppletFooterUiType(ServiceCtx context)
+        public static ResultCode GetAppletFooterUiType(ServiceCtx context)
         {
             ResultCode resultCode = GetAppletFooterUiTypeImpl(context, out AppletFooterUiType appletFooterUiType);
 

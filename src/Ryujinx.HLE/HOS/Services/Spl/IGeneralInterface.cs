@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Spl
 
         [CommandCmif(0)]
         // GetConfig(u32 config_item) -> u64 config_value
-        public ResultCode GetConfig(ServiceCtx context)
+        public static ResultCode GetConfig(ServiceCtx context)
         {
             ConfigItem configItem = (ConfigItem)context.RequestData.ReadUInt32();
 

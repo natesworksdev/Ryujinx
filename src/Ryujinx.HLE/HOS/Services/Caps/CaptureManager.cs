@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
 
         public CaptureManager(Switch device)
         {
-            _sdCardPath = device.FileSystem.GetSdCardPath();
+            _sdCardPath = FileSystem.VirtualFileSystem.GetSdCardPath();
         }
 
         public ResultCode SetShimLibraryVersion(ServiceCtx context)

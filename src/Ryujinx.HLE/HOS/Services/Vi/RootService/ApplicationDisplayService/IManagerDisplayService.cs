@@ -58,7 +58,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
 
         [CommandCmif(2012)] // 7.0.0+
         // CreateStrayLayer(u32, u64) -> (u64, u64, buffer<bytes, 6>)
-        public ResultCode CreateStrayLayer(ServiceCtx context)
+        public static ResultCode CreateStrayLayer(ServiceCtx context)
         {
             return IApplicationDisplayService.CreateStrayLayer(context);
         }

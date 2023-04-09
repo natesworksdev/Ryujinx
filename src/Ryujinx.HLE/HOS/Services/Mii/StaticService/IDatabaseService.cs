@@ -364,7 +364,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             return new Span<byte>(rawData);
         }
 
-        private Span<T> CreateSpanFromBuffer<T>(ServiceCtx context, IpcBuffDesc ipcBuff, bool isOutput) where T: unmanaged
+        private static Span<T> CreateSpanFromBuffer<T>(ServiceCtx context, IpcBuffDesc ipcBuff, bool isOutput) where T: unmanaged
         {
             return MemoryMarshal.Cast<byte, T>(CreateByteSpanFromBuffer(context, ipcBuff, isOutput));
         }

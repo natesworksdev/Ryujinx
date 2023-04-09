@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy
 
         public void ReloadEntries(ServiceCtx context)
         {
-            string sdPath = context.Device.Configuration.VirtualFileSystem.GetSdCardPath();
+            string sdPath = FileSystem.VirtualFileSystem.GetSdCardPath();
             string filePath = FileSystem.VirtualFileSystem.GetFullPath(sdPath, HostsFilePath);
 
             _mitmHostEntries.Clear();

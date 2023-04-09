@@ -90,7 +90,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         {
             if (HasTimeZoneBinaryTitle())
             {
-                using IStorage ncaFileStream = new LocalStorage(_virtualFileSystem.SwitchPathToSystemPath(GetTimeZoneBinaryTitleContentPath()), FileAccess.Read, FileMode.Open);
+                using IStorage ncaFileStream = new LocalStorage(VirtualFileSystem.SwitchPathToSystemPath(GetTimeZoneBinaryTitleContentPath()), FileAccess.Read, FileMode.Open);
                 Nca         nca              = new(_virtualFileSystem.KeySet, ncaFileStream);
                 IFileSystem romfs            = nca.OpenFileSystem(NcaSectionType.Data, _fsIntegrityCheckLevel);
 
@@ -129,7 +129,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
             List<(int Offset, string Location, string Abbr)> outList = new();
             var now = DateTimeOffset.Now.ToUnixTimeSeconds();
-            using (IStorage ncaStorage = new LocalStorage(_virtualFileSystem.SwitchPathToSystemPath(tzBinaryContentPath), FileAccess.Read, FileMode.Open))
+            using (IStorage ncaStorage = new LocalStorage(VirtualFileSystem.SwitchPathToSystemPath(tzBinaryContentPath), FileAccess.Read, FileMode.Open))
             using (IFileSystem romfs = new Nca(_virtualFileSystem.KeySet, ncaStorage).OpenFileSystem(NcaSectionType.Data, _fsIntegrityCheckLevel))
             {
                 foreach (string locName in LocationNameCache)
@@ -264,7 +264,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                 return ResultCode.TimeZoneNotFound;
             }
 
-            ncaFile = new LocalStorage(_virtualFileSystem.SwitchPathToSystemPath(GetTimeZoneBinaryTitleContentPath()), FileAccess.Read, FileMode.Open);
+            ncaFile = new LocalStorage(VirtualFileSystem.SwitchPathToSystemPath(GetTimeZoneBinaryTitleContentPath()), FileAccess.Read, FileMode.Open);
 
             Nca         nca   = new(_virtualFileSystem.KeySet, ncaFile);
             IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, _fsIntegrityCheckLevel);
