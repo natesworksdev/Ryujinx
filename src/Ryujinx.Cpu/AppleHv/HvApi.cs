@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Cpu.AppleHv
 {
+#pragma warning disable IDE1006
     struct hv_vcpu_exit_exception_t
     {
 #pragma warning disable CS0649
@@ -244,6 +245,7 @@ namespace Ryujinx.Cpu.AppleHv
         public ulong Low;
         public ulong High;
     }
+#pragma warning restore IDE1006
 
     static class HvResultExtensions
     {
@@ -259,6 +261,8 @@ namespace Ryujinx.Cpu.AppleHv
     static partial class HvApi
     {
         public const string LibraryName = "/System/Library/Frameworks/Hypervisor.framework/Hypervisor";
+
+#pragma warning disable IDE1006
 
         [LibraryImport(LibraryName, SetLastError = true)]
         public static partial hv_result_t hv_vm_get_max_vcpu_count(out uint max_vcpu_count);
@@ -316,5 +320,7 @@ namespace Ryujinx.Cpu.AppleHv
 
         [LibraryImport(LibraryName, SetLastError = true)]
         public static partial hv_result_t hv_vcpu_set_pending_interrupt(ulong vcpu, hv_interrupt_type_t type, [MarshalAs(UnmanagedType.Bool)] bool pending);
+
+#pragma warning restore IDE1006
     }
 }
