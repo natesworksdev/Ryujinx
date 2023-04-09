@@ -995,11 +995,13 @@ namespace Ryujinx.Graphics.Texture.Encoders
             return onesCount >= 2 ? 1 : 0;
         }
 
+#pragma warning disable IDE0060
         private static int GetPBit(uint c0, uint c1, int colorDepth, int alphaDepth)
         {
             // Giving preference to the first endpoint yields better results,
             // might be a side effect of the endpoint selection algorithm?
             return GetPBit(c0, colorDepth, alphaDepth);
         }
+#pragma warning restore IDE0060
     }
 }
