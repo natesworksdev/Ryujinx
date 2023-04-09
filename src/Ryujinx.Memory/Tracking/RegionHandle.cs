@@ -461,6 +461,8 @@ namespace Ryujinx.Memory.Tracking
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
 
+            GC.SuppressFinalize(this);
+
             _disposed = true;
 
             lock (_tracking.TrackingLock)

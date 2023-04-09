@@ -271,6 +271,7 @@ namespace Ryujinx.Memory.Tracking
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             foreach (var handle in _handles)
             {
                 handle?.Dispose();
