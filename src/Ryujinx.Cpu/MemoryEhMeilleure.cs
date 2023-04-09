@@ -53,6 +53,8 @@ namespace Ryujinx.Cpu
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
+
             NativeSignalHandler.RemoveTrackedRegion((nuint)_baseAddress);
 
             if (_mirrorAddress != 0)
