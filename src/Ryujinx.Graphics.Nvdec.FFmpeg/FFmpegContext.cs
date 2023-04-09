@@ -164,7 +164,7 @@ namespace Ryujinx.Graphics.Nvdec.FFmpeg
                 FFmpegApi.av_packet_free(ppPacket);
             }
 
-            FFmpegApi.avcodec_close(_context);
+            _ = FFmpegApi.avcodec_close(_context);
 
             fixed (AVCodecContext** ppContext = &_context)
             {
