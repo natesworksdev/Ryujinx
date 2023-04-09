@@ -498,6 +498,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
         }
 
+#pragma warning disable IDE0060
         private static void DeclareInputAttribute(CodeGenContext context, StructuredProgramInfo info, int attr)
         {
             string suffix = IsArrayAttributeGlsl(context.Config.Stage, isOutAttr: false) ? "[]" : string.Empty;
@@ -557,6 +558,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 context.AppendLine($"layout ({pass}location = {attr}) {iq}in {type} {name}{suffix};");
             }
         }
+#pragma warning restore IDE0060
 
         private static void DeclareInputAttributePerPatch(CodeGenContext context, int attr)
         {
@@ -566,6 +568,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             context.AppendLine($"layout (location = {location}) patch in vec4 {name};");
         }
 
+#pragma warning disable IDE0060
         private static void DeclareOutputAttributes(CodeGenContext context, StructuredProgramInfo info)
         {
             if (context.Config.UsedFeatures.HasFlag(FeatureFlags.OaIndexing))
@@ -596,6 +599,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 }
             }
         }
+#pragma warning restore IDE0060
 
         private static void DeclareOutputAttribute(CodeGenContext context, int attr)
         {
