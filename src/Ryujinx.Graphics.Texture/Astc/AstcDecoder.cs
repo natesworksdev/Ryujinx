@@ -1162,7 +1162,9 @@ namespace Ryujinx.Graphics.Texture.Astc
 
                 Debug.Assert(bitLength >= 1);
 
+#pragma warning disable IDE0059
                 int a = 0, b = 0, c = 0, d = 0;
+#pragma warning restore IDE0059
                 // A is just the lsb replicated 9 times.
                 a = Bits.Replicate(bitValue & 1, 1, 9);
 
