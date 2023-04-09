@@ -118,6 +118,7 @@ namespace Ryujinx.Input.SDL2
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             Dispose(true);
         }
 
