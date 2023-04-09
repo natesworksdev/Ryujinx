@@ -31,10 +31,10 @@ namespace Ryujinx.Ava.UI.ViewModels
     {
         public TitleUpdateMetadata _titleUpdateWindowData;
         public readonly string     _titleUpdateJsonPath;
-        private VirtualFileSystem  _virtualFileSystem { get; }
-        private ulong              _titleId           { get; }
+        private VirtualFileSystem  VirtualFileSystem { get; }
+        private ulong              TitleId           { get; }
 #pragma warning disable IDE0052
-        private string             _titleName         { get; }
+        private string             TitleName         { get; }
 #pragma warning restore IDE0052
 
         private AvaloniaList<TitleUpdateModel> _titleUpdates = new();
@@ -75,10 +75,10 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public TitleUpdateViewModel(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
         {
-            _virtualFileSystem = virtualFileSystem;
+            VirtualFileSystem = virtualFileSystem;
 
-            _titleId   = titleId;
-            _titleName = titleName;
+            TitleId   = titleId;
+            TitleName = titleName;
 
             _titleUpdateJsonPath = Path.Combine(AppDataManager.GamesDirPath, titleId.ToString("x16"), "updates.json");
 
@@ -88,7 +88,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
             catch
             {
-                Logger.Warning?.Print(LogClass.Application, $"Failed to deserialize title update data for {_titleId} at {_titleUpdateJsonPath}");
+                Logger.Warning?.Print(LogClass.Application, $"Failed to deserialize title update data for {TitleId} at {_titleUpdateJsonPath}");
 
                 _titleUpdateWindowData = new TitleUpdateMetadata
                 {
@@ -165,7 +165,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 try
                 {
-                    (Nca patchNca, Nca controlNca) = ApplicationLibrary.GetGameUpdateDataFromPartition(_virtualFileSystem, new PartitionFileSystem(file.AsStorage()), _titleId.ToString("x16"), 0);
+                    (Nca patchNca, Nca controlNca) = ApplicationLibrary.GetGameUpdateDataFromPartition(VirtualFileSystem, new PartitionFileSystem(file.AsStorage()), TitleId.ToString("x16"), 0);
 
                     if (controlNca != null && patchNca != null)
                     {
