@@ -142,6 +142,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             public void Dispose()
             {
+                GC.SuppressFinalize(this);
                 Dispose(true);
             }
         }
@@ -195,6 +196,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             Dispose(true);
         }
     }
