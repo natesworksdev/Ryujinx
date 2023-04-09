@@ -1499,10 +1499,12 @@ namespace Ryujinx.Ui.Common.Configuration
             return result;
         }
 
+#pragma warning disable IDE0060
         private static void LogValueChange<T>(object sender, ReactiveEventArgs<T> eventArgs, string valueName)
         {
             Ryujinx.Common.Logging.Logger.Info?.Print(LogClass.Configuration, $"{valueName} set to: {eventArgs.NewValue}");
         }
+#pragma warning restore IDE0060
 
         public static void Initialize()
         {
