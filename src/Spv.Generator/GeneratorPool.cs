@@ -7,7 +7,9 @@ namespace Spv.Generator
         private readonly List<T[]> _pool;
         private int _chunkIndex = -1;
         private int _poolIndex = -1;
+#pragma warning disable IDE0052
         private readonly int _initialSize;
+#pragma warning restore IDE0052
         private readonly int _poolSizeIncrement;
 
         public GeneratorPool(): this(1000, 200) { }
