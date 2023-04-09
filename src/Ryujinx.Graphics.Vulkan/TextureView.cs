@@ -830,6 +830,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
+#pragma warning disable IDE0060
         private void CopyFromOrToBuffer(
             CommandBuffer commandBuffer,
             VkBuffer buffer,
@@ -879,6 +880,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _gd.Api.CmdCopyBufferToImage(commandBuffer, buffer, image, ImageLayout.General, 1, region);
             }
         }
+#pragma warning restore IDE0060
 
         private static int AlignUpNpot(int size, int alignment)
         {

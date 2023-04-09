@@ -111,6 +111,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             return _fences[cbIndex] != null;
         }
+#pragma warning restore IDE0060
 
         /// <summary>
         /// Wait until all the fences on the holder are signaled.

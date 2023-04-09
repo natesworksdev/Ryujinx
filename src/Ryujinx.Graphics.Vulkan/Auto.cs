@@ -74,10 +74,12 @@ namespace Ryujinx.Graphics.Vulkan
             return _cbOwnership.IsSet(cbs.CommandBufferIndex);
         }
 
+#pragma warning disable IDE0060
         public bool HasRentedCommandBufferDependency(CommandBufferPool cbp)
         {
             return _cbOwnership.AnySet();
         }
+#pragma warning restore IDE0060
 
         public void AddCommandBufferDependencies(CommandBufferScoped cbs)
         {
