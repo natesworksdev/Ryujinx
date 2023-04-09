@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Ryujinx.Memory.WindowsShared
 {
     [Flags]
+    [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
     enum AllocationType : uint
     {
         CoalescePlaceholders = 0x1,
