@@ -63,6 +63,7 @@ namespace Ryujinx.Common.SystemInfo
         [LibraryImport(SystemLibraryName, SetLastError = true)]
         private static partial int sysctlbyname([MarshalAs(UnmanagedType.LPStr)] string name, IntPtr oldValue, ref ulong oldSize, IntPtr newValue, ulong newValueSize);
 
+#pragma warning disable IDE1006
         private static int sysctlbyname(string name, IntPtr oldValue, ref ulong oldSize)
         {
             if (sysctlbyname(name, oldValue, ref oldSize, IntPtr.Zero, 0) == -1)
@@ -121,6 +122,7 @@ namespace Ryujinx.Common.SystemInfo
 
         [LibraryImport(SystemLibraryName, SetLastError = true)]
         private static partial int host_page_size(uint host, ref uint out_page_size);
+#pragma warning restore IDE1006
 
         [StructLayout(LayoutKind.Sequential, Pack = 8)]
         struct VMStatistics64
@@ -152,6 +154,8 @@ namespace Ryujinx.Common.SystemInfo
         }
 
         [LibraryImport(SystemLibraryName, SetLastError = true)]
+#pragma warning disable IDE1006
         private static partial int host_statistics64(uint host_priv, int host_flavor, ref VMStatistics64 host_info64_out, ref uint host_info64_outCnt);
+#pragma warning restore IDE1006
     }
 }
