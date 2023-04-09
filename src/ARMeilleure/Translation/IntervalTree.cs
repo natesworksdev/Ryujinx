@@ -229,7 +229,7 @@ namespace ARMeilleure.Translation
         /// This fully recalculates the max value from all children when there is potential for it to decrease.
         /// </summary>
         /// <param name="node">The node to start propagating from</param>
-        private void PropagateFull(IntervalTreeNode<K, V> node)
+        private static void PropagateFull(IntervalTreeNode<K, V> node)
         {
             IntervalTreeNode<K, V> ptr = node;
 
