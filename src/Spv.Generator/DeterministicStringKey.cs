@@ -24,7 +24,7 @@ namespace Spv.Generator
 
         public override bool Equals([NotNullWhen(true)] object obj)
         {
-            return obj is DeterministicStringKey && Equals((DeterministicStringKey)obj);
+            return obj is DeterministicStringKey key && Equals(key);
         }
     }
 }

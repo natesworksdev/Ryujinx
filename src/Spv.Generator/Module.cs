@@ -143,7 +143,7 @@ namespace Spv.Generator
             _entrypoints.Add(entryPoint);
         }
 
-        public void AddExecutionMode(Instruction function, ExecutionMode mode, params Operand[] parameters)
+        public void AddExecutionMode(Instruction function, ExecutionMode mode, params IOperand[] parameters)
         {
             Debug.Assert(function.Opcode == Op.OpFunction);
 
@@ -225,7 +225,7 @@ namespace Spv.Generator
             _constants.Add(key, constant);
         }
 
-        public Instruction ExtInst(Instruction resultType, Instruction set, LiteralInteger instruction, params Operand[] parameters)
+        public Instruction ExtInst(Instruction resultType, Instruction set, LiteralInteger instruction, params IOperand[] parameters)
         {
             Instruction result = NewInstruction(Op.OpExtInst, GetNewId(), resultType);
 

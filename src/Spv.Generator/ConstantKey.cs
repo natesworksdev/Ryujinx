@@ -24,7 +24,7 @@ namespace Spv.Generator
 
         public override bool Equals([NotNullWhen(true)] object obj)
         {
-            return obj is ConstantKey && Equals((ConstantKey)obj);
+            return obj is ConstantKey key && Equals(key);
         }
     }
 }

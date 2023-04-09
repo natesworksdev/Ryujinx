@@ -24,7 +24,7 @@ namespace Spv.Generator
 
         public override bool Equals([NotNullWhen(true)] object obj)
         {
-            return obj is TypeDeclarationKey && Equals((TypeDeclarationKey)obj);
+            return obj is TypeDeclarationKey key && Equals(key);
         }
     }
 }
