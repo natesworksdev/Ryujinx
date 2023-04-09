@@ -262,6 +262,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             Dispose(true);
         }
 

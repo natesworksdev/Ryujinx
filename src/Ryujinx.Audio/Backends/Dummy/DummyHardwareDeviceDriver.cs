@@ -1,6 +1,7 @@
 using Ryujinx.Audio.Common;
 using Ryujinx.Audio.Integration;
 using Ryujinx.Memory;
+using System;
 using System.Threading;
 
 using static Ryujinx.Audio.Integration.IHardwareDeviceDriver;
@@ -54,6 +55,7 @@ namespace Ryujinx.Audio.Backends.Dummy
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             Dispose(true);
         }
 

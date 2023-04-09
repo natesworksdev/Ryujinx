@@ -346,6 +346,7 @@ namespace Ryujinx.Audio.Output
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             if (Interlocked.CompareExchange(ref _disposeState, 1, 0) == 0)
             {
                 Dispose(true);

@@ -149,6 +149,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             _buffersMemoryHandle.Dispose();
         }
     }

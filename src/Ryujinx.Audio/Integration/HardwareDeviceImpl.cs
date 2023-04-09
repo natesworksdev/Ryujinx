@@ -61,6 +61,7 @@ namespace Ryujinx.Audio.Integration
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             Dispose(true);
         }
 

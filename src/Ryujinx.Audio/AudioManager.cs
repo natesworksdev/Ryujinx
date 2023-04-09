@@ -115,6 +115,7 @@ namespace Ryujinx.Audio
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             Dispose(true);
         }
 

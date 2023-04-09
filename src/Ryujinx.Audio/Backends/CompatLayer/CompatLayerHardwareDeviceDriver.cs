@@ -24,6 +24,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             _realDriver.Dispose();
         }
 

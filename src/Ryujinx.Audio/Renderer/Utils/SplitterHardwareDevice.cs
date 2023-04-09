@@ -43,6 +43,7 @@ namespace Ryujinx.Audio.Renderer.Utils
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             Dispose(true);
         }
 
