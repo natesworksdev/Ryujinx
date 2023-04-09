@@ -20,6 +20,9 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public bool IsEmpty { get; set; }
 
-        public void Dispose() { }
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+        }
     }
 }

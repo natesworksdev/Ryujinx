@@ -185,6 +185,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             _httpClient.Dispose();
         }
 
