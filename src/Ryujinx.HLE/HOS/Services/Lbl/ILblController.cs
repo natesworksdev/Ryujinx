@@ -14,10 +14,12 @@
 
         [CommandCmif(17)]
         // SetBrightnessReflectionDelayLevel(float, float)
+#pragma warning disable IDE0060
         public static ResultCode SetBrightnessReflectionDelayLevel(ServiceCtx context)
         {
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(18)]
         // GetBrightnessReflectionDelayLevel(float) -> float
@@ -30,17 +32,21 @@
 
         [CommandCmif(21)]
         // SetCurrentAmbientLightSensorMapping(unknown<0xC>)
+#pragma warning disable IDE0060
         public static ResultCode SetCurrentAmbientLightSensorMapping(ServiceCtx context)
         {
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(22)]
         // GetCurrentAmbientLightSensorMapping() -> unknown<0xC>
+#pragma warning disable IDE0060
         public static ResultCode GetCurrentAmbientLightSensorMapping(ServiceCtx context)
         {
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(24)] // 3.0.0+
         // SetCurrentBrightnessSettingForVrMode(float)
@@ -66,21 +72,25 @@
 
         [CommandCmif(26)] // 3.0.0+
         // EnableVrMode()
+#pragma warning disable IDE0060
         public ResultCode EnableVrMode(ServiceCtx context)
         {
             EnableVrMode();
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(27)] // 3.0.0+
         // DisableVrMode()
+#pragma warning disable IDE0060
         public ResultCode DisableVrMode(ServiceCtx context)
         {
             DisableVrMode();
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(28)] // 3.0.0+
         // IsVrModeEnabled() -> bool

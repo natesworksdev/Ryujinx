@@ -483,17 +483,21 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             }
         }
 
+#pragma warning disable IDE0060
         public static Result MapNormalMemory(long address, long size, KMemoryPermission permission)
         {
             // TODO.
             return Result.Success;
         }
+#pragma warning restore IDE0060
 
+#pragma warning disable IDE0060
         public static Result MapIoMemory(long address, long size, KMemoryPermission permission)
         {
             // TODO.
             return Result.Success;
         }
+#pragma warning restore IDE0060
 
         public Result MapPages(
             ulong pagesCount,

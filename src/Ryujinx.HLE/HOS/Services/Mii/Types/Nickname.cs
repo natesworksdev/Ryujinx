@@ -62,11 +62,13 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             }
         }
 
+#pragma warning disable IDE0060
         public bool IsValidForFontRegion(FontRegion fontRegion)
         {
             // TODO: We need to extract the character tables used here, for now just assume that if it's valid Unicode, it will be valid for any font.
             return IsValid();
         }
+#pragma warning restore IDE0060
 
         public override string ToString()
         {

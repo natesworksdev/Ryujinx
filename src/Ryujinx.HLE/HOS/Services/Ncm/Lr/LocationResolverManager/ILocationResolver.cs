@@ -221,6 +221,7 @@ namespace Ryujinx.HLE.HOS.Services.Ncm.Lr.LocationResolverManager
             context.Device.System.ContentManager.RedirectLocation(newLocation, _storageId);
         }
 
+#pragma warning disable IDE0060
         private bool ResolvePath(ServiceCtx context, ulong titleId, NcaContentType contentType)
         {
             ContentManager contentManager = context.Device.System.ContentManager;
@@ -244,7 +245,9 @@ namespace Ryujinx.HLE.HOS.Services.Ncm.Lr.LocationResolverManager
 
             return true;
         }
+#pragma warning restore IDE0060
 
+#pragma warning disable IDE0060
         private void DeleteContentPath(ServiceCtx context, ulong titleId, NcaContentType contentType)
         {
             ContentManager contentManager = context.Device.System.ContentManager;
@@ -254,5 +257,6 @@ namespace Ryujinx.HLE.HOS.Services.Ncm.Lr.LocationResolverManager
 
             contentManager.ClearEntry(titleId, NcaContentType.Manual, _storageId);
         }
+#pragma warning restore IDE0060
     }
 }

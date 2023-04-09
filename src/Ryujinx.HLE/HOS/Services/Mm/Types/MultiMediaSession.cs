@@ -16,9 +16,11 @@
             CurrentValue     = 0;
         }
 
+#pragma warning disable IDE0060
         public void SetAndWait(uint value, int timeout)
         {
             CurrentValue = value;
         }
+#pragma warning restore IDE0060
     }
 }

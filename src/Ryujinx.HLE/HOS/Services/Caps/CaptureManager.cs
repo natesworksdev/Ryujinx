@@ -53,6 +53,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
             return resultCode;
         }
 
+#pragma warning disable IDE0060
         public ResultCode SaveScreenShot(byte[] screenshotData, ulong appletResourceUserId, ulong titleId, out ApplicationAlbumEntry applicationAlbumEntry)
         {
             applicationAlbumEntry = default;
@@ -125,6 +126,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
 
             return ResultCode.NullInputBuffer;
         }
+#pragma warning restore IDE0060
 
         private static string GenerateFilePath(string folderPath, ApplicationAlbumEntry applicationAlbumEntry, DateTime currentDateTime, string hash)
         {

@@ -135,10 +135,12 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
         [CommandCmif(13)]
         // InvalidateBisCache() -> ()
+#pragma warning disable IDE0060
         public ResultCode InvalidateBisCache(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.InvalidateBisCache().Value;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(18)]
         // OpenSdCardFileSystem() -> object<nn::fssrv::sf::IFileSystem>
@@ -156,10 +158,12 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
         [CommandCmif(19)]
         // FormatSdCardFileSystem() -> ()
+#pragma warning disable IDE0060
         public ResultCode FormatSdCardFileSystem(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.FormatSdCardFileSystem().Value;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(21)]
         // DeleteSaveDataFileSystem(u64 saveDataId) -> ()
@@ -213,10 +217,12 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
         [CommandCmif(26)]
         // FormatSdCardDryRun() -> ()
+#pragma warning disable IDE0060
         public ResultCode FormatSdCardDryRun(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.FormatSdCardDryRun().Value;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(27)]
         // IsExFatSupported() -> (u8 isSupported)
@@ -855,10 +861,12 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         }
 
         [CommandCmif(511)]
+#pragma warning disable IDE0060
         public ResultCode NotifySystemDataUpdateEvent(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.NotifySystemDataUpdateEvent().Value;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(523)]
         public ResultCode SimulateDeviceDetectionEvent(ServiceCtx context)
@@ -899,10 +907,12 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         }
 
         [CommandCmif(605)]
+#pragma warning disable IDE0060
         public ResultCode DeleteAllPaddingFiles(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.DeleteAllPaddingFiles().Value;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(606)]
         public ResultCode GetRightsId(ServiceCtx context)
@@ -928,10 +938,12 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         }
 
         [CommandCmif(608)]
+#pragma warning disable IDE0060
         public ResultCode UnregisterAllExternalKey(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.UnregisterAllExternalKey().Value;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(609)]
         public ResultCode GetRightsIdByPath(ServiceCtx context)
@@ -1148,10 +1160,12 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         }
 
         [CommandCmif(1003)]
+#pragma warning disable IDE0060
         public ResultCode DisableAutoSaveDataCreation(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.DisableAutoSaveDataCreation().Value;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(1004)]
         // SetGlobalAccessLogMode(u32 mode)
@@ -1188,10 +1202,12 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         }
 
         [CommandCmif(1007)]
+#pragma warning disable IDE0060
         public ResultCode RegisterUpdatePartition(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.RegisterUpdatePartition().Value;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(1008)]
         public ResultCode OpenRegisteredUpdatePartition(ServiceCtx context)
@@ -1243,22 +1259,28 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         }
 
         [CommandCmif(1013)]
+#pragma warning disable IDE0060
         public ResultCode UnsetSaveDataRootPath(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.UnsetSaveDataRootPath().Value;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(1014)]
+#pragma warning disable IDE0060
         public ResultCode OutputMultiProgramTagAccessLog(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.OutputMultiProgramTagAccessLog().Value;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(1016)]
+#pragma warning disable IDE0060
         public ResultCode FlushAccessLogOnSdCard(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.FlushAccessLogOnSdCard().Value;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(1017)]
         public ResultCode OutputApplicationInfoAccessLog(ServiceCtx context)

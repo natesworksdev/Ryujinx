@@ -41,6 +41,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
         [CommandCmif(1)]
         // nn::friends::Cancel()
+#pragma warning disable IDE0060
         public static ResultCode Cancel(ServiceCtx context)
         {
             // TODO: Original service sets an internal field to 1 here. Determine usage.
@@ -48,6 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(10100)]
         // nn::friends::GetFriendListIds(int offset, nn::account::Uid userId, nn::friends::detail::ipc::SizedFriendFilter friendFilter, ulong pidPlaceHolder, pid)

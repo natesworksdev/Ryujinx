@@ -37,12 +37,14 @@ namespace Ryujinx.HLE.HOS.Services.Sm
         [CommandCmif(0)]
         [CommandTipc(0)] // 12.0.0+
         // Initialize(pid, u64 reserved)
+#pragma warning disable IDE0060
         public ResultCode Initialize(ServiceCtx context)
         {
             _isInitialized = true;
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandTipc(1)] // 12.0.0+
         // GetService(ServiceName name) -> handle<move, session>

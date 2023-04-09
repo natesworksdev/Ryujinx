@@ -441,12 +441,14 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
         [CommandCmif(9)]
         // DumpGraphicsMemoryInfo()
+#pragma warning disable IDE0060
         public static ResultCode DumpGraphicsMemoryInfo(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNv);
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(10)] // 3.0.0+
         // InitializeDevtools(u32, handle<copy>) -> u32 error_code;
@@ -556,12 +558,14 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
         [CommandCmif(13)] // 3.0.0+
         // FinishInitialize(unknown<8>)
+#pragma warning disable IDE0060
         public static ResultCode FinishInitialize(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNv);
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         public static void Destroy()
         {

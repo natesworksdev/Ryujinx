@@ -18,12 +18,14 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
         private readonly bool _isInitialized = false;
 
+#pragma warning disable IDE0060
         public IManager(ServiceCtx context)
         {
             _fqdnResolver = new FqdnResolver();
 
             _isInitialized = true;
         }
+#pragma warning restore IDE0060
 
         static IManager()
         {
@@ -83,12 +85,14 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
         [CommandCmif(12)]
         // GetDeviceId() -> bytes<0x10, 1>
+#pragma warning disable IDE0060
         public static ResultCode GetDeviceId(ServiceCtx context)
         {
             // NOTE: Stubbed in system module.
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(13)]
         // DeleteSettings(u32)
@@ -270,6 +274,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
         [CommandCmif(60)]
         // ReadSaveDataFromFsForTest() -> buffer<unknown<0x12bf0>, 0x16>
+#pragma warning disable IDE0060
         public ResultCode ReadSaveDataFromFsForTest(ServiceCtx context)
         {
             if (!_isInitialized)
@@ -283,9 +288,11 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(61)]
         // WriteSaveDataToFsForTest(buffer<unknown<0x12bf0>, 0x15>)
+#pragma warning disable IDE0060
         public ResultCode WriteSaveDataToFsForTest(ServiceCtx context)
         {
             if (!_isInitialized)
@@ -312,9 +319,11 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(62)]
         // DeleteSaveDataOfFsForTest()
+#pragma warning disable IDE0060
         public ResultCode DeleteSaveDataOfFsForTest(ServiceCtx context)
         {
             if (!_isInitialized)
@@ -341,6 +350,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(63)] // 4.0.0+
         // IsChangeEnvironmentIdentifierDisabled() -> bytes<1>

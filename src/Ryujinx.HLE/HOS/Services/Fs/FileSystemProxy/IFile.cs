@@ -57,10 +57,12 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 
         [CommandCmif(2)]
         // Flush()
+#pragma warning disable IDE0060
         public ResultCode Flush(ServiceCtx context)
         {
             return (ResultCode)_baseFile.Get.Flush().Value;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(3)]
         // SetSize(u64 size)

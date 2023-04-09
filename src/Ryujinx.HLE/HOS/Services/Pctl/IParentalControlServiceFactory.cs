@@ -10,10 +10,12 @@ namespace Ryujinx.HLE.HOS.Services.Pctl
     {
         private readonly int _permissionFlag;
 
+#pragma warning disable IDE0060
         public IParentalControlServiceFactory(ServiceCtx context, int permissionFlag)
         {
             _permissionFlag = permissionFlag;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(0)]
         // CreateService(u64, pid) -> object<nn::pctl::detail::ipc::IParentalControlService>

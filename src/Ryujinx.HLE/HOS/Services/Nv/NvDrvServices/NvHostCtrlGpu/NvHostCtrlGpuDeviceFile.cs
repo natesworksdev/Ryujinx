@@ -16,11 +16,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
         private readonly KEvent _errorEvent;
         private readonly KEvent _unknownEvent;
 
+#pragma warning disable IDE0060
         public NvHostCtrlGpuDeviceFile(ServiceCtx context, IVirtualMemoryManager memory, ulong owner) : base(context, owner)
         {
             _errorEvent   = new KEvent(context.Device.System.KernelContext);
             _unknownEvent = new KEvent(context.Device.System.KernelContext);
         }
+#pragma warning restore IDE0060
 
         static NvHostCtrlGpuDeviceFile()
         {

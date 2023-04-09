@@ -223,24 +223,30 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
 
         [CommandCmif(15)]
         // DestroyFile()
+#pragma warning disable IDE0060
         public ResultCode DestroyFile(ServiceCtx context)
         {
             return DestroyFile();
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(16)]
         // DeleteFile()
+#pragma warning disable IDE0060
         public ResultCode DeleteFile(ServiceCtx context)
         {
             return DeleteFile();
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(17)]
         // Format()
+#pragma warning disable IDE0060
         public ResultCode Format(ServiceCtx context)
         {
             return Format();
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(18)]
         // Import(buffer<bytes, 5>)

@@ -13,7 +13,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
     {
         private int _irsensorSharedMemoryHandle = 0;
 
+#pragma warning disable IDE0060
         public IIrSensorServer(ServiceCtx context) { }
+#pragma warning restore IDE0060
 
         [CommandCmif(302)]
         // ActivateIrsensor(nn::applet::AppletResourceUserId, pid)

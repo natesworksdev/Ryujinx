@@ -12,11 +12,13 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
         private readonly bool _isSystem;
 
+#pragma warning disable IDE0060
         public IStaticService(ServiceCtx context, bool isSystem)
         {
             _isSystem     = isSystem;
             _databaseImpl = DatabaseImpl.Instance;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(0)]
         // GetDatabaseService(u32 mii_key_code) -> object<nn::mii::detail::IDatabaseService>

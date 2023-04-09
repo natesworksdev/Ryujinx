@@ -146,10 +146,12 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 
         [CommandCmif(10)]
         // Commit()
+#pragma warning disable IDE0060
         public ResultCode Commit(ServiceCtx context)
         {
             return (ResultCode)_fileSystem.Get.Commit().Value;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(11)]
         // GetFreeSpaceSize(buffer<bytes<0x301>, 0x19, 0x301> path) -> u64 totalFreeSpace

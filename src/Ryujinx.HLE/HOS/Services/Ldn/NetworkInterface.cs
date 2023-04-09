@@ -21,6 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn
             _state = NetworkState.None;
         }
 
+#pragma warning disable IDE0060
         public static ResultCode Initialize(int unknown, int version, IPAddress ipv4Address, IPAddress subnetMaskAddress)
         {
             // TODO(Ac_K): Call nn::nifm::InitializeSystem().
@@ -32,6 +33,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn
             // NOTE: Since we don't support ldn for now, we can return this following result code to make it disabled.
             return ResultCode.DeviceDisabled;
         }
+#pragma warning restore IDE0060
 
         public ResultCode GetState(out NetworkState state)
         {

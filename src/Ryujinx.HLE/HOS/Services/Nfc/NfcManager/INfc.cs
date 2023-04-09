@@ -16,6 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.NfcManager
         [CommandCmif(0)]
         [CommandCmif(400)] // 4.0.0+
         // Initialize(u64, u64, pid, buffer<unknown, 5>)
+#pragma warning disable IDE0060
         public ResultCode Initialize(ServiceCtx context)
         {
             _state = State.Initialized;
@@ -24,10 +25,12 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.NfcManager
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(1)]
         [CommandCmif(401)] // 4.0.0+
         // Finalize()
+#pragma warning disable IDE0060
         public ResultCode Finalize(ServiceCtx context)
         {
             _state = State.NonInitialized;
@@ -36,6 +39,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.NfcManager
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(2)]
         [CommandCmif(402)] // 4.0.0+

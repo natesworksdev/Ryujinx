@@ -11,7 +11,9 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
     {
         private int _fontSharedMemHandle;
 
+#pragma warning disable IDE0060
         public ISharedFontManager(ServiceCtx context) { }
+#pragma warning restore IDE0060
 
         [CommandCmif(0)]
         // RequestLoad(u32)

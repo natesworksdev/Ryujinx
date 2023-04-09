@@ -13,6 +13,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
         private readonly ushort[] _pageReferenceCounts;
 
+#pragma warning disable IDE0060
         public KMemoryRegionManager(ulong address, ulong size, ulong endAddr)
         {
             Address = address;
@@ -24,6 +25,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             _pageHeap.Free(address, size / KPageTableBase.PageSize);
             _pageHeap.UpdateUsedSize();
         }
+#pragma warning restore IDE0060
 
         public Result AllocatePages(out KPageList pageList, ulong pagesCount)
         {

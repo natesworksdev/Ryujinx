@@ -181,6 +181,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
         [CommandCmif(8)]
         // DoHandshake()
+#pragma warning disable IDE0060
         public ResultCode DoHandshake(ServiceCtx context)
         {
             if (_connection == null)
@@ -190,6 +191,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
             return _connection.Handshake(_hostName);
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(9)]
         // DoHandshakeGetServerCert() -> (u32, u32, buffer<bytes, 6>)

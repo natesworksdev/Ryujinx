@@ -26,12 +26,14 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
         [CommandCmif(2)] // 6.0.0+
         // Commit()
+#pragma warning disable IDE0060
         public ResultCode Commit(ServiceCtx context)
         {
             Result result = _baseCommitManager.Get.Commit();
 
             return (ResultCode)result.Value;
         }
+#pragma warning restore IDE0060
 
         protected override void Dispose(bool isDisposing)
         {

@@ -55,13 +55,16 @@ namespace Ryujinx.HLE.HOS.Services.Nim.Ntc.StaticService
 
         [CommandCmif(2)]
         // GetResult()
+#pragma warning disable IDE0060
         public ResultCode GetResult(ServiceCtx context)
         {
             return _taskResultCode;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(3)]
         // Cancel()
+#pragma warning disable IDE0060
         public ResultCode Cancel(ServiceCtx context)
         {
             // NOTE: The update task should be canceled here.
@@ -73,5 +76,6 @@ namespace Ryujinx.HLE.HOS.Services.Nim.Ntc.StaticService
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
     }
 }

@@ -42,6 +42,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
             return ResultCode.Success;
         }
 
+#pragma warning disable IDE0060
         public static ResultCode OpenNcaFs(ServiceCtx context, string ncaPath, LibHac.Fs.IStorage ncaStorage, out IFileSystem openedFileSystem)
         {
             openedFileSystem = null;
@@ -69,6 +70,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         public static ResultCode OpenFileSystemFromInternalFile(ServiceCtx context, string fullPath, out IFileSystem openedFileSystem)
         {
