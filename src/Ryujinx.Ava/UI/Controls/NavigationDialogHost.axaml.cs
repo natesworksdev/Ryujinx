@@ -56,6 +56,7 @@ namespace Ryujinx.Ava.UI.Controls
             InitializeComponent();
         }
 
+#pragma warning disable IDE0060
         public void GoBack(object parameter = null)
         {
             if (ContentFrame.BackStack.Count > 0)
@@ -65,6 +66,7 @@ namespace Ryujinx.Ava.UI.Controls
 
             LoadProfiles();
         }
+#pragma warning restore IDE0060
 
         public void Navigate(Type sourcePageType, object parameter)
         {

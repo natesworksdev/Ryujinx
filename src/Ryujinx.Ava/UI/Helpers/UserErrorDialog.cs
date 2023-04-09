@@ -67,6 +67,7 @@ namespace Ryujinx.Ava.UI.Helpers
             };
         }
 
+#pragma warning disable IDE0060
         public static async Task ShowUserErrorDialog(UserError error, StyleableWindow owner)
         {
             string errorCode = GetErrorCode(error);
@@ -87,5 +88,6 @@ namespace Ryujinx.Ava.UI.Helpers
                 OpenHelper.OpenUrl(GetSetupGuideUrl(error));
             }
         }
+#pragma warning restore IDE0060
     }
 }

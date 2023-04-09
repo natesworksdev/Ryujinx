@@ -18,6 +18,7 @@ namespace Ryujinx.Ava.UI.Helpers
     {
         private static bool _isChoiceDialogOpen;
 
+#pragma warning disable IDE0060
         private async static Task<UserResult> ShowContentDialog(
              string title,
              object content,
@@ -64,6 +65,7 @@ namespace Ryujinx.Ava.UI.Helpers
 
             return result;
         }
+#pragma warning restore IDE0060
 
         public async static Task<UserResult> ShowTextDialog(
             string title,
@@ -317,7 +319,7 @@ namespace Ryujinx.Ava.UI.Helpers
 
             Window parent = GetMainWindow();
 
-            if (parent != null && parent.IsActive && (parent as MainWindow).ViewModel.IsGameRunning)
+            if (parent is { IsActive: true } and MainWindow window && window.ViewModel.IsGameRunning)
             {
                 contentDialogOverlayWindow = new()
                 {

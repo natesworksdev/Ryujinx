@@ -34,9 +34,11 @@ namespace Ryujinx.Ava.UI.Renderer
             return new SurfaceKHR((ulong?)VulkanHelper.CreateWindowSurface(instance.Handle, nativeWindowBase));
         }
 
+#pragma warning disable IDE0060
         public SurfaceKHR CreateSurface(Instance instance, Vk api)
         {
             return CreateSurface(instance);
         }
+#pragma warning restore IDE0060
     }
 }
