@@ -74,6 +74,7 @@ namespace Ryujinx.Common.Logging.Targets
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             _messageQueue.CompleteAdding();
             _messageThread.Join();
         }

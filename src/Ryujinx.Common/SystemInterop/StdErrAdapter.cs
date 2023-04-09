@@ -41,7 +41,7 @@ namespace Ryujinx.Common.SystemInterop
             _worker = Task.Run(async () => await EventWorkerAsync(_cancellationTokenSource.Token), _cancellationTokenSource.Token);
             _disposable = true;
         }
-        
+
         [SupportedOSPlatform("linux")]
         [SupportedOSPlatform("macos")]
         private async Task EventWorkerAsync(CancellationToken cancellationToken)
@@ -53,14 +53,14 @@ namespace Ryujinx.Common.SystemInterop
                 Logger.Error?.PrintRawMsg(line);
             }
         }
-        
+
 #pragma warning disable IDE0060
         private void Dispose(bool disposing)
         {
             if (_disposable)
             {
                 _disposable = false;
-                
+
                 if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
                 {
                     _cancellationTokenSource.Cancel();
@@ -74,6 +74,7 @@ namespace Ryujinx.Common.SystemInterop
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             Dispose(true);
         }
 
@@ -85,7 +86,7 @@ namespace Ryujinx.Common.SystemInterop
 
         private static (int, int) MakePipe()
         {
-            Span<int> pipefd = stackalloc int[2]; 
+            Span<int> pipefd = stackalloc int[2];
 
             if (pipe(pipefd) == 0)
             {
@@ -96,7 +97,7 @@ namespace Ryujinx.Common.SystemInterop
                 throw new();
             }
         }
-        
+
         [SupportedOSPlatform("linux")]
         [SupportedOSPlatform("macos")]
         private static Stream CreateFileDescriptorStream(int fd)
@@ -106,6 +107,6 @@ namespace Ryujinx.Common.SystemInterop
                 FileAccess.ReadWrite
             );
         }
-       
+
     }
 }

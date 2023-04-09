@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Common.Utilities;
+using System;
 using System.IO;
 
 namespace Ryujinx.Common.Logging.Targets
@@ -31,6 +32,7 @@ namespace Ryujinx.Common.Logging.Targets
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             if (!_leaveOpen)
             {
                 _stream.Dispose();

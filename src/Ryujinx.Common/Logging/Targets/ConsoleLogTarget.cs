@@ -36,6 +36,7 @@ namespace Ryujinx.Common.Logging.Targets
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             Console.ResetColor();
         }
     }
