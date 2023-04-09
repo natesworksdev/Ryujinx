@@ -41,8 +41,10 @@ namespace Ryujinx.Audio.Renderer.Server
         private UpsamplerManager _upsamplerManager;
         private bool _isActive;
         private BehaviourContext _behaviourContext;
+#pragma warning disable IDE0052
         private ulong _totalElapsedTicksUpdating;
         private ulong _totalElapsedTicks;
+#pragma warning restore IDE0052
         private int _sessionId;
         private Memory<MemoryPoolState> _memoryPools;
 
