@@ -45,9 +45,9 @@ namespace Ryujinx.HLE.HOS
 
         public T GetData<T>(int id)
         {
-            if (_objs.TryGetValue(id, out object data) && data is T)
+            if (_objs.TryGetValue(id, out object dataObject) && dataObject is T data)
             {
-                return (T)data;
+                return data;
             }
 
             return default;

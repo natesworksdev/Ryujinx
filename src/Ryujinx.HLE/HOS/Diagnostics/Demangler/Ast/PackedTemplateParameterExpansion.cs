@@ -8,11 +8,11 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public override void PrintLeft(TextWriter writer)
         {
-            if (Child is PackedTemplateParameter)
+            if (Child is PackedTemplateParameter parameter)
             {
-                if (((PackedTemplateParameter)Child).Nodes.Count !=  0)
+                if (parameter.Nodes.Count !=  0)
                 {
-                    Child.Print(writer);
+                    parameter.Print(writer);
                 }
             }
             else
