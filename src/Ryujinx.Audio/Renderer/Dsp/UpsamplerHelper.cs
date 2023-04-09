@@ -61,7 +61,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
                     40  => 6.0f,
                     80  => 3.0f,
                     160 => 1.5f,
-                    _   => throw new ArgumentOutOfRangeException()
+                    _   => throw new ArgumentOutOfRangeException(nameof(inputSampleCount), inputSampleCount, null)
                 };
                 state.Initialized = true;
             }
@@ -185,7 +185,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
                     }
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(state), state.Scale, null);
             }
         }
     }

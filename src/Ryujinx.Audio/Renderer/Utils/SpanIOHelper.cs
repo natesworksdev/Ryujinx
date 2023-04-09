@@ -22,7 +22,7 @@ namespace Ryujinx.Audio.Renderer.Utils
 
             if (size > backingMemory.Length)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(backingMemory), backingMemory.Length, null);
             }
 
             MemoryMarshal.Write<T>(backingMemory.Span[..size], ref data);
@@ -42,7 +42,7 @@ namespace Ryujinx.Audio.Renderer.Utils
 
             if (size > backingMemory.Length)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(backingMemory), backingMemory.Length, null);
             }
 
             MemoryMarshal.Write<T>(backingMemory[..size], ref data);
@@ -62,7 +62,7 @@ namespace Ryujinx.Audio.Renderer.Utils
 
             if (size > backingMemory.Length)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(backingMemory), backingMemory.Length, null);
             }
 
             Span<T> result = MemoryMarshal.Cast<byte, T>(backingMemory.Span[..size]);
@@ -84,7 +84,7 @@ namespace Ryujinx.Audio.Renderer.Utils
 
             if (size > backingMemory.Length)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(backingMemory), backingMemory.Length, null);
             }
 
             Span<T> result = MemoryMarshal.Cast<byte, T>(backingMemory[..size]);
@@ -106,7 +106,7 @@ namespace Ryujinx.Audio.Renderer.Utils
 
             if (size > backingMemory.Length)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(backingMemory), backingMemory.Length, null);
             }
 
             T result = MemoryMarshal.Read<T>(backingMemory.Span[..size]);
@@ -128,7 +128,7 @@ namespace Ryujinx.Audio.Renderer.Utils
 
             if (size > backingMemory.Length)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(backingMemory), backingMemory.Length, null);
             }
 
             T result = MemoryMarshal.Read<T>(backingMemory[..size]);
