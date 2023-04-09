@@ -6,7 +6,9 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
     {
         // TODO: Compute inside the Demangler
         public BaseNode Reference;
+#pragma warning disable IDE0052
         private readonly int     _index;
+#pragma warning restore IDE0052
 
         public ForwardTemplateReference(int index) : base(NodeType.ForwardTemplateReference)
         {

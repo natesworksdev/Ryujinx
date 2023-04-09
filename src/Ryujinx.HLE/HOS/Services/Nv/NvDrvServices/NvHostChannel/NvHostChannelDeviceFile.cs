@@ -19,9 +19,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private const uint MaxModuleSyncpoint = 16;
 
+#pragma warning disable IDE0052
         private uint _timeout;
         private uint _submitTimeout;
         private uint _timeslice;
+#pragma warning restore IDE0052
 
         private readonly Switch _device;
 

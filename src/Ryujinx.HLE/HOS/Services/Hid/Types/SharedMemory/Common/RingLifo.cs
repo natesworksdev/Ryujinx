@@ -12,9 +12,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Common
 #pragma warning disable IDE0051
         private readonly ulong _unused;
 #pragma warning restore IDE0051
-#pragma warning disable CS0414
+#pragma warning disable CS0414, IDE0052
         private ulong _bufferCount;
-#pragma warning restore CS0414
+#pragma warning restore CS0414, IDE0052
         private ulong _index;
         private ulong _count;
         private Array17<AtomicStorage<T>> _storage;

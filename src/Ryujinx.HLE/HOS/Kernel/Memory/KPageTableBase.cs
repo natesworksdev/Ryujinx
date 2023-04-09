@@ -58,7 +58,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         public ulong AslrRegionStart { get; private set; }
         public ulong AslrRegionEnd { get; private set; }
 
+#pragma warning disable IDE0052
         private ulong _heapCapacity;
+#pragma warning restore IDE0052
 
         public ulong PhysicalMemoryUsage { get; private set; }
 

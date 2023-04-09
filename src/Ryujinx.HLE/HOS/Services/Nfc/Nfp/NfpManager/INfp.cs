@@ -18,8 +18,10 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 {
     class INfp : IpcService
     {
+#pragma warning disable IDE0052
         private ulong  _appletResourceUserId;
         private ulong  _mcuVersionData;
+#pragma warning restore IDE0052
         private byte[] _mcuData;
 
         private State _state = State.NonInitialized;

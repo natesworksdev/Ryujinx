@@ -15,7 +15,9 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private readonly ITickSource _tickSource;
 
+#pragma warning disable IDE0052
         private uint _stickyTransform;
+#pragma warning restore IDE0052
 
         private uint _nextCallbackTicket;
         private uint _currentCallbackTicket;

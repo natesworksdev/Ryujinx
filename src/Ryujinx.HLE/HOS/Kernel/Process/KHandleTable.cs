@@ -10,7 +10,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         public const int SelfThreadHandle  = (0x1ffff << 15) | 0;
         public const int SelfProcessHandle = (0x1ffff << 15) | 1;
 
+#pragma warning disable IDE0052
         private readonly KernelContext _context;
+#pragma warning restore IDE0052
 
         private KHandleEntry[] _table;
 

@@ -14,7 +14,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
     class IManager : IpcService
     {
         public static readonly NsdSettings NsdSettings;
+#pragma warning disable IDE0052
         private readonly FqdnResolver _fqdnResolver;
+#pragma warning restore IDE0052
 
         private readonly bool _isInitialized = false;
 

@@ -12,13 +12,17 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
         private readonly int                      _permissionFlag;
         private ulong                    _titleId;
         private ParentalControlFlagValue _parentalControlFlag;
+#pragma warning disable IDE0052
         private int[]                    _ratingAge;
+#pragma warning restore IDE0052
 
 #pragma warning disable CS0414
         // TODO: Find where they are set.
         private readonly bool _restrictionEnabled                  = false;
         private readonly bool _featuresRestriction                 = false;
+#pragma warning disable IDE0052
         private bool _freeCommunicationEnabled            = false;
+#pragma warning restore IDE0052
         private readonly bool _stereoVisionRestrictionConfigurable = true;
         private bool _stereoVisionRestriction             = false;
 #pragma warning restore CS0414

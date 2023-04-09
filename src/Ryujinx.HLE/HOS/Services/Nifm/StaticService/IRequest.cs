@@ -21,7 +21,9 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         private int _event0Handle;
         private int _event1Handle;
 
+#pragma warning disable IDE0052
         private readonly uint _version;
+#pragma warning restore IDE0052
 
         public IRequest(Horizon system, uint version)
         {

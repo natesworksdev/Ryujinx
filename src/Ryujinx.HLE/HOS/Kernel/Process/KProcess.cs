@@ -66,13 +66,17 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         public bool IsApplication { get; private set; }
         public ulong Pid { get; private set; }
 
+#pragma warning disable IDE0052
         private long _creationTimestamp;
+#pragma warning restore IDE0052
         private ulong _entrypoint;
         private ThreadStart _customThreadStart;
         private ulong _imageSize;
         private ulong _mainThreadStackSize;
         private ulong _memoryUsageCapacity;
+#pragma warning disable IDE0052
         private int _version;
+#pragma warning restore IDE0052
 
         public KHandleTable HandleTable { get; private set; }
 

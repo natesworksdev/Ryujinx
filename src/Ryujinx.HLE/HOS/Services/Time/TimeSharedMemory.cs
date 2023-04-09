@@ -14,7 +14,9 @@ namespace Ryujinx.HLE.HOS.Services.Time
         private Switch              _device;
         private KSharedMemory       _sharedMemory;
         private SharedMemoryStorage _timeSharedMemoryStorage;
+#pragma warning disable IDE0052
         private int                 _timeSharedMemorySize;
+#pragma warning restore IDE0052
 
         private const uint SteadyClockContextOffset = 0x00;
         private const uint LocalSystemClockContextOffset = 0x38;
