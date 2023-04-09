@@ -102,7 +102,11 @@ namespace Ryujinx
             // This ends up causing race condition and abort of XCB when a context is created by SPB (even if SPB do call XInitThreads).
             if (OperatingSystem.IsLinux())
             {
-                XInitThreads();
+                if (XInitThreads() == 0)
+                {
+                    throw new NotSupportedException("Failed to initialize multi-threading support.");
+                }
+
                 Environment.SetEnvironmentVariable("GDK_BACKEND", "x11");
                 setenv("GDK_BACKEND", "x11", 1);
             }

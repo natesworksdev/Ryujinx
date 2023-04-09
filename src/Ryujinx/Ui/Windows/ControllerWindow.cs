@@ -553,6 +553,7 @@ namespace Ryujinx.Ui.Windows
         {
             if (_inputDevice.ActiveId.StartsWith("keyboard"))
             {
+#pragma warning disable CA1806
                 Enum.TryParse(_lStickUp.Label,     out Key lStickUp);
                 Enum.TryParse(_lStickDown.Label,   out Key lStickDown);
                 Enum.TryParse(_lStickLeft.Label,   out Key lStickLeft);
@@ -582,6 +583,7 @@ namespace Ryujinx.Ui.Windows
                 Enum.TryParse(_zR.Label,           out Key rButtonZr);
                 Enum.TryParse(_rSl.Label,          out Key rButtonSl);
                 Enum.TryParse(_rSr.Label,          out Key rButtonSr);
+#pragma warning restore CA1806
 
                 return new StandardKeyboardInputConfig
                 {
@@ -635,6 +637,7 @@ namespace Ryujinx.Ui.Windows
 
             if (_inputDevice.ActiveId.StartsWith("controller"))
             {
+#pragma warning disable CA1806
                 Enum.TryParse(_lStick.Label,      out ConfigStickInputId lStick);
                 Enum.TryParse(_lStickButton.Label, out ConfigGamepadInputId lStickButton);
                 Enum.TryParse(_minus.Label,        out ConfigGamepadInputId lButtonMinus);
@@ -660,6 +663,7 @@ namespace Ryujinx.Ui.Windows
                 Enum.TryParse(_rSr.Label,          out ConfigGamepadInputId rButtonSr);
 
                 int.TryParse(_dsuServerPort.Buffer.Text, out int port);
+#pragma warning restore CA1806
 
                 MotionConfigController motionConfig;
 
