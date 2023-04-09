@@ -182,7 +182,9 @@ namespace Ryujinx.Common.Collections
 
                 if (ParentOf(element) == old)
                 {
+#pragma warning disable IDE0059
                     parent = element;
+#pragma warning restore IDE0059
                 }
 
                 element.Color = old.Color;
