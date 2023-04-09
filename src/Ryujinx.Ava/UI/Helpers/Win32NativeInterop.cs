@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
@@ -25,6 +26,7 @@ namespace Ryujinx.Ava.UI.Helpers
             IDC_ARROW = 32512
         }
 
+        [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
         public enum WindowsMessages : uint
         {
             MOUSEMOVE = 0x0200,
