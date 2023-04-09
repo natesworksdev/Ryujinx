@@ -579,7 +579,7 @@ namespace Ryujinx.Graphics.Texture.Astc
                 {
                     if ((uint)index >= Count)
                     {
-                        throw new ArgumentOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(index), index, null);
                     }
 
                     ref int start = ref Unsafe.Add(ref _start, index * 144);
