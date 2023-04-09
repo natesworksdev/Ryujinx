@@ -182,10 +182,7 @@ namespace Ryujinx.HLE.FileSystem
                         _locationEntries.Remove(storageId);
                     }
 
-                    if (!_locationEntries.ContainsKey(storageId))
-                    {
-                        _locationEntries.Add(storageId, locationList);
-                    }
+                    _locationEntries.TryAdd(storageId, locationList);
                 }
 
                 if (device != null)
@@ -420,9 +417,9 @@ namespace Ryujinx.HLE.FileSystem
         {
             LinkedList<LocationEntry> locationList = null;
 
-            if (_locationEntries.ContainsKey(storageId))
+            if (_locationEntries.TryGetValue(storageId, out LinkedList<LocationEntry> locationEntry))
             {
-                locationList = _locationEntries[storageId];
+                locationList = locationEntry;
             }
 
             if (locationList != null)
@@ -440,9 +437,9 @@ namespace Ryujinx.HLE.FileSystem
         {
             LinkedList<LocationEntry> locationList = null;
 
-            if (_locationEntries.ContainsKey(storageId))
+            if (_locationEntries.TryGetValue(storageId, out LinkedList<LocationEntry> locationEntry))
             {
-                locationList = _locationEntries[storageId];
+                locationList = locationEntry;
             }
 
             if (locationList != null)

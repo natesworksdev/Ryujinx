@@ -593,10 +593,15 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
             if (hostEntry != null)
             {
-                int.TryParse(service, out int port);
-
-                errno          = GaiError.Success;
-                serializedSize = SerializeAddrInfos(context, responseBufferPosition, responseBufferSize, hostEntry, port);
+                if (int.TryParse(service, out int port))
+                {
+                    errno          = GaiError.Success;
+                    serializedSize = SerializeAddrInfos(context, responseBufferPosition, responseBufferSize, hostEntry, port);
+                }
+                else
+                {
+                    errno = GaiError.Service;
+                }
             }
 
             WriteResponse(context, withOptions, serializedSize, errno, netDbErrorCode);
