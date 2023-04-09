@@ -96,6 +96,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         /// <param name="engine">3D engine where this method is being called</param>
         /// <param name="argument">Method call argument</param>
+#pragma warning disable IDE0060
         public void DrawEnd(ThreedClass engine, int argument)
         {
             DrawEnd(
@@ -105,6 +106,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _state.State.VertexBufferDrawState.First,
                 _state.State.VertexBufferDrawState.Count);
         }
+#pragma warning restore IDE0060
 
         /// <summary>
         /// Finishes the draw call.
@@ -284,10 +286,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// This also sets internal state that indicates that the next draw is an indexed draw.
         /// </summary>
         /// <param name="argument">Method call argument</param>
+#pragma warning disable IDE0060
         public void SetIndexBufferCount(int argument)
         {
             _drawState.DrawIndexed = true;
         }
+#pragma warning restore IDE0060
 
         // TODO: Verify if the index type is implied from the method that is called,
         // or if it uses the state index type on hardware.
@@ -430,6 +434,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         /// <param name="engine">3D engine where this method is being called</param>
         /// <param name="argument">Method call argument</param>
+#pragma warning disable IDE0060
         public void DrawTexture(ThreedClass engine, int argument)
         {
             static float FixedToFloat(int fixedValue)
@@ -484,6 +489,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 new Extents2DF(srcX0, srcY0, srcX1, srcY1),
                 new Extents2DF(dstX0, dstY0, dstX1, dstY1));
         }
+#pragma warning restore IDE0060
 
         /// <summary>
         /// Performs a indexed or non-indexed draw.

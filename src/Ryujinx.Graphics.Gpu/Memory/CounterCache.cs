@@ -55,6 +55,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="sender">Sender object</param>
         /// <param name="e">Event arguments</param>
+#pragma warning disable IDE0060
         public void MemoryUnmappedHandler(object sender, UnmapEventArgs e) => RemoveRange(e.Address, e.Size);
 
         private void RemoveRange(ulong gpuVa, ulong size)
@@ -91,6 +92,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             _items.RemoveRange(index, count);
         }
+#pragma warning restore IDE0060
 
         /// <summary>
         /// Checks whenever an address falls inside a given range.

@@ -1625,6 +1625,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="handle">The handle this flush action is for</param>
         /// <param name="address">The address of the flushing memory access</param>
         /// <param name="size">The size of the flushing memory access</param>
+#pragma warning disable IDE0060
         public void FlushAction(TextureGroupHandle handle, ulong address, ulong size)
         {
             // If the page size is larger than 4KB, we will have a lot of false positives for flushing.
@@ -1674,6 +1675,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             });
         }
+#pragma warning restore IDE0060
 
         /// <summary>
         /// Called if any part of the storage texture is unmapped.

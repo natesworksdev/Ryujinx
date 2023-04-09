@@ -219,6 +219,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
         /// </summary>
         /// <param name="state">GPU state at the time of the call</param>
         /// <param name="arg0">First argument of the call</param>
+#pragma warning disable IDE0060
         private void MultiDrawElementsIndirectCount(IDeviceState state, int arg0)
         {
             int arg1 = FetchParam().Word;
@@ -303,6 +304,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
                 indexCount,
                 Threed.IndirectDrawType.DrawIndexedIndirectCount);
         }
+#pragma warning restore IDE0060
 
         /// <summary>
         /// Checks if the draw should be skipped, because the masked instance count is zero.
