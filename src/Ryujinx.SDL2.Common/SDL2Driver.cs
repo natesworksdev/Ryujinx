@@ -196,6 +196,7 @@ namespace Ryujinx.SDL2.Common
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             Dispose(true);
         }
     }
