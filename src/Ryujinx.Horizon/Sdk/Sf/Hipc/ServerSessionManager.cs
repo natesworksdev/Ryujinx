@@ -216,7 +216,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
             return 0;
         }
 
-        protected Result ReceiveRequest(ServerSession session, Span<byte> message)
+        protected static Result ReceiveRequest(ServerSession session, Span<byte> message)
         {
             return ReceiveRequestImpl(session, message);
         }
