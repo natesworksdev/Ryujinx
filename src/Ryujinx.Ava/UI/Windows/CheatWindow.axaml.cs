@@ -60,7 +60,9 @@ namespace Ryujinx.Ava.UI.Windows
 
             string currentCheatFile = string.Empty;
             string buildId = string.Empty;
+#pragma warning disable IDE0059
             string parentPath = string.Empty;
+#pragma warning restore IDE0059
 
             CheatsList currentGroup = null;
 
