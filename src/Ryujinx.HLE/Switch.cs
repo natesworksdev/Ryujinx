@@ -139,6 +139,7 @@ namespace Ryujinx.HLE
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             Dispose(true);
         }
 

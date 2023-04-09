@@ -445,6 +445,7 @@ namespace Ryujinx.HLE.HOS
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             Dispose(true);
         }
 

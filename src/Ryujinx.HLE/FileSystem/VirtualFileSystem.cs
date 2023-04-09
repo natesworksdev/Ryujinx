@@ -595,6 +595,7 @@ namespace Ryujinx.HLE.FileSystem
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             Dispose(true);
         }
 
