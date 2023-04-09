@@ -141,9 +141,9 @@ namespace Ryujinx.Input.Motion.CemuHook
         {
             lock (_motionData)
             {
-                if (_motionData.ContainsKey(player))
+                if (_motionData.TryGetValue(player, out Dictionary<int, MotionInput> value))
                 {
-                    if (_motionData[player].TryGetValue(slot, out input))
+                    if (value.TryGetValue(slot, out input))
                     {
                         return true;
                     }
