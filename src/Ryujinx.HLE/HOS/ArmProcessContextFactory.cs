@@ -96,7 +96,9 @@ namespace Ryujinx.HLE.HOS
                         break;
 
                     default:
-                        throw new ArgumentOutOfRangeException();
+#pragma warning disable CA2208
+                        throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
+#pragma warning restore CA2208
                 }
             }
 

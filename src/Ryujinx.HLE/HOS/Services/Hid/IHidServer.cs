@@ -814,7 +814,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 NpadIdType.Player8  => 0b0110,
                 NpadIdType.Unknown  => 0b0000,
                 NpadIdType.Handheld => 0b0000,
-                _ => throw new ArgumentOutOfRangeException(nameof(npadId))
+#pragma warning disable CA2208
+                _ => throw new ArgumentOutOfRangeException(nameof(npadId), npadId, null)
+#pragma warning restore CA2208
             };
 
             context.ResponseData.Write(ledPattern);
@@ -879,7 +881,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             if (npadJoyHoldType > NpadJoyHoldType.Horizontal)
             {
-                throw new ArgumentOutOfRangeException(nameof(npadJoyHoldType));
+#pragma warning disable CA2208
+                throw new ArgumentOutOfRangeException(nameof(npadJoyHoldType), npadJoyHoldType, null);
+#pragma warning restore CA2208
             }
 
             foreach (PlayerIndex playerIndex in context.Device.Hid.Npads.GetSupportedPlayers())
@@ -1154,7 +1158,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                     }
                     else
                     {
-                        throw new ArgumentOutOfRangeException(nameof(deviceHandle.Position));
+#pragma warning disable CA2208
+                        throw new ArgumentOutOfRangeException(nameof(deviceHandle.Position), deviceHandle.Position, null);
+#pragma warning restore CA2208
                     }
                 }
 

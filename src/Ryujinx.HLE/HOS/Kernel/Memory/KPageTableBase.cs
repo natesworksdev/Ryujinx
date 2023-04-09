@@ -111,7 +111,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         {
             if ((uint)addrSpaceType > (uint)AddressSpaceType.Addr39Bits)
             {
-                throw new ArgumentException(nameof(addrSpaceType));
+                throw new ArgumentException($"AddressSpaceType bigger than {(uint)AddressSpaceType.Addr39Bits}: {(uint)addrSpaceType}", nameof(addrSpaceType));
             }
 
             _contextId = Context.ContextIdManager.GetId();
@@ -241,7 +241,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     }
                     break;
 
-                default: throw new ArgumentException(nameof(addrSpaceType));
+                default: throw new ArgumentException($"AddressSpaceType bigger than {(uint)AddressSpaceType.Addr39Bits}: {(uint)addrSpaceType}", nameof(addrSpaceType));
             }
 
             CodeRegionEnd = CodeRegionStart + codeRegionSize;

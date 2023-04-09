@@ -360,7 +360,7 @@ namespace Ryujinx.HLE.FileSystem
             {
                 SaveDataSpaceId.System => BisPartitionId.System,
                 SaveDataSpaceId.User => BisPartitionId.User,
-                _ => throw new ArgumentOutOfRangeException()
+                _ => throw new ArgumentOutOfRangeException(nameof(info), info.SpaceId, null)
             };
 
             Result rc = hos.Fs.MountBis(mountNameU8, partitionId);

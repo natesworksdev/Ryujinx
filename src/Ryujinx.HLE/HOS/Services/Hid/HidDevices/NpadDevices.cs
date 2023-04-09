@@ -129,7 +129,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
                 if (player > PlayerIndex.Handheld)
                 {
-                    throw new ArgumentOutOfRangeException("Player must be Player1-8 or Handheld");
+#pragma warning disable CA2208
+                    throw new ArgumentOutOfRangeException(nameof(player), player, "Player must be Player1-8 or Handheld");
+#pragma warning restore CA2208
                 }
 
                 if (controllerType == ControllerType.Handheld)
