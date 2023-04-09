@@ -84,7 +84,9 @@ namespace Ryujinx.Cpu.Jit
 
             ulong remainingSize = size;
             ulong oVa = va;
+#pragma warning disable IDE0059
             ulong oPa = pa;
+#pragma warning restore IDE0059
             while (remainingSize != 0)
             {
                 _pageTable.Write((va / PageSize) * PteSize, PaToPte(pa));
