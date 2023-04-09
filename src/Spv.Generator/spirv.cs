@@ -42,6 +42,8 @@
 // "Mask" in their name, and a parallel enum that has the shift
 // amount (1 << x) for each corresponding enumerant.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Spv
 {
 
@@ -63,6 +65,7 @@ namespace Spv
             HLSL = 5,
         }
 
+        [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
         public enum ExecutionModel
         {
             Vertex = 0,
@@ -88,6 +91,7 @@ namespace Spv
             CallableNV = 5318,
         }
 
+        [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
         public enum AddressingModel
         {
             Logical = 0,
@@ -97,6 +101,7 @@ namespace Spv
             PhysicalStorageBuffer64EXT = 5348,
         }
 
+        [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
         public enum MemoryModel
         {
             Simple = 0,
@@ -170,6 +175,7 @@ namespace Spv
             NumSIMDWorkitemsINTEL = 5896,
         }
 
+        [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
         public enum StorageClass
         {
             UniformConstant = 0,
@@ -319,6 +325,7 @@ namespace Spv
             UnormInt101010_2 = 16,
         }
 
+        [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
         public enum ImageOperandsShift
         {
             Bias = 0,
@@ -341,6 +348,7 @@ namespace Spv
             ZeroExtend = 13,
         }
 
+        [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
         public enum ImageOperandsMask
         {
             MaskNone = 0,
@@ -417,6 +425,7 @@ namespace Spv
             NoReadWrite = 7,
         }
 
+        [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
         public enum Decoration
         {
             RelaxedPrecision = 0,
@@ -503,6 +512,7 @@ namespace Spv
             ForcePow2DepthINTEL = 5836,
         }
 
+        [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
         public enum BuiltIn
         {
             Position = 0,
@@ -696,6 +706,7 @@ namespace Spv
             Const = 0x00000008,
         }
 
+        [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
         public enum MemorySemanticsShift
         {
             Acquire = 1,
@@ -717,6 +728,7 @@ namespace Spv
             Volatile = 15,
         }
 
+        [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
         public enum MemorySemanticsMask
         {
             MaskNone = 0,
@@ -739,6 +751,7 @@ namespace Spv
             Volatile = 0x00008000,
         }
 
+        [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
         public enum MemoryAccessShift
         {
             Volatile = 0,
@@ -752,6 +765,7 @@ namespace Spv
             NonPrivatePointerKHR = 5,
         }
 
+        [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
         public enum MemoryAccessMask
         {
             MaskNone = 0,
@@ -766,6 +780,7 @@ namespace Spv
             NonPrivatePointerKHR = 0x00000020,
         }
 
+        [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
         public enum Scope
         {
             CrossDevice = 0,
@@ -807,6 +822,7 @@ namespace Spv
             CmdExecTime = 0x00000001,
         }
 
+        [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
         public enum Capability
         {
             Matrix = 0,
@@ -1053,6 +1069,7 @@ namespace Spv
             Horizontal4Pixels = 0x00000008,
         }
 
+        [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
         public enum Op
         {
             OpNop = 0,
