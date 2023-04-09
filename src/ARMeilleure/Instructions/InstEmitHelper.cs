@@ -126,7 +126,7 @@ namespace ARMeilleure.Instructions
                     Aarch32Mode.Abort => RegisterAlias.SpAbt,
                     Aarch32Mode.Hypervisor => RegisterAlias.SpHyp,
                     Aarch32Mode.Undefined => RegisterAlias.SpUnd,
-                    _ => throw new ArgumentException(nameof(mode)),
+                    _ => throw new ArgumentException($"No such AArch32Mode: {mode}", nameof(mode)),
                 },
                 14 => mode switch
                 {
@@ -136,9 +136,9 @@ namespace ARMeilleure.Instructions
                     Aarch32Mode.Supervisor => RegisterAlias.LrSvc,
                     Aarch32Mode.Abort => RegisterAlias.LrAbt,
                     Aarch32Mode.Undefined => RegisterAlias.LrUnd,
-                    _ => throw new ArgumentException(nameof(mode)),
+                    _ => throw new ArgumentException($"No such AArch32Mode: {mode}", nameof(mode)),
                 },
-                _ => throw new ArgumentOutOfRangeException(nameof(regIndex)),
+                _ => throw new ArgumentOutOfRangeException(nameof(regIndex), regIndex, null),
             };
         }
 
