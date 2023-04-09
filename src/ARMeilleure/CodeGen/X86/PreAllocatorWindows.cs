@@ -155,6 +155,7 @@ namespace ARMeilleure.CodeGen.X86
             node.SetSources(sources);
         }
 
+#pragma warning disable IDE0060
         public static void InsertTailcallCopies(IntrusiveList<Operation> nodes, StackAllocator stackAlloc, Operation node)
         {
             int argsCount = node.SourcesCount - 1;
@@ -195,6 +196,7 @@ namespace ARMeilleure.CodeGen.X86
 
             node.SetSources(sources);
         }
+#pragma warning restore IDE0060
 
         public static Operation InsertLoadArgumentCopy(
             CompilerContext cctx,

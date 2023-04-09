@@ -361,6 +361,7 @@ namespace ARMeilleure.CodeGen.Arm64
             operation.SetSources(sources.ToArray());
         }
 
+#pragma warning disable IDE0060
         private static void InsertTailcallCopies(
             ConstantDict constants,
             IntrusiveList<Operation> nodes,
@@ -440,6 +441,7 @@ namespace ARMeilleure.CodeGen.Arm64
 
             operation.SetSources(sources.ToArray());
         }
+#pragma warning restore IDE0060
 
         private static Operation GenerateCompareAndSwap(IntrusiveList<Operation> nodes, Operation node)
         {

@@ -199,7 +199,9 @@ namespace ARMeilleure.Instructions
             }
         }
 
+#pragma warning disable IDE0060
         public static void Nop(ArmEmitterContext context) { }
+#pragma warning restore IDE0060
 
         public static void Vmrs(ArmEmitterContext context)
         {

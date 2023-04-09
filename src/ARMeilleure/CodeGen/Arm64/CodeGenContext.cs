@@ -58,6 +58,7 @@ namespace ARMeilleure.CodeGen.Arm64
 
         private readonly bool _relocatable;
 
+#pragma warning disable IDE0060
         public CodeGenContext(AllocationResult allocResult, int maxCallArgs, int blocksCount, bool relocatable)
         {
             _stream = MemoryStreamManager.Shared.GetStream();
@@ -84,6 +85,7 @@ namespace ARMeilleure.CodeGen.Arm64
 
             _relocatable = relocatable;
         }
+#pragma warning restore IDE0060
 
         public void EnterBlock(BasicBlock block)
         {
