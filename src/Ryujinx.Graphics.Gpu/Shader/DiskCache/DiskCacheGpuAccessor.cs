@@ -19,7 +19,9 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         private readonly ShaderSpecializationState _newSpecState;
         private readonly int _stageIndex;
         private readonly bool _isVulkan;
+#pragma warning disable IDE0052
         private readonly ResourceCounts _resourceCounts;
+#pragma warning restore IDE0052
 
         /// <summary>
         /// Creates a new instance of the cached GPU state accessor for shader translation.
