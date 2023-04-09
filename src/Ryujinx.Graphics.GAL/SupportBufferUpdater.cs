@@ -95,6 +95,7 @@ namespace Ryujinx.Graphics.GAL
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             _renderer.DeleteBuffer(Handle);
         }
     }

@@ -499,6 +499,8 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
+
             // Dispose must happen from the render thread, after all commands have completed.
 
             // Stop the GPU thread.
