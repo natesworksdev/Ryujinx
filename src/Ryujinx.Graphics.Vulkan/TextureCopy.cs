@@ -226,14 +226,18 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 dstZ = dstDepthOrLayer;
                 dstLayer = 0;
+#pragma warning disable IDE0059
                 dstDepth = depthOrLayers;
+#pragma warning restore IDE0059
                 dstLayers = 1;
             }
             else
             {
                 dstZ = 0;
                 dstLayer = dstDepthOrLayer;
+#pragma warning disable IDE0059
                 dstDepth = 1;
+#pragma warning restore IDE0059
                 dstLayers = depthOrLayers;
             }
 
