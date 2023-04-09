@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.OpenGL
         }
 
         private ulong _firstHandle = 0;
-        private static ClientWaitSyncFlags _syncFlags => HwCapabilities.RequiresSyncFlush ? ClientWaitSyncFlags.None : ClientWaitSyncFlags.SyncFlushCommandsBit;
+        private static ClientWaitSyncFlags SyncFlags => HwCapabilities.RequiresSyncFlush ? ClientWaitSyncFlags.None : ClientWaitSyncFlags.SyncFlushCommandsBit;
 
         private readonly List<SyncHandle> _handles = new();
 
@@ -57,7 +57,7 @@ namespace Ryujinx.Graphics.OpenGL
 
                         if (handle.ID > lastHandle)
                         {
-                            WaitSyncStatus syncResult = GL.ClientWaitSync(handle.Handle, _syncFlags, 0);
+                            WaitSyncStatus syncResult = GL.ClientWaitSync(handle.Handle, SyncFlags, 0);
 
                             if (syncResult == WaitSyncStatus.AlreadySignaled)
                             {
@@ -101,8 +101,8 @@ namespace Ryujinx.Graphics.OpenGL
                         return;
                     }
 
-                    WaitSyncStatus syncResult = GL.ClientWaitSync(result.Handle, _syncFlags, 1000000000);
-                    
+                    WaitSyncStatus syncResult = GL.ClientWaitSync(result.Handle, SyncFlags, 1000000000);
+
                     if (syncResult == WaitSyncStatus.TimeoutExpired)
                     {
                         Logger.Error?.PrintMsg(LogClass.Gpu, $"GL Sync Object {result.ID} failed to signal within 1000ms. Continuing...");
@@ -125,7 +125,7 @@ namespace Ryujinx.Graphics.OpenGL
 
                 if (first == null) break;
 
-                WaitSyncStatus syncResult = GL.ClientWaitSync(first.Handle, _syncFlags, 0);
+                WaitSyncStatus syncResult = GL.ClientWaitSync(first.Handle, SyncFlags, 0);
 
                 if (syncResult == WaitSyncStatus.AlreadySignaled)
                 {
