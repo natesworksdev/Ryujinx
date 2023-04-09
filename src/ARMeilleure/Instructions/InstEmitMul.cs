@@ -2,7 +2,7 @@ using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System;
-
+using System.Diagnostics.CodeAnalysis;
 using static ARMeilleure.Instructions.InstEmitHelper;
 
 namespace ARMeilleure.Instructions
@@ -33,6 +33,7 @@ namespace ARMeilleure.Instructions
         public static void Umsubl(ArmEmitterContext context) => EmitMull(context, MullFlags.Subtract);
 
         [Flags]
+        [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
         private enum MullFlags
         {
             Subtract = 0,

@@ -1,8 +1,10 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
     [Flags]
+    [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
     enum Intrinsic : ushort
     {
         // X86 (SSE and AVX)
