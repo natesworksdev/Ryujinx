@@ -2,8 +2,10 @@
 {
     readonly struct HipcReceiveListEntry
     {
+#pragma warning disable IDE0052
         private readonly uint _addressLow;
         private readonly uint _word1;
+#pragma warning restore IDE0052
 
         public HipcReceiveListEntry(ulong address, ulong size)
         {
