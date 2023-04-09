@@ -273,7 +273,9 @@ namespace Ryujinx.Graphics.Shader.Decoders
             int offset;
             int count = 1;
             bool isStore = false;
+#pragma warning disable IDE0059
             bool indexed = false;
+#pragma warning restore IDE0059
             bool perPatch = false;
 
             if (name == InstName.Ast)
