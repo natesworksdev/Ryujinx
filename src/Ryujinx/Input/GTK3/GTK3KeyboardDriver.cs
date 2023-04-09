@@ -49,6 +49,7 @@ namespace Ryujinx.Input.GTK3
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             Dispose(true);
         }
 

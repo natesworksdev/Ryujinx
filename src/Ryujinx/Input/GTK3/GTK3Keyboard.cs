@@ -48,6 +48,7 @@ namespace Ryujinx.Input.GTK3
         public void Dispose()
         {
             // No operations
+            GC.SuppressFinalize(this);
         }
 
         public KeyboardStateSnapshot GetKeyboardStateSnapshot()
