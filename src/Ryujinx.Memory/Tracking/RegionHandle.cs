@@ -50,7 +50,7 @@ namespace Ryujinx.Memory.Tracking
 
         internal IMultiRegionHandle Parent { get; set; }
 
-        private event Action _onDirty;
+        private event Action OnDirty;
 
         private readonly object _preActionLock = new();
         private RegionSignal _preAction; // Action to perform before a read or write. This will block the memory access.
@@ -269,7 +269,7 @@ namespace Ryujinx.Memory.Tracking
                 Dirty = true;
                 if (!oldDirty)
                 {
-                    _onDirty?.Invoke();
+                    OnDirty?.Invoke();
                 }
                 Parent?.SignalWrite();
             }
@@ -403,7 +403,7 @@ namespace Ryujinx.Memory.Tracking
         /// <param name="action">Action to call on dirty</param>
         public void RegisterDirtyEvent(Action action)
         {
-            _onDirty += action;
+            OnDirty += action;
         }
 
         /// <summary>
