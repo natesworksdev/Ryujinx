@@ -322,6 +322,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             VPredictor(dst, stride, 32, above, left);
         }
 
+#pragma warning disable IDE0060
         private static unsafe void VPredictor(byte* dst, int stride, int bs, byte* above, byte* left)
         {
             int r;
@@ -332,6 +333,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
                 dst += stride;
             }
         }
+#pragma warning restore IDE0060
 
         public static unsafe void HPredictor4x4(byte* dst, int stride, byte* above, byte* left)
         {
@@ -420,6 +422,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             Dc128Predictor(dst, stride, 32, above, left);
         }
 
+#pragma warning disable IDE0060
         private static unsafe void Dc128Predictor(byte* dst, int stride, int bs, byte* above, byte* left)
         {
             int r;
@@ -430,6 +433,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
                 dst += stride;
             }
         }
+#pragma warning restore IDE0060
 
         public static unsafe void DcLeftPredictor4x4(byte* dst, int stride, byte* above, byte* left)
         {
@@ -1030,6 +1034,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             HighbdVPredictor(dst, stride, 32, above, left, bd);
         }
 
+#pragma warning disable IDE0060
         private static unsafe void HighbdVPredictor(ushort* dst, int stride, int bs, ushort* above, ushort* left, int bd)
         {
             int r;
@@ -1039,6 +1044,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
                 dst += stride;
             }
         }
+#pragma warning restore IDE0060
 
         public static unsafe void HighbdHPredictor4x4(ushort* dst, int stride, ushort* above, ushort* left, int bd)
         {
@@ -1126,6 +1132,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             HighbdDc128Predictor(dst, stride, 32, above, left, bd);
         }
 
+#pragma warning disable IDE0060
         private static unsafe void HighbdDc128Predictor(ushort* dst, int stride, int bs, ushort* above, ushort* left, int bd)
         {
             int r;
@@ -1136,6 +1143,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
                 dst += stride;
             }
         }
+#pragma warning restore IDE0060
 
         public static unsafe void HighbdDcLeftPredictor4x4(ushort* dst, int stride, ushort* above, ushort* left, int bd)
         {
