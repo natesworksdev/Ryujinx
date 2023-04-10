@@ -1,6 +1,7 @@
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using DynamicData;
 using LibHac.Common;
@@ -90,12 +91,19 @@ namespace Ryujinx.Ava.UI.ViewModels
             get => string.Format(LocaleManager.Instance[LocaleKeys.DlcWindowHeading], DownloadableContents.Count);
         }
 
+        public IStorageProvider StorageProvider;
+
         public DownloadableContentManagerViewModel(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
         {
             _virtualFileSystem = virtualFileSystem;
 
             _titleId   = titleId;
             _titleName = titleName;
+
+            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                StorageProvider = desktop.MainWindow.StorageProvider;
+            }
 
             _downloadableContentJsonPath = Path.Combine(AppDataManager.GamesDirPath, titleId.ToString("x16"), "dlc.json");
 
@@ -132,7 +140,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                         Nca nca = TryOpenNca(ncaFile.Get.AsStorage(), downloadableContentContainer.ContainerPath);
                         if (nca != null)
-                        {   
+                        {
                             var content = new DownloadableContentModel(nca.Header.TitleId.ToString("X16"),
                                 downloadableContentContainer.ContainerPath,
                                 downloadableContentNca.FullPath,
@@ -196,29 +204,23 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async void Add()
         {
-            OpenFileDialog dialog = new OpenFileDialog()
+            var result = StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                Title         = LocaleManager.Instance[LocaleKeys.SelectDlcDialogTitle],
-                AllowMultiple = true
-            };
-
-            dialog.Filters.Add(new FileDialogFilter
-            {
-                Name       = "NSP",
-                Extensions = { "nsp" }
-            });
-
-            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-            {
-                string[] files = await dialog.ShowAsync(desktop.MainWindow);
-
-                if (files != null)
+                Title = LocaleManager.Instance[LocaleKeys.SelectDlcDialogTitle],
+                AllowMultiple = true,
+                FileTypeFilter = new List<FilePickerFileType>
                 {
-                    foreach (string file in files)
+                    new("NSP")
                     {
-                        await AddDownloadableContent(file);
+                        Patterns = new[] { "*.nsp" },
+                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.Ryujinx-nsp" },
+                        MimeTypes = new[] { "application/x-nx-nsp" }
                     }
                 }
+            }).Result;
+
+            foreach (var file in result) {
+                await AddDownloadableContent(file.Path.LocalPath);
             }
         }
 
