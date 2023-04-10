@@ -49,8 +49,6 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSystem op = (OpCodeSystem)context.CurrOp;
 
-            MethodInfo info;
-
             switch (GetPackedId(op))
             {
                 case 0b11_011_0100_0010_000: EmitSetNzcv(context); return;
@@ -60,8 +58,6 @@ namespace ARMeilleure.Instructions
 
                 default: throw new NotImplementedException($"Unknown MSR 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
             }
-
-            context.Call(info, GetIntOrZR(context, op.Rt));
         }
 
         public static void Nop(ArmEmitterContext context)

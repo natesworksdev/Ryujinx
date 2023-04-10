@@ -40,8 +40,6 @@ namespace ARMeilleure.Instructions
                             throw new NotImplementedException($"Unknown MRC Opc2 0x{op.Opc2:X} at 0x{op.Address:X} (0x{op.RawOpCode:X}).");
                     }
 
-                    break;
-
                 case 7:
                     switch (op.CRm) // Cache and Memory barrier.
                     {
