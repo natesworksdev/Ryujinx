@@ -1,9 +1,8 @@
 ﻿using Ryujinx.Common.Configuration;
 using System;
 using System.IO;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.PixelFormats;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 
 namespace Ryujinx.Common.Utilities
 {
@@ -11,72 +10,53 @@ namespace Ryujinx.Common.Utilities
     {
         public static void CreateAppShortcut(string appFilePath, string appName, string titleId, byte[] iconData)
         {
+            MemoryStream iconDataStream = new(iconData);
             string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx");
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
-            string iconPath = Path.Combine(AppDataManager.BaseDirPath, "games", titleId, "app");
+            string iconPath = Path.Combine(AppDataManager.BaseDirPath, "games", titleId, "app.ico");
             string cleanedAppName = string.Join("_", appName.Split(Path.GetInvalidFileNameChars()));
-#if OS_WINDOWS
+
             if (OperatingSystem.IsWindows())
             {
-                MemoryStream iconDataStream = new(iconData);
-                using (System.Drawing.Image image = System.Drawing.Image.FromStream(iconDataStream))
+                using (Image image = Image.FromStream(iconDataStream))
                 {
-                    using System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(128, 128);
-                    using System.Drawing.Graphics graphic = System.Drawing.Graphics.FromImage(bitmap);
-                    graphic.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                    using Bitmap bitmap = new Bitmap(128, 128);
+                    using Graphics graphic = Graphics.FromImage((Image)bitmap);
+                    graphic.InterpolationMode = InterpolationMode.HighQualityBicubic;
                     graphic.DrawImage(image, 0, 0, 128, 128);
-                    SaveBitmapAsIcon(bitmap, iconPath + ".ico");
+                    SaveBitmapAsIcon(bitmap, iconPath);
                 }
+
                 IWshRuntimeLibrary.IWshShortcut shortcut = new IWshRuntimeLibrary.WshShell().CreateShortcut(Path.Combine(desktopPath, cleanedAppName + ".lnk"));
                 shortcut.Description = cleanedAppName;
                 shortcut.TargetPath = basePath + ".exe";
-                shortcut.IconLocation = iconPath + ".ico";
+                shortcut.IconLocation = iconPath;
                 shortcut.Arguments = $"""{basePath} "{appFilePath}" --fullscreen""";
                 shortcut.Save();
             }
-#else
-            //if (OperatingSystem.IsMacOS())
-            //{
-
-            //}
-            if (OperatingSystem.IsLinux())
+            else if (OperatingSystem.IsLinux())
             {
-                var image = Image.Load<Rgba32>(iconData);
-                image.SaveAsPng(iconPath + ".png");
-                var desktopFile = """
-                    [Desktop Entry]
-                    Version=1.0
-                    Name={0}
-                    Type=Application
-                    Icon={1}
-                    Exec={2} {3} %f
-                    Comment=A Nintendo Switch Emulator
-                    GenericName=Nintendo Switch Emulator
-                    Terminal=false
-                    Categories=Game;Emulator;
-                    MimeType=application/x-nx-nca;application/x-nx-nro;application/x-nx-nso;application/x-nx-nsp;application/x-nx-xci;
-                    Keywords=Switch;Nintendo;Emulator;
-                    StartupWMClass=Ryujinx
-                    PrefersNonDefaultGPU=true
 
-                    """;
-                using StreamWriter outputFile = new StreamWriter(Path.Combine(desktopPath, cleanedAppName + ".desktop"));
-                outputFile.Write(String.Format(desktopFile, cleanedAppName, iconPath + ".png", basePath, $"\"appFilePath\""));
             }
-#endif
-        }
+            else if (OperatingSystem.IsMacOS())
+            {
 
-#if OS_WINDOWS
+            }
+        }
 
         /// <summary>
         /// Creates a Icon (.ico) file using the source bitmap image at the specified file path.
         /// </summary>
         /// <param name="source">The source bitmap image that will be saved as an .ico file</param>
         /// <param name="filePath">The location that the new .ico file will be saved too (Make sure to include '.ico' in the path).</param>
-        private static void SaveBitmapAsIcon(System.Drawing.Bitmap source, string filePath)
+        /// <exception cref="NotSupportedException"></exception>
+        private static void SaveBitmapAsIcon(Bitmap source, string filePath)
         {
-            if (!OperatingSystem.IsWindows()) return;
+            if (!OperatingSystem.IsWindows())
+            {
+                throw new NotSupportedException("Cannot save .ico files on Operating Systems other then Windows.");
+            }
 
             // Code Modified From https://stackoverflow.com/a/11448060/368354 by Benlitz
             using FileStream FS = new FileStream(filePath, FileMode.Create);
@@ -120,6 +100,5 @@ namespace Ryujinx.Common.Utilities
             FS.WriteByte((byte)Len);
             FS.WriteByte((byte)(Len >> 8));
         }
-#endif
     }
 }
