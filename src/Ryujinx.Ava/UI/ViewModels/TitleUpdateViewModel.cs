@@ -71,12 +71,19 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        public IStorageProvider StorageProvider;
+
         public TitleUpdateViewModel(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
         {
             _virtualFileSystem = virtualFileSystem;
 
             _titleId   = titleId;
             _titleName = titleName;
+
+            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                StorageProvider = desktop.MainWindow.StorageProvider;
+            }
 
             _titleUpdateJsonPath = Path.Combine(AppDataManager.GamesDirPath, titleId.ToString("x16"), "updates.json");
 
