@@ -641,16 +641,18 @@ namespace Ryujinx.Ui.Widgets
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
             string appPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx");
             string cleanedTitleName = string.Join("_", _titleName.Split(System.IO.Path.GetInvalidFileNameChars()));
-            string iconPath = System.IO.Path.Combine(AppDataManager.BaseDirPath, "games", _titleIdText, cleanedTitleName + ".ico");
+            string iconPath = System.IO.Path.Combine(AppDataManager.BaseDirPath, "games", _titleIdText, "app.ico");
             MemoryStream iconData = new(new ApplicationLibrary(_virtualFileSystem).GetApplicationIcon(_titleFilePath, ConfigurationState.Instance.System.Language));
 
             if (OperatingSystem.IsWindows())
             {
-                iconData.Seek(0, SeekOrigin.Begin);
-
                 using (Image image = Image.FromStream(iconData))
                 {
-                    SaveAsIcon(resizeImage(image), iconPath);
+                    using Bitmap bitmap = new Bitmap(128, 128);
+                    using SysGraphics graphic = SysGraphics.FromImage((Image)bitmap);
+                    graphic.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    graphic.DrawImage(image, 0, 0, 128, 128);
+                    SaveBitmapAsIcon(bitmap, iconPath);
                 }
 
                 IWshRuntimeLibrary.IWshShortcut shortcut = new IWshRuntimeLibrary.WshShell().CreateShortcut(System.IO.Path.Combine(desktopPath, cleanedTitleName + ".lnk"));
@@ -670,27 +672,22 @@ namespace Ryujinx.Ui.Widgets
             }
         }
 
-        private static Bitmap resizeImage(Image imgToResize)
+        // Code Modified From https://stackoverflow.com/a/11448060/368354 by Benlitz
+        public static void SaveBitmapAsIcon(Bitmap source, string filePath)
         {
-            int destWidth = 128, destHeight = 128;
-            Bitmap b = new Bitmap(destWidth, destHeight);
-            using (SysGraphics g = SysGraphics.FromImage((Image)b))
+            if (!OperatingSystem.IsWindows())
             {
-                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                // Draw image with new width and height  
-                g.DrawImage(imgToResize, 0, 0, destWidth, destHeight);
+                throw new NotSupportedException("Cannot save .ico files on Operating Systems other then Windows.");
             }
-            return b;
-        }
 
-        public static void SaveAsIcon(Bitmap SourceBitmap, string FilePath)
-        {
-            FileStream FS = new FileStream(FilePath, FileMode.Create);
+            using FileStream FS = new FileStream(filePath, FileMode.Create);
             // ICO header
-            FS.WriteByte(0); FS.WriteByte(0);
-            FS.WriteByte(1); FS.WriteByte(0);
-            FS.WriteByte(1); FS.WriteByte(0);
-
+            FS.WriteByte(0);
+            FS.WriteByte(0);
+            FS.WriteByte(1);
+            FS.WriteByte(0);
+            FS.WriteByte(1);
+            FS.WriteByte(0);
             // Image size
             // Set to 0 for 256 px width/height
             FS.WriteByte(0);
@@ -700,34 +697,29 @@ namespace Ryujinx.Ui.Widgets
             // Reserved
             FS.WriteByte(0);
             // Number of color planes
-            FS.WriteByte(1); FS.WriteByte(0);
+            FS.WriteByte(1);
+            FS.WriteByte(0);
             // Bits per pixel
-            FS.WriteByte(32); FS.WriteByte(0);
-
+            FS.WriteByte(32);
+            FS.WriteByte(0);
             // Data size, will be written after the data
             FS.WriteByte(0);
             FS.WriteByte(0);
             FS.WriteByte(0);
             FS.WriteByte(0);
-
             // Offset to image data, fixed at 22
             FS.WriteByte(22);
             FS.WriteByte(0);
             FS.WriteByte(0);
             FS.WriteByte(0);
-
             // Writing actual data
-            SourceBitmap.Save(FS, System.Drawing.Imaging.ImageFormat.Png);
-
+            source.Save(FS, System.Drawing.Imaging.ImageFormat.Png);
             // Getting data length (file length minus header)
             long Len = FS.Length - 22;
-
             // Write it in the correct place
             FS.Seek(14, SeekOrigin.Begin);
             FS.WriteByte((byte)Len);
             FS.WriteByte((byte)(Len >> 8));
-
-            FS.Close();
         }
     }
 }
