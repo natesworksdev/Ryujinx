@@ -15,10 +15,12 @@ namespace Ryujinx.HLE.HOS.Services.Caps
 
         private uint _shimLibraryVersion;
 
+#pragma warning disable IDE0060
         public CaptureManager(Switch device)
         {
             _sdCardPath = FileSystem.VirtualFileSystem.GetSdCardPath();
         }
+#pragma warning restore IDE0060
 
         public ResultCode SetShimLibraryVersion(ServiceCtx context)
         {

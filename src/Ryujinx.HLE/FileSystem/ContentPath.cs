@@ -27,7 +27,7 @@ namespace Ryujinx.HLE.FileSystem
         public const string Nintendo = "Nintendo";
         public const string Contents = "Contents";
 
-        public static string GetRealPath(VirtualFileSystem fileSystem, string switchContentPath)
+        public static string GetRealPath(string switchContentPath)
         {
             return switchContentPath switch
             {

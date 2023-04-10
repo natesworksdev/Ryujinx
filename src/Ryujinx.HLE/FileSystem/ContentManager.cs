@@ -110,7 +110,7 @@ namespace Ryujinx.HLE.FileSystem
                     try
                     {
                         contentPathString   = ContentPath.GetContentPath(storageId);
-                        contentDirectory    = ContentPath.GetRealPath(_virtualFileSystem, contentPathString);
+                        contentDirectory    = ContentPath.GetRealPath(contentPathString);
                         registeredDirectory = Path.Combine(contentDirectory, "registered");
                     }
                     catch (NotSupportedException)
@@ -479,7 +479,7 @@ namespace Ryujinx.HLE.FileSystem
         public void InstallFirmware(string firmwareSource)
         {
             string contentPathString   = ContentPath.GetContentPath(StorageId.BuiltInSystem);
-            string contentDirectory    = ContentPath.GetRealPath(_virtualFileSystem, contentPathString);
+            string contentDirectory    = ContentPath.GetRealPath(contentPathString);
             string registeredDirectory = Path.Combine(contentDirectory, "registered");
             string temporaryDirectory  = Path.Combine(contentDirectory, "temp");
 
