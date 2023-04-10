@@ -34,7 +34,6 @@
     <PackageReference Include="jp2masa.Avalonia.Flexbox" />
     <PackageReference Include="DynamicData" />
     <PackageReference Include="FluentAvaloniaUI" />
-    <PackageReference Include="XamlNameReferenceGenerator" />
 
     <PackageReference Include="OpenTK.Core" />
     <PackageReference Include="Ryujinx.Audio.OpenAL.Dependencies" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64' AND '$(RuntimeIdentifier)' != 'osx-arm64'" />
