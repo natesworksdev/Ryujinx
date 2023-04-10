@@ -68,7 +68,7 @@
                                   IsChecked="{Binding StartGamesInFullscreen, Mode=TwoWay}"/>
                     </MenuItem.Icon>
                 </MenuItem>
-                <MenuItem 
+                <MenuItem
                     IsVisible="{Binding ShowConsoleVisible}"
                     Command="{Binding ToggleShowConsole}"
                     Header="{locale:Locale MenuBarOptionsShowConsole}">
