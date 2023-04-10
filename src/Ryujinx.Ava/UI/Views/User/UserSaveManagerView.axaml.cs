@@ -94,7 +94,7 @@ namespace Ryujinx.Ava.UI.Views.User
                     var save = saveDataInfo[i];
                     if (save.ProgramId.Value != 0)
                     {
-                        var saveModel = new SaveModel(save, _virtualFileSystem);
+                        var saveModel = new SaveModel(save);
                         saves.Add(saveModel);
                     }
                 }
