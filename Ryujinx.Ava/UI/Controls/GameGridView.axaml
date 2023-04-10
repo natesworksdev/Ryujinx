@@ -89,6 +89,10 @@
                     Header="{locale:Locale GameListContextMenuExtractDataLogo}"
                     ToolTip.Tip="{locale:Locale GameListContextMenuExtractDataLogoToolTip}" />
             </MenuItem>
+			<MenuItem
+				Command="{Binding CreateShortcut}"
+				Header="{locale:Locale GameListContextMenuCreateShortcut}"
+				ToolTip.Tip="{locale:Locale GameListContextMenuCreateShortcutToolTip}" />
         </MenuFlyout>
     </UserControl.Resources>
     <Grid>
