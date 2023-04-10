@@ -86,7 +86,6 @@ namespace ARMeilleure.Instructions
         {
             return GetContext().CntvctEl0;
         }
-
         #endregion
 
         #region "Read"
