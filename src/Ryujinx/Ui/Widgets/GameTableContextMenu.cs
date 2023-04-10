@@ -27,6 +27,9 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Drawing;
+using Image = System.Drawing.Image;
+using SysGraphics = System.Drawing.Graphics;
+using System.Drawing.Drawing2D;
 
 namespace Ryujinx.Ui.Widgets
 {
@@ -637,23 +640,17 @@ namespace Ryujinx.Ui.Widgets
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
             string appPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx");
             string cleanedTitleName = string.Join("_", _titleName.Split(System.IO.Path.GetInvalidFileNameChars()));
-            string iconPath = System.IO.Path.Combine(AppDataManager.BaseDirPath, "games", _titleIdText, cleanedTitleName + ".bmp");
+            string iconPath = System.IO.Path.Combine(AppDataManager.BaseDirPath, "games", _titleIdText, cleanedTitleName + ".ico");
             MemoryStream iconData = new(new ApplicationLibrary(_virtualFileSystem).GetApplicationIcon(_titleFilePath, ConfigurationState.Instance.System.Language));
 
             if (OperatingSystem.IsWindows())
             {
                 iconData.Seek(0, SeekOrigin.Begin);
-                Bitmap ico = new Bitmap(iconData);
-                if (!File.Exists(iconPath))
-                {
-                    ico.Save(iconPath);
-                }
 
-                //var icon = System.Drawing.Icon.FromHandle(((Bitmap)new Bitmap(iconData)).GetHicon());
-                //using (var fs = new FileStream(iconPath, FileMode.CreateNew))
-                //{
-                //    icon.Save(fs);
-                //}
+                using (Image image = Image.FromStream(iconData))
+                {
+                    SaveAsIcon(resizeImage(image), iconPath);
+                }
 
                 IWshRuntimeLibrary.IWshShortcut shortcut = new IWshRuntimeLibrary.WshShell().CreateShortcut(System.IO.Path.Combine(desktopPath, cleanedTitleName + ".lnk"));
                 shortcut.Description = _titleName;
@@ -670,6 +667,66 @@ namespace Ryujinx.Ui.Widgets
             {
 
             }
+        }
+
+        private static Bitmap resizeImage(Image imgToResize)
+        {
+            int destWidth = 128, destHeight = 128;
+            Bitmap b = new Bitmap(destWidth, destHeight);
+            using (SysGraphics g = SysGraphics.FromImage((Image)b))
+            {
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                // Draw image with new width and height  
+                g.DrawImage(imgToResize, 0, 0, destWidth, destHeight);
+            }
+            return b;
+        }
+
+        public static void SaveAsIcon(Bitmap SourceBitmap, string FilePath)
+        {
+            FileStream FS = new FileStream(FilePath, FileMode.Create);
+            // ICO header
+            FS.WriteByte(0); FS.WriteByte(0);
+            FS.WriteByte(1); FS.WriteByte(0);
+            FS.WriteByte(1); FS.WriteByte(0);
+
+            // Image size
+            // Set to 0 for 256 px width/height
+            FS.WriteByte(0);
+            FS.WriteByte(0);
+            // Palette
+            FS.WriteByte(0);
+            // Reserved
+            FS.WriteByte(0);
+            // Number of color planes
+            FS.WriteByte(1); FS.WriteByte(0);
+            // Bits per pixel
+            FS.WriteByte(32); FS.WriteByte(0);
+
+            // Data size, will be written after the data
+            FS.WriteByte(0);
+            FS.WriteByte(0);
+            FS.WriteByte(0);
+            FS.WriteByte(0);
+
+            // Offset to image data, fixed at 22
+            FS.WriteByte(22);
+            FS.WriteByte(0);
+            FS.WriteByte(0);
+            FS.WriteByte(0);
+
+            // Writing actual data
+            SourceBitmap.Save(FS, System.Drawing.Imaging.ImageFormat.Png);
+
+            // Getting data length (file length minus header)
+            long Len = FS.Length - 22;
+
+            // Write it in the correct place
+            FS.Seek(14, SeekOrigin.Begin);
+            FS.WriteByte((byte)Len);
+            FS.WriteByte((byte)(Len >> 8));
+
+            FS.Close();
         }
     }
 }
