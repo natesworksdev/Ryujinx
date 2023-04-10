@@ -17,6 +17,7 @@ using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Utilities;
 using Ryujinx.Cpu;
 using Ryujinx.HLE;
 using Ryujinx.HLE.FileSystem;
@@ -1669,6 +1670,10 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        public void CreateShortcut()
+        {
+            DesktopShortcut.CreateAppShortcut(SelectedApplication.Path, SelectedApplication.TitleName, SelectedApplication.TitleId, SelectedApplication.Icon);
+        }
 #endregion
     }
 }

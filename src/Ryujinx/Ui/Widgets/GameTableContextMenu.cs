@@ -15,6 +15,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.Common.Utilities;
 using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
@@ -26,10 +27,6 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Threading;
-using System.Drawing;
-using Image = System.Drawing.Image;
-using SysGraphics = System.Drawing.Graphics;
-using System.Drawing.Drawing2D;
 
 namespace Ryujinx.Ui.Widgets
 {
@@ -606,88 +603,8 @@ namespace Ryujinx.Ui.Widgets
         private void CreateShortcut_Clicked(object sender, EventArgs args)
         {
             // Add the logic for the shortcut creating here
-            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-            string appPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx");
-            string cleanedTitleName = string.Join("_", _titleName.Split(System.IO.Path.GetInvalidFileNameChars()));
-            string iconPath = System.IO.Path.Combine(AppDataManager.BaseDirPath, "games", _titleIdText, "app.ico");
-            MemoryStream iconData = new(new ApplicationLibrary(_virtualFileSystem).GetApplicationIcon(_titleFilePath, ConfigurationState.Instance.System.Language));
-
-            if (OperatingSystem.IsWindows())
-            {
-                using (Image image = Image.FromStream(iconData))
-                {
-                    using Bitmap bitmap = new Bitmap(128, 128);
-                    using SysGraphics graphic = SysGraphics.FromImage((Image)bitmap);
-                    graphic.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                    graphic.DrawImage(image, 0, 0, 128, 128);
-                    SaveBitmapAsIcon(bitmap, iconPath);
-                }
-
-                IWshRuntimeLibrary.IWshShortcut shortcut = new IWshRuntimeLibrary.WshShell().CreateShortcut(System.IO.Path.Combine(desktopPath, cleanedTitleName + ".lnk"));
-                shortcut.Description = _titleName;
-                shortcut.TargetPath = appPath + ".exe";
-                shortcut.IconLocation = iconPath;
-                shortcut.Arguments = $"""{appPath} "{_titleFilePath}" --fullscreen""";
-                shortcut.Save();
-            }
-            else if (OperatingSystem.IsLinux())
-            {
-
-            }
-            else if (OperatingSystem.IsMacOS())
-            {
-
-            }
-        }
-
-        // Code Modified From https://stackoverflow.com/a/11448060/368354 by Benlitz
-        public static void SaveBitmapAsIcon(Bitmap source, string filePath)
-        {
-            if (!OperatingSystem.IsWindows())
-            {
-                throw new NotSupportedException("Cannot save .ico files on Operating Systems other then Windows.");
-            }
-
-            using FileStream FS = new FileStream(filePath, FileMode.Create);
-            // ICO header
-            FS.WriteByte(0);
-            FS.WriteByte(0);
-            FS.WriteByte(1);
-            FS.WriteByte(0);
-            FS.WriteByte(1);
-            FS.WriteByte(0);
-            // Image size
-            // Set to 0 for 256 px width/height
-            FS.WriteByte(0);
-            FS.WriteByte(0);
-            // Palette
-            FS.WriteByte(0);
-            // Reserved
-            FS.WriteByte(0);
-            // Number of color planes
-            FS.WriteByte(1);
-            FS.WriteByte(0);
-            // Bits per pixel
-            FS.WriteByte(32);
-            FS.WriteByte(0);
-            // Data size, will be written after the data
-            FS.WriteByte(0);
-            FS.WriteByte(0);
-            FS.WriteByte(0);
-            FS.WriteByte(0);
-            // Offset to image data, fixed at 22
-            FS.WriteByte(22);
-            FS.WriteByte(0);
-            FS.WriteByte(0);
-            FS.WriteByte(0);
-            // Writing actual data
-            source.Save(FS, System.Drawing.Imaging.ImageFormat.Png);
-            // Getting data length (file length minus header)
-            long Len = FS.Length - 22;
-            // Write it in the correct place
-            FS.Seek(14, SeekOrigin.Begin);
-            FS.WriteByte((byte)Len);
-            FS.WriteByte((byte)(Len >> 8));
+            byte[] appIcon = new ApplicationLibrary(_virtualFileSystem).GetApplicationIcon(_titleFilePath, ConfigurationState.Instance.System.Language);
+            DesktopShortcut.CreateAppShortcut(_titleFilePath, _titleName, _titleIdText, appIcon);
         }
     }
 }
