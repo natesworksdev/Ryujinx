@@ -10,12 +10,23 @@ namespace Ryujinx.Graphics.Vulkan
         // How often to flush on framebuffer change.
         private readonly static long FramebufferFlushTimer = Stopwatch.Frequency / 1000;
 
-        // How often to flush on draw.
+        // How often to flush on draw when fast flush mode is enabled.
         private readonly static long DrawFlushTimer = Stopwatch.Frequency / 666;
+
+        // Average wait time that triggers fast flush mode to be entered.
+        private readonly static long FastFlushEnterThreshold = Stopwatch.Frequency / 666; // (1.5ms)
+
+        // Average wait time that triggers fast flush mode to be exited.
+        private readonly static long FastFlushExitThreshold = Stopwatch.Frequency / 10000; // (0.1ms)
+
+        // Number of frames to average waiting times over.
+        private const int SyncWaitAverageCount = 20;
 
         private const int MinDrawCountForFlush = 10;
         private const int MinConsecutiveQueryForFlush = 10;
         private const int InitialQueryCountForFlush = 32;
+
+        private readonly VulkanRenderer _gd;
 
         private long _lastFlush;
         private ulong _lastDrawCount;
@@ -27,21 +38,18 @@ namespace Ryujinx.Graphics.Vulkan
         private int _queryCountHistoryIndex;
         private int _remainingQueries;
 
+        private long[] _syncWaitHistory = new long[SyncWaitAverageCount];
+        private int _syncWaitHistoryIndex;
+
+        private bool _fastFlushMode;
+
+        public AutoFlushCounter(VulkanRenderer gd)
+        {
+            _gd = gd;
+        }
+
         public void RegisterFlush(ulong drawCount)
         {
-            /*
-            long delta = Stopwatch.GetTimestamp() - _lastFlush;
-            long drawDiff = (long)(drawCount - _lastDrawCount);
-            if (drawDiff > 0)
-            {
-                Logger.Error?.PrintMsg(LogClass.Gpu, $"Time since last flush: {delta / (Stopwatch.Frequency / 1000f)}ms {drawDiff} draws");
-            }
-            else
-            {
-                Logger.Warning?.PrintMsg(LogClass.Gpu, $"Time since last flush: {delta / (Stopwatch.Frequency / 1000f)}ms {drawDiff} draws");
-            }
-            */
-
             _lastFlush = Stopwatch.GetTimestamp();
             _lastDrawCount = drawCount;
 
@@ -88,23 +96,28 @@ namespace Ryujinx.Graphics.Vulkan
 
         public bool ShouldFlushDraw(ulong drawCount)
         {
-            long draws = (long)(drawCount - _lastDrawCount);
-
-            if (draws < MinDrawCountForFlush)
+            if (_fastFlushMode)
             {
-                if (draws == 0)
+                long draws = (long)(drawCount - _lastDrawCount);
+
+                if (draws < MinDrawCountForFlush)
                 {
-                    _lastFlush = Stopwatch.GetTimestamp();
+                    if (draws == 0)
+                    {
+                        _lastFlush = Stopwatch.GetTimestamp();
+                    }
+
+                    return false;
                 }
 
-                return false;
+                long flushTimeout = DrawFlushTimer;
+
+                long now = Stopwatch.GetTimestamp();
+
+                return now > _lastFlush + flushTimeout;
             }
 
-            long flushTimeout = DrawFlushTimer;
-
-            long now = Stopwatch.GetTimestamp();
-
-            return now > _lastFlush + flushTimeout;
+            return false;
         }
 
         public bool ShouldFlushAttachmentChange(ulong drawCount)
@@ -140,11 +153,27 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Present()
         {
+            // Query flush prediction.
+
             _queryCountHistoryIndex = (_queryCountHistoryIndex + 1) % 3;
 
             _remainingQueries = _queryCountHistory.Max() + 10;
 
             _queryCountHistory[_queryCountHistoryIndex] = 0;
+
+            // Fast flush mode toggle.
+
+            _syncWaitHistory[_syncWaitHistoryIndex] = _gd.SyncManager.GetAndResetWaitTicks();
+
+            _syncWaitHistoryIndex = (_syncWaitHistoryIndex + 1) % SyncWaitAverageCount;
+
+            long averageWait = (long)_syncWaitHistory.Average();
+
+            if (_fastFlushMode ? averageWait < FastFlushExitThreshold : averageWait > FastFlushEnterThreshold)
+            {
+                _fastFlushMode = !_fastFlushMode;
+                Logger.Debug?.PrintMsg(LogClass.Gpu, $"Switched fast flush mode: ({_fastFlushMode})");
+            }
         }
     }
 }

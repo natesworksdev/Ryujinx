@@ -86,7 +86,7 @@ namespace Ryujinx.Graphics.Vulkan
             Gd = gd;
             Device = device;
 
-            AutoFlush = new AutoFlushCounter();
+            AutoFlush = new AutoFlushCounter(gd);
 
             var pipelineCacheCreateInfo = new PipelineCacheCreateInfo()
             {
