@@ -325,7 +325,7 @@ namespace ARMeilleure.Instructions
 
             Operand nativeContext = context.LoadArgument(OperandType.I64, 0);
 
-            return context.Load(OperandType.I64, context.Add(nativeContext, Const(NativeContext.GetTpidrEl0Offset())));
+            return context.Load(OperandType.I64, context.Add(nativeContext, Const((ulong)NativeContext.GetTpidrEl0Offset())));
         }
 
         private static Operand EmitGetTpidrroEl0(ArmEmitterContext context)
@@ -334,7 +334,7 @@ namespace ARMeilleure.Instructions
 
             Operand nativeContext = context.LoadArgument(OperandType.I64, 0);
 
-            return context.Load(OperandType.I64, context.Add(nativeContext, Const(NativeContext.GetTpidrroEl0Offset())));
+            return context.Load(OperandType.I64, context.Add(nativeContext, Const((ulong)NativeContext.GetTpidrroEl0Offset())));
         }
 
         private static void EmitSetTpidrEl0(ArmEmitterContext context)
@@ -345,7 +345,7 @@ namespace ARMeilleure.Instructions
 
             Operand nativeContext = context.LoadArgument(OperandType.I64, 0);
 
-            context.Store(context.Add(nativeContext, Const(NativeContext.GetTpidrEl0Offset())), context.ZeroExtend32(OperandType.I64, value));
+            context.Store(context.Add(nativeContext, Const((ulong)NativeContext.GetTpidrEl0Offset())), context.ZeroExtend32(OperandType.I64, value));
         }
     }
 }

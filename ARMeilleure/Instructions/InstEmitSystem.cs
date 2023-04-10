@@ -167,7 +167,7 @@ namespace ARMeilleure.Instructions
 
             Operand nativeContext = context.LoadArgument(OperandType.I64, 0);
 
-            Operand result = context.Load(OperandType.I64, context.Add(nativeContext, Const(NativeContext.GetTpidrEl0Offset())));
+            Operand result = context.Load(OperandType.I64, context.Add(nativeContext, Const((ulong)NativeContext.GetTpidrEl0Offset())));
 
             SetIntOrZR(context, op.Rt, result);
         }
@@ -178,7 +178,7 @@ namespace ARMeilleure.Instructions
 
             Operand nativeContext = context.LoadArgument(OperandType.I64, 0);
 
-            Operand result = context.Load(OperandType.I64, context.Add(nativeContext, Const(NativeContext.GetTpidrroEl0Offset())));
+            Operand result = context.Load(OperandType.I64, context.Add(nativeContext, Const((ulong)NativeContext.GetTpidrroEl0Offset())));
 
             SetIntOrZR(context, op.Rt, result);
         }
@@ -242,7 +242,7 @@ namespace ARMeilleure.Instructions
 
             Operand nativeContext = context.LoadArgument(OperandType.I64, 0);
 
-            context.Store(context.Add(nativeContext, Const(NativeContext.GetTpidrEl0Offset())), value);
+            context.Store(context.Add(nativeContext, Const((ulong)NativeContext.GetTpidrEl0Offset())), value);
         }
     }
 }
