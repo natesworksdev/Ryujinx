@@ -10,22 +10,24 @@ namespace Ryujinx.Tests.Cpu
 {
     internal class EnvironmentTests
     {
+#pragma warning disable IDE0052
         private static Translator _translator;
+#pragma warning restore IDE0052
 
-        private void EnsureTranslator()
+        private static void EnsureTranslator()
         {
             // Create a translator, as one is needed to register the signal handler or emit methods.
             _translator ??= new Translator(new JitMemoryAllocator(), new MockMemoryManager(), true);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        private float GetDenormal()
+        private static float GetDenormal()
         {
             return BitConverter.Int32BitsToSingle(1);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        private float GetZero()
+        private static float GetZero()
         {
             return BitConverter.Int32BitsToSingle(0);
         }
