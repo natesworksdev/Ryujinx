@@ -165,5 +165,15 @@ namespace Ryujinx.Graphics.GAL
         {
             return obj is TextureCreateInfo info && ((IEquatable<TextureCreateInfo>)this).Equals(info);
         }
+
+        public static bool operator ==(TextureCreateInfo left, TextureCreateInfo right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(TextureCreateInfo left, TextureCreateInfo right)
+        {
+            return !(left == right);
+        }
     }
 }
