@@ -27,15 +27,15 @@ namespace Ryujinx.Graphics.Shader
     {
         internal const int Binding = 0;
 
-        public static int FieldSize;
-        public static int RequiredSize;
+        public static readonly int FieldSize;
+        public static readonly int RequiredSize;
 
-        public static int FragmentAlphaTestOffset;
-        public static int FragmentIsBgraOffset;
-        public static int ViewportInverseOffset;
-        public static int FragmentRenderScaleCountOffset;
-        public static int GraphicsRenderScaleOffset;
-        public static int ComputeRenderScaleOffset;
+        public static readonly int FragmentAlphaTestOffset;
+        public static readonly int FragmentIsBgraOffset;
+        public static readonly int ViewportInverseOffset;
+        public static readonly int FragmentRenderScaleCountOffset;
+        public static readonly int GraphicsRenderScaleOffset;
+        public static readonly int ComputeRenderScaleOffset;
 
         public const int FragmentIsBgraCount = 8;
         // One for the render target, 64 for the textures, and 8 for the images.
