@@ -3,6 +3,7 @@ using System;
 
 namespace Ryujinx.HLE.Ui
 {
+#pragma warning disable CS0659
     /// <summary>
     /// Information about the indirect layer that is being drawn to.
     /// </summary>
@@ -31,5 +32,12 @@ namespace Ryujinx.HLE.Ui
                    Pitch       == other.Pitch       &&
                    Size        == other.Size;
         }
+
+
+        public override bool Equals(object obj)
+        {
+            return obj is RenderingSurfaceInfo info && Equals(info);
+        }
     }
+#pragma warning restore CS0659
 }
