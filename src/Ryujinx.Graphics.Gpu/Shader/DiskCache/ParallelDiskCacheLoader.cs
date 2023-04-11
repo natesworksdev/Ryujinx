@@ -201,22 +201,21 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// <param name="graphicsCache">Graphics shader cache</param>
         /// <param name="computeCache">Compute shader cache</param>
         /// <param name="hostStorage">Disk cache host storage</param>
-        /// <param name="cancellationToken">Cancellation token</param>
         /// <param name="stateChangeCallback">Function to be called when there is a state change, reporting state, compiled and total shaders count</param>
-        public ParallelDiskCacheLoader(
-            GpuContext context,
+        /// <param name="cancellationToken">Cancellation token</param>
+        public ParallelDiskCacheLoader(GpuContext context,
             ShaderCacheHashTable graphicsCache,
             ComputeShaderCacheHashTable computeCache,
             DiskCacheHostStorage hostStorage,
-            CancellationToken cancellationToken,
-            Action<ShaderCacheState, int, int> stateChangeCallback)
+            Action<ShaderCacheState, int, int> stateChangeCallback,
+            CancellationToken cancellationToken)
         {
             _context = context;
             _graphicsCache = graphicsCache;
             _computeCache = computeCache;
             _hostStorage = hostStorage;
-            _cancellationToken = cancellationToken;
             _stateChangeCallback = stateChangeCallback;
+            _cancellationToken = cancellationToken;
             _validationQueue = new Queue<ProgramEntry>();
             _compilationQueue = new ConcurrentQueue<ProgramCompilation>();
             _asyncTranslationQueue = new BlockingCollection<AsyncProgramTranslation>(ThreadCount);

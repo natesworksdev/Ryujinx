@@ -2,6 +2,7 @@ using System;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
+#pragma warning disable CS0659
     /// <summary>
     /// State used by the <see cref="GpuAccessor"/>.
     /// </summary>
@@ -52,4 +53,5 @@ namespace Ryujinx.Graphics.Gpu.Shader
             return obj is GpuChannelPoolState state && Equals(state);
         }
     }
+#pragma warning restore CS0659
 }

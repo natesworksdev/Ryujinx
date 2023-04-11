@@ -162,8 +162,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                     _graphicsShaderCache,
                     _computeShaderCache,
                     _diskCacheHostStorage,
-                    cancellationToken,
-                    ShaderCacheStateUpdate);
+                    ShaderCacheStateUpdate, cancellationToken);
 
                 loader.LoadShaders();
 
