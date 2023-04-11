@@ -65,7 +65,7 @@ namespace Ryujinx.Common.SystemInterop
                         {
                             userDpiScale = (double)XDisplayWidth(display, 0) * 25.4 / (double)XDisplayWidthMM(display, 0);
                         }
-                        XCloseDisplay(display);
+                        _ = XCloseDisplay(display);
                     }
                     else if (xdgSessionType == "wayland")
                     {
