@@ -62,7 +62,7 @@ namespace ARMeilleure.Translation
 
         public static FpFlagsPInvokeTest GenerateFpFlagsPInvokeTest()
         {
-            EmitterContext context = new EmitterContext();
+            EmitterContext context = new();
 
             Operand methodAddress = context.Copy(context.LoadArgument(OperandType.I64, 0));
 
@@ -110,7 +110,7 @@ namespace ARMeilleure.Translation
 
             context.MarkLabel(correct2Label);
 
-            // Call a managed method. This method should not change Fz state. 
+            // Call a managed method. This method should not change Fz state.
 
             context.Call(methodAddress, OperandType.None);
 
