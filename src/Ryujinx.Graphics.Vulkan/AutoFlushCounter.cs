@@ -38,7 +38,7 @@ namespace Ryujinx.Graphics.Vulkan
         private int _queryCountHistoryIndex;
         private int _remainingQueries;
 
-        private long[] _syncWaitHistory = new long[SyncWaitAverageCount];
+        private readonly long[] _syncWaitHistory = new long[SyncWaitAverageCount];
         private int _syncWaitHistoryIndex;
 
         private bool _fastFlushMode;
