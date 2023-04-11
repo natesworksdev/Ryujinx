@@ -18,8 +18,8 @@ namespace Ryujinx.Common.Memory.PartialUnmaps
         public Array20<int> ThreadIds;
         public Array20<T> Structs;
 
-        public static int ThreadIdsOffset;
-        public static int StructsOffset;
+        public static readonly int ThreadIdsOffset;
+        public static readonly int StructsOffset;
 
         /// <summary>
         /// Populates the field offsets for use when emitting native code.
