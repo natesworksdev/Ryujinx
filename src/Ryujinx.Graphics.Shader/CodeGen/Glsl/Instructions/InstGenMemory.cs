@@ -49,7 +49,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             if (texOp.Inst == Instruction.ImageAtomic)
             {
-                texCallBuilder.Append((texOp.Flags & TextureFlags.AtomicMask) switch {
+                texCallBuilder.Append((texOp.Flags & TextureFlags.AtomicMask) switch
+                {
                     TextureFlags.Add        => "imageAtomicAdd",
                     TextureFlags.Minimum    => "imageAtomicMin",
                     TextureFlags.Maximum    => "imageAtomicMax",
