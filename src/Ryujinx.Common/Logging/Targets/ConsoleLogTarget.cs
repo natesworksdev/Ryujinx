@@ -11,7 +11,8 @@ namespace Ryujinx.Common.Logging.Targets
 
         string ILogTarget.Name { get => _name; }
 
-        private static ConsoleColor GetLogColor(LogLevel level) => level switch {
+        private static ConsoleColor GetLogColor(LogLevel level) => level switch
+        {
             LogLevel.Info    => ConsoleColor.White,
             LogLevel.Warning => ConsoleColor.Yellow,
             LogLevel.Error   => ConsoleColor.Red,
