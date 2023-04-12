@@ -322,14 +322,14 @@ namespace Ryujinx.Ava
 
             var activeProcess   = Device.Processes.ActiveApplication;
 
-            string titleNameSection    = $" - {activeProcess.Name}";
-            string titleVersionSection = $" v{activeProcess.DisplayVersion}";
+            string titleNameSection    = string.IsNullOrWhiteSpace(activeProcess.Name) ? string.Empty : $" {activeProcess.Name}";
+            string titleVersionSection = string.IsNullOrWhiteSpace(activeProcess.DisplayVersion) ? string.Empty : $" v{activeProcess.DisplayVersion}";
             string titleIdSection      = $" ({activeProcess.ProgramIdText.ToUpper()})";
             string titleArchSection    = activeProcess.Is64Bit ? " (64-bit)" : " (32-bit)";
 
             Dispatcher.UIThread.InvokeAsync(() =>
             {
-                _viewModel.Title = $"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}";
+                _viewModel.Title = $"Ryujinx {Program.Version} -{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}";
             });
 
             _viewModel.SetUIProgressHandlers(Device);

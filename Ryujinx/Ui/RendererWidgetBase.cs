@@ -497,12 +497,12 @@ namespace Ryujinx.Ui
 
                 var activeProcess   = Device.Processes.ActiveApplication;
 
-                string titleNameSection    = $" - {activeProcess.Name}";
-                string titleVersionSection = $" v{activeProcess.DisplayVersion}";
+                string titleNameSection    = string.IsNullOrWhiteSpace(activeProcess.Name) ? string.Empty : $" {activeProcess.Name}";
+                string titleVersionSection = string.IsNullOrWhiteSpace(activeProcess.DisplayVersion) ? string.Empty : $" v{activeProcess.DisplayVersion}";
                 string titleIdSection      = $" ({activeProcess.ProgramIdText.ToUpper()})";
                 string titleArchSection    = activeProcess.Is64Bit ? " (64-bit)" : " (32-bit)";
 
-                parent.Title = $"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}";
+                parent.Title = $"Ryujinx {Program.Version} -{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}";
             });
 
             Thread renderLoopThread = new Thread(Render)
