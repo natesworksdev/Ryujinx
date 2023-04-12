@@ -418,9 +418,7 @@ namespace Ryujinx.Ui.Windows
                     _audioBackendSelect.SetActiveIter(dummyIter);
                     break;
                 default:
-#pragma warning disable CA2208
-                    throw new ArgumentOutOfRangeException(nameof(AudioBackend), ConfigurationState.Instance.System.AudioBackend.Value, null);
-#pragma warning restore CA2208
+                    throw new InvalidOperationException($"{nameof(ConfigurationState.Instance.System.AudioBackend)} contains an invalid value: {ConfigurationState.Instance.System.AudioBackend.Value}");
             }
 
             _audioBackendBox.Add(_audioBackendSelect);
@@ -460,9 +458,7 @@ namespace Ryujinx.Ui.Windows
                     AudioBackend.SoundIo => soundIoIsSupported,
                     AudioBackend.SDL2    => sdl2IsSupported,
                     AudioBackend.Dummy   => true,
-#pragma warning disable CA2208
-                    _ => throw new ArgumentOutOfRangeException(nameof(_audioBackendStore), (AudioBackend)_audioBackendStore.GetValue(iter, 1), null)
-#pragma warning restore CA2208
+                    _ => throw new InvalidOperationException($"{nameof(_audioBackendStore)} contains an invalid value for iteration {iter}: {_audioBackendStore.GetValue(iter, 1)}")
                 };
             });
 
