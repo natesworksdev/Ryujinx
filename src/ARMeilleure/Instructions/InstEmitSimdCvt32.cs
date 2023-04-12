@@ -259,7 +259,8 @@ namespace ARMeilleure.Instructions
 
                     if (unsigned)
                     {
-                        inst = rm switch {
+                        inst = rm switch
+                        {
                             0b00 => Intrinsic.Arm64FcvtauGp,
                             0b01 => Intrinsic.Arm64FcvtnuGp,
                             0b10 => Intrinsic.Arm64FcvtpuGp,
@@ -269,7 +270,8 @@ namespace ARMeilleure.Instructions
                     }
                     else
                     {
-                        inst = rm switch {
+                        inst = rm switch
+                        {
                             0b00 => Intrinsic.Arm64FcvtasGp,
                             0b01 => Intrinsic.Arm64FcvtnsGp,
                             0b10 => Intrinsic.Arm64FcvtpsGp,
@@ -286,7 +288,8 @@ namespace ARMeilleure.Instructions
                 {
                     if (unsigned)
                     {
-                        inst = rm switch {
+                        inst = rm switch
+                        {
                             0b00 => Intrinsic.Arm64FcvtauS,
                             0b01 => Intrinsic.Arm64FcvtnuS,
                             0b10 => Intrinsic.Arm64FcvtpuS,
@@ -296,7 +299,8 @@ namespace ARMeilleure.Instructions
                     }
                     else
                     {
-                        inst = rm switch {
+                        inst = rm switch
+                        {
                             0b00 => Intrinsic.Arm64FcvtasS,
                             0b01 => Intrinsic.Arm64FcvtnsS,
                             0b10 => Intrinsic.Arm64FcvtpsS,
@@ -421,7 +425,8 @@ namespace ARMeilleure.Instructions
 
             if (Optimizations.UseAdvSimd)
             {
-                Intrinsic inst = rm switch {
+                Intrinsic inst = rm switch
+                {
                     0b00 => Intrinsic.Arm64FrintaS,
                     0b01 => Intrinsic.Arm64FrintnS,
                     0b10 => Intrinsic.Arm64FrintpS,

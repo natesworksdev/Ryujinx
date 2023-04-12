@@ -185,7 +185,8 @@ namespace ARMeilleure.Instructions
 
                 int eSize = 8 << op.Size;
 
-                Operand res = eSize switch {
+                Operand res = eSize switch
+                {
                     8  => Clz_V_I8 (context, GetVec(op.Rn)),
                     16 => Clz_V_I16(context, GetVec(op.Rn)),
                     32 => Clz_V_I32(context, GetVec(op.Rn)),

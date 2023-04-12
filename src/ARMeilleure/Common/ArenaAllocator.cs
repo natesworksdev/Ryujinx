@@ -127,7 +127,8 @@ namespace ARMeilleure.Common
 
             // If arena is used frequently, keep pages for longer. Otherwise keep pages for a shorter amount of time.
             int now = Environment.TickCount;
-            int count = (now - _lastReset) switch {
+            int count = (now - _lastReset) switch
+            {
                 >= 5000 => 0,
                 >= 2500 => 50,
                 >= 1000 => 100,

@@ -80,7 +80,8 @@ namespace ARMeilleure.Instructions
                 int eSize = 8 << op.Size;
 
                 Operand d = GetVec(op.Rd);
-                Operand imm = eSize switch {
+                Operand imm = eSize switch
+                {
                     16 => X86GetAllElements(context, (short)~op.Immediate),
                     32 => X86GetAllElements(context, (int)~op.Immediate),
                     _ => throw new InvalidOperationException($"Invalid element size {eSize}.")
@@ -380,7 +381,8 @@ namespace ARMeilleure.Instructions
                 int eSize = 8 << op.Size;
 
                 Operand d = GetVec(op.Rd);
-                Operand imm = eSize switch {
+                Operand imm = eSize switch
+                {
                     16 => X86GetAllElements(context, (short)op.Immediate),
                     32 => X86GetAllElements(context, (int)op.Immediate),
                     _ => throw new InvalidOperationException($"Invalid element size {eSize}.")
