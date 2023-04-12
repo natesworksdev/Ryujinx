@@ -1423,18 +1423,11 @@ namespace Ryujinx.Graphics.Gpu.Image
                 _scaledSetScore = Math.Max(0, _scaledSetScore - 1);
             }
 
-            /*
-            if (_modifiedStale || Group.HasCopyDependencies)
+            if (_modifiedStale || Group.HasCopyDependencies || Group.HasFlushBuffer)
             {
                 _modifiedStale = false;
                 Group.SignalModifying(this, bound);
             }
-            */
-
-            // pre-flush moves this out here, but i'm not sure it's necessary due to some recent changes (it can also be really slow)
-            // i think this needs to call on unbind to create sync, which wasn't really necessary before.
-            _modifiedStale = false;
-            Group.SignalModifying(this, bound);
 
             _physicalMemory.TextureCache.Lift(this);
 

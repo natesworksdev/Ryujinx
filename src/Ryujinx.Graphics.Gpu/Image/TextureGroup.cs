@@ -57,6 +57,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public bool HasCopyDependencies { get; set; }
 
+        public bool HasFlushBuffer => _flushBuffer != BufferHandle.Null;
+
         /// <summary>
         /// Indicates if this texture has any incompatible overlaps alive.
         /// </summary>
