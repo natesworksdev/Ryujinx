@@ -614,9 +614,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
                             if (Uuid.Length > AmiiboConstants.UuidMaxLength)
                             {
-#pragma warning disable CA2208
-                                throw new ArgumentOutOfRangeException(nameof(Uuid.Length), Uuid.Length, null);
-#pragma warning restore CA2208
+                                throw new InvalidOperationException($"{nameof(Uuid)} is too long: {Uuid.Length}");
                             }
 
                             TagInfo tagInfo = new()
@@ -911,9 +909,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                 {
                     if (context.Device.System.NfpDevices[i].State > NfpDeviceState.Finalized)
                     {
-#pragma warning disable CA2208
-                        throw new ArgumentOutOfRangeException(nameof(context.Device.System.NfpDevices), context.Device.System.NfpDevices[i].State, null);
-#pragma warning restore CA2208
+                        throw new InvalidOperationException($"{nameof(context.Device.System.NfpDevices)} contains an invalid state for device {i}: {context.Device.System.NfpDevices[i].State}");
                     }
 
                     context.ResponseData.Write((uint)context.Device.System.NfpDevices[i].State);

@@ -814,9 +814,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 NpadIdType.Player8  => 0b0110,
                 NpadIdType.Unknown  => 0b0000,
                 NpadIdType.Handheld => 0b0000,
-#pragma warning disable CA2208
-                _ => throw new ArgumentOutOfRangeException(nameof(npadId), npadId, null)
-#pragma warning restore CA2208
+                _ => throw new InvalidOperationException($"{nameof(npadId)} contains an invalid value: {npadId}")
             };
 
             context.ResponseData.Write(ledPattern);
@@ -881,9 +879,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             if (npadJoyHoldType > NpadJoyHoldType.Horizontal)
             {
-#pragma warning disable CA2208
-                throw new ArgumentOutOfRangeException(nameof(npadJoyHoldType), npadJoyHoldType, null);
-#pragma warning restore CA2208
+                throw new InvalidOperationException($"{nameof(npadJoyHoldType)} contains an invalid value: {npadJoyHoldType}");
             }
 
             foreach (PlayerIndex playerIndex in context.Device.Hid.Npads.GetSupportedPlayers())
@@ -1158,9 +1154,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                     }
                     else
                     {
-#pragma warning disable CA2208
-                        throw new ArgumentOutOfRangeException(nameof(deviceHandle.Position), deviceHandle.Position, null);
-#pragma warning restore CA2208
+                        throw new InvalidOperationException($"{nameof(deviceHandle.Position)} contains an invalid value: {deviceHandle.Position}");
                     }
                 }
 
