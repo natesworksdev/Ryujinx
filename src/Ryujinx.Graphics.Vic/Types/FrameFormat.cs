@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Vic.Types
         SubPicBottomFieldChromaTop
     }
 
-    [SuppressMessage("Style", "IDE0066:Use switch expression")]
+    [SuppressMessage("Style", "IDE0066: Use switch expression")]
     static class FrameFormatExtensions
     {
         public static bool IsField(this FrameFormat frameFormat)
