@@ -9,7 +9,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// </summary>
     static class FormatTable
     {
-        [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
+        [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         private enum TextureFormat : uint
         {
             // Formats
@@ -246,7 +246,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             A5B5G5R1Unorm                    = A5B5G5R1          | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24913
         }
 
-        [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
+        [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         private enum VertexAttributeFormat : uint
         {
             // Width

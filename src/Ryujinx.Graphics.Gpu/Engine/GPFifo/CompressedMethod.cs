@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
 {
-    [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
+    [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
     enum TertOp
     {
         Grp0IncMethod = 0,
