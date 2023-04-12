@@ -314,7 +314,7 @@ namespace Ryujinx.Audio.Common
 #pragma warning disable IDE0060
         public static bool AppendUacBuffer(AudioBuffer buffer, uint handle)
         {
-            // NOTE: On hardware, there is another RegisterBuffer method taking an handle.
+            // NOTE: On hardware, there is another RegisterBuffer method taking a handle.
             // This variant of the call always return false (stubbed?) as a result this logic will never succeed.
 
             return false;
