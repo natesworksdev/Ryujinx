@@ -283,7 +283,7 @@ namespace Ryujinx.Tests.Memory
         [Test]
         // Only test in Windows, as this is only used on Windows and uses Windows APIs for trimming.
         [Platform("Win")]
-        [SuppressMessage("Interoperability", "CA1416:Validate platform compatibility")]
+        [SuppressMessage("Interoperability", "CA1416: Validate platform compatibility")]
         public void ThreadLocalMap()
         {
             PartialUnmapState.Reset();
