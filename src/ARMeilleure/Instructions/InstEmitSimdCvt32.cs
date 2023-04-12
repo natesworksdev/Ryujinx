@@ -264,9 +264,7 @@ namespace ARMeilleure.Instructions
                             0b01 => Intrinsic.Arm64FcvtnuGp,
                             0b10 => Intrinsic.Arm64FcvtpuGp,
                             0b11 => Intrinsic.Arm64FcvtmuGp,
-#pragma warning disable CA2208
-                            _ => throw new ArgumentOutOfRangeException(nameof(rm))
-#pragma warning restore CA2208
+                            _ => throw new InvalidOperationException($"{nameof(rm)} contains an invalid value: {rm}")
                         };
                     }
                     else
@@ -276,9 +274,7 @@ namespace ARMeilleure.Instructions
                             0b01 => Intrinsic.Arm64FcvtnsGp,
                             0b10 => Intrinsic.Arm64FcvtpsGp,
                             0b11 => Intrinsic.Arm64FcvtmsGp,
-#pragma warning disable CA2208
-                            _ => throw new ArgumentOutOfRangeException(nameof(rm))
-#pragma warning restore CA2208
+                            _ => throw new InvalidOperationException($"{nameof(rm)} contains an invalid value: {rm}")
                         };
                     }
 
@@ -295,7 +291,7 @@ namespace ARMeilleure.Instructions
                             0b01 => Intrinsic.Arm64FcvtnuS,
                             0b10 => Intrinsic.Arm64FcvtpuS,
                             0b11 => Intrinsic.Arm64FcvtmuS,
-                            _ => throw new ArgumentOutOfRangeException(nameof(rm))
+                            _ => throw new InvalidOperationException($"{nameof(rm)} contains an invalid value: {rm}")
                         };
                     }
                     else
@@ -305,7 +301,7 @@ namespace ARMeilleure.Instructions
                             0b01 => Intrinsic.Arm64FcvtnsS,
                             0b10 => Intrinsic.Arm64FcvtpsS,
                             0b11 => Intrinsic.Arm64FcvtmsS,
-                            _ => throw new ArgumentOutOfRangeException(nameof(rm))
+                            _ => throw new InvalidOperationException($"{nameof(rm)} contains an invalid value: {rm}")
                         };
                     }
 
@@ -430,9 +426,7 @@ namespace ARMeilleure.Instructions
                     0b01 => Intrinsic.Arm64FrintnS,
                     0b10 => Intrinsic.Arm64FrintpS,
                     0b11 => Intrinsic.Arm64FrintmS,
-#pragma warning disable CA2208
-                    _ => throw new ArgumentOutOfRangeException(nameof(rm), rm, null)
-#pragma warning restore CA2208
+                    _ => throw new InvalidOperationException($"{nameof(rm)} contains an invalid value: {rm}")
                 };
 
                 InstEmitSimdHelper32Arm64.EmitScalarUnaryOpF32(context, inst);
