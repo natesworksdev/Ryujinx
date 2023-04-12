@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Ryujinx.Graphics.Shader.Instructions
 {
-    [SuppressMessage("Style", "IDE0059:Remove unnecessary value assignment")]
+    [SuppressMessage("Style", "IDE0059: Remove unnecessary value assignment")]
     static partial class InstEmit
     {
         public static void AtomCas(EmitterContext context)

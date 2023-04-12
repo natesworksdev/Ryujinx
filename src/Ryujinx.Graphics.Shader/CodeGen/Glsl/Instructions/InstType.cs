@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 {
     [Flags]
-    [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
+    [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
     enum InstType
     {
         OpNullary   = Op | 0,

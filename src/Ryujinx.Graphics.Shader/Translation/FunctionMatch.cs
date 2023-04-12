@@ -309,7 +309,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             return nodes.ToArray();
         }
 
-        [SuppressMessage("Style", "IDE0066:Use switch expression")]
+        [SuppressMessage("Style", "IDE0066: Use switch expression")]
         private static bool IsOrderDependant(InstName name)
         {
             switch (name)
