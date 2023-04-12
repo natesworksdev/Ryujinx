@@ -9,7 +9,7 @@ using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
 namespace ARMeilleure.Instructions
 {
-    [SuppressMessage("Style", "IDE0059:Remove unnecessary value assignment")]
+    [SuppressMessage("Style", "IDE0059: Remove unnecessary value assignment")]
     static partial class InstEmit32
     {
         public static void Add(ArmEmitterContext context)

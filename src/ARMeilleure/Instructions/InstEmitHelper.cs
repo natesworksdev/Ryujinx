@@ -102,21 +102,11 @@ namespace ARMeilleure.Instructions
         {
             return regIndex switch
             {
-                8 => mode == Aarch32Mode.Fiq
-                                    ? RegisterAlias.R8Fiq
-                                    : RegisterAlias.R8Usr,
-                9 => mode == Aarch32Mode.Fiq
-                                    ? RegisterAlias.R9Fiq
-                                    : RegisterAlias.R9Usr,
-                10 => mode == Aarch32Mode.Fiq
-                                    ? RegisterAlias.R10Fiq
-                                    : RegisterAlias.R10Usr,
-                11 => mode == Aarch32Mode.Fiq
-                                    ? RegisterAlias.R11Fiq
-                                    : RegisterAlias.R11Usr,
-                12 => mode == Aarch32Mode.Fiq
-                                    ? RegisterAlias.R12Fiq
-                                    : RegisterAlias.R12Usr,
+                8  => mode == Aarch32Mode.Fiq ? RegisterAlias.R8Fiq  : RegisterAlias.R8Usr,
+                9  => mode == Aarch32Mode.Fiq ? RegisterAlias.R9Fiq  : RegisterAlias.R9Usr,
+                10 => mode == Aarch32Mode.Fiq ? RegisterAlias.R10Fiq : RegisterAlias.R10Usr,
+                11 => mode == Aarch32Mode.Fiq ? RegisterAlias.R11Fiq : RegisterAlias.R11Usr,
+                12 => mode == Aarch32Mode.Fiq ? RegisterAlias.R12Fiq : RegisterAlias.R12Usr,
                 13 => mode switch
                 {
                     Aarch32Mode.User or Aarch32Mode.System => RegisterAlias.SpUsr,
@@ -146,11 +136,11 @@ namespace ARMeilleure.Instructions
         {
             return context.CurrOp switch
             {
-                IOpCode32MemMult => true,// Setting PC using LDM is nearly always a return.
+                IOpCode32MemMult => true, // Setting PC using LDM is nearly always a return.
                 OpCode32AluRsImm op => op.Rm == RegisterAlias.Aarch32Lr,
                 OpCode32AluRsReg op => op.Rm == RegisterAlias.Aarch32Lr,
                 OpCode32AluReg op => op.Rm == RegisterAlias.Aarch32Lr,
-                OpCode32Mem op => op.Rn == RegisterAlias.Aarch32Sp && op.WBack && !op.Index,// Setting PC to an address stored on the stack is nearly always a return.
+                OpCode32Mem op => op.Rn == RegisterAlias.Aarch32Sp && op.WBack && !op.Index, // Setting PC to an address stored on the stack is nearly always a return.
                 _ => false,
             };
         }

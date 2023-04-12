@@ -225,7 +225,7 @@ namespace ARMeilleure.Instructions
 
         private static FPRoundingMode RMToRoundMode(int rm)
         {
-            var roundMode = rm switch
+            return rm switch
             {
                 0b00 => FPRoundingMode.ToNearestAway,
                 0b01 => FPRoundingMode.ToNearest,
@@ -233,7 +233,6 @@ namespace ARMeilleure.Instructions
                 0b11 => FPRoundingMode.TowardsMinusInfinity,
                 _ => throw new ArgumentOutOfRangeException(nameof(rm)),
             };
-            return roundMode;
         }
 
         // VCVTA/M/N/P (floating-point).

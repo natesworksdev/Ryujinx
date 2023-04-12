@@ -33,7 +33,7 @@ namespace ARMeilleure.Instructions
         public static void Umsubl(ArmEmitterContext context) => EmitMull(context, MullFlags.Subtract);
 
         [Flags]
-        [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
+        [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         private enum MullFlags
         {
             Subtract = 0,

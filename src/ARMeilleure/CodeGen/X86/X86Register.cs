@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace ARMeilleure.CodeGen.X86
 {
-    [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
+    [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
     enum X86Register
     {
         Invalid = -1,
