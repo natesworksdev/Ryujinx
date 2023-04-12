@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Loader
 {
-    [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
+    [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
     enum ResultCode
     {
         ModuleId       = 9,

@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Ryujinx.HLE.Loaders.Elf
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
+    [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
     enum ElfDynamicTag
     {
         DT_NULL            = 0,

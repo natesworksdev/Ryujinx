@@ -16,7 +16,7 @@ using System.Threading;
 namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 {
     [SvcImpl]
-    [SuppressMessage("Performance", "CA1822:Mark members as static")]
+    [SuppressMessage("Performance", "CA1822: Mark members as static")]
     class Syscall : ISyscallApi
     {
         private readonly KernelContext _context;

@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
-    [SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
+    [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
     enum ColorFormat : ulong
     {
         NonColor8                       = ColorSpace.NonColor      | ColorSwizzle.X000  | ColorComponent.X8           | ColorDataType.Integer,
