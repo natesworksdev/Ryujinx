@@ -319,7 +319,7 @@ namespace Ryujinx.Ava.UI.Windows
             ConfigurationState.Instance.Ui.WindowPositionX.Value = window.Position.X;
             ConfigurationState.Instance.Ui.WindowPositionY.Value = window.Position.Y;
 
-            ConfigurationState.Instance.Ui.WindowMaximized.Value = window.WindowState is WindowState.Maximized ? true : false;
+            ConfigurationState.Instance.Ui.WindowMaximized.Value = window.WindowState == WindowState.Maximized;
 
             MainWindowViewModel.SaveConfig();
         }
