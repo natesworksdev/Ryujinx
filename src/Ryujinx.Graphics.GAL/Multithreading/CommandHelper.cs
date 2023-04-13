@@ -43,6 +43,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
             Register<ActionCommand>(CommandType.Action);
             Register<CreateBufferCommand>(CommandType.CreateBuffer);
+            Register<CreateBufferAccessCommand>(CommandType.CreateBufferAccess);
             Register<CreateHostBufferCommand>(CommandType.CreateHostBuffer);
             Register<CreateProgramCommand>(CommandType.CreateProgram);
             Register<CreateSamplerCommand>(CommandType.CreateSampler);
