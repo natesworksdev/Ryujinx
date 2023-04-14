@@ -351,7 +351,7 @@ namespace Ryujinx.Ui.Windows
 
             _graphicsBackend.Changed += (sender, e) => UpdatePreferredGpuComboBox();
             PopulateNetworkInterfaces();
-            _multiLanSelect.SetActiveId(ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value.ToString());
+            _multiLanSelect.SetActiveId(ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value);
 
             _custThemePath.Buffer.Text           = ConfigurationState.Instance.Ui.CustomThemePath;
             _resScaleText.Buffer.Text            = ConfigurationState.Instance.Graphics.ResScaleCustom.Value.ToString();
@@ -633,6 +633,7 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.Graphics.AntiAliasing.Value               = Enum.Parse<AntiAliasing>(_antiAliasing.ActiveId);
             ConfigurationState.Instance.Graphics.ScalingFilter.Value              = Enum.Parse<ScalingFilter>(_scalingFilter.ActiveId);
             ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value         = (int)_scalingFilterLevel.Value;
+            ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value          = _multiLanSelect.ActiveId;
 
             _previousVolumeLevel = ConfigurationState.Instance.System.AudioVolume.Value;
 
