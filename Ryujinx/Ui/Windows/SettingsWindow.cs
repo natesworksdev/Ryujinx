@@ -543,7 +543,7 @@ namespace Ryujinx.Ui.Windows
                 _directoryChanged = false;
             }
 
-            if (!float.TryParse(_resScaleText.Buffer.Text.Replace(",","."), out float resScaleCustom) || resScaleCustom <= 0.0f)
+            if (!float.TryParse(_resScaleText.Buffer.Text.Replace(",", "."), out float resScaleCustom) || resScaleCustom <= 0.0f)
             {
                 resScaleCustom = 1.0f;
             }
