@@ -15,9 +15,12 @@ namespace Ryujinx.Graphics.OpenGL.Image
         private int _copyPboHandle;
         private int _copyPboSize;
 
+        public IntermmediatePool IntermmediatePool { get; }
+
         public TextureCopy(OpenGLRenderer renderer)
         {
             _renderer = renderer;
+            IntermmediatePool = new IntermmediatePool(renderer);
         }
 
         public void Copy(
@@ -514,6 +517,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
                 _copyPboHandle = 0;
             }
+
+            IntermmediatePool.Dispose();
         }
     }
 }
