@@ -148,14 +148,33 @@ namespace Ryujinx.Ui
             // Apply custom theme if needed.
             ThemeHelper.ApplyTheme();
             Gdk.Monitor monitor = Display.GetMonitor(0);
+            Gdk.Screen screen = Display.GetScreen(0);
             // Sets overridden fields.
             int monitorWidth  = monitor.Geometry.Width  * monitor.ScaleFactor;
             int monitorHeight = monitor.Geometry.Height * monitor.ScaleFactor;
+            int screenWidth = screen.Width;
+            int screenHeight = screen.Height;
+            int drawWidth = ConfigurationState.Instance.Ui.WindowSizeWidth;
+            int drawHeight = ConfigurationState.Instance.Ui.WindowSizeHeight;
+            int drawX = ConfigurationState.Instance.Ui.WindowPositionX;
+            int drawY = ConfigurationState.Instance.Ui.WindowPositionY;
 
-            DefaultWidth  = monitorWidth  < 1280 ? monitorWidth  : ConfigurationState.Instance.Ui.WindowSizeWidth;
-            DefaultHeight = monitorHeight < 760  ? monitorHeight : ConfigurationState.Instance.Ui.WindowSizeHeight;
-            Move(ConfigurationState.Instance.Ui.WindowPositionX, ConfigurationState.Instance.Ui.WindowPositionY);
-            if (ConfigurationState.Instance.Ui.WindowMaximized) 
+            if (drawWidth > screenWidth) {
+                drawWidth = drawWidth - (drawWidth - screenWidth) - 75;
+            }
+            if (drawHeight > screenHeight) {
+                drawHeight = drawHeight - (drawHeight - screenHeight) - 75;
+            }
+            if ( (drawX+drawWidth) > screenWidth ) {
+                drawX = drawX - (drawX - screenWidth);
+            }
+            if ( (drawY+drawHeight) > screenHeight ) {
+                drawY = drawY - (drawY - screenHeight);
+            }
+
+            DefaultWidth  = monitorWidth  < 1280 ? monitorWidth  : drawWidth;
+            DefaultHeight = monitorHeight < 760  ? monitorHeight : drawHeight;
+            Move(drawX,drawY);
             { 
                 Maximize(); 
             };
