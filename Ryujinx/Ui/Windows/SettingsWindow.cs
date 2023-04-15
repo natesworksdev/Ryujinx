@@ -559,16 +559,19 @@ namespace Ryujinx.Ui.Windows
                         _height = 720;
                         break;
                     case "2":
-                        _width = 1280;
-                        _height = 720;
+                        _width = 1920;
+                        _height = 1080;
                         break;
                     case "3":
-                        _width = 2160;
+                        _width = 2560;
                         _height = 1440;
                         break;
                     default:
                         break;
                 }
+
+                //If more resolutions need to be added they can be added here by just adding additional options
+                //in SettingsWindow.glade and then adding the related case to the switch statement. 
 
                 ConfigurationState.Instance.Ui.WindowSizeWidth.Value = _width;
                 ConfigurationState.Instance.Ui.WindowSizeHeight.Value = _height;
