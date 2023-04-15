@@ -116,7 +116,14 @@ namespace Ryujinx.Graphics.Vulkan
                 return new Auto<DisposableImageView>(new DisposableImageView(gd.Api, device, imageView), null, storage.GetImage());
             }
 
-            _imageView = CreateImageView(componentMapping, subresourceRange, type, ImageUsageFlags.SampledBit);
+            ImageUsageFlags shaderUsage = ImageUsageFlags.SampledBit;
+
+            if (info.Format.IsImageCompatible())
+            {
+                shaderUsage |= ImageUsageFlags.StorageBit;
+            }
+
+            _imageView = CreateImageView(componentMapping, subresourceRange, type, shaderUsage);
 
             // Framebuffer attachments and storage images requires a identity component mapping.
             var identityComponentMapping = new ComponentMapping(
