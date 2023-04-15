@@ -62,6 +62,8 @@ namespace Ryujinx.Ava.UI.Windows
 
             DataContext = ViewModel;
 
+            SetWindowSizePosition(this);
+
             InitializeComponent();
             Load();
 
@@ -297,6 +299,31 @@ namespace Ryujinx.Ava.UI.Windows
             LoadHotKeys();
         }
 
+        private void SetWindowSizePosition(MainWindow window)
+        {
+            ViewModel.WindowHeight = ConfigurationState.Instance.Ui.WindowSizeHeight * Program.WindowScaleFactor;
+            ViewModel.WindowWidth = ConfigurationState.Instance.Ui.WindowSizeWidth * Program.WindowScaleFactor;
+
+            ViewModel.WindowState = ConfigurationState.Instance.Ui.WindowMaximized.Value is true ? WindowState.Maximized : WindowState.Normal;
+
+            window.Position = new PixelPoint(ConfigurationState.Instance.Ui.WindowPositionX, 
+                                             ConfigurationState.Instance.Ui.WindowPositionY);
+        }
+
+        private void SaveWindowSizePosition(MainWindow window)
+        {
+            // Avalonia/GTK use different structures. Conversion is required for inter-operation.
+            ConfigurationState.Instance.Ui.WindowSizeHeight.Value = (int)window.Height;
+            ConfigurationState.Instance.Ui.WindowSizeWidth.Value = (int)window.Width;
+
+            ConfigurationState.Instance.Ui.WindowPositionX.Value = window.Position.X;
+            ConfigurationState.Instance.Ui.WindowPositionY.Value = window.Position.Y;
+
+            ConfigurationState.Instance.Ui.WindowMaximized.Value = window.WindowState == WindowState.Maximized;
+
+            MainWindowViewModel.SaveConfig();
+        }
+
         protected override void OnOpened(EventArgs e)
         {
             base.OnOpened(e);
@@ -387,6 +414,8 @@ namespace Ryujinx.Ava.UI.Windows
 
                 return;
             }
+
+            SaveWindowSizePosition(this);
 
             ApplicationLibrary.CancelLoading();
             InputManager.Dispose();

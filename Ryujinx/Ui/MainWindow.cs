@@ -149,6 +149,7 @@ namespace Ryujinx.Ui
             ThemeHelper.ApplyTheme();
             Gdk.Monitor monitor = Display.GetMonitor(0);
             Gdk.Screen screen = Display.GetScreen(0);
+            Gdk.Screen screen = Display.GetScreen(0);
             // Sets overridden fields.
             int monitorWidth  = monitor.Geometry.Width  * monitor.ScaleFactor;
             int monitorHeight = monitor.Geometry.Height * monitor.ScaleFactor;
@@ -158,7 +159,7 @@ namespace Ryujinx.Ui
             int drawHeight = ConfigurationState.Instance.Ui.WindowSizeHeight;
             int drawX = ConfigurationState.Instance.Ui.WindowPositionX;
             int drawY = ConfigurationState.Instance.Ui.WindowPositionY;
-            
+
             if (drawWidth > screenWidth) {
                 drawWidth = drawWidth - (drawWidth - screenWidth) - 75;
             }
@@ -172,10 +173,9 @@ namespace Ryujinx.Ui
                 drawY = drawY - (drawY - screenHeight);
             }
 
-            DefaultWidth  = monitorWidth  < 1280 ? monitorWidth  : ConfigurationState.Instance.Ui.WindowSizeWidth;
-            DefaultHeight = monitorHeight < 760  ? monitorHeight : ConfigurationState.Instance.Ui.WindowSizeHeight;
-            Move(drawX, drawY);
-            if (ConfigurationState.Instance.Ui.WindowMaximized) 
+            DefaultWidth  = monitorWidth  < 1280 ? monitorWidth  : drawWidth;
+            DefaultHeight = monitorHeight < 760  ? monitorHeight : drawHeight;
+            Move(drawX,drawY);
             { 
                 Maximize(); 
             };
@@ -1318,21 +1318,7 @@ namespace Ryujinx.Ui
         {
             if (!_gameLoaded || !ConfigurationState.Instance.ShowConfirmExit || GtkDialog.CreateExitDialog())
             {
-                int windowWidth;
-                int windowHeight;
-                int windowXPos;
-                int windowYPos;
-
-                GetSize(out windowWidth, out windowHeight);
-                GetPosition(out windowXPos, out windowYPos);
-
-                ConfigurationState.Instance.Ui.WindowMaximized.Value = IsMaximized;
-                ConfigurationState.Instance.Ui.WindowSizeWidth.Value = windowWidth;
-                ConfigurationState.Instance.Ui.WindowSizeHeight.Value = windowHeight;
-                ConfigurationState.Instance.Ui.WindowPositionX.Value = windowXPos;
-                ConfigurationState.Instance.Ui.WindowPositionY.Value = windowYPos;
-
-                SaveConfig();        
+                SaveWindowSizePosition();
                 End();
             }
         }
@@ -1341,27 +1327,32 @@ namespace Ryujinx.Ui
         {
             if (!_gameLoaded || !ConfigurationState.Instance.ShowConfirmExit || GtkDialog.CreateExitDialog())
             {
-                int windowWidth;
-                int windowHeight;
-                int windowXPos;
-                int windowYPos;
-
-                GetSize(out windowWidth, out windowHeight);
-                GetPosition(out windowXPos, out windowYPos);
-
-                ConfigurationState.Instance.Ui.WindowMaximized.Value = IsMaximized;
-                ConfigurationState.Instance.Ui.WindowSizeWidth.Value = windowWidth;
-                ConfigurationState.Instance.Ui.WindowSizeHeight.Value = windowHeight;
-                ConfigurationState.Instance.Ui.WindowPositionX.Value = windowXPos;
-                ConfigurationState.Instance.Ui.WindowPositionY.Value = windowYPos;
-
-                SaveConfig();        
+                SaveWindowSizePosition();        
                 End();
             }
             else
             {
                 args.RetVal = true;
             }
+        }
+
+        private void SaveWindowSizePosition()
+        {
+            int windowWidth;
+            int windowHeight;
+            int windowXPos;
+            int windowYPos;
+
+            GetSize(out windowWidth, out windowHeight);
+            GetPosition(out windowXPos, out windowYPos);
+
+            ConfigurationState.Instance.Ui.WindowMaximized.Value = IsMaximized;
+            ConfigurationState.Instance.Ui.WindowSizeWidth.Value = windowWidth;
+            ConfigurationState.Instance.Ui.WindowSizeHeight.Value = windowHeight;
+            ConfigurationState.Instance.Ui.WindowPositionX.Value = windowXPos;
+            ConfigurationState.Instance.Ui.WindowPositionY.Value = windowYPos;
+
+            SaveConfig();        
         }
 
         private void StopEmulation_Pressed(object sender, EventArgs args)
