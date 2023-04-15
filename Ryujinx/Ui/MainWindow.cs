@@ -1011,6 +1011,14 @@ namespace Ryujinx.Ui
             }
         }
 
+        public void UpdateWindowResolution(){
+            
+            int width = ConfigurationState.Instance.Ui.WindowSizeWidth.Value;
+            int height = ConfigurationState.Instance.Ui.WindowSizeHeight.Value;
+
+            Resize(width, height);
+        }
+
         public void UpdateGraphicsConfig()
         {
             int   resScale       = ConfigurationState.Instance.Graphics.ResScale;
