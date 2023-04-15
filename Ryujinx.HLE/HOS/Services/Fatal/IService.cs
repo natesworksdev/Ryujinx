@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Fatal
     {
         public IService(ServiceCtx context) { }
 
-        [CommandHipc(0)]
+        [CommandCmif(0)]
         // ThrowFatal(u64 result_code, u64 pid)
         public ResultCode ThrowFatal(ServiceCtx context)
         {
@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Fatal
             return ThrowFatalWithCpuContextImpl(context, resultCode, pid, FatalPolicy.ErrorReportAndErrorScreen, null);
         }
 
-        [CommandHipc(1)]
+        [CommandCmif(1)]
         // ThrowFatalWithPolicy(u64 result_code, u32 fatal_policy, u64 pid)
         public ResultCode ThrowFatalWithPolicy(ServiceCtx context)
         {
@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Services.Fatal
             return ThrowFatalWithCpuContextImpl(context, resultCode, pid, fatalPolicy, null);
         }
 
-        [CommandHipc(2)]
+        [CommandCmif(2)]
         // ThrowFatalWithCpuContext(u64 result_code, u32 fatal_policy, u64 pid, buffer<bytes, 0x15> cpu_context)
         public ResultCode ThrowFatalWithCpuContext(ServiceCtx context)
         {
@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS.Services.Fatal
             errorReport.AppendLine();
             errorReport.AppendLine("ErrorReport log:");
 
-            errorReport.AppendLine($"\tTitleId: {context.Device.Application.TitleId:x16}");
+            errorReport.AppendLine($"\tTitleId: {context.Device.Processes.ActiveApplication.ProgramIdText}");
             errorReport.AppendLine($"\tPid: {pid}");
             errorReport.AppendLine($"\tResultCode: {((int)resultCode & 0x1FF) + 2000}-{((int)resultCode >> 9) & 0x3FFF:d4}");
             errorReport.AppendLine($"\tFatalPolicy: {fatalPolicy}");
@@ -64,7 +64,7 @@ namespace Ryujinx.HLE.HOS.Services.Fatal
             {
                 errorReport.AppendLine("CPU Context:");
 
-                if (context.Device.Application.TitleIs64Bit)
+                if (context.Device.Processes.ActiveApplication.Is64Bit)
                 {
                     CpuContext64 cpuContext64 = MemoryMarshal.Cast<byte, CpuContext64>(cpuContext)[0];
 

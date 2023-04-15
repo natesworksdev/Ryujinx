@@ -32,6 +32,8 @@ namespace Ryujinx.HLE.HOS.Services
             0x01007FFF
         };
 
+        private readonly object _handleLock = new();
+
         private readonly KernelContext _context;
         private KProcess _selfProcess;
 
@@ -77,7 +79,10 @@ namespace Ryujinx.HLE.HOS.Services
 
         private void AddPort(int serverPortHandle, Func<IpcService> objectFactory)
         {
-            _portHandles.Add(serverPortHandle);
+            lock (_handleLock)
+            {
+                _portHandles.Add(serverPortHandle);
+            }
             _ports.Add(serverPortHandle, objectFactory);
         }
 
@@ -92,7 +97,10 @@ namespace Ryujinx.HLE.HOS.Services
 
         public void AddSessionObj(int serverSessionHandle, IpcService obj)
         {
-            _sessionHandles.Add(serverSessionHandle);
+            lock (_handleLock)
+            {
+                _sessionHandles.Add(serverSessionHandle);
+            }
             _sessions.Add(serverSessionHandle, obj);
         }
 
@@ -126,12 +134,20 @@ namespace Ryujinx.HLE.HOS.Services
 
             while (true)
             {
-                int handleCount = _portHandles.Count + _sessionHandles.Count;
+                int handleCount;
+                int portHandleCount;
+                int[] handles;
 
-                int[] handles = ArrayPool<int>.Shared.Rent(handleCount);
-                
-                _portHandles.CopyTo(handles, 0);
-                _sessionHandles.CopyTo(handles, _portHandles.Count);
+                lock (_handleLock)
+                {
+                    portHandleCount = _portHandles.Count;
+                    handleCount = portHandleCount + _sessionHandles.Count;
+
+                    handles = ArrayPool<int>.Shared.Rent(handleCount);
+
+                    _portHandles.CopyTo(handles, 0);
+                    _sessionHandles.CopyTo(handles, portHandleCount);
+                }
 
                 // We still need a timeout here to allow the service to pick up and listen new sessions...
                 var rc = _context.Syscall.ReplyAndReceive(out int signaledIndex, handles.AsSpan(0, handleCount), replyTargetHandle, 1000000L);
@@ -145,7 +161,7 @@ namespace Ryujinx.HLE.HOS.Services
 
                 replyTargetHandle = 0;
 
-                if (rc == Result.Success && signaledIndex >= _portHandles.Count)
+                if (rc == Result.Success && signaledIndex >= portHandleCount)
                 {
                     // We got a IPC request, process it, pass to the appropriate service if needed.
                     int signaledHandle = handles[signaledIndex];
@@ -220,10 +236,10 @@ namespace Ryujinx.HLE.HOS.Services
             _requestDataStream.Write(request.RawData);
             _requestDataStream.Position = 0;
 
-            if (request.Type == IpcMessageType.HipcRequest ||
-                request.Type == IpcMessageType.HipcRequestWithContext)
+            if (request.Type == IpcMessageType.CmifRequest ||
+                request.Type == IpcMessageType.CmifRequestWithContext)
             {
-                response.Type = IpcMessageType.HipcResponse;
+                response.Type = IpcMessageType.CmifResponse;
 
                 _responseDataStream.SetLength(0);
 
@@ -237,12 +253,12 @@ namespace Ryujinx.HLE.HOS.Services
                     _requestDataReader,
                     _responseDataWriter);
 
-                _sessions[serverSessionHandle].CallHipcMethod(context);
+                _sessions[serverSessionHandle].CallCmifMethod(context);
 
                 response.RawData = _responseDataStream.ToArray();
             }
-            else if (request.Type == IpcMessageType.HipcControl ||
-                        request.Type == IpcMessageType.HipcControlWithContext)
+            else if (request.Type == IpcMessageType.CmifControl ||
+                        request.Type == IpcMessageType.CmifControlWithContext)
             {
                 uint magic = (uint)_requestDataReader.ReadUInt64();
                 uint cmdId = (uint)_requestDataReader.ReadUInt64();
@@ -275,10 +291,13 @@ namespace Ryujinx.HLE.HOS.Services
                     default: throw new NotImplementedException(cmdId.ToString());
                 }
             }
-            else if (request.Type == IpcMessageType.HipcCloseSession || request.Type == IpcMessageType.TipcCloseSession)
+            else if (request.Type == IpcMessageType.CmifCloseSession || request.Type == IpcMessageType.TipcCloseSession)
             {
                 _context.Syscall.CloseHandle(serverSessionHandle);
-                _sessionHandles.Remove(serverSessionHandle);
+                lock (_handleLock)
+                {
+                    _sessionHandles.Remove(serverSessionHandle);
+                }
                 IpcService service = _sessions[serverSessionHandle];
                 (service as IDisposable)?.Dispose();
                 _sessions.Remove(serverSessionHandle);
@@ -357,7 +376,7 @@ namespace Ryujinx.HLE.HOS.Services
 
         private void FillHipcResponse(IpcMessage response, long result, ReadOnlySpan<byte> data)
         {
-            response.Type = IpcMessageType.HipcResponse;
+            response.Type = IpcMessageType.CmifResponse;
 
             _responseDataStream.SetLength(0);
 

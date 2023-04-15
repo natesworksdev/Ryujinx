@@ -9,51 +9,41 @@ namespace Ryujinx.Graphics.Vulkan
         private ulong MaxDeviceMemoryUsageEstimate = 16UL * 1024 * 1024 * 1024;
 
         private readonly Vk _api;
-        private readonly PhysicalDevice _physicalDevice;
+        private readonly VulkanPhysicalDevice _physicalDevice;
         private readonly Device _device;
         private readonly List<MemoryAllocatorBlockList> _blockLists;
         private readonly int _blockAlignment;
-        private readonly PhysicalDeviceMemoryProperties _physicalDeviceMemoryProperties;
 
-        public MemoryAllocator(Vk api, PhysicalDevice physicalDevice, Device device, uint maxMemoryAllocationCount)
+        public MemoryAllocator(Vk api, VulkanPhysicalDevice physicalDevice, Device device)
         {
             _api = api;
             _physicalDevice = physicalDevice;
             _device = device;
             _blockLists = new List<MemoryAllocatorBlockList>();
-            _blockAlignment = (int)Math.Min(int.MaxValue, MaxDeviceMemoryUsageEstimate / (ulong)maxMemoryAllocationCount);
-
-            _api.GetPhysicalDeviceMemoryProperties(_physicalDevice, out _physicalDeviceMemoryProperties);
+            _blockAlignment = (int)Math.Min(int.MaxValue, MaxDeviceMemoryUsageEstimate / (ulong)_physicalDevice.PhysicalDeviceProperties.Limits.MaxMemoryAllocationCount);
         }
 
         public MemoryAllocation AllocateDeviceMemory(
             MemoryRequirements requirements,
-            MemoryPropertyFlags flags = 0)
+            MemoryPropertyFlags flags = 0,
+            bool isBuffer = false)
         {
-            return AllocateDeviceMemory(requirements, flags, flags);
-        }
-
-        public MemoryAllocation AllocateDeviceMemory(
-            MemoryRequirements requirements,
-            MemoryPropertyFlags flags,
-            MemoryPropertyFlags alternativeFlags)
-        {
-            int memoryTypeIndex = FindSuitableMemoryTypeIndex(requirements.MemoryTypeBits, flags, alternativeFlags);
+            int memoryTypeIndex = FindSuitableMemoryTypeIndex(requirements.MemoryTypeBits, flags);
             if (memoryTypeIndex < 0)
             {
                 return default;
             }
 
             bool map = flags.HasFlag(MemoryPropertyFlags.HostVisibleBit);
-            return Allocate(memoryTypeIndex, requirements.Size, requirements.Alignment, map);
+            return Allocate(memoryTypeIndex, requirements.Size, requirements.Alignment, map, isBuffer);
         }
 
-        private MemoryAllocation Allocate(int memoryTypeIndex, ulong size, ulong alignment, bool map)
+        private MemoryAllocation Allocate(int memoryTypeIndex, ulong size, ulong alignment, bool map, bool isBuffer)
         {
             for (int i = 0; i < _blockLists.Count; i++)
             {
                 var bl = _blockLists[i];
-                if (bl.MemoryTypeIndex == memoryTypeIndex)
+                if (bl.MemoryTypeIndex == memoryTypeIndex && bl.ForBuffer == isBuffer)
                 {
                     lock (bl)
                     {
@@ -62,21 +52,18 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            var newBl = new MemoryAllocatorBlockList(_api, _device, memoryTypeIndex, _blockAlignment);
+            var newBl = new MemoryAllocatorBlockList(_api, _device, memoryTypeIndex, _blockAlignment, isBuffer);
             _blockLists.Add(newBl);
             return newBl.Allocate(size, alignment, map);
         }
 
         private int FindSuitableMemoryTypeIndex(
             uint memoryTypeBits,
-            MemoryPropertyFlags flags,
-            MemoryPropertyFlags alternativeFlags)
+            MemoryPropertyFlags flags)
         {
-            int bestCandidateIndex = -1;
-
-            for (int i = 0; i < _physicalDeviceMemoryProperties.MemoryTypeCount; i++)
+            for (int i = 0; i < _physicalDevice.PhysicalDeviceMemoryProperties.MemoryTypeCount; i++)
             {
-                var type = _physicalDeviceMemoryProperties.MemoryTypes[i];
+                var type = _physicalDevice.PhysicalDeviceMemoryProperties.MemoryTypes[i];
 
                 if ((memoryTypeBits & (1 << i)) != 0)
                 {
@@ -84,14 +71,23 @@ namespace Ryujinx.Graphics.Vulkan
                     {
                         return i;
                     }
-                    else if (type.PropertyFlags.HasFlag(alternativeFlags))
-                    {
-                        bestCandidateIndex = i;
-                    }
                 }
             }
 
-            return bestCandidateIndex;
+            return -1;
+        }
+
+        public static bool IsDeviceMemoryShared(VulkanPhysicalDevice physicalDevice)
+        {
+            for (int i = 0; i < physicalDevice.PhysicalDeviceMemoryProperties.MemoryHeapCount; i++)
+            {
+                if (!physicalDevice.PhysicalDeviceMemoryProperties.MemoryHeaps[i].Flags.HasFlag(MemoryHeapFlags.DeviceLocalBit))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public void Dispose()

@@ -10,10 +10,13 @@ namespace Ryujinx.HLE.HOS.Services.Nim
     {
         public IShopServiceAccessServerInterface(ServiceCtx context) { }
 
-        [CommandHipc(0)]
+        [CommandCmif(0)]
         // CreateServerInterface(pid, handle<unknown>, u64) -> object<nn::ec::IShopServiceAccessServer>
         public ResultCode CreateServerInterface(ServiceCtx context)
         {
+            // Close transfer memory immediately as we don't use it.
+            context.Device.System.KernelContext.Syscall.CloseHandle(context.Request.HandleDesc.ToCopy[0]);
+
             MakeObject(context, new IShopServiceAccessServer());
 
             Logger.Stub?.PrintStub(LogClass.ServiceNim);
@@ -21,7 +24,7 @@ namespace Ryujinx.HLE.HOS.Services.Nim
             return ResultCode.Success;
         }
 
-        [CommandHipc(4)] // 10.0.0+
+        [CommandCmif(4)] // 10.0.0+
         // IsLargeResourceAvailable(pid) -> b8
         public ResultCode IsLargeResourceAvailable(ServiceCtx context)
         {

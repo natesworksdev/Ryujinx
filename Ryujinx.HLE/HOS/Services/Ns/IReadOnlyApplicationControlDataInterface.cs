@@ -1,10 +1,13 @@
-﻿namespace Ryujinx.HLE.HOS.Services.Ns
+﻿using LibHac.Common;
+using LibHac.Ns;
+
+namespace Ryujinx.HLE.HOS.Services.Ns
 {
     class IReadOnlyApplicationControlDataInterface : IpcService
     {
         public IReadOnlyApplicationControlDataInterface(ServiceCtx context) { }
 
-        [CommandHipc(0)]
+        [CommandCmif(0)]
         // GetApplicationControlData(u8, u64) -> (unknown<4>, buffer<unknown, 6>)
         public ResultCode GetApplicationControlData(ServiceCtx context)
         {
@@ -13,9 +16,9 @@
 
             ulong position = context.Request.ReceiveBuff[0].Position;
 
-            byte[] nacpData = context.Device.Application.ControlData.ByteSpan.ToArray();
+            ApplicationControlProperty nacp = context.Device.Processes.ActiveApplication.ApplicationControlProperties;
 
-            context.Memory.Write(position, nacpData);
+            context.Memory.Write(position, SpanHelpers.AsByteSpan(ref nacp).ToArray());
 
             return ResultCode.Success;
         }

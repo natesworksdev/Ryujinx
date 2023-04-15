@@ -86,7 +86,7 @@ namespace Ryujinx.Graphics.Vulkan
             Gd = gd;
             Device = device;
 
-            AutoFlush = new AutoFlushCounter();
+            AutoFlush = new AutoFlushCounter(gd);
 
             var pipelineCacheCreateInfo = new PipelineCacheCreateInfo()
             {
@@ -226,6 +226,8 @@ namespace Ryujinx.Graphics.Vulkan
             var attachment = new ClearAttachment(ImageAspectFlags.ColorBit, (uint)index, clearValue);
             var clearRect = FramebufferParams.GetClearRect(ClearScissor, layer, layerCount);
 
+            FramebufferParams.InsertClearBarrier(Cbs, index);
+
             Gd.Api.CmdClearAttachments(CommandBuffer, 1, &attachment, 1, &clearRect);
         }
 
@@ -255,6 +257,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             var attachment = new ClearAttachment(flags, 0, clearValue);
             var clearRect = FramebufferParams.GetClearRect(ClearScissor, layer, layerCount);
+
+            FramebufferParams.InsertClearBarrierDS(Cbs);
 
             Gd.Api.CmdClearAttachments(CommandBuffer, 1, &attachment, 1, &clearRect);
         }
@@ -1297,6 +1301,25 @@ namespace Ryujinx.Graphics.Vulkan
             SignalStateChange();
         }
 
+        public void SwapBuffer(Auto<DisposableBuffer> from, Auto<DisposableBuffer> to)
+        {
+            _indexBuffer.Swap(from, to);
+
+            for (int i = 0; i < _vertexBuffers.Length; i++)
+            {
+                _vertexBuffers[i].Swap(from, to);
+            }
+
+            for (int i = 0; i < _transformFeedbackBuffers.Length; i++)
+            {
+                _transformFeedbackBuffers[i].Swap(from, to);
+            }
+
+            _descriptorSetUpdater.SwapBuffer(from, to);
+
+            SignalCommandBufferChange();
+        }
+
         public unsafe void TextureBarrier()
         {
             MemoryBarrier memoryBarrier = new MemoryBarrier()
@@ -1539,6 +1562,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         private void RecreatePipelineIfNeeded(PipelineBindPoint pbp)
         {
+            if (AutoFlush.ShouldFlushDraw(DrawCount))
+            {
+                Gd.FlushAllCommands();
+            }
+
             DynamicState.ReplayIfDirty(Gd.Api, CommandBuffer);
 
             // Commit changes to the support buffer before drawing.

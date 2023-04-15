@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
         public ILibraryAppletSelfAccessor(ServiceCtx context)
         {
-            if (context.Device.Application.TitleId == 0x0100000000001009)
+            if (context.Device.Processes.ActiveApplication.ProgramId == 0x0100000000001009)
             {
                 // Create MiiEdit data.
                 _appletStandalone = new AppletStandalone()
@@ -25,11 +25,11 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
             }
             else
             {
-                throw new NotImplementedException($"{context.Device.Application.TitleId} applet is not implemented.");
+                throw new NotImplementedException($"{context.Device.Processes.ActiveApplication.ProgramId} applet is not implemented.");
             }
         }
 
-        [CommandHipc(0)]
+        [CommandCmif(0)]
         // PopInData() -> object<nn::am::service::IStorage>
         public ResultCode PopInData(ServiceCtx context)
         {
@@ -45,7 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
             return ResultCode.Success;
         }
 
-        [CommandHipc(11)]
+        [CommandCmif(11)]
         // GetLibraryAppletInfo() -> nn::am::service::LibraryAppletInfo
         public ResultCode GetLibraryAppletInfo(ServiceCtx context)
         {
@@ -60,7 +60,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
             return ResultCode.Success;
         }
 
-        [CommandHipc(14)]
+        [CommandCmif(14)]
         // GetCallerAppletIdentityInfo() -> nn::am::service::AppletIdentityInfo
         public ResultCode GetCallerAppletIdentityInfo(ServiceCtx context)
         {

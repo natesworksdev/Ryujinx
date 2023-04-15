@@ -8,14 +8,14 @@ namespace Ryujinx.HLE.HOS.Services.Caps
     {
         public IScreenShotApplicationService(ServiceCtx context) { }
 
-        [CommandHipc(32)] // 7.0.0+
+        [CommandCmif(32)] // 7.0.0+
         // SetShimLibraryVersion(pid, u64, nn::applet::AppletResourceUserId)
         public ResultCode SetShimLibraryVersion(ServiceCtx context)
         {
             return context.Device.System.CaptureManager.SetShimLibraryVersion(context);
         }
 
-        [CommandHipc(203)]
+        [CommandCmif(203)]
         // SaveScreenShotEx0(bytes<0x40> ScreenShotAttribute, u32 unknown, u64 AppletResourceUserId, pid, buffer<bytes, 0x45> ScreenshotData) -> bytes<0x20> ApplicationAlbumEntry
         public ResultCode SaveScreenShotEx0(ServiceCtx context)
         {
@@ -31,14 +31,14 @@ namespace Ryujinx.HLE.HOS.Services.Caps
 
             byte[] screenshotData = context.Memory.GetSpan(screenshotDataPosition, (int)screenshotDataSize, true).ToArray();
 
-            ResultCode resultCode = context.Device.System.CaptureManager.SaveScreenShot(screenshotData, appletResourceUserId, context.Device.Application.TitleId, out ApplicationAlbumEntry applicationAlbumEntry);
+            ResultCode resultCode = context.Device.System.CaptureManager.SaveScreenShot(screenshotData, appletResourceUserId, context.Device.Processes.ActiveApplication.ProgramId, out ApplicationAlbumEntry applicationAlbumEntry);
 
             context.ResponseData.WriteStruct(applicationAlbumEntry);
 
             return resultCode;
         }
 
-        [CommandHipc(205)] // 8.0.0+
+        [CommandCmif(205)] // 8.0.0+
         // SaveScreenShotEx1(bytes<0x40> ScreenShotAttribute, u32 unknown, u64 AppletResourceUserId, pid, buffer<bytes, 0x15> ApplicationData, buffer<bytes, 0x45> ScreenshotData) -> bytes<0x20> ApplicationAlbumEntry
         public ResultCode SaveScreenShotEx1(ServiceCtx context)
         {
@@ -60,14 +60,14 @@ namespace Ryujinx.HLE.HOS.Services.Caps
 
             byte[] screenshotData = context.Memory.GetSpan(screenshotDataPosition, (int)screenshotDataSize, true).ToArray();
 
-            ResultCode resultCode = context.Device.System.CaptureManager.SaveScreenShot(screenshotData, appletResourceUserId, context.Device.Application.TitleId, out ApplicationAlbumEntry applicationAlbumEntry);
+            ResultCode resultCode = context.Device.System.CaptureManager.SaveScreenShot(screenshotData, appletResourceUserId, context.Device.Processes.ActiveApplication.ProgramId, out ApplicationAlbumEntry applicationAlbumEntry);
 
             context.ResponseData.WriteStruct(applicationAlbumEntry);
 
             return resultCode;
         }
 
-        [CommandHipc(210)]
+        [CommandCmif(210)]
         // SaveScreenShotEx2(bytes<0x40> ScreenShotAttribute, u32 unknown, u64 AppletResourceUserId, buffer<bytes, 0x15> UserIdList, buffer<bytes, 0x45> ScreenshotData) -> bytes<0x20> ApplicationAlbumEntry
         public ResultCode SaveScreenShotEx2(ServiceCtx context)
         {
@@ -88,7 +88,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
 
             byte[] screenshotData = context.Memory.GetSpan(screenshotDataPosition, (int)screenshotDataSize, true).ToArray();
 
-            ResultCode resultCode = context.Device.System.CaptureManager.SaveScreenShot(screenshotData, appletResourceUserId, context.Device.Application.TitleId, out ApplicationAlbumEntry applicationAlbumEntry);
+            ResultCode resultCode = context.Device.System.CaptureManager.SaveScreenShot(screenshotData, appletResourceUserId, context.Device.Processes.ActiveApplication.ProgramId, out ApplicationAlbumEntry applicationAlbumEntry);
 
             context.ResponseData.WriteStruct(applicationAlbumEntry);
 

@@ -495,18 +495,14 @@ namespace Ryujinx.Ui
             {
                 parent.Present();
 
-                string titleNameSection = string.IsNullOrWhiteSpace(Device.Application.TitleName) ? string.Empty
-                    : $" - {Device.Application.TitleName}";
+                var activeProcess   = Device.Processes.ActiveApplication;
 
-                string titleVersionSection = string.IsNullOrWhiteSpace(Device.Application.DisplayVersion) ? string.Empty
-                    : $" v{Device.Application.DisplayVersion}";
+                string titleNameSection    = string.IsNullOrWhiteSpace(activeProcess.Name) ? string.Empty : $" {activeProcess.Name}";
+                string titleVersionSection = string.IsNullOrWhiteSpace(activeProcess.DisplayVersion) ? string.Empty : $" v{activeProcess.DisplayVersion}";
+                string titleIdSection      = $" ({activeProcess.ProgramIdText.ToUpper()})";
+                string titleArchSection    = activeProcess.Is64Bit ? " (64-bit)" : " (32-bit)";
 
-                string titleIdSection = string.IsNullOrWhiteSpace(Device.Application.TitleIdText) ? string.Empty
-                    : $" ({Device.Application.TitleIdText.ToUpper()})";
-
-                string titleArchSection = Device.Application.TitleIs64Bit ? " (64-bit)" : " (32-bit)";
-
-                parent.Title = $"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}";
+                parent.Title = $"Ryujinx {Program.Version} -{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}";
             });
 
             Thread renderLoopThread = new Thread(Render)
@@ -612,7 +608,7 @@ namespace Ryujinx.Ui
                     {
                         if (!ParentWindow.State.HasFlag(WindowState.Fullscreen))
                         {
-                            Device.Application.DiskCacheLoadState?.Cancel();
+                            Device.Processes.ActiveApplication.DiskCacheLoadState?.Cancel();
                         }
                     }
                 });

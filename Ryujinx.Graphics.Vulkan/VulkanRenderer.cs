@@ -17,9 +17,9 @@ namespace Ryujinx.Graphics.Vulkan
 {
     public sealed class VulkanRenderer : IRenderer
     {
-        private Instance _instance;
+        private VulkanInstance _instance;
         private SurfaceKHR _surface;
-        private PhysicalDevice _physicalDevice;
+        private VulkanPhysicalDevice _physicalDevice;
         private Device _device;
         private WindowBase _window;
 
@@ -36,7 +36,6 @@ namespace Ryujinx.Graphics.Vulkan
         internal KhrPushDescriptor PushDescriptorApi { get; private set; }
         internal ExtTransformFeedback TransformFeedbackApi { get; private set; }
         internal KhrDrawIndirectCount DrawIndirectCountApi { get; private set; }
-        internal ExtDebugUtils DebugUtilsApi { get; private set; }
 
         internal uint QueueFamilyIndex { get; private set; }
         internal Queue Queue { get; private set; }
@@ -50,6 +49,7 @@ namespace Ryujinx.Graphics.Vulkan
         internal PipelineLayoutCache PipelineLayoutCache { get; private set; }
         internal BackgroundResources BackgroundResources { get; private set; }
         internal Action<Action> InterruptAction { get; private set; }
+        internal SyncManager SyncManager { get; private set; }
 
         internal BufferManager BufferManager { get; private set; }
 
@@ -57,11 +57,10 @@ namespace Ryujinx.Graphics.Vulkan
         internal HashSet<ITexture> Textures { get; }
         internal HashSet<SamplerHolder> Samplers { get; }
 
+        private VulkanDebugMessenger _debugMessenger;
         private Counters _counters;
-        private SyncManager _syncManager;
 
         private PipelineFull _pipeline;
-        private DebugUtilsMessengerEXT _debugUtilsMessenger;
 
         internal HelperShader HelperShader { get; private set; }
         internal PipelineFull PipelineInternal => _pipeline;
@@ -80,6 +79,7 @@ namespace Ryujinx.Graphics.Vulkan
         internal bool IsAmdGcn { get; private set; }
         internal bool IsMoltenVk { get; private set; }
         internal bool IsTBDR { get; private set; }
+        internal bool IsSharedMemory { get; private set; }
         public string GpuVendor { get; private set; }
         public string GpuRenderer { get; private set; }
         public string GpuVersion { get; private set; }
@@ -106,33 +106,31 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        private unsafe void LoadFeatures(string[] supportedExtensions, uint maxQueueCount, uint queueFamilyIndex)
+        private unsafe void LoadFeatures(uint maxQueueCount, uint queueFamilyIndex)
         {
-            FormatCapabilities = new FormatCapabilities(Api, _physicalDevice);
+            FormatCapabilities = new FormatCapabilities(Api, _physicalDevice.PhysicalDevice);
 
-            var supportedFeatures = Api.GetPhysicalDeviceFeature(_physicalDevice);
-
-            if (Api.TryGetDeviceExtension(_instance, _device, out ExtConditionalRendering conditionalRenderingApi))
+            if (Api.TryGetDeviceExtension(_instance.Instance, _device, out ExtConditionalRendering conditionalRenderingApi))
             {
                 ConditionalRenderingApi = conditionalRenderingApi;
             }
 
-            if (Api.TryGetDeviceExtension(_instance, _device, out ExtExtendedDynamicState extendedDynamicStateApi))
+            if (Api.TryGetDeviceExtension(_instance.Instance, _device, out ExtExtendedDynamicState extendedDynamicStateApi))
             {
                 ExtendedDynamicStateApi = extendedDynamicStateApi;
             }
 
-            if (Api.TryGetDeviceExtension(_instance, _device, out KhrPushDescriptor pushDescriptorApi))
+            if (Api.TryGetDeviceExtension(_instance.Instance, _device, out KhrPushDescriptor pushDescriptorApi))
             {
                 PushDescriptorApi = pushDescriptorApi;
             }
 
-            if (Api.TryGetDeviceExtension(_instance, _device, out ExtTransformFeedback transformFeedbackApi))
+            if (Api.TryGetDeviceExtension(_instance.Instance, _device, out ExtTransformFeedback transformFeedbackApi))
             {
                 TransformFeedbackApi = transformFeedbackApi;
             }
 
-            if (Api.TryGetDeviceExtension(_instance, _device, out KhrDrawIndirectCount drawIndirectCountApi))
+            if (Api.TryGetDeviceExtension(_instance.Instance, _device, out KhrDrawIndirectCount drawIndirectCountApi))
             {
                 DrawIndirectCountApi = drawIndirectCountApi;
             }
@@ -154,7 +152,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PhysicalDeviceBlendOperationAdvancedPropertiesExt
             };
 
-            bool supportsBlendOperationAdvanced = supportedExtensions.Contains("VK_EXT_blend_operation_advanced");
+            bool supportsBlendOperationAdvanced = _physicalDevice.IsDeviceExtensionPresent("VK_EXT_blend_operation_advanced");
 
             if (supportsBlendOperationAdvanced)
             {
@@ -167,12 +165,14 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PhysicalDeviceSubgroupSizeControlPropertiesExt
             };
 
-            if (Capabilities.SupportsSubgroupSizeControl)
+            bool supportsSubgroupSizeControl = _physicalDevice.IsDeviceExtensionPresent("VK_EXT_subgroup_size_control");
+
+            if (supportsSubgroupSizeControl)
             {
                 properties2.PNext = &propertiesSubgroupSizeControl;
             }
 
-            bool supportsTransformFeedback = supportedExtensions.Contains(ExtTransformFeedback.ExtensionName);
+            bool supportsTransformFeedback = _physicalDevice.IsDeviceExtensionPresent(ExtTransformFeedback.ExtensionName);
 
             PhysicalDeviceTransformFeedbackPropertiesEXT propertiesTransformFeedback = new PhysicalDeviceTransformFeedbackPropertiesEXT()
             {
@@ -220,30 +220,30 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PhysicalDevicePortabilitySubsetFeaturesKhr
             };
 
-            if (supportedExtensions.Contains("VK_EXT_primitive_topology_list_restart"))
+            if (_physicalDevice.IsDeviceExtensionPresent("VK_EXT_primitive_topology_list_restart"))
             {
                 features2.PNext = &featuresPrimitiveTopologyListRestart;
             }
 
-            if (supportedExtensions.Contains("VK_EXT_robustness2"))
+            if (_physicalDevice.IsDeviceExtensionPresent("VK_EXT_robustness2"))
             {
                 featuresRobustness2.PNext = features2.PNext;
                 features2.PNext = &featuresRobustness2;
             }
 
-            if (supportedExtensions.Contains("VK_KHR_shader_float16_int8"))
+            if (_physicalDevice.IsDeviceExtensionPresent("VK_KHR_shader_float16_int8"))
             {
                 featuresShaderInt8.PNext = features2.PNext;
                 features2.PNext = &featuresShaderInt8;
             }
 
-            if (supportedExtensions.Contains("VK_EXT_custom_border_color"))
+            if (_physicalDevice.IsDeviceExtensionPresent("VK_EXT_custom_border_color"))
             {
                 featuresCustomBorderColor.PNext = features2.PNext;
                 features2.PNext = &featuresCustomBorderColor;
             }
 
-            bool usePortability = supportedExtensions.Contains("VK_KHR_portability_subset");
+            bool usePortability = _physicalDevice.IsDeviceExtensionPresent("VK_KHR_portability_subset");
 
             if (usePortability)
             {
@@ -254,8 +254,8 @@ namespace Ryujinx.Graphics.Vulkan
                 features2.PNext = &featuresPortabilitySubset;
             }
 
-            Api.GetPhysicalDeviceProperties2(_physicalDevice, &properties2);
-            Api.GetPhysicalDeviceFeatures2(_physicalDevice, &features2);
+            Api.GetPhysicalDeviceProperties2(_physicalDevice.PhysicalDevice, &properties2);
+            Api.GetPhysicalDeviceFeatures2(_physicalDevice.PhysicalDevice, &features2);
 
             var portabilityFlags = PortabilitySubsetFlags.None;
             uint vertexBufferAlignment = 1;
@@ -270,7 +270,7 @@ namespace Ryujinx.Graphics.Vulkan
                 portabilityFlags |= featuresPortabilitySubset.SamplerMipLodBias ? 0 : PortabilitySubsetFlags.NoLodBias;
             }
 
-            bool supportsCustomBorderColor = supportedExtensions.Contains("VK_EXT_custom_border_color") &&
+            bool supportsCustomBorderColor = _physicalDevice.IsDeviceExtensionPresent("VK_EXT_custom_border_color") &&
                                              featuresCustomBorderColor.CustomBorderColors &&
                                              featuresCustomBorderColor.CustomBorderColorWithoutFormat;
 
@@ -282,30 +282,30 @@ namespace Ryujinx.Graphics.Vulkan
                 properties.Limits.FramebufferStencilSampleCounts;
 
             Capabilities = new HardwareCapabilities(
-                supportedExtensions.Contains("VK_EXT_index_type_uint8"),
+                _physicalDevice.IsDeviceExtensionPresent("VK_EXT_index_type_uint8"),
                 supportsCustomBorderColor,
                 supportsBlendOperationAdvanced,
                 propertiesBlendOperationAdvanced.AdvancedBlendCorrelatedOverlap,
                 propertiesBlendOperationAdvanced.AdvancedBlendNonPremultipliedSrcColor,
                 propertiesBlendOperationAdvanced.AdvancedBlendNonPremultipliedDstColor,
-                supportedExtensions.Contains(KhrDrawIndirectCount.ExtensionName),
-                supportedExtensions.Contains("VK_EXT_fragment_shader_interlock"),
-                supportedExtensions.Contains("VK_NV_geometry_shader_passthrough"),
-                supportedExtensions.Contains("VK_EXT_subgroup_size_control"),
+                _physicalDevice.IsDeviceExtensionPresent(KhrDrawIndirectCount.ExtensionName),
+                _physicalDevice.IsDeviceExtensionPresent("VK_EXT_fragment_shader_interlock"),
+                _physicalDevice.IsDeviceExtensionPresent("VK_NV_geometry_shader_passthrough"),
+                supportsSubgroupSizeControl,
                 featuresShaderInt8.ShaderInt8,
-                supportedExtensions.Contains("VK_EXT_shader_stencil_export"),
-                supportedExtensions.Contains(ExtConditionalRendering.ExtensionName),
-                supportedExtensions.Contains(ExtExtendedDynamicState.ExtensionName),
+                _physicalDevice.IsDeviceExtensionPresent("VK_EXT_shader_stencil_export"),
+                _physicalDevice.IsDeviceExtensionPresent(ExtConditionalRendering.ExtensionName),
+                _physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState.ExtensionName),
                 features2.Features.MultiViewport,
                 featuresRobustness2.NullDescriptor || IsMoltenVk,
-                supportedExtensions.Contains(KhrPushDescriptor.ExtensionName),
+                _physicalDevice.IsDeviceExtensionPresent(KhrPushDescriptor.ExtensionName),
                 featuresPrimitiveTopologyListRestart.PrimitiveTopologyListRestart,
                 featuresPrimitiveTopologyListRestart.PrimitiveTopologyPatchListRestart,
                 supportsTransformFeedback,
                 propertiesTransformFeedback.TransformFeedbackQueries,
                 features2.Features.OcclusionQueryPrecise,
-                supportedFeatures.PipelineStatisticsQuery,
-                supportedFeatures.GeometryShader,
+                _physicalDevice.PhysicalDeviceFeatures.PipelineStatisticsQuery,
+                _physicalDevice.PhysicalDeviceFeatures.GeometryShader,
                 propertiesSubgroupSizeControl.MinSubgroupSize,
                 propertiesSubgroupSizeControl.MaxSubgroupSize,
                 propertiesSubgroupSizeControl.RequiredSubgroupSizeStages,
@@ -313,9 +313,11 @@ namespace Ryujinx.Graphics.Vulkan
                 portabilityFlags,
                 vertexBufferAlignment);
 
-            MemoryAllocator = new MemoryAllocator(Api, _physicalDevice, _device, properties.Limits.MaxMemoryAllocationCount);
+            IsSharedMemory = MemoryAllocator.IsDeviceMemoryShared(_physicalDevice);
 
-            CommandBufferPool = VulkanInitialization.CreateCommandBufferPool(Api, _device, Queue, QueueLock, queueFamilyIndex);
+            MemoryAllocator = new MemoryAllocator(Api, _physicalDevice, _device);
+
+            CommandBufferPool = new CommandBufferPool(Api, _device, Queue, QueueLock, queueFamilyIndex);
 
             DescriptorSetManager = new DescriptorSetManager(_device);
 
@@ -325,7 +327,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             BufferManager = new BufferManager(this, _device);
 
-            _syncManager = new SyncManager(this, _device);
+            SyncManager = new SyncManager(this, _device);
             _pipeline = new PipelineFull(this, _device);
             _pipeline.Initialize();
 
@@ -340,24 +342,22 @@ namespace Ryujinx.Graphics.Vulkan
 
             Api = api;
 
-            _instance = VulkanInitialization.CreateInstance(api, logLevel, _getRequiredExtensions(), out ExtDebugUtils debugUtils, out _debugUtilsMessenger);
+            _instance = VulkanInitialization.CreateInstance(api, logLevel, _getRequiredExtensions());
+            _debugMessenger = new VulkanDebugMessenger(api, _instance.Instance, logLevel);
 
-            DebugUtilsApi = debugUtils;
-
-            if (api.TryGetInstanceExtension(_instance, out KhrSurface surfaceApi))
+            if (api.TryGetInstanceExtension(_instance.Instance, out KhrSurface surfaceApi))
             {
                 SurfaceApi = surfaceApi;
             }
 
-            _surface = _getSurface(_instance, api);
+            _surface = _getSurface(_instance.Instance, api);
             _physicalDevice = VulkanInitialization.FindSuitablePhysicalDevice(api, _instance, _surface, _preferredGpuId);
 
             var queueFamilyIndex = VulkanInitialization.FindSuitableQueueFamily(api, _physicalDevice, _surface, out uint maxQueueCount);
-            var supportedExtensions = VulkanInitialization.GetSupportedExtensions(api, _physicalDevice);
 
-            _device = VulkanInitialization.CreateDevice(api, _physicalDevice, queueFamilyIndex, supportedExtensions, maxQueueCount);
+            _device = VulkanInitialization.CreateDevice(api, _physicalDevice, queueFamilyIndex, maxQueueCount);
 
-            if (api.TryGetDeviceExtension(_instance, _device, out KhrSwapchain swapchainApi))
+            if (api.TryGetDeviceExtension(_instance.Instance, _device, out KhrSwapchain swapchainApi))
             {
                 SwapchainApi = swapchainApi;
             }
@@ -366,16 +366,16 @@ namespace Ryujinx.Graphics.Vulkan
             Queue = queue;
             QueueLock = new object();
 
-            LoadFeatures(supportedExtensions, maxQueueCount, queueFamilyIndex);
+            LoadFeatures(maxQueueCount, queueFamilyIndex);
 
-            _window = new Window(this, _surface, _physicalDevice, _device);
+            _window = new Window(this, _surface, _physicalDevice.PhysicalDevice, _device);
 
             _initialized = true;
         }
 
-        public BufferHandle CreateBuffer(int size)
+        public BufferHandle CreateBuffer(int size, BufferHandle storageHint)
         {
-            return BufferManager.CreateWithHandle(this, size, false);
+            return BufferManager.CreateWithHandle(this, size, BufferAllocationType.Auto, storageHint);
         }
 
         public IProgram CreateProgram(ShaderSource[] sources, ShaderInfo info)
@@ -436,10 +436,10 @@ namespace Ryujinx.Graphics.Vulkan
 
         internal void RegisterFlush()
         {
-            _syncManager.RegisterFlush();
+            SyncManager.RegisterFlush();
         }
 
-        public ReadOnlySpan<byte> GetBufferData(BufferHandle buffer, int offset, int size)
+        public PinnedSpan<byte> GetBufferData(BufferHandle buffer, int offset, int size)
         {
             return BufferManager.GetData(buffer, offset, size);
         }
@@ -533,10 +533,9 @@ namespace Ryujinx.Graphics.Vulkan
                 PNext = &featuresVk12
             };
 
-            Api.GetPhysicalDeviceFeatures2(_physicalDevice, &features2);
-            Api.GetPhysicalDeviceProperties(_physicalDevice, out var properties);
+            Api.GetPhysicalDeviceFeatures2(_physicalDevice.PhysicalDevice, &features2);
 
-            var limits = properties.Limits;
+            var limits = _physicalDevice.PhysicalDeviceProperties.Limits;
 
             return new Capabilities(
                 api: TargetApi.Vulkan,
@@ -620,7 +619,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private unsafe void PrintGpuInformation()
         {
-            Api.GetPhysicalDeviceProperties(_physicalDevice, out var properties);
+            var properties = _physicalDevice.PhysicalDeviceProperties;
 
             string vendorName = VendorUtils.GetNameFromId(properties.VendorID);
 
@@ -697,7 +696,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void PreFrame()
         {
-            _syncManager.Cleanup();
+            SyncManager.Cleanup();
         }
 
         public ICounterEvent ReportCounter(CounterType type, EventHandler<ulong> resultHandler, bool hostReserved)
@@ -737,7 +736,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void CreateSync(ulong id, bool strict)
         {
-            _syncManager.Create(id, strict);
+            SyncManager.Create(id, strict);
         }
 
         public IProgram LoadProgramBinary(byte[] programBinary, bool isFragment, ShaderInfo info)
@@ -747,12 +746,12 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void WaitSync(ulong id)
         {
-            _syncManager.Wait(id);
+            SyncManager.Wait(id);
         }
 
         public ulong GetCurrentSync()
         {
-            return _syncManager.GetCurrent();
+            return SyncManager.GetCurrent();
         }
 
         public void SetInterruptAction(Action<Action> interruptAction)
@@ -789,11 +788,6 @@ namespace Ryujinx.Graphics.Vulkan
 
             MemoryAllocator.Dispose();
 
-            if (_debugUtilsMessenger.Handle != 0)
-            {
-                DebugUtilsApi.DestroyDebugUtilsMessenger(_instance, _debugUtilsMessenger, null);
-            }
-
             foreach (var shader in Shaders)
             {
                 shader.Dispose();
@@ -809,12 +803,14 @@ namespace Ryujinx.Graphics.Vulkan
                 sampler.Dispose();
             }
 
-            SurfaceApi.DestroySurface(_instance, _surface, null);
+            SurfaceApi.DestroySurface(_instance.Instance, _surface, null);
 
             Api.DestroyDevice(_device, null);
 
+            _debugMessenger.Dispose();
+
             // Last step destroy the instance
-            Api.DestroyInstance(_instance, null);
+            _instance.Dispose();
         }
     }
 }
