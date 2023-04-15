@@ -2160,6 +2160,47 @@
                                   </packing>
                                 </child>
                                 <child>
+                                <object class="GtkBox">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="margin-top">5</property>
+                                    <property name="margin-bottom">5</property>
+                                <child>
+                                      <object class="GtkLabel">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="tooltip-text" translatable="yes">Set a fixed resolution for the emulation window</property>
+                                        <property name="label" translatable="yes">Resolution:</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="padding">5</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                <child>
+                                      <object class="GtkComboBoxText" id="_configureResolution">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="tooltip-text" translatable="yes">Applies anti-aliasing to the game render</property>
+                                        <property name="active-id">1</property>
+                                        <items>
+                                          <item id="0" translatable="yes">Auto</item>
+                                          <item id="1" translatable="yes">1280x720</item>
+                                          <item id="2" translatable="yes">1920x1080</item>
+                                          <item id="3" translatable="yes">2160x1440</item>
+                                        </items>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                    </object>
+                                    </child>
+                                <child>
                                   <object class="GtkBox">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
