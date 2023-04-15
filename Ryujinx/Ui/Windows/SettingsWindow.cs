@@ -111,6 +111,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] ToggleButton    _configureController7;
         [GUI] ToggleButton    _configureController8;
         [GUI] ToggleButton    _configureControllerH;
+        [GUI] ComboBoxText    _configureResolution;
 
 #pragma warning restore CS0649, IDE0044
 
@@ -339,6 +340,7 @@ namespace Ryujinx.Ui.Windows
             _systemRegionSelect.SetActiveId(ConfigurationState.Instance.System.Region.Value.ToString());
             _galThreading.SetActiveId(ConfigurationState.Instance.Graphics.BackendThreading.Value.ToString());
             _resScaleCombo.SetActiveId(ConfigurationState.Instance.Graphics.ResScale.Value.ToString());
+            _configureResolution.SetActiveId(ConfigurationState.Instance.Graphics.CustomResolution.Value.ToString());
             _anisotropy.SetActiveId(ConfigurationState.Instance.Graphics.MaxAnisotropy.Value.ToString());
             _aspectRatio.SetActiveId(((int)ConfigurationState.Instance.Graphics.AspectRatio.Value).ToString());
             _graphicsBackend.SetActiveId(((int)ConfigurationState.Instance.Graphics.GraphicsBackend.Value).ToString());
