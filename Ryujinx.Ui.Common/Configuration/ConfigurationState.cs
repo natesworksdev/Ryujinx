@@ -115,6 +115,25 @@ namespace Ryujinx.Ui.Common.Configuration
             /// </summary>
             public ReactiveObject<bool> ShowNames { get; private set; }
 
+            public ReactiveObject<int> WindowSizeWidth { get; private set; }
+
+            /// <summary>
+            /// Height of the main window in pixels. 
+            /// </summary>
+            public ReactiveObject<int> WindowSizeHeight { get; private set; }
+
+            /// <summary>
+            /// Horizontal position of the main window in pixels. 
+            /// </summary>
+            public ReactiveObject<int> WindowPositionX { get; private set; }
+
+            /// <summary>
+            /// Vertical position of the main window in pixels. 
+            /// </summary>
+            public ReactiveObject<int> WindowPositionY { get; private set; }
+
+            public ReactiveObject<bool> WindowMaximized {get; private set;}
+
             /// <summary>
             /// Sets App Icon Size in Grid Mode
             /// </summary>
@@ -146,6 +165,11 @@ namespace Ryujinx.Ui.Common.Configuration
                 IsAscendingOrder  = new ReactiveObject<bool>();
                 LanguageCode      = new ReactiveObject<string>();
                 ShowConsole       = new ReactiveObject<bool>();
+                WindowSizeWidth   = new ReactiveObject<int>();
+                WindowSizeHeight   = new ReactiveObject<int>();
+                WindowPositionX   = new ReactiveObject<int>();
+                WindowPositionY   = new ReactiveObject<int>();
+                WindowMaximized   = new ReactiveObject<bool>();
                 ShowConsole.Event += static (s, e) => { ConsoleHelper.SetConsoleWindowState(e.NewValue); };
             }
         }
@@ -629,6 +653,11 @@ namespace Ryujinx.Ui.Common.Configuration
                 IsAscendingOrder           = Ui.IsAscendingOrder,
                 StartFullscreen            = Ui.StartFullscreen,
                 ShowConsole                = Ui.ShowConsole,
+                WindowSizeWidth            = Ui.WindowSizeWidth,
+                WindowSizeHeight           = Ui.WindowSizeHeight,
+                WindowPositionX            = Ui.WindowPositionX,
+                WindowPositionY            = Ui.WindowPositionY,
+                WindowMaximized            = Ui.WindowMaximized,
                 EnableKeyboard             = Hid.EnableKeyboard,
                 EnableMouse                = Hid.EnableMouse,
                 Hotkeys                    = Hid.Hotkeys,
@@ -707,6 +736,9 @@ namespace Ryujinx.Ui.Common.Configuration
             Ui.CustomThemePath.Value                  = "";
             Ui.BaseStyle.Value                        = "Dark";
             Ui.GameListViewMode.Value                 = 0;
+            Ui.WindowSizeWidth.Value                  = 1280;
+            Ui.WindowSizeHeight.Value                 = 760;
+            Ui.WindowMaximized.Value                  = false;
             Ui.ShowNames.Value                        = true;
             Ui.GridSize.Value                         = 2;
             Ui.ApplicationSort.Value                  = 0;
