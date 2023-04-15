@@ -542,6 +542,38 @@ namespace Ryujinx.Ui.Windows
 
                 _directoryChanged = false;
             }
+            
+            if(_configureResolution.ActiveId != ""){
+
+                int _width = 0;
+                int _height = 0;
+
+                switch(_configureResolution.ActiveId){
+
+                    case "0":
+                        break;
+                    case "1":
+                        _width = 1280;
+                        _height = 720;
+                        break;
+                    case "2":
+                        _width = 1280;
+                        _height = 720;
+                        break;
+                    case "3":
+                        _width = 2160;
+                        _height = 1440;
+                        break;
+                    default:
+                        break;
+                }
+
+                ConfigurationState.Instance.Ui.WindowSizeWidth.Value = _width;
+                ConfigurationState.Instance.Ui.WindowSizeHeight.Value = _height;
+
+                _parent.UpdateWindowResolution();
+            }
+
 
             if (!float.TryParse(_resScaleText.Buffer.Text.Replace(",", "."), out float resScaleCustom) || resScaleCustom <= 0.0f)
             {
