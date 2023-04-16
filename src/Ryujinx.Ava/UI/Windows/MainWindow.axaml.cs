@@ -301,13 +301,13 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void SetWindowSizePosition()
         {
-            PixelPoint SavedPoint = new PixelPoint(ConfigurationState.Instance.Ui.WindowPositionX, 
-                                                   ConfigurationState.Instance.Ui.WindowPositionY);
+            PixelPoint SavedPoint = new PixelPoint(ConfigurationState.Instance.Ui.WindowStartup.WindowPositionX, 
+                                                   ConfigurationState.Instance.Ui.WindowStartup.WindowPositionY);
 
-            ViewModel.WindowHeight = ConfigurationState.Instance.Ui.WindowSizeHeight * Program.WindowScaleFactor;
-            ViewModel.WindowWidth = ConfigurationState.Instance.Ui.WindowSizeWidth * Program.WindowScaleFactor;
+            ViewModel.WindowHeight = ConfigurationState.Instance.Ui.WindowStartup.WindowSizeHeight * Program.WindowScaleFactor;
+            ViewModel.WindowWidth = ConfigurationState.Instance.Ui.WindowStartup.WindowSizeWidth * Program.WindowScaleFactor;
 
-            ViewModel.WindowState = ConfigurationState.Instance.Ui.WindowMaximized.Value is true ? WindowState.Maximized : WindowState.Normal;
+            ViewModel.WindowState = ConfigurationState.Instance.Ui.WindowStartup.WindowMaximized.Value is true ? WindowState.Maximized : WindowState.Normal;
         
             Position = CheckScreenBounds(SavedPoint) ? SavedPoint : new PixelPoint(0,0);
         }
@@ -328,13 +328,13 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void SaveWindowSizePosition()
         {
-            ConfigurationState.Instance.Ui.WindowSizeHeight.Value = (int)Height;
-            ConfigurationState.Instance.Ui.WindowSizeWidth.Value = (int)Width;
+            ConfigurationState.Instance.Ui.WindowStartup.WindowSizeHeight.Value = (int)Height;
+            ConfigurationState.Instance.Ui.WindowStartup.WindowSizeWidth.Value = (int)Width;
 
-            ConfigurationState.Instance.Ui.WindowPositionX.Value = Position.X;
-            ConfigurationState.Instance.Ui.WindowPositionY.Value = Position.Y;
+            ConfigurationState.Instance.Ui.WindowStartup.WindowPositionX.Value = Position.X;
+            ConfigurationState.Instance.Ui.WindowStartup.WindowPositionY.Value = Position.Y;
 
-            ConfigurationState.Instance.Ui.WindowMaximized.Value = WindowState == WindowState.Maximized;
+            ConfigurationState.Instance.Ui.WindowStartup.WindowMaximized.Value = WindowState == WindowState.Maximized;
 
             MainWindowViewModel.SaveConfig();
         }

@@ -158,12 +158,12 @@ namespace Ryujinx.Ui
             int monitorWidth  = monitor.Geometry.Width  * monitor.ScaleFactor;
             int monitorHeight = monitor.Geometry.Height * monitor.ScaleFactor;
 
-            DefaultWidth  = monitorWidth  < 1280 ? monitorWidth  : ConfigurationState.Instance.Ui.WindowSizeWidth;
-            DefaultHeight = monitorHeight < 760  ? monitorHeight : ConfigurationState.Instance.Ui.WindowSizeHeight;
+            DefaultWidth  = monitorWidth  < 1280 ? monitorWidth  : ConfigurationState.Instance.Ui.WindowStartup.WindowSizeWidth;
+            DefaultHeight = monitorHeight < 760  ? monitorHeight : ConfigurationState.Instance.Ui.WindowStartup.WindowSizeHeight;
 
-            Move(ConfigurationState.Instance.Ui.WindowPositionX, ConfigurationState.Instance.Ui.WindowPositionY);
+            Move(ConfigurationState.Instance.Ui.WindowStartup.WindowPositionX, ConfigurationState.Instance.Ui.WindowStartup.WindowPositionY);
 
-            if (ConfigurationState.Instance.Ui.WindowMaximized) 
+            if (ConfigurationState.Instance.Ui.WindowStartup.WindowMaximized) 
             { 
                 Maximize(); 
             }
@@ -1341,19 +1341,14 @@ namespace Ryujinx.Ui
 
         private void SaveWindowSizePosition()
         {
-            int windowWidth;
-            int windowHeight;
-            int windowXPos;
-            int windowYPos;
+            GetSize(out int windowWidth, out int windowHeight);
+            GetPosition(out int windowXPos, out int windowYPos);
 
-            GetSize(out windowWidth, out windowHeight);
-            GetPosition(out windowXPos, out windowYPos);
-
-            ConfigurationState.Instance.Ui.WindowMaximized.Value = IsMaximized;
-            ConfigurationState.Instance.Ui.WindowSizeWidth.Value = windowWidth;
-            ConfigurationState.Instance.Ui.WindowSizeHeight.Value = windowHeight;
-            ConfigurationState.Instance.Ui.WindowPositionX.Value = windowXPos;
-            ConfigurationState.Instance.Ui.WindowPositionY.Value = windowYPos;
+            ConfigurationState.Instance.Ui.WindowStartup.WindowMaximized.Value = IsMaximized;
+            ConfigurationState.Instance.Ui.WindowStartup.WindowSizeWidth.Value = windowWidth;
+            ConfigurationState.Instance.Ui.WindowStartup.WindowSizeHeight.Value = windowHeight;
+            ConfigurationState.Instance.Ui.WindowStartup.WindowPositionX.Value = windowXPos;
+            ConfigurationState.Instance.Ui.WindowStartup.WindowPositionY.Value = windowYPos;
 
             SaveConfig();        
         }

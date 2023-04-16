@@ -83,6 +83,27 @@ namespace Ryujinx.Ui.Common.Configuration
                 }
             }
 
+            // <summary>
+            /// Determines main window start-up position, size and state
+            ///<summary>
+            public class WindowStartupSettings
+            {
+                public ReactiveObject<int> WindowSizeWidth { get; private set; }
+                public ReactiveObject<int> WindowSizeHeight { get; private set; }
+                public ReactiveObject<int> WindowPositionX { get; private set; }
+                public ReactiveObject<int> WindowPositionY { get; private set; }
+                public ReactiveObject<bool> WindowMaximized { get; private set; }
+
+                public WindowStartupSettings()
+                {
+                    WindowSizeWidth = new ReactiveObject<int>();
+                    WindowSizeHeight = new ReactiveObject<int>();
+                    WindowPositionX = new ReactiveObject<int>();
+                    WindowPositionY = new ReactiveObject<int>();
+                    WindowMaximized = new ReactiveObject<bool>();
+                }
+            }
+
             /// <summary>
             /// Used to toggle columns in the GUI
             /// </summary>
@@ -102,6 +123,11 @@ namespace Ryujinx.Ui.Common.Configuration
             /// A list of file types to be hidden in the games List
             /// </summary>
             public ShownFileTypeSettings ShownFileTypes { get; private set; }
+
+            /// <summary>
+            /// Determines main window start-up position, size and state
+            /// </summary>
+            public WindowStartupSettings WindowStartup { get; private set; }
 
             /// <summary>
             /// Language Code for the UI
@@ -132,31 +158,6 @@ namespace Ryujinx.Ui.Common.Configuration
             /// Hide / Show Console Window
             /// </summary>
             public ReactiveObject<bool> ShowConsole { get; private set; }
-            
-            /// <summary>
-            /// Width of the main window in pixels. 
-            /// </summary>
-            public ReactiveObject<int> WindowSizeWidth { get; private set; }
-
-            /// <summary>
-            /// Height of the main window in pixels. 
-            /// </summary>
-            public ReactiveObject<int> WindowSizeHeight { get; private set; }
-
-            /// <summary>
-            /// Horizontal position of the main window in pixels. 
-            /// </summary>
-            public ReactiveObject<int> WindowPositionX { get; private set; }
-
-            /// <summary>
-            /// Vertical position of the main window in pixels. 
-            /// </summary>
-            public ReactiveObject<int> WindowPositionY { get; private set; }
-            
-            /// <summary>
-            /// Whether the main window is maximized or not. 
-            /// </summary>
-            public ReactiveObject<bool> WindowMaximized { get; private set; }
 
             /// <summary>
             /// View Mode of the Game list
@@ -188,7 +189,8 @@ namespace Ryujinx.Ui.Common.Configuration
                 GuiColumns        = new Columns();
                 ColumnSort        = new ColumnSortSettings();
                 GameDirs          = new ReactiveObject<List<string>>();
-                ShownFileTypes   = new ShownFileTypeSettings();
+                ShownFileTypes    = new ShownFileTypeSettings();
+                WindowStartup     = new WindowStartupSettings();
                 EnableCustomTheme = new ReactiveObject<bool>();
                 CustomThemePath   = new ReactiveObject<string>();
                 BaseStyle         = new ReactiveObject<string>();
@@ -201,11 +203,6 @@ namespace Ryujinx.Ui.Common.Configuration
                 LanguageCode      = new ReactiveObject<string>();
                 ShowConsole       = new ReactiveObject<bool>();
                 ShowConsole.Event += static (s, e) => { ConsoleHelper.SetConsoleWindowState(e.NewValue); };
-                WindowSizeWidth   = new ReactiveObject<int>();
-                WindowSizeHeight  = new ReactiveObject<int>();
-                WindowPositionX   = new ReactiveObject<int>();
-                WindowPositionY   = new ReactiveObject<int>();
-                WindowMaximized   = new ReactiveObject<bool>();
             }
         }
 
@@ -693,12 +690,12 @@ namespace Ryujinx.Ui.Common.Configuration
                     FileSizeColumn   = Ui.GuiColumns.FileSizeColumn,
                     PathColumn       = Ui.GuiColumns.PathColumn
                 },
-                ColumnSort                 = new ColumnSort
+                ColumnSort                = new ColumnSort
                 {
                     SortColumnId  = Ui.ColumnSort.SortColumnId,
                     SortAscending = Ui.ColumnSort.SortAscending
                 },
-                GameDirs                   = Ui.GameDirs,
+                GameDirs                  = Ui.GameDirs,
                 ShownFileTypes            = new ShownFileTypes
                 {
                     NSP = Ui.ShownFileTypes.NSP,
@@ -707,6 +704,14 @@ namespace Ryujinx.Ui.Common.Configuration
                     NCA = Ui.ShownFileTypes.NCA,
                     NRO = Ui.ShownFileTypes.NRO,
                     NSO = Ui.ShownFileTypes.NSO,
+                },
+                WindowStartup              = new WindowStartup
+                {
+                    WindowSizeWidth = Ui.WindowStartup.WindowSizeWidth,
+                    WindowSizeHeight = Ui.WindowStartup.WindowSizeHeight,
+                    WindowPositionX = Ui.WindowStartup.WindowPositionX,
+                    WindowPositionY = Ui.WindowStartup.WindowPositionY,
+                    WindowMaximized = Ui.WindowStartup.WindowMaximized,
                 },
                 LanguageCode               = Ui.LanguageCode,
                 EnableCustomTheme          = Ui.EnableCustomTheme,
@@ -719,11 +724,6 @@ namespace Ryujinx.Ui.Common.Configuration
                 IsAscendingOrder           = Ui.IsAscendingOrder,
                 StartFullscreen            = Ui.StartFullscreen,
                 ShowConsole                = Ui.ShowConsole,
-                WindowSizeWidth            = Ui.WindowSizeWidth,
-                WindowSizeHeight           = Ui.WindowSizeHeight,
-                WindowPositionX            = Ui.WindowPositionX,
-                WindowPositionY            = Ui.WindowPositionY,
-                WindowMaximized            = Ui.WindowMaximized,
                 EnableKeyboard             = Hid.EnableKeyboard,
                 EnableMouse                = Hid.EnableMouse,
                 Hotkeys                    = Hid.Hotkeys,
@@ -816,11 +816,11 @@ namespace Ryujinx.Ui.Common.Configuration
             Ui.IsAscendingOrder.Value                 = true;
             Ui.StartFullscreen.Value                  = false;
             Ui.ShowConsole.Value                      = true;
-            Ui.WindowSizeWidth.Value                  = 1280;
-            Ui.WindowSizeHeight.Value                 = 760;
-            Ui.WindowPositionX.Value                  = 0;
-            Ui.WindowPositionY.Value                  = 0;
-            Ui.WindowMaximized.Value                  = false;
+            Ui.WindowStartup.WindowSizeWidth.Value    = 1280;
+            Ui.WindowStartup.WindowSizeHeight.Value   = 760;
+            Ui.WindowStartup.WindowPositionX.Value    = 0;
+            Ui.WindowStartup.WindowPositionY.Value    = 0;
+            Ui.WindowStartup.WindowMaximized.Value    = false;
             Hid.EnableKeyboard.Value                  = false;
             Hid.EnableMouse.Value                     = false;
             Hid.Hotkeys.Value = new KeyboardHotkeys
@@ -1383,12 +1383,15 @@ namespace Ryujinx.Ui.Common.Configuration
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 47.");
 
-                configurationFileFormat.WindowPositionX = 0;
-                configurationFileFormat.WindowPositionY = 0;
-                configurationFileFormat.WindowSizeHeight = 760;
-                configurationFileFormat.WindowSizeWidth = 1280;
-                configurationFileFormat.WindowMaximized = false;
-
+                configurationFileFormat.WindowStartup = new WindowStartup
+                {
+                    WindowPositionX = 0,
+                    WindowPositionY = 0,
+                    WindowSizeHeight = 760,
+                    WindowSizeWidth = 1280,
+                    WindowMaximized = false,
+                };
+                
                 configurationFileUpdated = true;
             }
 
@@ -1467,11 +1470,11 @@ namespace Ryujinx.Ui.Common.Configuration
             Ui.ApplicationSort.Value                  = configurationFileFormat.ApplicationSort;
             Ui.StartFullscreen.Value                  = configurationFileFormat.StartFullscreen;
             Ui.ShowConsole.Value                      = configurationFileFormat.ShowConsole;
-            Ui.WindowSizeWidth.Value                  = configurationFileFormat.WindowSizeWidth;
-            Ui.WindowSizeHeight.Value                 = configurationFileFormat.WindowSizeHeight;
-            Ui.WindowPositionX.Value                  = configurationFileFormat.WindowPositionX;
-            Ui.WindowPositionY.Value                  = configurationFileFormat.WindowPositionY;
-            Ui.WindowMaximized.Value                  = configurationFileFormat.WindowMaximized;
+            Ui.WindowStartup.WindowSizeWidth.Value    = configurationFileFormat.WindowStartup.WindowSizeWidth;
+            Ui.WindowStartup.WindowSizeHeight.Value   = configurationFileFormat.WindowStartup.WindowSizeHeight;
+            Ui.WindowStartup.WindowPositionX.Value    = configurationFileFormat.WindowStartup.WindowPositionX;
+            Ui.WindowStartup.WindowPositionY.Value    = configurationFileFormat.WindowStartup.WindowPositionY;
+            Ui.WindowStartup.WindowMaximized.Value    = configurationFileFormat.WindowStartup.WindowMaximized;
             Hid.EnableKeyboard.Value                  = configurationFileFormat.EnableKeyboard;
             Hid.EnableMouse.Value                     = configurationFileFormat.EnableMouse;
             Hid.Hotkeys.Value                         = configurationFileFormat.Hotkeys;

@@ -252,6 +252,11 @@ namespace Ryujinx.Ui.Common.Configuration
         public ShownFileTypes ShownFileTypes { get; set; }
 
         /// <summary>
+        /// A list of file types to be hidden in the games List
+        /// </summary>
+        public WindowStartup WindowStartup { get; set; }
+
+        /// <summary>
         /// Language Code for the UI
         /// </summary>
         public string LanguageCode { get; set; }
@@ -305,31 +310,6 @@ namespace Ryujinx.Ui.Common.Configuration
         /// Show console window
         /// </summary>
         public bool ShowConsole { get; set; }
-        
-        /// <summary>
-        /// Width of the main window in pixels. 
-        /// </summary>
-        public int WindowSizeWidth { get; set;}
-
-        /// <summary>
-        /// Height of the main window in pixels. 
-        /// </summary>
-        public int WindowSizeHeight { get; set;}
-
-        /// <summary>
-        /// Horizontal position of the main window in pixels. 
-        /// </summary>
-        public int WindowPositionX { get; set;}
-
-        /// <summary>
-        /// Vertical position of the main window in pixels. 
-        /// </summary>
-        public int WindowPositionY { get; set;}
-        
-        /// <summary>
-        /// Whether the main window is maximized or not.
-        /// </summary>
-        public bool WindowMaximized { get; set;}
 
         /// <summary>
         /// Enable or disable keyboard support (Independent from controllers binding)
