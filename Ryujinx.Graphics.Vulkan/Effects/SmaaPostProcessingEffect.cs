@@ -283,7 +283,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             _pipeline.SetRenderTarget(texture.GetImageViewForAttachment(), (uint)texture.Width, (uint)texture.Height, false, texture.VkFormat);
             _pipeline.SetRenderTargetColorMasks(colorMasks);
             _pipeline.SetScissors(scissors);
-            _pipeline.ClearRenderTargetColor(0, 0, 1, new ColorF(0f, 0f, 0f, 0f));
+            _pipeline.ClearRenderTargetColor(0, 0, 1, new ColorF(0f, 0f, 0f, 1f));
         }
     }
 }
