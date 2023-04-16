@@ -52,7 +52,7 @@ namespace Ryujinx.Ava.UI.Views.Main
             return checkBoxes.ToArray();
         }
 
-        private MenuItem[] GenerateLanguageMenuItems()
+        private static MenuItem[] GenerateLanguageMenuItems()
         {
             List<MenuItem> menuItems = new();
 

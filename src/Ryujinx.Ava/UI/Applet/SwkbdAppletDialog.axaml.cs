@@ -57,7 +57,7 @@ namespace Ryujinx.Ava.UI.Controls
         public string MainText { get; set; } = "";
         public string SecondaryText { get; set; } = "";
 
-        public static async Task<(UserResult Result, string Input)> ShowInputDialog(StyleableWindow window, string title, SoftwareKeyboardUiArgs args)
+        public static async Task<(UserResult Result, string Input)> ShowInputDialog(string title, SoftwareKeyboardUiArgs args)
         {
             ContentDialog contentDialog = new();
 

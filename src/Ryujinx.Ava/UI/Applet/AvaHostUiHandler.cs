@@ -112,7 +112,7 @@ namespace Ryujinx.Ava.UI.Applet
             {
                 try
                 {
-                    var response = await SwkbdAppletDialog.ShowInputDialog(_parent, LocaleManager.Instance[LocaleKeys.SoftwareKeyboard], args);
+                    var response = await SwkbdAppletDialog.ShowInputDialog(LocaleManager.Instance[LocaleKeys.SoftwareKeyboard], args);
 
                     if (response.Result == UserResult.Ok)
                     {
