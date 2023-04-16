@@ -190,7 +190,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             if (destinationView.Target.IsMultisample())
             {
-                TextureView intermmediate = _renderer.TextureCopy.IntermmediatePool.GetOrCreateWithAtLeast(
+                TextureView intermmediate = _renderer.TextureCopy.IntermediatePool.GetOrCreateWithAtLeast(
                     Info.Target,
                     Info.BlockWidth,
                     Info.BlockHeight,
@@ -214,7 +214,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     _ => Target
                 };
 
-                TextureView intermmediate = _renderer.TextureCopy.IntermmediatePool.GetOrCreateWithAtLeast(
+                TextureView intermmediate = _renderer.TextureCopy.IntermediatePool.GetOrCreateWithAtLeast(
                     target,
                     Info.BlockWidth,
                     Info.BlockHeight,
