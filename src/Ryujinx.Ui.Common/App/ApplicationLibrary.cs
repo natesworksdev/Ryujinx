@@ -18,14 +18,15 @@ using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Configuration.System;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using Path = System.IO.Path;
+using TimeSpan = System.TimeSpan;
 
 namespace Ryujinx.Ui.App.Common
 {
@@ -121,7 +122,7 @@ namespace Ryujinx.Ui.App.Common
                             (Path.GetExtension(file).ToLower() is ".nro"  && ConfigurationState.Instance.Ui.ShownFileTypes.NRO.Value)  ||
                             (Path.GetExtension(file).ToLower() is ".nso"  && ConfigurationState.Instance.Ui.ShownFileTypes.NSO.Value);
                         });
-                        
+
                         foreach (string app in files)
                         {
                             if (_cancellationToken.Token.IsCancellationRequested)
@@ -713,7 +714,7 @@ namespace Ryujinx.Ui.App.Common
 
         private static string ConvertSecondsToFormattedString(double seconds)
         {
-            System.TimeSpan time = System.TimeSpan.FromSeconds(seconds);
+            TimeSpan time = TimeSpan.FromSeconds(seconds);
 
             string timeString;
             if (time.Days != 0)
@@ -941,4 +942,3 @@ namespace Ryujinx.Ui.App.Common
         }
     }
 }
-
