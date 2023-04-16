@@ -62,7 +62,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             DataContext = ViewModel;
 
-            SetWindowSizePosition(this);
+            SetWindowSizePosition();
 
             InitializeComponent();
             Load();
@@ -299,27 +299,26 @@ namespace Ryujinx.Ava.UI.Windows
             LoadHotKeys();
         }
 
-        private void SetWindowSizePosition(MainWindow window)
+        private void SetWindowSizePosition()
         {
             ViewModel.WindowHeight = ConfigurationState.Instance.Ui.WindowSizeHeight * Program.WindowScaleFactor;
             ViewModel.WindowWidth = ConfigurationState.Instance.Ui.WindowSizeWidth * Program.WindowScaleFactor;
 
             ViewModel.WindowState = ConfigurationState.Instance.Ui.WindowMaximized.Value is true ? WindowState.Maximized : WindowState.Normal;
 
-            window.Position = new PixelPoint(ConfigurationState.Instance.Ui.WindowPositionX, 
+            Position = new PixelPoint(ConfigurationState.Instance.Ui.WindowPositionX, 
                                              ConfigurationState.Instance.Ui.WindowPositionY);
         }
 
-        private void SaveWindowSizePosition(MainWindow window)
+        private void SaveWindowSizePosition()
         {
-            // Avalonia/GTK use different structures. Conversion is required for inter-operation.
-            ConfigurationState.Instance.Ui.WindowSizeHeight.Value = (int)window.Height;
-            ConfigurationState.Instance.Ui.WindowSizeWidth.Value = (int)window.Width;
+            ConfigurationState.Instance.Ui.WindowSizeHeight.Value = (int)Height;
+            ConfigurationState.Instance.Ui.WindowSizeWidth.Value = (int)Width;
 
-            ConfigurationState.Instance.Ui.WindowPositionX.Value = window.Position.X;
-            ConfigurationState.Instance.Ui.WindowPositionY.Value = window.Position.Y;
+            ConfigurationState.Instance.Ui.WindowPositionX.Value = Position.X;
+            ConfigurationState.Instance.Ui.WindowPositionY.Value = Position.Y;
 
-            ConfigurationState.Instance.Ui.WindowMaximized.Value = window.WindowState == WindowState.Maximized;
+            ConfigurationState.Instance.Ui.WindowMaximized.Value = WindowState == WindowState.Maximized;
 
             MainWindowViewModel.SaveConfig();
         }
@@ -415,7 +414,7 @@ namespace Ryujinx.Ava.UI.Windows
                 return;
             }
 
-            SaveWindowSizePosition(this);
+            SaveWindowSizePosition();
 
             ApplicationLibrary.CancelLoading();
             InputManager.Dispose();

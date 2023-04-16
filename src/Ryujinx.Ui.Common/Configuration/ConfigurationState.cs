@@ -818,6 +818,8 @@ namespace Ryujinx.Ui.Common.Configuration
             Ui.ShowConsole.Value                      = true;
             Ui.WindowSizeWidth.Value                  = 1280;
             Ui.WindowSizeHeight.Value                 = 760;
+            Ui.WindowPositionX.Value                  = 0;
+            Ui.WindowPositionY.Value                  = 0;
             Ui.WindowMaximized.Value                  = false;
             Hid.EnableKeyboard.Value                  = false;
             Hid.EnableMouse.Value                     = false;
