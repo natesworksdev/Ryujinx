@@ -301,13 +301,29 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void SetWindowSizePosition()
         {
+            PixelPoint SavedPoint = new PixelPoint(ConfigurationState.Instance.Ui.WindowPositionX, 
+                                                   ConfigurationState.Instance.Ui.WindowPositionY);
+
             ViewModel.WindowHeight = ConfigurationState.Instance.Ui.WindowSizeHeight * Program.WindowScaleFactor;
             ViewModel.WindowWidth = ConfigurationState.Instance.Ui.WindowSizeWidth * Program.WindowScaleFactor;
 
             ViewModel.WindowState = ConfigurationState.Instance.Ui.WindowMaximized.Value is true ? WindowState.Maximized : WindowState.Normal;
+        
+            Position = CheckScreenBounds(SavedPoint) ? SavedPoint : new PixelPoint(0,0);
+        }
 
-            Position = new PixelPoint(ConfigurationState.Instance.Ui.WindowPositionX, 
-                                             ConfigurationState.Instance.Ui.WindowPositionY);
+        private bool CheckScreenBounds(PixelPoint configPoint)
+        {   
+            for (int i = 0; i < Screens.ScreenCount; i++)
+            {
+                if (Screens.All[i].Bounds.Contains(configPoint))
+                {
+                    return true;
+                }
+            }
+
+            Logger.Warning?.Print(LogClass.Application, $"Failed to find valid start-up coordinates. Defaulting to 0,0.");
+            return false;
         }
 
         private void SaveWindowSizePosition()

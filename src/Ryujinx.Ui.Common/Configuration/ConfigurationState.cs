@@ -1374,21 +1374,20 @@ namespace Ryujinx.Ui.Common.Configuration
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 46.");
 
+                configurationFileFormat.MultiplayerLanInterfaceId = "0";
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 47)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 47.");
+
                 configurationFileFormat.WindowPositionX = 0;
                 configurationFileFormat.WindowPositionY = 0;
                 configurationFileFormat.WindowSizeHeight = 760;
                 configurationFileFormat.WindowSizeWidth = 1280;
                 configurationFileFormat.WindowMaximized = false;
-            }
-                
-
-                configurationFileUpdated = true;
-
-            if (configurationFileFormat.Version < 46)
-            {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 45.");
-
-                configurationFileFormat.MultiplayerLanInterfaceId = "0";
 
                 configurationFileUpdated = true;
             }
