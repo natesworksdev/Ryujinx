@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
         private ShimKind _shimKind;
 
 #pragma warning disable IDE0060
-        public BrowserApplet(Horizon system) {}
+        public BrowserApplet(Horizon system) { }
 #pragma warning restore IDE0060
 
         public ResultCode GetResult()

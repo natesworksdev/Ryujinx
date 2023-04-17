@@ -1,5 +1,5 @@
 using Ryujinx.HLE.HOS.Services.Sockets.Bsd.Types;
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 

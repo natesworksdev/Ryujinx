@@ -14,11 +14,11 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
         public StandardUserSystemClockCore(StandardLocalSystemClockCore localSystemClockCore, StandardNetworkSystemClockCore networkSystemClockCore) : base(localSystemClockCore.GetSteadyClockCore())
         {
-            _localSystemClockCore   = localSystemClockCore;
+            _localSystemClockCore = localSystemClockCore;
             _networkSystemClockCore = networkSystemClockCore;
-            _autoCorrectionEnabled  = false;
-            _autoCorrectionTime     = SteadyClockTimePoint.GetRandom();
-            _autoCorrectionEvent    = null;
+            _autoCorrectionEnabled = false;
+            _autoCorrectionTime = SteadyClockTimePoint.GetRandom();
+            _autoCorrectionEvent = null;
         }
 
         protected override ResultCode Flush(SystemClockContext context)

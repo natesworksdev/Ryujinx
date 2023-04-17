@@ -16,9 +16,9 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public Rect(int width, int height)
         {
-            Left   = 0;
-            Top    = 0;
-            Right  = width;
+            Left = 0;
+            Top = 0;
+            Right = width;
             Bottom = height;
         }
 
@@ -31,9 +31,9 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             result = new Rect
             {
-                Left   = Math.Max(Left, other.Left),
-                Top    = Math.Max(Top, other.Top),
-                Right  = Math.Min(Right, other.Right),
+                Left = Math.Max(Left, other.Left),
+                Top = Math.Max(Top, other.Top),
+                Right = Math.Min(Right, other.Right),
                 Bottom = Math.Min(Bottom, other.Bottom)
             };
 
@@ -42,7 +42,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public void MakeInvalid()
         {
-            Right  = -1;
+            Right = -1;
             Bottom = -1;
         }
 

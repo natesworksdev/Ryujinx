@@ -44,7 +44,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.NfcManager
         [CommandCmif(2)]
         [CommandCmif(402)] // 4.0.0+
         // GetState() -> u32
-        public ResultCode GetState(ServiceCtx context) 
+        public ResultCode GetState(ServiceCtx context)
         {
             context.ResponseData.Write((int)_state);
 

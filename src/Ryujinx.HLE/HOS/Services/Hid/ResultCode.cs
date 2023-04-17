@@ -12,4 +12,4 @@
         InvalidDeviceIndex    = (124 << ErrorCodeShift) | ModuleId,
         InvalidBufferSize     = (131 << ErrorCodeShift) | ModuleId
     }
-} 
+}

@@ -20,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
 
         [CommandCmif(102)]
         // GetAlbumFileList0AafeAruidDeprecated(pid, u16 content_type, u64 start_time, u64 end_time, nn::applet::AppletResourceUserId) -> (u64 count, buffer<ApplicationAlbumFileEntry, 0x6>)
-        public static ResultCode GetAlbumFileList0AafeAruidDeprecated(ServiceCtx context) 
+        public static ResultCode GetAlbumFileList0AafeAruidDeprecated(ServiceCtx context)
         {
             // NOTE: ApplicationAlbumFileEntry size is 0x30.
             return GetAlbumFileList(context);

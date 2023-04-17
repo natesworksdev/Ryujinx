@@ -11,4 +11,4 @@ namespace Ryujinx.HLE.HOS.Applets.Error
         public ByteArray2048 MessageText;
         public ByteArray2048 DetailsText;
     }
-} 
+}

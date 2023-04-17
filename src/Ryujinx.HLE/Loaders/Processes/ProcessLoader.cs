@@ -29,7 +29,7 @@ namespace Ryujinx.HLE.Loaders.Processes
 
         public ProcessLoader(Switch device)
         {
-            _device         = device;
+            _device = device;
             _processesByPid = new ConcurrentDictionary<ulong, ProcessResult>();
         }
 

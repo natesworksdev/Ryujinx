@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 #pragma warning disable IDE0060
         public IStaticService(ServiceCtx context, bool isSystem)
         {
-            _isSystem     = isSystem;
+            _isSystem = isSystem;
             _databaseImpl = DatabaseImpl.Instance;
         }
 #pragma warning restore IDE0060
