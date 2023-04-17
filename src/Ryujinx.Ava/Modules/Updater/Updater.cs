@@ -468,8 +468,8 @@ namespace Ryujinx.Modules
             // We do not want to timeout while downloading
             client.Timeout = TimeSpan.FromDays(1);
 
-            using (HttpResponseMessage response         = client.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead).Result)
-            using (Stream              remoteFileStream = response.Content.ReadAsStreamAsync().Result)
+            using (HttpResponseMessage response = client.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead).Result)
+            using (Stream remoteFileStream = response.Content.ReadAsStreamAsync().Result)
             {
                 using Stream updateFileStream = File.Open(updateFile, FileMode.Create);
 
@@ -564,13 +564,14 @@ namespace Ryujinx.Modules
             foreach (ZipEntry zipEntry in zipFile)
             {
                 count++;
-                if (zipEntry.IsDirectory) continue;
+                if (zipEntry.IsDirectory)
+                    continue;
 
                 string outPath = Path.Combine(outputDirectoryPath, zipEntry.Name);
 
                 Directory.CreateDirectory(Path.GetDirectoryName(outPath));
 
-                using (Stream     zipStream = zipFile.GetInputStream(zipEntry))
+                using (Stream zipStream = zipFile.GetInputStream(zipEntry))
                 using (FileStream outStream = File.OpenWrite(outPath))
                 {
                     zipStream.CopyTo(outStream);

@@ -142,14 +142,14 @@ namespace Ryujinx.Ava.UI.Controls
                 {
                     var save = saveDataInfo[i];
                     var id = new HLE.HOS.Services.Account.Acc.UserId((long)save.UserId.Id.Low, (long)save.UserId.Id.High);
-                    if (ViewModel.Profiles.Cast<UserProfile>().FirstOrDefault( x=> x.UserId == id) == null)
+                    if (ViewModel.Profiles.Cast<UserProfile>().FirstOrDefault(x => x.UserId == id) == null)
                     {
                         lostAccounts.Add(id);
                     }
                 }
             }
 
-            foreach(var account in lostAccounts)
+            foreach (var account in lostAccounts)
             {
                 ViewModel.LostProfiles.Add(new UserProfile(new HLE.HOS.Services.Account.Acc.UserProfile(account, "", null), this));
             }

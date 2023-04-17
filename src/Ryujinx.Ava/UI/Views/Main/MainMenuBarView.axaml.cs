@@ -38,7 +38,7 @@ namespace Ryujinx.Ava.UI.Views.Main
         {
             List<CheckBox> checkBoxes = new();
 
-            foreach (var item in Enum.GetValues(typeof (FileTypes)))
+            foreach (var item in Enum.GetValues(typeof(FileTypes)))
             {
                 string fileName = Enum.GetName(typeof (FileTypes), item);
                 checkBoxes.Add(new CheckBox()
