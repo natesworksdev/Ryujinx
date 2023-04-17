@@ -81,7 +81,7 @@ namespace Ryujinx.Audio.Backends.SoundIo
             _driver.FlushContextEvents();
         }
 
-        public override void UnregisterBuffer(AudioBuffer buffer) {}
+        public override void UnregisterBuffer(AudioBuffer buffer) { }
 
         public override bool WasBufferFullyConsumed(AudioBuffer buffer)
         {
