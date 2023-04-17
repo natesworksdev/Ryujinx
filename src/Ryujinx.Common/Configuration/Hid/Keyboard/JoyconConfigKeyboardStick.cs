@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Common.Configuration.Hid.Keyboard
 {
-    public class JoyconConfigKeyboardStick<Key> where Key: unmanaged
+    public class JoyconConfigKeyboardStick<Key> where Key : unmanaged
     {
         public Key StickUp { get; set; }
         public Key StickDown { get; set; }

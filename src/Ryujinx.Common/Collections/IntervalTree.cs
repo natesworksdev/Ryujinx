@@ -188,7 +188,7 @@ namespace Ryujinx.Common.Collections
                 if (start.CompareTo(node.End) < 0)
                 {
                     // Contains this node. Add overlaps to list.
-                    foreach (RangeNode<K,V> overlap in node.Values)
+                    foreach (RangeNode<K, V> overlap in node.Values)
                     {
                         if (start.CompareTo(overlap.End) < 0)
                         {

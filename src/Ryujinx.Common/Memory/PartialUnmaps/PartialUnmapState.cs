@@ -35,7 +35,7 @@ namespace Ryujinx.Common.Memory.PartialUnmaps
 
         [SupportedOSPlatform("windows")]
         [LibraryImport("kernel32.dll", SetLastError = true)]
-        [return: MarshalAs (UnmanagedType.Bool)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         private static partial bool CloseHandle(IntPtr hObject);
 
         [SupportedOSPlatform("windows")]

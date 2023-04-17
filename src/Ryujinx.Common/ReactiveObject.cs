@@ -30,7 +30,7 @@ namespace Ryujinx.Common
                 bool oldIsInitialized = _isInitialized;
 
                 _isInitialized = true;
-                _value         = value;
+                _value = value;
 
                 _readerWriterLock.ReleaseWriterLock();
 
