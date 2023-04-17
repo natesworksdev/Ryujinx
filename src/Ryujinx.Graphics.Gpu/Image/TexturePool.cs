@@ -476,7 +476,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     // address if there is a overlapping texture on the cache that can contain the new texture.
                     gpuVa += (ulong)sizeInfo.GetMipOffset(minLod);
 
-                    width  = Math.Max(1, width  >> minLod);
+                    width = Math.Max(1, width >> minLod);
                     height = Math.Max(1, height >> minLod);
 
                     if (target == Target.Texture3D)

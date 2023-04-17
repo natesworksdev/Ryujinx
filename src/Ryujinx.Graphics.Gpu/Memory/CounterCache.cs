@@ -129,7 +129,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 _items[index].Event?.Flush();
 
                 return true;
-            } 
+            }
             else
             {
                 return false;
@@ -170,7 +170,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 int middle = left + (range >> 1);
 
-               CounterEntry item = _items[middle];
+                CounterEntry item = _items[middle];
 
                 if (item.Address == address)
                 {

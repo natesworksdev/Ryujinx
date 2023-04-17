@@ -93,10 +93,10 @@ namespace Ryujinx.Graphics.Gpu.Image
             int stages = isCompute ? 1 : Constants.ShaderStages;
 
             _textureBindings = new TextureBindingInfo[stages][];
-            _imageBindings   = new TextureBindingInfo[stages][];
+            _imageBindings = new TextureBindingInfo[stages][];
 
             _textureState = new TextureState[InitialTextureStateSize];
-            _imageState   = new TextureState[InitialImageStateSize];
+            _imageState = new TextureState[InitialImageStateSize];
 
             for (int stage = 0; stage < stages; stage++)
             {
