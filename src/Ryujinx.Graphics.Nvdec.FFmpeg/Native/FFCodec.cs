@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Graphics.Nvdec.FFmpeg.Native
 {
-    struct FFCodec<T> where T: struct
+    struct FFCodec<T> where T : struct
     {
 #pragma warning disable CS0649
         public T Base;
