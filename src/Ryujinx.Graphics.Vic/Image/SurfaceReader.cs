@@ -21,7 +21,8 @@ namespace Ryujinx.Graphics.Vic.Image
         {
             switch (surfaceConfig.SlotPixelFormat)
             {
-                case PixelFormat.Y8___V8U8_N420: return ReadNv12(rm, ref config, ref surfaceConfig, ref offsets);
+                case PixelFormat.Y8___V8U8_N420:
+                    return ReadNv12(rm, ref config, ref surfaceConfig, ref offsets);
             }
 
             Logger.Error?.Print(LogClass.Vic, $"Unsupported pixel format \"{surfaceConfig.SlotPixelFormat}\".");
