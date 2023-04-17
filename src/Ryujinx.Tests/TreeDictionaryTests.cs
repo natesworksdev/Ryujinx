@@ -35,7 +35,7 @@ namespace Ryujinx.Tests.Collections
              *              5    11
              *  
              */
-            
+
             Assert.AreEqual(list.Count, dictionary.Count);
             Assert.AreEqual(list[0].Key, 2);
             Assert.AreEqual(list[1].Key, 1);
