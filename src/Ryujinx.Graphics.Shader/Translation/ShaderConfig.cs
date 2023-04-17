@@ -126,9 +126,9 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public ShaderConfig(ShaderStage stage, IGpuAccessor gpuAccessor, TranslationOptions options, int localMemorySize)
         {
-            Stage           = stage;
-            GpuAccessor     = gpuAccessor;
-            Options         = options;
+            Stage = stage;
+            GpuAccessor = gpuAccessor;
+            Options = options;
             LocalMemorySize = localMemorySize;
 
             _transformFeedbackDefinitions = new Dictionary<TransformFeedbackVariable, TransformFeedbackOutput>();
@@ -142,7 +142,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             UsedOutputAttributesPerPatch = new HashSet<int>();
 
             _usedTextures = new Dictionary<TextureInfo, TextureMeta>();
-            _usedImages   = new Dictionary<TextureInfo, TextureMeta>();
+            _usedImages = new Dictionary<TextureInfo, TextureMeta>();
 
             ResourceManager = new ResourceManager(stage, gpuAccessor, new ShaderProperties());
 
@@ -180,8 +180,8 @@ namespace Ryujinx.Graphics.Shader.Translation
             TranslationOptions options) : this(stage, gpuAccessor, options, 0)
         {
             ThreadsPerInputPrimitive = 1;
-            OutputTopology           = outputTopology;
-            MaxOutputVertices        = maxOutputVertices;
+            OutputTopology = outputTopology;
+            MaxOutputVertices = maxOutputVertices;
         }
 
         public ShaderConfig(
@@ -189,15 +189,15 @@ namespace Ryujinx.Graphics.Shader.Translation
             IGpuAccessor gpuAccessor,
             TranslationOptions options) : this(header.Stage, gpuAccessor, options, GetLocalMemorySize(header))
         {
-            GpPassthrough            = header.Stage == ShaderStage.Geometry && header.GpPassthrough;
+            GpPassthrough = header.Stage == ShaderStage.Geometry && header.GpPassthrough;
             ThreadsPerInputPrimitive = header.ThreadsPerInputPrimitive;
-            OutputTopology           = header.OutputTopology;
-            MaxOutputVertices        = header.MaxOutputVertexCount;
-            ImapTypes                = header.ImapTypes;
-            OmapTargets              = header.OmapTargets;
-            OmapSampleMask           = header.OmapSampleMask;
-            OmapDepth                = header.OmapDepth;
-            LastInVertexPipeline     = header.Stage < ShaderStage.Fragment;
+            OutputTopology = header.OutputTopology;
+            MaxOutputVertices = header.MaxOutputVertexCount;
+            ImapTypes = header.ImapTypes;
+            OmapTargets = header.OmapTargets;
+            OmapSampleMask = header.OmapSampleMask;
+            OmapDepth = header.OmapDepth;
+            LastInVertexPipeline = header.Stage < ShaderStage.Fragment;
         }
 
         private static int GetLocalMemorySize(ShaderHeader header)

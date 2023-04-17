@@ -121,7 +121,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             public FunctionRegisterUsage(Register[] inArguments, Register[] outArguments)
             {
-                InArguments  = inArguments;
+                InArguments = inArguments;
                 OutArguments = outArguments;
             }
         }

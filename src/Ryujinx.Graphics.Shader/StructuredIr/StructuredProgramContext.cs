@@ -242,7 +242,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
             _blockStack.Push((_currBlock, _currEndIndex, _loopEndIndex));
 
-            _currBlock    = childBlock;
+            _currBlock = childBlock;
             _currEndIndex = endIndex;
 
             if (type == AstBlockType.DoWhile)

@@ -29,9 +29,12 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public PixelImap GetFirstUsedType()
         {
-            if (X != PixelImap.Unused) return X;
-            if (Y != PixelImap.Unused) return Y;
-            if (Z != PixelImap.Unused) return Z;
+            if (X != PixelImap.Unused)
+                return X;
+            if (Y != PixelImap.Unused)
+                return Y;
+            if (Z != PixelImap.Unused)
+                return Z;
             return W;
         }
     }
