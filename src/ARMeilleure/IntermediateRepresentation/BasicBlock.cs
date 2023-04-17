@@ -105,7 +105,7 @@ namespace ARMeilleure.IntermediateRepresentation
 
             oldBlock.Predecessors.Remove(this);
             block.Predecessors.Add(this);
-            
+
             oldBlock = block;
         }
 

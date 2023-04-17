@@ -30,13 +30,13 @@ namespace ARMeilleure.IntermediateRepresentation
         public Operand BaseAddress
         {
             get => _data->BaseAddress;
-            set => _data->BaseAddress = value; 
+            set => _data->BaseAddress = value;
         }
 
         public Operand Index
         {
             get => _data->Index;
-            set => _data->Index = value; 
+            set => _data->Index = value;
         }
 
         public Multiplier Scale
