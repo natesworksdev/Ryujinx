@@ -35,7 +35,7 @@ namespace Ryujinx.Input.Assigner
             {
                 _currState = _gamepad.GetStateSnapshot();
                 _prevState = _currState;
-            }    
+            }
         }
 
         public void ReadInput()
