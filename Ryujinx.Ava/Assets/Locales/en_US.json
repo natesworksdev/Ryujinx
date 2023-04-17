@@ -388,7 +388,7 @@
   "DialogPerformanceCheckLoggingEnabledMessage": "You have trace logging enabled, which is designed to be used by developers only.",
   "DialogPerformanceCheckLoggingEnabledConfirmMessage": "For optimal performance, it's recommended to disable trace logging. Would you like to disable trace logging now?",
   "DialogPerformanceCheckShaderDumpEnabledMessage": "You have shader dumping enabled, which is designed to be used by developers only.",
-  "DialogPerformanceCheckShaderDumpEnabledConfirmMessage": "For optimal performance, it's recommended to disable shader dumping. Would you like to disable shader dumping now?",
+  "DialogPerformanceCheckShaderDumpEnabledConfirmMessage": "For optimal performance, it's recommended to disable shader dumping. Would you like to continue (select \"No\" to disable shader dumping)?",
   "DialogLoadAppGameAlreadyLoadedMessage": "A game has already been loaded",
   "DialogLoadAppGameAlreadyLoadedSubMessage": "Please stop emulation or close the emulator before launching another game.",
   "DialogUpdateAddUpdateErrorMessage": "The specified file does not contain an update for the selected title!",
