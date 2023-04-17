@@ -103,7 +103,7 @@ namespace Spv.Generator
             AddOperand(new LiteralString(value));
         }
 
-        public void AddOperand<T>(T value) where T: Enum
+        public void AddOperand<T>(T value) where T : Enum
         {
             AddOperand(LiteralInteger.CreateForEnum(value));
         }
@@ -229,7 +229,7 @@ namespace Spv.Generator
         {
             return obj is Instruction instruction && Equals(instruction);
         }
-        
+
         private static readonly Dictionary<Specification.Op, string[]> _operandLabels = new()
         {
             { Specification.Op.OpConstant, new [] { "Value" } },

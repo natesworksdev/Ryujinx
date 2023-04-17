@@ -12,7 +12,7 @@ namespace Spv.Generator
 #pragma warning restore IDE0052
         private readonly int _poolSizeIncrement;
 
-        public GeneratorPool(): this(1000, 200) { }
+        public GeneratorPool() : this(1000, 200) { }
 
         public GeneratorPool(int chunkSizeLimit, int poolSizeIncrement)
         {
