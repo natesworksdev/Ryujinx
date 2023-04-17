@@ -35,12 +35,12 @@ namespace Ryujinx.Horizon.LogManager.Types
             {
                 builder.AppendLine($"    ProgramName: {ProgramName}");
             }
-            
+
             if (!string.IsNullOrEmpty(Module))
             {
                 builder.AppendLine($"    Module: {Module}");
             }
-            
+
             if (!string.IsNullOrEmpty(Thread))
             {
                 builder.AppendLine($"    Thread: {Thread}");
