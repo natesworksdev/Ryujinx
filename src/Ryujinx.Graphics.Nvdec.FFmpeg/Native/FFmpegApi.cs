@@ -105,7 +105,7 @@ namespace Ryujinx.Graphics.Nvdec.FFmpeg.Native
         internal static unsafe partial AVCodecContext* avcodec_alloc_context3(AVCodec* codec);
 
         [LibraryImport(AvCodecLibraryName)]
-        internal static unsafe partial int avcodec_open2(AVCodecContext* avctx, AVCodec* codec, void **options);
+        internal static unsafe partial int avcodec_open2(AVCodecContext* avctx, AVCodec* codec, void** options);
 
         [LibraryImport(AvCodecLibraryName)]
         internal static unsafe partial int avcodec_close(AVCodecContext* avctx);
