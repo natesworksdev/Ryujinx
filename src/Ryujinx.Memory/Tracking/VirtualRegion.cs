@@ -86,7 +86,8 @@ namespace Ryujinx.Memory.Tracking
             foreach (var handle in Handles)
             {
                 result &= handle.RequiredPermission;
-                if (result == 0) return result;
+                if (result == 0)
+                    return result;
             }
             return result;
         }

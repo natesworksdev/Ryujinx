@@ -311,7 +311,8 @@ namespace Ryujinx.Memory.Tracking
         /// <param name="consecutiveCheck">True if this reprotect is the result of consecutive dirty checks</param>
         public void Reprotect(bool asDirty, bool consecutiveCheck = false)
         {
-            if (_volatile) return;
+            if (_volatile)
+                return;
 
             Dirty = asDirty;
 
