@@ -6,13 +6,13 @@ namespace Ryujinx.Graphics.GAL
 {
     public readonly struct TextureCreateInfo : IEquatable<TextureCreateInfo>
     {
-        public int Width         { get; }
-        public int Height        { get; }
-        public int Depth         { get; }
-        public int Levels        { get; }
-        public int Samples       { get; }
-        public int BlockWidth    { get; }
-        public int BlockHeight   { get; }
+        public int Width { get; }
+        public int Height { get; }
+        public int Depth { get; }
+        public int Levels { get; }
+        public int Samples { get; }
+        public int BlockWidth { get; }
+        public int BlockHeight { get; }
         public int BytesPerPixel { get; }
 
         public bool IsCompressed => (BlockWidth | BlockHeight) != 1;
@@ -29,37 +29,37 @@ namespace Ryujinx.Graphics.GAL
         public SwizzleComponent SwizzleA { get; }
 
         public TextureCreateInfo(
-            int              width,
-            int              height,
-            int              depth,
-            int              levels,
-            int              samples,
-            int              blockWidth,
-            int              blockHeight,
-            int              bytesPerPixel,
-            Format           format,
+            int width,
+            int height,
+            int depth,
+            int levels,
+            int samples,
+            int blockWidth,
+            int blockHeight,
+            int bytesPerPixel,
+            Format format,
             DepthStencilMode depthStencilMode,
-            Target           target,
+            Target target,
             SwizzleComponent swizzleR,
             SwizzleComponent swizzleG,
             SwizzleComponent swizzleB,
             SwizzleComponent swizzleA)
         {
-            Width            = width;
-            Height           = height;
-            Depth            = depth;
-            Levels           = levels;
-            Samples          = samples;
-            BlockWidth       = blockWidth;
-            BlockHeight      = blockHeight;
-            BytesPerPixel    = bytesPerPixel;
-            Format           = format;
+            Width = width;
+            Height = height;
+            Depth = depth;
+            Levels = levels;
+            Samples = samples;
+            BlockWidth = blockWidth;
+            BlockHeight = blockHeight;
+            BytesPerPixel = bytesPerPixel;
+            Format = format;
             DepthStencilMode = depthStencilMode;
-            Target           = target;
-            SwizzleR         = swizzleR;
-            SwizzleG         = swizzleG;
-            SwizzleB         = swizzleB;
-            SwizzleA         = swizzleA;
+            Target = target;
+            SwizzleR = swizzleR;
+            SwizzleG = swizzleG;
+            SwizzleB = swizzleB;
+            SwizzleA = swizzleA;
         }
 
         public int GetMipSize(int level)
