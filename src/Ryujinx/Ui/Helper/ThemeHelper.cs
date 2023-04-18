@@ -26,7 +26,7 @@ namespace Ryujinx.Ui.Helper
             {
                 Logger.Warning?.Print(LogClass.Application, $"The \"custom_theme_path\" section in \"Config.json\" contains an invalid path: \"{ConfigurationState.Instance.Ui.CustomThemePath}\".");
 
-                ConfigurationState.Instance.Ui.CustomThemePath.Value   = "";
+                ConfigurationState.Instance.Ui.CustomThemePath.Value = "";
                 ConfigurationState.Instance.Ui.EnableCustomTheme.Value = false;
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             }

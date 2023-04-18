@@ -52,12 +52,12 @@ namespace Ryujinx.Ui.Widgets
             InitializeComponent();
 
             _virtualFileSystem = virtualFileSystem;
-            _accountManager    = accountManager;
-            _horizonClient     = horizonClient;
-            _titleFilePath     = titleFilePath;
-            _titleName         = titleName;
-            _titleIdText       = titleId;
-            _controlData       = controlData;
+            _accountManager = accountManager;
+            _horizonClient = horizonClient;
+            _titleFilePath = titleFilePath;
+            _titleName = titleName;
+            _titleIdText = titleId;
+            _controlData = controlData;
 
             if (!ulong.TryParse(_titleIdText, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out _titleId))
             {
@@ -66,16 +66,18 @@ namespace Ryujinx.Ui.Widgets
                 return;
             }
 
+#pragma warning disable IDE0055 // Disable formatting
             _openSaveUserDirMenuItem.Sensitive   = !Utilities.IsZeros(controlData.ByteSpan) && controlData.Value.UserAccountSaveDataSize      > 0;
             _openSaveDeviceDirMenuItem.Sensitive = !Utilities.IsZeros(controlData.ByteSpan) && controlData.Value.DeviceSaveDataSize           > 0;
             _openSaveBcatDirMenuItem.Sensitive   = !Utilities.IsZeros(controlData.ByteSpan) && controlData.Value.BcatDeliveryCacheStorageSize > 0;
+#pragma warning restore IDE0055
 
             string fileExt = System.IO.Path.GetExtension(_titleFilePath).ToLower();
             bool   hasNca  = fileExt == ".nca" || fileExt == ".nsp" || fileExt == ".pfs0" || fileExt == ".xci";
 
             _extractRomFsMenuItem.Sensitive = hasNca;
             _extractExeFsMenuItem.Sensitive = hasNca;
-            _extractLogoMenuItem.Sensitive  = hasNca;
+            _extractLogoMenuItem.Sensitive = hasNca;
 
             PopupAtPointer(null);
         }
@@ -99,7 +101,7 @@ namespace Ryujinx.Ui.Widgets
                     control = ref new BlitStruct<ApplicationControlProperty>(1).Value;
 
                     // The set sizes don't actually matter as long as they're non-zero because we use directory savedata.
-                    control.UserAccountSaveDataSize        = 0x4000;
+                    control.UserAccountSaveDataSize = 0x4000;
                     control.UserAccountSaveDataJournalSize = 0x4000;
 
                     Logger.Warning?.Print(LogClass.Application, "No control file was found for this game. Using a dummy one instead. This may cause inaccuracies in some games.");
@@ -339,7 +341,8 @@ namespace Ryujinx.Ui.Widgets
         private (Result? result, bool canceled) CopyDirectory(FileSystemClient fs, string sourcePath, string destPath)
         {
             Result rc = fs.OpenDirectory(out DirectoryHandle sourceHandle, sourcePath.ToU8Span(), OpenDirectoryMode.All);
-            if (rc.IsFailure()) return (rc, false);
+            if (rc.IsFailure())
+                return (rc, false);
 
             using (sourceHandle)
             {
@@ -369,7 +372,8 @@ namespace Ryujinx.Ui.Widgets
                         fs.CreateOrOverwriteFile(subDstPath, entry.Size);
 
                         rc = CopyFile(fs, subSrcPath, subDstPath);
-                        if (rc.IsFailure()) return (rc, false);
+                        if (rc.IsFailure())
+                            return (rc, false);
                     }
                 }
             }
@@ -380,19 +384,22 @@ namespace Ryujinx.Ui.Widgets
         public static Result CopyFile(FileSystemClient fs, string sourcePath, string destPath)
         {
             Result rc = fs.OpenFile(out FileHandle sourceHandle, sourcePath.ToU8Span(), OpenMode.Read);
-            if (rc.IsFailure()) return rc;
+            if (rc.IsFailure())
+                return rc;
 
             using (sourceHandle)
             {
                 rc = fs.OpenFile(out FileHandle destHandle, destPath.ToU8Span(), OpenMode.Write | OpenMode.AllowAppend);
-                if (rc.IsFailure()) return rc;
+                if (rc.IsFailure())
+                    return rc;
 
                 using (destHandle)
                 {
                     const int MaxBufferSize = 1024 * 1024;
 
                     rc = fs.GetFileSize(out long fileSize, sourceHandle);
-                    if (rc.IsFailure()) return rc;
+                    if (rc.IsFailure())
+                        return rc;
 
                     int bufferSize = (int)Math.Min(MaxBufferSize, fileSize);
 
@@ -405,10 +412,12 @@ namespace Ryujinx.Ui.Widgets
                             Span<byte> buf = buffer.AsSpan(0, toRead);
 
                             rc = fs.ReadFile(out long _, sourceHandle, offset, buf);
-                            if (rc.IsFailure()) return rc;
+                            if (rc.IsFailure())
+                                return rc;
 
                             rc = fs.WriteFile(destHandle, offset, buf, WriteOption.None);
-                            if (rc.IsFailure()) return rc;
+                            if (rc.IsFailure())
+                                return rc;
                         }
                     }
                     finally
@@ -417,7 +426,8 @@ namespace Ryujinx.Ui.Widgets
                     }
 
                     rc = fs.FlushFile(destHandle);
-                    if (rc.IsFailure()) return rc;
+                    if (rc.IsFailure())
+                        return rc;
                 }
             }
 
@@ -551,7 +561,7 @@ namespace Ryujinx.Ui.Widgets
                     {
                         file.Delete();
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         GtkDialog.CreateErrorDialog($"Error purging PPTC cache {file.Name}: {e}");
                     }

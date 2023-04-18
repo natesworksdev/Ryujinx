@@ -85,9 +85,9 @@ namespace Ryujinx
             CommandLineState.ParseArguments(args);
 
             // Hook unhandled exception and process exit events.
-            GLib.ExceptionManager.UnhandledException   += (GLib.UnhandledExceptionArgs e)                => ProcessUnhandledException(e.ExceptionObject as Exception, e.IsTerminating);
+            GLib.ExceptionManager.UnhandledException += (GLib.UnhandledExceptionArgs e) => ProcessUnhandledException(e.ExceptionObject as Exception, e.IsTerminating);
             AppDomain.CurrentDomain.UnhandledException += (object sender, UnhandledExceptionEventArgs e) => ProcessUnhandledException(e.ExceptionObject as Exception, e.IsTerminating);
-            AppDomain.CurrentDomain.ProcessExit        += (object sender, EventArgs e)                   => Exit();
+            AppDomain.CurrentDomain.ProcessExit += (object sender, EventArgs e) => Exit();
 
             // Make process DPI aware for proper window sizing on high-res screens.
             ForceDpiAware.Windows();

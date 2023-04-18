@@ -16,7 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using GUI         = Gtk.Builder.ObjectAttribute;
+using GUI = Gtk.Builder.ObjectAttribute;
 using SpanHelpers = LibHac.Common.SpanHelpers;
 
 namespace Ryujinx.Ui.Windows
@@ -47,9 +47,9 @@ namespace Ryujinx.Ui.Windows
 
             builder.Autoconnect(this);
 
-            _titleId                     = titleId;
-            _virtualFileSystem           = virtualFileSystem;
-            _updateJsonPath              = System.IO.Path.Combine(AppDataManager.GamesDirPath, _titleId, "updates.json");
+            _titleId = titleId;
+            _virtualFileSystem = virtualFileSystem;
+            _updateJsonPath = System.IO.Path.Combine(AppDataManager.GamesDirPath, _titleId, "updates.json");
             _radioButtonToPathDictionary = new Dictionary<RadioButton, string>();
 
             try
@@ -61,12 +61,12 @@ namespace Ryujinx.Ui.Windows
                 _titleUpdateWindowData = new TitleUpdateMetadata
                 {
                     Selected = "",
-                    Paths    = new List<string>()
+                    Paths = new List<string>()
                 };
             }
 
             _baseTitleInfoLabel.Text = $"Updates Available for {titleName} [{titleId.ToUpper()}]";
-            
+
             foreach (string path in _titleUpdateWindowData.Paths)
             {
                 AddUpdate(path);

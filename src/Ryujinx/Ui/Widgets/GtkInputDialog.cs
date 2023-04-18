@@ -27,9 +27,11 @@ namespace Ryujinx.Ui.Widgets
                 Text = $"(Max length: {inputMax})"
             };
 
+#pragma warning disable IDE0055 // Disable formatting
             ((Box)MessageArea).PackStart(mainTextLabel,     true, true, 0);
             ((Box)MessageArea).PackStart(InputEntry,        true, true, 5);
             ((Box)MessageArea).PackStart(inputMaxTextLabel, true, true, 0);
+#pragma warning restore IDE0055
 
             ShowAll();
         }

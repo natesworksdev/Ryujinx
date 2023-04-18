@@ -49,8 +49,8 @@ namespace Ryujinx.Ui.Applet
                 {
                     msgDialog = new MessageDialog(_parent, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Ok, null)
                     {
-                        Title     = title,
-                        Text      = message,
+                        Title = title,
+                        Text = message,
                         UseMarkup = true
                     };
 
@@ -101,9 +101,9 @@ namespace Ryujinx.Ui.Applet
                         SecondaryText = args.SubtitleText
                     };
 
-                    swkbdDialog.InputEntry.Text            = inputText;
+                    swkbdDialog.InputEntry.Text = inputText;
                     swkbdDialog.InputEntry.PlaceholderText = args.GuideText;
-                    swkbdDialog.OkButton.Label             = args.SubmitText;
+                    swkbdDialog.OkButton.Label = args.SubmitText;
 
                     swkbdDialog.SetInputLengthValidation(args.StringLengthMin, args.StringLengthMax);
                     swkbdDialog.SetInputValidation(args.KeyboardMode);

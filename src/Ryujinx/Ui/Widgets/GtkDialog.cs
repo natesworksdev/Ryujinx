@@ -10,14 +10,14 @@ namespace Ryujinx.Ui.Widgets
     {
         private static bool _isChoiceDialogOpen;
 
-        private GtkDialog(string title, string mainText, string secondaryText, MessageType messageType = MessageType.Other, ButtonsType buttonsType = ButtonsType.Ok) 
+        private GtkDialog(string title, string mainText, string secondaryText, MessageType messageType = MessageType.Other, ButtonsType buttonsType = ButtonsType.Ok)
             : base(null, DialogFlags.Modal, messageType, buttonsType, null)
         {
-            Title              = title;
-            Icon               = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
-            Text               = mainText;
-            SecondaryText      = secondaryText;
-            WindowPosition     = WindowPosition.Center;
+            Title = title;
+            Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
+            Text = mainText;
+            SecondaryText = secondaryText;
+            WindowPosition = WindowPosition.Center;
             SecondaryUseMarkup = true;
 
             Response += GtkDialog_Response;

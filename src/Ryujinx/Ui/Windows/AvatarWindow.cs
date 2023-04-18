@@ -39,10 +39,10 @@ namespace Ryujinx.Ui.Windows
         {
             Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
 
-            CanFocus  = false;
+            CanFocus = false;
             Resizable = false;
-            Modal     = true;
-            TypeHint  = Gdk.WindowTypeHint.Dialog;
+            Modal = true;
+            TypeHint = Gdk.WindowTypeHint.Dialog;
 
             SetDefaultSize(740, 400);
             SetPosition(WindowPosition.Center);
@@ -68,14 +68,14 @@ namespace Ryujinx.Ui.Windows
 
             _setBackgroungColorButton = new Button()
             {
-                Label    = "Set Background Color",
+                Label = "Set Background Color",
                 CanFocus = true
             };
             _setBackgroungColorButton.Clicked += SetBackgroungColorButton_Pressed;
 
-            _backgroundColor.Red   = 1;
+            _backgroundColor.Red = 1;
             _backgroundColor.Green = 1;
-            _backgroundColor.Blue  = 1;
+            _backgroundColor.Blue = 1;
             _backgroundColor.Alpha = 1;
 
             Button closeButton = new()
@@ -85,19 +85,21 @@ namespace Ryujinx.Ui.Windows
             };
             closeButton.Clicked += CloseButton_Pressed;
 
+#pragma warning disable IDE0055 // Disable formatting
             vbox.PackStart(scrolledWindow,            true,  true,  0);
             hbox.PackStart(chooseButton,              true,  true,  0);
             hbox.PackStart(_setBackgroungColorButton, true,  true,  0);
             hbox.PackStart(closeButton,               true,  true,  0);
             vbox.PackStart(hbox,                      false, false, 0);
+#pragma warning restore
 
             _listStore = new ListStore(typeof(string), typeof(Gdk.Pixbuf));
             _listStore.SetSortColumnId(0, SortType.Ascending);
 
             _iconView = new IconView(_listStore)
             {
-                ItemWidth    = 64,
-                ItemPadding  = 10,
+                ItemWidth = 64,
+                ItemPadding = 10,
                 PixbufColumn = 1
             };
 
@@ -171,10 +173,12 @@ namespace Ryujinx.Ui.Windows
             using MemoryStream streamJpg = MemoryStreamManager.Shared.GetStream();
             Image avatarImage = Image.Load(data, new PngDecoder());
 
-            avatarImage.Mutate(x => x.BackgroundColor(new Rgba32((byte)(_backgroundColor.Red   * 255),
-                                                                                              (byte)(_backgroundColor.Green * 255),
-                                                                                              (byte)(_backgroundColor.Blue  * 255),
-                                                                                              (byte)(_backgroundColor.Alpha * 255))));
+            avatarImage.Mutate(x => x.BackgroundColor(new Rgba32(
+                (byte)(_backgroundColor.Red * 255),
+                (byte)(_backgroundColor.Green * 255),
+                (byte)(_backgroundColor.Blue * 255),
+                (byte)(_backgroundColor.Alpha * 255)
+            )));
             avatarImage.SaveAsJpeg(streamJpg);
 
             return streamJpg.ToArray();
@@ -201,7 +205,7 @@ namespace Ryujinx.Ui.Windows
         {
             using ColorChooserDialog colorChooserDialog = new("Set Background Color", this);
             colorChooserDialog.UseAlpha = false;
-            colorChooserDialog.Rgba     = _backgroundColor;
+            colorChooserDialog.Rgba = _backgroundColor;
 
             if (colorChooserDialog.Run() == (int)ResponseType.Ok)
             {

@@ -31,16 +31,16 @@ namespace Ryujinx.Modules
             builder.Autoconnect(this);
 
             _mainWindow = mainWindow;
-            _buildUrl   = buildUrl;
+            _buildUrl = buildUrl;
 
             Icon = new Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
-            MainText.Text      = "Do you want to update Ryujinx to the latest version?";
+            MainText.Text = "Do you want to update Ryujinx to the latest version?";
             SecondaryText.Text = $"{Program.Version} -> {newVersion}";
 
             ProgressBar.Hide();
 
             YesButton.Clicked += YesButton_Clicked;
-            NoButton.Clicked  += NoButton_Clicked;
+            NoButton.Clicked += NoButton_Clicked;
         }
 
         private void YesButton_Clicked(object sender, EventArgs args)
@@ -74,7 +74,7 @@ namespace Ryujinx.Modules
                 ProgressBar.Show();
 
                 SecondaryText.Text = "";
-                _restartQuery      = true;
+                _restartQuery = true;
 
                 Updater.UpdateRyujinx(this, _buildUrl);
             }
@@ -85,7 +85,7 @@ namespace Ryujinx.Modules
             Updater.Running = false;
             _mainWindow.Window.Functions = WMFunction.All;
 
-            _mainWindow.ExitMenuItem.Sensitive   = true;
+            _mainWindow.ExitMenuItem.Sensitive = true;
             _mainWindow.UpdateMenuItem.Sensitive = true;
 
             Dispose();

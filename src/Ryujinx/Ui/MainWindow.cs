@@ -156,14 +156,14 @@ namespace Ryujinx.Ui
 
             SetWindowSizePosition();
 
-            Icon  = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
+            Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
             Title = $"Ryujinx {Program.Version}";
 
             // Hide emulation context status bar.
             _statusBar.Hide();
 
             // Instantiate HLE objects.
-            _virtualFileSystem    = VirtualFileSystem.CreateInstance();
+            _virtualFileSystem = VirtualFileSystem.CreateInstance();
             _libHacHorizonManager = new LibHacHorizonManager();
 
             _libHacHorizonManager.InitializeFsServer(_virtualFileSystem);
@@ -178,15 +178,16 @@ namespace Ryujinx.Ui
             // Consider removing this at some point in the future when we don't need to worry about old saves.
             VirtualFileSystem.FixExtraData(_libHacHorizonManager.RyujinxClient);
 
-            _contentManager         = new ContentManager(_virtualFileSystem);
-            _accountManager         = new AccountManager(_libHacHorizonManager.RyujinxClient, CommandLineState.Profile);
+            _contentManager = new ContentManager(_virtualFileSystem);
+            _accountManager = new AccountManager(_libHacHorizonManager.RyujinxClient, CommandLineState.Profile);
             _userChannelPersistence = new UserChannelPersistence();
 
             // Instantiate GUI objects.
             _applicationLibrary = new ApplicationLibrary(_virtualFileSystem);
-            _uiHandler          = new GtkHostUiHandler(this);
-            _deviceExitStatus   = new AutoResetEvent(false);
+            _uiHandler = new GtkHostUiHandler(this);
+            _deviceExitStatus = new AutoResetEvent(false);
 
+#pragma warning disable IDE0055 // Disable formatting
             WindowStateEvent += WindowStateEvent_Changed;
             DeleteEvent      += Window_Close;
             FocusInEvent     += MainWindow_FocusInEvent;
@@ -201,13 +202,16 @@ namespace Ryujinx.Ui
 
             _gameTable.ButtonReleaseEvent += Row_Clicked;
             _fullScreen.Activated         += FullScreen_Toggled;
+#pragma warning restore IDE0055
 
             RendererWidgetBase.StatusUpdatedEvent += Update_StatusBar;
 
+#pragma warning disable IDE0055 // Disable formatting
             ConfigurationState.Instance.System.IgnoreMissingServices.Event += UpdateIgnoreMissingServicesState;
             ConfigurationState.Instance.Graphics.AspectRatio.Event         += UpdateAspectRatioState;
             ConfigurationState.Instance.System.EnableDockedMode.Event      += UpdateDockedModeState;
             ConfigurationState.Instance.System.AudioVolume.Event           += UpdateAudioVolumeState;
+#pragma warning restore IDE0055
 
             if (ConfigurationState.Instance.Ui.StartFullscreen)
             {
@@ -221,6 +225,7 @@ namespace Ryujinx.Ui
             _pauseEmulation.Sensitive = false;
             _resumeEmulation.Sensitive = false;
 
+#pragma warning disable IDE0055 // Disable formatting
             _nspShown.Active  = ConfigurationState.Instance.Ui.ShownFileTypes.NSP.Value;
             _pfs0Shown.Active = ConfigurationState.Instance.Ui.ShownFileTypes.PFS0.Value;
             _xciShown.Active  = ConfigurationState.Instance.Ui.ShownFileTypes.XCI.Value;
@@ -258,6 +263,7 @@ namespace Ryujinx.Ui
             _fileExtToggle.Toggled    += FileExt_Toggled;
             _fileSizeToggle.Toggled   += FileSize_Toggled;
             _pathToggle.Toggled       += Path_Toggled;
+#pragma warning restore IDE0055
 
             _gameTable.Model = _tableStore = new ListStore(
                 typeof(bool),
@@ -354,6 +360,7 @@ namespace Ryujinx.Ui
             CellRendererToggle favToggle = new();
             favToggle.Toggled += FavToggle_Toggled;
 
+#pragma warning disable IDE0055 // Disable formatting
             if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        _gameTable.AppendColumn("Fav",         favToggle,                "active", 0);
             if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)       _gameTable.AppendColumn("Icon",        new CellRendererPixbuf(), "pixbuf", 1);
             if (ConfigurationState.Instance.Ui.GuiColumns.AppColumn)        _gameTable.AppendColumn("Application", new CellRendererText(),   "text",   2);
@@ -364,6 +371,7 @@ namespace Ryujinx.Ui
             if (ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)    _gameTable.AppendColumn("File Ext",    new CellRendererText(),   "text",   7);
             if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)   _gameTable.AppendColumn("File Size",   new CellRendererText(),   "text",   8);
             if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn)       _gameTable.AppendColumn("Path",        new CellRendererText(),   "text",   9);
+#pragma warning restore IDE0055
 
             foreach (TreeViewColumn column in _gameTable.Columns)
             {
@@ -861,13 +869,13 @@ namespace Ryujinx.Ui
 
                 windowThread.Start();
 
-                _gameLoaded           = true;
+                _gameLoaded = true;
                 _actionMenu.Sensitive = true;
                 UpdateMenuItem.Sensitive = false;
 
                 _lastScannedAmiiboId = "";
 
-                _firmwareInstallFile.Sensitive      = false;
+                _firmwareInstallFile.Sensitive = false;
                 _firmwareInstallDirectory.Sensitive = false;
 
                 DiscordIntegrationModule.SwitchToPlayingState(_emulationContext.Processes.ActiveApplication.ProgramIdText,
@@ -1034,12 +1042,14 @@ namespace Ryujinx.Ui
             int   resScale       = ConfigurationState.Instance.Graphics.ResScale;
             float resScaleCustom = ConfigurationState.Instance.Graphics.ResScaleCustom;
 
+#pragma warning disable IDE0055 // Disable formatting
             Graphics.Gpu.GraphicsConfig.ResScale                   = (resScale == -1) ? resScaleCustom : resScale;
             Graphics.Gpu.GraphicsConfig.MaxAnisotropy              = ConfigurationState.Instance.Graphics.MaxAnisotropy;
             Graphics.Gpu.GraphicsConfig.ShadersDumpPath            = ConfigurationState.Instance.Graphics.ShadersDumpPath;
             Graphics.Gpu.GraphicsConfig.EnableShaderCache          = ConfigurationState.Instance.Graphics.EnableShaderCache;
             Graphics.Gpu.GraphicsConfig.EnableTextureRecompression = ConfigurationState.Instance.Graphics.EnableTextureRecompression;
             Graphics.Gpu.GraphicsConfig.EnableMacroHLE             = ConfigurationState.Instance.Graphics.EnableMacroHLE;
+#pragma warning restore IDE0055
         }
 
         public static void SaveConfig()
@@ -1125,6 +1135,7 @@ namespace Ryujinx.Ui
         {
             Application.Invoke(delegate
             {
+#pragma warning disable IDE0055 // Disable formatting
                 _gameStatus.Text   = args.GameStatus;
                 _fifoStatus.Text   = args.FifoStatus;
                 _gpuName.Text      = args.GpuName;
@@ -1132,6 +1143,7 @@ namespace Ryujinx.Ui
                 _aspectRatio.Text  = args.AspectRatio;
                 _gpuBackend.Text   = args.GpuBackend;
                 _volumeStatus.Text = GetVolumeLabelText(args.Volume);
+#pragma warning restore IDE0055
 
                 if (args.VSyncEnabled)
                 {
@@ -1165,8 +1177,10 @@ namespace Ryujinx.Ui
         {
             TreeViewColumn column = (TreeViewColumn)sender;
 
+#pragma warning disable IDE0055 // Disable formatting
             ConfigurationState.Instance.Ui.ColumnSort.SortColumnId.Value  = column.SortColumnId;
             ConfigurationState.Instance.Ui.ColumnSort.SortAscending.Value = column.SortOrder == SortType.Ascending;
+#pragma warning restore IDE0055
 
             SaveConfig();
         }
@@ -1235,9 +1249,11 @@ namespace Ryujinx.Ui
                 return;
             }
 
+#pragma warning disable IDE0055 // Disable formatting
             string titleFilePath = _tableStore.GetValue(treeIter, 9).ToString();
             string titleName     = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[0];
             string titleId       = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1].ToLower();
+#pragma warning restore IDE0055
 
             BlitStruct<ApplicationControlProperty> controlData = (BlitStruct<ApplicationControlProperty>)_tableStore.GetValue(treeIter, 10);
 
@@ -1277,8 +1293,8 @@ namespace Ryujinx.Ui
 
         private void FileMenu_StateChanged(object o, StateChangedArgs args)
         {
-            _appletMenu.Sensitive            = _emulationContext == null && _contentManager.GetCurrentFirmwareVersion() != null && _contentManager.GetCurrentFirmwareVersion().Major > 3;
-            _loadApplicationFile.Sensitive   = _emulationContext == null;
+            _appletMenu.Sensitive = _emulationContext == null && _contentManager.GetCurrentFirmwareVersion() != null && _contentManager.GetCurrentFirmwareVersion().Major > 3;
+            _loadApplicationFile.Sensitive = _emulationContext == null;
             _loadApplicationFolder.Sensitive = _emulationContext == null;
         }
 
@@ -1316,7 +1332,7 @@ namespace Ryujinx.Ui
         {
             if (!_gameLoaded || !ConfigurationState.Instance.ShowConfirmExit || GtkDialog.CreateExitDialog())
             {
-                SaveWindowSizePosition();        
+                SaveWindowSizePosition();
                 End();
             }
             else
@@ -1332,9 +1348,9 @@ namespace Ryujinx.Ui
 
             Move(ConfigurationState.Instance.Ui.WindowStartup.WindowPositionX, ConfigurationState.Instance.Ui.WindowStartup.WindowPositionY);
 
-            if (ConfigurationState.Instance.Ui.WindowStartup.WindowMaximized) 
-            { 
-                Maximize(); 
+            if (ConfigurationState.Instance.Ui.WindowStartup.WindowMaximized)
+            {
+                Maximize();
             }
         }
 
@@ -1349,7 +1365,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.Ui.WindowStartup.WindowPositionX.Value = windowXPos;
             ConfigurationState.Instance.Ui.WindowStartup.WindowPositionY.Value = windowYPos;
 
-            SaveConfig();        
+            SaveConfig();
         }
 
         private void StopEmulation_Pressed(object sender, EventArgs args)
@@ -1567,7 +1583,7 @@ namespace Ryujinx.Ui
             else
             {
                 // otherwise, clear state.
-                _userChannelPersistence  = new UserChannelPersistence();
+                _userChannelPersistence = new UserChannelPersistence();
                 _currentEmulatedGamePath = null;
                 _actionMenu.Sensitive = false;
                 _firmwareInstallFile.Sensitive = true;
@@ -1629,7 +1645,7 @@ namespace Ryujinx.Ui
                             _virtualFileSystem,
                             _emulationContext.Processes.ActiveApplication.ProgramId,
                             _emulationContext.Processes.ActiveApplication.ApplicationControlProperties
-                                .Title[(int)_emulationContext.System.State.DesiredTitleLanguage].NameString.ToString(), 
+                                .Title[(int)_emulationContext.System.State.DesiredTitleLanguage].NameString.ToString(),
                             _currentEmulatedGamePath);
 
             window.Destroyed += CheatWindow_Destroyed;
@@ -1657,7 +1673,7 @@ namespace Ryujinx.Ui
 
         private void ActionMenu_StateChanged(object o, StateChangedArgs args)
         {
-            _scanAmiibo.Sensitive     = _emulationContext != null && _emulationContext.System.SearchingForAmiibo(out int _);
+            _scanAmiibo.Sensitive = _emulationContext != null && _emulationContext.System.SearchingForAmiibo(out int _);
             _takeScreenshot.Sensitive = _emulationContext != null;
         }
 
@@ -1695,7 +1711,7 @@ namespace Ryujinx.Ui
         {
             if (((AmiiboWindow)sender).AmiiboId != "" && ((AmiiboWindow)sender).Response == ResponseType.Ok)
             {
-                _lastScannedAmiiboId      = ((AmiiboWindow)sender).AmiiboId;
+                _lastScannedAmiiboId = ((AmiiboWindow)sender).AmiiboId;
                 _lastScannedAmiiboShowAll = ((AmiiboWindow)sender).LastScannedAmiiboShowAll;
 
                 _emulationContext.System.ScanAmiibo(((AmiiboWindow)sender).DeviceId, ((AmiiboWindow)sender).AmiiboId, ((AmiiboWindow)sender).UseRandomUuid);
@@ -1817,7 +1833,7 @@ namespace Ryujinx.Ui
             UpdateGameTable();
         }
 
-        private void XCI_Shown_Toggled (object sender, EventArgs args)
+        private void XCI_Shown_Toggled(object sender, EventArgs args)
         {
             ConfigurationState.Instance.Ui.ShownFileTypes.XCI.Value = _xciShown.Active;
 
@@ -1825,7 +1841,7 @@ namespace Ryujinx.Ui
             UpdateGameTable();
         }
 
-        private void NCA_Shown_Toggled (object sender, EventArgs args)
+        private void NCA_Shown_Toggled(object sender, EventArgs args)
         {
             ConfigurationState.Instance.Ui.ShownFileTypes.NCA.Value = _ncaShown.Active;
 
@@ -1833,7 +1849,7 @@ namespace Ryujinx.Ui
             UpdateGameTable();
         }
 
-        private void NRO_Shown_Toggled (object sender, EventArgs args)
+        private void NRO_Shown_Toggled(object sender, EventArgs args)
         {
             ConfigurationState.Instance.Ui.ShownFileTypes.NRO.Value = _nroShown.Active;
 
@@ -1841,7 +1857,7 @@ namespace Ryujinx.Ui
             UpdateGameTable();
         }
 
-        private void NSO_Shown_Toggled (object sender, EventArgs args)
+        private void NSO_Shown_Toggled(object sender, EventArgs args)
         {
             ConfigurationState.Instance.Ui.ShownFileTypes.NSO.Value = _nsoShown.Active;
 

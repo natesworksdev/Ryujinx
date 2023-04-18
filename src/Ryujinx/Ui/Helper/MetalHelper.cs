@@ -92,7 +92,8 @@ namespace Ryujinx.Ui.Helper
             objc_msgSend(metalLayer, "setContentsScale:", (double)display.GetMonitorAtWindow(window).ScaleFactor);
 
             // Set the frame position/location.
-            updateBounds = (Window window) => {
+            updateBounds = (Window window) =>
+            {
                 window.GetPosition(out int x, out int y);
                 int width = window.Width;
                 int height = window.Height;

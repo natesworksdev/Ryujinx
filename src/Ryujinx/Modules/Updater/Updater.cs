@@ -55,7 +55,8 @@ namespace Ryujinx.Modules
 
         public static async Task BeginParse(MainWindow mainWindow, bool showVersionUpToDate)
         {
-            if (Running) return;
+            if (Running)
+                return;
 
             Running = true;
             mainWindow.UpdateMenuItem.Sensitive = false;
@@ -65,17 +66,17 @@ namespace Ryujinx.Modules
             // Detect current platform
             if (OperatingSystem.IsMacOS())
             {
-                _platformExt  = "osx_x64.zip";
+                _platformExt = "osx_x64.zip";
                 artifactIndex = 1;
             }
             else if (OperatingSystem.IsWindows())
             {
-                _platformExt  = "win_x64.zip";
+                _platformExt = "win_x64.zip";
                 artifactIndex = 2;
             }
             else if (OperatingSystem.IsLinux())
             {
-                _platformExt  = "linux_x64.tar.gz";
+                _platformExt = "linux_x64.tar.gz";
                 artifactIndex = 0;
             }
 
@@ -213,8 +214,8 @@ namespace Ryujinx.Modules
             string updateFile = Path.Combine(UpdateDir, "update.bin");
 
             // Download the update .zip
-            updateDialog.MainText.Text        = "Downloading Update...";
-            updateDialog.ProgressBar.Value    = 0;
+            updateDialog.MainText.Text = "Downloading Update...";
+            updateDialog.ProgressBar.Value = 0;
             updateDialog.ProgressBar.MaxValue = 100;
 
             if (_buildSize >= 0)
@@ -381,7 +382,7 @@ namespace Ryujinx.Modules
         private static async void InstallUpdate(UpdateDialog updateDialog, string updateFile)
         {
             // Extract Update
-            updateDialog.MainText.Text     = "Extracting Update...";
+            updateDialog.MainText.Text = "Extracting Update...";
             updateDialog.ProgressBar.Value = 0;
 
             if (OperatingSystem.IsLinux())
@@ -399,7 +400,8 @@ namespace Ryujinx.Modules
                     {
                         while ((tarEntry = tarStream.GetNextEntry()) != null)
                         {
-                            if (tarEntry.IsDirectory) continue;
+                            if (tarEntry.IsDirectory)
+                                continue;
 
                             string outPath = Path.Combine(UpdateDir, tarEntry.Name);
 
@@ -435,13 +437,14 @@ namespace Ryujinx.Modules
                 {
                     foreach (ZipEntry zipEntry in zipFile)
                     {
-                        if (zipEntry.IsDirectory) continue;
+                        if (zipEntry.IsDirectory)
+                            continue;
 
                         string outPath = Path.Combine(UpdateDir, zipEntry.Name);
 
                         Directory.CreateDirectory(Path.GetDirectoryName(outPath));
 
-                        using (Stream     zipStream = zipFile.GetInputStream(zipEntry))
+                        using (Stream zipStream = zipFile.GetInputStream(zipEntry))
                         using (FileStream outStream = File.OpenWrite(outPath))
                         {
                             zipStream.CopyTo(outStream);
@@ -462,8 +465,8 @@ namespace Ryujinx.Modules
 
             List<string> allFiles = EnumerateFilesToDelete().ToList();
 
-            updateDialog.MainText.Text        = "Renaming Old Files...";
-            updateDialog.ProgressBar.Value    = 0;
+            updateDialog.MainText.Text = "Renaming Old Files...";
+            updateDialog.ProgressBar.Value = 0;
             updateDialog.ProgressBar.MaxValue = allFiles.Count;
 
             // Replace old files
@@ -488,8 +491,8 @@ namespace Ryujinx.Modules
 
                 Application.Invoke(delegate
                 {
-                    updateDialog.MainText.Text        = "Adding New Files...";
-                    updateDialog.ProgressBar.Value    = 0;
+                    updateDialog.MainText.Text = "Adding New Files...";
+                    updateDialog.ProgressBar.Value = 0;
                     updateDialog.ProgressBar.MaxValue = Directory.GetFiles(UpdatePublishDir, "*", SearchOption.AllDirectories).Length;
                 });
 
@@ -498,9 +501,9 @@ namespace Ryujinx.Modules
 
             Directory.Delete(UpdateDir, true);
 
-            updateDialog.MainText.Text      = "Update Complete!";
+            updateDialog.MainText.Text = "Update Complete!";
             updateDialog.SecondaryText.Text = "Do you want to restart Ryujinx now?";
-            updateDialog.Modal              = true;
+            updateDialog.Modal = true;
 
             updateDialog.ProgressBar.Hide();
             updateDialog.YesButton.Show();

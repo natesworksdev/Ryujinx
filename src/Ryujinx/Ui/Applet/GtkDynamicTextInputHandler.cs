@@ -37,7 +37,7 @@ namespace Ryujinx.Ui.Applet
         public GtkDynamicTextInputHandler(Window parent)
         {
             _parent = parent;
-            _parent.KeyPressEvent   += HandleKeyPressEvent;
+            _parent.KeyPressEvent += HandleKeyPressEvent;
             _parent.KeyReleaseEvent += HandleKeyReleaseEvent;
 
             _inputToTextWindow.Add(_inputToTextEntry);
@@ -101,7 +101,7 @@ namespace Ryujinx.Ui.Applet
 
         public void Dispose()
         {
-            _parent.KeyPressEvent   -= HandleKeyPressEvent;
+            _parent.KeyPressEvent -= HandleKeyPressEvent;
             _parent.KeyReleaseEvent -= HandleKeyReleaseEvent;
         }
     }
