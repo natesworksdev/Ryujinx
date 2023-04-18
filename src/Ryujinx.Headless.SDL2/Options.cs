@@ -126,7 +126,7 @@ namespace Ryujinx.Headless.SDL2
         [Option("memory-manager-mode", Required = false, Default = MemoryManagerMode.HostMappedUnsafe, HelpText = "The selected memory manager mode.")]
         public MemoryManagerMode MemoryManagerMode { get; set; }
 
-        [Option("audio-volume", Required = false, Default = 1.0f, HelpText ="The audio level (0 to 1).")]
+        [Option("audio-volume", Required = false, Default = 1.0f, HelpText = "The audio level (0 to 1).")]
         public float AudioVolume { get; set; }
 
         [Option("use-hypervisor", Required = false, Default = true, HelpText = "Uses Hypervisor over JIT if available.")]
@@ -181,7 +181,7 @@ namespace Ryujinx.Headless.SDL2
         [Option("backend-threading", Required = false, Default = BackendThreading.Auto, HelpText = "Whether or not backend threading is enabled. The \"Auto\" setting will determine whether threading should be enabled at runtime.")]
         public BackendThreading BackendThreading { get; set; }
 
-        [Option("disable-macro-hle", Required= false, HelpText = "Disables high-level emulation of Macro code. Leaving this enabled improves performance but may cause graphical glitches in some games.")]
+        [Option("disable-macro-hle", Required = false, HelpText = "Disables high-level emulation of Macro code. Leaving this enabled improves performance but may cause graphical glitches in some games.")]
         public bool DisableMacroHLE { get; set; }
 
         [Option("graphics-shaders-dump-path", Required = false, HelpText = "Dumps shaders in this local directory. (Developer only)")]

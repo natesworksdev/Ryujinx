@@ -140,52 +140,52 @@ namespace Ryujinx.Headless.SDL2
                 {
                     config = new StandardKeyboardInputConfig
                     {
-                        Version          = InputConfig.CurrentVersion,
-                        Backend          = InputBackendType.WindowKeyboard,
-                        Id               = null,
-                        ControllerType   = ControllerType.JoyconPair,
-                        LeftJoycon       = new LeftJoyconCommonConfig<Key>
+                        Version = InputConfig.CurrentVersion,
+                        Backend = InputBackendType.WindowKeyboard,
+                        Id = null,
+                        ControllerType = ControllerType.JoyconPair,
+                        LeftJoycon = new LeftJoyconCommonConfig<Key>
                         {
-                            DpadUp       = Key.Up,
-                            DpadDown     = Key.Down,
-                            DpadLeft     = Key.Left,
-                            DpadRight    = Key.Right,
-                            ButtonMinus  = Key.Minus,
-                            ButtonL      = Key.E,
-                            ButtonZl     = Key.Q,
-                            ButtonSl     = Key.Unbound,
-                            ButtonSr     = Key.Unbound
+                            DpadUp = Key.Up,
+                            DpadDown = Key.Down,
+                            DpadLeft = Key.Left,
+                            DpadRight = Key.Right,
+                            ButtonMinus = Key.Minus,
+                            ButtonL = Key.E,
+                            ButtonZl = Key.Q,
+                            ButtonSl = Key.Unbound,
+                            ButtonSr = Key.Unbound
                         },
 
-                        LeftJoyconStick  = new JoyconConfigKeyboardStick<Key>
+                        LeftJoyconStick = new JoyconConfigKeyboardStick<Key>
                         {
-                            StickUp      = Key.W,
-                            StickDown    = Key.S,
-                            StickLeft    = Key.A,
-                            StickRight   = Key.D,
-                            StickButton  = Key.F,
+                            StickUp = Key.W,
+                            StickDown = Key.S,
+                            StickLeft = Key.A,
+                            StickRight = Key.D,
+                            StickButton = Key.F,
                         },
 
-                        RightJoycon      = new RightJoyconCommonConfig<Key>
+                        RightJoycon = new RightJoyconCommonConfig<Key>
                         {
-                            ButtonA      = Key.Z,
-                            ButtonB      = Key.X,
-                            ButtonX      = Key.C,
-                            ButtonY      = Key.V,
-                            ButtonPlus   = Key.Plus,
-                            ButtonR      = Key.U,
-                            ButtonZr     = Key.O,
-                            ButtonSl     = Key.Unbound,
-                            ButtonSr     = Key.Unbound
+                            ButtonA = Key.Z,
+                            ButtonB = Key.X,
+                            ButtonX = Key.C,
+                            ButtonY = Key.V,
+                            ButtonPlus = Key.Plus,
+                            ButtonR = Key.U,
+                            ButtonZr = Key.O,
+                            ButtonSl = Key.Unbound,
+                            ButtonSr = Key.Unbound
                         },
 
                         RightJoyconStick = new JoyconConfigKeyboardStick<Key>
                         {
-                            StickUp      = Key.I,
-                            StickDown    = Key.K,
-                            StickLeft    = Key.J,
-                            StickRight   = Key.L,
-                            StickButton  = Key.H,
+                            StickUp = Key.I,
+                            StickDown = Key.K,
+                            StickLeft = Key.J,
+                            StickRight = Key.L,
+                            StickButton = Key.H,
                         }
                     };
                 }
@@ -195,6 +195,7 @@ namespace Ryujinx.Headless.SDL2
 
                     config = new StandardControllerInputConfig
                     {
+#pragma warning disable IDE0055 // Disable formatting
                         Version          = InputConfig.CurrentVersion,
                         Backend          = InputBackendType.GamepadSDL2,
                         Id               = null,
@@ -261,6 +262,7 @@ namespace Ryujinx.Headless.SDL2
                             WeakRumble = 1f,
                             EnableRumble = false
                         }
+#pragma warning restore IDE0055
                     };
                 }
             }
@@ -310,7 +312,7 @@ namespace Ryujinx.Headless.SDL2
             {
                 if (controllerConfig.RangeLeft <= 0.0f && controllerConfig.RangeRight <= 0.0f)
                 {
-                    controllerConfig.RangeLeft  = 1.0f;
+                    controllerConfig.RangeLeft = 1.0f;
                     controllerConfig.RangeRight = 1.0f;
 
                     Logger.Info?.Print(LogClass.Application, $"{config.PlayerIndex} stick range reset. Save the profile now to update your configuration");
