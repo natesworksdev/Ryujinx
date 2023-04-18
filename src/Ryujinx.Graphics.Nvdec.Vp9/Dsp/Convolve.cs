@@ -786,7 +786,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             Debug.Assert(yStepQ4 <= 32);
             Debug.Assert(xStepQ4 <= 32);
 
-            HighbdConvolveHoriz(src - srcStride * (SubpelTaps / 2 - 1), srcStride, temp, 64, filter, x0Q4, xStepQ4, w,  intermediateHeight, bd);
+            HighbdConvolveHoriz(src - srcStride * (SubpelTaps / 2 - 1), srcStride, temp, 64, filter, x0Q4, xStepQ4, w, intermediateHeight, bd);
             HighbdConvolveVert(temp + 64 * (SubpelTaps / 2 - 1), 64, dst, dstStride, filter, y0Q4, yStepQ4, w, h, bd);
         }
 
@@ -824,7 +824,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             int h,
             int bd)
         {
-            HighbdConvolveAvgHoriz(src, srcStride, dst, dstStride, filter, x0Q4,  xStepQ4, w, h, bd);
+            HighbdConvolveAvgHoriz(src, srcStride, dst, dstStride, filter, x0Q4, xStepQ4, w, h, bd);
         }
 #pragma warning restore IDE0060
 

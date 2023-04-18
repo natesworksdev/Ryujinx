@@ -61,10 +61,15 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         {
             switch (maxTxSize)
             {
-                case TxSize.Tx8x8: return fc.Tx8x8Prob[ctx].AsSpan();
-                case TxSize.Tx16x16: return fc.Tx16x16Prob[ctx].AsSpan();
-                case TxSize.Tx32x32: return fc.Tx32x32Prob[ctx].AsSpan();
-                default: Debug.Assert(false, "Invalid maxTxSize."); return ReadOnlySpan<byte>.Empty;
+                case TxSize.Tx8x8:
+                    return fc.Tx8x8Prob[ctx].AsSpan();
+                case TxSize.Tx16x16:
+                    return fc.Tx16x16Prob[ctx].AsSpan();
+                case TxSize.Tx32x32:
+                    return fc.Tx32x32Prob[ctx].AsSpan();
+                default:
+                    Debug.Assert(false, "Invalid maxTxSize.");
+                    return ReadOnlySpan<byte>.Empty;
             }
         }
 
@@ -72,10 +77,15 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         {
             switch (maxTxSize)
             {
-                case TxSize.Tx8x8: return counts.Tx8x8[ctx].AsSpan();
-                case TxSize.Tx16x16: return counts.Tx16x16[ctx].AsSpan();
-                case TxSize.Tx32x32: return counts.Tx32x32[ctx].AsSpan();
-                default: Debug.Assert(false, "Invalid maxTxSize."); return Span<uint>.Empty;
+                case TxSize.Tx8x8:
+                    return counts.Tx8x8[ctx].AsSpan();
+                case TxSize.Tx16x16:
+                    return counts.Tx16x16[ctx].AsSpan();
+                case TxSize.Tx32x32:
+                    return counts.Tx32x32[ctx].AsSpan();
+                default:
+                    Debug.Assert(false, "Invalid maxTxSize.");
+                    return Span<uint>.Empty;
             }
         }
 
@@ -434,7 +444,9 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     mi.Bmi[0].Mode = mi.Bmi[1].Mode = ReadIntraModeY(ref cm, ref xd, ref r, 0);
                     mi.Bmi[2].Mode = mi.Bmi[3].Mode = mi.Mode = ReadIntraModeY(ref cm, ref xd, ref r, 0);
                     break;
-                default: mi.Mode = ReadIntraModeY(ref cm, ref xd, ref r, Luts.SizeGroupLookup[(int)bsize]); break;
+                default:
+                    mi.Mode = ReadIntraModeY(ref cm, ref xd, ref r, Luts.SizeGroupLookup[(int)bsize]);
+                    break;
             }
 
             mi.UvMode = ReadIntraModeUv(ref cm, ref xd, ref r, (byte)mi.Mode);
@@ -503,7 +515,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                         ZeroMvPair(ref mv);
                         break;
                     }
-                default: return false;
+                default:
+                    return false;
             }
             return ret;
         }
@@ -805,7 +818,9 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
             switch (block)
             {
-                case 0: bestSub8x8 = mvList[refmvCount - 1]; break;
+                case 0:
+                    bestSub8x8 = mvList[refmvCount - 1];
+                    break;
                 case 1:
                 case 2:
                     if (bMode == PredictionMode.NearestMv)
@@ -848,7 +863,9 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                         }
                     }
                     break;
-                default: Debug.Assert(false, "Invalid block index."); break;
+                default:
+                    Debug.Assert(false, "Invalid block index.");
+                    break;
             }
         }
 

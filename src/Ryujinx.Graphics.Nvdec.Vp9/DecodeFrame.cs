@@ -48,7 +48,9 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                         case TxSize.Tx32x32:
                             Idct.HighbdIdct32x32Add(dqcoeff.AsSpan(), dst16, stride, eob, xd.Bd);
                             break;
-                        default: Debug.Assert(false, "Invalid transform size"); break;
+                        default:
+                            Debug.Assert(false, "Invalid transform size");
+                            break;
                     }
                 }
             }
@@ -62,11 +64,21 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 {
                     switch (txSize)
                     {
-                        case TxSize.Tx4x4: Idct.Idct4x4Add(dqcoeff.AsSpan(), dst, stride, eob); break;
-                        case TxSize.Tx8x8: Idct.Idct8x8Add(dqcoeff.AsSpan(), dst, stride, eob); break;
-                        case TxSize.Tx16x16: Idct.Idct16x16Add(dqcoeff.AsSpan(), dst, stride, eob); break;
-                        case TxSize.Tx32x32: Idct.Idct32x32Add(dqcoeff.AsSpan(), dst, stride, eob); break;
-                        default: Debug.Assert(false, "Invalid transform size"); return;
+                        case TxSize.Tx4x4:
+                            Idct.Idct4x4Add(dqcoeff.AsSpan(), dst, stride, eob);
+                            break;
+                        case TxSize.Tx8x8:
+                            Idct.Idct8x8Add(dqcoeff.AsSpan(), dst, stride, eob);
+                            break;
+                        case TxSize.Tx16x16:
+                            Idct.Idct16x16Add(dqcoeff.AsSpan(), dst, stride, eob);
+                            break;
+                        case TxSize.Tx32x32:
+                            Idct.Idct32x32Add(dqcoeff.AsSpan(), dst, stride, eob);
+                            break;
+                        default:
+                            Debug.Assert(false, "Invalid transform size");
+                            return;
                     }
                 }
             }
@@ -127,7 +139,9 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                         case TxSize.Tx32x32:
                             Idct.HighbdIdct32x32Add(dqcoeff.AsSpan(), dst16, stride, eob, xd.Bd);
                             break;
-                        default: Debug.Assert(false, "Invalid transform size"); break;
+                        default:
+                            Debug.Assert(false, "Invalid transform size");
+                            break;
                     }
                 }
             }
@@ -141,11 +155,21 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 {
                     switch (txSize)
                     {
-                        case TxSize.Tx4x4: Idct.Iht4x4Add(txType, dqcoeff.AsSpan(), dst, stride, eob); break;
-                        case TxSize.Tx8x8: Idct.Iht8x8Add(txType, dqcoeff.AsSpan(), dst, stride, eob); break;
-                        case TxSize.Tx16x16: Idct.Iht16x16Add(txType, dqcoeff.AsSpan(), dst, stride, eob); break;
-                        case TxSize.Tx32x32: Idct.Idct32x32Add(dqcoeff.AsSpan(), dst, stride, eob); break;
-                        default: Debug.Assert(false, "Invalid transform size"); return;
+                        case TxSize.Tx4x4:
+                            Idct.Iht4x4Add(txType, dqcoeff.AsSpan(), dst, stride, eob);
+                            break;
+                        case TxSize.Tx8x8:
+                            Idct.Iht8x8Add(txType, dqcoeff.AsSpan(), dst, stride, eob);
+                            break;
+                        case TxSize.Tx16x16:
+                            Idct.Iht16x16Add(txType, dqcoeff.AsSpan(), dst, stride, eob);
+                            break;
+                        case TxSize.Tx32x32:
+                            Idct.Idct32x32Add(dqcoeff.AsSpan(), dst, stride, eob);
+                            break;
+                        default:
+                            Debug.Assert(false, "Invalid transform size");
+                            return;
                     }
                 }
             }
@@ -1030,7 +1054,9 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                         DecodePartition(ref twd, ref cm, miRow + hbs, miCol, subsize, n8x8L2);
                         DecodePartition(ref twd, ref cm, miRow + hbs, miCol + hbs, subsize, n8x8L2);
                         break;
-                    default: Debug.Assert(false, "Invalid partition type"); break;
+                    default:
+                        Debug.Assert(false, "Invalid partition type");
+                        break;
                 }
             }
 

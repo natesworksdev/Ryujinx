@@ -148,11 +148,21 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             Mv res = new();
             switch (ssIdx)
             {
-                case 0: res = mi.Bmi[block].Mv[refr]; break;
-                case 1: res = MiMvPredQ2(ref mi, refr, block, block + 2); break;
-                case 2: res = MiMvPredQ2(ref mi, refr, block, block + 1); break;
-                case 3: res = MiMvPredQ4(ref mi, refr); break;
-                default: Debug.Assert(ssIdx <= 3 && ssIdx >= 0); break;
+                case 0:
+                    res = mi.Bmi[block].Mv[refr];
+                    break;
+                case 1:
+                    res = MiMvPredQ2(ref mi, refr, block, block + 2);
+                    break;
+                case 2:
+                    res = MiMvPredQ2(ref mi, refr, block, block + 1);
+                    break;
+                case 3:
+                    res = MiMvPredQ4(ref mi, refr);
+                    break;
+                default:
+                    Debug.Assert(ssIdx <= 3 && ssIdx >= 0);
+                    break;
             }
             return res;
         }
