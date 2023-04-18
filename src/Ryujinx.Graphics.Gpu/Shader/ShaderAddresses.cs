@@ -35,12 +35,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>True if they are equal, false otherwise</returns>
         public bool Equals(ShaderAddresses other)
         {
-            return VertexA        == other.VertexA &&
-                   VertexB        == other.VertexB &&
-                   TessControl    == other.TessControl &&
+            return VertexA == other.VertexA &&
+                   VertexB == other.VertexB &&
+                   TessControl == other.TessControl &&
                    TessEvaluation == other.TessEvaluation &&
-                   Geometry       == other.Geometry &&
-                   Fragment       == other.Fragment;
+                   Geometry == other.Geometry &&
+                   Fragment == other.Fragment;
         }
 
         /// <summary>

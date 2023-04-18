@@ -224,7 +224,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             for (int i = 0; i < overlapCount; i++)
             {
                 var other = _textureOverlaps[i];
-                
+
                 if (texture != other &&
                     (texture.IsViewCompatible(other.Info, other.Range, true, other.LayerSize, _context.Capabilities, out _, out _) != TextureViewCompatibility.Incompatible ||
                     other.IsViewCompatible(texture.Info, texture.Range, true, texture.LayerSize, _context.Capabilities, out _, out _) != TextureViewCompatibility.Incompatible))
@@ -371,12 +371,12 @@ namespace Ryujinx.Graphics.Gpu.Image
             // so the width we get here is the aligned width.
             if (isLinear)
             {
-                width  = colorState.WidthOrStride / formatInfo.BytesPerPixel;
+                width = colorState.WidthOrStride / formatInfo.BytesPerPixel;
                 stride = colorState.WidthOrStride;
             }
             else
             {
-                width  = colorState.WidthOrStride;
+                width = colorState.WidthOrStride;
                 stride = 0;
             }
 
@@ -1143,7 +1143,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (scale != 1f)
             {
-                width  = (int)MathF.Ceiling(width  * scale);
+                width = (int)MathF.Ceiling(width * scale);
                 height = (int)MathF.Ceiling(height * scale);
             }
 

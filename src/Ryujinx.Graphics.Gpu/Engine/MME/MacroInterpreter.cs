@@ -291,11 +291,16 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
 
                     return (int)result;
 
-                case AluRegOperation.BitwiseExclusiveOr: return a ^ b;
-                case AluRegOperation.BitwiseOr: return a | b;
-                case AluRegOperation.BitwiseAnd: return a & b;
-                case AluRegOperation.BitwiseAndNot: return a & ~b;
-                case AluRegOperation.BitwiseNotAnd: return ~(a & b);
+                case AluRegOperation.BitwiseExclusiveOr:
+                    return a ^ b;
+                case AluRegOperation.BitwiseOr:
+                    return a | b;
+                case AluRegOperation.BitwiseAnd:
+                    return a & b;
+                case AluRegOperation.BitwiseAndNot:
+                    return a & ~b;
+                case AluRegOperation.BitwiseNotAnd:
+                    return ~(a & b);
             }
 
             throw new InvalidOperationException($"Invalid operation \"{aluOp}\" on instruction 0x{_opCode:X8}.");

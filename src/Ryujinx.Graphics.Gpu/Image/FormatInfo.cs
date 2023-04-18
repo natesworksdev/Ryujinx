@@ -57,16 +57,16 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="bytesPerPixel">The number of bytes occupied by a single pixel in memory of the texture data</param>
         public FormatInfo(
             Format format,
-            int    blockWidth,
-            int    blockHeight,
-            int    bytesPerPixel,
-            int    components)
+            int blockWidth,
+            int blockHeight,
+            int bytesPerPixel,
+            int components)
         {
-            Format        = format;
-            BlockWidth    = blockWidth;
-            BlockHeight   = blockHeight;
+            Format = format;
+            BlockWidth = blockWidth;
+            BlockHeight = blockHeight;
             BytesPerPixel = bytesPerPixel;
-            Components    = components;
+            Components = components;
         }
     }
 }

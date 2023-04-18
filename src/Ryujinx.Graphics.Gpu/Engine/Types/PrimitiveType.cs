@@ -53,6 +53,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Types
         {
             return type switch
             {
+#pragma warning disable IDE0055 // Disable formatting
                 PrimitiveType.Points                 => PrimitiveTopology.Points,
                 PrimitiveType.Lines                  => PrimitiveTopology.Lines,
                 PrimitiveType.LineLoop               => PrimitiveTopology.LineLoop,
@@ -69,6 +70,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Types
                 PrimitiveType.TriangleStripAdjacency => PrimitiveTopology.TriangleStripAdjacency,
                 PrimitiveType.Patches                => PrimitiveTopology.Patches,
                 _                                    => PrimitiveTopology.Triangles
+#pragma warning restore IDE0055
             };
         }
 
@@ -81,6 +83,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Types
         {
             return type switch
             {
+#pragma warning disable IDE0055 // Disable formatting
                 PrimitiveTypeOverride.Points                 => PrimitiveTopology.Points,
                 PrimitiveTypeOverride.Lines                  => PrimitiveTopology.Lines,
                 PrimitiveTypeOverride.LineStrip              => PrimitiveTopology.LineStrip,
@@ -93,6 +96,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Types
                 PrimitiveTypeOverride.TriangleStripAdjacency => PrimitiveTopology.TriangleStripAdjacency,
                 PrimitiveTypeOverride.Patches                => PrimitiveTopology.Patches,
                 _                                            => PrimitiveTopology.Triangles
+#pragma warning restore IDE0055
             };
         }
     }

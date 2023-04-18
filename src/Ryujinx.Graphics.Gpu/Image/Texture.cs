@@ -1274,7 +1274,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 ITexture viewTexture = HostTexture.CreateView(createInfo, 0, 0);
 
                 _arrayViewTexture = viewTexture;
-                _arrayViewTarget  = target;
+                _arrayViewTarget = target;
 
                 return viewTexture;
             }
@@ -1384,7 +1384,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             Height = info.Height;
             CanForceAnisotropy = CanTextureForceAnisotropy();
 
-            _depth  = info.GetDepth();
+            _depth = info.GetDepth();
             _layers = info.GetLayers();
         }
 

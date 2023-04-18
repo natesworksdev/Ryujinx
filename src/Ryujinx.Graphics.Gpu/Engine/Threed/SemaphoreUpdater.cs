@@ -117,8 +117,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             switch (op)
             {
-                case SemaphoreOperation.Release: ReleaseSemaphore(); break;
-                case SemaphoreOperation.Counter: ReportCounter(type); break;
+                case SemaphoreOperation.Release:
+                    ReleaseSemaphore();
+                    break;
+                case SemaphoreOperation.Counter:
+                    ReportCounter(type);
+                    break;
             }
         }
 

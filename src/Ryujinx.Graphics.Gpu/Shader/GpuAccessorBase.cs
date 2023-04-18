@@ -188,6 +188,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             return formatInfo.Format switch
             {
+#pragma warning disable IDE0055 // Disable formatting
                 Format.R8Unorm           => TextureFormat.R8Unorm,
                 Format.R8Snorm           => TextureFormat.R8Snorm,
                 Format.R8Uint            => TextureFormat.R8Uint,
@@ -229,6 +230,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 Format.R10G10B10A2Uint   => TextureFormat.R10G10B10A2Uint,
                 Format.R11G11B10Float    => TextureFormat.R11G11B10Float,
                 _                        => TextureFormat.Unknown
+#pragma warning restore IDE0055
             };
         }
 

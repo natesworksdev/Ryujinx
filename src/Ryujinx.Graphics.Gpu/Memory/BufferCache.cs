@@ -246,7 +246,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     {
                         Buffer buffer = _bufferOverlaps[index];
 
-                        address    = Math.Min(address,    buffer.Address);
+                        address = Math.Min(address, buffer.Address);
                         endAddress = Math.Max(endAddress, buffer.EndAddress);
 
                         lock (_buffers)

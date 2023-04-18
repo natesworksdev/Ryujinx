@@ -1015,8 +1015,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             switch (indexBuffer.Type)
             {
-                case IndexType.UShort: size *= 2; break;
-                case IndexType.UInt: size *= 4; break;
+                case IndexType.UShort:
+                    size *= 2;
+                    break;
+                case IndexType.UInt:
+                    size *= 4;
+                    break;
             }
 
             _channel.BufferManager.SetIndexBuffer(gpuVa, size, indexBuffer.Type);
@@ -1451,7 +1455,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 //  ScaleZ = (Far - Near) / 2
                 // DepthNear/Far are sorted such as that Near is always less than Far.
                 depthMode = extents.DepthNear != transform.TranslateZ &&
-                            extents.DepthFar  != transform.TranslateZ
+                            extents.DepthFar != transform.TranslateZ
                     ? DepthMode.MinusOneToOne
                     : DepthMode.ZeroToOne;
             }

@@ -80,10 +80,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="baseBuffers">Buffers which this buffer contains, and will inherit tracking handles from</param>
         public Buffer(GpuContext context, PhysicalMemory physicalMemory, ulong address, ulong size, IEnumerable<Buffer> baseBuffers = null)
         {
-            _context        = context;
+            _context = context;
             _physicalMemory = physicalMemory;
-            Address         = address;
-            Size            = size;
+            Address = address;
+            Size = size;
 
             Handle = context.Renderer.CreateBuffer((int)size, baseBuffers?.MaxBy(x => x.Size).Handle ?? BufferHandle.Null);
 

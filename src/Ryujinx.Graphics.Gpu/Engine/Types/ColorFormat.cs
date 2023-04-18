@@ -74,6 +74,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Types
         {
             return format switch
             {
+#pragma warning disable IDE0055 // Disable formatting
                 ColorFormat.R32G32B32A32Float => new FormatInfo(Format.R32G32B32A32Float, 1, 1, 16, 4),
                 ColorFormat.R32G32B32A32Sint  => new FormatInfo(Format.R32G32B32A32Sint,  1, 1, 16, 4),
                 ColorFormat.R32G32B32A32Uint  => new FormatInfo(Format.R32G32B32A32Uint,  1, 1, 16, 4),
@@ -128,6 +129,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Types
                 ColorFormat.R8G8B8X8Unorm     => new FormatInfo(Format.R8G8B8A8Unorm,     1, 1, 4,  4),
                 ColorFormat.R8G8B8X8Srgb      => new FormatInfo(Format.R8G8B8A8Srgb,      1, 1, 4,  4),
                 _                             => FormatInfo.Default
+#pragma warning restore IDE0055
             };
         }
 
