@@ -83,6 +83,15 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        /// <summary>
+        /// Gets a host pointer for a given range of application memory.
+        /// If the memory region is not a single contiguous block, this method returns 0.
+        /// </summary>
+        /// <remarks>
+        /// Getting a host pointer is unsafe. It should be considered invalid immediately if the GPU memory is unmapped.
+        /// </remarks>
+        /// <param name="range">Ranges of physical memory where the target data is located</param>
+        /// <returns>Pointer to the range of memory</returns>
         public nint GetHostPointer(MultiRange range)
         {
             if (range.Count == 1)

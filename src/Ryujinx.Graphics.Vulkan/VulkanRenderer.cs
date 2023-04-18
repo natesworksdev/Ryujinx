@@ -308,6 +308,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _physicalDevice.PhysicalDeviceFeatures.PipelineStatisticsQuery,
                 _physicalDevice.PhysicalDeviceFeatures.GeometryShader,
                 _physicalDevice.IsDeviceExtensionPresent("VK_NV_viewport_array2"),
+                _physicalDevice.IsDeviceExtensionPresent(ExtExternalMemoryHost.ExtensionName),
                 propertiesSubgroupSizeControl.MinSubgroupSize,
                 propertiesSubgroupSizeControl.MaxSubgroupSize,
                 propertiesSubgroupSizeControl.RequiredSubgroupSizeStages,
@@ -320,9 +321,9 @@ namespace Ryujinx.Graphics.Vulkan
 
             MemoryAllocator = new MemoryAllocator(Api, _physicalDevice, _device);
 
-            CommandBufferPool = new CommandBufferPool(Api, _device, Queue, QueueLock, queueFamilyIndex);
-
             HostMemoryAllocator = new HostMemoryAllocator(MemoryAllocator, Api, _device);
+
+            CommandBufferPool = new CommandBufferPool(Api, _device, Queue, QueueLock, queueFamilyIndex);
 
             DescriptorSetManager = new DescriptorSetManager(_device);
 
@@ -832,7 +833,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public bool PrepareHostMapping(nint address, ulong size)
         {
-            return HostMemoryAllocator.TryImport(BufferManager.GlobalRequirementsTest, BufferManager.DefaultBufferMemoryFlags, address, size);
+            return Capabilities.SupportsHostImportedMemory &&
+                HostMemoryAllocator.TryImport(BufferManager.HostImportedBufferMemoryRequirements, BufferManager.DefaultBufferMemoryFlags, address, size);
         }
     }
 }

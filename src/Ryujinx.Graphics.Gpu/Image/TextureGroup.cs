@@ -93,6 +93,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
         private BufferHandle _flushBuffer;
         private bool _flushBufferImported;
+        private bool _flushBufferInvalid;
 
         /// <summary>
         /// Create a new texture group.
@@ -469,6 +470,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </remarks>
         /// <param name="tracked">True if writing the texture data is tracked, false otherwise</param>
         /// <param name="sliceIndex">The index of the slice to flush</param>
+        /// <param name="inBuffer">Whether the flushed texture data is up to date in the flush buffer</param>
         /// <param name="texture">The specific host texture to flush. Defaults to the storage texture</param>
         private void FlushTextureDataSliceToGuest(bool tracked, int sliceIndex, bool inBuffer, ITexture texture = null)
         {
@@ -498,6 +500,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="tracked">True if writing the texture data is tracked, false otherwise</param>
         /// <param name="sliceStart">The first slice to flush</param>
         /// <param name="sliceEnd">The slice to finish flushing on (exclusive)</param>
+        /// <param name="inBuffer">Whether the flushed texture data is up to date in the flush buffer</param>
         /// <param name="texture">The specific host texture to flush. Defaults to the storage texture</param>
         private void FlushSliceRange(bool tracked, int sliceStart, int sliceEnd, bool inBuffer, ITexture texture = null)
         {
@@ -579,9 +582,21 @@ namespace Ryujinx.Graphics.Gpu.Image
             return flushed;
         }
 
+        /// <summary>
+        /// Flush the texture data into a persistently mapped buffer.
+        /// If the buffer does not exist, this method will create it.
+        /// </summary>
+        /// <param name="handle">Handle of the texture group to flush slices of</param>
         public void FlushIntoBuffer(TextureGroupHandle handle)
         {
             // Ensure that the buffer exists.
+
+            if (_flushBufferInvalid && _flushBuffer != BufferHandle.Null)
+            {
+                _flushBufferInvalid = false;
+                _context.Renderer.DeleteBuffer(_flushBuffer);
+                _flushBuffer = BufferHandle.Null;
+            }
 
             if (_flushBuffer == BufferHandle.Null)
             {
@@ -1636,6 +1651,17 @@ namespace Ryujinx.Graphics.Gpu.Image
                     FlushSliceRange(false, handle.BaseSlice, handle.BaseSlice + handle.SliceCount, inBuffer, Storage.GetFlushTexture());
                 }
             });
+        }
+
+        /// <summary>
+        /// Called if any part of the storage texture is unmapped.
+        /// </summary>
+        public void Unmapped()
+        {
+            if (_flushBufferImported)
+            {
+                _flushBufferInvalid = true;
+            }
         }
 
         /// <summary>

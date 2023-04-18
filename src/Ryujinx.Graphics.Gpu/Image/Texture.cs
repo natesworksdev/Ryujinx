@@ -1683,6 +1683,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (Group.Storage == this)
             {
+                Group.Unmapped();
+
                 Group.ClearModified(unmapRange);
             }
 
