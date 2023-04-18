@@ -31,7 +31,7 @@ namespace Ryujinx.Input
             _buttonState = buttonState;
 
             Position = position;
-            Scroll   = scroll;
+            Scroll = scroll;
         }
 
         /// <summary>
