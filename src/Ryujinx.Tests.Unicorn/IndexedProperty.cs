@@ -9,7 +9,7 @@ namespace Ryujinx.Tests.Unicorn
 
         public IndexedProperty(Func<TIndex, TValue> getFunc, Action<TIndex, TValue> setAction)
         {
-            _getFunc   = getFunc;
+            _getFunc = getFunc;
             _setAction = setAction;
         }
 

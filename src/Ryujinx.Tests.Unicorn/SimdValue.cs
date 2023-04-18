@@ -39,7 +39,7 @@ namespace Ryujinx.Tests.Unicorn
             return BitConverter.Int64BitsToDouble(GetInt64(index));
         }
 
-        public int  GetInt32(int index) => (int)GetUInt32(index);
+        public int GetInt32(int index) => (int)GetUInt32(index);
         public long GetInt64(int index) => (long)GetUInt64(index);
 
         public uint GetUInt32(int index)
