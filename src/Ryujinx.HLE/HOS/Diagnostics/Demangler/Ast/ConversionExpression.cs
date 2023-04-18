@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public ConversionExpression(BaseNode typeNode, BaseNode expressions) : base(NodeType.ConversionExpression)
         {
-            _typeNode    = typeNode;
+            _typeNode = typeNode;
             _expressions = expressions;
         }
 

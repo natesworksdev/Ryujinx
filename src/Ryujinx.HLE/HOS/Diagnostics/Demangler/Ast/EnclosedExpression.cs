@@ -10,9 +10,9 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public EnclosedExpression(string prefix, BaseNode expression, string postfix) : base(NodeType.EnclosedExpression)
         {
-            _prefix     = prefix;
+            _prefix = prefix;
             _expression = expression;
-            _postfix    = postfix;
+            _postfix = postfix;
         }
 
         public override void PrintLeft(TextWriter writer)

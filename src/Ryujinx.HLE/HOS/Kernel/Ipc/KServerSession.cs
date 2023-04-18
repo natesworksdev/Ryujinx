@@ -20,9 +20,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         private readonly struct Message
         {
-            public ulong Address  { get; }
-            public ulong Size     { get; }
-            public bool  IsCustom { get; }
+            public ulong Address { get; }
+            public ulong Size { get; }
+            public bool IsCustom { get; }
 
             public Message(KThread thread, ulong customCmdBuffAddress, ulong customCmdBuffSize)
             {
@@ -31,19 +31,20 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 if (IsCustom)
                 {
                     Address = customCmdBuffAddress;
-                    Size    = customCmdBuffSize;
+                    Size = customCmdBuffSize;
                 }
                 else
                 {
                     Address = thread.TlsAddress;
-                    Size    = 0x100;
+                    Size = 0x100;
                 }
             }
 
             public Message(KSessionRequest request) : this(
                 request.ClientThread,
                 request.CustomCmdBuffAddr,
-                request.CustomCmdBuffSize) { }
+                request.CustomCmdBuffSize)
+            { }
         }
 
         private readonly struct MessageHeader
@@ -52,18 +53,18 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             public uint Word1 { get; }
             public uint Word2 { get; }
 
-            public uint PointerBuffersCount  { get; }
-            public uint SendBuffersCount     { get; }
-            public uint ReceiveBuffersCount  { get; }
+            public uint PointerBuffersCount { get; }
+            public uint SendBuffersCount { get; }
+            public uint ReceiveBuffersCount { get; }
             public uint ExchangeBuffersCount { get; }
 
             public uint RawDataSizeInWords { get; }
 
             public uint ReceiveListType { get; }
 
-            public uint MessageSizeInWords       { get; }
+            public uint MessageSizeInWords { get; }
             public uint ReceiveListOffsetInWords { get; }
-            public uint ReceiveListOffset        { get; }
+            public uint ReceiveListOffset { get; }
 
             public bool HasHandles { get; }
 
@@ -101,10 +102,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                     MoveHandlesCount = 0;
                 }
 
-                PointerBuffersCount  = (word0 >> 16) & 0xf;
-                SendBuffersCount     = (word0 >> 20) & 0xf;
-                ReceiveBuffersCount  = (word0 >> 24) & 0xf;
-                ExchangeBuffersCount =  word0 >> 28;
+                PointerBuffersCount = (word0 >> 16) & 0xf;
+                SendBuffersCount = (word0 >> 20) & 0xf;
+                ReceiveBuffersCount = (word0 >> 24) & 0xf;
+                ExchangeBuffersCount = word0 >> 28;
 
                 uint pointerDescSizeInWords  = PointerBuffersCount  * 2;
                 uint sendDescSizeInWords     = SendBuffersCount     * 3;
@@ -119,12 +120,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
                 uint paddingSizeInWords = HasHandles ? 3u : 2u;
 
-                MessageSizeInWords = pointerDescSizeInWords  +
-                                     sendDescSizeInWords     +
-                                     receiveDescSizeInWords  +
+                MessageSizeInWords = pointerDescSizeInWords +
+                                     sendDescSizeInWords +
+                                     receiveDescSizeInWords +
                                      exchangeDescSizeInWords +
-                                     RawDataSizeInWords      +
-                                     paddingSizeInWords      +
+                                     RawDataSizeInWords +
+                                     paddingSizeInWords +
                                      handleDescSizeInWords;
 
                 if (ReceiveListOffsetInWords == 0)
@@ -140,15 +141,15 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
         {
             public uint ReceiveIndex { get; }
 
-            public uint  BufferSize    { get; }
+            public uint BufferSize { get; }
             public ulong BufferAddress { get; set; }
 
             public PointerBufferDesc(ulong dword)
             {
                 ReceiveIndex = (uint)dword & 0xf;
-                BufferSize   = (uint)dword >> 16;
+                BufferSize = (uint)dword >> 16;
 
-                BufferAddress  = (dword >> 2)  & 0x70;
+                BufferAddress = (dword >> 2) & 0x70;
                 BufferAddress |= (dword >> 12) & 0xf;
 
                 BufferAddress = (BufferAddress << 32) | (dword >> 32);
@@ -158,7 +159,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             {
                 ulong dword = (ReceiveIndex & 0xf) | ((BufferSize & 0xffff) << 16);
 
-                dword |=  BufferAddress << 32;
+                dword |= BufferAddress << 32;
                 dword |= (BufferAddress >> 20) & 0xf000;
                 dword |= (BufferAddress >> 30) & 0xffc0;
 
@@ -409,7 +410,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                         serverHeader.ReceiveListType,
                         clientHeader.MessageSizeInWords,
                         receiveList,
-                        ref       recvListDstOffset,
+                        ref recvListDstOffset,
                         out ulong recvListBufferAddress);
 
                     if (clientResult != Result.Success)
@@ -482,7 +483,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 {
                     ulong bufferAddress;
 
-                    bufferAddress  =   descWord2 >> 28;
+                    bufferAddress = descWord2 >> 28;
                     bufferAddress |= ((descWord2 >> 2) & 7) << 4;
 
                     bufferAddress = (bufferAddress << 32) | descWord1;
@@ -533,7 +534,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 descWord2 |= sizeHigh4 << 24;
 
                 descWord2 |= (uint)(dstAddress >> 34) & 0x3ffffffc;
-                descWord2 |= (uint)(dstAddress >> 4)  & 0xf0000000;
+                descWord2 |= (uint)(dstAddress >> 4) & 0xf0000000;
 
                 ulong serverDescAddress = serverMsg.Address + offset * 4;
 
@@ -664,8 +665,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 return KernelResult.CmdBufferTooSmall;
             }
 
-            if (serverHeader.SendBuffersCount     != 0 ||
-                serverHeader.ReceiveBuffersCount  != 0 ||
+            if (serverHeader.SendBuffersCount != 0 ||
+                serverHeader.ReceiveBuffersCount != 0 ||
                 serverHeader.ExchangeBuffersCount != 0)
             {
                 CleanUpForError();
@@ -966,12 +967,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         private static Result GetReceiveListAddress(
             PointerBufferDesc descriptor,
-            Message           message,
-            uint              recvListType,
-            uint              messageSizeInWords,
-            ulong[]           receiveList,
-            ref uint          dstOffset,
-            out ulong         address)
+            Message message,
+            uint recvListType,
+            uint messageSizeInWords,
+            ulong[] receiveList,
+            ref uint dstOffset,
+            out ulong address)
         {
             ulong recvListBufferAddress;
             address = 0;
@@ -988,7 +989,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 if (recvListType == 1)
                 {
                     recvListBaseAddr = message.Address + messageSizeInWords * 4;
-                    recvListEndAddr  = message.Address + message.Size;
+                    recvListEndAddr = message.Address + message.Size;
                 }
                 else /* if (recvListType == 2) */
                 {
@@ -1013,7 +1014,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 dstOffset = (uint)endAddress - (uint)recvListBaseAddr;
 
                 if (recvListBufferAddress + descriptor.BufferSize <= recvListBufferAddress ||
-                    recvListBufferAddress + descriptor.BufferSize >  recvListEndAddr)
+                    recvListBufferAddress + descriptor.BufferSize > recvListEndAddr)
                 {
                     return KernelResult.OutOfResource;
                 }
@@ -1237,7 +1238,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
         {
             if ((thread.SchedFlags & ThreadSchedState.LowMask) == ThreadSchedState.Paused)
             {
-                thread.SignaledObj   = signaledObj;
+                thread.SignaledObj = signaledObj;
                 thread.ObjSyncResult = result;
 
                 thread.Reschedule(ThreadSchedState.Running);

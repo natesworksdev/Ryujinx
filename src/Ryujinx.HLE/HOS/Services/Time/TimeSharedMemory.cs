@@ -26,10 +26,10 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         public void Initialize(Switch device, KSharedMemory sharedMemory, SharedMemoryStorage timeSharedMemoryStorage, int timeSharedMemorySize)
         {
-            _device                  = device;
-            _sharedMemory            = sharedMemory;
+            _device = device;
+            _sharedMemory = sharedMemory;
             _timeSharedMemoryStorage = timeSharedMemoryStorage;
-            _timeSharedMemorySize    = timeSharedMemorySize;
+            _timeSharedMemorySize = timeSharedMemorySize;
 
             // Clean the shared memory
             timeSharedMemoryStorage.ZeroFill();

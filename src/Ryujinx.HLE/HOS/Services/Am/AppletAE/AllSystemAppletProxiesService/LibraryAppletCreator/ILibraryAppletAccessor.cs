@@ -31,17 +31,17 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         {
             _kernelContext = system.KernelContext;
 
-            _stateChangedEvent       = new KEvent(system.KernelContext);
-            _normalOutDataEvent      = new KEvent(system.KernelContext);
+            _stateChangedEvent = new KEvent(system.KernelContext);
+            _normalOutDataEvent = new KEvent(system.KernelContext);
             _interactiveOutDataEvent = new KEvent(system.KernelContext);
 
             _applet = AppletManager.Create(appletId, system);
 
-            _normalSession      = new AppletSession();
+            _normalSession = new AppletSession();
             _interactiveSession = new AppletSession();
 
-            _applet.AppletStateChanged        += OnAppletStateChanged;
-            _normalSession.DataAvailable      += OnNormalOutData;
+            _applet.AppletStateChanged += OnAppletStateChanged;
+            _normalSession.DataAvailable += OnNormalOutData;
             _interactiveSession.DataAvailable += OnInteractiveOutData;
 
             Logger.Info?.Print(LogClass.ServiceAm, $"Applet '{appletId}' created.");

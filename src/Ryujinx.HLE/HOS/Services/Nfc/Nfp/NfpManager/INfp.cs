@@ -42,7 +42,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
         public ResultCode Initialize(ServiceCtx context)
         {
             _appletResourceUserId = context.RequestData.ReadUInt64();
-            _mcuVersionData       = context.RequestData.ReadUInt64();
+            _mcuVersionData = context.RequestData.ReadUInt64();
 
             ulong inputPosition = context.Request.SendBuff[0].Position;
             ulong inputSize     = context.Request.SendBuff[0].Size;

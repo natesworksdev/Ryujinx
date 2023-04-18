@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public NameTypeWithTemplateArguments(BaseNode prev, BaseNode templateArgument) : base(NodeType.NameTypeWithTemplateArguments)
         {
-            _prev             = prev;
+            _prev = prev;
             _templateArgument = templateArgument;
         }
 
@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         {
             return _prev.GetName();
         }
-        
+
         public override void PrintLeft(TextWriter writer)
         {
             _prev.Print(writer);

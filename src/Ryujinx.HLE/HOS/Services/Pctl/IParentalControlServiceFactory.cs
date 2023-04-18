@@ -2,7 +2,7 @@ using Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory;
 
 namespace Ryujinx.HLE.HOS.Services.Pctl
 {
-    [Service("pctl",   0x303)]
+    [Service("pctl", 0x303)]
     [Service("pctl:a", 0x83BE)]
     [Service("pctl:r", 0x8040)]
     [Service("pctl:s", 0x838E)]

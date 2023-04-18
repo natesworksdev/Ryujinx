@@ -29,8 +29,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     ? 1UL << nextBlockShift
                     : 1UL << blockShift;
 
-                address    = BitUtils.AlignDown(address,    align);
-                endAddress = BitUtils.AlignUp  (endAddress, align);
+                address = BitUtils.AlignDown(address, align);
+                endAddress = BitUtils.AlignUp(endAddress, align);
 
                 _heapAddress = address;
                 _endOffset = (endAddress - address) / (1UL << blockShift);
@@ -198,7 +198,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         FreeBlock(block, bigIndex);
                     }
 
-                    beforeEnd  = bigStart;
+                    beforeEnd = bigStart;
                     afterStart = bigEnd;
 
                     break;

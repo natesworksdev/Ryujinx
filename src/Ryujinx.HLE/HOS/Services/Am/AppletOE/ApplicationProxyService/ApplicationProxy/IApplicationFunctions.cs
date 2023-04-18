@@ -18,7 +18,7 @@ using Ryujinx.Horizon.Common;
 using System;
 using System.Numerics;
 using System.Threading;
-using AccountUid    = Ryujinx.HLE.HOS.Services.Account.Acc.UserId;
+using AccountUid = Ryujinx.HLE.HOS.Services.Account.Acc.UserId;
 using ApplicationId = LibHac.Ncm.ApplicationId;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy
@@ -47,9 +47,9 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         public IApplicationFunctions(Horizon system)
         {
             // TODO: Find where they are signaled.
-            _gpuErrorDetectedSystemEvent         = new KEvent(system.KernelContext);
+            _gpuErrorDetectedSystemEvent = new KEvent(system.KernelContext);
             _friendInvitationStorageChannelEvent = new KEvent(system.KernelContext);
-            _notificationStorageChannelEvent     = new KEvent(system.KernelContext);
+            _notificationStorageChannelEvent = new KEvent(system.KernelContext);
             _healthWarningDisappearedSystemEvent = new KEvent(system.KernelContext);
 
             _horizon = system.LibHacHorizonManager.AmClient;
@@ -197,7 +197,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             // NOTE: Service calls nn::fs::ExtendApplicationSaveData.
             //       Since LibHac currently doesn't support this method, we can stub it for now.
 
-            _defaultSaveDataSize        = saveDataSize;
+            _defaultSaveDataSize = saveDataSize;
             _defaultJournalSaveDataSize = journalSize;
 
             context.ResponseData.Write((uint)ResultCode.Success);
@@ -242,7 +242,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             LibHac.Result result = _horizon.Fs.CreateApplicationCacheStorage(out long requiredSize,
                 out CacheStorageTargetMedia storageTarget, applicationId, in nacp, index, saveSize, journalSize);
 
-            if (result.IsFailure()) return (ResultCode)result.Value;
+            if (result.IsFailure())
+                return (ResultCode)result.Value;
 
             context.ResponseData.Write((ulong)storageTarget);
             context.ResponseData.Write(requiredSize);

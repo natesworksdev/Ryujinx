@@ -71,7 +71,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
                     break;
                 }
 
-                context.Memory.Write(outputPosition + offset,     userProfile.UserId.High);
+                context.Memory.Write(outputPosition + offset, userProfile.UserId.High);
                 context.Memory.Write(outputPosition + offset + 8, userProfile.UserId.Low);
 
                 offset += 0x10;

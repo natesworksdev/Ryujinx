@@ -58,7 +58,7 @@ namespace Ryujinx.HLE.Ui.Input
             }
         }
 
-        public void Update(bool supressEvents=false)
+        public void Update(bool supressEvents = false)
         {
             ref var npads = ref _device.Hid.SharedMemory.Npads;
 
@@ -81,7 +81,9 @@ namespace Ryujinx.HLE.Ui.Input
             int firstEntryNum;
 
             // Scan the LIFO for the first entry that is newer that what's already processed.
+#pragma warning disable IDE0055 // Disable formatting
             for (firstEntryNum = fullKeyEntries.Length - 1; firstEntryNum >= 0 && fullKeyEntries[firstEntryNum].Object.SamplingNumber <= lastEntry.SamplingNumber; firstEntryNum--) ;
+#pragma warning restore IDE0055
 
             if (firstEntryNum == -1)
             {

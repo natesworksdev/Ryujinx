@@ -27,10 +27,10 @@ namespace Ryujinx.HLE.Ui
         public bool Equals(RenderingSurfaceInfo other)
         {
             return ColorFormat == other.ColorFormat &&
-                   Width       == other.Width       &&
-                   Height      == other.Height      &&
-                   Pitch       == other.Pitch       &&
-                   Size        == other.Size;
+                   Width == other.Width &&
+                   Height == other.Height &&
+                   Pitch == other.Pitch &&
+                   Size == other.Size;
         }
 
 

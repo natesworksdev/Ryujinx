@@ -13,12 +13,12 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public EncodedFunction(BaseNode name, BaseNode Params, BaseNode cv, BaseNode Ref, BaseNode attrs, BaseNode ret) : base(NodeType.NameType)
         {
-            _name   = name;
+            _name = name;
             _params = Params;
-            _cv     = cv;
-            _ref    = Ref;
-            _attrs  = attrs;
-            _ret    = ret;
+            _cv = cv;
+            _ref = Ref;
+            _attrs = attrs;
+            _ret = ret;
         }
 
         public override void PrintLeft(TextWriter writer)

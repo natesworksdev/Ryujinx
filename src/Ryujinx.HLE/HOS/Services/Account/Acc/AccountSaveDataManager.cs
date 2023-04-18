@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             if (File.Exists(_profilesJsonPath))
             {
-                try 
+                try
                 {
                     ProfilesJson profilesJson = JsonHelper.DeserializeFromFile(_profilesJsonPath, SerializerContext.ProfilesJson);
 
@@ -36,7 +36,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
                     LastOpened = new UserId(profilesJson.LastOpened);
                 }
-                catch (Exception e) 
+                catch (Exception e)
                 {
                     Logger.Error?.Print(LogClass.Application, $"Failed to parse {_profilesJsonPath}: {e.Message} Loading default profile!");
 
@@ -61,12 +61,12 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             {
                 profilesJson.Profiles.Add(new UserProfileJson()
                 {
-                    UserId                = profile.Value.UserId.ToString(),
-                    Name                  = profile.Value.Name,
-                    AccountState          = profile.Value.AccountState,
-                    OnlinePlayState       = profile.Value.OnlinePlayState,
+                    UserId = profile.Value.UserId.ToString(),
+                    Name = profile.Value.Name,
+                    AccountState = profile.Value.AccountState,
+                    OnlinePlayState = profile.Value.OnlinePlayState,
                     LastModifiedTimestamp = profile.Value.LastModifiedTimestamp,
-                    Image                 = profile.Value.Image,
+                    Image = profile.Value.Image,
                 });
             }
 

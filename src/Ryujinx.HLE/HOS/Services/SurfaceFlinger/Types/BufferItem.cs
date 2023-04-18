@@ -21,18 +21,18 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public BufferItem()
         {
-            GraphicBuffer             = new AndroidStrongPointer<GraphicBuffer>();
-            Transform                 = NativeWindowTransform.None;
-            ScalingMode               = NativeWindowScalingMode.Freeze;
-            Timestamp                 = 0;
-            IsAutoTimestamp           = false;
-            FrameNumber               = 0;
-            Slot                      = BufferSlotArray.InvalidBufferSlot;
-            IsDroppable               = false;
-            AcquireCalled             = false;
+            GraphicBuffer = new AndroidStrongPointer<GraphicBuffer>();
+            Transform = NativeWindowTransform.None;
+            ScalingMode = NativeWindowScalingMode.Freeze;
+            Timestamp = 0;
+            IsAutoTimestamp = false;
+            FrameNumber = 0;
+            Slot = BufferSlotArray.InvalidBufferSlot;
+            IsDroppable = false;
+            AcquireCalled = false;
             TransformToDisplayInverse = false;
-            SwapInterval              = 1;
-            Fence                     = AndroidFence.NoFence;
+            SwapInterval = 1;
+            Fence = AndroidFence.NoFence;
 
             Crop = new Rect();
             Crop.MakeInvalid();

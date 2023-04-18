@@ -89,6 +89,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
 
             switch (operation)
             {
+#pragma warning disable IDE0055 // Disable formatting
                 case Add: Emit(typeof(OpAdd<>), rightHandSideOperand); break;
                 case Sub: Emit(typeof(OpSub<>), rightHandSideOperand); break;
                 case Mul: Emit(typeof(OpMul<>), rightHandSideOperand); break;
@@ -101,6 +102,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
                 case Mov: Emit(typeof(OpMov<>)                      ); break;
                 default:
                     throw new TamperCompilationException($"Invalid arithmetic operation {operation} in Atmosphere cheat");
+#pragma warning restore IDE0055
             }
         }
     }

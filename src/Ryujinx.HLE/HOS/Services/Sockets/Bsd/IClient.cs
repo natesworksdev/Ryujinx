@@ -510,7 +510,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             int            socketFd    = context.RequestData.ReadInt32();
             BsdSocketFlags socketFlags = (BsdSocketFlags)context.RequestData.ReadInt32();
 
-            (ulong receivePosition,     ulong receiveLength)   = context.Request.GetBufferType0x22(0);
+            (ulong receivePosition, ulong receiveLength) = context.Request.GetBufferType0x22(0);
             (ulong sockAddrOutPosition, ulong sockAddrOutSize) = context.Request.GetBufferType0x22(1);
 
             WritableRegion receiveRegion = context.Memory.GetWritableRegion(receivePosition, (int)receiveLength);
@@ -529,7 +529,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
                     receiveRegion.Dispose();
 
-                    if (sockAddrOutSize != 0 && sockAddrOutSize >= (ulong) Unsafe.SizeOf<BsdSockAddr>())
+                    if (sockAddrOutSize != 0 && sockAddrOutSize >= (ulong)Unsafe.SizeOf<BsdSockAddr>())
                     {
                         context.Memory.Write(sockAddrOutPosition, BsdSockAddr.FromIPEndPoint(endPoint));
                     }
@@ -578,7 +578,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             int            socketFd    = context.RequestData.ReadInt32();
             BsdSocketFlags socketFlags = (BsdSocketFlags)context.RequestData.ReadInt32();
 
-            (ulong sendPosition,   ulong sendSize)   = context.Request.GetBufferType0x21(0);
+            (ulong sendPosition, ulong sendSize) = context.Request.GetBufferType0x21(0);
 #pragma warning disable IDE0059
             (ulong bufferPosition, ulong bufferSize) = context.Request.GetBufferType0x21(1);
 #pragma warning restore IDE0059

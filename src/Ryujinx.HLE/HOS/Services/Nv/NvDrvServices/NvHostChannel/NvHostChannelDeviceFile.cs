@@ -49,14 +49,14 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         public NvHostChannelDeviceFile(ServiceCtx context, IVirtualMemoryManager memory, ulong owner) : base(context, owner)
         {
-            _device        = context.Device;
-            _memory        = memory;
-            _timeout       = 3000;
+            _device = context.Device;
+            _memory = memory;
+            _timeout = 3000;
             _submitTimeout = 0;
-            _timeslice     = 0;
+            _timeslice = 0;
             _host1xContext = GetHost1XContext(context.Device.Gpu, owner);
-            _contextId     = _host1xContext.Host1x.CreateContext();
-            Channel        = _device.Gpu.CreateChannel();
+            _contextId = _host1xContext.Host1x.CreateContext();
+            Channel = _device.Gpu.CreateChannel();
 
             ChannelInitialization.InitializeState(Channel);
 

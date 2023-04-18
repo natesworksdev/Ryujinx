@@ -376,7 +376,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                                            MemoryManager.AliasRegionStart;
                     break;
 
-                default: throw new InvalidOperationException($"Invalid MMU flags value 0x{Flags:x2}.");
+                default:
+                    throw new InvalidOperationException($"Invalid MMU flags value 0x{Flags:x2}.");
             }
 #pragma warning restore IDE0066
 

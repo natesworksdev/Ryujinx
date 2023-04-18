@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         public ReferenceType(string reference, BaseNode child) : base(NodeType.ReferenceType)
         {
             _reference = reference;
-            _child     = child;
+            _child = child;
         }
 
         public override bool HasRightPart()

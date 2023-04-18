@@ -11,15 +11,15 @@ namespace Ryujinx.HLE.Loaders.Npdm
     {
         private const int MetaMagic = 'M' << 0 | 'E' << 8 | 'T' << 16 | 'A' << 24;
 
-        public byte   ProcessFlags        { get; private set; }
-        public bool   Is64Bit             { get; private set; }
-        public byte   MainThreadPriority  { get; private set; }
-        public byte   DefaultCpuId        { get; private set; }
-        public int    PersonalMmHeapSize  { get; private set; }
-        public int    Version             { get; private set; }
-        public int    MainThreadStackSize { get; private set; }
-        public string TitleName           { get;         set; }
-        public byte[] ProductCode         { get; private set; }
+        public byte ProcessFlags { get; private set; }
+        public bool Is64Bit { get; private set; }
+        public byte MainThreadPriority { get; private set; }
+        public byte DefaultCpuId { get; private set; }
+        public int PersonalMmHeapSize { get; private set; }
+        public int Version { get; private set; }
+        public int MainThreadStackSize { get; private set; }
+        public string TitleName { get; set; }
+        public byte[] ProductCode { get; private set; }
 
         public Aci0 Aci0 { get; private set; }
         public Acid Acid { get; private set; }
@@ -42,7 +42,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
             reader.ReadByte();
 
             MainThreadPriority = reader.ReadByte();
-            DefaultCpuId       = reader.ReadByte();
+            DefaultCpuId = reader.ReadByte();
 
             reader.ReadInt32();
 

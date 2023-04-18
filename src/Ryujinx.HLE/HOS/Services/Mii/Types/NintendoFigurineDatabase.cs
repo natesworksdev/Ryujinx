@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         private struct FigurineStorageStruct { }
 
         private Span<StoreData> Figurines => SpanHelpers.AsSpan<FigurineStorageStruct, StoreData>(ref _figurineStorage);
-        
+
         public StoreData Get(int index)
         {
             return Figurines[index];
@@ -74,14 +74,14 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
             if (newIndex < oldIndex)
             {
-                targetLength     = oldIndex - newIndex;
-                sourceIndex      = newIndex;
+                targetLength = oldIndex - newIndex;
+                sourceIndex = newIndex;
                 destinationIndex = newIndex + 1;
             }
             else
             {
-                targetLength     = newIndex - oldIndex;
-                sourceIndex      = oldIndex + 1;
+                targetLength = newIndex - oldIndex;
+                sourceIndex = oldIndex + 1;
                 destinationIndex = oldIndex;
             }
 
@@ -204,8 +204,8 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         public void Format()
         {
-            _magic         = DatabaseMagic;
-            _version       = CurrentVersion;
+            _magic = DatabaseMagic;
+            _version = CurrentVersion;
             _figurineCount = 0;
 
             // Fill with empty data

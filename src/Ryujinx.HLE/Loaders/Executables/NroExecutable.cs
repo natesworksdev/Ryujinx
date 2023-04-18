@@ -7,6 +7,7 @@ namespace Ryujinx.HLE.Loaders.Executables
     class NroExecutable : Nro, IExecutable
     {
         public byte[] Program { get; }
+#pragma warning disable IDE0055 // Disable formatting
         public Span<byte> Text => Program.AsSpan((int)TextOffset, (int)Header.NroSegments[0].Size);
         public Span<byte> Ro   => Program.AsSpan((int)RoOffset,   (int)Header.NroSegments[1].Size);
         public Span<byte> Data => Program.AsSpan((int)DataOffset, (int)Header.NroSegments[2].Size);
@@ -16,23 +17,26 @@ namespace Ryujinx.HLE.Loaders.Executables
         public uint DataOffset => Header.NroSegments[2].FileOffset;
         public uint BssOffset  => DataOffset + (uint)Data.Length;
         public uint BssSize    => Header.BssSize;
+#pragma warning restore IDE0055
 
         public uint Mod0Offset => (uint)Start.Mod0Offset;
-        public uint FileSize   => Header.Size;
+        public uint FileSize => Header.Size;
 
         public ulong SourceAddress { get; private set; }
-        public ulong BssAddress    { get; private set; }
+        public ulong BssAddress { get; private set; }
 
         public NroExecutable(IStorage inStorage, ulong sourceAddress = 0, ulong bssAddress = 0) : base(inStorage)
         {
             Program = new byte[FileSize];
 
             SourceAddress = sourceAddress;
-            BssAddress    = bssAddress;
+            BssAddress = bssAddress;
 
+#pragma warning disable IDE0055 // Disable formatting
             OpenNroSegment(NroSegmentType.Text, false).Read(0, Text);
             OpenNroSegment(NroSegmentType.Ro  , false).Read(0, Ro);
             OpenNroSegment(NroSegmentType.Data, false).Read(0, Data);
+#pragma warning restore IDE0055
         }
     }
 }

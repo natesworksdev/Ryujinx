@@ -10,8 +10,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public BracedExpression(BaseNode element, BaseNode expression, bool isArrayExpression) : base(NodeType.BracedExpression)
         {
-            _element           = element;
-            _expression        = expression;
+            _element = element;
+            _expression = expression;
             _isArrayExpression = isArrayExpression;
         }
 

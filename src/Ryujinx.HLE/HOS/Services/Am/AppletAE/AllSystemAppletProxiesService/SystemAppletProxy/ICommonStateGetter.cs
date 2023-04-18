@@ -32,9 +32,9 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         {
             _context = context;
 
-            _apmManagerServer       = new Apm.ManagerServer(context);
+            _apmManagerServer = new Apm.ManagerServer(context);
             _apmSystemManagerServer = new Apm.SystemManagerServer(context);
-            _lblControllerServer    = new Lbl.LblControllerServer(context);
+            _lblControllerServer = new Lbl.LblControllerServer(context);
 
             _acquiredSleepLockEvent = new KEvent(context.Device.System.KernelContext);
         }

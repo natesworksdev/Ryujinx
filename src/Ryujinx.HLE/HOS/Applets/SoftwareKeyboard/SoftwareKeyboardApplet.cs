@@ -75,7 +75,7 @@ namespace Ryujinx.HLE.HOS.Applets
         {
             lock (_lock)
             {
-                _normalSession      = normalSession;
+                _normalSession = normalSession;
                 _interactiveSession = interactiveSession;
 
                 _interactiveSession.DataAvailable += OnInteractiveData;
@@ -90,7 +90,7 @@ namespace Ryujinx.HLE.HOS.Applets
                     // Initialize the keyboard applet in background mode.
 
                     _keyboardBackgroundInitialize = MemoryMarshal.Read<SoftwareKeyboardInitialize>(keyboardConfig);
-                    _backgroundState              = InlineKeyboardState.Uninitialized;
+                    _backgroundState = InlineKeyboardState.Uninitialized;
 
                     if (_device.UiHandler == null)
                     {
@@ -101,11 +101,11 @@ namespace Ryujinx.HLE.HOS.Applets
                         // Create a text handler that converts keyboard strokes to strings.
                         _dynamicTextInputHandler = _device.UiHandler.CreateDynamicTextInputHandler();
                         _dynamicTextInputHandler.TextChangedEvent += HandleTextChangedEvent;
-                        _dynamicTextInputHandler.KeyPressedEvent  += HandleKeyPressedEvent;
+                        _dynamicTextInputHandler.KeyPressedEvent += HandleKeyPressedEvent;
 
                         _npads = new NpadReader(_device);
                         _npads.NpadButtonDownEvent += HandleNpadButtonDownEvent;
-                        _npads.NpadButtonUpEvent   += HandleNpadButtonUpEvent;
+                        _npads.NpadButtonUpEvent += HandleNpadButtonUpEvent;
 
                         _keyboardRenderer = new SoftwareKeyboardRenderer(_device.UiHandler.HostUiTheme);
                     }
@@ -513,7 +513,7 @@ namespace Ryujinx.HLE.HOS.Applets
         {
             Logger.Debug?.Print(LogClass.ServiceAm, $"Deactivating software keyboard frontend");
 
-            _inputMode           = KeyboardInputMode.ControllerAndKeyboard;
+            _inputMode = KeyboardInputMode.ControllerAndKeyboard;
             _canAcceptController = false;
 
             _dynamicTextInputHandler.TextProcessingEnabled = false;
@@ -530,7 +530,7 @@ namespace Ryujinx.HLE.HOS.Applets
             if (_dynamicTextInputHandler != null)
             {
                 _dynamicTextInputHandler.TextChangedEvent -= HandleTextChangedEvent;
-                _dynamicTextInputHandler.KeyPressedEvent  -= HandleKeyPressedEvent;
+                _dynamicTextInputHandler.KeyPressedEvent -= HandleKeyPressedEvent;
                 _dynamicTextInputHandler.Dispose();
                 _dynamicTextInputHandler = null;
             }
@@ -538,7 +538,7 @@ namespace Ryujinx.HLE.HOS.Applets
             if (_npads != null)
             {
                 _npads.NpadButtonDownEvent -= HandleNpadButtonDownEvent;
-                _npads.NpadButtonUpEvent   -= HandleNpadButtonUpEvent;
+                _npads.NpadButtonUpEvent -= HandleNpadButtonUpEvent;
                 _npads = null;
             }
         }
@@ -577,14 +577,14 @@ namespace Ryujinx.HLE.HOS.Applets
                 if (text.Length > MaxUiTextSize)
                 {
                     // Limit the text size and change it back.
-                    text        = text[..MaxUiTextSize];
+                    text = text[..MaxUiTextSize];
                     cursorBegin = Math.Min(cursorBegin, MaxUiTextSize);
-                    cursorEnd   = Math.Min(cursorEnd, MaxUiTextSize);
+                    cursorEnd = Math.Min(cursorEnd, MaxUiTextSize);
 
                     _dynamicTextInputHandler.SetText(text, cursorBegin, cursorEnd);
                 }
 
-                _textValue   = text;
+                _textValue = text;
                 _cursorBegin = cursorBegin;
                 _keyboardRenderer.UpdateTextState(text, cursorBegin, cursorEnd, overwriteMode, null);
 
@@ -648,7 +648,7 @@ namespace Ryujinx.HLE.HOS.Applets
         private void PushUpdatedState(string text, int cursorBegin, KeyboardResult result)
         {
             _lastResult = result;
-            _textValue  = text;
+            _textValue = text;
 
             bool cancel = result == KeyboardResult.Cancel;
             bool accept = result == KeyboardResult.Accept;

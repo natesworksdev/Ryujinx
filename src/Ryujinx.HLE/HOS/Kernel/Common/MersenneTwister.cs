@@ -66,9 +66,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
         }
 
         private long GenRandomNumber(
-            int  parts,
-            int  fullParts,
-            int  bitsPerPart,
+            int parts,
+            int fullParts,
+            int bitsPerPart,
             uint mask,
             uint maskPlus1)
         {
@@ -79,13 +79,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
             for (; part < fullParts; part++)
             {
                 randomNumber <<= bitsPerPart;
-                randomNumber  |= GenRandomNumber() & mask;
+                randomNumber |= GenRandomNumber() & mask;
             }
 
             for (; part < parts; part++)
             {
                 randomNumber <<= bitsPerPart + 1;
-                randomNumber  |= GenRandomNumber() & maskPlus1;
+                randomNumber |= GenRandomNumber() & maskPlus1;
             }
 
             return randomNumber;

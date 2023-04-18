@@ -56,29 +56,30 @@ namespace Ryujinx.HLE.Loaders.Mods
                     case Token.String:
                         state = c switch
                         {
-                            '"'  => Token.Normal,
+                            '"' => Token.Normal,
                             '\\' => Token.EscapeChar,
-                            _    => Token.String
+                            _ => Token.String
                         };
                         break;
                     case Token.EscapeChar:
                         state = Token.String;
                         c = c switch
                         {
-                            'a'  => '\a',
-                            'b'  => '\b',
-                            'f'  => '\f',
-                            'n'  => '\n',
-                            'r'  => '\r',
-                            't'  => '\t',
-                            'v'  => '\v',
+                            'a' => '\a',
+                            'b' => '\b',
+                            'f' => '\f',
+                            'n' => '\n',
+                            'r' => '\r',
+                            't' => '\t',
+                            'v' => '\v',
                             '\\' => '\\',
-                            _    => '?'
+                            _ => '?'
                         };
                         break;
                 }
 
-                if (state == Token.Comment) break;
+                if (state == Token.Comment)
+                    break;
 
                 if (state < Token.EscapeChar)
                 {
@@ -112,7 +113,8 @@ namespace Ryujinx.HLE.Loaders.Mods
         // Big Endian
         static byte[] Hex2ByteArrayBE(string hexstr)
         {
-            if ((hexstr.Length & 1) == 1) return null;
+            if ((hexstr.Length & 1) == 1)
+                return null;
 
             byte[] bytes = new byte[hexstr.Length >> 1];
 

@@ -19,11 +19,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public BufferSlot()
         {
-            GraphicBuffer    = new AndroidStrongPointer<GraphicBuffer>();
-            BufferState      = BufferState.Free;
-            QueueTime        = TimeSpanType.Zero;
+            GraphicBuffer = new AndroidStrongPointer<GraphicBuffer>();
+            BufferState = BufferState.Free;
+            QueueTime = TimeSpanType.Zero;
             PresentationTime = TimeSpanType.Zero;
-            IsPreallocated   = false;
+            IsPreallocated = false;
         }
     }
 }

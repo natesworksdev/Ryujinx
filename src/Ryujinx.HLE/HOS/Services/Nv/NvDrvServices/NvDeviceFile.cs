@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         public NvDeviceFile(ServiceCtx context, ulong owner)
         {
             Context = context;
-            Owner   = owner;
+            Owner = owner;
         }
 
         public virtual NvInternalResult QueryEvent(out int eventHandle, uint eventId)

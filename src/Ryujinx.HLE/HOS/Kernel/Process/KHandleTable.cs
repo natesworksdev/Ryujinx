@@ -83,7 +83,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
                 _nextFreeEntry = entry.Next;
 
-                entry.Obj      = obj;
+                entry.Obj = obj;
                 entry.HandleId = _idCounter;
 
                 _activeSlotsCount++;
@@ -145,7 +145,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             {
                 KHandleEntry entry = _table[index];
 
-                entry.Obj  = null;
+                entry.Obj = null;
                 entry.Next = _nextFreeEntry;
 
                 _nextFreeEntry = entry;
@@ -163,7 +163,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             {
                 KHandleEntry entry = _table[index];
 
-                entry.Obj      = obj;
+                entry.Obj = obj;
                 entry.HandleId = (ushort)handleId;
 
                 obj.IncrementReferenceCount();
@@ -194,7 +194,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
                     if ((obj = entry.Obj) != null && entry.HandleId == handleId)
                     {
-                        entry.Obj  = null;
+                        entry.Obj = null;
                         entry.Next = _nextFreeEntry;
 
                         _nextFreeEntry = entry;
@@ -275,7 +275,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                         }
 
                         entry.Obj.DecrementReferenceCount();
-                        entry.Obj  = null;
+                        entry.Obj = null;
                         entry.Next = _nextFreeEntry;
 
                         _nextFreeEntry = entry;

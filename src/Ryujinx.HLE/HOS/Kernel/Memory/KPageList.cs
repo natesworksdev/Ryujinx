@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                     if (lastNode.Address + lastNode.PagesCount * KPageTableBase.PageSize == address)
                     {
-                        address     = lastNode.Address;
+                        address = lastNode.Address;
                         pagesCount += lastNode.PagesCount;
 
                         Nodes.RemoveLast();
@@ -55,13 +55,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             while (thisNode != null && otherNode != null)
             {
-                if (thisNode.Value.Address    != otherNode.Value.Address ||
+                if (thisNode.Value.Address != otherNode.Value.Address ||
                     thisNode.Value.PagesCount != otherNode.Value.PagesCount)
                 {
                     return false;
                 }
 
-                thisNode  = thisNode.Next;
+                thisNode = thisNode.Next;
                 otherNode = otherNode.Next;
             }
 

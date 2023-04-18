@@ -131,7 +131,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
             ulong fontSizeBufferPosition = context.Request.ReceiveBuff[2].Position;
             ulong fontSizeBufferSize     = context.Request.ReceiveBuff[2].Size;
 
-            if (offset + 4 > (uint)typesSize   ||
+            if (offset + 4 > (uint)typesSize ||
                 offset + 4 > (uint)offsetsSize ||
                 offset + 4 > (uint)fontSizeBufferSize)
             {

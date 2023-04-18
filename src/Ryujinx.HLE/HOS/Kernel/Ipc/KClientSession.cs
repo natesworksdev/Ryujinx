@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         public KClientSession(KernelContext context, KSession parent, KClientPort parentPort) : base(context)
         {
-            _parent    = parent;
+            _parent = parent;
             ParentPort = parentPort;
 
             parentPort?.IncrementReferenceCount();
@@ -36,7 +36,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
             KernelContext.CriticalSection.Enter();
 
-            currentThread.SignaledObj   = null;
+            currentThread.SignaledObj = null;
             currentThread.ObjSyncResult = Result.Success;
 
             Result result = _parent.ServerSession.EnqueueRequest(request);

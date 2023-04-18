@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         private readonly bool[] _slots;
 
         public bool IsEmpty => _usedSlots == 0;
-        public bool IsFull  => _usedSlots == _slots.Length;
+        public bool IsFull => _usedSlots == _slots.Length;
 
         public KTlsPageManager(long pagePosition)
         {

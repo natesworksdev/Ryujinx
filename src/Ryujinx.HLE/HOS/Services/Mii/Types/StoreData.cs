@@ -98,6 +98,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
             coreData.SetDefault();
 
+#pragma warning disable IDE0055 // Disable formatting
             coreData.Nickname        = template.Nickname;
             coreData.FontRegion      = (FontRegion)template.FontRegion;
             coreData.FavoriteColor   = (byte)template.FavoriteColor;
@@ -148,6 +149,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             coreData.MoleScale       = (byte)template.MoleScale;
             coreData.MoleX           = (byte)template.MoleX;
             coreData.MoleY           = (byte)template.MoleY;
+#pragma warning restore IDE0055
 
             result.CoreData = coreData;
 

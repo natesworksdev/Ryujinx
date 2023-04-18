@@ -87,22 +87,22 @@ namespace Ryujinx.HLE.HOS.Services.Caps
 
                 applicationAlbumEntry = new ApplicationAlbumEntry()
                 {
-                    Size              = (ulong)Unsafe.SizeOf<ApplicationAlbumEntry>(),
-                    TitleId           = titleId,
+                    Size = (ulong)Unsafe.SizeOf<ApplicationAlbumEntry>(),
+                    TitleId = titleId,
                     AlbumFileDateTime = new AlbumFileDateTime()
                     {
-                        Year     = (ushort)currentDateTime.Year,
-                        Month    = (byte)currentDateTime.Month,
-                        Day      = (byte)currentDateTime.Day,
-                        Hour     = (byte)currentDateTime.Hour,
-                        Minute   = (byte)currentDateTime.Minute,
-                        Second   = (byte)currentDateTime.Second,
+                        Year = (ushort)currentDateTime.Year,
+                        Month = (byte)currentDateTime.Month,
+                        Day = (byte)currentDateTime.Day,
+                        Hour = (byte)currentDateTime.Hour,
+                        Minute = (byte)currentDateTime.Minute,
+                        Second = (byte)currentDateTime.Second,
                         UniqueId = 0
                     },
-                    AlbumStorage      = AlbumStorage.Sd,
-                    ContentType       = ContentType.Screenshot,
-                    Padding           = new Array5<byte>(),
-                    Unknown0x1f       = 1
+                    AlbumStorage = AlbumStorage.Sd,
+                    ContentType = ContentType.Screenshot,
+                    Padding = new Array5<byte>(),
+                    Unknown0x1f = 1
                 };
 
                 // NOTE: The hex hash is a HMAC-SHA256 (first 32 bytes) using a hardcoded secret key over the titleId, we can simulate it by hashing the titleId instead.

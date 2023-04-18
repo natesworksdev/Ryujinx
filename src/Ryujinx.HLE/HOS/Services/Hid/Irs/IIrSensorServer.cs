@@ -146,7 +146,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
             // TODO: Uses the buffer to copy the JoyCon IR data (by using a JoyCon driver) and update the following struct.
             context.ResponseData.WriteStruct(new ImageTransferProcessorState()
             {
-                SamplingNumber    = 0,
+                SamplingNumber = 0,
                 AmbientNoiseLevel = 0
             });
 
@@ -174,7 +174,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
         {
             NpadIdType npadIdType = (NpadIdType)context.RequestData.ReadUInt32();
 
-            if (npadIdType >  NpadIdType.Player8 &&
+            if (npadIdType > NpadIdType.Player8 &&
                 npadIdType != NpadIdType.Unknown &&
                 npadIdType != NpadIdType.Handheld)
             {

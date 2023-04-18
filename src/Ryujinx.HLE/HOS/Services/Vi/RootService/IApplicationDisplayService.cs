@@ -34,8 +34,8 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
         public IApplicationDisplayService(ViServiceType serviceType)
         {
-            _serviceType  = serviceType;
-            _displayInfo  = new List<DisplayInfo>();
+            _serviceType = serviceType;
+            _displayInfo = new List<DisplayInfo>();
             _openDisplays = new Dictionary<ulong, DisplayState>();
 
             void AddDisplayInfo(string name, bool layerLimitEnabled, ulong layerLimitMax, ulong width, ulong height)
@@ -55,11 +55,13 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
                 _displayInfo.Add(displayInfo);
             }
 
+#pragma warning disable IDE0055 // Disable formatting
             AddDisplayInfo("Default",  true,  1, 1920, 1080);
             AddDisplayInfo("External", true,  1, 1920, 1080);
             AddDisplayInfo("Edid",     true,  1, 0,    0);
             AddDisplayInfo("Internal", true,  1, 1920, 1080);
             AddDisplayInfo("Null",     false, 0, 1920, 1080);
+#pragma warning restore IDE0055
         }
 
         [CommandCmif(100)]
@@ -367,7 +369,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
             const ulong DefaultSize      = 0x20000;
 
             alignment = DefaultAlignment;
-            pitch     = BitUtils.AlignUp(BitUtils.DivRoundUp(width * 32, 8), 64);
+            pitch = BitUtils.AlignUp(BitUtils.DivRoundUp(width * 32, 8), 64);
 
             int   memorySize         = pitch * BitUtils.AlignUp(height, 64);
             ulong requiredMemorySize = (ulong)BitUtils.AlignUp(memorySize, alignment);

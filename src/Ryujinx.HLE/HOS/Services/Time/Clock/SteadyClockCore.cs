@@ -12,9 +12,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
         public SteadyClockCore()
         {
-            _clockSourceId      = UInt128Utils.CreateRandom();
+            _clockSourceId = UInt128Utils.CreateRandom();
             _isRtcResetDetected = false;
-            _isInitialized      = false;
+            _isInitialized = false;
         }
 
         public UInt128 GetClockSourceId()
@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             return new TimeSpanType(0);
         }
 
-        public virtual void SetTestOffset(TimeSpanType testOffset) {}
+        public virtual void SetTestOffset(TimeSpanType testOffset) { }
 
         public static ResultCode GetRtcValue(out ulong rtcValue)
         {
@@ -61,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             return new TimeSpanType(0);
         }
 
-        public virtual void SetInternalOffset(TimeSpanType internalOffset) {}
+        public virtual void SetInternalOffset(TimeSpanType internalOffset) { }
 
         public virtual SteadyClockTimePoint GetTimePoint(ITickSource tickSource)
         {

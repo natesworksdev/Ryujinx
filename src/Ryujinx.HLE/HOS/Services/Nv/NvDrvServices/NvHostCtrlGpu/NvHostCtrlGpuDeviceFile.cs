@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
 #pragma warning disable IDE0060
         public NvHostCtrlGpuDeviceFile(ServiceCtx context, IVirtualMemoryManager memory, ulong owner) : base(context, owner)
         {
-            _errorEvent   = new KEvent(context.Device.System.KernelContext);
+            _errorEvent = new KEvent(context.Device.System.KernelContext);
             _unknownEvent = new KEvent(context.Device.System.KernelContext);
         }
 #pragma warning restore IDE0060
@@ -127,6 +127,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
 
         private NvInternalResult ZcullGetInfo(ref ZcullGetInfoArguments arguments)
         {
+#pragma warning disable IDE0055 // Disable formatting
             arguments.WidthAlignPixels           = 0x20;
             arguments.HeightAlignPixels          = 0x20;
             arguments.PixelSquaresByAliquots     = 0x400;
@@ -137,6 +138,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
             arguments.SubregionWidthAlignPixels  = 0x20;
             arguments.SubregionHeightAlignPixels = 0x40;
             arguments.SubregionCount             = 0x10;
+#pragma warning restore IDE0055
 
             return NvInternalResult.Success;
         }
@@ -157,6 +159,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
         {
             arguments.Header.BufferSize = 0xa0;
 
+#pragma warning disable IDE0055 // Disable formatting
             characteristics.Arch                   = 0x120;
             characteristics.Impl                   = 0xb;
             characteristics.Rev                    = 0xa1;
@@ -192,6 +195,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
             characteristics.RopL2EnMask1           = 0x0;
             characteristics.ChipName               = 0x6230326d67;
             characteristics.GrCompbitStoreBaseHw   = 0x0;
+#pragma warning restore IDE0055
 
             arguments.Characteristics = characteristics;
 
@@ -207,7 +211,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
         {
             if (arguments.MaskBufferSize != 0)
             {
-                tpcMask           = 3;
+                tpcMask = 3;
                 arguments.TpcMask = tpcMask;
             }
 

@@ -453,15 +453,15 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             var glassTypeInfo       = RandomMiiGlassTypeArray[(int)age];
 
             // Faceline
-            coreData.FacelineType    = (FacelineType)facelineTypeInfo.Values[utilImpl.GetRandom(facelineTypeInfo.ValuesCount)];
-            coreData.FacelineColor   = (FacelineColor)Helper.Ver3FacelineColorTable[facelineColorInfo.Values[utilImpl.GetRandom(facelineColorInfo.ValuesCount)]];
+            coreData.FacelineType = (FacelineType)facelineTypeInfo.Values[utilImpl.GetRandom(facelineTypeInfo.ValuesCount)];
+            coreData.FacelineColor = (FacelineColor)Helper.Ver3FacelineColorTable[facelineColorInfo.Values[utilImpl.GetRandom(facelineColorInfo.ValuesCount)]];
             coreData.FacelineWrinkle = (FacelineWrinkle)facelineWrinkleInfo.Values[utilImpl.GetRandom(facelineWrinkleInfo.ValuesCount)];
-            coreData.FacelineMake    = (FacelineMake)facelineMakeInfo.Values[utilImpl.GetRandom(facelineMakeInfo.ValuesCount)];
+            coreData.FacelineMake = (FacelineMake)facelineMakeInfo.Values[utilImpl.GetRandom(facelineMakeInfo.ValuesCount)];
 
             // Hair
-            coreData.HairType  = (HairType)hairTypeInfo.Values[utilImpl.GetRandom(hairTypeInfo.ValuesCount)];
+            coreData.HairType = (HairType)hairTypeInfo.Values[utilImpl.GetRandom(hairTypeInfo.ValuesCount)];
             coreData.HairColor = (CommonColor)Helper.Ver3HairColorTable[hairColorInfo.Values[utilImpl.GetRandom(hairColorInfo.ValuesCount)]];
-            coreData.HairFlip  = (HairFlip)utilImpl.GetRandom((int)HairFlip.Max + 1);
+            coreData.HairFlip = (HairFlip)utilImpl.GetRandom((int)HairFlip.Max + 1);
 
             // Eye
             coreData.EyeType = (EyeType)eyeTypeInfo.Values[utilImpl.GetRandom(eyeTypeInfo.ValuesCount)];
@@ -472,12 +472,12 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             byte eyeRotateOffset = (byte)(32 - EyeRotateTable[eyeRotateKey1] + eyeRotateKey2);
             byte eyeRotate       = (byte)(32 - EyeRotateTable[(int)coreData.EyeType]);
 
-            coreData.EyeColor  = (CommonColor)Helper.Ver3EyeColorTable[eyeColorInfo.Values[utilImpl.GetRandom(eyeColorInfo.ValuesCount)]];
-            coreData.EyeScale  = 4;
+            coreData.EyeColor = (CommonColor)Helper.Ver3EyeColorTable[eyeColorInfo.Values[utilImpl.GetRandom(eyeColorInfo.ValuesCount)]];
+            coreData.EyeScale = 4;
             coreData.EyeAspect = 3;
             coreData.EyeRotate = (byte)(eyeRotateOffset - eyeRotate);
-            coreData.EyeX      = 2;
-            coreData.EyeY      = (byte)(axisY + 12);
+            coreData.EyeX = 2;
+            coreData.EyeY = (byte)(axisY + 12);
 
             // Eyebrow
             coreData.EyebrowType = (EyebrowType)eyebrowTypeInfo.Values[utilImpl.GetRandom(eyebrowTypeInfo.ValuesCount)];
@@ -488,31 +488,31 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             byte eyebrowRotateOffset = (byte)(32 - EyebrowRotateTable[eyebrowRotateKey] + 6);
             byte eyebrowRotate       = (byte)(32 - EyebrowRotateTable[(int)coreData.EyebrowType]);
 
-            coreData.EyebrowColor  = coreData.HairColor;
-            coreData.EyebrowScale  = 4;
+            coreData.EyebrowColor = coreData.HairColor;
+            coreData.EyebrowScale = 4;
             coreData.EyebrowAspect = 3;
             coreData.EyebrowRotate = (byte)(eyebrowRotateOffset - eyebrowRotate);
-            coreData.EyebrowX      = 2;
-            coreData.EyebrowY      = (byte)(axisY + eyebrowY);
+            coreData.EyebrowX = 2;
+            coreData.EyebrowY = (byte)(axisY + eyebrowY);
 
             // Nose
             int noseScale = gender == Gender.Female ? 3 : 4;
 
-            coreData.NoseType  = (NoseType)noseTypeInfo.Values[utilImpl.GetRandom(noseTypeInfo.ValuesCount)];
+            coreData.NoseType = (NoseType)noseTypeInfo.Values[utilImpl.GetRandom(noseTypeInfo.ValuesCount)];
             coreData.NoseScale = (byte)noseScale;
-            coreData.NoseY     = (byte)(axisY + 9);
+            coreData.NoseY = (byte)(axisY + 9);
 
             // Mouth
             int mouthColor = gender == Gender.Female ? utilImpl.GetRandom(0, 4) : 0;
 
-            coreData.MouthType   = (MouthType)mouthTypeInfo.Values[utilImpl.GetRandom(mouthTypeInfo.ValuesCount)];
-            coreData.MouthColor  = (CommonColor)Helper.Ver3MouthColorTable[mouthColor];
-            coreData.MouthScale  = 4;
+            coreData.MouthType = (MouthType)mouthTypeInfo.Values[utilImpl.GetRandom(mouthTypeInfo.ValuesCount)];
+            coreData.MouthColor = (CommonColor)Helper.Ver3MouthColorTable[mouthColor];
+            coreData.MouthScale = 4;
             coreData.MouthAspect = 3;
-            coreData.MouthY      = (byte)(axisY + 13);
+            coreData.MouthY = (byte)(axisY + 13);
 
             // Beard & Mustache
-            coreData.BeardColor    = coreData.HairColor;
+            coreData.BeardColor = coreData.HairColor;
             coreData.MustacheScale = 4;
 
             if (gender == Gender.Male && age != Age.Young && utilImpl.GetRandom(10) < 2)
@@ -533,14 +533,14 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
                 }
 
                 coreData.MustacheType = mustacheType;
-                coreData.BeardType    = beardType;
-                coreData.MustacheY    = 10;
+                coreData.BeardType = beardType;
+                coreData.MustacheY = 10;
             }
             else
             {
                 coreData.MustacheType = MustacheType.None;
-                coreData.BeardType    = BeardType.None;
-                coreData.MustacheY    = (byte)(axisY + 10);
+                coreData.BeardType = BeardType.None;
+                coreData.MustacheY = (byte)(axisY + 10);
             }
 
             // Glass
@@ -557,84 +557,84 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
                 }
             }
 
-            coreData.GlassType  = glassType;
+            coreData.GlassType = glassType;
             coreData.GlassColor = (CommonColor)Helper.Ver3GlassColorTable[0];
             coreData.GlassScale = 4;
-            coreData.GlassY     = (byte)(axisY + 10);
+            coreData.GlassY = (byte)(axisY + 10);
 
             // Mole
-            coreData.MoleType  = 0;
+            coreData.MoleType = 0;
             coreData.MoleScale = 4;
-            coreData.MoleX     = 2;
-            coreData.MoleY     = 20;
+            coreData.MoleX = 2;
+            coreData.MoleY = 20;
 
             // Body sizing
             coreData.Height = 64;
-            coreData.Build  = 64;
+            coreData.Build = 64;
 
             // Misc
-            coreData.Nickname      = Nickname.Default;
-            coreData.Gender        = gender;
+            coreData.Nickname = Nickname.Default;
+            coreData.Gender = gender;
             coreData.FavoriteColor = (byte)utilImpl.GetRandom(0, 11);
-            coreData.RegionMove    = 0;
-            coreData.FontRegion    = 0;
-            coreData.Type          = 0;
+            coreData.RegionMove = 0;
+            coreData.FontRegion = 0;
+            coreData.Type = 0;
 
             return coreData;
         }
 
         public void SetFromCharInfo(CharInfo charInfo)
         {
-            Nickname        = charInfo.Nickname;
-            FontRegion      = charInfo.FontRegion;
-            FavoriteColor   = charInfo.FavoriteColor;
-            Gender          = charInfo.Gender;
-            Height          = charInfo.Height;
-            Build           = charInfo.Build;
-            Type            = charInfo.Type;
-            RegionMove      = charInfo.RegionMove;
-            FacelineType    = charInfo.FacelineType;
-            FacelineColor   = charInfo.FacelineColor;
+            Nickname = charInfo.Nickname;
+            FontRegion = charInfo.FontRegion;
+            FavoriteColor = charInfo.FavoriteColor;
+            Gender = charInfo.Gender;
+            Height = charInfo.Height;
+            Build = charInfo.Build;
+            Type = charInfo.Type;
+            RegionMove = charInfo.RegionMove;
+            FacelineType = charInfo.FacelineType;
+            FacelineColor = charInfo.FacelineColor;
             FacelineWrinkle = charInfo.FacelineWrinkle;
-            FacelineMake    = charInfo.FacelineMake;
-            HairType        = charInfo.HairType;
-            HairColor       = charInfo.HairColor;
-            HairFlip        = charInfo.HairFlip;
-            EyeType         = charInfo.EyeType;
-            EyeColor        = charInfo.EyeColor;
-            EyeScale        = charInfo.EyeScale;
-            EyeAspect       = charInfo.EyeAspect;
-            EyeRotate       = charInfo.EyeRotate;
-            EyeX            = charInfo.EyeX;
-            EyeY            = charInfo.EyeY;
-            EyebrowType     = charInfo.EyebrowType;
-            EyebrowColor    = charInfo.EyebrowColor;
-            EyebrowScale    = charInfo.EyebrowScale;
-            EyebrowAspect   = charInfo.EyebrowAspect;
-            EyebrowRotate   = charInfo.EyebrowRotate;
-            EyebrowX        = charInfo.EyebrowX;
-            EyebrowY        = charInfo.EyebrowY;
-            NoseType        = charInfo.NoseType;
-            NoseScale       = charInfo.NoseScale;
-            NoseY           = charInfo.NoseY;
-            MouthType       = charInfo.MouthType;
-            MouthColor      = charInfo.MouthColor;
-            MouthScale      = charInfo.MouthScale;
-            MouthAspect     = charInfo.MouthAspect;
-            MouthY          = charInfo.MouthY;
-            BeardColor      = charInfo.BeardColor;
-            BeardType       = charInfo.BeardType;
-            MustacheType    = charInfo.MustacheType;
-            MustacheScale   = charInfo.MustacheScale;
-            MustacheY       = charInfo.MustacheY;
-            GlassType       = charInfo.GlassType;
-            GlassColor      = charInfo.GlassColor;
-            GlassScale      = charInfo.GlassScale;
-            GlassY          = charInfo.GlassY;
-            MoleType        = charInfo.MoleType;
-            MoleScale       = charInfo.MoleScale;
-            MoleX           = charInfo.MoleX;
-            MoleY           = charInfo.MoleY;
+            FacelineMake = charInfo.FacelineMake;
+            HairType = charInfo.HairType;
+            HairColor = charInfo.HairColor;
+            HairFlip = charInfo.HairFlip;
+            EyeType = charInfo.EyeType;
+            EyeColor = charInfo.EyeColor;
+            EyeScale = charInfo.EyeScale;
+            EyeAspect = charInfo.EyeAspect;
+            EyeRotate = charInfo.EyeRotate;
+            EyeX = charInfo.EyeX;
+            EyeY = charInfo.EyeY;
+            EyebrowType = charInfo.EyebrowType;
+            EyebrowColor = charInfo.EyebrowColor;
+            EyebrowScale = charInfo.EyebrowScale;
+            EyebrowAspect = charInfo.EyebrowAspect;
+            EyebrowRotate = charInfo.EyebrowRotate;
+            EyebrowX = charInfo.EyebrowX;
+            EyebrowY = charInfo.EyebrowY;
+            NoseType = charInfo.NoseType;
+            NoseScale = charInfo.NoseScale;
+            NoseY = charInfo.NoseY;
+            MouthType = charInfo.MouthType;
+            MouthColor = charInfo.MouthColor;
+            MouthScale = charInfo.MouthScale;
+            MouthAspect = charInfo.MouthAspect;
+            MouthY = charInfo.MouthY;
+            BeardColor = charInfo.BeardColor;
+            BeardType = charInfo.BeardType;
+            MustacheType = charInfo.MustacheType;
+            MustacheScale = charInfo.MustacheScale;
+            MustacheY = charInfo.MustacheY;
+            GlassType = charInfo.GlassType;
+            GlassColor = charInfo.GlassColor;
+            GlassScale = charInfo.GlassScale;
+            GlassY = charInfo.GlassY;
+            MoleType = charInfo.MoleType;
+            MoleScale = charInfo.MoleScale;
+            MoleX = charInfo.MoleX;
+            MoleY = charInfo.MoleY;
         }
 
         public static bool operator ==(CoreData x, CoreData y)

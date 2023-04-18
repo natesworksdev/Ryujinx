@@ -57,7 +57,7 @@ namespace Ryujinx.HLE.FileSystem
         public ContentManager(VirtualFileSystem virtualFileSystem)
         {
             _contentDictionary = new SortedDictionary<(ulong, NcaContentType), string>();
-            _locationEntries   = new Dictionary<StorageId, LinkedList<LocationEntry>>();
+            _locationEntries = new Dictionary<StorageId, LinkedList<LocationEntry>>();
 
             _sharedFontTitleDictionary = new Dictionary<string, ulong>
             {
@@ -99,7 +99,7 @@ namespace Ryujinx.HLE.FileSystem
             lock (_lock)
             {
                 _contentDictionary = new SortedDictionary<(ulong, NcaContentType), string>();
-                _locationEntries   = new Dictionary<StorageId, LinkedList<LocationEntry>>();
+                _locationEntries = new Dictionary<StorageId, LinkedList<LocationEntry>>();
 
                 foreach (StorageId storageId in Enum.GetValues<StorageId>())
                 {
@@ -109,8 +109,8 @@ namespace Ryujinx.HLE.FileSystem
 
                     try
                     {
-                        contentPathString   = ContentPath.GetContentPath(storageId);
-                        contentDirectory    = ContentPath.GetRealPath(contentPathString);
+                        contentPathString = ContentPath.GetContentPath(storageId);
+                        contentDirectory = ContentPath.GetRealPath(contentPathString);
                         registeredDirectory = Path.Combine(contentDirectory, "registered");
                     }
                     catch (NotSupportedException)

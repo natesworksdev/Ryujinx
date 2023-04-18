@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public DeleteExpression(BaseNode child, bool isGlobal, bool isArrayExpression) : base(NodeType.DeleteExpression, child)
         {
-            _isGlobal          = isGlobal;
+            _isGlobal = isGlobal;
             _isArrayExpression = isArrayExpression;
         }
 

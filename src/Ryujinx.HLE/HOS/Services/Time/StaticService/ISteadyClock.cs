@@ -12,8 +12,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 
         public ISteadyClock(SteadyClockCore steadyClock, bool writePermission, bool bypassUninitializedClock)
         {
-            _steadyClock              = steadyClock;
-            _writePermission          = writePermission;
+            _steadyClock = steadyClock;
+            _writePermission = writePermission;
             _bypassUninitializedClock = bypassUninitializedClock;
         }
 

@@ -20,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             bool useHardcodedData = context.RequestData.ReadBoolean();
 
             _imageCount = 0;
-            _isDirty    = false;
+            _isDirty = false;
 
             context.ResponseData.Write(_isDirty);
 

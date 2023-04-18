@@ -241,7 +241,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     }
                     break;
 
-                default: throw new ArgumentException($"AddressSpaceType bigger than {(uint)AddressSpaceType.Addr39Bits}: {(uint)addrSpaceType}", nameof(addrSpaceType));
+                default:
+                    throw new ArgumentException($"AddressSpaceType bigger than {(uint)AddressSpaceType.Addr39Bits}: {(uint)addrSpaceType}", nameof(addrSpaceType));
             }
 
             CodeRegionEnd = CodeRegionStart + codeRegionSize;
@@ -1684,11 +1685,18 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             switch (state)
             {
-                case MemoryState.IpcBuffer0: stateMask = MemoryState.IpcSendAllowedType0; break;
-                case MemoryState.IpcBuffer1: stateMask = MemoryState.IpcSendAllowedType1; break;
-                case MemoryState.IpcBuffer3: stateMask = MemoryState.IpcSendAllowedType3; break;
+                case MemoryState.IpcBuffer0:
+                    stateMask = MemoryState.IpcSendAllowedType0;
+                    break;
+                case MemoryState.IpcBuffer1:
+                    stateMask = MemoryState.IpcSendAllowedType1;
+                    break;
+                case MemoryState.IpcBuffer3:
+                    stateMask = MemoryState.IpcSendAllowedType3;
+                    break;
 
-                default: return KernelResult.InvalidCombination;
+                default:
+                    return KernelResult.InvalidCombination;
             }
 
             KMemoryPermission permissionMask = permission == KMemoryPermission.ReadAndWrite
@@ -2078,11 +2086,18 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             switch (state)
             {
-                case MemoryState.IpcBuffer0: stateMask = MemoryState.IpcSendAllowedType0; break;
-                case MemoryState.IpcBuffer1: stateMask = MemoryState.IpcSendAllowedType1; break;
-                case MemoryState.IpcBuffer3: stateMask = MemoryState.IpcSendAllowedType3; break;
+                case MemoryState.IpcBuffer0:
+                    stateMask = MemoryState.IpcSendAllowedType0;
+                    break;
+                case MemoryState.IpcBuffer1:
+                    stateMask = MemoryState.IpcSendAllowedType1;
+                    break;
+                case MemoryState.IpcBuffer3:
+                    stateMask = MemoryState.IpcSendAllowedType3;
+                    break;
 
-                default: return KernelResult.InvalidCombination;
+                default:
+                    return KernelResult.InvalidCombination;
             }
 
             MemoryAttribute attributeMask =

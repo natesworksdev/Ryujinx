@@ -1506,7 +1506,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                     return codeMemory.UnmapFromOwner(address, size);
 
-                default: return KernelResult.InvalidEnumValue;
+                default:
+                    return KernelResult.InvalidEnumValue;
             }
         }
 
@@ -1945,33 +1946,56 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                         switch (id)
                         {
-                            case InfoType.CoreMask: value = process.Capabilities.AllowedCpuCoresMask; break;
-                            case InfoType.PriorityMask: value = process.Capabilities.AllowedThreadPriosMask; break;
+                            case InfoType.CoreMask:
+                                value = process.Capabilities.AllowedCpuCoresMask;
+                                break;
+                            case InfoType.PriorityMask:
+                                value = process.Capabilities.AllowedThreadPriosMask;
+                                break;
 
-                            case InfoType.AliasRegionAddress: value = process.MemoryManager.AliasRegionStart; break;
+                            case InfoType.AliasRegionAddress:
+                                value = process.MemoryManager.AliasRegionStart;
+                                break;
                             case InfoType.AliasRegionSize:
                                 value = (process.MemoryManager.AliasRegionEnd -
-                                         process.MemoryManager.AliasRegionStart); break;
+                                         process.MemoryManager.AliasRegionStart);
+                                break;
 
-                            case InfoType.HeapRegionAddress: value = process.MemoryManager.HeapRegionStart; break;
+                            case InfoType.HeapRegionAddress:
+                                value = process.MemoryManager.HeapRegionStart;
+                                break;
                             case InfoType.HeapRegionSize:
                                 value = (process.MemoryManager.HeapRegionEnd -
-                                         process.MemoryManager.HeapRegionStart); break;
+                                         process.MemoryManager.HeapRegionStart);
+                                break;
 
-                            case InfoType.TotalMemorySize: value = process.GetMemoryCapacity(); break;
+                            case InfoType.TotalMemorySize:
+                                value = process.GetMemoryCapacity();
+                                break;
 
-                            case InfoType.UsedMemorySize: value = process.GetMemoryUsage(); break;
+                            case InfoType.UsedMemorySize:
+                                value = process.GetMemoryUsage();
+                                break;
 
-                            case InfoType.AslrRegionAddress: value = process.MemoryManager.GetAddrSpaceBaseAddr(); break;
+                            case InfoType.AslrRegionAddress:
+                                value = process.MemoryManager.GetAddrSpaceBaseAddr();
+                                break;
 
-                            case InfoType.AslrRegionSize: value = process.MemoryManager.GetAddrSpaceSize(); break;
+                            case InfoType.AslrRegionSize:
+                                value = process.MemoryManager.GetAddrSpaceSize();
+                                break;
 
-                            case InfoType.StackRegionAddress: value = process.MemoryManager.StackRegionStart; break;
+                            case InfoType.StackRegionAddress:
+                                value = process.MemoryManager.StackRegionStart;
+                                break;
                             case InfoType.StackRegionSize:
                                 value = (process.MemoryManager.StackRegionEnd -
-                                         process.MemoryManager.StackRegionStart); break;
+                                         process.MemoryManager.StackRegionStart);
+                                break;
 
-                            case InfoType.SystemResourceSizeTotal: value = process.PersonalMmHeapPagesCount * KPageTableBase.PageSize; break;
+                            case InfoType.SystemResourceSizeTotal:
+                                value = process.PersonalMmHeapPagesCount * KPageTableBase.PageSize;
+                                break;
 
                             case InfoType.SystemResourceSizeUsed:
                                 if (process.PersonalMmHeapPagesCount != 0)
@@ -1981,15 +2005,25 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                                 break;
 
-                            case InfoType.ProgramId: value = process.TitleId; break;
+                            case InfoType.ProgramId:
+                                value = process.TitleId;
+                                break;
 
-                            case InfoType.UserExceptionContextAddress: value = process.UserExceptionContextAddress; break;
+                            case InfoType.UserExceptionContextAddress:
+                                value = process.UserExceptionContextAddress;
+                                break;
 
-                            case InfoType.TotalNonSystemMemorySize: value = process.GetMemoryCapacityWithoutPersonalMmHeap(); break;
+                            case InfoType.TotalNonSystemMemorySize:
+                                value = process.GetMemoryCapacityWithoutPersonalMmHeap();
+                                break;
 
-                            case InfoType.UsedNonSystemMemorySize: value = process.GetMemoryUsageWithoutPersonalMmHeap(); break;
+                            case InfoType.UsedNonSystemMemorySize:
+                                value = process.GetMemoryUsageWithoutPersonalMmHeap();
+                                break;
 
-                            case InfoType.IsApplication: value = process.IsApplication ? 1UL : 0UL; break;
+                            case InfoType.IsApplication:
+                                value = process.IsApplication ? 1UL : 0UL;
+                                break;
 
                             case InfoType.FreeThreadCount:
                                 if (process.ResourceLimit != null)
@@ -2168,7 +2202,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         break;
                     }
 
-                default: return KernelResult.InvalidEnumValue;
+                default:
+                    return KernelResult.InvalidEnumValue;
             }
 
             return Result.Success;
@@ -2277,7 +2312,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 switch (id)
                 {
                     // Memory region capacity.
-                    case 0: value = (long)region.Size; break;
+                    case 0:
+                        value = (long)region.Size;
+                        break;
 
                     // Memory region free space.
                     case 1:
@@ -2299,8 +2336,12 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                 switch (subId)
                 {
-                    case 0: value = _context.PrivilegedProcessLowestId; break;
-                    case 1: value = _context.PrivilegedProcessHighestId; break;
+                    case 0:
+                        value = _context.PrivilegedProcessLowestId;
+                        break;
+                    case 1:
+                        value = _context.PrivilegedProcessHighestId;
+                        break;
                 }
             }
 
@@ -2521,9 +2562,15 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             {
                 switch (timeout)
                 {
-                    case 0: KScheduler.Yield(_context); break;
-                    case -1: KScheduler.YieldWithLoadBalancing(_context); break;
-                    case -2: KScheduler.YieldToAnyThread(_context); break;
+                    case 0:
+                        KScheduler.Yield(_context);
+                        break;
+                    case -1:
+                        KScheduler.YieldWithLoadBalancing(_context);
+                        break;
+                    case -2:
+                        KScheduler.YieldToAnyThread(_context);
+                        break;
                 }
             }
             else

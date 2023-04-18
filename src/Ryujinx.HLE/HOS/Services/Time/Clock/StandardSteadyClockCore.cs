@@ -11,9 +11,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
         public StandardSteadyClockCore()
         {
-            _setupValue         = TimeSpanType.Zero;
-            _testOffset         = TimeSpanType.Zero;
-            _internalOffset     = TimeSpanType.Zero;
+            _setupValue = TimeSpanType.Zero;
+            _testOffset = TimeSpanType.Zero;
+            _internalOffset = TimeSpanType.Zero;
             _cachedRawTimePoint = TimeSpanType.Zero;
         }
 

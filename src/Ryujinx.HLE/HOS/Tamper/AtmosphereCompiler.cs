@@ -17,11 +17,11 @@ namespace Ryujinx.HLE.HOS.Tamper
 
         public AtmosphereCompiler(ulong exeAddress, ulong heapAddress, ulong aliasAddress, ulong aslrAddress, ITamperedProcess process)
         {
-            _exeAddress   = exeAddress;
-            _heapAddress  = heapAddress;
+            _exeAddress = exeAddress;
+            _heapAddress = heapAddress;
             _aliasAddress = aliasAddress;
-            _aslrAddress  = aslrAddress;
-            _process      = process;
+            _aslrAddress = aslrAddress;
+            _process = process;
         }
 
         public ITamperProgram Compile(string name, IEnumerable<string> rawInstructions)
@@ -40,7 +40,7 @@ namespace Ryujinx.HLE.HOS.Tamper
             {
                 return CompileImpl(name, rawInstructions);
             }
-            catch(TamperCompilationException exception)
+            catch (TamperCompilationException exception)
             {
                 // Just print the message without the stack trace.
                 Logger.Error?.Print(LogClass.TamperMachine, exception.Message);

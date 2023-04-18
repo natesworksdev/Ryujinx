@@ -145,10 +145,10 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             TimeTypeInfo a = outRules.Ttis[aIndex];
             TimeTypeInfo b = outRules.Ttis[bIndex];
 
-            return a.GmtOffset              == b.GmtOffset &&
-                   a.IsDaySavingTime        == b.IsDaySavingTime &&
+            return a.GmtOffset == b.GmtOffset &&
+                   a.IsDaySavingTime == b.IsDaySavingTime &&
                    a.IsStandardTimeDaylight == b.IsStandardTimeDaylight &&
-                   a.IsGMT                  == b.IsGMT &&
+                   a.IsGMT == b.IsGMT &&
                    StringUtils.CompareCStr(outRules.Chars[a.AbbreviationListIndex..], outRules.Chars[b.AbbreviationListIndex..]) == 0;
         }
 
@@ -473,9 +473,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                 }
                 else
                 {
-                    destName     = name[namePosition..];
+                    destName = name[namePosition..];
                     namePosition = GetTZName(name, namePosition);
-                    destLen      = namePosition;
+                    destLen = namePosition;
                 }
 
                 if (destLen == 0)
@@ -539,15 +539,15 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
                     outRules.Ttis[0] = new TimeTypeInfo
                     {
-                        GmtOffset             = -dstOffset,
-                        IsDaySavingTime       = true,
+                        GmtOffset = -dstOffset,
+                        IsDaySavingTime = true,
                         AbbreviationListIndex = stdLen + 1
                     };
 
                     outRules.Ttis[1] = new TimeTypeInfo
                     {
-                        GmtOffset             = -stdOffset,
-                        IsDaySavingTime       = false,
+                        GmtOffset = -stdOffset,
+                        IsDaySavingTime = false,
                         AbbreviationListIndex = 0
                     };
 
@@ -631,7 +631,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                     }
                     else if (YearsPerRepeat < year - yearBegining)
                     {
-                        outRules.GoBack  = true;
+                        outRules.GoBack = true;
                         outRules.GoAhead = true;
                     }
                 }
@@ -701,32 +701,32 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
                     outRules.Ttis[0] = new TimeTypeInfo
                     {
-                        GmtOffset             = -stdOffset,
-                        IsDaySavingTime       = false,
+                        GmtOffset = -stdOffset,
+                        IsDaySavingTime = false,
                         AbbreviationListIndex = 0
                     };
 
                     outRules.Ttis[1] = new TimeTypeInfo
                     {
-                        GmtOffset             = -dstOffset,
-                        IsDaySavingTime       = true,
+                        GmtOffset = -dstOffset,
+                        IsDaySavingTime = true,
                         AbbreviationListIndex = stdLen + 1
                     };
 
-                    outRules.TypeCount   = 2;
+                    outRules.TypeCount = 2;
                     outRules.DefaultType = 0;
                 }
             }
             else
             {
                 // default is perpetual standard time
-                outRules.TypeCount   = 1;
-                outRules.TimeCount   = 0;
+                outRules.TypeCount = 1;
+                outRules.TimeCount = 0;
                 outRules.DefaultType = 0;
-                outRules.Ttis[0]     = new TimeTypeInfo
+                outRules.Ttis[0] = new TimeTypeInfo
                 {
-                    GmtOffset             = -stdOffset,
-                    IsDaySavingTime       = false,
+                    GmtOffset = -stdOffset,
+                    IsDaySavingTime = false,
                     AbbreviationListIndex = 0
                 };
             }
@@ -1258,7 +1258,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             long timeDays         = time / SecondsPerDay;
             long remainingSeconds = time % SecondsPerDay;
 
-            calendarTime           = new CalendarTimeInternal();
+            calendarTime = new CalendarTimeInternal();
             calendarAdditionalInfo = new CalendarAdditionalInfo();
 
             while (timeDays < 0 || timeDays >= YearLengths[IsLeap((int)year)])
@@ -1318,7 +1318,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                 }
             }
 
-            calendarTime.Year                = year;
+            calendarTime.Year = year;
             calendarAdditionalInfo.DayOfYear = (uint)dayOfYear;
 
             long dayOfWeek = (EpochWeekDay + ((year - EpochYear) % DaysPerWekk) * (DaysPerNYear % DaysPerWekk) + GetLeapDays(year - 1) - GetLeapDays(EpochYear - 1) + dayOfYear) % DaysPerWekk;
@@ -1345,14 +1345,14 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             calendarTime.Day = (sbyte)(dayOfYear + 1);
 
             calendarAdditionalInfo.IsDaySavingTime = false;
-            calendarAdditionalInfo.GmtOffset       = gmtOffset;
+            calendarAdditionalInfo.GmtOffset = gmtOffset;
 
             return 0;
         }
 
         private static ResultCode ToCalendarTimeInternal(in TimeZoneRule rules, long time, out CalendarTimeInternal calendarTime, out CalendarAdditionalInfo calendarAdditionalInfo)
         {
-            calendarTime           = new CalendarTimeInternal();
+            calendarTime = new CalendarTimeInternal();
             calendarAdditionalInfo = new CalendarAdditionalInfo();
 
             ResultCode result;
@@ -1375,7 +1375,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
                 seconds -= 1;
 
-                years   = (seconds / SecondsPerRepeat + 1) * YearsPerRepeat;
+                years = (seconds / SecondsPerRepeat + 1) * YearsPerRepeat;
                 seconds = years * AverageSecondsPerYear;
 
                 if (time < rules.Ats[0])
@@ -1474,7 +1474,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                 return ResultCode.Overflow;
             }
 
-            calendarTime.Day  = (sbyte)day;
+            calendarTime.Day = (sbyte)day;
             calendarTime.Hour = (sbyte)hour;
 
             long year  = calendarTime.Year;
@@ -1677,11 +1677,11 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             {
                 Time = new CalendarTime()
                 {
-                    Year   = (short)calendarTime.Year,
+                    Year = (short)calendarTime.Year,
                     // NOTE: Nintendo's month range is 1-12, internal range is 0-11.
                     Month = (sbyte)(calendarTime.Month + 1),
-                    Day    = calendarTime.Day,
-                    Hour   = calendarTime.Hour,
+                    Day = calendarTime.Day,
+                    Hour = calendarTime.Hour,
                     Minute = calendarTime.Minute,
                     Second = calendarTime.Second
                 },

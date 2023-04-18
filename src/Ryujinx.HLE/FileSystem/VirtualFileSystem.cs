@@ -30,10 +30,10 @@ namespace Ryujinx.HLE.FileSystem
         public static readonly string SystemNandPath = Path.Combine(AppDataManager.DefaultNandDir, "system");
         public static readonly string UserNandPath   = Path.Combine(AppDataManager.DefaultNandDir, "user");
 
-        public KeySet           KeySet    { get; private set; }
-        public EmulatedGameCard GameCard  { get; private set; }
-        public EmulatedSdCard   SdCard    { get; private set; }
-        public ModLoader        ModLoader { get; private set; }
+        public KeySet KeySet { get; private set; }
+        public EmulatedGameCard GameCard { get; private set; }
+        public EmulatedSdCard SdCard { get; private set; }
+        public ModLoader ModLoader { get; private set; }
 
         private readonly ConcurrentDictionary<ulong, Stream> _romFsByPid;
 
@@ -282,16 +282,20 @@ namespace Ryujinx.HLE.FileSystem
         public static Result FixExtraData(HorizonClient hos)
         {
             Result rc = GetSystemSaveList(hos, out List<ulong> systemSaveIds);
-            if (rc.IsFailure()) return rc;
+            if (rc.IsFailure())
+                return rc;
 
             rc = FixUnindexedSystemSaves(hos, systemSaveIds);
-            if (rc.IsFailure()) return rc;
+            if (rc.IsFailure())
+                return rc;
 
             rc = FixExtraDataInSpaceId(hos, SaveDataSpaceId.System);
-            if (rc.IsFailure()) return rc;
+            if (rc.IsFailure())
+                return rc;
 
             rc = FixExtraDataInSpaceId(hos, SaveDataSpaceId.User);
-            if (rc.IsFailure()) return rc;
+            if (rc.IsFailure())
+                return rc;
 
             return Result.Success;
         }
@@ -303,12 +307,14 @@ namespace Ryujinx.HLE.FileSystem
             using var iterator = new UniqueRef<SaveDataIterator>();
 
             Result rc = hos.Fs.OpenSaveDataIterator(ref iterator.Ref, spaceId);
-            if (rc.IsFailure()) return rc;
+            if (rc.IsFailure())
+                return rc;
 
             while (true)
             {
                 rc = iterator.Get.ReadSaveDataInfo(out long count, info);
-                if (rc.IsFailure()) return rc;
+                if (rc.IsFailure())
+                    return rc;
 
                 if (count == 0)
                     return Result.Success;
@@ -364,7 +370,8 @@ namespace Ryujinx.HLE.FileSystem
             };
 
             Result rc = hos.Fs.MountBis(mountNameU8, partitionId);
-            if (rc.IsFailure()) return rc;
+            if (rc.IsFailure())
+                return rc;
             try
             {
                 var path = $"{MountName}:/save/{info.SaveDataId:x16}".ToU8Span();
@@ -396,17 +403,20 @@ namespace Ryujinx.HLE.FileSystem
             try
             {
                 Result rc = hos.Fs.MountBis(mountName, BisPartitionId.System);
-                if (rc.IsFailure()) return rc;
+                if (rc.IsFailure())
+                    return rc;
 
                 rc = hos.Fs.OpenDirectory(out handle, "system:/save".ToU8Span(), OpenDirectoryMode.All);
-                if (rc.IsFailure()) return rc;
+                if (rc.IsFailure())
+                    return rc;
 
                 DirectoryEntry entry = new();
 
                 while (true)
                 {
                     rc = hos.Fs.ReadDirectory(out long readCount, SpanHelpers.AsSpan(ref entry), handle);
-                    if (rc.IsFailure()) return rc;
+                    if (rc.IsFailure())
+                        return rc;
 
                     if (readCount == 0)
                         break;
@@ -509,7 +519,8 @@ namespace Ryujinx.HLE.FileSystem
 
             Result rc = hos.Fs.Impl.ReadSaveDataFileSystemExtraData(out SaveDataExtraData extraData, info.SpaceId,
                 info.SaveDataId);
-            if (rc.IsFailure()) return rc;
+            if (rc.IsFailure())
+                return rc;
 
             // The extra data should have program ID or static save data ID set if it's valid.
             // We only try to fix the extra data if the info from the save data indexer has a program ID or static save data ID.

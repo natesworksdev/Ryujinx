@@ -27,8 +27,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             public Image(ulong baseAddress, ulong size, ElfSymbol[] symbols)
             {
                 BaseAddress = baseAddress;
-                Size        = size;
-                Symbols     = symbols;
+                Size = size;
+                Symbols = symbols;
             }
         }
 
@@ -381,14 +381,14 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 if (isAArch32)
                 {
                     tagVal = memory.Read<uint>(dynamicOffset + 0);
-                    value  = memory.Read<uint>(dynamicOffset + 4);
+                    value = memory.Read<uint>(dynamicOffset + 4);
 
                     dynamicOffset += 0x8;
                 }
                 else
                 {
                     tagVal = memory.Read<ulong>(dynamicOffset + 0);
-                    value  = memory.Read<ulong>(dynamicOffset + 8);
+                    value = memory.Read<ulong>(dynamicOffset + 8);
 
                     dynamicOffset += 0x10;
                 }

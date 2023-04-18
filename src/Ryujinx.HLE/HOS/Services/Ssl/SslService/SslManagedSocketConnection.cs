@@ -67,7 +67,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
             EndSslOperation();
         }
 
-// NOTE: We silence warnings about TLS 1.0 and 1.1 as games will likely use it.
+        // NOTE: We silence warnings about TLS 1.0 and 1.1 as games will likely use it.
 #pragma warning disable SYSLIB0039
         private static SslProtocols TranslateSslVersion(SslVersion version)
         {

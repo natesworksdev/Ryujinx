@@ -41,8 +41,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
         public void InitializeInstance(VirtualFileSystem virtualFileSystem, ContentManager contentManager, IntegrityCheckLevel fsIntegrityCheckLevel)
         {
-            _virtualFileSystem     = virtualFileSystem;
-            _contentManager        = contentManager;
+            _virtualFileSystem = virtualFileSystem;
+            _contentManager = contentManager;
             _fsIntegrityCheckLevel = fsIntegrityCheckLevel;
 
             InitializeLocationNameCache();
@@ -257,7 +257,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         internal ResultCode GetTimeZoneBinary(string locationName, out Stream timeZoneBinaryStream, out LocalStorage ncaFile)
         {
             timeZoneBinaryStream = null;
-            ncaFile              = null;
+            ncaFile = null;
 
             if (!HasTimeZoneBinaryTitle() || !IsLocationNameValid(locationName))
             {

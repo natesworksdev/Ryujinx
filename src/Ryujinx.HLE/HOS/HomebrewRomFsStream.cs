@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS
 
         public HomebrewRomFsStream(Stream baseStream, long positionOffset)
         {
-            _baseStream     = baseStream;
+            _baseStream = baseStream;
             _positionOffset = positionOffset;
 
             _baseStream.Position = _positionOffset;

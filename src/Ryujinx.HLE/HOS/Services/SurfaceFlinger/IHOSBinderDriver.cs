@@ -80,7 +80,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             uint code  = context.RequestData.ReadUInt32();
             uint flags = context.RequestData.ReadUInt32();
 
-            (ulong dataPos, ulong dataSize)   = context.Request.GetBufferType0x21();
+            (ulong dataPos, ulong dataSize) = context.Request.GetBufferType0x21();
             (ulong replyPos, ulong replySize) = context.Request.GetBufferType0x22();
 
             ReadOnlySpan<byte> inputParcel = context.Memory.GetSpan(dataPos, (int)dataSize);

@@ -29,8 +29,8 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
         public MiiDatabaseManager()
         {
-            _database     = new NintendoFigurineDatabase();
-            _isDirty      = false;
+            _database = new NintendoFigurineDatabase();
+            _isDirty = false;
             UpdateCounter = 0;
         }
 
@@ -125,17 +125,20 @@ namespace Ryujinx.HLE.HOS.Services.Mii
                 {
                     result = _horizonClient.Fs.CreateSystemSaveData(saveDataId, 0x10000, 0x10000,
                         SaveDataFlags.KeepAfterResettingSystemSaveDataWithoutUserSaveData);
-                    if (result.IsFailure()) return result;
+                    if (result.IsFailure())
+                        return result;
                 }
                 else
                 {
                     result = _horizonClient.Fs.CreateSystemSaveData(saveDataId, SystemProgramId.Ns.Value, 0x10000,
                         0x10000, SaveDataFlags.KeepAfterResettingSystemSaveDataWithoutUserSaveData);
-                    if (result.IsFailure()) return result;
+                    if (result.IsFailure())
+                        return result;
                 }
 
                 result = _horizonClient.Fs.MountSystemSaveData(MountName, SaveDataSpaceId.System, saveDataId);
-                if (result.IsFailure()) return result;
+                if (result.IsFailure())
+                    return result;
             }
 
             if (result == Result.Success)

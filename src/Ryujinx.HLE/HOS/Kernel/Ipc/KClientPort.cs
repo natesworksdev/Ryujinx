@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
         public KClientPort(KernelContext context, KPort parent, int maxSessions) : base(context)
         {
             _maxSessions = maxSessions;
-            _parent      = parent;
+            _parent = parent;
         }
 
         public Result Connect(out KClientSession clientSession)

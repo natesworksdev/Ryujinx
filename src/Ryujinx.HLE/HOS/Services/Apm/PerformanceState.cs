@@ -17,8 +17,8 @@
             return performanceMode switch
             {
                 PerformanceMode.Default => DefaultPerformanceConfiguration,
-                PerformanceMode.Boost   => BoostPerformanceConfiguration,
-                _                       => PerformanceConfiguration.PerformanceConfiguration7
+                PerformanceMode.Boost => BoostPerformanceConfiguration,
+                _ => PerformanceConfiguration.PerformanceConfiguration7
             };
         }
     }

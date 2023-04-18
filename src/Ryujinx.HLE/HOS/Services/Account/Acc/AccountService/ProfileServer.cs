@@ -23,8 +23,8 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
             MemoryHelper.FillWithZeros(context.Memory, bufferPosition, 0x80);
 
             // TODO: Determine the struct.
-            context.Memory.Write(bufferPosition,           0); // Unknown
-            context.Memory.Write(bufferPosition + 4,       1); // Icon ID. 0 = Mii, the rest are character icon IDs.
+            context.Memory.Write(bufferPosition, 0); // Unknown
+            context.Memory.Write(bufferPosition + 4, 1); // Icon ID. 0 = Mii, the rest are character icon IDs.
             context.Memory.Write(bufferPosition + 8, (byte)1); // Profile icon background color ID
             // 0x07 bytes - Unknown
             // 0x10 bytes - Some ID related to the Mii? All zeros when a character icon is used.

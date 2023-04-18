@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE
             IAppletFifo<byte[]> inputData,
             IAppletFifo<byte[]> outputData)
         {
-            _inputData  = inputData;
+            _inputData = inputData;
             _outputData = outputData;
 
             _inputData.DataAvailable += OnDataAvailable;

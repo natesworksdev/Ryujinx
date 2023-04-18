@@ -10,13 +10,13 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public ArrayType(BaseNode Base, BaseNode dimensionExpression = null) : base(NodeType.ArrayType)
         {
-            _base                = Base;
+            _base = Base;
             _dimensionExpression = dimensionExpression;
         }
 
         public ArrayType(BaseNode Base, string dimensionString) : base(NodeType.ArrayType)
         {
-            _base            = Base;
+            _base = Base;
             _dimensionString = dimensionString;
         }
 
@@ -46,7 +46,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
             {
                 writer.Write(_dimensionString);
             }
-            else _dimensionExpression?.Print(writer);
+            else
+            {
+                _dimensionExpression?.Print(writer);
+            }
 
             writer.Write("]");
 

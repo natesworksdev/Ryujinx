@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public ArraySubscriptingExpression(BaseNode leftNode, BaseNode subscript) : base(NodeType.ArraySubscriptingExpression)
         {
-            _leftNode  = leftNode;
+            _leftNode = leftNode;
             _subscript = subscript;
         }
 
@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
             _leftNode.Print(writer);
             writer.Write(")[");
             _subscript.Print(writer);
-            writer.Write("]");            
+            writer.Write("]");
         }
     }
 }

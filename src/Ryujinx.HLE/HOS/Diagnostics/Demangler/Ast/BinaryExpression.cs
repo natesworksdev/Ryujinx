@@ -10,8 +10,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public BinaryExpression(BaseNode leftPart, string name, BaseNode rightPart) : base(NodeType.BinaryExpression)
         {
-            _leftPart  = leftPart;
-            _name      = name;
+            _leftPart = leftPart;
+            _name = name;
             _rightPart = rightPart;
         }
 

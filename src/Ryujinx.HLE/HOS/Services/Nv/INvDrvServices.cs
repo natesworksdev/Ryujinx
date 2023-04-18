@@ -91,7 +91,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
         private static NvResult GetIoctlArgument(ServiceCtx context, NvIoctl ioctlCommand, out Span<byte> arguments)
         {
-            (ulong inputDataPosition,  ulong inputDataSize)  = context.Request.GetBufferType0x21(0);
+            (ulong inputDataPosition, ulong inputDataSize) = context.Request.GetBufferType0x21(0);
 #pragma warning disable IDE0059
             (ulong outputDataPosition, ulong outputDataSize) = context.Request.GetBufferType0x22(0);
 #pragma warning restore IDE0059

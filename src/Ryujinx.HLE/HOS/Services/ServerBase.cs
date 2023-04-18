@@ -384,7 +384,8 @@ namespace Ryujinx.HLE.HOS.Services
                             break;
                         }
 
-                    default: throw new NotImplementedException(cmdId.ToString());
+                    default:
+                        throw new NotImplementedException(cmdId.ToString());
                 }
             }
             else if (request.Type == IpcMessageType.CmifCloseSession || request.Type == IpcMessageType.TipcCloseSession)

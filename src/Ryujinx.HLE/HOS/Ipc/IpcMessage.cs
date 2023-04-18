@@ -15,10 +15,10 @@ namespace Ryujinx.HLE.HOS.Ipc
 
         public IpcHandleDesc HandleDesc { get; set; }
 
-        public List<IpcPtrBuffDesc>      PtrBuff      { get; private set; }
-        public List<IpcBuffDesc>         SendBuff     { get; private set; }
-        public List<IpcBuffDesc>         ReceiveBuff  { get; private set; }
-        public List<IpcBuffDesc>         ExchangeBuff { get; private set; }
+        public List<IpcPtrBuffDesc> PtrBuff { get; private set; }
+        public List<IpcBuffDesc> SendBuff { get; private set; }
+        public List<IpcBuffDesc> ReceiveBuff { get; private set; }
+        public List<IpcBuffDesc> ExchangeBuff { get; private set; }
         public List<IpcRecvListBuffDesc> RecvListBuff { get; private set; }
 
         public List<int> ObjectIds { get; private set; }
@@ -27,9 +27,9 @@ namespace Ryujinx.HLE.HOS.Ipc
 
         public IpcMessage()
         {
-            PtrBuff      = new List<IpcPtrBuffDesc>(0);
-            SendBuff     = new List<IpcBuffDesc>(0);
-            ReceiveBuff  = new List<IpcBuffDesc>(0);
+            PtrBuff = new List<IpcPtrBuffDesc>(0);
+            SendBuff = new List<IpcBuffDesc>(0);
+            ReceiveBuff = new List<IpcBuffDesc>(0);
             ExchangeBuff = new List<IpcBuffDesc>(0);
             RecvListBuff = new List<IpcRecvListBuffDesc>(0);
 
@@ -132,10 +132,10 @@ namespace Ryujinx.HLE.HOS.Ipc
             int word0;
             int word1;
 
-            word0  = (int)Type;
-            word0 |= (PtrBuff.Count      & 0xf) << 16;
-            word0 |= (SendBuff.Count     & 0xf) << 20;
-            word0 |= (ReceiveBuff.Count  & 0xf) << 24;
+            word0 = (int)Type;
+            word0 |= (PtrBuff.Count & 0xf) << 16;
+            word0 |= (SendBuff.Count & 0xf) << 20;
+            word0 |= (ReceiveBuff.Count & 0xf) << 24;
             word0 |= (ExchangeBuff.Count & 0xf) << 28;
 
             using RecyclableMemoryStream handleDataStream = HandleDesc?.GetStream();

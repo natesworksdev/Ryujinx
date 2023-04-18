@@ -24,7 +24,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         private int _timeSharedMemoryNativeHandle = 0;
 
 #pragma warning disable IDE0060
-        public IStaticServiceForPsc(ServiceCtx context, TimePermissions permissions) : this(TimeManager.Instance, permissions) {}
+        public IStaticServiceForPsc(ServiceCtx context, TimePermissions permissions) : this(TimeManager.Instance, permissions) { }
 #pragma warning restore IDE0060
 
         public IStaticServiceForPsc(TimeManager manager, TimePermissions permissions)
@@ -345,7 +345,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
                 if (clockSnapshotA.NetworkTime != 0 && clockSnapshotB.NetworkTime != 0)
                 {
-                    result     = TimeSpanType.FromSeconds(clockSnapshotB.NetworkTime - clockSnapshotA.NetworkTime);
+                    result = TimeSpanType.FromSeconds(clockSnapshotB.NetworkTime - clockSnapshotA.NetworkTime);
                     resultCode = ResultCode.Success;
                 }
                 else
@@ -371,9 +371,9 @@ namespace Ryujinx.HLE.HOS.Services.Time
             SteadyClockTimePoint currentTimePoint = steadyClockCore.GetCurrentTimePoint(tickSource);
 
             clockSnapshot.IsAutomaticCorrectionEnabled = _timeManager.StandardUserSystemClock.IsAutomaticCorrectionEnabled();
-            clockSnapshot.UserContext                  = userContext;
-            clockSnapshot.NetworkContext               = networkContext;
-            clockSnapshot.SteadyClockTimePoint         = currentTimePoint;
+            clockSnapshot.UserContext = userContext;
+            clockSnapshot.NetworkContext = networkContext;
+            clockSnapshot.SteadyClockTimePoint = currentTimePoint;
 
             ResultCode result = _timeManager.TimeZone.Manager.GetDeviceLocationName(out string deviceLocationName);
 
@@ -394,7 +394,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
                 if (result == ResultCode.Success)
                 {
-                    clockSnapshot.UserCalendarTime           = userCalendarInfo.Time;
+                    clockSnapshot.UserCalendarTime = userCalendarInfo.Time;
                     clockSnapshot.UserCalendarAdditionalTime = userCalendarInfo.AdditionalInfo;
 
                     if (ClockSnapshot.GetCurrentTime(out clockSnapshot.NetworkTime, currentTimePoint, clockSnapshot.NetworkContext) != ResultCode.Success)
@@ -406,9 +406,9 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
                     if (result == ResultCode.Success)
                     {
-                        clockSnapshot.NetworkCalendarTime           = networkCalendarInfo.Time;
+                        clockSnapshot.NetworkCalendarTime = networkCalendarInfo.Time;
                         clockSnapshot.NetworkCalendarAdditionalTime = networkCalendarInfo.AdditionalInfo;
-                        clockSnapshot.Type                          = type;
+                        clockSnapshot.Type = type;
 
                         // Probably a version field?
                         clockSnapshot.Unknown = 0;

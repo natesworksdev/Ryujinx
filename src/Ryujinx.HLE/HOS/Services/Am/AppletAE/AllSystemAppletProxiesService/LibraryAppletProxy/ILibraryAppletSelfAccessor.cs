@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
                 // Create MiiEdit data.
                 _appletStandalone = new AppletStandalone()
                 {
-                    AppletId          = AppletId.MiiEdit,
+                    AppletId = AppletId.MiiEdit,
                     LibraryAppletMode = LibraryAppletMode.AllForeground
                 };
 

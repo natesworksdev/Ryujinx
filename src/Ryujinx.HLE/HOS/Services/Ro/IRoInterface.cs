@@ -37,8 +37,8 @@ namespace Ryujinx.HLE.HOS.Services.Ro
         {
             _nrrInfos = new List<NrrInfo>(MaxNrr);
             _nroInfos = new List<NroInfo>(MaxNro);
-            _owner    = null;
-            _ownerMm  = null;
+            _owner = null;
+            _ownerMm = null;
         }
 #pragma warning restore IDE0060
 
@@ -166,15 +166,15 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
             // Check if everything is page align.
             if ((nro.Text.Length & 0xFFF) != 0 || (nro.Ro.Length & 0xFFF) != 0 ||
-                (nro.Data.Length & 0xFFF) != 0 || (nro.BssSize & 0xFFF)   != 0)
+                (nro.Data.Length & 0xFFF) != 0 || (nro.BssSize & 0xFFF) != 0)
             {
                 return ResultCode.InvalidNro;
             }
 
             // Check if everything is contiguous.
-            if (nro.RoOffset   != nro.TextOffset + nro.Text.Length ||
-                nro.DataOffset != nro.RoOffset   + nro.Ro.Length   ||
-                nroFileSize    != nro.DataOffset + nro.Data.Length)
+            if (nro.RoOffset != nro.TextOffset + nro.Text.Length ||
+                nro.DataOffset != nro.RoOffset + nro.Ro.Length ||
+                nroFileSize != nro.DataOffset + nro.Data.Length)
             {
                 return ResultCode.InvalidNro;
             }
@@ -328,7 +328,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             ulong bssEnd = BitUtils.AlignUp<ulong>(bssStart + relocatableObject.BssSize, KPageTableBase.PageSize);
 
             process.CpuMemory.Write(textStart, relocatableObject.Text);
-            process.CpuMemory.Write(roStart,   relocatableObject.Ro);
+            process.CpuMemory.Write(roStart, relocatableObject.Ro);
             process.CpuMemory.Write(dataStart, relocatableObject.Data);
 
             MemoryHelper.FillWithZeros(process.CpuMemory, bssStart, (int)(bssEnd - bssStart));

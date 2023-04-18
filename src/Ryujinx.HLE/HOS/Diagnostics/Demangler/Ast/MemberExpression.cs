@@ -10,8 +10,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public MemberExpression(BaseNode leftNode, string kind, BaseNode rightNode) : base(NodeType.MemberExpression)
         {
-            _leftNode  = leftNode;
-            _kind      = kind;
+            _leftNode = leftNode;
+            _kind = kind;
             _rightNode = rightNode;
         }
 

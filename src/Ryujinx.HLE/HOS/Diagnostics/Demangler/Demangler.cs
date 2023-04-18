@@ -24,9 +24,9 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
 
         public Demangler(string mangled)
         {
-            Mangled               = mangled;
-            _position             = 0;
-            _length               = mangled.Length;
+            Mangled = mangled;
+            _position = 0;
+            _length = mangled.Length;
             _canParseTemplateArgs = true;
         }
 
@@ -545,7 +545,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                             _position += 2;
                             // FIXME: GNU c++flit returns this but that is not what is supposed to be returned.
                             return new NameType("half");
-                            // return new NameType("decimal16");
+                        // return new NameType("decimal16");
                         case 'i':
                             _position += 2;
                             return new NameType("char32_t");
@@ -559,7 +559,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                             _position += 2;
                             // FIXME: GNU c++flit returns this but that is not what is supposed to be returned.
                             return new NameType("decltype(nullptr)");
-                            // return new NameType("std::nullptr_t");
+                        // return new NameType("std::nullptr_t");
                         case 't':
                         case 'T':
                             _position += 2;
@@ -1059,12 +1059,12 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                             bool canParseTemplateArgsBackup        = _canParseTemplateArgs;
                             bool canForwardTemplateReferenceBackup = _canForwardTemplateReference;
 
-                            _canParseTemplateArgs        = false;
+                            _canParseTemplateArgs = false;
                             _canForwardTemplateReference = canForwardTemplateReferenceBackup || context != null;
 
                             BaseNode type = ParseType();
 
-                            _canParseTemplateArgs        = canParseTemplateArgsBackup;
+                            _canParseTemplateArgs = canParseTemplateArgsBackup;
                             _canForwardTemplateReference = canForwardTemplateReferenceBackup;
 
                             if (type == null)
@@ -1585,9 +1585,9 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
             }
 
             bool canParseTemplateArgsBackup = _canParseTemplateArgs;
-            _canParseTemplateArgs           = false;
+            _canParseTemplateArgs = false;
             BaseNode type                   = ParseType();
-            _canParseTemplateArgs           = canParseTemplateArgsBackup;
+            _canParseTemplateArgs = canParseTemplateArgsBackup;
 
             if (type == null)
             {

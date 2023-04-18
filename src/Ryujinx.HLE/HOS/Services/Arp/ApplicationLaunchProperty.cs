@@ -18,9 +18,9 @@ namespace Ryujinx.HLE.HOS.Services.Arp
             {
                 return new ApplicationLaunchProperty
                 {
-                    TitleId             = 0x00,
-                    Version             = 0x00,
-                    BaseGameStorageId   = (byte)StorageId.BuiltInSystem,
+                    TitleId = 0x00,
+                    Version = 0x00,
+                    BaseGameStorageId = (byte)StorageId.BuiltInSystem,
                     UpdateGameStorageId = (byte)StorageId.None
                 };
             }
@@ -33,9 +33,9 @@ namespace Ryujinx.HLE.HOS.Services.Arp
 
             return new ApplicationLaunchProperty
             {
-                TitleId             = context.Device.Processes.ActiveApplication.ProgramId,
-                Version             = 0x00,
-                BaseGameStorageId   = (byte)StorageId.BuiltInSystem,
+                TitleId = context.Device.Processes.ActiveApplication.ProgramId,
+                Version = 0x00,
+                BaseGameStorageId = (byte)StorageId.BuiltInSystem,
                 UpdateGameStorageId = (byte)StorageId.None
             };
         }

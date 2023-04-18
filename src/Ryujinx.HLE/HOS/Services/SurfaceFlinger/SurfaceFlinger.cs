@@ -132,11 +132,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 _layers.Add(layerId, new Layer
                 {
                     ProducerBinderId = HOSBinderDriverServer.RegisterBinderObject(producer),
-                    Producer         = producer,
-                    Consumer         = new BufferItemConsumer(_device, consumer, 0, -1, false, this),
-                    Core             = core,
-                    Owner            = pid,
-                    State            = initialState
+                    Producer = producer,
+                    Consumer = new BufferItemConsumer(_device, consumer, 0, -1, false, this),
+                    Core = core,
+                    Owner = pid,
+                    State = initialState
                 });
             }
         }
@@ -545,6 +545,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             _device.Statistics.RecordGameFrameTime();
         }
 
-        public void OnBuffersReleased() {}
+        public void OnBuffersReleased() { }
     }
 }

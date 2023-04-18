@@ -13,11 +13,11 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         public SystemClockCore(SteadyClockCore steadyClockCore)
         {
             _steadyClockCore = steadyClockCore;
-            _context         = new SystemClockContext();
-            _isInitialized   = false;
+            _context = new SystemClockContext();
+            _isInitialized = false;
 
             _context.SteadyTimePoint.ClockSourceId = steadyClockCore.GetClockSourceId();
-            _systemClockContextUpdateCallback      = null;
+            _systemClockContextUpdateCallback = null;
         }
 
         public virtual SteadyClockCore GetSteadyClockCore()

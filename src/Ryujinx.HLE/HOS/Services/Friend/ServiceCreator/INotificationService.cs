@@ -26,9 +26,9 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
         public INotificationService(ServiceCtx context, UserId userId, FriendServicePermissionLevel permissionLevel)
         {
-            _userId            = userId;
-            _permissionLevel   = permissionLevel;
-            _notifications     = new LinkedList<NotificationInfo>();
+            _userId = userId;
+            _permissionLevel = permissionLevel;
+            _notifications = new LinkedList<NotificationInfo>();
             _notificationEvent = new KEvent(context.Device.System.KernelContext);
 
             _hasNewFriendRequest = false;

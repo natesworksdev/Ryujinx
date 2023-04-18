@@ -13,8 +13,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         public SystemClockContextUpdateCallback()
         {
             _operationEventList = new List<KWritableEvent>();
-            _context            = new SystemClockContext();
-            _hasContext         = false;
+            _context = new SystemClockContext();
+            _hasContext = false;
         }
 
         private bool NeedUpdate(SystemClockContext context)
@@ -54,7 +54,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
             if (NeedUpdate(context))
             {
-                _context    = context;
+                _context = context;
                 _hasContext = true;
 
                 result = Update();

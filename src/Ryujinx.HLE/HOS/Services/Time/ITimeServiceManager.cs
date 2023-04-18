@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 #pragma warning disable IDE0060
         public ITimeServiceManager(ServiceCtx context)
         {
-            _timeManager              = TimeManager.Instance;
+            _timeManager = TimeManager.Instance;
             _automaticCorrectionEvent = 0;
         }
 #pragma warning restore IDE0060

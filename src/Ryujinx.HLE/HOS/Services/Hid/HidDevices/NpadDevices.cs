@@ -249,6 +249,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             switch (type)
             {
+#pragma warning disable IDE0055 // Disable formatting
                 case ControllerType.ProController:
                     controller.StyleSet           = NpadStyleTag.FullKey;
                     controller.DeviceType         = DeviceType.FullKey;
@@ -296,6 +297,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                     controller.DeviceType         = DeviceType.Palma;
                     controller.AppletFooterUiType = AppletFooterUiType.None;
                     break;
+#pragma warning restore IDE0055
             }
 
             _styleSetUpdateEvents[(int)player].ReadableEvent.Signal();

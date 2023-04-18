@@ -56,9 +56,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
         private void ResetFailingState()
         {
-            _previousFailingFence.Id    = NvFence.InvalidSyncPointId;
+            _previousFailingFence.Id = NvFence.InvalidSyncPointId;
             _previousFailingFence.Value = 0;
-            _failingCount               = 0;
+            _failingCount = 0;
         }
 
         private void Signal()

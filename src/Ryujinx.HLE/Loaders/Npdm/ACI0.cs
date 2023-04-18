@@ -9,11 +9,11 @@ namespace Ryujinx.HLE.Loaders.Npdm
 
         public ulong TitleId { get; set; }
 
-        public int   FsVersion            { get; private set; }
+        public int FsVersion { get; private set; }
         public ulong FsPermissionsBitmask { get; private set; }
 
         public ServiceAccessControl ServiceAccessControl { get; private set; }
-        public KernelAccessControl  KernelAccessControl  { get; private set; }
+        public KernelAccessControl KernelAccessControl { get; private set; }
 
         public Aci0(Stream stream, int offset)
         {
@@ -42,7 +42,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
 
             FsAccessHeader fsAccessHeader = new(stream, offset + fsAccessHeaderOffset, fsAccessHeaderSize);
 
-            FsVersion            = fsAccessHeader.Version;
+            FsVersion = fsAccessHeader.Version;
             FsPermissionsBitmask = fsAccessHeader.PermissionsBitmask;
 
             ServiceAccessControl = new ServiceAccessControl(stream, offset + serviceAccessControlOffset, serviceAccessControlSize);

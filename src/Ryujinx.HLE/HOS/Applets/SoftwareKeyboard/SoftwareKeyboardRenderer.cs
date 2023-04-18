@@ -61,6 +61,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
                         return;
                     }
 
+#pragma warning disable IDE0055 // Disable formatting
                     needsUpdate  = UpdateStateField(ref state.InputText,           ref internalState.InputText);
                     needsUpdate |= UpdateStateField(ref state.CursorBegin,         ref internalState.CursorBegin);
                     needsUpdate |= UpdateStateField(ref state.CursorEnd,           ref internalState.CursorEnd);
@@ -70,6 +71,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
                     needsUpdate |= UpdateStateField(ref state.TypingEnabled,       ref internalState.TypingEnabled);
                     needsUpdate |= UpdateStateField(ref state.ControllerEnabled,   ref internalState.ControllerEnabled);
                     needsUpdate |= UpdateStateField(ref state.TextBoxBlinkCounter, ref internalState.TextBoxBlinkCounter);
+#pragma warning restore IDE0055
 
                     canCreateSurface = state.SurfaceInfo != null && internalState.SurfaceInfo == null;
 
@@ -110,12 +112,14 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
         {
             lock (_stateLock)
             {
+#pragma warning disable IDE0055 // Disable formatting
                 // Update the parameters that were provided.
                 _state.InputText     = inputText ?? _state.InputText;
                 _state.CursorBegin   = cursorBegin.GetValueOrDefault(_state.CursorBegin);
                 _state.CursorEnd     = cursorEnd.GetValueOrDefault(_state.CursorEnd);
                 _state.OverwriteMode = overwriteMode.GetValueOrDefault(_state.OverwriteMode);
                 _state.TypingEnabled = typingEnabled.GetValueOrDefault(_state.TypingEnabled);
+#pragma warning restore IDE0055
 
                 // Reset the cursor blink.
                 _state.TextBoxBlinkCounter = 0;
@@ -130,8 +134,8 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             lock (_stateLock)
             {
                 // Update the parameters that were provided.
-                _state.AcceptPressed     = acceptPressed.GetValueOrDefault(_state.AcceptPressed);
-                _state.CancelPressed     = cancelPressed.GetValueOrDefault(_state.CancelPressed);
+                _state.AcceptPressed = acceptPressed.GetValueOrDefault(_state.AcceptPressed);
+                _state.CancelPressed = cancelPressed.GetValueOrDefault(_state.CancelPressed);
                 _state.ControllerEnabled = controllerEnabled.GetValueOrDefault(_state.ControllerEnabled);
 
                 // Tell the render thread there is something new to render.

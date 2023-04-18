@@ -20,9 +20,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         public NvHostGpuDeviceFile(ServiceCtx context, IVirtualMemoryManager memory, ulong owner) : base(context, memory, owner)
         {
-            _smExceptionBptIntReportEvent   = CreateEvent(context, out _smExceptionBptIntReportEventHandle);
+            _smExceptionBptIntReportEvent = CreateEvent(context, out _smExceptionBptIntReportEventHandle);
             _smExceptionBptPauseReportEvent = CreateEvent(context, out _smExceptionBptPauseReportEventHandle);
-            _errorNotifierEvent             = CreateEvent(context, out _errorNotifierEventHandle);
+            _errorNotifierEvent = CreateEvent(context, out _errorNotifierEventHandle);
         }
 
         private static KEvent CreateEvent(ServiceCtx context, out int handle)

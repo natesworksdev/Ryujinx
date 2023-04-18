@@ -19,14 +19,14 @@ namespace Ryujinx.HLE.HOS.Services.Pcv.Clkrst.ClkrstManager
             DeviceCode.Vic,    DeviceCode.Nvenc,    DeviceCode.Nvjpg,    DeviceCode.Nvdec,
             DeviceCode.Ape,    DeviceCode.AudioDsp, DeviceCode.Emc,      DeviceCode.Dsi,
             DeviceCode.SysBus, DeviceCode.XusbSs,   DeviceCode.XusbHost, DeviceCode.XusbDevice,
-            DeviceCode.Gpuaux, DeviceCode.Pcie,     DeviceCode.Apbdma,   DeviceCode.Sdmmc1, 
+            DeviceCode.Gpuaux, DeviceCode.Pcie,     DeviceCode.Apbdma,   DeviceCode.Sdmmc1,
             DeviceCode.Sdmmc2, DeviceCode.Sdmmc4
         };
 
         public IClkrstSession(DeviceCode deviceCode, uint unknown)
         {
             _deviceCode = deviceCode;
-            _unknown    = unknown;
+            _unknown = unknown;
         }
 
         [CommandCmif(7)]

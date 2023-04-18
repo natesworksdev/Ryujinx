@@ -17,15 +17,15 @@ namespace Ryujinx.HLE.HOS
     {
         private LibHac.Horizon Server { get; set; }
 
-        public HorizonClient RyujinxClient     { get; private set; }
+        public HorizonClient RyujinxClient { get; private set; }
         public HorizonClient ApplicationClient { get; private set; }
-        public HorizonClient AccountClient     { get; private set; }
-        public HorizonClient AmClient          { get; private set; }
-        public HorizonClient BcatClient        { get; private set; }
-        public HorizonClient FsClient          { get; private set; }
-        public HorizonClient NsClient          { get; private set; }
-        public HorizonClient PmClient          { get; private set; }
-        public HorizonClient SdbClient         { get; private set; }
+        public HorizonClient AccountClient { get; private set; }
+        public HorizonClient AmClient { get; private set; }
+        public HorizonClient BcatClient { get; private set; }
+        public HorizonClient FsClient { get; private set; }
+        public HorizonClient NsClient { get; private set; }
+        public HorizonClient PmClient { get; private set; }
+        public HorizonClient SdbClient { get; private set; }
 
         private SharedRef<LibHacIReader> _arpIReader;
         internal LibHacIReader ArpIReader => _arpIReader.Get;
@@ -64,11 +64,13 @@ namespace Ryujinx.HLE.HOS
 
         public void InitializeSystemClients()
         {
+#pragma warning disable IDE0055 // Disable formatting
             PmClient      = Server.CreatePrivilegedHorizonClient();
             AccountClient = Server.CreateHorizonClient(new ProgramLocation(SystemProgramId.Account, StorageId.BuiltInSystem), AccountFsPermissions);
             AmClient      = Server.CreateHorizonClient(new ProgramLocation(SystemProgramId.Am,      StorageId.BuiltInSystem), AmFsPermissions);
             NsClient      = Server.CreateHorizonClient(new ProgramLocation(SystemProgramId.Ns,      StorageId.BuiltInSystem), NsFsPermissions);
             SdbClient     = Server.CreateHorizonClient(new ProgramLocation(SystemProgramId.Sdb,     StorageId.BuiltInSystem), SdbFacData, SdbFacDescriptor);
+#pragma warning restore IDE0055
         }
 
         public void InitializeApplicationClient(ProgramId programId, in Npdm npdm)

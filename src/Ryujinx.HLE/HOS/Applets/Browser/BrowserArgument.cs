@@ -8,12 +8,12 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
 {
     class BrowserArgument
     {
-        public WebArgTLVType Type  { get; }
-        public byte[]        Value { get; }
+        public WebArgTLVType Type { get; }
+        public byte[] Value { get; }
 
         public BrowserArgument(WebArgTLVType type, byte[] value)
         {
-            Type  = type;
+            Type = type;
             Value = value;
         }
 

@@ -8,24 +8,24 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu.Types
         private class Range
         {
             public ulong Start { get; }
-            public ulong End   { get; }
+            public ulong End { get; }
 
             public Range(ulong address, ulong size)
             {
                 Start = address;
-                End   = size + Start;
+                End = size + Start;
             }
         }
 
         private class MappedMemory : Range
         {
             public ulong PhysicalAddress { get; }
-            public bool  VaAllocated     { get; }
+            public bool VaAllocated { get; }
 
             public MappedMemory(ulong address, ulong size, ulong physicalAddress, bool vaAllocated) : base(address, size)
             {
                 PhysicalAddress = physicalAddress;
-                VaAllocated     = vaAllocated;
+                VaAllocated = vaAllocated;
             }
         }
 
@@ -38,7 +38,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu.Types
         {
             Gmm = gmm;
 
-            _maps         = new SortedList<ulong, Range>();
+            _maps = new SortedList<ulong, Range>();
             _reservations = new SortedList<ulong, Range>();
         }
 

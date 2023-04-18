@@ -13,11 +13,11 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public NewExpression(NodeArray expressions, BaseNode typeNode, NodeArray initializers, bool isGlobal, bool isArrayExpression) : base(NodeType.NewExpression)
         {
-            _expressions       = expressions;
-            _typeNode          = typeNode;
-            _initializers      = initializers;
+            _expressions = expressions;
+            _typeNode = typeNode;
+            _initializers = initializers;
 
-            _isGlobal          = isGlobal;
+            _isGlobal = isGlobal;
             _isArrayExpression = isArrayExpression;
         }
 

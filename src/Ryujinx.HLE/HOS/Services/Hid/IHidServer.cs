@@ -42,15 +42,15 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         public IHidServer(ServiceCtx context) : base(context.Device.System.HidServer)
         {
-            _xpadIdEvent                 = new KEvent(context.Device.System.KernelContext);
+            _xpadIdEvent = new KEvent(context.Device.System.KernelContext);
             _palmaOperationCompleteEvent = new KEvent(context.Device.System.KernelContext);
 
             _npadHandheldActivationMode = NpadHandheldActivationMode.Dual;
-            _gyroscopeZeroDriftMode     = GyroscopeZeroDriftMode.Standard;
+            _gyroscopeZeroDriftMode = GyroscopeZeroDriftMode.Standard;
 
             _isFirmwareUpdateAvailableForSixAxisSensor = false;
 
-            _sensorFusionParams  = new SensorFusionParameters();
+            _sensorFusionParams = new SensorFusionParameters();
             _accelerometerParams = new AccelerometerParameters();
 
             // TODO: signal event at right place
@@ -1098,7 +1098,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 #pragma warning disable IDE0060
         private static void SetNpadJoyAssignmentModeSingleWithDestinationImpl(ServiceCtx context, NpadIdType npadIdType, long appletResourceUserId, NpadJoyDeviceType npadJoyDeviceType, out NpadIdType npadIdTypeSet, out bool npadIdTypeIsSet)
         {
-            npadIdTypeSet   = default;
+            npadIdTypeSet = default;
             npadIdTypeIsSet = false;
 
             context.Device.Hid.SharedMemory.Npads[(int)HidUtils.GetIndexFromNpadIdType(npadIdType)].InternalState.JoyAssignmentMode = NpadJoyAssignmentMode.Single;
@@ -1470,7 +1470,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // SetSevenSixAxisSensorFusionStrength(float Strength, nn::applet::AppletResourceUserId)
         public ResultCode SetSevenSixAxisSensorFusionStrength(ServiceCtx context)
         {
-                 _sevenSixAxisSensorFusionStrength = context.RequestData.ReadSingle();
+            _sevenSixAxisSensorFusionStrength = context.RequestData.ReadSingle();
             long appletResourceUserId              = context.RequestData.ReadInt64();
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, _sevenSixAxisSensorFusionStrength });
@@ -1602,7 +1602,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             context.ResponseData.Write(palmaConnectionHandle);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId , unknown0, palmaConnectionHandle });
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, unknown0, palmaConnectionHandle });
 
             return ResultCode.Success;
         }
@@ -1797,7 +1797,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // SetNpadCommunicationMode(long CommunicationMode, nn::applet::AppletResourceUserId)
         public ResultCode SetNpadCommunicationMode(ServiceCtx context)
         {
-                 _npadCommunicationMode = context.RequestData.ReadInt64();
+            _npadCommunicationMode = context.RequestData.ReadInt64();
             long appletResourceUserId   = context.RequestData.ReadInt64();
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, _npadCommunicationMode });

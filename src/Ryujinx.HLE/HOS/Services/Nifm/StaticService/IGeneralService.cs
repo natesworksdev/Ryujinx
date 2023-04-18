@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         {
             _generalServiceDetail = new GeneralServiceDetail
             {
-                ClientId                     = GeneralServiceManager.Count,
+                ClientId = GeneralServiceManager.Count,
                 IsAnyInternetRequestAccepted = true // NOTE: Why not accept any internet request?
             };
 
@@ -82,7 +82,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
             };
 
             networkProfile.IpSettingData.IpAddressSetting = new IpAddressSetting(interfaceProperties, unicastAddress);
-            networkProfile.IpSettingData.DnsSetting       = new DnsSetting(interfaceProperties);
+            networkProfile.IpSettingData.DnsSetting = new DnsSetting(interfaceProperties);
 
             "RyujinxNetwork"u8.CopyTo(networkProfile.Name.AsSpan());
 
@@ -188,7 +188,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         {
             Logger.Info?.Print(LogClass.ServiceNifm, $"NetworkAddress changed, invalidating cached data.");
 
-            _targetPropertiesCache  = null;
+            _targetPropertiesCache = null;
             _targetAddressInfoCache = null;
         }
 

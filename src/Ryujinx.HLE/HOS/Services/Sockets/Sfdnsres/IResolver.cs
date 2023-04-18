@@ -200,8 +200,8 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         // GetHostByNameRequestWithOptions(u8, u32, u64, pid, buffer<unknown, 21, 0>, buffer<unknown, 21, 0>) -> (u32, u32, u32, buffer<unknown, 22, 0>)
         public static ResultCode GetHostByNameRequestWithOptions(ServiceCtx context)
         {
-            (ulong inputBufferPosition,   ulong inputBufferSize)   = context.Request.GetBufferType0x21();
-            (ulong outputBufferPosition,  ulong outputBufferSize)  = context.Request.GetBufferType0x22();
+            (ulong inputBufferPosition, ulong inputBufferSize) = context.Request.GetBufferType0x21();
+            (ulong outputBufferPosition, ulong outputBufferSize) = context.Request.GetBufferType0x22();
             (ulong optionsBufferPosition, ulong optionsBufferSize) = context.Request.GetBufferType0x21();
 
             return GetHostByNameRequestImpl(
@@ -219,8 +219,8 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         // GetHostByAddrRequestWithOptions(u32, u32, u32, u64, pid, buffer<unknown, 21, 0>, buffer<unknown, 21, 0>) -> (u32, u32, u32, buffer<unknown, 22, 0>)
         public static ResultCode GetHostByAddrRequestWithOptions(ServiceCtx context)
         {
-            (ulong inputBufferPosition,   ulong inputBufferSize)   = context.Request.GetBufferType0x21();
-            (ulong outputBufferPosition,  ulong outputBufferSize)  = context.Request.GetBufferType0x22();
+            (ulong inputBufferPosition, ulong inputBufferSize) = context.Request.GetBufferType0x21();
+            (ulong outputBufferPosition, ulong outputBufferSize) = context.Request.GetBufferType0x22();
             (ulong optionsBufferPosition, ulong optionsBufferSize) = context.Request.GetBufferType0x21();
 
             return GetHostByAddrRequestImpl(
@@ -238,7 +238,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         // GetAddrInfoRequestWithOptions(bool enable_nsd_resolve, u32, u64 pid_placeholder, pid, buffer<i8, 5, 0> host, buffer<i8, 5, 0> service, buffer<packed_addrinfo, 5, 0> hints, buffer<unknown, 21, 0>) -> (i32 ret, u32 bsd_errno, u32 unknown, u32 packed_addrinfo_size, buffer<packed_addrinfo, 22, 0> response)
         public static ResultCode GetAddrInfoRequestWithOptions(ServiceCtx context)
         {
-            (ulong outputBufferPosition,  ulong outputBufferSize)  = context.Request.GetBufferType0x22();
+            (ulong outputBufferPosition, ulong outputBufferSize) = context.Request.GetBufferType0x22();
             (ulong optionsBufferPosition, ulong optionsBufferSize) = context.Request.GetBufferType0x21();
 
             return GetAddrInfoRequestImpl(context, outputBufferPosition, outputBufferSize, true, optionsBufferPosition, optionsBufferSize);
@@ -337,7 +337,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
                     Logger.Info?.Print(LogClass.ServiceSfdnsres, $"DNS Blocked: {host}");
 
                     netDbErrorCode = NetDbError.HostNotFound;
-                    errno          = GaiError.NoData;
+                    errno = GaiError.NoData;
                 }
                 else
                 {
@@ -350,7 +350,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
                     catch (SocketException exception)
                     {
                         netDbErrorCode = ConvertSocketErrorCodeToNetDbError(exception.ErrorCode);
-                        errno          = ConvertSocketErrorCodeToGaiError(exception.ErrorCode, errno);
+                        errno = ConvertSocketErrorCodeToGaiError(exception.ErrorCode, errno);
                     }
                 }
             }
@@ -365,12 +365,12 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
                 if (!addresses.Any())
                 {
-                    errno          = GaiError.NoData;
+                    errno = GaiError.NoData;
                     netDbErrorCode = NetDbError.NoAddress;
                 }
                 else
                 {
-                    errno          = GaiError.Success;
+                    errno = GaiError.Success;
                     serializedSize = SerializeHostEntries(context, outputBufferPosition, outputBufferSize, hostEntry, addresses);
                 }
             }
@@ -435,7 +435,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
                 catch (SocketException exception)
                 {
                     netDbErrorCode = ConvertSocketErrorCodeToNetDbError(exception.ErrorCode);
-                    errno          = ConvertSocketErrorCodeToGaiError(exception.ErrorCode, errno);
+                    errno = ConvertSocketErrorCodeToGaiError(exception.ErrorCode, errno);
                 }
             }
             else
@@ -445,7 +445,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
             if (hostEntry != null)
             {
-                errno          = GaiError.Success;
+                errno = GaiError.Success;
                 serializedSize = SerializeHostEntries(context, outputBufferPosition, outputBufferSize, hostEntry, GetIpv4Addresses(hostEntry));
             }
 
@@ -569,7 +569,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
                     Logger.Info?.Print(LogClass.ServiceSfdnsres, $"DNS Blocked: {host}");
 
                     netDbErrorCode = NetDbError.HostNotFound;
-                    errno          = GaiError.NoData;
+                    errno = GaiError.NoData;
                 }
                 else
                 {
@@ -582,7 +582,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
                     catch (SocketException exception)
                     {
                         netDbErrorCode = ConvertSocketErrorCodeToNetDbError(exception.ErrorCode);
-                        errno          = ConvertSocketErrorCodeToGaiError(exception.ErrorCode, errno);
+                        errno = ConvertSocketErrorCodeToGaiError(exception.ErrorCode, errno);
                     }
                 }
             }
@@ -595,7 +595,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             {
                 if (int.TryParse(service, out int port))
                 {
-                    errno          = GaiError.Success;
+                    errno = GaiError.Success;
                     serializedSize = SerializeAddrInfos(context, responseBufferPosition, responseBufferSize, hostEntry, port);
                 }
                 else
@@ -702,7 +702,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
                 11002 => NetDbError.TryAgain,
                 11003 => NetDbError.NoRecovery,
                 11004 => NetDbError.NoData,
-                _     => NetDbError.Internal
+                _ => NetDbError.Internal
             };
         }
 
@@ -712,7 +712,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             {
                 11001 => GaiError.NoData,
                 10060 => GaiError.Again,
-                _     => errno
+                _ => errno
             };
         }
     }

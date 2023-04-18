@@ -15,8 +15,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         public KBufferDescriptorTable()
         {
-            _sendBufferDescriptors     = new List<KBufferDescriptor>(MaxInternalBuffersCount);
-            _receiveBufferDescriptors  = new List<KBufferDescriptor>(MaxInternalBuffersCount);
+            _sendBufferDescriptors = new List<KBufferDescriptor>(MaxInternalBuffersCount);
+            _receiveBufferDescriptors = new List<KBufferDescriptor>(MaxInternalBuffersCount);
             _exchangeBufferDescriptors = new List<KBufferDescriptor>(MaxInternalBuffersCount);
         }
 
@@ -67,11 +67,18 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
                 switch (desc.State)
                 {
-                    case MemoryState.IpcBuffer0: stateMask = MemoryState.IpcSendAllowedType0; break;
-                    case MemoryState.IpcBuffer1: stateMask = MemoryState.IpcSendAllowedType1; break;
-                    case MemoryState.IpcBuffer3: stateMask = MemoryState.IpcSendAllowedType3; break;
+                    case MemoryState.IpcBuffer0:
+                        stateMask = MemoryState.IpcSendAllowedType0;
+                        break;
+                    case MemoryState.IpcBuffer1:
+                        stateMask = MemoryState.IpcSendAllowedType1;
+                        break;
+                    case MemoryState.IpcBuffer3:
+                        stateMask = MemoryState.IpcSendAllowedType3;
+                        break;
 
-                    default: return KernelResult.InvalidCombination;
+                    default:
+                        return KernelResult.InvalidCombination;
                 }
 
                 MemoryAttribute attributeMask = MemoryAttribute.Borrowed | MemoryAttribute.Uncached;

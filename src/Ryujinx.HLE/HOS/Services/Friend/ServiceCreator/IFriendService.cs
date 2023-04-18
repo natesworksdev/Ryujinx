@@ -116,7 +116,8 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
             // There are no friends online, so we return 0 because the nn::account::NetworkServiceAccountId array is empty.
             context.ResponseData.Write(0);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceFriend, new {
+            Logger.Stub?.PrintStub(LogClass.ServiceFriend, new
+            {
                 UserId = userId.ToString(),
                 offset,
                 filter.PresenceStatus,
@@ -304,7 +305,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
             */
 
-            context.Memory.Write(bufferPosition,        playHistoryRegistrationKeyBuffer);
+            context.Memory.Write(bufferPosition, playHistoryRegistrationKeyBuffer);
             context.Memory.Write(bufferPosition + 0x20, new byte[0x20]); // HmacHash
 
             return ResultCode.Success;

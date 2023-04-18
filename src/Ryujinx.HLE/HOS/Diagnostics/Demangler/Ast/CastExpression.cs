@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         public CastExpression(string kind, BaseNode to, BaseNode from) : base(NodeType.CastExpression)
         {
             _kind = kind;
-            _to   = to;
+            _to = to;
             _from = from;
         }
 

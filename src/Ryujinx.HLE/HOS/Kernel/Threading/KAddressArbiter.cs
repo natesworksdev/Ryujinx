@@ -38,7 +38,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 return KernelResult.ThreadTerminating;
             }
 
-            currentThread.SignaledObj   = null;
+            currentThread.SignaledObj = null;
             currentThread.ObjSyncResult = Result.Success;
 
             KProcess currentProcess = KernelStatic.GetCurrentProcess();
@@ -66,7 +66,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 return KernelResult.InvalidHandle;
             }
 
-            currentThread.MutexAddress             = mutexAddress;
+            currentThread.MutexAddress = mutexAddress;
             currentThread.ThreadHandleForUserMutex = requesterHandle;
 
             mutexOwner.AddMutexWaiter(currentThread);
@@ -100,7 +100,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             if (result != Result.Success && newOwnerThread != null)
             {
-                newOwnerThread.SignaledObj   = null;
+                newOwnerThread.SignaledObj = null;
                 newOwnerThread.ObjSyncResult = result;
             }
 
@@ -115,7 +115,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             KThread currentThread = KernelStatic.GetCurrentThread();
 
-            currentThread.SignaledObj   = null;
+            currentThread.SignaledObj = null;
             currentThread.ObjSyncResult = KernelResult.TimedOut;
 
             if (currentThread.TerminationRequested)
@@ -136,9 +136,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 return KernelResult.InvalidMemState;
             }
 
-            currentThread.MutexAddress             = mutexAddress;
+            currentThread.MutexAddress = mutexAddress;
             currentThread.ThreadHandleForUserMutex = threadHandle;
-            currentThread.CondVarAddress           = condVarAddress;
+            currentThread.CondVarAddress = condVarAddress;
 
             _condVarThreads.Add(currentThread);
 
@@ -185,7 +185,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                     mutexValue |= HasListenersMask;
                 }
 
-                newOwnerThread.SignaledObj   = null;
+                newOwnerThread.SignaledObj = null;
                 newOwnerThread.ObjSyncResult = Result.Success;
 
                 newOwnerThread.ReleaseAndResume();
@@ -217,7 +217,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             if (!currentProcess.CpuMemory.IsMapped(address))
             {
                 // Invalid address.
-                requester.SignaledObj   = null;
+                requester.SignaledObj = null;
                 requester.ObjSyncResult = KernelResult.InvalidMemState;
 
                 return;
@@ -247,7 +247,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             if (mutexValue == 0)
             {
                 // We now own the mutex.
-                requester.SignaledObj   = null;
+                requester.SignaledObj = null;
                 requester.ObjSyncResult = Result.Success;
 
                 requester.ReleaseAndResume();
@@ -267,7 +267,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             else
             {
                 // Invalid mutex owner.
-                requester.SignaledObj   = null;
+                requester.SignaledObj = null;
                 requester.ObjSyncResult = KernelResult.InvalidHandle;
 
                 requester.ReleaseAndResume();
@@ -287,7 +287,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 return KernelResult.ThreadTerminating;
             }
 
-            currentThread.SignaledObj   = null;
+            currentThread.SignaledObj = null;
             currentThread.ObjSyncResult = KernelResult.TimedOut;
 
             if (!KernelTransfer.UserToKernel(out int currentValue, address))
@@ -306,7 +306,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                     return KernelResult.TimedOut;
                 }
 
-                currentThread.MutexAddress         = address;
+                currentThread.MutexAddress = address;
                 currentThread.WaitingInArbitration = true;
 
                 _arbiterThreads.Add(currentThread);
@@ -357,7 +357,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 return KernelResult.ThreadTerminating;
             }
 
-            currentThread.SignaledObj   = null;
+            currentThread.SignaledObj = null;
             currentThread.ObjSyncResult = KernelResult.TimedOut;
 
             KProcess currentProcess = KernelStatic.GetCurrentProcess();
@@ -383,7 +383,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                     return KernelResult.TimedOut;
                 }
 
-                currentThread.MutexAddress         = address;
+                currentThread.MutexAddress = address;
                 currentThread.WaitingInArbitration = true;
 
                 _arbiterThreads.Add(currentThread);
@@ -545,7 +545,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         {
             static void RemoveArbiterThread(KThread thread)
             {
-                thread.SignaledObj   = null;
+                thread.SignaledObj = null;
                 thread.ObjSyncResult = Result.Success;
 
                 thread.ReleaseAndResume();

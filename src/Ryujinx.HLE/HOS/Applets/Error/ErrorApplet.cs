@@ -40,14 +40,14 @@ namespace Ryujinx.HLE.HOS.Applets.Error
 
         public ResultCode Start(AppletSession normalSession, AppletSession interactiveSession)
         {
-            _normalSession   = normalSession;
+            _normalSession = normalSession;
             _commonArguments = IApplet.ReadStruct<CommonArguments>(_normalSession.Pop());
 
             Logger.Info?.PrintMsg(LogClass.ServiceAm, $"ErrorApplet version: 0x{_commonArguments.AppletVersion:x8}");
 
-            _errorStorage      = _normalSession.Pop();
+            _errorStorage = _normalSession.Pop();
             _errorCommonHeader = IApplet.ReadStruct<ErrorCommonHeader>(_errorStorage);
-            _errorStorage      = _errorStorage.Skip(Marshal.SizeOf<ErrorCommonHeader>()).ToArray();
+            _errorStorage = _errorStorage.Skip(Marshal.SizeOf<ErrorCommonHeader>()).ToArray();
 
             switch (_errorCommonHeader.Type)
             {
@@ -63,7 +63,8 @@ namespace Ryujinx.HLE.HOS.Applets.Error
 
                         break;
                     }
-                default: throw new NotImplementedException($"ErrorApplet type {_errorCommonHeader.Type} is not implemented.");
+                default:
+                    throw new NotImplementedException($"ErrorApplet type {_errorCommonHeader.Type} is not implemented.");
             }
 
             AppletStateChanged?.Invoke(this, null);
@@ -80,6 +81,7 @@ namespace Ryujinx.HLE.HOS.Applets.Error
         {
             return systemLanguage switch
             {
+#pragma warning disable IDE0055 // Disable formatting
                 SystemLanguage.Japanese             => "ja",
                 SystemLanguage.AmericanEnglish      => "en-US",
                 SystemLanguage.French               => "fr",
@@ -99,6 +101,7 @@ namespace Ryujinx.HLE.HOS.Applets.Error
                 SystemLanguage.TraditionalChinese   => "zh-Hant",
                 SystemLanguage.BrazilianPortuguese  => "pt-BR",
                 _                                   => "en-US"
+#pragma warning restore IDE0055
             };
         }
 

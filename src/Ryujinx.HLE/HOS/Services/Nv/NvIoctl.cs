@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
         private const int NumberShift    = 0;
         private const int TypeShift      = NumberShift + NumberBits;
-        private const int SizeShift      = TypeShift + TypeBits; 
+        private const int SizeShift      = TypeShift + TypeBits;
         private const int DirectionShift = SizeShift + SizeBits;
 
         private const int NumberMask    = (1 << NumberBits) - 1;
@@ -37,9 +37,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
         public uint RawValue;
 
-        public uint      Number         => (RawValue >> NumberShift) & NumberMask;
-        public uint      Type           => (RawValue >> TypeShift) & TypeMask;
-        public uint      Size           => (RawValue >> SizeShift) & SizeMask;
+        public uint Number => (RawValue >> NumberShift) & NumberMask;
+        public uint Type => (RawValue >> TypeShift) & TypeMask;
+        public uint Size => (RawValue >> SizeShift) & SizeMask;
         public Direction DirectionValue => (Direction)((RawValue >> DirectionShift) & DirectionMask);
     }
 }

@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
 {
     class FsAccessHeader
     {
-        public int   Version            { get; private set; }
+        public int Version { get; private set; }
         public ulong PermissionsBitmask { get; private set; }
 
 #pragma warning disable IDE0060
@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
 
             BinaryReader reader = new(stream);
 
-            Version            = reader.ReadInt32();
+            Version = reader.ReadInt32();
             PermissionsBitmask = reader.ReadUInt64();
 
             int dataSize = reader.ReadInt32();

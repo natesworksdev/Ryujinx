@@ -72,12 +72,14 @@ namespace Ryujinx.HLE.Exceptions
             sb.AppendLine("Guest Stack Trace:");
             sb.AppendLine(Context.Thread.GetGuestStackTrace());
 
+#pragma warning disable IDE0055 // Disable formatting
             // Print buffer information
             if (Request.PtrBuff.Count      > 0 ||
                 Request.SendBuff.Count     > 0 ||
                 Request.ReceiveBuff.Count  > 0 ||
                 Request.ExchangeBuff.Count > 0 ||
                 Request.RecvListBuff.Count > 0)
+#pragma warning restore IDE0055
             {
                 sb.AppendLine("Buffer Information:");
 

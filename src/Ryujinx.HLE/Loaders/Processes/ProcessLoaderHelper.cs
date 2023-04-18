@@ -82,9 +82,9 @@ namespace Ryujinx.HLE.Loaders.Processes
 
             for (int i = 0; i < programCount; i++)
             {
-                mapInfo[i].ProgramId     = new ProgramId(applicationId + (uint)i);
+                mapInfo[i].ProgramId = new ProgramId(applicationId + (uint)i);
                 mapInfo[i].MainProgramId = new ApplicationId(applicationId);
-                mapInfo[i].ProgramIndex  = (byte)i;
+                mapInfo[i].ProgramIndex = (byte)i;
             }
 
             return device.System.LibHacHorizonManager.NsClient.Fs.RegisterProgramIndexMapInfo(mapInfo[..programCount]);
@@ -102,9 +102,9 @@ namespace Ryujinx.HLE.Loaders.Processes
                 control = ref new BlitStruct<ApplicationControlProperty>(1).Value;
 
                 // The set sizes don't actually matter as long as they're non-zero because we use directory savedata.
-                control.UserAccountSaveDataSize        = 0x4000;
+                control.UserAccountSaveDataSize = 0x4000;
                 control.UserAccountSaveDataJournalSize = 0x4000;
-                control.SaveDataOwnerId                = applicationId.Value;
+                control.SaveDataOwnerId = applicationId.Value;
 
                 Logger.Warning?.Print(LogClass.Application, "No control file was found for this game. Using a dummy one instead. This may cause inaccuracies in some games.");
             }
@@ -432,7 +432,7 @@ namespace Ryujinx.HLE.Loaders.Processes
             }
 
             process.CpuMemory.Write(textStart, image.Text);
-            process.CpuMemory.Write(roStart,   image.Ro);
+            process.CpuMemory.Write(roStart, image.Ro);
             process.CpuMemory.Write(dataStart, image.Data);
 
             process.CpuMemory.Fill(bssStart, image.BssSize, 0);

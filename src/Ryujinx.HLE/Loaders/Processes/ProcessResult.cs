@@ -33,23 +33,23 @@ namespace Ryujinx.HLE.Loaders.Processes
         public readonly bool   AllowCodeMemoryForJit;
 
         public ProcessResult(
-            MetaLoader                             metaLoader,
+            MetaLoader metaLoader,
             BlitStruct<ApplicationControlProperty> applicationControlProperties,
-            bool                                   diskCacheEnabled,
-            bool                                   allowCodeMemoryForJit,
-            IDiskCacheLoadState                    diskCacheLoadState,
-            ulong                                  pid,
-            byte                                   mainThreadPriority,
-            uint                                   mainThreadStackSize,
-            TitleLanguage                          titleLanguage)
+            bool diskCacheEnabled,
+            bool allowCodeMemoryForJit,
+            IDiskCacheLoadState diskCacheLoadState,
+            ulong pid,
+            byte mainThreadPriority,
+            uint mainThreadStackSize,
+            TitleLanguage titleLanguage)
         {
-            _mainThreadPriority  = mainThreadPriority;
+            _mainThreadPriority = mainThreadPriority;
             _mainThreadStackSize = mainThreadStackSize;
 
             DiskCacheLoadState = diskCacheLoadState;
-            ProcessId          = pid;
+            ProcessId = pid;
 
-            MetaLoader                   = metaLoader;
+            MetaLoader = metaLoader;
             ApplicationControlProperties = applicationControlProperties.Value;
 
             if (metaLoader is not null)
@@ -64,12 +64,12 @@ namespace Ryujinx.HLE.Loaders.Processes
                 }
 
                 DisplayVersion = ApplicationControlProperties.DisplayVersionString.ToString();
-                ProgramId      = programId;
-                ProgramIdText  = $"{programId:x16}";
-                Is64Bit        = metaLoader.IsProgram64Bit();
+                ProgramId = programId;
+                ProgramIdText = $"{programId:x16}";
+                Is64Bit = metaLoader.IsProgram64Bit();
             }
 
-            DiskCacheEnabled      = diskCacheEnabled;
+            DiskCacheEnabled = diskCacheEnabled;
             AllowCodeMemoryForJit = allowCodeMemoryForJit;
         }
 

@@ -11,10 +11,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public FoldExpression(bool isLeftFold, string operatorName, BaseNode expression, BaseNode initializer) : base(NodeType.FunctionParameter)
         {
-            _isLeftFold   = isLeftFold;
+            _isLeftFold = isLeftFold;
             _operatorName = operatorName;
-            _expression   = expression;
-            _initializer  = initializer;
+            _expression = expression;
+            _initializer = initializer;
         }
 
         public override void PrintLeft(TextWriter writer)

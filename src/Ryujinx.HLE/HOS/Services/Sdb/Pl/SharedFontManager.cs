@@ -33,7 +33,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
             public FontInfo(int offset, int size)
             {
                 Offset = offset;
-                Size   = size;
+                Size = size;
             }
         }
 
@@ -41,7 +41,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
 
         public SharedFontManager(Switch device, SharedMemoryStorage storage)
         {
-            _device  = device;
+            _device = device;
             _storage = storage;
         }
 

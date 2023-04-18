@@ -18,11 +18,11 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Types
 
         public AddrInfoSerializedHeader(IPAddress address, SocketType socketType)
         {
-            Magic      = SfdnsresContants.AddrInfoMagic;
-            Flags      = 0;
-            Family     = (int)address.AddressFamily;
+            Magic = SfdnsresContants.AddrInfoMagic;
+            Flags = 0;
+            Family = (int)address.AddressFamily;
             SocketType = (int)socketType;
-            Protocol   = 0;
+            Protocol = 0;
 
             if (address.AddressFamily == AddressFamily.InterNetwork)
             {
@@ -36,21 +36,21 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Types
 
         public void ToNetworkOrder()
         {
-            Magic         = (uint)IPAddress.HostToNetworkOrder((int)Magic);
-            Flags         = IPAddress.HostToNetworkOrder(Flags);
-            Family        = IPAddress.HostToNetworkOrder(Family);
-            SocketType    = IPAddress.HostToNetworkOrder(SocketType);
-            Protocol      = IPAddress.HostToNetworkOrder(Protocol);
+            Magic = (uint)IPAddress.HostToNetworkOrder((int)Magic);
+            Flags = IPAddress.HostToNetworkOrder(Flags);
+            Family = IPAddress.HostToNetworkOrder(Family);
+            SocketType = IPAddress.HostToNetworkOrder(SocketType);
+            Protocol = IPAddress.HostToNetworkOrder(Protocol);
             AddressLength = (uint)IPAddress.HostToNetworkOrder((int)AddressLength);
         }
 
         public void ToHostOrder()
         {
-            Magic         = (uint)IPAddress.NetworkToHostOrder((int)Magic);
-            Flags         = IPAddress.NetworkToHostOrder(Flags);
-            Family        = IPAddress.NetworkToHostOrder(Family);
-            SocketType    = IPAddress.NetworkToHostOrder(SocketType);
-            Protocol      = IPAddress.NetworkToHostOrder(Protocol);
+            Magic = (uint)IPAddress.NetworkToHostOrder((int)Magic);
+            Flags = IPAddress.NetworkToHostOrder(Flags);
+            Family = IPAddress.NetworkToHostOrder(Family);
+            SocketType = IPAddress.NetworkToHostOrder(SocketType);
+            Protocol = IPAddress.NetworkToHostOrder(Protocol);
             AddressLength = (uint)IPAddress.NetworkToHostOrder((int)AddressLength);
         }
     }

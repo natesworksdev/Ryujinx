@@ -7,6 +7,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.HidServer
         public static PlayerIndex GetIndexFromNpadIdType(NpadIdType npadIdType)
         => npadIdType switch
         {
+#pragma warning disable IDE0055 // Disable formatting
             NpadIdType.Player1  => PlayerIndex.Player1,
             NpadIdType.Player2  => PlayerIndex.Player2,
             NpadIdType.Player3  => PlayerIndex.Player3,
@@ -18,11 +19,13 @@ namespace Ryujinx.HLE.HOS.Services.Hid.HidServer
             NpadIdType.Handheld => PlayerIndex.Handheld,
             NpadIdType.Unknown  => PlayerIndex.Unknown,
             _                   => throw new ArgumentOutOfRangeException(nameof(npadIdType))
+#pragma warning restore IDE0055
         };
 
         public static NpadIdType GetNpadIdTypeFromIndex(PlayerIndex index)
         => index switch
         {
+#pragma warning disable IDE0055 // Disable formatting
             PlayerIndex.Player1  => NpadIdType.Player1,
             PlayerIndex.Player2  => NpadIdType.Player2,
             PlayerIndex.Player3  => NpadIdType.Player3,
@@ -34,6 +37,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.HidServer
             PlayerIndex.Handheld => NpadIdType.Handheld,
             PlayerIndex.Unknown  => NpadIdType.Unknown,
             _                    => throw new ArgumentOutOfRangeException(nameof(index))
+#pragma warning restore IDE0055
         };
 
         public static bool IsValidNpadIdType(NpadIdType npadIdType)
