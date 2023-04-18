@@ -12,6 +12,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             _table = new VkFormat[Enum.GetNames(typeof(Format)).Length];
 
+#pragma warning disable IDE0055 // Disable formatting
             Add(Format.R8Unorm,             VkFormat.R8Unorm);
             Add(Format.R8Snorm,             VkFormat.R8SNorm);
             Add(Format.R8Uint,              VkFormat.R8Uint);
@@ -157,6 +158,7 @@ namespace Ryujinx.Graphics.Vulkan
             Add(Format.A1B5G5R5Unorm,       VkFormat.R5G5B5A1UnormPack16);
             Add(Format.B8G8R8A8Unorm,       VkFormat.B8G8R8A8Unorm);
             Add(Format.B8G8R8A8Srgb,        VkFormat.B8G8R8A8Srgb);
+#pragma warning restore IDE0055
         }
 
         private static void Add(Format format, VkFormat vkFormat)

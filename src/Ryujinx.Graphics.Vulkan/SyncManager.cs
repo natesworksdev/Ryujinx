@@ -177,7 +177,8 @@ namespace Ryujinx.Graphics.Vulkan
                     first = _handles.FirstOrDefault();
                 }
 
-                if (first == null || first.NeedsFlush(FlushId)) break;
+                if (first == null || first.NeedsFlush(FlushId))
+                    break;
 
                 bool signaled = first.Waitable.WaitForFences(_gd.Api, _device, 0);
                 if (signaled)
@@ -192,7 +193,8 @@ namespace Ryujinx.Graphics.Vulkan
                             first.Waitable = null;
                         }
                     }
-                } else
+                }
+                else
                 {
                     // This sync handle and any following have not been reached yet.
                     break;
