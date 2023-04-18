@@ -36,7 +36,7 @@ namespace Ryujinx.Graphics.Nvdec
                     SurfaceWriter.Write(
                         rm.Gmm,
                         outputSurface,
-                        lumaOffset   + pictureInfo.LumaFrameOffset,
+                        lumaOffset + pictureInfo.LumaFrameOffset,
                         chromaOffset + pictureInfo.ChromaFrameOffset);
                 }
                 else
@@ -44,9 +44,9 @@ namespace Ryujinx.Graphics.Nvdec
                     SurfaceWriter.WriteInterlaced(
                         rm.Gmm,
                         outputSurface,
-                        lumaOffset   + pictureInfo.LumaTopFieldOffset,
+                        lumaOffset + pictureInfo.LumaTopFieldOffset,
                         chromaOffset + pictureInfo.ChromaTopFieldOffset,
-                        lumaOffset   + pictureInfo.LumaBottomFieldOffset,
+                        lumaOffset + pictureInfo.LumaBottomFieldOffset,
                         chromaOffset + pictureInfo.ChromaBottomFieldOffset);
                 }
             }
