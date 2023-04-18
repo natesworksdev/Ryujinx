@@ -222,9 +222,9 @@ namespace Ryujinx.Graphics.OpenGL
 
         private void PrintGpuInformation()
         {
-            GpuVendor   = GL.GetString(StringName.Vendor);
+            GpuVendor = GL.GetString(StringName.Vendor);
             GpuRenderer = GL.GetString(StringName.Renderer);
-            GpuVersion  = GL.GetString(StringName.Version);
+            GpuVersion = GL.GetString(StringName.Version);
 
             Logger.Notice.Print(LogClass.Gpu, $"{GpuVendor} {GpuRenderer} ({GpuVersion})");
         }

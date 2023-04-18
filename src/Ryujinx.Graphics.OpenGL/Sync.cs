@@ -123,7 +123,8 @@ namespace Ryujinx.Graphics.OpenGL
                     first = _handles.FirstOrDefault();
                 }
 
-                if (first == null) break;
+                if (first == null)
+                    break;
 
                 WaitSyncStatus syncResult = GL.ClientWaitSync(first.Handle, SyncFlags, 0);
 
@@ -140,7 +141,8 @@ namespace Ryujinx.Graphics.OpenGL
                             first.Handle = IntPtr.Zero;
                         }
                     }
-                } else
+                }
+                else
                 {
                     // This sync handle and any following have not been reached yet.
                     break;

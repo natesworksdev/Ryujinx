@@ -42,7 +42,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         private static readonly Lazy<GpuVendor> _gpuVendor = new(GetGpuVendor);
 
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051, IDE0055 // Disable formatting
         private static bool IsAmd   => _gpuVendor.Value == GpuVendor.AmdWindows || _gpuVendor.Value == GpuVendor.AmdUnix;
 #pragma warning restore IDE0051
         private static bool IsIntel => _gpuVendor.Value == GpuVendor.IntelWindows || _gpuVendor.Value == GpuVendor.IntelUnix;
@@ -51,7 +51,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         private static readonly Lazy<float> _maxSupportedAnisotropy = new(GL.GetFloat((GetPName)All.MaxTextureMaxAnisotropy));
 
-        public static bool UsePersistentBufferForFlush       => _gpuVendor.Value == GpuVendor.AmdWindows || _gpuVendor.Value == GpuVendor.Nvidia;
+        public static bool UsePersistentBufferForFlush          => _gpuVendor.Value == GpuVendor.AmdWindows || _gpuVendor.Value == GpuVendor.Nvidia;
 
         public static bool SupportsAlphaToCoverageDitherControl => _supportsAlphaToCoverageDitherControl.Value;
         public static bool SupportsAstcCompression              => _supportsAstcCompression.Value;
@@ -83,6 +83,7 @@ namespace Ryujinx.Graphics.OpenGL
         public static int StorageBufferOffsetAlignment   => _storageBufferOffsetAlignment.Value;
 
         public static float MaximumSupportedAnisotropy => _maxSupportedAnisotropy.Value;
+#pragma warning restore IDE0055
 
         private static bool HasExtension(string name)
         {

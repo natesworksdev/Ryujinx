@@ -368,8 +368,12 @@ namespace Ryujinx.Graphics.OpenGL
 
             switch (_elementsType)
             {
-                case DrawElementsType.UnsignedShort: indexElemSize = 2; break;
-                case DrawElementsType.UnsignedInt: indexElemSize = 4; break;
+                case DrawElementsType.UnsignedShort:
+                    indexElemSize = 2;
+                    break;
+                case DrawElementsType.UnsignedInt:
+                    indexElemSize = 4;
+                    break;
             }
 
             IntPtr indexBaseOffset = _indexBaseOffset + firstIndex * indexElemSize;
