@@ -13,8 +13,8 @@ namespace Ryujinx.Tests.Cpu
                            [Values(2u)] uint rm,
                            [Values(0x7B5B546573745665ul)] ulong valueH,
                            [Values(0x63746F725D53475Dul)] ulong valueL,
-                           [Random(2)]                    ulong roundKeyH,
-                           [Random(2)]                    ulong roundKeyL,
+                           [Random(2)] ulong roundKeyH,
+                           [Random(2)] ulong roundKeyL,
                            [Values(0x8DCAB9BC035006BCul)] ulong resultH,
                            [Values(0x8F57161E00CAFD8Dul)] ulong resultL)
         {
@@ -47,8 +47,8 @@ namespace Ryujinx.Tests.Cpu
                            [Values(2u)] uint rm,
                            [Values(0x7B5B546573745665ul)] ulong valueH,
                            [Values(0x63746F725D53475Dul)] ulong valueL,
-                           [Random(2)]                    ulong roundKeyH,
-                           [Random(2)]                    ulong roundKeyL,
+                           [Random(2)] ulong roundKeyH,
+                           [Random(2)] ulong roundKeyL,
                            [Values(0x8F92A04DFBED204Dul)] ulong resultH,
                            [Values(0x4C39B1402192A84Cul)] ulong resultL)
         {
@@ -77,7 +77,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Description("AESIMC.8 <Qd>, <Qm>")]
-        public void Aesimc_V([Values(0u)]     uint rd,
+        public void Aesimc_V([Values(0u)] uint rd,
                              [Values(2u, 0u)] uint rm,
                              [Values(0x8DCAB9DC035006BCul)] ulong valueH,
                              [Values(0x8F57161E00CAFD8Dul)] ulong valueL,
@@ -115,7 +115,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Description("AESMC.8 <Qd>, <Qm>")]
-        public void Aesmc_V([Values(0u)]     uint rd,
+        public void Aesmc_V([Values(0u)] uint rd,
                             [Values(2u, 0u)] uint rm,
                             [Values(0x627A6F6644B109C8ul)] ulong valueH,
                             [Values(0x2B18330A81C3B3E5ul)] ulong valueL,

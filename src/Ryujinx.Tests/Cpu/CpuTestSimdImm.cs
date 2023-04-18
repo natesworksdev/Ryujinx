@@ -11,7 +11,7 @@ namespace Ryujinx.Tests.Cpu
     {
 #if SimdImm
 
-#region "Helper methods"
+        #region "Helper methods"
         // abcdefgh -> aaaaaaaabbbbbbbbccccccccddddddddeeeeeeeeffffffffgggggggghhhhhhhh
         private static ulong ExpandImm8(byte imm8)
         {
@@ -43,9 +43,9 @@ namespace Ryujinx.Tests.Cpu
 
             return imm8;
         }
-#endregion
+        #endregion
 
-#region "ValueSource (Types)"
+        #region "ValueSource (Types)"
 #pragma warning disable IDE1006
         private static ulong[] _2S_()
         {
@@ -88,9 +88,9 @@ namespace Ryujinx.Tests.Cpu
                 yield return ExpandImm8(imm8);
             }
         }
-#endregion
+        #endregion
 
-#region "ValueSource (Opcodes)"
+        #region "ValueSource (Opcodes)"
         private static uint[] _Bic_Orr_Vi_16bit_()
         {
             return new[]
@@ -184,7 +184,7 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 #pragma warning restore IDE1006
-#endregion
+        #endregion
 
         private const int RndCntImm8  = 2;
         private const int RndCntImm64 = 2;
@@ -231,7 +231,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Mov_Vi_2S([ValueSource(nameof(_F_Mov_Vi_2S_))] uint opcodes,
                                 [Range(0u, 255u, 1u)] uint abcdefgh)
         {
@@ -248,7 +249,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Mov_Vi_4S([ValueSource(nameof(_F_Mov_Vi_4S_))] uint opcodes,
                                 [Range(0u, 255u, 1u)] uint abcdefgh)
         {
@@ -262,7 +264,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Mov_Vi_2D([ValueSource(nameof(_F_Mov_Vi_2D_))] uint opcodes,
                                 [Range(0u, 255u, 1u)] uint abcdefgh)
         {

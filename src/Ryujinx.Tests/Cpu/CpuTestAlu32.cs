@@ -9,7 +9,7 @@ namespace Ryujinx.Tests.Cpu
     {
 #if Alu32
 
-#region "ValueSource (Opcodes)"
+        #region "ValueSource (Opcodes)"
 #pragma warning disable IDE1006
         private static uint[] _SU_H_AddSub_8_()
         {
@@ -57,7 +57,7 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 #pragma warning restore IDE1006
-#endregion
+        #endregion
 
         private const int RndCnt = 2;
 
@@ -195,7 +195,7 @@ namespace Ryujinx.Tests.Cpu
             uint opUadd8 = 0xE6500F90; // UADD8 R0, R0, R0
             uint opSel   = 0xE6800FB0; // SEL R0, R0, R0
 
-            opUadd8  |= ((rm & 15) << 0) | ((rd & 15) << 12) | ((rn & 15) << 16);
+            opUadd8 |= ((rm & 15) << 0) | ((rd & 15) << 12) | ((rn & 15) << 16);
             opSel |= ((rm & 15) << 0) | ((rd & 15) << 12) | ((rn & 15) << 16);
 
             SetContext(r0: w0, r1: w1, r2: w2);

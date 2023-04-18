@@ -10,7 +10,7 @@ namespace Ryujinx.Tests.Cpu
     {
 #if SimdIns
 
-#region "ValueSource"
+        #region "ValueSource"
 #pragma warning disable IDE1006
         private static ulong[] _1D_()
         {
@@ -66,10 +66,10 @@ namespace Ryujinx.Tests.Cpu
                            0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
         }
 #pragma warning restore IDE1006
-#endregion
+        #endregion
 
         [Test, Pairwise, Description("DUP <Vd>.<T>, W<n>")]
-        public void Dup_Gp_W([Values(0u)]      uint rd,
+        public void Dup_Gp_W([Values(0u)] uint rd,
                              [Values(1u, 31u)] uint rn,
                              [ValueSource(nameof(_W_))] uint wn,
                              [Values(0, 1, 2)] int size,  // Q0: <8B,  4H, 2S>
@@ -92,7 +92,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("DUP <Vd>.<T>, X<n>")]
-        public void Dup_Gp_X([Values(0u)]      uint rd,
+        public void Dup_Gp_X([Values(0u)] uint rd,
                              [Values(1u, 31u)] uint rn,
                              [ValueSource(nameof(_X_))] ulong xn)
         {
@@ -189,7 +189,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("DUP <Vd>.<T>, <Vn>.B[<index>]")]
-        public void Dup_V_8B_16B([Values(0u)]     uint rd,
+        public void Dup_V_8B_16B([Values(0u)] uint rd,
                                  [Values(1u, 0u)] uint rn,
                                  [ValueSource(nameof(_8B_))] ulong z,
                                  [ValueSource(nameof(_8B_))] ulong a,
@@ -214,7 +214,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("DUP <Vd>.<T>, <Vn>.H[<index>]")]
-        public void Dup_V_4H_8H([Values(0u)]     uint rd,
+        public void Dup_V_4H_8H([Values(0u)] uint rd,
                                 [Values(1u, 0u)] uint rn,
                                 [ValueSource(nameof(_4H_))] ulong z,
                                 [ValueSource(nameof(_4H_))] ulong a,
@@ -239,7 +239,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("DUP <Vd>.<T>, <Vn>.S[<index>]")]
-        public void Dup_V_2S_4S([Values(0u)]     uint rd,
+        public void Dup_V_2S_4S([Values(0u)] uint rd,
                                 [Values(1u, 0u)] uint rn,
                                 [ValueSource(nameof(_2S_))] ulong z,
                                 [ValueSource(nameof(_2S_))] ulong a,
@@ -264,7 +264,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("DUP <Vd>.<T>, <Vn>.D[<index>]")]
-        public void Dup_V_2D([Values(0u)]     uint rd,
+        public void Dup_V_2D([Values(0u)] uint rd,
                              [Values(1u, 0u)] uint rn,
                              [ValueSource(nameof(_1D_))] ulong z,
                              [ValueSource(nameof(_1D_))] ulong a,
@@ -289,7 +289,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("INS <Vd>.B[<index>], W<n>")]
-        public void Ins_Gp_WB([Values(0u)]      uint rd,
+        public void Ins_Gp_WB([Values(0u)] uint rd,
                               [Values(1u, 31u)] uint rn,
                               [ValueSource(nameof(_8B_))] ulong z,
                               [ValueSource(nameof(_W_))] uint wn,
@@ -312,7 +312,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("INS <Vd>.H[<index>], W<n>")]
-        public void Ins_Gp_WH([Values(0u)]      uint rd,
+        public void Ins_Gp_WH([Values(0u)] uint rd,
                               [Values(1u, 31u)] uint rn,
                               [ValueSource(nameof(_4H_))] ulong z,
                               [ValueSource(nameof(_W_))] uint wn,
@@ -335,7 +335,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("INS <Vd>.S[<index>], W<n>")]
-        public void Ins_Gp_WS([Values(0u)]      uint rd,
+        public void Ins_Gp_WS([Values(0u)] uint rd,
                               [Values(1u, 31u)] uint rn,
                               [ValueSource(nameof(_2S_))] ulong z,
                               [ValueSource(nameof(_W_))] uint wn,
@@ -358,7 +358,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("INS <Vd>.D[<index>], X<n>")]
-        public void Ins_Gp_XD([Values(0u)]      uint rd,
+        public void Ins_Gp_XD([Values(0u)] uint rd,
                               [Values(1u, 31u)] uint rn,
                               [ValueSource(nameof(_1D_))] ulong z,
                               [ValueSource(nameof(_X_))] ulong xn,
@@ -381,7 +381,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("INS <Vd>.B[<index1>], <Vn>.B[<index2>]")]
-        public void Ins_V_BB([Values(0u)]     uint rd,
+        public void Ins_V_BB([Values(0u)] uint rd,
                              [Values(1u, 0u)] uint rn,
                              [ValueSource(nameof(_8B_))] ulong z,
                              [ValueSource(nameof(_8B_))] ulong a,
@@ -407,7 +407,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("INS <Vd>.H[<index1>], <Vn>.H[<index2>]")]
-        public void Ins_V_HH([Values(0u)]     uint rd,
+        public void Ins_V_HH([Values(0u)] uint rd,
                              [Values(1u, 0u)] uint rn,
                              [ValueSource(nameof(_4H_))] ulong z,
                              [ValueSource(nameof(_4H_))] ulong a,
@@ -433,7 +433,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("INS <Vd>.S[<index1>], <Vn>.S[<index2>]")]
-        public void Ins_V_SS([Values(0u)]     uint rd,
+        public void Ins_V_SS([Values(0u)] uint rd,
                              [Values(1u, 0u)] uint rn,
                              [ValueSource(nameof(_2S_))] ulong z,
                              [ValueSource(nameof(_2S_))] ulong a,
@@ -459,7 +459,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("INS <Vd>.D[<index1>], <Vn>.D[<index2>]")]
-        public void Ins_V_DD([Values(0u)]     uint rd,
+        public void Ins_V_DD([Values(0u)] uint rd,
                              [Values(1u, 0u)] uint rn,
                              [ValueSource(nameof(_1D_))] ulong z,
                              [ValueSource(nameof(_1D_))] ulong a,
@@ -486,7 +486,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("SMOV <Wd>, <Vn>.B[<index>]")]
         public void Smov_S_BW([Values(0u, 31u)] uint rd,
-                              [Values(1u)]      uint rn,
+                              [Values(1u)] uint rn,
                               [ValueSource(nameof(_8B_))] ulong a,
                               [Values(0u, 15u)] uint index)
         {
@@ -509,7 +509,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("SMOV <Wd>, <Vn>.H[<index>]")]
         public void Smov_S_HW([Values(0u, 31u)] uint rd,
-                              [Values(1u)]      uint rn,
+                              [Values(1u)] uint rn,
                               [ValueSource(nameof(_4H_))] ulong a,
                               [Values(0u, 7u)] uint index)
         {
@@ -532,7 +532,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("SMOV <Xd>, <Vn>.B[<index>]")]
         public void Smov_S_BX([Values(0u, 31u)] uint rd,
-                              [Values(1u)]      uint rn,
+                              [Values(1u)] uint rn,
                               [ValueSource(nameof(_8B_))] ulong a,
                               [Values(0u, 15u)] uint index)
         {
@@ -554,7 +554,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("SMOV <Xd>, <Vn>.H[<index>]")]
         public void Smov_S_HX([Values(0u, 31u)] uint rd,
-                              [Values(1u)]      uint rn,
+                              [Values(1u)] uint rn,
                               [ValueSource(nameof(_4H_))] ulong a,
                               [Values(0u, 7u)] uint index)
         {
@@ -576,7 +576,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("SMOV <Xd>, <Vn>.S[<index>]")]
         public void Smov_S_SX([Values(0u, 31u)] uint rd,
-                              [Values(1u)]      uint rn,
+                              [Values(1u)] uint rn,
                               [ValueSource(nameof(_2S_))] ulong a,
                               [Values(0u, 1u, 2u, 3u)] uint index)
         {
@@ -598,7 +598,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("UMOV <Wd>, <Vn>.B[<index>]")]
         public void Umov_S_BW([Values(0u, 31u)] uint rd,
-                              [Values(1u)]      uint rn,
+                              [Values(1u)] uint rn,
                               [ValueSource(nameof(_8B_))] ulong a,
                               [Values(0u, 15u)] uint index)
         {
@@ -621,7 +621,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("UMOV <Wd>, <Vn>.H[<index>]")]
         public void Umov_S_HW([Values(0u, 31u)] uint rd,
-                              [Values(1u)]      uint rn,
+                              [Values(1u)] uint rn,
                               [ValueSource(nameof(_4H_))] ulong a,
                               [Values(0u, 7u)] uint index)
         {
@@ -644,7 +644,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("UMOV <Wd>, <Vn>.S[<index>]")]
         public void Umov_S_SW([Values(0u, 31u)] uint rd,
-                              [Values(1u)]      uint rn,
+                              [Values(1u)] uint rn,
                               [ValueSource(nameof(_2S_))] ulong a,
                               [Values(0u, 1u, 2u, 3u)] uint index)
         {
@@ -667,7 +667,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("UMOV <Xd>, <Vn>.D[<index>]")]
         public void Umov_S_DX([Values(0u, 31u)] uint rd,
-                              [Values(1u)]      uint rn,
+                              [Values(1u)] uint rn,
                               [ValueSource(nameof(_1D_))] ulong a,
                               [Values(0u, 1u)] uint index)
         {

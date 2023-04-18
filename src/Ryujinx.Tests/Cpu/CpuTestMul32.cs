@@ -9,7 +9,7 @@ namespace Ryujinx.Tests.Cpu
     {
 #if Mul32
 
-#region "ValueSource (Opcodes)"
+        #region "ValueSource (Opcodes)"
 #pragma warning disable IDE0051, IDE1006
         private static uint[] _Smlabb_Smlabt_Smlatb_Smlatt_()
         {
@@ -51,7 +51,7 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 #pragma warning restore IDE0051, IDE1006
-#endregion
+        #endregion
 
         [Test, Pairwise, Description("SMLA<x><y> <Rd>, <Rn>, <Rm>, <Ra>")]
         public void Smla___32bit([ValueSource("_Smlabb_Smlabt_Smlatb_Smlatt_")] uint opcode,

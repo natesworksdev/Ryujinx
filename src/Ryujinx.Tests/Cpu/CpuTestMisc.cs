@@ -12,7 +12,7 @@ namespace Ryujinx.Tests.Cpu
     {
 #if Misc
 
-#region "ValueSource (Types)"
+        #region "ValueSource (Types)"
         private static IEnumerable<ulong> _1S_F_()
         {
             yield return 0x00000000FF7FFFFFul; // -Max Normal    (float.MinValue)
@@ -54,7 +54,7 @@ namespace Ryujinx.Tests.Cpu
                 yield return (grbg << 32) | rnd2;
             }
         }
-#endregion
+        #endregion
 
         private const int RndCnt    = 2;
 
@@ -62,7 +62,7 @@ namespace Ryujinx.Tests.Cpu
         private static readonly bool NoInfs  = false;
         private static readonly bool NoNaNs  = false;
 
-#region "AluImm & Csel"
+        #region "AluImm & Csel"
         [Test, Pairwise]
         public void Adds_Csinc_64bit([Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
                                              0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
@@ -76,7 +76,7 @@ namespace Ryujinx.Tests.Cpu
             uint opCmn  = 0xB100001F; // ADDS  X31, X0,  #0,  LSL #0 -> CMN  X0, #0, LSL #0
             uint opCset = 0x9A9F07E0; // CSINC X0,  X31, X31, EQ     -> CSET X0, NE
 
-            opCmn  |= ((shift & 3) << 22) | ((imm & 4095) << 10);
+            opCmn |= ((shift & 3) << 22) | ((imm & 4095) << 10);
             opCset |= ((cond & 15) << 12);
 
             SetContext(x0: xn);
@@ -101,7 +101,7 @@ namespace Ryujinx.Tests.Cpu
             uint opCmn  = 0x3100001F; // ADDS  W31, W0,  #0,  LSL #0 -> CMN  W0, #0, LSL #0
             uint opCset = 0x1A9F07E0; // CSINC W0,  W31, W31, EQ     -> CSET W0, NE
 
-            opCmn  |= ((shift & 3) << 22) | ((imm & 4095) << 10);
+            opCmn |= ((shift & 3) << 22) | ((imm & 4095) << 10);
             opCset |= ((cond & 15) << 12);
 
             SetContext(x0: wn);
@@ -126,7 +126,7 @@ namespace Ryujinx.Tests.Cpu
             uint opCmp  = 0xF100001F; // SUBS  X31, X0,  #0,  LSL #0 -> CMP  X0, #0, LSL #0
             uint opCset = 0x9A9F07E0; // CSINC X0,  X31, X31, EQ     -> CSET X0, NE
 
-            opCmp  |= ((shift & 3) << 22) | ((imm & 4095) << 10);
+            opCmp |= ((shift & 3) << 22) | ((imm & 4095) << 10);
             opCset |= ((cond & 15) << 12);
 
             SetContext(x0: xn);
@@ -151,7 +151,7 @@ namespace Ryujinx.Tests.Cpu
             uint opCmp  = 0x7100001F; // SUBS  W31, W0,  #0,  LSL #0 -> CMP  W0, #0, LSL #0
             uint opCset = 0x1A9F07E0; // CSINC W0,  W31, W31, EQ     -> CSET W0, NE
 
-            opCmp  |= ((shift & 3) << 22) | ((imm & 4095) << 10);
+            opCmp |= ((shift & 3) << 22) | ((imm & 4095) << 10);
             opCset |= ((cond & 15) << 12);
 
             SetContext(x0: wn);
@@ -162,7 +162,7 @@ namespace Ryujinx.Tests.Cpu
 
             CompareAgainstUnicorn();
         }
-#endregion
+        #endregion
 
         [Explicit]
         [TestCase(0xFFFFFFFDu)] // Roots.
@@ -197,24 +197,24 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Explicit]
-        [TestCase(-20f,  -5f)] // 18 integer solutions.
-        [TestCase(-12f,  -6f)]
-        [TestCase(-12f,   3f)]
-        [TestCase( -8f,  -8f)]
-        [TestCase( -6f, -12f)]
-        [TestCase( -5f, -20f)]
-        [TestCase( -4f,   2f)]
-        [TestCase( -3f,  12f)]
-        [TestCase( -2f,   4f)]
-        [TestCase(  2f,  -4f)]
-        [TestCase(  3f, -12f)]
-        [TestCase(  4f,  -2f)]
-        [TestCase(  5f,  20f)]
-        [TestCase(  6f,  12f)]
-        [TestCase(  8f,   8f)]
-        [TestCase( 12f,  -3f)]
-        [TestCase( 12f,   6f)]
-        [TestCase( 20f,   5f)]
+        [TestCase(-20f, -5f)] // 18 integer solutions.
+        [TestCase(-12f, -6f)]
+        [TestCase(-12f, 3f)]
+        [TestCase(-8f, -8f)]
+        [TestCase(-6f, -12f)]
+        [TestCase(-5f, -20f)]
+        [TestCase(-4f, 2f)]
+        [TestCase(-3f, 12f)]
+        [TestCase(-2f, 4f)]
+        [TestCase(2f, -4f)]
+        [TestCase(3f, -12f)]
+        [TestCase(4f, -2f)]
+        [TestCase(5f, 20f)]
+        [TestCase(6f, 12f)]
+        [TestCase(8f, 8f)]
+        [TestCase(12f, -3f)]
+        [TestCase(12f, 6f)]
+        [TestCase(20f, 5f)]
         public void Misc2(float a, float b)
         {
             // 1 / ((1 / a + 1 / b) ^ 2) = 16
@@ -243,24 +243,24 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Explicit]
-        [TestCase(-20d,  -5d)] // 18 integer solutions.
-        [TestCase(-12d,  -6d)]
-        [TestCase(-12d,   3d)]
-        [TestCase( -8d,  -8d)]
-        [TestCase( -6d, -12d)]
-        [TestCase( -5d, -20d)]
-        [TestCase( -4d,   2d)]
-        [TestCase( -3d,  12d)]
-        [TestCase( -2d,   4d)]
-        [TestCase(  2d,  -4d)]
-        [TestCase(  3d, -12d)]
-        [TestCase(  4d,  -2d)]
-        [TestCase(  5d,  20d)]
-        [TestCase(  6d,  12d)]
-        [TestCase(  8d,   8d)]
-        [TestCase( 12d,  -3d)]
-        [TestCase( 12d,   6d)]
-        [TestCase( 20d,   5d)]
+        [TestCase(-20d, -5d)] // 18 integer solutions.
+        [TestCase(-12d, -6d)]
+        [TestCase(-12d, 3d)]
+        [TestCase(-8d, -8d)]
+        [TestCase(-6d, -12d)]
+        [TestCase(-5d, -20d)]
+        [TestCase(-4d, 2d)]
+        [TestCase(-3d, 12d)]
+        [TestCase(-2d, 4d)]
+        [TestCase(2d, -4d)]
+        [TestCase(3d, -12d)]
+        [TestCase(4d, -2d)]
+        [TestCase(5d, 20d)]
+        [TestCase(6d, 12d)]
+        [TestCase(8d, 8d)]
+        [TestCase(12d, -3d)]
+        [TestCase(12d, 6d)]
+        [TestCase(20d, 5d)]
         public void Misc3(double a, double b)
         {
             // 1 / ((1 / a + 1 / b) ^ 2) = 16
@@ -395,9 +395,9 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Explicit]
-        [TestCase( 0ul)]
-        [TestCase( 1ul)]
-        [TestCase( 2ul)]
+        [TestCase(0ul)]
+        [TestCase(1ul)]
+        [TestCase(2ul)]
         [TestCase(42ul)]
         public void SanityCheck(ulong a)
         {
@@ -439,8 +439,8 @@ namespace Ryujinx.Tests.Cpu
                 v1: MakeVectorE0E1(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong()),
                 v2: MakeVectorE0E1(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong()),
                 overflow: TestContext.CurrentContext.Random.NextBool(),
-                carry:    TestContext.CurrentContext.Random.NextBool(),
-                zero:     TestContext.CurrentContext.Random.NextBool(),
+                carry: TestContext.CurrentContext.Random.NextBool(),
+                zero: TestContext.CurrentContext.Random.NextBool(),
                 negative: TestContext.CurrentContext.Random.NextBool());
 
             Opcode(0xBD400001); // LDR   S1, [X0,#0]
@@ -463,8 +463,8 @@ namespace Ryujinx.Tests.Cpu
                 v0: MakeVectorE0E1(a, TestContext.CurrentContext.Random.NextULong()),
                 v1: MakeVectorE0E1(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong()),
                 overflow: TestContext.CurrentContext.Random.NextBool(),
-                carry:    TestContext.CurrentContext.Random.NextBool(),
-                zero:     TestContext.CurrentContext.Random.NextBool(),
+                carry: TestContext.CurrentContext.Random.NextBool(),
+                zero: TestContext.CurrentContext.Random.NextBool(),
                 negative: TestContext.CurrentContext.Random.NextBool());
 
             Opcode(0x1E202008); // FCMP  S0, #0.0

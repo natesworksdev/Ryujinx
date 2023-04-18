@@ -10,7 +10,7 @@ namespace Ryujinx.Tests.Cpu
     {
 #if SimdShImm32
 
-#region "ValueSource (Types)"
+        #region "ValueSource (Types)"
 #pragma warning disable IDE1006
         private static ulong[] _1D_()
         {
@@ -32,9 +32,9 @@ namespace Ryujinx.Tests.Cpu
         {
             return new[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful, 0x8080808080808080ul, 0xFFFFFFFFFFFFFFFFul };
         }
-#endregion
+        #endregion
 
-#region "ValueSource (Opcodes)"
+        #region "ValueSource (Opcodes)"
         private static uint[] _Vshr_Imm_SU8_()
         {
             return new[]
@@ -97,7 +97,7 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 #pragma warning restore IDE1006
-#endregion
+        #endregion
 
         private const int RndCnt = 2;
         private const int RndCntShiftImm = 2;
@@ -173,12 +173,14 @@ namespace Ryujinx.Tests.Cpu
             {
                 opcode |= 1 << 6;
 
-                rd >>= 1; rd <<= 1;
-                rm >>= 1; rm <<= 1;
+                rd >>= 1;
+                rd <<= 1;
+                rm >>= 1;
+                rm <<= 1;
             }
 
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
-            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
 
             opcode |= (imm6 & 0x3f) << 16;
 

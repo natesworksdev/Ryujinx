@@ -27,7 +27,7 @@ namespace Ryujinx.Tests.Cpu
             }
         }
 
-#region "ValueSource (CRC32/CRC32C)"
+        #region "ValueSource (CRC32/CRC32C)"
 #pragma warning disable IDE1006
         private static CrcTest32[] _CRC32_Test_Values_()
         {
@@ -65,7 +65,7 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 #pragma warning restore IDE1006
-#endregion
+        #endregion
 
         [Test, Combinatorial]
         public void Crc32_Crc32c_b_h_w([Values(0u)] uint rd,

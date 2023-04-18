@@ -11,7 +11,7 @@ namespace Ryujinx.Tests.Cpu
     {
 #if SimdTbl
 
-#region "Helper methods"
+        #region "Helper methods"
         private static ulong GenIdxsForTbls(int regs)
         {
             const byte IdxInRngMin = 0;
@@ -33,9 +33,9 @@ namespace Ryujinx.Tests.Cpu
 
             return idxs;
         }
-#endregion
+        #endregion
 
-#region "ValueSource (Types)"
+        #region "ValueSource (Types)"
 #pragma warning disable IDE1006
         private static ulong[] _8B_()
         {
@@ -94,9 +94,9 @@ namespace Ryujinx.Tests.Cpu
                 yield return GenIdxsForTbls(regs: 4);
             }
         }
-#endregion
+        #endregion
 
-#region "ValueSource (Opcodes)"
+        #region "ValueSource (Opcodes)"
         private static uint[] _SingleRegisterTable_V_8B_16B_()
         {
             return new[]
@@ -133,7 +133,7 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 #pragma warning restore IDE1006
-#endregion
+        #endregion
 
         private const int RndCntIdxs = 2;
 
@@ -186,7 +186,7 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise]
         public void Mod_TwoRegisterTable_V_8B_16B([ValueSource(nameof(_TwoRegisterTable_V_8B_16B_))] uint opcodes,
                                                   [Values(30u, 1u)] uint rd,
-                                                  [Values(31u)]     uint rn,
+                                                  [Values(31u)] uint rn,
                                                   [Values(1u, 30u)] uint rm,
                                                   [ValueSource(nameof(_8B_))] ulong z,
                                                   [ValueSource(nameof(_8B_))] ulong table0,
@@ -236,7 +236,7 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise]
         public void Mod_ThreeRegisterTable_V_8B_16B([ValueSource(nameof(_ThreeRegisterTable_V_8B_16B_))] uint opcodes,
                                                     [Values(30u, 2u)] uint rd,
-                                                    [Values(31u)]     uint rn,
+                                                    [Values(31u)] uint rn,
                                                     [Values(2u, 30u)] uint rm,
                                                     [ValueSource(nameof(_8B_))] ulong z,
                                                     [ValueSource(nameof(_8B_))] ulong table0,
@@ -290,7 +290,7 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise]
         public void Mod_FourRegisterTable_V_8B_16B([ValueSource(nameof(_FourRegisterTable_V_8B_16B_))] uint opcodes,
                                                    [Values(30u, 3u)] uint rd,
-                                                   [Values(31u)]     uint rn,
+                                                   [Values(31u)] uint rn,
                                                    [Values(3u, 30u)] uint rm,
                                                    [ValueSource(nameof(_8B_))] ulong z,
                                                    [ValueSource(nameof(_8B_))] ulong table0,

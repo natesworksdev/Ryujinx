@@ -11,7 +11,7 @@ namespace Ryujinx.Tests.Cpu
     {
 #if Simd32
 
-#region "ValueSource (Opcodes)"
+        #region "ValueSource (Opcodes)"
 #pragma warning disable IDE1006
         private static uint[] _Vabs_Vneg_Vpaddl_I_()
         {
@@ -31,9 +31,9 @@ namespace Ryujinx.Tests.Cpu
                 0xf3b90780u  // VNEG.F32 D0, D0
             };
         }
-#endregion
+        #endregion
 
-#region "ValueSource (Types)"
+        #region "ValueSource (Types)"
         private static ulong[] _8B4H2S_()
         {
             return new[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
@@ -175,7 +175,7 @@ namespace Ryujinx.Tests.Cpu
             }
         }
 #pragma warning restore IDE1006
-#endregion
+        #endregion
 
         private const int RndCnt = 2;
 
@@ -195,7 +195,7 @@ namespace Ryujinx.Tests.Cpu
                                 [Values(0x74CED221E2793F07ul)] ulong resultH)
         {
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
-            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
 
             V128 v0 = MakeVectorE0E1(z0, z1);
             V128 v1 = MakeVectorE0E1(a0, a1);
@@ -225,12 +225,14 @@ namespace Ryujinx.Tests.Cpu
             {
                 opcode |= 1 << 6;
 
-                rd >>= 1; rd <<= 1;
-                rm >>= 1; rm <<= 1;
+                rd >>= 1;
+                rd <<= 1;
+                rm >>= 1;
+                rm <<= 1;
             }
 
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
-            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
 
             opcode |= (size & 0x3) << 18;
 
@@ -254,12 +256,14 @@ namespace Ryujinx.Tests.Cpu
             {
                 opcode |= 1 << 6;
 
-                rd >>= 1; rd <<= 1;
-                rm >>= 1; rm <<= 1;
+                rd >>= 1;
+                rd <<= 1;
+                rm >>= 1;
+                rm <<= 1;
             }
 
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
-            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
 
             V128 v0 = MakeVectorE0E1(z, ~z);
             V128 v1 = MakeVectorE0E1(b, ~b);
@@ -288,7 +292,7 @@ namespace Ryujinx.Tests.Cpu
             }
 
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
-            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
 
             V128 v0 = MakeVectorE0E1(d0, d1);
 
@@ -305,12 +309,13 @@ namespace Ryujinx.Tests.Cpu
                             [Values(0u, 1u, 2u, 3u)] uint op,
                             [Values(0u, 1u, 2u)] uint size) // <S8, S16, S32>
         {
-            rm >>= 1; rm <<= 1;
+            rm >>= 1;
+            rm <<= 1;
 
             uint opcode = 0xf3b20200u; // VMOVN.S16 D0, Q0
 
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
-            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
 
             opcode |= (op & 0x3) << 6;
             opcode |= (size & 0x3) << 18;

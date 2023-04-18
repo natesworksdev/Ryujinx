@@ -12,7 +12,7 @@ namespace Ryujinx.Tests.Cpu
     {
 #if Simd
 
-#region "Helper methods"
+        #region "Helper methods"
         private static byte GenLeadingSignsMinus8(int cnt) // 0 <= cnt <= 7
         {
             return (byte)(~(uint)GenLeadingZeros8(cnt + 1));
@@ -45,8 +45,10 @@ namespace Ryujinx.Tests.Cpu
 
         private static byte GenLeadingZeros8(int cnt) // 0 <= cnt <= 8
         {
-            if (cnt == 8) return 0;
-            if (cnt == 7) return 1;
+            if (cnt == 8)
+                return 0;
+            if (cnt == 7)
+                return 1;
 
             byte  rnd  = TestContext.CurrentContext.Random.NextByte();
             sbyte mask = sbyte.MinValue;
@@ -56,8 +58,10 @@ namespace Ryujinx.Tests.Cpu
 
         private static ushort GenLeadingZeros16(int cnt) // 0 <= cnt <= 16
         {
-            if (cnt == 16) return 0;
-            if (cnt == 15) return 1;
+            if (cnt == 16)
+                return 0;
+            if (cnt == 15)
+                return 1;
 
             ushort rnd  = TestContext.CurrentContext.Random.NextUShort();
             short  mask = short.MinValue;
@@ -67,17 +71,19 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint GenLeadingZeros32(int cnt) // 0 <= cnt <= 32
         {
-            if (cnt == 32) return 0u;
-            if (cnt == 31) return 1u;
+            if (cnt == 32)
+                return 0u;
+            if (cnt == 31)
+                return 1u;
 
             uint rnd  = TestContext.CurrentContext.Random.NextUInt();
             int  mask = int.MinValue;
 
             return (rnd >> (cnt + 1)) | ((uint)mask >> cnt);
         }
-#endregion
+        #endregion
 
-#region "ValueSource (Types)"
+        #region "ValueSource (Types)"
 #pragma warning disable IDE1006
         private static ulong[] _1B1H1S1D_()
         {
@@ -643,9 +649,9 @@ namespace Ryujinx.Tests.Cpu
                              (cnt << 24) | (cnt << 16) | (cnt << 08) | cnt;
             }
         }
-#endregion
+        #endregion
 
-#region "ValueSource (Opcodes)"
+        #region "ValueSource (Opcodes)"
         private static uint[] _SU_Add_Max_Min_V_V_8BB_4HH_()
         {
             return new[]
@@ -1198,7 +1204,7 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 #pragma warning restore IDE1006
-#endregion
+        #endregion
 
         private const int RndCnt = 2;
 
@@ -1207,7 +1213,7 @@ namespace Ryujinx.Tests.Cpu
         private static readonly bool NoNaNs  = false;
 
         [Test, Pairwise, Description("ABS <V><d>, <V><n>")]
-        public void Abs_S_D([Values(0u)]     uint rd,
+        public void Abs_S_D([Values(0u)] uint rd,
                             [Values(1u, 0u)] uint rn,
                             [ValueSource(nameof(_1D_))] ulong z,
                             [ValueSource(nameof(_1D_))] ulong a)
@@ -1224,7 +1230,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("ABS <Vd>.<T>, <Vn>.<T>")]
-        public void Abs_V_8B_4H_2S([Values(0u)]     uint rd,
+        public void Abs_V_8B_4H_2S([Values(0u)] uint rd,
                                    [Values(1u, 0u)] uint rn,
                                    [ValueSource(nameof(_8B4H2S_))] ulong z,
                                    [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -1243,7 +1249,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("ABS <Vd>.<T>, <Vn>.<T>")]
-        public void Abs_V_16B_8H_4S_2D([Values(0u)]     uint rd,
+        public void Abs_V_16B_8H_4S_2D([Values(0u)] uint rd,
                                        [Values(1u, 0u)] uint rn,
                                        [ValueSource(nameof(_8B4H2S1D_))] ulong z,
                                        [ValueSource(nameof(_8B4H2S1D_))] ulong a,
@@ -1262,7 +1268,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("ADDP <V><d>, <Vn>.<T>")]
-        public void Addp_S_2DD([Values(0u)]     uint rd,
+        public void Addp_S_2DD([Values(0u)] uint rd,
                                [Values(1u, 0u)] uint rn,
                                [ValueSource(nameof(_1D_))] ulong z,
                                [ValueSource(nameof(_1D_))] ulong a)
@@ -1280,7 +1286,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise]
         public void SU_Add_Max_Min_V_V_8BB_4HH([ValueSource(nameof(_SU_Add_Max_Min_V_V_8BB_4HH_))] uint opcodes,
-                                               [Values(0u)]     uint rd,
+                                               [Values(0u)] uint rd,
                                                [Values(1u, 0u)] uint rn,
                                                [ValueSource(nameof(_8B4H_))] ulong z,
                                                [ValueSource(nameof(_8B4H_))] ulong a,
@@ -1299,7 +1305,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise]
         public void SU_Add_Max_Min_V_V_16BB_8HH_4SS([ValueSource(nameof(_SU_Add_Max_Min_V_V_16BB_8HH_4SS_))] uint opcodes,
-                                                    [Values(0u)]     uint rd,
+                                                    [Values(0u)] uint rd,
                                                     [Values(1u, 0u)] uint rn,
                                                     [ValueSource(nameof(_8B4H2S_))] ulong z,
                                                     [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -1317,9 +1323,9 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CLS <Vd>.<T>, <Vn>.<T>")]
-        public void Cls_V_8B_16B([Values(0u)]     uint rd,
+        public void Cls_V_8B_16B([Values(0u)] uint rd,
                                  [Values(1u, 0u)] uint rn,
-                                 [ValueSource(nameof(_8B_))]                [Random(RndCnt)] ulong z,
+                                 [ValueSource(nameof(_8B_))][Random(RndCnt)] ulong z,
                                  [ValueSource(nameof(_GenLeadingSigns8B_))] ulong a,
                                  [Values(0b0u, 0b1u)] uint q) // <8B, 16B>
         {
@@ -1336,9 +1342,9 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CLS <Vd>.<T>, <Vn>.<T>")]
-        public void Cls_V_4H_8H([Values(0u)]     uint rd,
+        public void Cls_V_4H_8H([Values(0u)] uint rd,
                                 [Values(1u, 0u)] uint rn,
-                                [ValueSource(nameof(_4H_))]                [Random(RndCnt)] ulong z,
+                                [ValueSource(nameof(_4H_))][Random(RndCnt)] ulong z,
                                 [ValueSource(nameof(_GenLeadingSigns4H_))] ulong a,
                                 [Values(0b0u, 0b1u)] uint q) // <4H, 8H>
         {
@@ -1355,9 +1361,9 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CLS <Vd>.<T>, <Vn>.<T>")]
-        public void Cls_V_2S_4S([Values(0u)]     uint rd,
+        public void Cls_V_2S_4S([Values(0u)] uint rd,
                                 [Values(1u, 0u)] uint rn,
-                                [ValueSource(nameof(_2S_))]                [Random(RndCnt)] ulong z,
+                                [ValueSource(nameof(_2S_))][Random(RndCnt)] ulong z,
                                 [ValueSource(nameof(_GenLeadingSigns2S_))] ulong a,
                                 [Values(0b0u, 0b1u)] uint q) // <2S, 4S>
         {
@@ -1374,9 +1380,9 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CLZ <Vd>.<T>, <Vn>.<T>")]
-        public void Clz_V_8B_16B([Values(0u)]     uint rd,
+        public void Clz_V_8B_16B([Values(0u)] uint rd,
                                  [Values(1u, 0u)] uint rn,
-                                 [ValueSource(nameof(_8B_))]                [Random(RndCnt)] ulong z,
+                                 [ValueSource(nameof(_8B_))][Random(RndCnt)] ulong z,
                                  [ValueSource(nameof(_GenLeadingZeros8B_))] ulong a,
                                  [Values(0b0u, 0b1u)] uint q) // <8B, 16B>
         {
@@ -1393,9 +1399,9 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CLZ <Vd>.<T>, <Vn>.<T>")]
-        public void Clz_V_4H_8H([Values(0u)]     uint rd,
+        public void Clz_V_4H_8H([Values(0u)] uint rd,
                                 [Values(1u, 0u)] uint rn,
-                                [ValueSource(nameof(_4H_))]                [Random(RndCnt)] ulong z,
+                                [ValueSource(nameof(_4H_))][Random(RndCnt)] ulong z,
                                 [ValueSource(nameof(_GenLeadingZeros4H_))] ulong a,
                                 [Values(0b0u, 0b1u)] uint q) // <4H, 8H>
         {
@@ -1412,9 +1418,9 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CLZ <Vd>.<T>, <Vn>.<T>")]
-        public void Clz_V_2S_4S([Values(0u)]     uint rd,
+        public void Clz_V_2S_4S([Values(0u)] uint rd,
                                 [Values(1u, 0u)] uint rn,
-                                [ValueSource(nameof(_2S_))]                [Random(RndCnt)] ulong z,
+                                [ValueSource(nameof(_2S_))][Random(RndCnt)] ulong z,
                                 [ValueSource(nameof(_GenLeadingZeros2S_))] ulong a,
                                 [Values(0b0u, 0b1u)] uint q) // <2S, 4S>
         {
@@ -1431,7 +1437,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CMEQ <V><d>, <V><n>, #0")]
-        public void Cmeq_S_D([Values(0u)]     uint rd,
+        public void Cmeq_S_D([Values(0u)] uint rd,
                              [Values(1u, 0u)] uint rn,
                              [ValueSource(nameof(_1D_))] ulong z,
                              [ValueSource(nameof(_1D_))] ulong a)
@@ -1448,7 +1454,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CMEQ <Vd>.<T>, <Vn>.<T>, #0")]
-        public void Cmeq_V_8B_4H_2S([Values(0u)]     uint rd,
+        public void Cmeq_V_8B_4H_2S([Values(0u)] uint rd,
                                     [Values(1u, 0u)] uint rn,
                                     [ValueSource(nameof(_8B4H2S_))] ulong z,
                                     [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -1467,7 +1473,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CMEQ <Vd>.<T>, <Vn>.<T>, #0")]
-        public void Cmeq_V_16B_8H_4S_2D([Values(0u)]     uint rd,
+        public void Cmeq_V_16B_8H_4S_2D([Values(0u)] uint rd,
                                         [Values(1u, 0u)] uint rn,
                                         [ValueSource(nameof(_8B4H2S1D_))] ulong z,
                                         [ValueSource(nameof(_8B4H2S1D_))] ulong a,
@@ -1486,7 +1492,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CMGE <V><d>, <V><n>, #0")]
-        public void Cmge_S_D([Values(0u)]     uint rd,
+        public void Cmge_S_D([Values(0u)] uint rd,
                              [Values(1u, 0u)] uint rn,
                              [ValueSource(nameof(_1D_))] ulong z,
                              [ValueSource(nameof(_1D_))] ulong a)
@@ -1503,7 +1509,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CMGE <Vd>.<T>, <Vn>.<T>, #0")]
-        public void Cmge_V_8B_4H_2S([Values(0u)]     uint rd,
+        public void Cmge_V_8B_4H_2S([Values(0u)] uint rd,
                                     [Values(1u, 0u)] uint rn,
                                     [ValueSource(nameof(_8B4H2S_))] ulong z,
                                     [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -1522,7 +1528,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CMGE <Vd>.<T>, <Vn>.<T>, #0")]
-        public void Cmge_V_16B_8H_4S_2D([Values(0u)]     uint rd,
+        public void Cmge_V_16B_8H_4S_2D([Values(0u)] uint rd,
                                         [Values(1u, 0u)] uint rn,
                                         [ValueSource(nameof(_8B4H2S1D_))] ulong z,
                                         [ValueSource(nameof(_8B4H2S1D_))] ulong a,
@@ -1541,7 +1547,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CMGT <V><d>, <V><n>, #0")]
-        public void Cmgt_S_D([Values(0u)]     uint rd,
+        public void Cmgt_S_D([Values(0u)] uint rd,
                              [Values(1u, 0u)] uint rn,
                              [ValueSource(nameof(_1D_))] ulong z,
                              [ValueSource(nameof(_1D_))] ulong a)
@@ -1558,7 +1564,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CMGT <Vd>.<T>, <Vn>.<T>, #0")]
-        public void Cmgt_V_8B_4H_2S([Values(0u)]     uint rd,
+        public void Cmgt_V_8B_4H_2S([Values(0u)] uint rd,
                                     [Values(1u, 0u)] uint rn,
                                     [ValueSource(nameof(_8B4H2S_))] ulong z,
                                     [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -1577,7 +1583,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CMGT <Vd>.<T>, <Vn>.<T>, #0")]
-        public void Cmgt_V_16B_8H_4S_2D([Values(0u)]     uint rd,
+        public void Cmgt_V_16B_8H_4S_2D([Values(0u)] uint rd,
                                         [Values(1u, 0u)] uint rn,
                                         [ValueSource(nameof(_8B4H2S1D_))] ulong z,
                                         [ValueSource(nameof(_8B4H2S1D_))] ulong a,
@@ -1596,7 +1602,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CMLE <V><d>, <V><n>, #0")]
-        public void Cmle_S_D([Values(0u)]     uint rd,
+        public void Cmle_S_D([Values(0u)] uint rd,
                              [Values(1u, 0u)] uint rn,
                              [ValueSource(nameof(_1D_))] ulong z,
                              [ValueSource(nameof(_1D_))] ulong a)
@@ -1613,7 +1619,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CMLE <Vd>.<T>, <Vn>.<T>, #0")]
-        public void Cmle_V_8B_4H_2S([Values(0u)]     uint rd,
+        public void Cmle_V_8B_4H_2S([Values(0u)] uint rd,
                                     [Values(1u, 0u)] uint rn,
                                     [ValueSource(nameof(_8B4H2S_))] ulong z,
                                     [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -1632,7 +1638,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CMLE <Vd>.<T>, <Vn>.<T>, #0")]
-        public void Cmle_V_16B_8H_4S_2D([Values(0u)]     uint rd,
+        public void Cmle_V_16B_8H_4S_2D([Values(0u)] uint rd,
                                         [Values(1u, 0u)] uint rn,
                                         [ValueSource(nameof(_8B4H2S1D_))] ulong z,
                                         [ValueSource(nameof(_8B4H2S1D_))] ulong a,
@@ -1651,7 +1657,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CMLT <V><d>, <V><n>, #0")]
-        public void Cmlt_S_D([Values(0u)]     uint rd,
+        public void Cmlt_S_D([Values(0u)] uint rd,
                              [Values(1u, 0u)] uint rn,
                              [ValueSource(nameof(_1D_))] ulong z,
                              [ValueSource(nameof(_1D_))] ulong a)
@@ -1668,7 +1674,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CMLT <Vd>.<T>, <Vn>.<T>, #0")]
-        public void Cmlt_V_8B_4H_2S([Values(0u)]     uint rd,
+        public void Cmlt_V_8B_4H_2S([Values(0u)] uint rd,
                                     [Values(1u, 0u)] uint rn,
                                     [ValueSource(nameof(_8B4H2S_))] ulong z,
                                     [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -1687,7 +1693,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CMLT <Vd>.<T>, <Vn>.<T>, #0")]
-        public void Cmlt_V_16B_8H_4S_2D([Values(0u)]     uint rd,
+        public void Cmlt_V_16B_8H_4S_2D([Values(0u)] uint rd,
                                         [Values(1u, 0u)] uint rn,
                                         [ValueSource(nameof(_8B4H2S1D_))] ulong z,
                                         [ValueSource(nameof(_8B4H2S1D_))] ulong a,
@@ -1706,9 +1712,9 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CNT <Vd>.<T>, <Vn>.<T>")]
-        public void Cnt_V_8B([Values(0u)]     uint rd,
+        public void Cnt_V_8B([Values(0u)] uint rd,
                              [Values(1u, 0u)] uint rn,
-                             [ValueSource(nameof(_8B_))]          [Random(RndCnt)] ulong z,
+                             [ValueSource(nameof(_8B_))][Random(RndCnt)] ulong z,
                              [ValueSource(nameof(_GenPopCnt8B_))] ulong a)
         {
             uint opcode = 0x0E205800; // CNT V0.8B, V0.8B
@@ -1723,9 +1729,9 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("CNT <Vd>.<T>, <Vn>.<T>")]
-        public void Cnt_V_16B([Values(0u)]     uint rd,
+        public void Cnt_V_16B([Values(0u)] uint rd,
                               [Values(1u, 0u)] uint rn,
-                              [ValueSource(nameof(_8B_))]          [Random(RndCnt)] ulong z,
+                              [ValueSource(nameof(_8B_))][Random(RndCnt)] ulong z,
                               [ValueSource(nameof(_GenPopCnt8B_))] ulong a)
         {
             uint opcode = 0x4E205800; // CNT V0.16B, V0.16B
@@ -1739,7 +1745,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Abs_Neg_Recpx_Sqrt_S_S([ValueSource(nameof(_F_Abs_Neg_Recpx_Sqrt_S_S_))] uint opcodes,
                                              [ValueSource(nameof(_1S_F_))] ulong a)
         {
@@ -1757,7 +1764,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Idc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Abs_Neg_Recpx_Sqrt_S_D([ValueSource(nameof(_F_Abs_Neg_Recpx_Sqrt_S_D_))] uint opcodes,
                                              [ValueSource(nameof(_1D_F_))] ulong a)
         {
@@ -1775,9 +1783,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Idc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Abs_Neg_Sqrt_V_2S_4S([ValueSource(nameof(_F_Abs_Neg_Sqrt_V_2S_4S_))] uint opcodes,
-                                           [Values(0u)]     uint rd,
+                                           [Values(0u)] uint rd,
                                            [Values(1u, 0u)] uint rn,
                                            [ValueSource(nameof(_2S_F_))] ulong z,
                                            [ValueSource(nameof(_2S_F_))] ulong a,
@@ -1799,9 +1808,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Idc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Abs_Neg_Sqrt_V_2D([ValueSource(nameof(_F_Abs_Neg_Sqrt_V_2D_))] uint opcodes,
-                                        [Values(0u)]     uint rd,
+                                        [Values(0u)] uint rd,
                                         [Values(1u, 0u)] uint rn,
                                         [ValueSource(nameof(_1D_F_))] ulong z,
                                         [ValueSource(nameof(_1D_F_))] ulong a)
@@ -1821,7 +1831,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Idc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Add_Max_Min_Nm_P_S_2SS([ValueSource(nameof(_F_Add_Max_Min_Nm_P_S_2SS_))] uint opcodes,
                                              [ValueSource(nameof(_2S_F_))] ulong a)
         {
@@ -1840,7 +1851,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Idc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Add_Max_Min_Nm_P_S_2DD([ValueSource(nameof(_F_Add_Max_Min_Nm_P_S_2DD_))] uint opcodes,
                                              [ValueSource(nameof(_1D_F_))] ulong a0,
                                              [ValueSource(nameof(_1D_F_))] ulong a1)
@@ -1860,7 +1872,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Idc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Cm_EqGeGtLeLt_S_S([ValueSource(nameof(_F_Cm_EqGeGtLeLt_S_S_))] uint opcodes,
                                         [ValueSource(nameof(_1S_F_))] ulong a)
         {
@@ -1877,7 +1890,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Idc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Cm_EqGeGtLeLt_S_D([ValueSource(nameof(_F_Cm_EqGeGtLeLt_S_D_))] uint opcodes,
                                         [ValueSource(nameof(_1D_F_))] ulong a)
         {
@@ -1894,9 +1908,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Idc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Cm_EqGeGtLeLt_V_2S_4S([ValueSource(nameof(_F_Cm_EqGeGtLeLt_V_2S_4S_))] uint opcodes,
-                                            [Values(0u)]     uint rd,
+                                            [Values(0u)] uint rd,
                                             [Values(1u, 0u)] uint rn,
                                             [ValueSource(nameof(_2S_F_))] ulong z,
                                             [ValueSource(nameof(_2S_F_))] ulong a,
@@ -1917,9 +1932,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Idc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Cm_EqGeGtLeLt_V_2D([ValueSource(nameof(_F_Cm_EqGeGtLeLt_V_2D_))] uint opcodes,
-                                         [Values(0u)]     uint rd,
+                                         [Values(0u)] uint rd,
                                          [Values(1u, 0u)] uint rn,
                                          [ValueSource(nameof(_1D_F_))] ulong z,
                                          [ValueSource(nameof(_1D_F_))] ulong a)
@@ -1938,7 +1954,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Idc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Cmp_Cmpe_S_S([ValueSource(nameof(_F_Cmp_Cmpe_S_S_))] uint opcodes,
                                    [ValueSource(nameof(_1S_F_))] ulong a)
         {
@@ -1954,7 +1971,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Cmp_Cmpe_S_D([ValueSource(nameof(_F_Cmp_Cmpe_S_D_))] uint opcodes,
                                    [ValueSource(nameof(_1D_F_))] ulong a)
         {
@@ -1970,7 +1988,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Cvt_S_SD([ValueSource(nameof(_F_Cvt_S_SD_))] uint opcodes,
                                [ValueSource(nameof(_1S_F_))] ulong a)
         {
@@ -1983,7 +2002,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Cvt_S_DS([ValueSource(nameof(_F_Cvt_S_DS_))] uint opcodes,
                                [ValueSource(nameof(_1D_F_))] ulong a)
         {
@@ -1996,7 +2016,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit] // Unicorn seems to default all rounding modes to RMode.Rn.
+        [Test, Pairwise]
+        [Explicit] // Unicorn seems to default all rounding modes to RMode.Rn.
         public void F_Cvt_S_SH([ValueSource(nameof(_F_Cvt_S_SH_))] uint opcodes,
                                [ValueSource(nameof(_1S_F_))] ulong a,
                                [Values(RMode.Rn)] RMode rMode)
@@ -2012,7 +2033,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Cvt_S_DH([ValueSource(nameof(_F_Cvt_S_DH_))] uint opcodes,
                                [ValueSource(nameof(_1D_F_))] ulong a,
                                [Values(RMode.Rn)] RMode rMode)
@@ -2028,7 +2050,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Cvt_S_HS([ValueSource(nameof(_F_Cvt_S_HS_))] uint opcodes,
                                [ValueSource(nameof(_1H_F_))] ulong a)
         {
@@ -2041,7 +2064,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Cvt_S_HD([ValueSource(nameof(_F_Cvt_S_HD_))] uint opcodes,
                                [ValueSource(nameof(_1H_F_))] ulong a)
         {
@@ -2054,7 +2078,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Cvt_ANZ_SU_S_S([ValueSource(nameof(_F_Cvt_ANZ_SU_S_S_))] uint opcodes,
                                      [ValueSource(nameof(_1S_F_W_))] ulong a)
         {
@@ -2067,7 +2092,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Cvt_ANZ_SU_S_D([ValueSource(nameof(_F_Cvt_ANZ_SU_S_D_))] uint opcodes,
                                      [ValueSource(nameof(_1D_F_X_))] ulong a)
         {
@@ -2080,9 +2106,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Cvt_ANZ_SU_V_2S_4S([ValueSource(nameof(_F_Cvt_ANZ_SU_V_2S_4S_))] uint opcodes,
-                                         [Values(0u)]     uint rd,
+                                         [Values(0u)] uint rd,
                                          [Values(1u, 0u)] uint rn,
                                          [ValueSource(nameof(_2S_F_W_))] ulong z,
                                          [ValueSource(nameof(_2S_F_W_))] ulong a,
@@ -2099,9 +2126,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Cvt_ANZ_SU_V_2D([ValueSource(nameof(_F_Cvt_ANZ_SU_V_2D_))] uint opcodes,
-                                      [Values(0u)]     uint rd,
+                                      [Values(0u)] uint rd,
                                       [Values(1u, 0u)] uint rn,
                                       [ValueSource(nameof(_1D_F_X_))] ulong z,
                                       [ValueSource(nameof(_1D_F_X_))] ulong a)
@@ -2116,9 +2144,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Cvtl_V_4H4S_8H4S([ValueSource(nameof(_F_Cvtl_V_4H4S_8H4S_))] uint opcodes,
-                                       [Values(0u)]     uint rd,
+                                       [Values(0u)] uint rd,
                                        [Values(1u, 0u)] uint rn,
                                        [ValueSource(nameof(_4H_F_))] ulong z,
                                        [ValueSource(nameof(_4H_F_))] ulong a,
@@ -2143,9 +2172,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Ofc | Fpsr.Ufc | Fpsr.Ixc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Cvtl_V_2S2D_4S2D([ValueSource(nameof(_F_Cvtl_V_2S2D_4S2D_))] uint opcodes,
-                                       [Values(0u)]     uint rd,
+                                       [Values(0u)] uint rd,
                                        [Values(1u, 0u)] uint rn,
                                        [ValueSource(nameof(_2S_F_))] ulong z,
                                        [ValueSource(nameof(_2S_F_))] ulong a,
@@ -2162,9 +2192,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit] // Unicorn seems to default all rounding modes to RMode.Rn.
+        [Test, Pairwise]
+        [Explicit] // Unicorn seems to default all rounding modes to RMode.Rn.
         public void F_Cvtn_V_4S4H_4S8H([ValueSource(nameof(_F_Cvtn_V_4S4H_4S8H_))] uint opcodes,
-                                       [Values(0u)]     uint rd,
+                                       [Values(0u)] uint rd,
                                        [Values(1u, 0u)] uint rn,
                                        [ValueSource(nameof(_2S_F_))] ulong z,
                                        [ValueSource(nameof(_2S_F_))] ulong a,
@@ -2189,9 +2220,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Ofc | Fpsr.Ufc | Fpsr.Ixc | Fpsr.Idc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Cvtn_V_2D2S_2D4S([ValueSource(nameof(_F_Cvtn_V_2D2S_2D4S_))] uint opcodes,
-                                       [Values(0u)]     uint rd,
+                                       [Values(0u)] uint rd,
                                        [Values(1u, 0u)] uint rn,
                                        [ValueSource(nameof(_1D_F_))] ulong z,
                                        [ValueSource(nameof(_1D_F_))] ulong a,
@@ -2208,9 +2240,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Max_Min_Nm_V_V_4SS([ValueSource(nameof(_F_Max_Min_Nm_V_V_4SS_))] uint opcodes,
-                                         [Values(0u)]     uint rd,
+                                         [Values(0u)] uint rd,
                                          [Values(1u, 0u)] uint rn,
                                          [ValueSource(nameof(_2S_F_))] ulong z,
                                          [ValueSource(nameof(_2S_F_))] ulong a)
@@ -2230,10 +2263,11 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Idc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Mov_Ftoi_SW([ValueSource(nameof(_F_Mov_Ftoi_SW_))] uint opcodes,
                                   [Values(0u, 31u)] uint rd,
-                                  [Values(1u)]      uint rn,
+                                  [Values(1u)] uint rn,
                                   [ValueSource(nameof(_1S_F_))] ulong a)
         {
             opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -2247,10 +2281,11 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Mov_Ftoi_DX([ValueSource(nameof(_F_Mov_Ftoi_DX_))] uint opcodes,
                                   [Values(0u, 31u)] uint rd,
-                                  [Values(1u)]      uint rn,
+                                  [Values(1u)] uint rn,
                                   [ValueSource(nameof(_1D_F_))] ulong a)
         {
             opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -2263,10 +2298,11 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Mov_Ftoi1_DX([ValueSource(nameof(_F_Mov_Ftoi1_DX_))] uint opcodes,
                                    [Values(0u, 31u)] uint rd,
-                                   [Values(1u)]      uint rn,
+                                   [Values(1u)] uint rn,
                                    [ValueSource(nameof(_1D_F_))] ulong a)
         {
             opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -2279,9 +2315,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Mov_Itof_WS([ValueSource(nameof(_F_Mov_Itof_WS_))] uint opcodes,
-                                  [Values(0u)]      uint rd,
+                                  [Values(0u)] uint rd,
                                   [Values(1u, 31u)] uint rn,
                                   [ValueSource(nameof(_W_))] uint wn)
         {
@@ -2296,9 +2333,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Mov_Itof_XD([ValueSource(nameof(_F_Mov_Itof_XD_))] uint opcodes,
-                                  [Values(0u)]      uint rd,
+                                  [Values(0u)] uint rd,
                                   [Values(1u, 31u)] uint rn,
                                   [ValueSource(nameof(_X_))] ulong xn)
         {
@@ -2313,9 +2351,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Mov_Itof1_XD([ValueSource(nameof(_F_Mov_Itof1_XD_))] uint opcodes,
-                                   [Values(0u)]      uint rd,
+                                   [Values(0u)] uint rd,
                                    [Values(1u, 31u)] uint rn,
                                    [ValueSource(nameof(_X_))] ulong xn)
         {
@@ -2330,7 +2369,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Mov_S_S([ValueSource(nameof(_F_Mov_S_S_))] uint opcodes,
                               [ValueSource(nameof(_1S_F_))] ulong a)
         {
@@ -2343,7 +2383,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Mov_S_D([ValueSource(nameof(_F_Mov_S_D_))] uint opcodes,
                               [ValueSource(nameof(_1D_F_))] ulong a)
         {
@@ -2356,7 +2397,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Recpe_Rsqrte_S_S([ValueSource(nameof(_F_Recpe_Rsqrte_S_S_))] uint opcodes,
                                        [ValueSource(nameof(_1S_F_))] ulong a,
                                        [Values(RMode.Rn)] RMode rMode)
@@ -2376,7 +2418,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Dzc | Fpsr.Ofc | Fpsr.Ufc | Fpsr.Ixc | Fpsr.Idc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Recpe_Rsqrte_S_D([ValueSource(nameof(_F_Recpe_Rsqrte_S_D_))] uint opcodes,
                                        [ValueSource(nameof(_1D_F_))] ulong a,
                                        [Values(RMode.Rn)] RMode rMode)
@@ -2396,9 +2439,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Dzc | Fpsr.Ofc | Fpsr.Ufc | Fpsr.Ixc | Fpsr.Idc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Recpe_Rsqrte_V_2S_4S([ValueSource(nameof(_F_Recpe_Rsqrte_V_2S_4S_))] uint opcodes,
-                                           [Values(0u)]     uint rd,
+                                           [Values(0u)] uint rd,
                                            [Values(1u, 0u)] uint rn,
                                            [ValueSource(nameof(_2S_F_))] ulong z,
                                            [ValueSource(nameof(_2S_F_))] ulong a,
@@ -2422,9 +2466,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Dzc | Fpsr.Ofc | Fpsr.Ufc | Fpsr.Ixc | Fpsr.Idc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Recpe_Rsqrte_V_2D([ValueSource(nameof(_F_Recpe_Rsqrte_V_2D_))] uint opcodes,
-                                        [Values(0u)]     uint rd,
+                                        [Values(0u)] uint rd,
                                         [Values(1u, 0u)] uint rn,
                                         [ValueSource(nameof(_1D_F_))] ulong z,
                                         [ValueSource(nameof(_1D_F_))] ulong a,
@@ -2446,7 +2491,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Dzc | Fpsr.Ofc | Fpsr.Ufc | Fpsr.Ixc | Fpsr.Idc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Rint_AMNPZ_S_S([ValueSource(nameof(_F_Rint_AMNPZ_S_S_))] uint opcodes,
                                      [ValueSource(nameof(_1S_F_))] ulong a)
         {
@@ -2459,7 +2505,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Rint_AMNPZ_S_D([ValueSource(nameof(_F_Rint_AMNPZ_S_D_))] uint opcodes,
                                      [ValueSource(nameof(_1D_F_))] ulong a)
         {
@@ -2472,9 +2519,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Rint_AMNPZ_V_2S_4S([ValueSource(nameof(_F_Rint_AMNPZ_V_2S_4S_))] uint opcodes,
-                                         [Values(0u)]     uint rd,
+                                         [Values(0u)] uint rd,
                                          [Values(1u, 0u)] uint rn,
                                          [ValueSource(nameof(_2S_F_))] ulong z,
                                          [ValueSource(nameof(_2S_F_))] ulong a,
@@ -2491,9 +2539,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Rint_AMNPZ_V_2D([ValueSource(nameof(_F_Rint_AMNPZ_V_2D_))] uint opcodes,
-                                      [Values(0u)]     uint rd,
+                                      [Values(0u)] uint rd,
                                       [Values(1u, 0u)] uint rn,
                                       [ValueSource(nameof(_1D_F_))] ulong z,
                                       [ValueSource(nameof(_1D_F_))] ulong a)
@@ -2508,7 +2557,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Rint_IX_S_S([ValueSource(nameof(_F_Rint_IX_S_S_))] uint opcodes,
                                   [ValueSource(nameof(_1S_F_))] ulong a,
                                   [Values] RMode rMode)
@@ -2524,7 +2574,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Rint_IX_S_D([ValueSource(nameof(_F_Rint_IX_S_D_))] uint opcodes,
                                   [ValueSource(nameof(_1D_F_))] ulong a,
                                   [Values] RMode rMode)
@@ -2540,9 +2591,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Rint_IX_V_2S_4S([ValueSource(nameof(_F_Rint_IX_V_2S_4S_))] uint opcodes,
-                                      [Values(0u)]     uint rd,
+                                      [Values(0u)] uint rd,
                                       [Values(1u, 0u)] uint rn,
                                       [ValueSource(nameof(_2S_F_))] ulong z,
                                       [ValueSource(nameof(_2S_F_))] ulong a,
@@ -2562,9 +2614,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Rint_IX_V_2D([ValueSource(nameof(_F_Rint_IX_V_2D_))] uint opcodes,
-                                   [Values(0u)]     uint rd,
+                                   [Values(0u)] uint rd,
                                    [Values(1u, 0u)] uint rn,
                                    [ValueSource(nameof(_1D_F_))] ulong z,
                                    [ValueSource(nameof(_1D_F_))] ulong a,
@@ -2583,7 +2636,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("NEG <V><d>, <V><n>")]
-        public void Neg_S_D([Values(0u)]     uint rd,
+        public void Neg_S_D([Values(0u)] uint rd,
                             [Values(1u, 0u)] uint rn,
                             [ValueSource(nameof(_1D_))] ulong z,
                             [ValueSource(nameof(_1D_))] ulong a)
@@ -2600,7 +2653,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("NEG <Vd>.<T>, <Vn>.<T>")]
-        public void Neg_V_8B_4H_2S([Values(0u)]     uint rd,
+        public void Neg_V_8B_4H_2S([Values(0u)] uint rd,
                                    [Values(1u, 0u)] uint rn,
                                    [ValueSource(nameof(_8B4H2S_))] ulong z,
                                    [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -2619,7 +2672,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("NEG <Vd>.<T>, <Vn>.<T>")]
-        public void Neg_V_16B_8H_4S_2D([Values(0u)]     uint rd,
+        public void Neg_V_16B_8H_4S_2D([Values(0u)] uint rd,
                                        [Values(1u, 0u)] uint rn,
                                        [ValueSource(nameof(_8B4H2S1D_))] ulong z,
                                        [ValueSource(nameof(_8B4H2S1D_))] ulong a,
@@ -2638,7 +2691,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("NOT <Vd>.<T>, <Vn>.<T>")]
-        public void Not_V_8B([Values(0u)]     uint rd,
+        public void Not_V_8B([Values(0u)] uint rd,
                              [Values(1u, 0u)] uint rn,
                              [ValueSource(nameof(_8B_))] ulong z,
                              [ValueSource(nameof(_8B_))] ulong a)
@@ -2655,7 +2708,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("NOT <Vd>.<T>, <Vn>.<T>")]
-        public void Not_V_16B([Values(0u)]     uint rd,
+        public void Not_V_16B([Values(0u)] uint rd,
                               [Values(1u, 0u)] uint rn,
                               [ValueSource(nameof(_8B_))] ulong z,
                               [ValueSource(nameof(_8B_))] ulong a)
@@ -2672,7 +2725,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("RBIT <Vd>.<T>, <Vn>.<T>")]
-        public void Rbit_V_8B([Values(0u)]     uint rd,
+        public void Rbit_V_8B([Values(0u)] uint rd,
                               [Values(1u, 0u)] uint rn,
                               [ValueSource(nameof(_8B_))] ulong z,
                               [ValueSource(nameof(_8B_))] ulong a)
@@ -2689,7 +2742,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("RBIT <Vd>.<T>, <Vn>.<T>")]
-        public void Rbit_V_16B([Values(0u)]     uint rd,
+        public void Rbit_V_16B([Values(0u)] uint rd,
                                [Values(1u, 0u)] uint rn,
                                [ValueSource(nameof(_8B_))] ulong z,
                                [ValueSource(nameof(_8B_))] ulong a)
@@ -2706,7 +2759,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("REV16 <Vd>.<T>, <Vn>.<T>")]
-        public void Rev16_V_8B([Values(0u)]     uint rd,
+        public void Rev16_V_8B([Values(0u)] uint rd,
                                [Values(1u, 0u)] uint rn,
                                [ValueSource(nameof(_8B_))] ulong z,
                                [ValueSource(nameof(_8B_))] ulong a)
@@ -2723,7 +2776,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("REV16 <Vd>.<T>, <Vn>.<T>")]
-        public void Rev16_V_16B([Values(0u)]     uint rd,
+        public void Rev16_V_16B([Values(0u)] uint rd,
                                 [Values(1u, 0u)] uint rn,
                                 [ValueSource(nameof(_8B_))] ulong z,
                                 [ValueSource(nameof(_8B_))] ulong a)
@@ -2740,7 +2793,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("REV32 <Vd>.<T>, <Vn>.<T>")]
-        public void Rev32_V_8B_4H([Values(0u)]     uint rd,
+        public void Rev32_V_8B_4H([Values(0u)] uint rd,
                                   [Values(1u, 0u)] uint rn,
                                   [ValueSource(nameof(_8B4H_))] ulong z,
                                   [ValueSource(nameof(_8B4H_))] ulong a,
@@ -2759,7 +2812,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("REV32 <Vd>.<T>, <Vn>.<T>")]
-        public void Rev32_V_16B_8H([Values(0u)]     uint rd,
+        public void Rev32_V_16B_8H([Values(0u)] uint rd,
                                    [Values(1u, 0u)] uint rn,
                                    [ValueSource(nameof(_8B4H_))] ulong z,
                                    [ValueSource(nameof(_8B4H_))] ulong a,
@@ -2778,7 +2831,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("REV64 <Vd>.<T>, <Vn>.<T>")]
-        public void Rev64_V_8B_4H_2S([Values(0u)]     uint rd,
+        public void Rev64_V_8B_4H_2S([Values(0u)] uint rd,
                                      [Values(1u, 0u)] uint rn,
                                      [ValueSource(nameof(_8B4H2S_))] ulong z,
                                      [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -2797,7 +2850,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("REV64 <Vd>.<T>, <Vn>.<T>")]
-        public void Rev64_V_16B_8H_4S([Values(0u)]     uint rd,
+        public void Rev64_V_16B_8H_4S([Values(0u)] uint rd,
                                       [Values(1u, 0u)] uint rn,
                                       [ValueSource(nameof(_8B4H2S_))] ulong z,
                                       [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -2816,7 +2869,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SADALP <Vd>.<Ta>, <Vn>.<Tb>")]
-        public void Sadalp_V_8B4H_4H2S_2S1D([Values(0u)]     uint rd,
+        public void Sadalp_V_8B4H_4H2S_2S1D([Values(0u)] uint rd,
                                             [Values(1u, 0u)] uint rn,
                                             [ValueSource(nameof(_8B4H2S_))] ulong z,
                                             [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -2835,7 +2888,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SADALP <Vd>.<Ta>, <Vn>.<Tb>")]
-        public void Sadalp_V_16B8H_8H4S_4S2D([Values(0u)]     uint rd,
+        public void Sadalp_V_16B8H_8H4S_4S2D([Values(0u)] uint rd,
                                              [Values(1u, 0u)] uint rn,
                                              [ValueSource(nameof(_8B4H2S_))] ulong z,
                                              [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -2854,7 +2907,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SADDLP <Vd>.<Ta>, <Vn>.<Tb>")]
-        public void Saddlp_V_8B4H_4H2S_2S1D([Values(0u)]     uint rd,
+        public void Saddlp_V_8B4H_4H2S_2S1D([Values(0u)] uint rd,
                                             [Values(1u, 0u)] uint rn,
                                             [ValueSource(nameof(_8B4H2S_))] ulong z,
                                             [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -2873,7 +2926,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SADDLP <Vd>.<Ta>, <Vn>.<Tb>")]
-        public void Saddlp_V_16B8H_8H4S_4S2D([Values(0u)]     uint rd,
+        public void Saddlp_V_16B8H_8H4S_4S2D([Values(0u)] uint rd,
                                              [Values(1u, 0u)] uint rn,
                                              [ValueSource(nameof(_8B4H2S_))] ulong z,
                                              [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -2893,7 +2946,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise]
         public void SU_Addl_V_V_8BH_4HS([ValueSource(nameof(_SU_Addl_V_V_8BH_4HS_))] uint opcodes,
-                                        [Values(0u)]     uint rd,
+                                        [Values(0u)] uint rd,
                                         [Values(1u, 0u)] uint rn,
                                         [ValueSource(nameof(_8B4H_))] ulong z,
                                         [ValueSource(nameof(_8B4H_))] ulong a,
@@ -2912,7 +2965,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise]
         public void SU_Addl_V_V_16BH_8HS_4SD([ValueSource(nameof(_SU_Addl_V_V_16BH_8HS_4SD_))] uint opcodes,
-                                             [Values(0u)]     uint rd,
+                                             [Values(0u)] uint rd,
                                              [Values(1u, 0u)] uint rn,
                                              [ValueSource(nameof(_8B4H2S_))] ulong z,
                                              [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -2929,7 +2982,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void SU_Cvt_F_S_S([ValueSource(nameof(_SU_Cvt_F_S_S_))] uint opcodes,
                                  [ValueSource(nameof(_1S_))] ulong a)
         {
@@ -2942,7 +2996,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void SU_Cvt_F_S_D([ValueSource(nameof(_SU_Cvt_F_S_D_))] uint opcodes,
                                  [ValueSource(nameof(_1D_))] ulong a)
         {
@@ -2955,9 +3010,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void SU_Cvt_F_V_2S_4S([ValueSource(nameof(_SU_Cvt_F_V_2S_4S_))] uint opcodes,
-                                     [Values(0u)]     uint rd,
+                                     [Values(0u)] uint rd,
                                      [Values(1u, 0u)] uint rn,
                                      [ValueSource(nameof(_2S_))] ulong z,
                                      [ValueSource(nameof(_2S_))] ulong a,
@@ -2974,9 +3030,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void SU_Cvt_F_V_2D([ValueSource(nameof(_SU_Cvt_F_V_2D_))] uint opcodes,
-                                  [Values(0u)]     uint rd,
+                                  [Values(0u)] uint rd,
                                   [Values(1u, 0u)] uint rn,
                                   [ValueSource(nameof(_1D_))] ulong z,
                                   [ValueSource(nameof(_1D_))] ulong a)
@@ -2993,7 +3050,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise]
         public void Sha1h_Sha1su1_V([ValueSource(nameof(_Sha1h_Sha1su1_V_))] uint opcodes,
-                                    [Values(0u)]     uint rd,
+                                    [Values(0u)] uint rd,
                                     [Values(1u, 0u)] uint rn,
                                     [Random(RndCnt / 2)] ulong z0, [Random(RndCnt / 2)] ulong z1,
                                     [Random(RndCnt / 2)] ulong a0, [Random(RndCnt / 2)] ulong a1)
@@ -3010,7 +3067,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise]
         public void Sha256su0_V([ValueSource(nameof(_Sha256su0_V_))] uint opcodes,
-                                [Values(0u)]     uint rd,
+                                [Values(0u)] uint rd,
                                 [Values(1u, 0u)] uint rn,
                                 [Random(RndCnt / 2)] ulong z0, [Random(RndCnt / 2)] ulong z1,
                                 [Random(RndCnt / 2)] ulong a0, [Random(RndCnt / 2)] ulong a1)
@@ -3026,7 +3083,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SHLL{2} <Vd>.<Ta>, <Vn>.<Tb>, #<shift>")]
-        public void Shll_V([Values(0u)]     uint rd,
+        public void Shll_V([Values(0u)] uint rd,
                            [Values(1u, 0u)] uint rn,
                            [ValueSource(nameof(_8B4H2S_))] ulong z,
                            [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -3047,7 +3104,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SQABS <V><d>, <V><n>")]
-        public void Sqabs_S_B_H_S_D([Values(0u)]     uint rd,
+        public void Sqabs_S_B_H_S_D([Values(0u)] uint rd,
                                     [Values(1u, 0u)] uint rn,
                                     [ValueSource(nameof(_1B1H1S1D_))] ulong z,
                                     [ValueSource(nameof(_1B1H1S1D_))] ulong a,
@@ -3066,7 +3123,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SQABS <Vd>.<T>, <Vn>.<T>")]
-        public void Sqabs_V_8B_4H_2S([Values(0u)]     uint rd,
+        public void Sqabs_V_8B_4H_2S([Values(0u)] uint rd,
                                      [Values(1u, 0u)] uint rn,
                                      [ValueSource(nameof(_8B4H2S_))] ulong z,
                                      [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -3085,7 +3142,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SQABS <Vd>.<T>, <Vn>.<T>")]
-        public void Sqabs_V_16B_8H_4S_2D([Values(0u)]     uint rd,
+        public void Sqabs_V_16B_8H_4S_2D([Values(0u)] uint rd,
                                          [Values(1u, 0u)] uint rn,
                                          [ValueSource(nameof(_8B4H2S1D_))] ulong z,
                                          [ValueSource(nameof(_8B4H2S1D_))] ulong a,
@@ -3104,7 +3161,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SQNEG <V><d>, <V><n>")]
-        public void Sqneg_S_B_H_S_D([Values(0u)]     uint rd,
+        public void Sqneg_S_B_H_S_D([Values(0u)] uint rd,
                                     [Values(1u, 0u)] uint rn,
                                     [ValueSource(nameof(_1B1H1S1D_))] ulong z,
                                     [ValueSource(nameof(_1B1H1S1D_))] ulong a,
@@ -3123,7 +3180,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SQNEG <Vd>.<T>, <Vn>.<T>")]
-        public void Sqneg_V_8B_4H_2S([Values(0u)]     uint rd,
+        public void Sqneg_V_8B_4H_2S([Values(0u)] uint rd,
                                      [Values(1u, 0u)] uint rn,
                                      [ValueSource(nameof(_8B4H2S_))] ulong z,
                                      [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -3142,7 +3199,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SQNEG <Vd>.<T>, <Vn>.<T>")]
-        public void Sqneg_V_16B_8H_4S_2D([Values(0u)]     uint rd,
+        public void Sqneg_V_16B_8H_4S_2D([Values(0u)] uint rd,
                                          [Values(1u, 0u)] uint rn,
                                          [ValueSource(nameof(_8B4H2S1D_))] ulong z,
                                          [ValueSource(nameof(_8B4H2S1D_))] ulong a,
@@ -3161,7 +3218,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SQXTN <Vb><d>, <Va><n>")]
-        public void Sqxtn_S_HB_SH_DS([Values(0u)]     uint rd,
+        public void Sqxtn_S_HB_SH_DS([Values(0u)] uint rd,
                                      [Values(1u, 0u)] uint rn,
                                      [ValueSource(nameof(_1H1S1D_))] ulong z,
                                      [ValueSource(nameof(_1H1S1D_))] ulong a,
@@ -3180,7 +3237,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SQXTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
-        public void Sqxtn_V_8H8B_4S4H_2D2S([Values(0u)]     uint rd,
+        public void Sqxtn_V_8H8B_4S4H_2D2S([Values(0u)] uint rd,
                                            [Values(1u, 0u)] uint rn,
                                            [ValueSource(nameof(_4H2S1D_))] ulong z,
                                            [ValueSource(nameof(_4H2S1D_))] ulong a,
@@ -3199,7 +3256,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SQXTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
-        public void Sqxtn_V_8H16B_4S8H_2D4S([Values(0u)]     uint rd,
+        public void Sqxtn_V_8H16B_4S8H_2D4S([Values(0u)] uint rd,
                                             [Values(1u, 0u)] uint rn,
                                             [ValueSource(nameof(_4H2S1D_))] ulong z,
                                             [ValueSource(nameof(_4H2S1D_))] ulong a,
@@ -3218,7 +3275,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SQXTUN <Vb><d>, <Va><n>")]
-        public void Sqxtun_S_HB_SH_DS([Values(0u)]     uint rd,
+        public void Sqxtun_S_HB_SH_DS([Values(0u)] uint rd,
                                       [Values(1u, 0u)] uint rn,
                                       [ValueSource(nameof(_1H1S1D_))] ulong z,
                                       [ValueSource(nameof(_1H1S1D_))] ulong a,
@@ -3237,7 +3294,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SQXTUN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
-        public void Sqxtun_V_8H8B_4S4H_2D2S([Values(0u)]     uint rd,
+        public void Sqxtun_V_8H8B_4S4H_2D2S([Values(0u)] uint rd,
                                             [Values(1u, 0u)] uint rn,
                                             [ValueSource(nameof(_4H2S1D_))] ulong z,
                                             [ValueSource(nameof(_4H2S1D_))] ulong a,
@@ -3256,7 +3313,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SQXTUN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
-        public void Sqxtun_V_8H16B_4S8H_2D4S([Values(0u)]     uint rd,
+        public void Sqxtun_V_8H16B_4S8H_2D4S([Values(0u)] uint rd,
                                              [Values(1u, 0u)] uint rn,
                                              [ValueSource(nameof(_4H2S1D_))] ulong z,
                                              [ValueSource(nameof(_4H2S1D_))] ulong a,
@@ -3275,7 +3332,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SUQADD <V><d>, <V><n>")]
-        public void Suqadd_S_B_H_S_D([Values(0u)]     uint rd,
+        public void Suqadd_S_B_H_S_D([Values(0u)] uint rd,
                                      [Values(1u, 0u)] uint rn,
                                      [ValueSource(nameof(_1B1H1S1D_))] ulong z,
                                      [ValueSource(nameof(_1B1H1S1D_))] ulong a,
@@ -3294,7 +3351,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SUQADD <Vd>.<T>, <Vn>.<T>")]
-        public void Suqadd_V_8B_4H_2S([Values(0u)]     uint rd,
+        public void Suqadd_V_8B_4H_2S([Values(0u)] uint rd,
                                       [Values(1u, 0u)] uint rn,
                                       [ValueSource(nameof(_8B4H2S_))] ulong z,
                                       [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -3313,7 +3370,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SUQADD <Vd>.<T>, <Vn>.<T>")]
-        public void Suqadd_V_16B_8H_4S_2D([Values(0u)]     uint rd,
+        public void Suqadd_V_16B_8H_4S_2D([Values(0u)] uint rd,
                                           [Values(1u, 0u)] uint rn,
                                           [ValueSource(nameof(_8B4H2S1D_))] ulong z,
                                           [ValueSource(nameof(_8B4H2S1D_))] ulong a,
@@ -3332,7 +3389,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("UADALP <Vd>.<Ta>, <Vn>.<Tb>")]
-        public void Uadalp_V_8B4H_4H2S_2S1D([Values(0u)]     uint rd,
+        public void Uadalp_V_8B4H_4H2S_2S1D([Values(0u)] uint rd,
                                             [Values(1u, 0u)] uint rn,
                                             [ValueSource(nameof(_8B4H2S_))] ulong z,
                                             [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -3351,7 +3408,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("UADALP <Vd>.<Ta>, <Vn>.<Tb>")]
-        public void Uadalp_V_16B8H_8H4S_4S2D([Values(0u)]     uint rd,
+        public void Uadalp_V_16B8H_8H4S_4S2D([Values(0u)] uint rd,
                                              [Values(1u, 0u)] uint rn,
                                              [ValueSource(nameof(_8B4H2S_))] ulong z,
                                              [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -3370,7 +3427,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("UADDLP <Vd>.<Ta>, <Vn>.<Tb>")]
-        public void Uaddlp_V_8B4H_4H2S_2S1D([Values(0u)]     uint rd,
+        public void Uaddlp_V_8B4H_4H2S_2S1D([Values(0u)] uint rd,
                                             [Values(1u, 0u)] uint rn,
                                             [ValueSource(nameof(_8B4H2S_))] ulong z,
                                             [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -3389,7 +3446,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("UADDLP <Vd>.<Ta>, <Vn>.<Tb>")]
-        public void Uaddlp_V_16B8H_8H4S_4S2D([Values(0u)]     uint rd,
+        public void Uaddlp_V_16B8H_8H4S_4S2D([Values(0u)] uint rd,
                                              [Values(1u, 0u)] uint rn,
                                              [ValueSource(nameof(_8B4H2S_))] ulong z,
                                              [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -3408,7 +3465,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("UQXTN <Vb><d>, <Va><n>")]
-        public void Uqxtn_S_HB_SH_DS([Values(0u)]     uint rd,
+        public void Uqxtn_S_HB_SH_DS([Values(0u)] uint rd,
                                      [Values(1u, 0u)] uint rn,
                                      [ValueSource(nameof(_1H1S1D_))] ulong z,
                                      [ValueSource(nameof(_1H1S1D_))] ulong a,
@@ -3427,7 +3484,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("UQXTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
-        public void Uqxtn_V_8H8B_4S4H_2D2S([Values(0u)]     uint rd,
+        public void Uqxtn_V_8H8B_4S4H_2D2S([Values(0u)] uint rd,
                                            [Values(1u, 0u)] uint rn,
                                            [ValueSource(nameof(_4H2S1D_))] ulong z,
                                            [ValueSource(nameof(_4H2S1D_))] ulong a,
@@ -3446,7 +3503,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("UQXTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
-        public void Uqxtn_V_8H16B_4S8H_2D4S([Values(0u)]     uint rd,
+        public void Uqxtn_V_8H16B_4S8H_2D4S([Values(0u)] uint rd,
                                             [Values(1u, 0u)] uint rn,
                                             [ValueSource(nameof(_4H2S1D_))] ulong z,
                                             [ValueSource(nameof(_4H2S1D_))] ulong a,
@@ -3465,7 +3522,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("USQADD <V><d>, <V><n>")]
-        public void Usqadd_S_B_H_S_D([Values(0u)]     uint rd,
+        public void Usqadd_S_B_H_S_D([Values(0u)] uint rd,
                                      [Values(1u, 0u)] uint rn,
                                      [ValueSource(nameof(_1B1H1S1D_))] ulong z,
                                      [ValueSource(nameof(_1B1H1S1D_))] ulong a,
@@ -3484,7 +3541,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("USQADD <Vd>.<T>, <Vn>.<T>")]
-        public void Usqadd_V_8B_4H_2S([Values(0u)]     uint rd,
+        public void Usqadd_V_8B_4H_2S([Values(0u)] uint rd,
                                       [Values(1u, 0u)] uint rn,
                                       [ValueSource(nameof(_8B4H2S_))] ulong z,
                                       [ValueSource(nameof(_8B4H2S_))] ulong a,
@@ -3503,7 +3560,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("USQADD <Vd>.<T>, <Vn>.<T>")]
-        public void Usqadd_V_16B_8H_4S_2D([Values(0u)]     uint rd,
+        public void Usqadd_V_16B_8H_4S_2D([Values(0u)] uint rd,
                                           [Values(1u, 0u)] uint rn,
                                           [ValueSource(nameof(_8B4H2S1D_))] ulong z,
                                           [ValueSource(nameof(_8B4H2S1D_))] ulong a,
@@ -3522,7 +3579,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("XTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
-        public void Xtn_V_8H8B_4S4H_2D2S([Values(0u)]     uint rd,
+        public void Xtn_V_8H8B_4S4H_2D2S([Values(0u)] uint rd,
                                          [Values(1u, 0u)] uint rn,
                                          [ValueSource(nameof(_4H2S1D_))] ulong z,
                                          [ValueSource(nameof(_4H2S1D_))] ulong a,
@@ -3541,7 +3598,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("XTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
-        public void Xtn_V_8H16B_4S8H_2D4S([Values(0u)]     uint rd,
+        public void Xtn_V_8H16B_4S8H_2D4S([Values(0u)] uint rd,
                                           [Values(1u, 0u)] uint rn,
                                           [ValueSource(nameof(_4H2S1D_))] ulong z,
                                           [ValueSource(nameof(_4H2S1D_))] ulong a,

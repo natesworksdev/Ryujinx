@@ -10,7 +10,7 @@ namespace Ryujinx.Tests.Cpu
     {
 #if Alu
 
-#region "Helper methods"
+        #region "Helper methods"
         private static uint GenLeadingSignsMinus32(int cnt) // 0 <= cnt <= 31
         {
             return ~GenLeadingZeros32(cnt + 1);
@@ -33,8 +33,10 @@ namespace Ryujinx.Tests.Cpu
 
         private static uint GenLeadingZeros32(int cnt) // 0 <= cnt <= 32
         {
-            if (cnt == 32) return 0u;
-            if (cnt == 31) return 1u;
+            if (cnt == 32)
+                return 0u;
+            if (cnt == 31)
+                return 1u;
 
             uint rnd  = TestContext.CurrentContext.Random.NextUInt();
             int  mask = int.MinValue;
@@ -44,17 +46,19 @@ namespace Ryujinx.Tests.Cpu
 
         private static ulong GenLeadingZeros64(int cnt) // 0 <= cnt <= 64
         {
-            if (cnt == 64) return 0ul;
-            if (cnt == 63) return 1ul;
+            if (cnt == 64)
+                return 0ul;
+            if (cnt == 63)
+                return 1ul;
 
             ulong rnd  = TestContext.CurrentContext.Random.NextULong();
             long  mask = long.MinValue;
 
             return (rnd >> (cnt + 1)) | ((ulong)mask >> cnt);
         }
-#endregion
+        #endregion
 
-#region "ValueSource (Types)"
+        #region "ValueSource (Types)"
 #pragma warning disable IDE1006
         private static IEnumerable<ulong> _GenLeadingSignsX_()
         {
@@ -90,7 +94,7 @@ namespace Ryujinx.Tests.Cpu
             }
         }
 #pragma warning restore IDE1006
-#endregion
+        #endregion
 
         [Test, Pairwise, Description("CLS <Xd>, <Xn>")]
         public void Cls_64bit([Values(0u, 31u)] uint rd,

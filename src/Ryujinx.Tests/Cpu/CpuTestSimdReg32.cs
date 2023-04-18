@@ -12,7 +12,7 @@ namespace Ryujinx.Tests.Cpu
     {
 #if SimdReg32
 
-#region "ValueSource (Opcodes)"
+        #region "ValueSource (Opcodes)"
 #pragma warning disable IDE1006
         private static uint[] _V_Add_Sub_Long_Wide_I_()
         {
@@ -123,9 +123,9 @@ namespace Ryujinx.Tests.Cpu
                 0xf2000250u  // VQSUB.S8 Q0, Q0, Q0
             };
         }
-#endregion
+        #endregion
 
-#region "ValueSource (Types)"
+        #region "ValueSource (Types)"
         private static ulong[] _8B1D_()
         {
             return new[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
@@ -266,7 +266,7 @@ namespace Ryujinx.Tests.Cpu
             }
         }
 #pragma warning restore IDE1006
-#endregion
+        #endregion
 
         private const int RndCnt = 2;
 
@@ -290,7 +290,7 @@ namespace Ryujinx.Tests.Cpu
         {
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
-            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
 
             V128 v0 = MakeVectorE0E1(z0, z1);
             V128 v1 = MakeVectorE0E1(a0, a1);
@@ -324,7 +324,7 @@ namespace Ryujinx.Tests.Cpu
         {
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
-            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
 
             V128 v0 = MakeVectorE0E1(z0, z1);
             V128 v1 = MakeVectorE0E1(a0, a1);
@@ -358,7 +358,7 @@ namespace Ryujinx.Tests.Cpu
         {
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
-            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
 
             V128 v0 = MakeVectorE0E1(z0, z1);
             V128 v1 = MakeVectorE0E1(a0, a1);
@@ -398,7 +398,7 @@ namespace Ryujinx.Tests.Cpu
                 rd <<= 1;
             }
 
-            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
 
@@ -427,12 +427,14 @@ namespace Ryujinx.Tests.Cpu
                 opcode |= 1 << 24;
             }
 
-            rd >>= 1; rd <<= 1;
-            rn >>= 1; rn <<= 1;
+            rd >>= 1;
+            rd <<= 1;
+            rn >>= 1;
+            rn <<= 1;
 
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
-            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
 
             opcode |= (size & 0x3) << 20;
 
@@ -457,12 +459,12 @@ namespace Ryujinx.Tests.Cpu
 
             if (size == 3)
             {
-                opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+                opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
                 opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             }
             else
             {
-                opcode |= ((rm & 0x1e) >> 1)  | ((rm & 0x1) << 5);
+                opcode |= ((rm & 0x1e) >> 1) | ((rm & 0x1) << 5);
                 opcode |= ((rd & 0x1e) << 11) | ((rd & 0x1) << 22);
             }
 
@@ -482,7 +484,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Nzcv);
         }
 
-        [Test, Pairwise] [Explicit] // Fused.
+        [Test, Pairwise]
+        [Explicit] // Fused.
         public void Vfma_Vfms_Vfnma_Vfnms_S_F32([ValueSource(nameof(_Vfma_Vfms_Vfnma_Vfnms_S_F32_))] uint opcode,
                                                 [Values(0u, 1u, 2u, 3u)] uint rd,
                                                 [Values(0u, 1u, 2u, 3u)] uint rn,
@@ -493,8 +496,8 @@ namespace Ryujinx.Tests.Cpu
                                                 [ValueSource(nameof(_1S_F_))] ulong s3)
         {
             opcode |= (((rd & 0x1) << 22) | (rd & 0x1e) << 11);
-            opcode |= (((rn & 0x1) << 7)  | (rn & 0x1e) << 15);
-            opcode |= (((rm & 0x1) << 5)  | (rm & 0x1e) >> 1);
+            opcode |= (((rn & 0x1) << 7) | (rn & 0x1e) << 15);
+            opcode |= (((rm & 0x1) << 5) | (rm & 0x1e) >> 1);
 
             V128 v0 = MakeVectorE0E1E2E3((uint)s0, (uint)s1, (uint)s2, (uint)s3);
 
@@ -503,7 +506,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit] // Fused.
+        [Test, Pairwise]
+        [Explicit] // Fused.
         public void Vfma_Vfms_Vfnma_Vfnms_S_F64([ValueSource(nameof(_Vfma_Vfms_Vfnma_Vfnms_S_F64_))] uint opcode,
                                                 [Values(0u, 1u)] uint rd,
                                                 [Values(0u, 1u)] uint rn,
@@ -512,8 +516,8 @@ namespace Ryujinx.Tests.Cpu
                                                 [ValueSource(nameof(_1D_F_))] ulong d1)
         {
             opcode |= (((rd & 0x10) << 18) | (rd & 0xf) << 12);
-            opcode |= (((rn & 0x10) << 3)  | (rn & 0xf) << 16);
-            opcode |= (((rm & 0x10) << 1)  | (rm & 0xf) << 0);
+            opcode |= (((rn & 0x10) << 3) | (rn & 0xf) << 16);
+            opcode |= (((rm & 0x10) << 1) | (rm & 0xf) << 0);
 
             V128 v0 = MakeVectorE0E1(d0, d1);
 
@@ -522,7 +526,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit] // Fused.
+        [Test, Pairwise]
+        [Explicit] // Fused.
         public void Vfma_Vfms_V_F32([ValueSource(nameof(_Vfma_Vfms_V_F32_))] uint opcode,
                                     [Values(0u, 1u, 2u, 3u)] uint rd,
                                     [Values(0u, 1u, 2u, 3u)] uint rn,
@@ -537,14 +542,17 @@ namespace Ryujinx.Tests.Cpu
             {
                 opcode |= 1 << 6;
 
-                rd >>= 1; rd <<= 1;
-                rn >>= 1; rn <<= 1;
-                rm >>= 1; rm <<= 1;
+                rd >>= 1;
+                rd <<= 1;
+                rn >>= 1;
+                rn <<= 1;
+                rm >>= 1;
+                rm <<= 1;
             }
 
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
-            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
 
             V128 v0 = MakeVectorE0E1(d0, d1);
             V128 v1 = MakeVectorE0E1(d2, d3);
@@ -554,7 +562,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void Vmla_Vmls_Vnmla_Vnmls_S_F32([ValueSource(nameof(_Vmla_Vmls_Vnmla_Vnmls_S_F32_))] uint opcode,
                                                 [Values(0u, 1u, 2u, 3u)] uint rd,
                                                 [Values(0u, 1u, 2u, 3u)] uint rn,
@@ -565,8 +574,8 @@ namespace Ryujinx.Tests.Cpu
                                                 [ValueSource(nameof(_1S_F_))] ulong s3)
         {
             opcode |= (((rd & 0x1) << 22) | (rd & 0x1e) << 11);
-            opcode |= (((rn & 0x1) << 7)  | (rn & 0x1e) << 15);
-            opcode |= (((rm & 0x1) << 5)  | (rm & 0x1e) >> 1);
+            opcode |= (((rn & 0x1) << 7) | (rn & 0x1e) << 15);
+            opcode |= (((rm & 0x1) << 5) | (rm & 0x1e) >> 1);
 
             V128 v0 = MakeVectorE0E1E2E3((uint)s0, (uint)s1, (uint)s2, (uint)s3);
 
@@ -575,7 +584,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void Vmla_Vmls_Vnmla_Vnmls_S_F64([ValueSource(nameof(_Vmla_Vmls_Vnmla_Vnmls_S_F64_))] uint opcode,
                                                 [Values(0u, 1u)] uint rd,
                                                 [Values(0u, 1u)] uint rn,
@@ -584,8 +594,8 @@ namespace Ryujinx.Tests.Cpu
                                                 [ValueSource(nameof(_1D_F_))] ulong d1)
         {
             opcode |= (((rd & 0x10) << 18) | (rd & 0xf) << 12);
-            opcode |= (((rn & 0x10) << 3)  | (rn & 0xf) << 16);
-            opcode |= (((rm & 0x10) << 1)  | (rm & 0xf) << 0);
+            opcode |= (((rn & 0x10) << 3) | (rn & 0xf) << 16);
+            opcode |= (((rm & 0x10) << 1) | (rm & 0xf) << 0);
 
             V128 v0 = MakeVectorE0E1(d0, d1);
 
@@ -605,7 +615,7 @@ namespace Ryujinx.Tests.Cpu
                                   [Random(RndCnt)] ulong b,
                                   [Values] bool u)
         {
-            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
 
@@ -638,7 +648,7 @@ namespace Ryujinx.Tests.Cpu
         {
             uint opcode = 0xf2800c00u; // VMULL.S8 Q0, D0, D0
 
-            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
 
@@ -680,11 +690,12 @@ namespace Ryujinx.Tests.Cpu
 
             uint opcode = 0xf2800e00u; // VMULL.P8 Q0, D0, D0
 
-            rd >>= 1; rd <<= 1;
+            rd >>= 1;
+            rd <<= 1;
 
             opcode |= (((rd & 0x10) << 18) | (rd & 0xf) << 12);
-            opcode |= (((rn & 0x10) << 3)  | (rn & 0xf) << 16);
-            opcode |= (((rm & 0x10) << 1)  | (rm & 0xf) << 0);
+            opcode |= (((rn & 0x10) << 3) | (rn & 0xf) << 16);
+            opcode |= (((rm & 0x10) << 1) | (rm & 0xf) << 0);
 
             opcode |= (size & 0x3) << 20;
 
@@ -725,7 +736,7 @@ namespace Ryujinx.Tests.Cpu
                 opcode |= 1 << 24;
             }
 
-            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
 
@@ -753,7 +764,7 @@ namespace Ryujinx.Tests.Cpu
                                      [ValueSource(nameof(_2S_F_))] ulong b0,
                                      [ValueSource(nameof(_2S_F_))] ulong b1)
         {
-            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
 
@@ -776,7 +787,7 @@ namespace Ryujinx.Tests.Cpu
                              [Random(RndCnt)] ulong a,
                              [Random(RndCnt)] ulong b)
         {
-            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
 
@@ -807,7 +818,7 @@ namespace Ryujinx.Tests.Cpu
                 opcode |= 1 << 24;
             }
 
-            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
 
@@ -838,13 +849,16 @@ namespace Ryujinx.Tests.Cpu
                 opcode |= 1 << 24;
             }
 
-            rd >>= 1; rd <<= 1;
-            rn >>= 1; rn <<= 1;
-            rm >>= 1; rm <<= 1;
+            rd >>= 1;
+            rd <<= 1;
+            rn >>= 1;
+            rn <<= 1;
+            rm >>= 1;
+            rm <<= 1;
 
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
-            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
 
             opcode |= (size & 0x3) << 20;
 
@@ -866,15 +880,18 @@ namespace Ryujinx.Tests.Cpu
                               [ValueSource(nameof(_8B4H2S1D_))] ulong b,
                               [Values(1u, 2u)] uint size) // <S16, S32>
         {
-            rd >>= 1; rd <<= 1;
-            rn >>= 1; rn <<= 1;
-            rm >>= 1; rm <<= 1;
+            rd >>= 1;
+            rd <<= 1;
+            rn >>= 1;
+            rn <<= 1;
+            rm >>= 1;
+            rm <<= 1;
 
             uint opcode = 0xf2100b40u & ~(3u << 20); // VQDMULH.S16 Q0, Q0, Q0
 
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
-            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
 
             opcode |= (size & 0x3) << 20;
 

@@ -97,7 +97,8 @@ namespace Ryujinx.Tests.Cpu
             opcode |= (vn & 0x1e) << 15;
             opcode |= (rt & 0xf) << 12;
 
-            if (op) opcode |= 1 << 20;
+            if (op)
+                opcode |= 1 << 20;
 
             SingleOpcode(opcode, r0: valueRn, r1: valueRn, r2: valueRn, r3: valueRn, v0: new V128(valueVn1, valueVn2));
 
@@ -348,7 +349,8 @@ namespace Ryujinx.Tests.Cpu
             if (q)
             {
                 opcode |= 1 << 6;
-                vd <<= 1; vm <<= 1;
+                vd <<= 1;
+                vm <<= 1;
             }
             opcode |= (vm & 0x10) << 1;
             opcode |= (vm & 0xf);
@@ -381,7 +383,8 @@ namespace Ryujinx.Tests.Cpu
             if (q)
             {
                 opcode |= 1 << 6;
-                vd <<= 1; vm <<= 1;
+                vd <<= 1;
+                vm <<= 1;
             }
             opcode |= (vm & 0x10) << 1;
             opcode |= (vm & 0xf);
@@ -414,7 +417,8 @@ namespace Ryujinx.Tests.Cpu
             if (q)
             {
                 opcode |= 1 << 6;
-                vd <<= 1; vm <<= 1;
+                vd <<= 1;
+                vm <<= 1;
             }
             opcode |= (vm & 0x10) << 1;
             opcode |= (vm & 0xf);
@@ -467,7 +471,7 @@ namespace Ryujinx.Tests.Cpu
             byte maxIndex = (byte)(length * 8 - 1);
             byte[] b0 = new byte[16];
             byte[] b1 = new byte[16];
-            for (int i=0; i<16; i++)
+            for (int i = 0; i < 16; i++)
             {
                 b0[i] = rnd.NextByte(maxIndex);
                 b1[i] = rnd.NextByte(maxIndex);
@@ -493,7 +497,9 @@ namespace Ryujinx.Tests.Cpu
             if (q)
             {
                 opcode |= 1 << 6;
-                vd <<= 1; vm <<= 1; vn <<= 1;
+                vd <<= 1;
+                vm <<= 1;
+                vn <<= 1;
             }
             else if (imm4 > 7)
             {

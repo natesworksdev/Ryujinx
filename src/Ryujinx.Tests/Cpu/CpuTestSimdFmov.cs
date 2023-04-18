@@ -10,7 +10,7 @@ namespace Ryujinx.Tests.Cpu
     {
 #if SimdFmov
 
-#region "ValueSource"
+        #region "ValueSource"
 #pragma warning disable IDE1006
         private static uint[] _F_Mov_Si_S_()
         {
@@ -28,9 +28,10 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 #pragma warning restore IDE1006
-#endregion
+        #endregion
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Mov_Si_S([ValueSource(nameof(_F_Mov_Si_S_))] uint opcodes,
                                [Range(0u, 255u, 1u)] uint imm8)
         {
@@ -44,7 +45,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Mov_Si_D([ValueSource(nameof(_F_Mov_Si_D_))] uint opcodes,
                                [Range(0u, 255u, 1u)] uint imm8)
         {

@@ -11,7 +11,7 @@ namespace Ryujinx.Tests.Cpu
     {
 #if SimdRegElemF
 
-#region "ValueSource (Types)"
+        #region "ValueSource (Types)"
 #pragma warning disable IDE1006
         private static IEnumerable<ulong> _1S_F_()
         {
@@ -136,9 +136,9 @@ namespace Ryujinx.Tests.Cpu
                 yield return rnd2;
             }
         }
-#endregion
+        #endregion
 
-#region "ValueSource (Opcodes)"
+        #region "ValueSource (Opcodes)"
         private static uint[] _F_Mla_Mls_Se_S_()
         {
             return new[]
@@ -211,7 +211,7 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 #pragma warning restore IDE1006
-#endregion
+        #endregion
 
         private const int RndCnt = 2;
 
@@ -219,7 +219,8 @@ namespace Ryujinx.Tests.Cpu
         private static readonly bool NoInfs  = false;
         private static readonly bool NoNaNs  = false;
 
-        [Test, Pairwise] [Explicit] // Fused.
+        [Test, Pairwise]
+        [Explicit] // Fused.
         public void F_Mla_Mls_Se_S([ValueSource(nameof(_F_Mla_Mls_Se_S_))] uint opcodes,
                                    [ValueSource(nameof(_1S_F_))] ulong z,
                                    [ValueSource(nameof(_1S_F_))] ulong a,
@@ -245,7 +246,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(Fpsr.Ioc | Fpsr.Idc, FpSkips.IfUnderflow, FpTolerances.UpToOneUlpsS);
         }
 
-        [Test, Pairwise] [Explicit] // Fused.
+        [Test, Pairwise]
+        [Explicit] // Fused.
         public void F_Mla_Mls_Se_D([ValueSource(nameof(_F_Mla_Mls_Se_D_))] uint opcodes,
                                    [ValueSource(nameof(_1D_F_))] ulong z,
                                    [ValueSource(nameof(_1D_F_))] ulong a,
@@ -270,9 +272,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(Fpsr.Ioc | Fpsr.Idc, FpSkips.IfUnderflow, FpTolerances.UpToOneUlpsD);
         }
 
-        [Test, Pairwise] [Explicit] // Fused.
+        [Test, Pairwise]
+        [Explicit] // Fused.
         public void F_Mla_Mls_Ve_2S_4S([ValueSource(nameof(_F_Mla_Mls_Ve_2S_4S_))] uint opcodes,
-                                       [Values(0u)]     uint rd,
+                                       [Values(0u)] uint rd,
                                        [Values(1u, 0u)] uint rn,
                                        [Values(2u, 0u)] uint rm,
                                        [ValueSource(nameof(_2S_F_))] ulong z,
@@ -302,9 +305,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(Fpsr.Ioc | Fpsr.Idc, FpSkips.IfUnderflow, FpTolerances.UpToOneUlpsS);
         }
 
-        [Test, Pairwise] [Explicit] // Fused.
+        [Test, Pairwise]
+        [Explicit] // Fused.
         public void F_Mla_Mls_Ve_2D([ValueSource(nameof(_F_Mla_Mls_Ve_2D_))] uint opcodes,
-                                    [Values(0u)]     uint rd,
+                                    [Values(0u)] uint rd,
                                     [Values(1u, 0u)] uint rn,
                                     [Values(2u, 0u)] uint rm,
                                     [ValueSource(nameof(_1D_F_))] ulong z,
@@ -331,7 +335,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(Fpsr.Ioc | Fpsr.Idc, FpSkips.IfUnderflow, FpTolerances.UpToOneUlpsD);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Mul_Mulx_Se_S([ValueSource(nameof(_F_Mul_Mulx_Se_S_))] uint opcodes,
                                     [ValueSource(nameof(_1S_F_))] ulong a,
                                     [ValueSource(nameof(_2S_F_))] ulong b,
@@ -357,7 +362,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Idc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Mul_Mulx_Se_D([ValueSource(nameof(_F_Mul_Mulx_Se_D_))] uint opcodes,
                                     [ValueSource(nameof(_1D_F_))] ulong a,
                                     [ValueSource(nameof(_1D_F_))] ulong b,
@@ -382,9 +388,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Idc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Mul_Mulx_Ve_2S_4S([ValueSource(nameof(_F_Mul_Mulx_Ve_2S_4S_))] uint opcodes,
-                                        [Values(0u)]     uint rd,
+                                        [Values(0u)] uint rd,
                                         [Values(1u, 0u)] uint rn,
                                         [Values(2u, 0u)] uint rm,
                                         [ValueSource(nameof(_2S_F_))] ulong z,
@@ -414,9 +421,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Idc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Mul_Mulx_Ve_2D([ValueSource(nameof(_F_Mul_Mulx_Ve_2D_))] uint opcodes,
-                                     [Values(0u)]     uint rd,
+                                     [Values(0u)] uint rd,
                                      [Values(1u, 0u)] uint rn,
                                      [Values(2u, 0u)] uint rm,
                                      [ValueSource(nameof(_1D_F_))] ulong z,

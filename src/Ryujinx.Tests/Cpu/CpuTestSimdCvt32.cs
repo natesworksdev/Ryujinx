@@ -12,7 +12,7 @@ namespace Ryujinx.Tests.Cpu
     {
 #if SimdCvt32
 
-#region "ValueSource (Opcodes)"
+        #region "ValueSource (Opcodes)"
 #pragma warning disable IDE1006
         private static uint[] _Vrint_AMNP_V_F32_()
         {
@@ -24,9 +24,9 @@ namespace Ryujinx.Tests.Cpu
                 0xf3ba0780u  // VRINTP.F32 Q0, Q0
             };
         }
-#endregion
+        #endregion
 
-#region "ValueSource (Types)"
+        #region "ValueSource (Types)"
         private static uint[] _1S_()
         {
             return new[] { 0x00000000u, 0x7FFFFFFFu,
@@ -157,7 +157,7 @@ namespace Ryujinx.Tests.Cpu
             }
         }
 #pragma warning restore IDE1006
-#endregion
+        #endregion
 
         private const int RndCnt = 2;
 
@@ -277,7 +277,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void Vrint_AMNP_V_F32([ValueSource(nameof(_Vrint_AMNP_V_F32_))] uint opcode,
                                      [Values(0u, 1u, 2u, 3u)] uint rd,
                                      [Values(0u, 1u, 2u, 3u)] uint rm,
@@ -291,12 +292,14 @@ namespace Ryujinx.Tests.Cpu
             {
                 opcode |= 1 << 6;
 
-                rd >>= 1; rd <<= 1;
-                rm >>= 1; rm <<= 1;
+                rd >>= 1;
+                rd <<= 1;
+                rm >>= 1;
+                rm <<= 1;
             }
 
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
-            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
 
             V128 v0 = MakeVectorE0E1(d0, d1);
             V128 v1 = MakeVectorE0E1(d2, d3);

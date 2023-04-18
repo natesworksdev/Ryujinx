@@ -79,8 +79,8 @@ namespace Ryujinx.Tests.Cpu
             _context.Dispose();
             _ram.Dispose();
 
-            _memory     = null;
-            _context    = null;
+            _memory = null;
+            _context = null;
             _cpuContext = null;
             _unicornEmu = null;
 
@@ -288,7 +288,8 @@ namespace Ryujinx.Tests.Cpu
 
             SetWorkingMemory(0, testMem);
 
-            RunPrecomputedTestCase(new PrecomputedThumbTestCase(){
+            RunPrecomputedTestCase(new PrecomputedThumbTestCase()
+            {
                 Instructions = test.Instructions,
                 StartRegs = test.StartRegs,
                 FinalRegs = test.FinalRegs,
@@ -574,7 +575,8 @@ namespace Ryujinx.Tests.Cpu
         {
             uint rnd;
 
-            do rnd = TestContext.CurrentContext.Random.NextUShort();
+            do
+                rnd = TestContext.CurrentContext.Random.NextUShort();
             while ((rnd & 0x7C00u) == 0u ||
                    (~rnd & 0x7C00u) == 0u);
 
@@ -585,7 +587,8 @@ namespace Ryujinx.Tests.Cpu
         {
             uint rnd;
 
-            do rnd = TestContext.CurrentContext.Random.NextUShort();
+            do
+                rnd = TestContext.CurrentContext.Random.NextUShort();
             while ((rnd & 0x03FFu) == 0u);
 
             return (ushort)(rnd & 0x83FFu);
@@ -595,7 +598,8 @@ namespace Ryujinx.Tests.Cpu
         {
             uint rnd;
 
-            do rnd = TestContext.CurrentContext.Random.NextUInt();
+            do
+                rnd = TestContext.CurrentContext.Random.NextUInt();
             while ((rnd & 0x7F800000u) == 0u ||
                    (~rnd & 0x7F800000u) == 0u);
 
@@ -606,7 +610,8 @@ namespace Ryujinx.Tests.Cpu
         {
             uint rnd;
 
-            do rnd = TestContext.CurrentContext.Random.NextUInt();
+            do
+                rnd = TestContext.CurrentContext.Random.NextUInt();
             while ((rnd & 0x007FFFFFu) == 0u);
 
             return rnd & 0x807FFFFFu;
@@ -616,7 +621,8 @@ namespace Ryujinx.Tests.Cpu
         {
             ulong rnd;
 
-            do rnd = TestContext.CurrentContext.Random.NextULong();
+            do
+                rnd = TestContext.CurrentContext.Random.NextULong();
             while ((rnd & 0x7FF0000000000000ul) == 0ul ||
                    (~rnd & 0x7FF0000000000000ul) == 0ul);
 
@@ -627,7 +633,8 @@ namespace Ryujinx.Tests.Cpu
         {
             ulong rnd;
 
-            do rnd = TestContext.CurrentContext.Random.NextULong();
+            do
+                rnd = TestContext.CurrentContext.Random.NextULong();
             while ((rnd & 0x000FFFFFFFFFFFFFul) == 0ul);
 
             return rnd & 0x800FFFFFFFFFFFFFul;

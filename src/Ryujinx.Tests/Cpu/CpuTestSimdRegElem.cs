@@ -10,7 +10,7 @@ namespace Ryujinx.Tests.Cpu
     {
 #if SimdRegElem
 
-#region "ValueSource (Types)"
+        #region "ValueSource (Types)"
 #pragma warning disable IDE1006
         private static ulong[] _2S_()
         {
@@ -23,9 +23,9 @@ namespace Ryujinx.Tests.Cpu
             return new[] { 0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
                            0x8000800080008000ul, 0xFFFFFFFFFFFFFFFFul };
         }
-#endregion
+        #endregion
 
-#region "ValueSource (Opcodes)"
+        #region "ValueSource (Opcodes)"
         private static uint[] _Mla_Mls_Mul_Sqdmulh_Sqrdmulh_Ve_4H_8H_()
         {
             return new[]
@@ -76,12 +76,12 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 #pragma warning restore IDE1006
-#endregion
+        #endregion
 
 
         [Test, Pairwise]
         public void Mla_Mls_Mul_Sqdmulh_Sqrdmulh_Ve_4H_8H([ValueSource(nameof(_Mla_Mls_Mul_Sqdmulh_Sqrdmulh_Ve_4H_8H_))] uint opcodes,
-                                                          [Values(0u)]     uint rd,
+                                                          [Values(0u)] uint rd,
                                                           [Values(1u, 0u)] uint rn,
                                                           [Values(2u, 0u)] uint rm,
                                                           [ValueSource(nameof(_4H_))] ulong z,
@@ -136,7 +136,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise]
         public void SU_Mlal_Mlsl_Mull_Ve_4H4S_8H4S([ValueSource(nameof(_SU_Mlal_Mlsl_Mull_Ve_4H4S_8H4S_))] uint opcodes,
-                                                   [Values(0u)]     uint rd,
+                                                   [Values(0u)] uint rd,
                                                    [Values(1u, 0u)] uint rn,
                                                    [Values(2u, 0u)] uint rm,
                                                    [ValueSource(nameof(_4H_))] ulong z,
@@ -164,7 +164,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise]
         public void SU_Mlal_Mlsl_Mull_Ve_2S2D_4S2D([ValueSource(nameof(_SU_Mlal_Mlsl_Mull_Ve_2S2D_4S2D_))] uint opcodes,
-                                                   [Values(0u)]     uint rd,
+                                                   [Values(0u)] uint rd,
                                                    [Values(1u, 0u)] uint rn,
                                                    [Values(2u, 0u)] uint rm,
                                                    [ValueSource(nameof(_2S_))] ulong z,

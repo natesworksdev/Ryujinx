@@ -11,7 +11,7 @@ namespace Ryujinx.Tests.Cpu
     {
 #if SimdFcond
 
-#region "ValueSource (Types)"
+        #region "ValueSource (Types)"
 #pragma warning disable IDE1006
         private static IEnumerable<ulong> _1S_F_()
         {
@@ -95,9 +95,9 @@ namespace Ryujinx.Tests.Cpu
                 yield return rnd2;
             }
         }
-#endregion
+        #endregion
 
-#region "ValueSource (Opcodes)"
+        #region "ValueSource (Opcodes)"
         private static uint[] _F_Ccmp_Ccmpe_S_S_()
         {
             return new[]
@@ -132,7 +132,7 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 #pragma warning restore IDE1006
-#endregion
+        #endregion
 
         private const int RndCnt     = 2;
         private const int RndCntNzcv = 2;
@@ -141,7 +141,8 @@ namespace Ryujinx.Tests.Cpu
         private static readonly bool NoInfs  = false;
         private static readonly bool NoNaNs  = false;
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Ccmp_Ccmpe_S_S([ValueSource(nameof(_F_Ccmp_Ccmpe_S_S_))] uint opcodes,
                                      [ValueSource(nameof(_1S_F_))] ulong a,
                                      [ValueSource(nameof(_1S_F_))] ulong b,
@@ -166,7 +167,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Ccmp_Ccmpe_S_D([ValueSource(nameof(_F_Ccmp_Ccmpe_S_D_))] uint opcodes,
                                      [ValueSource(nameof(_1D_F_))] ulong a,
                                      [ValueSource(nameof(_1D_F_))] ulong b,
@@ -191,7 +193,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Csel_S_S([ValueSource(nameof(_F_Csel_S_S_))] uint opcodes,
                                [ValueSource(nameof(_1S_F_))] ulong a,
                                [ValueSource(nameof(_1S_F_))] ulong b,
@@ -212,7 +215,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise]
+        [Explicit]
         public void F_Csel_S_D([ValueSource(nameof(_F_Csel_S_D_))] uint opcodes,
                                [ValueSource(nameof(_1D_F_))] ulong a,
                                [ValueSource(nameof(_1D_F_))] ulong b,
