@@ -506,7 +506,7 @@ namespace Ryujinx.Ui.App.Common
 
             // Return the ControlFS
             controlFs = controlNca?.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None);
-            titleId   = controlNca?.Header.TitleId.ToString("x16");
+            titleId = controlNca?.Header.TitleId.ToString("x16");
         }
 
         public static ApplicationMetadata LoadAndSaveMetaData(string titleId, Action<ApplicationMetadata> modifyFunction = null)
@@ -704,7 +704,7 @@ namespace Ryujinx.Ui.App.Common
                     }
                 }
             }
-            catch(Exception)
+            catch (Exception)
             {
                 Logger.Warning?.Print(LogClass.Application, $"Could not retrieve a valid icon for the app. Default icon will be used. Errored File: {applicationPath}");
             }

@@ -9,6 +9,7 @@ namespace Ryujinx.Ui.Common.Configuration
     {
         public static void Initialize()
         {
+#pragma warning disable IDE0055 // Disable formatting
             ConfigurationState.Instance.Logger.EnableDebug.Event       += ReloadEnableDebug;
             ConfigurationState.Instance.Logger.EnableStub.Event        += ReloadEnableStub;
             ConfigurationState.Instance.Logger.EnableInfo.Event        += ReloadEnableInfo;
@@ -19,6 +20,7 @@ namespace Ryujinx.Ui.Common.Configuration
             ConfigurationState.Instance.Logger.EnableFsAccessLog.Event += ReloadEnableFsAccessLog;
             ConfigurationState.Instance.Logger.FilteredClasses.Event   += ReloadFilteredClasses;
             ConfigurationState.Instance.Logger.EnableFileLog.Event     += ReloadFileLogger;
+#pragma warning restore IDE0055
         }
 
         private static void ReloadEnableDebug(object sender, ReactiveEventArgs<bool> e)
