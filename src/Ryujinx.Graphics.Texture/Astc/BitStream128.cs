@@ -44,7 +44,8 @@ namespace Ryujinx.Graphics.Texture.Astc
         {
             Debug.Assert(bitCount < 32);
 
-            if (bitCount == 0) return;
+            if (bitCount == 0)
+                return;
 
             ulong maskedValue = (uint)(value & ((1 << bitCount) - 1));
 

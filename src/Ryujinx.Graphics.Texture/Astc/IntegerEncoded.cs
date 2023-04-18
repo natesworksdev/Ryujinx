@@ -185,29 +185,29 @@ namespace Ryujinx.Graphics.Texture.Astc
                 switch (intEncoded.GetEncoding())
                 {
                     case EIntegerEncoding.Quint:
-                    {
-                        DecodeQuintBlock(ref bitStream, ref decodeIntegerSequence, intEncoded.NumberBits);
-                        numberValuesDecoded += 3;
+                        {
+                            DecodeQuintBlock(ref bitStream, ref decodeIntegerSequence, intEncoded.NumberBits);
+                            numberValuesDecoded += 3;
 
-                        break;
-                    }
+                            break;
+                        }
 
                     case EIntegerEncoding.Trit:
-                    {
-                        DecodeTritBlock(ref bitStream, ref decodeIntegerSequence, intEncoded.NumberBits);
-                        numberValuesDecoded += 5;
+                        {
+                            DecodeTritBlock(ref bitStream, ref decodeIntegerSequence, intEncoded.NumberBits);
+                            numberValuesDecoded += 5;
 
-                        break;
-                    }
+                            break;
+                        }
 
                     case EIntegerEncoding.JustBits:
-                    {
-                        intEncoded.BitValue = bitStream.ReadBits(intEncoded.NumberBits);
-                        decodeIntegerSequence.Add(ref intEncoded);
-                        numberValuesDecoded++;
+                        {
+                            intEncoded.BitValue = bitStream.ReadBits(intEncoded.NumberBits);
+                            decodeIntegerSequence.Add(ref intEncoded);
+                            numberValuesDecoded++;
 
-                        break;
-                    }
+                            break;
+                        }
                 }
             }
         }

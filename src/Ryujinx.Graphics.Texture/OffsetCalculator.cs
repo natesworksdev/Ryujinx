@@ -19,18 +19,18 @@ namespace Ryujinx.Graphics.Texture
         private int _yPart;
 
         public OffsetCalculator(
-            int  width,
-            int  height,
-            int  stride,
+            int width,
+            int height,
+            int stride,
             bool isLinear,
-            int  gobBlocksInY,
-            int  gobBlocksInZ,
-            int  bytesPerPixel)
+            int gobBlocksInY,
+            int gobBlocksInZ,
+            int bytesPerPixel)
         {
-            _width         = width;
-            _height        = height;
-            _stride        = stride;
-            _isLinear      = isLinear;
+            _width = width;
+            _height = height;
+            _stride = stride;
+            _isLinear = isLinear;
             _bytesPerPixel = bytesPerPixel;
 
             int wAlignment = GobStride / bytesPerPixel;

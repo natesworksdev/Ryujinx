@@ -388,10 +388,18 @@ namespace Ryujinx.Graphics.Texture.Astc
             {
                 switch (numberPartitions)
                 {
-                    case 2: extraColorEndpointModeBits += 2; break;
-                    case 3: extraColorEndpointModeBits += 5; break;
-                    case 4: extraColorEndpointModeBits += 8; break;
-                    default: Debug.Assert(false); break;
+                    case 2:
+                        extraColorEndpointModeBits += 2;
+                        break;
+                    case 3:
+                        extraColorEndpointModeBits += 5;
+                        break;
+                    case 4:
+                        extraColorEndpointModeBits += 8;
+                        break;
+                    default:
+                        Debug.Assert(false);
+                        break;
                 }
             }
 
@@ -448,7 +456,10 @@ namespace Ryujinx.Graphics.Texture.Astc
                 for (int i = 0; i < numberPartitions; i++)
                 {
                     colorEndpointMode[i] = baseMode;
-                    if (!(c[i])) colorEndpointMode[i] -= 1;
+                    if (!(c[i]))
+                    {
+                        colorEndpointMode[i] -= 1;
+                    }
                     colorEndpointMode[i] <<= 2;
                     colorEndpointMode[i] |= m[i];
                 }
@@ -475,7 +486,11 @@ namespace Ryujinx.Graphics.Texture.Astc
             DecodeColorValues(colorValues, ref colorEndpointStream, colorEndpointMode, numberPartitions, colorDataBits);
 
             EndPointSet endPoints;
-            unsafe { _ = &endPoints; } // Skip struct initialization
+            unsafe
+            {
+                // Skip struct initialization
+                _ = &endPoints;
+            }
 
             int colorValuesPosition = 0;
 
@@ -502,10 +517,17 @@ namespace Ryujinx.Graphics.Texture.Astc
             texelWeightData[clearByteStart - 1] &= (byte)((1 << (texelParams.GetPackedBitSize() % 8)) - 1);
 
             int cLen = 16 - clearByteStart;
-            for (int i = clearByteStart; i < clearByteStart + cLen; i++) texelWeightData[i] = 0;
+            for (int i = clearByteStart; i < clearByteStart + cLen; i++)
+            {
+                texelWeightData[i] = 0;
+            }
 
             IntegerSequence texelWeightValues;
-            unsafe { _ = &texelWeightValues; } // Skip struct initialization
+            unsafe
+            {
+                // Skip struct initialization
+                _ = &texelWeightValues;
+            }
             texelWeightValues.Reset();
 
             BitStream128 weightBitStream = new(texelWeightData);
@@ -514,7 +536,11 @@ namespace Ryujinx.Graphics.Texture.Astc
 
             // Blocks can be at most 12x12, so we can have as many as 144 weights
             Weights weights;
-            unsafe { _ = &weights; } // Skip struct initialization
+            unsafe
+            {
+                // Skip struct initialization
+                _ = &weights;
+            }
 
             UnquantizeTexelWeights(ref weights, ref texelWeightValues, ref texelParams, blockWidth, blockHeight);
 
@@ -632,12 +658,18 @@ namespace Ryujinx.Graphics.Texture.Astc
             byte seed11 = (byte)((rightNum >> 26) & 0xF);
             byte seed12 = (byte)(((rightNum >> 30) | (rightNum << 2)) & 0xF);
 
-            seed01 *= seed01; seed02 *= seed02;
-            seed03 *= seed03; seed04 *= seed04;
-            seed05 *= seed05; seed06 *= seed06;
-            seed07 *= seed07; seed08 *= seed08;
-            seed09 *= seed09; seed10 *= seed10;
-            seed11 *= seed11; seed12 *= seed12;
+            seed01 *= seed01;
+            seed02 *= seed02;
+            seed03 *= seed03;
+            seed04 *= seed04;
+            seed05 *= seed05;
+            seed06 *= seed06;
+            seed07 *= seed07;
+            seed08 *= seed08;
+            seed09 *= seed09;
+            seed10 *= seed10;
+            seed11 *= seed11;
+            seed12 *= seed12;
 
             int seedHash1, seedHash2, seedHash3;
 
@@ -654,31 +686,55 @@ namespace Ryujinx.Graphics.Texture.Astc
 
             seedHash3 = (seed & 0x10) != 0 ? seedHash1 : seedHash2;
 
-            seed01 >>= seedHash1; seed02 >>= seedHash2; seed03 >>= seedHash1; seed04 >>= seedHash2;
-            seed05 >>= seedHash1; seed06 >>= seedHash2; seed07 >>= seedHash1; seed08 >>= seedHash2;
-            seed09 >>= seedHash3; seed10 >>= seedHash3; seed11 >>= seedHash3; seed12 >>= seedHash3;
+            seed01 >>= seedHash1;
+            seed02 >>= seedHash2;
+            seed03 >>= seedHash1;
+            seed04 >>= seedHash2;
+            seed05 >>= seedHash1;
+            seed06 >>= seedHash2;
+            seed07 >>= seedHash1;
+            seed08 >>= seedHash2;
+            seed09 >>= seedHash3;
+            seed10 >>= seedHash3;
+            seed11 >>= seedHash3;
+            seed12 >>= seedHash3;
 
             int a = seed01 * x + seed02 * y + seed11 * z + (rightNum >> 14);
             int b = seed03 * x + seed04 * y + seed12 * z + (rightNum >> 10);
             int c = seed05 * x + seed06 * y + seed09 * z + (rightNum >> 6);
             int d = seed07 * x + seed08 * y + seed10 * z + (rightNum >> 2);
 
-            a &= 0x3F; b &= 0x3F; c &= 0x3F; d &= 0x3F;
+            a &= 0x3F;
+            b &= 0x3F;
+            c &= 0x3F;
+            d &= 0x3F;
 
-            if (partitionCount < 4) d = 0;
-            if (partitionCount < 3) c = 0;
+            if (partitionCount < 4)
+                d = 0;
+            if (partitionCount < 3)
+                c = 0;
 
-            if (a >= b && a >= c && a >= d) return 0;
-            else if (b >= c && b >= d) return 1;
-            else if (c >= d) return 2;
+            if (a >= b && a >= c && a >= d)
+                return 0;
+            else if (b >= c && b >= d)
+                return 1;
+            else if (c >= d)
+                return 2;
             return 3;
         }
 
         static int Hash52(uint val)
         {
-            val ^= val >> 15; val -= val << 17; val += val << 7; val += val << 4;
-            val ^= val >> 5; val += val << 16; val ^= val >> 7; val ^= val >> 3;
-            val ^= val << 6; val ^= val >> 17;
+            val ^= val >> 15;
+            val -= val << 17;
+            val += val << 7;
+            val += val << 4;
+            val ^= val >> 5;
+            val += val << 16;
+            val ^= val >> 7;
+            val ^= val >> 3;
+            val ^= val << 6;
+            val ^= val >> 17;
 
             return (int)val;
         }
@@ -692,7 +748,11 @@ namespace Ryujinx.Graphics.Texture.Astc
         {
             int weightIndices = 0;
             Weights unquantized;
-            unsafe { _ = &unquantized; } // Skip struct initialization
+            unsafe
+            {
+                // Skip struct initialization
+                _ = &unquantized;
+            }
 
             Span<IntegerEncoded> weightsList = weights.List;
             Span<int> unquantized0 = unquantized[0];
@@ -713,7 +773,8 @@ namespace Ryujinx.Graphics.Texture.Astc
                     }
                 }
 
-                if (++weightIndices >= texelParams.Width * texelParams.Height) break;
+                if (++weightIndices >= texelParams.Width * texelParams.Height)
+                    break;
             }
 
             // Do infill if necessary (Section C.2.18) ...
@@ -794,100 +855,100 @@ namespace Ryujinx.Graphics.Texture.Astc
                     break;
 
                 case IntegerEncoded.EIntegerEncoding.Trit:
-                {
-                    d = intEncoded.TritValue;
-                    Debug.Assert(d < 3);
-
-                    switch (bitLength)
                     {
-                        case 0:
-                        {
-                            result = d switch
-                            {
-                                0 => 0,
-                                1 => 32,
-                                2 => 63,
-                                _ => 0
-                            };
+                        d = intEncoded.TritValue;
+                        Debug.Assert(d < 3);
 
-                            break;
+                        switch (bitLength)
+                        {
+                            case 0:
+                                {
+                                    result = d switch
+                                    {
+                                        0 => 0,
+                                        1 => 32,
+                                        2 => 63,
+                                        _ => 0
+                                    };
+
+                                    break;
+                                }
+
+                            case 1:
+                                {
+                                    c = 50;
+                                    break;
+                                }
+
+                            case 2:
+                                {
+                                    c = 23;
+                                    int b2 = (bitValue >> 1) & 1;
+                                    b = (b2 << 6) | (b2 << 2) | b2;
+
+                                    break;
+                                }
+
+                            case 3:
+                                {
+                                    c = 11;
+                                    int cb = (bitValue >> 1) & 3;
+                                    b = (cb << 5) | cb;
+
+                                    break;
+                                }
+
+                            default:
+                                throw new AstcDecoderException("Invalid trit encoding for texel weight.");
                         }
 
-                        case 1:
-                        {
-                            c = 50;
-                            break;
-                        }
-
-                        case 2:
-                        {
-                            c = 23;
-                            int b2 = (bitValue >> 1) & 1;
-                            b = (b2 << 6) | (b2 << 2) | b2;
-
-                            break;
-                        }
-
-                        case 3:
-                        {
-                            c = 11;
-                            int cb = (bitValue >> 1) & 3;
-                            b = (cb << 5) | cb;
-
-                            break;
-                        }
-
-                        default:
-                            throw new AstcDecoderException("Invalid trit encoding for texel weight.");
+                        break;
                     }
-
-                    break;
-                }
 
                 case IntegerEncoded.EIntegerEncoding.Quint:
-                {
-                    d = intEncoded.QuintValue;
-                    Debug.Assert(d < 5);
-
-                    switch (bitLength)
                     {
-                        case 0:
-                        {
-                            result = d switch
-                            {
-                                0 => 0,
-                                1 => 16,
-                                2 => 32,
-                                3 => 47,
-                                4 => 63,
-                                _ => 0
-                            };
+                        d = intEncoded.QuintValue;
+                        Debug.Assert(d < 5);
 
-                            break;
+                        switch (bitLength)
+                        {
+                            case 0:
+                                {
+                                    result = d switch
+                                    {
+                                        0 => 0,
+                                        1 => 16,
+                                        2 => 32,
+                                        3 => 47,
+                                        4 => 63,
+                                        _ => 0
+                                    };
+
+                                    break;
+                                }
+
+                            case 1:
+                                {
+                                    c = 28;
+
+                                    break;
+                                }
+
+                            case 2:
+                                {
+                                    c = 13;
+                                    int b2 = (bitValue >> 1) & 1;
+                                    b = (b2 << 6) | (b2 << 1);
+
+                                    break;
+                                }
+
+                            default:
+                                throw new AstcDecoderException("Invalid quint encoding for texel weight.");
                         }
 
-                        case 1:
-                        {
-                            c = 28;
-
-                            break;
-                        }
-
-                        case 2:
-                        {
-                            c = 13;
-                            int b2 = (bitValue >> 1) & 1;
-                            b = (b2 << 6) | (b2 << 1);
-
-                            break;
-                        }
-
-                        default:
-                            throw new AstcDecoderException("Invalid quint encoding for texel weight.");
+                        break;
                     }
-
-                    break;
-                }
             }
 
             if (intEncoded.GetEncoding() != IntegerEncoded.EIntegerEncoding.JustBits && bitLength > 0)
@@ -942,160 +1003,160 @@ namespace Ryujinx.Graphics.Texture.Astc
             switch (colorEndpointMode)
             {
                 case 0:
-                {
-                    Span<uint> val = ReadUintColorValues(2, colorValues, ref colorValuesPosition);
+                    {
+                        Span<uint> val = ReadUintColorValues(2, colorValues, ref colorValuesPosition);
 
-                    endPoints[0] = new AstcPixel(0xFF, (short)val[0], (short)val[0], (short)val[0]);
-                    endPoints[1] = new AstcPixel(0xFF, (short)val[1], (short)val[1], (short)val[1]);
+                        endPoints[0] = new AstcPixel(0xFF, (short)val[0], (short)val[0], (short)val[0]);
+                        endPoints[1] = new AstcPixel(0xFF, (short)val[1], (short)val[1], (short)val[1]);
 
-                    break;
-                }
+                        break;
+                    }
 
 
                 case 1:
-                {
-                    Span<uint> val = ReadUintColorValues(2, colorValues, ref colorValuesPosition);
-                    int l0 = (int)((val[0] >> 2) | (val[1] & 0xC0));
-                    int l1 = (int)Math.Min(l0 + (val[1] & 0x3F), 0xFFU);
+                    {
+                        Span<uint> val = ReadUintColorValues(2, colorValues, ref colorValuesPosition);
+                        int l0 = (int)((val[0] >> 2) | (val[1] & 0xC0));
+                        int l1 = (int)Math.Min(l0 + (val[1] & 0x3F), 0xFFU);
 
-                    endPoints[0] = new AstcPixel(0xFF, (short)l0, (short)l0, (short)l0);
-                    endPoints[1] = new AstcPixel(0xFF, (short)l1, (short)l1, (short)l1);
+                        endPoints[0] = new AstcPixel(0xFF, (short)l0, (short)l0, (short)l0);
+                        endPoints[1] = new AstcPixel(0xFF, (short)l1, (short)l1, (short)l1);
 
-                    break;
-                }
+                        break;
+                    }
 
                 case 4:
-                {
-                    Span<uint> val = ReadUintColorValues(4, colorValues, ref colorValuesPosition);
+                    {
+                        Span<uint> val = ReadUintColorValues(4, colorValues, ref colorValuesPosition);
 
-                    endPoints[0] = new AstcPixel((short)val[2], (short)val[0], (short)val[0], (short)val[0]);
-                    endPoints[1] = new AstcPixel((short)val[3], (short)val[1], (short)val[1], (short)val[1]);
+                        endPoints[0] = new AstcPixel((short)val[2], (short)val[0], (short)val[0], (short)val[0]);
+                        endPoints[1] = new AstcPixel((short)val[3], (short)val[1], (short)val[1], (short)val[1]);
 
-                    break;
-                }
+                        break;
+                    }
 
                 case 5:
-                {
-                    Span<int> val = ReadIntColorValues(4, colorValues, ref colorValuesPosition);
+                    {
+                        Span<int> val = ReadIntColorValues(4, colorValues, ref colorValuesPosition);
 
-                    Bits.BitTransferSigned(ref val[1], ref val[0]);
-                    Bits.BitTransferSigned(ref val[3], ref val[2]);
+                        Bits.BitTransferSigned(ref val[1], ref val[0]);
+                        Bits.BitTransferSigned(ref val[3], ref val[2]);
 
-                    endPoints[0] = new AstcPixel((short)val[2], (short)val[0], (short)val[0], (short)val[0]);
-                    endPoints[1] = new AstcPixel((short)(val[2] + val[3]), (short)(val[0] + val[1]), (short)(val[0] + val[1]), (short)(val[0] + val[1]));
+                        endPoints[0] = new AstcPixel((short)val[2], (short)val[0], (short)val[0], (short)val[0]);
+                        endPoints[1] = new AstcPixel((short)(val[2] + val[3]), (short)(val[0] + val[1]), (short)(val[0] + val[1]), (short)(val[0] + val[1]));
 
-                    endPoints[0].ClampByte();
-                    endPoints[1].ClampByte();
+                        endPoints[0].ClampByte();
+                        endPoints[1].ClampByte();
 
-                    break;
-                }
+                        break;
+                    }
 
                 case 6:
-                {
-                    Span<uint> val = ReadUintColorValues(4, colorValues, ref colorValuesPosition);
+                    {
+                        Span<uint> val = ReadUintColorValues(4, colorValues, ref colorValuesPosition);
 
-                    endPoints[0] = new AstcPixel(0xFF, (short)(val[0] * val[3] >> 8), (short)(val[1] * val[3] >> 8), (short)(val[2] * val[3] >> 8));
-                    endPoints[1] = new AstcPixel(0xFF, (short)val[0], (short)val[1], (short)val[2]);
+                        endPoints[0] = new AstcPixel(0xFF, (short)(val[0] * val[3] >> 8), (short)(val[1] * val[3] >> 8), (short)(val[2] * val[3] >> 8));
+                        endPoints[1] = new AstcPixel(0xFF, (short)val[0], (short)val[1], (short)val[2]);
 
-                    break;
-                }
+                        break;
+                    }
 
                 case 8:
-                {
-                    Span<uint> val = ReadUintColorValues(6, colorValues, ref colorValuesPosition);
-
-                    if (val[1] + val[3] + val[5] >= val[0] + val[2] + val[4])
                     {
-                        endPoints[0] = new AstcPixel(0xFF, (short)val[0], (short)val[2], (short)val[4]);
-                        endPoints[1] = new AstcPixel(0xFF, (short)val[1], (short)val[3], (short)val[5]);
-                    }
-                    else
-                    {
-                        endPoints[0] = AstcPixel.BlueContract(0xFF, (short)val[1], (short)val[3], (short)val[5]);
-                        endPoints[1] = AstcPixel.BlueContract(0xFF, (short)val[0], (short)val[2], (short)val[4]);
-                    }
+                        Span<uint> val = ReadUintColorValues(6, colorValues, ref colorValuesPosition);
 
-                    break;
-                }
+                        if (val[1] + val[3] + val[5] >= val[0] + val[2] + val[4])
+                        {
+                            endPoints[0] = new AstcPixel(0xFF, (short)val[0], (short)val[2], (short)val[4]);
+                            endPoints[1] = new AstcPixel(0xFF, (short)val[1], (short)val[3], (short)val[5]);
+                        }
+                        else
+                        {
+                            endPoints[0] = AstcPixel.BlueContract(0xFF, (short)val[1], (short)val[3], (short)val[5]);
+                            endPoints[1] = AstcPixel.BlueContract(0xFF, (short)val[0], (short)val[2], (short)val[4]);
+                        }
+
+                        break;
+                    }
 
                 case 9:
-                {
-                    Span<int> val = ReadIntColorValues(6, colorValues, ref colorValuesPosition);
-
-                    Bits.BitTransferSigned(ref val[1], ref val[0]);
-                    Bits.BitTransferSigned(ref val[3], ref val[2]);
-                    Bits.BitTransferSigned(ref val[5], ref val[4]);
-
-                    if (val[1] + val[3] + val[5] >= 0)
                     {
-                        endPoints[0] = new AstcPixel(0xFF, (short)val[0], (short)val[2], (short)val[4]);
-                        endPoints[1] = new AstcPixel(0xFF, (short)(val[0] + val[1]), (short)(val[2] + val[3]), (short)(val[4] + val[5]));
-                    }
-                    else
-                    {
-                        endPoints[0] = AstcPixel.BlueContract(0xFF, val[0] + val[1], val[2] + val[3], val[4] + val[5]);
-                        endPoints[1] = AstcPixel.BlueContract(0xFF, val[0], val[2], val[4]);
-                    }
+                        Span<int> val = ReadIntColorValues(6, colorValues, ref colorValuesPosition);
 
-                    endPoints[0].ClampByte();
-                    endPoints[1].ClampByte();
+                        Bits.BitTransferSigned(ref val[1], ref val[0]);
+                        Bits.BitTransferSigned(ref val[3], ref val[2]);
+                        Bits.BitTransferSigned(ref val[5], ref val[4]);
 
-                    break;
-                }
+                        if (val[1] + val[3] + val[5] >= 0)
+                        {
+                            endPoints[0] = new AstcPixel(0xFF, (short)val[0], (short)val[2], (short)val[4]);
+                            endPoints[1] = new AstcPixel(0xFF, (short)(val[0] + val[1]), (short)(val[2] + val[3]), (short)(val[4] + val[5]));
+                        }
+                        else
+                        {
+                            endPoints[0] = AstcPixel.BlueContract(0xFF, val[0] + val[1], val[2] + val[3], val[4] + val[5]);
+                            endPoints[1] = AstcPixel.BlueContract(0xFF, val[0], val[2], val[4]);
+                        }
+
+                        endPoints[0].ClampByte();
+                        endPoints[1].ClampByte();
+
+                        break;
+                    }
 
                 case 10:
-                {
-                    Span<uint> val = ReadUintColorValues(6, colorValues, ref colorValuesPosition);
+                    {
+                        Span<uint> val = ReadUintColorValues(6, colorValues, ref colorValuesPosition);
 
-                    endPoints[0] = new AstcPixel((short)val[4], (short)(val[0] * val[3] >> 8), (short)(val[1] * val[3] >> 8), (short)(val[2] * val[3] >> 8));
-                    endPoints[1] = new AstcPixel((short)val[5], (short)val[0], (short)val[1], (short)val[2]);
+                        endPoints[0] = new AstcPixel((short)val[4], (short)(val[0] * val[3] >> 8), (short)(val[1] * val[3] >> 8), (short)(val[2] * val[3] >> 8));
+                        endPoints[1] = new AstcPixel((short)val[5], (short)val[0], (short)val[1], (short)val[2]);
 
-                    break;
-                }
+                        break;
+                    }
 
                 case 12:
-                {
-                    Span<uint> val = ReadUintColorValues(8, colorValues, ref colorValuesPosition);
-
-                    if (val[1] + val[3] + val[5] >= val[0] + val[2] + val[4])
                     {
-                        endPoints[0] = new AstcPixel((short)val[6], (short)val[0], (short)val[2], (short)val[4]);
-                        endPoints[1] = new AstcPixel((short)val[7], (short)val[1], (short)val[3], (short)val[5]);
-                    }
-                    else
-                    {
-                        endPoints[0] = AstcPixel.BlueContract((short)val[7], (short)val[1], (short)val[3], (short)val[5]);
-                        endPoints[1] = AstcPixel.BlueContract((short)val[6], (short)val[0], (short)val[2], (short)val[4]);
-                    }
+                        Span<uint> val = ReadUintColorValues(8, colorValues, ref colorValuesPosition);
 
-                    break;
-                }
+                        if (val[1] + val[3] + val[5] >= val[0] + val[2] + val[4])
+                        {
+                            endPoints[0] = new AstcPixel((short)val[6], (short)val[0], (short)val[2], (short)val[4]);
+                            endPoints[1] = new AstcPixel((short)val[7], (short)val[1], (short)val[3], (short)val[5]);
+                        }
+                        else
+                        {
+                            endPoints[0] = AstcPixel.BlueContract((short)val[7], (short)val[1], (short)val[3], (short)val[5]);
+                            endPoints[1] = AstcPixel.BlueContract((short)val[6], (short)val[0], (short)val[2], (short)val[4]);
+                        }
+
+                        break;
+                    }
 
                 case 13:
-                {
-                    Span<int> val = ReadIntColorValues(8, colorValues, ref colorValuesPosition);
-
-                    Bits.BitTransferSigned(ref val[1], ref val[0]);
-                    Bits.BitTransferSigned(ref val[3], ref val[2]);
-                    Bits.BitTransferSigned(ref val[5], ref val[4]);
-                    Bits.BitTransferSigned(ref val[7], ref val[6]);
-
-                    if (val[1] + val[3] + val[5] >= 0)
                     {
-                        endPoints[0] = new AstcPixel((short)val[6], (short)val[0], (short)val[2], (short)val[4]);
-                        endPoints[1] = new AstcPixel((short)(val[7] + val[6]), (short)(val[0] + val[1]), (short)(val[2] + val[3]), (short)(val[4] + val[5]));
-                    }
-                    else
-                    {
-                        endPoints[0] = AstcPixel.BlueContract(val[6] + val[7], val[0] + val[1], val[2] + val[3], val[4] + val[5]);
-                        endPoints[1] = AstcPixel.BlueContract(val[6], val[0], val[2], val[4]);
-                    }
+                        Span<int> val = ReadIntColorValues(8, colorValues, ref colorValuesPosition);
 
-                    endPoints[0].ClampByte();
-                    endPoints[1].ClampByte();
+                        Bits.BitTransferSigned(ref val[1], ref val[0]);
+                        Bits.BitTransferSigned(ref val[3], ref val[2]);
+                        Bits.BitTransferSigned(ref val[5], ref val[4]);
+                        Bits.BitTransferSigned(ref val[7], ref val[6]);
 
-                    break;
-                }
+                        if (val[1] + val[3] + val[5] >= 0)
+                        {
+                            endPoints[0] = new AstcPixel((short)val[6], (short)val[0], (short)val[2], (short)val[4]);
+                            endPoints[1] = new AstcPixel((short)(val[7] + val[6]), (short)(val[0] + val[1]), (short)(val[2] + val[3]), (short)(val[4] + val[5]));
+                        }
+                        else
+                        {
+                            endPoints[0] = AstcPixel.BlueContract(val[6] + val[7], val[0] + val[1], val[2] + val[3], val[4] + val[5]);
+                            endPoints[1] = AstcPixel.BlueContract(val[6], val[0], val[2], val[4]);
+                        }
+
+                        endPoints[0].ClampByte();
+                        endPoints[1].ClampByte();
+
+                        break;
+                    }
 
                 default:
                     throw new AstcDecoderException("Unsupported color endpoint mode (is it HDR?)");
@@ -1146,7 +1207,8 @@ namespace Ryujinx.Graphics.Texture.Astc
 
             // We now have enough to decode our integer sequence.
             IntegerSequence integerEncodedSequence;
-            unsafe { _ = &integerEncodedSequence; } // Skip struct initialization
+            unsafe
+            { _ = &integerEncodedSequence; } // Skip struct initialization
             integerEncodedSequence.Reset();
 
             IntegerEncoded.DecodeIntegerSequence(ref integerEncodedSequence, ref colorBitStream, range, numberValues);
@@ -1171,141 +1233,141 @@ namespace Ryujinx.Graphics.Texture.Astc
                 switch (intEncoded.GetEncoding())
                 {
                     case IntegerEncoded.EIntegerEncoding.JustBits:
-                    {
-                        outputValues[outputIndices++] = Bits.Replicate(bitValue, bitLength, 8);
+                        {
+                            outputValues[outputIndices++] = Bits.Replicate(bitValue, bitLength, 8);
 
-                        break;
-                    }
+                            break;
+                        }
 
                     case IntegerEncoded.EIntegerEncoding.Trit:
-                    {
-                        d = intEncoded.TritValue;
-
-                        switch (bitLength)
                         {
-                            case 1:
-                            {
-                                c = 204;
+                            d = intEncoded.TritValue;
 
-                                break;
+                            switch (bitLength)
+                            {
+                                case 1:
+                                    {
+                                        c = 204;
+
+                                        break;
+                                    }
+
+                                case 2:
+                                    {
+                                        c = 93;
+                                        // B = b000b0bb0
+                                        int b2 = (bitValue >> 1) & 1;
+                                        b = (b2 << 8) | (b2 << 4) | (b2 << 2) | (b2 << 1);
+
+                                        break;
+                                    }
+
+                                case 3:
+                                    {
+                                        c = 44;
+                                        // B = cb000cbcb
+                                        int cb = (bitValue >> 1) & 3;
+                                        b = (cb << 7) | (cb << 2) | cb;
+
+                                        break;
+                                    }
+
+
+                                case 4:
+                                    {
+                                        c = 22;
+                                        // B = dcb000dcb
+                                        int dcb = (bitValue >> 1) & 7;
+                                        b = (dcb << 6) | dcb;
+
+                                        break;
+                                    }
+
+                                case 5:
+                                    {
+                                        c = 11;
+                                        // B = edcb000ed
+                                        int edcb = (bitValue >> 1) & 0xF;
+                                        b = (edcb << 5) | (edcb >> 2);
+
+                                        break;
+                                    }
+
+                                case 6:
+                                    {
+                                        c = 5;
+                                        // B = fedcb000f
+                                        int fedcb = (bitValue >> 1) & 0x1F;
+                                        b = (fedcb << 4) | (fedcb >> 4);
+
+                                        break;
+                                    }
+
+                                default:
+                                    throw new AstcDecoderException("Unsupported trit encoding for color values.");
                             }
 
-                            case 2:
-                            {
-                                c = 93;
-                                // B = b000b0bb0
-                                int b2 = (bitValue >> 1) & 1;
-                                b = (b2 << 8) | (b2 << 4) | (b2 << 2) | (b2 << 1);
-
-                                break;
-                            }
-
-                            case 3:
-                            {
-                                c = 44;
-                                // B = cb000cbcb
-                                int cb = (bitValue >> 1) & 3;
-                                b = (cb << 7) | (cb << 2) | cb;
-
-                                break;
-                            }
-
-
-                            case 4:
-                            {
-                                c = 22;
-                                // B = dcb000dcb
-                                int dcb = (bitValue >> 1) & 7;
-                                b = (dcb << 6) | dcb;
-
-                                break;
-                            }
-
-                            case 5:
-                            {
-                                c = 11;
-                                // B = edcb000ed
-                                int edcb = (bitValue >> 1) & 0xF;
-                                b = (edcb << 5) | (edcb >> 2);
-
-                                break;
-                            }
-
-                            case 6:
-                            {
-                                c = 5;
-                                // B = fedcb000f
-                                int fedcb = (bitValue >> 1) & 0x1F;
-                                b = (fedcb << 4) | (fedcb >> 4);
-
-                                break;
-                            }
-
-                            default:
-                                throw new AstcDecoderException("Unsupported trit encoding for color values.");
+                            break;
                         }
-
-                        break;
-                    }
 
                     case IntegerEncoded.EIntegerEncoding.Quint:
-                    {
-                        d = intEncoded.QuintValue;
-
-                        switch (bitLength)
                         {
-                            case 1:
+                            d = intEncoded.QuintValue;
+
+                            switch (bitLength)
                             {
-                                c = 113;
+                                case 1:
+                                    {
+                                        c = 113;
 
-                                break;
+                                        break;
+                                    }
+
+                                case 2:
+                                    {
+                                        c = 54;
+                                        // B = b0000bb00
+                                        int b2 = (bitValue >> 1) & 1;
+                                        b = (b2 << 8) | (b2 << 3) | (b2 << 2);
+
+                                        break;
+                                    }
+
+                                case 3:
+                                    {
+                                        c = 26;
+                                        // B = cb0000cbc
+                                        int cb = (bitValue >> 1) & 3;
+                                        b = (cb << 7) | (cb << 1) | (cb >> 1);
+
+                                        break;
+                                    }
+
+                                case 4:
+                                    {
+                                        c = 13;
+                                        // B = dcb0000dc
+                                        int dcb = (bitValue >> 1) & 7;
+                                        b = (dcb << 6) | (dcb >> 1);
+
+                                        break;
+                                    }
+
+                                case 5:
+                                    {
+                                        c = 6;
+                                        // B = edcb0000e
+                                        int edcb = (bitValue >> 1) & 0xF;
+                                        b = (edcb << 5) | (edcb >> 3);
+
+                                        break;
+                                    }
+
+                                default:
+                                    throw new AstcDecoderException("Unsupported quint encoding for color values.");
                             }
-
-                            case 2:
-                            {
-                                c = 54;
-                                // B = b0000bb00
-                                int b2 = (bitValue >> 1) & 1;
-                                b = (b2 << 8) | (b2 << 3) | (b2 << 2);
-
-                                break;
-                            }
-
-                            case 3:
-                            {
-                                c = 26;
-                                // B = cb0000cbc
-                                int cb = (bitValue >> 1) & 3;
-                                b = (cb << 7) | (cb << 1) | (cb >> 1);
-
-                                break;
-                            }
-
-                            case 4:
-                            {
-                                c = 13;
-                                // B = dcb0000dc
-                                int dcb = (bitValue >> 1) & 7;
-                                b = (dcb << 6) | (dcb >> 1);
-
-                                break;
-                            }
-
-                            case 5:
-                            {
-                                c = 6;
-                                // B = edcb0000e
-                                int edcb = (bitValue >> 1) & 0xF;
-                                b = (edcb << 5) | (edcb >> 3);
-
-                                break;
-                            }
-
-                            default:
-                                throw new AstcDecoderException("Unsupported quint encoding for color values.");
+                            break;
                         }
-                        break;
-                    }
                 }
 
                 if (intEncoded.GetEncoding() != IntegerEncoded.EIntegerEncoding.JustBits)
@@ -1495,105 +1557,105 @@ namespace Ryujinx.Graphics.Texture.Astc
             switch (layout)
             {
                 case 0:
-                {
-                    int a = (modeBits >> 5) & 0x3;
-                    int b = (modeBits >> 7) & 0x3;
+                    {
+                        int a = (modeBits >> 5) & 0x3;
+                        int b = (modeBits >> 7) & 0x3;
 
-                    texelParams.Width = b + 4;
-                    texelParams.Height = a + 2;
+                        texelParams.Width = b + 4;
+                        texelParams.Height = a + 2;
 
-                    break;
-                }
+                        break;
+                    }
 
                 case 1:
-                {
-                    int a = (modeBits >> 5) & 0x3;
-                    int b = (modeBits >> 7) & 0x3;
+                    {
+                        int a = (modeBits >> 5) & 0x3;
+                        int b = (modeBits >> 7) & 0x3;
 
-                    texelParams.Width = b + 8;
-                    texelParams.Height = a + 2;
+                        texelParams.Width = b + 8;
+                        texelParams.Height = a + 2;
 
-                    break;
-                }
+                        break;
+                    }
 
                 case 2:
-                {
-                    int a = (modeBits >> 5) & 0x3;
-                    int b = (modeBits >> 7) & 0x3;
+                    {
+                        int a = (modeBits >> 5) & 0x3;
+                        int b = (modeBits >> 7) & 0x3;
 
-                    texelParams.Width = a + 2;
-                    texelParams.Height = b + 8;
+                        texelParams.Width = a + 2;
+                        texelParams.Height = b + 8;
 
-                    break;
-                }
+                        break;
+                    }
 
                 case 3:
-                {
-                    int a = (modeBits >> 5) & 0x3;
-                    int b = (modeBits >> 7) & 0x1;
+                    {
+                        int a = (modeBits >> 5) & 0x3;
+                        int b = (modeBits >> 7) & 0x1;
 
-                    texelParams.Width = a + 2;
-                    texelParams.Height = b + 6;
+                        texelParams.Width = a + 2;
+                        texelParams.Height = b + 6;
 
-                    break;
-                }
+                        break;
+                    }
 
                 case 4:
-                {
-                    int a = (modeBits >> 5) & 0x3;
-                    int b = (modeBits >> 7) & 0x1;
+                    {
+                        int a = (modeBits >> 5) & 0x3;
+                        int b = (modeBits >> 7) & 0x1;
 
-                    texelParams.Width = b + 2;
-                    texelParams.Height = a + 2;
+                        texelParams.Width = b + 2;
+                        texelParams.Height = a + 2;
 
-                    break;
-                }
+                        break;
+                    }
 
                 case 5:
-                {
-                    int a = (modeBits >> 5) & 0x3;
+                    {
+                        int a = (modeBits >> 5) & 0x3;
 
-                    texelParams.Width = 12;
-                    texelParams.Height = a + 2;
+                        texelParams.Width = 12;
+                        texelParams.Height = a + 2;
 
-                    break;
-                }
+                        break;
+                    }
 
                 case 6:
-                {
-                    int a = (modeBits >> 5) & 0x3;
+                    {
+                        int a = (modeBits >> 5) & 0x3;
 
-                    texelParams.Width = a + 2;
-                    texelParams.Height = 12;
+                        texelParams.Width = a + 2;
+                        texelParams.Height = 12;
 
-                    break;
-                }
+                        break;
+                    }
 
                 case 7:
-                {
-                    texelParams.Width = 6;
-                    texelParams.Height = 10;
+                    {
+                        texelParams.Width = 6;
+                        texelParams.Height = 10;
 
-                    break;
-                }
+                        break;
+                    }
 
                 case 8:
-                {
-                    texelParams.Width = 10;
-                    texelParams.Height = 6;
-                    break;
-                }
+                    {
+                        texelParams.Width = 10;
+                        texelParams.Height = 6;
+                        break;
+                    }
 
                 case 9:
-                {
-                    int a = (modeBits >> 5) & 0x3;
-                    int b = (modeBits >> 9) & 0x3;
+                    {
+                        int a = (modeBits >> 5) & 0x3;
+                        int b = (modeBits >> 9) & 0x3;
 
-                    texelParams.Width = a + 6;
-                    texelParams.Height = b + 6;
+                        texelParams.Width = a + 6;
+                        texelParams.Height = b + 6;
 
-                    break;
-                }
+                        break;
+                    }
 
                 default:
                     // Don't know this layout...

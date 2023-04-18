@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.Texture
 
             public RobAndSliceSizes(int robSize, int sliceSize)
             {
-                RobSize   = robSize;
+                RobSize = robSize;
                 SliceSize = sliceSize;
             }
         }
@@ -60,7 +60,7 @@ namespace Ryujinx.Graphics.Texture
 
             RobAndSliceSizes rsSizes = GetRobAndSliceSizes(width, height, gobBlocksInY, gobBlocksInZ);
 
-            _robSize   = rsSizes.RobSize;
+            _robSize = rsSizes.RobSize;
             _sliceSize = rsSizes.SliceSize;
         }
 

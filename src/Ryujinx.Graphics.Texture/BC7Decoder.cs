@@ -177,9 +177,18 @@ namespace Ryujinx.Graphics.Texture
 
                         switch (rotation)
                         {
-                            case 1: color.A = color.R; color.R = a; break;
-                            case 2: color.A = color.G; color.G = a; break;
-                            case 3: color.A = color.B; color.B = a; break;
+                            case 1:
+                                color.A = color.R;
+                                color.R = a;
+                                break;
+                            case 2:
+                                color.A = color.G;
+                                color.G = a;
+                                break;
+                            case 3:
+                                color.A = color.B;
+                                color.B = a;
+                                break;
                         }
                     }
 
