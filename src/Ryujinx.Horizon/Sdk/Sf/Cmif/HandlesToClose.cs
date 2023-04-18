@@ -36,15 +36,32 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
             {
                 switch (index)
                 {
-                    case 0: _handle0 = value; break;
-                    case 1: _handle1 = value; break;
-                    case 2: _handle2 = value; break;
-                    case 3: _handle3 = value; break;
-                    case 4: _handle4 = value; break;
-                    case 5: _handle5 = value; break;
-                    case 6: _handle6 = value; break;
-                    case 7: _handle7 = value; break;
-                    default: throw new IndexOutOfRangeException();
+                    case 0:
+                        _handle0 = value;
+                        break;
+                    case 1:
+                        _handle1 = value;
+                        break;
+                    case 2:
+                        _handle2 = value;
+                        break;
+                    case 3:
+                        _handle3 = value;
+                        break;
+                    case 4:
+                        _handle4 = value;
+                        break;
+                    case 5:
+                        _handle5 = value;
+                        break;
+                    case 6:
+                        _handle6 = value;
+                        break;
+                    case 7:
+                        _handle7 = value;
+                        break;
+                    default:
+                        throw new IndexOutOfRangeException();
                 }
             }
         }

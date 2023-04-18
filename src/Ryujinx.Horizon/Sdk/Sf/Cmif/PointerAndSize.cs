@@ -11,7 +11,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
         public PointerAndSize(ulong address, ulong size)
         {
             Address = address;
-            Size    = size;
+            Size = size;
         }
     }
 }

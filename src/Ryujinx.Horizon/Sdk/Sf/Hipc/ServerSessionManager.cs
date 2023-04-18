@@ -75,7 +75,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
             }
 
             session.PointerBuffer = GetSessionPointerBuffer(session);
-            session.SavedMessage  = GetSessionSavedMessageBuffer(session);
+            session.SavedMessage = GetSessionSavedMessageBuffer(session);
 
             RegisterSessionToWaitList(session);
 
@@ -110,10 +110,10 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
         }
 
         protected virtual Server AllocateServer(
-            int                 portIndex,
-            int                 portHandle,
-            ServiceName         name,
-            bool                managed,
+            int portIndex,
+            int portHandle,
+            ServiceName name,
+            bool managed,
             ServiceObjectHolder staticHoder)
         {
             throw new NotSupportedException();
@@ -271,9 +271,9 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 
         protected virtual Result DispatchRequest(
             ServiceObjectHolder objectHolder,
-            ServerSession       session,
-            Span<byte>          inMessage,
-            Span<byte>          outMessage)
+            ServerSession session,
+            Span<byte> inMessage,
+            Span<byte> outMessage)
         {
             HipcMessage request;
 

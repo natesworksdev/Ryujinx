@@ -21,7 +21,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
             }
 
             totalSize += Unsafe.SizeOf<CmifInHeader>() + format.DataSize;
-            totalSize  = (totalSize + 1) & ~1;
+            totalSize = (totalSize + 1) & ~1;
 
             int outPointerSizeTableOffset = totalSize;
             int outPointerSizeTableSize   = format.OutAutoBuffersCount + format.OutPointersCount;
@@ -57,12 +57,12 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
 
                 domainHeader = new CmifDomainInHeader()
                 {
-                    Type         = CmifDomainRequestType.SendMessage,
+                    Type = CmifDomainRequestType.SendMessage,
                     ObjectsCount = (byte)format.ObjectsCount,
-                    DataSize     = (ushort)payloadSize,
-                    ObjectId     = format.ObjectId,
-                    Padding      = 0,
-                    Token        = format.Context
+                    DataSize = (ushort)payloadSize,
+                    ObjectId = format.ObjectId,
+                    Padding = 0,
+                    Token = format.Context
                 };
 
                 data = data[(Unsafe.SizeOf<CmifDomainInHeader>() / sizeof(uint))..];
@@ -74,10 +74,10 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
 
             header = new CmifInHeader()
             {
-                Magic     = CmifInHeaderMagic,
-                Version   = format.Context != 0 ? 1u : 0u,
+                Magic = CmifInHeaderMagic,
+                Version = format.Context != 0 ? 1u : 0u,
                 CommandId = format.RequestId,
-                Token     = format.ObjectId != 0 ? 0u : format.Context
+                Token = format.ObjectId != 0 ? 0u : format.Context
             };
 
             request.Data = MemoryMarshal.Cast<uint, byte>(data)[Unsafe.SizeOf<CmifInHeader>()..];
@@ -86,7 +86,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
 
             Span<byte> outPointerTable = MemoryMarshal.Cast<uint, byte>(request.Hipc.DataWords)[(outPointerSizeTableOffset - paddingSizeBefore)..];
 
-            request.OutPointerSizes   = MemoryMarshal.Cast<byte, ushort>(outPointerTable);
+            request.OutPointerSizes = MemoryMarshal.Cast<byte, ushort>(outPointerTable);
             request.ServerPointerSize = format.ServerPointerSize;
 
             return request;
@@ -101,7 +101,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
 
             if (isDomain)
             {
-                data    = data[Unsafe.SizeOf<CmifDomainOutHeader>()..];
+                data = data[Unsafe.SizeOf<CmifDomainOutHeader>()..];
                 objects = MemoryMarshal.Cast<byte, uint>(data[(Unsafe.SizeOf<CmifOutHeader>() + size)..]);
             }
 
@@ -123,8 +123,8 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
 
             response = new CmifResponse()
             {
-                Data        = data[Unsafe.SizeOf<CmifOutHeader>()..],
-                Objects     = objects,
+                Data = data[Unsafe.SizeOf<CmifOutHeader>()..],
+                Objects = objects,
                 CopyHandles = responseMessage.Data.CopyHandles,
                 MoveHandles = responseMessage.Data.MoveHandles
             };

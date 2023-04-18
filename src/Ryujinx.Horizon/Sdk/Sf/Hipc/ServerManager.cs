@@ -63,7 +63,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
                     return null;
                 }
 
-                for (int i = 0; i <_sessionAllocationBitmap.Length; i++)
+                for (int i = 0; i < _sessionAllocationBitmap.Length; i++)
                 {
                     ref ulong mask = ref _sessionAllocationBitmap[i];
 

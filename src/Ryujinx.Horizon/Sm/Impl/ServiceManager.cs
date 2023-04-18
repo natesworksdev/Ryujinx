@@ -98,8 +98,8 @@ namespace Ryujinx.Horizon.Sm.Impl
                 return result;
             }
 
-            freeService.PortHandle     = clientPort;
-            freeService.Name           = name;
+            freeService.PortHandle = clientPort;
+            freeService.Name = name;
             freeService.OwnerProcessId = processId;
 
             return Result.Success;

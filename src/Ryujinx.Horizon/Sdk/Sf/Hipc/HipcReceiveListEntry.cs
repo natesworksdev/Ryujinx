@@ -10,7 +10,7 @@
         public HipcReceiveListEntry(ulong address, ulong size)
         {
             _addressLow = (uint)address;
-            _word1      = (ushort)(address >> 32) | (uint)(size << 16);
+            _word1 = (ushort)(address >> 32) | (uint)(size << 16);
         }
     }
 }

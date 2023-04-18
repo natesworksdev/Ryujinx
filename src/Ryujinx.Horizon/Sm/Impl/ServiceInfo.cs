@@ -12,9 +12,9 @@ namespace Ryujinx.Horizon.Sm.Impl
         {
             HorizonStatic.Syscall.CloseHandle(PortHandle);
 
-            Name           = ServiceName.Invalid;
+            Name = ServiceName.Invalid;
             OwnerProcessId = 0L;
-            PortHandle     = 0;
+            PortHandle = 0;
         }
     }
 }

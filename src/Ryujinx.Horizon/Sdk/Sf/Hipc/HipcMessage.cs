@@ -42,44 +42,44 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
             if (header.HasSpecialHeader)
             {
                 specialHeader = MemoryMarshal.Cast<byte, SpecialHeader>(data)[0];
-                data          = data[Unsafe.SizeOf<SpecialHeader>()..];
+                data = data[Unsafe.SizeOf<SpecialHeader>()..];
 
                 if (specialHeader.SendPid)
                 {
-                    pid  = MemoryMarshal.Cast<byte, ulong>(data)[0];
+                    pid = MemoryMarshal.Cast<byte, ulong>(data)[0];
                     data = data[sizeof(ulong)..];
                 }
             }
 
             Meta = new HipcMetadata()
             {
-                Type                 = (int)header.Type,
-                SendStaticsCount     = header.SendStaticsCount,
-                SendBuffersCount     = header.SendBuffersCount,
-                ReceiveBuffersCount  = header.ReceiveBuffersCount,
+                Type = (int)header.Type,
+                SendStaticsCount = header.SendStaticsCount,
+                SendBuffersCount = header.SendBuffersCount,
+                ReceiveBuffersCount = header.ReceiveBuffersCount,
                 ExchangeBuffersCount = header.ExchangeBuffersCount,
-                DataWordsCount       = header.DataWordsCount,
-                ReceiveStaticsCount  = receiveStaticsCount,
-                SendPid              = specialHeader.SendPid,
-                CopyHandlesCount     = specialHeader.CopyHandlesCount,
-                MoveHandlesCount     = specialHeader.MoveHandlesCount
+                DataWordsCount = header.DataWordsCount,
+                ReceiveStaticsCount = receiveStaticsCount,
+                SendPid = specialHeader.SendPid,
+                CopyHandlesCount = specialHeader.CopyHandlesCount,
+                MoveHandlesCount = specialHeader.MoveHandlesCount
             };
 
             Data = CreateMessageData(Meta, data, initialLength);
-            Pid  = pid;
+            Pid = pid;
         }
 
         public static HipcMessageData WriteResponse(
             Span<byte> destination,
-            int        sendStaticCount,
-            int        dataWordsCount,
-            int        copyHandlesCount,
-            int        moveHandlesCount)
+            int sendStaticCount,
+            int dataWordsCount,
+            int copyHandlesCount,
+            int moveHandlesCount)
         {
             return WriteMessage(destination, new HipcMetadata()
             {
                 SendStaticsCount = sendStaticCount,
-                DataWordsCount   = dataWordsCount,
+                DataWordsCount = dataWordsCount,
                 CopyHandlesCount = copyHandlesCount,
                 MoveHandlesCount = moveHandlesCount
             });
@@ -92,14 +92,14 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 
             MemoryMarshal.Cast<byte, Header>(destination)[0] = new Header()
             {
-                Type                 = (CommandType)meta.Type,
-                SendStaticsCount     = meta.SendStaticsCount,
-                SendBuffersCount     = meta.SendBuffersCount,
-                ReceiveBuffersCount  = meta.ReceiveBuffersCount,
+                Type = (CommandType)meta.Type,
+                SendStaticsCount = meta.SendStaticsCount,
+                SendBuffersCount = meta.SendBuffersCount,
+                ReceiveBuffersCount = meta.ReceiveBuffersCount,
                 ExchangeBuffersCount = meta.ExchangeBuffersCount,
-                DataWordsCount       = meta.DataWordsCount,
-                ReceiveStaticMode    = meta.ReceiveStaticsCount != 0 ? (meta.ReceiveStaticsCount != AutoReceiveStatic ? meta.ReceiveStaticsCount + 2 : 2) : 0,
-                HasSpecialHeader     = hasSpecialHeader
+                DataWordsCount = meta.DataWordsCount,
+                ReceiveStaticMode = meta.ReceiveStaticsCount != 0 ? (meta.ReceiveStaticsCount != AutoReceiveStatic ? meta.ReceiveStaticsCount + 2 : 2) : 0,
+                HasSpecialHeader = hasSpecialHeader
             };
 
             destination = destination[Unsafe.SizeOf<Header>()..];
@@ -108,7 +108,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
             {
                 MemoryMarshal.Cast<byte, SpecialHeader>(destination)[0] = new SpecialHeader()
                 {
-                    SendPid          = meta.SendPid,
+                    SendPid = meta.SendPid,
                     CopyHandlesCount = meta.CopyHandlesCount,
                     MoveHandlesCount = meta.MoveHandlesCount
                 };
@@ -204,14 +204,14 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 
             return new HipcMessageData()
             {
-                SendStatics     = sendStatics,
-                SendBuffers     = sendBuffers,
-                ReceiveBuffers  = receiveBuffers,
+                SendStatics = sendStatics,
+                SendBuffers = sendBuffers,
+                ReceiveBuffers = receiveBuffers,
                 ExchangeBuffers = exchangeBuffers,
-                DataWords       = dataWords,
-                ReceiveList     = receiveList,
-                CopyHandles     = copyHandles,
-                MoveHandles     = moveHandles
+                DataWords = dataWords,
+                ReceiveList = receiveList,
+                CopyHandles = copyHandles,
+                MoveHandles = moveHandles
             };
         }
     }

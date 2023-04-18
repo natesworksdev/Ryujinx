@@ -21,7 +21,7 @@ namespace Ryujinx.Horizon.Sm.Ipc
         public Result Initialize([ClientProcessId] ulong clientProcessId)
         {
             _clientProcessId = clientProcessId;
-            _initialized     = true;
+            _initialized = true;
 
             return Result.Success;
         }

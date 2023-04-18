@@ -36,13 +36,13 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
             _canDeferInvokeRequest = options.CanDeferInvokeRequest;
 
             _multiWait = new MultiWait();
-            _waitList  = new MultiWait();
+            _waitList = new MultiWait();
 
             _multiWaitSelectionLock = new object();
-            _waitListLock           = new object();
+            _waitListLock = new object();
 
             _requestStopEvent = new Event(EventClearMode.ManualClear);
-            _notifyEvent      = new Event(EventClearMode.ManualClear);
+            _notifyEvent = new Event(EventClearMode.ManualClear);
 
             _requestStopEventHolder = new MultiWaitHolderOfEvent(_requestStopEvent);
             _multiWait.LinkMultiWaitHolder(_requestStopEventHolder);
@@ -113,7 +113,9 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 
         public void ServiceRequests()
         {
-            while (WaitAndProcessRequestsImpl());
+#pragma warning disable IDE0055 // Disable formatting
+            while (WaitAndProcessRequestsImpl()) ;
+#pragma warning restore IDE0055
         }
 
         public void WaitAndProcessRequests()
@@ -183,7 +185,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
         protected override void RegisterSessionToWaitList(ServerSession session)
         {
             session.HasReceived = false;
-            session.UserData    = UserDataTag.Session;
+            session.UserData = UserDataTag.Session;
 
             RegisterToWaitList(session);
         }
@@ -209,9 +211,9 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
         {
             return (UserDataTag)holder.UserData switch
             {
-                UserDataTag.Server  => ProcessForServer(holder),
+                UserDataTag.Server => ProcessForServer(holder),
                 UserDataTag.Session => ProcessForSession(holder),
-                _                   => throw new NotImplementedException(((UserDataTag)holder.UserData).ToString())
+                _ => throw new NotImplementedException(((UserDataTag)holder.UserData).ToString())
             };
         }
 

@@ -12,9 +12,9 @@ namespace Ryujinx.Horizon
 
         internal ServiceEntry(Action<ServiceTable> entrypoint, ServiceTable serviceTable, HorizonOptions options)
         {
-            _entrypoint   = entrypoint;
+            _entrypoint = entrypoint;
             _serviceTable = serviceTable;
-            _options      = options;
+            _options = options;
         }
 
         public void Start(ISyscallApi syscallApi, IVirtualMemoryManager addressSpace, IThreadContext threadContext)

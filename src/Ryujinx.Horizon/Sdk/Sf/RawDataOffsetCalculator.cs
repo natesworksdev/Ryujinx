@@ -18,9 +18,9 @@ namespace Ryujinx.Horizon.Sdk.Sf
 
                 for (int i = 0; i < argsCount; i++)
                 {
-                    sizes[i]  = args[i].ArgSize;
+                    sizes[i] = args[i].ArgSize;
                     aligns[i] = args[i].ArgAlignment;
-                    map[i]    = i;
+                    map[i] = i;
                 }
 
                 for (int i = 1; i < argsCount; i++)
@@ -35,9 +35,9 @@ namespace Ryujinx.Horizon.Sdk.Sf
 
                 foreach (int i in map)
                 {
-                    offset     = BitUtils.AlignUp(offset, aligns[i]);
+                    offset = BitUtils.AlignUp(offset, aligns[i]);
                     offsets[i] = offset;
-                    offset    += sizes[i];
+                    offset += sizes[i];
                 }
 
                 offsets[argsCount] = offset;

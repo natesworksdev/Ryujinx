@@ -213,7 +213,7 @@ namespace Ryujinx.Horizon.Sdk.Sf
                         }
 
                         pointerBufferHead = BitUtils.AlignDown(pointerBufferHead - size, 0x10UL);
-                        _bufferRanges[i]  = new PointerAndSize(pointerBufferHead, size);
+                        _bufferRanges[i] = new PointerAndSize(pointerBufferHead, size);
                     }
                 }
             }
@@ -305,13 +305,13 @@ namespace Ryujinx.Horizon.Sdk.Sf
         {
             ref var meta = ref context.Request.Meta;
             bool requestValid = true;
-            requestValid &= meta.SendPid              == _hasInProcessIdHolder;
-            requestValid &= meta.SendStaticsCount     == _inPointerBuffersCount;
-            requestValid &= meta.SendBuffersCount     == _inMapAliasBuffersCount;
-            requestValid &= meta.ReceiveBuffersCount  == _outMapAliasBuffersCount;
+            requestValid &= meta.SendPid == _hasInProcessIdHolder;
+            requestValid &= meta.SendStaticsCount == _inPointerBuffersCount;
+            requestValid &= meta.SendBuffersCount == _inMapAliasBuffersCount;
+            requestValid &= meta.ReceiveBuffersCount == _outMapAliasBuffersCount;
             requestValid &= meta.ExchangeBuffersCount == 0;
-            requestValid &= meta.CopyHandlesCount     == _inCopyHandlesCount;
-            requestValid &= meta.MoveHandlesCount     == _inMoveHandlesCount;
+            requestValid &= meta.CopyHandlesCount == _inCopyHandlesCount;
+            requestValid &= meta.MoveHandlesCount == _inMoveHandlesCount;
 
             int rawSizeInBytes = meta.DataWordsCount * sizeof(uint);
             int commandRawSize = BitUtils.AlignUp(runtimeMetadata.UnfixedOutPointerSizeOffset + (OutUnfixedSizePointerBuffersCount * sizeof(ushort)), sizeof(uint));

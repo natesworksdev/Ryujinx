@@ -12,12 +12,12 @@ namespace Ryujinx.Horizon
         private readonly struct Range : IComparable<Range>
         {
             public ulong Offset { get; }
-            public ulong Size   { get; }
+            public ulong Size { get; }
 
             public Range(ulong offset, ulong size)
             {
                 Offset = offset;
-                Size   = size;
+                Size = size;
             }
 
             public int CompareTo(Range other)
@@ -31,7 +31,7 @@ namespace Ryujinx.Horizon
 
         public HeapAllocator()
         {
-            _freeRanges      = new List<Range>();
+            _freeRanges = new List<Range>();
             _currentHeapSize = 0;
         }
 
