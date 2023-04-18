@@ -35,7 +35,7 @@ namespace Ryujinx.Common.Logging.Targets
             // Get path for the current time
             path = Path.Combine(logDir.FullName, $"Ryujinx_{version}_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.log");
 
-            _name      = name;
+            _name = name;
             _logWriter = new StreamWriter(File.Open(path, fileMode, FileAccess.Write, fileShare));
             _formatter = new DefaultLogFormatter();
         }

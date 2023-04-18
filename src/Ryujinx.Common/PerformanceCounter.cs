@@ -1,4 +1,4 @@
-﻿﻿using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Ryujinx.Common
 {
@@ -71,10 +71,10 @@ namespace Ryujinx.Common
         static PerformanceCounter()
         {
             TicksPerMillisecond = Stopwatch.Frequency / 1000;
-            TicksPerSecond      = Stopwatch.Frequency;
-            TicksPerMinute      = TicksPerSecond * 60;
-            TicksPerHour        = TicksPerMinute * 60;
-            TicksPerDay         = TicksPerHour * 24;
+            TicksPerSecond = Stopwatch.Frequency;
+            TicksPerMinute = TicksPerSecond * 60;
+            TicksPerHour = TicksPerMinute * 60;
+            TicksPerDay = TicksPerHour * 24;
 
             _ticksToNs = 1000000000.0 / Stopwatch.Frequency;
         }

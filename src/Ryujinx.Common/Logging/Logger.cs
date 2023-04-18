@@ -103,15 +103,15 @@ namespace Ryujinx.Common.Logging
             private static string FormatMessage(LogClass Class, string Caller, string Message) => $"{Class} {Caller}: {Message}";
         }
 
-        public static Log? Debug     { get; private set; }
-        public static Log? Info      { get; private set; }
-        public static Log? Warning   { get; private set; }
-        public static Log? Error     { get; private set; }
-        public static Log? Guest     { get; private set; }
+        public static Log? Debug { get; private set; }
+        public static Log? Info { get; private set; }
+        public static Log? Warning { get; private set; }
+        public static Log? Error { get; private set; }
+        public static Log? Guest { get; private set; }
         public static Log? AccessLog { get; private set; }
-        public static Log? Stub      { get; private set; }
-        public static Log? Trace     { get; private set; }
-        public static Log  Notice    { get; } // Always enabled
+        public static Log? Stub { get; private set; }
+        public static Log? Trace { get; private set; }
+        public static Log Notice { get; } // Always enabled
 
         static Logger()
         {
@@ -215,6 +215,7 @@ namespace Ryujinx.Common.Logging
         {
             switch (logLevel)
             {
+#pragma warning disable IDE0055 // Disable formatting
                 case LogLevel.Debug     : Debug     = enabled ? new Log(LogLevel.Debug)    : new Log?(); break;
                 case LogLevel.Info      : Info      = enabled ? new Log(LogLevel.Info)     : new Log?(); break;
                 case LogLevel.Warning   : Warning   = enabled ? new Log(LogLevel.Warning)  : new Log?(); break;
@@ -224,6 +225,7 @@ namespace Ryujinx.Common.Logging
                 case LogLevel.Stub      : Stub      = enabled ? new Log(LogLevel.Stub)     : new Log?(); break;
                 case LogLevel.Trace     : Trace     = enabled ? new Log(LogLevel.Trace)    : new Log?(); break;
                 default: throw new ArgumentException("Unknown Log Level");
+#pragma warning restore IDE0055
             }
         }
 

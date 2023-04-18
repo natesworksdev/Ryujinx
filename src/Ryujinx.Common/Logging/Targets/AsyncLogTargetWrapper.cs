@@ -35,8 +35,8 @@ namespace Ryujinx.Common.Logging.Targets
 
         public AsyncLogTargetWrapper(ILogTarget target, int queueLimit, AsyncLogTargetOverflowAction overflowAction)
         {
-            _target          = target;
-            _messageQueue    = new BlockingCollection<LogEventArgs>(queueLimit);
+            _target = target;
+            _messageQueue = new BlockingCollection<LogEventArgs>(queueLimit);
             _overflowTimeout = overflowAction == AsyncLogTargetOverflowAction.Block ? -1 : 0;
 
             _messageThread = new Thread(() =>

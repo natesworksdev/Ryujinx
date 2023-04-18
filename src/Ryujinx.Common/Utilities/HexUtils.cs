@@ -48,9 +48,9 @@ namespace Ryujinx.Common
                 line[2] = HexChars[(i >> 20) & 0xF];
                 line[3] = HexChars[(i >> 16) & 0xF];
                 line[4] = HexChars[(i >> 12) & 0xF];
-                line[5] = HexChars[(i >>  8) & 0xF];
-                line[6] = HexChars[(i >>  4) & 0xF];
-                line[7] = HexChars[(i >>  0) & 0xF];
+                line[5] = HexChars[(i >> 8) & 0xF];
+                line[6] = HexChars[(i >> 4) & 0xF];
+                line[7] = HexChars[(i >> 0) & 0xF];
 
                 int hexColumn  = firstHexColumn;
                 int charColumn = firstCharColumn;
@@ -64,17 +64,17 @@ namespace Ryujinx.Common
 
                     if (i + j >= bytesLength)
                     {
-                        line[hexColumn]     = ' ';
+                        line[hexColumn] = ' ';
                         line[hexColumn + 1] = ' ';
-                        line[charColumn]    = ' ';
+                        line[charColumn] = ' ';
                     }
                     else
                     {
                         byte b = bytes[i + j];
 
-                        line[hexColumn]     = HexChars[(b >> 4) & 0xF];
+                        line[hexColumn] = HexChars[(b >> 4) & 0xF];
                         line[hexColumn + 1] = HexChars[b & 0xF];
-                        line[charColumn]    = (b < 32 ? '·' : (char)b);
+                        line[charColumn] = (b < 32 ? '·' : (char)b);
                     }
 
                     hexColumn += 3;

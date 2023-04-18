@@ -15,12 +15,12 @@ namespace Ryujinx.Common.Logging.Targets
         public JsonLogTarget(Stream stream, string name)
         {
             _stream = stream;
-            _name   = name;
+            _name = name;
         }
 
         public JsonLogTarget(Stream stream, bool leaveOpen)
         {
-            _stream    = stream;
+            _stream = stream;
             _leaveOpen = leaveOpen;
         }
 

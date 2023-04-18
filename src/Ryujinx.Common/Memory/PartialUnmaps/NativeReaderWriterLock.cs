@@ -35,7 +35,9 @@ namespace Ryujinx.Common.Memory.PartialUnmaps
         {
             // Must take write lock for a very short time to become a reader.
 
+#pragma warning disable IDE0055 // Disable formatting
             while (Interlocked.CompareExchange(ref WriteLock, 1, 0) != 0) { }
+#pragma warning restore IDE0055
 
             Interlocked.Increment(ref ReaderCount);
 
@@ -60,11 +62,15 @@ namespace Ryujinx.Common.Memory.PartialUnmaps
 
             Interlocked.Decrement(ref ReaderCount);
 
+#pragma warning disable IDE0055 // Disable formatting
             while (Interlocked.CompareExchange(ref WriteLock, 1, 0) != 0) { }
+#pragma warning restore IDE0055
 
             // Wait for reader count to drop to 0, then take the lock again as the only reader.
 
+#pragma warning disable IDE0055 // Disable formatting
             while (Interlocked.CompareExchange(ref ReaderCount, 1, 0) != 0) { }
+#pragma warning restore IDE0055
         }
 
         /// <summary>
