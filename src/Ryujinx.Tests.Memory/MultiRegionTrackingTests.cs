@@ -242,7 +242,8 @@ namespace Ryujinx.Tests.Memory
             ulong expectedAddress = 0;
 
             // Expect each region to trigger in its entirety, in address ascending order.
-            handle.QueryModified((address, size) => {
+            handle.QueryModified((address, size) =>
+            {
                 int region = regionSizes[regionInd++];
 
                 Assert.AreEqual(address, expectedAddress);
