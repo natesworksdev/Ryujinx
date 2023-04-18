@@ -26,9 +26,9 @@ namespace Ryujinx.Ava.UI.Renderer
         protected GLXWindow X11Window { get; set; }
 
         protected IntPtr WindowHandle { get; set; }
-        protected IntPtr X11Display   { get; set; }
-        protected IntPtr NsView       { get; set; }
-        protected IntPtr MetalLayer   { get; set; }
+        protected IntPtr X11Display { get; set; }
+        protected IntPtr NsView { get; set; }
+        protected IntPtr MetalLayer { get; set; }
 
         public delegate void UpdateBoundsCallbackDelegate(Rect rect);
         private UpdateBoundsCallbackDelegate _updateBoundsCallback;
@@ -50,9 +50,9 @@ namespace Ryujinx.Ava.UI.Renderer
         protected virtual void OnWindowDestroying()
         {
             WindowHandle = IntPtr.Zero;
-            X11Display   = IntPtr.Zero;
-            NsView       = IntPtr.Zero;
-            MetalLayer   = IntPtr.Zero;
+            X11Display = IntPtr.Zero;
+            NsView = IntPtr.Zero;
+            MetalLayer = IntPtr.Zero;
         }
 
         private void OnNativeEmbeddedWindowCreated(object sender, EventArgs e)
@@ -127,7 +127,7 @@ namespace Ryujinx.Ava.UI.Renderer
             }
 
             WindowHandle = X11Window.WindowHandle.RawHandle;
-            X11Display   = X11Window.DisplayHandle.RawHandle;
+            X11Display = X11Window.DisplayHandle.RawHandle;
 
             return new PlatformHandle(WindowHandle, "X11");
         }
@@ -143,8 +143,8 @@ namespace Ryujinx.Ava.UI.Renderer
                 {
                     if (msg == WindowsMessages.LBUTTONDOWN ||
                         msg == WindowsMessages.RBUTTONDOWN ||
-                        msg == WindowsMessages.LBUTTONUP   ||
-                        msg == WindowsMessages.RBUTTONUP   ||
+                        msg == WindowsMessages.LBUTTONUP ||
+                        msg == WindowsMessages.RBUTTONUP ||
                         msg == WindowsMessages.MOUSEMOVE)
                     {
                         Point   rootVisualPosition = this.TranslatePoint(new Point((long)lParam & 0xFFFF, (long)lParam >> 16 & 0xFFFF), VisualRoot).Value;

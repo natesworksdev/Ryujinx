@@ -22,11 +22,11 @@ namespace Ryujinx.Ava
 {
     internal partial class Program
     {
-        public static double WindowScaleFactor  { get; set; }
+        public static double WindowScaleFactor { get; set; }
         public static double DesktopScaleFactor { get; set; } = 1.0;
-        public static string Version            { get; private set; }
-        public static string ConfigurationPath  { get; private set; }
-        public static bool   PreviewerDetached  { get; private set; }
+        public static string Version { get; private set; }
+        public static string ConfigurationPath { get; private set; }
+        public static bool PreviewerDetached { get; private set; }
 
         [LibraryImport("user32.dll", SetLastError = true)]
         public static partial int MessageBoxA(IntPtr hWnd, [MarshalAs(UnmanagedType.LPStr)] string text, [MarshalAs(UnmanagedType.LPStr)] string caption, uint type);
@@ -58,15 +58,15 @@ namespace Ryujinx.Ava
                 .With(new X11PlatformOptions
                 {
                     EnableMultiTouch = true,
-                    EnableIme        = true,
-                    UseEGL           = false,
-                    UseGpu           = true
+                    EnableIme = true,
+                    UseEGL = false,
+                    UseGpu = true
                 })
                 .With(new Win32PlatformOptions
                 {
-                    EnableMultitouch                = true,
-                    UseWgl                          = false,
-                    AllowEglInitialization          = false,
+                    EnableMultitouch = true,
+                    UseWgl = false,
+                    AllowEglInitialization = false,
                     CompositionBackdropCornerRadius = 8.0f,
                 })
                 .UseSkia();
@@ -84,7 +84,7 @@ namespace Ryujinx.Ava
 
             // Hook unhandled exception and process exit events.
             AppDomain.CurrentDomain.UnhandledException += (sender, e) => ProcessUnhandledException(e.ExceptionObject as Exception, e.IsTerminating);
-            AppDomain.CurrentDomain.ProcessExit        += (sender, e) => Exit();
+            AppDomain.CurrentDomain.ProcessExit += (sender, e) => Exit();
 
             // Setup base data directory.
             AppDataManager.Initialize(CommandLineState.BaseDirPathArg);

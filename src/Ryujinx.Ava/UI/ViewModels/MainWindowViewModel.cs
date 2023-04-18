@@ -152,7 +152,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             TopLevel = topLevel;
         }
 
-#region Properties
+        #region Properties
 
         public string SearchText
         {
@@ -911,14 +911,15 @@ namespace Ryujinx.Ava.UI.ViewModels
         public static bool IsGridLarge => ConfigurationState.Instance.Ui.GridSize == 3;
         public static bool IsGridHuge => ConfigurationState.Instance.Ui.GridSize == 4;
 
-#endregion
+        #endregion
 
-#region PrivateMethods
+        #region PrivateMethods
 
         private IComparer<ApplicationData> GetComparer()
         {
             return SortMode switch
             {
+#pragma warning disable IDE0055 // Disable formatting
                 ApplicationSort.LastPlayed      => new Models.Generic.LastPlayedSortComparer(IsAscending),
                 ApplicationSort.FileSize        => IsAscending  ? SortExpressionComparer<ApplicationData>.Ascending(app => app.FileSizeBytes)
                                                                 : SortExpressionComparer<ApplicationData>.Descending(app => app.FileSizeBytes),
@@ -935,6 +936,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 ApplicationSort.Path            => IsAscending  ? SortExpressionComparer<ApplicationData>.Ascending(app => app.Path)
                                                                 : SortExpressionComparer<ApplicationData>.Descending(app => app.Path),
                 _ => null,
+#pragma warning restore IDE0055
             };
         }
 
@@ -1044,7 +1046,10 @@ namespace Ryujinx.Ava.UI.ViewModels
                         {
                             RefreshFirmwareStatus();
                         }
-                    }) { Name = "GUI.FirmwareInstallerThread" };
+                    })
+                    {
+                        Name = "GUI.FirmwareInstallerThread"
+                    };
 
                     thread.Start();
                 }
@@ -1204,9 +1209,9 @@ namespace Ryujinx.Ava.UI.ViewModels
             _rendererWaitEvent.Set();
         }
 
-#endregion
+        #endregion
 
-#region PublicMethods
+        #region PublicMethods
 
         public void SetUIProgressHandlers(Switch emulationContext)
         {
@@ -1264,8 +1269,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 OpenFileDialog dialog = new() { AllowMultiple = false };
                 dialog.Filters.Add(new FileDialogFilter { Name = LocaleManager.Instance[LocaleKeys.FileDialogAllTypes], Extensions = { "xci", "zip" } });
-                dialog.Filters.Add(new FileDialogFilter { Name = "XCI",                                                 Extensions = { "xci" } });
-                dialog.Filters.Add(new FileDialogFilter { Name = "ZIP",                                                 Extensions = { "zip" } });
+                dialog.Filters.Add(new FileDialogFilter { Name = "XCI", Extensions = { "xci" } });
+                dialog.Filters.Add(new FileDialogFilter { Name = "ZIP", Extensions = { "zip" } });
 
                 string[] file = await dialog.ShowAsync(desktop.MainWindow);
 
@@ -1342,6 +1347,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             _ = fileType switch
             {
+#pragma warning disable IDE0055 // Disable formatting
                 "NSP"  => ConfigurationState.Instance.Ui.ShownFileTypes.NSP.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.NSP,
                 "PFS0" => ConfigurationState.Instance.Ui.ShownFileTypes.PFS0.Value = !ConfigurationState.Instance.Ui.ShownFileTypes.PFS0,
                 "XCI"  => ConfigurationState.Instance.Ui.ShownFileTypes.XCI.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.XCI,
@@ -1349,6 +1355,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 "NRO"  => ConfigurationState.Instance.Ui.ShownFileTypes.NRO.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.NRO,
                 "NSO"  => ConfigurationState.Instance.Ui.ShownFileTypes.NSO.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.NSO,
                     _  => throw new ArgumentOutOfRangeException(fileType),
+#pragma warning restore IDE0055
             };
 
             ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
@@ -1371,9 +1378,9 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 Applications.Clear();
 
-                StatusBarVisible         = true;
+                StatusBarVisible = true;
                 StatusBarProgressMaximum = 0;
-                StatusBarProgressValue   = 0;
+                StatusBarProgressValue = 0;
 
                 LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.StatusBarGamesLoaded, 0, 0);
             });
@@ -1404,12 +1411,14 @@ namespace Ryujinx.Ava.UI.ViewModels
                     }
                 });
 
+#pragma warning disable IDE0055 // Disable formatting
                 dialog.Filters.Add(new FileDialogFilter { Name = "NSP",  Extensions = { "nsp" } });
                 dialog.Filters.Add(new FileDialogFilter { Name = "PFS0", Extensions = { "pfs0" } });
                 dialog.Filters.Add(new FileDialogFilter { Name = "XCI",  Extensions = { "xci" } });
                 dialog.Filters.Add(new FileDialogFilter { Name = "NCA",  Extensions = { "nca" } });
                 dialog.Filters.Add(new FileDialogFilter { Name = "NRO",  Extensions = { "nro" } });
                 dialog.Filters.Add(new FileDialogFilter { Name = "NSO",  Extensions = { "nso" } });
+#pragma warning restore IDE0055
 
                 string[] files = await dialog.ShowAsync(desktop.MainWindow);
 
@@ -1492,7 +1501,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 if (string.IsNullOrWhiteSpace(titleName))
                 {
                     LoadHeading = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.LoadingHeading, AppHost.Device.Processes.ActiveApplication.Name);
-                    TitleName   = AppHost.Device.Processes.ActiveApplication.Name;
+                    TitleName = AppHost.Device.Processes.ActiveApplication.Name;
                 }
 
                 SwitchToRenderer(startFullscreen);
@@ -1672,6 +1681,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-#endregion
+        #endregion
     }
 }

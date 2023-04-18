@@ -323,9 +323,9 @@ namespace Ryujinx.Ava.UI.Helpers
             {
                 contentDialogOverlayWindow = new()
                 {
-                    Height        = parent.Bounds.Height,
-                    Width         = parent.Bounds.Width,
-                    Position      = parent.PointToScreen(new Point()),
+                    Height = parent.Bounds.Height,
+                    Width = parent.Bounds.Width,
+                    Position = parent.PointToScreen(new Point()),
                     ShowInTaskbar = false
                 };
 

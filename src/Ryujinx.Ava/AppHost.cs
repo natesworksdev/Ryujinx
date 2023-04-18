@@ -109,50 +109,50 @@ namespace Ryujinx.Ava
         public event EventHandler AppExit;
         public event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
 
-        public VirtualFileSystem  VirtualFileSystem  { get; }
-        public ContentManager     ContentManager     { get; }
-        public NpadManager        NpadManager        { get; }
+        public VirtualFileSystem VirtualFileSystem { get; }
+        public ContentManager ContentManager { get; }
+        public NpadManager NpadManager { get; }
         public TouchScreenManager TouchScreenManager { get; }
-        public Switch             Device             { get; set; }
+        public Switch Device { get; set; }
 
-        public int    Width               { get; private set; }
-        public int    Height              { get; private set; }
-        public string ApplicationPath     { get; private set; }
-        public bool   ScreenshotRequested { get; set; }
+        public int Width { get; private set; }
+        public int Height { get; private set; }
+        public string ApplicationPath { get; private set; }
+        public bool ScreenshotRequested { get; set; }
 
         public AppHost(
-            RendererHost           renderer,
-            InputManager           inputManager,
-            string                 applicationPath,
-            VirtualFileSystem      virtualFileSystem,
-            ContentManager         contentManager,
-            AccountManager         accountManager,
+            RendererHost renderer,
+            InputManager inputManager,
+            string applicationPath,
+            VirtualFileSystem virtualFileSystem,
+            ContentManager contentManager,
+            AccountManager accountManager,
             UserChannelPersistence userChannelPersistence,
-            MainWindowViewModel    viewmodel,
-            TopLevel               topLevel)
+            MainWindowViewModel viewmodel,
+            TopLevel topLevel)
         {
-            _viewModel              = viewmodel;
-            _inputManager           = inputManager;
-            _accountManager         = accountManager;
+            _viewModel = viewmodel;
+            _inputManager = inputManager;
+            _accountManager = accountManager;
             _userChannelPersistence = userChannelPersistence;
-            _renderingThread        = new Thread(RenderLoop) { Name = "GUI.RenderThread" };
-            _lastCursorMoveTime     = Stopwatch.GetTimestamp();
-            _glLogLevel             = ConfigurationState.Instance.Logger.GraphicsDebugLevel;
-            _topLevel               = topLevel;
+            _renderingThread = new Thread(RenderLoop) { Name = "GUI.RenderThread" };
+            _lastCursorMoveTime = Stopwatch.GetTimestamp();
+            _glLogLevel = ConfigurationState.Instance.Logger.GraphicsDebugLevel;
+            _topLevel = topLevel;
 
             _inputManager.SetMouseDriver(new AvaloniaMouseDriver(_topLevel, renderer));
 
             _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad("0");
 
-            NpadManager        = _inputManager.CreateNpadManager();
+            NpadManager = _inputManager.CreateNpadManager();
             TouchScreenManager = _inputManager.CreateTouchScreenManager();
-            ApplicationPath    = applicationPath;
-            VirtualFileSystem  = virtualFileSystem;
-            ContentManager     = contentManager;
+            ApplicationPath = applicationPath;
+            VirtualFileSystem = virtualFileSystem;
+            ContentManager = contentManager;
 
             _rendererHost = renderer;
 
-            _chrono        = new Stopwatch();
+            _chrono = new Stopwatch();
             _ticksPerFrame = Stopwatch.Frequency / TargetFps;
 
             if (ApplicationPath.StartsWith("@SystemContent"))
@@ -171,20 +171,20 @@ namespace Ryujinx.Ava
             if (OperatingSystem.IsWindows())
             {
                 InvisibleCursorWin = CreateEmptyCursor();
-                DefaultCursorWin   = CreateArrowCursor();
+                DefaultCursorWin = CreateArrowCursor();
             }
 
             ConfigurationState.Instance.System.IgnoreMissingServices.Event += UpdateIgnoreMissingServicesState;
-            ConfigurationState.Instance.Graphics.AspectRatio.Event         += UpdateAspectRatioState;
-            ConfigurationState.Instance.System.EnableDockedMode.Event      += UpdateDockedModeState;
-            ConfigurationState.Instance.System.AudioVolume.Event           += UpdateAudioVolumeState;
-            ConfigurationState.Instance.System.EnableDockedMode.Event      += UpdateDockedModeState;
-            ConfigurationState.Instance.System.AudioVolume.Event           += UpdateAudioVolumeState;
-            ConfigurationState.Instance.Graphics.AntiAliasing.Event        += UpdateAntiAliasing;
-            ConfigurationState.Instance.Graphics.ScalingFilter.Event       += UpdateScalingFilter;
-            ConfigurationState.Instance.Graphics.ScalingFilterLevel.Event  += UpdateScalingFilterLevel;
+            ConfigurationState.Instance.Graphics.AspectRatio.Event += UpdateAspectRatioState;
+            ConfigurationState.Instance.System.EnableDockedMode.Event += UpdateDockedModeState;
+            ConfigurationState.Instance.System.AudioVolume.Event += UpdateAudioVolumeState;
+            ConfigurationState.Instance.System.EnableDockedMode.Event += UpdateDockedModeState;
+            ConfigurationState.Instance.System.AudioVolume.Event += UpdateAudioVolumeState;
+            ConfigurationState.Instance.Graphics.AntiAliasing.Event += UpdateAntiAliasing;
+            ConfigurationState.Instance.Graphics.ScalingFilter.Event += UpdateScalingFilter;
+            ConfigurationState.Instance.Graphics.ScalingFilterLevel.Event += UpdateScalingFilterLevel;
 
-            ConfigurationState.Instance.Multiplayer.LanInterfaceId.Event   += UpdateLanInterfaceIdState;
+            ConfigurationState.Instance.Multiplayer.LanInterfaceId.Event += UpdateLanInterfaceIdState;
 
             _gpuCancellationTokenSource = new CancellationTokenSource();
             _gpuDoneEvent = new ManualResetEvent(false);
@@ -419,7 +419,7 @@ namespace Ryujinx.Ava
             }
 
             _isStopped = true;
-            _isActive  = false;
+            _isActive = false;
         }
 
         public void DisposeContext()
@@ -452,12 +452,12 @@ namespace Ryujinx.Ava
             }
 
             ConfigurationState.Instance.System.IgnoreMissingServices.Event -= UpdateIgnoreMissingServicesState;
-            ConfigurationState.Instance.Graphics.AspectRatio.Event         -= UpdateAspectRatioState;
-            ConfigurationState.Instance.System.EnableDockedMode.Event      -= UpdateDockedModeState;
-            ConfigurationState.Instance.System.AudioVolume.Event           -= UpdateAudioVolumeState;
-            ConfigurationState.Instance.Graphics.ScalingFilter.Event       -= UpdateScalingFilter;
-            ConfigurationState.Instance.Graphics.ScalingFilterLevel.Event  -= UpdateScalingFilterLevel;
-            ConfigurationState.Instance.Graphics.AntiAliasing.Event        -= UpdateAntiAliasing;
+            ConfigurationState.Instance.Graphics.AspectRatio.Event -= UpdateAspectRatioState;
+            ConfigurationState.Instance.System.EnableDockedMode.Event -= UpdateDockedModeState;
+            ConfigurationState.Instance.System.AudioVolume.Event -= UpdateAudioVolumeState;
+            ConfigurationState.Instance.Graphics.ScalingFilter.Event -= UpdateScalingFilter;
+            ConfigurationState.Instance.Graphics.ScalingFilterLevel.Event -= UpdateScalingFilterLevel;
+            ConfigurationState.Instance.Graphics.AntiAliasing.Event -= UpdateAntiAliasing;
 
             _topLevel.PointerMoved -= TopLevel_PointerEnterOrMoved;
             _topLevel.PointerEnter -= TopLevel_PointerEnterOrMoved;
@@ -823,10 +823,10 @@ namespace Ryujinx.Ava
 
                 deviceDriver = currentBackend switch
                 {
-                    AudioBackend.SDL2    => InitializeAudioBackend<SDL2HardwareDeviceDriver>(AudioBackend.SDL2, nextBackend),
+                    AudioBackend.SDL2 => InitializeAudioBackend<SDL2HardwareDeviceDriver>(AudioBackend.SDL2, nextBackend),
                     AudioBackend.SoundIo => InitializeAudioBackend<SoundIoHardwareDeviceDriver>(AudioBackend.SoundIo, nextBackend),
-                    AudioBackend.OpenAl  => InitializeAudioBackend<OpenALHardwareDeviceDriver>(AudioBackend.OpenAl, nextBackend),
-                    _                    => new DummyHardwareDeviceDriver()
+                    AudioBackend.OpenAl => InitializeAudioBackend<OpenALHardwareDeviceDriver>(AudioBackend.OpenAl, nextBackend),
+                    _ => new DummyHardwareDeviceDriver()
                 };
 
                 if (deviceDriver != null)
@@ -843,7 +843,7 @@ namespace Ryujinx.Ava
 
         private void Window_SizeChanged(object sender, Size e)
         {
-            Width  = (int)e.Width;
+            Width = (int)e.Width;
             Height = (int)e.Height;
 
             SetRendererWindowSize(e);

@@ -15,7 +15,7 @@ namespace Ryujinx.Ava.UI.Renderer
         private SPBOpenGLContext(OpenGLContextBase context, NativeWindowBase window)
         {
             _context = context;
-            _window  = window;
+            _window = window;
         }
 
         public void Dispose()

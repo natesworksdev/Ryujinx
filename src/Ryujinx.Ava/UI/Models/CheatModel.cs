@@ -11,8 +11,8 @@ namespace Ryujinx.Ava.UI.Models
 
         public CheatModel(string name, string buildId, bool isEnabled)
         {
-            Name      = name;
-            BuildId   = buildId;
+            Name = name;
+            BuildId = buildId;
             IsEnabled = isEnabled;
         }
 

@@ -31,10 +31,10 @@ namespace Ryujinx.Ava.UI.ViewModels
     {
         public TitleUpdateMetadata _titleUpdateWindowData;
         public readonly string     _titleUpdateJsonPath;
-        private VirtualFileSystem  VirtualFileSystem { get; }
-        private ulong              TitleId           { get; }
+        private VirtualFileSystem VirtualFileSystem { get; }
+        private ulong TitleId { get; }
 #pragma warning disable IDE0052
-        private string             TitleName         { get; }
+        private string TitleName { get; }
 #pragma warning restore IDE0052
 
         private AvaloniaList<TitleUpdateModel> _titleUpdates = new();
@@ -77,7 +77,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             VirtualFileSystem = virtualFileSystem;
 
-            TitleId   = titleId;
+            TitleId = titleId;
             TitleName = titleName;
 
             _titleUpdateJsonPath = Path.Combine(AppDataManager.GamesDirPath, titleId.ToString("x16"), "updates.json");
@@ -93,7 +93,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _titleUpdateWindowData = new TitleUpdateMetadata
                 {
                     Selected = "",
-                    Paths    = new List<string>()
+                    Paths = new List<string>()
                 };
 
                 Save();
@@ -213,7 +213,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             dialog.Filters.Add(new FileDialogFilter
             {
-                Name       = "NSP",
+                Name = "NSP",
                 Extensions = { "nsp" }
             });
 

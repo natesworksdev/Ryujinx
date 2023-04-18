@@ -96,7 +96,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             _virtualFileSystem = virtualFileSystem;
 
-            _titleId   = titleId;
+            _titleId = titleId;
             _titleName = titleName;
 
             _downloadableContentJsonPath = Path.Combine(AppDataManager.GamesDirPath, titleId.ToString("x16"), "dlc.json");
@@ -134,7 +134,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                         Nca nca = TryOpenNca(ncaFile.Get.AsStorage(), downloadableContentContainer.ContainerPath);
                         if (nca != null)
-                        {   
+                        {
                             var content = new DownloadableContentModel(nca.Header.TitleId.ToString("X16"),
                                 downloadableContentContainer.ContainerPath,
                                 downloadableContentNca.FullPath,
@@ -206,7 +206,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             dialog.Filters.Add(new FileDialogFilter
             {
-                Name       = "NSP",
+                Name = "NSP",
                 Extensions = { "nsp" }
             });
 
@@ -315,15 +315,15 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                     container = new DownloadableContentContainer
                     {
-                        ContainerPath              = downloadableContent.ContainerPath,
+                        ContainerPath = downloadableContent.ContainerPath,
                         DownloadableContentNcaList = new List<DownloadableContentNca>()
                     };
                 }
 
                 container.DownloadableContentNcaList.Add(new DownloadableContentNca
                 {
-                    Enabled  = downloadableContent.Enabled,
-                    TitleId  = Convert.ToUInt64(downloadableContent.TitleId, 16),
+                    Enabled = downloadableContent.Enabled,
+                    TitleId = Convert.ToUInt64(downloadableContent.TitleId, 16),
                     FullPath = downloadableContent.FullPath
                 });
             }
