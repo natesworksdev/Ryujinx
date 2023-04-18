@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Common.Collections;
 using Silk.NET.Vulkan;
+using Silk.NET.Vulkan.Extensions.EXT;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,16 +30,18 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly MemoryAllocator _allocator;
         private readonly Vk _api;
+        private readonly ExtExternalMemoryHost _hostMemoryApi;
         private readonly Device _device;
         private readonly object _lock = new();
 
         private List<HostMemoryAllocation> _allocations;
         private IntervalTree<ulong, HostMemoryAllocation> _allocationTree;
 
-        public HostMemoryAllocator(MemoryAllocator allocator, Vk api, Device device)
+        public HostMemoryAllocator(MemoryAllocator allocator, Vk api, ExtExternalMemoryHost hostMemoryApi, Device device)
         {
             _allocator = allocator;
             _api = api;
+            _hostMemoryApi = hostMemoryApi;
             _device = device;
 
             _allocations = new List<HostMemoryAllocation>();
@@ -84,15 +87,25 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                 }
 
-                int memoryTypeIndex = _allocator.FindSuitableMemoryTypeIndex(requirements.MemoryTypeBits, flags);
-                if (memoryTypeIndex < 0)
-                {
-                    return default;
-                }
-
                 nint pageAlignedPointer = BitUtils.AlignDown(pointer, Environment.SystemPageSize);
                 nint pageAlignedEnd = BitUtils.AlignUp((nint)((ulong)pointer + size), Environment.SystemPageSize);
                 ulong pageAlignedSize = (ulong)(pageAlignedEnd - pageAlignedPointer);
+
+                Result getResult = _hostMemoryApi.GetMemoryHostPointerProperties(_device, ExternalMemoryHandleTypeFlags.HostAllocationBitExt, (void*)pageAlignedPointer, out MemoryHostPointerPropertiesEXT properties);
+                if (getResult < Result.Success)
+                {
+                    Console.WriteLine($"Failed (get properties)");
+
+                    return false;
+                }
+
+                int memoryTypeIndex = _allocator.FindSuitableMemoryTypeIndex(properties.MemoryTypeBits, flags);
+                if (memoryTypeIndex < 0)
+                {
+                    Console.WriteLine($"Failed (memory type)");
+
+                    return false;
+                }
 
                 ImportMemoryHostPointerInfoEXT importInfo = new ImportMemoryHostPointerInfoEXT()
                 {

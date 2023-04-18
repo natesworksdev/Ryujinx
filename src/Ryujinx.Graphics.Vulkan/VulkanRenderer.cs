@@ -321,7 +321,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             MemoryAllocator = new MemoryAllocator(Api, _physicalDevice, _device);
 
-            HostMemoryAllocator = new HostMemoryAllocator(MemoryAllocator, Api, _device);
+            Api.TryGetDeviceExtension(_instance.Instance, _device, out ExtExternalMemoryHost hostMemoryApi);
+            HostMemoryAllocator = new HostMemoryAllocator(MemoryAllocator, Api, hostMemoryApi, _device);
 
             CommandBufferPool = new CommandBufferPool(Api, _device, Queue, QueueLock, queueFamilyIndex);
 
