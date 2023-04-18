@@ -51,6 +51,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             {
                 texCallBuilder.Append((texOp.Flags & TextureFlags.AtomicMask) switch
                 {
+#pragma warning disable IDE0055 // Disable formatting
                     TextureFlags.Add        => "imageAtomicAdd",
                     TextureFlags.Minimum    => "imageAtomicMin",
                     TextureFlags.Maximum    => "imageAtomicMax",
@@ -62,6 +63,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     TextureFlags.Swap       => "imageAtomicExchange",
                     TextureFlags.CAS        => "imageAtomicCompSwap",
                     _                       => "imageAtomicAdd",
+#pragma warning restore IDE0055
                 });
             }
             else
@@ -132,7 +134,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                         {
                             AggregateType.S32 => NumberFormatter.FormatInt(0),
                             AggregateType.U32 => NumberFormatter.FormatUint(0),
-                            _                => NumberFormatter.FormatFloat(0)
+                            _ => NumberFormatter.FormatFloat(0)
                         };
                     }
                 }
@@ -501,14 +503,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             if (hasLodBias)
             {
-               Append(Src(AggregateType.FP32));
+                Append(Src(AggregateType.FP32));
             }
 
             // textureGather* optional extra component index,
             // not needed for shadow samplers.
             if (isGather && !isShadow)
             {
-               Append(Src(AggregateType.S32));
+                Append(Src(AggregateType.S32));
             }
 
             texCall += ")" + (colorIsVector ? GetMaskMultiDest(texOp.Index) : "");

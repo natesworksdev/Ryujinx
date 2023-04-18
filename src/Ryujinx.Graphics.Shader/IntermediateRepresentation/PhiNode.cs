@@ -19,12 +19,12 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 
         private class PhiSource
         {
-            public BasicBlock Block   { get; }
-            public Operand    Operand { get; set; }
+            public BasicBlock Block { get; }
+            public Operand Operand { get; set; }
 
             public PhiSource(BasicBlock block, Operand operand)
             {
-                Block   = block;
+                Block = block;
                 Operand = operand;
             }
         }

@@ -41,7 +41,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 Operand x = srcA;
                 Operand y = srcB;
                 Operand z = srcC;
-                
+
                 if ((i & 0x01) != 0)
                 {
                     (x, y) = (y, x);
@@ -98,6 +98,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             return imm switch
             {
+#pragma warning disable IDE0055 // Disable formatting
                 TruthTable.False         => Const(0),
                 TruthTable.True          => Const(-1),
                 TruthTable.In            => x,
@@ -119,6 +120,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 TruthTable.OrXor         => context.BitwiseExclusiveOr(x, context.BitwiseOr(y, z)),
                 TruthTable.Xor3          => context.BitwiseExclusiveOr(x, context.BitwiseExclusiveOr(y, z)),
                 _                        => null
+#pragma warning restore IDE0055
             };
         }
 

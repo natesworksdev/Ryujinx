@@ -296,10 +296,18 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 {
                     switch (cond)
                     {
-                        case IComp.Lt: inst = Instruction.CompareLess; break;
-                        case IComp.Le: inst = Instruction.CompareLessOrEqual; break;
-                        case IComp.Gt: inst = Instruction.CompareGreater; break;
-                        case IComp.Ge: inst = Instruction.CompareGreaterOrEqual; break;
+                        case IComp.Lt:
+                            inst = Instruction.CompareLess;
+                            break;
+                        case IComp.Le:
+                            inst = Instruction.CompareLessOrEqual;
+                            break;
+                        case IComp.Gt:
+                            inst = Instruction.CompareGreater;
+                            break;
+                        case IComp.Ge:
+                            inst = Instruction.CompareGreaterOrEqual;
+                            break;
                     }
                 }
 

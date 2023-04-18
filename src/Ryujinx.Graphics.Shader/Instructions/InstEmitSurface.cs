@@ -445,10 +445,18 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 switch (size)
                 {
-                    case SuSize.U8: context.Copy(dests[0], ZeroExtendTo32(context, dests[0], 8)); break;
-                    case SuSize.U16: context.Copy(dests[0], ZeroExtendTo32(context, dests[0], 16)); break;
-                    case SuSize.S8: context.Copy(dests[0], SignExtendTo32(context, dests[0], 8)); break;
-                    case SuSize.S16: context.Copy(dests[0], SignExtendTo32(context, dests[0], 16)); break;
+                    case SuSize.U8:
+                        context.Copy(dests[0], ZeroExtendTo32(context, dests[0], 8));
+                        break;
+                    case SuSize.U16:
+                        context.Copy(dests[0], ZeroExtendTo32(context, dests[0], 16));
+                        break;
+                    case SuSize.S8:
+                        context.Copy(dests[0], SignExtendTo32(context, dests[0], 8));
+                        break;
+                    case SuSize.S16:
+                        context.Copy(dests[0], SignExtendTo32(context, dests[0], 16));
+                        break;
                 }
             }
         }

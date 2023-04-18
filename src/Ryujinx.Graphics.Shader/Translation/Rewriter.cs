@@ -647,12 +647,12 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             if (hasLodBias)
             {
-               sources[dstIndex++] = texOp.GetSource(srcIndex++);
+                sources[dstIndex++] = texOp.GetSource(srcIndex++);
             }
 
             if (isGather && !isShadow)
             {
-               sources[dstIndex++] = texOp.GetSource(srcIndex++);
+                sources[dstIndex++] = texOp.GetSource(srcIndex++);
             }
 
             int coordsIndex = isBindless || isIndexed ? 1 : 0;

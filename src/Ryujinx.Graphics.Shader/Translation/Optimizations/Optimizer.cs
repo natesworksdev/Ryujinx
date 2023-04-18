@@ -93,7 +93,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                                 modified = true;
                             }
                             else if ((operation.Inst == Instruction.PackHalf2x16 && PropagatePack(operation)) ||
-                                     (operation.Inst == Instruction.ShuffleXor   && MatchDdxOrDdy(operation)))
+                                     (operation.Inst == Instruction.ShuffleXor && MatchDdxOrDdy(operation)))
                             {
                                 if (DestHasNoUses(operation))
                                 {

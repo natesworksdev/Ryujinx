@@ -65,7 +65,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 {
                     var fru = frus[i];
 
-                    inArgumentsCount  = fru.InArguments.Length;
+                    inArgumentsCount = fru.InArguments.Length;
                     outArgumentsCount = fru.OutArguments.Length;
                 }
 

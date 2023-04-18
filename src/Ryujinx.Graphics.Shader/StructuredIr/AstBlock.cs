@@ -38,7 +38,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         public AstBlock(AstBlockType type, IAstNode condition = null)
         {
-            Type      = type;
+            Type = type;
             Condition = condition;
 
             _nodes = new LinkedList<IAstNode>();

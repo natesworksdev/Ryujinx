@@ -96,7 +96,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                         context.AppendLine($"if ({GetCondExpr(context, e.Block.Condition)})");
                         break;
 
-                    default: throw new InvalidOperationException($"Found unexpected block type \"{e.Block.Type}\".");
+                    default:
+                        throw new InvalidOperationException($"Found unexpected block type \"{e.Block.Type}\".");
                 }
 
                 context.EnterScope();

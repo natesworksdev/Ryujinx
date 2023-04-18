@@ -90,8 +90,12 @@ namespace Ryujinx.Graphics.Shader
 
             switch (componentType)
             {
-                case AggregateType.U32: typeName = 'u' + typeName; break;
-                case AggregateType.S32: typeName = 'i' + typeName; break;
+                case AggregateType.U32:
+                    typeName = 'u' + typeName;
+                    break;
+                case AggregateType.S32:
+                    typeName = 'i' + typeName;
+                    break;
             }
 
             return typeName;

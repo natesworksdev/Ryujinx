@@ -169,23 +169,25 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             switch (swizzle)
             {
-                case OFmt.F16: return context.PackHalf2x16(results[0], results[1]);
+                case OFmt.F16:
+                    return context.PackHalf2x16(results[0], results[1]);
 
-                case OFmt.F32: return results[0];
+                case OFmt.F32:
+                    return results[0];
 
                 case OFmt.MrgH0:
-                {
-                    Operand h1 = GetHalfDest(context, rd, isHigh: true);
+                    {
+                        Operand h1 = GetHalfDest(context, rd, isHigh: true);
 
-                    return context.PackHalf2x16(results[0], h1);
-                }
+                        return context.PackHalf2x16(results[0], h1);
+                    }
 
                 case OFmt.MrgH1:
-                {
-                    Operand h0 = GetHalfDest(context, rd, isHigh: false);
+                    {
+                        Operand h0 = GetHalfDest(context, rd, isHigh: false);
 
-                    return context.PackHalf2x16(h0, results[1]);
-                }
+                        return context.PackHalf2x16(h0, results[1]);
+                    }
             }
 
             throw new ArgumentException($"Invalid swizzle \"{swizzle}\".");

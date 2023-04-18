@@ -134,7 +134,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 }
 
                 context.Copy(GetZF(), context.FPCompareEqual(dest, zero, fpType));
-                context.Copy(GetNF(), context.FPCompareLess (dest, zero, fpType));
+                context.Copy(GetNF(), context.FPCompareLess(dest, zero, fpType));
             }
         }
 

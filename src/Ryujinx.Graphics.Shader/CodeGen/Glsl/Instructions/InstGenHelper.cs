@@ -14,6 +14,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
         {
             _infoTable = new InstInfo[(int)Instruction.Count];
 
+#pragma warning disable IDE0055 // Disable formatting
             Add(Instruction.AtomicAdd,                InstType.AtomicBinary,   "atomicAdd");
             Add(Instruction.AtomicAnd,                InstType.AtomicBinary,   "atomicAnd");
             Add(Instruction.AtomicCompareAndSwap,     InstType.AtomicTernary,  "atomicCompSwap");
@@ -125,6 +126,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             Add(Instruction.VoteAll,                  InstType.CallUnary,      "allInvocationsARB");
             Add(Instruction.VoteAllEqual,             InstType.CallUnary,      "allInvocationsEqualARB");
             Add(Instruction.VoteAny,                  InstType.CallUnary,      "anyInvocationARB");
+#pragma warning restore IDE0055
         }
 
         private static void Add(Instruction inst, InstType flags, string opName = null, int precedence = 0)

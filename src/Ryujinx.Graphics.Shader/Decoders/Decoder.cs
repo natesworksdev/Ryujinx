@@ -579,25 +579,25 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
             public PathBlockState(Block block)
             {
-                Block             = block;
-                _restoreType      = RestoreType.None;
-                _restoreValue     = 0;
+                Block = block;
+                _restoreType = RestoreType.None;
+                _restoreValue = 0;
                 _restoreMergeType = default;
             }
 
             public PathBlockState(int oldStackSize)
             {
-                Block             = null;
-                _restoreType      = RestoreType.PopPushOp;
-                _restoreValue     = (ulong)oldStackSize;
+                Block = null;
+                _restoreType = RestoreType.PopPushOp;
+                _restoreValue = (ulong)oldStackSize;
                 _restoreMergeType = default;
             }
 
             public PathBlockState(ulong syncAddress, MergeType mergeType)
             {
-                Block             = null;
-                _restoreType      = RestoreType.PushBranchOp;
-                _restoreValue     = syncAddress;
+                Block = null;
+                _restoreType = RestoreType.PushBranchOp;
+                _restoreValue = syncAddress;
                 _restoreMergeType = mergeType;
             }
 

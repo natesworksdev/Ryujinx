@@ -169,9 +169,15 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
                 switch (componentsCount)
                 {
-                    case 2: destType |= AggregateType.Vector2; break;
-                    case 3: destType |= AggregateType.Vector3; break;
-                    case 4: destType |= AggregateType.Vector4; break;
+                    case 2:
+                        destType |= AggregateType.Vector2;
+                        break;
+                    case 3:
+                        destType |= AggregateType.Vector3;
+                        break;
+                    case 4:
+                        destType |= AggregateType.Vector4;
+                        break;
                 }
 
                 AstOperand destVec = context.NewTemp(destType);

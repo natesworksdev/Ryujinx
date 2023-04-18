@@ -110,16 +110,16 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
             if (lLevel > rLevel)
             {
-                block    = lBlock;
+                block = lBlock;
                 blockLvl = lLevel;
-                other    = rBlock;
+                other = rBlock;
                 otherLvl = rLevel;
             }
             else /* if (rLevel > lLevel) */
             {
-                block    = rBlock;
+                block = rBlock;
                 blockLvl = rLevel;
-                other    = lBlock;
+                other = lBlock;
                 otherLvl = lLevel;
             }
 
@@ -194,7 +194,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
                     loopBlock.AddAfter(child, stmt.Goto);
 
-                    block  = loopBlock;
+                    block = loopBlock;
                     gLevel = loopLevel;
                 }
             }
@@ -340,11 +340,11 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         }
 
         private static AstBlock Enclose(
-            AstBlock     block,
+            AstBlock block,
             AstBlockType type,
-            IAstNode     cond,
-            IAstNode     first,
-            IAstNode     last  = null)
+            IAstNode cond,
+            IAstNode first,
+            IAstNode last = null)
         {
             if (first == last)
             {

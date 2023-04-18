@@ -23,8 +23,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         static SpirvGenerator()
         {
-            InstructionPool = new (() => new SpvInstructionPool(), GeneratorPoolCount);
-            IntegerPool = new (() => new SpvLiteralIntegerPool(), GeneratorPoolCount);
+            InstructionPool = new(() => new SpvInstructionPool(), GeneratorPoolCount);
+            IntegerPool = new(() => new SpvLiteralIntegerPool(), GeneratorPoolCount);
             PoolLock = new object();
         }
 

@@ -27,6 +27,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         {
             InstTable = new Func<CodeGenContext, AstOperation, OperationResult>[(int)Instruction.Count];
 
+#pragma warning disable IDE0055 // Disable formatting
             Add(Instruction.Absolute,                 GenerateAbsolute);
             Add(Instruction.Add,                      GenerateAdd);
             Add(Instruction.AtomicAdd,                GenerateAtomicAdd);
@@ -141,6 +142,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.VoteAll,                  GenerateVoteAll);
             Add(Instruction.VoteAllEqual,             GenerateVoteAllEqual);
             Add(Instruction.VoteAny,                  GenerateVoteAny);
+#pragma warning restore IDE0055
         }
 
         private static void Add(Instruction inst, Func<CodeGenContext, AstOperation, OperationResult> handler)
@@ -1498,7 +1500,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             // not needed for shadow samplers.
             if (isGather && !isShadow)
             {
-               compIdx = Src(AggregateType.S32);
+                compIdx = Src(AggregateType.S32);
             }
 
             var operandsList = new List<SpvInstruction>();
@@ -2089,10 +2091,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             return new OperationResult(AggregateType.Bool, emitB(context.TypeBool(), context.Get(AggregateType.Bool, source)));
         }
 
-         private static OperationResult GenerateUnaryFP32(
-            CodeGenContext context,
-            AstOperation operation,
-            Func<SpvInstruction, SpvInstruction, SpvInstruction> emit)
+        private static OperationResult GenerateUnaryFP32(
+           CodeGenContext context,
+           AstOperation operation,
+           Func<SpvInstruction, SpvInstruction, SpvInstruction> emit)
         {
             var source = operation.GetSource(0);
             return new OperationResult(AggregateType.FP32, emit(context.TypeFP32(), context.GetFP32(source)));
