@@ -16,13 +16,25 @@ namespace ARMeilleure.Instructions
 
             switch (type)
             {
-                case IntType.UInt8:  value = context.ZeroExtend8 (value.Type, value); break;
-                case IntType.UInt16: value = context.ZeroExtend16(value.Type, value); break;
-                case IntType.UInt32: value = context.ZeroExtend32(value.Type, value); break;
+                case IntType.UInt8:
+                    value = context.ZeroExtend8(value.Type, value);
+                    break;
+                case IntType.UInt16:
+                    value = context.ZeroExtend16(value.Type, value);
+                    break;
+                case IntType.UInt32:
+                    value = context.ZeroExtend32(value.Type, value);
+                    break;
 
-                case IntType.Int8:  value = context.SignExtend8 (value.Type, value); break;
-                case IntType.Int16: value = context.SignExtend16(value.Type, value); break;
-                case IntType.Int32: value = context.SignExtend32(value.Type, value); break;
+                case IntType.Int8:
+                    value = context.SignExtend8(value.Type, value);
+                    break;
+                case IntType.Int16:
+                    value = context.SignExtend16(value.Type, value);
+                    break;
+                case IntType.Int32:
+                    value = context.SignExtend32(value.Type, value);
+                    break;
             }
 
             return value;
@@ -102,6 +114,7 @@ namespace ARMeilleure.Instructions
         {
             return regIndex switch
             {
+#pragma warning disable IDE0055 // Disable formatting
                 8  => mode == Aarch32Mode.Fiq ? RegisterAlias.R8Fiq  : RegisterAlias.R8Usr,
                 9  => mode == Aarch32Mode.Fiq ? RegisterAlias.R9Fiq  : RegisterAlias.R9Usr,
                 10 => mode == Aarch32Mode.Fiq ? RegisterAlias.R10Fiq : RegisterAlias.R10Usr,
@@ -129,6 +142,7 @@ namespace ARMeilleure.Instructions
                     _ => throw new ArgumentException($"No such AArch32Mode: {mode}", nameof(mode)),
                 },
                 _ => throw new ArgumentOutOfRangeException(nameof(regIndex), regIndex, null),
+#pragma warning restore IDE0055
             };
         }
 

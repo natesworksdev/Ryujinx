@@ -674,7 +674,10 @@ namespace ARMeilleure.Translation.PTC
 
                     if (translator.FunctionTable.IsValid(guestAddress))
                     {
-                        unsafe { imm = (IntPtr)Unsafe.AsPointer(ref translator.FunctionTable.GetValue(guestAddress)); }
+                        unsafe
+                        {
+                            imm = (IntPtr)Unsafe.AsPointer(ref translator.FunctionTable.GetValue(guestAddress));
+                        }
                     }
                 }
                 else if (symbol.Type == SymbolType.DelegateTable)
@@ -694,7 +697,10 @@ namespace ARMeilleure.Translation.PTC
                 {
                     callCounter ??= new Counter<uint>(translator.CountTable);
 
-                    unsafe { imm = (IntPtr)Unsafe.AsPointer(ref callCounter.Value); }
+                    unsafe
+                    {
+                        imm = (IntPtr)Unsafe.AsPointer(ref callCounter.Value);
+                    }
                 }
                 else if (symbol == DispatchStubSymbol)
                 {
@@ -994,10 +1000,12 @@ namespace ARMeilleure.Translation.PTC
         {
             uint osPlatform = 0u;
 
+#pragma warning disable IDE0055 // Disable formatting
             osPlatform |= (OperatingSystem.IsFreeBSD() ? 1u : 0u) << 0;
             osPlatform |= (OperatingSystem.IsLinux()   ? 1u : 0u) << 1;
             osPlatform |= (OperatingSystem.IsMacOS()   ? 1u : 0u) << 2;
             osPlatform |= (OperatingSystem.IsWindows() ? 1u : 0u) << 3;
+#pragma warning restore IDE0055
 
             return osPlatform;
         }

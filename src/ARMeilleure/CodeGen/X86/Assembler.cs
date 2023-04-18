@@ -971,7 +971,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 X86Register baseRegLow = (X86Register)(baseReg.Index & 0b111);
 
-                needsSibByte      = memOp.Index != default  || baseRegLow == X86Register.Rsp;
+                needsSibByte = memOp.Index != default || baseRegLow == X86Register.Rsp;
                 needsDisplacement = memOp.Displacement != 0 || baseRegLow == X86Register.Rbp;
 
                 if (needsDisplacement)
@@ -1081,11 +1081,19 @@ namespace ARMeilleure.CodeGen.X86
 
                     switch (opCodeHigh)
                     {
-                        case 0xf:   vexByte1 |= 1; break;
-                        case 0xf38: vexByte1 |= 2; break;
-                        case 0xf3a: vexByte1 |= 3; break;
+                        case 0xf:
+                            vexByte1 |= 1;
+                            break;
+                        case 0xf38:
+                            vexByte1 |= 2;
+                            break;
+                        case 0xf3a:
+                            vexByte1 |= 3;
+                            break;
 
-                        default: Debug.Assert(false, $"Failed to VEX encode opcode 0x{opCode:X}."); break;
+                        default:
+                            Debug.Assert(false, $"Failed to VEX encode opcode 0x{opCode:X}.");
+                            break;
                     }
 
                     vexByte2 |= (rexPrefix & 8) << 4;
@@ -1191,11 +1199,19 @@ namespace ARMeilleure.CodeGen.X86
 
             switch ((ushort)(opCode >> 8))
             {
-                case 0xf00: mm = 0b01; break;
-                case 0xf38: mm = 0b10; break;
-                case 0xf3a: mm = 0b11; break;
+                case 0xf00:
+                    mm = 0b01;
+                    break;
+                case 0xf38:
+                    mm = 0b10;
+                    break;
+                case 0xf3a:
+                    mm = 0b11;
+                    break;
 
-                default: Debug.Fail($"Failed to EVEX encode opcode 0x{opCode:X}."); break;
+                default:
+                    Debug.Fail($"Failed to EVEX encode opcode 0x{opCode:X}.");
+                    break;
             }
 
             WriteByte(
@@ -1233,11 +1249,19 @@ namespace ARMeilleure.CodeGen.X86
             byte ll = 0b00;
             switch (registerWidth)
             {
-                case 128: ll = 0b00; break;
-                case 256: ll = 0b01; break;
-                case 512: ll = 0b10; break;
+                case 128:
+                    ll = 0b00;
+                    break;
+                case 256:
+                    ll = 0b01;
+                    break;
+                case 512:
+                    ll = 0b10;
+                    break;
 
-                default: Debug.Fail($"Invalid EVEX vector register width {registerWidth}."); break;
+                default:
+                    Debug.Fail($"Invalid EVEX vector register width {registerWidth}.");
+                    break;
             }
             // Embedded broadcast in the case of a memory operand
             bool bcast = broadcast;

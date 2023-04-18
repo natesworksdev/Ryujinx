@@ -456,10 +456,10 @@ namespace ARMeilleure.Instructions
                                             context.ShiftLeft   (context.BitwiseAnd(op, Const(0x55ul)), Const(1)));
 
             val = context.BitwiseOr(context.ShiftRightUI(context.BitwiseAnd(val, Const(0xccul)), Const(2)),
-                                    context.ShiftLeft   (context.BitwiseAnd(val, Const(0x33ul)), Const(2)));
+                                    context.ShiftLeft(context.BitwiseAnd(val, Const(0x33ul)), Const(2)));
 
             return context.BitwiseOr(context.ShiftRightUI(val, Const(4)),
-                                     context.ShiftLeft   (context.BitwiseAnd(val, Const(0x0ful)), Const(4)));
+                                     context.ShiftLeft(context.BitwiseAnd(val, Const(0x0ful)), Const(4)));
         }
 
         public static void Rev16_V(ArmEmitterContext context)

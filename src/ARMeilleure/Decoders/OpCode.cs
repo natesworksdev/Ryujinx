@@ -5,8 +5,8 @@ namespace ARMeilleure.Decoders
 {
     class OpCode : IOpCode
     {
-        public ulong Address   { get; }
-        public int   RawOpCode { get; }
+        public ulong Address { get; }
+        public int RawOpCode { get; }
 
         public int OpCodeSizeInBytes { get; protected set; } = 4;
 
@@ -19,8 +19,8 @@ namespace ARMeilleure.Decoders
         public OpCode(InstDescriptor inst, ulong address, int opCode)
         {
             Instruction = inst;
-            Address     = address;
-            RawOpCode   = opCode;
+            Address = address;
+            RawOpCode = opCode;
 
             RegisterSize = RegisterSize.Int64;
         }

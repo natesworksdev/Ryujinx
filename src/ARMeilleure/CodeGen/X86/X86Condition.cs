@@ -29,6 +29,7 @@ namespace ARMeilleure.CodeGen.X86
         {
             return comp switch
             {
+#pragma warning disable IDE0055 // Disable formatting
                 Comparison.Equal            => X86Condition.Equal,
                 Comparison.NotEqual         => X86Condition.NotEqual,
                 Comparison.Greater          => X86Condition.Greater,
@@ -39,6 +40,7 @@ namespace ARMeilleure.CodeGen.X86
                 Comparison.Less             => X86Condition.Less,
                 Comparison.GreaterOrEqualUI => X86Condition.AboveOrEqual,
                 Comparison.LessUI           => X86Condition.Below,
+#pragma warning restore IDE0055
 
                 _ => throw new ArgumentException(null, nameof(comp))
             };

@@ -45,7 +45,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                string name = (size, castagnoli) switch 
+                string name = (size, castagnoli) switch
                 {
                     (0, false) => nameof(SoftFallback.Crc32b),
                     (1, false) => nameof(SoftFallback.Crc32h),
@@ -71,9 +71,15 @@ namespace ARMeilleure.Instructions
 
             switch (size)
             {
-                case 0: data = context.VectorInsert8(context.VectorZero(), data, 0); break;
-                case 1: data = context.VectorInsert16(context.VectorZero(), data, 0); break;
-                case 2: data = context.VectorInsert(context.VectorZero(), data, 0); break;
+                case 0:
+                    data = context.VectorInsert8(context.VectorZero(), data, 0);
+                    break;
+                case 1:
+                    data = context.VectorInsert16(context.VectorZero(), data, 0);
+                    break;
+                case 2:
+                    data = context.VectorInsert(context.VectorZero(), data, 0);
+                    break;
             }
 
             int bitsize = 8 << size;

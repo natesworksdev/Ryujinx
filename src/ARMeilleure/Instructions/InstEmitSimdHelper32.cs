@@ -773,7 +773,8 @@ namespace ARMeilleure.Instructions
         {
             // Index into 0, 0 into index. This swap happens at the start of an A32 scalar op if required.
             int index = reg & (doubleWidth ? 1 : 3);
-            if (index == 0) return target;
+            if (index == 0)
+                return target;
 
             if (doubleWidth)
             {
@@ -969,7 +970,7 @@ namespace ARMeilleure.Instructions
 
             Intrinsic inst = (op.Size & 1) != 0 ? inst64 : inst32;
 
-            EmitScalarBinaryOpSimd32(context, (n, m) =>  context.AddIntrinsic(inst, n, m));
+            EmitScalarBinaryOpSimd32(context, (n, m) => context.AddIntrinsic(inst, n, m));
         }
 
         public static void EmitScalarTernaryOpSimd32(ArmEmitterContext context, Func3I scalarFunc)
@@ -1240,16 +1241,24 @@ namespace ARMeilleure.Instructions
             {
                 switch (size)
                 {
-                    case 0: res = context.SignExtend8(OperandType.I32, res); break;
-                    case 1: res = context.SignExtend16(OperandType.I32, res); break;
+                    case 0:
+                        res = context.SignExtend8(OperandType.I32, res);
+                        break;
+                    case 1:
+                        res = context.SignExtend16(OperandType.I32, res);
+                        break;
                 }
             }
             else
             {
                 switch (size)
                 {
-                    case 0: res = context.ZeroExtend8(OperandType.I32, res); break;
-                    case 1: res = context.ZeroExtend16(OperandType.I32, res); break;
+                    case 0:
+                        res = context.ZeroExtend8(OperandType.I32, res);
+                        break;
+                    case 1:
+                        res = context.ZeroExtend16(OperandType.I32, res);
+                        break;
                 }
             }
 

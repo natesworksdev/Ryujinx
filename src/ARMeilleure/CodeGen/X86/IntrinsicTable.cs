@@ -11,6 +11,7 @@ namespace ARMeilleure.CodeGen.X86
         {
             _intrinTable = new IntrinsicInfo[EnumUtils.GetCount(typeof(Intrinsic))];
 
+#pragma warning disable IDE0055 // Disable formatting
             Add(Intrinsic.X86Addpd,         new IntrinsicInfo(X86Instruction.Addpd,         IntrinsicType.Binary));
             Add(Intrinsic.X86Addps,         new IntrinsicInfo(X86Instruction.Addps,         IntrinsicType.Binary));
             Add(Intrinsic.X86Addsd,         new IntrinsicInfo(X86Instruction.Addsd,         IntrinsicType.Binary));
@@ -185,6 +186,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Intrinsic.X86Vpternlogd,    new IntrinsicInfo(X86Instruction.Vpternlogd,    IntrinsicType.TernaryImm));
             Add(Intrinsic.X86Xorpd,         new IntrinsicInfo(X86Instruction.Xorpd,         IntrinsicType.Binary));
             Add(Intrinsic.X86Xorps,         new IntrinsicInfo(X86Instruction.Xorps,         IntrinsicType.Binary));
+#pragma warning restore IDE0055
         }
 
         private static void Add(Intrinsic intrin, IntrinsicInfo info)

@@ -46,11 +46,11 @@ namespace ARMeilleure.Decoders
             }
 
             return MoveBit(imm, 7, 31) | MoveBit(~imm, 6, 30) |
-                   MoveBit(imm, 6, 29) | MoveBit( imm, 6, 28) |
-                   MoveBit(imm, 6, 27) | MoveBit( imm, 6, 26) |
-                   MoveBit(imm, 6, 25) | MoveBit( imm, 5, 24) |
-                   MoveBit(imm, 4, 23) | MoveBit( imm, 3, 22) |
-                   MoveBit(imm, 2, 21) | MoveBit( imm, 1, 20) |
+                   MoveBit(imm, 6, 29) | MoveBit(imm, 6, 28) |
+                   MoveBit(imm, 6, 27) | MoveBit(imm, 6, 26) |
+                   MoveBit(imm, 6, 25) | MoveBit(imm, 5, 24) |
+                   MoveBit(imm, 4, 23) | MoveBit(imm, 3, 22) |
+                   MoveBit(imm, 2, 21) | MoveBit(imm, 1, 20) |
                    MoveBit(imm, 0, 19);
         }
 
@@ -63,13 +63,13 @@ namespace ARMeilleure.Decoders
             }
 
             return MoveBit(imm, 7, 63) | MoveBit(~imm, 6, 62) |
-                   MoveBit(imm, 6, 61) | MoveBit( imm, 6, 60) |
-                   MoveBit(imm, 6, 59) | MoveBit( imm, 6, 58) |
-                   MoveBit(imm, 6, 57) | MoveBit( imm, 6, 56) |
-                   MoveBit(imm, 6, 55) | MoveBit( imm, 6, 54) |
-                   MoveBit(imm, 5, 53) | MoveBit( imm, 4, 52) |
-                   MoveBit(imm, 3, 51) | MoveBit( imm, 2, 50) |
-                   MoveBit(imm, 1, 49) | MoveBit( imm, 0, 48);
+                   MoveBit(imm, 6, 61) | MoveBit(imm, 6, 60) |
+                   MoveBit(imm, 6, 59) | MoveBit(imm, 6, 58) |
+                   MoveBit(imm, 6, 57) | MoveBit(imm, 6, 56) |
+                   MoveBit(imm, 6, 55) | MoveBit(imm, 6, 54) |
+                   MoveBit(imm, 5, 53) | MoveBit(imm, 4, 52) |
+                   MoveBit(imm, 3, 51) | MoveBit(imm, 2, 50) |
+                   MoveBit(imm, 1, 49) | MoveBit(imm, 0, 48);
         }
 
         public struct BitMask
@@ -115,7 +115,7 @@ namespace ARMeilleure.Decoders
 
             if (r > 0)
             {
-                wMask  = BitUtils.RotateRight(wMask, r, size);
+                wMask = BitUtils.RotateRight(wMask, r, size);
                 wMask &= BitUtils.FillWithOnes(size);
             }
 
@@ -124,7 +124,7 @@ namespace ARMeilleure.Decoders
                 WMask = BitUtils.Replicate(wMask, size),
                 TMask = BitUtils.Replicate(tMask, size),
 
-                Pos   = immS,
+                Pos = immS,
                 Shift = immR
             };
         }

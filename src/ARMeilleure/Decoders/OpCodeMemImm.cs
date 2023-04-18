@@ -2,10 +2,10 @@ namespace ARMeilleure.Decoders
 {
     class OpCodeMemImm : OpCodeMem
     {
-        public    long Immediate { get; protected set; }
-        public    bool WBack     { get; protected set; }
-        public    bool PostIdx   { get; protected set; }
-        protected bool Unscaled  { get; }
+        public long Immediate { get; protected set; }
+        public bool WBack { get; protected set; }
+        public bool PostIdx { get; protected set; }
+        protected bool Unscaled { get; }
 
         private enum MemOp
         {
@@ -21,13 +21,13 @@ namespace ARMeilleure.Decoders
         public OpCodeMemImm(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Extend64 = ((opCode >> 22) & 3) == 2;
-            WBack    = ((opCode >> 24) & 1) == 0;
+            WBack = ((opCode >> 24) & 1) == 0;
 
             // The type is not valid for the Unsigned Immediate 12-bits encoding,
             // because the bits 11:10 are used for the larger Immediate offset.
             MemOp type = WBack ? (MemOp)((opCode >> 10) & 3) : MemOp.Unsigned;
 
-            PostIdx  = type == MemOp.PostIndexed;
+            PostIdx = type == MemOp.PostIndexed;
             Unscaled = type == MemOp.Unscaled ||
                        type == MemOp.Unprivileged;
 

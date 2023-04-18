@@ -7,8 +7,8 @@ namespace ARMeilleure.Decoders
         public int Rn { get; }
 
         public int RegisterMask { get; }
-        public int Offset       { get; }
-        public int PostOffset   { get; }
+        public int Offset { get; }
+        public int PostOffset { get; }
 
         public bool IsLoad { get; }
 

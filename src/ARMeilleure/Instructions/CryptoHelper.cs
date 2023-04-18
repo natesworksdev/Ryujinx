@@ -7,7 +7,7 @@ namespace ARMeilleure.Instructions
 {
     static class CryptoHelper
     {
-#region "LookUp Tables"
+        #region "LookUp Tables"
 #pragma warning disable IDE1006
         private static ReadOnlySpan<byte> _sBox => new byte[]
         {
@@ -179,7 +179,7 @@ namespace ARMeilleure.Instructions
             0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12, 1, 6, 11
         };
 #pragma warning restore IDE1006
-#endregion
+        #endregion
 
         public static V128 AesInvMixColumns(V128 op)
         {

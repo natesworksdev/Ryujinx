@@ -223,7 +223,8 @@ namespace ARMeilleure.Instructions
                 case 0b0000: // FPSID
                     throw new NotImplementedException("Supervisor Only");
                 case 0b0001: // FPSCR
-                    EmitGetFpscr(context); return;
+                    EmitGetFpscr(context);
+                    return;
                 case 0b0101: // MVFR2
                     throw new NotImplementedException("MVFR2");
                 case 0b0110: // MVFR1
@@ -246,7 +247,8 @@ namespace ARMeilleure.Instructions
                 case 0b0000: // FPSID
                     throw new NotImplementedException("Supervisor Only");
                 case 0b0001: // FPSCR
-                    EmitSetFpscr(context); return;
+                    EmitSetFpscr(context);
+                    return;
                 case 0b0101: // MVFR2
                     throw new NotImplementedException("MVFR2");
                 case 0b0110: // MVFR1

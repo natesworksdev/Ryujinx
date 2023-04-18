@@ -36,11 +36,13 @@ namespace ARMeilleure.Instructions
         public static void Dmb(ArmEmitterContext context) => EmitBarrier(context);
         public static void Dsb(ArmEmitterContext context) => EmitBarrier(context);
 
+#pragma warning disable IDE0055 // Disable formatting
         public static void Ldar(ArmEmitterContext context)  => EmitLdr(context, AccessType.Ordered);
         public static void Ldaxr(ArmEmitterContext context) => EmitLdr(context, AccessType.OrderedEx);
         public static void Ldxr(ArmEmitterContext context)  => EmitLdr(context, AccessType.Exclusive);
         public static void Ldxp(ArmEmitterContext context)  => EmitLdp(context, AccessType.Exclusive);
         public static void Ldaxp(ArmEmitterContext context) => EmitLdp(context, AccessType.OrderedEx);
+#pragma warning restore IDE0055
 
         private static void EmitLdr(ArmEmitterContext context, AccessType accType)
         {
@@ -82,7 +84,7 @@ namespace ARMeilleure.Instructions
 
                     Operand valueHigh = context.ShiftRightUI(value, Const(32));
 
-                    SetIntOrZR(context, op.Rt,  valueLow);
+                    SetIntOrZR(context, op.Rt, valueLow);
                     SetIntOrZR(context, op.Rt2, valueHigh);
                 }
                 else if (op.Size == 3)
@@ -92,7 +94,7 @@ namespace ARMeilleure.Instructions
                     Operand valueLow  = context.VectorExtract(OperandType.I64, value, 0);
                     Operand valueHigh = context.VectorExtract(OperandType.I64, value, 1);
 
-                    SetIntOrZR(context, op.Rt,  valueLow);
+                    SetIntOrZR(context, op.Rt, valueLow);
                     SetIntOrZR(context, op.Rt2, valueHigh);
                 }
                 else
@@ -116,11 +118,13 @@ namespace ARMeilleure.Instructions
         }
 #pragma warning restore IDE0060
 
+#pragma warning disable IDE0055 // Disable formatting
         public static void Stlr(ArmEmitterContext context)  => EmitStr(context, AccessType.Ordered);
         public static void Stlxr(ArmEmitterContext context) => EmitStr(context, AccessType.OrderedEx);
         public static void Stxr(ArmEmitterContext context)  => EmitStr(context, AccessType.Exclusive);
         public static void Stxp(ArmEmitterContext context)  => EmitStp(context, AccessType.Exclusive);
         public static void Stlxp(ArmEmitterContext context) => EmitStp(context, AccessType.OrderedEx);
+#pragma warning restore IDE0055
 
         private static void EmitStr(ArmEmitterContext context, AccessType accType)
         {
@@ -157,8 +161,8 @@ namespace ARMeilleure.Instructions
                 }
                 else /* if (op.Size == 3) */
                 {
-                    value = context.VectorInsert(context.VectorZero(), t,  0);
-                    value = context.VectorInsert(value,                t2, 1);
+                    value = context.VectorInsert(context.VectorZero(), t, 0);
+                    value = context.VectorInsert(value, t2, 1);
                 }
 
                 EmitStoreExclusive(context, address, value, exclusive, op.Size + 1, op.Rs, a32: false);

@@ -196,9 +196,9 @@ namespace ARMeilleure.Decoders
 
         private static void FillBlock(
             IMemoryManager memory,
-            ExecutionMode  mode,
-            Block          block,
-            ulong          limitAddress)
+            ExecutionMode mode,
+            Block block,
+            ulong limitAddress)
         {
             ulong address = block.Address;
             int itBlockSize = 0;
@@ -241,7 +241,7 @@ namespace ARMeilleure.Decoders
         private static bool IsUnconditionalBranch(OpCode opCode)
         {
             return opCode is OpCodeBImmAl ||
-                   opCode is OpCodeBReg   || IsAarch32UnconditionalBranch(opCode);
+                   opCode is OpCodeBReg || IsAarch32UnconditionalBranch(opCode);
         }
 
         private static bool IsAarch32UnconditionalBranch(OpCode opCode)
@@ -290,9 +290,9 @@ namespace ARMeilleure.Decoders
 
                 if (opCode is IOpCode32Mem opMem)
                 {
-                    rt     = opMem.Rt;
-                    rn     = opMem.Rn;
-                    wBack  = opMem.WBack;
+                    rt = opMem.Rt;
+                    rn = opMem.Rn;
+                    wBack = opMem.WBack;
                     isLoad = opMem.IsLoad;
 
                     // For the dual load, we also need to take into account the
@@ -306,10 +306,10 @@ namespace ARMeilleure.Decoders
                 {
                     const int pcMask = 1 << RegisterAlias.Aarch32Pc;
 
-                    rt     = (opMemMult.RegisterMask & pcMask) != 0 ? RegisterAlias.Aarch32Pc : 0;
-                    rn     =  opMemMult.Rn;
-                    wBack  =  opMemMult.PostOffset != 0;
-                    isLoad =  opMemMult.IsLoad;
+                    rt = (opMemMult.RegisterMask & pcMask) != 0 ? RegisterAlias.Aarch32Pc : 0;
+                    rn = opMemMult.Rn;
+                    wBack = opMemMult.PostOffset != 0;
+                    isLoad = opMemMult.IsLoad;
                 }
                 else
                 {

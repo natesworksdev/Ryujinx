@@ -55,9 +55,9 @@ namespace ARMeilleure.State
         /// <param name="e3">Element 3</param>
         public V128(float e0, float e1, float e2, float e3)
         {
-            _e0  = (ulong)(uint)BitConverter.SingleToInt32Bits(e0) << 0;
+            _e0 = (ulong)(uint)BitConverter.SingleToInt32Bits(e0) << 0;
             _e0 |= (ulong)(uint)BitConverter.SingleToInt32Bits(e1) << 32;
-            _e1  = (ulong)(uint)BitConverter.SingleToInt32Bits(e2) << 0;
+            _e1 = (ulong)(uint)BitConverter.SingleToInt32Bits(e2) << 0;
             _e1 |= (ulong)(uint)BitConverter.SingleToInt32Bits(e3) << 32;
         }
 
@@ -98,9 +98,9 @@ namespace ARMeilleure.State
         /// <param name="e3">Element 3</param>
         public V128(uint e0, uint e1, uint e2, uint e3)
         {
-            _e0  = (ulong)e0 << 0;
+            _e0 = (ulong)e0 << 0;
             _e0 |= (ulong)e1 << 32;
-            _e1  = (ulong)e2 << 0;
+            _e1 = (ulong)e2 << 0;
             _e1 |= (ulong)e3 << 32;
         }
 

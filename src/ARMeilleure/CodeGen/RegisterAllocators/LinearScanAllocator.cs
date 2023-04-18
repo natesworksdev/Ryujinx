@@ -33,7 +33,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             public StackAllocator StackAlloc { get; }
 
-            public BitMap Active   { get; }
+            public BitMap Active { get; }
             public BitMap Inactive { get; }
 
             public int IntUsedRegisters { get; set; }
@@ -47,9 +47,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             public AllocationContext(StackAllocator stackAlloc, RegisterMasks masks, int intervalsCount)
             {
                 StackAlloc = stackAlloc;
-                Masks      = masks;
+                Masks = masks;
 
-                Active   = new BitMap(Allocators.Default, intervalsCount);
+                Active = new BitMap(Allocators.Default, intervalsCount);
                 Inactive = new BitMap(Allocators.Default, intervalsCount);
 
                 PopulateFreePositions(RegisterType.Integer, out _intFreePositions, out _intFreePositionsCount);
@@ -443,7 +443,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 if (highest < current)
                 {
-                    highest  = current;
+                    highest = current;
                     selected = index;
 
                     if (current == int.MaxValue)
@@ -485,9 +485,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         private void SplitAndSpillOverlappingInterval(
             AllocationContext context,
-            LiveInterval      current,
-            LiveInterval      interval,
-            int               registersCount)
+            LiveInterval current,
+            LiveInterval interval,
+            int registersCount)
         {
             // If there's a next use after the start of the current interval,
             // we need to split the spilled interval twice, and re-insert it
@@ -530,8 +530,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         private void InsertInterval(LiveInterval interval, int registersCount)
         {
             Debug.Assert(interval.UsesCount != 0, "Trying to insert a interval without uses.");
-            Debug.Assert(!interval.IsEmpty,       "Trying to insert a empty interval.");
-            Debug.Assert(!interval.IsSpilled,     "Trying to insert a spilled interval.");
+            Debug.Assert(!interval.IsEmpty, "Trying to insert a empty interval.");
+            Debug.Assert(!interval.IsSpilled, "Trying to insert a spilled interval.");
 
             int startIndex = registersCount * 2;
 
@@ -547,7 +547,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         private static void Spill(AllocationContext context, LiveInterval interval)
         {
-            Debug.Assert(!interval.IsFixed,       "Trying to spill a fixed interval.");
+            Debug.Assert(!interval.IsFixed, "Trying to spill a fixed interval.");
             Debug.Assert(interval.UsesCount == 0, "Trying to spill a interval with uses.");
 
             // We first check if any of the siblings were spilled, if so we can reuse
@@ -907,7 +907,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     }
                 }
 
-                blkLiveGen [block.Index] = liveGen;
+                blkLiveGen[block.Index] = liveGen;
                 blkLiveKill[block.Index] = liveKill;
             }
 
@@ -917,7 +917,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             for (int index = 0; index < cfg.Blocks.Count; index++)
             {
-                blkLiveIn [index] = new BitMap(Allocators.Default, mapSize);
+                blkLiveIn[index] = new BitMap(Allocators.Default, mapSize);
                 blkLiveOut[index] = new BitMap(Allocators.Default, mapSize);
             }
 
@@ -942,9 +942,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                     BitMap liveIn = blkLiveIn[block.Index];
 
-                    liveIn.Set  (liveOut);
+                    liveIn.Set(liveOut);
                     liveIn.Clear(blkLiveKill[block.Index]);
-                    liveIn.Set  (blkLiveGen [block.Index]);
+                    liveIn.Set(blkLiveGen[block.Index]);
                 }
             }
             while (modified);

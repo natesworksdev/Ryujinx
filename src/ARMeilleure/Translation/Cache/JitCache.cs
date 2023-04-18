@@ -35,11 +35,13 @@ namespace ARMeilleure.Translation.Cache
 
         public static void Initialize(IJitMemoryAllocator allocator)
         {
-            if (_initialized) return;
+            if (_initialized)
+                return;
 
             lock (_lock)
             {
-                if (_initialized) return;
+                if (_initialized)
+                    return;
 
                 _jitRegion = new ReservedRegion(allocator, CacheSize);
 
@@ -75,7 +77,7 @@ namespace ARMeilleure.Translation.Cache
                 {
                     unsafe
                     {
-                        fixed (byte *codePtr = code)
+                        fixed (byte* codePtr = code)
                         {
                             JitSupportDarwin.Copy(funcPtr, (IntPtr)codePtr, (ulong)code.Length);
                         }

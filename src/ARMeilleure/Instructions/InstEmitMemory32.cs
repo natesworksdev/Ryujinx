@@ -161,7 +161,7 @@ namespace ARMeilleure.Instructions
             if (op.Index || op.WBack)
             {
                 temp = op.Add
-                    ? context.Add     (n, m)
+                    ? context.Add(n, m)
                     : context.Subtract(n, m);
             }
 

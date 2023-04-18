@@ -108,9 +108,9 @@ namespace ARMeilleure.Translation
 
         protected static OperandType GetOperandType(Type type)
         {
-            if (type == typeof(bool)   || type == typeof(byte)  ||
-                type == typeof(char)   || type == typeof(short) ||
-                type == typeof(int)    || type == typeof(sbyte) ||
+            if (type == typeof(bool) || type == typeof(byte) ||
+                type == typeof(char) || type == typeof(short) ||
+                type == typeof(int) || type == typeof(sbyte) ||
                 type == typeof(ushort) || type == typeof(uint))
             {
                 return OperandType.I32;

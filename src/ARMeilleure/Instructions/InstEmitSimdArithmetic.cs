@@ -238,7 +238,7 @@ namespace ARMeilleure.Instructions
 
             // Get the high 4 bits of elements in arg.
             Operand hiArg = context.AddIntrinsic(Intrinsic.X86Psrlw, arg, Const(4));
-                    hiArg = context.AddIntrinsic(Intrinsic.X86Pand, hiArg, maskLow);
+            hiArg = context.AddIntrinsic(Intrinsic.X86Pand, hiArg, maskLow);
 
             // CLZ of high 4 bits of elements in arg.
             Operand hiClz = context.AddIntrinsic(Intrinsic.X86Pshufb, clzTable, hiArg);
@@ -283,12 +283,14 @@ namespace ARMeilleure.Instructions
                 return default;
             }
 
+#pragma warning disable IDE0055 // Disable formatting
             Operand AddVectorI32(Operand op0, Operand op1)      => context.AddIntrinsic(Intrinsic.X86Paddd, op0, op1);
             Operand SubVectorI32(Operand op0, Operand op1)      => context.AddIntrinsic(Intrinsic.X86Psubd, op0, op1);
             Operand ShiftRightVectorUI32(Operand op0, int imm8) => context.AddIntrinsic(Intrinsic.X86Psrld, op0, Const(imm8));
             Operand OrVector(Operand op0, Operand op1)          => context.AddIntrinsic(Intrinsic.X86Por, op0, op1);
             Operand AndVector(Operand op0, Operand op1)         => context.AddIntrinsic(Intrinsic.X86Pand, op0, op1);
             Operand NotVector(Operand op0)                      => context.AddIntrinsic(Intrinsic.X86Pandn, op0, context.VectorOne());
+#pragma warning restore IDE0055
 
             Operand c55555555 = X86GetAllElements(context, 0x55555555);
             Operand c33333333 = X86GetAllElements(context, 0x33333333);
@@ -312,24 +314,24 @@ namespace ARMeilleure.Instructions
             // Count leading 1s, which is the population count.
             tmp0 = ShiftRightVectorUI32(res, 1);
             tmp0 = AndVector(tmp0, c55555555);
-            res  = SubVectorI32(res, tmp0);
+            res = SubVectorI32(res, tmp0);
 
             tmp0 = ShiftRightVectorUI32(res, 2);
             tmp0 = AndVector(tmp0, c33333333);
             tmp1 = AndVector(res, c33333333);
-            res  = AddVectorI32(tmp0, tmp1);
+            res = AddVectorI32(tmp0, tmp1);
 
             tmp0 = ShiftRightVectorUI32(res, 4);
             tmp0 = AddVectorI32(tmp0, res);
-            res  = AndVector(tmp0, c0f0f0f0f);
+            res = AndVector(tmp0, c0f0f0f0f);
 
             tmp0 = ShiftRightVectorUI32(res, 8);
-            res  = AddVectorI32(tmp0, res);
+            res = AddVectorI32(tmp0, res);
 
             tmp0 = ShiftRightVectorUI32(res, 16);
-            res  = AddVectorI32(tmp0, res);
+            res = AddVectorI32(tmp0, res);
 
-            res  = AndVector(res, c0000003f);
+            res = AndVector(res, c0000003f);
 
             return res;
         }
@@ -2520,7 +2522,7 @@ namespace ARMeilleure.Instructions
                         res = context.AddIntrinsic(Intrinsic.X86Subps, maskThree, res);
                     }
 
-                    res = context.AddIntrinsic(Intrinsic.X86Mulps, maskHalf,  res);
+                    res = context.AddIntrinsic(Intrinsic.X86Mulps, maskHalf, res);
                     res = EmitSse41RecipStepSelectOpF(context, n, m, res, maskOneHalf, scalar: false, sizeF);
 
                     if (op.RegisterSize == RegisterSize.Simd64)
@@ -2546,7 +2548,7 @@ namespace ARMeilleure.Instructions
                         res = context.AddIntrinsic(Intrinsic.X86Subpd, maskThree, res);
                     }
 
-                    res = context.AddIntrinsic(Intrinsic.X86Mulpd, maskHalf,  res);
+                    res = context.AddIntrinsic(Intrinsic.X86Mulpd, maskHalf, res);
                     res = EmitSse41RecipStepSelectOpF(context, n, m, res, maskOneHalf, scalar: false, sizeF);
 
                     context.Copy(GetVec(op.Rd), res);
@@ -2825,10 +2827,10 @@ namespace ARMeilleure.Instructions
                     for (int i = 0; i < 8; i++)
                     {
                         Operand mask = context.AddIntrinsic(Intrinsic.X86Psllw, n, Const(15 - i));
-                                mask = context.AddIntrinsic(Intrinsic.X86Psraw, mask, Const(15));
+                        mask = context.AddIntrinsic(Intrinsic.X86Psraw, mask, Const(15));
 
                         Operand tmp = context.AddIntrinsic(Intrinsic.X86Psllw, m, Const(i));
-                                tmp = context.AddIntrinsic(Intrinsic.X86Pand, tmp, mask);
+                        tmp = context.AddIntrinsic(Intrinsic.X86Pand, tmp, mask);
 
                         res = context.AddIntrinsic(Intrinsic.X86Pxor, res, tmp);
                     }
@@ -2840,12 +2842,12 @@ namespace ARMeilleure.Instructions
                     for (int i = 0; i < 64; i++)
                     {
                         Operand mask = context.AddIntrinsic(Intrinsic.X86Movlhps, n, n);
-                                mask = context.AddIntrinsic(Intrinsic.X86Psllq, mask, Const(63 - i));
-                                mask = context.AddIntrinsic(Intrinsic.X86Psrlq, mask, Const(63));
-                                mask = context.AddIntrinsic(Intrinsic.X86Psubq, zero, mask);
+                        mask = context.AddIntrinsic(Intrinsic.X86Psllq, mask, Const(63 - i));
+                        mask = context.AddIntrinsic(Intrinsic.X86Psrlq, mask, Const(63));
+                        mask = context.AddIntrinsic(Intrinsic.X86Psubq, zero, mask);
 
                         Operand tmp = EmitSse2Sll_128(context, m, i);
-                                tmp = context.AddIntrinsic(Intrinsic.X86Pand, tmp, mask);
+                        tmp = context.AddIntrinsic(Intrinsic.X86Pand, tmp, mask);
 
                         res = context.AddIntrinsic(Intrinsic.X86Pxor, res, tmp);
                     }
@@ -4854,9 +4856,9 @@ namespace ARMeilleure.Instructions
                 Operand mask1 = context.AddIntrinsic(Intrinsic.X86Cmpps, opF, opF, Const((int)CmpCondition.UnorderedQ));
 
                 Operand mask2 = context.AddIntrinsic(Intrinsic.X86Pand,  opF,   qMask);
-                        mask2 = context.AddIntrinsic(Intrinsic.X86Cmpps, mask2, qMask, Const((int)CmpCondition.Equal));
+                mask2 = context.AddIntrinsic(Intrinsic.X86Cmpps, mask2, qMask, Const((int)CmpCondition.Equal));
 
-                qNaNMask = isQNaN == null ||  (bool)isQNaN ? context.AddIntrinsic(Intrinsic.X86Andps,  mask2, mask1) : default;
+                qNaNMask = isQNaN == null || (bool)isQNaN ? context.AddIntrinsic(Intrinsic.X86Andps, mask2, mask1) : default;
                 sNaNMask = isQNaN == null || !(bool)isQNaN ? context.AddIntrinsic(Intrinsic.X86Andnps, mask2, mask1) : default;
             }
             else /* if ((op.Size & 1) == 1) */
@@ -4868,9 +4870,9 @@ namespace ARMeilleure.Instructions
                 Operand mask1 = context.AddIntrinsic(Intrinsic.X86Cmppd, opF, opF, Const((int)CmpCondition.UnorderedQ));
 
                 Operand mask2 = context.AddIntrinsic(Intrinsic.X86Pand,  opF,   qMask);
-                        mask2 = context.AddIntrinsic(Intrinsic.X86Cmppd, mask2, qMask, Const((int)CmpCondition.Equal));
+                mask2 = context.AddIntrinsic(Intrinsic.X86Cmppd, mask2, qMask, Const((int)CmpCondition.Equal));
 
-                qNaNMask = isQNaN == null ||  (bool)isQNaN ? context.AddIntrinsic(Intrinsic.X86Andpd,  mask2, mask1) : default;
+                qNaNMask = isQNaN == null || (bool)isQNaN ? context.AddIntrinsic(Intrinsic.X86Andpd, mask2, mask1) : default;
                 sNaNMask = isQNaN == null || !(bool)isQNaN ? context.AddIntrinsic(Intrinsic.X86Andnpd, mask2, mask1) : default;
             }
         }
@@ -4897,10 +4899,10 @@ namespace ARMeilleure.Instructions
                 Operand qMask = scalar ? X86GetScalar(context, 1 << QBit) : X86GetAllElements(context, 1 << QBit);
 
                 Operand resNaNMask = context.AddIntrinsic(Intrinsic.X86Pandn, mSNaNMask,  nQNaNMask);
-                        resNaNMask = context.AddIntrinsic(Intrinsic.X86Por,   resNaNMask, nSNaNMask);
+                resNaNMask = context.AddIntrinsic(Intrinsic.X86Por, resNaNMask, nSNaNMask);
 
                 Operand resNaN = context.AddIntrinsic(Intrinsic.X86Blendvps, mCopy, nCopy, resNaNMask);
-                        resNaN = context.AddIntrinsic(Intrinsic.X86Por, resNaN, qMask);
+                resNaN = context.AddIntrinsic(Intrinsic.X86Por, resNaN, qMask);
 
                 Operand resMask = context.AddIntrinsic(Intrinsic.X86Cmpps, nCopy, mCopy, Const((int)CmpCondition.OrderedQ));
 
@@ -4931,10 +4933,10 @@ namespace ARMeilleure.Instructions
                 Operand qMask = scalar ? X86GetScalar(context, 1L << QBit) : X86GetAllElements(context, 1L << QBit);
 
                 Operand resNaNMask = context.AddIntrinsic(Intrinsic.X86Pandn, mSNaNMask,  nQNaNMask);
-                        resNaNMask = context.AddIntrinsic(Intrinsic.X86Por,   resNaNMask, nSNaNMask);
+                resNaNMask = context.AddIntrinsic(Intrinsic.X86Por, resNaNMask, nSNaNMask);
 
                 Operand resNaN = context.AddIntrinsic(Intrinsic.X86Blendvpd, mCopy, nCopy, resNaNMask);
-                        resNaN = context.AddIntrinsic(Intrinsic.X86Por, resNaN, qMask);
+                resNaN = context.AddIntrinsic(Intrinsic.X86Por, resNaN, qMask);
 
                 Operand resMask = context.AddIntrinsic(Intrinsic.X86Cmppd, nCopy, mCopy, Const((int)CmpCondition.OrderedQ));
 
@@ -4965,10 +4967,10 @@ namespace ARMeilleure.Instructions
                 Operand mask = X86GetAllElements(context, -0f);
 
                 Operand res = context.AddIntrinsic(isMax ? Intrinsic.X86Maxps : Intrinsic.X86Minps, n, m);
-                        res = context.AddIntrinsic(Intrinsic.X86Andnps, mask, res);
+                res = context.AddIntrinsic(Intrinsic.X86Andnps, mask, res);
 
                 Operand resSign = context.AddIntrinsic(isMax ? Intrinsic.X86Pand : Intrinsic.X86Por, n, m);
-                        resSign = context.AddIntrinsic(Intrinsic.X86Andps, mask, resSign);
+                resSign = context.AddIntrinsic(Intrinsic.X86Andps, mask, resSign);
 
                 return context.AddIntrinsic(Intrinsic.X86Por, res, resSign);
             }
@@ -4977,10 +4979,10 @@ namespace ARMeilleure.Instructions
                 Operand mask = X86GetAllElements(context, -0d);
 
                 Operand res = context.AddIntrinsic(isMax ? Intrinsic.X86Maxpd : Intrinsic.X86Minpd, n, m);
-                        res = context.AddIntrinsic(Intrinsic.X86Andnpd, mask, res);
+                res = context.AddIntrinsic(Intrinsic.X86Andnpd, mask, res);
 
                 Operand resSign = context.AddIntrinsic(isMax ? Intrinsic.X86Pand : Intrinsic.X86Por, n, m);
-                        resSign = context.AddIntrinsic(Intrinsic.X86Andpd, mask, resSign);
+                resSign = context.AddIntrinsic(Intrinsic.X86Andpd, mask, resSign);
 
                 return context.AddIntrinsic(Intrinsic.X86Por, res, resSign);
             }
@@ -5191,7 +5193,7 @@ namespace ARMeilleure.Instructions
             Operand res  = context.AddIntrinsic(subInst, n, m);
             Operand res2 = context.AddIntrinsic(subInst, m, n);
 
-            res  = context.AddIntrinsic(Intrinsic.X86Pand,  cmpMask, res);
+            res = context.AddIntrinsic(Intrinsic.X86Pand, cmpMask, res);
             res2 = context.AddIntrinsic(Intrinsic.X86Pandn, cmpMask, res2);
 
             res = context.AddIntrinsic(Intrinsic.X86Por, res, res2);
@@ -5215,7 +5217,7 @@ namespace ARMeilleure.Instructions
             }
 
             Operand high = context.AddIntrinsic(Intrinsic.X86Pslldq, op, Const(8));
-                    high = context.AddIntrinsic(Intrinsic.X86Psrlq, high, Const(64 - shift));
+            high = context.AddIntrinsic(Intrinsic.X86Psrlq, high, Const(64 - shift));
 
             Operand low = context.AddIntrinsic(Intrinsic.X86Psllq, op, Const(shift));
 

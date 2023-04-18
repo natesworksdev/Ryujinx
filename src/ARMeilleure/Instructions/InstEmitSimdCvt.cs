@@ -67,8 +67,8 @@ namespace ARMeilleure.Instructions
                     Operand n = GetVec(op.Rn);
 
                     Operand res = context.AddIntrinsic(Intrinsic.X86Vcvtps2ph, n, Const(X86GetRoundControl(FPRoundingMode.ToNearest)));
-                            res = context.AddIntrinsic(Intrinsic.X86Pslldq, res, Const(14)); // VectorZeroUpper112()
-                            res = context.AddIntrinsic(Intrinsic.X86Psrldq, res, Const(14));
+                    res = context.AddIntrinsic(Intrinsic.X86Pslldq, res, Const(14)); // VectorZeroUpper112()
+                    res = context.AddIntrinsic(Intrinsic.X86Psrldq, res, Const(14));
 
                     context.Copy(GetVec(op.Rd), res);
                 }
@@ -92,7 +92,7 @@ namespace ARMeilleure.Instructions
                     Debug.Assert(!Optimizations.ForceLegacySse);
 
                     Operand res = context.AddIntrinsic(Intrinsic.X86Vcvtph2ps, GetVec(op.Rn));
-                            res = context.VectorZeroUpper96(res);
+                    res = context.VectorZeroUpper96(res);
 
                     context.Copy(GetVec(op.Rd), res);
                 }
@@ -116,7 +116,7 @@ namespace ARMeilleure.Instructions
                     Operand n = GetVec(op.Rn);
 
                     Operand res = context.AddIntrinsic(Intrinsic.X86Cvtsd2ss, context.VectorZero(), n);
-                            res = context.AddIntrinsic(Intrinsic.X86Vcvtps2ph, res, Const(X86GetRoundControl(FPRoundingMode.ToNearest)));
+                    res = context.AddIntrinsic(Intrinsic.X86Vcvtps2ph, res, Const(X86GetRoundControl(FPRoundingMode.ToNearest)));
 
                     context.Copy(GetVec(op.Rd), res);
                 }
@@ -140,8 +140,8 @@ namespace ARMeilleure.Instructions
                     Operand n = GetVec(op.Rn);
 
                     Operand res = context.AddIntrinsic(Intrinsic.X86Vcvtph2ps, GetVec(op.Rn));
-                            res = context.AddIntrinsic(Intrinsic.X86Cvtss2sd, context.VectorZero(), res);
-                            res = context.VectorZeroUpper64(res);
+                    res = context.AddIntrinsic(Intrinsic.X86Cvtss2sd, context.VectorZero(), res);
+                    res = context.VectorZeroUpper64(res);
 
                     context.Copy(GetVec(op.Rd), res);
                 }
@@ -273,7 +273,7 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
 
                 Operand res = op.RegisterSize == RegisterSize.Simd128 ? context.AddIntrinsic(Intrinsic.X86Movhlps, n, n) : n;
-                        res = context.AddIntrinsic(Intrinsic.X86Cvtps2pd, res);
+                res = context.AddIntrinsic(Intrinsic.X86Cvtps2pd, res);
 
                 context.Copy(GetVec(op.Rd), res);
             }
@@ -284,7 +284,7 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
 
                 Operand res = op.RegisterSize == RegisterSize.Simd128 ? context.AddIntrinsic(Intrinsic.X86Movhlps, n, n) : n;
-                        res = context.AddIntrinsic(Intrinsic.X86Vcvtph2ps, res);
+                res = context.AddIntrinsic(Intrinsic.X86Vcvtph2ps, res);
 
                 context.Copy(GetVec(op.Rd), res);
             }
@@ -387,10 +387,10 @@ namespace ARMeilleure.Instructions
                 Intrinsic movInst = op.RegisterSize == RegisterSize.Simd128 ? Intrinsic.X86Movlhps : Intrinsic.X86Movhlps;
 
                 Operand nInt = context.AddIntrinsic(Intrinsic.X86Cvtpd2ps, GetVec(op.Rn));
-                        nInt = context.AddIntrinsic(Intrinsic.X86Movlhps, nInt, nInt);
+                nInt = context.AddIntrinsic(Intrinsic.X86Movlhps, nInt, nInt);
 
                 Operand res = context.VectorZeroUpper64(d);
-                        res = context.AddIntrinsic(movInst, res, nInt);
+                res = context.AddIntrinsic(movInst, res, nInt);
 
                 context.Copy(d, res);
             }
@@ -404,10 +404,10 @@ namespace ARMeilleure.Instructions
                 Intrinsic movInst = op.RegisterSize == RegisterSize.Simd128 ? Intrinsic.X86Movlhps : Intrinsic.X86Movhlps;
 
                 Operand nInt = context.AddIntrinsic(Intrinsic.X86Vcvtps2ph, n, Const(X86GetRoundControl(FPRoundingMode.ToNearest)));
-                        nInt = context.AddIntrinsic(Intrinsic.X86Movlhps, nInt, nInt);
+                nInt = context.AddIntrinsic(Intrinsic.X86Movlhps, nInt, nInt);
 
                 Operand res = context.VectorZeroUpper64(d);
-                        res = context.AddIntrinsic(movInst, res, nInt);
+                res = context.AddIntrinsic(movInst, res, nInt);
 
                 context.Copy(d, res);
             }
@@ -1233,7 +1233,7 @@ namespace ARMeilleure.Instructions
                 Operand opFH  = context.AddIntrinsic      (Intrinsic.X86Movhlps,  res, opF); // res doesn't matter.
                 Operand longH = context.AddIntrinsicLong  (Intrinsic.X86Cvtsd2si, opFH);
                 Operand resH  = context.VectorCreateScalar(longH);
-                        res   = context.AddIntrinsic      (Intrinsic.X86Movlhps,  res, resH);
+                res = context.AddIntrinsic(Intrinsic.X86Movlhps, res, resH);
             }
 
             return res;
@@ -1251,7 +1251,7 @@ namespace ARMeilleure.Instructions
                 Operand opH   = context.AddIntrinsic    (Intrinsic.X86Movhlps,  res, op);    // res doesn't matter.
                 Operand longH = context.AddIntrinsicLong(Intrinsic.X86Cvtsi2si, opH);
                 Operand resH  = context.AddIntrinsic    (Intrinsic.X86Cvtsi2sd, res, longH); // res doesn't matter.
-                        res   = context.AddIntrinsic    (Intrinsic.X86Movlhps,  res, resH);
+                res = context.AddIntrinsic(Intrinsic.X86Movlhps, res, resH);
             }
 
             return res;
@@ -1338,12 +1338,12 @@ namespace ARMeilleure.Instructions
                     : X86GetAllElements(context, 0x47800000);
 
                 Operand res = context.AddIntrinsic(Intrinsic.X86Psrld, n, Const(16));
-                        res = context.AddIntrinsic(Intrinsic.X86Cvtdq2ps, res);
-                        res = context.AddIntrinsic(Intrinsic.X86Mulps, res, mask);
+                res = context.AddIntrinsic(Intrinsic.X86Cvtdq2ps, res);
+                res = context.AddIntrinsic(Intrinsic.X86Mulps, res, mask);
 
                 Operand res2 = context.AddIntrinsic(Intrinsic.X86Pslld, n, Const(16));
-                        res2 = context.AddIntrinsic(Intrinsic.X86Psrld, res2, Const(16));
-                        res2 = context.AddIntrinsic(Intrinsic.X86Cvtdq2ps, res2);
+                res2 = context.AddIntrinsic(Intrinsic.X86Psrld, res2, Const(16));
+                res2 = context.AddIntrinsic(Intrinsic.X86Cvtdq2ps, res2);
 
                 res = context.AddIntrinsic(Intrinsic.X86Addps, res, res2);
 
@@ -1379,12 +1379,12 @@ namespace ARMeilleure.Instructions
                     : X86GetAllElements(context, 0x41F0000000000000L);
 
                 Operand res = context.AddIntrinsic      (Intrinsic.X86Psrlq, n, Const(32));
-                        res = EmitSse2CvtInt64ToDoubleOp(context, res, scalar);
-                        res = context.AddIntrinsic      (Intrinsic.X86Mulpd, res, mask);
+                res = EmitSse2CvtInt64ToDoubleOp(context, res, scalar);
+                res = context.AddIntrinsic(Intrinsic.X86Mulpd, res, mask);
 
                 Operand res2 = context.AddIntrinsic      (Intrinsic.X86Psllq, n, Const(32));
-                        res2 = context.AddIntrinsic      (Intrinsic.X86Psrlq, res2, Const(32));
-                        res2 = EmitSse2CvtInt64ToDoubleOp(context, res2, scalar);
+                res2 = context.AddIntrinsic(Intrinsic.X86Psrlq, res2, Const(32));
+                res2 = EmitSse2CvtInt64ToDoubleOp(context, res2, scalar);
 
                 res = context.AddIntrinsic(Intrinsic.X86Addpd, res, res2);
 
@@ -1423,7 +1423,7 @@ namespace ARMeilleure.Instructions
             if (sizeF == 0)
             {
                 Operand nRes = context.AddIntrinsic(Intrinsic.X86Cmpps, n, n, Const((int)CmpCondition.OrderedQ));
-                        nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, n);
+                nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, n);
 
                 if (op is OpCodeSimdShImm fixedOp)
                 {
@@ -1472,7 +1472,7 @@ namespace ARMeilleure.Instructions
             else /* if (sizeF == 1) */
             {
                 Operand nRes = context.AddIntrinsic(Intrinsic.X86Cmppd, n, n, Const((int)CmpCondition.OrderedQ));
-                        nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, n);
+                nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, n);
 
                 if (op is OpCodeSimdShImm fixedOp)
                 {
@@ -1528,7 +1528,7 @@ namespace ARMeilleure.Instructions
             if (sizeF == 0)
             {
                 Operand nRes = context.AddIntrinsic(Intrinsic.X86Cmpps, n, n, Const((int)CmpCondition.OrderedQ));
-                        nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, n);
+                nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, n);
 
                 if (op is OpCodeSimdShImm fixedOp)
                 {
@@ -1556,7 +1556,7 @@ namespace ARMeilleure.Instructions
                 Operand zero = context.VectorZero();
 
                 Operand nCmp = context.AddIntrinsic(Intrinsic.X86Cmpps, nRes, zero, Const((int)CmpCondition.NotLessThanOrEqual));
-                        nRes = context.AddIntrinsic(Intrinsic.X86Pand,  nRes, nCmp);
+                nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, nCmp);
 
                 Operand fpMaxValMask = scalar // 2.14748365E9f (2147483648)
                     ? X86GetScalar     (context, 0x4F000000)
@@ -1567,14 +1567,14 @@ namespace ARMeilleure.Instructions
                 nRes = context.AddIntrinsic(Intrinsic.X86Subps, nRes, fpMaxValMask);
 
                 nCmp = context.AddIntrinsic(Intrinsic.X86Cmpps, nRes, zero, Const((int)CmpCondition.NotLessThanOrEqual));
-                nRes = context.AddIntrinsic(Intrinsic.X86Pand,  nRes, nCmp);
+                nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, nCmp);
 
                 Operand nInt2 = context.AddIntrinsic(Intrinsic.X86Cvtps2dq, nRes);
 
                 nRes = context.AddIntrinsic(Intrinsic.X86Cmpps, nRes, fpMaxValMask, Const((int)CmpCondition.NotLessThan));
 
                 Operand dRes = context.AddIntrinsic(Intrinsic.X86Pxor,  nInt2, nRes);
-                        dRes = context.AddIntrinsic(Intrinsic.X86Paddd, dRes,  nInt);
+                dRes = context.AddIntrinsic(Intrinsic.X86Paddd, dRes, nInt);
 
                 if (scalar)
                 {
@@ -1590,7 +1590,7 @@ namespace ARMeilleure.Instructions
             else /* if (sizeF == 1) */
             {
                 Operand nRes = context.AddIntrinsic(Intrinsic.X86Cmppd, n, n, Const((int)CmpCondition.OrderedQ));
-                        nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, n);
+                nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, n);
 
                 if (op is OpCodeSimdShImm fixedOp)
                 {
@@ -1618,7 +1618,7 @@ namespace ARMeilleure.Instructions
                 Operand zero = context.VectorZero();
 
                 Operand nCmp = context.AddIntrinsic(Intrinsic.X86Cmppd, nRes, zero, Const((int)CmpCondition.NotLessThanOrEqual));
-                        nRes = context.AddIntrinsic(Intrinsic.X86Pand,  nRes, nCmp);
+                nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, nCmp);
 
                 Operand fpMaxValMask = scalar // 9.2233720368547760E18d (9223372036854775808)
                     ? X86GetScalar     (context, 0x43E0000000000000L)
@@ -1629,14 +1629,14 @@ namespace ARMeilleure.Instructions
                 nRes = context.AddIntrinsic(Intrinsic.X86Subpd, nRes, fpMaxValMask);
 
                 nCmp = context.AddIntrinsic(Intrinsic.X86Cmppd, nRes, zero, Const((int)CmpCondition.NotLessThanOrEqual));
-                nRes = context.AddIntrinsic(Intrinsic.X86Pand,  nRes, nCmp);
+                nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, nCmp);
 
                 Operand nLong2 = EmitSse2CvtDoubleToInt64OpF(context, nRes, scalar);
 
                 nRes = context.AddIntrinsic(Intrinsic.X86Cmppd, nRes, fpMaxValMask, Const((int)CmpCondition.NotLessThan));
 
                 Operand dRes = context.AddIntrinsic(Intrinsic.X86Pxor,  nLong2, nRes);
-                        dRes = context.AddIntrinsic(Intrinsic.X86Paddq, dRes,   nLong);
+                dRes = context.AddIntrinsic(Intrinsic.X86Paddq, dRes, nLong);
 
                 if (scalar)
                 {
@@ -1656,7 +1656,7 @@ namespace ARMeilleure.Instructions
             if (op.Size == 0)
             {
                 Operand nRes = context.AddIntrinsic(Intrinsic.X86Cmpss, n, n, Const((int)CmpCondition.OrderedQ));
-                        nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, n);
+                nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, n);
 
                 if (isFixed)
                 {
@@ -1703,7 +1703,7 @@ namespace ARMeilleure.Instructions
             else /* if (op.Size == 1) */
             {
                 Operand nRes = context.AddIntrinsic(Intrinsic.X86Cmpsd, n, n, Const((int)CmpCondition.OrderedQ));
-                        nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, n);
+                nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, n);
 
                 if (isFixed)
                 {
@@ -1758,7 +1758,7 @@ namespace ARMeilleure.Instructions
             if (op.Size == 0)
             {
                 Operand nRes = context.AddIntrinsic(Intrinsic.X86Cmpss, n, n, Const((int)CmpCondition.OrderedQ));
-                        nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, n);
+                nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, n);
 
                 if (isFixed)
                 {
@@ -1782,7 +1782,7 @@ namespace ARMeilleure.Instructions
                 Operand zero = context.VectorZero();
 
                 Operand nCmp = context.AddIntrinsic(Intrinsic.X86Cmpss, nRes, zero, Const((int)CmpCondition.NotLessThanOrEqual));
-                        nRes = context.AddIntrinsic(Intrinsic.X86Pand,  nRes, nCmp);
+                nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, nCmp);
 
                 int fpMaxVal = op.RegisterSize == RegisterSize.Int32
                     ? 0x4F000000  // 2.14748365E9f (2147483648)
@@ -1797,7 +1797,7 @@ namespace ARMeilleure.Instructions
                 nRes = context.AddIntrinsic(Intrinsic.X86Subss, nRes, fpMaxValMask);
 
                 nCmp = context.AddIntrinsic(Intrinsic.X86Cmpss, nRes, zero, Const((int)CmpCondition.NotLessThanOrEqual));
-                nRes = context.AddIntrinsic(Intrinsic.X86Pand,  nRes, nCmp);
+                nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, nCmp);
 
                 Operand nIntOrLong2 = op.RegisterSize == RegisterSize.Int32
                     ? context.AddIntrinsicInt (Intrinsic.X86Cvtss2si, nRes)
@@ -1813,14 +1813,14 @@ namespace ARMeilleure.Instructions
                 }
 
                 Operand dRes = context.BitwiseExclusiveOr(nIntOrLong2, nInt);
-                        dRes = context.Add(dRes, nIntOrLong);
+                dRes = context.Add(dRes, nIntOrLong);
 
                 SetIntOrZR(context, op.Rd, dRes);
             }
             else /* if (op.Size == 1) */
             {
                 Operand nRes = context.AddIntrinsic(Intrinsic.X86Cmpsd, n, n, Const((int)CmpCondition.OrderedQ));
-                        nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, n);
+                nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, n);
 
                 if (isFixed)
                 {
@@ -1844,7 +1844,7 @@ namespace ARMeilleure.Instructions
                 Operand zero = context.VectorZero();
 
                 Operand nCmp = context.AddIntrinsic(Intrinsic.X86Cmpsd, nRes, zero, Const((int)CmpCondition.NotLessThanOrEqual));
-                        nRes = context.AddIntrinsic(Intrinsic.X86Pand,  nRes, nCmp);
+                nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, nCmp);
 
                 long fpMaxVal = op.RegisterSize == RegisterSize.Int32
                     ? 0x41E0000000000000L  // 2147483648.0000000d    (2147483648)
@@ -1859,7 +1859,7 @@ namespace ARMeilleure.Instructions
                 nRes = context.AddIntrinsic(Intrinsic.X86Subsd, nRes, fpMaxValMask);
 
                 nCmp = context.AddIntrinsic(Intrinsic.X86Cmpsd, nRes, zero, Const((int)CmpCondition.NotLessThanOrEqual));
-                nRes = context.AddIntrinsic(Intrinsic.X86Pand,  nRes, nCmp);
+                nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, nCmp);
 
                 Operand nIntOrLong2 = op.RegisterSize == RegisterSize.Int32
                     ? context.AddIntrinsicInt (Intrinsic.X86Cvtsd2si, nRes)
@@ -1875,7 +1875,7 @@ namespace ARMeilleure.Instructions
                 }
 
                 Operand dRes = context.BitwiseExclusiveOr(nIntOrLong2, nLong);
-                        dRes = context.Add(dRes, nIntOrLong);
+                dRes = context.Add(dRes, nIntOrLong);
 
                 SetIntOrZR(context, op.Rd, dRes);
             }

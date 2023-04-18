@@ -18,7 +18,7 @@ namespace ARMeilleure.Instructions
             Negate
         }
 
-        public static void Csel(ArmEmitterContext context)  => EmitCsel(context, CselOperation.None);
+        public static void Csel(ArmEmitterContext context) => EmitCsel(context, CselOperation.None);
         public static void Csinc(ArmEmitterContext context) => EmitCsel(context, CselOperation.Increment);
         public static void Csinv(ArmEmitterContext context) => EmitCsel(context, CselOperation.Invert);
         public static void Csneg(ArmEmitterContext context) => EmitCsel(context, CselOperation.Negate);

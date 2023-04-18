@@ -35,7 +35,7 @@ namespace ARMeilleure.CodeGen.Arm64
             }
         }
 
-#region Linux
+        #region Linux
 
         private const ulong AT_HWCAP = 16;
         private const ulong AT_HWCAP2 = 26;
@@ -125,9 +125,9 @@ namespace ARMeilleure.CodeGen.Arm64
         public static LinuxFeatureFlagsHwCap LinuxFeatureInfoHwCap { get; } = 0;
         public static LinuxFeatureFlagsHwCap2 LinuxFeatureInfoHwCap2 { get; } = 0;
 
-#endregion
+        #endregion
 
-#region macOS
+        #region macOS
 
         [LibraryImport("libSystem.dylib", SetLastError = true)]
         private static unsafe partial int sysctlbyname([MarshalAs(UnmanagedType.LPStr)] string name, out int oldValue, ref ulong oldSize, IntPtr newValue, ulong newValueSize);
@@ -172,7 +172,7 @@ namespace ARMeilleure.CodeGen.Arm64
 
         public static MacOsFeatureFlags MacOsFeatureInfo { get; } = 0;
 
-#endregion
+        #endregion
 
         public static bool SupportsAdvSimd => LinuxFeatureInfoHwCap.HasFlag(LinuxFeatureFlagsHwCap.Asimd) || MacOsFeatureInfo.HasFlag(MacOsFeatureFlags.AdvSimd);
         public static bool SupportsAes => LinuxFeatureInfoHwCap.HasFlag(LinuxFeatureFlagsHwCap.Aes) || MacOsFeatureInfo.HasFlag(MacOsFeatureFlags.Aes);

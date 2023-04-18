@@ -286,10 +286,12 @@ namespace ARMeilleure.Translation
 
             switch (register.Type)
             {
+#pragma warning disable IDE0055 // Disable formatting
                 case RegisterType.Flag:    intMask = (1L << RegsCount) << register.Index; break;
                 case RegisterType.Integer: intMask =  1L               << register.Index; break;
                 case RegisterType.FpFlag:  vecMask = (1L << RegsCount) << register.Index; break;
                 case RegisterType.Vector:  vecMask =  1L               << register.Index; break;
+#pragma warning restore IDE0055
             }
 
             return new RegisterMask(intMask, vecMask);

@@ -140,7 +140,7 @@ namespace ARMeilleure.Instructions
                     Operand exValueHigh = context.VectorExtract(OperandType.I64, exValue, 1);
 
                     storeFailed = context.BitwiseOr(
-                        context.ICompareNotEqual(currValueLow,  exValueLow),
+                        context.ICompareNotEqual(currValueLow, exValueLow),
                         context.ICompareNotEqual(currValueHigh, exValueHigh));
                 }
                 else

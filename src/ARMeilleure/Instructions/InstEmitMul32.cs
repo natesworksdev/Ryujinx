@@ -293,8 +293,8 @@ namespace ARMeilleure.Instructions
             Operand dLo = context.ZeroExtend32(OperandType.I64, GetIntA32(context, op.RdLo));
 
             Operand res = context.Multiply(n, m);
-                    res = context.Add(res, dHi);
-                    res = context.Add(res, dLo);
+            res = context.Add(res, dHi);
+            res = context.Add(res, dLo);
 
             Operand hi = context.ConvertI64ToI32(context.ShiftRightUI(res, Const(32)));
             Operand lo = context.ConvertI64ToI32(res);

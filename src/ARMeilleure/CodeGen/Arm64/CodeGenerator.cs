@@ -40,6 +40,7 @@ namespace ARMeilleure.CodeGen.Arm64
         {
             _instTable = new Action<CodeGenContext, Operation>[EnumUtils.GetCount(typeof(Instruction))];
 
+#pragma warning disable IDE0055 // Disable formatting
             Add(Instruction.Add,                     GenerateAdd);
             Add(Instruction.BitwiseAnd,              GenerateBitwiseAnd);
             Add(Instruction.BitwiseExclusiveOr,      GenerateBitwiseExclusiveOr);
@@ -48,7 +49,7 @@ namespace ARMeilleure.CodeGen.Arm64
             Add(Instruction.BranchIf,                GenerateBranchIf);
             Add(Instruction.ByteSwap,                GenerateByteSwap);
             Add(Instruction.Call,                    GenerateCall);
-            //Add(Instruction.Clobber,                 GenerateClobber);
+            // Add(Instruction.Clobber,                 GenerateClobber);
             Add(Instruction.Compare,                 GenerateCompare);
             Add(Instruction.CompareAndSwap,          GenerateCompareAndSwap);
             Add(Instruction.CompareAndSwap16,        GenerateCompareAndSwap16);
@@ -100,6 +101,7 @@ namespace ARMeilleure.CodeGen.Arm64
             Add(Instruction.ZeroExtend16,            GenerateZeroExtend16);
             Add(Instruction.ZeroExtend32,            GenerateZeroExtend32);
             Add(Instruction.ZeroExtend8,             GenerateZeroExtend8);
+#pragma warning restore IDE0055
 
             static void Add(Instruction inst, Action<CodeGenContext, Operation> func)
             {
@@ -444,7 +446,7 @@ namespace ARMeilleure.CodeGen.Arm64
             Debug.Assert(dest.Type.IsInteger());
             Debug.Assert(src1.Type == OperandType.I32);
 
-            context.Assembler.Cmp (src1, Const(src1.Type, 0));
+            context.Assembler.Cmp(src1, Const(src1.Type, 0));
             context.Assembler.Csel(dest, src2, src3, ArmCondition.Ne);
         }
 

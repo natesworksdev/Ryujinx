@@ -13,16 +13,16 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             private readonly struct Copy
             {
-                public Register Dest   { get; }
+                public Register Dest { get; }
                 public Register Source { get; }
 
                 public OperandType Type { get; }
 
                 public Copy(Register dest, Register source, OperandType type)
                 {
-                    Dest   = dest;
+                    Dest = dest;
                     Source = source;
-                    Type   = type;
+                    Type = type;
                 }
             }
 
@@ -53,8 +53,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 foreach (Copy copy in _copies)
                 {
                     locations[copy.Source] = copy.Source;
-                    sources[copy.Dest]     = copy.Source;
-                    types[copy.Dest]       = copy.Type;
+                    sources[copy.Dest] = copy.Source;
+                    types[copy.Dest] = copy.Type;
 
                     pendingQueue.Enqueue(copy.Dest);
                 }
@@ -91,7 +91,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         }
                     }
 
-                    copyDest   = current;
+                    copyDest = current;
                     origSource = sources[copyDest];
                     copySource = locations[origSource];
 

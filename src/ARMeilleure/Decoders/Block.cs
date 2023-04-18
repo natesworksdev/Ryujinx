@@ -5,10 +5,10 @@ namespace ARMeilleure.Decoders
 {
     class Block
     {
-        public ulong Address    { get; set; }
+        public ulong Address { get; set; }
         public ulong EndAddress { get; set; }
 
-        public Block Next   { get; set; }
+        public Block Next { get; set; }
         public Block Branch { get; set; }
 
         public bool Exit { get; set; }
@@ -43,14 +43,14 @@ namespace ARMeilleure.Decoders
 
             rightBlock.EndAddress = EndAddress;
 
-            rightBlock.Next   = Next;
+            rightBlock.Next = Next;
             rightBlock.Branch = Branch;
 
             rightBlock.OpCodes.AddRange(OpCodes.GetRange(splitIndex, splitCount));
 
             EndAddress = rightBlock.Address;
 
-            Next   = rightBlock;
+            Next = rightBlock;
             Branch = null;
 
             OpCodes.RemoveRange(splitIndex, splitCount);

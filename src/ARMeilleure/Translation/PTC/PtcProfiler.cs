@@ -46,7 +46,7 @@ namespace ARMeilleure.Translation.PTC
         public bool Enabled { get; private set; }
 
         public ulong StaticCodeStart { get; set; }
-        public ulong StaticCodeSize  { get; set; }
+        public ulong StaticCodeSize { get; set; }
 
         public PtcProfiler(Ptc ptc)
         {

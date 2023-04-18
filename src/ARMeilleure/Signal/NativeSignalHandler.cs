@@ -96,11 +96,13 @@ namespace ARMeilleure.Signal
 
         public static void InitializeSignalHandler(ulong pageSize, Func<IntPtr, IntPtr, IntPtr> customSignalHandlerFactory = null)
         {
-            if (_initialized) return;
+            if (_initialized)
+                return;
 
             lock (_lock)
             {
-                if (_initialized) return;
+                if (_initialized)
+                    return;
 
                 _pageSize = pageSize;
                 _pageMask = pageSize - 1;
@@ -284,7 +286,7 @@ namespace ARMeilleure.Signal
                     const ulong auxOffset = 464; // uc_mcontext.__reserved
                     const uint esrMagic = 0x45535201;
 
-                    context.Copy(auxPtr,  context.Add(ucontextPtr, Const(auxOffset)));
+                    context.Copy(auxPtr, context.Add(ucontextPtr, Const(auxOffset)));
 
                     context.MarkLabel(loopLabel);
 

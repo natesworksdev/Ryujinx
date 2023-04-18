@@ -17,12 +17,12 @@ namespace ARMeilleure.Instructions
 
     static partial class InstEmit
     {
-#region "Masks"
+        #region "Masks"
         private static readonly long[] _masks_SliSri = new long[] // Replication masks.
         {
             0x0101010101010101L, 0x0001000100010001L, 0x0000000100000001L, 0x0000000000000001L
         };
-#endregion
+        #endregion
 
         public static void Rshrn_V(ArmEmitterContext context)
         {
@@ -51,9 +51,15 @@ namespace ARMeilleure.Instructions
 
                 switch (op.Size + 1)
                 {
-                    case 1: mask = X86GetAllElements(context, (int)roundConst * 0x00010001); break;
-                    case 2: mask = X86GetAllElements(context, (int)roundConst); break;
-                    case 3: mask = X86GetAllElements(context,      roundConst); break;
+                    case 1:
+                        mask = X86GetAllElements(context, (int)roundConst * 0x00010001);
+                        break;
+                    case 2:
+                        mask = X86GetAllElements(context, (int)roundConst);
+                        break;
+                    case 3:
+                        mask = X86GetAllElements(context, roundConst);
+                        break;
                 }
 
                 Intrinsic addInst = X86PaddInstruction[op.Size + 1];

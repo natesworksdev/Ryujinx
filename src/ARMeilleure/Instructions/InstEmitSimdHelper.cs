@@ -18,7 +18,7 @@ namespace ARMeilleure.Instructions
 
     static class InstEmitSimdHelper
     {
-#region "Masks"
+        #region "Masks"
         public static readonly long[] EvenMasks = new long[]
         {
             14L << 56 | 12L << 48 | 10L << 40 | 08L << 32 | 06L << 24 | 04L << 16 | 02L << 8 | 00L << 0, // B
@@ -42,9 +42,9 @@ namespace ARMeilleure.Instructions
 
             return shift >= 0 ? identity >> (shift * 8) : identity << (-shift * 8);
         }
-#endregion
+        #endregion
 
-#region "X86 SSE Intrinsics"
+        #region "X86 SSE Intrinsics"
         public static readonly Intrinsic[] X86PaddInstruction = new Intrinsic[]
         {
             Intrinsic.X86Paddb,
@@ -157,7 +157,7 @@ namespace ARMeilleure.Instructions
             Intrinsic.X86Punpckldq,
             Intrinsic.X86Punpcklqdq
         };
-#endregion
+        #endregion
 
         public static void EnterArmFpMode(EmitterContext context, Func<FPState, Operand> getFpFlag)
         {
@@ -314,11 +314,13 @@ namespace ARMeilleure.Instructions
         {
             return roundMode switch
             {
+#pragma warning disable IDE0055 // Disable formatting
                 FPRoundingMode.ToNearest            => 8 | 0, // even
                 FPRoundingMode.TowardsPlusInfinity  => 8 | 2,
                 FPRoundingMode.TowardsMinusInfinity => 8 | 1,
                 FPRoundingMode.TowardsZero          => 8 | 3,
                 _ => throw new ArgumentException($"Invalid rounding mode \"{roundMode}\"."),
+#pragma warning restore IDE0055
             };
         }
 
@@ -335,11 +337,11 @@ namespace ARMeilleure.Instructions
             if ((op.Size & 1) == 0)
             {
                 Operand signMask = scalar ? X86GetScalar(context, int.MinValue) : X86GetAllElements(context, int.MinValue);
-                        signMask = context.AddIntrinsic(Intrinsic.X86Pand, signMask, nCopy);
+                signMask = context.AddIntrinsic(Intrinsic.X86Pand, signMask, nCopy);
 
                 // 0x3EFFFFFF == BitConverter.SingleToInt32Bits(0.5f) - 1
                 Operand valueMask = scalar ? X86GetScalar(context, 0x3EFFFFFF) : X86GetAllElements(context, 0x3EFFFFFF);
-                        valueMask = context.AddIntrinsic(Intrinsic.X86Por, valueMask, signMask);
+                valueMask = context.AddIntrinsic(Intrinsic.X86Por, valueMask, signMask);
 
                 nCopy = context.AddIntrinsic(scalar ? Intrinsic.X86Addss : Intrinsic.X86Addps, nCopy, valueMask);
 
@@ -348,11 +350,11 @@ namespace ARMeilleure.Instructions
             else
             {
                 Operand signMask = scalar ? X86GetScalar(context, long.MinValue) : X86GetAllElements(context, long.MinValue);
-                        signMask = context.AddIntrinsic(Intrinsic.X86Pand, signMask, nCopy);
+                signMask = context.AddIntrinsic(Intrinsic.X86Pand, signMask, nCopy);
 
                 // 0x3FDFFFFFFFFFFFFFL == BitConverter.DoubleToInt64Bits(0.5d) - 1L
                 Operand valueMask = scalar ? X86GetScalar(context, 0x3FDFFFFFFFFFFFFFL) : X86GetAllElements(context, 0x3FDFFFFFFFFFFFFFL);
-                        valueMask = context.AddIntrinsic(Intrinsic.X86Por, valueMask, signMask);
+                valueMask = context.AddIntrinsic(Intrinsic.X86Por, valueMask, signMask);
 
                 nCopy = context.AddIntrinsic(scalar ? Intrinsic.X86Addsd : Intrinsic.X86Addpd, nCopy, valueMask);
 
@@ -483,7 +485,7 @@ namespace ARMeilleure.Instructions
         public static Operand EmitGetRoundingMode(ArmEmitterContext context)
         {
             Operand rMode = context.ShiftLeft(GetFpFlag(FPState.RMode1Flag), Const(1));
-                    rMode = context.BitwiseOr(rMode, GetFpFlag(FPState.RMode0Flag));
+            rMode = context.BitwiseOr(rMode, GetFpFlag(FPState.RMode0Flag));
 
             return rMode;
         }
@@ -1181,7 +1183,7 @@ namespace ARMeilleure.Instructions
                 Operand m0 = EmitVectorExtract(context, op.Rm, pairIndex,     op.Size, signed);
                 Operand m1 = EmitVectorExtract(context, op.Rm, pairIndex + 1, op.Size, signed);
 
-                res = EmitVectorInsert(context, res, emit(n0, n1),         index, op.Size);
+                res = EmitVectorInsert(context, res, emit(n0, n1), index, op.Size);
                 res = EmitVectorInsert(context, res, emit(m0, m1), pairs + index, op.Size);
             }
 
@@ -1382,7 +1384,7 @@ namespace ARMeilleure.Instructions
                 Operand m0 = context.VectorExtract(type, GetVec(op.Rm), pairIndex);
                 Operand m1 = context.VectorExtract(type, GetVec(op.Rm), pairIndex + 1);
 
-                res = context.VectorInsert(res, emit(n0, n1),         index);
+                res = context.VectorInsert(res, emit(n0, n1), index);
                 res = context.VectorInsert(res, emit(m0, m1), pairs + index);
             }
 
@@ -2035,18 +2037,30 @@ namespace ARMeilleure.Instructions
             {
                 switch (size)
                 {
-                    case 0: res = context.SignExtend8 (OperandType.I64, res); break;
-                    case 1: res = context.SignExtend16(OperandType.I64, res); break;
-                    case 2: res = context.SignExtend32(OperandType.I64, res); break;
+                    case 0:
+                        res = context.SignExtend8(OperandType.I64, res);
+                        break;
+                    case 1:
+                        res = context.SignExtend16(OperandType.I64, res);
+                        break;
+                    case 2:
+                        res = context.SignExtend32(OperandType.I64, res);
+                        break;
                 }
             }
             else
             {
                 switch (size)
                 {
-                    case 0: res = context.ZeroExtend8 (OperandType.I64, res); break;
-                    case 1: res = context.ZeroExtend16(OperandType.I64, res); break;
-                    case 2: res = context.ZeroExtend32(OperandType.I64, res); break;
+                    case 0:
+                        res = context.ZeroExtend8(OperandType.I64, res);
+                        break;
+                    case 1:
+                        res = context.ZeroExtend16(OperandType.I64, res);
+                        break;
+                    case 2:
+                        res = context.ZeroExtend32(OperandType.I64, res);
+                        break;
                 }
             }
 
@@ -2064,10 +2078,18 @@ namespace ARMeilleure.Instructions
 
             switch (size)
             {
-                case 0: vector = context.VectorInsert8 (vector, value, index); break;
-                case 1: vector = context.VectorInsert16(vector, value, index); break;
-                case 2: vector = context.VectorInsert  (vector, value, index); break;
-                case 3: vector = context.VectorInsert  (vector, value, index); break;
+                case 0:
+                    vector = context.VectorInsert8(vector, value, index);
+                    break;
+                case 1:
+                    vector = context.VectorInsert16(vector, value, index);
+                    break;
+                case 2:
+                    vector = context.VectorInsert(vector, value, index);
+                    break;
+                case 3:
+                    vector = context.VectorInsert(vector, value, index);
+                    break;
             }
 
             return vector;
