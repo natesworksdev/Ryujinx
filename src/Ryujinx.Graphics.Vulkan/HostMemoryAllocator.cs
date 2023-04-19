@@ -1,11 +1,10 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Common.Collections;
+using Ryujinx.Common.Logging;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -75,8 +74,6 @@ namespace Ryujinx.Graphics.Vulkan
                         {
                             existing.Allocation.IncrementReferenceCount();
 
-                            Console.WriteLine($"Existing at {start:x16} {end:x8}");
-
                             return true;
                         }
                         catch (InvalidOperationException)
@@ -94,16 +91,12 @@ namespace Ryujinx.Graphics.Vulkan
                 Result getResult = _hostMemoryApi.GetMemoryHostPointerProperties(_device, ExternalMemoryHandleTypeFlags.HostAllocationBitExt, (void*)pageAlignedPointer, out MemoryHostPointerPropertiesEXT properties);
                 if (getResult < Result.Success)
                 {
-                    Console.WriteLine($"Failed (get properties)");
-
                     return false;
                 }
 
                 int memoryTypeIndex = _allocator.FindSuitableMemoryTypeIndex(properties.MemoryTypeBits & requirements.MemoryTypeBits, flags);
                 if (memoryTypeIndex < 0)
                 {
-                    Console.WriteLine($"Failed (memory type)");
-
                     return false;
                 }
 
@@ -122,13 +115,11 @@ namespace Ryujinx.Graphics.Vulkan
                     PNext = &importInfo
                 };
 
-                Console.WriteLine($"{pageAlignedPointer:x16} {pageAlignedSize:x8}");
-
                 Result result = _api.AllocateMemory(_device, memoryAllocateInfo, null, out var deviceMemory);
 
                 if (result < Result.Success)
                 {
-                    Console.WriteLine($"failed :(");
+                    Logger.Debug?.PrintMsg(LogClass.Gpu, $"Host mapping import {pageAlignedPointer:x16} {pageAlignedSize:x8} failed.");
                     return false;
                 }
 
@@ -184,7 +175,6 @@ namespace Ryujinx.Graphics.Vulkan
                     if (allocation.Allocation.GetUnsafe().Memory.Handle == memory.Handle)
                     {
                         _allocationTree.Remove(allocation.Start, allocation);
-                        Console.WriteLine($"freed {BitUtils.AlignDown(allocation.Pointer, Environment.SystemPageSize)}");
                         return true;
                     }
 
