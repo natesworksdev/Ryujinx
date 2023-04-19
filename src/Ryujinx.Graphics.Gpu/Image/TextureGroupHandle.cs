@@ -194,8 +194,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Alters the flush balance by the given value. Should increase significantly with each sync, decrease with each write.
         /// A flush balance higher than the threshold will cause a texture to repeatedly copy to a flush buffer on each use.
         /// </summary>
-        /// <param name="modifier"></param>
-        /// <returns></returns>
+        /// <param name="modifier">Value to add to the existing flush balance</param>
+        /// <returns>True if the new balance is over the threshold, false otherwise</returns>
         private bool ModifyFlushBalance(int modifier)
         {
             int result;
