@@ -5,7 +5,7 @@ namespace Ryujinx.Graphics.GAL
     [StructLayout(LayoutKind.Sequential, Size = 8)]
     public readonly record struct BufferHandle
     {
-        public readonly ulong _value;
+        private readonly ulong _value;
 
         public static BufferHandle Null => new BufferHandle(0);
 
