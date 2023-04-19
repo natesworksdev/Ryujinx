@@ -99,7 +99,7 @@ namespace Ryujinx.Graphics.Vulkan
                     return false;
                 }
 
-                int memoryTypeIndex = _allocator.FindSuitableMemoryTypeIndex(properties.MemoryTypeBits, flags);
+                int memoryTypeIndex = _allocator.FindSuitableMemoryTypeIndex(properties.MemoryTypeBits & requirements.MemoryTypeBits, flags);
                 if (memoryTypeIndex < 0)
                 {
                     Console.WriteLine($"Failed (memory type)");
