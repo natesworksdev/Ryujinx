@@ -151,6 +151,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (group.Storage.Info.IsLinear)
             {
+                // Linear textures are presumed to be used for readback initially.
                 _flushBalance = FlushBalanceThreshold + FlushBalanceIncrement;
             }
         }
@@ -180,11 +181,21 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
         }
 
-        private bool NextSyncFlushes()
+        /// <summary>
+        /// Determine if the next sync will copy into the flush buffer.
+        /// </summary>
+        /// <returns>True if it will copy, false otherwise</returns>
+        private bool NextSyncCopies()
         {
             return _flushBalance - FlushBalanceWriteCost > FlushBalanceThreshold;
         }
 
+        /// <summary>
+        /// Alters the flush balance by the given value. Should increase significantly with each sync, decrease with each write.
+        /// A flush balance higher than the threshold will cause a texture to repeatedly copy to a flush buffer on each use.
+        /// </summary>
+        /// <param name="modifier"></param>
+        /// <returns></returns>
         private bool ModifyFlushBalance(int modifier)
         {
             int result;
@@ -243,7 +254,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             if (!_syncActionRegistered)
             {
-                ModifyTime = System.Diagnostics.Stopwatch.GetTimestamp();
                 _modifiedSync = context.SyncNumber;
                 context.RegisterSyncAction(this, true);
                 _syncActionRegistered = true;
@@ -282,7 +292,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             SignalModified(context);
 
-            if (!bound && _syncActionRegistered && NextSyncFlushes())
+            if (!bound && _syncActionRegistered && NextSyncCopies())
             {
                 // On unbind, textures that flush often should immediately create sync so their result can be obtained as soon as possible.
 
@@ -309,9 +319,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
         }
 
-        long ModifyTime;
-        long RegisterTime;
-
         /// <summary>
         /// Wait for the latest sync number that the texture handle was written to,
         /// removing the modified flag if it was reached, or leaving it set if it has not yet been created.
@@ -327,41 +334,21 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (diff > 0)
             {
-                context.Renderer.WaitSync(registeredSync);
-
                 ulong bufferSync = _registeredBufferSync;
 
-                    long preTime = System.Diagnostics.Stopwatch.GetTimestamp();
+                context.Renderer.WaitSync(registeredSync);
 
-                    //Logger.Error?.PrintMsg(LogClass.Gpu, $"Sync took {(endtime - time) / (System.Diagnostics.Stopwatch.Frequency / 1000f)}ms");
+                bool inBuffer = registeredSync == bufferSync;
 
-                    context.Renderer.WaitSync(registeredSync);
-
-                    long waitTime = System.Diagnostics.Stopwatch.GetTimestamp();
-
-                    /*
-                    Common.Logging.Logger.Error?.PrintMsg(Common.Logging.LogClass.Gpu, $"Total Latency: {(waitTime - ModifyTime) / (System.Diagnostics.Stopwatch.Frequency / 1000f)}ms");
-                    Common.Logging.Logger.Warning?.PrintMsg(Common.Logging.LogClass.Gpu, $" - To Register Sync {(RegisterTime - ModifyTime) / (System.Diagnostics.Stopwatch.Frequency / 1000f)}ms");
-                    Common.Logging.Logger.Warning?.PrintMsg(Common.Logging.LogClass.Gpu, $" - To Handler {(preTime - RegisterTime) / (System.Diagnostics.Stopwatch.Frequency / 1000f)}ms");
-                    Common.Logging.Logger.Warning?.PrintMsg(Common.Logging.LogClass.Gpu, $" > Wait Time ({registeredSync}) {(waitTime - preTime) / (System.Diagnostics.Stopwatch.Frequency / 1000f)}ms");
-                    */
-
-                    bool inBuffer = registeredSync == bufferSync;
-
-                    if (!inBuffer)
-                    {
-                        Logger.Error?.PrintMsg(LogClass.Gpu, $"Texture flush {inBuffer}: {registeredSync} {bufferSync}");
-                    }
-
-                    if ((long)(_modifiedSync - registeredSync) > 0)
-                    {
-                        // Flush the data in a previous state. Do not remove the modified flag - it will be removed to ignore following writes.
-                        return inBuffer;
-                    }
-
-                    Modified = false;
-
+                if ((long)(_modifiedSync - registeredSync) > 0)
+                {
+                    // Flush the data in a previous state. Do not remove the modified flag - it will be removed to ignore following writes.
                     return inBuffer;
+                }
+
+                Modified = false;
+
+                return inBuffer;
             }
 
             // If the difference is <= 0, no data is not ready yet. Flush any data we can without waiting or removing modified flag.
@@ -376,16 +363,21 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             Interlocked.Exchange(ref _actionRegistered, 0);
         }
-        
+
+        /// <summary>
+        /// Action to perform before a sync number is registered after modification.
+        /// This action will copy the texture data to the flush buffer if this texture
+        /// flushes often enough, which is determined by the flush balance.
+        /// </summary>
+        /// <inheritdoc/>
         public void SyncPreAction(bool syncpoint)
         {
-            if (syncpoint || NextSyncFlushes())
+            if (syncpoint || NextSyncCopies())
             {
                 // TODO: only copy if the copy has not been performed since the last modification
                 if (ModifyFlushBalance(-FlushBalanceWriteCost))
                 {
                     _group.FlushIntoBuffer(this);
-                    RegisterTime = System.Diagnostics.Stopwatch.GetTimestamp();
                     _registeredBufferSync = _modifiedSync;
                 }
             }
@@ -401,7 +393,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             // The storage will need to signal modified again to update the sync number in future.
             _group.Storage.SignalModifiedDirty();
 
-            if (!syncpoint && !NextSyncFlushes())
+            if (!syncpoint && !NextSyncCopies())
             {
                 return false;
             }
