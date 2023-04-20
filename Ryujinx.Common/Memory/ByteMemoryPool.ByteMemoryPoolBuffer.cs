@@ -16,9 +16,9 @@ namespace Ryujinx.Common.Memory
             private byte[] _array;
             private readonly int _length;
 
-            public ByteMemoryPoolBuffer(byte[] array, int length)
+            public ByteMemoryPoolBuffer(int length)
             {
-                _array = array;
+                _array = ArrayPool<byte>.Shared.Rent(length);
                 _length = length;
             }
 

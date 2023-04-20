@@ -102,9 +102,7 @@ namespace Ryujinx.Common.Memory
                 throw new ArgumentOutOfRangeException(nameof(length), length, null);
             }
 
-            var array = ArrayPool<byte>.Shared.Rent(length);
-
-            return new ByteMemoryPoolBuffer(array, length);
+            return new ByteMemoryPoolBuffer(length);
         }
     }
 }
