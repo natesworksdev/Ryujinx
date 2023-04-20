@@ -85,7 +85,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             ReadOnlySpan<byte> inputParcel = context.Memory.GetSpan(dataPos, (int)dataSize);
 
-            using (MemoryBuffer outputParcelOwner = MemoryBuffer.Rent((int)replySize, true))
+            using (IMemoryOwner<byte> outputParcelOwner = ByteMemoryPool.Shared.RentCleared(replySize))
             {
                 Span<byte> outputParcel = outputParcelOwner.Memory.Span;
                 

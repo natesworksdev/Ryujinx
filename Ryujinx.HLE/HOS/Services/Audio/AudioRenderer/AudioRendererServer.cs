@@ -69,8 +69,8 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 
             ReadOnlyMemory<byte> input = context.Memory.GetSpan(inputPosition, (int)inputSize).ToArray();
 
-            using (MemoryBuffer outputOwner = MemoryBuffer.Rent(outputSize, true))
-            using (MemoryBuffer performanceOutputOwner = MemoryBuffer.Rent(performanceOutputSize, true))
+            using (IMemoryOwner<byte> outputOwner = ByteMemoryPool.Shared.RentCleared(outputSize))
+            using (IMemoryOwner<byte> performanceOutputOwner = ByteMemoryPool.Shared.RentCleared(performanceOutputSize))
             {
                 Memory<byte> output = outputOwner.Memory;
                 Memory<byte> performanceOutput = performanceOutputOwner.Memory;
