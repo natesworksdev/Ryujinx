@@ -677,7 +677,19 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 return vector;
             }
 
-            Append(ApplyScaling(AssemblePVector(pCount)));
+            string ApplyBias(string vector)
+            {
+                int gatherBiasPrecision = 8;
+                if (isGather && gatherBiasPrecision != 0)
+                {
+                    // GPU requires texture gather to be slightly offset.
+                    vector = $"{vector} + (1.0 / (vec{pCount}(textureSize({samplerName}, 0).{"xyz".Substring(0, pCount)}) * float({1 << gatherBiasPrecision})))";
+                }
+
+                return vector;
+            }
+
+            Append(ApplyBias(ApplyScaling(AssemblePVector(pCount))));
 
             string AssembleDerivativesVector(int count)
             {
