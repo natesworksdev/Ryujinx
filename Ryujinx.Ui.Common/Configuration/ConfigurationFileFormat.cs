@@ -14,7 +14,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 44;
+        public const int CurrentVersion = 46;
 
         /// <summary>
         /// Version of the configuration file format
@@ -247,6 +247,11 @@ namespace Ryujinx.Ui.Common.Configuration
         public List<string> GameDirs { get; set; }
 
         /// <summary>
+        /// A list of file types to be hidden in the games List
+        /// </summary>
+        public ShownFileTypes ShownFileTypes { get; set; }
+
+        /// <summary>
         /// Language Code for the UI
         /// </summary>
         public string LanguageCode { get; set; }
@@ -344,6 +349,11 @@ namespace Ryujinx.Ui.Common.Configuration
         /// Preferred GPU
         /// </summary>
         public string PreferredGpu { get; set; }
+
+        /// <summary>
+        /// GUID for the network interface used by LAN (or 0 for default)
+        /// </summary>
+        public string MultiplayerLanInterfaceId { get; set; }
 
         /// <summary>
         /// Uses Hypervisor over JIT if available

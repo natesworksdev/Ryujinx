@@ -548,7 +548,8 @@ namespace Ryujinx.Headless.SDL2
                                                                   options.IgnoreMissingServices,
                                                                   options.AspectRatio,
                                                                   options.AudioVolume,
-                                                                  options.UseHypervisor);
+                                                                  options.UseHypervisor,
+                                                                  options.MultiplayerLanInterfaceId);
 
             return new Switch(configuration);
         }
@@ -588,8 +589,6 @@ namespace Ryujinx.Headless.SDL2
             _window = window;
 
             _emulationContext = InitializeEmulationContext(window, renderer, options);
-
-            SetupProgressHandler();
 
             SystemVersion firmwareVersion = _contentManager.GetCurrentFirmwareVersion();
 
@@ -692,6 +691,8 @@ namespace Ryujinx.Headless.SDL2
 
                 return false;
             }
+
+            SetupProgressHandler();
 
             Translator.IsReadyForTranslation.Reset();
 
