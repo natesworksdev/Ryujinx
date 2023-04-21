@@ -679,7 +679,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             string ApplyBias(string vector)
             {
-                int gatherBiasPrecision = 8;
+                int gatherBiasPrecision = context.Config.GpuAccessor.QueryHostGatherBiasPrecision();
                 if (isGather && gatherBiasPrecision != 0)
                 {
                     // GPU requires texture gather to be slightly offset to match NVIDIA behaviour when point is exactly between two texels.
