@@ -1573,7 +1573,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             if (SelectedApplication != null)
             {
                 await new CheatWindow(VirtualFileSystem, SelectedApplication.TitleId, SelectedApplication.TitleName, 
-                GameDataExtractor.GetGameBuildId(VirtualFileSystem, SelectedApplication.Path)).ShowDialog(TopLevel as Window);
+                ApplicationData.GetApplicationBuildId(VirtualFileSystem, SelectedApplication.Path)).ShowDialog(TopLevel as Window);
             }
         }
 

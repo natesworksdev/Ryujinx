@@ -11,6 +11,7 @@ using Ryujinx.Common;
 using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.HOS;
 using Ryujinx.Modules;
+using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.Generic;
@@ -152,7 +153,7 @@ namespace Ryujinx.Ava.UI.Views.Main
 
             await new CheatWindow(Window.VirtualFileSystem,
                     ViewModel.AppHost.Device.Processes.ActiveApplication.ProgramIdText, name,
-                    GameDataExtractor.GetGameBuildId(Window.VirtualFileSystem,
+                    ApplicationData.GetApplicationBuildId(Window.VirtualFileSystem,
                         Window.ViewModel.SelectedApplication.Path))
                 .ShowDialog(Window);
 
