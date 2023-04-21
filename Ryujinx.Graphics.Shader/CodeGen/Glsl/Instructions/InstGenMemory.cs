@@ -682,8 +682,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 int gatherBiasPrecision = 8;
                 if (isGather && gatherBiasPrecision != 0)
                 {
-                    // GPU requires texture gather to be slightly offset.
-                    vector = $"{vector} + (1.0 / (vec{pCount}(textureSize({samplerName}, 0).{"xyz".Substring(0, pCount)}) * float({1 << gatherBiasPrecision})))";
+                    // GPU requires texture gather to be slightly offset to match NVIDIA behaviour when point is exactly between two texels.
+                    // Offset by the gather precision divided by 2 to correct for rounding.
+                    vector = $"{vector} + (1.0 / (vec{pCount}(textureSize({samplerName}, 0).{"xyz".Substring(0, pCount)}) * float({1 << (gatherBiasPrecision + 1)})))";
                 }
 
                 return vector;
