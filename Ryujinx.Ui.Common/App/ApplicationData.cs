@@ -30,6 +30,7 @@ namespace Ryujinx.Ui.App.Common
         public double FileSizeBytes { get; set; }
         public string Path          { get; set; }
         public BlitStruct<ApplicationControlProperty> ControlHolder { get; set; }
+        
         public static string GetApplicationBuildId(VirtualFileSystem virtualFileSystem, string titleFilePath)
         {
             using FileStream file = new(titleFilePath, FileMode.Open, FileAccess.Read);
