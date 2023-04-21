@@ -5,7 +5,7 @@ using Ryujinx.Common.Utilities;
 using Ryujinx.Ui.Common.Configuration.System;
 using Ryujinx.Ui.Common.Configuration.Ui;
 using System.Collections.Generic;
-using System.IO;
+using System.Text.Json.Nodes;
 
 namespace Ryujinx.Ui.Common.Configuration
 {
@@ -14,7 +14,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 44;
+        public const int CurrentVersion = 46;
 
         /// <summary>
         /// Version of the configuration file format
@@ -247,6 +247,11 @@ namespace Ryujinx.Ui.Common.Configuration
         public List<string> GameDirs { get; set; }
 
         /// <summary>
+        /// A list of file types to be hidden in the games List
+        /// </summary>
+        public ShownFileTypes ShownFileTypes { get; set; }
+
+        /// <summary>
         /// Language Code for the UI
         /// </summary>
         public string LanguageCode { get; set; }
@@ -321,14 +326,14 @@ namespace Ryujinx.Ui.Common.Configuration
         /// </summary>
         /// <remarks>Kept for file format compatibility (to avoid possible failure when parsing configuration on old versions)</remarks>
         /// TODO: Remove this when those older versions aren't in use anymore.
-        public List<object> KeyboardConfig { get; set; }
+        public List<JsonObject> KeyboardConfig { get; set; }
 
         /// <summary>
         /// Legacy controller control bindings
         /// </summary>
         /// <remarks>Kept for file format compatibility (to avoid possible failure when parsing configuration on old versions)</remarks>
         /// TODO: Remove this when those older versions aren't in use anymore.
-        public List<object> ControllerConfig { get; set; }
+        public List<JsonObject> ControllerConfig { get; set; }
 
         /// <summary>
         /// Input configurations
@@ -346,6 +351,11 @@ namespace Ryujinx.Ui.Common.Configuration
         public string PreferredGpu { get; set; }
 
         /// <summary>
+        /// GUID for the network interface used by LAN (or 0 for default)
+        /// </summary>
+        public string MultiplayerLanInterfaceId { get; set; }
+
+        /// <summary>
         /// Uses Hypervisor over JIT if available
         /// </summary>
         public bool UseHypervisor { get; set; }
@@ -354,11 +364,12 @@ namespace Ryujinx.Ui.Common.Configuration
         /// Loads a configuration file from disk
         /// </summary>
         /// <param name="path">The path to the JSON configuration file</param>
+        /// <param name="configurationFileFormat">Parsed configuration file</param>
         public static bool TryLoad(string path, out ConfigurationFileFormat configurationFileFormat)
         {
             try
             {
-                configurationFileFormat = JsonHelper.DeserializeFromFile<ConfigurationFileFormat>(path);
+                configurationFileFormat = JsonHelper.DeserializeFromFile(path, ConfigurationFileFormatSettings.SerializerContext.ConfigurationFileFormat);
 
                 return configurationFileFormat.Version != 0;
             }
@@ -376,8 +387,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <param name="path">The path to the JSON configuration file</param>
         public void SaveConfig(string path)
         {
-            using FileStream fileStream = File.Create(path, 4096, FileOptions.WriteThrough);
-            JsonHelper.Serialize(fileStream, this, true);
+            JsonHelper.SerializeToFile(path, this, ConfigurationFileFormatSettings.SerializerContext.ConfigurationFileFormat);
         }
     }
 }

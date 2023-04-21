@@ -10,19 +10,21 @@ using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Npdm;
+using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Configuration.System;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
-using JsonHelper = Ryujinx.Common.Utilities.JsonHelper;
 using Path = System.IO.Path;
 
 namespace Ryujinx.Ui.App.Common
@@ -41,6 +43,9 @@ namespace Ryujinx.Ui.App.Common
         private readonly VirtualFileSystem _virtualFileSystem;
         private Language                   _desiredTitleLanguage;
         private CancellationTokenSource    _cancellationToken;
+
+        private static readonly ApplicationJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
+        private static readonly TitleUpdateMetadataJsonSerializerContext TitleSerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
         public ApplicationLibrary(VirtualFileSystem virtualFileSystem)
         {
@@ -106,18 +111,31 @@ namespace Ryujinx.Ui.App.Common
 
                     try
                     {
-                        foreach (string app in Directory.EnumerateFiles(appDir, "*", SearchOption.AllDirectories))
+                        IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", SearchOption.AllDirectories).Where(file =>
+                        {
+                            return
+                            (Path.GetExtension(file).ToLower() is ".nsp"  && ConfigurationState.Instance.Ui.ShownFileTypes.NSP.Value)  ||
+                            (Path.GetExtension(file).ToLower() is ".pfs0" && ConfigurationState.Instance.Ui.ShownFileTypes.PFS0.Value) ||
+                            (Path.GetExtension(file).ToLower() is ".xci"  && ConfigurationState.Instance.Ui.ShownFileTypes.XCI.Value)  ||
+                            (Path.GetExtension(file).ToLower() is ".nca"  && ConfigurationState.Instance.Ui.ShownFileTypes.NCA.Value)  ||
+                            (Path.GetExtension(file).ToLower() is ".nro"  && ConfigurationState.Instance.Ui.ShownFileTypes.NRO.Value)  ||
+                            (Path.GetExtension(file).ToLower() is ".nso"  && ConfigurationState.Instance.Ui.ShownFileTypes.NSO.Value);
+                        });
+                        
+                        foreach (string app in files)
                         {
                             if (_cancellationToken.Token.IsCancellationRequested)
                             {
                                 return;
                             }
 
-                            string extension = Path.GetExtension(app).ToLower();
+                            var fileInfo = new FileInfo(app);
+                            string extension = fileInfo.Extension.ToLower();
 
-                            if (!File.GetAttributes(app).HasFlag(FileAttributes.Hidden) && extension is ".nsp" or ".pfs0" or ".xci" or ".nca" or ".nro" or ".nso")
+                            if (!fileInfo.Attributes.HasFlag(FileAttributes.Hidden) && extension is ".nsp" or ".pfs0" or ".xci" or ".nca" or ".nro" or ".nso")
                             {
-                                applications.Add(app);
+                                var fullPath = fileInfo.ResolveLinkTarget(true)?.FullName ?? fileInfo.FullName;
+                                applications.Add(fullPath);
                                 numApplicationsFound++;
                             }
                         }
@@ -489,14 +507,12 @@ namespace Ryujinx.Ui.App.Common
 
                 appMetadata = new ApplicationMetadata();
 
-                using FileStream stream = File.Create(metadataFile, 4096, FileOptions.WriteThrough);
-
-                JsonHelper.Serialize(stream, appMetadata, true);
+                JsonHelper.SerializeToFile(metadataFile, appMetadata, SerializerContext.ApplicationMetadata);
             }
 
             try
             {
-                appMetadata = JsonHelper.DeserializeFromFile<ApplicationMetadata>(metadataFile);
+                appMetadata = JsonHelper.DeserializeFromFile(metadataFile, SerializerContext.ApplicationMetadata);
             }
             catch (JsonException)
             {
@@ -509,9 +525,7 @@ namespace Ryujinx.Ui.App.Common
             {
                 modifyFunction(appMetadata);
 
-                using FileStream stream = File.Create(metadataFile, 4096, FileOptions.WriteThrough);
-
-                JsonHelper.Serialize(stream, appMetadata, true);
+                JsonHelper.SerializeToFile(metadataFile, appMetadata, SerializerContext.ApplicationMetadata);
             }
 
             return appMetadata;
@@ -890,7 +904,7 @@ namespace Ryujinx.Ui.App.Common
 
                 if (File.Exists(titleUpdateMetadataPath))
                 {
-                    updatePath = JsonHelper.DeserializeFromFile<TitleUpdateMetadata>(titleUpdateMetadataPath).Selected;
+                    updatePath = JsonHelper.DeserializeFromFile(titleUpdateMetadataPath, TitleSerializerContext.TitleUpdateMetadata).Selected;
 
                     if (File.Exists(updatePath))
                     {
@@ -906,3 +920,4 @@ namespace Ryujinx.Ui.App.Common
         }
     }
 }
+

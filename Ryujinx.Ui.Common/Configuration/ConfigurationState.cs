@@ -9,6 +9,7 @@ using Ryujinx.Ui.Common.Configuration.Ui;
 using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Nodes;
 
 namespace Ryujinx.Ui.Common.Configuration
 {
@@ -60,6 +61,29 @@ namespace Ryujinx.Ui.Common.Configuration
             }
 
             /// <summary>
+            /// Used to toggle which file types are shown in the UI
+            /// </summary>
+            public class ShownFileTypeSettings
+            {
+                public ReactiveObject<bool> NSP { get; private set; }
+                public ReactiveObject<bool> PFS0 { get; private set; }
+                public ReactiveObject<bool> XCI { get; private set; }
+                public ReactiveObject<bool> NCA { get; private set; }
+                public ReactiveObject<bool> NRO { get; private set; }
+                public ReactiveObject<bool> NSO { get; private set; }
+
+                public ShownFileTypeSettings()
+                {
+                    NSP  = new ReactiveObject<bool>();
+                    PFS0 = new ReactiveObject<bool>();
+                    XCI  = new ReactiveObject<bool>();
+                    NCA  = new ReactiveObject<bool>();
+                    NRO  = new ReactiveObject<bool>();
+                    NSO  = new ReactiveObject<bool>();
+                }
+            }
+
+            /// <summary>
             /// Used to toggle columns in the GUI
             /// </summary>
             public Columns GuiColumns { get; private set; }
@@ -73,6 +97,11 @@ namespace Ryujinx.Ui.Common.Configuration
             /// A list of directories containing games to be used to load games into the games list
             /// </summary>
             public ReactiveObject<List<string>> GameDirs { get; private set; }
+
+            /// <summary>
+            /// A list of file types to be hidden in the games List
+            /// </summary>
+            public ShownFileTypeSettings ShownFileTypes { get; private set; }
 
             /// <summary>
             /// Language Code for the UI
@@ -134,6 +163,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 GuiColumns        = new Columns();
                 ColumnSort        = new ColumnSortSettings();
                 GameDirs          = new ReactiveObject<List<string>>();
+                ShownFileTypes   = new ShownFileTypeSettings();
                 EnableCustomTheme = new ReactiveObject<bool>();
                 CustomThemePath   = new ReactiveObject<string>();
                 BaseStyle         = new ReactiveObject<string>();
@@ -488,6 +518,22 @@ namespace Ryujinx.Ui.Common.Configuration
         }
 
         /// <summary>
+        /// Multiplayer configuration section
+        /// </summary>
+        public class MultiplayerSection
+        {
+            /// <summary>
+            /// GUID for the network interface used by LAN (or 0 for default)
+            /// </summary>
+            public ReactiveObject<string> LanInterfaceId { get; private set; }
+
+            public MultiplayerSection()
+            {
+                LanInterfaceId = new ReactiveObject<string>();
+            }
+        }
+
+        /// <summary>
         /// The default configuration instance
         /// </summary>
         public static ConfigurationState Instance { get; private set; }
@@ -518,6 +564,11 @@ namespace Ryujinx.Ui.Common.Configuration
         public HidSection Hid { get; private set; }
 
         /// <summary>
+        /// The Multiplayer section
+        /// </summary>
+        public MultiplayerSection Multiplayer { get; private set; }
+
+        /// <summary>
         /// Enables or disables Discord Rich Presence
         /// </summary>
         public ReactiveObject<bool> EnableDiscordIntegration { get; private set; }
@@ -544,6 +595,7 @@ namespace Ryujinx.Ui.Common.Configuration
             System                   = new SystemSection();
             Graphics                 = new GraphicsSection();
             Hid                      = new HidSection();
+            Multiplayer              = new MultiplayerSection();
             EnableDiscordIntegration = new ReactiveObject<bool>();
             CheckUpdatesOnStart      = new ReactiveObject<bool>();
             ShowConfirmExit          = new ReactiveObject<bool>();
@@ -617,6 +669,15 @@ namespace Ryujinx.Ui.Common.Configuration
                     SortAscending = Ui.ColumnSort.SortAscending
                 },
                 GameDirs                   = Ui.GameDirs,
+                ShownFileTypes            = new ShownFileTypes
+                {
+                    NSP = Ui.ShownFileTypes.NSP,
+                    PFS0 = Ui.ShownFileTypes.PFS0,
+                    XCI = Ui.ShownFileTypes.XCI,
+                    NCA = Ui.ShownFileTypes.NCA,
+                    NRO = Ui.ShownFileTypes.NRO,
+                    NSO = Ui.ShownFileTypes.NSO,
+                },
                 LanguageCode               = Ui.LanguageCode,
                 EnableCustomTheme          = Ui.EnableCustomTheme,
                 CustomThemePath            = Ui.CustomThemePath,
@@ -631,11 +692,12 @@ namespace Ryujinx.Ui.Common.Configuration
                 EnableKeyboard             = Hid.EnableKeyboard,
                 EnableMouse                = Hid.EnableMouse,
                 Hotkeys                    = Hid.Hotkeys,
-                KeyboardConfig             = new List<object>(),
-                ControllerConfig           = new List<object>(),
+                KeyboardConfig             = new List<JsonObject>(),
+                ControllerConfig           = new List<JsonObject>(),
                 InputConfig                = Hid.InputConfig,
                 GraphicsBackend            = Graphics.GraphicsBackend,
-                PreferredGpu               = Graphics.PreferredGpu
+                PreferredGpu               = Graphics.PreferredGpu,
+                MultiplayerLanInterfaceId  = Multiplayer.LanInterfaceId
             };
 
             return configurationFile;
@@ -688,6 +750,7 @@ namespace Ryujinx.Ui.Common.Configuration
             System.ExpandRam.Value                    = false;
             System.IgnoreMissingServices.Value        = false;
             System.UseHypervisor.Value                = true;
+            Multiplayer.LanInterfaceId.Value          = "0";
             Ui.GuiColumns.FavColumn.Value             = true;
             Ui.GuiColumns.IconColumn.Value            = true;
             Ui.GuiColumns.AppColumn.Value             = true;
@@ -701,7 +764,13 @@ namespace Ryujinx.Ui.Common.Configuration
             Ui.ColumnSort.SortColumnId.Value          = 0;
             Ui.ColumnSort.SortAscending.Value         = false;
             Ui.GameDirs.Value                         = new List<string>();
-            Ui.EnableCustomTheme.Value                = false;
+            Ui.ShownFileTypes.NSP.Value              = true;
+            Ui.ShownFileTypes.PFS0.Value             = true;
+            Ui.ShownFileTypes.XCI.Value              = true;
+            Ui.ShownFileTypes.NCA.Value              = true;
+            Ui.ShownFileTypes.NRO.Value              = true;
+            Ui.ShownFileTypes.NSO.Value              = true;
+            Ui.EnableCustomTheme.Value                = true;
             Ui.LanguageCode.Value                     = "en_US";
             Ui.CustomThemePath.Value                  = "";
             Ui.BaseStyle.Value                        = "Dark";
@@ -1237,11 +1306,37 @@ namespace Ryujinx.Ui.Common.Configuration
 
             if (configurationFileFormat.Version < 44)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 42.");
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 44.");
 
                 configurationFileFormat.AntiAliasing = AntiAliasing.None;
                 configurationFileFormat.ScalingFilter = ScalingFilter.Bilinear;
                 configurationFileFormat.ScalingFilterLevel = 80;
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 45)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 45.");
+
+                configurationFileFormat.ShownFileTypes = new ShownFileTypes
+                {
+                    NSP  = true,
+                    PFS0 = true,
+                    XCI  = true,
+                    NCA  = true,
+                    NRO  = true,
+                    NSO  = true
+                };
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 46)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 45.");
+
+                configurationFileFormat.MultiplayerLanInterfaceId = "0";
 
                 configurationFileUpdated = true;
             }
@@ -1304,6 +1399,12 @@ namespace Ryujinx.Ui.Common.Configuration
             Ui.ColumnSort.SortColumnId.Value          = configurationFileFormat.ColumnSort.SortColumnId;
             Ui.ColumnSort.SortAscending.Value         = configurationFileFormat.ColumnSort.SortAscending;
             Ui.GameDirs.Value                         = configurationFileFormat.GameDirs;
+            Ui.ShownFileTypes.NSP.Value               = configurationFileFormat.ShownFileTypes.NSP;
+            Ui.ShownFileTypes.PFS0.Value              = configurationFileFormat.ShownFileTypes.PFS0;
+            Ui.ShownFileTypes.XCI.Value               = configurationFileFormat.ShownFileTypes.XCI;
+            Ui.ShownFileTypes.NCA.Value               = configurationFileFormat.ShownFileTypes.NCA;
+            Ui.ShownFileTypes.NRO.Value               = configurationFileFormat.ShownFileTypes.NRO;
+            Ui.ShownFileTypes.NSO.Value               = configurationFileFormat.ShownFileTypes.NSO;
             Ui.EnableCustomTheme.Value                = configurationFileFormat.EnableCustomTheme;
             Ui.LanguageCode.Value                     = configurationFileFormat.LanguageCode;
             Ui.CustomThemePath.Value                  = configurationFileFormat.CustomThemePath;
@@ -1324,6 +1425,8 @@ namespace Ryujinx.Ui.Common.Configuration
             {
                 Hid.InputConfig.Value = new List<InputConfig>();
             }
+
+            Multiplayer.LanInterfaceId.Value = configurationFileFormat.MultiplayerLanInterfaceId;
 
             if (configurationFileUpdated)
             {

@@ -6,7 +6,6 @@ using Ryujinx.HLE.HOS.Services.Nifm.StaticService.Types;
 using System;
 using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 {
@@ -16,6 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         private IPInterfaceProperties _targetPropertiesCache = null;
         private UnicastIPAddressInformation _targetAddressInfoCache = null;
+        private string _cacheChosenInterface = null;
 
         public IGeneralService()
         {
@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
             GeneralServiceManager.Add(_generalServiceDetail);
         }
 
-        [CommandHipc(1)]
+        [CommandCmif(1)]
         // GetClientId() -> buffer<nn::nifm::ClientId, 0x1a, 4>
         public ResultCode GetClientId(ServiceCtx context)
         {
@@ -43,7 +43,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
             return ResultCode.Success;
         }
 
-        [CommandHipc(4)]
+        [CommandCmif(4)]
         // CreateRequest(u32 version) -> object<nn::nifm::detail::IRequest>
         public ResultCode CreateRequest(ServiceCtx context)
         {
@@ -59,13 +59,13 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
             return ResultCode.Success;
         }
 
-        [CommandHipc(5)]
+        [CommandCmif(5)]
         // GetCurrentNetworkProfile() -> buffer<nn::nifm::detail::sf::NetworkProfileData, 0x1a, 0x17c>
         public ResultCode GetCurrentNetworkProfile(ServiceCtx context)
         {
             ulong networkProfileDataPosition = context.Request.RecvListBuff[0].Position;
 
-            (IPInterfaceProperties interfaceProperties, UnicastIPAddressInformation unicastAddress) = GetLocalInterface();
+            (IPInterfaceProperties interfaceProperties, UnicastIPAddressInformation unicastAddress) = GetLocalInterface(context);
 
             if (interfaceProperties == null || unicastAddress == null)
             {
@@ -91,11 +91,11 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
             return ResultCode.Success;
         }
 
-        [CommandHipc(12)]
+        [CommandCmif(12)]
         // GetCurrentIpAddress() -> nn::nifm::IpV4Address
         public ResultCode GetCurrentIpAddress(ServiceCtx context)
         {
-            (_, UnicastIPAddressInformation unicastAddress) = GetLocalInterface();
+            (_, UnicastIPAddressInformation unicastAddress) = GetLocalInterface(context);
 
             if (unicastAddress == null)
             {
@@ -109,11 +109,11 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
             return ResultCode.Success;
         }
 
-        [CommandHipc(15)]
+        [CommandCmif(15)]
         // GetCurrentIpConfigInfo() -> (nn::nifm::IpAddressSetting, nn::nifm::DnsSetting)
         public ResultCode GetCurrentIpConfigInfo(ServiceCtx context)
         {
-            (IPInterfaceProperties interfaceProperties, UnicastIPAddressInformation unicastAddress) = GetLocalInterface();
+            (IPInterfaceProperties interfaceProperties, UnicastIPAddressInformation unicastAddress) = GetLocalInterface(context);
 
             if (interfaceProperties == null || unicastAddress == null)
             {
@@ -128,7 +128,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
             return ResultCode.Success;
         }
 
-        [CommandHipc(18)]
+        [CommandCmif(18)]
         // GetInternetConnectionStatus() -> nn::nifm::detail::sf::InternetConnectionStatus
         public ResultCode GetInternetConnectionStatus(ServiceCtx context)
         {
@@ -149,7 +149,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
             return ResultCode.Success;
         }
 
-        [CommandHipc(21)]
+        [CommandCmif(21)]
         // IsAnyInternetRequestAccepted(buffer<nn::nifm::ClientId, 0x19, 4>) -> bool
         public ResultCode IsAnyInternetRequestAccepted(ServiceCtx context)
         {
@@ -163,51 +163,23 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
             return ResultCode.Success;
         }
 
-        private (IPInterfaceProperties, UnicastIPAddressInformation) GetLocalInterface()
+        private (IPInterfaceProperties, UnicastIPAddressInformation) GetLocalInterface(ServiceCtx context)
         {
             if (!NetworkInterface.GetIsNetworkAvailable())
             {
                 return (null, null);
             }
 
-            if (_targetPropertiesCache != null && _targetAddressInfoCache != null)
+            string chosenInterface = context.Device.Configuration.MultiplayerLanInterfaceId;
+
+            if (_targetPropertiesCache == null || _targetAddressInfoCache == null || _cacheChosenInterface != chosenInterface)
             {
-                return (_targetPropertiesCache, _targetAddressInfoCache);
+                _cacheChosenInterface = chosenInterface;
+
+                (_targetPropertiesCache, _targetAddressInfoCache) = NetworkHelpers.GetLocalInterface(chosenInterface);
             }
 
-            IPInterfaceProperties       targetProperties  = null;
-            UnicastIPAddressInformation targetAddressInfo = null;
-
-            NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
-
-            foreach (NetworkInterface adapter in interfaces)
-            {
-                // Ignore loopback and non IPv4 capable interface.
-                if (targetProperties == null && adapter.NetworkInterfaceType != NetworkInterfaceType.Loopback && adapter.Supports(NetworkInterfaceComponent.IPv4))
-                {
-                    IPInterfaceProperties properties = adapter.GetIPProperties();
-
-                    if (properties.GatewayAddresses.Count > 0 && properties.DnsAddresses.Count > 0)
-                    {
-                        foreach (UnicastIPAddressInformation info in properties.UnicastAddresses)
-                        {
-                            // Only accept an IPv4 address
-                            if (info.Address.GetAddressBytes().Length == 4)
-                            {
-                                targetProperties  = properties;
-                                targetAddressInfo = info;
-
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            _targetPropertiesCache  = targetProperties;
-            _targetAddressInfoCache = targetAddressInfo;
-
-            return (targetProperties, targetAddressInfo);
+            return (_targetPropertiesCache, _targetAddressInfoCache);
         }
 
         private void LocalInterfaceCacheHandler(object sender, EventArgs e)

@@ -177,6 +177,8 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.Graphics.ScalingFilter.Event       += UpdateScalingFilter;
             ConfigurationState.Instance.Graphics.ScalingFilterLevel.Event  += UpdateScalingFilterLevel;
 
+            ConfigurationState.Instance.Multiplayer.LanInterfaceId.Event   += UpdateLanInterfaceIdState;
+
             _gpuCancellationTokenSource = new CancellationTokenSource();
         }
 
@@ -321,17 +323,15 @@ namespace Ryujinx.Ava
             _viewModel.IsGameRunning = true;
 
             var activeProcess   = Device.Processes.ActiveApplication;
-            var nacp            = activeProcess.ApplicationControlProperties;
-            int desiredLanguage = (int)Device.System.State.DesiredTitleLanguage;
 
-            string titleNameSection    = string.IsNullOrWhiteSpace(nacp.Title[desiredLanguage].NameString.ToString()) ? string.Empty : $" - {nacp.Title[desiredLanguage].NameString.ToString()}";
-            string titleVersionSection = string.IsNullOrWhiteSpace(nacp.DisplayVersionString.ToString())              ? string.Empty : $" v{nacp.DisplayVersionString.ToString()}";
-            string titleIdSection      = string.IsNullOrWhiteSpace(activeProcess.ProgramIdText)                       ? string.Empty : $" ({activeProcess.ProgramIdText.ToUpper()})";
-            string titleArchSection    = activeProcess.Is64Bit                                                        ? " (64-bit)"  : " (32-bit)";
+            string titleNameSection    = string.IsNullOrWhiteSpace(activeProcess.Name) ? string.Empty : $" {activeProcess.Name}";
+            string titleVersionSection = string.IsNullOrWhiteSpace(activeProcess.DisplayVersion) ? string.Empty : $" v{activeProcess.DisplayVersion}";
+            string titleIdSection      = $" ({activeProcess.ProgramIdText.ToUpper()})";
+            string titleArchSection    = activeProcess.Is64Bit ? " (64-bit)" : " (32-bit)";
 
             Dispatcher.UIThread.InvokeAsync(() =>
             {
-                _viewModel.Title = $"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}";
+                _viewModel.Title = $"Ryujinx {Program.Version} -{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}";
             });
 
             _viewModel.SetUIProgressHandlers(Device);
@@ -383,6 +383,11 @@ namespace Ryujinx.Ava
             {
                 _viewModel.Volume = e.NewValue;
             });
+        }
+
+        private void UpdateLanInterfaceIdState(object sender, ReactiveEventArgs<string> e)
+        {
+            Device.Configuration.MultiplayerLanInterfaceId = e.NewValue;
         }
 
         public void Stop()
@@ -741,7 +746,8 @@ namespace Ryujinx.Ava
                                                      ConfigurationState.Instance.System.IgnoreMissingServices,
                                                      ConfigurationState.Instance.Graphics.AspectRatio,
                                                      ConfigurationState.Instance.System.AudioVolume,
-                                                     ConfigurationState.Instance.System.UseHypervisor);
+                                                     ConfigurationState.Instance.System.UseHypervisor,
+                                                     ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value);
 
             Device = new Switch(configuration);
         }

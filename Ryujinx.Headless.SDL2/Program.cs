@@ -56,6 +56,8 @@ namespace Ryujinx.Headless.SDL2
         private static bool _enableKeyboard;
         private static bool _enableMouse;
 
+        private static readonly InputConfigJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
+
         static void Main(string[] args)
         {
             Version = ReleaseInformation.GetVersion();
@@ -285,10 +287,7 @@ namespace Ryujinx.Headless.SDL2
 
                 try
                 {
-                    using (Stream stream = File.OpenRead(path))
-                    {
-                        config = JsonHelper.Deserialize<InputConfig>(stream);
-                    }
+                    config = JsonHelper.DeserializeFromFile(path, SerializerContext.InputConfig);
                 }
                 catch (JsonException)
                 {
@@ -549,7 +548,8 @@ namespace Ryujinx.Headless.SDL2
                                                                   options.IgnoreMissingServices,
                                                                   options.AspectRatio,
                                                                   options.AudioVolume,
-                                                                  options.UseHypervisor);
+                                                                  options.UseHypervisor,
+                                                                  options.MultiplayerLanInterfaceId);
 
             return new Switch(configuration);
         }
@@ -589,8 +589,6 @@ namespace Ryujinx.Headless.SDL2
             _window = window;
 
             _emulationContext = InitializeEmulationContext(window, renderer, options);
-
-            SetupProgressHandler();
 
             SystemVersion firmwareVersion = _contentManager.GetCurrentFirmwareVersion();
 
@@ -693,6 +691,8 @@ namespace Ryujinx.Headless.SDL2
 
                 return false;
             }
+
+            SetupProgressHandler();
 
             Translator.IsReadyForTranslation.Reset();
 
