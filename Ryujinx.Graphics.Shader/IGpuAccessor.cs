@@ -199,7 +199,7 @@ namespace Ryujinx.Graphics.Shader
         /// <summary>
         /// Queries host's gather operation precision bits for biasing their coordinates. Zero means no bias.
         /// </summary>
-        /// <returns>Bits of gater operation precision to use for coordinate bias</returns>
+        /// <returns>Bits of gather operation precision to use for coordinate bias</returns>
         int QueryHostGatherBiasPrecision()
         {
             return 0;
