@@ -75,7 +75,9 @@ namespace ARMeilleure.Instructions
         {
             int index = reg & (doubleWidth ? 1 : 3);
             if (index == 0)
+            {
                 return target; // Element is already at index 0, so just return the vector directly.
+            }
 
             if (doubleWidth)
             {

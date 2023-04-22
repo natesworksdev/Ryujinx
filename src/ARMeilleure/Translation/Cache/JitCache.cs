@@ -36,12 +36,16 @@ namespace ARMeilleure.Translation.Cache
         public static void Initialize(IJitMemoryAllocator allocator)
         {
             if (_initialized)
+            {
                 return;
+            }
 
             lock (_lock)
             {
                 if (_initialized)
+                {
                     return;
+                }
 
                 _jitRegion = new ReservedRegion(allocator, CacheSize);
 

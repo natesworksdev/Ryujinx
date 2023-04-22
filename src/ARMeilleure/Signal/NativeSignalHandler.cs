@@ -97,12 +97,16 @@ namespace ARMeilleure.Signal
         public static void InitializeSignalHandler(ulong pageSize, Func<IntPtr, IntPtr, IntPtr> customSignalHandlerFactory = null)
         {
             if (_initialized)
+            {
                 return;
+            }
 
             lock (_lock)
             {
                 if (_initialized)
+                {
                     return;
+                }
 
                 _pageSize = pageSize;
                 _pageMask = pageSize - 1;

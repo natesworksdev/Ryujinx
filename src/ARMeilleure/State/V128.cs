@@ -137,7 +137,9 @@ namespace ARMeilleure.State
         public T Extract<T>(int index) where T : unmanaged
         {
             if ((uint)index >= GetElementCount<T>())
+            {
                 ThrowIndexOutOfRange();
+            }
 
             // Performs:
             //  return *((*T)this + index);
@@ -156,7 +158,9 @@ namespace ARMeilleure.State
         public void Insert<T>(int index, T value) where T : unmanaged
         {
             if ((uint)index >= GetElementCount<T>())
+            {
                 ThrowIndexOutOfRange();
+            }
 
             // Performs:
             //  *((*T)this + index) = value;

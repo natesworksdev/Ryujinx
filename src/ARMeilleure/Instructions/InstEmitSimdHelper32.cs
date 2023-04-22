@@ -774,7 +774,9 @@ namespace ARMeilleure.Instructions
             // Index into 0, 0 into index. This swap happens at the start of an A32 scalar op if required.
             int index = reg & (doubleWidth ? 1 : 3);
             if (index == 0)
+            {
                 return target;
+            }
 
             if (doubleWidth)
             {
