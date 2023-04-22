@@ -710,16 +710,27 @@ namespace Ryujinx.Graphics.Texture.Astc
             d &= 0x3F;
 
             if (partitionCount < 4)
+            {
                 d = 0;
+            }
             if (partitionCount < 3)
+            {
                 c = 0;
+            }
 
             if (a >= b && a >= c && a >= d)
+            {
                 return 0;
+            }
             else if (b >= c && b >= d)
+            {
                 return 1;
+            }
             else if (c >= d)
+            {
                 return 2;
+            }
+
             return 3;
         }
 
@@ -774,7 +785,9 @@ namespace Ryujinx.Graphics.Texture.Astc
                 }
 
                 if (++weightIndices >= texelParams.Width * texelParams.Height)
+                {
                     break;
+                }
             }
 
             // Do infill if necessary (Section C.2.18) ...
