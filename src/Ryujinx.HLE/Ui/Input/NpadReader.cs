@@ -81,9 +81,11 @@ namespace Ryujinx.HLE.Ui.Input
             int firstEntryNum;
 
             // Scan the LIFO for the first entry that is newer that what's already processed.
-#pragma warning disable IDE0055 // Disable formatting
-            for (firstEntryNum = fullKeyEntries.Length - 1; firstEntryNum >= 0 && fullKeyEntries[firstEntryNum].Object.SamplingNumber <= lastEntry.SamplingNumber; firstEntryNum--) ;
-#pragma warning restore IDE0055
+            for (firstEntryNum = fullKeyEntries.Length - 1;
+                 firstEntryNum >= 0 && fullKeyEntries[firstEntryNum].Object.SamplingNumber <= lastEntry.SamplingNumber;
+                 firstEntryNum--)
+            {
+            }
 
             if (firstEntryNum == -1)
             {
