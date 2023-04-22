@@ -427,16 +427,23 @@ namespace Ryujinx.Headless.SDL2
 
             if (!option.DisableFileLog)
             {
-                string oldLogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
-                string newLogPath = Path.Combine(AppDataManager.BaseDirPath, "Logs");
+                string logBasePath = AppDomain.CurrentDomain.BaseDirectory;
 
-                if (Directory.Exists(oldLogPath) && !Directory.Exists(newLogPath))
+                if (ReleaseInformation.IsValid)
                 {
-                    Directory.Move(oldLogPath, newLogPath);
+                    string oldLogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
+                    string newLogPath = Path.Combine(AppDataManager.BaseDirPath, "Logs");
+
+                    if (Directory.Exists(oldLogPath) && !Directory.Exists(newLogPath))
+                    {
+                        Directory.Move(oldLogPath, newLogPath);
+                    }
+
+                    logBasePath = AppDataManager.BaseDirPath;
                 }
 
                 Logger.AddTarget(new AsyncLogTargetWrapper(
-                    new FileLogTarget(AppDataManager.BaseDirPath, "file"),
+                    new FileLogTarget(logBasePath, "file"),
                     1000,
                     AsyncLogTargetOverflowAction.Block
                 ));
