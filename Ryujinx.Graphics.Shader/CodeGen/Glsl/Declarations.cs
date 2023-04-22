@@ -642,7 +642,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             if (context.Config.TransformFeedbackEnabled && context.Config.LastInVertexPipeline)
             {
                 int attrOffset = AttributeConsts.UserAttributeBase + attr * 16;
-                int components = context.Config.LastInPipeline ? context.Info.GetTransformFeedbackOutputComponents(attrOffset) : 1;
+                int components = context.Info.GetTransformFeedbackOutputComponents(attrOffset);
 
                 if (components > 1)
                 {
