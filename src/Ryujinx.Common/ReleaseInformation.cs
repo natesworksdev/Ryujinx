@@ -37,22 +37,5 @@ namespace Ryujinx.Common
 
             return Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
         }
-
-#if FORCE_EXTERNAL_BASE_DIR
-        public static string GetBaseApplicationDirectory()
-        {
-            return AppDataManager.BaseDirPath;
-        }
-#else
-        public static string GetBaseApplicationDirectory()
-        {
-            if (IsFlatHubBuild() || OperatingSystem.IsMacOS())
-            {
-                return AppDataManager.BaseDirPath;
-            }
-
-            return AppDomain.CurrentDomain.BaseDirectory;
-        }
-#endif
     }
 }

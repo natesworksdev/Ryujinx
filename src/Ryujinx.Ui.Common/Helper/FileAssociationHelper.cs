@@ -34,7 +34,7 @@ namespace Ryujinx.Ui.Common.Helper
 
             if ((uninstall && AreMimeTypesRegisteredLinux()) || (!uninstall && !AreMimeTypesRegisteredLinux()))
             {
-                string mimeTypesFile = Path.Combine(ReleaseInformation.GetBaseApplicationDirectory(), "mime", "Ryujinx.xml");
+                string mimeTypesFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "mime", "Ryujinx.xml");
                 string additionalArgs = !uninstall ? "--novendor" : "";
 
                 using Process mimeProcess = new();

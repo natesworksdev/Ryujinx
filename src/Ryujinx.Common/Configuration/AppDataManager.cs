@@ -6,8 +6,8 @@ namespace Ryujinx.Common.Configuration
 {
     public static class AppDataManager
     {
-        public const string DefaultBaseDir = "Ryujinx";
-        public const string DefaultPortableDir = "portable";
+        private const string DefaultBaseDir = "Ryujinx";
+        private const string DefaultPortableDir = "portable";
 
         // The following 3 are always part of Base Directory
         private const string GamesDir = "games";
