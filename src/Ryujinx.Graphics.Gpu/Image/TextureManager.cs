@@ -235,7 +235,10 @@ namespace Ryujinx.Graphics.Gpu.Image
             void ConsiderTarget(Texture target)
             {
                 if (target == null)
+                {
                     return;
+                }
+
                 float scale = target.ScaleFactor;
 
                 switch (target.ScaleMode)
