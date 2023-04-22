@@ -36,13 +36,11 @@ namespace ARMeilleure.Instructions
         public static void Dmb(ArmEmitterContext context) => EmitBarrier(context);
         public static void Dsb(ArmEmitterContext context) => EmitBarrier(context);
 
-#pragma warning disable IDE0055 // Disable formatting
-        public static void Ldar(ArmEmitterContext context)  => EmitLdr(context, AccessType.Ordered);
+        public static void Ldar(ArmEmitterContext context) => EmitLdr(context, AccessType.Ordered);
         public static void Ldaxr(ArmEmitterContext context) => EmitLdr(context, AccessType.OrderedEx);
-        public static void Ldxr(ArmEmitterContext context)  => EmitLdr(context, AccessType.Exclusive);
-        public static void Ldxp(ArmEmitterContext context)  => EmitLdp(context, AccessType.Exclusive);
+        public static void Ldxr(ArmEmitterContext context) => EmitLdr(context, AccessType.Exclusive);
+        public static void Ldxp(ArmEmitterContext context) => EmitLdp(context, AccessType.Exclusive);
         public static void Ldaxp(ArmEmitterContext context) => EmitLdp(context, AccessType.OrderedEx);
-#pragma warning restore IDE0055
 
         private static void EmitLdr(ArmEmitterContext context, AccessType accType)
         {
@@ -118,13 +116,11 @@ namespace ARMeilleure.Instructions
         }
 #pragma warning restore IDE0060
 
-#pragma warning disable IDE0055 // Disable formatting
-        public static void Stlr(ArmEmitterContext context)  => EmitStr(context, AccessType.Ordered);
+        public static void Stlr(ArmEmitterContext context) => EmitStr(context, AccessType.Ordered);
         public static void Stlxr(ArmEmitterContext context) => EmitStr(context, AccessType.OrderedEx);
-        public static void Stxr(ArmEmitterContext context)  => EmitStr(context, AccessType.Exclusive);
-        public static void Stxp(ArmEmitterContext context)  => EmitStp(context, AccessType.Exclusive);
+        public static void Stxr(ArmEmitterContext context) => EmitStr(context, AccessType.Exclusive);
+        public static void Stxp(ArmEmitterContext context) => EmitStp(context, AccessType.Exclusive);
         public static void Stlxp(ArmEmitterContext context) => EmitStp(context, AccessType.OrderedEx);
-#pragma warning restore IDE0055
 
         private static void EmitStr(ArmEmitterContext context, AccessType accType)
         {

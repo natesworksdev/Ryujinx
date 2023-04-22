@@ -284,17 +284,15 @@ namespace ARMeilleure.Instructions
         private const uint Crc32RevPoly  = 0xedb88320;
         private const uint Crc32cRevPoly = 0x82f63b78;
 
-#pragma warning disable IDE0055 // Disable formatting
-        public static uint Crc32b(uint crc, byte   value) => Crc32 (crc, Crc32RevPoly, value);
+        public static uint Crc32b(uint crc, byte value) => Crc32(crc, Crc32RevPoly, value);
         public static uint Crc32h(uint crc, ushort value) => Crc32h(crc, Crc32RevPoly, value);
-        public static uint Crc32w(uint crc, uint   value) => Crc32w(crc, Crc32RevPoly, value);
-        public static uint Crc32x(uint crc, ulong  value) => Crc32x(crc, Crc32RevPoly, value);
+        public static uint Crc32w(uint crc, uint value) => Crc32w(crc, Crc32RevPoly, value);
+        public static uint Crc32x(uint crc, ulong value) => Crc32x(crc, Crc32RevPoly, value);
 
-        public static uint Crc32cb(uint crc, byte   value) => Crc32 (crc, Crc32cRevPoly, value);
+        public static uint Crc32cb(uint crc, byte value) => Crc32(crc, Crc32cRevPoly, value);
         public static uint Crc32ch(uint crc, ushort value) => Crc32h(crc, Crc32cRevPoly, value);
-        public static uint Crc32cw(uint crc, uint   value) => Crc32w(crc, Crc32cRevPoly, value);
-        public static uint Crc32cx(uint crc, ulong  value) => Crc32x(crc, Crc32cRevPoly, value);
-#pragma warning restore IDE0055
+        public static uint Crc32cw(uint crc, uint value) => Crc32w(crc, Crc32cRevPoly, value);
+        public static uint Crc32cx(uint crc, ulong value) => Crc32x(crc, Crc32cRevPoly, value);
 
         private static uint Crc32h(uint crc, uint poly, ushort val)
         {
