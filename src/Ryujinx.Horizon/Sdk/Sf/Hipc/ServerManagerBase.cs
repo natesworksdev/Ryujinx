@@ -113,9 +113,9 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 
         public void ServiceRequests()
         {
-#pragma warning disable IDE0055 // Disable formatting
-            while (WaitAndProcessRequestsImpl()) ;
-#pragma warning restore IDE0055
+            while (WaitAndProcessRequestsImpl())
+            {
+            }
         }
 
         public void WaitAndProcessRequests()
