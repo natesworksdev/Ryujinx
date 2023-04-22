@@ -124,7 +124,9 @@ namespace Ryujinx.Graphics.OpenGL
                 }
 
                 if (first == null)
+                {
                     break;
+                }
 
                 WaitSyncStatus syncResult = GL.ClientWaitSync(first.Handle, SyncFlags, 0);
 
