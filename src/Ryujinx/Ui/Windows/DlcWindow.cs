@@ -165,7 +165,9 @@ namespace Ryujinx.Ui.Windows
                         Nca nca = TryCreateNca(ncaFile.Get.AsStorage(), containerPath);
 
                         if (nca == null)
+                        {
                             continue;
+                        }
 
                         if (nca.Header.ContentType == NcaContentType.PublicData)
                         {

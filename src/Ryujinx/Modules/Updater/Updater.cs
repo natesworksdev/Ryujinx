@@ -56,7 +56,9 @@ namespace Ryujinx.Modules
         public static async Task BeginParse(MainWindow mainWindow, bool showVersionUpToDate)
         {
             if (Running)
+            {
                 return;
+            }
 
             Running = true;
             mainWindow.UpdateMenuItem.Sensitive = false;
@@ -401,7 +403,9 @@ namespace Ryujinx.Modules
                         while ((tarEntry = tarStream.GetNextEntry()) != null)
                         {
                             if (tarEntry.IsDirectory)
+                            {
                                 continue;
+                            }
 
                             string outPath = Path.Combine(UpdateDir, tarEntry.Name);
 
@@ -438,7 +442,9 @@ namespace Ryujinx.Modules
                     foreach (ZipEntry zipEntry in zipFile)
                     {
                         if (zipEntry.IsDirectory)
+                        {
                             continue;
+                        }
 
                         string outPath = Path.Combine(UpdateDir, zipEntry.Name);
 

@@ -342,7 +342,9 @@ namespace Ryujinx.Ui.Widgets
         {
             Result rc = fs.OpenDirectory(out DirectoryHandle sourceHandle, sourcePath.ToU8Span(), OpenDirectoryMode.All);
             if (rc.IsFailure())
+            {
                 return (rc, false);
+            }
 
             using (sourceHandle)
             {
@@ -373,7 +375,9 @@ namespace Ryujinx.Ui.Widgets
 
                         rc = CopyFile(fs, subSrcPath, subDstPath);
                         if (rc.IsFailure())
+                        {
                             return (rc, false);
+                        }
                     }
                 }
             }
@@ -385,13 +389,17 @@ namespace Ryujinx.Ui.Widgets
         {
             Result rc = fs.OpenFile(out FileHandle sourceHandle, sourcePath.ToU8Span(), OpenMode.Read);
             if (rc.IsFailure())
+            {
                 return rc;
+            }
 
             using (sourceHandle)
             {
                 rc = fs.OpenFile(out FileHandle destHandle, destPath.ToU8Span(), OpenMode.Write | OpenMode.AllowAppend);
                 if (rc.IsFailure())
+                {
                     return rc;
+                }
 
                 using (destHandle)
                 {
@@ -399,7 +407,9 @@ namespace Ryujinx.Ui.Widgets
 
                     rc = fs.GetFileSize(out long fileSize, sourceHandle);
                     if (rc.IsFailure())
+                    {
                         return rc;
+                    }
 
                     int bufferSize = (int)Math.Min(MaxBufferSize, fileSize);
 
@@ -413,11 +423,15 @@ namespace Ryujinx.Ui.Widgets
 
                             rc = fs.ReadFile(out long _, sourceHandle, offset, buf);
                             if (rc.IsFailure())
+                            {
                                 return rc;
+                            }
 
                             rc = fs.WriteFile(destHandle, offset, buf, WriteOption.None);
                             if (rc.IsFailure())
+                            {
                                 return rc;
+                            }
                         }
                     }
                     finally
@@ -427,7 +441,9 @@ namespace Ryujinx.Ui.Widgets
 
                     rc = fs.FlushFile(destHandle);
                     if (rc.IsFailure())
+                    {
                         return rc;
+                    }
                 }
             }
 

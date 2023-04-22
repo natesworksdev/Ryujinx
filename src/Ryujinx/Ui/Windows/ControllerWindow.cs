@@ -973,7 +973,9 @@ namespace Ryujinx.Ui.Windows
             ((ToggleButton)sender).SetStateFlags(StateFlags.Normal, true);
 
             if (_inputDevice.ActiveId == "disabled" || _profile.ActiveId == null)
+            {
                 return;
+            }
 
             InputConfig config = null;
             int         pos    = _profile.Active;
@@ -1137,13 +1139,17 @@ namespace Ryujinx.Ui.Windows
             ((ToggleButton)sender).SetStateFlags(StateFlags.Normal, true);
 
             if (_inputDevice.ActiveId == "disabled")
+            {
                 return;
+            }
 
             InputConfig   inputConfig   = GetValues();
             ProfileDialog profileDialog = new();
 
             if (inputConfig == null)
+            {
                 return;
+            }
 
             if (profileDialog.Run() == (int)ResponseType.Ok)
             {
@@ -1163,7 +1169,9 @@ namespace Ryujinx.Ui.Windows
             ((ToggleButton)sender).SetStateFlags(StateFlags.Normal, true);
 
             if (_inputDevice.ActiveId == "disabled" || _profile.ActiveId == "default" || _profile.ActiveId == null)
+            {
                 return;
+            }
 
             MessageDialog confirmDialog = GtkDialog.CreateConfirmationDialog("Deleting Profile", "This action is irreversible, are you sure you want to continue?");
 
