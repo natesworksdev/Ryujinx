@@ -243,7 +243,9 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
                 out CacheStorageTargetMedia storageTarget, applicationId, in nacp, index, saveSize, journalSize);
 
             if (result.IsFailure())
+            {
                 return (ResultCode)result.Value;
+            }
 
             context.ResponseData.Write((ulong)storageTarget);
             context.ResponseData.Write(requiredSize);

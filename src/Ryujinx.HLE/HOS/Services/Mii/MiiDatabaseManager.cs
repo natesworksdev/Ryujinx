@@ -119,26 +119,34 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             if (result.IsFailure())
             {
                 if (!ResultFs.TargetNotFound.Includes(result))
+                {
                     return result;
+                }
 
                 if (IsTestModeEnabled)
                 {
                     result = _horizonClient.Fs.CreateSystemSaveData(saveDataId, 0x10000, 0x10000,
                         SaveDataFlags.KeepAfterResettingSystemSaveDataWithoutUserSaveData);
                     if (result.IsFailure())
+                    {
                         return result;
+                    }
                 }
                 else
                 {
                     result = _horizonClient.Fs.CreateSystemSaveData(saveDataId, SystemProgramId.Ns.Value, 0x10000,
                         0x10000, SaveDataFlags.KeepAfterResettingSystemSaveDataWithoutUserSaveData);
                     if (result.IsFailure())
+                    {
                         return result;
+                    }
                 }
 
                 result = _horizonClient.Fs.MountSystemSaveData(MountName, SaveDataSpaceId.System, saveDataId);
                 if (result.IsFailure())
+                {
                     return result;
+                }
             }
 
             if (result == Result.Success)

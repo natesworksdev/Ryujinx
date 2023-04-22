@@ -209,7 +209,7 @@ namespace Ryujinx.HLE.HOS
         private static void QueryPatchDirs(PatchCache cache, DirectoryInfo patchDir)
         {
             if (cache.Initialized || !patchDir.Exists)
-               {
+            {
                 return;
             }
 
@@ -243,7 +243,7 @@ namespace Ryujinx.HLE.HOS
         private static void QueryTitleDir(ModCache mods, DirectoryInfo titleDir)
         {
             if (!titleDir.Exists)
-               {
+            {
                 return;
             }
 
@@ -265,7 +265,7 @@ namespace Ryujinx.HLE.HOS
         public static void QueryContentsDir(ModCache mods, DirectoryInfo contentsDir, ulong titleId)
         {
             if (!contentsDir.Exists)
-               {
+            {
                 return;
             }
 
@@ -623,7 +623,9 @@ namespace Ryujinx.HLE.HOS
             var nroPatches = _patches.NroPatches;
 
             if (nroPatches.Count == 0)
+            {
                 return;
+            }
 
             // NRO patches aren't offset relative to header unlike NSO
             // according to Atmosphere's ro patcher module

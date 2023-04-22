@@ -283,19 +283,27 @@ namespace Ryujinx.HLE.FileSystem
         {
             Result rc = GetSystemSaveList(hos, out List<ulong> systemSaveIds);
             if (rc.IsFailure())
+            {
                 return rc;
+            }
 
             rc = FixUnindexedSystemSaves(hos, systemSaveIds);
             if (rc.IsFailure())
+            {
                 return rc;
+            }
 
             rc = FixExtraDataInSpaceId(hos, SaveDataSpaceId.System);
             if (rc.IsFailure())
+            {
                 return rc;
+            }
 
             rc = FixExtraDataInSpaceId(hos, SaveDataSpaceId.User);
             if (rc.IsFailure())
+            {
                 return rc;
+            }
 
             return Result.Success;
         }
@@ -308,16 +316,22 @@ namespace Ryujinx.HLE.FileSystem
 
             Result rc = hos.Fs.OpenSaveDataIterator(ref iterator.Ref, spaceId);
             if (rc.IsFailure())
+            {
                 return rc;
+            }
 
             while (true)
             {
                 rc = iterator.Get.ReadSaveDataInfo(out long count, info);
                 if (rc.IsFailure())
+                {
                     return rc;
+                }
 
                 if (count == 0)
+                {
                     return Result.Success;
+                }
 
                 for (int i = 0; i < count; i++)
                 {
@@ -357,7 +371,9 @@ namespace Ryujinx.HLE.FileSystem
         private static Result CreateSaveDataDirectory(HorizonClient hos, in SaveDataInfo info)
         {
             if (info.SpaceId != SaveDataSpaceId.User && info.SpaceId != SaveDataSpaceId.System)
+            {
                 return Result.Success;
+            }
 
             const string MountName = "SaveDir";
             var mountNameU8 = MountName.ToU8Span();
@@ -371,7 +387,10 @@ namespace Ryujinx.HLE.FileSystem
 
             Result rc = hos.Fs.MountBis(mountNameU8, partitionId);
             if (rc.IsFailure())
+            {
                 return rc;
+            }
+
             try
             {
                 var path = $"{MountName}:/save/{info.SaveDataId:x16}".ToU8Span();
@@ -404,11 +423,15 @@ namespace Ryujinx.HLE.FileSystem
             {
                 Result rc = hos.Fs.MountBis(mountName, BisPartitionId.System);
                 if (rc.IsFailure())
+                {
                     return rc;
+                }
 
                 rc = hos.Fs.OpenDirectory(out handle, "system:/save".ToU8Span(), OpenDirectoryMode.All);
                 if (rc.IsFailure())
+                {
                     return rc;
+                }
 
                 DirectoryEntry entry = new();
 
@@ -416,10 +439,14 @@ namespace Ryujinx.HLE.FileSystem
                 {
                     rc = hos.Fs.ReadDirectory(out long readCount, SpanHelpers.AsSpan(ref entry), handle);
                     if (rc.IsFailure())
+                    {
                         return rc;
+                    }
 
                     if (readCount == 0)
+                    {
                         break;
+                    }
 
                     if (Utf8Parser.TryParse(entry.Name, out ulong saveDataId, out int bytesRead, 'x') &&
                         bytesRead == 16 && (long)saveDataId < 0)
@@ -482,7 +509,9 @@ namespace Ryujinx.HLE.FileSystem
             if (!rc.IsSuccess())
             {
                 if (!ResultFs.TargetNotFound.Includes(rc))
+                {
                     return rc;
+                }
 
                 // We'll reach this point only if the save data directory exists but it's not in the save data indexer.
                 // Creating the save will add it to the indexer while leaving its existing contents intact.
@@ -520,7 +549,9 @@ namespace Ryujinx.HLE.FileSystem
             Result rc = hos.Fs.Impl.ReadSaveDataFileSystemExtraData(out SaveDataExtraData extraData, info.SpaceId,
                 info.SaveDataId);
             if (rc.IsFailure())
+            {
                 return rc;
+            }
 
             // The extra data should have program ID or static save data ID set if it's valid.
             // We only try to fix the extra data if the info from the save data indexer has a program ID or static save data ID.

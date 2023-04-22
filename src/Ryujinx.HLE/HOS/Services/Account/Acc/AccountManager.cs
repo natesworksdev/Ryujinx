@@ -51,7 +51,10 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
                 {
                     commandLineUserProfileOverride = _profiles.Values.FirstOrDefault(x => x.Name == initialProfileName)?.UserId ?? default;
                     if (commandLineUserProfileOverride.IsNull)
-                        Logger.Warning?.Print(LogClass.Application, $"The command line specified profile named '{initialProfileName}' was not found");
+                    {
+                        Logger.Warning?.Print(LogClass.Application,
+                            $"The command line specified profile named '{initialProfileName}' was not found");
+                    }
                 }
                 OpenUser(commandLineUserProfileOverride.IsNull ? _accountSaveDataManager.LastOpened : commandLineUserProfileOverride);
             }

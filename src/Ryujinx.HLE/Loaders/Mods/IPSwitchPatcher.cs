@@ -79,7 +79,9 @@ namespace Ryujinx.HLE.Loaders.Mods
                 }
 
                 if (state == Token.Comment)
+                {
                     break;
+                }
 
                 if (state < Token.EscapeChar)
                 {
@@ -114,7 +116,9 @@ namespace Ryujinx.HLE.Loaders.Mods
         static byte[] Hex2ByteArrayBE(string hexstr)
         {
             if ((hexstr.Length & 1) == 1)
+            {
                 return null;
+            }
 
             byte[] bytes = new byte[hexstr.Length >> 1];
 

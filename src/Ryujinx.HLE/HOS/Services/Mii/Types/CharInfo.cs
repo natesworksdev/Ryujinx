@@ -73,107 +73,209 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         public uint Verify()
         {
             if (!CreateId.IsValid)
+            {
                 return 50;
+            }
             if (!Nickname.IsValid())
+            {
                 return 51;
+            }
             if ((byte)FontRegion > 3)
+            {
                 return 23;
+            }
             if (FavoriteColor > 11)
+            {
                 return 22;
+            }
             if (Gender > Gender.Max)
+            {
                 return 24;
+            }
             if ((sbyte)Height < 0)
+            {
                 return 32;
+            }
             if ((sbyte)Build < 0)
+            {
                 return 3;
+            }
             if (Type > 1)
+            {
                 return 53;
+            }
             if (RegionMove > 3)
+            {
                 return 49;
+            }
             if (FacelineType > FacelineType.Max)
+            {
                 return 21;
+            }
             if (FacelineColor > FacelineColor.Max)
+            {
                 return 18;
+            }
             if (FacelineWrinkle > FacelineWrinkle.Max)
+            {
                 return 20;
+            }
             if (FacelineMake > FacelineMake.Max)
+            {
                 return 19;
+            }
             if (HairType > HairType.Max)
+            {
                 return 31;
+            }
             if (HairColor > CommonColor.Max)
+            {
                 return 29;
+            }
             if (HairFlip > HairFlip.Max)
+            {
                 return 30;
+            }
             if (EyeType > EyeType.Max)
+            {
                 return 8;
+            }
             if (EyeColor > CommonColor.Max)
+            {
                 return 5;
+            }
             if (EyeScale > 7)
+            {
                 return 7;
+            }
             if (EyeAspect > 6)
+            {
                 return 4;
+            }
             if (EyeRotate > 7)
+            {
                 return 6;
+            }
             if (EyeX > 12)
+            {
                 return 9;
+            }
             if (EyeY > 18)
+            {
                 return 10;
+            }
             if (EyebrowType > EyebrowType.Max)
+            {
                 return 15;
+            }
             if (EyebrowColor > CommonColor.Max)
+            {
                 return 12;
+            }
             if (EyebrowScale > 8)
+            {
                 return 14;
+            }
             if (EyebrowAspect > 6)
+            {
                 return 11;
+            }
             if (EyebrowRotate > 11)
+            {
                 return 13;
+            }
             if (EyebrowX > 12)
+            {
                 return 16;
+            }
             if (EyebrowY - 3 > 15)
+            {
                 return 17;
+            }
             if (NoseType > NoseType.Max)
+            {
                 return 47;
+            }
             if (NoseScale > 8)
+            {
                 return 46;
+            }
             if (NoseY > 18)
+            {
                 return 48;
+            }
             if (MouthType > MouthType.Max)
+            {
                 return 40;
+            }
             if (MouthColor > CommonColor.Max)
+            {
                 return 38;
+            }
             if (MouthScale > 8)
+            {
                 return 39;
+            }
             if (MouthAspect > 6)
+            {
                 return 37;
+            }
             if (MouthY > 18)
+            {
                 return 41;
+            }
             if (BeardColor > CommonColor.Max)
+            {
                 return 1;
+            }
             if (BeardType > BeardType.Max)
+            {
                 return 2;
+            }
             if (MustacheType > MustacheType.Max)
+            {
                 return 43;
+            }
             if (MustacheScale > 8)
+            {
                 return 42;
+            }
             if (MustacheY > 16)
+            {
                 return 44;
+            }
             if (GlassType > GlassType.Max)
+            {
                 return 27;
+            }
             if (GlassColor > CommonColor.Max)
+            {
                 return 25;
+            }
             if (GlassScale > 7)
+            {
                 return 26;
+            }
             if (GlassY > 20)
+            {
                 return 28;
+            }
             if (MoleType > MoleType.Max)
+            {
                 return 34;
+            }
             if (MoleScale > 8)
+            {
                 return 33;
+            }
             if (MoleX > 16)
+            {
                 return 35;
+            }
             if (MoleY >= 31)
+            {
                 return 36;
+            }
 
             return 0;
         }
