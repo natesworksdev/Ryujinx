@@ -61,7 +61,7 @@ namespace Ryujinx.Headless.SDL2
 
         static void Main(string[] args)
         {
-            Version = ReleaseInformation.GetVersion();
+            Version = ReleaseInformation.Version;
 
             // Make process DPI aware for proper window sizing on high-res screens.
             ForceDpiAware.Windows();

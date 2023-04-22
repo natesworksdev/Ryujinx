@@ -1,6 +1,4 @@
-using Ryujinx.Common.Configuration;
-using System;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Ryujinx.Common
 {
@@ -9,33 +7,25 @@ namespace Ryujinx.Common
     {
         private const string FlatHubChannelOwner = "flathub";
 
-        public const string BuildVersion = "%%RYUJINX_BUILD_VERSION%%";
-        public const string BuildGitHash = "%%RYUJINX_BUILD_GIT_HASH%%";
-        public const string ReleaseChannelName = "%%RYUJINX_TARGET_RELEASE_CHANNEL_NAME%%";
+        private const string BuildVersion = "%%RYUJINX_BUILD_VERSION%%";
+        private const string BuildGitHash = "%%RYUJINX_BUILD_GIT_HASH%%";
+        private const string ReleaseChannelName = "%%RYUJINX_TARGET_RELEASE_CHANNEL_NAME%%";
+        private const string ConfigFileName = "%%RYUJINX_CONFIG_FILE_NAME%%";
+
         public const string ReleaseChannelOwner = "%%RYUJINX_TARGET_RELEASE_CHANNEL_OWNER%%";
         public const string ReleaseChannelRepo = "%%RYUJINX_TARGET_RELEASE_CHANNEL_REPO%%";
 
-        public static bool IsValid()
-        {
-            return !BuildGitHash.StartsWith("%%") &&
-                   !ReleaseChannelName.StartsWith("%%") &&
-                   !ReleaseChannelOwner.StartsWith("%%") &&
-                   !ReleaseChannelRepo.StartsWith("%%");
-        }
+        public static string ConfigName => !ConfigFileName.StartsWith("%%") ? ConfigFileName : "Config.json";
 
-        public static bool IsFlatHubBuild()
-        {
-            return IsValid() && ReleaseChannelOwner.Equals(FlatHubChannelOwner);
-        }
+        public static bool IsValid =>
+            !BuildGitHash.StartsWith("%%") &&
+            !ReleaseChannelName.StartsWith("%%") &&
+            !ReleaseChannelOwner.StartsWith("%%") &&
+            !ReleaseChannelRepo.StartsWith("%%") &&
+            !ConfigFileName.StartsWith("%%");
 
-        public static string GetVersion()
-        {
-            if (IsValid())
-            {
-                return BuildVersion;
-            }
+        public static bool IsFlatHubBuild => IsValid && ReleaseChannelOwner.Equals(FlatHubChannelOwner);
 
-            return Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
-        }
+        public static string Version => IsValid ? BuildVersion : Assembly.GetEntryAssembly()!.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
     }
 }
