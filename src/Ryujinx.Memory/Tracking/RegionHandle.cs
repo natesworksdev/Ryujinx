@@ -312,7 +312,9 @@ namespace Ryujinx.Memory.Tracking
         public void Reprotect(bool asDirty, bool consecutiveCheck = false)
         {
             if (_volatile)
+            {
                 return;
+            }
 
             Dirty = asDirty;
 
