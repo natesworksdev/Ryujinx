@@ -178,7 +178,9 @@ namespace Ryujinx.Graphics.Vulkan
                 }
 
                 if (first == null || first.NeedsFlush(FlushId))
+                {
                     break;
+                }
 
                 bool signaled = first.Waitable.WaitForFences(_gd.Api, _device, 0);
                 if (signaled)
