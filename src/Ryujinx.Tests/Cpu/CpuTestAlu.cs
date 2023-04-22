@@ -34,9 +34,13 @@ namespace Ryujinx.Tests.Cpu
         private static uint GenLeadingZeros32(int cnt) // 0 <= cnt <= 32
         {
             if (cnt == 32)
+            {
                 return 0u;
+            }
             if (cnt == 31)
+            {
                 return 1u;
+            }
 
             uint rnd  = TestContext.CurrentContext.Random.NextUInt();
             int  mask = int.MinValue;
@@ -47,9 +51,13 @@ namespace Ryujinx.Tests.Cpu
         private static ulong GenLeadingZeros64(int cnt) // 0 <= cnt <= 64
         {
             if (cnt == 64)
+            {
                 return 0ul;
+            }
             if (cnt == 63)
+            {
                 return 1ul;
+            }
 
             ulong rnd  = TestContext.CurrentContext.Random.NextULong();
             long  mask = long.MinValue;

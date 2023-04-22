@@ -46,9 +46,13 @@ namespace Ryujinx.Tests.Cpu
         private static byte GenLeadingZeros8(int cnt) // 0 <= cnt <= 8
         {
             if (cnt == 8)
+            {
                 return 0;
+            }
             if (cnt == 7)
+            {
                 return 1;
+            }
 
             byte  rnd  = TestContext.CurrentContext.Random.NextByte();
             sbyte mask = sbyte.MinValue;
@@ -59,9 +63,13 @@ namespace Ryujinx.Tests.Cpu
         private static ushort GenLeadingZeros16(int cnt) // 0 <= cnt <= 16
         {
             if (cnt == 16)
+            {
                 return 0;
+            }
             if (cnt == 15)
+            {
                 return 1;
+            }
 
             ushort rnd  = TestContext.CurrentContext.Random.NextUShort();
             short  mask = short.MinValue;
@@ -72,9 +80,13 @@ namespace Ryujinx.Tests.Cpu
         private static uint GenLeadingZeros32(int cnt) // 0 <= cnt <= 32
         {
             if (cnt == 32)
+            {
                 return 0u;
+            }
             if (cnt == 31)
+            {
                 return 1u;
+            }
 
             uint rnd  = TestContext.CurrentContext.Random.NextUInt();
             int  mask = int.MinValue;

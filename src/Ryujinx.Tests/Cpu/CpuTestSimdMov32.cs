@@ -98,7 +98,9 @@ namespace Ryujinx.Tests.Cpu
             opcode |= (rt & 0xf) << 12;
 
             if (op)
+            {
                 opcode |= 1 << 20;
+            }
 
             SingleOpcode(opcode, r0: valueRn, r1: valueRn, r2: valueRn, r3: valueRn, v0: new V128(valueVn1, valueVn2));
 
