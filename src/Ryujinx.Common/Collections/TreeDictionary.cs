@@ -302,7 +302,9 @@ namespace Ryujinx.Common.Collections
             Node<K, V> nodeToDelete = GetNode(key);
 
             if (nodeToDelete == null)
+            {
                 return null;
+            }
 
             Node<K, V> replacementNode;
 

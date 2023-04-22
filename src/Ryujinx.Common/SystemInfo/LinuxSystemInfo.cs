@@ -63,7 +63,9 @@ namespace Ryujinx.Common.SystemInfo
                 string[] kvPair = line.Split(':', 2, StringSplitOptions.TrimEntries);
 
                 if (kvPair.Length < 2)
+                {
                     continue;
+                }
 
                 string key = kvPair[0];
 
@@ -72,7 +74,9 @@ namespace Ryujinx.Common.SystemInfo
                     itemDict[key] = kvPair[1];
 
                     if (--count <= 0)
+                    {
                         break;
+                    }
                 }
             }
         }
