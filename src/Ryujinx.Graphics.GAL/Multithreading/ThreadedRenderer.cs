@@ -57,6 +57,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         private int _refConsumerPtr;
 
         private Action _interruptAction;
+        private object _interruptLock = new();
 
         public event EventHandler<ScreenCaptureImageInfo> ScreenCaptured;
 
@@ -466,11 +467,14 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             }
             else
             {
-                while (Interlocked.CompareExchange(ref _interruptAction, action, null) != null) { }
+                lock (_interruptLock)
+                {
+                    while (Interlocked.CompareExchange(ref _interruptAction, action, null) != null) { }
 
-                _galWorkAvailable.Set();
+                    _galWorkAvailable.Set();
 
-                _interruptRun.WaitOne();
+                    _interruptRun.WaitOne();
+                }
             }
         }
 
