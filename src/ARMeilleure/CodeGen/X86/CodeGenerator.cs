@@ -1461,7 +1461,7 @@ namespace ARMeilleure.CodeGen.X86
                             mask1 = BitUtils.RotateRight(mask1, 8 - index * 2, 8);
 
                             context.Assembler.Pshufd(src1, src1, (byte)mask0); // Lane to be inserted in position 0.
-                            context.Assembler.Movss(dest, src1, src2);        // dest[127:0] = src1[127:32] | src2[31:0]
+                            context.Assembler.Movss(dest, src1, src2);         // dest[127:0] = src1[127:32] | src2[31:0]
                             context.Assembler.Pshufd(dest, dest, (byte)mask1); // Inserted lane in original position.
 
                             if (dest.GetRegister() != src1.GetRegister())
