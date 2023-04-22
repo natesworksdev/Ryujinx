@@ -468,9 +468,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             {
                 lock (_interruptLock)
                 {
-#pragma warning disable IDE0055 // Disable formatting
-                    while (Interlocked.CompareExchange(ref _interruptAction, action, null) != null) { }
-#pragma warning restore IDE0055
+                    while (Interlocked.CompareExchange(ref _interruptAction, action, null) != null)
+                    {
+                    }
 
                     _galWorkAvailable.Set();
 
