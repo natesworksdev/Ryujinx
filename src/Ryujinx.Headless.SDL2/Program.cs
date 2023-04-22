@@ -436,7 +436,7 @@ namespace Ryujinx.Headless.SDL2
 
                     if (Directory.Exists(oldLogPath) && !Directory.Exists(newLogPath))
                     {
-                        Directory.Move(oldLogPath, newLogPath);
+                        FileSystemUtils.MoveDirectory(oldLogPath, newLogPath);
                     }
 
                     logBasePath = AppDataManager.BaseDirPath;

@@ -2,6 +2,7 @@
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Logging.Targets;
+using Ryujinx.Common.Utilities;
 using System;
 using System.IO;
 
@@ -18,7 +19,7 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 if (Directory.Exists(oldLogPath) && !Directory.Exists(newLogPath))
                 {
-                    Directory.Move(oldLogPath, newLogPath);
+                    FileSystemUtils.MoveDirectory(oldLogPath, newLogPath);
                 }
             }
 
