@@ -565,7 +565,9 @@ namespace Ryujinx.Modules
             {
                 count++;
                 if (zipEntry.IsDirectory)
+                {
                     continue;
+                }
 
                 string outPath = Path.Combine(outputDirectoryPath, zipEntry.Name);
 
