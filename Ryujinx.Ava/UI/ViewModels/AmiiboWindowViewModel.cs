@@ -207,9 +207,9 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     amiiboJsonString = await DownloadAmiiboJson();
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    Logger.Error?.Print(LogClass.Application, $"Failed to download amiibo data: {e}");
+                    Logger.Error?.Print(LogClass.Application, $"Failed to download amiibo data: {ex}");
 
                     ShowInfoDialog();
                 }
@@ -375,9 +375,9 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 return false;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Logger.Error?.Print(LogClass.Application, $"Failed to check for amiibo updates: {e}");
+                Logger.Error?.Print(LogClass.Application, $"Failed to check for amiibo updates: {ex}");
 
                 ShowInfoDialog();
 
