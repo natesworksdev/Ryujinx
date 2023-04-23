@@ -93,7 +93,7 @@ namespace Ryujinx.Ui.Windows
                 {
                     amiiboJsonString = await DownloadAmiiboJson();
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Logger.Error?.Print(LogClass.Application, $"Failed to download amiibo data: {e}");
 
@@ -185,7 +185,7 @@ namespace Ryujinx.Ui.Windows
 
                 return false;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Logger.Error?.Print(LogClass.Application, $"Failed to check for amiibo updates: {e}");
 
