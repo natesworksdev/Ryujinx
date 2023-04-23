@@ -130,7 +130,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     elems[index] = Src(AggregateType.S32);
                 }
 
-                Append(ApplyScaling($"ivec{pCount}({string.Join(", ", elems)})"));
+                Append($"ivec{pCount}({string.Join(", ", elems)})");
             }
             else
             {
@@ -630,7 +630,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 return vector;
             }
 
-            Append(ApplyBias(ApplyScaling(AssemblePVector(pCount))));
+            Append(ApplyBias(AssemblePVector(pCount)));
 
             string AssembleDerivativesVector(int count)
             {
@@ -765,14 +765,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 else
                 {
                     texCall = $"textureSize({samplerName}){GetMask(texOp.Index)}";
-                }
-
-                if (context.Config.Stage.SupportsRenderScale() &&
-                    (texOp.Index < 2 || (texOp.Type & SamplerType.Mask) == SamplerType.Texture3D) &&
-                    !isBindless &&
-                    !isIndexed)
-                {
-                    texCall = $"Helper_TextureSizeUnscale({texCall}, {descriptorIndex})";
                 }
 
                 return texCall;

@@ -897,12 +897,40 @@ namespace Ryujinx.Graphics.Shader.Translation
             return -1;
         }
 
+        private static int FindDescriptorIndex(TextureDescriptor[] array, TextureOperation texOp, bool ignoreType = false)
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                var descriptor = array[i];
+
+                if ((descriptor.Type == texOp.Type || ignoreType) &&
+                    descriptor.CbufSlot == texOp.CbufSlot &&
+                    descriptor.HandleIndex == texOp.Handle &&
+                    descriptor.Format == texOp.Format)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
         public int FindTextureDescriptorIndex(AstTextureOperation texOp)
         {
             return FindDescriptorIndex(GetTextureDescriptors(), texOp);
         }
 
         public int FindImageDescriptorIndex(AstTextureOperation texOp)
+        {
+            return FindDescriptorIndex(GetImageDescriptors(), texOp);
+        }
+
+        public int FindTextureDescriptorIndex(TextureOperation texOp, bool ignoreType = false)
+        {
+            return FindDescriptorIndex(GetTextureDescriptors(), texOp, ignoreType);
+        }
+
+        public int FindImageDescriptorIndex(TextureOperation texOp)
         {
             return FindDescriptorIndex(GetImageDescriptors(), texOp);
         }

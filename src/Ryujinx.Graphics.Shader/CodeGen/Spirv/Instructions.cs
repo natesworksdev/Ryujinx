@@ -114,6 +114,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.MemoryBarrier,            GenerateMemoryBarrier);
             Add(Instruction.Minimum,                  GenerateMinimum);
             Add(Instruction.MinimumU32,               GenerateMinimumU32);
+            Add(Instruction.Modulo,                   GenerateModulo);
             Add(Instruction.Multiply,                 GenerateMultiply);
             Add(Instruction.MultiplyHighS32,          GenerateMultiplyHighS32);
             Add(Instruction.MultiplyHighU32,          GenerateMultiplyHighU32);
@@ -744,8 +745,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 pCoords = Src(AggregateType.S32);
             }
 
-            pCoords = ScalingHelpers.ApplyScaling(context, texOp, pCoords, intCoords: true, isBindless, isIndexed, isArray, pCount);
-
             (var imageType, var imageVariable) = context.Images[new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format)];
 
             var image = context.Load(imageType, imageVariable);
@@ -1040,6 +1039,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             return GenerateBinaryU32(context, operation, context.Delegates.GlslUMin);
         }
 
+        private static OperationResult GenerateModulo(CodeGenContext context, AstOperation operation)
+        {
+            return GenerateBinary(context, operation, context.Delegates.FMod, null);
+        }
+
         private static OperationResult GenerateMultiply(CodeGenContext context, AstOperation operation)
         {
             return GenerateBinary(context, operation, context.Delegates.FMul, context.Delegates.IMul);
@@ -1101,7 +1105,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateReturn(CodeGenContext context, AstOperation operation)
         {
-            context.Return();
+            if (operation.SourcesCount != 0)
+            {
+                context.ReturnValue(context.Get(context.CurrentFunction.ReturnType, operation.GetSource(0)));
+            }
+            else
+            {
+                context.Return();
+            }
+
             return OperationResult.Invalid;
         }
 
@@ -1467,7 +1479,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
 
             SpvInstruction pCoords = AssemblePVector(pCount);
-            pCoords = ScalingHelpers.ApplyScaling(context, texOp, pCoords, intCoords, isBindless, isIndexed, isArray, pCount);
 
             SpvInstruction AssembleDerivativesVector(int count)
             {
@@ -1753,11 +1764,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 if (dimensions != 1)
                 {
                     result = context.CompositeExtract(context.TypeS32(), result, (SpvLiteralInteger)texOp.Index);
-                }
-
-                if (texOp.Index < 2 || (type & SamplerType.Mask) == SamplerType.Texture3D)
-                {
-                    result = ScalingHelpers.ApplyUnscaling(context, texOp.WithType(type), result, isBindless, isIndexed);
                 }
 
                 return new OperationResult(AggregateType.S32, result);

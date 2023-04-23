@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 {
     static class Rewriter
     {
-        public static void RunPass(BasicBlock[] blocks, ShaderConfig config)
+        public static void RunPass(HelperFunctionManager hfm, BasicBlock[] blocks, ShaderConfig config)
         {
             bool isVertexShader = config.Stage == ShaderStage.Vertex;
             bool hasConstantBufferDrawParameters = config.GpuAccessor.QueryHasConstantBufferDrawParameters();
@@ -54,6 +54,9 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                     if (operation is TextureOperation texOp)
                     {
+                        node = InsertTexelFetchScale(hfm, node, config);
+                        node = InsertTextureSizeUnscale(hfm, node, config);
+
                         if (texOp.Inst == Instruction.TextureSample)
                         {
                             node = RewriteTextureSample(node, config);
@@ -342,6 +345,117 @@ namespace Ryujinx.Graphics.Shader.Translation
             oldNodeList.Remove(oldNode);
 
             return node;
+        }
+
+        private static LinkedListNode<INode> InsertTexelFetchScale(HelperFunctionManager hfm, LinkedListNode<INode> node, ShaderConfig config)
+        {
+            TextureOperation texOp = (TextureOperation)node.Value;
+
+            bool isBindless = (texOp.Flags & TextureFlags.Bindless)  != 0;
+            bool intCoords  = (texOp.Flags & TextureFlags.IntCoords) != 0;
+
+            bool isArray   = (texOp.Type & SamplerType.Array)   != 0;
+            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
+
+            int coordsCount = texOp.Type.GetDimensions();
+
+            int coordsIndex = isBindless || isIndexed ? 1 : 0;
+
+            bool isImage = IsImageInstructionWithScale(texOp.Inst);
+
+            if ((texOp.Inst == Instruction.TextureSample || isImage) &&
+                intCoords &&
+                !isBindless &&
+                !isIndexed &&
+                config.Stage.SupportsRenderScale() &&
+                TypeSupportsScale(texOp.Type))
+            {
+                int functionId = hfm.GetOrCreateFunctionId(HelperFunctionName.TexelFetchScale);
+                int samplerIndex = isImage
+                    ? config.GetTextureDescriptors().Length + config.FindImageDescriptorIndex(texOp)
+                    : config.FindTextureDescriptorIndex(texOp);
+
+                for (int index = 0; index < coordsCount; index++)
+                {
+                    Operand scaledCoord = Local();
+                    Operand[] callArgs;
+
+                    if (config.Stage == ShaderStage.Fragment)
+                    {
+                        callArgs = new Operand[] { Const(functionId), texOp.GetSource(coordsIndex + index), Const(samplerIndex), Const(index) };
+                    }
+                    else
+                    {
+                        callArgs = new Operand[] { Const(functionId), texOp.GetSource(coordsIndex + index), Const(samplerIndex) };
+                    }
+
+                    node.List.AddBefore(node, new Operation(Instruction.Call, 0, scaledCoord, callArgs));
+
+                    texOp.SetSource(coordsIndex + index, scaledCoord);
+                }
+            }
+
+            return node;
+        }
+
+        private static LinkedListNode<INode> InsertTextureSizeUnscale(HelperFunctionManager hfm, LinkedListNode<INode> node, ShaderConfig config)
+        {
+            TextureOperation texOp = (TextureOperation)node.Value;
+
+            bool isBindless = (texOp.Flags & TextureFlags.Bindless)  != 0;
+            bool intCoords  = (texOp.Flags & TextureFlags.IntCoords) != 0;
+
+            bool isArray   = (texOp.Type & SamplerType.Array)   != 0;
+            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
+
+            if (texOp.Inst == Instruction.TextureSize &&
+                texOp.Index < 2 &&
+                !isBindless &&
+                !isIndexed &&
+                config.Stage.SupportsRenderScale() &&
+                TypeSupportsScale(texOp.Type))
+            {
+                int functionId = hfm.GetOrCreateFunctionId(HelperFunctionName.TextureSizeUnscale);
+                int samplerIndex = config.FindTextureDescriptorIndex(texOp, ignoreType: true);
+
+                for (int index = texOp.DestsCount - 1; index >= 0; index--)
+                {
+                    Operand dest = texOp.GetDest(index);
+
+                    Operand unscaledSize = Local();
+
+                    // Replace all uses with the unscaled size value.
+                    // This must be done before the call is added, since it also is a use of the original size.
+                    foreach (INode useOp in dest.UseOps)
+                    {
+                        for (int srcIndex = 0; srcIndex < useOp.SourcesCount; srcIndex++)
+                        {
+                            if (useOp.GetSource(srcIndex) == dest)
+                            {
+                                useOp.SetSource(srcIndex, unscaledSize);
+                            }
+                        }
+                    }
+
+                    Operand[] callArgs = new Operand[] { Const(functionId), dest, Const(samplerIndex) };
+
+                    node.List.AddAfter(node, new Operation(Instruction.Call, 0, unscaledSize, callArgs));
+                }
+            }
+
+            return node;
+        }
+
+        private static bool IsImageInstructionWithScale(Instruction inst)
+        {
+            // Currently, we don't support scaling images that are modified,
+            // so we only need to care about the load instruction.
+            return inst == Instruction.ImageLoad;
+        }
+
+        private static bool TypeSupportsScale(SamplerType type)
+        {
+            return (type & SamplerType.Mask) == SamplerType.Texture2D;
         }
 
         private static LinkedListNode<INode> RewriteTextureSample(LinkedListNode<INode> node, ShaderConfig config)
