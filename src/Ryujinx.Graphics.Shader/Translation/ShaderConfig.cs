@@ -860,7 +860,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             return descriptors;
         }
 
-        public (TextureDescriptor, int) FindTextureDescriptor(AstTextureOperation texOp)
+        public TextureDescriptor FindTextureDescriptor(AstTextureOperation texOp)
         {
             TextureDescriptor[] descriptors = GetTextureDescriptors();
 
@@ -872,11 +872,11 @@ namespace Ryujinx.Graphics.Shader.Translation
                     descriptor.HandleIndex == texOp.Handle &&
                     descriptor.Format == texOp.Format)
                 {
-                    return (descriptor, i);
+                    return descriptor;
                 }
             }
 
-            return (default, -1);
+            return default;
         }
 
         private static int FindDescriptorIndex(TextureDescriptor[] array, AstTextureOperation texOp)
@@ -913,16 +913,6 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
 
             return -1;
-        }
-
-        public int FindTextureDescriptorIndex(AstTextureOperation texOp)
-        {
-            return FindDescriptorIndex(GetTextureDescriptors(), texOp);
-        }
-
-        public int FindImageDescriptorIndex(AstTextureOperation texOp)
-        {
-            return FindDescriptorIndex(GetImageDescriptors(), texOp);
         }
 
         public int FindTextureDescriptorIndex(TextureOperation texOp, bool ignoreType = false)

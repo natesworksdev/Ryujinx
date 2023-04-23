@@ -97,30 +97,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 texCallBuilder.Append(str);
             }
 
-            string ApplyScaling(string vector)
-            {
-                if (context.Config.Stage.SupportsRenderScale() &&
-                    texOp.Inst == Instruction.ImageLoad &&
-                    !isBindless &&
-                    !isIndexed)
-                {
-                    // Image scales start after texture ones.
-                    int scaleIndex = context.Config.GetTextureDescriptors().Length + context.Config.FindImageDescriptorIndex(texOp);
-
-                    if (pCount == 3 && isArray)
-                    {
-                        // The array index is not scaled, just x and y.
-                        vector = $"ivec3(Helper_TexelFetchScale(({vector}).xy, {scaleIndex}), ({vector}).z)";
-                    }
-                    else if (pCount == 2 && !isArray)
-                    {
-                        vector = $"Helper_TexelFetchScale({vector}, {scaleIndex})";
-                    }
-                }
-
-                return vector;
-            }
-
             if (pCount > 1)
             {
                 string[] elems = new string[pCount];
@@ -584,31 +560,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 }
             }
 
-            string ApplyScaling(string vector)
-            {
-                if (intCoords)
-                {
-                    if (context.Config.Stage.SupportsRenderScale() &&
-                        !isBindless &&
-                        !isIndexed)
-                    {
-                        int index = context.Config.FindTextureDescriptorIndex(texOp);
-
-                        if (pCount == 3 && isArray)
-                        {
-                            // The array index is not scaled, just x and y.
-                            vector = "ivec3(Helper_TexelFetchScale((" + vector + ").xy, " + index + "), (" + vector + ").z)";
-                        }
-                        else if (pCount == 2 && !isArray)
-                        {
-                            vector = "Helper_TexelFetchScale(" + vector + ", " + index + ")";
-                        }
-                    }
-                }
-
-                return vector;
-            }
-
             string ApplyBias(string vector)
             {
                 int gatherBiasPrecision = context.Config.GpuAccessor.QueryHostGatherBiasPrecision();
@@ -750,7 +701,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             }
             else
             {
-                (TextureDescriptor descriptor, int descriptorIndex) = context.Config.FindTextureDescriptor(texOp);
+                TextureDescriptor descriptor = context.Config.FindTextureDescriptor(texOp);
                 bool hasLod = !descriptor.Type.HasFlag(SamplerType.Multisample) && descriptor.Type != SamplerType.TextureBuffer;
                 string texCall;
 
