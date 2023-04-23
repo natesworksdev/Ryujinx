@@ -3,6 +3,7 @@ using Silk.NET.Vulkan;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -125,24 +126,29 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (result != null)
             {
+                if (result.Waitable == null)
+                {
+                    return;
+                }
+
+                long beforeTicks = Stopwatch.GetTimestamp();
+
+                if (result.NeedsFlush(FlushId))
+                {
+                    _gd.InterruptAction(() =>
+                    {
+                        if (result.NeedsFlush(FlushId))
+                        {
+                            _gd.FlushAllCommands();
+                        }
+                    });
+                }
+
                 lock (result)
                 {
                     if (result.Waitable == null)
                     {
                         return;
-                    }
-
-                    long beforeTicks = Stopwatch.GetTimestamp();
-
-                    if (result.NeedsFlush(FlushId))
-                    {
-                        _gd.InterruptAction(() =>
-                        {
-                            if (result.NeedsFlush(FlushId))
-                            {
-                                _gd.FlushAllCommands();
-                            }
-                        });
                     }
 
                     bool signaled = result.Signalled || result.Waitable.WaitForFences(_gd.Api, _device, 1000000000);
