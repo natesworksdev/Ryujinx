@@ -568,12 +568,27 @@ namespace Ryujinx.Graphics.Vulkan
             _gd.PipelineInternal.EndRenderPass();
             var cbs = _gd.PipelineInternal.CurrentCommandBuffer;
 
-            int size = Info.GetMipSize(level);
+            int outSize = Info.GetMipSize(level);
+            int hostSize = GetBufferDataLength(outSize);
 
-            var buffer = _gd.BufferManager.GetBuffer(cbs.CommandBuffer, range.Handle, true).Get(cbs, range.Offset, size).Value;
             var image = GetImage().Get(cbs).Value;
+            int offset = range.Offset;
 
-            CopyFromOrToBuffer(cbs.CommandBuffer, buffer, image, size, true, layer, level, 1, 1, singleSlice: true, range.Offset, stride);
+            Auto<DisposableBuffer> autoBuffer = _gd.BufferManager.GetBuffer(cbs.CommandBuffer, range.Handle, true);
+            VkBuffer buffer = autoBuffer.Get(cbs, range.Offset, outSize).Value;
+
+            if (PrepareOutputBuffer(cbs, hostSize, buffer, out VkBuffer copyToBuffer, out BufferHolder tempCopyHolder))
+            {
+                offset = 0;
+            }
+
+            CopyFromOrToBuffer(cbs.CommandBuffer, copyToBuffer, image, hostSize, true, layer, level, 1, 1, singleSlice: true, offset, stride);
+
+            if (tempCopyHolder != null)
+            {
+                CopyDataToOutputBuffer(cbs, tempCopyHolder, autoBuffer, hostSize, range.Offset);
+                tempCopyHolder.Dispose();
+            }
         }
 
         private ReadOnlySpan<byte> GetData(CommandBufferPool cbp, PersistentFlushBuffer flushBuffer)
@@ -704,6 +719,30 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             return storage;
+        }
+
+        private bool PrepareOutputBuffer(CommandBufferScoped cbs, int hostSize, VkBuffer target, out VkBuffer copyTarget, out BufferHolder copyTargetHolder)
+        {
+            if (NeedsD24S8Conversion())
+            {
+                copyTargetHolder = _gd.BufferManager.Create(_gd, hostSize);
+                copyTarget = copyTargetHolder.GetBuffer().Get(cbs, 0, hostSize).Value;
+
+                return true;
+            }
+
+            copyTarget = target;
+            copyTargetHolder = null;
+
+            return false;
+        }
+
+        private void CopyDataToOutputBuffer(CommandBufferScoped cbs, BufferHolder hostData, Auto<DisposableBuffer> copyTarget, int hostSize, int dstOffset)
+        {
+            if (NeedsD24S8Conversion())
+            {
+                _gd.HelperShader.ConvertD32S8ToD24S8(_gd, cbs, hostData, copyTarget, hostSize / (2 * sizeof(int)), dstOffset);
+            }
         }
 
         private bool NeedsD24S8Conversion()

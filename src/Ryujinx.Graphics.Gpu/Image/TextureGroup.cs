@@ -600,7 +600,12 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (_flushBuffer == BufferHandle.Null)
             {
-                bool canImport = Storage.Info.IsLinear;
+                if (!TextureCompatibility.CanTextureFlush(Storage.Info, _context.Capabilities))
+                {
+                    return;
+                }
+
+                bool canImport = Storage.Info.IsLinear && Storage.Info.Stride >= Storage.Info.Width * Storage.Info.FormatInfo.BytesPerPixel;
 
                 var hostPointer = canImport ? _physicalMemory.GetHostPointer(Storage.Range) : 0;
 
