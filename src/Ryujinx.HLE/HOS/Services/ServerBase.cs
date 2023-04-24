@@ -201,9 +201,9 @@ namespace Ryujinx.HLE.HOS.Services
                     handleLockTaken = _handleLock.TryEnterReadLock(Timeout.Infinite);
 
                     portHandleCount = _ports.Count;
-                    
+
                     handleCount = portHandleCount + _sessions.Count;
-                    
+
                     handles = ArrayPool<int>.Shared.Rent(handleCount);
 
                     _ports.Keys.CopyTo(handles, 0);
@@ -336,7 +336,7 @@ namespace Ryujinx.HLE.HOS.Services
                     _requestDataReader,
                     _responseDataWriter);
 
-                _sessions[serverSessionHandle].CallCmifMethod(context);
+                GetSessionObj(serverSessionHandle).CallCmifMethod(context);
 
                 response.RawData = _responseDataStream.ToArray();
             }
