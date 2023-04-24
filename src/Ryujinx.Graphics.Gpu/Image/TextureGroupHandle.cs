@@ -1,11 +1,9 @@
-﻿using Ryujinx.Common.Logging;
-using Ryujinx.Cpu.Tracking;
+﻿using Ryujinx.Cpu.Tracking;
 using Ryujinx.Graphics.Gpu.Synchronization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Timers;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {

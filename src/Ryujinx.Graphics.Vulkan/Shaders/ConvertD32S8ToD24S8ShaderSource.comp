@@ -46,7 +46,8 @@ void main()
     int dstOffset = dstStartOffset + startCopy;
 
     // Perform the conversion for this region.
-    for (int i=0; i<copyCount; i++) {
+    for (int i = 0; i < copyCount; i++)
+    {
         float depth = uintBitsToFloat(in_data[srcOffset++]);
         uint stencil = in_data[srcOffset++];
 

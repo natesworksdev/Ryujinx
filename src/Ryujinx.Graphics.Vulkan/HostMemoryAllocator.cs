@@ -119,7 +119,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (result < Result.Success)
                 {
-                    Logger.Debug?.PrintMsg(LogClass.Gpu, $"Host mapping import {pageAlignedPointer:x16} {pageAlignedSize:x8} failed.");
+                    Logger.Debug?.PrintMsg(LogClass.Gpu, $"Host mapping import 0x{pageAlignedPointer:x16} 0x{pageAlignedSize:x8} failed.");
                     return false;
                 }
 
@@ -162,11 +162,11 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                 }
 
-                throw new InvalidOperationException($"No host allocation was prepared for requested range {pointer:x16}:{size:x16}.");
+                throw new InvalidOperationException($"No host allocation was prepared for requested range 0x{pointer:x16}:0x{size:x16}.");
             }
         }
 
-        public unsafe void Free(DeviceMemory memory, ulong offset, ulong size)
+        public void Free(DeviceMemory memory, ulong offset, ulong size)
         {
             lock (_lock)
             {
@@ -182,7 +182,7 @@ namespace Ryujinx.Graphics.Vulkan
                 });
             }
 
-            _api.FreeMemory(_device, memory, null);
+            _api.FreeMemory(_device, memory, ReadOnlySpan<AllocationCallbacks>.Empty);
         }
     }
 }
