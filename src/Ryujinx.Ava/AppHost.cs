@@ -248,7 +248,10 @@ namespace Ryujinx.Ava
         {
             if (_renderer != null)
             {
-                double scale = _topLevel.PlatformImpl.RenderScaling;
+                // Preview 7 made this property private
+                // double scale = _topLevel.PlatformImpl.RenderScaling;
+
+                double scale = 1.0;
 
                 _renderer.Window?.SetSize((int)(size.Width * scale), (int)(size.Height * scale));
             }
@@ -873,7 +876,8 @@ namespace Ryujinx.Ava
             Width = (int)_rendererHost.Bounds.Width;
             Height = (int)_rendererHost.Bounds.Height;
 
-            _renderer.Window.SetSize((int)(Width * _topLevel.PlatformImpl.RenderScaling), (int)(Height * _topLevel.PlatformImpl.RenderScaling));
+            // Preview 7 made PlatformImpl.RenderScaling private
+            _renderer.Window.SetSize((int)(Width * /* _topLevel.PlatformImpl.RenderScaling*/ 1.0), (int)(Height * /*_topLevel.PlatformImpl.RenderScaling*/ 1.0));
 
             _chrono.Start();
 

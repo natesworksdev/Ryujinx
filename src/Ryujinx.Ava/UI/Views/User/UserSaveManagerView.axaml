@@ -106,7 +106,7 @@
             VerticalAlignment="Stretch">
             <ListBox
                 Name="SaveList"
-                Items="{Binding Views}"
+                ItemsSource="{Binding Views}"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch">
                 <ListBox.Styles>

@@ -36,11 +36,11 @@
             </Grid.ColumnDefinitions>
             <StackPanel Spacing="10" Orientation="Horizontal" HorizontalAlignment="Left">
                 <TextBlock VerticalAlignment="Center" Text="{locale:Locale AmiiboSeriesLabel}" />
-                <ComboBox SelectedIndex="{Binding SeriesSelectedIndex}" Items="{Binding AmiiboSeries}" MinWidth="100" />
+                <ComboBox SelectedIndex="{Binding SeriesSelectedIndex}" ItemsSource="{Binding AmiiboSeries}" MinWidth="100" />
             </StackPanel>
             <StackPanel Spacing="10" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
                 <TextBlock VerticalAlignment="Center" Text="{locale:Locale AmiiboCharacterLabel}" />
-                <ComboBox SelectedIndex="{Binding AmiiboSelectedIndex}" MinWidth="100" Items="{Binding AmiiboList}" />
+                <ComboBox SelectedIndex="{Binding AmiiboSelectedIndex}" MinWidth="100" ItemsSource="{Binding AmiiboList}" />
             </StackPanel>
         </Grid>
         <StackPanel Margin="20" Grid.Row="2">

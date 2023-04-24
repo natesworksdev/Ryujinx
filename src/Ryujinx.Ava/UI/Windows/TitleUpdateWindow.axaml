@@ -30,7 +30,7 @@
             <ListBox
                 Background="Transparent"
                 SelectedItem="{Binding SelectedUpdate, Mode=TwoWay}"
-                Items="{Binding Views}">
+                ItemsSource="{Binding Views}">
                 <ListBox.DataTemplates>
                     <DataTemplate
                         DataType="models:TitleUpdateModel">

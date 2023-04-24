@@ -32,7 +32,7 @@
                 <ListBox
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
-                    Items="{Binding LostProfiles}">
+                    ItemsSource="{Binding LostProfiles}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <Border

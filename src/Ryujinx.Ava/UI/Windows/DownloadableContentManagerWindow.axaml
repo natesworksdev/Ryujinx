@@ -75,7 +75,7 @@
                 Background="Transparent"
                 SelectionChanged="OnSelectionChanged"
                 SelectedItems="{Binding SelectedDownloadableContents, Mode=TwoWay}"
-                Items="{Binding Views}">
+                ItemsSource="{Binding Views}">
                 <ListBox.DataTemplates>
                     <DataTemplate
                         DataType="models:DownloadableContentModel">

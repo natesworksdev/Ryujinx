@@ -35,7 +35,7 @@
             BorderThickness="0"
             SelectedIndex="{Binding SelectedIndex}"
             Height="400"
-            Items="{Binding Images}"
+            ItemsSource="{Binding Images}"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Center">
             <ListBox.ItemsPanel>

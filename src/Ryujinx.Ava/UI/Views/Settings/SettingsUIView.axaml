@@ -65,7 +65,7 @@
                     <ListBox
                         Name="GameList"
                         MinHeight="230"
-                        Items="{Binding GameDirectories}">
+                        ItemsSource="{Binding GameDirectories}">
                         <ListBox.Styles>
                             <Style Selector="ListBoxItem">
                                 <Setter Property="Padding" Value="10" />

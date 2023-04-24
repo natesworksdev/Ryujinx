@@ -53,7 +53,7 @@
                                 HorizontalContentAlignment="Left"
                                 ToolTip.Tip="{locale:Locale SettingsTabGraphicsPreferredGpuTooltip}"
                                 SelectedIndex="{Binding PreferredGpuIndex}"
-                                Items="{Binding AvailableGpus}"/>
+                                ItemsSource="{Binding AvailableGpus}"/>
                     </StackPanel>
                 </StackPanel>
                 <Separator Height="1" />

@@ -77,7 +77,7 @@
                 MinHeight="300"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
-                Items="{ReflectionBinding LoadedCheats}">
+                ItemsSource="{ReflectionBinding LoadedCheats}">
                 <TreeView.Styles>
                     <Styles>
                         <Style Selector="TreeViewItem:empty /template/ ItemsPresenter">
