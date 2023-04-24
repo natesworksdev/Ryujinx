@@ -88,7 +88,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
             }
         }
 
-        [StructLayout(LayoutKind.Sequential, Size = 3)]
+        [StructLayout(LayoutKind.Sequential, Size = 3, Pack = 1)]
         private struct UInt24
         {
             public byte Byte0;
