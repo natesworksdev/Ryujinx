@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
+using Avalonia.Rendering;
 using Avalonia.Threading;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Audio.Backends.Dummy;
@@ -50,6 +51,7 @@ using System.Threading.Tasks;
 using static Ryujinx.Ava.UI.Helpers.Win32NativeInterop;
 using Image = SixLabors.ImageSharp.Image;
 using InputManager = Ryujinx.Input.HLE.InputManager;
+using IRenderer = Ryujinx.Graphics.GAL.IRenderer;
 using Key = Ryujinx.Input.Key;
 using MouseButton = Ryujinx.Input.MouseButton;
 using Size = Avalonia.Size;
@@ -248,10 +250,7 @@ namespace Ryujinx.Ava
         {
             if (_renderer != null)
             {
-                // Preview 7 made this property private
-                // double scale = _topLevel.PlatformImpl.RenderScaling;
-
-                double scale = 1.0;
+                double scale = ((IRenderRoot)_topLevel).RenderScaling;
 
                 _renderer.Window?.SetSize((int)(size.Width * scale), (int)(size.Height * scale));
             }
@@ -876,8 +875,7 @@ namespace Ryujinx.Ava
             Width = (int)_rendererHost.Bounds.Width;
             Height = (int)_rendererHost.Bounds.Height;
 
-            // Preview 7 made PlatformImpl.RenderScaling private
-            _renderer.Window.SetSize((int)(Width * /* _topLevel.PlatformImpl.RenderScaling*/ 1.0), (int)(Height * /*_topLevel.PlatformImpl.RenderScaling*/ 1.0));
+            _renderer.Window.SetSize((int)(Width * ((IRenderRoot)_topLevel).RenderScaling), (int)(Height * ((IRenderRoot)_topLevel).RenderScaling));
 
             _chrono.Start();
 
