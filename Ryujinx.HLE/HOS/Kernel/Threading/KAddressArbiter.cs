@@ -31,6 +31,14 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             _context.CriticalSection.Enter();
 
+            if (currentThread.ShallBeTerminated ||
+                currentThread.SchedFlags == ThreadSchedState.TerminationPending)
+            {
+                _context.CriticalSection.Leave();
+
+                return KernelResult.ThreadTerminating;
+            }
+
             currentThread.SignaledObj   = null;
             currentThread.ObjSyncResult = Result.Success;
 
