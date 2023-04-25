@@ -155,6 +155,41 @@ namespace Ryujinx.HLE.HOS
         private static DirectoryInfo FindTitleDir(DirectoryInfo contentsDir, string titleId)
             => contentsDir.EnumerateDirectories($"{titleId}*", _dirEnumOptions).FirstOrDefault();
 
+        private static void AddModsFromDirectory(ModCache mods, DirectoryInfo dir, string titleId)
+        {
+            System.Text.StringBuilder types = new();
+
+            foreach (var modDir in dir.EnumerateDirectories())
+            {
+                types.Clear();
+                Mod<DirectoryInfo> mod = new("", null);
+
+                if (StrEquals(RomfsDir, modDir.Name))
+                {
+                    mods.RomfsDirs.Add(mod = new Mod<DirectoryInfo>($"<{titleId} RomFs>", modDir));
+                    types.Append('R');
+                }
+                else if (StrEquals(ExefsDir, modDir.Name))
+                {
+                    mods.ExefsDirs.Add(mod = new Mod<DirectoryInfo>($"<{titleId} ExeFs>", modDir));
+                    types.Append('E');
+                }
+                else if (StrEquals(CheatDir, modDir.Name))
+                {
+                    types.Append('C', QueryCheatsDir(mods, modDir));
+                }
+                else
+                {
+                    AddModsFromDirectory(mods, modDir, titleId);
+                }
+
+                if (types.Length > 0)
+                {
+                    Logger.Info?.Print(LogClass.ModLoader, $"Found mod '{mod.Name}' [{types}]");
+                }
+            }
+        }
+
         public string GetTitleDir(string modsBasePath, string titleId)
         {
             var contentsDir = new DirectoryInfo(Path.Combine(modsBasePath, AmsContentsDir));
@@ -205,59 +240,7 @@ namespace Ryujinx.HLE.HOS
                 mods.ExefsContainers.Add(new Mod<FileInfo>($"<{titleDir.Name} ExeFs>", fsFile));
             }
 
-            System.Text.StringBuilder types = new System.Text.StringBuilder(5);
-
-            foreach (var modDir in titleDir.EnumerateDirectories())
-            {
-                types.Clear();
-                Mod<DirectoryInfo> mod = new Mod<DirectoryInfo>("", null);
-
-                if (StrEquals(RomfsDir, modDir.Name))
-                {
-                    mods.RomfsDirs.Add(mod = new Mod<DirectoryInfo>($"<{titleDir.Name} RomFs>", modDir));
-                    types.Append('R');
-                }
-                else if (StrEquals(ExefsDir, modDir.Name))
-                {
-                    mods.ExefsDirs.Add(mod = new Mod<DirectoryInfo>($"<{titleDir.Name} ExeFs>", modDir));
-                    types.Append('E');
-                }
-                else if (StrEquals(CheatDir, modDir.Name))
-                {
-                    for (int i = 0; i < QueryCheatsDir(mods, modDir); i++)
-                    {
-                        types.Append('C');
-                    }
-                }
-                else
-                {
-                    var romfs = new DirectoryInfo(Path.Combine(modDir.FullName, RomfsDir));
-                    var exefs = new DirectoryInfo(Path.Combine(modDir.FullName, ExefsDir));
-                    var cheat = new DirectoryInfo(Path.Combine(modDir.FullName, CheatDir));
-
-                    if (romfs.Exists)
-                    {
-                        mods.RomfsDirs.Add(mod = new Mod<DirectoryInfo>(modDir.Name, romfs));
-                        types.Append('R');
-                    }
-
-                    if (exefs.Exists)
-                    {
-                        mods.ExefsDirs.Add(mod = new Mod<DirectoryInfo>(modDir.Name, exefs));
-                        types.Append('E');
-                    }
-
-                    if (cheat.Exists)
-                    {
-                        for (int i = 0; i < QueryCheatsDir(mods, cheat); i++)
-                        {
-                            types.Append('C');
-                        }
-                    }
-                }
-
-                if (types.Length > 0) Logger.Info?.Print(LogClass.ModLoader, $"Found mod '{mod.Name}' [{types}]");
-            }
+            AddModsFromDirectory(mods, titleDir, titleDir.Name);
         }
 
         public static void QueryContentsDir(ModCache mods, DirectoryInfo contentsDir, ulong titleId)
