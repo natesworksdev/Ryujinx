@@ -1408,11 +1408,10 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     new(LocaleManager.Instance[LocaleKeys.AllSupportedFormats])
                     {
-                        Patterns = new[] { "*.nsp", "*.pfs0", "*.xci", "*.nca", "*.nro", "*.nso"},
+                        Patterns = new[] { "*.nsp", "*.xci", "*.nca", "*.nro", "*.nso"},
                         AppleUniformTypeIdentifiers = new[]
                         {
                             "com.ryujinx.Ryujinx-nsp",
-                            "com.ryujinx.Ryujinx-pfs0",
                             "com.ryujinx.Ryujinx-xci",
                             "com.ryujinx.Ryujinx-nca",
                             "com.ryujinx.Ryujinx-nro",
@@ -1421,7 +1420,6 @@ namespace Ryujinx.Ava.UI.ViewModels
                         MimeTypes = new[]
                         {
                             "application/x-nx-nsp",
-                            "application/x-nx-pfs0",
                             "application/x-nx-xci",
                             "application/x-nx-nca",
                             "application/x-nx-nro",

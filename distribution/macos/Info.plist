@@ -80,23 +80,6 @@
 		</dict>
 		<dict>
 			<key>UTTypeDescription</key>
-			<string>Nintendo Switch Partition FS</string>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeIdentifier</key>
-			<string>com.ryujinx.Ryujinx-pfs0</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>pfs0</string>
-				</array>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeDescription</key>
 			<string>Nintendo Switch Cartridge</string>
 			<key>UTTypeConformsTo</key>
 			<array>
