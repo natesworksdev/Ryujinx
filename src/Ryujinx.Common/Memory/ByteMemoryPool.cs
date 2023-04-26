@@ -89,9 +89,9 @@ namespace Ryujinx.Common.Memory
         public IMemoryOwner<byte> RentCleared(int length)
         {
             var buffer = RentImpl(length);
-            
+
             buffer.Memory.Span.Clear();
-            
+
             return buffer;
         }
 
