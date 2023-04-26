@@ -69,7 +69,7 @@ namespace Ryujinx.HLE.HOS.Ipc
 
             static List<IpcBuffDesc> ReadBuff(BinaryReader reader, int count)
             {
-                List<IpcBuffDesc> buff = new List<IpcBuffDesc>(count);
+                List<IpcBuffDesc> buff = new(count);
 
                 for (int index = 0; index < count; index++)
                 {
