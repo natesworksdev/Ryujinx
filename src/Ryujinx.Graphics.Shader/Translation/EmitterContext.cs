@@ -93,7 +93,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public Operand Add(Instruction inst, StorageKind storageKind, Operand dest = null, params Operand[] sources)
         {
-            Operation operation = new Operation(inst, storageKind, dest, sources);
+            Operation operation = new(inst, storageKind, dest, sources);
 
             _operations.Add(operation);
 

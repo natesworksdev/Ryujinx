@@ -64,6 +64,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public static bool IsPerVertex(IoVariable ioVariable, ShaderStage stage, bool isOutput)
         {
+#pragma warning disable IDE0066
             switch (ioVariable)
             {
                 case IoVariable.Layer:
@@ -79,6 +80,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                            stage == ShaderStage.TessellationEvaluation ||
                            stage == ShaderStage.Geometry);
             }
+#pragma warning restore IDE0066
 
             return false;
         }

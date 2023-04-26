@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
     {
         private static readonly string[] _stagePrefixes = new string[] { "cp", "vp", "tcp", "tep", "gp", "fp" };
 
-        private Dictionary<AstOperand, string> _locals;
+        private readonly Dictionary<AstOperand, string> _locals;
 
         public OperandManager()
         {
@@ -153,7 +153,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                         case StorageKind.InputPerPatch:
                         case StorageKind.Output:
                         case StorageKind.OutputPerPatch:
-                            if (!(operation.GetSource(0) is AstOperand varId) || varId.Type != OperandType.Constant)
+                            if (operation.GetSource(0) is not AstOperand varId || varId.Type != OperandType.Constant)
                             {
                                 throw new InvalidOperationException($"First input of {operation.Inst} with {operation.StorageKind} storage must be a constant operand.");
                             }
@@ -166,7 +166,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                             if (context.Config.HasPerLocationInputOrOutput(ioVariable, isOutput))
                             {
-                                if (!(operation.GetSource(1) is AstOperand vecIndex) || vecIndex.Type != OperandType.Constant)
+                                if (operation.GetSource(1) is not AstOperand vecIndex || vecIndex.Type != OperandType.Constant)
                                 {
                                     throw new InvalidOperationException($"Second input of {operation.Inst} with {operation.StorageKind} storage must be a constant operand.");
                                 }

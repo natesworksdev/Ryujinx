@@ -24,7 +24,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             AllGraphics = Vertex | Tessellation | Geometry | Fragment
         }
 
-        private struct AttributeEntry
+        private readonly struct AttributeEntry
         {
             public int BaseOffset { get; }
             public AggregateType Type { get; }
