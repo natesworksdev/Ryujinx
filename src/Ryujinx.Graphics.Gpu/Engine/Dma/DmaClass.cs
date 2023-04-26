@@ -363,13 +363,26 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
 
                     switch (srcBpp)
                     {
-                        case 1: Copy<byte>(dstSpan, srcSpan, dstParams, srcParams); break;
-                        case 2: Copy<ushort>(dstSpan, srcSpan, dstParams, srcParams); break;
-                        case 4: Copy<uint>(dstSpan, srcSpan, dstParams, srcParams); break;
-                        case 8: Copy<ulong>(dstSpan, srcSpan, dstParams, srcParams); break;
-                        case 12: Copy<Bpp12Pixel>(dstSpan, srcSpan, dstParams, srcParams); break;
-                        case 16: Copy<Vector128<byte>>(dstSpan, srcSpan, dstParams, srcParams); break;
-                        default: throw new NotSupportedException($"Unable to copy ${srcBpp} bpp pixel format.");
+                        case 1:
+                            Copy<byte>(dstSpan, srcSpan, dstParams, srcParams);
+                            break;
+                        case 2:
+                            Copy<ushort>(dstSpan, srcSpan, dstParams, srcParams);
+                            break;
+                        case 4:
+                            Copy<uint>(dstSpan, srcSpan, dstParams, srcParams);
+                            break;
+                        case 8:
+                            Copy<ulong>(dstSpan, srcSpan, dstParams, srcParams);
+                            break;
+                        case 12:
+                            Copy<Bpp12Pixel>(dstSpan, srcSpan, dstParams, srcParams);
+                            break;
+                        case 16:
+                            Copy<Vector128<byte>>(dstSpan, srcSpan, dstParams, srcParams);
+                            break;
+                        default:
+                            throw new NotSupportedException($"Unable to copy ${srcBpp} bpp pixel format.");
                     }
                 }
                 else
@@ -378,11 +391,20 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
 
                     switch (componentSize)
                     {
-                        case 1: CopyShuffle<byte>(dstSpan, srcSpan, dstParams, srcParams); break;
-                        case 2: CopyShuffle<ushort>(dstSpan, srcSpan, dstParams, srcParams); break;
-                        case 3: CopyShuffle<UInt24>(dstSpan, srcSpan, dstParams, srcParams); break;
-                        case 4: CopyShuffle<uint>(dstSpan, srcSpan, dstParams, srcParams); break;
-                        default: throw new NotSupportedException($"Unable to copy ${componentSize} component size.");
+                        case 1:
+                            CopyShuffle<byte>(dstSpan, srcSpan, dstParams, srcParams);
+                            break;
+                        case 2:
+                            CopyShuffle<ushort>(dstSpan, srcSpan, dstParams, srcParams);
+                            break;
+                        case 3:
+                            CopyShuffle<UInt24>(dstSpan, srcSpan, dstParams, srcParams);
+                            break;
+                        case 4:
+                            CopyShuffle<uint>(dstSpan, srcSpan, dstParams, srcParams);
+                            break;
+                        default:
+                            throw new NotSupportedException($"Unable to copy ${componentSize} component size.");
                     }
                 }
 
