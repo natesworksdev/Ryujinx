@@ -36,7 +36,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
         /// <summary>
         /// Texture parameters for copy.
         /// </summary>
-        private struct TextureParams
+        private readonly struct TextureParams
         {
             /// <summary>
             /// Copy region X coordinate.
@@ -345,8 +345,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                 // all be rewritten to use pooled arrays, but that gets complicated with packed data and strides
                 Span<byte> dstSpan = memoryManager.GetSpan(dstGpuVa + (ulong)dstBaseOffset, dstSize).ToArray();
 
-                TextureParams srcParams = new TextureParams(srcRegionX, srcRegionY, srcBaseOffset, srcBpp, srcLinear, srcCalculator);
-                TextureParams dstParams = new TextureParams(dstRegionX, dstRegionY, dstBaseOffset, dstBpp, dstLinear, dstCalculator);
+                TextureParams srcParams = new(srcRegionX, srcRegionY, srcBaseOffset, srcBpp, srcLinear, srcCalculator);
+                TextureParams dstParams = new(dstRegionX, dstRegionY, dstBaseOffset, dstBpp, dstLinear, dstCalculator);
 
                 // If remapping is enabled, we always copy the components directly, in order.
                 // If it's enabled, but the mapping is just XYZW, we also copy them in order.
@@ -554,22 +554,22 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                 switch (componentsDst)
                 {
                     case SetRemapComponentsDst.SrcX:
-                        Copy<T>(dstSpan.Slice(Unsafe.SizeOf<T>() * i), srcSpan, dst, src);
+                        Copy<T>(dstSpan[(Unsafe.SizeOf<T>() * i)..], srcSpan, dst, src);
                         break;
                     case SetRemapComponentsDst.SrcY:
-                        Copy<T>(dstSpan.Slice(Unsafe.SizeOf<T>() * i), srcSpan.Slice(Unsafe.SizeOf<T>()), dst, src);
+                        Copy<T>(dstSpan[(Unsafe.SizeOf<T>() * i)..], srcSpan[Unsafe.SizeOf<T>()..], dst, src);
                         break;
                     case SetRemapComponentsDst.SrcZ:
-                        Copy<T>(dstSpan.Slice(Unsafe.SizeOf<T>() * i), srcSpan.Slice(Unsafe.SizeOf<T>() * 2), dst, src);
+                        Copy<T>(dstSpan[(Unsafe.SizeOf<T>() * i)..], srcSpan[(Unsafe.SizeOf<T>() * 2)..], dst, src);
                         break;
                     case SetRemapComponentsDst.SrcW:
-                        Copy<T>(dstSpan.Slice(Unsafe.SizeOf<T>() * i), srcSpan.Slice(Unsafe.SizeOf<T>() * 3), dst, src);
+                        Copy<T>(dstSpan[(Unsafe.SizeOf<T>() * i)..], srcSpan[(Unsafe.SizeOf<T>() * 3)..], dst, src);
                         break;
                     case SetRemapComponentsDst.ConstA:
-                        Fill<T>(dstSpan.Slice(Unsafe.SizeOf<T>() * i), dst, Unsafe.As<uint, T>(ref _state.State.SetRemapConstA));
+                        Fill<T>(dstSpan[(Unsafe.SizeOf<T>() * i)..], dst, Unsafe.As<uint, T>(ref _state.State.SetRemapConstA));
                         break;
                     case SetRemapComponentsDst.ConstB:
-                        Fill<T>(dstSpan.Slice(Unsafe.SizeOf<T>() * i), dst, Unsafe.As<uint, T>(ref _state.State.SetRemapConstB));
+                        Fill<T>(dstSpan[(Unsafe.SizeOf<T>() * i)..], dst, Unsafe.As<uint, T>(ref _state.State.SetRemapConstB));
                         break;
                 }
             }
