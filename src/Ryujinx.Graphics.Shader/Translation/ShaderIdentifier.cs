@@ -84,7 +84,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                                 }
 
                                 writesLayer = true;
-                                layerInputAttr = srcAttributeAsgOp.GetSource(1).Value * 4 + srcAttributeAsgOp.GetSource(3).Value;;
+                                layerInputAttr = srcAttributeAsgOp.GetSource(1).Value * 4 + srcAttributeAsgOp.GetSource(3).Value;
                             }
                             else
                             {

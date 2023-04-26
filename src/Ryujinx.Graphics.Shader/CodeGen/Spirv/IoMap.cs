@@ -74,10 +74,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 case IoVariable.ClipDistance:
                 case IoVariable.PointCoord:
                 case IoVariable.ViewportMask:
-                return !isOutput &&
-                       (stage == ShaderStage.TessellationControl ||
-                       stage == ShaderStage.TessellationEvaluation ||
-                       stage == ShaderStage.Geometry);
+                    return !isOutput &&
+                           (stage == ShaderStage.TessellationControl ||
+                           stage == ShaderStage.TessellationEvaluation ||
+                           stage == ShaderStage.Geometry);
             }
 
             return false;
