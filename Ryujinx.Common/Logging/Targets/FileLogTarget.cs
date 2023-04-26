@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.Configuration;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Common.Logging
 {
@@ -12,6 +14,17 @@ namespace Ryujinx.Common.Logging
 
         string ILogTarget.Name { get => _name; }
 
+        private static string _config = GetConfigName();
+
+        // Build a config object, using env vars and JSON providers.
+        private static IConfiguration config = new ConfigurationBuilder()
+            .AddJsonFile(_config)
+            .AddEnvironmentVariables()
+            .Build();
+
+        // Get values from the config given their key and their target type.
+        public static Settings settings = config.GetRequiredSection("Settings").Get<Settings>();
+
         public FileLogTarget(string path, string name)
             : this(path, name, FileShare.Read, FileMode.Append)
         { }
@@ -19,7 +32,7 @@ namespace Ryujinx.Common.Logging
         public FileLogTarget(string path, string name, FileShare fileShare, FileMode fileMode)
         {
             // Ensure directory is present
-            DirectoryInfo logDir = new DirectoryInfo(Path.Combine(path, "Logs"));
+            DirectoryInfo logDir = new DirectoryInfo(Path.Combine(settings.logDir, "Logs"));
             logDir.Create();
 
             // Clean up old logs, should only keep 3
@@ -50,6 +63,24 @@ namespace Ryujinx.Common.Logging
             _logWriter.WriteLine("---- End of Log ----");
             _logWriter.Flush();
             _logWriter.Dispose();
+        }
+
+        private static string GetConfigName()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return "macOS.json";
+            } 
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return "windows.json";
+            } 
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return "linux.json";
+            }
+
+            throw new Exception("OS not detected.");
         }
     }
 }

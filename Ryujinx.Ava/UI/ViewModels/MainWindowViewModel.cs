@@ -40,6 +40,7 @@ using System.Threading.Tasks;
 using Path = System.IO.Path;
 using ShaderCacheLoadingState = Ryujinx.Graphics.Gpu.Shader.ShaderCacheState;
 using UserId = LibHac.Fs.UserId;
+using Microsoft.Extensions.Configuration;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
@@ -1296,7 +1297,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public static void OpenLogsFolder()
         {
-            string logPath = Path.Combine(ReleaseInformation.GetBaseApplicationDirectory(), "Logs");
+            string logPath = Path.Combine(FileLogTarget.settings.logDir, "Logs");
 
             new DirectoryInfo(logPath).Create();
 
