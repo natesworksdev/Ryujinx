@@ -1308,12 +1308,12 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public static void OpenRyujinxFolder()
+        public void OpenRyujinxFolder()
         {
             OpenHelper.OpenFolder(AppDataManager.BaseDirPath);
         }
 
-        public static void OpenLogsFolder()
+        public void OpenLogsFolder()
         {
             string logPath = Path.Combine(ReleaseInformation.GetBaseApplicationDirectory(), "Logs");
 
