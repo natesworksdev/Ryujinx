@@ -1368,6 +1368,8 @@ namespace Ryujinx.Ui.Common.Configuration
                     NRO  = true,
                     NSO  = true
                 };
+
+                configurationFileUpdated = true;
             }
 
             if (configurationFileFormat.Version < 46)

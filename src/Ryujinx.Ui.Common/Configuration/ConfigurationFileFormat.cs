@@ -252,7 +252,7 @@ namespace Ryujinx.Ui.Common.Configuration
         public ShownFileTypes ShownFileTypes { get; set; }
 
         /// <summary>
-        /// A list of file types to be hidden in the games List
+        /// Main window start-up position, size and state
         /// </summary>
         public WindowStartup WindowStartup { get; set; }
 

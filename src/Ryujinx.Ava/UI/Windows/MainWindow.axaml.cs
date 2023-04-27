@@ -309,7 +309,12 @@ namespace Ryujinx.Ava.UI.Windows
 
             ViewModel.WindowState = ConfigurationState.Instance.Ui.WindowStartup.WindowMaximized.Value is true ? WindowState.Maximized : WindowState.Normal;
         
-            Position = CheckScreenBounds(SavedPoint) ? SavedPoint : new PixelPoint(0,0);
+            if (CheckScreenBounds(SavedPoint))
+            {
+                Position = SavedPoint;
+            }
+
+            else WindowStartupLocation = WindowStartupLocation.CenterScreen;
         }
 
         private bool CheckScreenBounds(PixelPoint configPoint)
@@ -322,7 +327,7 @@ namespace Ryujinx.Ava.UI.Windows
                 }
             }
 
-            Logger.Warning?.Print(LogClass.Application, $"Failed to find valid start-up coordinates. Defaulting to 0,0.");
+            Logger.Warning?.Print(LogClass.Application, $"Failed to find valid start-up coordinates. Defaulting to primary monitor center.");
             return false;
         }
 
