@@ -112,6 +112,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
             };
         }
 
+        public int QueryHostGatherBiasPrecision() => _context.Capabilities.GatherBiasPrecision;
+
         public bool QueryHostReducedPrecision() => _context.Capabilities.ReduceShaderPrecision;
 
         public bool QueryHostHasFrontFacingBug() => _context.Capabilities.HasFrontFacingBug;
@@ -142,7 +144,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
         public bool QueryHostSupportsTextureShadowLod() => _context.Capabilities.SupportsTextureShadowLod;
 
-        public bool QueryHostSupportsViewportIndex() => _context.Capabilities.SupportsViewportIndex;
+        public bool QueryHostSupportsViewportIndexVertexTessellation() => _context.Capabilities.SupportsViewportIndexVertexTessellation;
+
+        public bool QueryHostSupportsViewportMask() => _context.Capabilities.SupportsViewportMask;
 
         /// <summary>
         /// Converts a packed Maxwell texture format to the shader translator texture format.

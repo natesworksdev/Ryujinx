@@ -103,11 +103,14 @@ namespace Ryujinx.Graphics.OpenGL
 
         public Capabilities GetCapabilities()
         {
+            bool intelWindows = HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelWindows;
+            bool amdWindows = HwCapabilities.Vendor == HwCapabilities.GpuVendor.AmdWindows;
+
             return new Capabilities(
                 api: TargetApi.OpenGL,
                 vendorName: GpuVendor,
-                hasFrontFacingBug: HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelWindows,
-                hasVectorIndexingBug: HwCapabilities.Vendor == HwCapabilities.GpuVendor.AmdWindows,
+                hasFrontFacingBug: intelWindows,
+                hasVectorIndexingBug: amdWindows,
                 needsFragmentOutputSpecialization: false,
                 reduceShaderPrecision: false,
                 supportsAstcCompression: HwCapabilities.SupportsAstcCompression,
@@ -133,7 +136,8 @@ namespace Ryujinx.Graphics.OpenGL
                 supportsNonConstantTextureOffset: HwCapabilities.SupportsNonConstantTextureOffset,
                 supportsShaderBallot: HwCapabilities.SupportsShaderBallot,
                 supportsTextureShadowLod: HwCapabilities.SupportsTextureShadowLod,
-                supportsViewportIndex: HwCapabilities.SupportsShaderViewportLayerArray,
+                supportsViewportIndexVertexTessellation: HwCapabilities.SupportsShaderViewportLayerArray,
+                supportsViewportMask: HwCapabilities.SupportsViewportArray2,
                 supportsViewportSwizzle: HwCapabilities.SupportsViewportSwizzle,
                 supportsIndirectParameters: HwCapabilities.SupportsIndirectParameters,
                 maximumUniformBuffersPerStage: 13, // TODO: Avoid hardcoding those limits here and get from driver?
@@ -142,7 +146,8 @@ namespace Ryujinx.Graphics.OpenGL
                 maximumImagesPerStage: 8,
                 maximumComputeSharedMemorySize: HwCapabilities.MaximumComputeSharedMemorySize,
                 maximumSupportedAnisotropy: HwCapabilities.MaximumSupportedAnisotropy,
-                storageBufferOffsetAlignment: HwCapabilities.StorageBufferOffsetAlignment);
+                storageBufferOffsetAlignment: HwCapabilities.StorageBufferOffsetAlignment,
+                gatherBiasPrecision: intelWindows || amdWindows ? 8 : 0); // Precision is 8 for these vendors on Vulkan.
         }
 
         public void SetBufferData(BufferHandle buffer, int offset, ReadOnlySpan<byte> data)

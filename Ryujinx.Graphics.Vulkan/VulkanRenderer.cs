@@ -306,12 +306,14 @@ namespace Ryujinx.Graphics.Vulkan
                 features2.Features.OcclusionQueryPrecise,
                 _physicalDevice.PhysicalDeviceFeatures.PipelineStatisticsQuery,
                 _physicalDevice.PhysicalDeviceFeatures.GeometryShader,
+                _physicalDevice.IsDeviceExtensionPresent("VK_NV_viewport_array2"),
                 propertiesSubgroupSizeControl.MinSubgroupSize,
                 propertiesSubgroupSizeControl.MaxSubgroupSize,
                 propertiesSubgroupSizeControl.RequiredSubgroupSizeStages,
                 supportedSampleCounts,
                 portabilityFlags,
-                vertexBufferAlignment);
+                vertexBufferAlignment,
+                properties.Limits.SubTexelPrecisionBits);
 
             IsSharedMemory = MemoryAllocator.IsDeviceMemoryShared(_physicalDevice);
 
@@ -567,7 +569,8 @@ namespace Ryujinx.Graphics.Vulkan
                 supportsNonConstantTextureOffset: false,
                 supportsShaderBallot: false,
                 supportsTextureShadowLod: false,
-                supportsViewportIndex: featuresVk12.ShaderOutputViewportIndex,
+                supportsViewportIndexVertexTessellation: featuresVk12.ShaderOutputViewportIndex,
+                supportsViewportMask: Capabilities.SupportsViewportArray2,
                 supportsViewportSwizzle: false,
                 supportsIndirectParameters: true,
                 maximumUniformBuffersPerStage: Constants.MaxUniformBuffersPerStage,
@@ -576,7 +579,8 @@ namespace Ryujinx.Graphics.Vulkan
                 maximumImagesPerStage: Constants.MaxImagesPerStage,
                 maximumComputeSharedMemorySize: (int)limits.MaxComputeSharedMemorySize,
                 maximumSupportedAnisotropy: (int)limits.MaxSamplerAnisotropy,
-                storageBufferOffsetAlignment: (int)limits.MinStorageBufferOffsetAlignment);
+                storageBufferOffsetAlignment: (int)limits.MinStorageBufferOffsetAlignment,
+                gatherBiasPrecision: IsIntelWindows || IsAmdWindows ? (int)Capabilities.SubTexelPrecisionBits : 0);
         }
 
         public HardwareInfo GetHardwareInfo()
