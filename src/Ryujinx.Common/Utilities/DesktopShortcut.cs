@@ -36,10 +36,10 @@ namespace Ryujinx.Common.Utilities
                 shortcut.Save();
             }
 #else
-            if (OperatingSystem.IsMacOS())
-            {
+            //if (OperatingSystem.IsMacOS())
+            //{
 
-            }
+            //}
             if (OperatingSystem.IsLinux())
             {
                 var image = Image.Load<Rgba32>(iconData);
@@ -50,7 +50,7 @@ namespace Ryujinx.Common.Utilities
                     Name={0}
                     Type=Application
                     Icon={1}
-                    Exec=env DOTNET_EnableAlternateStackCheck=1 Ryujinx {2} %f
+                    Exec={2} {3} %f
                     Comment=A Nintendo Switch Emulator
                     GenericName=Nintendo Switch Emulator
                     Terminal=false
@@ -62,7 +62,7 @@ namespace Ryujinx.Common.Utilities
 
                     """;
                 using StreamWriter outputFile = new StreamWriter(Path.Combine(desktopPath, cleanedAppName + ".desktop"));
-                outputFile.Write(String.Format(desktopFile, cleanedAppName, iconPath + ".png", appFilePath));
+                outputFile.Write(String.Format(desktopFile, cleanedAppName, iconPath + ".png", basePath, $"\"appFilePath\""));
             }
 #endif
         }
@@ -74,14 +74,8 @@ namespace Ryujinx.Common.Utilities
         /// </summary>
         /// <param name="source">The source bitmap image that will be saved as an .ico file</param>
         /// <param name="filePath">The location that the new .ico file will be saved too (Make sure to include '.ico' in the path).</param>
-        /// <exception cref="NotSupportedException"></exception>
         private static void SaveBitmapAsIcon(System.Drawing.Bitmap source, string filePath)
         {
-            if (!OperatingSystem.IsWindows())
-            {
-                throw new NotSupportedException("Cannot save .ico files on Operating Systems other then Windows.");
-            }
-
             // Code Modified From https://stackoverflow.com/a/11448060/368354 by Benlitz
             using FileStream FS = new FileStream(filePath, FileMode.Create);
             // ICO header
