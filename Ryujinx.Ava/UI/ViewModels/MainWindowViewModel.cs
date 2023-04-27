@@ -1903,7 +1903,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public async void CreateShortcut()
+        public void CreateShortcut()
         {
             DesktopShortcut.CreateAppShortcut(SelectedApplication.Path, SelectedApplication.TitleName, SelectedApplication.TitleId, SelectedApplication.Icon);
         }

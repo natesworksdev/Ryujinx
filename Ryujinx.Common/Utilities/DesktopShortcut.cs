@@ -76,6 +76,8 @@ namespace Ryujinx.Common.Utilities
         /// <param name="filePath">The location that the new .ico file will be saved too (Make sure to include '.ico' in the path).</param>
         private static void SaveBitmapAsIcon(System.Drawing.Bitmap source, string filePath)
         {
+            if (!OperatingSystem.IsWindows()) return;
+
             // Code Modified From https://stackoverflow.com/a/11448060/368354 by Benlitz
             using FileStream FS = new FileStream(filePath, FileMode.Create);
             // ICO header
