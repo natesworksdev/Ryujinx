@@ -113,6 +113,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] ToggleButton    _configureController7;
         [GUI] ToggleButton    _configureController8;
         [GUI] ToggleButton    _configureControllerH;
+        [GUI] ComboBoxText    _configureResolution;
 
 #pragma warning restore CS0649, IDE0044
 
@@ -559,8 +560,43 @@ namespace Ryujinx.Ui.Windows
 
                 _directoryChanged = false;
             }
+            
+            if(_configureResolution.ActiveId != ""){
 
-            if (!float.TryParse(_resScaleText.Buffer.Text, out float resScaleCustom) || resScaleCustom <= 0.0f)
+                int _width = 0;
+                int _height = 0;
+
+                switch(_configureResolution.ActiveId){
+
+                    case "0":
+                        break;
+                    case "1":
+                        _width = 1280;
+                        _height = 720;
+                        break;
+                    case "2":
+                        _width = 1920;
+                        _height = 1080;
+                        break;
+                    case "3":
+                        _width = 2560;
+                        _height = 1440;
+                        break;
+                    default:
+                        break;
+                }
+
+                //If more resolutions need to be added they can be added here by just adding additional options
+                //in SettingsWindow.glade and then adding the related case to the switch statement. 
+
+                ConfigurationState.Instance.Ui.WindowSizeWidth.Value = _width;
+                ConfigurationState.Instance.Ui.WindowSizeHeight.Value = _height;
+
+                _parent.UpdateWindowResolution();
+            }
+
+
+            if (!float.TryParse(_resScaleText.Buffer.Text.Replace(",", "."), out float resScaleCustom) || resScaleCustom <= 0.0f)
             {
                 resScaleCustom = 1.0f;
             }
