@@ -78,7 +78,7 @@
                                         VerticalAlignment="Top"
                                         Source="{Binding Image, Converter={StaticResource ByteImage}}" />
                                     <TextBlock
-                                        HorizontalAlignment="Stretch"
+                                        HorizontalAlignment="Center"
                                         MaxWidth="90"
                                         Text="{Binding Name}"
                                         TextAlignment="Center"
