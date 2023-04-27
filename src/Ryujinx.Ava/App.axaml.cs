@@ -99,10 +99,19 @@ namespace Ryujinx.Ava
                     baseStyle = ConfigurationState.Instance.Ui.BaseStyle;
                 }
 
-                var theme = AvaloniaLocator.Current.GetService<FluentAvaloniaTheme>();
-
-                theme.RequestedTheme = baseStyle;
-
+                // TODO: Revamp how we handle styles to properly take advantage of Ava 11 theme variants
+                switch (baseStyle)
+                {
+                    case "Light":
+                        RequestedThemeVariant = ThemeVariant.Light;
+                        break;
+                    case "Dark":
+                        RequestedThemeVariant = ThemeVariant.Dark;
+                        break;
+                    default:
+                        RequestedThemeVariant = ThemeVariant.Default;
+                        break;
+                }
                 var currentStyles = this.Styles;
 
                 // Remove all styles except the base style.
