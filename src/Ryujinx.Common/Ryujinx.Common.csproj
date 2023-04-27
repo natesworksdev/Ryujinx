@@ -4,9 +4,12 @@
     <TargetFramework>net7.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DefineConstants Condition=" '$(ExtraDefineConstants)' != '' ">$(DefineConstants);$(ExtraDefineConstants)</DefineConstants>
+    <DefineConstants Condition="$([MSBuild]::IsOSPlatform('Windows'))">OS_WINDOWS</DefineConstants>
+    <DefineConstants Condition="$([MSBuild]::IsOSPlatform('Linux'))">OS_LINUX</DefineConstants>
+    <DefineConstants Condition="$([MSBuild]::IsOSPlatform('OSX'))">OS_MAC</DefineConstants>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
     <COMReference Include="IWshRuntimeLibrary">
       <WrapperTool>tlbimp</WrapperTool>
       <VersionMinor>0</VersionMinor>
@@ -21,6 +24,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" />
     <PackageReference Include="MsgPack.Cli" />
+    <PackageReference Include="SixLabors.ImageSharp" />
     <PackageReference Include="System.Drawing.Common" />
     <PackageReference Include="System.Management" />
   </ItemGroup>
