@@ -90,8 +90,6 @@ namespace Ryujinx.Ava
                 string themePath = ConfigurationState.Instance.Ui.CustomThemePath;
                 bool enableCustomTheme = ConfigurationState.Instance.Ui.EnableCustomTheme;
 
-                const string BaseStyleUrl = "avares://Ryujinx.Ava/Assets/Styles/Base{0}.xaml";
-
                 if (string.IsNullOrWhiteSpace(baseStyle))
                 {
                     ConfigurationState.Instance.Ui.BaseStyle.Value = "Dark";
@@ -113,26 +111,6 @@ namespace Ryujinx.Ava
                         break;
                 }
                 var currentStyles = this.Styles;
-
-                // Remove all styles except the base style.
-                if (currentStyles.Count > 1)
-                {
-                    currentStyles.RemoveRange(1, currentStyles.Count - 1);
-                }
-
-                IStyle newStyles = null;
-
-                // Load requested style, and fallback to Dark theme if loading failed.
-                try
-                {
-                    newStyles = (Styles)AvaloniaXamlLoader.Load(new Uri(string.Format(BaseStyleUrl, baseStyle), UriKind.Absolute));
-                }
-                catch (XamlLoadException)
-                {
-                    newStyles = (Styles)AvaloniaXamlLoader.Load(new Uri(string.Format(BaseStyleUrl, "Dark"), UriKind.Absolute));
-                }
-
-                currentStyles.Add(newStyles);
 
                 if (enableCustomTheme)
                 {

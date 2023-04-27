@@ -96,10 +96,7 @@
       <SubType>Designer</SubType>
     </AvaloniaResource>
     <AvaloniaResource Include="Assets\Fonts\SegoeFluentIcons.ttf" />
-    <AvaloniaResource Include="Assets\Styles\BaseLight.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaResource>
-    <AvaloniaResource Include="Assets\Styles\BaseDark.xaml">
+    <AvaloniaResource Include="Assets\Styles\Themes.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaResource>
     <AvaloniaResource Include="Assets\Styles\Styles.xaml" />
@@ -122,8 +119,7 @@
     <None Remove="Assets\Locales\zh_CN.json" />
     <None Remove="Assets\Locales\zh_TW.json" />
     <None Remove="Assets\Styles\Styles.xaml" />
-    <None Remove="Assets\Styles\BaseDark.xaml" />
-    <None Remove="Assets\Styles\BaseLight.xaml" />
+    <None Remove="Assets\Styles\Themes.xaml" />
   </ItemGroup>
 
   <ItemGroup>
