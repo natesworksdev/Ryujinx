@@ -41,8 +41,7 @@ then
         exit 1
     fi
 
-    # NOTE: Currently requires https://github.com/indygreg/apple-platform-rs/pull/44 to work on other OSes.
-    # cargo install --git "https://github.com/marysaka/apple-platform-rs" --branch "fix/adhoc-app-bundle" apple-codesign --bin "rcodesign"
+    # cargo install apple-codesign
     echo "Usign rcodesign for ad-hoc signing"
     rcodesign sign --entitlements-xml-path "$ENTITLEMENTS_FILE_PATH" "$APP_BUNDLE_DIRECTORY"
 else
