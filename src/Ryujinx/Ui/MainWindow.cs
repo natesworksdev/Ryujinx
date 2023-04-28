@@ -153,20 +153,6 @@ namespace Ryujinx.Ui
 
             // Apply custom theme if needed.
             ThemeHelper.ApplyTheme();
-            Gdk.Monitor monitor = Display.GetMonitor(0);
-            // Sets overridden fields.
-            int monitorWidth  = monitor.Geometry.Width  * monitor.ScaleFactor;
-            int monitorHeight = monitor.Geometry.Height * monitor.ScaleFactor;
-
-            DefaultWidth  = monitorWidth  < 1280 ? monitorWidth  : ConfigurationState.Instance.Ui.WindowStartup.WindowSizeWidth;
-            DefaultHeight = monitorHeight < 760  ? monitorHeight : ConfigurationState.Instance.Ui.WindowStartup.WindowSizeHeight;
-
-            Move(ConfigurationState.Instance.Ui.WindowStartup.WindowPositionX, ConfigurationState.Instance.Ui.WindowStartup.WindowPositionY);
-
-            if (ConfigurationState.Instance.Ui.WindowStartup.WindowMaximized) 
-            { 
-                Maximize(); 
-            }
 
             Icon  = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
             Title = $"Ryujinx {Program.Version}";
@@ -1336,6 +1322,19 @@ namespace Ryujinx.Ui
             else
             {
                 args.RetVal = true;
+            }
+        }
+
+        private void SetWindowSizePosition()
+        {
+            DefaultWidth  = ConfigurationState.Instance.Ui.WindowStartup.WindowSizeWidth;
+            DefaultHeight = ConfigurationState.Instance.Ui.WindowStartup.WindowSizeHeight;
+
+            Move(ConfigurationState.Instance.Ui.WindowStartup.WindowPositionX, ConfigurationState.Instance.Ui.WindowStartup.WindowPositionY);
+
+            if (ConfigurationState.Instance.Ui.WindowStartup.WindowMaximized) 
+            { 
+                Maximize(); 
             }
         }
 
