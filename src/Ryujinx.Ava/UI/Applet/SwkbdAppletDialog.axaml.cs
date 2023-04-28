@@ -9,14 +9,17 @@ using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.HLE.HOS.Applets;
+using Ryujinx.HLE.HOS.Applets.SoftwareKeyboard;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.UI.Controls
 {
     internal partial class SwkbdAppletDialog : UserControl
     {
-        private Predicate<int> _checkLength;
+        private Predicate<int> _checkLength = _ => true;
+        private Predicate<string> _checkInput = _ => true;
         private int _inputMax;
         private int _inputMin;
         private string _placeholder;
@@ -35,8 +38,6 @@ namespace Ryujinx.Ava.UI.Controls
             Input.Watermark = _placeholder;
 
             Input.AddHandler(TextInputEvent, Message_TextInput, RoutingStrategies.Tunnel, true);
-
-            SetInputLengthValidation(0, int.MaxValue); // Disable by default.
         }
 
         public SwkbdAppletDialog()
@@ -67,6 +68,7 @@ namespace Ryujinx.Ava.UI.Controls
             string input = string.Empty;
 
             content.SetInputLengthValidation(args.StringLengthMin, args.StringLengthMax);
+            content.SetInputValidation(args.KeyboardMode);
 
             content._host = contentDialog;
             contentDialog.Title = title;
@@ -80,67 +82,8 @@ namespace Ryujinx.Ava.UI.Controls
             {
                 if (eventArgs.Result == ContentDialogResult.Primary)
                 {
-                    bool isTextAgreeWithKeyboardMode = true;
-                    switch (args.KeyboardMode)
-                    {
-                        case HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode.NumbersOnly:
-                            {
-                                foreach (char c in content.Input.Text)
-                                {
-                                    if (!char.IsNumber(c))
-                                    {
-                                        isTextAgreeWithKeyboardMode = false;
-                                        break;
-                                    }
-                                }
-                            }
-                            break;
-                        case HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode.Alphabet:
-                            {
-                                foreach (char c in content.Input.Text)
-                                {
-                                    if (!char.IsLetter(c))
-                                    {
-                                        isTextAgreeWithKeyboardMode = false;
-                                        break;
-                                    }
-                                }
-                            }
-                            break;
-                        case HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode.ASCII:
-                            {
-                                foreach (char c in content.Input.Text)
-                                {
-                                    if (!char.IsAscii(c))
-                                    {
-                                        isTextAgreeWithKeyboardMode = false;
-                                        break;
-                                    }
-                                }
-                            }
-                            break;
-                        case HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode.FullLatin:
-                        case HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode.SimplifiedChinese:
-                        case HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode.TraditionalChinese:
-                        case HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode.Korean:
-                        case HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode.LanguageSet2:
-                        case HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode.LanguageSet2Latin:
-                        case HLE.HOS.Applets.SoftwareKeyboard.KeyboardMode.Default:
-                        default:
-                            isTextAgreeWithKeyboardMode = true;
-                            break;
-                    }
-
-                    if (isTextAgreeWithKeyboardMode)
-                    {
-                        result = UserResult.Ok;
-                        input = content.Input.Text;
-                    }
-                    else
-                    {
-                        result = UserResult.Cancel;
-                        input = string.Empty;
-                    }
+                    result = UserResult.Ok;
+                    input = content.Input.Text;
                 }
             };
             contentDialog.Closed += handler;
@@ -184,11 +127,24 @@ namespace Ryujinx.Ava.UI.Controls
             Message_TextInput(this, new TextInputEventArgs());
         }
 
+        private void SetInputValidation(KeyboardMode mode)
+        {
+            _checkInput = mode switch
+            {
+                KeyboardMode.NumbersOnly => text => text.All(char.IsDigit),
+                KeyboardMode.Alphabet => text => text.All(char.IsAsciiLetter),
+                KeyboardMode.ASCII => text => text.All(char.IsAscii),
+                _ => _ => true
+            };
+
+            Message_TextInput(this, new TextInputEventArgs());
+        }
+
         private void Message_TextInput(object sender, TextInputEventArgs e)
         {
             if (_host != null)
             {
-                _host.IsPrimaryButtonEnabled = _checkLength(Message.Length);
+                _host.IsPrimaryButtonEnabled = _checkLength(Message.Length) && _checkInput(Message);
             }
         }
 
@@ -200,7 +156,7 @@ namespace Ryujinx.Ava.UI.Controls
             }
             else
             {
-                _host.IsPrimaryButtonEnabled = _checkLength(Message.Length);
+                _host.IsPrimaryButtonEnabled = _checkLength(Message.Length) && _checkInput(Message);
             }
         }
     }
