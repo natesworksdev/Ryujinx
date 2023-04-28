@@ -154,6 +154,8 @@ namespace Ryujinx.Ui
             // Apply custom theme if needed.
             ThemeHelper.ApplyTheme();
 
+            SetWindowSizePosition();
+
             Icon  = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
             Title = $"Ryujinx {Program.Version}";
 
