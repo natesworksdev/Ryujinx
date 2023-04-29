@@ -64,7 +64,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Handles removal of textures written to a memory region being unmapped.
+        /// Handles marking of textures written to a memory region being (partially) remapped.
         /// </summary>
         /// <param name="sender">Sender object</param>
         /// <param name="e">Event arguments</param>
@@ -80,26 +80,36 @@ namespace Ryujinx.Graphics.Gpu.Image
                 overlapCount = _textures.FindOverlaps(unmapped, ref overlaps);
             }
 
-            for (int i = 0; i < overlapCount; i++)
+            if (overlapCount > 0)
             {
-                overlaps[i].Unmapped(unmapped);
-            }
-
-            // If any range was previously unmapped, we also need to purge
-            // all partially mapped texture, as they might be fully mapped now.
-            for (int i = 0; i < unmapped.Count; i++)
-            {
-                if (unmapped.GetSubRange(i).Address == MemoryManager.PteUnmapped)
+                lock (_partiallyMappedTextures)
                 {
-                    lock (_partiallyMappedTextures)
+                    for (int i = 0; i < overlapCount; i++)
                     {
-                        foreach (var texture in _partiallyMappedTextures)
-                        {
-                            texture.Unmapped(unmapped);
-                        }
+                        overlaps[i].Unmapped(unmapped);
+                        _partiallyMappedTextures.Add(overlaps[i]);
                     }
+                }
+            }
+        }
 
-                    break;
+        /// <summary>
+        /// Handles removal of textures written to a memory region being remapped.
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">Event arguments</param>
+        public void MemoryRemappedHandler(object sender, UnmapEventArgs e)
+        {
+            // Any texture that has been unmapped at any point or is partially unmapped
+            // should update their pool references after the remap completes.
+
+            MultiRange unmapped = ((MemoryManager)sender).GetPhysicalRegions(e.Address, e.Size);
+
+            lock (_partiallyMappedTextures)
+            {
+                foreach (var texture in _partiallyMappedTextures)
+                {
+                    texture.UpdatePoolMappings();
                 }
             }
         }

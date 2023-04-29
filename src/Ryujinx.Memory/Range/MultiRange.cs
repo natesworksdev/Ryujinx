@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Ryujinx.Memory.Range
 {
@@ -318,6 +319,18 @@ namespace Ryujinx.Memory.Range
             }
 
             return hash.ToHashCode();
+        }
+
+        public override string ToString()
+        {
+            if (HasSingleRange)
+            {
+                return $"[{_singleRange.Address:x16}:{_singleRange.Size:x8}]";
+            }
+            else
+            {
+                return $"[{string.Join(", ", _ranges.Select(range => $"{range.Address:x16}:{range.Size:x8}"))}]";
+            }
         }
     }
 }

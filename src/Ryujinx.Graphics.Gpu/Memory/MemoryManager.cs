@@ -33,6 +33,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private readonly ulong[][] _pageTable;
 
         public event EventHandler<UnmapEventArgs> MemoryUnmapped;
+        public event EventHandler<UnmapEventArgs> MemoryRemapped;
 
         /// <summary>
         /// Physical memory where the virtual memory is mapped into.
@@ -56,6 +57,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
             MemoryUnmapped += Physical.TextureCache.MemoryUnmappedHandler;
             MemoryUnmapped += Physical.BufferCache.MemoryUnmappedHandler;
             MemoryUnmapped += CounterCache.MemoryUnmappedHandler;
+
+            MemoryRemapped += Physical.TextureCache.MemoryRemappedHandler;
         }
 
         /// <summary>
@@ -385,6 +388,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 {
                     SetPte(va + offset, PackPte(pa + offset, kind));
                 }
+
+                MemoryRemapped?.Invoke(this, new UnmapEventArgs(va, size));
             }
         }
 
@@ -404,6 +409,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 {
                     SetPte(va + offset, PteUnmapped);
                 }
+
+                MemoryRemapped?.Invoke(this, new UnmapEventArgs(va, size));
             }
         }
 
