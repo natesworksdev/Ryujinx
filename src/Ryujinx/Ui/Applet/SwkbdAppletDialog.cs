@@ -48,7 +48,7 @@ namespace Ryujinx.Ui.Applet
 
         private void ApplyValidationInfo()
         {
-            _validationInfo.Visible = string.IsNullOrEmpty(_validationInfoText);
+            _validationInfo.Visible = !string.IsNullOrEmpty(_validationInfoText);
             _validationInfo.Markup = _validationInfoText;
         }
 
