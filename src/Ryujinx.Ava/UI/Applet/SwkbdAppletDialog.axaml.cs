@@ -24,6 +24,8 @@ namespace Ryujinx.Ava.UI.Controls
         private int _inputMin;
         private string _placeholder;
 
+        private string _validationInfoText = "";
+
         private ContentDialog _host;
 
         public SwkbdAppletDialog(string mainText, string secondaryText, string placeholder, string message)
@@ -93,6 +95,12 @@ namespace Ryujinx.Ava.UI.Controls
             return (result, input);
         }
 
+        private void ApplyValidationInfo()
+        {
+            Error.IsVisible = !string.IsNullOrEmpty(_validationInfoText);
+            Error.Text = _validationInfoText;
+        }
+
         public void SetInputLengthValidation(int min, int max)
         {
             _inputMin = Math.Min(min, max);
@@ -109,34 +117,43 @@ namespace Ryujinx.Ava.UI.Controls
             }
             else if (_inputMin > 0 && _inputMax == int.MaxValue)
             {
-                Error.IsVisible = true;
-
-                Error.Text = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.SwkbdMinCharacters, _inputMin);
+                _validationInfoText = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.SwkbdMinCharacters, _inputMin);
 
                 _checkLength = length => _inputMin <= length;
             }
             else
             {
-                Error.IsVisible = true;
-
-                Error.Text = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.SwkbdMinRangeCharacters, _inputMin, _inputMax);
+                _validationInfoText = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.SwkbdMinRangeCharacters, _inputMin, _inputMax);
 
                 _checkLength = length => _inputMin <= length && length <= _inputMax;
             }
 
+            ApplyValidationInfo();
             Message_TextInput(this, new TextInputEventArgs());
         }
 
         private void SetInputValidation(KeyboardMode mode)
         {
-            _checkInput = mode switch
+            switch (mode)
             {
-                KeyboardMode.NumbersOnly => text => text.All(char.IsDigit),
-                KeyboardMode.Alphabet => text => text.All(char.IsAsciiLetter),
-                KeyboardMode.ASCII => text => text.All(char.IsAscii),
-                _ => _ => true
-            };
+                case KeyboardMode.NumbersOnly:
+                    _validationInfoText = string.IsNullOrEmpty(_validationInfoText) ? LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.SoftwareKeyboardModeNumbersOnly) : string.Join("\n", _validationInfoText, LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.SoftwareKeyboardModeNumbersOnly));
+                    _checkInput = text => text.All(char.IsDigit);
+                    break;
+                case KeyboardMode.Alphabet:
+                    _validationInfoText = string.IsNullOrEmpty(_validationInfoText) ? LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.SoftwareKeyboardModeAlphabet) : string.Join("\n", _validationInfoText, LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.SoftwareKeyboardModeAlphabet));
+                    _checkInput = text => text.All(char.IsAsciiLetter);
+                    break;
+                case KeyboardMode.ASCII:
+                    _validationInfoText = string.IsNullOrEmpty(_validationInfoText) ? LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.SoftwareKeyboardModeASCII) : string.Join("\n", _validationInfoText, LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.SoftwareKeyboardModeASCII));
+                    _checkInput = text => text.All(char.IsAscii);
+                    break;
+                default:
+                    _checkInput = _ => true;
+                    break;
+            }
 
+            ApplyValidationInfo();
             Message_TextInput(this, new TextInputEventArgs());
         }
 
