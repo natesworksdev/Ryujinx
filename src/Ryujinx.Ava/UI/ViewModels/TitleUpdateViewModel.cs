@@ -211,29 +211,23 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async void Add()
         {
-            OpenFileDialog dialog = new()
+            var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                Title         = LocaleManager.Instance[LocaleKeys.SelectUpdateDialogTitle],
-                AllowMultiple = true
-            };
-
-            dialog.Filters.Add(new FileDialogFilter
-            {
-                Name       = "NSP",
-                Extensions = { "nsp" }
-            });
-
-            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-            {
-                string[] files = await dialog.ShowAsync(desktop.MainWindow);
-
-                if (files != null)
+                AllowMultiple = true,
+                FileTypeFilter = new List<FilePickerFileType>
                 {
-                    foreach (string file in files)
+                    new(LocaleManager.Instance[LocaleKeys.AllSupportedFormats])
                     {
-                        AddUpdate(file);
+                        Patterns = new[] { "*.nsp" },
+                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.Ryujinx-nsp" },
+                        MimeTypes = new[] { "application/x-nx-nsp" }
                     }
                 }
+            });
+
+            foreach (var file in result)
+            {
+                AddUpdate(file.Path.LocalPath);
             }
 
             SortUpdates();
