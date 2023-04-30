@@ -294,7 +294,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 // On unbind, textures that flush often should immediately create sync so their result can be obtained as soon as possible.
 
-                context.CreateHostSyncIfNeeded(false, false, true);
+                context.CreateHostSyncIfNeeded(HostSyncFlags.Force);
             }
 
             // Note: Bind count currently resets to 0 on inherit for safety, as the handle <-> view relationship can change.

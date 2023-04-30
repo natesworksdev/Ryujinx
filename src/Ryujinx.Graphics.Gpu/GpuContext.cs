@@ -315,11 +315,13 @@ namespace Ryujinx.Graphics.Gpu
         /// Creates a host sync object if there are any pending sync actions. The actions will then be called.
         /// If no actions are present, a host sync object is not created.
         /// </summary>
-        /// <param name="syncpoint">True if host sync is being created by a syncpoint</param>
-        /// <param name="strict">True if the sync should signal as soon as possible</param>
-        /// <param name="force">True will force the sync to be created, even if no actions are eligible</param>
-        public void CreateHostSyncIfNeeded(bool syncpoint, bool strict, bool force = false)
+        /// <param name="flags">Modifiers for how host sync should be created</param>
+        internal void CreateHostSyncIfNeeded(HostSyncFlags flags)
         {
+            bool syncpoint = flags.HasFlag(HostSyncFlags.Syncpoint);
+            bool strict = flags.HasFlag(HostSyncFlags.Strict);
+            bool force = flags.HasFlag(HostSyncFlags.Force);
+
             if (BufferMigrations.Count > 0)
             {
                 ulong currentSyncNumber = Renderer.GetCurrentSync();

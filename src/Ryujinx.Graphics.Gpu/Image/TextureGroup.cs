@@ -634,7 +634,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 (int layer, int level) = GetLayerLevelForView(i);
 
-                Storage.GetFlushTexture().CopyTo(new BufferRange(_flushBuffer, _allOffsets[i], 1), layer, level, _flushBufferImported ? Storage.Info.Stride : 0);
+                Storage.GetFlushTexture().CopyTo(new BufferRange(_flushBuffer, _allOffsets[i], _sliceSizes[level]), layer, level, _flushBufferImported ? Storage.Info.Stride : 0);
             }
         }
 
