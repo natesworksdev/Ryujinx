@@ -120,27 +120,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Handles removal of textures written to a memory region being remapped.
-        /// </summary>
-        /// <param name="sender">Sender object</param>
-        /// <param name="e">Event arguments</param>
-        public void MemoryRemappedHandler(object sender, UnmapEventArgs e)
-        {
-            // Any texture that has been unmapped at any point or is partially unmapped
-            // should update their pool references after the remap completes.
-
-            MultiRange unmapped = ((MemoryManager)sender).GetPhysicalRegions(e.Address, e.Size);
-
-            lock (_partiallyMappedTextures)
-            {
-                foreach (var texture in _partiallyMappedTextures)
-                {
-                    texture.UpdatePoolMappings();
-                }
-            }
-        }
-
-        /// <summary>
         /// Determines if a given texture is eligible for upscaling from its info.
         /// </summary>
         /// <param name="info">The texture info to check</param>
