@@ -1,4 +1,5 @@
 ﻿using System;
+
 namespace Ryujinx.Graphics.Gpu.Synchronization
 {
     /// <summary>

@@ -372,8 +372,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             if (syncpoint || NextSyncCopies())
             {
-                // TODO: only copy if the copy has not been performed since the last modification
-                if (ModifyFlushBalance(-FlushBalanceWriteCost))
+                if (ModifyFlushBalance(-FlushBalanceWriteCost) && _registeredBufferSync != _modifiedSync)
                 {
                     _group.FlushIntoBuffer(this);
                     _registeredBufferSync = _modifiedSync;
