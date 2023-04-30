@@ -31,12 +31,12 @@
         SamplerDispose,
 
         TextureCopyTo,
+        TextureCopyToBuffer,
         TextureCopyToScaled,
         TextureCopyToSlice,
         TextureCreateView,
         TextureGetData,
         TextureGetDataSlice,
-        TextureGetDataToBuffer,
         TextureRelease,
         TextureSetData,
         TextureSetDataSlice,

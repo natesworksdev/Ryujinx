@@ -43,7 +43,7 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
-        public bool TryGetPersist(BufferHandle handle, out IntPtr ptr)
+        public bool TryGet(BufferHandle handle, out IntPtr ptr)
         {
             return _maps.TryGetValue(handle, out ptr);
         }

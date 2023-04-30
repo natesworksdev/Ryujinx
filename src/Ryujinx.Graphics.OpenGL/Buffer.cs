@@ -74,7 +74,7 @@ namespace Ryujinx.Graphics.OpenGL
             // Data in the persistent buffer and host array is guaranteed to be available
             // until the next time the host thread requests data.
 
-            if (renderer.PersistentBuffers.TryGetPersist(buffer, out IntPtr ptr))
+            if (renderer.PersistentBuffers.TryGet(buffer, out IntPtr ptr))
             {
                 return new PinnedSpan<byte>(IntPtr.Add(ptr, offset).ToPointer(), size);
             }

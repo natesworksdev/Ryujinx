@@ -49,7 +49,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             return GetData();
         }
 
-        public void GetData(BufferRange range, int layer, int level, int stride)
+        public void CopyTo(BufferRange range, int layer, int level, int stride)
         {
             throw new NotImplementedException();
         }

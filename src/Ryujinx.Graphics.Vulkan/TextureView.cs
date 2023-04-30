@@ -563,7 +563,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void GetData(BufferRange range, int layer, int level, int stride)
+        public void CopyTo(BufferRange range, int layer, int level, int stride)
         {
             _gd.PipelineInternal.EndRenderPass();
             var cbs = _gd.PipelineInternal.CurrentCommandBuffer;

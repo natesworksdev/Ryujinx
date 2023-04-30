@@ -127,7 +127,7 @@ namespace Ryujinx.Graphics.Vulkan
             var bufferCreateInfo = new BufferCreateInfo()
             {
                 SType = StructureType.BufferCreateInfo,
-                Size = (ulong)4096,
+                Size = (ulong)Environment.SystemPageSize,
                 Usage = usage,
                 SharingMode = SharingMode.Exclusive
             };

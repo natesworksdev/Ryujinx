@@ -57,6 +57,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public bool HasCopyDependencies { get; set; }
 
+        /// <summary>
+        /// Indicates if the texture group has a pre-emptive flush buffer.
+        /// When one is present, the group must always be notified on unbind.
+        /// </summary>
         public bool HasFlushBuffer => _flushBuffer != BufferHandle.Null;
 
         /// <summary>
@@ -630,7 +634,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 (int layer, int level) = GetLayerLevelForView(i);
 
-                Storage.GetFlushTexture().GetData(new BufferRange(_flushBuffer, _allOffsets[i], 1), layer, level, _flushBufferImported ? Storage.Info.Stride : 0);
+                Storage.GetFlushTexture().CopyTo(new BufferRange(_flushBuffer, _allOffsets[i], 1), layer, level, _flushBufferImported ? Storage.Info.Stride : 0);
             }
         }
 
