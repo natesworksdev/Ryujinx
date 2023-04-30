@@ -327,14 +327,7 @@ namespace Ryujinx.Memory.Range
         /// <returns>A string summary of the ranges contained within</returns>
         public override string ToString()
         {
-            if (HasSingleRange)
-            {
-                return $"[{_singleRange.Address:x16}:{_singleRange.Size:x8}]";
-            }
-            else
-            {
-                return $"[{string.Join(", ", _ranges.Select(range => $"{range.Address:x16}:{range.Size:x8}"))}]";
-            }
+            return HasSingleRange ? _singleRange.ToString() : string.Join(", ", _ranges);
         }
     }
 }

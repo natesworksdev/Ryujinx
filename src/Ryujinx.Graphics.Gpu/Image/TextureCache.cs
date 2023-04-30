@@ -1171,6 +1171,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     if (range.GetSubRange(i).Address == MemoryManager.PteUnmapped)
                     {
                         partiallyMapped = true;
+                        break;
                     }
                 }
 
