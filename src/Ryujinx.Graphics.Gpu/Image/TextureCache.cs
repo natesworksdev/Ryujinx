@@ -82,13 +82,39 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (overlapCount > 0)
             {
-                lock (_partiallyMappedTextures)
+                for (int i = 0; i < overlapCount; i++)
                 {
-                    for (int i = 0; i < overlapCount; i++)
+                    overlaps[i].Unmapped(unmapped);
+                }
+            }
+
+            lock (_partiallyMappedTextures)
+            {
+                if (overlapCount > 0 || _partiallyMappedTextures.Count > 0)
+                {
+                    e.AddRemapAction(() =>
                     {
-                        overlaps[i].Unmapped(unmapped);
-                        _partiallyMappedTextures.Add(overlaps[i]);
-                    }
+                        lock (_partiallyMappedTextures)
+                        {
+                            if (overlapCount > 0)
+                            {
+                                for (int i = 0; i < overlapCount; i++)
+                                {
+                                    _partiallyMappedTextures.Add(overlaps[i]);
+                                }
+                            }
+
+                            // Any texture that has been unmapped at any point or is partially unmapped
+                            // should update their pool references after the remap completes.
+
+                            MultiRange unmapped = ((MemoryManager)sender).GetPhysicalRegions(e.Address, e.Size);
+
+                            foreach (var texture in _partiallyMappedTextures)
+                            {
+                                texture.UpdatePoolMappings();
+                            }
+                        }
+                    });
                 }
             }
         }
@@ -1143,6 +1169,43 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 _partiallyMappedTextures.Remove(texture);
             }
+        }
+
+        /// <summary>
+        /// Queries a texture's memory range and marks it as partially mapped or not.
+        /// Partially mapped textures re-evaluate their memory range after each time GPU memory is mapped.
+        /// </summary>
+        /// <param name="memoryManager">GPU memory manager where the texture is mapped</param>
+        /// <param name="address">The virtual address of the texture</param>
+        /// <param name="texture">The texture to be marked</param>
+        /// <returns>The physical regions for the texture, found when evaluating whether the texture was partially mapped</returns>
+        public MultiRange UpdatePartiallyMapped(MemoryManager memoryManager, ulong address, Texture texture)
+        {
+            MultiRange range;
+            lock (_partiallyMappedTextures)
+            {
+                range = memoryManager.GetPhysicalRegions(address, texture.Size);
+                bool partiallyMapped = false;
+
+                for (int i = 0; i < range.Count; i++)
+                {
+                    if (range.GetSubRange(i).Address == MemoryManager.PteUnmapped)
+                    {
+                        partiallyMapped = true;
+                    }
+                }
+
+                if (partiallyMapped)
+                {
+                    _partiallyMappedTextures.Add(texture);
+                }
+                else
+                {
+                    _partiallyMappedTextures.Remove(texture);
+                }
+            }
+
+            return range;
         }
 
         /// <summary>

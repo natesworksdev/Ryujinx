@@ -33,7 +33,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private readonly ulong[][] _pageTable;
 
         public event EventHandler<UnmapEventArgs> MemoryUnmapped;
-        public event EventHandler<UnmapEventArgs> MemoryRemapped;
 
         /// <summary>
         /// Physical memory where the virtual memory is mapped into.
@@ -57,8 +56,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
             MemoryUnmapped += Physical.TextureCache.MemoryUnmappedHandler;
             MemoryUnmapped += Physical.BufferCache.MemoryUnmappedHandler;
             MemoryUnmapped += CounterCache.MemoryUnmappedHandler;
-
-            MemoryRemapped += Physical.TextureCache.MemoryRemappedHandler;
         }
 
         /// <summary>
@@ -369,6 +366,22 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Runs remap actions that are added to an unmap event.
+        /// These must run after the mapping completes.
+        /// </summary>
+        /// <param name="e">Event with remap actions</param>
+        private void RunRemapActions(UnmapEventArgs e)
+        {
+            if (e.RemapActions != null)
+            {
+                foreach (Action action in e.RemapActions)
+                {
+                    action();
+                }
+            }
+        }
+
+        /// <summary>
         /// Maps a given range of pages to the specified CPU virtual address.
         /// </summary>
         /// <remarks>
@@ -382,14 +395,15 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             lock (_pageTable)
             {
-                MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
+                UnmapEventArgs e = new(va, size);
+                MemoryUnmapped?.Invoke(this, e);
 
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, PackPte(pa + offset, kind));
                 }
 
-                MemoryRemapped?.Invoke(this, new UnmapEventArgs(va, size));
+                RunRemapActions(e);
             }
         }
 
@@ -403,14 +417,15 @@ namespace Ryujinx.Graphics.Gpu.Memory
             lock (_pageTable)
             {
                 // Event handlers are not expected to be thread safe.
-                MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
+                UnmapEventArgs e = new(va, size);
+                MemoryUnmapped?.Invoke(this, e);
 
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, PteUnmapped);
                 }
 
-                MemoryRemapped?.Invoke(this, new UnmapEventArgs(va, size));
+                RunRemapActions(e);
             }
         }
 

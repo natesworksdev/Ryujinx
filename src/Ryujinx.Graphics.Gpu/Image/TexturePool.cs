@@ -280,7 +280,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         continue;
                     }
 
-                    MultiRange range = _channel.MemoryManager.GetPhysicalRegions(address, texture.Size);
+                    MultiRange range = _channel.MemoryManager.Physical.TextureCache.UpdatePartiallyMapped(_channel.MemoryManager, address, texture);
 
                     // If the texture is not mapped at all, delete its reference.
 
