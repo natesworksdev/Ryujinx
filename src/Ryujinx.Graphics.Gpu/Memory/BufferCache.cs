@@ -156,7 +156,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 _dirtyCache[gpuVa] = result;
             }
 
-            result.Buffer.ForceDirty(result.Address, size, true);
+            result.Buffer.ForceDirty(result.Address, size);
         }
 
         /// <summary>

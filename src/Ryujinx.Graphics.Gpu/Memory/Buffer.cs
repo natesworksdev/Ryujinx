@@ -436,38 +436,52 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Force a region of the buffer to be dirty within the memory tracking. Avoids reprotection and nullifies sequence number check.
+        /// </summary>
+        /// <param name="mAddress">Start address of the modified region</param>
+        /// <param name="mSize">Size of the region to force dirty</param>
+        private void ForceTrackingDirty(ulong mAddress, ulong mSize)
+        {
+            if (_useGranular)
+            {
+                _memoryTrackingGranular.ForceDirty(mAddress, mSize);
+            }
+            else
+            {
+                _memoryTracking.ForceDirty();
+                _sequenceNumber--;
+            }
+        }
+
+        /// <summary>
         /// Force a region of the buffer to be dirty. Avoids reprotection and nullifies sequence number check.
         /// </summary>
         /// <param name="mAddress">Start address of the modified region</param>
         /// <param name="mSize">Size of the region to force dirty</param>
-        /// <param name="precise">Whether the dirty range should retain its precision or be page granular</param>
-        public void ForceDirty(ulong mAddress, ulong mSize, bool precise = false)
+        public void ForceDirty(ulong mAddress, ulong mSize)
         {
             _modifiedRanges?.Clear(mAddress, mSize);
 
-            if (precise)
+            ulong end = mAddress + mSize;
+
+            if (_dirtyStart == ulong.MaxValue)
             {
-                if (_dirtyStart == ulong.MaxValue)
+                _dirtyStart = mAddress;
+                _dirtyEnd = end;
+            }
+            else
+            {
+                // Is the new range more than a page away from the existing one?
+
+                if ((long)(mAddress - _dirtyEnd) >= (long)MemoryManager.PageSize ||
+                    (long)(_dirtyStart - end) >= (long)MemoryManager.PageSize)
                 {
-                    _dirtyStart = mAddress;
-                    _dirtyEnd = mAddress + mSize;
+                    ForceTrackingDirty(mAddress, mSize);
                 }
                 else
                 {
                     _dirtyStart = Math.Min(_dirtyStart, mAddress);
                     _dirtyEnd = Math.Max(_dirtyEnd, mAddress + mSize);
-                }
-            }
-            else
-            {
-                if (_useGranular)
-                {
-                    _memoryTrackingGranular.ForceDirty(mAddress, mSize);
-                }
-                else
-                {
-                    _memoryTracking.ForceDirty();
-                    _sequenceNumber--;
                 }
             }
         }
@@ -556,7 +570,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 return false;
             }
 
-            ForceDirty(maxAddress, minEndAddress - maxAddress, true);
+            ForceDirty(maxAddress, minEndAddress - maxAddress);
 
             return true;
         }
