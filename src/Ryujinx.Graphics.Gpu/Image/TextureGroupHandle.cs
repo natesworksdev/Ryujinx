@@ -16,10 +16,10 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// </summary>
     class TextureGroupHandle : ISyncActionHandler, IDisposable
     {
-        private const int FlushBalanceIncrement = 3;
+        private const int FlushBalanceIncrement = 6;
         private const int FlushBalanceWriteCost = 1;
-        private const int FlushBalanceThreshold = 4;
-        private const int FlushBalanceMax = 30;
+        private const int FlushBalanceThreshold = 7;
+        private const int FlushBalanceMax = 60;
         private const int FlushBalanceMin = -10;
 
         private TextureGroup _group;
@@ -34,6 +34,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         private ulong _registeredSync;
         private ulong _registeredBufferSync = ulong.MaxValue;
+        private ulong _registeredBufferGuestSync = ulong.MaxValue;
 
         /// <summary>
         /// The sync number when the texture was last modified by GPU.
@@ -325,20 +326,20 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>True if the texture data can be read from the flush buffer</returns>
         public bool Sync(GpuContext context)
         {
-            ulong registeredSync = _registeredSync;
-            long diff = (long)(context.SyncNumber - registeredSync);
+            // Currently assumes the calling thread is a guest thread.
+
+            bool inBuffer = _registeredBufferGuestSync != ulong.MaxValue;
+            ulong sync = inBuffer ? _registeredBufferGuestSync : _registeredSync;
+
+            long diff = (long)(context.SyncNumber - sync);
 
             ModifyFlushBalance(FlushBalanceIncrement);
 
             if (diff > 0)
             {
-                ulong bufferSync = _registeredBufferSync;
+                context.Renderer.WaitSync(sync);
 
-                context.Renderer.WaitSync(registeredSync);
-
-                bool inBuffer = registeredSync == bufferSync;
-
-                if ((long)(_modifiedSync - registeredSync) > 0)
+                if ((long)(_modifiedSync - sync) > 0)
                 {
                     // Flush the data in a previous state. Do not remove the modified flag - it will be removed to ignore following writes.
                     return inBuffer;
@@ -372,7 +373,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             if (syncpoint || NextSyncCopies())
             {
-                if (ModifyFlushBalance(-FlushBalanceWriteCost) && _registeredBufferSync != _modifiedSync)
+                if (ModifyFlushBalance(0) && _registeredBufferSync != _modifiedSync)
                 {
                     _group.FlushIntoBuffer(this);
                     _registeredBufferSync = _modifiedSync;
@@ -390,9 +391,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             // The storage will need to signal modified again to update the sync number in future.
             _group.Storage.SignalModifiedDirty();
 
-            if (!syncpoint && !NextSyncCopies())
+            bool lastInBuffer = _registeredBufferSync == _modifiedSync;
+
+            if (!lastInBuffer)
             {
-                return false;
+                _registeredBufferSync = ulong.MaxValue;
             }
 
             lock (Overlaps)
@@ -413,7 +416,13 @@ namespace Ryujinx.Graphics.Gpu.Image
                 _group.RegisterAction(this);
             }
 
-            return true;
+            if (syncpoint)
+            {
+                _registeredBufferGuestSync = _registeredBufferSync;
+            }
+
+            // If the last modification is in the buffer, keep this sync action alive until it sees a syncpoint.
+            return syncpoint || !lastInBuffer;
         }
 
         /// <summary>
