@@ -481,7 +481,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 else
                 {
                     _dirtyStart = Math.Min(_dirtyStart, mAddress);
-                    _dirtyEnd = Math.Max(_dirtyEnd, mAddress + mSize);
+                    _dirtyEnd = Math.Max(_dirtyEnd, end);
                 }
             }
         }
