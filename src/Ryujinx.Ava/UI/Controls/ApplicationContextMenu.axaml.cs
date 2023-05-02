@@ -1,0 +1,290 @@
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
+using LibHac.Fs;
+using LibHac.Tools.FsSystem.NcaUtils;
+using Ryujinx.Ava.Common;
+using Ryujinx.Ava.Common.Locale;
+using Ryujinx.Ava.UI.Helpers;
+using Ryujinx.Ava.UI.ViewModels;
+using Ryujinx.Ava.UI.Windows;
+using Ryujinx.Common.Configuration;
+using Ryujinx.Ui.Common.Helper;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using Path = System.IO.Path;
+using UserId = LibHac.Fs.UserId;
+
+namespace Ryujinx.Ava.UI.Controls
+{
+    public class ApplicationContextMenu : MenuFlyout
+    {
+        private static MainWindowViewModel _viewModel => ContentDialogHelper.GetMainWindow().ViewModel;
+
+        public ApplicationContextMenu()
+        {
+            InitializeComponent();
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
+
+        public void ToggleFavorite_Click(object sender, RoutedEventArgs args)
+        {
+            if (_viewModel.SelectedApplication != null)
+            {
+                _viewModel.SelectedApplication.Favorite = !_viewModel.SelectedApplication.Favorite;
+
+                _viewModel.ApplicationLibrary.LoadAndSaveMetaData(_viewModel.SelectedApplication.TitleId, appMetadata =>
+                {
+                    appMetadata.Favorite = _viewModel.SelectedApplication.Favorite;
+                });
+
+                _viewModel.RefreshView();
+            }
+        }
+
+        public void OpenUserSaveDirectory_Click(object sender, RoutedEventArgs args)
+        {
+            OpenSaveDirectory(SaveDataType.Account, userId: new UserId((ulong)_viewModel.AccountManager.LastOpenedUser.UserId.High, (ulong)_viewModel.AccountManager.LastOpenedUser.UserId.Low));
+        }
+
+        public void OpenDeviceSaveDirectory_Click(object sender, RoutedEventArgs args)
+        {
+            OpenSaveDirectory(SaveDataType.Device, userId: default);
+        }
+
+        public void OpenBcatSaveDirectory_Click(object sender, RoutedEventArgs args)
+        {
+            OpenSaveDirectory(SaveDataType.Bcat, userId: default);
+        }
+
+        private void OpenSaveDirectory(SaveDataType saveDataType, UserId userId)
+        {
+            if (_viewModel.SelectedApplication != null)
+            {
+                if (!ulong.TryParse(_viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ulong titleIdNumber))
+                {
+                    Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogRyujinxErrorMessage], LocaleManager.Instance[LocaleKeys.DialogInvalidTitleIdErrorMessage]);
+                    });
+
+                    return;
+                }
+
+                var saveDataFilter = SaveDataFilter.Make(titleIdNumber, saveDataType, userId, saveDataId: default, index: default);
+
+                ApplicationHelper.OpenSaveDir(in saveDataFilter, titleIdNumber, _viewModel.SelectedApplication.ControlHolder, _viewModel.SelectedApplication.TitleName);
+            }
+        }
+
+        public async void OpenTitleUpdateManager_Click(object sender, RoutedEventArgs args)
+        {
+            if (_viewModel.SelectedApplication != null)
+            {
+                await TitleUpdateWindow.Show(_viewModel.VirtualFileSystem, ulong.Parse(_viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber), _viewModel.SelectedApplication.TitleName);
+            }
+        }
+
+        public async void OpenDownloadableContentManager_Click(object sender, RoutedEventArgs args)
+        {
+            if (_viewModel.SelectedApplication != null)
+            {
+                await DownloadableContentManagerWindow.Show(_viewModel.VirtualFileSystem, ulong.Parse(_viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber), _viewModel.SelectedApplication.TitleName);
+            }
+        }
+
+        public async void OpenCheatManager_Click(object sender, RoutedEventArgs args)
+        {
+            if (_viewModel.SelectedApplication != null)
+            {
+                await new CheatWindow(_viewModel.VirtualFileSystem, _viewModel.SelectedApplication.TitleId, _viewModel.SelectedApplication.TitleName).ShowDialog(_viewModel.TopLevel as Window);
+            }
+        }
+
+        public void OpenModsDirectory_Click(object sender, RoutedEventArgs args)
+        {
+            if (_viewModel.SelectedApplication != null)
+            {
+                string modsBasePath = _viewModel.VirtualFileSystem.ModLoader.GetModsBasePath();
+                string titleModsPath = _viewModel.VirtualFileSystem.ModLoader.GetTitleDir(modsBasePath, _viewModel.SelectedApplication.TitleId);
+
+                OpenHelper.OpenFolder(titleModsPath);
+            }
+        }
+
+        public void OpenSdModsDirectory_Click(object sender, RoutedEventArgs args)
+        {
+            if (_viewModel.SelectedApplication != null)
+            {
+                string sdModsBasePath = _viewModel.VirtualFileSystem.ModLoader.GetSdModsBasePath();
+                string titleModsPath = _viewModel.VirtualFileSystem.ModLoader.GetTitleDir(sdModsBasePath, _viewModel.SelectedApplication.TitleId);
+
+                OpenHelper.OpenFolder(titleModsPath);
+            }
+        }
+
+        public async void PurgePtcCache_Click(object sender, RoutedEventArgs args)
+        {
+            if (_viewModel.SelectedApplication != null)
+            {
+                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(LocaleManager.Instance[LocaleKeys.DialogWarning],
+                                                                                       LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogPPTCDeletionMessage, _viewModel.SelectedApplication.TitleName),
+                                                                                       LocaleManager.Instance[LocaleKeys.InputDialogYes],
+                                                                                       LocaleManager.Instance[LocaleKeys.InputDialogNo],
+                                                                                       LocaleManager.Instance[LocaleKeys.RyujinxConfirm]);
+
+                if (result == UserResult.Yes)
+                {
+                    DirectoryInfo mainDir = new(Path.Combine(AppDataManager.GamesDirPath, _viewModel.SelectedApplication.TitleId, "cache", "cpu", "0"));
+                    DirectoryInfo backupDir = new(Path.Combine(AppDataManager.GamesDirPath, _viewModel.SelectedApplication.TitleId, "cache", "cpu", "1"));
+
+                    List<FileInfo> cacheFiles = new();
+
+                    if (mainDir.Exists)
+                    {
+                        cacheFiles.AddRange(mainDir.EnumerateFiles("*.cache"));
+                    }
+
+                    if (backupDir.Exists)
+                    {
+                        cacheFiles.AddRange(backupDir.EnumerateFiles("*.cache"));
+                    }
+
+                    if (cacheFiles.Count > 0)
+                    {
+                        foreach (FileInfo file in cacheFiles)
+                        {
+                            try
+                            {
+                                file.Delete();
+                            }
+                            catch (Exception ex)
+                            {
+                                await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogPPTCDeletionErrorMessage, file.Name, ex));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public async void PurgeShaderCache_Click(object sender, RoutedEventArgs args)
+        {
+            if (_viewModel.SelectedApplication != null)
+            {
+                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(LocaleManager.Instance[LocaleKeys.DialogWarning],
+                                                                                       LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogShaderDeletionMessage, _viewModel.SelectedApplication.TitleName),
+                                                                                       LocaleManager.Instance[LocaleKeys.InputDialogYes],
+                                                                                       LocaleManager.Instance[LocaleKeys.InputDialogNo],
+                                                                                       LocaleManager.Instance[LocaleKeys.RyujinxConfirm]);
+
+                if (result == UserResult.Yes)
+                {
+                    DirectoryInfo shaderCacheDir = new(Path.Combine(AppDataManager.GamesDirPath, _viewModel.SelectedApplication.TitleId, "cache", "shader"));
+
+                    List<DirectoryInfo> oldCacheDirectories = new();
+                    List<FileInfo> newCacheFiles = new();
+
+                    if (shaderCacheDir.Exists)
+                    {
+                        oldCacheDirectories.AddRange(shaderCacheDir.EnumerateDirectories("*"));
+                        newCacheFiles.AddRange(shaderCacheDir.GetFiles("*.toc"));
+                        newCacheFiles.AddRange(shaderCacheDir.GetFiles("*.data"));
+                    }
+
+                    if ((oldCacheDirectories.Count > 0 || newCacheFiles.Count > 0))
+                    {
+                        foreach (DirectoryInfo directory in oldCacheDirectories)
+                        {
+                            try
+                            {
+                                directory.Delete(true);
+                            }
+                            catch (Exception ex)
+                            {
+                                await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogPPTCDeletionErrorMessage, directory.Name, ex));
+                            }
+                        }
+
+                        foreach (FileInfo file in newCacheFiles)
+                        {
+                            try
+                            {
+                                file.Delete();
+                            }
+                            catch (Exception ex)
+                            {
+                                await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.ShaderCachePurgeError, file.Name, ex));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public void OpenPtcDirectory_Click(object sender, RoutedEventArgs args)
+        {
+            if (_viewModel.SelectedApplication != null)
+            {
+                string ptcDir = Path.Combine(AppDataManager.GamesDirPath, _viewModel.SelectedApplication.TitleId, "cache", "cpu");
+                string mainDir = Path.Combine(ptcDir, "0");
+                string backupDir = Path.Combine(ptcDir, "1");
+
+                if (!Directory.Exists(ptcDir))
+                {
+                    Directory.CreateDirectory(ptcDir);
+                    Directory.CreateDirectory(mainDir);
+                    Directory.CreateDirectory(backupDir);
+                }
+
+                OpenHelper.OpenFolder(ptcDir);
+            }
+        }
+
+        public void OpenShaderCacheDirectory_Click(object sender, RoutedEventArgs args)
+        {
+            if (_viewModel.SelectedApplication != null)
+            {
+                string shaderCacheDir = Path.Combine(AppDataManager.GamesDirPath, _viewModel.SelectedApplication.TitleId, "cache", "shader");
+
+                if (!Directory.Exists(shaderCacheDir))
+                {
+                    Directory.CreateDirectory(shaderCacheDir);
+                }
+
+                OpenHelper.OpenFolder(shaderCacheDir);
+            }
+        }
+
+        public async void ExtractApplicationLogo_Click(object sender, RoutedEventArgs args)
+        {
+            if (_viewModel.SelectedApplication != null)
+            {
+                await ApplicationHelper.ExtractSection(NcaSectionType.Logo, _viewModel.SelectedApplication.Path, _viewModel.SelectedApplication.TitleName);
+            }
+        }
+
+        public async void ExtractApplicationRomFs_Click(object sender, RoutedEventArgs args)
+        {
+            if (_viewModel.SelectedApplication != null)
+            {
+                await ApplicationHelper.ExtractSection(NcaSectionType.Data, _viewModel.SelectedApplication.Path, _viewModel.SelectedApplication.TitleName);
+            }
+        }
+
+        public async void ExtractApplicationExeFs_Click(object sender, RoutedEventArgs args)
+        {
+            if (_viewModel.SelectedApplication != null)
+            {
+                await ApplicationHelper.ExtractSection(NcaSectionType.Code, _viewModel.SelectedApplication.Path, _viewModel.SelectedApplication.TitleName);
+            }
+        }
+    }
+}
