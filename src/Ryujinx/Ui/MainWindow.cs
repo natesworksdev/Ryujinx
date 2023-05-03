@@ -1343,7 +1343,7 @@ namespace Ryujinx.Ui
 
         private void SetWindowSizePosition()
         {
-            DefaultWidth  = ConfigurationState.Instance.Ui.WindowStartup.WindowSizeWidth;
+            DefaultWidth = ConfigurationState.Instance.Ui.WindowStartup.WindowSizeWidth;
             DefaultHeight = ConfigurationState.Instance.Ui.WindowStartup.WindowSizeHeight;
 
             Move(ConfigurationState.Instance.Ui.WindowStartup.WindowPositionX, ConfigurationState.Instance.Ui.WindowStartup.WindowPositionY);

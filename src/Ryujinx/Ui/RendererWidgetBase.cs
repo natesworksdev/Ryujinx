@@ -165,7 +165,7 @@ namespace Ryujinx.Ui
                         Window.Cursor = _invisibleCursor;
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(state));
                 }
             });
         }
