@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.OpenGL
         private readonly PersistentBuffer _main = new();
         private readonly PersistentBuffer _background = new();
 
-        private Dictionary<BufferHandle, IntPtr> _maps = new Dictionary<BufferHandle, IntPtr>();
+        private readonly Dictionary<BufferHandle, IntPtr> _maps = new();
 
         public PersistentBuffer Default => BackgroundContextWorker.InBackground ? _background : _main;
 
