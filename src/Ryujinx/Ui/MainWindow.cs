@@ -135,7 +135,7 @@ namespace Ryujinx.Ui
         [GUI] Label _firmwareVersionLabel;
         [GUI] Gtk.ProgressBar _progressBar;
         [GUI] Box _viewBox;
-        [GUI] Label _vSyncStatus;
+        [GUI] Label _speedState;
         [GUI] Label _volumeStatus;
         [GUI] Box _listStatusBox;
         [GUI] Label _loadingStatusLabel;
@@ -649,7 +649,10 @@ namespace Ryujinx.Ui
                 ConfigurationState.Instance.Graphics.AspectRatio,
                 ConfigurationState.Instance.System.AudioVolume,
                 ConfigurationState.Instance.System.UseHypervisor,
-                ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value);
+                ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value,
+                ConfigurationState.Instance.Graphics.NormalEmulationSpeed,
+                ConfigurationState.Instance.Graphics.FastForwardEmulationSpeed,
+                ConfigurationState.Instance.Graphics.TurboEmulationSpeed);
 
             _emulationContext = new HLE.Switch(configuration);
         }
@@ -1087,7 +1090,7 @@ namespace Ryujinx.Ui
             }
         }
 
-        public static void UpdateGraphicsConfig()
+        public void UpdateGraphicsConfig()
         {
             int resScale = ConfigurationState.Instance.Graphics.ResScale;
             float resScaleCustom = ConfigurationState.Instance.Graphics.ResScaleCustom;
@@ -1098,6 +1101,14 @@ namespace Ryujinx.Ui
             Graphics.Gpu.GraphicsConfig.EnableShaderCache = ConfigurationState.Instance.Graphics.EnableShaderCache;
             Graphics.Gpu.GraphicsConfig.EnableTextureRecompression = ConfigurationState.Instance.Graphics.EnableTextureRecompression;
             Graphics.Gpu.GraphicsConfig.EnableMacroHLE = ConfigurationState.Instance.Graphics.EnableMacroHLE;
+
+            if (_emulationContext != null)
+            {
+                _emulationContext.NormalEmulationSpeed             = ConfigurationState.Instance.Graphics.NormalEmulationSpeed;
+                _emulationContext.FastForwardEmulationSpeed        = ConfigurationState.Instance.Graphics.FastForwardEmulationSpeed;
+                _emulationContext.TurboEmulationSpeed              = ConfigurationState.Instance.Graphics.TurboEmulationSpeed;
+                _emulationContext.SetSpeedState(_emulationContext.SpeedState);
+            }
         }
 
         public static void SaveConfig()
@@ -1184,23 +1195,13 @@ namespace Ryujinx.Ui
             Application.Invoke(delegate
             {
                 _gameStatus.Text = args.GameStatus;
+                _speedState.Text   = args.SpeedState;
                 _fifoStatus.Text = args.FifoStatus;
                 _gpuName.Text = args.GpuName;
                 _dockedMode.Text = args.DockedMode;
                 _aspectRatio.Text = args.AspectRatio;
                 _gpuBackend.Text = args.GpuBackend;
                 _volumeStatus.Text = GetVolumeLabelText(args.Volume);
-
-                if (args.VSyncEnabled)
-                {
-                    _vSyncStatus.Attributes = new Pango.AttrList();
-                    _vSyncStatus.Attributes.Insert(new Pango.AttrForeground(11822, 60138, 51657));
-                }
-                else
-                {
-                    _vSyncStatus.Attributes = new Pango.AttrList();
-                    _vSyncStatus.Attributes.Insert(new Pango.AttrForeground(ushort.MaxValue, 17733, 21588));
-                }
             });
         }
 
@@ -1238,11 +1239,24 @@ namespace Ryujinx.Ui
             RunApplication(path);
         }
 
-        private void VSyncStatus_Clicked(object sender, ButtonReleaseEventArgs args)
+        private void SpeedState_Clicked(object sender, ButtonReleaseEventArgs args)
         {
-            _emulationContext.EnableDeviceVsync = !_emulationContext.EnableDeviceVsync;
+            var currentState = _emulationContext.SpeedState;
 
-            Logger.Info?.Print(LogClass.Application, $"VSync toggled to: {_emulationContext.EnableDeviceVsync}");
+            if (currentState.HasFlag(SpeedState.Turbo))
+            {
+                _emulationContext.SetSpeedState(SpeedState.Normal);
+            }
+            else if (currentState.HasFlag(SpeedState.FastForward))
+            {
+                _emulationContext.SetSpeedState(SpeedState.Turbo);
+            }
+            else
+            {
+                _emulationContext.SetSpeedState(SpeedState.FastForward);
+            }
+            
+            Logger.Info?.Print(LogClass.Application, $"Speed State set to: {_emulationContext.GetSpeedStateStatus()}");
         }
 
         private void DockedMode_Clicked(object sender, ButtonReleaseEventArgs args)

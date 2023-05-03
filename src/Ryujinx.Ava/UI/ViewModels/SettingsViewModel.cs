@@ -45,6 +45,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private bool _isVulkanAvailable = true;
         private bool _directoryChanged;
         private readonly List<string> _gpuIds = new();
+        private Dictionary<string, decimal> _emulationSpeeds = new();
         private KeyboardHotkeys _keyboardHotkeys;
         private int _graphicsBackendIndex;
         private string _customThemePath;
@@ -54,6 +55,9 @@ namespace Ryujinx.Ava.UI.ViewModels
         public event Action CloseWindow;
         public event Action SaveSettingsEvent;
         private int _networkInterfaceIndex;
+        private int _normalEmulationSpeed;
+        private int _fastForwardSpeed;
+        private int _turboSpeed;
 
         public int ResolutionScale
         {
@@ -110,6 +114,19 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 OnPropertyChanged();
             }
+        }
+
+        public bool IsCustomNormalSpeed
+        {
+            get => _emulationSpeeds[(string)AvailableNormalSpeeds[NormalEmulationSpeed].Content] == -2;
+        }
+        public bool IsCustomFastSpeed
+        {
+            get => _emulationSpeeds[(string)AvailableFastForwardSpeeds[FastForwardSpeed].Content] == -2;
+        }
+        public bool IsCustomTurboSpeed
+        {
+            get => _emulationSpeeds[(string)AvailableTurboSpeeds[TurboSpeed].Content] == -2;
         }
 
         public bool IsOpenGLAvailable => !OperatingSystem.IsMacOS();
@@ -224,6 +241,36 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        public int NormalEmulationSpeed
+        {
+            get => _normalEmulationSpeed;
+            set
+            {
+                _normalEmulationSpeed = value;
+                OnPropertyChanged(nameof(IsCustomNormalSpeed));
+            }
+        }
+        public int FastForwardSpeed
+        {
+            get => _fastForwardSpeed;
+            set
+            {
+                _fastForwardSpeed = value;
+                OnPropertyChanged(nameof(IsCustomFastSpeed));
+            }
+        }
+        public int TurboSpeed
+        {
+            get => _turboSpeed;
+            set
+            {
+                _turboSpeed = value;
+                OnPropertyChanged(nameof(IsCustomTurboSpeed));
+            }
+        }
+        public decimal CustomNormalEmulationSpeed { get; set; }
+        public decimal CustomFastForwardSpeed { get; set; }
+        public decimal CustomTurboSpeed { get; set; }
         public int PreferredGpuIndex { get; set; }
 
         public float Volume
@@ -245,6 +292,9 @@ namespace Ryujinx.Ava.UI.ViewModels
         internal AvaloniaList<TimeZone> TimeZones { get; set; }
         public AvaloniaList<string> GameDirectories { get; set; }
         public ObservableCollection<ComboBoxItem> AvailableGpus { get; set; }
+        public ObservableCollection<ComboBoxItem> AvailableNormalSpeeds { get; set; }
+        public ObservableCollection<ComboBoxItem> AvailableFastForwardSpeeds { get; set; }
+        public ObservableCollection<ComboBoxItem> AvailableTurboSpeeds { get; set; }
 
         public AvaloniaList<string> NetworkInterfaceList
         {
@@ -296,6 +346,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             if (Program.PreviewerDetached)
             {
                 Task.Run(LoadAvailableGpus);
+                LoadEmulationSpeeds();
                 LoadCurrentConfiguration();
             }
         }
@@ -368,7 +419,28 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             Dispatcher.UIThread.Post(() => OnPropertyChanged(nameof(TimeZone)));
         }
+        private void LoadEmulationSpeeds()
+        {
+            _emulationSpeeds.Clear();
+            for (decimal i = 0.1m; i <= 1.0m; i += 0.1m)
+            {
+                _emulationSpeeds.Add($"{(i * 100).ToString("F0")}%", i);
+            }
+            for (decimal i = 1.25m; i <= 5.0m; i += 0.25m)
+            {
+                _emulationSpeeds.Add($"{(i * 100).ToString("F0")}%", i);
+            }
+            for (decimal i = 6.00m; i <= 10.0m; i += 1.0m)
+            {
+                _emulationSpeeds.Add($"{(i * 100).ToString("F0")}%", i);
+            }
+            _emulationSpeeds.Add("Unlimited (Vsync off)", -1);
+            _emulationSpeeds.Add("Custom", -2);
 
+            AvailableNormalSpeeds = new ObservableCollection<ComboBoxItem>(_emulationSpeeds.Select(x => new ComboBoxItem() { Content = x.Key }).ToArray());
+            AvailableFastForwardSpeeds = new ObservableCollection<ComboBoxItem>(_emulationSpeeds.Select(x => new ComboBoxItem() { Content = x.Key }));
+            AvailableTurboSpeeds = new ObservableCollection<ComboBoxItem>(_emulationSpeeds.Select(x => new ComboBoxItem() { Content = x.Key }));
+        }
         private async Task PopulateNetworkInterfaces()
         {
             _networkInterfaces.Clear();
@@ -435,6 +507,16 @@ namespace Ryujinx.Ava.UI.ViewModels
             EnableFsIntegrityChecks = config.System.EnableFsIntegrityChecks;
             ExpandDramSize = config.System.ExpandRam;
             IgnoreMissingServices = config.System.IgnoreMissingServices;
+
+            var foundNormalSpeed = _emulationSpeeds.Values.Contains(config.Graphics.NormalEmulationSpeed) ? _emulationSpeeds.First(x => x.Value == config.Graphics.NormalEmulationSpeed).Key : null;
+            NormalEmulationSpeed = foundNormalSpeed != null ? AvailableNormalSpeeds.IndexOf(AvailableNormalSpeeds.First(x => (string)x.Content == foundNormalSpeed)) : AvailableNormalSpeeds.IndexOf(AvailableNormalSpeeds.First(x => (string)x.Content == _emulationSpeeds.First(x => x.Value == -2).Key));
+            CustomNormalEmulationSpeed = config.Graphics.NormalEmulationSpeed * 100.0m;
+            var foundFastForwardSpeed = _emulationSpeeds.Values.Contains(config.Graphics.FastForwardEmulationSpeed) ? _emulationSpeeds.First(x => x.Value == config.Graphics.FastForwardEmulationSpeed).Key : null;
+            FastForwardSpeed = foundFastForwardSpeed != null ? AvailableFastForwardSpeeds.IndexOf(AvailableFastForwardSpeeds.First(x => (string)x.Content == foundFastForwardSpeed)) : AvailableFastForwardSpeeds.IndexOf(AvailableFastForwardSpeeds.First(x => (string)x.Content == _emulationSpeeds.First(x => x.Value == -2).Key));
+            CustomFastForwardSpeed = config.Graphics.FastForwardEmulationSpeed * 100.0m;
+            var foundTurboSpeed = _emulationSpeeds.Values.Contains(config.Graphics.TurboEmulationSpeed) ? _emulationSpeeds.First(x => x.Value == config.Graphics.TurboEmulationSpeed).Key : null;
+            TurboSpeed = foundTurboSpeed != null ? AvailableTurboSpeeds.IndexOf(AvailableTurboSpeeds.First(x => (string)x.Content == foundTurboSpeed)) : AvailableTurboSpeeds.IndexOf(AvailableTurboSpeeds.First(x => (string)x.Content == _emulationSpeeds.First(x => x.Value == -2).Key));
+            CustomTurboSpeed = config.Graphics.TurboEmulationSpeed * 100.0m;
 
             // CPU
             EnablePptc = config.System.EnablePtc;
@@ -522,6 +604,10 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.System.EnableFsIntegrityChecks.Value = EnableFsIntegrityChecks;
             config.System.ExpandRam.Value = ExpandDramSize;
             config.System.IgnoreMissingServices.Value = IgnoreMissingServices;
+            config.Graphics.NormalEmulationSpeed.Value = _emulationSpeeds[(string)AvailableNormalSpeeds[NormalEmulationSpeed].Content] == -2 ? CustomNormalEmulationSpeed / 100.0m : _emulationSpeeds[(string)AvailableNormalSpeeds[NormalEmulationSpeed].Content];
+            config.Graphics.FastForwardEmulationSpeed.Value = _emulationSpeeds[(string)AvailableFastForwardSpeeds[FastForwardSpeed].Content] == -2 ? CustomFastForwardSpeed / 100.0m : _emulationSpeeds[(string)AvailableFastForwardSpeeds[FastForwardSpeed].Content];
+            config.Graphics.TurboEmulationSpeed.Value = _emulationSpeeds[(string)AvailableTurboSpeeds[TurboSpeed].Content] == -2 ? CustomTurboSpeed / 100.0m : _emulationSpeeds[(string)AvailableTurboSpeeds[TurboSpeed].Content];
+
 
             // CPU
             config.System.EnablePtc.Value = EnablePptc;

@@ -12,5 +12,7 @@
         ResScaleDown,
         VolumeUp,
         VolumeDown,
+        ToggleFastForward,
+        ToggleTurbo
     }
 }

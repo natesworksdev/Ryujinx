@@ -471,6 +471,21 @@ namespace Ryujinx.Ui.Common.Configuration
             public ReactiveObject<bool> EnableVsync { get; private set; }
 
             /// <summary>
+            /// Sets target emulation speed when in normal emulation mode
+            /// </summary>
+            public ReactiveObject<decimal> NormalEmulationSpeed { get; private set; }
+
+            /// <summary>
+            /// Sets target emulation speed when in fast forward mode
+            /// </summary>
+            public ReactiveObject<decimal> FastForwardEmulationSpeed { get; private set; }
+
+            /// <summary>
+            /// Sets target emulation speed when in turbo mode
+            /// </summary>
+            public ReactiveObject<decimal> TurboEmulationSpeed { get; private set; }
+
+            /// <summary>
             /// Enables or disables Shader cache
             /// </summary>
             public ReactiveObject<bool> EnableShaderCache { get; private set; }
@@ -548,6 +563,12 @@ namespace Ryujinx.Ui.Common.Configuration
                 ScalingFilter.Event += static (sender, e) => LogValueChange(e, nameof(ScalingFilter));
                 ScalingFilterLevel = new ReactiveObject<int>();
                 ScalingFilterLevel.Event += static (sender, e) => LogValueChange(e, nameof(ScalingFilterLevel));
+                NormalEmulationSpeed = new ReactiveObject<decimal>();
+                NormalEmulationSpeed.Event += static (sender, e) => LogValueChange(e, nameof(NormalEmulationSpeed));
+                FastForwardEmulationSpeed = new ReactiveObject<decimal>();
+                FastForwardEmulationSpeed.Event += static (sender, e) => LogValueChange(e, nameof(FastForwardEmulationSpeed));
+                TurboEmulationSpeed = new ReactiveObject<decimal>();
+                TurboEmulationSpeed.Event += static (sender, e) => LogValueChange(e, nameof(TurboEmulationSpeed));
             }
         }
 
@@ -671,6 +692,9 @@ namespace Ryujinx.Ui.Common.Configuration
                 ShowConfirmExit = ShowConfirmExit,
                 HideCursor = HideCursor,
                 EnableVsync = Graphics.EnableVsync,
+                NormalEmulationSpeed       = Graphics.NormalEmulationSpeed,
+                FastForwardEmulationSpeed           = Graphics.FastForwardEmulationSpeed,
+                TurboEmulationSpeed                 = Graphics.TurboEmulationSpeed,
                 EnableShaderCache = Graphics.EnableShaderCache,
                 EnableTextureRecompression = Graphics.EnableTextureRecompression,
                 EnableMacroHLE = Graphics.EnableMacroHLE,
@@ -757,6 +781,9 @@ namespace Ryujinx.Ui.Common.Configuration
             Graphics.GraphicsBackend.Value = OperatingSystem.IsMacOS() ? GraphicsBackend.Vulkan : GraphicsBackend.OpenGl;
             Graphics.PreferredGpu.Value = "";
             Graphics.ShadersDumpPath.Value = "";
+            Graphics.NormalEmulationSpeed.Value       = 1.0m;
+            Graphics.FastForwardEmulationSpeed.Value  = 1.5m;
+            Graphics.TurboEmulationSpeed.Value        = -1.0m;
             Logger.EnableDebug.Value = false;
             Logger.EnableStub.Value = true;
             Logger.EnableInfo.Value = true;
@@ -843,6 +870,8 @@ namespace Ryujinx.Ui.Common.Configuration
                 ResScaleDown = Key.Unbound,
                 VolumeUp = Key.Unbound,
                 VolumeDown = Key.Unbound,
+                ToggleFastForward = Key.Unbound,
+                ToggleTurbo = Key.Unbound,
             };
             Hid.InputConfig.Value = new List<InputConfig>
             {
@@ -1399,6 +1428,31 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 configurationFileUpdated = true;
             }
+            if (configurationFileFormat.Version < 48)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 48.");
+
+                configurationFileFormat.NormalEmulationSpeed = 1.0m;
+                configurationFileFormat.FastForwardEmulationSpeed = 1.5m;
+                configurationFileFormat.TurboEmulationSpeed = -1.0m;
+
+                configurationFileFormat.Hotkeys = new KeyboardHotkeys
+                {
+                    ToggleVsync = configurationFileFormat.Hotkeys.ToggleVsync,
+                    Screenshot = configurationFileFormat.Hotkeys.Screenshot,
+                    ShowUi = configurationFileFormat.Hotkeys.ShowUi,
+                    Pause = configurationFileFormat.Hotkeys.Pause,
+                    ToggleMute = configurationFileFormat.Hotkeys.ToggleMute,
+                    ResScaleUp = configurationFileFormat.Hotkeys.ResScaleUp,
+                    ResScaleDown = configurationFileFormat.Hotkeys.ResScaleDown,
+                    VolumeUp = configurationFileFormat.Hotkeys.VolumeUp,
+                    VolumeDown = configurationFileFormat.Hotkeys.VolumeDown,
+                    ToggleFastForward = Key.Unbound,
+                    ToggleTurbo = Key.Unbound
+                };
+
+                configurationFileUpdated = true;
+            }
 
             if (configurationFileFormat.Version < 48)
             {
@@ -1421,6 +1475,9 @@ namespace Ryujinx.Ui.Common.Configuration
             Graphics.AntiAliasing.Value = configurationFileFormat.AntiAliasing;
             Graphics.ScalingFilter.Value = configurationFileFormat.ScalingFilter;
             Graphics.ScalingFilterLevel.Value = configurationFileFormat.ScalingFilterLevel;
+            Graphics.NormalEmulationSpeed.Value = configurationFileFormat.NormalEmulationSpeed;
+            Graphics.FastForwardEmulationSpeed.Value = configurationFileFormat.FastForwardEmulationSpeed;
+            Graphics.TurboEmulationSpeed.Value = configurationFileFormat.TurboEmulationSpeed;
             Logger.EnableDebug.Value = configurationFileFormat.LoggingEnableDebug;
             Logger.EnableStub.Value = configurationFileFormat.LoggingEnableStub;
             Logger.EnableInfo.Value = configurationFileFormat.LoggingEnableInfo;

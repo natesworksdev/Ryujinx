@@ -698,15 +698,15 @@
                       <object class="GtkEventBox">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <signal name="button-release-event" handler="VSyncStatus_Clicked" swapped="no"/>
+                        <signal name="button-release-event" handler="SpeedState_Clicked" swapped="no"/>
                         <child>
-                          <object class="GtkLabel" id="_vSyncStatus">
+                          <object class="GtkLabel" id="_speedState">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">start</property>
                             <property name="margin-left">5</property>
                             <property name="margin-right">5</property>
-                            <property name="label" translatable="yes">VSync</property>
+                            <property name="label" translatable="yes">Normal</property>
                           </object>
                         </child>
                       </object>

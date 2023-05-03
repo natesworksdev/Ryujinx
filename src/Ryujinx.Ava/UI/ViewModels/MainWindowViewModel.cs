@@ -58,6 +58,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private string _searchText;
         private Timer _searchTimer;
         private string _dockedStatusText;
+        private string _speedStateText;
         private string _fifoStatusText;
         private string _gameStatusText;
         private string _volumeStatusText;
@@ -73,7 +74,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         private bool _showStatusSeparator;
         private Brush _progressBarForegroundColor;
         private Brush _progressBarBackgroundColor;
-        private Brush _vsyncColor;
         private byte[] _selectedIcon;
         private bool _isAppletMenuActive;
         private int _statusBarProgressMaximum;
@@ -400,17 +400,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public Brush VsyncColor
-        {
-            get => _vsyncColor;
-            set
-            {
-                _vsyncColor = value;
-
-                OnPropertyChanged();
-            }
-        }
-
         public byte[] SelectedIcon
         {
             get => _selectedIcon;
@@ -505,6 +494,17 @@ namespace Ryujinx.Ava.UI.ViewModels
             set
             {
                 _dockedStatusText = value;
+
+                OnPropertyChanged();
+            }
+        }
+
+        public string SpeedStateText
+        {
+            get => _speedStateText;
+            set
+            {
+                _speedStateText = value;
 
                 OnPropertyChanged();
             }
@@ -1188,17 +1188,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    Application.Current.Styles.TryGetResource(args.VSyncEnabled
-                        ? "VsyncEnabled"
-                        : "VsyncDisabled",
-                        Avalonia.Application.Current.ActualThemeVariant,
-                        out object color);
-
-                    if (color is not null)
-                    {
-                        VsyncColor = new SolidColorBrush((Color)color);
-                    }
-
+                    SpeedStateText = args.SpeedState;
                     DockedStatusText = args.DockedMode;
                     AspectRatioStatusText = args.AspectRatio;
                     GameStatusText = args.GameStatus;

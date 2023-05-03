@@ -97,6 +97,22 @@
                             TextAlignment="Center" />
                     </ToggleButton>
                 </StackPanel>
+              <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
+                <TextBlock VerticalAlignment="Center" Text="{locale:Locale SettingsTabHotkeysToggleFastForward}" Width="230" />
+                <ToggleButton Width="90" Height="27" Checked="Button_Checked" Unchecked="Button_Unchecked">
+                  <TextBlock
+                      Text="{Binding KeyboardHotkeys.ToggleFastForward, Mode=TwoWay, Converter={StaticResource Key}}"
+                      TextAlignment="Center" />
+                </ToggleButton>
+              </StackPanel>
+              <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
+                <TextBlock VerticalAlignment="Center" Text="{locale:Locale SettingsTabHotkeysToggleTurbo}" Width="230" />
+                <ToggleButton Width="90" Height="27" Checked="Button_Checked" Unchecked="Button_Unchecked">
+                  <TextBlock
+                      Text="{Binding KeyboardHotkeys.ToggleTurbo, Mode=TwoWay, Converter={StaticResource Key}}"
+                      TextAlignment="Center" />
+                </ToggleButton>
+              </StackPanel>
             </StackPanel>
         </Border>
    </ScrollViewer>

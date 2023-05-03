@@ -138,6 +138,15 @@ namespace Ryujinx.Headless.SDL2
         [Option("lan-interface-id", Required = false, Default = "0", HelpText = "GUID for the network interface used by LAN.")]
         public string MultiplayerLanInterfaceId { get; set; }
 
+        [Option("normal-emulation-speed", Required = false, Default = 1.0, HelpText = "Sets target emulation speed when in normal emulation mode")]
+        public decimal NormalEmulationSpeed { get; set; }
+
+        [Option("fast-forward-emulation-speed", Required = false, Default = 1.5, HelpText = "Sets target emulation speed when in fast forward mode")]
+        public decimal FastForwardEmulationSpeed { get; set; }
+
+        [Option("turbo-emulation-speed", Required = false, Default = -1.0, HelpText = "Sets target emulation speed when in turbo mode")]
+        public decimal TurboEmulationSpeed { get; set; }
+
         // Logging
 
         [Option("disable-file-logging", Required = false, Default = false, HelpText = "Disables logging to a file on disk.")]

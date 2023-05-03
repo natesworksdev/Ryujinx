@@ -6,6 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
+    xmlns:ui="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
     xmlns:helpers="clr-namespace:Ryujinx.Ava.UI.Helpers"
     mc:Ignorable="d"
     x:DataType="viewModels:SettingsViewModel">
@@ -154,7 +155,7 @@
                             SelectionChanged="TimeZoneBox_OnSelectionChanged"
                             Text="{Binding Path=TimeZone, Mode=OneWay}"
                             TextChanged="TimeZoneBox_OnTextChanged"
-                            ToolTip.Tip="{locale:Locale TimezoneTooltip}" 
+                            ToolTip.Tip="{locale:Locale TimezoneTooltip}"
                             ValueMemberBinding="{Binding Mode=OneWay, Converter={StaticResource TimeZone}}" />
                     </StackPanel>
                     <StackPanel
@@ -166,7 +167,7 @@
                             ToolTip.Tip="{locale:Locale TimeTooltip}"
                             Width="250"/>
                         <DatePicker
-                            VerticalAlignment="Center" 
+                            VerticalAlignment="Center"
                             SelectedDate="{Binding CurrentDate}"
                             ToolTip.Tip="{locale:Locale TimeTooltip}"
                             Width="350" />
@@ -193,6 +194,78 @@
                     </CheckBox>
                 </StackPanel>
                 <Separator Height="1" />
+                <StackPanel Orientation="Vertical" Spacing="2">
+                    <TextBlock Classes="h1" Text="{locale:Locale SettingsTabSystemSpeedControl}" />
+                </StackPanel>
+                <StackPanel
+                      Margin="10,0,0,0"
+                      HorizontalAlignment="Stretch"
+                      Orientation="Vertical">
+                    <StackPanel
+                        Margin="10,0,0,5"
+                        HorizontalAlignment="Stretch"
+                        Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center"
+                                        Text="{locale:Locale SettingsTabSystemSpeedControlNormalSpeed}"
+                                        Width="250" />
+                        <ComboBox Width="250" Margin="0,0,5,0"
+                                        HorizontalContentAlignment="Left"
+                                        SelectedIndex="{Binding NormalEmulationSpeed}"
+                                        ItemsSource="{Binding AvailableNormalSpeeds}"/>
+                        <ui:NumberBox IsVisible="{Binding IsCustomNormalSpeed}"
+                                        Value="{Binding CustomNormalEmulationSpeed}"
+                                        Width="200"
+                                        SmallChange="1.0"
+                                        LargeChange="10"
+                                        SimpleNumberFormat="F0"
+                                        SpinButtonPlacementMode="Inline"
+                                        Minimum="10"
+                                        Maximum="1000" />
+                    </StackPanel>
+                    <StackPanel
+                        Margin="10,0,0,5"
+                        HorizontalAlignment="Stretch"
+                        Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center"
+                                        Text="{locale:Locale SettingsTabSystemSpeedControlFastForwardSpeed}"
+                                        Width="250" />
+                        <ComboBox Width="250" Margin="0,0,5,0"
+                                        HorizontalContentAlignment="Left"
+                                        SelectedIndex="{Binding FastForwardSpeed}"
+                                        ItemsSource="{Binding AvailableFastForwardSpeeds}"/>
+                        <ui:NumberBox IsVisible="{Binding IsCustomFastSpeed}"
+                                        Value="{Binding CustomFastForwardSpeed}"
+                                        Width="200"
+                                        SmallChange="1.0"
+                                        LargeChange="10"
+                                        SimpleNumberFormat="F0"
+                                        SpinButtonPlacementMode="Inline"
+                                        Minimum="10"
+                                        Maximum="1000" />
+                    </StackPanel>
+                    <StackPanel
+                        Margin="10,0,0,0"
+                        HorizontalAlignment="Stretch"
+                        Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center"
+                                        Text="{locale:Locale SettingsTabSystemSpeedControlTurboSpeed}"
+                                        Width="250" />
+                        <ComboBox Width="250" Margin="0,0,5,0"
+                                        HorizontalContentAlignment="Left"
+                                        SelectedIndex="{Binding TurboSpeed}"
+                                        ItemsSource="{Binding AvailableTurboSpeeds}"/>
+                        <ui:NumberBox IsVisible="{Binding IsCustomTurboSpeed}"
+                                        Value="{Binding CustomTurboSpeed}"
+                                        Width="200"
+                                        SmallChange="1.0"
+                                        LargeChange="10"
+                                        SimpleNumberFormat="F0"
+                                        SpinButtonPlacementMode="Inline"
+                                        Minimum="10"
+                                        Maximum="1000" />
+                    </StackPanel>
+                    <Separator Height="1" />
+                </StackPanel>
                 <StackPanel
                     Orientation="Vertical"
                     Spacing="2">

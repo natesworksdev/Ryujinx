@@ -88,6 +88,21 @@ namespace Ryujinx.HLE
         internal readonly bool EnableVsync;
 
         /// <summary>
+        /// Sets target emulation speed when in normal emulation mode
+        /// </summary>
+        internal readonly decimal NormalEmulationSpeed;
+
+        /// <summary>
+        /// Sets target emulation speed when in fast forward mode
+        /// </summary>
+        internal readonly decimal FastForwardEmulationSpeed;
+
+        /// <summary>
+        /// Sets target emulation speed when in turbo mode
+        /// </summary>
+        internal readonly decimal TurboEmulationSpeed;
+
+        /// <summary>
         /// Control the initial state of the docked mode.
         /// </summary>
         internal readonly bool EnableDockedMode;
@@ -187,7 +202,10 @@ namespace Ryujinx.HLE
                                 AspectRatio aspectRatio,
                                 float audioVolume,
                                 bool useHypervisor,
-                                string multiplayerLanInterfaceId)
+                                string multiplayerLanInterfaceId,
+                                decimal emulationSpeed,
+                                decimal fastForwardSpeed,
+                                decimal turboSpeed)
         {
             VirtualFileSystem = virtualFileSystem;
             LibHacHorizonManager = libHacHorizonManager;
@@ -214,6 +232,9 @@ namespace Ryujinx.HLE
             AudioVolume = audioVolume;
             UseHypervisor = useHypervisor;
             MultiplayerLanInterfaceId = multiplayerLanInterfaceId;
+            NormalEmulationSpeed            = emulationSpeed;
+            FastForwardEmulationSpeed          = fastForwardSpeed;
+            TurboEmulationSpeed                = turboSpeed;
         }
     }
 }

@@ -189,6 +189,9 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.Graphics.ScalingFilter.Event += UpdateScalingFilter;
             ConfigurationState.Instance.Graphics.ScalingFilterLevel.Event += UpdateScalingFilterLevel;
             ConfigurationState.Instance.Graphics.EnableColorSpacePassthrough.Event += UpdateColorSpacePassthrough;
+            ConfigurationState.Instance.Graphics.NormalEmulationSpeed.Event      += (o, e) => UpdateSpeedSettingState(e.NewValue, SpeedState.Normal);
+            ConfigurationState.Instance.Graphics.FastForwardEmulationSpeed.Event += (o, e) => UpdateSpeedSettingState(e.NewValue, SpeedState.FastForward);
+            ConfigurationState.Instance.Graphics.TurboEmulationSpeed.Event       += (o, e) => UpdateSpeedSettingState(e.NewValue, SpeedState.Turbo);
 
             ConfigurationState.Instance.Multiplayer.LanInterfaceId.Event += UpdateLanInterfaceIdState;
 
@@ -410,6 +413,26 @@ namespace Ryujinx.Ava
         private void UpdateLanInterfaceIdState(object sender, ReactiveEventArgs<string> e)
         {
             Device.Configuration.MultiplayerLanInterfaceId = e.NewValue;
+        }
+
+        private void UpdateSpeedSettingState(decimal value, SpeedState state)
+        {
+            if (Device != null)
+            {
+                if (state == SpeedState.Normal)
+                {
+                    Device.NormalEmulationSpeed = value;
+                }
+                else if (state == SpeedState.FastForward)
+                {
+                    Device.FastForwardEmulationSpeed = value;
+                }
+                else if (state == SpeedState.Turbo)
+                {
+                    Device.TurboEmulationSpeed = value;
+                }
+            }
+            Device.SetSpeedState(Device.SpeedState);
         }
 
         public void Stop()
@@ -782,7 +805,10 @@ namespace Ryujinx.Ava
                                                      ConfigurationState.Instance.Graphics.AspectRatio,
                                                      ConfigurationState.Instance.System.AudioVolume,
                                                      ConfigurationState.Instance.System.UseHypervisor,
-                                                     ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value);
+                                                     ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value,
+                                                     ConfigurationState.Instance.Graphics.NormalEmulationSpeed,
+                                                     ConfigurationState.Instance.Graphics.FastForwardEmulationSpeed,
+                                                     ConfigurationState.Instance.Graphics.TurboEmulationSpeed);
 
             Device = new Switch(configuration);
         }
@@ -963,7 +989,7 @@ namespace Ryujinx.Ava
             }
 
             StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
-                Device.EnableDeviceVsync,
+                Device.GetSpeedStateStatus(),
                 LocaleManager.Instance[LocaleKeys.VolumeShort] + $": {(int)(Device.GetVolume() * 100)}%",
                 ConfigurationState.Instance.Graphics.GraphicsBackend.Value == GraphicsBackend.Vulkan ? "Vulkan" : "OpenGL",
                 dockedMode,
@@ -1057,7 +1083,6 @@ namespace Ryujinx.Ava
                     {
                         case KeyboardHotkeyState.ToggleVSync:
                             Device.EnableDeviceVsync = !Device.EnableDeviceVsync;
-
                             break;
                         case KeyboardHotkeyState.Screenshot:
                             ScreenshotRequested = true;
@@ -1105,6 +1130,12 @@ namespace Ryujinx.Ava
                             Device.SetVolume(_newVolume);
 
                             _viewModel.Volume = Device.GetVolume();
+                            break;
+                        case KeyboardHotkeyState.ToggleFastForward:
+                            Device.ToggleFastForward();
+                            break;
+                        case KeyboardHotkeyState.ToggleTurbo:
+                            Device.ToggleTurbo();
                             break;
                         case KeyboardHotkeyState.None:
                             (_keyboardInterface as AvaloniaKeyboard).Clear();
@@ -1178,6 +1209,14 @@ namespace Ryujinx.Ava
             else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.VolumeDown))
             {
                 state = KeyboardHotkeyState.VolumeDown;
+            }
+            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleFastForward))
+            {
+                state = KeyboardHotkeyState.ToggleFastForward;
+            }
+            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleTurbo))
+            {
+                state = KeyboardHotkeyState.ToggleTurbo;
             }
 
             return state;

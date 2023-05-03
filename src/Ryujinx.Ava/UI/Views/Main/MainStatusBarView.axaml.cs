@@ -31,11 +31,25 @@ namespace Ryujinx.Ava.UI.Views.Main
             DataContext = Window.ViewModel;
         }
 
-        private void VsyncStatus_PointerReleased(object sender, PointerReleasedEventArgs e)
+        private void SpeedState_PointerReleased(object sender, PointerReleasedEventArgs e)
         {
-            Window.ViewModel.AppHost.Device.EnableDeviceVsync = !Window.ViewModel.AppHost.Device.EnableDeviceVsync;
+            var emulationContext = Window.ViewModel.AppHost.Device;
+            var currentState = emulationContext.SpeedState;
 
-            Logger.Info?.Print(LogClass.Application, $"VSync toggled to: {Window.ViewModel.AppHost.Device.EnableDeviceVsync}");
+            if (currentState.HasFlag(SpeedState.Turbo))
+            {
+                emulationContext.SetSpeedState(SpeedState.Normal);
+            }
+            else if (currentState.HasFlag(SpeedState.FastForward))
+            {
+                emulationContext.SetSpeedState(SpeedState.Turbo);
+            }
+            else
+            {
+                emulationContext.SetSpeedState(SpeedState.FastForward);
+            }
+
+            Logger.Info?.Print(LogClass.Application, $"Speed State set to: {emulationContext.GetSpeedStateStatus()}");
         }
 
         private void DockedStatus_PointerReleased(object sender, PointerReleasedEventArgs e)

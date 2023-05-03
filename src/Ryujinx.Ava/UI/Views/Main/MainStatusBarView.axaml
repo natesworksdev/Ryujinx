@@ -78,14 +78,13 @@
             MaxHeight="18"
             Orientation="Horizontal">
             <TextBlock
-                Name="VsyncStatus"
+                Name="SpeedStatus"
                 Margin="5,0,5,0"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center"
-                Foreground="{Binding VsyncColor}"
                 IsVisible="{Binding !ShowLoadProgress}"
-                PointerReleased="VsyncStatus_PointerReleased"
-                Text="VSync"
+                PointerReleased="SpeedState_PointerReleased"
+                Text="{Binding SpeedStateText}"
                 TextAlignment="Left" />
             <Border
                 Width="2"
