@@ -33,7 +33,7 @@ namespace Ryujinx.Graphics.Vulkan
         private MemoryAllocation _allocation;
         private Auto<DisposableBuffer> _buffer;
         private Auto<MemoryAllocation> _allocationAuto;
-        private bool _allocationImported;
+        private readonly bool _allocationImported;
         private ulong _bufferHandle;
 
         private CacheByRange<BufferHolder> _cachedConvertedBuffers;
