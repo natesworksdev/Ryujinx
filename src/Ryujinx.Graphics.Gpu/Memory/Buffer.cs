@@ -234,7 +234,14 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 if (end > _dirtyStart && address < _dirtyEnd)
                 {
-                    LoadRegion(_dirtyStart, _dirtyEnd - _dirtyStart);
+                    if (_modifiedRanges != null)
+                    {
+                        _modifiedRanges.ExcludeModifiedRegions(_dirtyStart, _dirtyEnd - _dirtyStart, _loadDelegate);
+                    }
+                    else
+                    {
+                        LoadRegion(_dirtyStart, _dirtyEnd - _dirtyStart);
+                    }
 
                     _dirtyStart = ulong.MaxValue;
                 }
@@ -307,7 +314,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Inherit modified ranges from another buffer.
+        /// Inherit modified and dirty ranges from another buffer.
         /// </summary>
         /// <param name="from">The buffer to inherit from</param>
         public void InheritModifiedRanges(Buffer from)
@@ -335,6 +342,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 EnsureRangeList();
 
                 _modifiedRanges.InheritRanges(from._modifiedRanges, registerRangeAction);
+            }
+
+            if (from._dirtyStart != ulong.MaxValue)
+            {
+                ForceDirty(from._dirtyStart, from._dirtyEnd - from._dirtyStart);
             }
         }
 
