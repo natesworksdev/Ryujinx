@@ -370,7 +370,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// These must run after the mapping completes.
         /// </summary>
         /// <param name="e">Event with remap actions</param>
-        private void RunRemapActions(UnmapEventArgs e)
+        private static void RunRemapActions(UnmapEventArgs e)
         {
             if (e.RemapActions != null)
             {
