@@ -189,7 +189,8 @@ namespace Ryujinx.Ui.Common.Configuration
                 GuiColumns = new Columns();
                 ColumnSort = new ColumnSortSettings();
                 GameDirs = new ReactiveObject<List<string>>();
-                ShownFileTypes = new ShownFileTypeSettings();WindowStartup     = new WindowStartupSettings();
+                ShownFileTypes = new ShownFileTypeSettings();
+                WindowStartup = new WindowStartupSettings();
                 EnableCustomTheme = new ReactiveObject<bool>();
                 CustomThemePath = new ReactiveObject<string>();
                 BaseStyle = new ReactiveObject<string>();
@@ -815,11 +816,11 @@ namespace Ryujinx.Ui.Common.Configuration
             Ui.IsAscendingOrder.Value = true;
             Ui.StartFullscreen.Value = false;
             Ui.ShowConsole.Value = true;
-            Ui.WindowStartup.WindowSizeWidth.Value    = 1280;
-            Ui.WindowStartup.WindowSizeHeight.Value   = 760;
-            Ui.WindowStartup.WindowPositionX.Value    = 0;
-            Ui.WindowStartup.WindowPositionY.Value    = 0;
-            Ui.WindowStartup.WindowMaximized.Value    = false;
+            Ui.WindowStartup.WindowSizeWidth.Value = 1280;
+            Ui.WindowStartup.WindowSizeHeight.Value = 760;
+            Ui.WindowStartup.WindowPositionX.Value = 0;
+            Ui.WindowStartup.WindowPositionY.Value = 0;
+            Ui.WindowStartup.WindowMaximized.Value = false;
             Hid.EnableKeyboard.Value = false;
             Hid.EnableMouse.Value = false;
             Hid.Hotkeys.Value = new KeyboardHotkeys
@@ -1394,7 +1395,8 @@ namespace Ryujinx.Ui.Common.Configuration
                 };
 
                 configurationFileUpdated = true;
-            }Logger.EnableFileLog.Value = configurationFileFormat.EnableFileLog;
+            }
+            Logger.EnableFileLog.Value = configurationFileFormat.EnableFileLog;
             Graphics.ResScale.Value = configurationFileFormat.ResScale;
             Graphics.ResScaleCustom.Value = configurationFileFormat.ResScaleCustom;
             Graphics.MaxAnisotropy.Value = configurationFileFormat.MaxAnisotropy;
@@ -1469,11 +1471,11 @@ namespace Ryujinx.Ui.Common.Configuration
             Ui.ApplicationSort.Value = configurationFileFormat.ApplicationSort;
             Ui.StartFullscreen.Value = configurationFileFormat.StartFullscreen;
             Ui.ShowConsole.Value = configurationFileFormat.ShowConsole;
-            Ui.WindowStartup.WindowSizeWidth.Value    = configurationFileFormat.WindowStartup.WindowSizeWidth;
-            Ui.WindowStartup.WindowSizeHeight.Value   = configurationFileFormat.WindowStartup.WindowSizeHeight;
-            Ui.WindowStartup.WindowPositionX.Value    = configurationFileFormat.WindowStartup.WindowPositionX;
-            Ui.WindowStartup.WindowPositionY.Value    = configurationFileFormat.WindowStartup.WindowPositionY;
-            Ui.WindowStartup.WindowMaximized.Value    = configurationFileFormat.WindowStartup.WindowMaximized;
+            Ui.WindowStartup.WindowSizeWidth.Value = configurationFileFormat.WindowStartup.WindowSizeWidth;
+            Ui.WindowStartup.WindowSizeHeight.Value = configurationFileFormat.WindowStartup.WindowSizeHeight;
+            Ui.WindowStartup.WindowPositionX.Value = configurationFileFormat.WindowStartup.WindowPositionX;
+            Ui.WindowStartup.WindowPositionY.Value = configurationFileFormat.WindowStartup.WindowPositionY;
+            Ui.WindowStartup.WindowMaximized.Value = configurationFileFormat.WindowStartup.WindowMaximized;
             Hid.EnableKeyboard.Value = configurationFileFormat.EnableKeyboard;
             Hid.EnableMouse.Value = configurationFileFormat.EnableMouse;
             Hid.Hotkeys.Value = configurationFileFormat.Hotkeys;
