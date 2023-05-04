@@ -134,14 +134,15 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                 sbUseMask &= ~(1 << slot);
 
-                config.SetUsedStorageBuffer(slot, isWrite);
-
                 int cbOffset = GetStorageCbOffset(config.Stage, slot);
+                slot = config.GetSbSlot(DriverReservedCb, (ushort)cbOffset);
+
+                config.SetUsedStorageBuffer(slot, isWrite);
 
                 Operand inRange = BindingRangeCheck(cbOffset, out Operand baseAddrLow);
 
                 sbBaseAddrLow = PrependOperation(Instruction.ConditionalSelect, inRange, baseAddrLow, sbBaseAddrLow);
-                sbSlot        = PrependOperation(Instruction.ConditionalSelect, inRange, Const(config.GetSbSlot(DriverReservedCb, (ushort)cbOffset)), sbSlot);
+                sbSlot        = PrependOperation(Instruction.ConditionalSelect, inRange, Const(slot), sbSlot);
             }
 
             if (config.AccessibleStorageBuffersMask != 0)
