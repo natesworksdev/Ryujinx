@@ -1,5 +1,7 @@
-﻿using Ryujinx.Memory.Range;
+﻿using Ryujinx.Common.Memory;
+using Ryujinx.Memory.Range;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -156,6 +158,57 @@ namespace Ryujinx.Memory
             Write(va, data);
 
             return true;
+        }
+
+        /// <inheritdoc/>
+        public ReadOnlySequence<byte> GetReadOnlySequence(ulong va, int size, bool tracked = false)
+        {
+            if (size == 0)
+            {
+                return ReadOnlySequence<byte>.Empty;
+            }
+
+            if (IsContiguousAndMapped(va, size))
+            {
+                return new ReadOnlySequence<byte>(GetHostMemoryContiguous(va, size));
+            }
+            else
+            {
+                AssertValidAddressAndSize(va, (ulong)size);
+
+                int offset = 0, segmentSize;
+
+                BytesReadOnlySequenceSegment first = null, last = null;
+
+                if ((va & PageMask) != 0)
+                {
+                    segmentSize = Math.Min(size, PageSize - (int)(va & PageMask));
+
+                    var memory = GetHostMemoryContiguous(va, segmentSize);
+
+                    first = last = new BytesReadOnlySequenceSegment(memory);
+
+                    offset += segmentSize;
+                }
+
+                for (; offset < size; offset += segmentSize)
+                {
+                    segmentSize = Math.Min(size - offset, PageSize);
+
+                    var memory = GetHostMemoryContiguous(va + (ulong)offset, segmentSize);
+
+                    if (first == null)
+                    {
+                        first = last = new BytesReadOnlySequenceSegment(memory);
+                    }
+                    else
+                    {
+                        last = last.Append(memory);
+                    }
+                }
+
+                return new ReadOnlySequence<byte>(first, 0, last, (int)(size - last.RunningIndex));
+            }
         }
 
         /// <inheritdoc/>
@@ -443,6 +496,11 @@ namespace Ryujinx.Memory
             {
                 throw new InvalidMemoryRegionException($"va=0x{va:X16}, size=0x{size:X16}");
             }
+        }
+
+        private unsafe Memory<byte> GetHostMemoryContiguous(ulong va, int size)
+        {
+            return new NativeMemoryManager<byte>((byte*)GetHostAddress(va), size).Memory;
         }
 
         private unsafe Span<byte> GetHostSpanContiguous(ulong va, int size)

@@ -1,3 +1,4 @@
+using Ryujinx.Common.Memory;
 using Ryujinx.Cpu;
 using Ryujinx.Cpu.Tracking;
 using Ryujinx.Graphics.Gpu.Image;
