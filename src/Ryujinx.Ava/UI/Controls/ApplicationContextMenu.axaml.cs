@@ -10,6 +10,7 @@ using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.Generic;
@@ -116,7 +117,10 @@ namespace Ryujinx.Ava.UI.Controls
 
             if (viewModel.SelectedApplication != null)
             {
-                await new CheatWindow(viewModel.VirtualFileSystem, viewModel.SelectedApplication.TitleId, viewModel.SelectedApplication.TitleName).ShowDialog(viewModel.TopLevel as Window);
+                await new CheatWindow(viewModel.VirtualFileSystem, viewModel.SelectedApplication.TitleId,
+                    viewModel.SelectedApplication.TitleName,
+                    ApplicationData.GetApplicationBuildId(viewModel.VirtualFileSystem,
+                        viewModel.SelectedApplication.Path)).ShowDialog(viewModel.TopLevel as Window);
             }
         }
 
