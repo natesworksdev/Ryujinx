@@ -453,7 +453,10 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 int slot = operand.GetCbufSlot();
                 int offset = operand.GetCbufOffset();
 
-                return new SearchResult(slot, offset);
+                if ((offset & 3) == 0)
+                {
+                    return new SearchResult(slot, offset);
+                }
             }
 
             return SearchResult.NotFound;
