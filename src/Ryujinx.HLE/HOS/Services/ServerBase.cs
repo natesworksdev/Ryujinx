@@ -486,12 +486,14 @@ namespace Ryujinx.HLE.HOS.Services
         {
             if (disposing)
             {
-                if (!_threadStopped.Wait(ThreadStoppedWaitTimeout))
+                if (Interlocked.Exchange(ref _isDisposed, 1) == 0)
                 {
-                    Logger.Warning?.Print(LogClass.Service, $"the ServerBase thread didn't signal it has stopped within {ThreadStoppedWaitTimeout:g}, resources may be leaked!");
-                }
-                else if (Interlocked.Exchange(ref _isDisposed, 1) == 0)
-                {
+                    if (!_threadStopped.Wait(ThreadStoppedWaitTimeout))
+                    {
+                        Logger.Warning?.Print(LogClass.Service, $"The ServerBase thread didn't signal it has stopped within {ThreadStoppedWaitTimeout:g}, resources will not have Dispose() called to avoid a race condition.");
+                        return;
+                    }
+
                     foreach (IpcService service in _sessions.Values)
                     {
                         (service as IDisposable)?.Dispose();
