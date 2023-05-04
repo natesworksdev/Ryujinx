@@ -579,7 +579,7 @@ namespace Ryujinx.Graphics.Texture.Astc
                 {
                     if ((uint)index >= Count)
                     {
-                        throw new ArgumentOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(index));
                     }
 
                     ref int start = ref Unsafe.Add(ref _start, index * 144);
@@ -1162,7 +1162,7 @@ namespace Ryujinx.Graphics.Texture.Astc
 
                 Debug.Assert(bitLength >= 1);
 
-                int a = 0, b = 0, c = 0, d = 0;
+                int a, b = 0, c = 0, d = 0;
                 // A is just the lsb replicated 9 times.
                 a = Bits.Replicate(bitValue & 1, 1, 9);
 

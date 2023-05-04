@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 {
     class KSynchronization
     {
-        private KernelContext _context;
+        private readonly KernelContext _context;
 
         public KSynchronization(KernelContext context)
         {

@@ -36,7 +36,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
         /// <summary>
         /// Texture parameters for copy.
         /// </summary>
-        private struct TextureParams
+        private readonly struct TextureParams
         {
             /// <summary>
             /// Copy region X coordinate.

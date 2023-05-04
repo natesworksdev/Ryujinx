@@ -215,7 +215,7 @@ namespace Ryujinx.Memory
 
         /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int GetPagesCount(ulong va, uint size, out ulong startVa)
+        private static int GetPagesCount(ulong va, uint size, out ulong startVa)
         {
             // WARNING: Always check if ulong does not overflow during the operations.
             startVa = va & ~(ulong)PageMask;
@@ -224,7 +224,7 @@ namespace Ryujinx.Memory
             return (int)(vaSpan / PageSize);
         }
 
-        private void ThrowMemoryNotContiguous() => throw new MemoryNotContiguousException();
+        private static void ThrowMemoryNotContiguous() => throw new MemoryNotContiguousException();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsContiguousAndMapped(ulong va, int size) => IsContiguous(va, size) && IsMapped(va);

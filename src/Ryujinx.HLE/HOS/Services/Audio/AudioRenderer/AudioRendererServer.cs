@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 {
     class AudioRendererServer : DisposableIpcService
     {
-        private IAudioRenderer _impl;
+        private readonly IAudioRenderer _impl;
 
         public AudioRendererServer(IAudioRenderer impl)
         {
