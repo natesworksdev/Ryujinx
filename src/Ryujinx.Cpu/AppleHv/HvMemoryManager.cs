@@ -449,11 +449,11 @@ namespace Ryujinx.Cpu.AppleHv
             }
             else
             {
-                Memory<byte> memory = new byte[size];
+                IMemoryOwner<byte> memoryOwner = ByteMemoryPool.Shared.Rent(size);
 
-                ReadImpl(va, memory.Span);
+                ReadImpl(va, memoryOwner.Memory.Span);
 
-                return new WritableRegion(this, va, memory);
+                return new WritableRegion(this, va, memoryOwner);
             }
         }
 
