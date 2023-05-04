@@ -388,7 +388,7 @@ namespace Ryujinx.Ava.UI.Helpers
             return result;
         }
 
-        public static MainWindow GetMainWindow()
+        private static Window GetMainWindow()
         {
             if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime al)
             {

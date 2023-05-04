@@ -22,8 +22,6 @@ namespace Ryujinx.Ava.UI.Controls
 {
     public class ApplicationContextMenu : MenuFlyout
     {
-        private static MainWindowViewModel _viewModel => ContentDialogHelper.GetMainWindow().ViewModel;
-
         public ApplicationContextMenu()
         {
             InitializeComponent();
@@ -36,39 +34,47 @@ namespace Ryujinx.Ava.UI.Controls
 
         public void ToggleFavorite_Click(object sender, RoutedEventArgs args)
         {
-            if (_viewModel.SelectedApplication != null)
-            {
-                _viewModel.SelectedApplication.Favorite = !_viewModel.SelectedApplication.Favorite;
+            var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
 
-                _viewModel.ApplicationLibrary.LoadAndSaveMetaData(_viewModel.SelectedApplication.TitleId, appMetadata =>
+            if (viewModel.SelectedApplication != null)
+            {
+                viewModel.SelectedApplication.Favorite = !viewModel.SelectedApplication.Favorite;
+
+                viewModel.ApplicationLibrary.LoadAndSaveMetaData(viewModel.SelectedApplication.TitleId, appMetadata =>
                 {
-                    appMetadata.Favorite = _viewModel.SelectedApplication.Favorite;
+                    appMetadata.Favorite = viewModel.SelectedApplication.Favorite;
                 });
 
-                _viewModel.RefreshView();
+                viewModel.RefreshView();
             }
         }
 
         public void OpenUserSaveDirectory_Click(object sender, RoutedEventArgs args)
         {
-            OpenSaveDirectory(SaveDataType.Account, userId: new UserId((ulong)_viewModel.AccountManager.LastOpenedUser.UserId.High, (ulong)_viewModel.AccountManager.LastOpenedUser.UserId.Low));
+            var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
+
+            OpenSaveDirectory(viewModel, SaveDataType.Account, userId: new UserId((ulong)viewModel.AccountManager.LastOpenedUser.UserId.High, (ulong)viewModel.AccountManager.LastOpenedUser.UserId.Low));
         }
 
         public void OpenDeviceSaveDirectory_Click(object sender, RoutedEventArgs args)
         {
-            OpenSaveDirectory(SaveDataType.Device, userId: default);
+            var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
+
+            OpenSaveDirectory(viewModel, SaveDataType.Device, userId: default);
         }
 
         public void OpenBcatSaveDirectory_Click(object sender, RoutedEventArgs args)
         {
-            OpenSaveDirectory(SaveDataType.Bcat, userId: default);
+            var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
+
+            OpenSaveDirectory(viewModel, SaveDataType.Bcat, userId: default);
         }
 
-        private void OpenSaveDirectory(SaveDataType saveDataType, UserId userId)
+        private void OpenSaveDirectory(MainWindowViewModel viewModel, SaveDataType saveDataType, UserId userId)
         {
-            if (_viewModel.SelectedApplication != null)
+            if (viewModel.SelectedApplication != null)
             {
-                if (!ulong.TryParse(_viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ulong titleIdNumber))
+                if (!ulong.TryParse(viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ulong titleIdNumber))
                 {
                     Dispatcher.UIThread.InvokeAsync(async () =>
                     {
@@ -80,40 +86,48 @@ namespace Ryujinx.Ava.UI.Controls
 
                 var saveDataFilter = SaveDataFilter.Make(titleIdNumber, saveDataType, userId, saveDataId: default, index: default);
 
-                ApplicationHelper.OpenSaveDir(in saveDataFilter, titleIdNumber, _viewModel.SelectedApplication.ControlHolder, _viewModel.SelectedApplication.TitleName);
+                ApplicationHelper.OpenSaveDir(in saveDataFilter, titleIdNumber, viewModel.SelectedApplication.ControlHolder, viewModel.SelectedApplication.TitleName);
             }
         }
 
         public async void OpenTitleUpdateManager_Click(object sender, RoutedEventArgs args)
         {
-            if (_viewModel.SelectedApplication != null)
+            var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
+
+            if (viewModel.SelectedApplication != null)
             {
-                await TitleUpdateWindow.Show(_viewModel.VirtualFileSystem, ulong.Parse(_viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber), _viewModel.SelectedApplication.TitleName);
+                await TitleUpdateWindow.Show(viewModel.VirtualFileSystem, ulong.Parse(viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber), viewModel.SelectedApplication.TitleName);
             }
         }
 
         public async void OpenDownloadableContentManager_Click(object sender, RoutedEventArgs args)
         {
-            if (_viewModel.SelectedApplication != null)
+            var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
+
+            if (viewModel.SelectedApplication != null)
             {
-                await DownloadableContentManagerWindow.Show(_viewModel.VirtualFileSystem, ulong.Parse(_viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber), _viewModel.SelectedApplication.TitleName);
+                await DownloadableContentManagerWindow.Show(viewModel.VirtualFileSystem, ulong.Parse(viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber), viewModel.SelectedApplication.TitleName);
             }
         }
 
         public async void OpenCheatManager_Click(object sender, RoutedEventArgs args)
         {
-            if (_viewModel.SelectedApplication != null)
+            var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
+
+            if (viewModel.SelectedApplication != null)
             {
-                await new CheatWindow(_viewModel.VirtualFileSystem, _viewModel.SelectedApplication.TitleId, _viewModel.SelectedApplication.TitleName).ShowDialog(_viewModel.TopLevel as Window);
+                await new CheatWindow(viewModel.VirtualFileSystem, viewModel.SelectedApplication.TitleId, viewModel.SelectedApplication.TitleName).ShowDialog(viewModel.TopLevel as Window);
             }
         }
 
         public void OpenModsDirectory_Click(object sender, RoutedEventArgs args)
         {
-            if (_viewModel.SelectedApplication != null)
+            var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
+
+            if (viewModel.SelectedApplication != null)
             {
-                string modsBasePath = _viewModel.VirtualFileSystem.ModLoader.GetModsBasePath();
-                string titleModsPath = _viewModel.VirtualFileSystem.ModLoader.GetTitleDir(modsBasePath, _viewModel.SelectedApplication.TitleId);
+                string modsBasePath = viewModel.VirtualFileSystem.ModLoader.GetModsBasePath();
+                string titleModsPath = viewModel.VirtualFileSystem.ModLoader.GetTitleDir(modsBasePath, viewModel.SelectedApplication.TitleId);
 
                 OpenHelper.OpenFolder(titleModsPath);
             }
@@ -121,10 +135,12 @@ namespace Ryujinx.Ava.UI.Controls
 
         public void OpenSdModsDirectory_Click(object sender, RoutedEventArgs args)
         {
-            if (_viewModel.SelectedApplication != null)
+            var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
+
+            if (viewModel.SelectedApplication != null)
             {
-                string sdModsBasePath = _viewModel.VirtualFileSystem.ModLoader.GetSdModsBasePath();
-                string titleModsPath = _viewModel.VirtualFileSystem.ModLoader.GetTitleDir(sdModsBasePath, _viewModel.SelectedApplication.TitleId);
+                string sdModsBasePath = viewModel.VirtualFileSystem.ModLoader.GetSdModsBasePath();
+                string titleModsPath = viewModel.VirtualFileSystem.ModLoader.GetTitleDir(sdModsBasePath, viewModel.SelectedApplication.TitleId);
 
                 OpenHelper.OpenFolder(titleModsPath);
             }
@@ -132,18 +148,20 @@ namespace Ryujinx.Ava.UI.Controls
 
         public async void PurgePtcCache_Click(object sender, RoutedEventArgs args)
         {
-            if (_viewModel.SelectedApplication != null)
+            var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
+
+            if (viewModel.SelectedApplication != null)
             {
                 UserResult result = await ContentDialogHelper.CreateConfirmationDialog(LocaleManager.Instance[LocaleKeys.DialogWarning],
-                                                                                       LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogPPTCDeletionMessage, _viewModel.SelectedApplication.TitleName),
+                                                                                       LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogPPTCDeletionMessage, viewModel.SelectedApplication.TitleName),
                                                                                        LocaleManager.Instance[LocaleKeys.InputDialogYes],
                                                                                        LocaleManager.Instance[LocaleKeys.InputDialogNo],
                                                                                        LocaleManager.Instance[LocaleKeys.RyujinxConfirm]);
 
                 if (result == UserResult.Yes)
                 {
-                    DirectoryInfo mainDir = new(Path.Combine(AppDataManager.GamesDirPath, _viewModel.SelectedApplication.TitleId, "cache", "cpu", "0"));
-                    DirectoryInfo backupDir = new(Path.Combine(AppDataManager.GamesDirPath, _viewModel.SelectedApplication.TitleId, "cache", "cpu", "1"));
+                    DirectoryInfo mainDir = new(Path.Combine(AppDataManager.GamesDirPath, viewModel.SelectedApplication.TitleId, "cache", "cpu", "0"));
+                    DirectoryInfo backupDir = new(Path.Combine(AppDataManager.GamesDirPath, viewModel.SelectedApplication.TitleId, "cache", "cpu", "1"));
 
                     List<FileInfo> cacheFiles = new();
 
@@ -177,17 +195,19 @@ namespace Ryujinx.Ava.UI.Controls
 
         public async void PurgeShaderCache_Click(object sender, RoutedEventArgs args)
         {
-            if (_viewModel.SelectedApplication != null)
+            var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
+
+            if (viewModel.SelectedApplication != null)
             {
                 UserResult result = await ContentDialogHelper.CreateConfirmationDialog(LocaleManager.Instance[LocaleKeys.DialogWarning],
-                                                                                       LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogShaderDeletionMessage, _viewModel.SelectedApplication.TitleName),
+                                                                                       LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogShaderDeletionMessage, viewModel.SelectedApplication.TitleName),
                                                                                        LocaleManager.Instance[LocaleKeys.InputDialogYes],
                                                                                        LocaleManager.Instance[LocaleKeys.InputDialogNo],
                                                                                        LocaleManager.Instance[LocaleKeys.RyujinxConfirm]);
 
                 if (result == UserResult.Yes)
                 {
-                    DirectoryInfo shaderCacheDir = new(Path.Combine(AppDataManager.GamesDirPath, _viewModel.SelectedApplication.TitleId, "cache", "shader"));
+                    DirectoryInfo shaderCacheDir = new(Path.Combine(AppDataManager.GamesDirPath, viewModel.SelectedApplication.TitleId, "cache", "shader"));
 
                     List<DirectoryInfo> oldCacheDirectories = new();
                     List<FileInfo> newCacheFiles = new();
@@ -231,9 +251,11 @@ namespace Ryujinx.Ava.UI.Controls
 
         public void OpenPtcDirectory_Click(object sender, RoutedEventArgs args)
         {
-            if (_viewModel.SelectedApplication != null)
+            var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
+
+            if (viewModel.SelectedApplication != null)
             {
-                string ptcDir = Path.Combine(AppDataManager.GamesDirPath, _viewModel.SelectedApplication.TitleId, "cache", "cpu");
+                string ptcDir = Path.Combine(AppDataManager.GamesDirPath, viewModel.SelectedApplication.TitleId, "cache", "cpu");
                 string mainDir = Path.Combine(ptcDir, "0");
                 string backupDir = Path.Combine(ptcDir, "1");
 
@@ -250,9 +272,11 @@ namespace Ryujinx.Ava.UI.Controls
 
         public void OpenShaderCacheDirectory_Click(object sender, RoutedEventArgs args)
         {
-            if (_viewModel.SelectedApplication != null)
+            var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
+
+            if (viewModel.SelectedApplication != null)
             {
-                string shaderCacheDir = Path.Combine(AppDataManager.GamesDirPath, _viewModel.SelectedApplication.TitleId, "cache", "shader");
+                string shaderCacheDir = Path.Combine(AppDataManager.GamesDirPath, viewModel.SelectedApplication.TitleId, "cache", "shader");
 
                 if (!Directory.Exists(shaderCacheDir))
                 {
@@ -265,25 +289,31 @@ namespace Ryujinx.Ava.UI.Controls
 
         public async void ExtractApplicationLogo_Click(object sender, RoutedEventArgs args)
         {
-            if (_viewModel.SelectedApplication != null)
+            var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
+
+            if (viewModel.SelectedApplication != null)
             {
-                await ApplicationHelper.ExtractSection(NcaSectionType.Logo, _viewModel.SelectedApplication.Path, _viewModel.SelectedApplication.TitleName);
+                await ApplicationHelper.ExtractSection(NcaSectionType.Logo, viewModel.SelectedApplication.Path, viewModel.SelectedApplication.TitleName);
             }
         }
 
         public async void ExtractApplicationRomFs_Click(object sender, RoutedEventArgs args)
         {
-            if (_viewModel.SelectedApplication != null)
+            var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
+
+            if (viewModel.SelectedApplication != null)
             {
-                await ApplicationHelper.ExtractSection(NcaSectionType.Data, _viewModel.SelectedApplication.Path, _viewModel.SelectedApplication.TitleName);
+                await ApplicationHelper.ExtractSection(NcaSectionType.Data, viewModel.SelectedApplication.Path, viewModel.SelectedApplication.TitleName);
             }
         }
 
         public async void ExtractApplicationExeFs_Click(object sender, RoutedEventArgs args)
         {
-            if (_viewModel.SelectedApplication != null)
+            var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
+
+            if (viewModel.SelectedApplication != null)
             {
-                await ApplicationHelper.ExtractSection(NcaSectionType.Code, _viewModel.SelectedApplication.Path, _viewModel.SelectedApplication.TitleName);
+                await ApplicationHelper.ExtractSection(NcaSectionType.Code, viewModel.SelectedApplication.Path, viewModel.SelectedApplication.TitleName);
             }
         }
     }
