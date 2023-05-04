@@ -6,6 +6,7 @@ using Ryujinx.Graphics.Texture;
 using Ryujinx.Memory;
 using Ryujinx.Memory.Range;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
@@ -420,9 +421,9 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                             ReadOnlySpan<byte> data = dataSpan.Slice(offset - spanBase);
 
-                            SpanOrArray<byte> result = Storage.ConvertToHostCompatibleFormat(data, info.BaseLevel + level, true);
+                            using IMemoryOwner<byte> result = Storage.ConvertToHostCompatibleFormat(data, info.BaseLevel + level, true);
 
-                            Storage.SetData(result, info.BaseLayer + layer, info.BaseLevel + level);
+                            Storage.SetData(result.Memory.Span, info.BaseLayer + layer, info.BaseLevel + level);
                         }
                     }
                 }
