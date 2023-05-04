@@ -814,7 +814,13 @@ namespace Ryujinx.Graphics.Shader.Translation
                     // The next array entries also consumes bindings, even if they are unused.
                     for (int j = lastSlot + 1; j < slot; j++)
                     {
-                        getBindingCallback(slot);
+                        int binding = getBindingCallback(j);
+
+                        if (!hasFirstBinding)
+                        {
+                            firstBinding = binding;
+                            hasFirstBinding = true;
+                        }
                     }
                 }
 
