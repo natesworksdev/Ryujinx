@@ -328,12 +328,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                                 srcSpan);
                         }
 
-                        using (data)
-                        {
-                            target.SynchronizeMemory();
-                            target.SetData(data.Memory.Span);
-                            target.SignalModified();
-                        }
+                        target.SynchronizeMemory();
+                        target.SetData(data);
+                        target.SignalModified();
                         return;
                     }
                     else if (srcCalculator.LayoutMatches(dstCalculator))

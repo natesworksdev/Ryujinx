@@ -3,6 +3,7 @@ using Ryujinx.Common;
 using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.GAL;
 using System;
+using System.Buffers;
 using System.Diagnostics;
 
 namespace Ryujinx.Graphics.OpenGL.Image
@@ -418,6 +419,25 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 }
 
                 data += Info.GetMipSize(level);
+            }
+        }
+
+        public void SetData(IMemoryOwner<byte> data)
+        {
+            if (Format == Format.S8UintD24Unorm)
+            {
+                var convertedData = FormatConverter.ConvertS8D24ToD24S8AsMemoryOwner(data.Memory.Span);
+                data.Dispose();
+                data = convertedData;
+            }
+
+            unsafe
+            {
+                var dataSpan = data.Memory.Span;
+                fixed (byte* ptr = dataSpan)
+                {
+                    ReadFrom((IntPtr)ptr, dataSpan.Length);
+                }
             }
         }
 

@@ -672,6 +672,23 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Uploads new texture data to the host GPU.
         /// </summary>
         /// <param name="data">New data</param>
+        public void SetData(IMemoryOwner<byte> data)
+        {
+            BlacklistScale();
+
+            Group.CheckDirty(this, true);
+
+            AlwaysFlushOnOverlap = true;
+
+            HostTexture.SetData(data);
+
+            _hasData = true;
+        }
+
+        /// <summary>
+        /// Uploads new texture data to the host GPU.
+        /// </summary>
+        /// <param name="data">New data</param>
         public void SetData(SpanOrArray<byte> data)
         {
             BlacklistScale();
