@@ -4,6 +4,7 @@ using Ryujinx.Graphics.Gpu.Engine.Threed;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Texture;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -295,7 +296,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
 
                     if (target != null)
                     {
-                        byte[] data;
+                        IMemoryOwner<byte> data;
                         if (srcLinear)
                         {
                             data = LayoutConverter.ConvertLinearStridedToLinear(
@@ -327,9 +328,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                                 srcSpan);
                         }
 
-                        target.SynchronizeMemory();
-                        target.SetData(data);
-                        target.SignalModified();
+                        using (data)
+                        {
+                            target.SynchronizeMemory();
+                            target.SetData(data.Memory.Span);
+                            target.SignalModified();
+                        }
                         return;
                     }
                     else if (srcCalculator.LayoutMatches(dstCalculator))
