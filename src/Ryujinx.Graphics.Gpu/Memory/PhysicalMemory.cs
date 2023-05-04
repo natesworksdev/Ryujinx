@@ -6,6 +6,7 @@ using Ryujinx.Memory;
 using Ryujinx.Memory.Range;
 using Ryujinx.Memory.Tracking;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Linq;
@@ -186,7 +187,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
             else
             {
-                Memory<byte> memory = new byte[range.GetSize()];
+                IMemoryOwner<byte> memoryOwner = ByteMemoryPool.Shared.Rent(range.GetSize());
+
+                Memory<byte> memory = memoryOwner.Memory;
 
                 int offset = 0;
                 for (int i = 0; i < range.Count; i++)
@@ -200,7 +203,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     offset += size;
                 }
 
-                return new WritableRegion(new MultiRangeWritableBlock(range, this), 0, memory, tracked);
+                return new WritableRegion(new MultiRangeWritableBlock(range, this), 0, memoryOwner, tracked);
             }
         }
 

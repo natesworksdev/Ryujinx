@@ -387,11 +387,11 @@ namespace Ryujinx.Cpu.Jit
             }
             else
             {
-                Memory<byte> memory = new byte[size];
+                IMemoryOwner<byte> memoryOwner = ByteMemoryPool.Shared.Rent(size);
 
-                GetSpan(va, size).CopyTo(memory.Span);
+                GetSpan(va, size).CopyTo(memoryOwner.Memory.Span);
 
-                return new WritableRegion(this, va, memory, tracked);
+                return new WritableRegion(this, va, memoryOwner, tracked);
             }
         }
 

@@ -243,15 +243,15 @@ namespace Ryujinx.Memory
 
             if (IsContiguousAndMapped(va, size))
             {
-                return new WritableRegion(null, va, new NativeMemoryManager<byte>((byte*)GetHostAddress(va), size).Memory);
+                return new WritableRegion(null, va, GetHostMemoryContiguous(va, size));
             }
             else
             {
-                Memory<byte> memory = new byte[size];
+                IMemoryOwner<byte> memoryOwner = ByteMemoryPool.Shared.Rent(size);
 
-                GetSpan(va, size).CopyTo(memory.Span);
+                GetSpan(va, size).CopyTo(memoryOwner.Memory.Span);
 
-                return new WritableRegion(this, va, memory);
+                return new WritableRegion(this, va, memoryOwner);
             }
         }
 
