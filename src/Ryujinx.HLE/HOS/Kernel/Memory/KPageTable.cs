@@ -2,6 +2,7 @@
 using Ryujinx.Memory;
 using Ryujinx.Memory.Range;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -222,6 +223,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
         /// <inheritdoc/>
         protected override void Write(ulong va, ReadOnlySpan<byte> data)
+        {
+            _cpuMemory.Write(va, data);
+        }
+
+        /// <inheritdoc/>
+        protected override void Write(ulong va, ReadOnlySequence<byte> data)
         {
             _cpuMemory.Write(va, data);
         }
