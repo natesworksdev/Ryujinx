@@ -562,7 +562,6 @@
   "LoadingHeading": "Loading {0}",
   "CompilingPPTC": "Compiling PTC",
   "CompilingShaders": "Compiling Shaders",
-  "PackagingShaders": "Packaging Shaders",
   "AllKeyboards": "All keyboards",
   "OpenFileDialogTitle": "Select a supported file to open",
   "OpenFolderDialogTitle": "Select a folder with an unpacked game",
@@ -645,5 +644,6 @@
   "UserEditorTitleCreate" : "Create User",
   "SettingsTabNetworkInterface": "Network Interface:",
   "NetworkInterfaceTooltip": "The network interface used for LAN features",
-  "NetworkInterfaceDefault": "Default"
+  "NetworkInterfaceDefault": "Default",
+  "PackagingShaders": "Packaging Shaders"
 }
