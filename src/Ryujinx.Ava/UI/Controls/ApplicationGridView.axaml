@@ -29,7 +29,7 @@
             VerticalAlignment="Stretch"
             ContextFlyout="{StaticResource ApplicationContextMenu}"
             DoubleTapped="GameList_DoubleTapped"
-            Items="{Binding AppsObservableList}"
+            ItemsSource="{Binding AppsObservableList}"
             SelectionChanged="GameList_SelectionChanged">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -45,7 +45,7 @@
                     <Setter Property="Margin" Value="5" />
                     <Setter Property="CornerRadius" Value="4" />
                 </Style>
-                <Style Selector="ListBoxItem:selected /template/ Border#SelectionIndicator">
+                <Style Selector="ListBoxItem:selected /template/ Rectangle#SelectionIndicator">
                     <Setter Property="MinHeight" Value="{ReflectionBinding $parent[UserControl].DataContext.GridItemSelectorSize}" />
                 </Style>
             </ListBox.Styles>
@@ -80,7 +80,7 @@
                                     VerticalAlignment="Stretch"
                                     IsVisible="{ReflectionBinding $parent[UserControl].DataContext.ShowNames}">
                                     <TextBlock
-                                        HorizontalAlignment="Stretch"
+                                        HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         Text="{Binding TitleName}"
                                         TextAlignment="Center"

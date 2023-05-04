@@ -41,7 +41,7 @@
                 </ItemsPanelTemplate>
             </ListBox.ItemsPanel>
             <ListBox.Styles>
-                <Style Selector="ListBoxItem:selected /template/ Border#SelectionIndicator">
+                <Style Selector="ListBoxItem:selected /template/ Rectangle#SelectionIndicator">
                     <Setter Property="MinHeight" Value="{ReflectionBinding $parent[UserControl].DataContext.ListItemSelectorSize}" />
                 </Style>
             </ListBox.Styles>
