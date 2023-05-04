@@ -272,7 +272,7 @@ namespace Ryujinx.Audio.Renderer.Server
         }
 
         /// <summary>
-        /// Check if the audio renderer should trust the user destination count in <see cref="Splitter.SplitterState.Update(Splitter.SplitterContext, ref Parameter.SplitterInParameter, ReadOnlySpan{byte})"/>.
+        /// Check if the audio renderer should trust the user destination count in <see cref="Splitter.SplitterState.Update(Splitter.SplitterContext, ref Parameter.SplitterInParameter, ReadOnlySequence{Byte})"/>.
         /// </summary>
         /// <returns>True if the audio renderer should trust the user destination count.</returns>
         public bool IsSplitterBugFixed()
