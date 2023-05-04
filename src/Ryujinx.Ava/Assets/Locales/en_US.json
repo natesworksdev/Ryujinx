@@ -562,6 +562,7 @@
   "LoadingHeading": "Loading {0}",
   "CompilingPPTC": "Compiling PTC",
   "CompilingShaders": "Compiling Shaders",
+  "PackagingShaders": "Packaging Shaders",
   "AllKeyboards": "All keyboards",
   "OpenFileDialogTitle": "Select a supported file to open",
   "OpenFolderDialogTitle": "Select a folder with an unpacked game",
