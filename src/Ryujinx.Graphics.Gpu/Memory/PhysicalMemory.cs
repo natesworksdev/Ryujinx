@@ -1,3 +1,4 @@
+using Ryujinx.Common.Memory;
 using Ryujinx.Cpu;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Gpu.Shader;
