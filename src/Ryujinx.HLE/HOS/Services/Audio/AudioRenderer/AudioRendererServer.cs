@@ -67,31 +67,30 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
             ulong performanceOutputPosition = context.Request.ReceiveBuff[1].Position;
             ulong performanceOutputSize = context.Request.ReceiveBuff[1].Size;
 
-            ReadOnlyMemory<byte> input = context.Memory.GetSpan(inputPosition, (int)inputSize).ToArray();
+            ReadOnlySequence<byte> input = context.Memory.GetReadOnlySequence(inputPosition, (int)inputSize);
 
-            using (IMemoryOwner<byte> outputOwner = ByteMemoryPool.Shared.RentCleared(outputSize))
-            using (IMemoryOwner<byte> performanceOutputOwner = ByteMemoryPool.Shared.RentCleared(performanceOutputSize))
+            using IMemoryOwner<byte> outputOwner = ByteMemoryPool.Shared.RentCleared(outputSize);
+            using IMemoryOwner<byte> performanceOutputOwner = ByteMemoryPool.Shared.RentCleared(performanceOutputSize);
+
+            Memory<byte> output = outputOwner.Memory;
+            Memory<byte> performanceOutput = performanceOutputOwner.Memory;
+
+            using MemoryHandle outputHandle = output.Pin();
+            using MemoryHandle performanceOutputHandle = performanceOutput.Pin();
+
+            ResultCode result = _impl.RequestUpdate(output, performanceOutput, input);
+
+            if (result == ResultCode.Success)
             {
-                Memory<byte> output = outputOwner.Memory;
-                Memory<byte> performanceOutput = performanceOutputOwner.Memory;
-
-                using MemoryHandle outputHandle = output.Pin();
-                using MemoryHandle performanceOutputHandle = performanceOutput.Pin();
-
-                ResultCode result = _impl.RequestUpdate(output, performanceOutput, input);
-
-                if (result == ResultCode.Success)
-                {
-                    context.Memory.Write(outputPosition, output.Span);
-                    context.Memory.Write(performanceOutputPosition, performanceOutput.Span);
-                }
-                else
-                {
-                    Logger.Error?.Print(LogClass.ServiceAudio, $"Error while processing renderer update: 0x{(int)result:X}");
-                }
-
-                return result;
+                context.Memory.Write(outputPosition, output.Span);
+                context.Memory.Write(performanceOutputPosition, performanceOutput.Span);
             }
+            else
+            {
+                Logger.Error?.Print(LogClass.ServiceAudio, $"Error while processing renderer update: 0x{(int)result:X}");
+            }
+
+            return result;
         }
 
         [CommandCmif(5)]
@@ -158,10 +157,13 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
             (ulong outputPosition, ulong outputSize) = context.Request.GetBufferType0x22(0);
             (ulong performanceOutputPosition, ulong performanceOutputSize) = context.Request.GetBufferType0x22(1);
 
-            ReadOnlyMemory<byte> input = context.Memory.GetSpan(inputPosition, (int)inputSize).ToArray();
+            ReadOnlySequence<byte> input = context.Memory.GetReadOnlySequence(inputPosition, (int)inputSize);
 
-            Memory<byte> output = new byte[outputSize];
-            Memory<byte> performanceOutput = new byte[performanceOutputSize];
+            using IMemoryOwner<byte> outputOwner = ByteMemoryPool.Shared.Rent(outputSize);
+            using IMemoryOwner<byte> performanceOutputOwner = ByteMemoryPool.Shared.Rent(performanceOutputSize);
+
+            Memory<byte> output = outputOwner.Memory;
+            Memory<byte> performanceOutput = performanceOutputOwner.Memory;
 
             using MemoryHandle outputHandle = output.Pin();
             using MemoryHandle performanceOutputHandle = performanceOutput.Pin();
