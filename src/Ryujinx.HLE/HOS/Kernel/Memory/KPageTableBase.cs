@@ -5,6 +5,7 @@ using Ryujinx.Horizon.Common;
 using Ryujinx.Memory;
 using Ryujinx.Memory.Range;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -1539,7 +1540,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         }
                         else
                         {
-                            Write(clientAddress, currentProcess.CpuMemory.GetSpan(serverAddress, (int)copySize));
+                            Write(clientAddress, currentProcess.CpuMemory.GetReadOnlySequence(serverAddress, (int)copySize));
                         }
 
                         serverAddress += copySize;
@@ -3039,5 +3040,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         /// <param name="data">Data to be written</param>
         /// <exception cref="Ryujinx.Memory.InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
         protected abstract void Write(ulong va, ReadOnlySpan<byte> data);
+
+        /// <summary>
+        /// Writes data to CPU mapped memory, with write tracking.
+        /// </summary>
+        /// <param name="va">Virtual address to write the data into</param>
+        /// <param name="data">Data to be written</param>
+        /// <exception cref="Ryujinx.Memory.InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
+        protected abstract void Write(ulong va, ReadOnlySequence<byte> data);
     }
 }
