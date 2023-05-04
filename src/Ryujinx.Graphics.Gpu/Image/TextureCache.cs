@@ -64,7 +64,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Handles removal of textures written to a memory region being unmapped.
+        /// Handles marking of textures written to a memory region being (partially) remapped.
         /// </summary>
         /// <param name="sender">Sender object</param>
         /// <param name="e">Event arguments</param>
@@ -80,26 +80,41 @@ namespace Ryujinx.Graphics.Gpu.Image
                 overlapCount = _textures.FindOverlaps(unmapped, ref overlaps);
             }
 
-            for (int i = 0; i < overlapCount; i++)
+            if (overlapCount > 0)
             {
-                overlaps[i].Unmapped(unmapped);
+                for (int i = 0; i < overlapCount; i++)
+                {
+                    overlaps[i].Unmapped(unmapped);
+                }
             }
 
-            // If any range was previously unmapped, we also need to purge
-            // all partially mapped texture, as they might be fully mapped now.
-            for (int i = 0; i < unmapped.Count; i++)
+            lock (_partiallyMappedTextures)
             {
-                if (unmapped.GetSubRange(i).Address == MemoryManager.PteUnmapped)
+                if (overlapCount > 0 || _partiallyMappedTextures.Count > 0)
                 {
-                    lock (_partiallyMappedTextures)
+                    e.AddRemapAction(() =>
                     {
-                        foreach (var texture in _partiallyMappedTextures)
+                        lock (_partiallyMappedTextures)
                         {
-                            texture.Unmapped(unmapped);
-                        }
-                    }
+                            if (overlapCount > 0)
+                            {
+                                for (int i = 0; i < overlapCount; i++)
+                                {
+                                    _partiallyMappedTextures.Add(overlaps[i]);
+                                }
+                            }
 
-                    break;
+                            // Any texture that has been unmapped at any point or is partially unmapped
+                            // should update their pool references after the remap completes.
+
+                            MultiRange unmapped = ((MemoryManager)sender).GetPhysicalRegions(e.Address, e.Size);
+
+                            foreach (var texture in _partiallyMappedTextures)
+                            {
+                                texture.UpdatePoolMappings();
+                            }
+                        }
+                    });
                 }
             }
         }
@@ -234,6 +249,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="copyTexture">Copy texture to find or create</param>
         /// <param name="offset">Offset to be added to the physical texture address</param>
         /// <param name="formatInfo">Format information of the copy texture</param>
+        /// <param name="depthAlias">Indicates if aliasing between color and depth format should be allowed</param>
+        /// <param name="shouldCreate">Indicates if a new texture should be created if none is found on the cache</param>
         /// <param name="preferScaling">Indicates if the texture should be scaled from the start</param>
         /// <param name="sizeHint">A hint indicating the minimum used size for the texture</param>
         /// <returns>The texture</returns>
@@ -242,6 +259,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             TwodTexture copyTexture,
             ulong offset,
             FormatInfo formatInfo,
+            bool depthAlias,
             bool shouldCreate,
             bool preferScaling,
             Size sizeHint)
@@ -277,6 +295,11 @@ namespace Ryujinx.Graphics.Gpu.Image
                 formatInfo);
 
             TextureSearchFlags flags = TextureSearchFlags.ForCopy;
+
+            if (depthAlias)
+            {
+                flags |= TextureSearchFlags.DepthAlias;
+            }
 
             if (preferScaling)
             {
@@ -833,7 +856,17 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                             if (overlapInCache)
                             {
-                                _cache.Remove(overlap, flush);
+                                if (flush || overlap.HadPoolOwner || overlap.IsView)
+                                {
+                                    _cache.Remove(overlap, flush);
+                                }
+                                else
+                                {
+                                    // This texture has only ever been referenced in the AutoDeleteCache.
+                                    // Keep this texture alive with the short duration cache, as it may be used often but not sampled.
+
+                                    _cache.AddShortCache(overlap);
+                                }
                             }
 
                             removeOverlap = modified;
@@ -1136,6 +1169,44 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Queries a texture's memory range and marks it as partially mapped or not.
+        /// Partially mapped textures re-evaluate their memory range after each time GPU memory is mapped.
+        /// </summary>
+        /// <param name="memoryManager">GPU memory manager where the texture is mapped</param>
+        /// <param name="address">The virtual address of the texture</param>
+        /// <param name="texture">The texture to be marked</param>
+        /// <returns>The physical regions for the texture, found when evaluating whether the texture was partially mapped</returns>
+        public MultiRange UpdatePartiallyMapped(MemoryManager memoryManager, ulong address, Texture texture)
+        {
+            MultiRange range;
+            lock (_partiallyMappedTextures)
+            {
+                range = memoryManager.GetPhysicalRegions(address, texture.Size);
+                bool partiallyMapped = false;
+
+                for (int i = 0; i < range.Count; i++)
+                {
+                    if (range.GetSubRange(i).Address == MemoryManager.PteUnmapped)
+                    {
+                        partiallyMapped = true;
+                        break;
+                    }
+                }
+
+                if (partiallyMapped)
+                {
+                    _partiallyMappedTextures.Add(texture);
+                }
+                else
+                {
+                    _partiallyMappedTextures.Remove(texture);
+                }
+            }
+
+            return range;
+        }
+
+        /// <summary>
         /// Adds a texture to the short duration cache. This typically keeps it alive for two ticks.
         /// </summary>
         /// <param name="texture">Texture to add to the short cache</param>
@@ -1143,6 +1214,16 @@ namespace Ryujinx.Graphics.Gpu.Image
         public void AddShortCache(Texture texture, ref TextureDescriptor descriptor)
         {
             _cache.AddShortCache(texture, ref descriptor);
+        }
+
+        /// <summary>
+        /// Adds a texture to the short duration cache without a descriptor. This typically keeps it alive for two ticks.
+        /// On expiry, it will be removed from the AutoDeleteCache.
+        /// </summary>
+        /// <param name="texture">Texture to add to the short cache</param>
+        public void AddShortCache(Texture texture)
+        {
+            _cache.AddShortCache(texture);
         }
 
         /// <summary>
