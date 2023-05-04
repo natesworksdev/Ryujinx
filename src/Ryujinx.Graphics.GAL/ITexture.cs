@@ -1,5 +1,6 @@
 using Ryujinx.Common.Memory;
 using System;
+using System.Buffers;
 
 namespace Ryujinx.Graphics.GAL
 {
@@ -19,6 +20,7 @@ namespace Ryujinx.Graphics.GAL
         PinnedSpan<byte> GetData();
         PinnedSpan<byte> GetData(int layer, int level);
 
+        void SetData(IMemoryOwner<byte> data);
         void SetData(SpanOrArray<byte> data);
         void SetData(SpanOrArray<byte> data, int layer, int level);
         void SetData(SpanOrArray<byte> data, int layer, int level, Rectangle<int> region);
