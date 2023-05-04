@@ -10,7 +10,6 @@ using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Configuration;
-using Ryujinx.Ui.App.Common;
 using Ryujinx.HLE.HOS;
 using Ryujinx.Ui.Common.Helper;
 using System;
@@ -119,11 +118,7 @@ namespace Ryujinx.Ava.UI.Controls
 
             if (viewModel?.SelectedApplication != null)
             {
-                await new CheatWindow(
-                    viewModel.VirtualFileSystem,
-                    viewModel.SelectedApplication.TitleId,
-                    viewModel.SelectedApplication.TitleName,
-                    viewModel.SelectedApplication.Path).ShowDialog(viewModel.TopLevel as Window);
+                await new CheatWindow(viewModel.VirtualFileSystem, viewModel.SelectedApplication.TitleId, viewModel.SelectedApplication.TitleName).ShowDialog(viewModel.TopLevel as Window);
             }
         }
 
@@ -294,13 +289,13 @@ namespace Ryujinx.Ava.UI.Controls
             }
         }
 
-        public async void ExtractApplicationExeFs_Click(object sender, RoutedEventArgs args)
+        public async void ExtractApplicationLogo_Click(object sender, RoutedEventArgs args)
         {
             var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
 
             if (viewModel?.SelectedApplication != null)
             {
-                await ApplicationHelper.ExtractSection(NcaSectionType.Code, viewModel.SelectedApplication.Path, viewModel.SelectedApplication.TitleName);
+                await ApplicationHelper.ExtractSection(NcaSectionType.Logo, viewModel.SelectedApplication.Path, viewModel.SelectedApplication.TitleName, viewModel.StorageProvider);
             }
         }
 
@@ -310,17 +305,17 @@ namespace Ryujinx.Ava.UI.Controls
 
             if (viewModel?.SelectedApplication != null)
             {
-                await ApplicationHelper.ExtractSection(NcaSectionType.Data, viewModel.SelectedApplication.Path, viewModel.SelectedApplication.TitleName);
+                await ApplicationHelper.ExtractSection(NcaSectionType.Data, viewModel.SelectedApplication.Path, viewModel.SelectedApplication.TitleName, viewModel.StorageProvider);
             }
         }
 
-        public async void ExtractApplicationLogo_Click(object sender, RoutedEventArgs args)
+        public async void ExtractApplicationExeFs_Click(object sender, RoutedEventArgs args)
         {
             var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
 
             if (viewModel?.SelectedApplication != null)
             {
-                await ApplicationHelper.ExtractSection(NcaSectionType.Logo, viewModel.SelectedApplication.Path, viewModel.SelectedApplication.TitleName);
+                await ApplicationHelper.ExtractSection(NcaSectionType.Code, viewModel.SelectedApplication.Path, viewModel.SelectedApplication.TitleName, viewModel.StorageProvider);
             }
         }
     }
