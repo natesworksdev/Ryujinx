@@ -110,9 +110,9 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             Operand BindingRangeCheck(int cbOffset, out Operand baseAddrLow)
             {
-                baseAddrLow = Cbuf(0, cbOffset);
-                Operand baseAddrHigh = Cbuf(0, cbOffset + 1);
-                Operand size = Cbuf(0, cbOffset + 2);
+                baseAddrLow          = Cbuf(DriverReservedCb, cbOffset);
+                Operand baseAddrHigh = Cbuf(DriverReservedCb, cbOffset + 1);
+                Operand size         = Cbuf(DriverReservedCb, cbOffset + 2);
 
                 Operand offset = PrependOperation(Instruction.Subtract, addrLow, baseAddrLow);
                 Operand borrow = PrependOperation(Instruction.CompareLessU32, addrLow, baseAddrLow);
@@ -141,7 +141,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 Operand inRange = BindingRangeCheck(cbOffset, out Operand baseAddrLow);
 
                 sbBaseAddrLow = PrependOperation(Instruction.ConditionalSelect, inRange, baseAddrLow, sbBaseAddrLow);
-                sbSlot        = PrependOperation(Instruction.ConditionalSelect, inRange, Const(slot), sbSlot);
+                sbSlot        = PrependOperation(Instruction.ConditionalSelect, inRange, Const(config.GetSbSlot(DriverReservedCb, (ushort)cbOffset)), sbSlot);
             }
 
             if (config.AccessibleStorageBuffersMask != 0)
