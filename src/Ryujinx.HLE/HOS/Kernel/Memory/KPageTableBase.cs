@@ -1526,7 +1526,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                     while (size > 0)
                     {
-                        ulong copySize = 0x100000; // Copy chunck size. Any value will do, moderate sizes are recommended.
+                        ulong copySize = 0x100000; // Copy chunk size. Any value will do, moderate sizes are recommended.
 
                         if (copySize > size)
                         {

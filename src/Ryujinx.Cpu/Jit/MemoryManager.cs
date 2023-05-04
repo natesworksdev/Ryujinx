@@ -84,7 +84,6 @@ namespace Ryujinx.Cpu.Jit
 
             ulong remainingSize = size;
             ulong oVa = va;
-            ulong oPa = pa;
             while (remainingSize != 0)
             {
                 _pageTable.Write((va / PageSize) * PteSize, PaToPte(pa));
@@ -345,7 +344,7 @@ namespace Ryujinx.Cpu.Jit
         /// <param name="startVa">The virtual address of the beginning of the first page</param>
         /// <remarks>This function does not differentiate between allocated and unallocated pages.</remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int GetPagesCount(ulong va, uint size, out ulong startVa)
+        private static int GetPagesCount(ulong va, uint size, out ulong startVa)
         {
             // WARNING: Always check if ulong does not overflow during the operations.
             startVa = va & ~(ulong)PageMask;
@@ -698,6 +697,6 @@ namespace Ryujinx.Cpu.Jit
         /// </summary>
         protected override void Destroy() => _pageTable.Dispose();
 
-        private void ThrowInvalidMemoryRegionException(string message) => throw new InvalidMemoryRegionException(message);
+        private static void ThrowInvalidMemoryRegionException(string message) => throw new InvalidMemoryRegionException(message);
     }
 }

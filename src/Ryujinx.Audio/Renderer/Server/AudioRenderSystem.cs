@@ -402,7 +402,7 @@ namespace Ryujinx.Audio.Renderer.Server
             {
                 ulong updateStartTicks = GetSystemTicks();
 
-                output.Span.Fill(0);
+                output.Span.Clear();
 
                 StateUpdater stateUpdater = new StateUpdater(input, output, _processHandle, _behaviourContext);
 

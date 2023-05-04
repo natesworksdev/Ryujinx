@@ -79,7 +79,7 @@ namespace Ryujinx.Audio.Backends.Common
         }
 
 
-        public void Write<T>(T[] buffer, int index, int count)
+        public void Write(byte[] buffer, int index, int count)
         {
             if (count == 0)
             {

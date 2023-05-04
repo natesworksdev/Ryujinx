@@ -5,7 +5,6 @@ using Ryujinx.Common;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Ryujinx.Audio.Renderer.Server.Splitter
 {

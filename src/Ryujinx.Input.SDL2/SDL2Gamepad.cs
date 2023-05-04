@@ -57,9 +57,9 @@ namespace Ryujinx.Input.SDL2
 
         private readonly object _userMappingLock = new();
 
-        private List<ButtonMappingEntry> _buttonsUserMapping;
+        private readonly List<ButtonMappingEntry> _buttonsUserMapping;
 
-        private StickInputId[] _stickUserMapping = new StickInputId[(int)StickInputId.Count]
+        private readonly StickInputId[] _stickUserMapping = new StickInputId[(int)StickInputId.Count]
         {
             StickInputId.Unbound,
             StickInputId.Left,
