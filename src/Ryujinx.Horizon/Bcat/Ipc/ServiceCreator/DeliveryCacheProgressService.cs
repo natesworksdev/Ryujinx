@@ -34,7 +34,7 @@ namespace Ryujinx.Horizon.Bcat.Ipc
         }
 
         [CmifCommand(1)]
-        public Result GetImpl([Buffer(HipcBufferFlags.Out | HipcBufferFlags.Pointer | HipcBufferFlags.FixedSize, 0x200)] out DeliveryCacheProgressImpl deliveryCacheProgressImpl)
+        public Result GetImpl([Buffer(HipcBufferFlags.Out | HipcBufferFlags.Pointer, 0x200)] out DeliveryCacheProgressImpl deliveryCacheProgressImpl)
         {
             deliveryCacheProgressImpl = new DeliveryCacheProgressImpl
             {
