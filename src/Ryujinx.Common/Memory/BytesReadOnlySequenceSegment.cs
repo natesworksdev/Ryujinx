@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Buffers;
 
 namespace Ryujinx.Common.Memory
 {
     /// <summary>
-    /// A concrete implementation of <seealso cref="System.Buffers.ReadOnlySequence{byte}"/>,
+    /// A concrete implementation of <seealso cref="ReadOnlySequence{Byte}"/>,
     /// with methods to help build a full sequence.
     /// </summary>
-    public sealed class BytesReadOnlySequenceSegment : System.Buffers.ReadOnlySequenceSegment<byte>
+    public sealed class BytesReadOnlySequenceSegment : ReadOnlySequenceSegment<byte>
     {
         public BytesReadOnlySequenceSegment(Memory<byte> memory) => Memory = memory;
 

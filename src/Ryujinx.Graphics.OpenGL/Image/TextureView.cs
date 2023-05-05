@@ -431,12 +431,15 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 data = convertedData;
             }
 
-            unsafe
+            using (data)
             {
-                var dataSpan = data.Memory.Span;
-                fixed (byte* ptr = dataSpan)
+                unsafe
                 {
-                    ReadFrom((IntPtr)ptr, dataSpan.Length);
+                    var dataSpan = data.Memory.Span;
+                    fixed (byte* ptr = dataSpan)
+                    {
+                        ReadFrom((IntPtr)ptr, dataSpan.Length);
+                    }
                 }
             }
         }

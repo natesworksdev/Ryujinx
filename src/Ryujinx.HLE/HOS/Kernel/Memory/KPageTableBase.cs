@@ -1525,27 +1525,27 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 {
                     KProcess currentProcess = KernelStatic.GetCurrentProcess();
 
-                    while (size > 0)
+                    if (toServer)
                     {
-                        ulong copySize = 0x100000; // Copy chunk size. Any value will do, moderate sizes are recommended.
-
-                        if (copySize > size)
+                        while (size > 0)
                         {
-                            copySize = size;
-                        }
+                            ulong copySize = 0x100000; // Copy chunk size. Any value will do, moderate sizes are recommended.
 
-                        if (toServer)
-                        {
+                            if (copySize > size)
+                            {
+                                copySize = size;
+                            }
+
                             currentProcess.CpuMemory.Write(serverAddress, GetSpan(clientAddress, (int)copySize));
-                        }
-                        else
-                        {
-                            Write(clientAddress, currentProcess.CpuMemory.GetReadOnlySequence(serverAddress, (int)copySize));
-                        }
 
-                        serverAddress += copySize;
-                        clientAddress += copySize;
-                        size -= copySize;
+                            serverAddress += copySize;
+                            clientAddress += copySize;
+                            size -= copySize;
+                        }
+                    }
+                    else
+                    {
+                        Write(clientAddress, currentProcess.CpuMemory.GetReadOnlySequence(serverAddress, checked((int)size)));
                     }
 
                     return Result.Success;

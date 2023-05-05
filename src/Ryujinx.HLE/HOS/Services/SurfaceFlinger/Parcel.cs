@@ -25,6 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private int _payloadPosition;
         private int _objectPosition;
+        private bool _isDisposed;
 
         public Parcel(ReadOnlySpan<byte> rawData)
         {
@@ -224,7 +225,22 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public void Dispose()
         {
-            _rawDataOwner.Dispose();
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (!_isDisposed)
+            {
+                _isDisposed = true;
+
+                if (disposing)
+                {
+                    _rawDataOwner.Dispose();
+                }
+            }
         }
     }
 }
