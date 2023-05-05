@@ -1,16 +1,18 @@
-﻿using Microsoft.IO;
-using Ryujinx.Common.Memory;
-using Ryujinx.Memory;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.IO;
+using Ryujinx.Common.Memory;
+using Ryujinx.Memory;
 
 namespace Ryujinx.Cpu
 {
     public static class MemoryHelper
     {
+        private static readonly RecyclableMemoryStreamManager s_memoryStreamManager = new RecyclableMemoryStreamManager();
+
         public static void FillWithZeros(IVirtualMemoryManager memory, ulong position, int size)
         {
             int size8 = size & ~(8 - 1);
@@ -28,21 +30,20 @@ namespace Ryujinx.Cpu
 
         public unsafe static T Read<T>(IVirtualMemoryManager memory, ulong position) where T : unmanaged
         {
-            return MemoryMarshal.Cast<byte, T>(memory.GetSpan(position, Unsafe.SizeOf<T>()))[0];
+            ReadOnlySpan<byte> span = memory.GetSpan(position, Unsafe.SizeOf<T>());
+            return MemoryMarshal.Read<T>(span);
         }
 
         public unsafe static ulong Write<T>(IVirtualMemoryManager memory, ulong position, T value) where T : unmanaged
         {
-            ReadOnlySpan<byte> data = MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateReadOnlySpan(ref value, 1));
-
-            memory.Write(position, data);
-
-            return (ulong)data.Length;
+            Span<byte> span = MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan(ref value, 1));
+            memory.Write(position, span);
+            return (ulong)span.Length;
         }
 
         public static string ReadAsciiString(IVirtualMemoryManager memory, ulong position, long maxSize = -1)
         {
-            using (RecyclableMemoryStream ms = MemoryStreamManager.Shared.GetStream())
+            using (MemoryStream ms = s_memoryStreamManager.GetStream())
             {
                 for (long offs = 0; offs < maxSize || maxSize == -1; offs++)
                 {
@@ -56,7 +57,8 @@ namespace Ryujinx.Cpu
                     ms.WriteByte(value);
                 }
 
-                return Encoding.ASCII.GetString(ms.GetReadOnlySequence());
+                ReadOnlySpan<byte> span = new ReadOnlySpan<byte>(ms.GetBuffer(), 0, (int)ms.Length);
+                return Encoding.ASCII.GetString(span);
             }
         }
     }
