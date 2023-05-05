@@ -1,6 +1,8 @@
 using Ryujinx.Cpu.AppleHv.Arm;
 using Ryujinx.Memory;
 using System;
+using System.Threading.Tasks;
+
 
 namespace Ryujinx.Cpu.AppleHv
 {
@@ -41,27 +43,27 @@ namespace Ryujinx.Cpu.AppleHv
         }
 
         private void InitializeKernelCode(HvIpaAllocator ipaAllocator)
-        {
-            // Write exception handlers.
-            for (ulong offset = 0; offset < 0x800; offset += 0x80)
-            {
-                // Offsets:
-                // 0x0: Synchronous
-                // 0x80: IRQ
-                // 0x100: FIQ
-                // 0x180: SError
-                _kernelCodeBlock.Write(KernelRegionCodeOffset + offset, 0xD41FFFE2u); // HVC #0xFFFF
-                _kernelCodeBlock.Write(KernelRegionCodeOffset + offset + 4, 0xD69F03E0u); // ERET
-            }
+{
+    // Write exception handlers.
+    Parallel.For((int)0UL, (int)0x800UL, (offset, state) =>
+{
+    // Offsets:
+    // 0x0: Synchronous
+    // 0x80: IRQ
+    // 0x100: FIQ
+    // 0x180: SError
+    _kernelCodeBlock.Write(KernelRegionCodeOffset + (ulong)offset, 0xD41FFFE2u); // HVC #0xFFFF
+    _kernelCodeBlock.Write(KernelRegionCodeOffset + (ulong)offset + 4, 0xD69F03E0u); // ERET
+});
 
-            _kernelCodeBlock.Write(KernelRegionTlbiEretOffset, 0xD508831Fu); // TLBI VMALLE1IS
-            _kernelCodeBlock.Write(KernelRegionEretOffset, 0xD69F03E0u); // ERET
+    _kernelCodeBlock.Write(KernelRegionTlbiEretOffset, 0xD508831Fu); // TLBI VMALLE1IS
+    _kernelCodeBlock.Write(KernelRegionEretOffset, 0xD69F03E0u); // ERET
 
-            ulong kernelCodePa = ipaAllocator.Allocate(AllocationGranule);
-            HvApi.hv_vm_map((ulong)_kernelCodeBlock.Pointer, kernelCodePa, AllocationGranule, hv_memory_flags_t.HV_MEMORY_READ | hv_memory_flags_t.HV_MEMORY_EXEC).ThrowOnError();
+    ulong kernelCodePa = ipaAllocator.Allocate(AllocationGranule);
+    HvApi.hv_vm_map((ulong)_kernelCodeBlock.Pointer, kernelCodePa, AllocationGranule, hv_memory_flags_t.HV_MEMORY_READ | hv_memory_flags_t.HV_MEMORY_EXEC).ThrowOnError();
 
-            _kernelRange.Map(KernelRegionCodeOffset, kernelCodePa, KernelRegionCodeSize, ApFlags.UserNoneKernelReadExecute);
-        }
+    _kernelRange.Map(KernelRegionCodeOffset, kernelCodePa, KernelRegionCodeSize, ApFlags.UserNoneKernelReadExecute);
+}
 
         public void InitializeMmu(ulong vcpu)
         {
