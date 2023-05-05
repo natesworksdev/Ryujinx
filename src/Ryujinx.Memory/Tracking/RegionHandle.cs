@@ -444,6 +444,11 @@ namespace Ryujinx.Memory.Tracking
             return Address < address + size && address < EndAddress;
         }
 
+        /// <summary>
+        /// Determines if this handle's memory range matches another exactly.
+        /// </summary>
+        /// <param name="other">The other handle</param>
+        /// <returns>True on a match, false otherwise</returns>
         public bool RangeEquals(RegionHandle other)
         {
             return RealAddress == other.RealAddress && RealSize == other.RealSize;
