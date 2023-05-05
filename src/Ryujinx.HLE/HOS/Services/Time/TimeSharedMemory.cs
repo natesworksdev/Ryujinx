@@ -16,9 +16,9 @@ namespace Ryujinx.HLE.HOS.Services.Time
         private SharedMemoryStorage _timeSharedMemoryStorage;
         private int                 _timeSharedMemorySize;
 
-        private const uint SteadyClockContextOffset         = 0x00;
-        private const uint LocalSystemClockContextOffset    = 0x38;
-        private const uint NetworkSystemClockContextOffset  = 0x80;
+        private const uint SteadyClockContextOffset = 0x00;
+        private const uint LocalSystemClockContextOffset = 0x38;
+        private const uint NetworkSystemClockContextOffset = 0x80;
         private const uint AutomaticCorrectionEnabledOffset = 0xC8;
         private const uint ContinuousAdjustmentTimePointOffset = 0xD0;
 
