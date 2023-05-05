@@ -159,8 +159,8 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 
             ReadOnlySequence<byte> input = context.Memory.GetReadOnlySequence(inputPosition, (int)inputSize);
 
-            using IMemoryOwner<byte> outputOwner = ByteMemoryPool.Shared.Rent(outputSize);
-            using IMemoryOwner<byte> performanceOutputOwner = ByteMemoryPool.Shared.Rent(performanceOutputSize);
+            using IMemoryOwner<byte> outputOwner = ByteMemoryPool.Shared.RentCleared(outputSize);
+            using IMemoryOwner<byte> performanceOutputOwner = ByteMemoryPool.Shared.RentCleared(performanceOutputSize);
 
             Memory<byte> output = outputOwner.Memory;
             Memory<byte> performanceOutput = performanceOutputOwner.Memory;

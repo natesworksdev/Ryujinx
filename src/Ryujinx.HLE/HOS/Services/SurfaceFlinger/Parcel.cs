@@ -41,7 +41,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             uint headerSize = (uint)Unsafe.SizeOf<ParcelHeader>();
 
-            _rawDataOwner = ByteMemoryPool.Shared.Rent(BitUtils.AlignUp<uint>(headerSize + payloadSize + objectsSize, 4));
+            _rawDataOwner = ByteMemoryPool.Shared.RentCleared(BitUtils.AlignUp<uint>(headerSize + payloadSize + objectsSize, 4));
 
             Header.PayloadSize   = payloadSize;
             Header.ObjectsSize   = objectsSize;
