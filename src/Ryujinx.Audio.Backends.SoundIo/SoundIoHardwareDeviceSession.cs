@@ -1,8 +1,10 @@
 ﻿using Ryujinx.Audio.Backends.Common;
 using Ryujinx.Audio.Backends.SoundIo.Native;
 using Ryujinx.Audio.Common;
+using Ryujinx.Common.Memory;
 using Ryujinx.Memory;
 using System;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -111,7 +113,9 @@ namespace Ryujinx.Audio.Backends.SoundIo
 
             int channelCount = areas.Length;
 
-            byte[] samples = new byte[frameCount * bytesPerFrame];
+            using IMemoryOwner<byte> samplesOwner = ByteMemoryPool.Shared.Rent(frameCount * bytesPerFrame);
+
+            Span<byte> samples = samplesOwner.Memory.Span;
 
             _ringBuffer.Read(samples, 0, samples.Length);
 

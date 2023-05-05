@@ -2,6 +2,7 @@
 using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.GAL;
 using System;
+using System.Buffers;
 
 namespace Ryujinx.Graphics.OpenGL.Image
 {
@@ -52,6 +53,13 @@ namespace Ryujinx.Graphics.OpenGL.Image
         public void CopyTo(BufferRange range, int layer, int level, int stride)
         {
             throw new NotImplementedException();
+        }
+
+        public void SetData(IMemoryOwner<byte> data)
+        {
+            var dataSpan = data.Memory.Span;
+
+            Buffer.SetData(_buffer, _bufferOffset, dataSpan.Slice(0, Math.Min(dataSpan.Length, _bufferSize)));
         }
 
         public void SetData(SpanOrArray<byte> data)

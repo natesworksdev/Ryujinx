@@ -2,6 +2,7 @@
 using Ryujinx.Graphics.GAL.Multithreading.Commands.Texture;
 using Ryujinx.Graphics.GAL.Multithreading.Model;
 using System;
+using System.Buffers;
 
 namespace Ryujinx.Graphics.GAL.Multithreading.Resources
 {
@@ -111,6 +112,12 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Resources
         public void CopyTo(BufferRange range, int layer, int level, int stride)
         {
             _renderer.New<TextureCopyToBufferCommand>().Set(Ref(this), range, layer, level, stride);
+            _renderer.QueueCommand();
+        }
+
+        public void SetData(IMemoryOwner<byte> data)
+        {
+            _renderer.New<TextureSetByteMemoryDataCommand>().Set(Ref(this), Ref(data));
             _renderer.QueueCommand();
         }
 

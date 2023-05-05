@@ -1,9 +1,11 @@
 ﻿using ARMeilleure.Memory;
+using Ryujinx.Common.Memory;
 using Ryujinx.Cpu.Tracking;
 using Ryujinx.Memory;
 using Ryujinx.Memory.Range;
 using Ryujinx.Memory.Tracking;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -85,7 +87,6 @@ namespace Ryujinx.Cpu.Jit
 
             ulong remainingSize = size;
             ulong oVa = va;
-            ulong oPa = pa;
             while (remainingSize != 0)
             {
                 _pageTable.Write((va / PageSize) * PteSize, PaToPte(pa));
@@ -272,6 +273,76 @@ namespace Ryujinx.Cpu.Jit
         }
 
         /// <inheritdoc/>
+        public ReadOnlySequence<byte> GetReadOnlySequence(ulong va, int size, bool tracked = false)
+        {
+            if (size == 0)
+            {
+                return ReadOnlySequence<byte>.Empty;
+            }
+
+            if (tracked)
+            {
+                SignalMemoryTracking(va, (ulong)size, false);
+            }
+
+            if (IsContiguousAndMapped(va, size))
+            {
+                return new ReadOnlySequence<byte>(_backingMemory.GetMemory(GetPhysicalAddressInternal(va), size));
+            }
+            else
+            {
+                BytesReadOnlySequenceSegment first = null, last = null;
+
+                try
+                {
+                    AssertValidAddressAndSize(va, (ulong)size);
+
+                    int offset = 0, segmentSize;
+
+                    if ((va & PageMask) != 0)
+                    {
+                        ulong pa = GetPhysicalAddressInternal(va);
+
+                        segmentSize = Math.Min(size, PageSize - (int)(va & PageMask));
+
+                        var memory = _backingMemory.GetMemory(pa, segmentSize);
+
+                        first = last = new BytesReadOnlySequenceSegment(memory);
+
+                        offset += segmentSize;
+                    }
+
+                    for (; offset < size; offset += segmentSize)
+                    {
+                        ulong pa = GetPhysicalAddressInternal(va + (ulong)offset);
+
+                        segmentSize = Math.Min(size - offset, PageSize);
+
+                        var memory = _backingMemory.GetMemory(pa, segmentSize);
+
+                        if (first == null)
+                        {
+                            first = last = new BytesReadOnlySequenceSegment(memory);
+                        }
+                        else
+                        {
+                            last = last.Append(memory);
+                        }
+                    }
+                }
+                catch (InvalidMemoryRegionException)
+                {
+                    if (_invalidAccessHandler == null || !_invalidAccessHandler(va))
+                    {
+                        throw;
+                    }
+                }
+
+                return new ReadOnlySequence<byte>(first, 0, last, (int)(size - last.RunningIndex));
+            }
+        }
+
+        /// <inheritdoc/>
         public ReadOnlySpan<byte> GetSpan(ulong va, int size, bool tracked = false)
         {
             if (size == 0)
@@ -317,11 +388,11 @@ namespace Ryujinx.Cpu.Jit
             }
             else
             {
-                Memory<byte> memory = new byte[size];
+                IMemoryOwner<byte> memoryOwner = ByteMemoryPool.Shared.Rent(size);
 
-                GetSpan(va, size).CopyTo(memory.Span);
+                GetSpan(va, size).CopyTo(memoryOwner.Memory.Span);
 
-                return new WritableRegion(this, va, memory, tracked);
+                return new WritableRegion(this, va, memoryOwner, tracked);
             }
         }
 
@@ -346,7 +417,7 @@ namespace Ryujinx.Cpu.Jit
         /// <param name="startVa">The virtual address of the beginning of the first page</param>
         /// <remarks>This function does not differentiate between allocated and unallocated pages.</remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int GetPagesCount(ulong va, uint size, out ulong startVa)
+        private static int GetPagesCount(ulong va, uint size, out ulong startVa)
         {
             // WARNING: Always check if ulong does not overflow during the operations.
             startVa = va & ~(ulong)PageMask;
@@ -699,6 +770,6 @@ namespace Ryujinx.Cpu.Jit
         /// </summary>
         protected override void Destroy() => _pageTable.Dispose();
 
-        private void ThrowInvalidMemoryRegionException(string message) => throw new InvalidMemoryRegionException(message);
+        private static void ThrowInvalidMemoryRegionException(string message) => throw new InvalidMemoryRegionException(message);
     }
 }

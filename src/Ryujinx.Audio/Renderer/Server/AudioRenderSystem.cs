@@ -403,13 +403,13 @@ namespace Ryujinx.Audio.Renderer.Server
             }
         }
 
-        public ResultCode Update(Memory<byte> output, Memory<byte> performanceOutput, ReadOnlyMemory<byte> input)
+        public ResultCode Update(Memory<byte> output, Memory<byte> performanceOutput, ReadOnlySequence<byte> input)
         {
             lock (_lock)
             {
                 ulong updateStartTicks = GetSystemTicks();
 
-                output.Span.Fill(0);
+                output.Span.Clear();
 
                 StateUpdater stateUpdater = new StateUpdater(input, output, _processHandle, _behaviourContext);
 
@@ -436,14 +436,16 @@ namespace Ryujinx.Audio.Renderer.Server
                     return result;
                 }
 
-                result = stateUpdater.UpdateVoices(_voiceContext, _memoryPools);
+                PoolMapper poolMapper = new PoolMapper(_processHandle, _memoryPools, _behaviourContext.IsMemoryPoolForceMappingEnabled());
+
+                result = stateUpdater.UpdateVoices(_voiceContext, poolMapper);
 
                 if (result != ResultCode.Success)
                 {
                     return result;
                 }
 
-                result = stateUpdater.UpdateEffects(_effectContext, _isActive, _memoryPools);
+                result = stateUpdater.UpdateEffects(_effectContext, _isActive, poolMapper);
 
                 if (result != ResultCode.Success)
                 {
@@ -467,7 +469,7 @@ namespace Ryujinx.Audio.Renderer.Server
                     return result;
                 }
 
-                result = stateUpdater.UpdateSinks(_sinkContext, _memoryPools);
+                result = stateUpdater.UpdateSinks(_sinkContext, poolMapper);
 
                 if (result != ResultCode.Success)
                 {

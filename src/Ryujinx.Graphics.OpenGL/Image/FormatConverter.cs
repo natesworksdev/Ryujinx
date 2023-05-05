@@ -1,4 +1,6 @@
+using Ryujinx.Common.Memory;
 using System;
+using System.Buffers;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -8,10 +10,26 @@ namespace Ryujinx.Graphics.OpenGL.Image
 {
     static class FormatConverter
     {
-        public unsafe static byte[] ConvertS8D24ToD24S8(ReadOnlySpan<byte> data)
+        public static IMemoryOwner<byte> ConvertS8D24ToD24S8AsMemoryOwner(ReadOnlySpan<byte> data)
+        {
+            IMemoryOwner<byte> output = ByteMemoryPool.Shared.Rent(data.Length);
+
+            ConvertS8D24ToD24S8(data, output.Memory.Span);
+
+            return output;
+        }
+
+        public static byte[] ConvertS8D24ToD24S8(ReadOnlySpan<byte> data)
         {
             byte[] output = new byte[data.Length];
 
+            ConvertS8D24ToD24S8(data, output);
+
+            return output;
+        }
+
+        private unsafe static void ConvertS8D24ToD24S8(ReadOnlySpan<byte> data, Span<byte> output)
+        {
             int start = 0;
 
             if (Avx2.IsSupported)
@@ -73,8 +91,6 @@ namespace Ryujinx.Graphics.OpenGL.Image
             {
                 outSpan[i] = BitOperations.RotateLeft(dataSpan[i], 8);
             }
-
-            return output;
         }
 
         public unsafe static byte[] ConvertD24S8ToS8D24(ReadOnlySpan<byte> data)

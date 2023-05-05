@@ -1,5 +1,6 @@
 ﻿using Ryujinx.HLE.HOS.Kernel.Threading;
 using System;
+using System.Buffers;
 
 namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 {
@@ -9,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
         uint GetSampleCount();
         uint GetMixBufferCount();
         int GetState();
-        ResultCode RequestUpdate(Memory<byte> output, Memory<byte> performanceOutput, ReadOnlyMemory<byte> input);
+        ResultCode RequestUpdate(Memory<byte> output, Memory<byte> performanceOutput, ReadOnlySequence<byte> input);
         ResultCode Start();
         ResultCode Stop();
         ResultCode QuerySystemEvent(out KEvent systemEvent);

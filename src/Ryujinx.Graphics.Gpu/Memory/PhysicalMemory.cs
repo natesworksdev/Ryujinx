@@ -1,3 +1,4 @@
+using Ryujinx.Common.Memory;
 using Ryujinx.Cpu;
 using Ryujinx.Cpu.Tracking;
 using Ryujinx.Graphics.Gpu.Image;
@@ -6,6 +7,7 @@ using Ryujinx.Memory;
 using Ryujinx.Memory.Range;
 using Ryujinx.Memory.Tracking;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Linq;
@@ -20,7 +22,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     class PhysicalMemory : IDisposable
     {
         private readonly GpuContext _context;
-        private IVirtualMemoryManagerTracked _cpuMemory;
+        private readonly IVirtualMemoryManagerTracked _cpuMemory;
         private int _referenceCount;
 
         /// <summary>
@@ -186,7 +188,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
             else
             {
-                Memory<byte> memory = new byte[range.GetSize()];
+                IMemoryOwner<byte> memoryOwner = ByteMemoryPool.Shared.Rent(range.GetSize());
+
+                Memory<byte> memory = memoryOwner.Memory;
 
                 int offset = 0;
                 for (int i = 0; i < range.Count; i++)
@@ -200,7 +204,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     offset += size;
                 }
 
-                return new WritableRegion(new MultiRangeWritableBlock(range, this), 0, memory, tracked);
+                return new WritableRegion(new MultiRangeWritableBlock(range, this), 0, memoryOwner, tracked);
             }
         }
 

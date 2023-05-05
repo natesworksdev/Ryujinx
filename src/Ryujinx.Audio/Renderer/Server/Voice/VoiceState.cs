@@ -202,7 +202,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
             Pitch = 0.0f;
             Volume = 0.0f;
             PreviousVolume = 0.0f;
-            BiquadFilters.AsSpan().Fill(new BiquadFilterParameter());
+            BiquadFilters.AsSpan().Clear();
             WaveBuffersCount = 0;
             WaveBuffersIndex = 0;
             MixId = Constants.UnusedMixId;
@@ -252,7 +252,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
         /// </summary>
         /// <param name="parameter">The user parameter.</param>
         /// <returns>Return true, if the server voice information needs to be updated.</returns>
-        private bool ShouldUpdateParameters(ref VoiceInParameter parameter)
+        private bool ShouldUpdateParameters(in VoiceInParameter parameter)
         {
             if (DataSourceStateAddressInfo.CpuAddress == parameter.DataSourceStateAddress)
             {
@@ -271,7 +271,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
         /// <param name="parameter">The user parameter.</param>
         /// <param name="poolMapper">The mapper to use.</param>
         /// <param name="behaviourContext">The behaviour context.</param>
-        public void UpdateParameters(out ErrorInfo outErrorInfo, ref VoiceInParameter parameter, ref PoolMapper poolMapper, ref BehaviourContext behaviourContext)
+        public void UpdateParameters(out ErrorInfo outErrorInfo, in VoiceInParameter parameter, PoolMapper poolMapper, ref BehaviourContext behaviourContext)
         {
             InUse = parameter.InUse;
             Id = parameter.Id;
@@ -324,7 +324,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
                 VoiceDropFlag = false;
             }
 
-            if (ShouldUpdateParameters(ref parameter))
+            if (ShouldUpdateParameters(in parameter))
             {
                 DataSourceStateUnmapped = !poolMapper.TryAttachBuffer(out outErrorInfo, ref DataSourceStateAddressInfo, parameter.DataSourceStateAddress, parameter.DataSourceStateSize);
             }
@@ -378,7 +378,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
         /// <param name="outStatus">The given user output.</param>
         /// <param name="parameter">The user parameter.</param>
         /// <param name="voiceUpdateStates">The voice states associated to the <see cref="VoiceState"/>.</param>
-        public void WriteOutStatus(ref VoiceOutStatus outStatus, ref VoiceInParameter parameter, ReadOnlySpan<Memory<VoiceUpdateState>> voiceUpdateStates)
+        public void WriteOutStatus(ref VoiceOutStatus outStatus, in VoiceInParameter parameter, ReadOnlySpan<Memory<VoiceUpdateState>> voiceUpdateStates)
         {
 #if DEBUG
             // Sanity check in debug mode of the internal state
@@ -424,7 +424,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
         /// <param name="voiceUpdateStates">The voice states associated to the <see cref="VoiceState"/>.</param>
         /// <param name="mapper">The mapper to use.</param>
         /// <param name="behaviourContext">The behaviour context.</param>
-        public void UpdateWaveBuffers(out ErrorInfo[] errorInfos, ref VoiceInParameter parameter, ReadOnlySpan<Memory<VoiceUpdateState>> voiceUpdateStates, ref PoolMapper mapper, ref BehaviourContext behaviourContext)
+        public void UpdateWaveBuffers(out ErrorInfo[] errorInfos, in VoiceInParameter parameter, ReadOnlySpan<Memory<VoiceUpdateState>> voiceUpdateStates, PoolMapper mapper, ref BehaviourContext behaviourContext)
         {
             errorInfos = new ErrorInfo[Constants.VoiceWaveBufferCount * 2];
 
@@ -434,7 +434,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
 
                 for (int i = 0; i < parameter.ChannelCount; i++)
                 {
-                    voiceUpdateStates[i].Span[0].IsWaveBufferValid.Fill(false);
+                    voiceUpdateStates[i].Span[0].IsWaveBufferValid.Clear();
                 }
             }
 
@@ -442,7 +442,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
 
             for (int i = 0; i < Constants.VoiceWaveBufferCount; i++)
             {
-                UpdateWaveBuffer(errorInfos.AsSpan(i * 2, 2), ref WaveBuffers[i], ref parameter.WaveBuffers[i], parameter.SampleFormat, voiceUpdateState.IsWaveBufferValid[i], ref mapper, ref behaviourContext);
+                UpdateWaveBuffer(errorInfos.AsSpan(i * 2, 2), ref WaveBuffers[i], ref parameter.WaveBuffers[i], parameter.SampleFormat, voiceUpdateState.IsWaveBufferValid[i], mapper, ref behaviourContext);
             }
         }
 
@@ -456,7 +456,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
         /// <param name="isValid">If set to true, the server side wavebuffer is considered valid.</param>
         /// <param name="mapper">The mapper to use.</param>
         /// <param name="behaviourContext">The behaviour context.</param>
-        private void UpdateWaveBuffer(Span<ErrorInfo> errorInfos, ref WaveBuffer waveBuffer, ref WaveBufferInternal inputWaveBuffer, SampleFormat sampleFormat, bool isValid, ref PoolMapper mapper, ref BehaviourContext behaviourContext)
+        private void UpdateWaveBuffer(Span<ErrorInfo> errorInfos, ref WaveBuffer waveBuffer, ref WaveBufferInternal inputWaveBuffer, SampleFormat sampleFormat, bool isValid, PoolMapper mapper, ref BehaviourContext behaviourContext)
         {
             if (!isValid && waveBuffer.IsSendToAudioProcessor && waveBuffer.BufferAddressInfo.CpuAddress != 0)
             {
@@ -530,7 +530,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
 
                 Memory<VoiceUpdateState> dspSharedState = context.GetUpdateStateForDsp(channelResourceId);
 
-                MemoryMarshal.Cast<VoiceUpdateState, byte>(dspSharedState.Span).Fill(0);
+                MemoryMarshal.Cast<VoiceUpdateState, byte>(dspSharedState.Span).Clear();
 
                 voiceChannelResource.UpdateState();
             }
@@ -638,7 +638,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
 
                         voiceUpdateState.Offset = 0;
                         voiceUpdateState.PlayedSampleCount = 0;
-                        voiceUpdateState.Pitch.AsSpan().Fill(0);
+                        voiceUpdateState.Pitch.AsSpan().Clear();
                         voiceUpdateState.Fraction = 0;
                         voiceUpdateState.LoopContext = new Dsp.State.AdpcmLoopContext();
                     }

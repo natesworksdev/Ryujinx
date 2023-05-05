@@ -2,6 +2,7 @@
 using Ryujinx.Audio.Renderer.Server;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using System;
+using System.Buffers;
 
 namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 {
@@ -72,7 +73,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
             return resultCode;
         }
 
-        public ResultCode RequestUpdate(Memory<byte> output, Memory<byte> performanceOutput, ReadOnlyMemory<byte> input)
+        public ResultCode RequestUpdate(Memory<byte> output, Memory<byte> performanceOutput, ReadOnlySequence<byte> input)
         {
             return (ResultCode)_impl.Update(output, performanceOutput, input);
         }

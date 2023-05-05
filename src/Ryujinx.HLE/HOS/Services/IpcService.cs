@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Services
         public ServerBase Server { get; private set; }
 
         private IpcService _parent;
-        private IdDictionary _domainObjects;
+        private readonly IdDictionary _domainObjects;
         private int _selfId;
         private bool _isDomain;
 

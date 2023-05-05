@@ -247,7 +247,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
             context.Device.System.SurfaceFlinger.SetRenderLayer(layerId);
 
-            Parcel parcel = new Parcel(0x28, 0x4);
+            using Parcel parcel = new Parcel(0x28, 0x4);
 
             parcel.WriteObject(producer, "dispdrv\0");
 
@@ -283,7 +283,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
             context.Device.System.SurfaceFlinger.SetRenderLayer(layerId);
 
-            Parcel parcel = new Parcel(0x28, 0x4);
+            using Parcel parcel = new Parcel(0x28, 0x4);
 
             parcel.WriteObject(producer, "dispdrv\0");
 

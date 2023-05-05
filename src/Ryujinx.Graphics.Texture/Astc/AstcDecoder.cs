@@ -1,5 +1,7 @@
-﻿using Ryujinx.Common.Utilities;
+﻿using Ryujinx.Common.Memory;
+using Ryujinx.Common.Utilities;
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -291,15 +293,13 @@ namespace Ryujinx.Graphics.Texture.Astc
             int depth,
             int levels,
             int layers,
-            out byte[] decoded)
+            out IMemoryOwner<byte> decoded)
         {
-            byte[] output = new byte[QueryDecompressedSize(width, height, depth, levels, layers)];
+            decoded = ByteMemoryPool.Shared.Rent(QueryDecompressedSize(width, height, depth, levels, layers));
 
-            AstcDecoder decoder = new AstcDecoder(data, output, blockWidth, blockHeight, width, height, depth, levels, layers);
+            AstcDecoder decoder = new AstcDecoder(data, decoded.Memory, blockWidth, blockHeight, width, height, depth, levels, layers);
 
             Enumerable.Range(0, decoder.TotalBlockCount).AsParallel().ForAll(x => decoder.ProcessBlock(x));
-
-            decoded = output;
 
             return decoder.Success;
         }
@@ -579,7 +579,7 @@ namespace Ryujinx.Graphics.Texture.Astc
                 {
                     if ((uint)index >= Count)
                     {
-                        throw new ArgumentOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(index));
                     }
 
                     ref int start = ref Unsafe.Add(ref _start, index * 144);
@@ -1162,7 +1162,7 @@ namespace Ryujinx.Graphics.Texture.Astc
 
                 Debug.Assert(bitLength >= 1);
 
-                int a = 0, b = 0, c = 0, d = 0;
+                int a, b = 0, c = 0, d = 0;
                 // A is just the lsb replicated 9 times.
                 a = Bits.Replicate(bitValue & 1, 1, 9);
 

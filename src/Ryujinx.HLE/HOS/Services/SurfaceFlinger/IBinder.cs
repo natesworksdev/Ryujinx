@@ -13,10 +13,10 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         ResultCode OnTransact(uint code, uint flags, ReadOnlySpan<byte> inputParcel, Span<byte> outputParcel)
         {
-            Parcel inputParcelReader = new Parcel(inputParcel.ToArray());
+            using Parcel inputParcelReader = new Parcel(inputParcel);
 
             // TODO: support objects?
-            Parcel outputParcelWriter = new Parcel((uint)(outputParcel.Length - Unsafe.SizeOf<ParcelHeader>()), 0);
+            using Parcel outputParcelWriter = new Parcel((uint)(outputParcel.Length - Unsafe.SizeOf<ParcelHeader>()), 0);
 
             string inputInterfaceToken = inputParcelReader.ReadInterfaceToken();
 

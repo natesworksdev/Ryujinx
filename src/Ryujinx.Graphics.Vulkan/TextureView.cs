@@ -2,6 +2,7 @@
 using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using VkBuffer = Silk.NET.Vulkan.Buffer;
 using VkFormat = Silk.NET.Vulkan.Format;
@@ -612,6 +613,11 @@ namespace Ryujinx.Graphics.Vulkan
 
             Span<byte> result = flushBuffer.GetTextureData(cbp, this, size, layer, level);
             return GetDataFromBuffer(result, size, result);
+        }
+
+        public void SetData(IMemoryOwner<byte> data)
+        {
+            SetData(data.Memory.Span, 0, 0, Info.GetLayers(), Info.Levels, singleSlice: false);
         }
 
         public void SetData(SpanOrArray<byte> data)
