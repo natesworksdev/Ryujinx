@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading;
 
 namespace Ryujinx.Memory.Tracking
@@ -441,6 +442,11 @@ namespace Ryujinx.Memory.Tracking
         public bool OverlapsWith(ulong address, ulong size)
         {
             return Address < address + size && address < EndAddress;
+        }
+
+        public bool RangeEquals(RegionHandle other)
+        {
+            return RealAddress == other.RealAddress && RealSize == other.RealSize;
         }
 
         /// <summary>
