@@ -225,7 +225,7 @@ namespace Ryujinx.HLE.HOS
             internalOffset = new TimeSpanType(-internalOffset.NanoSeconds);
 
             // First init the standard steady clock
-            TimeServiceManager.Instance.SetupStandardSteadyClock(TickSource, clockSourceId, systemTime, internalOffset, TimeSpanType.Zero, false);
+            TimeServiceManager.Instance.SetupStandardSteadyClock(TickSource, clockSourceId, TimeSpanType.Zero, internalOffset, TimeSpanType.Zero, false);
             TimeServiceManager.Instance.SetupStandardLocalSystemClock(TickSource, new SystemClockContext(), systemTime.ToSeconds());
 
             if (NxSettings.Settings.TryGetValue("time!standard_network_clock_sufficient_accuracy_minutes", out object standardNetworkClockSufficientAccuracyMinutes))
