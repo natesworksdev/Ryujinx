@@ -1527,21 +1527,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                     if (toServer)
                     {
-                        while (size > 0)
-                        {
-                            ulong copySize = 0x100000; // Copy chunk size. Any value will do, moderate sizes are recommended.
-
-                            if (copySize > size)
-                            {
-                                copySize = size;
-                            }
-
-                            currentProcess.CpuMemory.Write(serverAddress, GetSpan(clientAddress, (int)copySize));
-
-                            serverAddress += copySize;
-                            clientAddress += copySize;
-                            size -= copySize;
-                        }
+                        currentProcess.CpuMemory.Write(serverAddress, GetReadOnlySequence(clientAddress, checked((int)size)));
                     }
                     else
                     {
@@ -2917,6 +2903,19 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         protected abstract void GetPhysicalRegions(ulong va, ulong size, KPageList pageList);
 
         /// <summary>
+        /// Gets a read-only sequence of data from CPU mapped memory.
+        /// </summary>
+        /// <remarks>
+        /// This does not perform an allocation if the data is not contiguous in memory.
+        /// </remarks>
+        /// <param name="va">Virtual address of the data</param>
+        /// <param name="size">Size of the data</param>
+        /// <param name="tracked">True if read tracking is triggered on the span</param>
+        /// <returns>A read-only sequence of the data</returns>
+        /// <exception cref="Ryujinx.Memory.InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
+        protected abstract ReadOnlySequence<byte> GetReadOnlySequence(ulong va, int size);
+
+        /// <summary>
         /// Gets a read-only span of data from CPU mapped memory.
         /// </summary>
         /// <remarks>
@@ -2929,6 +2928,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         /// <returns>A read-only span of the data</returns>
         /// <exception cref="Ryujinx.Memory.InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
         protected abstract ReadOnlySpan<byte> GetSpan(ulong va, int size);
+
 
         /// <summary>
         /// Maps a new memory region with the contents of a existing memory region.

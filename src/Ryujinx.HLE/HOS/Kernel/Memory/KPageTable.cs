@@ -36,6 +36,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         }
 
         /// <inheritdoc/>
+        protected override ReadOnlySequence<byte> GetReadOnlySequence(ulong va, int size)
+        {
+            return _cpuMemory.GetReadOnlySequence(va, size);
+        }
+
+        /// <inheritdoc/>
         protected override ReadOnlySpan<byte> GetSpan(ulong va, int size)
         {
             return _cpuMemory.GetSpan(va, size);
