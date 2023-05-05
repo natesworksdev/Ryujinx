@@ -270,8 +270,14 @@ namespace Ryujinx.Ui.Widgets
 
                         int index = Nca.GetSectionIndexFromType(ncaSectionType, mainNca.Header.ContentType);
 
-                        IFileSystem ncaFileSystem = patchNca != null ? mainNca.OpenFileSystemWithPatch(patchNca, index, IntegrityCheckLevel.ErrorOnInvalid)
-                                                                     : mainNca.OpenFileSystem(index, IntegrityCheckLevel.ErrorOnInvalid);
+                        bool isSectionExistInPatch = false;
+                        if (patchNca != null)
+                        {
+                            isSectionExistInPatch = patchNca.CanOpenSection(index);
+                        }
+
+                        IFileSystem ncaFileSystem = isSectionExistInPatch ? mainNca.OpenFileSystemWithPatch(patchNca, index, IntegrityCheckLevel.ErrorOnInvalid)
+                                                                          : mainNca.OpenFileSystem(index, IntegrityCheckLevel.ErrorOnInvalid);
 
                         FileSystemClient fsClient = _horizonClient.Fs;
 
