@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock.Types
     {
         public ulong ClockOffset;
         public long Multiplier;
-        public long Divider;
+        public long DivisorLog2;
         public SystemClockContext Context;
     }
 }

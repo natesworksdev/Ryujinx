@@ -222,22 +222,22 @@ namespace Ryujinx.HLE.HOS
                 internalOffset = internalOffset.AddSeconds(-3600L);
             }
 
-            internalOffset = new TimeSpanType(-internalOffset.NanoSeconds);
+            systemTime = new TimeSpanType(systemTime.NanoSeconds + internalOffset.NanoSeconds);
 
             // First init the standard steady clock
-            TimeServiceManager.Instance.SetupStandardSteadyClock(TickSource, clockSourceId, TimeSpanType.Zero, internalOffset, TimeSpanType.Zero, false);
+            TimeServiceManager.Instance.SetupStandardSteadyClock(TickSource, clockSourceId, TimeSpanType.Zero, TimeSpanType.Zero, TimeSpanType.Zero, false);
             TimeServiceManager.Instance.SetupStandardLocalSystemClock(TickSource, new SystemClockContext(), systemTime.ToSeconds());
+            TimeServiceManager.Instance.StandardLocalSystemClock.GetClockContext(TickSource, out SystemClockContext localSytemClockContext);
 
             if (NxSettings.Settings.TryGetValue("time!standard_network_clock_sufficient_accuracy_minutes", out object standardNetworkClockSufficientAccuracyMinutes))
             {
                 TimeSpanType standardNetworkClockSufficientAccuracy = new TimeSpanType((int)standardNetworkClockSufficientAccuracyMinutes * 60000000000);
 
                 // The network system clock needs a valid system clock, as such we setup this system clock using the local system clock.
-                TimeServiceManager.Instance.StandardLocalSystemClock.GetClockContext(TickSource, out SystemClockContext localSytemClockContext);
                 TimeServiceManager.Instance.SetupStandardNetworkSystemClock(localSytemClockContext, standardNetworkClockSufficientAccuracy);
             }
 
-            TimeServiceManager.Instance.SetupStandardUserSystemClock(TickSource, false, SteadyClockTimePoint.GetRandom());
+            TimeServiceManager.Instance.SetupStandardUserSystemClock(TickSource, false, localSytemClockContext.SteadyTimePoint);
 
             // FIXME: TimeZone should be init here but it's actually done in ContentManager
 

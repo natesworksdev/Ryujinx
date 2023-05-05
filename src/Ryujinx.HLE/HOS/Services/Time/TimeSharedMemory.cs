@@ -64,7 +64,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             {
                 ClockOffset = (ulong)ticksTimeSpan.NanoSeconds,
                 Multiplier = 1,
-                Divider = 0,
+                DivisorLog2 = 0,
                 Context = new SystemClockContext
                 {
                     Offset = 0,
