@@ -1,8 +1,10 @@
-﻿using Avalonia.Collections;
+﻿using Avalonia;
+using Avalonia.Collections;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
+using Ryujinx.Ui.App.Common;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -28,12 +30,12 @@ namespace Ryujinx.Ava.UI.Windows
             Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance[LocaleKeys.CheatWindowTitle];
         }
 
-        public CheatWindow(VirtualFileSystem virtualFileSystem, string titleId, string titleName, string gameBuildId)
+        public CheatWindow(VirtualFileSystem virtualFileSystem, string titleId, string titleName, string titlePath)
         {
             LoadedCheats = new AvaloniaList<CheatsList>();
 
             Heading = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.CheatWindowHeading, titleName, titleId.ToUpper());
-            BuildId = gameBuildId;
+            BuildId = ApplicationData.GetApplicationBuildId(virtualFileSystem, titlePath);
             InitializeComponent();
 
             string modsBasePath = ModLoader.GetModsBasePath();

@@ -119,10 +119,11 @@ namespace Ryujinx.Ava.UI.Controls
 
             if (viewModel?.SelectedApplication != null)
             {
-                await new CheatWindow(viewModel.VirtualFileSystem, viewModel.SelectedApplication.TitleId,
+                await new CheatWindow(
+                    viewModel.VirtualFileSystem,
+                    viewModel.SelectedApplication.TitleId,
                     viewModel.SelectedApplication.TitleName,
-                    ApplicationData.GetApplicationBuildId(viewModel.VirtualFileSystem,
-                        viewModel.SelectedApplication.Path)).ShowDialog(viewModel.TopLevel as Window);
+                    viewModel.SelectedApplication.Path).ShowDialog(viewModel.TopLevel as Window);
             }
         }
 

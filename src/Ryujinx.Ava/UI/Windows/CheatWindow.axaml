@@ -51,7 +51,7 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             LineHeight="30"
-            Text="BID:"
+            Text="BuildId:"
             TextAlignment="Center"
             TextWrapping="Wrap" />
         <TextBox

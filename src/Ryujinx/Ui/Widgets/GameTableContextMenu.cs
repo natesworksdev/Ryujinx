@@ -455,8 +455,7 @@ namespace Ryujinx.Ui.Widgets
 
         private void ManageCheats_Clicked(object sender, EventArgs args)
         {
-            new CheatWindow(_virtualFileSystem, _titleId, _titleName,
-                ApplicationData.GetApplicationBuildId(_virtualFileSystem, _titleFilePath)).Show();
+            new CheatWindow(_virtualFileSystem, _titleId, _titleName, _titleFilePath).Show();
         }
 
         private void OpenTitleModDir_Clicked(object sender, EventArgs args)

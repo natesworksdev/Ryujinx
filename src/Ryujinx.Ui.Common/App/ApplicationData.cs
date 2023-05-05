@@ -40,8 +40,7 @@ namespace Ryujinx.Ui.App.Common
 
             if (!System.IO.Path.Exists(titleFilePath))
             {
-                Logger.Error?.Print(LogClass.Application,
-                    $"File does not exists. {titleFilePath}");
+                Logger.Error?.Print(LogClass.Application, $"File does not exists. {titleFilePath}");
                 return string.Empty;
             }
 
@@ -94,14 +93,12 @@ namespace Ryujinx.Ui.App.Common
 
             if (mainNca == null)
             {
-                Logger.Error?.Print(LogClass.Application,
-                    "Extraction failure. The main NCA was not present in the selected file");
+                Logger.Error?.Print(LogClass.Application, "Extraction failure. The main NCA was not present in the selected file");
 
                 return string.Empty;
             }
 
-            (Nca updatePatchNca, _) = ApplicationLibrary.GetGameUpdateData(virtualFileSystem,
-                mainNca.Header.TitleId.ToString("x16"), 0, out _);
+            (Nca updatePatchNca, _) = ApplicationLibrary.GetGameUpdateData(virtualFileSystem, mainNca.Header.TitleId.ToString("x16"), 0, out _);
 
             if (updatePatchNca != null)
             {
@@ -121,8 +118,7 @@ namespace Ryujinx.Ui.App.Common
             {
                 if (patchNca.CanOpenSection(NcaSectionType.Code))
                 {
-                    codeFs = mainNca.OpenFileSystemWithPatch(patchNca, NcaSectionType.Code,
-                        IntegrityCheckLevel.ErrorOnInvalid);
+                    codeFs = mainNca.OpenFileSystemWithPatch(patchNca, NcaSectionType.Code, IntegrityCheckLevel.ErrorOnInvalid);
                 }
             }
 
@@ -148,11 +144,8 @@ namespace Ryujinx.Ui.App.Common
 
             NsoReader reader = new NsoReader();
             reader.Initialize(nsoFile.Release().AsStorage().AsFile(OpenMode.Read)).ThrowIfFailure();
-
-            const int buildIdSize = 16;
-
-            return BitConverter.ToString(reader.Header.ModuleId.ItemsRo.ToArray()).Replace("-", "").ToUpper()
-                [..buildIdSize];
+            
+            return BitConverter.ToString(reader.Header.ModuleId.ItemsRo.ToArray()).Replace("-", "").ToUpper()[..16];
         }
     }
 }
