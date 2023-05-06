@@ -12,7 +12,7 @@ namespace Ryujinx.Ava.UI.Helpers
 {
     public static class NotificationHelper
     {
-        private const int MaxNotifications      = 4; 
+        private const int MaxNotifications      = 4;
         private const int NotificationDelayInMs = 5000;
 
         private static WindowNotificationManager _notificationManager;
@@ -34,11 +34,21 @@ namespace Ryujinx.Ava.UI.Helpers
                 _templateAppliedEvent.Set();
             };
 
+            // Ordinarily you'd want to Dispose() these, but we're using this one until the application start shutting down.
+            // The process will be ending soon (right?!) so we're not too concerned about proper disposal.
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
+            _notificationManager.DetachedFromLogicalTree += (sender, args) =>
+            {
+                cancellationTokenSource.Cancel();
+                _notifications.CompleteAdding();
+            };
+
             Task.Run(async () =>
             {
                 _templateAppliedEvent.WaitOne();
 
-                foreach (var notification in _notifications.GetConsumingEnumerable())
+                foreach (var notification in _notifications.GetConsumingEnumerable(cancellationTokenSource.Token))
                 {
                     Dispatcher.UIThread.Post(() =>
                     {
