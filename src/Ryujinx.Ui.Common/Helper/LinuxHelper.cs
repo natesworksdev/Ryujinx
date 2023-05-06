@@ -49,7 +49,7 @@ namespace Ryujinx.Ui.Common.Helper
                 StartInfo =
                 {
                     FileName = PkExecPath,
-                    Arguments = $"sh -c '{command}'"
+                    ArgumentList = { "sh", "-c", command }
                 }
             };
 
