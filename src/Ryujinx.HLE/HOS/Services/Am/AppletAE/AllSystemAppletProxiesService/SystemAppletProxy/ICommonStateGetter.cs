@@ -23,11 +23,16 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         private int  _messageEventHandle;
         private int  _displayResolutionChangedEventHandle;
 
+        private KEvent _acquiredSleepLockEvent;
+        private int _acquiredSleepLockEventHandle;
+
         public ICommonStateGetter(ServiceCtx context)
         {
             _apmManagerServer       = new Apm.ManagerServer(context);
             _apmSystemManagerServer = new Apm.SystemManagerServer(context);
             _lblControllerServer    = new Lbl.LblControllerServer(context);
+
+            _acquiredSleepLockEvent = new KEvent(context.Device.System.KernelContext);
         }
 
         [CommandCmif(0)]
@@ -113,6 +118,34 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         public ResultCode GetCurrentFocusState(ServiceCtx context)
         {
             context.ResponseData.Write((byte)context.Device.System.AppletState.FocusState);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(10)]
+        // RequestToAcquireSleepLock()
+        public ResultCode RequestToAcquireSleepLock(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(13)]
+        // GetAcquiredSleepLockEvent() -> handle<copy>
+        public ResultCode GetAcquiredSleepLockEvent(ServiceCtx context)
+        {
+            if (_acquiredSleepLockEventHandle == 0)
+            {
+                if (context.Process.HandleTable.GenerateHandle(_acquiredSleepLockEvent.ReadableEvent, out _acquiredSleepLockEventHandle) != Result.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
+            }
+
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_acquiredSleepLockEventHandle);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
             return ResultCode.Success;
         }
