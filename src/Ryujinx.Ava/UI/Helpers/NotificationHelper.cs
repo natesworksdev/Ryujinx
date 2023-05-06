@@ -58,6 +58,8 @@ namespace Ryujinx.Ava.UI.Helpers
                     await Task.Delay(NotificationDelayInMs / MaxNotifications);
                 }
             });
+
+            _notificationManager.ApplyTemplate();
         }
 
         public static void Show(string title, string text, NotificationType type, bool waitingExit = false, Action onClick = null, Action onClose = null)
