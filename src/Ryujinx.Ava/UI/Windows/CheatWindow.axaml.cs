@@ -36,8 +36,8 @@ namespace Ryujinx.Ava.UI.Windows
             LoadedCheats = new AvaloniaList<CheatsList>();
 
             Heading = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.CheatWindowHeading, titleName, titleId.ToUpper());
-            BuildIdLabel = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.BuildId);
             BuildId = ApplicationData.GetApplicationBuildId(virtualFileSystem, titlePath);
+            
             InitializeComponent();
 
             string modsBasePath = ModLoader.GetModsBasePath();

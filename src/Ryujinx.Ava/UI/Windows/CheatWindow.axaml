@@ -51,7 +51,7 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             LineHeight="30"
-            Text="{Binding BuildIdLabel}"
+            Text="{locale:Locale BuildId}"
             TextAlignment="Center"
             TextWrapping="Wrap" />
         <TextBox
