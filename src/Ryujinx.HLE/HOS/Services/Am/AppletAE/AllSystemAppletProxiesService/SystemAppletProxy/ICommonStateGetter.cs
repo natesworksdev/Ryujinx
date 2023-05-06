@@ -9,8 +9,10 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy
 {
-    class ICommonStateGetter : IpcService
+    class ICommonStateGetter : DisposableIpcService
     {
+        private readonly ServiceCtx _context;
+
         private Apm.ManagerServer       _apmManagerServer;
         private Apm.SystemManagerServer _apmSystemManagerServer;
         private Lbl.LblControllerServer _lblControllerServer;
@@ -28,6 +30,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         public ICommonStateGetter(ServiceCtx context)
         {
+            _context = context;
+
             _apmManagerServer       = new Apm.ManagerServer(context);
             _apmSystemManagerServer = new Apm.SystemManagerServer(context);
             _lblControllerServer    = new Lbl.LblControllerServer(context);
@@ -313,6 +317,18 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             _requestExitToLibraryAppletAtExecuteNextProgramEnabled = true;
 
             return ResultCode.Success;
+        }
+
+        protected override void Dispose(bool isDisposing)
+        {
+            if (isDisposing)
+            {
+                if (_acquiredSleepLockEventHandle != 0)
+                {
+                    _context.Process.HandleTable.CloseHandle(_acquiredSleepLockEventHandle);
+                    _acquiredSleepLockEventHandle = 0;
+                }
+            }
         }
     }
 }
