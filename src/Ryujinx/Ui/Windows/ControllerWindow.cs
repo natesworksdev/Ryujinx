@@ -14,6 +14,7 @@ using Ryujinx.Ui.Widgets;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
@@ -115,6 +116,11 @@ namespace Ryujinx.Ui.Windows
         private bool _mousePressed;
         private bool _middleMousePressed;
 
+        private readonly ToggleButton[] _buttonOrderKeyboard;
+        private readonly ToggleButton[] _buttonOrderController;
+        private readonly ToggleButton[] _buttonOrderJoyLeft;
+        private readonly ToggleButton[] _buttonOrderJoyRight;
+
         private static readonly InputConfigJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
         public ControllerWindow(MainWindow mainWindow, PlayerIndex controllerId) : this(mainWindow, new Builder("Ryujinx.Ui.Windows.ControllerWindow.glade"), controllerId) { }
@@ -201,6 +207,34 @@ namespace Ryujinx.Ui.Windows
             {
                 _mainWindow.RendererWidget.NpadManager.BlockInputUpdates();
             }
+
+            _buttonOrderKeyboard = new ToggleButton[]
+            {
+                _a, _b, _x, _y, _plus, _minus,
+                _dpadUp, _dpadDown, _dpadLeft, _dpadRight,
+                _lStickButton, _lStickUp, _lStickDown, _lStickLeft, _lStickRight,
+                _rStickButton, _rStickUp, _rStickDown, _rStickLeft, _rStickRight,
+                _l, _r, _zL, _zR
+            };
+
+            _buttonOrderController = new ToggleButton[]
+            {
+                _a, _b, _x, _y, _plus, _minus,
+                _dpadUp, _dpadDown, _dpadLeft, _dpadRight,
+                _lStickButton, _lStick,
+                _rStickButton, _rStick,
+                _l, _r, _zL, _zR
+            };
+
+            _buttonOrderJoyLeft = new ToggleButton[]
+            {
+                _lSl, _lSr
+            };
+
+            _buttonOrderJoyRight = new ToggleButton[]
+            {
+                _rSl, _rSr
+            };
         }
 
         private void CemuHookCheckButtonPressed(object sender, EventArgs e)
@@ -915,12 +949,51 @@ namespace Ryujinx.Ui.Windows
 
                     button.Active = false;
                     _isWaitingForInput = false;
+
+                    if (pressedButton != "")
+                    {
+                        HandleNextToggleButton(button);
+                    }
                 });
             });
 
             inputThread.Name = "GUI.InputThread";
             inputThread.IsBackground = true;
             inputThread.Start();
+        }
+
+        private void HandleNextToggleButton(ToggleButton currentButton)
+        {
+            IEnumerable<ToggleButton> buttonOrder = GetCurrentButtonOrder();
+            ToggleButton nextButton = buttonOrder.SkipWhile(element => element != currentButton)
+                .Skip(1)
+                .FirstOrDefault();
+
+            nextButton?.Activate();
+        }
+
+        private IEnumerable<ToggleButton> GetCurrentButtonOrder()
+        {
+            ToggleButton[] baseOrder;
+            if (_inputDevice.ActiveId.StartsWith("keyboard"))
+            {
+                baseOrder = _buttonOrderKeyboard;
+            }
+            else if (_inputDevice.ActiveId.StartsWith("controller"))
+            {
+                baseOrder = _buttonOrderController;
+            }
+            else
+            {
+                throw new Exception("Controller not supported");
+            }
+
+            return _controllerType.ActiveId switch
+            {
+                "JoyconLeft" => baseOrder.Concat(_buttonOrderJoyLeft),
+                "JoyconRight" => baseOrder.Concat(_buttonOrderJoyRight),
+                _ => baseOrder
+            };
         }
 
         private void Button_Pressed(object sender, EventArgs args)
