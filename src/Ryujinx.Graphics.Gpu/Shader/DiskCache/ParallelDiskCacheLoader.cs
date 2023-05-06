@@ -306,7 +306,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                         using var streams = _hostStorage.GetOutputStreams(_context);
 
                         int packagedShaders = 0;
-                        foreach(var kv in _programList)
+                        foreach (var kv in _programList)
                         {
                             if (!Active)
                             {
