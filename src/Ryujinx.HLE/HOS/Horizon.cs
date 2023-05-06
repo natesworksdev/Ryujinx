@@ -202,7 +202,7 @@ namespace Ryujinx.HLE.HOS
 
             // TODO: use set:sys (and get external clock source id from settings)
             // TODO: use "time!standard_steady_clock_rtc_update_interval_minutes" and implement a worker thread to be accurate.
-            UInt128 clockSourceId = UInt128Utils.CreateRandom();
+            UInt128 clockSourceId = new UInt128(0x36a0328702ce8bc1, 0x1608eaba02333284);
             IRtcManager.GetExternalRtcValue(out ulong rtcValue);
 
             // We assume the rtc is system time.
@@ -237,7 +237,7 @@ namespace Ryujinx.HLE.HOS
                 TimeServiceManager.Instance.SetupStandardNetworkSystemClock(localSytemClockContext, standardNetworkClockSufficientAccuracy);
             }
 
-            TimeServiceManager.Instance.SetupStandardUserSystemClock(TickSource, false, localSytemClockContext.SteadyTimePoint);
+            TimeServiceManager.Instance.SetupStandardUserSystemClock(TickSource, true, localSytemClockContext.SteadyTimePoint);
 
             // FIXME: TimeZone should be init here but it's actually done in ContentManager
 
