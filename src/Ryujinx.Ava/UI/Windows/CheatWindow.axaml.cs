@@ -20,7 +20,6 @@ namespace Ryujinx.Ava.UI.Windows
 
         public string Heading { get; }
         public string BuildId { get; }
-        public string BuildIdLabel { get; }
 
         public CheatWindow()
         {
