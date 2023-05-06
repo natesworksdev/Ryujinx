@@ -1525,15 +1525,30 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 {
                     KProcess currentProcess = KernelStatic.GetCurrentProcess();
 
-                    if (toServer)
+                    while (size > 0)
                     {
-                        currentProcess.CpuMemory.Write(serverAddress, GetReadOnlySequence(clientAddress, checked((int)size)));
-                    }
-                    else
-                    {
-                        Write(clientAddress, currentProcess.CpuMemory.GetReadOnlySequence(serverAddress, checked((int)size)));
-                    }
+                        // Copy chunk size. Since moving to use ReadOnlySequence<byte>, which may already be segmented,
+                        // we'll use a segment's max size (Int32.MaxValue) here for the max to read and write at once.
+                        ulong copySize = int.MaxValue;
 
+                        if (copySize > size)
+                        {
+                            copySize = size;
+                        }
+
+                        if (toServer)
+                        {
+                            currentProcess.CpuMemory.Write(serverAddress, GetReadOnlySequence(clientAddress, (int)copySize));
+                        }
+                        else
+                        {
+                            Write(clientAddress, currentProcess.CpuMemory.GetReadOnlySequence(serverAddress, (int)copySize));
+                        }
+
+                        serverAddress += copySize;
+                        clientAddress += copySize;
+                        size -= copySize;
+                    }
                     return Result.Success;
                 }
                 else
