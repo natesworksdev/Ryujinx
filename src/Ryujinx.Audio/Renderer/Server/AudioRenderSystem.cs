@@ -389,7 +389,12 @@ namespace Ryujinx.Audio.Renderer.Server
 
             if (_executionMode == AudioRendererExecutionMode.Auto)
             {
-                _terminationEvent.WaitOne();
+                TimeSpan terminationWaitTimeout = TimeSpan.FromSeconds(5);
+
+                if (_terminationEvent.WaitOne(terminationWaitTimeout) == false)
+                {
+                    Logger.Warning?.PrintMsg(LogClass.AudioRenderer, $"AudioRenderSystem.Stop() timed out after {terminationWaitTimeout} while waiting for the termination signal. Execution will continue to avoid interfering with emulation shutdown. Please file a detailed bug report.");
+                }
             }
 
             Logger.Info?.Print(LogClass.AudioRenderer, $"Stopped renderer id {_sessionId}");
