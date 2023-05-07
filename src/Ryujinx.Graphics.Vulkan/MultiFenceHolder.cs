@@ -82,7 +82,7 @@ namespace Ryujinx.Graphics.Vulkan
         /// </summary>
         /// <param name="cbIndex">Command buffer index of the command buffer that owns the fence</param>
         /// <param name="fence">Fence to be added</param>
-        /// <returns>True if the constant buffer's previous fence value was null</returns>
+        /// <returns>True if the command buffer's previous fence value was null</returns>
         public bool AddFence(int cbIndex, FenceHolder fence)
         {
             ref FenceHolder fenceRef = ref _fences[cbIndex];
@@ -106,7 +106,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         /// <summary>
-        /// Determines if a fence referenced on the given constant buffer.
+        /// Determines if a fence referenced on the given command buffer.
         /// </summary>
         /// <param name="cbIndex"></param>
         /// <returns></returns>
