@@ -39,7 +39,7 @@ namespace Ryujinx.Input.Assigner
 
         public bool ShouldCancel()
         {
-            return _keyboardState.IsPressed(Key.Escape);
+            return _keyboardState?.IsPressed(Key.Escape) == true;
         }
 
         public string GetPressedButton()
