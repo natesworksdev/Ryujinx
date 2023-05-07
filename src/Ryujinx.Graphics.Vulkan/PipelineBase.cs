@@ -1233,23 +1233,28 @@ namespace Ryujinx.Graphics.Vulkan
                         ref var buffer = ref _vertexBuffers[binding];
                         int oldScalarAlign = buffer.AttributeScalarAlignment;
 
-                        buffer.Dispose();
-
                         if (Gd.Capabilities.VertexBufferAlignment < 2 &&
                             (vertexBuffer.Stride % FormatExtensions.MaxBufferFormatScalarSize) == 0)
                         {
-                            buffer = new VertexBufferState(
-                                vb,
-                                descriptorIndex,
-                                vertexBuffer.Buffer.Offset,
-                                vbSize,
-                                vertexBuffer.Stride);
+                            if (!buffer.Matches(vb, descriptorIndex, vertexBuffer.Buffer.Offset, vbSize, vertexBuffer.Stride))
+                            {
+                                buffer.Dispose();
 
-                            buffer.BindVertexBuffer(Gd, Cbs, (uint)binding, ref _newState, _vertexBufferUpdater);
+                                buffer = new VertexBufferState(
+                                    vb,
+                                    descriptorIndex,
+                                    vertexBuffer.Buffer.Offset,
+                                    vbSize,
+                                    vertexBuffer.Stride);
+
+                                buffer.BindVertexBuffer(Gd, Cbs, (uint)binding, ref _newState, _vertexBufferUpdater);
+                            }
                         }
                         else
                         {
                             // May need to be rewritten. Bind this buffer before draw.
+
+                            buffer.Dispose();
 
                             buffer = new VertexBufferState(
                                 vertexBuffer.Buffer.Handle,

@@ -101,6 +101,11 @@ namespace Ryujinx.Graphics.Vulkan
             return _buffer == buffer;
         }
 
+        public bool Matches(Auto<DisposableBuffer> buffer, int descriptorIndex, int offset, int size, int stride = 0)
+        {
+            return _buffer == buffer && DescriptorIndex == descriptorIndex && _offset == offset && _size == size && _stride == stride;
+        }
+
         public void Swap(Auto<DisposableBuffer> from, Auto<DisposableBuffer> to)
         {
             if (_buffer == from)
