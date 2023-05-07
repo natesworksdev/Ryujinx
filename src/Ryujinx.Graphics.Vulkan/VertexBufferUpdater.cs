@@ -1,16 +1,18 @@
 ﻿using Silk.NET.Vulkan;
+using System;
+
+using VkBuffer = Silk.NET.Vulkan.Buffer;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    internal class VertexBufferUpdater
+    internal class VertexBufferUpdater : IDisposable
     {
-        private int MaxVertexBuffers = 16;
         private VulkanRenderer _gd;
 
         private uint _baseBinding;
         private uint _count;
 
-        private NativeArray<Buffer> _buffers;
+        private NativeArray<VkBuffer> _buffers;
         private NativeArray<ulong> _offsets;
         private NativeArray<ulong> _sizes;
         private NativeArray<ulong> _strides;
@@ -19,13 +21,13 @@ namespace Ryujinx.Graphics.Vulkan
         {
             _gd = gd;
 
-            _buffers = new NativeArray<Buffer>(MaxVertexBuffers);
-            _offsets = new NativeArray<ulong>(MaxVertexBuffers);
-            _sizes = new NativeArray<ulong>(MaxVertexBuffers);
-            _strides = new NativeArray<ulong>(MaxVertexBuffers);
+            _buffers = new NativeArray<VkBuffer>(Constants.MaxVertexBuffers);
+            _offsets = new NativeArray<ulong>(Constants.MaxVertexBuffers);
+            _sizes = new NativeArray<ulong>(Constants.MaxVertexBuffers);
+            _strides = new NativeArray<ulong>(Constants.MaxVertexBuffers);
         }
 
-        public void BindVertexBuffer(CommandBufferScoped cbs, uint binding, Buffer buffer, ulong offset, ulong size, ulong stride)
+        public void BindVertexBuffer(CommandBufferScoped cbs, uint binding, VkBuffer buffer, ulong offset, ulong size, ulong stride)
         {
             if (_count == 0)
             {
@@ -69,6 +71,14 @@ namespace Ryujinx.Graphics.Vulkan
 
                 _count = 0;
             }
+        }
+
+        public void Dispose()
+        {
+            _buffers.Dispose();
+            _offsets.Dispose();
+            _sizes.Dispose();
+            _strides.Dispose();
         }
     }
 }
