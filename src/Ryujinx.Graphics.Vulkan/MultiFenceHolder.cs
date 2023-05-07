@@ -1,8 +1,5 @@
 ﻿using Silk.NET.Vulkan;
 using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -108,8 +105,8 @@ namespace Ryujinx.Graphics.Vulkan
         /// <summary>
         /// Determines if a fence referenced on the given command buffer.
         /// </summary>
-        /// <param name="cbIndex"></param>
-        /// <returns></returns>
+        /// <param name="cbIndex">Index of the command buffer to check if it's used</param>
+        /// <returns>True if referenced, false otherwise</returns>
         public bool HasFence(int cbIndex)
         {
             return _fences[cbIndex] != null;
