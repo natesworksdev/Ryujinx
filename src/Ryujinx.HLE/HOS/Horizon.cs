@@ -200,6 +200,7 @@ namespace Ryujinx.HLE.HOS
 
             LibHacHorizonManager = device.Configuration.LibHacHorizonManager;
 
+            // We hardcode a clock source id to avoid it changing between each start.
             // TODO: use set:sys (and get external clock source id from settings)
             // TODO: use "time!standard_steady_clock_rtc_update_interval_minutes" and implement a worker thread to be accurate.
             UInt128 clockSourceId = new UInt128(0x36a0328702ce8bc1, 0x1608eaba02333284);
