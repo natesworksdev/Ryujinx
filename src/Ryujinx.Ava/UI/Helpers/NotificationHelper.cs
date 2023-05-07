@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
 using Avalonia.Threading;
 using Ryujinx.Ava.Common.Locale;
+using Ryujinx.Common.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
@@ -17,7 +18,7 @@ namespace Ryujinx.Ava.UI.Helpers
 
         private static WindowNotificationManager _notificationManager;
 
-        private static readonly ManualResetEvent                 _templateAppliedEvent = new(false);
+        private static readonly ManualResetEventSlim             _templateAppliedEvent = new(false);
         private static readonly BlockingCollection<Notification> _notifications        = new();
 
         public static void SetNotificationManager(Window host)
@@ -40,13 +41,13 @@ namespace Ryujinx.Ava.UI.Helpers
 
             _notificationManager.DetachedFromLogicalTree += (sender, args) =>
             {
-                cancellationTokenSource.Cancel();
                 _notifications.CompleteAdding();
+                cancellationTokenSource.Cancel();
             };
 
             Task.Run(async () =>
             {
-                _templateAppliedEvent.WaitOne();
+                _templateAppliedEvent.Wait(cancellationTokenSource.Token);
 
                 foreach (var notification in _notifications.GetConsumingEnumerable(cancellationTokenSource.Token))
                 {
@@ -57,9 +58,7 @@ namespace Ryujinx.Ava.UI.Helpers
 
                     await Task.Delay(NotificationDelayInMs / MaxNotifications);
                 }
-            });
-
-            _notificationManager.ApplyTemplate();
+            }, cancellationTokenSource.Token);
         }
 
         public static void Show(string title, string text, NotificationType type, bool waitingExit = false, Action onClick = null, Action onClose = null)
