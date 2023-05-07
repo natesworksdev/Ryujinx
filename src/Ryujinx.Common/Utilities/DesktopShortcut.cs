@@ -19,7 +19,7 @@ namespace Ryujinx.Common.Utilities
 
             string iconPath = Path.Combine(AppDataManager.BaseDirPath, "games", titleId, "app");
             string cleanedAppName = string.Join("_", appName.Split(Path.GetInvalidFileNameChars()));
-#if OS_WINDOWS
+
             if (OperatingSystem.IsWindows())
             {
                 MemoryStream iconDataStream = new(iconData);
@@ -42,7 +42,6 @@ namespace Ryujinx.Common.Utilities
                 IPersistFile file = (IPersistFile)shortcut;
                 file.Save(Path.Combine(desktopPath, cleanedAppName + ".lnk"), false);
             }
-#else
             //if (OperatingSystem.IsMacOS())
             //{
 
@@ -71,10 +70,7 @@ namespace Ryujinx.Common.Utilities
                 using StreamWriter outputFile = new StreamWriter(Path.Combine(desktopPath, cleanedAppName + ".desktop"));
                 outputFile.Write(String.Format(desktopFile, cleanedAppName, iconPath + ".png", basePath, $"\"appFilePath\""));
             }
-#endif
         }
-
-#if OS_WINDOWS
 
         /// <summary>
         /// Creates a Icon (.ico) file using the source bitmap image at the specified file path.
@@ -127,7 +123,6 @@ namespace Ryujinx.Common.Utilities
             FS.WriteByte((byte)Len);
             FS.WriteByte((byte)(Len >> 8));
         }
-
     }
 
     #region Implementing the ShellLink Interfaces
@@ -168,5 +163,4 @@ namespace Ryujinx.Common.Utilities
         void SetPath([MarshalAs(UnmanagedType.LPWStr)] string pszFile);
     }
     #endregion
-#endif
 }
