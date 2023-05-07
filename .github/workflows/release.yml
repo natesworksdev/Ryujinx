@@ -149,23 +149,23 @@ jobs:
       - uses: actions/setup-dotnet@v3
         with:
           global-json-file: global.json
-
+          
       - name: Setup LLVM 14
         run: |
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
           sudo ./llvm.sh 14
 
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-
       - name: Install rcodesign
         run: |
-          cargo install --git "https://github.com/marysaka/apple-platform-rs" --branch "fix/adhoc-app-bundle" apple-codesign --bin "rcodesign"
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          mkdir -p $HOME/.bin
+          gh release download -R indygreg/apple-platform-rs -O apple-codesign.tar.gz -p 'apple-codesign-*-x86_64-unknown-linux-musl.tar.gz'
+          tar -xzvf apple-codesign.tar.gz --wildcards '*/rcodesign' --strip-components=1
+          rm apple-codesign.tar.gz
+          mv rcodesign $HOME/.bin/
+          echo "$HOME/.bin" >> $GITHUB_PATH
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get version info
         id: version_info
