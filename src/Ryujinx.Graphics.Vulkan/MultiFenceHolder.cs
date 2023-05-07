@@ -162,17 +162,28 @@ namespace Ryujinx.Graphics.Vulkan
         private bool WaitForFencesImpl(Vk api, Device device, int offset, int size, bool hasTimeout, ulong timeout)
         {
             Span<FenceHolder> fenceHolders = new FenceHolder[CommandBufferPool.MaxCommandBuffers];
-            Fence[] fences;
 
             int count = size != 0 ? GetOverlappingFences(fenceHolders, offset, size) : GetFences(fenceHolders);
-            fences = new Fence[count];
+            Span<Fence> fences = stackalloc Fence[count];
+
+            int fenceCount = 0;
 
             for (int i = 0; i < count; i++)
             {
-                fences[i] = fenceHolders[i].Get();
+                fences[fenceCount] = fenceHolders[i].Get();
+
+                if (fenceCount < i)
+                {
+                    fenceHolders[fenceCount] = fenceHolders[i];
+                }
+
+                if (fences[i].Handle != 0)
+                {
+                    fenceCount++;
+                }
             }
 
-            if (fences.Length == 0)
+            if (fenceCount == 0)
             {
                 return true;
             }
@@ -181,14 +192,14 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (hasTimeout)
             {
-                signaled = FenceHelper.AllSignaled(api, device, fences, timeout);
+                signaled = FenceHelper.AllSignaled(api, device, fences.Slice(0, fenceCount), timeout);
             }
             else
             {
-                FenceHelper.WaitAllIndefinitely(api, device, fences);
+                FenceHelper.WaitAllIndefinitely(api, device, fences.Slice(0, fenceCount));
             }
 
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < fenceCount; i++)
             {
                 fenceHolders[i].Put();
             }

@@ -34,7 +34,13 @@ namespace Ryujinx.Graphics.Vulkan
 
         public Fence Get()
         {
-            Interlocked.Increment(ref _referenceCount);
+            if (Interlocked.Increment(ref _referenceCount) == 1)
+            {
+                Interlocked.Decrement(ref _referenceCount);
+
+                return default;
+            }
+
             return _fence;
         }
 
