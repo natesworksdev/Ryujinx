@@ -41,13 +41,11 @@ namespace Ryujinx.Graphics.Vulkan
                 srcBuffer = buffer.GetBuffer(cbs.CommandBuffer);
                 var dstBuffer = flushStorage.GetBuffer(cbs.CommandBuffer);
 
-                try
+                if (srcBuffer.TryIncrementReferenceCount())
                 {
-                    srcBuffer.IncrementReferenceCount();
-
                     BufferHolder.Copy(_gd, cbs, srcBuffer, dstBuffer, offset, 0, size, registerSrcUsage: false);
                 }
-                catch (InvalidOperationException)
+                else
                 {
                     // Source buffer is no longer alive, don't copy anything to flush storage.
                     srcBuffer = null;

@@ -170,15 +170,15 @@ namespace Ryujinx.Graphics.Vulkan
 
             for (int i = 0; i < count; i++)
             {
-                fences[fenceCount] = fenceHolders[i].Get();
-
-                if (fenceCount < i)
+                if (fenceHolders[i].TryGet(out Fence fence))
                 {
-                    fenceHolders[fenceCount] = fenceHolders[i];
-                }
+                    fences[fenceCount] = fence;
 
-                if (fences[i].Handle != 0)
-                {
+                    if (fenceCount < i)
+                    {
+                        fenceHolders[fenceCount] = fenceHolders[i];
+                    }
+
                     fenceCount++;
                 }
             }

@@ -32,15 +32,28 @@ namespace Ryujinx.Graphics.Vulkan
             return _fence;
         }
 
+        public bool TryGet(out Fence fence)
+        {
+            int lastValue;
+            do
+            {
+                lastValue = _referenceCount;
+
+                if (lastValue == 0)
+                {
+                    fence = default;
+                    return false;
+                }
+            }
+            while (Interlocked.CompareExchange(ref _referenceCount, lastValue + 1, lastValue) != lastValue);
+
+            fence = _fence;
+            return true;
+        }
+
         public Fence Get()
         {
-            if (Interlocked.Increment(ref _referenceCount) == 1)
-            {
-                Interlocked.Decrement(ref _referenceCount);
-
-                return default;
-            }
-
+            Interlocked.Increment(ref _referenceCount);
             return _fence;
         }
 
