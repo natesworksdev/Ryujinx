@@ -37,11 +37,6 @@ namespace Ryujinx.Ava.UI.Helpers
 
         public async void GetInputAndAssign(IButtonAssigner assigner, IKeyboard keyboard = null)
         {
-            Dispatcher.UIThread.Post(() =>
-            {
-                ToggledButton.IsChecked = true;
-            });
-
             if (_isWaitingForInput)
             {
                 Dispatcher.UIThread.Post(() =>
@@ -58,13 +53,8 @@ namespace Ryujinx.Ava.UI.Helpers
 
             await Task.Run(async () =>
             {
-                while (true)
+                while (_isWaitingForInput)
                 {
-                    if (!_isWaitingForInput)
-                    {
-                        return;
-                    }
-
                     await Task.Delay(10);
 
                     assigner.ReadInput();
@@ -92,9 +82,7 @@ namespace Ryujinx.Ava.UI.Helpers
                 _shouldUnbind = false;
                 _isWaitingForInput = false;
 
-                ToggledButton.IsChecked = false;
-
-                ButtonAssigned?.Invoke(this, new ButtonAssignedEventArgs(ToggledButton, pressedButton != null));
+                ButtonAssigned?.Invoke(this, new ButtonAssignedEventArgs(ToggledButton, pressedButton != ""));
 
                 static void SetButtonText(ToggleButton button, string text)
                 {
@@ -111,7 +99,6 @@ namespace Ryujinx.Ava.UI.Helpers
         public void Cancel(bool shouldUnbind = false)
         {
             _isWaitingForInput = false;
-            ToggledButton.IsChecked = false;
             _shouldUnbind = shouldUnbind;
         }
     }

@@ -4,7 +4,6 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Ryujinx.Ava.Common.Locale;
-using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
@@ -12,6 +11,7 @@ using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Input;
 using Ryujinx.Input.Assigner;
 using System;
+using System.Linq;
 
 namespace Ryujinx.Ava.UI.Windows
 {
@@ -28,14 +28,16 @@ namespace Ryujinx.Ava.UI.Windows
 
             InitializeComponent();
 
-            foreach (ILogical visual in SettingButtons.GetLogicalDescendants())
+            foreach (ToggleButton button in SettingButtons.GetLogicalDescendants().OfType<ToggleButton>())
             {
-                if (visual is ToggleButton button && !(visual is CheckBox))
+                if (button is not CheckBox)
                 {
-                    button.Checked += Button_Checked;
-                    button.Unchecked += Button_Unchecked;
+                    button.Click += Button_Click;
                 }
             }
+            
+            PointerPressed += MouseClick;
+            DetachedFromVisualTree += OnViewDetachedFromVisualTree;
         }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
@@ -44,54 +46,58 @@ namespace Ryujinx.Ava.UI.Windows
 
             if (_currentAssigner != null && _currentAssigner.ToggledButton != null && !_currentAssigner.ToggledButton.IsPointerOver)
             {
-                _currentAssigner.Cancel();
+                CancelAssignment();
             }
         }
 
-        private void Button_Checked(object sender, RoutedEventArgs e)
+        private void Button_Click(object sender, RoutedEventArgs e)
         {
             if (sender is ToggleButton button)
             {
-                if (_currentAssigner != null && button == _currentAssigner.ToggledButton)
+                //In any case, if a button is clicked we want to cancel the current assignment
+                //  New button -> Cancel old button assignment
+                //  Same button -> Cancel current assignment
+                if (_currentAssigner != null)
                 {
-                    return;
-                }
+                    ToggleButton oldButton = _currentAssigner.ToggledButton;
 
-                bool isStick = button.Tag != null && button.Tag.ToString() == "stick";
+                    CancelAssignment();
 
-                if (_currentAssigner == null && (bool)button.IsChecked)
-                {
-                    _currentAssigner = new ButtonKeyAssigner(button);
-
-                    FocusManager.Instance.Focus(this, NavigationMethod.Pointer);
-
-                    PointerPressed += MouseClick;
-
-                    IKeyboard keyboard = (IKeyboard)ViewModel.AvaloniaKeyboardDriver.GetGamepad("0"); // Open Avalonia keyboard for cancel operations.
-                    IButtonAssigner assigner = CreateButtonAssigner(isStick);
-
-                    _currentAssigner.ButtonAssigned += (sender, e) =>
+                    if (button == oldButton)
                     {
-                        if (e.IsAssigned)
-                        {
-                            ViewModel.IsModified = true;
-                        }
-                    };
-
-                    _currentAssigner.GetInputAndAssign(assigner, keyboard);
-                }
-                else
-                {
-                    if (_currentAssigner != null)
-                    {
-                        ToggleButton oldButton = _currentAssigner.ToggledButton;
-
-                        _currentAssigner.Cancel();
-                        _currentAssigner = null;
-                        button.IsChecked = false;
+                        return;
                     }
                 }
+
+                IKeyboard keyboard = (IKeyboard)ViewModel.AvaloniaKeyboardDriver.GetGamepad("0"); // Open Avalonia keyboard for cancel operations.
+                IButtonAssigner assigner = CreateButtonAssigner(Equals(button.Tag, "stick"));
+
+                _currentAssigner = new ButtonKeyAssigner(button);
+                _currentAssigner.ButtonAssigned += OnButtonAssigned;
+                _currentAssigner.GetInputAndAssign(assigner, keyboard);
             }
+        }
+
+        private void OnButtonAssigned(object sender, ButtonKeyAssigner.ButtonAssignedEventArgs args)
+        {
+            //In case the current assignment is canceled by another button click, we don't want to set the new assigner to null
+            if (_currentAssigner == sender)
+            {
+                _currentAssigner = null;
+            }
+
+            args.Button.IsChecked = false;
+
+            if (args.IsAssigned)
+            {
+                ViewModel.IsModified = true;
+                CheckNextVisibleToggleButton(args.Button);
+            }
+        }
+
+        private void OnViewDetachedFromVisualTree(object sender, Avalonia.VisualTreeAttachmentEventArgs e)
+        {
+            CancelAssignment();
         }
 
         public void SaveCurrentProfile()
@@ -99,46 +105,37 @@ namespace Ryujinx.Ava.UI.Windows
             ViewModel.Save();
         }
 
-        private IButtonAssigner CreateButtonAssigner(bool forStick)
+        private IButtonAssigner CreateButtonAssigner(bool forStick) => ViewModel.Devices[ViewModel.Device].Type switch
         {
-            IButtonAssigner assigner;
+            DeviceType.Keyboard => new KeyboardKeyAssigner((IKeyboard)ViewModel.SelectedGamepad),
+            DeviceType.Controller => new GamepadButtonAssigner(ViewModel.SelectedGamepad,
+                (ViewModel.Config as StandardControllerInputConfig).TriggerThreshold, forStick),
+            _ => throw new Exception("Controller not supported")
+        };
 
-            var device = ViewModel.Devices[ViewModel.Device];
-
-            if (device.Type == DeviceType.Keyboard)
-            {
-                assigner = new KeyboardKeyAssigner((IKeyboard)ViewModel.SelectedGamepad);
-            }
-            else if (device.Type == DeviceType.Controller)
-            {
-                assigner = new GamepadButtonAssigner(ViewModel.SelectedGamepad, (ViewModel.Config as StandardControllerInputConfig).TriggerThreshold, forStick);
-            }
-            else
-            {
-                throw new Exception("Controller not supported");
-            }
-
-            return assigner;
-        }
-
-        private void Button_Unchecked(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Finds the next visible toggle button (if there is any left), sets it to checked and raises the click event
+        /// </summary>
+        /// <param name="currentButton">Currently checked button</param>
+        private void CheckNextVisibleToggleButton(ToggleButton currentButton)
         {
-            _currentAssigner?.Cancel();
-            _currentAssigner = null;
+            ToggleButton nextButton = SettingButtons.GetLogicalDescendants().OfType<ToggleButton>()
+                .Where(element => element is not CheckBox)
+                .Where(element => element.IsEffectivelyVisible)
+                .SkipWhile(element => element != currentButton).Skip(1)
+                .FirstOrDefault();
+
+            if (nextButton != null)
+            {
+                nextButton.IsChecked = true;
+                nextButton?.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            }
         }
 
         private void MouseClick(object sender, PointerPressedEventArgs e)
         {
-            bool shouldUnbind = false;
-
-            if (e.GetCurrentPoint(this).Properties.IsMiddleButtonPressed)
-            {
-                shouldUnbind = true;
-            }
-
-            _currentAssigner?.Cancel(shouldUnbind);
-
-            PointerPressed -= MouseClick;
+            bool shouldUnbind = e.GetCurrentPoint(this).Properties.IsMiddleButtonPressed;
+            CancelAssignment(shouldUnbind);
         }
 
         private async void PlayerIndexBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -171,11 +168,19 @@ namespace Ryujinx.Ava.UI.Windows
             }
         }
 
+        private void CancelAssignment(bool unbind = false)
+        {
+            _currentAssigner?.Cancel(unbind);
+            _currentAssigner = null;
+        }
+
         public void Dispose()
         {
-            _currentAssigner?.Cancel();
-            _currentAssigner = null;
+            CancelAssignment();
             ViewModel.Dispose();
+
+            PointerPressed -= MouseClick;
+            DetachedFromVisualTree -= OnViewDetachedFromVisualTree;
         }
     }
 }
