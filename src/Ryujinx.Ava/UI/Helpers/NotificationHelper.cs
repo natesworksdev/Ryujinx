@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
 using Avalonia.Threading;
 using Ryujinx.Ava.Common.Locale;
-using Ryujinx.Common.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
@@ -41,8 +40,8 @@ namespace Ryujinx.Ava.UI.Helpers
 
             _notificationManager.DetachedFromLogicalTree += (sender, args) =>
             {
-                _notifications.CompleteAdding();
                 cancellationTokenSource.Cancel();
+                _notifications.CompleteAdding();
             };
 
             Task.Run(async () =>
