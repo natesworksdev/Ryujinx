@@ -4,6 +4,9 @@ using System.IO;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.PixelFormats;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
+using System.Text;
 
 namespace Ryujinx.Common.Utilities
 {
@@ -11,7 +14,7 @@ namespace Ryujinx.Common.Utilities
     {
         public static void CreateAppShortcut(string appFilePath, string appName, string titleId, byte[] iconData)
         {
-            string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx");
+            string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName);
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
             string iconPath = Path.Combine(AppDataManager.BaseDirPath, "games", titleId, "app");
@@ -28,12 +31,16 @@ namespace Ryujinx.Common.Utilities
                     graphic.DrawImage(image, 0, 0, 128, 128);
                     SaveBitmapAsIcon(bitmap, iconPath + ".ico");
                 }
-                IWshRuntimeLibrary.IWshShortcut shortcut = new IWshRuntimeLibrary.WshShell().CreateShortcut(Path.Combine(desktopPath, cleanedAppName + ".lnk"));
-                shortcut.Description = cleanedAppName;
-                shortcut.TargetPath = basePath + ".exe";
-                shortcut.IconLocation = iconPath + ".ico";
-                shortcut.Arguments = $"""{basePath} "{appFilePath}" --fullscreen""";
-                shortcut.Save();
+
+                IShellLink shortcut = (IShellLink)new ShellLink();
+
+                shortcut.SetDescription(cleanedAppName);
+                shortcut.SetPath(basePath + ".exe");
+                shortcut.SetIconLocation(iconPath + ".ico", 0);
+                shortcut.SetArguments($"""{basePath} "{appFilePath}" --fullscreen""");
+
+                IPersistFile file = (IPersistFile)shortcut;
+                file.Save(Path.Combine(desktopPath, cleanedAppName + ".lnk"), false);
             }
 #else
             //if (OperatingSystem.IsMacOS())
@@ -120,6 +127,46 @@ namespace Ryujinx.Common.Utilities
             FS.WriteByte((byte)Len);
             FS.WriteByte((byte)(Len >> 8));
         }
-#endif
+
     }
+
+    #region Implementing the ShellLink Interfaces
+    [ComImport]
+    [Guid("00021401-0000-0000-C000-000000000046")]
+    internal class ShellLink
+    {
+    }
+
+    /// <summary>
+    /// The IShellLink interface is imported using ComImport, instead of directly referencing the COM library in the project (which causes issues).
+    /// This handles the various properties of shortcuts on Windows. Create the object using: <code>IShellLink shortcut = (IShellLink)new ShellLink();</code>
+    /// </summary>
+    [ComImport]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    [Guid("000214F9-0000-0000-C000-000000000046")]
+    internal interface IShellLink
+    {
+        // The full list of members present here must be kept, otherwise ShellLink starts to misbehave. For additional information,
+        // visit: http://www.vbaccelerator.com/home/NET/Code/Libraries/Shell_Projects/Creating_and_Modifying_Shortcuts/article.html
+        void GetPath([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszFile, int cchMaxPath, out IntPtr pfd, int fFlags);
+        void GetIDList(out IntPtr ppidl);
+        void SetIDList(IntPtr pidl);
+        void GetDescription([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszName, int cchMaxName);
+        void SetDescription([MarshalAs(UnmanagedType.LPWStr)] string pszName);
+        void GetWorkingDirectory([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszDir, int cchMaxPath);
+        void SetWorkingDirectory([MarshalAs(UnmanagedType.LPWStr)] string pszDir);
+        void GetArguments([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszArgs, int cchMaxPath);
+        void SetArguments([MarshalAs(UnmanagedType.LPWStr)] string pszArgs);
+        void GetHotkey(out short pwHotkey);
+        void SetHotkey(short wHotkey);
+        void GetShowCmd(out int piShowCmd);
+        void SetShowCmd(int iShowCmd);
+        void GetIconLocation([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszIconPath, int cchIconPath, out int piIcon);
+        void SetIconLocation([MarshalAs(UnmanagedType.LPWStr)] string pszIconPath, int iIcon);
+        void SetRelativePath([MarshalAs(UnmanagedType.LPWStr)] string pszPathRel, int dwReserved);
+        void Resolve(IntPtr hwnd, int fFlags);
+        void SetPath([MarshalAs(UnmanagedType.LPWStr)] string pszFile);
+    }
+    #endregion
+#endif
 }
