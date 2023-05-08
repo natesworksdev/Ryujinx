@@ -427,7 +427,7 @@ namespace Ryujinx.Ui.App.Common
                             Logger.Info?.Print(LogClass.Application, $"last_played found: \"{appMetadata.LastPlayedOld}\", migrating to last_played_utc");
                             appMetadata.LastPlayed = lastPlayedOldParsed;
 
-                            // Migration successful: deleting last_played from the metadata file
+                            // Migration successful: deleting last_played from the metadata file.
                             appMetadata.LastPlayedOld = default;
                         }
                         else
