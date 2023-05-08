@@ -416,20 +416,6 @@ namespace Ryujinx.Ui.App.Common
                         appMetadata.Title = titleName;
                     });
 
-                    if (appMetadata.LastPlayed != "Never")
-                    {
-                        if (!DateTime.TryParse(appMetadata.LastPlayed, out _))
-                        {
-                            Logger.Warning?.Print(LogClass.Application, $"Last played datetime \"{appMetadata.LastPlayed}\" is invalid for current system culture, skipping (did current culture change?)");
-
-                            appMetadata.LastPlayed = "Never";
-                        }
-                        else
-                        {
-                            appMetadata.LastPlayed = appMetadata.LastPlayed[..^3];
-                        }
-                    }
-
                     ApplicationData data = new()
                     {
                         Favorite = appMetadata.Favorite,
