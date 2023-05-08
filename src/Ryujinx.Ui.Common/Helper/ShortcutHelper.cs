@@ -2,54 +2,50 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using System.Runtime.Versioning;
 using System.Text;
+using Image = System.Drawing.Image;
 
 namespace Ryujinx.Ui.Common.Helper
 {
     public static class ShortcutHelper
     {
-        public static void CreateAppShortcut(string appFilePath, string appName, string titleId, byte[] iconData)
+        [SupportedOSPlatform("windows")]
+        private static void CreateShortcutWindows(string appFilePath, byte[] iconData, string iconPath, string cleanedAppName, string basePath, string desktopPath)
         {
-            string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName);
-            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-
-            string iconPath = Path.Combine(AppDataManager.BaseDirPath, "games", titleId, "app");
-            string cleanedAppName = string.Join("_", appName.Split(Path.GetInvalidFileNameChars()));
-
-            if (OperatingSystem.IsWindows())
+            MemoryStream iconDataStream = new(iconData);
+            using (Image image = Image.FromStream(iconDataStream))
             {
-                MemoryStream iconDataStream = new(iconData);
-                using (System.Drawing.Image image = System.Drawing.Image.FromStream(iconDataStream))
-                {
-                    using System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(128, 128);
-                    using System.Drawing.Graphics graphic = System.Drawing.Graphics.FromImage(bitmap);
-                    graphic.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                    graphic.DrawImage(image, 0, 0, 128, 128);
-                    SaveBitmapAsIcon(bitmap, iconPath + ".ico");
-                }
-
-                IShellLink shortcut = (IShellLink)new ShellLink();
-
-                shortcut.SetDescription(cleanedAppName);
-                shortcut.SetPath(basePath + ".exe");
-                shortcut.SetIconLocation(iconPath + ".ico", 0);
-                shortcut.SetArguments($"""{basePath} "{appFilePath}" --fullscreen""");
-
-                IPersistFile file = (IPersistFile)shortcut;
-                file.Save(Path.Combine(desktopPath, cleanedAppName + ".lnk"), false);
+                using Bitmap bitmap = new(128, 128);
+                using System.Drawing.Graphics graphic = System.Drawing.Graphics.FromImage(bitmap);
+                graphic.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphic.DrawImage(image, 0, 0, 128, 128);
+                SaveBitmapAsIcon(bitmap, iconPath + ".ico");
             }
-            //if (OperatingSystem.IsMacOS())
-            //{
 
-            //}
-            if (OperatingSystem.IsLinux())
-            {
-                var image = Image.Load<Rgba32>(iconData);
-                image.SaveAsPng(iconPath + ".png");
-                var desktopFile = """
+            IShellLink shortcut = (IShellLink)new ShellLink();
+
+            shortcut.SetDescription(cleanedAppName);
+            shortcut.SetPath(basePath + ".exe");
+            shortcut.SetIconLocation(iconPath + ".ico", 0);
+            shortcut.SetArguments($"""{basePath} "{appFilePath}" --fullscreen""");
+
+            IPersistFile file = (IPersistFile)shortcut;
+            file.Save(Path.Combine(desktopPath, cleanedAppName + ".lnk"), false);
+        }
+
+        [SupportedOSPlatform("linux")]
+        private static void CreateShortcutLinux(byte[] iconData, string iconPath, string desktopPath, string cleanedAppName, string basePath)
+        {
+            var image = SixLabors.ImageSharp.Image.Load<Rgba32>(iconData);
+            image.SaveAsPng(iconPath + ".png");
+            var desktopFile = """
                     [Desktop Entry]
                     Version=1.0
                     Name={0}
@@ -66,9 +62,31 @@ namespace Ryujinx.Ui.Common.Helper
                     PrefersNonDefaultGPU=true
 
                     """;
-                using StreamWriter outputFile = new StreamWriter(Path.Combine(desktopPath, cleanedAppName + ".desktop"));
-                outputFile.Write(String.Format(desktopFile, cleanedAppName, iconPath + ".png", basePath, $"\"appFilePath\""));
+            using StreamWriter outputFile = new(Path.Combine(desktopPath, cleanedAppName + ".desktop"));
+            outputFile.Write(desktopFile, cleanedAppName, iconPath + ".png", basePath, "\"appFilePath\"");
+        }
+
+        public static void CreateAppShortcut(string appFilePath, string appName, string titleId, byte[] iconData)
+        {
+            string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName);
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+
+            string iconPath = Path.Combine(AppDataManager.BaseDirPath, "games", titleId, "app");
+            string cleanedAppName = string.Join("_", appName.Split(Path.GetInvalidFileNameChars()));
+
+            if (OperatingSystem.IsWindows())
+            {
+                CreateShortcutWindows(appFilePath, iconData, iconPath, cleanedAppName, basePath, desktopPath);
+                return;
             }
+
+            if (OperatingSystem.IsLinux())
+            {
+                CreateShortcutLinux(iconData, iconPath, desktopPath, cleanedAppName, basePath);
+                return;
+            }
+
+            throw new NotImplementedException("Shortcut support has not been implemented yet for this OS.");
         }
 
         /// <summary>
@@ -76,55 +94,54 @@ namespace Ryujinx.Ui.Common.Helper
         /// </summary>
         /// <param name="source">The source bitmap image that will be saved as an .ico file</param>
         /// <param name="filePath">The location that the new .ico file will be saved too (Make sure to include '.ico' in the path).</param>
-        private static void SaveBitmapAsIcon(System.Drawing.Bitmap source, string filePath)
+        [SupportedOSPlatform("windows")]
+        private static void SaveBitmapAsIcon(Bitmap source, string filePath)
         {
-            if (!OperatingSystem.IsWindows()) return;
-
             // Code Modified From https://stackoverflow.com/a/11448060/368354 by Benlitz
-            using FileStream FS = new FileStream(filePath, FileMode.Create);
+            using FileStream fs = new(filePath, FileMode.Create);
             // ICO header
-            FS.WriteByte(0);
-            FS.WriteByte(0);
-            FS.WriteByte(1);
-            FS.WriteByte(0);
-            FS.WriteByte(1);
-            FS.WriteByte(0);
+            fs.WriteByte(0);
+            fs.WriteByte(0);
+            fs.WriteByte(1);
+            fs.WriteByte(0);
+            fs.WriteByte(1);
+            fs.WriteByte(0);
             // Image size
             // Set to 0 for 256 px width/height
-            FS.WriteByte(0);
-            FS.WriteByte(0);
+            fs.WriteByte(0);
+            fs.WriteByte(0);
             // Palette
-            FS.WriteByte(0);
+            fs.WriteByte(0);
             // Reserved
-            FS.WriteByte(0);
+            fs.WriteByte(0);
             // Number of color planes
-            FS.WriteByte(1);
-            FS.WriteByte(0);
+            fs.WriteByte(1);
+            fs.WriteByte(0);
             // Bits per pixel
-            FS.WriteByte(32);
-            FS.WriteByte(0);
+            fs.WriteByte(32);
+            fs.WriteByte(0);
             // Data size, will be written after the data
-            FS.WriteByte(0);
-            FS.WriteByte(0);
-            FS.WriteByte(0);
-            FS.WriteByte(0);
+            fs.WriteByte(0);
+            fs.WriteByte(0);
+            fs.WriteByte(0);
+            fs.WriteByte(0);
             // Offset to image data, fixed at 22
-            FS.WriteByte(22);
-            FS.WriteByte(0);
-            FS.WriteByte(0);
-            FS.WriteByte(0);
+            fs.WriteByte(22);
+            fs.WriteByte(0);
+            fs.WriteByte(0);
+            fs.WriteByte(0);
             // Writing actual data
-            source.Save(FS, System.Drawing.Imaging.ImageFormat.Png);
+            source.Save(fs, ImageFormat.Png);
             // Getting data length (file length minus header)
-            long Len = FS.Length - 22;
+            long Len = fs.Length - 22;
             // Write it in the correct place
-            FS.Seek(14, SeekOrigin.Begin);
-            FS.WriteByte((byte)Len);
-            FS.WriteByte((byte)(Len >> 8));
+            fs.Seek(14, SeekOrigin.Begin);
+            fs.WriteByte((byte)Len);
+            fs.WriteByte((byte)(Len >> 8));
         }
     }
 
-    #region Implementing the ShellLink Interfaces
+    #region ShellLink Interfaces
     [ComImport]
     [Guid("00021401-0000-0000-C000-000000000046")]
     internal class ShellLink
