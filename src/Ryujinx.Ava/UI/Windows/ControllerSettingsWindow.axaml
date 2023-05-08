@@ -739,7 +739,8 @@
                         BorderBrush="{DynamicResource ThemeControlBorderColor}"
                         BorderThickness="1"
                         HorizontalAlignment="Stretch"
-                        IsVisible="{Binding IsController}">
+                        IsVisible="{Binding IsController}"
+                        Margin="0,-1,0,0">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
