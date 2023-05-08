@@ -15,7 +15,6 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
-using Ryujinx.Common.Utilities;
 using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
@@ -635,7 +634,7 @@ namespace Ryujinx.Ui.Widgets
         {
             // Add the logic for the shortcut creating here
             byte[] appIcon = new ApplicationLibrary(_virtualFileSystem).GetApplicationIcon(_titleFilePath, ConfigurationState.Instance.System.Language);
-            DesktopShortcut.CreateAppShortcut(_titleFilePath, _titleName, _titleIdText, appIcon);
+            ShortcutHelper.CreateAppShortcut(_titleFilePath, _titleName, _titleIdText, appIcon);
         }
     }
 }
