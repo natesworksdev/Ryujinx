@@ -1,16 +1,15 @@
 ﻿using Ryujinx.Common.Configuration;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.IO;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.PixelFormats;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 
-namespace Ryujinx.Common.Utilities
+namespace Ryujinx.Ui.Common.Helper
 {
-    public static class DesktopShortcut
+    public static class ShortcutHelper
     {
         public static void CreateAppShortcut(string appFilePath, string appName, string titleId, byte[] iconData)
         {
