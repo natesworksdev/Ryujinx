@@ -1,8 +1,10 @@
-﻿using Avalonia.Collections;
+﻿using Avalonia;
+using Avalonia.Collections;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
+using Ryujinx.Ui.App.Common;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,6 +19,7 @@ namespace Ryujinx.Ava.UI.Windows
         private AvaloniaList<CheatsList> LoadedCheats { get; }
 
         public string Heading { get; }
+        public string BuildId { get; }
 
         public CheatWindow()
         {
@@ -27,16 +30,17 @@ namespace Ryujinx.Ava.UI.Windows
             Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance[LocaleKeys.CheatWindowTitle];
         }
 
-        public CheatWindow(VirtualFileSystem virtualFileSystem, string titleId, string titleName)
+        public CheatWindow(VirtualFileSystem virtualFileSystem, string titleId, string titleName, string titlePath)
         {
             LoadedCheats = new AvaloniaList<CheatsList>();
 
             Heading = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.CheatWindowHeading, titleName, titleId.ToUpper());
-
+            BuildId = ApplicationData.GetApplicationBuildId(virtualFileSystem, titlePath);
+            
             InitializeComponent();
 
-            string modsBasePath = virtualFileSystem.ModLoader.GetModsBasePath();
-            string titleModsPath = virtualFileSystem.ModLoader.GetTitleDir(modsBasePath, titleId);
+            string modsBasePath = ModLoader.GetModsBasePath();
+            string titleModsPath = ModLoader.GetTitleDir(modsBasePath, titleId);
             ulong titleIdValue = ulong.Parse(titleId, System.Globalization.NumberStyles.HexNumber);
 
             _enabledCheatsPath = Path.Combine(titleModsPath, "cheats", "enabled.txt");

@@ -13,6 +13,7 @@ using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Configuration.System;
 using Ryujinx.Ui.Helper;
 using Ryujinx.Ui.Widgets;
+using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -52,7 +53,9 @@ namespace Ryujinx.Ui.Windows
         [GUI] CheckButton     _discordToggle;
         [GUI] CheckButton     _checkUpdatesToggle;
         [GUI] CheckButton     _showConfirmExitToggle;
-        [GUI] CheckButton     _hideCursorOnIdleToggle;
+        [GUI] RadioButton     _hideCursorNever;
+        [GUI] RadioButton     _hideCursorOnIdle;
+        [GUI] RadioButton     _hideCursorAlways;
         [GUI] CheckButton     _vSyncToggle;
         [GUI] CheckButton     _shaderCacheToggle;
         [GUI] CheckButton     _textureRecompressionToggle;
@@ -226,9 +229,17 @@ namespace Ryujinx.Ui.Windows
                 _showConfirmExitToggle.Click();
             }
 
-            if (ConfigurationState.Instance.HideCursorOnIdle)
+            switch (ConfigurationState.Instance.HideCursor.Value)
             {
-                _hideCursorOnIdleToggle.Click();
+                case HideCursorMode.Never:
+                    _hideCursorNever.Click();
+                    break;
+                case HideCursorMode.OnIdle:
+                    _hideCursorOnIdle.Click();
+                    break;
+                case HideCursorMode.Always:
+                    _hideCursorAlways.Click();
+                    break;
             }
 
             if (ConfigurationState.Instance.Graphics.EnableVsync)
@@ -467,7 +478,7 @@ namespace Ryujinx.Ui.Windows
 
             if (Enum.Parse<GraphicsBackend>(_graphicsBackend.ActiveId) == GraphicsBackend.Vulkan)
             {
-                var devices = VulkanRenderer.GetPhysicalDevices();
+                var devices = VulkanRenderer.GetPhysicalDevices(Vk.GetApi());
                 string preferredGpuIdFromConfig = ConfigurationState.Instance.Graphics.PreferredGpu.Value;
                 string preferredGpuId = preferredGpuIdFromConfig;
                 bool noGpuId = string.IsNullOrEmpty(preferredGpuIdFromConfig);
@@ -560,6 +571,18 @@ namespace Ryujinx.Ui.Windows
                 _directoryChanged = false;
             }
 
+            HideCursorMode hideCursor = HideCursorMode.Never;
+
+            if (_hideCursorOnIdle.Active)
+            {
+                hideCursor = HideCursorMode.OnIdle;
+            }
+
+            if (_hideCursorAlways.Active)
+            {
+                hideCursor = HideCursorMode.Always;
+            }
+
             if (!float.TryParse(_resScaleText.Buffer.Text, out float resScaleCustom) || resScaleCustom <= 0.0f)
             {
                 resScaleCustom = 1.0f;
@@ -602,7 +625,7 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.EnableDiscordIntegration.Value            = _discordToggle.Active;
             ConfigurationState.Instance.CheckUpdatesOnStart.Value                 = _checkUpdatesToggle.Active;
             ConfigurationState.Instance.ShowConfirmExit.Value                     = _showConfirmExitToggle.Active;
-            ConfigurationState.Instance.HideCursorOnIdle.Value                    = _hideCursorOnIdleToggle.Active;
+            ConfigurationState.Instance.HideCursor.Value                          = hideCursor;
             ConfigurationState.Instance.Graphics.EnableVsync.Value                = _vSyncToggle.Active;
             ConfigurationState.Instance.Graphics.EnableShaderCache.Value          = _shaderCacheToggle.Active;
             ConfigurationState.Instance.Graphics.EnableTextureRecompression.Value = _textureRecompressionToggle.Active;
@@ -698,6 +721,7 @@ namespace Ryujinx.Ui.Windows
             if (Directory.Exists(_addGameDirBox.Buffer.Text))
             {
                 _gameDirsBoxStore.AppendValues(_addGameDirBox.Buffer.Text);
+                _directoryChanged = true;
             }
             else
             {

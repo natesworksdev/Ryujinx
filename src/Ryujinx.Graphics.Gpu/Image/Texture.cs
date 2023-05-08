@@ -144,6 +144,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public ShortTextureCacheEntry ShortCacheEntry { get; set; }
 
+        /// <summary>
+        /// Whether this texture has ever been referenced by a pool.
+        /// </summary>
+        public bool HadPoolOwner { get; private set; }
+
         /// Physical memory ranges where the texture data is located.
         /// </summary>
         public MultiRange Range { get; private set; }
@@ -1113,7 +1118,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             bool forSampler = (flags & TextureSearchFlags.ForSampler) != 0;
 
-            TextureMatchQuality matchQuality = TextureCompatibility.FormatMatches(Info, info, forSampler, (flags & TextureSearchFlags.ForCopy) != 0);
+            TextureMatchQuality matchQuality = TextureCompatibility.FormatMatches(Info, info, forSampler, (flags & TextureSearchFlags.DepthAlias) != 0);
 
             if (matchQuality == TextureMatchQuality.NoMatch)
             {
@@ -1423,7 +1428,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 _scaledSetScore = Math.Max(0, _scaledSetScore - 1);
             }
 
-            if (_modifiedStale || Group.HasCopyDependencies)
+            if (_modifiedStale || Group.HasCopyDependencies || Group.HasFlushBuffer)
             {
                 _modifiedStale = false;
                 Group.SignalModifying(this, bound);
@@ -1506,10 +1511,13 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="gpuVa">GPU VA of the pool reference</param>
         public void IncrementReferenceCount(TexturePool pool, int id, ulong gpuVa)
         {
+            HadPoolOwner = true;
+
             lock (_poolOwners)
             {
                 _poolOwners.Add(new TexturePoolOwner { Pool = pool, ID = id, GpuAddress = gpuVa });
             }
+
             _referenceCount++;
 
             if (ShortCacheEntry != null)
@@ -1594,7 +1602,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 _poolOwners.Clear();
             }
 
-            if (ShortCacheEntry != null && _context.IsGpuThread())
+            if (ShortCacheEntry != null && !ShortCacheEntry.IsAutoDelete && _context.IsGpuThread())
             {
                 // If this is called from another thread (unmapped), the short cache will
                 // have to remove this texture on a future tick.
@@ -1610,6 +1618,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void UpdatePoolMappings()
         {
+            ChangedMapping = true;
+
             lock (_poolOwners)
             {
                 ulong address = 0;
@@ -1683,10 +1693,10 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (Group.Storage == this)
             {
+                Group.Unmapped();
+
                 Group.ClearModified(unmapRange);
             }
-
-            UpdatePoolMappings();
         }
 
         /// <summary>

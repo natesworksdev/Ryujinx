@@ -33,6 +33,7 @@ namespace Ryujinx.Graphics.Vulkan
         private MemoryAllocation _allocation;
         private Auto<DisposableBuffer> _buffer;
         private Auto<MemoryAllocation> _allocationAuto;
+        private bool _allocationImported;
         private ulong _bufferHandle;
 
         private CacheByRange<BufferHolder> _cachedConvertedBuffers;
@@ -73,6 +74,26 @@ namespace Ryujinx.Graphics.Vulkan
             _bufferHandle = buffer.Handle;
             Size = size;
             _map = allocation.HostPointer;
+
+            _baseType = type;
+            _currentType = currentType;
+            DesiredType = currentType;
+
+            _flushLock = new ReaderWriterLock();
+        }
+
+        public BufferHolder(VulkanRenderer gd, Device device, VkBuffer buffer, Auto<MemoryAllocation> allocation, int size, BufferAllocationType type, BufferAllocationType currentType, int offset)
+        {
+            _gd = gd;
+            _device = device;
+            _allocation = allocation.GetUnsafe();
+            _allocationAuto = allocation;
+            _allocationImported = true;
+            _waitable = new MultiFenceHolder(size);
+            _buffer = new Auto<DisposableBuffer>(new DisposableBuffer(gd.Api, device, buffer), _waitable, _allocationAuto);
+            _bufferHandle = buffer.Handle;
+            Size = size;
+            _map = _allocation.HostPointer + offset;
 
             _baseType = type;
             _currentType = currentType;
@@ -578,9 +599,10 @@ namespace Ryujinx.Graphics.Vulkan
             Auto<DisposableBuffer> dst,
             int srcOffset,
             int dstOffset,
-            int size)
+            int size,
+            bool registerSrcUsage = true)
         {
-            var srcBuffer = src.Get(cbs, srcOffset, size).Value;
+            var srcBuffer = registerSrcUsage ? src.Get(cbs, srcOffset, size).Value : src.GetUnsafe().Value;
             var dstBuffer = dst.Get(cbs, dstOffset, size).Value;
 
             InsertBufferBarrier(
@@ -775,8 +797,15 @@ namespace Ryujinx.Graphics.Vulkan
             _gd.PipelineInternal?.FlushCommandsIfWeightExceeding(_buffer, (ulong)Size);
 
             _buffer.Dispose();
-            _allocationAuto.Dispose();
             _cachedConvertedBuffers.Dispose();
+            if (_allocationImported)
+            {
+                _allocationAuto.DecrementReferenceCount();
+            }
+            else
+            {
+                _allocationAuto.Dispose();
+            }
 
             _flushLock.AcquireWriterLock(Timeout.Infinite);
 

@@ -270,8 +270,14 @@ namespace Ryujinx.Ui.Widgets
 
                         int index = Nca.GetSectionIndexFromType(ncaSectionType, mainNca.Header.ContentType);
 
-                        IFileSystem ncaFileSystem = patchNca != null ? mainNca.OpenFileSystemWithPatch(patchNca, index, IntegrityCheckLevel.ErrorOnInvalid)
-                                                                     : mainNca.OpenFileSystem(index, IntegrityCheckLevel.ErrorOnInvalid);
+                        bool sectionExistsInPatch = false;
+                        if (patchNca != null)
+                        {
+                            sectionExistsInPatch = patchNca.CanOpenSection(index);
+                        }
+
+                        IFileSystem ncaFileSystem = sectionExistsInPatch ? mainNca.OpenFileSystemWithPatch(patchNca, index, IntegrityCheckLevel.ErrorOnInvalid)
+                                                                         : mainNca.OpenFileSystem(index, IntegrityCheckLevel.ErrorOnInvalid);
 
                         FileSystemClient fsClient = _horizonClient.Fs;
 
@@ -455,21 +461,21 @@ namespace Ryujinx.Ui.Widgets
 
         private void ManageCheats_Clicked(object sender, EventArgs args)
         {
-            new CheatWindow(_virtualFileSystem, _titleId, _titleName).Show();
+            new CheatWindow(_virtualFileSystem, _titleId, _titleName, _titleFilePath).Show();
         }
 
         private void OpenTitleModDir_Clicked(object sender, EventArgs args)
         {
-            string modsBasePath  = _virtualFileSystem.ModLoader.GetModsBasePath();
-            string titleModsPath = _virtualFileSystem.ModLoader.GetTitleDir(modsBasePath, _titleIdText);
+            string modsBasePath  = ModLoader.GetModsBasePath();
+            string titleModsPath = ModLoader.GetTitleDir(modsBasePath, _titleIdText);
 
             OpenHelper.OpenFolder(titleModsPath);
         }
 
         private void OpenTitleSdModDir_Clicked(object sender, EventArgs args)
         {
-            string sdModsBasePath  = _virtualFileSystem.ModLoader.GetSdModsBasePath();
-            string titleModsPath   = _virtualFileSystem.ModLoader.GetTitleDir(sdModsBasePath, _titleIdText);
+            string sdModsBasePath  = ModLoader.GetSdModsBasePath();
+            string titleModsPath   = ModLoader.GetTitleDir(sdModsBasePath, _titleIdText);
 
             OpenHelper.OpenFolder(titleModsPath);
         }

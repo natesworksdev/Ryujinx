@@ -35,6 +35,7 @@ using Ryujinx.Input.HLE;
 using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
+using Silk.NET.Vulkan;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
@@ -157,7 +158,7 @@ namespace Ryujinx.Ava
                 _isFirmwareTitle = true;
             }
 
-            ConfigurationState.Instance.HideCursorOnIdle.Event += HideCursorState_Changed;
+            ConfigurationState.Instance.HideCursor.Event += HideCursorState_Changed;
 
             _topLevel.PointerMoved += TopLevel_PointerMoved;
 
@@ -468,9 +469,9 @@ namespace Ryujinx.Ava
             (_rendererHost.EmbeddedWindow as EmbeddedWindowOpenGL)?.MakeCurrent(null);
         }
 
-        private void HideCursorState_Changed(object sender, ReactiveEventArgs<bool> state)
+        private void HideCursorState_Changed(object sender, ReactiveEventArgs<HideCursorMode> state)
         {
-            if (state.NewValue)
+            if (state.NewValue == HideCursorMode.OnIdle)
             {
                 _lastCursorMoveTime = Stopwatch.GetTimestamp();
             }
@@ -701,6 +702,7 @@ namespace Ryujinx.Ava
             if (ConfigurationState.Instance.Graphics.GraphicsBackend.Value == GraphicsBackend.Vulkan)
             {
                 renderer = new VulkanRenderer(
+                    Vk.GetApi(),
                     (_rendererHost.EmbeddedWindow as EmbeddedWindowVulkan).CreateSurface,
                     VulkanHelper.GetRequiredInstanceExtensions,
                     ConfigurationState.Instance.Graphics.PreferredGpu.Value);
@@ -965,30 +967,38 @@ namespace Ryujinx.Ava
 
             if (_viewModel.IsActive)
             {
-                if (ConfigurationState.Instance.Hid.EnableMouse)
+                if (_isCursorInRenderer)
                 {
-                    if (_isCursorInRenderer)
+                    if (ConfigurationState.Instance.Hid.EnableMouse)
                     {
                         HideCursor();
                     }
                     else
                     {
-                        ShowCursor();
+                        switch (ConfigurationState.Instance.HideCursor.Value)
+                        {
+                            case HideCursorMode.Never:
+                                ShowCursor();
+                                break;
+                            case HideCursorMode.OnIdle:
+                                if (Stopwatch.GetTimestamp() - _lastCursorMoveTime >= CursorHideIdleTime * Stopwatch.Frequency)
+                                {
+                                    HideCursor();
+                                }
+                                else
+                                {
+                                    ShowCursor();
+                                }
+                                break;
+                            case HideCursorMode.Always:
+                                HideCursor();
+                                break;
+                        }
                     }
                 }
                 else
                 {
-                    if (ConfigurationState.Instance.HideCursorOnIdle)
-                    {
-                        if (Stopwatch.GetTimestamp() - _lastCursorMoveTime >= CursorHideIdleTime * Stopwatch.Frequency)
-                        {
-                            HideCursor();
-                        }
-                        else
-                        {
-                            ShowCursor();
-                        }
-                    }
+                    ShowCursor();
                 }
 
                 Dispatcher.UIThread.Post(() =>
