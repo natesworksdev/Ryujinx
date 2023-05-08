@@ -267,8 +267,7 @@
                     Grid.Row="0"
                     BorderBrush="{DynamicResource ThemeControlBorderColor}"
                     BorderThickness="1"
-                    IsVisible="{Binding IsLeft}">
-                    IsVisible="True" 
+                    IsVisible="{Binding IsLeft}"
                     MinHeight="90">
                     <Grid Margin="10" HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
@@ -338,8 +337,7 @@
                     Grid.Row="1"
                     BorderBrush="{DynamicResource ThemeControlBorderColor}"
                     BorderThickness="1"
-                    IsVisible="{Binding IsLeft}">
-                    IsVisible="True"
+                    IsVisible="{Binding IsLeft}"
                     Margin="0,5,0,0">
                     <StackPanel Margin="10" Orientation="Vertical">
                         <TextBlock
