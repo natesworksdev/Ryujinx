@@ -1,4 +1,5 @@
-﻿using Ryujinx.HLE.HOS.Services.Sockets.Bsd;
+﻿using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Services.Sockets.Bsd;
 using Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl;
 using Ryujinx.HLE.HOS.Services.Ssl.Types;
 using System;
@@ -93,7 +94,17 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         {
             StartSslOperation();
             _stream = new SslStream(new NetworkStream(((ManagedSocket)Socket).Socket, false), false, null, null);
-            _stream.AuthenticateAsClient(hostName, null, TranslateSslVersion(_sslVersion), false);
+
+            try 
+            {
+                _stream.AuthenticateAsClient(hostName, null, TranslateSslVersion(_sslVersion), false);
+            }
+            catch (Exception e) 
+            {
+                Logger.Error?.Print(LogClass.ServiceSsl, "SSL handshake error. If proxy is enabled try adding a certificate in your OS settings.");
+                throw;
+            }
+            
             EndSslOperation();
 
             return ResultCode.Success;
