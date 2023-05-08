@@ -5,7 +5,7 @@ using System;
 
 namespace Ryujinx.Cpu
 {
-    class AddressSpace : IDisposable
+    public class AddressSpace : IDisposable
     {
         private const ulong PageSize = 0x1000;
 
@@ -154,7 +154,9 @@ namespace Ryujinx.Cpu
         public MemoryBlock Base { get; }
         public MemoryBlock Mirror { get; }
 
-        public AddressSpace(MemoryBlock backingMemory, ulong asSize, bool supports4KBPages)
+        public ulong AddressSpaceSize { get; }
+
+        public AddressSpace(MemoryBlock backingMemory, MemoryBlock baseMemory, MemoryBlock mirrorMemory, ulong addressSpaceSize, bool supports4KBPages)
         {
             if (!supports4KBPages)
             {
@@ -163,17 +165,50 @@ namespace Ryujinx.Cpu
                 _privateTree = new IntrusiveRedBlackTree<PrivateMapping>();
                 _treeLock = new object();
 
-                _mappingTree.Add(new Mapping(0UL, asSize, MappingType.None));
-                _privateTree.Add(new PrivateMapping(0UL, asSize, default));
+                _mappingTree.Add(new Mapping(0UL, addressSpaceSize, MappingType.None));
+                _privateTree.Add(new PrivateMapping(0UL, addressSpaceSize, default));
             }
 
             _backingMemory = backingMemory;
             _supports4KBPages = supports4KBPages;
 
+            Base = baseMemory;
+            Mirror = mirrorMemory;
+            AddressSpaceSize = addressSpaceSize;
+        }
+
+        public static bool TryCreate(out AddressSpace addressSpace, MemoryBlock backingMemory, ulong asSize, bool supports4KBPages)
+        {
+            addressSpace = null;
+
             MemoryAllocationFlags asFlags = MemoryAllocationFlags.Reserve | MemoryAllocationFlags.ViewCompatible;
 
-            Base = new MemoryBlock(asSize, asFlags);
-            Mirror = new MemoryBlock(asSize, asFlags);
+
+            for (ulong addressSpaceSize = asSize; addressSpaceSize >= (1UL << 36); addressSpaceSize >>= 1)
+            {
+                MemoryBlock baseMemory = null;
+                MemoryBlock mirrorMemory = null;
+
+                try
+                {
+                    baseMemory = new MemoryBlock(addressSpaceSize, asFlags);
+                    mirrorMemory = new MemoryBlock(addressSpaceSize, asFlags);
+                    addressSpace = new AddressSpace(backingMemory, baseMemory, mirrorMemory, addressSpaceSize, supports4KBPages);
+
+                    break;
+                }
+                catch (OutOfMemoryException) { }
+                finally
+                {
+                    if (addressSpace == null)
+                    {
+                        baseMemory?.Dispose();
+                        mirrorMemory?.Dispose();
+                    }
+                }
+            }
+
+            return addressSpace != null;
         }
 
         public void Map(ulong va, ulong pa, ulong size, MemoryMapFlags flags)

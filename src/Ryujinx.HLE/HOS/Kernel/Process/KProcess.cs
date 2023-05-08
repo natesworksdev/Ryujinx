@@ -1085,7 +1085,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             Context = _contextFactory.Create(KernelContext, Pid, 1UL << addrSpaceBits, InvalidAccessHandler, for64Bit);
 
-            MemoryManager = new KPageTable(KernelContext, CpuMemory);
+            MemoryManager = new KPageTable(KernelContext, CpuMemory, Context.AddressSpaceSize);
         }
 
         private bool InvalidAccessHandler(ulong va)
