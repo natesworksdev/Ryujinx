@@ -78,6 +78,13 @@ jobs:
         run: dotnet publish -c "${{ matrix.configuration }}" -r "${{ matrix.DOTNET_RUNTIME_IDENTIFIER }}" -o ./publish_ava -p:Version="${{ env.RYUJINX_BASE_VERSION }}" -p:DebugType=embedded -p:SourceRevisionId="${{ steps.git_short_hash.outputs.result }}" -p:ExtraDefineConstants=DISABLE_UPDATER src/Ryujinx.Ava --self-contained true
         if: github.event_name == 'pull_request'
 
+      - name: Set executable bit
+        run: |
+          chmod +x ./publish/Ryujinx ./publish/Ryujinx.sh
+          chmod +x ./publish_sdl2_headless/Ryujinx.Headless.SDL2 ./publish_sdl2_headless/Ryujinx.sh
+          chmod +x ./publish_ava/Ryujinx.Ava ./publish_ava/Ryujinx.sh
+        if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-latest'
+
       - name: Upload Ryujinx artifact
         uses: actions/upload-artifact@v3
         with:
