@@ -33,11 +33,12 @@ namespace Ryujinx.HLE.HOS.Services
             0x01007FFF
         };
 
-        // The amount of time that Dispose() will wait on the _threadStopped wait handle.
-        private static readonly TimeSpan ThreadStoppedWaitTimeout = TimeSpan.FromSeconds(3);
+        // The amount of time Dispose() will wait to Join() the thread executing the ServerLoop()
+        private static readonly TimeSpan ThreadJoinTimeout = TimeSpan.FromSeconds(3);
 
         private readonly KernelContext _context;
         private KProcess _selfProcess;
+        private KThread _selfThread;
 
         private readonly ReaderWriterLockSlim _handleLock = new ReaderWriterLockSlim();
         private readonly Dictionary<int, IpcService> _sessions = new Dictionary<int, IpcService>();
@@ -49,7 +50,6 @@ namespace Ryujinx.HLE.HOS.Services
         private readonly MemoryStream _responseDataStream;
         private readonly BinaryWriter _responseDataWriter;
 
-        private readonly ManualResetEventSlim _threadStopped;
         private int _isDisposed = 0;
 
         public ManualResetEvent InitDone { get; }
@@ -69,8 +69,6 @@ namespace Ryujinx.HLE.HOS.Services
             InitDone = new ManualResetEvent(false);
             Name = name;
             SmObjectFactory = smObjectFactory;
-
-            _threadStopped = new ManualResetEventSlim(false);
 
             const ProcessCreationFlags flags =
                 ProcessCreationFlags.EnableAslr |
@@ -167,8 +165,8 @@ namespace Ryujinx.HLE.HOS.Services
 
         private void ServerLoop()
         {
-            _threadStopped.Reset();
             _selfProcess = KernelStatic.GetCurrentProcess();
+            _selfThread = KernelStatic.GetCurrentThread();
 
             if (SmObjectFactory != null)
             {
@@ -179,8 +177,7 @@ namespace Ryujinx.HLE.HOS.Services
 
             InitDone.Set();
 
-            KThread thread = KernelStatic.GetCurrentThread();
-            ulong messagePtr = thread.TlsAddress;
+            ulong messagePtr = _selfThread.TlsAddress;
             _context.Syscall.SetHeapSize(out ulong heapAddr, 0x200000);
 
             _selfProcess.CpuMemory.Write(messagePtr + 0x0, 0);
@@ -221,9 +218,9 @@ namespace Ryujinx.HLE.HOS.Services
                 // We still need a timeout here to allow the service to pick up and listen new sessions...
                 var rc = _context.Syscall.ReplyAndReceive(out int signaledIndex, handles.AsSpan(0, handleCount), replyTargetHandle, 1000000L);
 
-                thread.HandlePostSyscall();
+                _selfThread.HandlePostSyscall();
 
-                if (!thread.Context.Running)
+                if (!_selfThread.Context.Running)
                 {
                     break;
                 }
@@ -272,17 +269,12 @@ namespace Ryujinx.HLE.HOS.Services
                 ArrayPool<int>.Shared.Return(handles);
             }
 
-            _threadStopped.Set();
             Dispose();
         }
 
         private bool Process(int serverSessionHandle, ulong recvListAddr)
         {
-            KProcess process = KernelStatic.GetCurrentProcess();
-            KThread thread = KernelStatic.GetCurrentThread();
-            ulong messagePtr = thread.TlsAddress;
-
-            IpcMessage request = ReadRequest(process, messagePtr);
+            IpcMessage request = ReadRequest();
 
             IpcMessage response = new IpcMessage();
 
@@ -328,9 +320,9 @@ namespace Ryujinx.HLE.HOS.Services
 
                 ServiceCtx context = new ServiceCtx(
                     _context.Device,
-                    process,
-                    process.CpuMemory,
-                    thread,
+                    _selfProcess,
+                    _selfProcess.CpuMemory,
+                    _selfThread,
                     request,
                     response,
                     _requestDataReader,
@@ -409,9 +401,9 @@ namespace Ryujinx.HLE.HOS.Services
 
                 ServiceCtx context = new ServiceCtx(
                     _context.Device,
-                    process,
-                    process.CpuMemory,
-                    thread,
+                    _selfProcess,
+                    _selfProcess.CpuMemory,
+                    _selfThread,
                     request,
                     response,
                     _requestDataReader,
@@ -422,7 +414,7 @@ namespace Ryujinx.HLE.HOS.Services
                 response.RawData = _responseDataStream.ToArray();
 
                 using var responseStream = response.GetStreamTipc();
-                process.CpuMemory.Write(messagePtr, responseStream.GetReadOnlySequence());
+                _selfProcess.CpuMemory.Write(_selfThread.TlsAddress, responseStream.GetReadOnlySequence());
             }
             else
             {
@@ -431,27 +423,24 @@ namespace Ryujinx.HLE.HOS.Services
 
             if (!isTipcCommunication)
             {
-                using var responseStream = response.GetStream((long)messagePtr, recvListAddr | ((ulong)PointerBufferSize << 48));
-                process.CpuMemory.Write(messagePtr, responseStream.GetReadOnlySequence());
+                using var responseStream = response.GetStream((long)_selfThread.TlsAddress, recvListAddr | ((ulong)PointerBufferSize << 48));
+                _selfProcess.CpuMemory.Write(_selfThread.TlsAddress, responseStream.GetReadOnlySequence());
             }
 
             return shouldReply;
         }
 
-        private static IpcMessage ReadRequest(KProcess process, ulong messagePtr)
+        private IpcMessage ReadRequest()
         {
             const int messageSize = 0x100;
 
-            byte[] reqData = ArrayPool<byte>.Shared.Rent(messageSize);
+            using IMemoryOwner<byte> reqDataOwner = ByteMemoryPool.Shared.Rent(messageSize);
 
-            Span<byte> reqDataSpan = reqData.AsSpan(0, messageSize);
-            reqDataSpan.Clear();
+            Span<byte> reqDataSpan = reqDataOwner.Memory.Span;
 
-            process.CpuMemory.Read(messagePtr, reqDataSpan);
+            _selfProcess.CpuMemory.Read(_selfThread.TlsAddress, reqDataSpan);
 
-            IpcMessage request = new IpcMessage(reqDataSpan, (long)messagePtr);
-
-            ArrayPool<byte>.Shared.Return(reqData);
+            IpcMessage request = new IpcMessage(reqDataSpan, (long)_selfThread.TlsAddress);
 
             return request;
         }
@@ -484,16 +473,17 @@ namespace Ryujinx.HLE.HOS.Services
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && _selfThread != null)
             {
+                if (_selfThread.HostThread.ManagedThreadId != Environment.CurrentManagedThreadId
+                    && _selfThread.HostThread.Join(ThreadJoinTimeout) == false)
+                {
+                    Logger.Warning?.Print(LogClass.Service, $"The ServerBase thread didn't terminate within {ThreadJoinTimeout:g}, resources will not have Dispose() called to avoid a race condition.");
+                    return;
+                }
+
                 if (Interlocked.Exchange(ref _isDisposed, 1) == 0)
                 {
-                    if (!_threadStopped.Wait(ThreadStoppedWaitTimeout))
-                    {
-                        Logger.Warning?.Print(LogClass.Service, $"The ServerBase thread didn't signal it has stopped within {ThreadStoppedWaitTimeout:g}, resources will not have Dispose() called to avoid a race condition.");
-                        return;
-                    }
-
                     foreach (IpcService service in _sessions.Values)
                     {
                         (service as IDisposable)?.Dispose();
@@ -510,7 +500,6 @@ namespace Ryujinx.HLE.HOS.Services
                     _responseDataWriter.Dispose();
                     _responseDataStream.Dispose();
 
-                    _threadStopped.Dispose();
                     InitDone.Dispose();
                 }
             }
