@@ -475,7 +475,9 @@
                             </CheckBox>
                             <Separator Margin="0,8,0,8" Height="1" />
                             <StackPanel Orientation="Vertical">
-                                <TextBlock Text="{locale:Locale ControllerSettingsLStickDeadzone}" />
+                                <TextBlock 
+                                    HorizontalAlignment="Center" 
+                                    Text="{locale:Locale ControllerSettingsLStickDeadzone}" />
                                 <StackPanel
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
@@ -492,7 +494,9 @@
                                         Width="25"
                                         Text="{Binding Configuration.DeadzoneLeft, StringFormat=\{0:0.00\}}" />
                                 </StackPanel>
-                                <TextBlock Text="{locale:Locale ControllerSettingsStickRange}" />
+                                <TextBlock 
+                                    HorizontalAlignment="Center" 
+                                    Text="{locale:Locale ControllerSettingsStickRange}" />
                                 <StackPanel
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
@@ -1071,7 +1075,9 @@
                             </CheckBox>
                             <Separator Margin="0,8,0,8" Height="1" />
                             <StackPanel Orientation="Vertical">
-                                <TextBlock Text="{locale:Locale ControllerSettingsRStickDeadzone}" />
+                                <TextBlock 
+                                    HorizontalAlignment="Center" 
+                                    Text="{locale:Locale ControllerSettingsRStickDeadzone}" />
                                 <StackPanel
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
@@ -1090,7 +1096,9 @@
                                         Width="25"
                                         Text="{Binding Configuration.DeadzoneRight, StringFormat=\{0:0.00\}}" />
                                 </StackPanel>
-                                <TextBlock Text="{locale:Locale ControllerSettingsStickRange}" />
+                                <TextBlock 
+                                    HorizontalAlignment="Center" 
+                                    Text="{locale:Locale ControllerSettingsStickRange}" />
                                 <StackPanel
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
