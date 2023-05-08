@@ -417,22 +417,22 @@ namespace Ryujinx.Ui.App.Common
 
                         if (appMetadata.LastPlayedOld == default || appMetadata.LastPlayed.HasValue)
                         {
-                            // don't do the migration if last_played doesn't exist or last_played_utc already has a value
+                            // Don't do the migration if last_played doesn't exist or last_played_utc already has a value.
                             return;
                         }
 
-                        // migrate from string-based last_played to DateTime-based last_played_utc
+                        // Migrate from string-based last_played to DateTime-based last_played_utc.
                         if (DateTime.TryParse(appMetadata.LastPlayedOld, out DateTime lastPlayedOldParsed))
                         {
                             Logger.Info?.Print(LogClass.Application, $"last_played found: \"{appMetadata.LastPlayedOld}\", migrating to last_played_utc");
                             appMetadata.LastPlayed = lastPlayedOldParsed;
 
-                            // migration successful: deleting last_played from the metadata file
+                            // Migration successful: deleting last_played from the metadata file
                             appMetadata.LastPlayedOld = default;
                         }
                         else
                         {
-                            // migration failed: emitting warning but leaving the unparsable value in the metadata file so the user can fix it
+                            // Migration failed: emitting warning but leaving the unparsable value in the metadata file so the user can fix it.
                             Logger.Warning?.Print(LogClass.Application, $"Last played string \"{appMetadata.LastPlayedOld}\" is invalid for current system culture, skipping (did current culture change?)");
                         }
                     });
