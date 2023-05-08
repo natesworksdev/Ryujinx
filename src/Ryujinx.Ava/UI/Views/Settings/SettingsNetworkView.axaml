@@ -25,20 +25,54 @@
                 Orientation="Vertical"
                 Spacing="10">
                 <TextBlock Classes="h1" Text="{locale:Locale SettingsTabNetworkConnection}" />
-                <CheckBox Margin="10,0,0,0" IsChecked="{Binding EnableInternetAccess}">
-                    <TextBlock Text="{locale:Locale SettingsTabSystemEnableInternetAccess}"
-                               ToolTip.Tip="{locale:Locale EnableInternetAccessTooltip}" />
-                </CheckBox>
-                <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
-                    <TextBlock VerticalAlignment="Center"
-                               Text="{locale:Locale SettingsTabNetworkInterface}"
-                               ToolTip.Tip="{locale:Locale NetworkInterfaceTooltip}"
-                               Width="200" />
-                    <ComboBox SelectedIndex="{Binding NetworkInterfaceIndex}"
-                              ToolTip.Tip="{locale:Locale NetworkInterfaceTooltip}"
-                              HorizontalContentAlignment="Left"
-                              Items="{Binding NetworkInterfaceList}"
-                              Width="250" />
+                <StackPanel Margin="10,0,0,0" Orientation="Vertical">
+                    <CheckBox Margin="10,0,0,0" IsChecked="{Binding EnableInternetAccess}">
+                        <TextBlock Text="{locale:Locale SettingsTabSystemEnableInternetAccess}"
+                                   ToolTip.Tip="{locale:Locale EnableInternetAccessTooltip}" />
+                    </CheckBox>
+                    <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center"
+                                   Text="{locale:Locale SettingsTabNetworkInterface}"
+                                   ToolTip.Tip="{locale:Locale NetworkInterfaceTooltip}"
+                                   Width="200" />
+                        <ComboBox SelectedIndex="{Binding NetworkInterfaceIndex}"
+                                  ToolTip.Tip="{locale:Locale NetworkInterfaceTooltip}"
+                                  HorizontalContentAlignment="Left"
+                                  Items="{Binding NetworkInterfaceList}"
+                                  Width="250" />
+                    </StackPanel>
+                </StackPanel>
+                <Separator Height="1" />
+                <StackPanel Orientation="Vertical" Spacing="2">
+                    <TextBlock Classes="h1" Text="Proxy" />
+                </StackPanel>
+                <StackPanel
+                    Margin="10,0,0,0"
+                    HorizontalAlignment="Stretch"
+                    Orientation="Vertical">
+                    <CheckBox Margin="10,0,0,0" IsChecked="{Binding EnableProxy}">
+                        <TextBlock Text="Proxy enabled"
+                                   ToolTip.Tip="Sends all HTTP requests through the proxy server. Useful for intercepting network traffic and mocking responses." />
+                    </CheckBox>
+                    <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center"
+                                   Text="Proxy address"
+                                   ToolTip.Tip="IP address and port of your HTTP proxy server"
+                                   Width="200" />
+                        <TextBox Margin="0,0,5,0" 
+                                 Text="{Binding ProxyIpAddress}"
+                                 Width="250"
+                                 Watermark="IP address"
+                                 ToolTip.Tip="IP address"
+                                 IsEnabled="{Binding EnableProxy}"/>
+                        <NumericUpDown Width="50"
+                                       Value="{Binding ProxyPort}"
+                                       ShowButtonSpinner="False"
+                                       Minimum="0"
+                                       Maximum="65535"
+                                       ToolTip.Tip="Port"
+                                       IsEnabled="{Binding EnableProxy}"/>
+                    </StackPanel>
                 </StackPanel>
             </StackPanel>
         </Border>

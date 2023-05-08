@@ -55,6 +55,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public event Action CloseWindow;
         public event Action SaveSettingsEvent;
         private int _networkInterfaceIndex;
+        private bool _enableProxy;
 
         public int ResolutionScale
         {
@@ -272,6 +273,19 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        public bool EnableProxy
+        {
+            get => _enableProxy;
+            set
+            {
+                _enableProxy = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string ProxyIpAddress { get; set; }
+        public int ProxyPort { get; set; }
+
         public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager) : this()
         {
             _virtualFileSystem = virtualFileSystem;
@@ -436,6 +450,9 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             // Network
             EnableInternetAccess = config.System.EnableInternetAccess;
+            EnableProxy = config.System.EnableHttpProxy;
+            ProxyIpAddress = config.System.HttpProxyIpAddress;
+            ProxyPort = config.System.HttpProxyPort;
 
             // Logging
             EnableFileLog = config.Logger.EnableFileLog;
@@ -536,6 +553,9 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             // Network
             config.System.EnableInternetAccess.Value = EnableInternetAccess;
+            config.System.EnableHttpProxy.Value = EnableProxy;
+            config.System.HttpProxyIpAddress.Value = ProxyIpAddress;
+            config.System.HttpProxyPort.Value = ProxyPort;
 
             // Logging
             config.Logger.EnableFileLog.Value = EnableFileLog;

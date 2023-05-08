@@ -92,6 +92,15 @@ namespace Ryujinx.Headless.SDL2
 
         [Option("enable-internet-connection", Required = false, Default = false, HelpText = "Enables guest Internet connection.")]
         public bool EnableInternetAccess { get; set; }
+        
+        [Option("enable-proxy-connection", Required = false, Default = false, HelpText = "Enables using proxy for http requests")]
+        public bool EnableHttpProxy { get; set; }
+        
+        [Option("proxy-ip", Required = false, Default = "127.0.0.1", HelpText = "IP address of HTTP proxy server")]
+        public string HttpProxyIpAddress { get; set; }
+        
+        [Option("proxy-port", Required = false, Default = 8080, HelpText = "Port number of HTTP proxy server")]
+        public int HttpProxyPortNumber { get; set; }
 
         [Option("disable-fs-integrity-checks", Required = false, HelpText = "Disables integrity checks on Game content files.")]
         public bool DisableFsIntegrityChecks { get; set; }

@@ -102,6 +102,22 @@ namespace Ryujinx.HLE
         /// </summary>
         internal readonly bool EnableInternetAccess;
 
+
+        /// <summary>
+        /// Enables or disables sending HTTP requests through a proxy server
+        /// </summary>
+        internal readonly bool EnableHttpProxy;
+
+        /// <summary>
+        /// IP address of HTTP proxy server
+        /// </summary>
+        internal readonly string HttpProxyIpAddress;
+
+        /// <summary>
+        /// Port number of HTTP proxy server
+        /// </summary>
+        internal readonly int HttpProxyPort;
+
         /// <summary>
         /// Control LibHac's integrity check level.
         /// </summary>
@@ -178,6 +194,9 @@ namespace Ryujinx.HLE
                                 bool                   enableDockedMode,
                                 bool                   enablePtc,
                                 bool                   enableInternetAccess,
+                                bool                   enableHttpProxy,
+                                string                 httpProxyIpAddress,
+                                int                    httpProxyPort,
                                 IntegrityCheckLevel    fsIntegrityCheckLevel,
                                 int                    fsGlobalAccessLogMode,
                                 long                   systemTimeOffset,
@@ -204,6 +223,9 @@ namespace Ryujinx.HLE
             EnableDockedMode          = enableDockedMode;
             EnablePtc                 = enablePtc;
             EnableInternetAccess      = enableInternetAccess;
+            EnableHttpProxy           = enableHttpProxy;
+            HttpProxyIpAddress        = httpProxyIpAddress;
+            HttpProxyPort             = httpProxyPort;
             FsIntegrityCheckLevel     = fsIntegrityCheckLevel;
             FsGlobalAccessLogMode     = fsGlobalAccessLogMode;
             SystemTimeOffset          = systemTimeOffset;
