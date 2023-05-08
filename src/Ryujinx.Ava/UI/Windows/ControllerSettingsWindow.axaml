@@ -48,7 +48,6 @@
             <Border
                 Grid.Row="0"
                 Grid.Column="0"
-                Margin="0,0,2,0"
                 BorderBrush="{DynamicResource ThemeControlBorderColor}"
                 BorderThickness="1"
                 Padding="2">
@@ -62,7 +61,7 @@
                     </Grid.ColumnDefinitions>
 
                     <TextBlock
-                        Margin="0,0,10,0"
+                        Margin="5,0,10,0"
                         Width="90"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
@@ -86,8 +85,9 @@
             </Border>
             <!-- Profile selection -->
             <Border
-               Grid.Row="0"
-               Grid.Column="1"
+               Grid.Row="1"
+               Grid.Column="0"
+               Margin="0,-1,0,0"
                BorderBrush="{DynamicResource ThemeControlBorderColor}"
                BorderThickness="1"
                Padding="2">
@@ -104,7 +104,7 @@
                     </Grid.ColumnDefinitions>
 
                     <TextBlock
-                        Margin="0,0,10,0"
+                        Margin="5,0,10,0"
                         Width="90"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
@@ -156,12 +156,11 @@
                     </Button>
                 </Grid>
             </Border>
-
             <!-- Input device -->
             <Border
-                Grid.Row="1"
-                Grid.Column="0"
-                Margin="0,2,2,0"
+                Grid.Row="0"
+                Grid.Column="1"
+                Margin="-1,0,0,0"
                 BorderBrush="{DynamicResource ThemeControlBorderColor}"
                 BorderThickness="1"
                 Padding="2">
@@ -174,7 +173,7 @@
 
                     <TextBlock
                         Grid.Column="0"
-                        Margin="0,0,10,0"
+                        Margin="5,0,10,0"
                         Width="90"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
@@ -200,13 +199,12 @@
                             Height="20"/>
                     </Button>
                 </Grid>
-            </Border>
-            
+            </Border>            
             <!-- Controler type -->
             <Border
                 Grid.Row="1"
                 Grid.Column="1"
-                Margin="0,2,0,0"
+                Margin="-1,-1,0,0"
                 BorderBrush="{DynamicResource ThemeControlBorderColor}"
                 BorderThickness="1"
                 Padding="2">
@@ -219,7 +217,7 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <TextBlock
-                        Margin="0,0,10,0"
+                        Margin="5,0,10,0"
                         Width="90"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
@@ -252,7 +250,7 @@
 
             <!--  Left  -->
             <Grid
-                Margin="0,0,10,0"
+                Margin="0,0,5,0"
                 Grid.Column="0"
                 VerticalAlignment="Stretch"
                 DockPanel.Dock="Left">
@@ -763,7 +761,7 @@
 
             <!--Right Controls-->
             <Grid
-                Margin="10,0,0,0"
+                Margin="5,0,0,0"
                 Grid.Column="2"
                 VerticalAlignment="Top"
                 HorizontalAlignment="Stretch" >
