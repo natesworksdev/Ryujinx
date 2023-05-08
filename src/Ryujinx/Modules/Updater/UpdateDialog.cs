@@ -1,5 +1,6 @@
 using Gdk;
 using Gtk;
+using Ryujinx.Common;
 using Ryujinx.Ui;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
@@ -47,9 +48,14 @@ namespace Ryujinx.Modules
             if (_restartQuery)
             {
                 string ryuName = OperatingSystem.IsWindows() ? "Ryujinx.exe" : "Ryujinx";
-                string ryuExe  = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ryuName);
 
-                Process.Start(ryuExe, CommandLineState.Arguments);
+                ProcessStartInfo processStart = new(ryuName, string.Join(' ', CommandLineState.Arguments))
+                {
+                    UseShellExecute = true,
+                    WorkingDirectory = ReleaseInformation.GetBaseApplicationDirectory()
+                };
+
+                Process.Start(processStart);
 
                 Environment.Exit(0);
             }
