@@ -488,7 +488,7 @@
                                         Value="{Binding Configuration.DeadzoneLeft, Mode=TwoWay}" />
                                     <TextBlock
                                         VerticalAlignment="Center"
-                                        Width="20"
+                                        Width="25"
                                         Text="{Binding Configuration.DeadzoneLeft, StringFormat=\{0:0.00\}}" />
                                 </StackPanel>
                                 <TextBlock Text="{locale:Locale ControllerSettingsStickRange}" />
@@ -505,6 +505,7 @@
                                         Value="{Binding Configuration.RangeLeft, Mode=TwoWay}" />
                                     <TextBlock
                                         VerticalAlignment="Center"
+                                        Width="25"
                                         Text="{Binding Configuration.RangeLeft, StringFormat=\{0:0.00\}}" />
                                 </StackPanel>
                             </StackPanel>
@@ -613,7 +614,9 @@
                                 IsSnapToTickEnabled="True"
                                 Minimum="0"
                                 Value="{Binding Configuration.TriggerThreshold, Mode=TwoWay}" />
-                            <TextBlock Text="{Binding Configuration.TriggerThreshold, StringFormat=\{0:0.00\}}" />
+                            <TextBlock
+                              Width="25"
+                              Text="{Binding Configuration.TriggerThreshold, StringFormat=\{0:0.00\}}" />
                         </StackPanel>
                         <StackPanel
                             Margin="0,4,0,0"
@@ -1082,6 +1085,7 @@
                                         Value="{Binding Configuration.DeadzoneRight, Mode=TwoWay}" />
                                     <TextBlock
                                         VerticalAlignment="Center"
+                                        Width="25"
                                         Text="{Binding Configuration.DeadzoneRight, StringFormat=\{0:0.00\}}" />
                                 </StackPanel>
                                 <TextBlock Text="{locale:Locale ControllerSettingsStickRange}" />
@@ -1098,6 +1102,7 @@
                                         Value="{Binding Configuration.RangeRight, Mode=TwoWay}" />
                                     <TextBlock
                                         VerticalAlignment="Center"
+                                        Width="25"
                                         Text="{Binding Configuration.RangeRight, StringFormat=\{0:0.00\}}" />
                                 </StackPanel>
                             </StackPanel>
