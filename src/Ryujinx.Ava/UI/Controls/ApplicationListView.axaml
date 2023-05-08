@@ -13,7 +13,6 @@
     mc:Ignorable="d">
     <UserControl.Resources>
         <helpers:BitmapArrayValueConverter x:Key="ByteImage" />
-        <helpers:NullableDateTimeConverter x:Key="NullableDateTime" />
         <controls:ApplicationContextMenu x:Key="ApplicationContextMenu" />
     </UserControl.Resources>
     <Grid>
@@ -130,7 +129,7 @@
                                         TextWrapping="Wrap" />
                                     <TextBlock
                                         HorizontalAlignment="Stretch"
-                                        Text="{Binding LastPlayed, Converter={StaticResource NullableDateTime}}"
+                                        Text="{Binding LastPlayed, Converter={helpers:NullableDateTimeConverter}}"
                                         TextAlignment="Right"
                                         TextWrapping="Wrap" />
                                     <TextBlock

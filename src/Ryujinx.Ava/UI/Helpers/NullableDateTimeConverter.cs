@@ -1,16 +1,14 @@
 using Avalonia.Data.Converters;
-using Avalonia.Media;
-using Avalonia.Media.Imaging;
+using Avalonia.Markup.Xaml;
 using Ryujinx.Ava.Common.Locale;
 using System;
 using System.Globalization;
-using System.IO;
 
 namespace Ryujinx.Ava.UI.Helpers
 {
-    internal class NullableDateTimeConverter : IValueConverter
+    internal class NullableDateTimeConverter : MarkupExtension, IValueConverter
     {
-        public static NullableDateTimeConverter Instance = new();
+        private static readonly NullableDateTimeConverter _instance = new();
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -30,6 +28,11 @@ namespace Ryujinx.Ava.UI.Helpers
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotSupportedException();
+        }
+
+        public override object ProvideValue(IServiceProvider serviceProvider)
+        {
+            return _instance;
         }
     }
 }
