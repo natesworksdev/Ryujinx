@@ -38,7 +38,7 @@ namespace Ryujinx.Ava.UI.Helpers
             // The process will be ending soon (right?!) so we're not too concerned about proper disposal.
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
-            _notificationManager.DetachedFromLogicalTree += (sender, args) =>
+            host.Closing += (sender, args) =>
             {
                 cancellationTokenSource.Cancel();
                 _notifications.CompleteAdding();
