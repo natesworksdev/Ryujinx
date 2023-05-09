@@ -6,7 +6,6 @@ using Ryujinx.Ava.Common.Locale;
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.UI.Helpers
 {
@@ -44,20 +43,35 @@ namespace Ryujinx.Ava.UI.Helpers
                 _notifications.CompleteAdding();
             };
 
-            Task.Run(async () =>
+            var notificationThread = new Thread(() =>
             {
                 _templateAppliedEvent.Wait(cancellationTokenSource.Token);
 
-                foreach (var notification in _notifications.GetConsumingEnumerable(cancellationTokenSource.Token))
+                try
                 {
-                    Dispatcher.UIThread.Post(() =>
+                    foreach (var notification in _notifications.GetConsumingEnumerable(cancellationTokenSource.Token))
                     {
-                        _notificationManager.Show(notification);
-                    });
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            _notificationManager.Show(notification);
+                        });
 
-                    await Task.Delay(NotificationDelayInMs / MaxNotifications);
+                        bool isCancelled = cancellationTokenSource.Token.WaitHandle.WaitOne(NotificationDelayInMs / MaxNotifications);
+                        if (isCancelled)
+                            break;
+                    }
                 }
-            }, cancellationTokenSource.Token);
+                catch (OperationCanceledException)
+                {
+                    // Do nothing.
+                }
+            })
+            {
+                Name = "UI.NotificationThread",
+                IsBackground = true,
+            };
+
+            notificationThread.Start();
         }
 
         public static void Show(string title, string text, NotificationType type, bool waitingExit = false, Action onClick = null, Action onClose = null)
