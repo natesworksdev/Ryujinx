@@ -31,7 +31,6 @@ namespace Ryujinx.Audio.Renderer.Server
         private AudioRendererRenderingDevice _renderingDevice;
         private AudioRendererExecutionMode _executionMode;
         private IWritableEvent _systemEvent;
-        private ManualResetEvent _terminationEvent;
         private MemoryPoolState _dspMemoryPoolState;
         private VoiceContext _voiceContext;
         private MixContext _mixContext;
@@ -83,7 +82,6 @@ namespace Ryujinx.Audio.Renderer.Server
         public AudioRenderSystem(AudioRendererManager manager, IWritableEvent systemEvent)
         {
             _manager = manager;
-            _terminationEvent = new ManualResetEvent(false);
             _dspMemoryPoolState = MemoryPoolState.Create(MemoryPoolState.LocationType.Dsp);
             _voiceContext = new VoiceContext();
             _mixContext = new MixContext();
@@ -387,16 +385,6 @@ namespace Ryujinx.Audio.Renderer.Server
                 _isActive = false;
             }
 
-            if (_executionMode == AudioRendererExecutionMode.Auto)
-            {
-                TimeSpan terminationWaitTimeout = TimeSpan.FromSeconds(5);
-
-                if (_terminationEvent.WaitOne(terminationWaitTimeout) == false)
-                {
-                    Logger.Warning?.PrintMsg(LogClass.AudioRenderer, $"AudioRenderSystem.Stop() timed out after {terminationWaitTimeout} while waiting for the termination signal. Execution will continue to avoid interfering with emulation shutdown. Please file a detailed bug report.");
-                }
-            }
-
             Logger.Info?.Print(LogClass.AudioRenderer, $"Stopped renderer id {_sessionId}");
         }
 
@@ -673,8 +661,6 @@ namespace Ryujinx.Audio.Renderer.Server
             {
                 if (_isActive)
                 {
-                    _terminationEvent.Reset();
-
                     if (!_manager.Processor.HasRemainingCommands(_sessionId))
                     {
                         GenerateCommandList(out CommandList commands);
@@ -691,10 +677,7 @@ namespace Ryujinx.Audio.Renderer.Server
                         _isDspRunningBehind = true;
                     }
                 }
-                else
-                {
-                    _terminationEvent.Set();
-                }
+
             }
         }
 
@@ -862,7 +845,6 @@ namespace Ryujinx.Audio.Renderer.Server
                 }
 
                 _manager.Unregister(this);
-                _terminationEvent.Dispose();
                 _workBufferMemoryPin.Dispose();
 
                 if (MemoryManager is IRefCounted rc)
