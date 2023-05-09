@@ -118,7 +118,7 @@ namespace Ryujinx.Ava.UI.Controls
 
             if (viewModel?.SelectedApplication != null)
             {
-                await new CheatWindow(viewModel.VirtualFileSystem, viewModel.SelectedApplication.TitleId, viewModel.SelectedApplication.TitleName).ShowDialog(viewModel.TopLevel as Window);
+                await new CheatWindow(viewModel.VirtualFileSystem, viewModel.SelectedApplication.TitleId, viewModel.SelectedApplication.TitleName, viewModel.SelectedApplication.Path).ShowDialog(viewModel.TopLevel as Window);
             }
         }
 
@@ -295,7 +295,7 @@ namespace Ryujinx.Ava.UI.Controls
 
             if (viewModel?.SelectedApplication != null)
             {
-                await ApplicationHelper.ExtractSection(NcaSectionType.Code, viewModel.SelectedApplication.Path, viewModel.SelectedApplication.TitleName);
+                await ApplicationHelper.ExtractSection(NcaSectionType.Code, viewModel.SelectedApplication.Path, viewModel.SelectedApplication.TitleName, viewModel.StorageProvider);
             }
         }
 
@@ -305,7 +305,7 @@ namespace Ryujinx.Ava.UI.Controls
 
             if (viewModel?.SelectedApplication != null)
             {
-                await ApplicationHelper.ExtractSection(NcaSectionType.Data, viewModel.SelectedApplication.Path, viewModel.SelectedApplication.TitleName);
+                await ApplicationHelper.ExtractSection(NcaSectionType.Data, viewModel.SelectedApplication.Path, viewModel.SelectedApplication.TitleName, viewModel.StorageProvider);
             }
         }
 
@@ -315,7 +315,7 @@ namespace Ryujinx.Ava.UI.Controls
 
             if (viewModel?.SelectedApplication != null)
             {
-                await ApplicationHelper.ExtractSection(NcaSectionType.Logo, viewModel.SelectedApplication.Path, viewModel.SelectedApplication.TitleName);
+                await ApplicationHelper.ExtractSection(NcaSectionType.Logo, viewModel.SelectedApplication.Path, viewModel.SelectedApplication.TitleName, viewModel.StorageProvider);
             }
         }
     }

@@ -149,7 +149,7 @@
                                    Text="{locale:Locale SettingsTabSystemSystemTime}"
                                    ToolTip.Tip="{locale:Locale TimeTooltip}"
                                    Width="250"/>
-                        <DatePicker VerticalAlignment="Center" SelectedDate="{Binding DateOffset}"
+                        <DatePicker VerticalAlignment="Center" SelectedDate="{Binding CurrentDate}"
                                     ToolTip.Tip="{locale:Locale TimeTooltip}"
                                     Width="350" />
                     </StackPanel>
@@ -157,7 +157,7 @@
                         <TimePicker
                             VerticalAlignment="Center"
                             ClockIdentifier="24HourClock"
-                            SelectedTime="{Binding TimeOffset}"
+                            SelectedTime="{Binding CurrentTime}"
                             Width="350"
                             ToolTip.Tip="{locale:Locale TimeTooltip}" />
                     </StackPanel>

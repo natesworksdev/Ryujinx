@@ -61,7 +61,7 @@
             MinWidth="160"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Text="{Binding BuildId}"
+            Text="{ReflectionBinding BuildId}"
             IsReadOnly="True" />
         <Border
             Grid.Row="3"
