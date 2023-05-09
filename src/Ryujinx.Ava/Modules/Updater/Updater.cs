@@ -314,6 +314,17 @@ namespace Ryujinx.Modules
 
                         executablePath = "/bin/bash";
                         arguments.InsertRange(0, new List<string> { updaterScriptPath, baseBundlePath, newBundlePath, currentPid });
+                        Process.Start(executablePath, arguments);
+                    }
+                    else
+                    {
+                        ProcessStartInfo processStart = new(ryuName, string.Join(' ', arguments))
+                        {
+                            UseShellExecute = true,
+                            WorkingDirectory = executableDirectory
+                        };
+
+                        Process.Start(processStart);
                     }
 
                     Process.Start(executablePath, arguments);
