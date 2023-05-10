@@ -295,14 +295,7 @@ namespace Ryujinx.Modules
                 if (shouldRestart)
                 {
                     List<string> arguments = CommandLineState.Arguments.ToList();
-                    string ryuName = Path.GetFileName(Environment.ProcessPath);
                     string executableDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                    string executablePath = Path.Combine(executableDirectory, ryuName);
-
-                    if (!Path.Exists(executablePath))
-                    {
-                        executablePath = Path.Combine(executableDirectory, OperatingSystem.IsWindows() ? "Ryujinx.exe" : "Ryujinx");
-                    }
 
                     // On macOS we perform the update at relaunch.
                     if (OperatingSystem.IsMacOS())
@@ -310,14 +303,20 @@ namespace Ryujinx.Modules
                         string baseBundlePath = Path.GetFullPath(Path.Combine(executableDirectory, "..", ".."));
                         string newBundlePath = Path.Combine(UpdateDir, "Ryujinx.app");
                         string updaterScriptPath = Path.Combine(newBundlePath, "Contents", "Resources", "updater.sh");
-                        string currentPid = Process.GetCurrentProcess().Id.ToString();
+                        string currentPid = Environment.ProcessId.ToString();
 
-                        executablePath = "/bin/bash";
                         arguments.InsertRange(0, new List<string> { updaterScriptPath, baseBundlePath, newBundlePath, currentPid });
-                        Process.Start(executablePath, arguments);
+                        Process.Start("/bin/bash", arguments);
                     }
                     else
                     {
+                        // Find the process name.
+                        string ryuName = Path.GetFileName(Environment.ProcessPath);
+                        if (!Path.Exists(Path.Combine(executableDirectory, ryuName)))
+                        {
+                            ryuName = OperatingSystem.IsWindows() ? "Ryujinx.exe" : "Ryujinx";
+                        }
+
                         ProcessStartInfo processStart = new(ryuName, string.Join(' ', arguments))
                         {
                             UseShellExecute = true,
@@ -327,7 +326,6 @@ namespace Ryujinx.Modules
                         Process.Start(processStart);
                     }
 
-                    Process.Start(executablePath, arguments);
                     Environment.Exit(0);
                 }
             }
