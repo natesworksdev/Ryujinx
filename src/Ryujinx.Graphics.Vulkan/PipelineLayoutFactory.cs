@@ -99,7 +99,7 @@ namespace Ryujinx.Graphics.Vulkan
                         Binding = (uint)(start + stage * maxPerStage),
                         DescriptorType = DescriptorType.StorageBuffer,
                         DescriptorCount = (uint)maxPerStage,
-                        StageFlags = stageFlags
+                        StageFlags = flags
                     };
                 }
 
