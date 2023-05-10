@@ -28,19 +28,21 @@ namespace Ryujinx.Ava.UI.Helpers
                 Margin   = new Thickness(0, 0, 15, 40)
             };
 
-            Lazy<AsyncWorkQueue<Notification>> maybeAsyncWorkQueue = new Lazy<AsyncWorkQueue<Notification>>(
+            var maybeAsyncWorkQueue = new Lazy<AsyncWorkQueue<Notification>>(
                 () => new AsyncWorkQueue<Notification>(notification =>
-                {
-                    Dispatcher.UIThread.Post(() =>
                     {
-                        _notificationManager.Show(notification);
-                    });
-                }, "UI.NotificationThread", _notifications)
-                , LazyThreadSafetyMode.ExecutionAndPublication);
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            _notificationManager.Show(notification);
+                        });
+                    },
+                    "UI.NotificationThread",
+                    _notifications),
+                LazyThreadSafetyMode.ExecutionAndPublication);
 
             _notificationManager.TemplateApplied += (sender, args) =>
             {
-                // Force creation of the AsyncWorkQueue
+                // NOTE: Force creation of the AsyncWorkQueue.
                 _ = maybeAsyncWorkQueue.Value;
             };
 
