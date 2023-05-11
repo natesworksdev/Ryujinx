@@ -29,7 +29,6 @@
         </Style>
     </UserControl.Styles>
     
-    
     <StackPanel
         HorizontalAlignment="Stretch"
         VerticalAlignment="Stretch"
@@ -59,14 +58,12 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-
                     <TextBlock
                         Margin="5,0,10,0"
                         Width="90"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         Text="{locale:Locale ControllerSettingsPlayer}" />
-                    
                     <ComboBox
                         Grid.Column="1"
                         Name="PlayerIndexBox"
@@ -102,7 +99,6 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-
                     <TextBlock
                         Margin="5,0,10,0"
                         Width="90"
@@ -156,6 +152,7 @@
                     </Button>
                 </Grid>
             </Border>
+
             <!-- Input device -->
             <Border
                 Grid.Row="0"
@@ -170,7 +167,6 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-
                     <TextBlock
                         Grid.Column="0"
                         Margin="5,0,10,0"
@@ -178,7 +174,6 @@
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         Text="{locale:Locale ControllerSettingsInputDevice}" />
-
                     <ComboBox
                         Grid.Column="1"
                         Name="DeviceBox"
@@ -186,7 +181,6 @@
                         VerticalAlignment="Center"
                         Items="{Binding DeviceList}"
                         SelectedIndex="{Binding Device}" />
-
                     <Button
                         Grid.Column="2"
                         MinWidth="0"
@@ -200,6 +194,7 @@
                     </Button>
                 </Grid>
             </Border>            
+
             <!-- Controler type -->
             <Border
                 Grid.Row="1"
