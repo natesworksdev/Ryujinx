@@ -54,9 +54,9 @@ namespace Ryujinx.Ava.UI.Windows
         {
             if (sender is ToggleButton button)
             {
-                //In any case, if a button is clicked we want to cancel the current assignment
-                //  New button -> Cancel old button assignment
-                //  Same button -> Cancel current assignment
+                // NOTE: In any case, if a button is clicked we want to cancel the current assignment.
+                //       New button -> Cancel old button assignment
+                //       Same button -> Cancel current assignment
                 if (_currentAssigner != null)
                 {
                     ToggleButton oldButton = _currentAssigner.ToggledButton;
@@ -69,7 +69,8 @@ namespace Ryujinx.Ava.UI.Windows
                     }
                 }
 
-                IKeyboard keyboard = (IKeyboard)ViewModel.AvaloniaKeyboardDriver.GetGamepad("0"); // Open Avalonia keyboard for cancel operations.
+                // NOTE: Open Avalonia keyboard for cancel operations.
+                IKeyboard keyboard = (IKeyboard)ViewModel.AvaloniaKeyboardDriver.GetGamepad("0");
                 IButtonAssigner assigner = CreateButtonAssigner(Equals(button.Tag, "stick"));
 
                 _currentAssigner = new ButtonKeyAssigner(button);
@@ -80,7 +81,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void OnButtonAssigned(object sender, ButtonKeyAssigner.ButtonAssignedEventArgs args)
         {
-            //In case the current assignment is canceled by another button click, we don't want to set the new assigner to null
+            // NOTE: In case the current assignment is canceled by another button click, we don't want to set the new assigner to null.
             if (_currentAssigner == sender)
             {
                 _currentAssigner = null;
@@ -91,6 +92,7 @@ namespace Ryujinx.Ava.UI.Windows
             if (args.IsAssigned)
             {
                 ViewModel.IsModified = true;
+
                 CheckNextVisibleToggleButton(args.Button);
             }
         }
@@ -108,13 +110,12 @@ namespace Ryujinx.Ava.UI.Windows
         private IButtonAssigner CreateButtonAssigner(bool forStick) => ViewModel.Devices[ViewModel.Device].Type switch
         {
             DeviceType.Keyboard => new KeyboardKeyAssigner((IKeyboard)ViewModel.SelectedGamepad),
-            DeviceType.Controller => new GamepadButtonAssigner(ViewModel.SelectedGamepad,
-                (ViewModel.Config as StandardControllerInputConfig).TriggerThreshold, forStick),
-            _ => throw new Exception("Controller not supported")
+            DeviceType.Controller => new GamepadButtonAssigner(ViewModel.SelectedGamepad, (ViewModel.Config as StandardControllerInputConfig).TriggerThreshold, forStick),
+            _ => throw new Exception("Input device not supported")
         };
 
         /// <summary>
-        /// Finds the next visible toggle button (if there is any left), sets it to checked and raises the click event
+        /// Finds the next visible toggle button (if there is any left), sets it to checked and raises the click event.
         /// </summary>
         /// <param name="currentButton">Currently checked button</param>
         private void CheckNextVisibleToggleButton(ToggleButton currentButton)
@@ -135,6 +136,7 @@ namespace Ryujinx.Ava.UI.Windows
         private void MouseClick(object sender, PointerPressedEventArgs e)
         {
             bool shouldUnbind = e.GetCurrentPoint(this).Properties.IsMiddleButtonPressed;
+
             CancelAssignment(shouldUnbind);
         }
 

@@ -50,8 +50,8 @@ namespace Ryujinx.Ava.UI.Views.Settings
         {
             if (sender is ToggleButton button)
             {
-                //In any case, if a button is clicked we want to cancel the current assignment
-                //It is either a new button, so cancel the old one or it is the same button, so cancel the assignment
+                // NOTE: In any case, if a button is clicked we want to cancel the current assignment.
+                //       It is either a new button, so cancel the old one or it is the same button, so cancel the assignment.
                 if (_currentAssigner != null)
                 {
                     ToggleButton oldButton = _currentAssigner.ToggledButton;

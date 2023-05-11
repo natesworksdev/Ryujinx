@@ -965,6 +965,7 @@ namespace Ryujinx.Ui.Windows
         private void HandleNextToggleButton(ToggleButton currentButton)
         {
             IEnumerable<ToggleButton> buttonOrder = GetCurrentButtonOrder();
+
             ToggleButton nextButton = buttonOrder.SkipWhile(element => element != currentButton)
                 .Skip(1)
                 .FirstOrDefault();
@@ -985,7 +986,7 @@ namespace Ryujinx.Ui.Windows
             }
             else
             {
-                throw new Exception("Controller not supported");
+                throw new Exception("Input device not supported");
             }
 
             return _controllerType.ActiveId switch
