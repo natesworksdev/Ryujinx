@@ -24,7 +24,7 @@ namespace Ryujinx.Graphics.Vulkan
                 stageFlags |= stage switch
                 {
                     1 => ShaderStageFlags.FragmentBit,
-                    2 => supportsGeometryShader ? ShaderStageFlags.GeometryBit : ShaderStageFlags.VertexBit,
+                    2 => ShaderStageFlags.GeometryBit,
                     3 => ShaderStageFlags.TessellationControlBit,
                     4 => ShaderStageFlags.TessellationEvaluationBit,
                     _ => ShaderStageFlags.VertexBit | ShaderStageFlags.ComputeBit
