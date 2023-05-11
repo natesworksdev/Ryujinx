@@ -116,7 +116,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                 for (int i = 0; i < targetEarlyDelayLineIndicesTable.Length; i++)
                 {
                     int earlyDelayIndex = targetEarlyDelayLineIndicesTable[i];
-                    int outputIndex = outputEarlyIndicesTable[i];
+                    int outputIndex = outputEarlyIndicesTable[earlyDelayIndex];
 
                     float tempTapOut = state.PreDelayLine.TapUnsafe(state.EarlyDelayTime[earlyDelayIndex], delayLineSampleIndexOffset);
 
