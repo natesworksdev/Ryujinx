@@ -6,7 +6,6 @@ namespace Ryujinx.Input.Assigner
     public class KeyboardKeyAssigner : IButtonAssigner
     {
         private readonly IKeyboard _keyboard;
-
         private Key _pressedKey;
         private KeyboardStateSnapshot _keyboardState;
 
