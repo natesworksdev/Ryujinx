@@ -678,7 +678,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     if (overlap.IsView)
                     {
-                        overlapCompatibility = TextureViewCompatibility.CopyOnly;
+                        overlapCompatibility = overlapCompatibility == TextureViewCompatibility.FormatAlias ?
+                            TextureViewCompatibility.Incompatible :
+                            TextureViewCompatibility.CopyOnly;
                     }
                     else
                     {
@@ -756,7 +758,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     Texture overlap = _textureOverlaps[index];
                     OverlapInfo oInfo = _overlapInfo[index];
 
-                    if (oInfo.Compatibility <= TextureViewCompatibility.LayoutIncompatible)
+                    if (oInfo.Compatibility <= TextureViewCompatibility.LayoutIncompatible || oInfo.Compatibility == TextureViewCompatibility.FormatAlias)
                     {
                         if (!overlap.IsView && texture.DataOverlaps(overlap, oInfo.Compatibility))
                         {
