@@ -371,7 +371,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 GobBlocksInZ,
                 GobBlocksInTileX,
                 target,
-                FormatInfo,
+                parentFormat ? parent.Info.FormatInfo : FormatInfo,
                 DepthStencilMode,
                 SwizzleR,
                 SwizzleG,
@@ -380,11 +380,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Inherit the format from a parent texture.
+        /// Creates texture information for a given format and this information.
         /// </summary>
-        /// <param name="parent">Texture to inherit format from</param>
-        /// <returns>New info with the inherited format</returns>
-        public TextureInfo InheritFormat(Texture parent)
+        /// <param name="formatInfo">Format for the new texture info</param>
+        /// <returns>New info with the specified format</returns>
+        public TextureInfo CreateInfoWithFormat(FormatInfo formatInfo)
         {
             return new TextureInfo(
                 GpuAddress,
@@ -400,7 +400,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 GobBlocksInZ,
                 GobBlocksInTileX,
                 Target,
-                parent.Info.FormatInfo,
+                formatInfo,
                 DepthStencilMode,
                 SwizzleR,
                 SwizzleG,

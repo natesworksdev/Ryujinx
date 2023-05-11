@@ -716,7 +716,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 else if (aliased)
                 {
                     // The format must be changed to match the parent.
-                    info = info.InheritFormat(overlap);
+                    info = info.CreateInfoWithFormat(overlap.Info.FormatInfo);
                 }
 
                 texture = overlap.CreateView(info, sizeInfo, range.Value, oInfo.FirstLayer, oInfo.FirstLevel);
