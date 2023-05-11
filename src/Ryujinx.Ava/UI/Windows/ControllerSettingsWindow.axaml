@@ -16,7 +16,8 @@
     mc:Ignorable="d"
     Focusable="True"
     Background="Transparent">
-    <!--Background="Transparent": https://stackoverflow.com/a/70179675 -->
+	<!-- NOTE: For the UserControl to be able to register all pointer presses, 
+	    the background needs to be transparent (https://stackoverflow.com/a/70179675). -->
     <Design.DataContext>
         <viewModels:ControllerSettingsViewModel />
     </Design.DataContext>
