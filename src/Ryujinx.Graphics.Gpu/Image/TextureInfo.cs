@@ -300,8 +300,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="parent">The parent texture</param>
         /// <param name="firstLevel">The first level of the texture view</param>
+        /// <param name="parentFormat">True if the parent format should be inherited</param>
         /// <returns>The adjusted texture information with the new size</returns>
-        public TextureInfo CreateInfoForLevelView(Texture parent, int firstLevel)
+        public TextureInfo CreateInfoForLevelView(Texture parent, int firstLevel, bool parentFormat)
         {
             // When the texture is used as view of another texture, we must
             // ensure that the sizes are valid, otherwise data uploads would fail
@@ -371,6 +372,35 @@ namespace Ryujinx.Graphics.Gpu.Image
                 GobBlocksInTileX,
                 target,
                 FormatInfo,
+                DepthStencilMode,
+                SwizzleR,
+                SwizzleG,
+                SwizzleB,
+                SwizzleA);
+        }
+
+        /// <summary>
+        /// Inherit the format from a parent texture.
+        /// </summary>
+        /// <param name="parent">Texture to inherit format from</param>
+        /// <returns>New info with the inherited format</returns>
+        public TextureInfo InheritFormat(Texture parent)
+        {
+            return new TextureInfo(
+                GpuAddress,
+                Width,
+                Height,
+                DepthOrLayers,
+                Levels,
+                SamplesInX,
+                SamplesInY,
+                Stride,
+                IsLinear,
+                GobBlocksInY,
+                GobBlocksInZ,
+                GobBlocksInTileX,
+                Target,
+                parent.Info.FormatInfo,
                 DepthStencilMode,
                 SwizzleR,
                 SwizzleG,
