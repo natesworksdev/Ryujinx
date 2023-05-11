@@ -65,7 +65,6 @@ namespace Ryujinx.Audio.Renderer.Dsp
         {
             OutputDevices = new IHardwareDevice[Constants.AudioRendererSessionCountMax];
 
-            // TODO: Before enabling this, we need up-mixing from stereo to 5.1.
             uint channelCount = GetHardwareChannelCount(deviceDriver);
 
             for (int i = 0; i < OutputDevices.Length; i++)
