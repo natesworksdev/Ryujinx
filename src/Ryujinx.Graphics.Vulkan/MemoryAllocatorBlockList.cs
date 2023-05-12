@@ -207,7 +207,14 @@ namespace Ryujinx.Graphics.Vulkan
                 MemoryTypeIndex = (uint)MemoryTypeIndex
             };
 
-            _api.AllocateMemory(_device, memoryAllocateInfo, null, out var deviceMemory).ThrowOnError();
+            // It seems that AllocateMemory sometimes fails and succeeds the second time.
+            DeviceMemory deviceMemory;
+            var allocateMemoryResult = _api.AllocateMemory(_device, memoryAllocateInfo, null, out deviceMemory);
+            if (allocateMemoryResult == Result.ErrorOutOfDeviceMemory)
+            {
+                _api.AllocateMemory(_device, memoryAllocateInfo, null, out deviceMemory).ThrowOnError();
+            }
+            allocateMemoryResult.ThrowOnError();
 
             IntPtr hostPointer = IntPtr.Zero;
 
