@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.Vulkan
             ShaderStageFlags.FragmentBit |
             ShaderStageFlags.ComputeBit;
 
-        private static ShaderStageFlags ActiveStages(uint stages, bool supportsGeometryShader)
+        private static ShaderStageFlags ActiveStages(uint stages)
         {
             ShaderStageFlags stageFlags = 0;
 
@@ -56,7 +56,7 @@ namespace Ryujinx.Graphics.Vulkan
             };
 
             int iter = 0;
-            var activeStages = ActiveStages(stages, gd.Capabilities.SupportsGeometryShader);
+            var activeStages = ActiveStages(stages);
 
             while (stages != 0)
             {
