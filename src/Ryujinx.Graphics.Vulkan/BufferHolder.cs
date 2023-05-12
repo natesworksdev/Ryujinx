@@ -212,7 +212,8 @@ namespace Ryujinx.Graphics.Vulkan
                         // If the buffer is large it will do better on GPU memory, as there will be more writes than data flushes (typically individual pages).
                         // If it is small, then it's likely most of the buffer will be flushed so we want it on host memory, as access is cached.
 
-                        bool deviceLocalMapped = Size > DeviceLocalSizeThreshold || (wasFlushed && _writeCount > _flushCount * 10) || _currentType == BufferAllocationType.DeviceLocalMapped;
+                        bool hostMappingSensitive = _gd.Vendor == Vendor.Nvidia;
+                        bool deviceLocalMapped = Size > DeviceLocalSizeThreshold || (wasFlushed && _writeCount > _flushCount * 10 && hostMappingSensitive) || _currentType == BufferAllocationType.DeviceLocalMapped;
 
                         DesiredType = deviceLocalMapped ? BufferAllocationType.DeviceLocalMapped : BufferAllocationType.HostMapped;
 
