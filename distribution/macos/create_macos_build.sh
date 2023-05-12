@@ -20,7 +20,13 @@ SOURCE_REVISION_ID=$6
 CONFIGURATION=$7
 EXTRA_ARGS=$8
 
-RELEASE_TAR_FILE_NAME=test-ava-ryujinx-$VERSION-macos_universal.app.tar
+if [ "$VERSION" == "1.1.0" ];
+then
+  RELEASE_TAR_FILE_NAME=Ryujinx-$CONFIGURATION-$VERSION+$SOURCE_REVISION_ID-macos_universal.app.tar
+else
+  RELEASE_TAR_FILE_NAME=test-ava-ryujinx-$VERSION-macos_universal.app.tar
+fi
+
 ARM64_APP_BUNDLE="$TEMP_DIRECTORY/output_arm64/Ryujinx.app"
 X64_APP_BUNDLE="$TEMP_DIRECTORY/output_x64/Ryujinx.app"
 UNIVERSAL_APP_BUNDLE="$OUTPUT_DIRECTORY/Ryujinx.app"
