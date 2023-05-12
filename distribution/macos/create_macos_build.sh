@@ -22,7 +22,7 @@ EXTRA_ARGS=$8
 
 if [ "$VERSION" == "1.1.0" ];
 then
-  RELEASE_TAR_FILE_NAME=Ryujinx-$CONFIGURATION-$VERSION+$SOURCE_REVISION_ID-macos_universal.app.tar
+  RELEASE_TAR_FILE_NAME=test-ava-ryujinx-$CONFIGURATION-$VERSION+$SOURCE_REVISION_ID-macos_universal.app.tar
 else
   RELEASE_TAR_FILE_NAME=test-ava-ryujinx-$VERSION-macos_universal.app.tar
 fi
