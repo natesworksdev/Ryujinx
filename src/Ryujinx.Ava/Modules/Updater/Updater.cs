@@ -312,9 +312,17 @@ namespace Ryujinx.Modules
                     {
                         // Find the process name.
                         string ryuName = Path.GetFileName(Environment.ProcessPath);
+
+                        // Some operating systems can see the renamed executable, so strip off the .ryuold if found.
+                        if (ryuName.EndsWith(".ryuold"))
+                        {
+                            ryuName = ryuName[..^7];
+                        }
+
+                        // Fallback if the executable could not be found.
                         if (!Path.Exists(Path.Combine(executableDirectory, ryuName)))
                         {
-                            ryuName = OperatingSystem.IsWindows() ? "Ryujinx.exe" : "Ryujinx";
+                            ryuName = OperatingSystem.IsWindows() ? "Ryujinx.Ava.exe" : "Ryujinx.Ava";
                         }
 
                         ProcessStartInfo processStart = new(ryuName, string.Join(' ', arguments))
