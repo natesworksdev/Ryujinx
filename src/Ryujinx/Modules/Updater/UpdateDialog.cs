@@ -49,11 +49,16 @@ namespace Ryujinx.Modules
             {
                 string ryuName = OperatingSystem.IsWindows() ? "Ryujinx.exe" : "Ryujinx";
 
-                ProcessStartInfo processStart = new(ryuName, string.Join(' ', CommandLineState.Arguments))
+                ProcessStartInfo processStart = new(ryuName)
                 {
                     UseShellExecute = true,
                     WorkingDirectory = ReleaseInformation.GetBaseApplicationDirectory()
                 };
+
+                foreach (string argument in CommandLineState.Arguments)
+                {
+                    processStart.ArgumentList.Add(argument);
+                }
 
                 Process.Start(processStart);
 

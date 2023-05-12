@@ -325,11 +325,16 @@ namespace Ryujinx.Modules
                             ryuName = OperatingSystem.IsWindows() ? "Ryujinx.Ava.exe" : "Ryujinx.Ava";
                         }
 
-                        ProcessStartInfo processStart = new(ryuName, string.Join(' ', arguments))
+                        ProcessStartInfo processStart = new(ryuName)
                         {
                             UseShellExecute = true,
                             WorkingDirectory = executableDirectory
                         };
+
+                        foreach (string argument in CommandLineState.Arguments)
+                        {
+                            processStart.ArgumentList.Add(argument);
+                        }
 
                         Process.Start(processStart);
                     }
