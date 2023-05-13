@@ -2,6 +2,7 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -29,12 +30,19 @@ namespace Ryujinx.Ui.Common.Helper
                 SaveBitmapAsIcon(bitmap, iconPath + ".ico");
             }
 
+            List<string> args = new List<string>
+            {
+                basePath,
+                "--fullscreen",
+                $"\"{appFilePath}\"",
+            };
+
             IShellLink shortcut = (IShellLink)new ShellLink();
 
             shortcut.SetDescription(cleanedAppName);
             shortcut.SetPath(basePath + ".exe");
             shortcut.SetIconLocation(iconPath + ".ico", 0);
-            shortcut.SetArguments($"""{basePath} "{appFilePath}" --fullscreen""");
+            shortcut.SetArguments(String.Join(" ", args));
 
             IPersistFile file = (IPersistFile)shortcut;
             file.Save(Path.Combine(desktopPath, cleanedAppName + ".lnk"), false);
@@ -71,17 +79,18 @@ namespace Ryujinx.Ui.Common.Helper
             string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName);
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
-            string iconPath = Path.Combine(AppDataManager.BaseDirPath, "games", titleId, "app");
             string cleanedAppName = string.Join("_", appName.Split(Path.GetInvalidFileNameChars()));
 
             if (OperatingSystem.IsWindows())
             {
+                string iconPath = Path.Combine(AppDataManager.BaseDirPath, "games", titleId, "app");
                 CreateShortcutWindows(appFilePath, iconData, iconPath, cleanedAppName, basePath, desktopPath);
                 return;
             }
 
             if (OperatingSystem.IsLinux())
             {
+                string iconPath = Path.Combine("$HOME", ".local", "share", "icons", "Ryujinx", titleId);
                 CreateShortcutLinux(iconData, iconPath, desktopPath, cleanedAppName, basePath);
                 return;
             }
@@ -99,37 +108,8 @@ namespace Ryujinx.Ui.Common.Helper
         {
             // Code Modified From https://stackoverflow.com/a/11448060/368354 by Benlitz
             using FileStream fs = new(filePath, FileMode.Create);
-            // ICO header
-            fs.WriteByte(0);
-            fs.WriteByte(0);
-            fs.WriteByte(1);
-            fs.WriteByte(0);
-            fs.WriteByte(1);
-            fs.WriteByte(0);
-            // Image size
-            // Set to 0 for 256 px width/height
-            fs.WriteByte(0);
-            fs.WriteByte(0);
-            // Palette
-            fs.WriteByte(0);
-            // Reserved
-            fs.WriteByte(0);
-            // Number of color planes
-            fs.WriteByte(1);
-            fs.WriteByte(0);
-            // Bits per pixel
-            fs.WriteByte(32);
-            fs.WriteByte(0);
-            // Data size, will be written after the data
-            fs.WriteByte(0);
-            fs.WriteByte(0);
-            fs.WriteByte(0);
-            fs.WriteByte(0);
-            // Offset to image data, fixed at 22
-            fs.WriteByte(22);
-            fs.WriteByte(0);
-            fs.WriteByte(0);
-            fs.WriteByte(0);
+            fs.Write(new ReadOnlySpan<byte>(new byte[] { 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 32, 0, 0, 0, 0, 0, 22, 0, 0, 0 }));
+
             // Writing actual data
             source.Save(fs, ImageFormat.Png);
             // Getting data length (file length minus header)
