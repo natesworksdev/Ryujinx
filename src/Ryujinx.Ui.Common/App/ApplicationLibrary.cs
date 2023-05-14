@@ -430,11 +430,8 @@ namespace Ryujinx.Ui.App.Common
                             // Migration successful: deleting last_played from the metadata file.
                             appMetadata.LastPlayedOld = default;
                         }
-                        else
-                        {
-                            // Migration failed: emitting warning but leaving the unparsable value in the metadata file so the user can fix it.
-                            Logger.Warning?.Print(LogClass.Application, $"Last played string \"{appMetadata.LastPlayedOld}\" is invalid for current system culture, skipping (did current culture change?)");
-                        }
+
+                        // Don't emit a warning when the migration fails. The value for Last Played will be updated next time the game is run anyway.
                     });
 
                     ApplicationData data = new()
