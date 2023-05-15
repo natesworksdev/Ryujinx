@@ -26,10 +26,9 @@ namespace Ryujinx.Ui.App.Common
         {
             if (LastPlayed.HasValue)
             {
-                double sessionTimePlayed = DateTime.UtcNow.Subtract(LastPlayed.Value).TotalSeconds;
-                sessionTimePlayed = Math.Round(sessionTimePlayed, MidpointRounding.AwayFromZero);
-
-                TimePlayed = TimePlayed.Add(TimeSpan.FromSeconds(sessionTimePlayed));
+                TimeSpan diff = DateTime.UtcNow - LastPlayed.Value;
+                double newTotalSeconds = TimePlayed.Add(diff).TotalSeconds;
+                TimePlayed = TimeSpan.FromSeconds(Math.Round(newTotalSeconds, MidpointRounding.AwayFromZero));
             }
         }
     }
