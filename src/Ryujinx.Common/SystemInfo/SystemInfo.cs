@@ -21,13 +21,13 @@ namespace Ryujinx.Common.SystemInfo
             CpuName = "Unknown";
         }
 
-        private static string ToGiBString(ulong bytesValue) => (bytesValue == 0) ? "Unknown" : ValueFormatUtils.FormatFileSize((long)bytesValue, false, ValueFormatUtils.FileSizeUnits.Gibibytes);
+        private static string ToGBString(ulong bytesValue) => (bytesValue == 0) ? "Unknown" : ValueFormatUtils.FormatFileSize((long)bytesValue, ValueFormatUtils.FileSizeUnits.Gigabytes);
 
         public void Print()
         {
             Logger.Notice.Print(LogClass.Application, $"Operating System: {OsDescription}");
             Logger.Notice.Print(LogClass.Application, $"CPU: {CpuName}");
-            Logger.Notice.Print(LogClass.Application, $"RAM: Total {ToGiBString(RamTotal)} ; Available {ToGiBString(RamAvailable)}");
+            Logger.Notice.Print(LogClass.Application, $"RAM: Total {ToGBString(RamTotal)} ; Available {ToGBString(RamAvailable)}");
         }
 
         public static SystemInfo Gather()

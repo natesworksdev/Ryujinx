@@ -8,8 +8,11 @@ namespace Ryujinx.Common.Utilities
 {
     public static class ValueFormatUtils
     {
-        private static readonly string[] FILE_SIZE_UNITS_BASE10 = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
-        private static readonly string[] FILE_SIZE_UNITS_BASE2 = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB" };
+        private static readonly string[] FILE_SIZE_UNITS =
+        {
+            "B", "KB", "MB", "GB", "TB", "PB", "EB",
+            "KiB", "MiB", "GiB", "TiB", "PiB", "EiB",
+        };
 
         /// <summary>
         /// Can be used with <see cref="FormatFileSize"/>.
@@ -19,17 +22,11 @@ namespace Ryujinx.Common.Utilities
             Auto = -1,
             Bytes = 0,
             Kilobytes = 1,
-            Kibibytes = 1,
             Megabytes = 2,
-            Mebibytes = 2,
             Gigabytes = 3,
-            Gibibytes = 3,
             Terabytes = 4,
-            Tebibytes = 4,
             Petabytes = 5,
-            Pebibytes = 5,
             Exabytes = 6,
-            Exbibytes = 6,
         }
 
         /// <summary>
@@ -124,54 +121,52 @@ namespace Ryujinx.Common.Utilities
         /// Formats a number of bytes to a human-readable string with adjustable units.
         /// </summary>
         /// <param name="size">The file size in bytes.</param>
-        /// <param name="base10">
-        /// Specifies what rules to use when formatting the size value.
-        /// If true, uses base 10 units like KB, MB, GB and makes 1 KB == 1000 B.
-        /// If false, uses base 2 units like KiB, MiB, GiB and makes 1 KiB == 1024 B.
-        /// </param>
         /// <param name="forceUnit">Formats the passed size value as this unit, bypassing the automatic unit choice.</param>
         /// <returns>A human-readable file size string.</returns>
-        public static string FormatFileSize(long size, bool base10 = false, FileSizeUnits forceUnit = FileSizeUnits.Auto)
+        public static string FormatFileSize(long size, FileSizeUnits forceUnit = FileSizeUnits.Auto)
         {
-            string[] units = base10 ? FILE_SIZE_UNITS_BASE10 : FILE_SIZE_UNITS_BASE2;
-            double x = base10 ? 1000 : 1024;
+            double _base = 1024;
 
             if (size <= 0)
             {
-                return $"0 {units[0]}";
+                return $"0 {FILE_SIZE_UNITS[0]}";
             }
 
             int unitIndex;
             if (forceUnit == FileSizeUnits.Auto)
             {
-                unitIndex = Convert.ToInt32(Math.Floor(Math.Log(size, x)));
+                unitIndex = Convert.ToInt32(Math.Floor(Math.Log(size, _base)));
+
+                // Applying an upper bound so that exabytes are the biggest used unit when formatting.
+                if (unitIndex > 6)
+                {
+                    unitIndex = 6;
+                }
             }
             else
             {
                 unitIndex = (int)forceUnit;
             }
 
-            double sizeRounded = Math.Round(size / Math.Pow(x, unitIndex), 1);
+            double sizeRounded = Math.Round(size / Math.Pow(_base, unitIndex), 1);
             string sizeFormatted = sizeRounded.ToString(CultureInfo.InvariantCulture);
 
-            return $"{sizeFormatted} {units[unitIndex]}";
+            return $"{sizeFormatted} {FILE_SIZE_UNITS[unitIndex]}";
         }
 
         /// <summary>
         /// Parses a previously-formatted value and returns a number of bytes. Mainly used for sorting purposes.
         /// </summary>
         /// <param name="sizeString">A string representing a file size formatted with <see cref="FormatFileSize"/>.</param>
-        /// <param name="base10">See <see cref="FormatFileSize"/>. Will cause inaccurate results if sizeString was formatted using a different base.</param>
         /// <returns>A <see cref="long"/> containing a number of bytes.</returns>
-        public static long ParseFileSize(string sizeString, bool base10 = false)
+        public static long ParseFileSize(string sizeString)
         {
-            string[] units = base10 ? FILE_SIZE_UNITS_BASE10 : FILE_SIZE_UNITS_BASE2;
-            double x = base10 ? 1000 : 1024;
+            double _base = 1024;
 
             // Enumerating over the units backwards because otherwise, sizeString.EndsWith("B") would exit the loop in the first iteration.
-            for (int i = units.Length - 1; i >= 0; i--)
+            for (int i = FILE_SIZE_UNITS.Length - 1; i >= 0; i--)
             {
-                string unit = units[i];
+                string unit = FILE_SIZE_UNITS[i];
                 if (!sizeString.EndsWith(unit))
                 {
                     continue;
@@ -182,8 +177,14 @@ namespace Ryujinx.Common.Utilities
                 {
                     break;
                 }
+
+                // If the unit index is one that resolves to a base 2 unit, subtract 6 to arrive at a usable power value.
+                if (i > 6)
+                {
+                    i -= 6;
+                }
                 
-                number *= Math.Pow(x, i);
+                number *= Math.Pow(_base, i);
                 return Convert.ToInt64(number);
             }
 
