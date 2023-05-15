@@ -271,7 +271,7 @@ namespace Ryujinx.Ui
                 typeof(string),
                 typeof(string),
                 typeof(BlitStruct<ApplicationControlProperty>));
-
+            
             _tableStore.SetSortFunc(5, SortHelper.TimePlayedSort);
             _tableStore.SetSortFunc(6, SortHelper.LastPlayedSort);
             _tableStore.SetSortFunc(8, SortHelper.FileSizeSort);
@@ -1022,7 +1022,8 @@ namespace Ryujinx.Ui
                     if (appMetadata.LastPlayed.HasValue)
                     {
                         double sessionTimePlayed = DateTime.UtcNow.Subtract(appMetadata.LastPlayed.Value).TotalSeconds;
-                        appMetadata.TimePlayed += Math.Round(sessionTimePlayed, MidpointRounding.AwayFromZero);
+                        sessionTimePlayed = Math.Round(sessionTimePlayed, MidpointRounding.AwayFromZero);
+                        appMetadata.TimePlayed = (appMetadata.TimePlayed ?? TimeSpan.Zero).Add(TimeSpan.FromSeconds(sessionTimePlayed));
                     }
                 });
             }
@@ -1089,10 +1090,10 @@ namespace Ryujinx.Ui
                     $"{args.AppData.TitleName}\n{args.AppData.TitleId.ToUpper()}",
                     args.AppData.Developer,
                     args.AppData.Version,
-                    args.AppData.TimePlayed,
+                    args.AppData.TimePlayedString,
                     args.AppData.LastPlayedString,
                     args.AppData.FileExtension,
-                    args.AppData.FileSize,
+                    args.AppData.FileSizeString,
                     args.AppData.Path,
                     args.AppData.ControlHolder);
             });

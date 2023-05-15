@@ -918,21 +918,20 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             return SortMode switch
             {
+                ApplicationSort.Title           => IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app => app.TitleName)
+                                                               : SortExpressionComparer<ApplicationData>.Descending(app => app.TitleName),
+                ApplicationSort.Developer       => IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app => app.Developer)
+                                                               : SortExpressionComparer<ApplicationData>.Descending(app => app.Developer),
                 ApplicationSort.LastPlayed      => new Models.Generic.LastPlayedSortComparer(IsAscending),
-                ApplicationSort.FileSize        => IsAscending  ? SortExpressionComparer<ApplicationData>.Ascending(app => app.FileSizeBytes)
-                                                                : SortExpressionComparer<ApplicationData>.Descending(app => app.FileSizeBytes),
-                ApplicationSort.TotalTimePlayed => IsAscending  ? SortExpressionComparer<ApplicationData>.Ascending(app => app.TimePlayedNum)
-                                                                : SortExpressionComparer<ApplicationData>.Descending(app => app.TimePlayedNum),
-                ApplicationSort.Title           => IsAscending  ? SortExpressionComparer<ApplicationData>.Ascending(app => app.TitleName)
-                                                                : SortExpressionComparer<ApplicationData>.Descending(app => app.TitleName),
+                ApplicationSort.TotalTimePlayed => new Models.Generic.TimePlayedSortComparer(IsAscending),
+                ApplicationSort.FileType        => IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app => app.FileExtension)
+                                                               : SortExpressionComparer<ApplicationData>.Descending(app => app.FileExtension),
+                ApplicationSort.FileSize        => IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app => app.FileSize)
+                                                               : SortExpressionComparer<ApplicationData>.Descending(app => app.FileSize),
+                ApplicationSort.Path            => IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app => app.Path)
+                                                               : SortExpressionComparer<ApplicationData>.Descending(app => app.Path),
                 ApplicationSort.Favorite        => !IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app => app.Favorite)
                                                                 : SortExpressionComparer<ApplicationData>.Descending(app => app.Favorite),
-                ApplicationSort.Developer       => IsAscending  ? SortExpressionComparer<ApplicationData>.Ascending(app => app.Developer)
-                                                                : SortExpressionComparer<ApplicationData>.Descending(app => app.Developer),
-                ApplicationSort.FileType        => IsAscending  ? SortExpressionComparer<ApplicationData>.Ascending(app => app.FileExtension)
-                                                                : SortExpressionComparer<ApplicationData>.Descending(app => app.FileExtension),
-                ApplicationSort.Path            => IsAscending  ? SortExpressionComparer<ApplicationData>.Ascending(app => app.Path)
-                                                                : SortExpressionComparer<ApplicationData>.Descending(app => app.Path),
                 _ => null,
             };
         }
@@ -1527,7 +1526,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                 if (appMetadata.LastPlayed.HasValue)
                 {
                     double sessionTimePlayed = DateTime.UtcNow.Subtract(appMetadata.LastPlayed.Value).TotalSeconds;
-                    appMetadata.TimePlayed += Math.Round(sessionTimePlayed, MidpointRounding.AwayFromZero);
+                    sessionTimePlayed = Math.Round(sessionTimePlayed, MidpointRounding.AwayFromZero);
+                    appMetadata.TimePlayed = (appMetadata.TimePlayed ?? TimeSpan.Zero).Add(TimeSpan.FromSeconds(sessionTimePlayed));
                 }
             });
         }

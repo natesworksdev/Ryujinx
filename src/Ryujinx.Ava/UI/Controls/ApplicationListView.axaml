@@ -124,7 +124,7 @@
                                     Spacing="5">
                                     <TextBlock
                                         HorizontalAlignment="Stretch"
-                                        Text="{Binding TimePlayed}"
+                                        Text="{Binding TimePlayed, Converter={helpers:NullableTimeSpanConverter}}"
                                         TextAlignment="Right"
                                         TextWrapping="Wrap" />
                                     <TextBlock
@@ -134,7 +134,7 @@
                                         TextWrapping="Wrap" />
                                     <TextBlock
                                         HorizontalAlignment="Stretch"
-                                        Text="{Binding FileSize}"
+                                        Text="{Binding FileSize, Converter={helpers:FileSizeConverter}}"
                                         TextAlignment="Right"
                                         TextWrapping="Wrap" />
                                 </StackPanel>

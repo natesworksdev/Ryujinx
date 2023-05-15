@@ -7,13 +7,13 @@ using System.Globalization;
 
 namespace Ryujinx.Ava.UI.Helpers
 {
-    internal class NullableDateTimeConverter : MarkupExtension, IValueConverter
+    internal class NullableTimeSpanConverter : MarkupExtension, IValueConverter
     {
-        private static readonly NullableDateTimeConverter _instance = new();
+        private static readonly NullableTimeSpanConverter _instance = new();
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return ValueFormatUtils.FormatDateTime((DateTime?)value);
+            return ValueFormatUtils.FormatTimeSpan((TimeSpan?)value);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

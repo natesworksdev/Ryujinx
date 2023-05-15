@@ -154,7 +154,7 @@ namespace Ryujinx.Ui.App.Common
                         return;
                     }
 
-                    double fileSize = new FileInfo(applicationPath).Length * 0.000000000931;
+                    long fileSize = new FileInfo(applicationPath).Length;
                     string titleName = "Unknown";
                     string titleId = "0000000000000000";
                     string developer = "Unknown";
@@ -445,12 +445,10 @@ namespace Ryujinx.Ui.App.Common
                         TitleId = titleId,
                         Developer = developer,
                         Version = version,
-                        TimePlayed = ConvertSecondsToFormattedString(appMetadata.TimePlayed),
-                        TimePlayedNum = appMetadata.TimePlayed,
+                        TimePlayed = appMetadata.TimePlayed,
                         LastPlayed = appMetadata.LastPlayed,
                         FileExtension = Path.GetExtension(applicationPath).ToUpper().Remove(0, 1),
-                        FileSize = (fileSize < 1) ? (fileSize * 1024).ToString("0.##") + " MiB" : fileSize.ToString("0.##") + " GiB",
-                        FileSizeBytes = fileSize,
+                        FileSize = fileSize,
                         Path = applicationPath,
                         ControlHolder = controlHolder
                     };

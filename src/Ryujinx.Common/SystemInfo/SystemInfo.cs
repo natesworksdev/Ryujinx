@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Common.Logging;
+using Ryujinx.Common.Utilities;
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.X86;
@@ -20,13 +21,13 @@ namespace Ryujinx.Common.SystemInfo
             CpuName = "Unknown";
         }
 
-        private static string ToMiBString(ulong bytesValue) => (bytesValue == 0) ? "Unknown" : $"{bytesValue / 1024 / 1024} MiB";
+        private static string ToGiBString(ulong bytesValue) => (bytesValue == 0) ? "Unknown" : ValueFormatUtils.FormatFileSize((long)bytesValue, false, ValueFormatUtils.FileSizeUnits.Gibibytes);
 
         public void Print()
         {
             Logger.Notice.Print(LogClass.Application, $"Operating System: {OsDescription}");
             Logger.Notice.Print(LogClass.Application, $"CPU: {CpuName}");
-            Logger.Notice.Print(LogClass.Application, $"RAM: Total {ToMiBString(RamTotal)} ; Available {ToMiBString(RamAvailable)}");
+            Logger.Notice.Print(LogClass.Application, $"RAM: Total {ToGiBString(RamTotal)} ; Available {ToGiBString(RamAvailable)}");
         }
 
         public static SystemInfo Gather()

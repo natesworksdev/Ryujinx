@@ -8,9 +8,9 @@ using LibHac.Tools.Fs;
 using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
 using System;
-using System.Globalization;
 using System.IO;
 using System.Text.Json.Serialization;
 
@@ -24,29 +24,22 @@ namespace Ryujinx.Ui.App.Common
         public string    TitleId       { get; set; }
         public string    Developer     { get; set; }
         public string    Version       { get; set; }
-        public string    TimePlayed    { get; set; }
-        public double    TimePlayedNum { get; set; }
+        public TimeSpan? TimePlayed    { get; set; }
         public DateTime? LastPlayed    { get; set; }
         public string    FileExtension { get; set; }
-        public string    FileSize      { get; set; }
-        public double    FileSizeBytes { get; set; }
+        public long      FileSize      { get; set; }
         public string    Path          { get; set; }
         public BlitStruct<ApplicationControlProperty> ControlHolder { get; set; }
 
+        // TODO: Are these JsonIgnores even needed here?
         [JsonIgnore]
-        public string LastPlayedString
-        {
-            get
-            {
-                if (!LastPlayed.HasValue)
-                {
-                    // TODO: maybe put localized string here instead of just "Never"
-                    return "Never";
-                }
+        public string TimePlayedString => ValueFormatUtils.FormatTimeSpan(TimePlayed);
 
-                return LastPlayed.Value.ToLocalTime().ToString(CultureInfo.CurrentCulture);
-            }
-        }
+        [JsonIgnore]
+        public string LastPlayedString => ValueFormatUtils.FormatDateTime(LastPlayed);
+
+        [JsonIgnore]
+        public string FileSizeString => ValueFormatUtils.FormatFileSize(FileSize);
 
         public static string GetApplicationBuildId(VirtualFileSystem virtualFileSystem, string titleFilePath)
         {

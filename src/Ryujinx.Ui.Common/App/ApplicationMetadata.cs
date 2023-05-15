@@ -7,10 +7,16 @@ namespace Ryujinx.Ui.App.Common
     {
         public string Title { get; set; }
         public bool   Favorite   { get; set; }
-        public double TimePlayed { get; set; }
+
+        [JsonPropertyName("timespan_played")]
+        public TimeSpan? TimePlayed { get; set; }
 
         [JsonPropertyName("last_played_utc")]
         public DateTime? LastPlayed { get; set; } = null;
+
+        [JsonPropertyName("time_played")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public double TimePlayedOld { get; set; }
 
         [JsonPropertyName("last_played")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
