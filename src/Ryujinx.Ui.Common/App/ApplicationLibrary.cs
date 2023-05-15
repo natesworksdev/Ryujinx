@@ -26,6 +26,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using Path = System.IO.Path;
+using TimeSpan = System.TimeSpan;
 
 namespace Ryujinx.Ui.App.Common
 {
@@ -415,25 +416,26 @@ namespace Ryujinx.Ui.App.Common
                     {
                         appMetadata.Title = titleName;
 
-                        if (appMetadata.LastPlayedOld == default || appMetadata.LastPlayed.HasValue)
+                        // Only do the migration if time_played has a value and timespan_played doesn't exist yet.
+                        if (appMetadata.TimePlayedOld != default && !appMetadata.TimePlayed.HasValue)
                         {
-                            // Don't do the migration if last_played doesn't exist or last_played_utc already has a value.
-                            return;
+                            appMetadata.TimePlayed = TimeSpan.FromSeconds(appMetadata.TimePlayedOld);
+                            appMetadata.TimePlayedOld = default;
                         }
 
-                        // Migrate from string-based last_played to DateTime-based last_played_utc.
-                        if (DateTime.TryParse(appMetadata.LastPlayedOld, out DateTime lastPlayedOldParsed))
+                        // Only do the migration if last_played has a value and last_played_utc doesn't exist yet.
+                        if (appMetadata.LastPlayedOld != default && !appMetadata.LastPlayed.HasValue)
                         {
-                            Logger.Info?.Print(LogClass.Application, $"last_played found: \"{appMetadata.LastPlayedOld}\", migrating to last_played_utc");
-                            appMetadata.LastPlayed = lastPlayedOldParsed;
+                            // Migrate from string-based last_played to DateTime-based last_played_utc.
+                            if (DateTime.TryParse(appMetadata.LastPlayedOld, out DateTime lastPlayedOldParsed))
+                            {
+                                Logger.Info?.Print(LogClass.Application, $"last_played found: \"{appMetadata.LastPlayedOld}\", migrating to last_played_utc");
+                                appMetadata.LastPlayed = lastPlayedOldParsed;
 
-                            // Migration successful: deleting last_played from the metadata file.
-                            appMetadata.LastPlayedOld = default;
-                        }
-                        else
-                        {
-                            // Migration failed: emitting warning but leaving the unparsable value in the metadata file so the user can fix it.
-                            Logger.Warning?.Print(LogClass.Application, $"Last played string \"{appMetadata.LastPlayedOld}\" is invalid for current system culture, skipping (did current culture change?)");
+                                // Migration successful: deleting last_played from the metadata file.
+                                appMetadata.LastPlayedOld = default;
+                            }
+
                         }
                     });
 
@@ -447,7 +449,7 @@ namespace Ryujinx.Ui.App.Common
                         Version = version,
                         TimePlayed = appMetadata.TimePlayed,
                         LastPlayed = appMetadata.LastPlayed,
-                        FileExtension = Path.GetExtension(applicationPath).ToUpper().Remove(0, 1),
+                        FileExtension = Path.GetExtension(applicationPath).TrimStart('.').ToUpper(),
                         FileSize = fileSize,
                         Path = applicationPath,
                         ControlHolder = controlHolder
@@ -693,31 +695,6 @@ namespace Ryujinx.Ui.App.Common
             }
 
             return applicationIcon ?? _ncaIcon;
-        }
-
-        private static string ConvertSecondsToFormattedString(double seconds)
-        {
-            System.TimeSpan time = System.TimeSpan.FromSeconds(seconds);
-
-            string timeString;
-            if (time.Days != 0)
-            {
-                timeString = $"{time.Days}d {time.Hours:D2}h {time.Minutes:D2}m";
-            }
-            else if (time.Hours != 0)
-            {
-                timeString = $"{time.Hours:D2}h {time.Minutes:D2}m";
-            }
-            else if (time.Minutes != 0)
-            {
-                timeString = $"{time.Minutes:D2}m";
-            }
-            else
-            {
-                timeString = "Never";
-            }
-
-            return timeString;
         }
 
         private void GetGameInformation(ref ApplicationControlProperty controlData, out string titleName, out string titleId, out string publisher, out string version)
