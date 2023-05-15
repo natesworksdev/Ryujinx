@@ -30,15 +30,11 @@ namespace Ryujinx.Ui.App.Common
         public long      FileSize      { get; set; }
         public string    Path          { get; set; }
         public BlitStruct<ApplicationControlProperty> ControlHolder { get; set; }
-
-        // TODO: Are these JsonIgnores even needed here?
-        [JsonIgnore]
+        
         public string TimePlayedString => ValueFormatUtils.FormatTimeSpan(TimePlayed);
-
-        [JsonIgnore]
+        
         public string LastPlayedString => ValueFormatUtils.FormatDateTime(LastPlayed);
-
-        [JsonIgnore]
+        
         public string FileSizeString => ValueFormatUtils.FormatFileSize(FileSize);
 
         public static string GetApplicationBuildId(VirtualFileSystem virtualFileSystem, string titleFilePath)
