@@ -124,17 +124,17 @@
                                     Spacing="5">
                                     <TextBlock
                                         HorizontalAlignment="Stretch"
-                                        Text="{Binding TimePlayed, Converter={helpers:NullableTimeSpanConverter}}"
+                                        Text="{Binding TimePlayedString}"
                                         TextAlignment="Right"
                                         TextWrapping="Wrap" />
                                     <TextBlock
                                         HorizontalAlignment="Stretch"
-                                        Text="{Binding LastPlayed, Converter={helpers:NullableDateTimeConverter}}"
+                                        Text="{Binding LastPlayedString}"
                                         TextAlignment="Right"
                                         TextWrapping="Wrap" />
                                     <TextBlock
                                         HorizontalAlignment="Stretch"
-                                        Text="{Binding FileSize, Converter={helpers:FileSizeConverter}}"
+                                        Text="{Binding FileSizeString}"
                                         TextAlignment="Right"
                                         TextWrapping="Wrap" />
                                 </StackPanel>
