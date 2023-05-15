@@ -17,12 +17,12 @@ namespace Ryujinx.Ava.UI.Models.Generic
 
             if (x?.TimePlayed != null)
             {
-                aValue = x.TimePlayed.Value;
+                aValue = x.TimePlayed;
             }
 
             if (y?.TimePlayed != null)
             {
-                bValue = y.TimePlayed.Value;
+                bValue = y.TimePlayed;
             }
 
             return (IsAscending ? 1 : -1) * TimeSpan.Compare(aValue, bValue);

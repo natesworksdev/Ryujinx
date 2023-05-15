@@ -416,8 +416,8 @@ namespace Ryujinx.Ui.App.Common
                     {
                         appMetadata.Title = titleName;
 
-                        // Only do the migration if time_played has a value and timespan_played doesn't exist yet.
-                        if (appMetadata.TimePlayedOld != default && !appMetadata.TimePlayed.HasValue)
+                        // Only do the migration if time_played has a value and timespan_played hasn't been updated yet.
+                        if (appMetadata.TimePlayedOld != default && appMetadata.TimePlayed == TimeSpan.Zero)
                         {
                             appMetadata.TimePlayed = TimeSpan.FromSeconds(appMetadata.TimePlayedOld);
                             appMetadata.TimePlayedOld = default;

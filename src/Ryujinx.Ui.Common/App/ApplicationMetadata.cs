@@ -9,7 +9,7 @@ namespace Ryujinx.Ui.App.Common
         public bool   Favorite   { get; set; }
 
         [JsonPropertyName("timespan_played")]
-        public TimeSpan? TimePlayed { get; set; }
+        public TimeSpan TimePlayed { get; set; } = TimeSpan.Zero;
 
         [JsonPropertyName("last_played_utc")]
         public DateTime? LastPlayed { get; set; } = null;
@@ -21,5 +21,16 @@ namespace Ryujinx.Ui.App.Common
         [JsonPropertyName("last_played")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public string LastPlayedOld { get; set; }
+
+        public void UpdateTimePlayed()
+        {
+            if (LastPlayed.HasValue)
+            {
+                double sessionTimePlayed = DateTime.UtcNow.Subtract(LastPlayed.Value).TotalSeconds;
+                sessionTimePlayed = Math.Round(sessionTimePlayed, MidpointRounding.AwayFromZero);
+
+                TimePlayed = TimePlayed.Add(TimeSpan.FromSeconds(sessionTimePlayed));
+            }
+        }
     }
 }

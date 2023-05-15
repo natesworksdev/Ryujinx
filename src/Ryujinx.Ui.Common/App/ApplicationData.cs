@@ -24,7 +24,7 @@ namespace Ryujinx.Ui.App.Common
         public string    TitleId       { get; set; }
         public string    Developer     { get; set; }
         public string    Version       { get; set; }
-        public TimeSpan? TimePlayed    { get; set; }
+        public TimeSpan  TimePlayed    { get; set; }
         public DateTime? LastPlayed    { get; set; }
         public string    FileExtension { get; set; }
         public long      FileSize      { get; set; }

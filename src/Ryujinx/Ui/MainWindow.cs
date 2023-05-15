@@ -1019,12 +1019,7 @@ namespace Ryujinx.Ui
             {
                 _applicationLibrary.LoadAndSaveMetaData(titleId, appMetadata =>
                 {
-                    if (appMetadata.LastPlayed.HasValue)
-                    {
-                        double sessionTimePlayed = DateTime.UtcNow.Subtract(appMetadata.LastPlayed.Value).TotalSeconds;
-                        sessionTimePlayed = Math.Round(sessionTimePlayed, MidpointRounding.AwayFromZero);
-                        appMetadata.TimePlayed = (appMetadata.TimePlayed ?? TimeSpan.Zero).Add(TimeSpan.FromSeconds(sessionTimePlayed));
-                    }
+                    appMetadata.UpdateTimePlayed();
                 });
             }
         }
