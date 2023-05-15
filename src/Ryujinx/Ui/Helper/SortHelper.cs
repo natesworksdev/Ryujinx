@@ -1,9 +1,6 @@
 ﻿using Gtk;
-using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using System;
-using System.Globalization;
-using System.Linq;
 
 namespace Ryujinx.Ui.Helper
 {
