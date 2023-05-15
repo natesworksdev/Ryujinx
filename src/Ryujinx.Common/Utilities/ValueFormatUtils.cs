@@ -90,7 +90,7 @@ namespace Ryujinx.Common.Utilities
         /// Only used as a canonical way to format the TimePlayed value.
         /// </summary>
         /// <param name="utcDateTime">The <see cref="DateTime"/> to be formatted. This is expected to be UTC-based.</param>
-        /// <param name="culture">The <see cref="CultureInfo"/> that's used in formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>. Do not use outside of value converters.</param>
+        /// <param name="culture">The <see cref="CultureInfo"/> that's used in formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.</param>
         /// <returns>A formatted string that can be displayed in the UI.</returns>
         public static string FormatDateTime(DateTime? utcDateTime, CultureInfo culture = null)
         {
