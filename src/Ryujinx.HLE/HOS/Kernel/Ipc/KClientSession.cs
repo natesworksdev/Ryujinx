@@ -2,6 +2,7 @@ using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Horizon.Common;
+using System.Threading.Tasks;
 
 namespace Ryujinx.HLE.HOS.Kernel.Ipc
 {
@@ -28,27 +29,21 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             CreatorProcess.IncrementReferenceCount();
         }
 
-        public Result SendSyncRequest(ulong customCmdBuffAddr = 0, ulong customCmdBuffSize = 0)
+        public async Task<Result> SendSyncRequest(ulong customCmdBuffAddr = 0, ulong customCmdBuffSize = 0)
         {
             KThread currentThread = KernelStatic.GetCurrentThread();
-
             KSessionRequest request = new KSessionRequest(currentThread, customCmdBuffAddr, customCmdBuffSize);
 
-            KernelContext.CriticalSection.Enter();
-
-            currentThread.SignaledObj   = null;
-            currentThread.ObjSyncResult = Result.Success;
-
+            // Send request
             Result result = _parent.ServerSession.EnqueueRequest(request);
-
-            KernelContext.CriticalSection.Leave();
-
-            if (result == Result.Success)
+            if (result != Result.Success)
             {
-                result = currentThread.ObjSyncResult;
+                return result;
             }
-
-            return result;
+                
+            // Await response
+            // TODO: fold in cancellation token
+            return await request.Complete.Task;
         }
 
         public Result SendAsyncRequest(KWritableEvent asyncEvent, ulong customCmdBuffAddr = 0, ulong customCmdBuffSize = 0)

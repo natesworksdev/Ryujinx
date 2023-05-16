@@ -4,7 +4,10 @@ using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Horizon.Common;
+using System;
 using System.Collections.Generic;
+using System.Threading.Channels;
+using System.Threading.Tasks;
 
 namespace Ryujinx.HLE.HOS.Kernel.Ipc
 {
@@ -168,15 +171,17 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         private KSession _parent;
 
-        private LinkedList<KSessionRequest> _requests;
+        private Channel<KSessionRequest> _requests;
 
         private KSessionRequest _activeRequest;
+
+        private readonly object _lock = new();
 
         public KServerSession(KernelContext context, KSession parent) : base(context)
         {
             _parent = parent;
 
-            _requests = new LinkedList<KSessionRequest>();
+            _requests = Channel.CreateUnbounded<KSessionRequest>();
         }
 
         public Result EnqueueRequest(KSessionRequest request)
@@ -185,28 +190,23 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             {
                 return KernelResult.PortRemoteClosed;
             }
-
-            if (request.AsyncEvent == null)
+            
+            // TODO: shift this logic elsewhere ?
+            if (request.ClientThread.TerminationRequested)
             {
-                if (request.ClientThread.TerminationRequested)
-                {
-                    return KernelResult.ThreadTerminating;
-                }
-
-                request.ClientThread.Reschedule(ThreadSchedState.Paused);
+                return KernelResult.ThreadTerminating;
             }
 
-            _requests.AddLast(request);
-
-            if (_requests.Count == 1)
+            // NOTE: since our channel is unbounded should never fail
+            if (!_requests.Writer.TryWrite(request))
             {
-                Signal();
+                throw new Exception("Unexpected failure to enqueue KSessionRequest");
             }
 
             return Result.Success;
         }
 
-        public Result Receive(ulong customCmdBuffAddr = 0, ulong customCmdBuffSize = 0)
+        public async Task<Result> Receive(ulong customCmdBuffAddr = 0, ulong customCmdBuffSize = 0)
         {
             KThread  serverThread  = KernelStatic.GetCurrentThread();
             KProcess serverProcess = serverThread.Owner;
@@ -220,7 +220,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 return KernelResult.PortRemoteClosed;
             }
 
-            if (_activeRequest != null || !DequeueRequest(out KSessionRequest request))
+            // TODO: recheck this is correct
+            var request = await DequeueRequest();
+            if (_activeRequest != null)
             {
                 KernelContext.CriticalSection.Leave();
 
@@ -265,14 +267,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
                 _activeRequest = null;
 
-                if (_requests.Count != 0)
-                {
-                    Signal();
-                }
-
                 KernelContext.CriticalSection.Leave();
 
-                WakeClientThread(request, clientResult);
+                CompleteRequest(request, clientResult);
             }
 
             if (clientHeader.ReceiveListType < 2 &&
@@ -602,7 +599,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
             _activeRequest = null;
 
-            if (_requests.Count != 0)
+            if (_requests.Reader.Count != 0)
             {
                 Signal();
             }
@@ -1079,7 +1076,14 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 return true;
             }
 
-            return _requests.Count != 0 && _activeRequest == null;
+            return _requests.Reader.Count > 0 && _activeRequest != null;
+        }
+        
+        public override async Task<Result> WaitSignaled() {
+            return await _requests.Reader.WaitToReadAsync() switch {
+                true => Result.Success,
+                false => KernelResult.PortRemoteClosed,
+            };
         }
 
         protected override void Destroy()
@@ -1093,7 +1097,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         private void CancelAllRequestsServerDisconnected()
         {
-            foreach (KSessionRequest request in IterateWithRemovalOfAllRequests())
+            foreach(var request in IterateWithRemovalOfAllRequests())
             {
                 FinishRequest(request, KernelResult.PortRemoteClosed);
             }
@@ -1101,7 +1105,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         public void CancelAllRequestsClientDisconnected()
         {
-            foreach (KSessionRequest request in IterateWithRemovalOfAllRequests())
+            foreach(var request in IterateWithRemovalOfAllRequests())
             {
                 if (request.ClientThread.TerminationRequested)
                 {
@@ -1116,18 +1120,19 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                     SendResultToAsyncRequestClient(request, KernelResult.PortRemoteClosed);
                 }
             }
-
-            WakeServerThreads(KernelResult.PortRemoteClosed);
         }
 
         private IEnumerable<KSessionRequest> IterateWithRemovalOfAllRequests()
         {
             KernelContext.CriticalSection.Enter();
 
+            // Complete channel will propagate PortRemoteClosed to waiters
+            _requests.Writer.TryComplete(); // Mark channel as complete
+
+            // Yield active if any
             if (_activeRequest != null)
             {
                 KSessionRequest request = _activeRequest;
-
                 _activeRequest = null;
 
                 KernelContext.CriticalSection.Leave();
@@ -1139,30 +1144,15 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 KernelContext.CriticalSection.Leave();
             }
 
-            while (DequeueRequest(out KSessionRequest request))
+            while (_requests.Reader.TryRead(out KSessionRequest request))
             {
                 yield return request;
             }
         }
 
-        private bool DequeueRequest(out KSessionRequest request)
+        private async ValueTask<KSessionRequest> DequeueRequest()
         {
-            request = null;
-
-            KernelContext.CriticalSection.Enter();
-
-            bool hasRequest = _requests.First != null;
-
-            if (hasRequest)
-            {
-                request = _requests.First.Value;
-
-                _requests.RemoveFirst();
-            }
-
-            KernelContext.CriticalSection.Leave();
-
-            return hasRequest;
+            return await _requests.Reader.ReadAsync();
         }
 
         private void FinishRequest(KSessionRequest request, Result result)
@@ -1182,10 +1172,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 request.BufferDescriptorTable.RestoreClientBuffers(clientProcess.MemoryManager);
             }
 
-            WakeClientThread(request, result);
+            CompleteRequest(request, result);
         }
 
-        private void WakeClientThread(KSessionRequest request, Result result)
+        private void CompleteRequest(KSessionRequest request, Result result)
         {
             // Wait client thread waiting for a response for the given request.
             if (request.AsyncEvent != null)
@@ -1195,8 +1185,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             else
             {
                 KernelContext.CriticalSection.Enter();
-
-                WakeAndSetResult(request.ClientThread, result);
+                
+                request.Complete.SetResult(result);
 
                 KernelContext.CriticalSection.Leave();
             }
@@ -1217,30 +1207,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             clientProcess.MemoryManager.UnborrowIpcBuffer(request.CustomCmdBuffAddr, request.CustomCmdBuffSize);
 
             request.AsyncEvent.Signal();
+            request.Complete.SetResult(result);
         }
-
-        private void WakeServerThreads(Result result)
-        {
-            // Wake all server threads waiting for requests.
-            KernelContext.CriticalSection.Enter();
-
-            foreach (KThread thread in WaitingThreads)
-            {
-                WakeAndSetResult(thread, result, this);
-            }
-
-            KernelContext.CriticalSection.Leave();
-        }
-
-        private void WakeAndSetResult(KThread thread, Result result, KSynchronizationObject signaledObj = null)
-        {
-            if ((thread.SchedFlags & ThreadSchedState.LowMask) == ThreadSchedState.Paused)
-            {
-                thread.SignaledObj   = signaledObj;
-                thread.ObjSyncResult = result;
-
-                thread.Reschedule(ThreadSchedState.Running);
-            }
-        }
+        
     }
 }

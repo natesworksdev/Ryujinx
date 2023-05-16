@@ -35,6 +35,14 @@ namespace Ryujinx.Cpu.AppleHv
             swapContext(vcpu.NativeContext);
             return vcpu;
         }
+        
+        public HvVcpu CreateEphemeral(HvAddressSpace addressSpace, IHvExecutionContext shadowContext, Action<IHvExecutionContext> swapContext)
+        {
+            HvVcpu vcpu = CreateNew(addressSpace, shadowContext, true);
+            vcpu.NativeContext.Load(shadowContext);
+            swapContext(vcpu.NativeContext);
+            return vcpu;
+        }
 
         public void Destroy(HvVcpu vcpu, Action<IHvExecutionContext> swapContext)
         {
@@ -65,8 +73,13 @@ namespace Ryujinx.Cpu.AppleHv
 
         private unsafe HvVcpu CreateNew(HvAddressSpace addressSpace, IHvExecutionContext shadowContext)
         {
+            return CreateNew(addressSpace, shadowContext, false);
+        }
+        
+        private unsafe HvVcpu CreateNew(HvAddressSpace addressSpace, IHvExecutionContext shadowContext, bool forceEphemeral)
+        {
             int newCount = IncrementVcpuCount();
-            bool isEphemeral = newCount > _maxVcpus - MaxActiveVcpus;
+            bool isEphemeral = forceEphemeral || (newCount > _maxVcpus - MaxActiveVcpus);
 
             // Create VCPU.
             hv_vcpu_exit_t* exitInfo = null;

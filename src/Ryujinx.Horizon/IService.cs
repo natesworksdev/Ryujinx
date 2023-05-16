@@ -1,7 +1,11 @@
-﻿namespace Ryujinx.Horizon
+﻿using System.Threading.Tasks;
+
+namespace Ryujinx.Horizon
 {
-    interface IService
+    public interface IService
     {
-        abstract static void Main(ServiceTable serviceTable);
+        public Task Initialize();
+        public Task ServiceRequests();
+        public void Shutdown();
     }
 }

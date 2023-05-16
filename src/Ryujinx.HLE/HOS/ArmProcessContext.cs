@@ -3,6 +3,7 @@ using Ryujinx.Cpu;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.Memory;
+using System.Threading.Tasks;
 
 namespace Ryujinx.HLE.HOS
 {
@@ -45,9 +46,9 @@ namespace Ryujinx.HLE.HOS
             return _cpuContext.CreateExecutionContext(exceptionCallbacks);
         }
 
-        public void Execute(IExecutionContext context, ulong codeAddress)
+        public async Task Execute(IExecutionContext context, ulong codeAddress)
         {
-            _cpuContext.Execute(context, codeAddress);
+            await _cpuContext.Execute(context, codeAddress);
         }
 
         public IDiskCacheLoadState Initialize(

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Ryujinx.HLE.HOS.Kernel.Threading
 {
@@ -25,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             _arbiterThreads = new List<KThread>();
         }
 
-        public Result ArbitrateLock(int ownerHandle, ulong mutexAddress, int requesterHandle)
+        public async Task<Result> ArbitrateLock(int ownerHandle, ulong mutexAddress, int requesterHandle)
         {
             KThread currentThread = KernelStatic.GetCurrentThread();
 
@@ -74,6 +75,19 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             currentThread.Reschedule(ThreadSchedState.Paused);
 
             _context.CriticalSection.Leave();
+            
+            // TODO: specific TCS for sync actions to further strip out indirect shceduler 
+            Task[] tasks = {
+                currentThread.SchedulerWaitEvent.Task, // Signaled on success
+                currentThread.WaitSyncCancel(), // Canceled
+            };
+            var task = await Task.WhenAny(tasks);
+            var result = Array.IndexOf(tasks, task) switch
+            {
+                0 => Result.Success,
+                1 => KernelResult.Cancelled,
+            };
+            
             _context.CriticalSection.Enter();
 
             if (currentThread.MutexOwner != null)
@@ -83,7 +97,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             _context.CriticalSection.Leave();
 
-            return currentThread.ObjSyncResult;
+            return result;
         }
 
         public Result ArbitrateUnlock(ulong mutexAddress)
@@ -112,7 +126,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             return result;
         }
 
-        public Result WaitProcessWideKeyAtomic(ulong mutexAddress, ulong condVarAddress, int threadHandle, long timeout)
+        public async Task<Result> WaitProcessWideKeyAtomic(ulong mutexAddress, ulong condVarAddress, int threadHandle, long timeout)
         {
             _context.CriticalSection.Enter();
 
@@ -148,19 +162,23 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             if (timeout != 0)
             {
                 currentThread.Reschedule(ThreadSchedState.Paused);
-
-                if (timeout > 0)
-                {
-                    _context.TimeManager.ScheduleFutureInvocation(currentThread, timeout);
-                }
             }
 
             _context.CriticalSection.Leave();
-
-            if (timeout > 0)
+            
+            // TODO: specific TCS for sync actions to further strip out indirect shceduler
+            Task[] tasks = {
+                currentThread.SchedulerWaitEvent.Task, // Signaled on success
+                currentThread.WaitSyncCancel(), // Canceled
+                Task.Delay(TimeSpan.FromMicroseconds((double)timeout / 1000)), 
+            };
+            var task = await Task.WhenAny(tasks);
+            var result = Array.IndexOf(tasks, task) switch
             {
-                _context.TimeManager.UnscheduleFutureInvocation(currentThread);
-            }
+                0 => Result.Success,
+                1 => KernelResult.Cancelled,
+                _ => KernelResult.TimedOut,
+            };
 
             _context.CriticalSection.Enter();
 
@@ -173,7 +191,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             _context.CriticalSection.Leave();
 
-            return currentThread.ObjSyncResult;
+            return result;
         }
 
         private (int, KThread) MutexUnlock(KThread currentThread, ulong mutexAddress)
@@ -280,7 +298,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             }
         }
 
-        public Result WaitForAddressIfEqual(ulong address, int value, long timeout)
+        public async Task<Result> WaitForAddressIfEqual(ulong address, int value, long timeout)
         {
             KThread currentThread = KernelStatic.GetCurrentThread();
 
@@ -319,18 +337,22 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
                 currentThread.Reschedule(ThreadSchedState.Paused);
 
-                if (timeout > 0)
-                {
-                    _context.TimeManager.ScheduleFutureInvocation(currentThread, timeout);
-                }
-
                 _context.CriticalSection.Leave();
-
-                if (timeout > 0)
+                
+                // TODO: specific TCS for sync actions to further strip out indirect shceduler
+                Task[] tasks = {
+                    currentThread.SchedulerWaitEvent.Task, // Signaled on success
+                    currentThread.WaitSyncCancel(), // Canceled
+                    Task.Delay(TimeSpan.FromMicroseconds((double)timeout / 1000)), 
+                };
+                var task = await Task.WhenAny(tasks);
+                var result = Array.IndexOf(tasks, task) switch
                 {
-                    _context.TimeManager.UnscheduleFutureInvocation(currentThread);
-                }
-
+                    0 => Result.Success,
+                    1 => KernelResult.Cancelled,
+                    2 => KernelResult.TimedOut,
+                };
+                
                 _context.CriticalSection.Enter();
 
                 if (currentThread.WaitingInArbitration)
@@ -342,7 +364,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
                 _context.CriticalSection.Leave();
 
-                return currentThread.ObjSyncResult;
+                return result;
             }
 
             _context.CriticalSection.Leave();
@@ -350,7 +372,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             return KernelResult.InvalidState;
         }
 
-        public Result WaitForAddressIfLessThan(ulong address, int value, bool shouldDecrement, long timeout)
+        public async Task<Result> WaitForAddressIfLessThan(ulong address, int value, bool shouldDecrement, long timeout)
         {
             KThread currentThread = KernelStatic.GetCurrentThread();
 
@@ -396,17 +418,22 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
                 currentThread.Reschedule(ThreadSchedState.Paused);
 
-                if (timeout > 0)
-                {
-                    _context.TimeManager.ScheduleFutureInvocation(currentThread, timeout);
-                }
-
+                // 
                 _context.CriticalSection.Leave();
-
-                if (timeout > 0)
+                
+                // TODO: specific TCS for sync actions to further strip out indirect shceduler
+                Task[] tasks = {
+                    currentThread.SchedulerWaitEvent.Task, // Signaled on success
+                    currentThread.WaitSyncCancel(), // Canceled
+                    Task.Delay(TimeSpan.FromMicroseconds((double)timeout / 1000)), 
+                };
+                var task = await Task.WhenAny(tasks);
+                var result = Array.IndexOf(tasks, task) switch
                 {
-                    _context.TimeManager.UnscheduleFutureInvocation(currentThread);
-                }
+                    0 => Result.Success,
+                    1 => KernelResult.Cancelled,
+                    2 => KernelResult.TimedOut,
+                };
 
                 _context.CriticalSection.Enter();
 
@@ -419,7 +446,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
                 _context.CriticalSection.Leave();
 
-                return currentThread.ObjSyncResult;
+                return result;
             }
 
             _context.CriticalSection.Leave();

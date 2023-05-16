@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace Ryujinx.Cpu
 {
     /// <summary>
@@ -13,6 +15,14 @@ namespace Ryujinx.Cpu
     /// <param name="address">Address of the instruction that caused the exception</param>
     /// <param name="imm">Immediate value of the instruction that caused the exception, or for undefined instruction, the instruction itself</param>
     public delegate void ExceptionCallback(IExecutionContext context, ulong address, int imm);
+    
+    /// <summary>
+    /// Async exception callback.
+    /// </summary>
+    /// <param name="context">Context for the thread where the exception was triggered</param>
+    /// <param name="address">Address of the instruction that caused the exception</param>
+    /// <param name="imm">Immediate value of the instruction that caused the exception, or for undefined instruction, the instruction itself</param>
+    public delegate Task ExceptionCallbackAsync(IExecutionContext context, ulong address, int imm);
 
     /// <summary>
     /// Stores handlers for the various CPU exceptions.
@@ -32,7 +42,7 @@ namespace Ryujinx.Cpu
         /// <summary>
         /// Handler for CPU software interrupts caused by the Arm SVC instruction.
         /// </summary>
-        public readonly ExceptionCallback SupervisorCallback;
+        public readonly ExceptionCallbackAsync SupervisorCallback;
 
         /// <summary>
         /// Handler for CPU software interrupts caused by any undefined Arm instruction.
@@ -52,7 +62,7 @@ namespace Ryujinx.Cpu
         public ExceptionCallbacks(
             ExceptionCallbackNoArgs interruptCallback = null,
             ExceptionCallback breakCallback = null,
-            ExceptionCallback supervisorCallback = null,
+            ExceptionCallbackAsync supervisorCallback = null,
             ExceptionCallback undefinedCallback = null)
         {
             InterruptCallback = interruptCallback;

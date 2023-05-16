@@ -3,6 +3,7 @@ using Ryujinx.Horizon.Sdk.OsTypes;
 using Ryujinx.Horizon.Sdk.Sf.Cmif;
 using Ryujinx.Horizon.Sdk.Sm;
 using System;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 {
@@ -111,20 +112,17 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
             return AcceptSession(server.PortHandle, new ServiceObjectHolder(obj));
         }
 
-        public void ServiceRequests()
+        public async Task ServiceRequests()
         {
-            while (WaitAndProcessRequestsImpl());
+            while (await WaitAndProcessRequestsImpl());
         }
 
-        public void WaitAndProcessRequests()
-        {
-            WaitAndProcessRequestsImpl();
-        }
-
-        private bool WaitAndProcessRequestsImpl()
+        private async Task<bool> WaitAndProcessRequestsImpl()
         {
             try
             {
+                // TODO: async this
+                // await Task.Yield();
                 MultiWaitHolder multiWait = WaitSignaled();
 
                 if (multiWait == null)

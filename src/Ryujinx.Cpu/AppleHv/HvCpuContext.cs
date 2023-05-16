@@ -1,5 +1,6 @@
 using ARMeilleure.Memory;
 using System;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Cpu.AppleHv
 {
@@ -25,9 +26,9 @@ namespace Ryujinx.Cpu.AppleHv
         }
 
         /// <inheritdoc/>
-        public void Execute(IExecutionContext context, ulong address)
+        public async Task Execute(IExecutionContext context, ulong address)
         {
-            ((HvExecutionContext)context).Execute(_memoryManager, address);
+            await ((HvExecutionContext)context).Execute(_memoryManager, address);
         }
 
         /// <inheritdoc/>

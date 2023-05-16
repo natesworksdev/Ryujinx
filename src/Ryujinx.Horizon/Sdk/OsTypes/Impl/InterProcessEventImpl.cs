@@ -39,13 +39,11 @@ namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
 
         public static void Wait(int handle, bool autoClear)
         {
-            Span<int> handles = stackalloc int[1];
-
-            handles[0] = handle;
+            var handles = new int[] { handle };
 
             while (true)
             {
-                Result result = HorizonStatic.Syscall.WaitSynchronization(out _, handles, -1L);
+                var (result, _) = HorizonStatic.Syscall.WaitSynchronization(handles, -1L).GetAwaiter().GetResult();
 
                 if (result == Result.Success)
                 {
@@ -75,13 +73,11 @@ namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
                 return HorizonStatic.Syscall.ResetSignal(handle) == Result.Success;
             }
 
-            Span<int> handles = stackalloc int[1];
-
-            handles[0] = handle;
+            var handles = new int[] { handle };
 
             while (true)
             {
-                Result result = HorizonStatic.Syscall.WaitSynchronization(out _, handles, 0);
+                var (result, _) = HorizonStatic.Syscall.WaitSynchronization(handles, 0).GetAwaiter().GetResult();
 
                 if (result == Result.Success)
                 {
@@ -98,15 +94,13 @@ namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
 
         public static bool TimedWait(int handle, bool autoClear, TimeSpan timeout)
         {
-            Span<int> handles = stackalloc int[1];
-
-            handles[0] = handle;
+            var handles = new int[] { handle };
 
             long timeoutNs = timeout.Milliseconds * 1000000L;
 
             while (true)
             {
-                Result result = HorizonStatic.Syscall.WaitSynchronization(out _, handles, timeoutNs);
+                Result result = HorizonStatic.Syscall.WaitSynchronization(handles, timeoutNs).GetAwaiter().GetResult().Item1;
 
                 if (result == Result.Success)
                 {

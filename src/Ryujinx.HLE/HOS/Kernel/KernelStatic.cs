@@ -4,23 +4,23 @@ using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Horizon.Common;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
     static class KernelStatic
     {
-        [ThreadStatic]
-        private static KernelContext Context;
-
-        [ThreadStatic]
-        private static KThread CurrentThread;
+        private static AsyncLocal<KernelContext> _context = new AsyncLocal<KernelContext>();
+        private static KernelContext Context => _context.Value;
+        private static AsyncLocal<KThread> _currentThread = new AsyncLocal<KThread>();
+        private static KThread CurrentThread => _currentThread.Value;
 
         public static Result StartInitialProcess(
             KernelContext context,
             ProcessCreationInfo creationInfo,
             ReadOnlySpan<uint> capabilities,
             int mainThreadPriority,
-            ThreadStart customThreadStart)
+            KThread.ThreadMainFn customThreadStart)
         {
             KProcess process = new KProcess(context);
 
@@ -46,8 +46,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         internal static void SetKernelContext(KernelContext context, KThread thread)
         {
-            Context = context;
-            CurrentThread = thread;
+            _context.Value = context;
+            _currentThread.Value = thread;
         }
 
         internal static KThread GetCurrentThread()

@@ -1,10 +1,11 @@
 ﻿using Ryujinx.Horizon.Prepo.Types;
 using Ryujinx.Horizon.Sdk.Sf.Hipc;
 using Ryujinx.Horizon.Sdk.Sm;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Horizon.Prepo
 {
-    class PrepoIpcServer
+    public class PrepoIpcServer: IService
     {
         private const int PrepoMaxSessionsCount      = 12;
         private const int PrepoTotalMaxSessionsCount = PrepoMaxSessionsCount * 6;
@@ -19,12 +20,12 @@ namespace Ryujinx.Horizon.Prepo
         private SmApi _sm;
         private PrepoServerManager _serverManager;
 
-        public void Initialize()
+        public async Task Initialize()
         {
             HeapAllocator allocator = new();
 
             _sm = new SmApi();
-            _sm.Initialize().AbortOnFailure();
+            (await _sm.Initialize()).AbortOnFailure();
 
             _serverManager = new PrepoServerManager(allocator, _sm, MaxPortsCount, _prepoManagerOptions, PrepoTotalMaxSessionsCount);
 
@@ -36,9 +37,9 @@ namespace Ryujinx.Horizon.Prepo
             _serverManager.RegisterServer((int)PrepoPortIndex.Debug,   ServiceName.Encode("prepo:d"),  PrepoMaxSessionsCount); // 1.0.0
         }
 
-        public void ServiceRequests()
+        public async Task ServiceRequests()
         {
-            _serverManager.ServiceRequests();
+            await _serverManager.ServiceRequests();
         }
 
         public void Shutdown()

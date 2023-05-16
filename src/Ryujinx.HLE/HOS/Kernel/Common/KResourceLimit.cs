@@ -39,12 +39,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 
         public bool Reserve(LimitableResource resource, long amount)
         {
-            return Reserve(resource, amount, KTimeManager.ConvertMillisecondsToNanoseconds(DefaultTimeoutMs));
+            return Reserve(resource, amount, (long)DefaultTimeoutMs * 1_000_000);
         }
 
-        public bool Reserve(LimitableResource resource, long amount, long timeout)
+        public bool Reserve(LimitableResource resource, long amount, long timeoutNs)
         {
-            long endTimePoint = KTimeManager.ConvertNanosecondsToMilliseconds(timeout);
+            // TODO: maybe avoid this ns/ms indirection?
+            long endTimePoint = timeoutNs / 1_000_000;
 
             endTimePoint += PerformanceCounter.ElapsedMilliseconds;
 
@@ -61,17 +62,18 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 
                 long newCurrent = _current[index] + amount;
 
+                // TODO: asyncify
                 while (newCurrent > _limit[index] && _current2[index] + amount <= _limit[index])
                 {
                     _waitingThreadsCount++;
 
-                    KConditionVariable.Wait(KernelContext, _waitingThreads, _lock, timeout);
+                    KConditionVariable.Wait(KernelContext, _waitingThreads, _lock, timeoutNs);
 
                     _waitingThreadsCount--;
 
                     newCurrent = _current[index] + amount;
 
-                    if (timeout >= 0 && PerformanceCounter.ElapsedMilliseconds > endTimePoint)
+                    if (timeoutNs >= 0 && PerformanceCounter.ElapsedMilliseconds > endTimePoint)
                     {
                         break;
                     }

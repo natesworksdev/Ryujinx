@@ -68,7 +68,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         private long _creationTimestamp;
         private ulong _entrypoint;
-        private ThreadStart _customThreadStart;
+        private KThread.ThreadMainFn _customThreadStart;
         private ulong _imageSize;
         private ulong _mainThreadStackSize;
         private ulong _memoryUsageCapacity;
@@ -124,7 +124,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             KResourceLimit resourceLimit,
             MemoryRegion memRegion,
             IProcessContextFactory contextFactory,
-            ThreadStart customThreadStart = null)
+            KThread.ThreadMainFn customThreadStart = null)
         {
             ResourceLimit = resourceLimit;
             _memRegion = memRegion;
@@ -194,7 +194,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             KResourceLimit resourceLimit,
             MemoryRegion memRegion,
             IProcessContextFactory contextFactory,
-            ThreadStart customThreadStart = null)
+            KThread.ThreadMainFn customThreadStart = null)
         {
             ResourceLimit = resourceLimit;
             _memRegion = memRegion;
@@ -698,7 +698,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                     : ProcessState.Started;
 
                 SetState(newState);
-
+                
                 result = mainThread.Start();
 
                 if (result != Result.Success)
@@ -737,7 +737,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             ulong stackTop,
             int priority,
             int cpuCore,
-            ThreadStart customThreadStart = null)
+            KThread.ThreadMainFn customThreadStart = null)
         {
             lock (_processLock)
             {
@@ -772,10 +772,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 KernelContext.CriticalSection.Leave();
             }
 
-            if (currentThread.IsSchedulable)
-            {
-                KernelContext.Schedulers[currentThread.CurrentCore].Schedule();
-            }
+            // if (currentThread.IsSchedulable)
+            // {
+            //     KernelContext.Schedulers[currentThread.CurrentCore].Schedule();
+            // }
 
             currentThread.HandlePostSyscall();
         }

@@ -1,12 +1,16 @@
 using Ryujinx.HLE.HOS.Kernel.Common;
-using System.Collections.Generic;
+using Ryujinx.Horizon.Common;
+using System.Diagnostics;
+using System.Threading.Channels;
+using System.Threading.Tasks;
 
 namespace Ryujinx.HLE.HOS.Kernel.Ipc
 {
     class KServerPort : KSynchronizationObject
     {
-        private readonly LinkedList<KServerSession>      _incomingConnections;
-        private readonly LinkedList<KLightServerSession> _lightIncomingConnections;
+        private readonly object _lock = new();
+        private readonly Channel<KServerSession>      _incomingConnections;
+        private readonly Channel<KLightServerSession> _lightIncomingConnections;
 
         private readonly KPort _parent;
 
@@ -16,72 +20,70 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
         {
             _parent = parent;
 
-            _incomingConnections      = new LinkedList<KServerSession>();
-            _lightIncomingConnections = new LinkedList<KLightServerSession>();
+            _incomingConnections      = Channel.CreateUnbounded<KServerSession>();
+            _lightIncomingConnections = Channel.CreateUnbounded<KLightServerSession>();
         }
 
         public void EnqueueIncomingSession(KServerSession session)
         {
-            AcceptIncomingConnection(_incomingConnections, session);
+            EnqueueIncomingConnection(_incomingConnections, session);
         }
 
         public void EnqueueIncomingLightSession(KLightServerSession session)
         {
-            AcceptIncomingConnection(_lightIncomingConnections, session);
+            EnqueueIncomingConnection(_lightIncomingConnections, session);
         }
 
-        private void AcceptIncomingConnection<T>(LinkedList<T> list, T session)
+        private void EnqueueIncomingConnection<T>(Channel<T> list, T session)
         {
-            KernelContext.CriticalSection.Enter();
-
-            list.AddLast(session);
-
-            if (list.Count == 1)
+            lock (_lock)
             {
-                Signal();
+                if (!list.Writer.TryWrite(session))
+                {
+                    throw new UnreachableException("Failed to enqueue new session");
+                }
             }
-
-            KernelContext.CriticalSection.Leave();
         }
 
         public KServerSession AcceptIncomingConnection()
         {
-            return AcceptIncomingConnection(_incomingConnections);
+            return DequeueIncomingConnection(_incomingConnections);
         }
 
         public KLightServerSession AcceptIncomingLightConnection()
         {
-            return AcceptIncomingConnection(_lightIncomingConnections);
+            return DequeueIncomingConnection(_lightIncomingConnections);
         }
 
-        private T AcceptIncomingConnection<T>(LinkedList<T> list)
+        private T DequeueIncomingConnection<T>(Channel<T> list)
         {
-            T session = default;
-
-            KernelContext.CriticalSection.Enter();
-
-            if (list.Count != 0)
+            // TODO: maybe not necessary ?
+            lock (_lock)
             {
-                session = list.First.Value;
-
-                list.RemoveFirst();
+                list.Reader.TryRead(out T session);
+                return session;
             }
-
-            KernelContext.CriticalSection.Leave();
-
-            return session;
         }
 
         public override bool IsSignaled()
         {
             if (_parent.IsLight)
             {
-                return _lightIncomingConnections.Count != 0;
+                return _lightIncomingConnections.Reader.Count != 0;
             }
             else
             {
-                return _incomingConnections.Count != 0;
+                return _incomingConnections.Reader.Count != 0;
             }
         }
+
+        public override async Task<Result> WaitSignaled()
+        {
+            var isOpen = _parent.IsLight switch {
+                true => await _lightIncomingConnections.Reader.WaitToReadAsync(),
+                false => await _incomingConnections.Reader.WaitToReadAsync(),
+            };
+            return isOpen ? Result.Success : KernelResult.PortClosed;
+        } 
     }
 }

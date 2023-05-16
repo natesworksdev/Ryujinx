@@ -1,5 +1,7 @@
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.Horizon.Common;
+using System.Threading.Tasks;
 
 namespace Ryujinx.HLE.HOS.Kernel.Ipc
 {
@@ -16,6 +18,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
         public ulong CustomCmdBuffAddr { get; }
         public ulong CustomCmdBuffSize { get; }
 
+        public TaskCompletionSource<Result> Complete { get; }
+
         public KSessionRequest(
             KThread        clientThread,
             ulong          customCmdBuffAddr,
@@ -28,6 +32,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             AsyncEvent        = asyncEvent;
 
             BufferDescriptorTable = new KBufferDescriptorTable();
+
+            Complete = new();
         }
     }
 }

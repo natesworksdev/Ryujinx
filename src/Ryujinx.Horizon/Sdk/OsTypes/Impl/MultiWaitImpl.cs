@@ -192,7 +192,7 @@ namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
 
         private static int WaitSynchronization(ReadOnlySpan<int> handles, long timeout)
         {
-            Result result = HorizonStatic.Syscall.WaitSynchronization(out int index, handles, timeout);
+            var (result, index) = HorizonStatic.Syscall.WaitSynchronization(handles.ToArray(), timeout).GetAwaiter().GetResult();
 
             if (result == KernelResult.TimedOut)
             {

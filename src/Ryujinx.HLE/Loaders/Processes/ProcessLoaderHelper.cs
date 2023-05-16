@@ -227,7 +227,8 @@ namespace Ryujinx.HLE.Loaders.Processes
             byte[] arguments = null,
             params IExecutable[] executables)
         {
-            context.Device.System.ServiceTable.WaitServicesReady();
+            // TODO: make async ?
+            context.Device.System.ServicesInitialized.Wait();
 
             LibHac.Result resultCode = metaLoader.GetNpdm(out var npdm);
 

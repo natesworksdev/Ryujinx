@@ -31,17 +31,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             }
             else
             {
-                if (timeout > 0)
-                {
-                    context.TimeManager.ScheduleFutureInvocation(currentThread, timeout);
-                }
-
+                // TODO: implement waiting
                 context.CriticalSection.Leave();
-
-                if (timeout > 0)
-                {
-                    context.TimeManager.UnscheduleFutureInvocation(currentThread);
-                }
             }
 
             Monitor.Enter(mutex);

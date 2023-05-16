@@ -30,7 +30,7 @@ namespace Ryujinx.Horizon.Common
             { 0xE801, "InvalidCombination" },
             { 0xEA01, "TimedOut" },
             { 0xEC01, "Cancelled" },
-            { 0xEE01, "OutOfRange" },
+            { 0xEE01, "MaximumExceeded" },
             { 0xF001, "InvalidEnumValue" },
             { 0xF201, "NotFound" },
             { 0xF401, "Busy" },

@@ -10,6 +10,7 @@ using Ryujinx.Audio.Integration;
 using Ryujinx.Audio.Output;
 using Ryujinx.Audio.Renderer.Device;
 using Ryujinx.Audio.Renderer.Server;
+using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.FileSystem;
@@ -37,11 +38,15 @@ using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Loaders.Processes;
 using Ryujinx.Horizon;
+using Ryujinx.Horizon.LogManager;
+using Ryujinx.Horizon.Prepo;
+using Ryujinx.Horizon.Bcat;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using TimeSpanType = Ryujinx.HLE.HOS.Services.Time.Clock.TimeSpanType;
 
 namespace Ryujinx.HLE.HOS
@@ -122,9 +127,9 @@ namespace Ryujinx.HLE.HOS
 
         internal LibHacHorizonManager LibHacHorizonManager { get; private set; }
 
-        internal ServiceTable ServiceTable { get; private set; }
-
         public bool IsPaused { get; private set; }
+        
+        public Task ServicesInitialized { get; private set;  }
 
         public Horizon(Switch device)
         {
@@ -327,37 +332,67 @@ namespace Ryujinx.HLE.HOS
 
         private void StartNewServices()
         {
-            ServiceTable = new ServiceTable();
-            var services = ServiceTable.GetServices(new HorizonOptions(Device.Configuration.IgnoreMissingServices, LibHacHorizonManager.BcatClient));
+            var options = new HorizonOptions(Device.Configuration.IgnoreMissingServices, LibHacHorizonManager.BcatClient);
 
-            foreach (var service in services)
+            Console.WriteLine("Starting Services");
+            // ServicesInitialized = Task.WhenAll(new Task[]
+            // {
+            //     StartServiceProcess(LogClass.ServiceLm, KernelContext, options, new LmIpcServer()),
+            //     StartServiceProcess(LogClass.ServicePrepo, KernelContext, options, new PrepoIpcServer()),
+            //     StartServiceProcess(LogClass.ServiceBcat, KernelContext, options, new BcatIpcServer()),
+            // });
+            ServicesInitialized = Task.Run(async () =>
             {
-                const ProcessCreationFlags flags =
-                    ProcessCreationFlags.EnableAslr |
-                    ProcessCreationFlags.AddressSpace64Bit |
-                    ProcessCreationFlags.Is64Bit |
-                    ProcessCreationFlags.PoolPartitionSystem;
+                await StartServiceProcess(LogClass.ServiceLm, KernelContext, options, new LmIpcServer());
+                await StartServiceProcess(LogClass.ServicePrepo, KernelContext, options, new PrepoIpcServer());
+                await StartServiceProcess(LogClass.ServiceBcat, KernelContext, options, new BcatIpcServer());
+            });
+        }
+        
+        private Task StartServiceProcess(LogClass logClass, KernelContext kernelContext, HorizonOptions options, IService service)
+        {
+            var initialized = new TaskCompletionSource();
+            
+            const ProcessCreationFlags flags =
+                ProcessCreationFlags.EnableAslr |
+                ProcessCreationFlags.AddressSpace64Bit |
+                ProcessCreationFlags.Is64Bit |
+                ProcessCreationFlags.PoolPartitionSystem;
 
-                ProcessCreationInfo creationInfo = new ProcessCreationInfo("Service", 1, 0, 0x8000000, 1, flags, 0, 0);
+            ProcessCreationInfo creationInfo = new ProcessCreationInfo("Service", 1, 0, 0x8000000, 1, flags, 0, 0);
 
-                uint[] defaultCapabilities = new uint[]
-                {
-                    0x030363F7,
-                    0x1FFFFFCF,
-                    0x207FFFEF,
-                    0x47E0060F,
-                    0x0048BFFF,
-                    0x01007FFF
-                };
+            uint[] defaultCapabilities = new uint[]
+            {
+                0x030363F7,
+                0x1FFFFFCF,
+                0x207FFFEF,
+                0x47E0060F,
+                0x0048BFFF,
+                0x01007FFF
+            };
+            
+            // TODO:
+            // - Have the ThreadStart function take the syscall, address space and thread context parameters instead of passing them here.
+            KernelStatic.StartInitialProcess(KernelContext, creationInfo, defaultCapabilities, 44, async () =>
+            {
+                var syscallApi = KernelContext.Syscall;
+                var addressSpace = KernelStatic.GetCurrentProcess().CpuMemory;
+                var threadContext = KernelStatic.GetCurrentThread().ThreadContext;
+                HorizonStatic.Register(options, syscallApi, addressSpace, threadContext, (int)threadContext.GetX(1));
 
-                // TODO:
-                // - Pass enough information (capabilities, process creation info, etc) on ServiceEntry for proper initialization.
-                // - Have the ThreadStart function take the syscall, address space and thread context parameters instead of passing them here.
-                KernelStatic.StartInitialProcess(KernelContext, creationInfo, defaultCapabilities, 44, () =>
-                {
-                    service.Start(KernelContext.Syscall, KernelStatic.GetCurrentProcess().CpuMemory, KernelStatic.GetCurrentThread().ThreadContext);
-                });
-            }
+                Logger.Info?.Print(logClass, "service pre-init");
+                await service.Initialize();
+                Logger.Info?.Print(logClass, "service post-init");
+                initialized.SetResult();
+
+                Logger.Info?.Print(logClass,  "service pre-service-reqs");
+                await service.ServiceRequests();
+                Logger.Info?.Print(logClass, "service post-service-reqs");
+                service.Shutdown();
+                Logger.Info?.Print(logClass, "service post-shutdown");
+            });
+
+            return initialized.Task;
         }
 
         public bool LoadKip(string kipPath)
@@ -467,7 +502,7 @@ namespace Ryujinx.HLE.HOS
                 KProcess terminationProcess = new KProcess(KernelContext);
                 KThread terminationThread = new KThread(KernelContext);
 
-                terminationThread.Initialize(0, 0, 0, 3, 0, terminationProcess, ThreadType.Kernel, () =>
+                terminationThread.Initialize(0, 0, 0, 3, 0, terminationProcess, ThreadType.Kernel, async () =>
                 {
                     // Force all threads to exit.
                     lock (KernelContext.Processes)
@@ -500,13 +535,13 @@ namespace Ryujinx.HLE.HOS
                 terminationThread.Start();
 
                 // Wait until the thread is actually started.
-                while (terminationThread.HostThread.ThreadState == ThreadState.Unstarted)
+                while (terminationThread.HostThread.Status == TaskStatus.Created)
                 {
                     Thread.Sleep(10);
                 }
 
                 // Wait until the termination thread is done terminating all the other threads.
-                terminationThread.HostThread.Join();
+                terminationThread.HostThread.GetAwaiter().GetResult();
 
                 // Destroy nvservices channels as KThread could be waiting on some user events.
                 // This is safe as KThread that are likely to call ioctls are going to be terminated by the post handler hook on the SVC facade.

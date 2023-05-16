@@ -212,7 +212,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             return result;
         }
 
-        public T GetObject<T>(int handle) where T : KAutoObject
+        public KAutoObject GetObject(int handle)
         {
             int index    = (handle >> 0) & 0x7fff;
             int handleId = (handle >> 15);
@@ -223,14 +223,23 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 {
                     KHandleEntry entry = _table[index];
 
-                    if (entry.HandleId == handleId && entry.Obj is T obj)
+                    if (entry.HandleId == handleId)
                     {
-                        return obj;
+                        return entry.Obj;
                     }
                 }
             }
 
             return default;
+        }
+
+        public T GetObject<T>(int handle) where T : KAutoObject
+        {
+            switch (GetObject(handle))
+            {
+                case T x: return x;
+                default: return default;
+            }
         }
 
         public KThread GetKThread(int handle)

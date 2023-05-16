@@ -1,7 +1,9 @@
-﻿using Ryujinx.Common.Memory;
+﻿using Ryujinx.Common.Logging;
+using Ryujinx.Common.Memory;
 using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Sdk.Sf.Cmif;
 using System;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Horizon.Sdk.Sm
 {
@@ -11,13 +13,13 @@ namespace Ryujinx.Horizon.Sdk.Sm
 
         private int _portHandle;
 
-        public Result Initialize()
+        public async Task<Result> Initialize()
         {
             Result result = HorizonStatic.Syscall.ConnectToNamedPort(out int portHandle, SmName);
 
             while (result == KernelResult.NotFound)
             {
-                HorizonStatic.Syscall.SleepThread(50000000L);
+                await HorizonStatic.Syscall.SleepThread(50000000L);
                 result = HorizonStatic.Syscall.ConnectToNamedPort(out portHandle, SmName);
             }
 
@@ -39,7 +41,8 @@ namespace Ryujinx.Horizon.Sdk.Sm
 
             writer.Write(0UL);
 
-            return ServiceUtil.SendRequest(out _, _portHandle, 0, sendPid: true, data);
+            var result = ServiceUtil.SendRequest(out _, _portHandle, 0, sendPid: true, data);
+            return result;
         }
 
         public Result GetServiceHandle(out int handle, ServiceName name)

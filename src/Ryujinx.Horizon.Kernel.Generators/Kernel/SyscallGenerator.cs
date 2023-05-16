@@ -33,6 +33,7 @@ namespace Ryujinx.Horizon.Generators.Kernel
         private const string TypeKernelResultName = "KernelResult";
         private const string TypeResult = NamespaceHorizonCommon + "." + TypeResultName;
         private const string TypeExecutionContext = "IExecutionContext";
+        private const string TypeTask = "System.Threading.Tasks.Task";
 
         private static readonly string[] _expectedResults = new string[]
         {
@@ -40,7 +41,7 @@ namespace Ryujinx.Horizon.Generators.Kernel
             $"{TypeKernelResultName}.TimedOut",
             $"{TypeKernelResultName}.Cancelled",
             $"{TypeKernelResultName}.PortRemoteClosed",
-            $"{TypeKernelResultName}.InvalidState"
+            $"{TypeKernelResultName}.InvalidState",
         };
 
         private readonly struct OutParameter
@@ -111,11 +112,13 @@ namespace Ryujinx.Horizon.Generators.Kernel
         {
             public readonly int Id;
             public readonly string Name;
+            public readonly bool IsAsync;
 
-            public SyscallIdAndName(int id, string name)
+            public SyscallIdAndName(int id, string name, bool isAsync)
             {
                 Id = id;
                 Name = name;
+                IsAsync = isAsync;
             }
 
             public int CompareTo(SyscallIdAndName other)
@@ -138,6 +141,7 @@ namespace Ryujinx.Horizon.Generators.Kernel
             generator.AppendLine($"using {NamespaceKernel}.Threading;");
             generator.AppendLine($"using {NamespaceHorizonCommon};");
             generator.AppendLine("using System;");
+            generator.AppendLine("using System.Threading.Tasks;");
             generator.AppendLine();
             generator.EnterScope($"namespace {ClassNamespace}");
             generator.EnterScope($"static class {ClassName}");
@@ -160,7 +164,7 @@ namespace Ryujinx.Horizon.Generators.Kernel
                         where attributeArg.Expression.Kind() == SyntaxKind.NumericLiteralExpression
                         select (LiteralExpressionSyntax)attributeArg.Expression
                         into numericLiteral
-                        select new SyscallIdAndName((int)numericLiteral.Token.Value, method.Identifier.Text));
+                        select new SyscallIdAndName((int)numericLiteral.Token.Value, method.Identifier.Text, IsAsyncMethod(method)));
                 }
             }
 
@@ -195,7 +199,8 @@ namespace Ryujinx.Horizon.Generators.Kernel
 
         private static void GenerateMethod32(CodeGenerator generator, Compilation compilation, MethodDeclarationSyntax method)
         {
-            generator.EnterScope($"private static void {method.Identifier.Text}{A32Suffix}(Syscall syscall, {TypeExecutionContext} context)");
+            var retType = IsAsyncMethod(method) ? "async Task" : "void";
+            generator.EnterScope($"private static {retType} {method.Identifier.Text}{A32Suffix}(Syscall syscall, {TypeExecutionContext} context)");
 
             string[] args = new string[method.ParameterList.Parameters.Count];
             int index = 0;
@@ -259,14 +264,34 @@ namespace Ryujinx.Horizon.Generators.Kernel
                 args[index++] = argName;
             }
 
-            GenerateLogPrintBeforeCall(generator, method.Identifier.Text, logInArgs);
+            GenerateLogPrintBeforeCall(generator, $"{method.Identifier.Text}", logInArgs);
 
             string argsList = string.Join(", ", args);
             int returnRegisterIndex = 0;
             string result = null;
             string canonicalReturnTypeName = null;
-
-            if (method.ReturnType.ToString() != "void")
+            
+            // TODO: clean this up, make it more generic ?
+            if (TaskArity(compilation, method) == 0) // Task
+            {
+                generator.AppendLine($"await syscall.{method.Identifier.Text}({argsList});");                
+            }
+            else if (TaskArity(compilation, method) == 1) // Task<Result>
+            {
+                generator.AppendLine($"var {ResultVariableName} = await syscall.{method.Identifier.Text}({argsList});");
+                generator.AppendLine($"context.SetX({returnRegisterIndex++}, (uint)({ResultVariableName}.ErrorCode));");
+                canonicalReturnTypeName = TypeResult;
+                result = GetFormattedLogValue($"{ResultVariableName}", canonicalReturnTypeName);
+            }
+            else if (TaskArity(compilation, method) == 2) // Task<(Result, int)>
+            {
+                generator.AppendLine($"var ({ResultVariableName}, {ResultVariableName}2) = await syscall.{method.Identifier.Text}({argsList});");
+                generator.AppendLine($"context.SetX({returnRegisterIndex++}, (uint)({ResultVariableName}.ErrorCode));");
+                generator.AppendLine($"context.SetX({returnRegisterIndex++}, (uint)({ResultVariableName}2));");
+                canonicalReturnTypeName = TypeResult;
+                result = GetFormattedLogValue($"{ResultVariableName}", canonicalReturnTypeName);
+            }
+            else if (method.ReturnType.ToString() != "void")
             {
                 generator.AppendLine($"var {ResultVariableName} = syscall.{method.Identifier.Text}({argsList});");
                 canonicalReturnTypeName = GetCanonicalTypeName(compilation, method.ReturnType);
@@ -315,7 +340,8 @@ namespace Ryujinx.Horizon.Generators.Kernel
 
         private static void GenerateMethod64(CodeGenerator generator, Compilation compilation, MethodDeclarationSyntax method)
         {
-            generator.EnterScope($"private static void {method.Identifier.Text}{A64Suffix}(Syscall syscall, {TypeExecutionContext} context)");
+            var retType = IsAsyncMethod(method) ? "async Task" : "void";
+            generator.EnterScope($"private static {retType} {method.Identifier.Text}{A64Suffix}(Syscall syscall, {TypeExecutionContext} context)");
 
             string[] args = new string[method.ParameterList.Parameters.Count];
             int registerIndex = 0;
@@ -356,7 +382,27 @@ namespace Ryujinx.Horizon.Generators.Kernel
             string result = null;
             string canonicalReturnTypeName = null;
 
-            if (method.ReturnType.ToString() != "void")
+            // TODO: clean this up, make it more generic ?
+            if (TaskArity(compilation, method) == 0) // Task
+            {
+                generator.AppendLine($"await syscall.{method.Identifier.Text}({argsList});");                
+            }
+            else if (TaskArity(compilation, method) == 1) // Task<Result>
+            {
+                generator.AppendLine($"var {ResultVariableName} = await syscall.{method.Identifier.Text}({argsList});");
+                generator.AppendLine($"context.SetX({returnRegisterIndex++}, (ulong)({ResultVariableName}.ErrorCode));");
+                canonicalReturnTypeName = TypeResult;
+                result = GetFormattedLogValue($"{ResultVariableName}", canonicalReturnTypeName);
+            }
+            else if (TaskArity(compilation, method) == 2) // Task<(Result, int)>
+            {
+                generator.AppendLine($"var ({ResultVariableName}, {ResultVariableName}2) = await syscall.{method.Identifier.Text}({argsList});");
+                generator.AppendLine($"context.SetX({returnRegisterIndex++}, (uint)({ResultVariableName}.ErrorCode));");
+                generator.AppendLine($"context.SetX({returnRegisterIndex++}, (uint)({ResultVariableName}2));");
+                canonicalReturnTypeName = TypeResult;
+                result = GetFormattedLogValue($"{ResultVariableName}", canonicalReturnTypeName);
+            }
+            else if (method.ReturnType.ToString() != "void")
             {
                 generator.AppendLine($"var {ResultVariableName} = syscall.{method.Identifier.Text}({argsList});");
                 canonicalReturnTypeName = GetCanonicalTypeName(compilation, method.ReturnType);
@@ -425,7 +471,7 @@ namespace Ryujinx.Horizon.Generators.Kernel
 
         private static void GenerateLogPrintBeforeCall(CodeGenerator generator, string methodName, List<string> argList)
         {
-            string log = $"{methodName}({string.Join(", ", argList)})";
+            string log = $"[{{KernelStatic.GetCurrentThread().ThreadUid}}] {methodName}({string.Join(", ", argList)})";
             GenerateLogPrint(generator, "Trace", "KernelSvc", log);
         }
 
@@ -436,7 +482,7 @@ namespace Ryujinx.Horizon.Generators.Kernel
             string result,
             string canonicalResultTypeName)
         {
-            string log = $"{methodName}({string.Join(", ", argList)})";
+            string log = $"[{{KernelStatic.GetCurrentThread().ThreadUid}}] {methodName}({string.Join(", ", argList)})";
 
             if (result != null)
             {
@@ -465,15 +511,17 @@ namespace Ryujinx.Horizon.Generators.Kernel
 
         private static void GenerateDispatch(CodeGenerator generator, List<SyscallIdAndName> syscalls, string suffix)
         {
-            generator.EnterScope($"public static void Dispatch{suffix}(Syscall syscall, {TypeExecutionContext} context, int id)");
+            generator.EnterScope($"public static async Task Dispatch{suffix}(Syscall syscall, {TypeExecutionContext} context, int id)");
             generator.EnterScope("switch (id)");
 
             foreach (var syscall in syscalls)
             {
+                var maybeAwait = syscall.IsAsync ? "await" : "";
                 generator.AppendLine($"case {syscall.Id}:");
                 generator.IncreaseIndentation();
 
-                generator.AppendLine($"{syscall.Name}{suffix}(syscall, context);");
+                // generator.AppendLine($"System.Console.WriteLine(\"syscall: {syscall.Name}{suffix}\");");
+                generator.AppendLine($"{maybeAwait} {syscall.Name}{suffix}(syscall, context);");
                 generator.AppendLine("break;");
 
                 generator.DecreaseIndentation();
@@ -515,6 +563,86 @@ namespace Ryujinx.Horizon.Generators.Kernel
         public void Initialize(GeneratorInitializationContext context)
         {
             context.RegisterForSyntaxNotifications(() => new SyscallSyntaxReceiver());
+        }
+
+        private static bool IsAsyncMethod(MethodDeclarationSyntax method)
+        {
+            return method.Modifiers.Any(m => m.IsKind(SyntaxKind.AsyncKeyword));
+        }
+        
+        // TODO: cleanup and make it robust
+        // NOTE: naively assuming sigs are unique for a given arity (true for now)
+        private static int _TaskArity(Compilation compilation, MethodDeclarationSyntax method)
+        {
+            var tname = method.ReturnType.ToFullString();
+    
+    
+            if (tname == "Task")
+            {
+                return 0;
+            }
+            else if (tname == "Task<Result>")
+            {
+                return 1;
+            }
+            else if (
+                tname == "Task<(Result, int)>" ||
+                tname == "Task<(Result, long)>" ||
+                tname == "Task<(Result, uint)>" ||
+                tname == "Task<(Result, ulong)>"
+            )
+            {
+                return 2;
+            }
+            else
+            {
+                return -1;                
+            }
+
+            // if (tname == $"{TypeTask}")
+            // {
+            //     return 0;
+            // }
+            // else if (tname == $"{TypeTask}<{TypeResult}>")
+            // {
+            //     return 1;
+            // }
+            // else if (
+            //     tname == $"{TypeTask}<{TypeResult}, {TypeSystemInt32}>" ||
+            //     tname == $"{TypeTask}<{TypeResult}, {TypeSystemInt64}>" ||
+            //     tname == $"{TypeTask}<{TypeResult}, {TypeSystemUInt32}>" ||
+            //     tname == $"{TypeTask}<{TypeResult}, {TypeSystemUInt64}>"
+            // )
+            // {
+            //     return 2;
+            // }
+            // else
+            // {
+            //     return -1;                
+            // }
+        }
+        
+        private static int TaskArity(Compilation _compilation, MethodDeclarationSyntax method)
+        {
+            var returnType = method.ReturnType;
+
+            if (returnType is IdentifierNameSyntax identifier)
+            {
+                if (identifier.Identifier.Text == "Task")
+                    return 0;
+            }
+            else if (returnType is GenericNameSyntax generic)
+            {
+                if (generic.Identifier.Text == "Task" && generic.TypeArgumentList.Arguments.Count == 1)
+                {
+                    var argument = generic.TypeArgumentList.Arguments[0];
+                    if (argument is TupleTypeSyntax)
+                        return 2;
+                    return 1;
+                }
+            }
+
+            return -1;
         }
     }
 }

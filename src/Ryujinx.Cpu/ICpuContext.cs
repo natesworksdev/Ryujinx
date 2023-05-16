@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace Ryujinx.Cpu
 {
     /// <summary>
@@ -20,7 +22,7 @@ namespace Ryujinx.Cpu
         /// </remarks>
         /// <param name="context">Execution context to be used for this run</param>
         /// <param name="address">Entry point address</param>
-        void Execute(IExecutionContext context, ulong address);
+        Task Execute(IExecutionContext context, ulong address);
 
         /// <summary>
         /// Invalidates the instruction cache for a given memory region.

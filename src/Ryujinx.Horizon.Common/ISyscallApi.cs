@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Horizon.Common
 {
@@ -6,20 +7,20 @@ namespace Ryujinx.Horizon.Common
     {
         Result SetHeapSize(out ulong address, ulong size);
 
-        void SleepThread(long timeout);
+        Task SleepThread(long timeout);
 
         Result CloseHandle(int handle);
 
-        Result WaitSynchronization(out int handleIndex, ReadOnlySpan<int> handles, long timeout);
+        Task<(Result, int)> WaitSynchronization(int[] handles, long timeout);
         Result CancelSynchronization(int handle);
 
         Result GetProcessId(out ulong pid, int handle);
 
         Result ConnectToNamedPort(out int handle, string name);
-        Result SendSyncRequest(int handle);
+        Task<Result> SendSyncRequest(int handle);
         Result CreateSession(out int serverSessionHandle, out int clientSessionHandle, bool isLight, string name);
         Result AcceptSession(out int sessionHandle, int portHandle);
-        Result ReplyAndReceive(out int handleIndex, ReadOnlySpan<int> handles, int replyTargetHandle, long timeout);
+        Task<(Result, int)> ReplyAndReceive(int[] handles, int replyTargetHandle, long timeout);
 
         Result CreateEvent(out int writableHandle, out int readableHandle);
         Result SignalEvent(int handle);

@@ -40,7 +40,6 @@ namespace Ryujinx.HLE.HOS.Kernel
         public KCriticalSection CriticalSection { get; }
         public KScheduler[] Schedulers { get; }
         public KPriorityQueue PriorityQueue { get; }
-        public KTimeManager TimeManager { get; }
         public KSynchronization Synchronization { get; }
         public KContextIdManager ContextIdManager { get; }
 
@@ -89,7 +88,6 @@ namespace Ryujinx.HLE.HOS.Kernel
             CriticalSection = new KCriticalSection(this);
             Schedulers = new KScheduler[KScheduler.CpuCoresCount];
             PriorityQueue = new KPriorityQueue();
-            TimeManager = new KTimeManager(this);
             Synchronization = new KSynchronization(this);
             ContextIdManager = new KContextIdManager();
 
@@ -98,8 +96,6 @@ namespace Ryujinx.HLE.HOS.Kernel
                 Schedulers[core] = new KScheduler(this, core);
             }
 
-            StartPreemptionThread();
-
             KernelInitialized = true;
 
             Processes = new ConcurrentDictionary<ulong, KProcess>();
@@ -107,16 +103,6 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             _kipId = KernelConstants.InitialKipId;
             _processId = KernelConstants.InitialProcessId;
-        }
-
-        private void StartPreemptionThread()
-        {
-            void PreemptionThreadStart()
-            {
-                KScheduler.PreemptionThreadLoop(this);
-            }
-
-            new Thread(PreemptionThreadStart) { Name = "HLE.PreemptionThread" }.Start();
         }
 
         public void CommitMemory(ulong address, ulong size)
@@ -153,8 +139,6 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 Schedulers[i].Dispose();
             }
-
-            TimeManager.Dispose();
         }
     }
 }

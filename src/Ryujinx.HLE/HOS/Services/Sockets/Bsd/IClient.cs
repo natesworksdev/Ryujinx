@@ -434,7 +434,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                     }
 
                     // If we are here, that mean nothing was available, sleep for 50ms
-                    context.Device.System.KernelContext.Syscall.SleepThread(50 * 1000000);
+                    context.Device.System.KernelContext.Syscall.SleepThread(50 * 1000000).GetAwaiter().GetResult();
                 }
                 while (PerformanceCounter.ElapsedMilliseconds < budgetLeftMilliseconds);
             }
@@ -445,7 +445,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             }
             else
             {
-                context.Device.System.KernelContext.Syscall.SleepThread(timeout);
+                context.Device.System.KernelContext.Syscall.SleepThread(timeout).GetAwaiter().GetResult();
             }
 
             // TODO: Spanify

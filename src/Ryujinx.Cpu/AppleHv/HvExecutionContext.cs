@@ -2,6 +2,7 @@ using ARMeilleure.State;
 using Ryujinx.Cpu.AppleHv.Arm;
 using Ryujinx.Memory.Tracking;
 using System;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Cpu.AppleHv
 {
@@ -98,9 +99,9 @@ namespace Ryujinx.Cpu.AppleHv
             _exceptionCallbacks.BreakCallback?.Invoke(this, address, imm);
         }
 
-        private void SupervisorCallHandler(ulong address, int imm)
+        private async Task SupervisorCallHandler(ulong address, int imm)
         {
-            _exceptionCallbacks.SupervisorCallback?.Invoke(this, address, imm);
+            await _exceptionCallbacks.SupervisorCallback?.Invoke(this, address, imm);
         }
 
         private void UndefinedHandler(ulong address, int opCode)
@@ -121,21 +122,28 @@ namespace Ryujinx.Cpu.AppleHv
             RequestInterrupt();
         }
 
-        public unsafe void Execute(HvMemoryManager memoryManager, ulong address)
+        public async Task Execute(HvMemoryManager memoryManager, ulong address)
         {
-            HvVcpu vcpu = HvVcpuPool.Instance.Create(memoryManager.AddressSpace, _shadowContext, SwapContext);
-
-            HvApi.hv_vcpu_set_reg(vcpu.Handle, hv_reg_t.HV_REG_PC, address).ThrowOnError();
-
             while (Running)
             {
-                HvApi.hv_vcpu_run(vcpu.Handle).ThrowOnError();
+                HvVcpu vcpu = HvVcpuPool.Instance.CreateEphemeral(memoryManager.AddressSpace, _shadowContext, SwapContext);
+                HvApi.hv_vcpu_set_reg(vcpu.Handle, hv_reg_t.HV_REG_PC, address).ThrowOnError();
 
-                uint reason = vcpu.ExitInfo->reason;
+                unsafe uint GetReason() {
+                    return vcpu.ExitInfo->reason;
+                }
+                unsafe uint GetException() {
+                    return (uint)vcpu.ExitInfo->exception.syndrome;
+                }
+                
+                // TODO: resolve why this fails ? AsyncLocals ?
+                HvApi.hv_vcpu_run(vcpu.Handle).ThrowOnError();
+                
+                uint reason = GetReason();
 
                 if (reason == 1)
                 {
-                    uint hvEsr = (uint)vcpu.ExitInfo->exception.syndrome;
+                    uint hvEsr = GetException();
                     ExceptionClass hvEc = (ExceptionClass)(hvEsr >> 26);
 
                     if (hvEc != ExceptionClass.HvcAarch64)
@@ -143,8 +151,8 @@ namespace Ryujinx.Cpu.AppleHv
                         throw new Exception($"Unhandled exception from guest kernel with ESR 0x{hvEsr:X} ({hvEc}).");
                     }
 
-                    address = SynchronousException(memoryManager, ref vcpu);
-                    HvApi.hv_vcpu_set_reg(vcpu.Handle, hv_reg_t.HV_REG_PC, address).ThrowOnError();
+                    // Eats vCPU
+                    address = await SynchronousException(memoryManager, vcpu);
                 }
                 else if (reason == 0)
                 {
@@ -152,7 +160,7 @@ namespace Ryujinx.Cpu.AppleHv
                     {
                         ReturnToPool(vcpu);
                         InterruptHandler();
-                        vcpu = RentFromPool(memoryManager.AddressSpace, vcpu);
+                        // vcpu = RentFromPool(memoryManager.AddressSpace, vcpu);
                     }
                 }
                 else
@@ -161,10 +169,10 @@ namespace Ryujinx.Cpu.AppleHv
                 }
             }
 
-            HvVcpuPool.Instance.Destroy(vcpu, SwapContext);
+            // HvVcpuPool.Instance.Destroy(vcpu, SwapContext);
         }
 
-        private ulong SynchronousException(HvMemoryManager memoryManager, ref HvVcpu vcpu)
+        private async Task<ulong> SynchronousException(HvMemoryManager memoryManager, HvVcpu vcpu)
         {
             ulong vcpuHandle = vcpu.Handle;
 
@@ -177,18 +185,20 @@ namespace Ryujinx.Cpu.AppleHv
             {
                 case ExceptionClass.DataAbortLowerEl:
                     DataAbort(memoryManager.Tracking, vcpuHandle, (uint)esr);
+                    ReturnToPool(vcpu);
                     break;
                 case ExceptionClass.TrappedMsrMrsSystem:
                     InstructionTrap((uint)esr);
                     HvApi.hv_vcpu_set_sys_reg(vcpuHandle, hv_sys_reg_t.HV_SYS_REG_ELR_EL1, elr + 4UL).ThrowOnError();
+                    ReturnToPool(vcpu);
                     break;
                 case ExceptionClass.SvcAarch64:
                     ReturnToPool(vcpu);
                     ushort id = (ushort)esr;
-                    SupervisorCallHandler(elr - 4UL, id);
-                    vcpu = RentFromPool(memoryManager.AddressSpace, vcpu);
+                    await SupervisorCallHandler(elr - 4UL, id);
                     break;
                 default:
+                    ReturnToPool(vcpu);
                     throw new Exception($"Unhandled guest exception {ec}.");
             }
 

@@ -12,6 +12,7 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Ryujinx.HLE.HOS.Services
 {
@@ -104,12 +105,12 @@ namespace Ryujinx.HLE.HOS.Services
             _sessions.Add(serverSessionHandle, obj);
         }
 
-        private void Main()
+        private async Task Main()
         {
-            ServerLoop();
+            await ServerLoop();
         }
 
-        private void ServerLoop()
+        private async Task ServerLoop()
         {
             _selfProcess = KernelStatic.GetCurrentProcess();
 
@@ -134,23 +135,18 @@ namespace Ryujinx.HLE.HOS.Services
 
             while (true)
             {
-                int handleCount;
-                int portHandleCount;
-                int[] handles;
+                int portHandleCount = _portHandles.Count;
+                int handleCount = portHandleCount + _sessionHandles.Count;
+                var handles = new int[handleCount];
 
                 lock (_handleLock)
                 {
-                    portHandleCount = _portHandles.Count;
-                    handleCount = portHandleCount + _sessionHandles.Count;
-
-                    handles = ArrayPool<int>.Shared.Rent(handleCount);
-
                     _portHandles.CopyTo(handles, 0);
                     _sessionHandles.CopyTo(handles, portHandleCount);
                 }
 
                 // We still need a timeout here to allow the service to pick up and listen new sessions...
-                var rc = _context.Syscall.ReplyAndReceive(out int signaledIndex, handles.AsSpan(0, handleCount), replyTargetHandle, 1000000L);
+                var (rc, signaledIndex) = await _context.Syscall.ReplyAndReceive( handles, replyTargetHandle, 1000000L);
 
                 thread.HandlePostSyscall();
 
@@ -176,7 +172,8 @@ namespace Ryujinx.HLE.HOS.Services
                     if (rc == Result.Success)
                     {
                         // We got a new connection, accept the session to allow servicing future requests.
-                        if (_context.Syscall.AcceptSession(out int serverSessionHandle, handles[signaledIndex]) == Result.Success)
+                        var result = _context.Syscall.AcceptSession(out int serverSessionHandle, handles[signaledIndex]);
+                        if (result == Result.Success)
                         {
                             IpcService obj = _ports[handles[signaledIndex]].Invoke();
 
@@ -189,7 +186,7 @@ namespace Ryujinx.HLE.HOS.Services
                     _selfProcess.CpuMemory.Write(messagePtr + 0x8, heapAddr | ((ulong)PointerBufferSize << 48));
                 }
 
-                ArrayPool<int>.Shared.Return(handles);
+                // ArrayPool<int>.Shared.Return(handles);
             }
 
             Dispose();

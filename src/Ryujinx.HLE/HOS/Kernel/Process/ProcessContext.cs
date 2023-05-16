@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Cpu;
 using Ryujinx.Memory;
 using System;
+using System.Threading.Tasks;
 
 namespace Ryujinx.HLE.HOS.Kernel.Process
 {
@@ -18,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             return new ProcessExecutionContext();
         }
 
-        public void Execute(IExecutionContext context, ulong codeAddress)
+        public Task Execute(IExecutionContext context, ulong codeAddress)
         {
             throw new NotSupportedException();
         }

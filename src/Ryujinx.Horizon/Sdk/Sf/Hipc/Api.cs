@@ -31,15 +31,13 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 
         private static Result ReceiveImpl(int sessionHandle, Span<byte> messageBuffer)
         {
-            Span<int> handles = stackalloc int[1];
-
-            handles[0] = sessionHandle;
+            int[] handles = { sessionHandle };
 
             var tlsSpan = HorizonStatic.AddressSpace.GetSpan(HorizonStatic.ThreadContext.TlsAddress, TlsMessageBufferSize);
 
             if (messageBuffer == tlsSpan)
             {
-                return HorizonStatic.Syscall.ReplyAndReceive(out _, handles, 0, -1L);
+                return HorizonStatic.Syscall.ReplyAndReceive(handles, 0, -1L).GetAwaiter().GetResult().Item1;
             }
             else
             {
@@ -62,7 +60,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 
             if (messageBuffer == tlsSpan)
             {
-                return HorizonStatic.Syscall.ReplyAndReceive(out _, ReadOnlySpan<int>.Empty, sessionHandle, 0);
+                return HorizonStatic.Syscall.ReplyAndReceive(Array.Empty<int>(), sessionHandle, 0).GetAwaiter().GetResult().Item1;
             }
             else
             {

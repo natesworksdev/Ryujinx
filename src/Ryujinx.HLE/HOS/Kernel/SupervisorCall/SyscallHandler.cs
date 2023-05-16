@@ -1,5 +1,6 @@
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using System.Threading.Tasks;
 
 namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 {
@@ -12,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             _context = context;
         }
 
-        public void SvcCall(IExecutionContext context, ulong address, int id)
+        public async Task SvcCall(IExecutionContext context, ulong address, int id)
         {
             KThread currentThread = KernelStatic.GetCurrentThread();
 
@@ -31,11 +32,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             if (context.IsAarch32)
             {
-                SyscallDispatch.Dispatch32(_context.Syscall, context, id);
+                await SyscallDispatch.Dispatch32(_context.Syscall, context, id);
             }
             else
             {
-                SyscallDispatch.Dispatch64(_context.Syscall, context, id);
+                await SyscallDispatch.Dispatch64(_context.Syscall, context, id);
             }
 
             currentThread.HandlePostSyscall();

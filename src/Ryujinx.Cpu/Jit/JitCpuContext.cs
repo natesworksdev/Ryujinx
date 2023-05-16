@@ -1,5 +1,6 @@
 ﻿using ARMeilleure.Memory;
 using ARMeilleure.Translation;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Cpu.Jit
 {
@@ -27,9 +28,10 @@ namespace Ryujinx.Cpu.Jit
         }
 
         /// <inheritdoc/>
-        public void Execute(IExecutionContext context, ulong address)
+        public async Task Execute(IExecutionContext context, ulong address)
         {
             _translator.Execute(((JitExecutionContext)context).Impl, address);
+            await Task.Yield(); // TODO: look into how we could have jitted syscalls slot into 
         }
 
         /// <inheritdoc/>

@@ -1,31 +1,27 @@
 ﻿using Ryujinx.Horizon.Common;
 using Ryujinx.Memory;
 using System;
+using System.Threading;
 
 namespace Ryujinx.Horizon
 {
-    static class HorizonStatic
+    public static class HorizonStatic
     {
-        [ThreadStatic]
-        private static HorizonOptions _options;
+        private static AsyncLocal<HorizonOptions> _options = new AsyncLocal<HorizonOptions>();
 
-        [ThreadStatic]
-        private static ISyscallApi _syscall;
+        private static AsyncLocal<ISyscallApi> _syscall = new AsyncLocal<ISyscallApi>();
 
-        [ThreadStatic]
-        private static IVirtualMemoryManager _addressSpace;
+        private static AsyncLocal<IVirtualMemoryManager> _addressSpace = new AsyncLocal<IVirtualMemoryManager>();
 
-        [ThreadStatic]
-        private static IThreadContext _threadContext;
+        private static AsyncLocal<IThreadContext> _threadContext = new AsyncLocal<IThreadContext>();
 
-        [ThreadStatic]
-        private static int _threadHandle;
+        private static AsyncLocal<int> _threadHandle = new AsyncLocal<int>();
 
-        public static HorizonOptions        Options             => _options;
-        public static ISyscallApi           Syscall             => _syscall;
-        public static IVirtualMemoryManager AddressSpace        => _addressSpace;
-        public static IThreadContext        ThreadContext       => _threadContext;
-        public static int                   CurrentThreadHandle => _threadHandle;
+        public static HorizonOptions        Options             => _options.Value;
+        public static ISyscallApi           Syscall             => _syscall.Value;
+        public static IVirtualMemoryManager AddressSpace        => _addressSpace.Value;
+        public static IThreadContext        ThreadContext       => _threadContext.Value;
+        public static int                   CurrentThreadHandle => _threadHandle.Value;
 
         public static void Register(
             HorizonOptions        options,
@@ -34,11 +30,11 @@ namespace Ryujinx.Horizon
             IThreadContext        threadContext,
             int                   threadHandle)
         {
-            _options       = options;
-            _syscall       = syscallApi;
-            _addressSpace  = addressSpace;
-            _threadContext = threadContext;
-            _threadHandle  = threadHandle;
+            _options.Value       = options;
+            _syscall.Value       = syscallApi;
+            _addressSpace.Value  = addressSpace;
+            _threadContext.Value = threadContext;
+            _threadHandle.Value  = threadHandle;
         }
     }
 }

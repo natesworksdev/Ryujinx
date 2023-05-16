@@ -1,10 +1,12 @@
-﻿using Ryujinx.Horizon.LogManager.Ipc;
+﻿using Ryujinx.Common.Logging;
+using Ryujinx.Horizon.LogManager.Ipc;
 using Ryujinx.Horizon.Sdk.Sf.Hipc;
 using Ryujinx.Horizon.Sdk.Sm;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Horizon.LogManager
 {
-    class LmIpcServer
+    public class LmIpcServer: IService
     {
         private const int LogMaxSessionsCount = 42;
 
@@ -18,21 +20,24 @@ namespace Ryujinx.Horizon.LogManager
         private SmApi         _sm;
         private ServerManager _serverManager;
 
-        public void Initialize()
+        public async Task Initialize()
         {
             HeapAllocator allocator = new();
 
+            Logger.Info?.Print(LogClass.Kernel, "Creating SmAPi");
             _sm = new SmApi();
-            _sm.Initialize().AbortOnFailure();
+            Logger.Info?.Print(LogClass.Kernel, "Initializing");
+            (await _sm.Initialize()).AbortOnFailure();
+            Logger.Info?.Print(LogClass.Kernel, "Post Initializing");
 
             _serverManager = new ServerManager(allocator, _sm, MaxPortsCount, _logManagerOptions, LogMaxSessionsCount);
-
+            Logger.Info?.Print(LogClass.Kernel, "Registering");
             _serverManager.RegisterObjectForServer(new LogService(), ServiceName.Encode("lm"), LogMaxSessionsCount);
         }
 
-        public void ServiceRequests()
+        public async Task ServiceRequests()
         {
-            _serverManager.ServiceRequests();
+            await _serverManager.ServiceRequests();
         }
 
         public void Shutdown()

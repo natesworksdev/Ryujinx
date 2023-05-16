@@ -3,6 +3,7 @@ using Ryujinx.Horizon.Common;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Ryujinx.HLE.HOS.Kernel.Threading
 {
@@ -15,13 +16,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             _context = context;
         }
 
-        public Result WaitFor(Span<KSynchronizationObject> syncObjs, long timeout, out int handleIndex)
+        public async Task<(Result, int)> WaitFor(KSynchronizationObject[] syncObjs, long timeout)
         {
-            handleIndex = 0;
-
-            Result result = KernelResult.TimedOut;
-
-            _context.CriticalSection.Enter();
+            var handleIndex = 0;
 
             // Check if objects are already signaled before waiting.
             for (int index = 0; index < syncObjs.Length; index++)
@@ -33,110 +30,53 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
                 handleIndex = index;
 
-                _context.CriticalSection.Leave();
-
-                return Result.Success;
+                return (Result.Success, handleIndex);
             }
 
             if (timeout == 0)
             {
-                _context.CriticalSection.Leave();
-
-                return result;
+                return (KernelResult.TimedOut, handleIndex);
             }
 
             KThread currentThread = KernelStatic.GetCurrentThread();
 
             if (currentThread.TerminationRequested)
             {
-                result = KernelResult.ThreadTerminating;
+                return (KernelResult.ThreadTerminating, 0);
             }
-            else if (currentThread.SyncCancelled)
+      
+            // Timeout ns to ms
+            int timeoutMs = (int)(timeout / 1_000_000);
+            
+            async Task YieldAsTask()
             {
-                currentThread.SyncCancelled = false;
-
-                result = KernelResult.Cancelled;
+                await Task.Yield();
             }
-            else
+            
+            // Get tasks of sync objs
+            var tasks = new Task[syncObjs.Length + 2];
+            for (int index = 0; index < syncObjs.Length; index++)
             {
-                LinkedListNode<KThread>[] syncNodesArray = ArrayPool<LinkedListNode<KThread>>.Shared.Rent(syncObjs.Length);
-
-                Span<LinkedListNode<KThread>> syncNodes = syncNodesArray.AsSpan(0, syncObjs.Length);
-
-                for (int index = 0; index < syncObjs.Length; index++)
-                {
-                    syncNodes[index] = syncObjs[index].AddWaitingThread(currentThread);
-                }
-
-                currentThread.WaitingSync   = true;
-                currentThread.SignaledObj   = null;
-                currentThread.ObjSyncResult = result;
-
-                currentThread.Reschedule(ThreadSchedState.Paused);
-
-                if (timeout > 0)
-                {
-                    _context.TimeManager.ScheduleFutureInvocation(currentThread, timeout);
-                }
-
-                _context.CriticalSection.Leave();
-
-                currentThread.WaitingSync = false;
-
-                if (timeout > 0)
-                {
-                    _context.TimeManager.UnscheduleFutureInvocation(currentThread);
-                }
-
-                _context.CriticalSection.Enter();
-
-                result = currentThread.ObjSyncResult;
-
-                handleIndex = -1;
-
-                for (int index = 0; index < syncObjs.Length; index++)
-                {
-                    syncObjs[index].RemoveWaitingThread(syncNodes[index]);
-
-                    if (syncObjs[index] == currentThread.SignaledObj)
-                    {
-                        handleIndex = index;
-                    }
-                }
-
-                ArrayPool<LinkedListNode<KThread>>.Shared.Return(syncNodesArray);
+                tasks[index] = syncObjs[index].WaitSignaled();
             }
-
-            _context.CriticalSection.Leave();
-
-            return result;
-        }
-
-        public void SignalObject(KSynchronizationObject syncObj)
-        {
-            _context.CriticalSection.Enter();
-
-            if (syncObj.IsSignaled())
+            // Add timeout & cancel tasks
+            // TODO: clean this up
+            tasks[syncObjs.Length] = timeoutMs == 0 ? YieldAsTask() : Task.Delay(timeoutMs);
+            tasks[syncObjs.Length + 1] = currentThread.WaitSyncCancel();
+            
+            // Async wait for any task to complete or timeout
+            var task = await Task.WhenAny(tasks);
+            handleIndex = Array.IndexOf(tasks, task);
+            // If timeout task completed first, return timeout
+            if (handleIndex == syncObjs.Length)
             {
-                LinkedListNode<KThread> node = syncObj.WaitingThreads.First;
-
-                while (node != null)
-                {
-                    KThread thread = node.Value;
-
-                    if ((thread.SchedFlags & ThreadSchedState.LowMask) == ThreadSchedState.Paused)
-                    {
-                        thread.SignaledObj   = syncObj;
-                        thread.ObjSyncResult = Result.Success;
-
-                        thread.Reschedule(ThreadSchedState.Running);
-                    }
-
-                    node = node.Next;
-                }
+                return (KernelResult.TimedOut, -1);
+            } else if (handleIndex == syncObjs.Length + 1)
+            {
+                currentThread.ResetCancel();
+                return (KernelResult.Cancelled, -1);
             }
-
-            _context.CriticalSection.Leave();
+            return (Result.Success, handleIndex);
         }
     }
 }

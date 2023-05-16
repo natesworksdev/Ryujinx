@@ -2,10 +2,11 @@
 using Ryujinx.Horizon.Bcat.Types;
 using Ryujinx.Horizon.Sdk.Sf.Hipc;
 using Ryujinx.Horizon.Sdk.Sm;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Horizon.Bcat
 {
-    internal class BcatIpcServer
+    public class BcatIpcServer: IService
     {
         private const int BcatMaxSessionsCount = 8;
         private const int BcatTotalMaxSessionsCount = BcatMaxSessionsCount * 4; 
@@ -20,12 +21,12 @@ namespace Ryujinx.Horizon.Bcat
 
         private static readonly ManagerOptions _bcatManagerOptions = new(PointerBufferSize, MaxDomains, MaxDomainObjects, false);
 
-        internal void Initialize()
+        public async Task Initialize()
         {
             HeapAllocator allocator = new();
 
             _sm = new SmApi();
-            _sm.Initialize().AbortOnFailure();
+            (await _sm.Initialize()).AbortOnFailure();
 
             _serverManager = new BcatServerManager(allocator, _sm, MaxPortsCount, _bcatManagerOptions, BcatTotalMaxSessionsCount);
 
@@ -35,9 +36,9 @@ namespace Ryujinx.Horizon.Bcat
             _serverManager.RegisterServer((int)BcatPortIndex.System,  ServiceName.Encode("bcat:s"), BcatMaxSessionsCount);
         }
 
-        public void ServiceRequests()
+        public async Task ServiceRequests()
         {
-            _serverManager.ServiceRequests();
+            await _serverManager.ServiceRequests();
         }
 
         public void Shutdown()

@@ -4,6 +4,7 @@ using Ryujinx.Horizon.Sdk.Sf.Hipc;
 using Ryujinx.Horizon.Sdk.Sm;
 using Ryujinx.Horizon.Sm.Impl;
 using Ryujinx.Horizon.Sm.Types;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Horizon.Sm
 {
@@ -19,7 +20,7 @@ namespace Ryujinx.Horizon.Sm
 
         private readonly ServiceManager _serviceManager = new();
 
-        public void Main()
+        public async Task Main()
         {
             HorizonStatic.Syscall.ManageNamedPort(out int smHandle, "sm:", SmMaxSessionsCount).AbortOnFailure();
 
@@ -28,7 +29,7 @@ namespace Ryujinx.Horizon.Sm
             _serverManager.RegisterServer((int)SmPortIndex.User, smHandle);
             _serviceManager.RegisterServiceForSelf(out int smmHandle, ServiceName.Encode("sm:m"), SmmMaxSessionsCount).AbortOnFailure();
             _serverManager.RegisterServer((int)SmPortIndex.Manager, smmHandle);
-            _serverManager.ServiceRequests();
+            await _serverManager.ServiceRequests();
         }
     }
 }

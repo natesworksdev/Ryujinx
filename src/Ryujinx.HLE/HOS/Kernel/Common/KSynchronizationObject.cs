@@ -1,35 +1,75 @@
-using Ryujinx.HLE.HOS.Kernel.Threading;
-using System.Collections.Generic;
+using Ryujinx.Horizon.Common;
+using System.Threading.Tasks;
 
 namespace Ryujinx.HLE.HOS.Kernel.Common
 {
+    // TODO: clean this up and disambiguate with KReadableEvent
     class KSynchronizationObject : KAutoObject
     {
-        public LinkedList<KThread> WaitingThreads { get; }
+        private readonly object _lock = new();
+        // TODO: might be inefficient to have a TCS per sync obj
+        private TaskCompletionSource<Result> _tcs = new ();
 
         public KSynchronizationObject(KernelContext context) : base(context)
         {
-            WaitingThreads = new LinkedList<KThread>();
+            lock (_lock)
+            {
+                // _tcs.TrySetResult(Result.Success);
+            }
         }
-
-        public LinkedListNode<KThread> AddWaitingThread(KThread thread)
+        
+        public void Signal()
         {
-            return WaitingThreads.AddLast(thread);
+            Signal(Result.Success);
         }
-
-        public void RemoveWaitingThread(LinkedListNode<KThread> node)
+        
+        public virtual void Signal(Result result)
         {
-            WaitingThreads.Remove(node);
+            lock (_lock)
+            {
+                _tcs.TrySetResult(result);
+            }
         }
-
-        public virtual void Signal()
-        {
-            KernelContext.Synchronization.SignalObject(this);
-        }
-
+        
         public virtual bool IsSignaled()
         {
-            return false;
+            return _tcs.Task.IsCompleted;
+        }
+
+        public virtual Task<Result> WaitSignaled()
+        {
+            return _tcs.Task;
+        }
+
+        public Result Clear()
+        {
+            lock (_lock)
+            {
+                // TODO: review, might not be expected behaviour
+                _tcs.TrySetResult(Result.Success); // Flush existing waiters to avoid deadlock  
+                _tcs = new ();
+                return Result.Success;
+            }
+        }
+
+        public Result ClearIfSignaled()
+        {
+            if (IsSignaled())
+            {
+                return Clear();
+            } else {
+                return KernelResult.InvalidState;
+            }
+            
+            // lock (_lock)
+            // {
+            //     if (!_tcs.Task.IsCompleted)
+            //     {
+            //         return KernelResult.InvalidState;
+            //     }
+            //     _tcs = new TaskCompletionSource<Result>();
+            //     return Result.Success;
+            // }
         }
     }
 }

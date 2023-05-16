@@ -1,5 +1,6 @@
 using ARMeilleure.Memory;
 using ARMeilleure.State;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Cpu.Jit
 {
@@ -93,9 +94,9 @@ namespace Ryujinx.Cpu.Jit
             _exceptionCallbacks.BreakCallback?.Invoke(this, address, imm);
         }
 
-        private void SupervisorCallHandler(ExecutionContext context, ulong address, int imm)
+        private async Task SupervisorCallHandler(ExecutionContext context, ulong address, int imm)
         {
-            _exceptionCallbacks.SupervisorCallback?.Invoke(this, address, imm);
+            await _exceptionCallbacks.SupervisorCallback?.Invoke(this, address, imm);
         }
 
         private void UndefinedHandler(ExecutionContext context, ulong address, int opCode)
