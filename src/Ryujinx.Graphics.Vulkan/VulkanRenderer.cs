@@ -600,6 +600,26 @@ namespace Ryujinx.Graphics.Vulkan
             return new HardwareInfo(GpuVendor, GpuRenderer);
         }
 
+        /// <summary>
+        /// Gets the available Vulkan devices using the default Vulkan API
+        /// object returned by <see cref="Vk.GetApi()"/>
+        /// </summary>
+        /// <returns></returns>
+        public static DeviceInfo[] GetPhysicalDevices()
+        {
+            try
+            {
+                Vk api = Vk.GetApi();
+                return VulkanInitialization.GetSuitablePhysicalDevices(api);
+            }
+            catch (Exception ex)
+            {
+                // If we got an exception here, Vulkan is most likely not supported.
+                Logger.Warning?.PrintMsg(LogClass.Gpu, $"Error querying Vulkan devices: {ex.Message}");
+                return Array.Empty<DeviceInfo>();
+            }
+        }
+
         public static DeviceInfo[] GetPhysicalDevices(Vk api)
         {
             try

@@ -311,17 +311,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             _gpuIds = new List<string>();
             List<string> names = new();
-
-            var devices = Array.Empty<Ryujinx.Graphics.GAL.DeviceInfo>();
-            
-            try
-            {
-                devices = VulkanRenderer.GetPhysicalDevices(Vk.GetApi());
-            }
-            catch (Exception)
-            {
-                // Do nothing
-            }
+            var devices = VulkanRenderer.GetPhysicalDevices();
 
             if (devices.Length == 0)
             {
