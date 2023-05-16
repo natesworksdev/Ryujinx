@@ -609,13 +609,12 @@ namespace Ryujinx.Graphics.Vulkan
         {
             try
             {
-                Vk api = Vk.GetApi();
-                return VulkanInitialization.GetSuitablePhysicalDevices(api);
+                return VulkanInitialization.GetSuitablePhysicalDevices(Vk.GetApi());
             }
             catch (Exception ex)
             {
-                // If we got an exception here, Vulkan is most likely not supported.
-                Logger.Warning?.PrintMsg(LogClass.Gpu, $"Error querying Vulkan devices: {ex.Message}");
+                Logger.Error?.PrintMsg(LogClass.Gpu, $"Error querying Vulkan devices: {ex.Message}");
+
                 return Array.Empty<DeviceInfo>();
             }
         }
