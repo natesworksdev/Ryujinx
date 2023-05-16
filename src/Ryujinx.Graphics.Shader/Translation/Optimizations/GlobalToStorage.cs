@@ -137,6 +137,11 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
             if (result.Found)
             {
+                // We found the storage buffer that is being accessed.
+                // There are two possible paths here, if the operation is simple enough,
+                // we just generate the storage access code inline.
+                // Otherwise, we generate a function call (and the function if necessary).
+
                 Operand offset = result.Offset;
 
                 bool storageAligned = !(config.GpuAccessor.QueryHasUnalignedStorageBuffer() ||
@@ -183,6 +188,11 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             }
             else
             {
+                // Failed to find the storage buffer directly.
+                // Try to walk through Phi chains and find all possible constant buffers where
+                // the base address might be stored.
+                // Generate a helper function that will check all possible storage buffers and use the right one.
+
                 int functionId = GenerateMultiTargetStorageOp(gtsContext, config, block, operation);
 
                 return GenerateCallStorageOp(node, operation, null, functionId);
@@ -253,12 +263,16 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
         private static LinkedListNode<INode> GenerateCallStorageOp(LinkedListNode<INode> node, Operation operation, Operand offset, int functionId)
         {
+            // Generate call to a helper function that will perform the storage buffer operation.
+
             Operand[] sources = new Operand[operation.SourcesCount - 1 + (offset == null ? 2 : 1)];
 
             sources[0] = Const(functionId);
 
             if (offset != null)
             {
+                // If the offset was supplised, we use that and skip the global address.
+
                 sources[1] = offset;
 
                 for (int srcIndex = 2; srcIndex < operation.SourcesCount; srcIndex++)
@@ -268,6 +282,8 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             }
             else
             {
+                // Use the 64-bit global address which is split in 2 32-bit arguments.
+
                 for (int srcIndex = 0; srcIndex < operation.SourcesCount; srcIndex++)
                 {
                     sources[srcIndex + 1] = operation.GetSource(srcIndex);
@@ -381,6 +397,21 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
             Operand globalAddress = operation.GetSource(0);
 
+            if (globalAddress.AsgOp is Operation addOp && addOp.Inst == Instruction.Add)
+            {
+                Operand src1 = addOp.GetSource(0);
+                Operand src2 = addOp.GetSource(1);
+
+                if (src1.Type == OperandType.Constant && src2.Type == OperandType.LocalVariable)
+                {
+                    globalAddress = src2;
+                }
+                else if (src1.Type == OperandType.LocalVariable && src2.Type == OperandType.Constant)
+                {
+                    globalAddress = src1;
+                }
+            }
+
             if (globalAddress.AsgOp is PhiNode phi && visited.Add(phi))
             {
                 phis.Enqueue(phi);
@@ -412,6 +443,11 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             }
 
             targetCbs.Sort();
+
+            if (targetCbs.Count == 0)
+            {
+                config.GpuAccessor.Log($"Failed to find storage buffer for global memory operation \"{operation.Inst}\".");
+            }
 
             if (gtsContext.TryGetFunctionId(operation, isMultiTarget: true, targetCbs, out int functionId))
             {
