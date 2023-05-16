@@ -162,9 +162,9 @@ namespace Ryujinx.Ava
 
             ConfigurationState.Instance.HideCursor.Event += HideCursorState_Changed;
 
-            _topLevel.PointerMoved += TopLevel_PointerEnterOrMoved;
-            _topLevel.PointerEnter += TopLevel_PointerEnterOrMoved;
-            _topLevel.PointerLeave += TopLevel_PointerLeave;
+            _topLevel.PointerMoved   += TopLevel_PointerEnteredOrMoved;
+            _topLevel.PointerEntered += TopLevel_PointerEnteredOrMoved;
+            _topLevel.PointerExited  += TopLevel_PointerExited;
 
             if (OperatingSystem.IsWindows())
             {
@@ -187,7 +187,7 @@ namespace Ryujinx.Ava
             _gpuCancellationTokenSource = new CancellationTokenSource();
         }
 
-        private void TopLevel_PointerEnterOrMoved(object sender, PointerEventArgs e)
+        private void TopLevel_PointerEnteredOrMoved(object sender, PointerEventArgs e)
         {
             if (sender is MainWindow window)
             {
@@ -203,7 +203,7 @@ namespace Ryujinx.Ava
             }
         }
 
-        private void TopLevel_PointerLeave(object sender, PointerEventArgs e)
+        private void TopLevel_PointerExited(object sender, PointerEventArgs e)
         {
             _isCursorInRenderer = false;
         }
@@ -453,9 +453,9 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.Graphics.ScalingFilterLevel.Event  -= UpdateScalingFilterLevel;
             ConfigurationState.Instance.Graphics.AntiAliasing.Event        -= UpdateAntiAliasing;
 
-            _topLevel.PointerMoved -= TopLevel_PointerEnterOrMoved;
-            _topLevel.PointerEnter -= TopLevel_PointerEnterOrMoved;
-            _topLevel.PointerLeave -= TopLevel_PointerLeave;
+            _topLevel.PointerMoved   -= TopLevel_PointerEnteredOrMoved;
+            _topLevel.PointerEntered -= TopLevel_PointerEnteredOrMoved;
+            _topLevel.PointerExited  -= TopLevel_PointerExited;
 
             _gpuCancellationTokenSource.Cancel();
             _gpuCancellationTokenSource.Dispose();
