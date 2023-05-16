@@ -13,7 +13,7 @@ fi
 
 if command -v gamemoderun >/dev/null 2>&1
 then
-    env DOTNET_EnableAlternateStackCheck=1 "$(which gamemoderun)" "$SCRIPT_DIR/$RYUJINX_BIN" "$@"
+    env DOTNET_EnableAlternateStackCheck=1 gamemoderun "$SCRIPT_DIR/$RYUJINX_BIN" "$@"
 else
     env DOTNET_EnableAlternateStackCheck=1 "$SCRIPT_DIR/$RYUJINX_BIN" "$@"
 fi
