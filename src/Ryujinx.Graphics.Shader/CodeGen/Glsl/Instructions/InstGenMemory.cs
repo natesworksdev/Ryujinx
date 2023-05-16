@@ -701,25 +701,34 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             }
         }
 
-        private static string GenerateLoadOrStore(CodeGenContext context, AstOperation operation, bool isStore)
+        public static string GenerateLoadOrStore(CodeGenContext context, AstOperation operation, bool isStore)
         {
             StorageKind storageKind = operation.StorageKind;
 
             string varName;
             AggregateType varType;
             int srcIndex = 0;
-            int inputsCount = isStore ? operation.SourcesCount - 1 : operation.SourcesCount;
+            bool isStoreOrAtomic = operation.Inst == Instruction.Store || operation.Inst.IsAtomic();
+            int inputsCount = isStoreOrAtomic ? operation.SourcesCount - 1 : operation.SourcesCount;
+
+            if (operation.Inst == Instruction.AtomicCompareAndSwap)
+            {
+                inputsCount--;
+            }
 
             switch (storageKind)
             {
                 case StorageKind.ConstantBuffer:
+                case StorageKind.StorageBuffer:
                     if (!(operation.GetSource(srcIndex++) is AstOperand bindingIndex) || bindingIndex.Type != OperandType.Constant)
                     {
                         throw new InvalidOperationException($"First input of {operation.Inst} with {storageKind} storage must be a constant operand.");
                     }
 
                     int binding = bindingIndex.Value;
-                    BufferDefinition buffer = context.Config.Properties.ConstantBuffers[binding];
+                    BufferDefinition buffer = storageKind == StorageKind.ConstantBuffer
+                        ? context.Config.Properties.ConstantBuffers[binding]
+                        : context.Config.Properties.StorageBuffers[binding];
 
                     if (!(operation.GetSource(srcIndex++) is AstOperand fieldIndex) || fieldIndex.Type != OperandType.Constant)
                     {

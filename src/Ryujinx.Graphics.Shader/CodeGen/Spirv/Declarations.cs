@@ -5,6 +5,7 @@ using Ryujinx.Graphics.Shader.Translation;
 using Spv.Generator;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using static Spv.Specification;
@@ -99,7 +100,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
 
             DeclareConstantBuffers(context, context.Config.Properties.ConstantBuffers.Values);
-            DeclareStorageBuffers(context, context.Config.GetStorageBufferDescriptors());
+            DeclareStorageBuffers(context, context.Config.Properties.StorageBuffers.Values);
             DeclareSamplers(context, context.Config.GetTextureDescriptors());
             DeclareImages(context, context.Config.GetImageDescriptors());
             DeclareInputsAndOutputs(context, info);
@@ -128,62 +129,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static void DeclareConstantBuffers(CodeGenContext context, IEnumerable<BufferDefinition> buffers)
         {
-            HashSet<SpvInstruction> decoratedTypes = new HashSet<SpvInstruction>();
+            DeclareBuffers(context, buffers, isBuffer: false);
+        }
 
-            foreach (BufferDefinition buffer in buffers)
-            {
-                int alignment = buffer.Layout == BufferLayout.Std140 ? 16 : 4;
-                int alignmentMask = alignment - 1;
-                int offset = 0;
-
-                SpvInstruction[] structFieldTypes = new SpvInstruction[buffer.Type.Fields.Length];
-                int[] structFieldOffsets = new int[buffer.Type.Fields.Length];
-
-                for (int fieldIndex = 0; fieldIndex < buffer.Type.Fields.Length; fieldIndex++)
-                {
-                    StructureField field = buffer.Type.Fields[fieldIndex];
-                    int fieldSize = (field.Type.GetSizeInBytes() + alignmentMask) & ~alignmentMask;
-
-                    structFieldTypes[fieldIndex] = context.GetType(field.Type, field.ArrayLength);
-                    structFieldOffsets[fieldIndex] = offset;
-
-                    if (field.Type.HasFlag(AggregateType.Array))
-                    {
-                        // We can't decorate the type more than once.
-                        if (decoratedTypes.Add(structFieldTypes[fieldIndex]))
-                        {
-                            context.Decorate(structFieldTypes[fieldIndex], Decoration.ArrayStride, (LiteralInteger)fieldSize);
-                        }
-
-                        offset += fieldSize * field.ArrayLength;
-                    }
-                    else
-                    {
-                        offset += fieldSize;
-                    }
-                }
-
-                var ubStructType = context.TypeStruct(false, structFieldTypes);
-
-                if (decoratedTypes.Add(ubStructType))
-                {
-                    context.Decorate(ubStructType, Decoration.Block);
-
-                    for (int fieldIndex = 0; fieldIndex < structFieldOffsets.Length; fieldIndex++)
-                    {
-                        context.MemberDecorate(ubStructType, fieldIndex, Decoration.Offset, (LiteralInteger)structFieldOffsets[fieldIndex]);
-                    }
-                }
-
-                var ubPointerType = context.TypePointer(StorageClass.Uniform, ubStructType);
-                var ubVariable = context.Variable(ubPointerType, StorageClass.Uniform);
-
-                context.Name(ubVariable, buffer.Name);
-                context.Decorate(ubVariable, Decoration.DescriptorSet, (LiteralInteger)buffer.Set);
-                context.Decorate(ubVariable, Decoration.Binding, (LiteralInteger)buffer.Binding);
-                context.AddGlobalVariable(ubVariable);
-                context.ConstantBuffers.Add(buffer.Binding, ubVariable);
-            }
+        private static void DeclareStorageBuffers(CodeGenContext context, IEnumerable<BufferDefinition> buffers)
+        {
+            DeclareBuffers(context, buffers, isBuffer: true);
         }
 
         private static void DeclareStorageBuffers(CodeGenContext context, BufferDescriptor[] descriptors)
@@ -211,6 +162,80 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             context.AddGlobalVariable(sbVariable);
 
             context.StorageBuffersArray = sbVariable;
+        }
+
+        private static void DeclareBuffers(CodeGenContext context, IEnumerable<BufferDefinition> buffers, bool isBuffer)
+        {
+            HashSet<SpvInstruction> decoratedTypes = new HashSet<SpvInstruction>();
+
+            foreach (BufferDefinition buffer in buffers)
+            {
+                int alignment = buffer.Layout == BufferLayout.Std140 ? 16 : 4;
+                int alignmentMask = alignment - 1;
+                int offset = 0;
+
+                SpvInstruction[] structFieldTypes = new SpvInstruction[buffer.Type.Fields.Length];
+                int[] structFieldOffsets = new int[buffer.Type.Fields.Length];
+
+                for (int fieldIndex = 0; fieldIndex < buffer.Type.Fields.Length; fieldIndex++)
+                {
+                    StructureField field = buffer.Type.Fields[fieldIndex];
+                    int fieldSize = (field.Type.GetSizeInBytes() + alignmentMask) & ~alignmentMask;
+
+                    structFieldTypes[fieldIndex] = context.GetType(field.Type, field.ArrayLength);
+                    structFieldOffsets[fieldIndex] = offset;
+
+                    if (field.Type.HasFlag(AggregateType.Array))
+                    {
+                        // We can't decorate the type more than once.
+                        if (decoratedTypes.Add(structFieldTypes[fieldIndex]))
+                        {
+                            context.Decorate(structFieldTypes[fieldIndex], Decoration.ArrayStride, (LiteralInteger)fieldSize);
+                        }
+
+                        // Zero lengths are assumed to be a "runtime array" (which does not have a explicit length
+                        // specified on the shader, and instead assumes the bound buffer length).
+                        // It is only valid as the last struct element.
+
+                        Debug.Assert(field.ArrayLength > 0 || fieldIndex == buffer.Type.Fields.Length - 1);
+
+                        offset += fieldSize * field.ArrayLength;
+                    }
+                    else
+                    {
+                        offset += fieldSize;
+                    }
+                }
+
+                var structType = context.TypeStruct(false, structFieldTypes);
+
+                if (decoratedTypes.Add(structType))
+                {
+                    context.Decorate(structType, isBuffer ? Decoration.BufferBlock : Decoration.Block);
+
+                    for (int fieldIndex = 0; fieldIndex < structFieldOffsets.Length; fieldIndex++)
+                    {
+                        context.MemberDecorate(structType, fieldIndex, Decoration.Offset, (LiteralInteger)structFieldOffsets[fieldIndex]);
+                    }
+                }
+
+                var pointerType = context.TypePointer(StorageClass.Uniform, structType);
+                var variable = context.Variable(pointerType, StorageClass.Uniform);
+
+                context.Name(variable, buffer.Name);
+                context.Decorate(variable, Decoration.DescriptorSet, (LiteralInteger)buffer.Set);
+                context.Decorate(variable, Decoration.Binding, (LiteralInteger)buffer.Binding);
+                context.AddGlobalVariable(variable);
+
+                if (isBuffer)
+                {
+                    context.StorageBuffers.Add(buffer.Binding, variable);
+                }
+                else
+                {
+                    context.ConstantBuffers.Add(buffer.Binding, variable);
+                }
+            }
         }
 
         private static void DeclareSamplers(CodeGenContext context, TextureDescriptor[] descriptors)

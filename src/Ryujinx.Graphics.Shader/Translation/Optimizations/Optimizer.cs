@@ -7,9 +7,11 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 {
     static class Optimizer
     {
-        public static void RunPass(BasicBlock[] blocks, ShaderConfig config)
+        public static void RunPass(HelperFunctionManager hfm, BasicBlock[] blocks, ShaderConfig config)
         {
             RunOptimizationPasses(blocks, config);
+
+            GlobalToStorage.RunPass(hfm, blocks, config);
 
             int sbUseMask = 0;
             int ubeUseMask = 0;

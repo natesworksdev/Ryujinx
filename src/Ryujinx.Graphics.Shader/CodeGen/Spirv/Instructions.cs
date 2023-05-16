@@ -1849,13 +1849,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             AstOperation operation,
             Func<SpvInstruction, SpvInstruction, SpvInstruction, SpvInstruction, SpvInstruction, SpvInstruction> emitU)
         {
-            var value = context.GetU32(operation.GetSource(2));
+            var value = context.GetU32(operation.GetSource(operation.SourcesCount - 1));
 
             SpvInstruction elemPointer;
 
             if (operation.StorageKind == StorageKind.StorageBuffer)
             {
-                elemPointer = GetStorageElemPointer(context, operation);
+                elemPointer = GetStoragePointer(context, operation, out _);
             }
             else if (operation.StorageKind == StorageKind.SharedMemory)
             {
@@ -1875,14 +1875,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateAtomicMemoryCas(CodeGenContext context, AstOperation operation)
         {
-            var value0 = context.GetU32(operation.GetSource(2));
-            var value1 = context.GetU32(operation.GetSource(3));
+            var value0 = context.GetU32(operation.GetSource(operation.SourcesCount - 2));
+            var value1 = context.GetU32(operation.GetSource(operation.SourcesCount - 1));
 
             SpvInstruction elemPointer;
 
             if (operation.StorageKind == StorageKind.StorageBuffer)
             {
-                elemPointer = GetStorageElemPointer(context, operation);
+                elemPointer = GetStoragePointer(context, operation, out _);
             }
             else if (operation.StorageKind == StorageKind.SharedMemory)
             {
@@ -1902,16 +1902,32 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateLoadOrStore(CodeGenContext context, AstOperation operation, bool isStore)
         {
+            SpvInstruction pointer = GetStoragePointer(context, operation, out AggregateType varType);
+
+            if (isStore)
+            {
+                context.Store(pointer, context.Get(varType, operation.GetSource(operation.SourcesCount - 1)));
+                return OperationResult.Invalid;
+            }
+            else
+            {
+                var result = context.Load(context.GetType(varType), pointer);
+                return new OperationResult(varType, result);
+            }
+        }
+
+        private static SpvInstruction GetStoragePointer(CodeGenContext context, AstOperation operation, out AggregateType varType)
+        {
             StorageKind storageKind = operation.StorageKind;
 
             StorageClass storageClass;
             SpvInstruction baseObj;
-            AggregateType varType;
             int srcIndex = 0;
 
             switch (storageKind)
             {
                 case StorageKind.ConstantBuffer:
+                case StorageKind.StorageBuffer:
                     if (!(operation.GetSource(srcIndex++) is AstOperand bindingIndex) || bindingIndex.Type != OperandType.Constant)
                     {
                         throw new InvalidOperationException($"First input of {operation.Inst} with {storageKind} storage must be a constant operand.");
@@ -1922,12 +1938,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         throw new InvalidOperationException($"Second input of {operation.Inst} with {storageKind} storage must be a constant operand.");
                     }
 
-                    BufferDefinition buffer = context.Config.Properties.ConstantBuffers[bindingIndex.Value];
+                    BufferDefinition buffer = storageKind == StorageKind.ConstantBuffer
+                        ? context.Config.Properties.ConstantBuffers[bindingIndex.Value]
+                        : context.Config.Properties.StorageBuffers[bindingIndex.Value];
                     StructureField field = buffer.Type.Fields[fieldIndex.Value];
 
                     storageClass = StorageClass.Uniform;
                     varType = field.Type & AggregateType.ElementTypeMask;
-                    baseObj = context.ConstantBuffers[bindingIndex.Value];
+                    baseObj = storageKind == StorageKind.ConstantBuffer
+                        ? context.ConstantBuffers[bindingIndex.Value]
+                        : context.StorageBuffers[bindingIndex.Value];
                     break;
 
                 case StorageKind.Input:
@@ -1993,7 +2013,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     throw new InvalidOperationException($"Invalid storage kind {storageKind}.");
             }
 
-            int inputsCount = (isStore ? operation.SourcesCount - 1 : operation.SourcesCount) - srcIndex;
+            bool isStoreOrAtomic = operation.Inst == Instruction.Store || operation.Inst.IsAtomic();
+            int inputsCount = (isStoreOrAtomic ? operation.SourcesCount - 1 : operation.SourcesCount) - srcIndex;
+
+            if (operation.Inst == Instruction.AtomicCompareAndSwap)
+            {
+                inputsCount--;
+            }
+
             SpvInstruction e0, e1, e2;
             SpvInstruction pointer;
 
@@ -2030,16 +2057,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     break;
             }
 
-            if (isStore)
-            {
-                context.Store(pointer, context.Get(varType, operation.GetSource(srcIndex)));
-                return OperationResult.Invalid;
-            }
-            else
-            {
-                var result = context.Load(context.GetType(varType), pointer);
-                return new OperationResult(varType, result);
-            }
+            return pointer;
         }
 
         private static SpvInstruction GetScalarInput(CodeGenContext context, IoVariable ioVariable)

@@ -104,6 +104,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
 
             DeclareConstantBuffers(context, context.Config.Properties.ConstantBuffers.Values);
+            DeclareStorageBuffers(context, context.Config.Properties.StorageBuffers.Values);
 
             var sBufferDescriptors = context.Config.GetStorageBufferDescriptors();
             if (sBufferDescriptors.Length != 0)
@@ -357,6 +358,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareConstantBuffers(CodeGenContext context, IEnumerable<BufferDefinition> buffers)
         {
+            DeclareBuffers(context, buffers, "uniform");
+        }
+
+        private static void DeclareStorageBuffers(CodeGenContext context, IEnumerable<BufferDefinition> buffers)
+        {
+            DeclareBuffers(context, buffers, "buffer");
+        }
+
+        private static void DeclareBuffers(CodeGenContext context, IEnumerable<BufferDefinition> buffers, string declType)
+        {
             foreach (BufferDefinition buffer in buffers)
             {
                 string layout = buffer.Layout switch
@@ -365,7 +376,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     _ => "std430"
                 };
 
-                context.AppendLine($"layout (binding = {buffer.Binding}, {layout}) uniform _{buffer.Name}");
+                context.AppendLine($"layout (binding = {buffer.Binding}, {layout}) {declType} _{buffer.Name}");
                 context.EnterScope();
 
                 foreach (StructureField field in buffer.Type.Fields)
@@ -373,9 +384,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     if (field.Type.HasFlag(AggregateType.Array))
                     {
                         string typeName = GetVarTypeName(context, field.Type & ~AggregateType.Array);
-                        string arraySize = field.ArrayLength.ToString(CultureInfo.InvariantCulture);
 
-                        context.AppendLine($"{typeName} {field.Name}[{arraySize}];");
+                        if (field.ArrayLength > 0)
+                        {
+                            string arraySize = field.ArrayLength.ToString(CultureInfo.InvariantCulture);
+
+                            context.AppendLine($"{typeName} {field.Name}[{arraySize}];");
+                        }
+                        else
+                        {
+                            context.AppendLine($"{typeName} {field.Name}[];");
+                        }
                     }
                     else
                     {

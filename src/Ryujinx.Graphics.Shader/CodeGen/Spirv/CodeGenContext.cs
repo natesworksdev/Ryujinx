@@ -24,6 +24,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         public int InputVertices { get; }
 
         public Dictionary<int, Instruction> ConstantBuffers { get; } = new Dictionary<int, Instruction>();
+        public Dictionary<int, Instruction> StorageBuffers { get; } = new Dictionary<int, Instruction>();
         public Instruction StorageBuffersArray { get; set; }
         public Instruction LocalMemory { get; set; }
         public Instruction SharedMemory { get; set; }
@@ -308,7 +309,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         {
             if ((type & AggregateType.Array) != 0)
             {
-                return TypeArray(GetType(type & ~AggregateType.Array), Constant(TypeU32(), length));
+                if (length > 0)
+                {
+                    return TypeArray(GetType(type & ~AggregateType.Array), Constant(TypeU32(), length));
+                }
+                else
+                {
+                    return TypeRuntimeArray(GetType(type & ~AggregateType.Array));
+                }
             }
             else if ((type & AggregateType.ElementCountMask) != 0)
             {

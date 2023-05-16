@@ -336,13 +336,10 @@ namespace Ryujinx.Graphics.Shader.Instructions
             int offset,
             bool extended)
         {
-            bool isSmallInt = size < LsSize.B32;
-
             int count = GetVectorCount(size);
+            StorageKind storageKind = GetStorageKind(size);
 
             (Operand addrLow, Operand addrHigh) = Get40BitsAddress(context, new Register(ra, RegisterType.Gpr), extended, offset);
-
-            Operand bitOffset = GetBitOffset(context, addrLow);
 
             for (int index = 0; index < count; index++)
             {
@@ -353,12 +350,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     break;
                 }
 
-                Operand value = context.LoadGlobal(context.IAdd(addrLow, Const(index * 4)), addrHigh);
-
-                if (isSmallInt)
-                {
-                    value = ExtractSmallInt(context, size, bitOffset, value);
-                }
+                Operand value = context.Load(storageKind, context.IAdd(addrLow, Const(index * 4)), addrHigh);
 
                 context.Copy(Register(dest), value);
             }
@@ -445,6 +437,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
 
             int count = GetVectorCount((LsSize)size);
+            StorageKind storageKind = GetStorageKind((LsSize)size);
 
             (Operand addrLow, Operand addrHigh) = Get40BitsAddress(context, new Register(ra, RegisterType.Gpr), extended, offset);
 
@@ -458,19 +451,20 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 Operand addrLowOffset = context.IAdd(addrLow, Const(index * 4));
 
-                if (size == LsSize2.U8 || size == LsSize2.S8)
-                {
-                    context.StoreGlobal8(addrLowOffset, addrHigh, value);
-                }
-                else if (size == LsSize2.U16 || size == LsSize2.S16)
-                {
-                    context.StoreGlobal16(addrLowOffset, addrHigh, value);
-                }
-                else
-                {
-                    context.StoreGlobal(addrLowOffset, addrHigh, value);
-                }
+                context.Store(storageKind, addrLowOffset, addrHigh, value);
             }
+        }
+
+        private static StorageKind GetStorageKind(LsSize size)
+        {
+            return size switch
+            {
+                LsSize.U8 => StorageKind.GlobalMemoryU8,
+                LsSize.S8 => StorageKind.GlobalMemoryS8,
+                LsSize.U16 => StorageKind.GlobalMemoryU16,
+                LsSize.S16 => StorageKind.GlobalMemoryS16,
+                _ => StorageKind.GlobalMemory
+            };
         }
 
         private static int GetVectorCount(LsSize size)
