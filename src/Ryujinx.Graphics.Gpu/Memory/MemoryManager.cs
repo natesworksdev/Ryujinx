@@ -638,6 +638,31 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Translates a GPU virtual address and returns the number of bytes that are mapped after it.
+        /// </summary>
+        /// <param name="va">GPU virtual address to be translated</param>
+        /// <returns>Number of bytes, 0 if unmapped</returns>
+        public ulong GetMappedSize(ulong va)
+        {
+            if (!ValidateAddress(va))
+            {
+                return 0;
+            }
+
+            ulong startVa = va;
+
+            ulong pte = GetPte(va);
+
+            while (pte != PteUnmapped)
+            {
+                va += PageSize - (va & PageMask);
+                pte = GetPte(va);
+            }
+
+            return va - startVa;
+        }
+
+        /// <summary>
         /// Gets the kind of a given memory page.
         /// This might indicate the type of resource that can be allocated on the page, and also texture tiling.
         /// </summary>

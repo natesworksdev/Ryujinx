@@ -356,7 +356,18 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                     SbDescriptor sbDescriptor = _channel.MemoryManager.Physical.Read<SbDescriptor>(sbDescAddress);
 
-                    _channel.BufferManager.SetGraphicsStorageBuffer(stage, sb.Slot, sbDescriptor.PackAddress(), (uint)sbDescriptor.Size, sb.Flags);
+                    uint size;
+                    if (sb.SbCbSlot == 0)
+                    {
+                        // Only trust the SbDescriptor size if it comes from slot 0.
+                        size = (uint)sbDescriptor.Size;
+                    }
+                    else
+                    {
+                        size = (uint)_channel.MemoryManager.GetMappedSize(sbDescriptor.PackAddress());
+                    }
+
+                    _channel.BufferManager.SetGraphicsStorageBuffer(stage, sb.Slot, sbDescriptor.PackAddress(), size, sb.Flags);
                 }
             }
         }
