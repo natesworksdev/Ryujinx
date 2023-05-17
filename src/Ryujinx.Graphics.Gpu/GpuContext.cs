@@ -124,6 +124,8 @@ namespace Ryujinx.Graphics.Gpu
             DeferredActions = new Queue<Action>();
 
             PhysicalMemoryRegistry = new ConcurrentDictionary<ulong, PhysicalMemory>();
+
+            _firstTimestamp = ConvertNanosecondsToTicks((ulong)PerformanceCounter.ElapsedNanoseconds);
         }
 
         /// <summary>
@@ -221,10 +223,6 @@ namespace Ryujinx.Graphics.Gpu
             ulong ticks = ConvertNanosecondsToTicks((ulong)PerformanceCounter.ElapsedNanoseconds);
 
             // Initialize ticks counter to start at 0, instead of the host GPU counter
-            if (_firstTimestamp == 0)
-            {
-                _firstTimestamp = ticks;
-            }
             ticks -= _firstTimestamp;
 
             if (GraphicsConfig.FastGpuTime)
