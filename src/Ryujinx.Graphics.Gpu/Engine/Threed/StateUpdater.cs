@@ -23,7 +23,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public const int PrimitiveRestartStateIndex = 12;
         public const int RenderTargetStateIndex = 27;
 
-        public const ulong MaxUnknownStorageSize = 1048576;
+        private const ulong MaxUnknownStorageSize = 0x100000;
 
         private readonly GpuContext _context;
         private readonly GpuChannel _channel;

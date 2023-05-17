@@ -661,7 +661,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 pte = GetPte(va);
             }
 
-            return va - startVa;
+            return Math.Min(maxSize, va - startVa);
         }
 
         /// <summary>
