@@ -99,6 +99,7 @@ namespace Ryujinx.Graphics.Gpu
         private bool _pendingSync;
 
         private long _modifiedSequence;
+        private ulong _firstTimestamp;
 
         /// <summary>
         /// Creates a new instance of the GPU emulation context.
@@ -218,6 +219,13 @@ namespace Ryujinx.Graphics.Gpu
         public ulong GetTimestamp()
         {
             ulong ticks = ConvertNanosecondsToTicks((ulong)PerformanceCounter.ElapsedNanoseconds);
+
+            // Initialize ticks counter to start at 0, instead of the host GPU counter
+            if (_firstTimestamp == 0)
+            {
+                _firstTimestamp = ticks;
+            }
+            ticks -= _firstTimestamp;
 
             if (GraphicsConfig.FastGpuTime)
             {
