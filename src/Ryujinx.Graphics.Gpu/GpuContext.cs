@@ -222,7 +222,7 @@ namespace Ryujinx.Graphics.Gpu
         {
             ulong ticks = ConvertNanosecondsToTicks((ulong)PerformanceCounter.ElapsedNanoseconds);
 
-            // Initialize ticks counter to start at 0, instead of the host GPU counter
+            // Initialize ticks counter to start at 0, instead of host value
             ticks -= _firstTimestamp;
 
             if (GraphicsConfig.FastGpuTime)
