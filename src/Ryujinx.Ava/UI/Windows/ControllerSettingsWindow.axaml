@@ -73,7 +73,6 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                 </Grid>
-
                 <!-- Profile Selection -->
                 <Grid
                     Grid.Column="2"
@@ -183,7 +182,6 @@
                             Height="20"/>
                     </Button>
                 </Grid>
-
                 <!-- Controller Type -->
                 <Grid
                     Grid.Column="2"
@@ -214,7 +212,6 @@
                 </Grid>
             </Grid>
         </StackPanel>
-
         <!-- Button / JoyStick Settings -->
         <Grid
             Name="SettingButtons"
@@ -225,7 +222,6 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-
             <!-- Left Controls -->
             <StackPanel
                 Orientation="Vertical"
@@ -238,7 +234,9 @@
                     IsVisible="{Binding IsLeft}"
                     MinHeight="90"
                     CornerRadius="5">
-                    <Grid Margin="10" HorizontalAlignment="Stretch">
+                    <Grid
+                        Margin="10"
+                        HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition />
                             <ColumnDefinition />
@@ -304,17 +302,18 @@
                     IsVisible="{Binding IsLeft}"
                     Margin="0,5,0,0"
                     CornerRadius="5">
-                    <StackPanel Margin="10" Orientation="Vertical">
+                    <StackPanel
+                        Margin="10"
+                        Orientation="Vertical">
                         <TextBlock
                             Margin="0,0,0,10"
                             HorizontalAlignment="Center"
                             Text="{locale:Locale ControllerSettingsLStick}" />
-
-                        <!--  Left Joystick Keyboard -->
+                        <!-- Left Joystick Keyboard -->
                         <StackPanel
                             IsVisible="{Binding !IsController}"
                             Orientation="Vertical">
-                            <!--  Left Joystick Button -->
+                            <!-- Left Joystick Button -->
                             <StackPanel
                                 Margin="0,0,0,4"
                                 Orientation="Horizontal">
@@ -331,7 +330,6 @@
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
-
                             <!-- Left Joystick Up -->
                             <StackPanel
                                 Margin="0,0,0,4"
@@ -349,7 +347,6 @@
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
-
                             <!-- Left Joystick Down -->
                             <StackPanel
                                 Margin="0,0,0,4"
@@ -367,8 +364,7 @@
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
-
-                            <!--  Left Joystick Left  -->
+                            <!-- Left Joystick Left -->
                             <StackPanel
                                 Margin="0,0,0,4"
                                 Orientation="Horizontal">
@@ -385,8 +381,7 @@
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
-
-                            <!--  Left Joystick Right  -->
+                            <!-- Left Joystick Right -->
                             <StackPanel
                                 Margin="0,0,0,4"
                                 Orientation="Horizontal">
@@ -404,12 +399,11 @@
                                 </ToggleButton>
                             </StackPanel>
                         </StackPanel>
-
-                        <!--  Left Joystick Controller  -->
+                        <!-- Left Joystick Controller -->
                         <StackPanel
                             IsVisible="{Binding IsController}"
                             Orientation="Vertical">
-                            <!--  Left Joystick Button  -->
+                            <!-- Left Joystick Button -->
                             <StackPanel
                                 Orientation="Horizontal">
                                 <TextBlock
@@ -425,8 +419,7 @@
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
-
-                            <!--  Left Joystick Stick  -->
+                            <!-- Left Joystick Stick -->
                             <StackPanel
                                 Margin="0,4,0,4"
                                 Orientation="Horizontal">
@@ -443,7 +436,9 @@
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
-                            <Separator Margin="0,8,0,8" Height="1" />
+                            <Separator
+                                Margin="0,8,0,8"
+                                Height="1" />
                             <CheckBox IsChecked="{Binding Configuration.LeftInvertStickX}">
                                 <TextBlock Text="{locale:Locale ControllerSettingsStickInvertXAxis}" />
                             </CheckBox>
@@ -453,7 +448,9 @@
                             <CheckBox IsChecked="{Binding Configuration.LeftRotate90}">
                                 <TextBlock Text="{locale:Locale ControllerSettingsRotate90}" />
                             </CheckBox>
-                            <Separator Margin="0,8,0,8" Height="1" />
+                            <Separator
+                                Margin="0,8,0,8"
+                                Height="1" />
                             <StackPanel Orientation="Vertical">
                                 <TextBlock
                                     HorizontalAlignment="Center"
@@ -505,7 +502,9 @@
                     IsVisible="{Binding IsLeft}"
                     Margin="0,5,0,0"
                     CornerRadius="5">
-                    <StackPanel Margin="10" Orientation="Vertical">
+                    <StackPanel
+                        Margin="10"
+                        Orientation="Vertical">
                         <TextBlock
                             Margin="0,0,0,10"
                             HorizontalAlignment="Center"
@@ -522,14 +521,12 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsDPadUp}"
                                     TextAlignment="Center" />
-                                <ToggleButton
-                                    HorizontalAlignment="Stretch">
+                                <ToggleButton>
                                     <TextBlock
                                         Text="{Binding Configuration.DpadUp, Mode=TwoWay, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
-
                             <!-- Left DPad Down -->
                             <StackPanel
                                 Margin="0,0,0,4"
@@ -541,14 +538,12 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsDPadDown}"
                                     TextAlignment="Center" />
-                                <ToggleButton
-                                    HorizontalAlignment="Stretch">
+                                <ToggleButton>
                                     <TextBlock
                                         Text="{Binding Configuration.DpadDown, Mode=TwoWay, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
-
                             <!-- Left DPad Left -->
                             <StackPanel
                                 Margin="0,0,0,4"
@@ -560,14 +555,12 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsDPadLeft}"
                                     TextAlignment="Center" />
-                                <ToggleButton
-                                    HorizontalAlignment="Stretch">
+                                <ToggleButton>
                                     <TextBlock
                                         Text="{Binding Configuration.DpadLeft, Mode=TwoWay, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
-
                             <!-- Left DPad Right -->
                             <StackPanel
                                 Margin="0,0,0,4"
@@ -579,8 +572,7 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsDPadRight}"
                                     TextAlignment="Center" />
-                                <ToggleButton
-                                    HorizontalAlignment="Stretch">
+                                <ToggleButton>
                                     <TextBlock
                                         Text="{Binding Configuration.DpadRight, Mode=TwoWay, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
@@ -590,7 +582,6 @@
                     </StackPanel>
                 </Border>
             </StackPanel>
-
             <!-- Triggers & Side Buttons -->
             <StackPanel
                 Grid.Column="1"
@@ -695,7 +686,6 @@
                         </StackPanel>
                     </StackPanel>
                 </Border>
-
                 <!-- Controller Picture -->
                 <Image
                     Margin="0,10,0,0"
@@ -703,7 +693,6 @@
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Source="{Binding Image}" />
-
                 <!-- Motion + Rumble -->
                 <StackPanel
                     Margin="0,10,0,0"
@@ -753,14 +742,16 @@
                                 IsChecked="{Binding Configuration.EnableRumble, Mode=TwoWay}">
                                 <TextBlock Text="{locale:Locale ControllerSettingsRumble}" />
                             </CheckBox>
-                            <Button Margin="10" Grid.Column="1" Command="{Binding ShowRumbleConfig}">
+                            <Button
+                                Margin="10"
+                                Grid.Column="1"
+                                Command="{Binding ShowRumbleConfig}">
                                 <TextBlock Text="{locale:Locale ControllerSettingsConfigureGeneral}" />
                             </Button>
                         </Grid>
                     </Border>
                 </StackPanel>
             </StackPanel>
-
             <!-- Right Controls -->
             <StackPanel
                 Orientation="Vertical"
@@ -773,7 +764,9 @@
                     IsVisible="{Binding IsRight}"
                     MinHeight="90"
                     CornerRadius="5">
-                    <Grid Margin="10" HorizontalAlignment="Stretch">
+                    <Grid
+                        Margin="10"
+                        HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition />
                             <ColumnDefinition />
@@ -850,7 +843,8 @@
                             Margin="0,0,0,10"
                             HorizontalAlignment="Center"
                             Text="{locale:Locale ControllerSettingsButtons}" />
-                        <StackPanel Orientation="Vertical">
+                        <StackPanel
+                            Orientation="Vertical">
                             <!-- Right Buttons A -->
                             <StackPanel
                                 Margin="0,0,0,4"
@@ -935,12 +929,11 @@
                             Margin="0,0,0,10"
                             HorizontalAlignment="Center"
                             Text="{locale:Locale ControllerSettingsRStick}" />
-
-                        <!--  Right Joystick Keyboard  -->
+                        <!-- Right Joystick Keyboard -->
                         <StackPanel
                             IsVisible="{Binding !IsController}"
                             Orientation="Vertical">
-                            <!--  Right Joystick Button  -->
+                            <!-- Right Joystick Button -->
                             <StackPanel
                                 Margin="0,0,0,4"
                                 Orientation="Horizontal">
@@ -957,8 +950,7 @@
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
-
-                            <!--  Right Joystick Up  -->
+                            <!-- Right Joystick Up -->
                             <StackPanel
                                 Margin="0,0,0,4"
                                 Orientation="Horizontal">
@@ -975,8 +967,7 @@
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
-
-                            <!--  Right Joystick Down  -->
+                            <!-- Right Joystick Down -->
                             <StackPanel
                                 Margin="0,0,0,4"
                                 Orientation="Horizontal">
@@ -993,8 +984,7 @@
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
-
-                            <!--  Right Joystick Left  -->
+                            <!-- Right Joystick Left -->
                             <StackPanel
                                 Margin="0,0,0,4"
                                 Orientation="Horizontal">
@@ -1011,8 +1001,7 @@
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
-
-                            <!--  Right Joystick Right  -->
+                            <!-- Right Joystick Right -->
                             <StackPanel
                                 Margin="0,0,0,4"
                                 Orientation="Horizontal">
@@ -1030,12 +1019,11 @@
                                 </ToggleButton>
                             </StackPanel>
                         </StackPanel>
-
-                        <!--  Right Joystick Controller  -->
+                        <!-- Right Joystick Controller -->
                         <StackPanel
                             IsVisible="{Binding IsController}"
                             Orientation="Vertical">
-                            <!--  Right Joystick Button  -->
+                            <!-- Right Joystick Button -->
                             <StackPanel
                                 Orientation="Horizontal">
                                 <TextBlock
@@ -1051,9 +1039,7 @@
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
-
-
-                            <!--  Right Joystick Stick  -->
+                            <!-- Right Joystick Stick -->
                             <StackPanel
                                 Margin="0,4,0,4"
                                 Background="{DynamicResource ThemeDarkColor}"
