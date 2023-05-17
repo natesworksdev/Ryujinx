@@ -366,6 +366,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     }
                     else
                     {
+                        // TODO: Use full mapped size and somehow speed up buffer sync.
                         size = (uint)_channel.MemoryManager.GetMappedSize(sbDescriptor.PackAddress(), MaxUnknownStorageSize);
                     }
 
