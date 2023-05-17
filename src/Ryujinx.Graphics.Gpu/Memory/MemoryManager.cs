@@ -641,8 +641,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// Translates a GPU virtual address and returns the number of bytes that are mapped after it.
         /// </summary>
         /// <param name="va">GPU virtual address to be translated</param>
+        /// <param name="maxSize">Maximum size in bytes to scan</param>
         /// <returns>Number of bytes, 0 if unmapped</returns>
-        public ulong GetMappedSize(ulong va)
+        public ulong GetMappedSize(ulong va, ulong maxSize)
         {
             if (!ValidateAddress(va))
             {
@@ -650,10 +651,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
 
             ulong startVa = va;
+            ulong endVa = va + maxSize;
 
             ulong pte = GetPte(va);
 
-            while (pte != PteUnmapped)
+            while (pte != PteUnmapped && va < endVa)
             {
                 va += PageSize - (va & PageMask);
                 pte = GetPte(va);
