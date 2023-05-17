@@ -76,6 +76,7 @@
             Padding="20,5"
             BorderBrush="{DynamicResource ThemeControlBorderColor}"
             BorderThickness="1"
+            CornerRadius="5"
             HorizontalAlignment="Stretch">
             <Grid VerticalAlignment="Top">
                 <Grid.RowDefinitions>
