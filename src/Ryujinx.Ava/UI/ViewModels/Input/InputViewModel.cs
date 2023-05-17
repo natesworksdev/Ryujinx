@@ -29,7 +29,7 @@ using ConfigGamepadInputId = Ryujinx.Common.Configuration.Hid.Controller.Gamepad
 using ConfigStickInputId = Ryujinx.Common.Configuration.Hid.Controller.StickInputId;
 using Key = Ryujinx.Common.Configuration.Hid.Key;
 
-namespace Ryujinx.Ava.UI.ViewModels
+namespace Ryujinx.Ava.UI.ViewModels.Input
 {
     public class InputViewModel : BaseModel, IDisposable
     {

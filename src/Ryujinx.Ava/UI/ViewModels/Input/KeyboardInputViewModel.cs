@@ -1,16 +1,11 @@
 using Avalonia.Svg.Skia;
 using Ryujinx.Ava.UI.Models;
 
-namespace Ryujinx.Ava.UI.ViewModels
+namespace Ryujinx.Ava.UI.ViewModels.Input
 {
     public class KeyboardInputViewModel : BaseModel
     {
         private KeyboardInputConfig _config;
-        private bool _isLeft;
-        private bool _isRight;
-        private bool _showSettings;
-        private SvgImage _image;
-
         public KeyboardInputConfig Config
         {
             get => _config;
@@ -21,6 +16,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        private bool _isLeft;
         public bool IsLeft
         {
             get => _isLeft;
@@ -31,6 +27,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        private bool _isRight;
         public bool IsRight
         {
             get => _isRight;
@@ -41,6 +38,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        private bool _showSettings;
         public bool ShowSettings
         {
             get => _showSettings;
@@ -51,6 +49,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        private SvgImage _image;
         public SvgImage Image
         {
             get => _image;
