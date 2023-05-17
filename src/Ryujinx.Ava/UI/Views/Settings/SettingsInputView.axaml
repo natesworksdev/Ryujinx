@@ -27,7 +27,7 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <views:ControllerInputView
+                    <views:InputView
                         Grid.Row="0"
                         Name="ControllerSettings" />
                     <StackPanel

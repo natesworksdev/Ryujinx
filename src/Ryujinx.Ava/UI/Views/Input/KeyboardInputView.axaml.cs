@@ -4,9 +4,9 @@ using Avalonia.Markup.Xaml;
 
 namespace Ryujinx.Ava.UI.Views.Input
 {
-    public partial class ControllerInputView : UserControl
+    public partial class KeyboardInputView : UserControl
     {
-        public ControllerInputView()
+        public KeyboardInputView()
         {
             InitializeComponent();
         }
