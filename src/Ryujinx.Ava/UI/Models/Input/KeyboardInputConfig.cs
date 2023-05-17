@@ -6,42 +6,11 @@ namespace Ryujinx.Ava.UI.Models.Input
 {
     public class KeyboardInputConfig : BaseModel
     {
-        private Key _leftStickUp;
-        private Key _leftStickDown;
-        private Key _leftStickLeft;
-        private Key _leftStickRight;
-        private Key _leftKeyboardStickButton;
-
-        private Key _rightStickUp;
-        private Key _rightStickDown;
-        private Key _rightStickLeft;
-        private Key _rightStickRight;
-        private Key _rightKeyboardStickButton;
-
-        private Key _buttonA;
-        private Key _buttonB;
-        private Key _buttonX;
-        private Key _buttonY;
-        private Key _buttonR;
-        private Key _rightButtonSl;
-        private Key _rightButtonSr;
-        private Key _buttonZr;
-        private Key _buttonPlus;
-
-        private Key _dpadUp;
-        private Key _dpadDown;
-        private Key _dpadLeft;
-        private Key _dpadRight;
-        private Key _buttonL;
-        private Key _leftButtonSl;
-        private Key _leftButtonSr;
-        private Key _buttonZl;
-        private Key _buttonMinus;
-
         public string Id { get; set; }
         public ControllerType ControllerType { get; set; }
         public PlayerIndex PlayerIndex { get; set; }
 
+        private Key _leftStickUp;
         public Key LeftStickUp
         {
             get => _leftStickUp;
@@ -52,6 +21,7 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
+        private Key _leftStickDown;
         public Key LeftStickDown
         {
             get => _leftStickDown;
@@ -62,6 +32,7 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
+        private Key _leftStickLeft;
         public Key LeftStickLeft
         {
             get => _leftStickLeft;
@@ -72,6 +43,7 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
+        private Key _leftStickRight;
         public Key LeftStickRight
         {
             get => _leftStickRight;
@@ -82,6 +54,7 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
+        private Key _leftKeyboardStickButton;
         public Key LeftKeyboardStickButton
         {
             get => _leftKeyboardStickButton;
@@ -92,6 +65,7 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
+        private Key _rightStickUp;
         public Key RightStickUp
         {
             get => _rightStickUp;
@@ -102,6 +76,7 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
+        private Key _rightStickDown;
         public Key RightStickDown
         {
             get => _rightStickDown;
@@ -112,6 +87,7 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
+        private Key _rightStickLeft;
         public Key RightStickLeft
         {
             get => _rightStickLeft;
@@ -122,6 +98,7 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
+        private Key _rightStickRight;
         public Key RightStickRight
         {
             get => _rightStickRight;
@@ -132,6 +109,7 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
+        private Key _rightKeyboardStickButton;
         public Key RightKeyboardStickButton
         {
             get => _rightKeyboardStickButton;
@@ -142,96 +120,7 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
-        public Key ButtonA
-        {
-            get => _buttonA;
-            set
-            {
-                _buttonA = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public Key ButtonB
-        {
-            get => _buttonB;
-            set
-            {
-                _buttonB = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public Key ButtonX
-        {
-            get => _buttonX;
-            set
-            {
-                _buttonX = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public Key ButtonY
-        {
-            get => _buttonY;
-            set
-            {
-                _buttonY = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public Key ButtonR
-        {
-            get => _buttonR;
-            set
-            {
-                _buttonR = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public Key RightButtonSl
-        {
-            get => _rightButtonSl;
-            set
-            {
-                _rightButtonSl = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public Key RightButtonSr
-        {
-            get => _rightButtonSr;
-            set
-            {
-                _rightButtonSr = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public Key ButtonZr
-        {
-            get => _buttonZr;
-            set
-            {
-                _buttonZr = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public Key ButtonPlus
-        {
-            get => _buttonPlus;
-            set
-            {
-                _buttonPlus = value;
-                OnPropertyChanged();
-            }
-        }
-
+        private Key _dpadUp;
         public Key DpadUp
         {
             get => _dpadUp;
@@ -242,6 +131,7 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
+        private Key _dpadDown;
         public Key DpadDown
         {
             get => _dpadDown;
@@ -252,6 +142,7 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
+        private Key _dpadLeft;
         public Key DpadLeft
         {
             get => _dpadLeft;
@@ -262,6 +153,7 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
+        private Key _dpadRight;
         public Key DpadRight
         {
             get => _dpadRight;
@@ -272,6 +164,7 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
+        private Key _buttonL;
         public Key ButtonL
         {
             get => _buttonL;
@@ -282,6 +175,18 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
+        private Key _buttonMinus;
+        public Key ButtonMinus
+        {
+            get => _buttonMinus;
+            set
+            {
+                _buttonMinus = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private Key _leftButtonSl;
         public Key LeftButtonSl
         {
             get => _leftButtonSl;
@@ -292,6 +197,7 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
+        private Key _leftButtonSr;
         public Key LeftButtonSr
         {
             get => _leftButtonSr;
@@ -302,6 +208,7 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
+        private Key _buttonZl;
         public Key ButtonZl
         {
             get => _buttonZl;
@@ -312,12 +219,101 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
-        public Key ButtonMinus
+        private Key _buttonA;
+        public Key ButtonA
         {
-            get => _buttonMinus;
+            get => _buttonA;
             set
             {
-                _buttonMinus = value;
+                _buttonA = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private Key _buttonB;
+        public Key ButtonB
+        {
+            get => _buttonB;
+            set
+            {
+                _buttonB = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private Key _buttonX;
+        public Key ButtonX
+        {
+            get => _buttonX;
+            set
+            {
+                _buttonX = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private Key _buttonY;
+        public Key ButtonY
+        {
+            get => _buttonY;
+            set
+            {
+                _buttonY = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private Key _buttonR;
+        public Key ButtonR
+        {
+            get => _buttonR;
+            set
+            {
+                _buttonR = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private Key _buttonPlus;
+        public Key ButtonPlus
+        {
+            get => _buttonPlus;
+            set
+            {
+                _buttonPlus = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private Key _rightButtonSl;
+        public Key RightButtonSl
+        {
+            get => _rightButtonSl;
+            set
+            {
+                _rightButtonSl = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private Key _rightButtonSr;
+        public Key RightButtonSr
+        {
+            get => _rightButtonSr;
+            set
+            {
+                _rightButtonSr = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private Key _buttonZr;
+        public Key ButtonZr
+        {
+            get => _buttonZr;
+            set
+            {
+                _buttonZr = value;
                 OnPropertyChanged();
             }
         }
@@ -338,25 +334,25 @@ namespace Ryujinx.Ava.UI.Models.Input
                     RightStickLeft  = keyboardConfig.RightJoyconStick.StickLeft;
                     RightStickRight = keyboardConfig.RightJoyconStick.StickRight;
 
+                    DpadUp        = keyboardConfig.LeftJoycon.DpadUp;
+                    DpadDown      = keyboardConfig.LeftJoycon.DpadDown;
+                    DpadLeft      = keyboardConfig.LeftJoycon.DpadLeft;
+                    DpadRight     = keyboardConfig.LeftJoycon.DpadRight;
+                    ButtonL       = keyboardConfig.LeftJoycon.ButtonL;
+                    ButtonMinus   = keyboardConfig.LeftJoycon.ButtonMinus;
+                    LeftButtonSl  = keyboardConfig.LeftJoycon.ButtonSl;
+                    LeftButtonSr  = keyboardConfig.LeftJoycon.ButtonSr;
+                    ButtonZl      = keyboardConfig.LeftJoycon.ButtonZl;
+
                     ButtonA       = keyboardConfig.RightJoycon.ButtonA;
                     ButtonB       = keyboardConfig.RightJoycon.ButtonB;
                     ButtonX       = keyboardConfig.RightJoycon.ButtonX;
                     ButtonY       = keyboardConfig.RightJoycon.ButtonY;
                     ButtonR       = keyboardConfig.RightJoycon.ButtonR;
+                    ButtonPlus    = keyboardConfig.RightJoycon.ButtonPlus;
                     RightButtonSl = keyboardConfig.RightJoycon.ButtonSl;
                     RightButtonSr = keyboardConfig.RightJoycon.ButtonSr;
                     ButtonZr      = keyboardConfig.RightJoycon.ButtonZr;
-                    ButtonPlus    = keyboardConfig.RightJoycon.ButtonPlus;
-
-                    DpadUp        = keyboardConfig.LeftJoycon.DpadUp;
-                    DpadDown      = keyboardConfig.LeftJoycon.DpadDown;
-                    DpadLeft      = keyboardConfig.LeftJoycon.DpadLeft;
-                    DpadRight     = keyboardConfig.LeftJoycon.DpadRight;
-                    ButtonMinus   = keyboardConfig.LeftJoycon.ButtonMinus;
-                    LeftButtonSl  = keyboardConfig.LeftJoycon.ButtonSl;
-                    LeftButtonSr  = keyboardConfig.LeftJoycon.ButtonSr;
-                    ButtonZl      = keyboardConfig.LeftJoycon.ButtonZl;
-                    ButtonL       = keyboardConfig.LeftJoycon.ButtonL;
                 }
             }
         }
@@ -377,10 +373,10 @@ namespace Ryujinx.Ava.UI.Models.Input
                         DpadLeft = DpadLeft,
                         DpadRight = DpadRight,
                         ButtonL = ButtonL,
+                        ButtonMinus = ButtonMinus,
                         ButtonZl = ButtonZl,
                         ButtonSl = LeftButtonSl,
                         ButtonSr = LeftButtonSr,
-                        ButtonMinus = ButtonMinus
                     },
                 RightJoycon =
                     new RightJoyconCommonConfig<Key>
