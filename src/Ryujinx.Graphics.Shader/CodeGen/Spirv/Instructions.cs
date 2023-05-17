@@ -99,7 +99,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.Load,                     GenerateLoad);
             Add(Instruction.LoadLocal,                GenerateLoadLocal);
             Add(Instruction.LoadShared,               GenerateLoadShared);
-            Add(Instruction.LoadStorage,              GenerateLoadStorage);
             Add(Instruction.Lod,                      GenerateLod);
             Add(Instruction.LogarithmB2,              GenerateLogarithmB2);
             Add(Instruction.LogicalAnd,               GenerateLogicalAnd);
@@ -137,9 +136,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.StoreShared,              GenerateStoreShared);
             Add(Instruction.StoreShared16,            GenerateStoreShared16);
             Add(Instruction.StoreShared8,             GenerateStoreShared8);
-            Add(Instruction.StoreStorage,             GenerateStoreStorage);
-            Add(Instruction.StoreStorage16,           GenerateStoreStorage16);
-            Add(Instruction.StoreStorage8,            GenerateStoreStorage8);
             Add(Instruction.Subtract,                 GenerateSubtract);
             Add(Instruction.SwizzleAdd,               GenerateSwizzleAdd);
             Add(Instruction.TextureSample,            GenerateTextureSample);
@@ -889,14 +885,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             return new OperationResult(AggregateType.U32, value);
         }
 
-        private static OperationResult GenerateLoadStorage(CodeGenContext context, AstOperation operation)
-        {
-            var elemPointer = GetStorageElemPointer(context, operation);
-            var value = context.Load(context.TypeU32(), elemPointer);
-
-            return new OperationResult(AggregateType.U32, value);
-        }
-
         private static OperationResult GenerateLod(CodeGenContext context, AstOperation operation)
         {
             AstTextureOperation texOp = (AstTextureOperation)operation;
@@ -1303,28 +1291,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         private static OperationResult GenerateStoreShared8(CodeGenContext context, AstOperation operation)
         {
             GenerateStoreSharedSmallInt(context, operation, 8);
-
-            return OperationResult.Invalid;
-        }
-
-        private static OperationResult GenerateStoreStorage(CodeGenContext context, AstOperation operation)
-        {
-            var elemPointer = GetStorageElemPointer(context, operation);
-            context.Store(elemPointer, context.Get(AggregateType.U32, operation.GetSource(2)));
-
-            return OperationResult.Invalid;
-        }
-
-        private static OperationResult GenerateStoreStorage16(CodeGenContext context, AstOperation operation)
-        {
-            GenerateStoreStorageSmallInt(context, operation, 16);
-
-            return OperationResult.Invalid;
-        }
-
-        private static OperationResult GenerateStoreStorage8(CodeGenContext context, AstOperation operation)
-        {
-            GenerateStoreStorageSmallInt(context, operation, 8);
 
             return OperationResult.Invalid;
         }
@@ -2086,25 +2052,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             GenerateStoreSmallInt(context, elemPointer, bitOffset, value, bitSize);
         }
 
-        private static void GenerateStoreStorageSmallInt(CodeGenContext context, AstOperation operation, int bitSize)
-        {
-            var i0 = context.Get(AggregateType.S32, operation.GetSource(0));
-            var offset = context.Get(AggregateType.U32, operation.GetSource(1));
-            var value = context.Get(AggregateType.U32, operation.GetSource(2));
-
-            var wordOffset = context.ShiftRightLogical(context.TypeU32(), offset, context.Constant(context.TypeU32(), 2));
-            var bitOffset = context.BitwiseAnd(context.TypeU32(), offset, context.Constant(context.TypeU32(), 3));
-            bitOffset = context.ShiftLeftLogical(context.TypeU32(), bitOffset, context.Constant(context.TypeU32(), 3));
-
-            var sbVariable = context.StorageBuffersArray;
-
-            var i1 = context.Constant(context.TypeS32(), 0);
-
-            var elemPointer = context.AccessChain(context.TypePointer(StorageClass.Uniform, context.TypeU32()), sbVariable, i0, i1, wordOffset);
-
-            GenerateStoreSmallInt(context, elemPointer, bitOffset, value, bitSize);
-        }
-
         private static void GenerateStoreSmallInt(
             CodeGenContext context,
             SpvInstruction elemPointer,
@@ -2189,16 +2136,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                 return context.CompositeExtract(context.GetType(swizzledResultType), vector, (SpvLiteralInteger)componentIndex);
             }
-        }
-
-        private static SpvInstruction GetStorageElemPointer(CodeGenContext context, AstOperation operation)
-        {
-            var sbVariable = context.StorageBuffersArray;
-            var i0 = context.Get(AggregateType.S32, operation.GetSource(0));
-            var i1 = context.Constant(context.TypeS32(), 0);
-            var i2 = context.Get(AggregateType.S32, operation.GetSource(1));
-
-            return context.AccessChain(context.TypePointer(StorageClass.Uniform, context.TypeU32()), sbVariable, i0, i1, i2);
         }
 
         private static OperationResult GenerateUnary(

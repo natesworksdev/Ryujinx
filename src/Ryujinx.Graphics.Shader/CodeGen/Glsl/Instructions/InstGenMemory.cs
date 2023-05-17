@@ -210,17 +210,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             return $"{arrayName}[{offsetExpr}]";
         }
 
-        public static string LoadStorage(CodeGenContext context, AstOperation operation)
-        {
-            IAstNode src1 = operation.GetSource(0);
-            IAstNode src2 = operation.GetSource(1);
-
-            string indexExpr  = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
-            string offsetExpr = GetSoureExpr(context, src2, GetSrcVarType(operation.Inst, 1));
-
-            return GetStorageBufferAccessor(indexExpr, offsetExpr, context.Config.Stage);
-        }
-
         public static string Lod(CodeGenContext context, AstOperation operation)
         {
             AstTextureOperation texOp = (AstTextureOperation)operation;
@@ -324,60 +313,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             string src = TypeConversion.ReinterpretCast(context, src2, srcType, AggregateType.U32);
 
             return $"{HelperFunctionNames.StoreShared8}({offsetExpr}, {src})";
-        }
-
-        public static string StoreStorage(CodeGenContext context, AstOperation operation)
-        {
-            IAstNode src1 = operation.GetSource(0);
-            IAstNode src2 = operation.GetSource(1);
-            IAstNode src3 = operation.GetSource(2);
-
-            string indexExpr  = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
-            string offsetExpr = GetSoureExpr(context, src2, GetSrcVarType(operation.Inst, 1));
-
-            AggregateType srcType = OperandManager.GetNodeDestType(context, src3);
-
-            string src = TypeConversion.ReinterpretCast(context, src3, srcType, AggregateType.U32);
-
-            string sb = GetStorageBufferAccessor(indexExpr, offsetExpr, context.Config.Stage);
-
-            return $"{sb} = {src}";
-        }
-
-        public static string StoreStorage16(CodeGenContext context, AstOperation operation)
-        {
-            IAstNode src1 = operation.GetSource(0);
-            IAstNode src2 = operation.GetSource(1);
-            IAstNode src3 = operation.GetSource(2);
-
-            string indexExpr  = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
-            string offsetExpr = GetSoureExpr(context, src2, GetSrcVarType(operation.Inst, 1));
-
-            AggregateType srcType = OperandManager.GetNodeDestType(context, src3);
-
-            string src = TypeConversion.ReinterpretCast(context, src3, srcType, AggregateType.U32);
-
-            string sb = GetStorageBufferAccessor(indexExpr, offsetExpr, context.Config.Stage);
-
-            return $"{HelperFunctionNames.StoreStorage16}({indexExpr}, {offsetExpr}, {src})";
-        }
-
-        public static string StoreStorage8(CodeGenContext context, AstOperation operation)
-        {
-            IAstNode src1 = operation.GetSource(0);
-            IAstNode src2 = operation.GetSource(1);
-            IAstNode src3 = operation.GetSource(2);
-
-            string indexExpr  = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
-            string offsetExpr = GetSoureExpr(context, src2, GetSrcVarType(operation.Inst, 1));
-
-            AggregateType srcType = OperandManager.GetNodeDestType(context, src3);
-
-            string src = TypeConversion.ReinterpretCast(context, src3, srcType, AggregateType.U32);
-
-            string sb = GetStorageBufferAccessor(indexExpr, offsetExpr, context.Config.Stage);
-
-            return $"{HelperFunctionNames.StoreStorage8}({indexExpr}, {offsetExpr}, {src})";
         }
 
         public static string TextureSample(CodeGenContext context, AstOperation operation)
@@ -832,15 +767,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             }
 
             return varName;
-        }
-
-        private static string GetStorageBufferAccessor(string slotExpr, string offsetExpr, ShaderStage stage)
-        {
-            string sbName = OperandManager.GetShaderStagePrefix(stage);
-
-            sbName += "_" + DefaultNames.StorageNamePrefix;
-
-            return $"{sbName}[{slotExpr}].{DefaultNames.DataName}[{offsetExpr}]";
         }
 
         private static string GetMask(int index)

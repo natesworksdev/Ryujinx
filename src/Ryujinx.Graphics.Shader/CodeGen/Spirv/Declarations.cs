@@ -137,33 +137,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             DeclareBuffers(context, buffers, isBuffer: true);
         }
 
-        private static void DeclareStorageBuffers(CodeGenContext context, BufferDescriptor[] descriptors)
-        {
-            if (descriptors.Length == 0)
-            {
-                return;
-            }
-
-            int setIndex = context.Config.Options.TargetApi == TargetApi.Vulkan ? 1 : 0;
-            int count = descriptors.Max(x => x.Slot) + 1;
-
-            var sbArrayType = context.TypeRuntimeArray(context.TypeU32());
-            context.Decorate(sbArrayType, Decoration.ArrayStride, (LiteralInteger)4);
-            var sbStructType = context.TypeStruct(true, sbArrayType);
-            context.Decorate(sbStructType, Decoration.BufferBlock);
-            context.MemberDecorate(sbStructType, 0, Decoration.Offset, (LiteralInteger)0);
-            var sbStructArrayType = context.TypeArray(sbStructType, context.Constant(context.TypeU32(), count));
-            var sbPointerType = context.TypePointer(StorageClass.Uniform, sbStructArrayType);
-            var sbVariable = context.Variable(sbPointerType, StorageClass.Uniform);
-
-            context.Name(sbVariable, $"{GetStagePrefix(context.Config.Stage)}_s");
-            context.Decorate(sbVariable, Decoration.DescriptorSet, (LiteralInteger)setIndex);
-            context.Decorate(sbVariable, Decoration.Binding, (LiteralInteger)context.Config.FirstStorageBufferBinding);
-            context.AddGlobalVariable(sbVariable);
-
-            context.StorageBuffersArray = sbVariable;
-        }
-
         private static void DeclareBuffers(CodeGenContext context, IEnumerable<BufferDefinition> buffers, bool isBuffer)
         {
             HashSet<SpvInstruction> decoratedTypes = new HashSet<SpvInstruction>();

@@ -661,11 +661,6 @@ namespace Ryujinx.Graphics.Shader.Translation
                 : context.Load(storageKind, (int)ioVariable, arrayIndex, elemIndex);
         }
 
-        public static Operand LoadGlobal(this EmitterContext context, Operand a, Operand b)
-        {
-            return context.Add(Instruction.LoadGlobal, Local(), a, b);
-        }
-
         public static Operand LoadLocal(this EmitterContext context, Operand a)
         {
             return context.Add(Instruction.LoadLocal, Local(), a);
@@ -800,21 +795,6 @@ namespace Ryujinx.Graphics.Shader.Translation
             return invocationId != null
                 ? context.Add(Instruction.Store, storageKind, null, Const((int)ioVariable), invocationId, arrayIndex, elemIndex, value)
                 : context.Add(Instruction.Store, storageKind, null, Const((int)ioVariable), arrayIndex, elemIndex, value);
-        }
-
-        public static Operand StoreGlobal(this EmitterContext context, Operand a, Operand b, Operand c)
-        {
-            return context.Add(Instruction.StoreGlobal, null, a, b, c);
-        }
-
-        public static Operand StoreGlobal16(this EmitterContext context, Operand a, Operand b, Operand c)
-        {
-            return context.Add(Instruction.StoreGlobal16, null, a, b, c);
-        }
-
-        public static Operand StoreGlobal8(this EmitterContext context, Operand a, Operand b, Operand c)
-        {
-            return context.Add(Instruction.StoreGlobal8, null, a, b, c);
         }
 
         public static Operand StoreLocal(this EmitterContext context, Operand a, Operand b)
