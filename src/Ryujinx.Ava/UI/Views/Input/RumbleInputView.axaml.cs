@@ -6,34 +6,34 @@ using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using System.Threading.Tasks;
 
-namespace Ryujinx.Ava.UI.Windows
+namespace Ryujinx.Ava.UI.Views.Input
 {
-    public partial class RumbleSettingsWindow : UserControl
+    public partial class RumbleInputView : UserControl
     {
-        private readonly InputConfiguration<GamepadInputId, StickInputId> _viewmodel;
+        private RumbleInputViewModel ViewModel;
 
-        public RumbleSettingsWindow()
+        public RumbleInputView()
         {
             InitializeComponent();
-            DataContext = _viewmodel;
         }
 
-        public RumbleSettingsWindow(ControllerInputViewModel viewmodel)
+        public RumbleInputView(ControllerInputViewModel viewmodel)
         {
             var config = viewmodel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
 
-            _viewmodel = new InputConfiguration<GamepadInputId, StickInputId>()
+            ViewModel = new RumbleInputViewModel
             {
-                StrongRumble = config.StrongRumble, WeakRumble = config.WeakRumble
+                StrongRumble = config.StrongRumble,
+                WeakRumble = config.WeakRumble
             };
 
             InitializeComponent();
-            DataContext = _viewmodel;
+            DataContext = ViewModel;
         }
 
         public static async Task Show(ControllerInputViewModel viewmodel)
         {
-            RumbleSettingsWindow content = new RumbleSettingsWindow(viewmodel);
+            RumbleInputView content = new RumbleInputView(viewmodel);
 
             ContentDialog contentDialog = new ContentDialog
             {
@@ -43,14 +43,14 @@ namespace Ryujinx.Ava.UI.Windows
                 CloseButtonText = LocaleManager.Instance[LocaleKeys.ControllerSettingsClose],
                 Content = content,
             };
-            
+
             contentDialog.PrimaryButtonClick += (sender, args) =>
             {
                 var config = viewmodel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
-                config.StrongRumble = content._viewmodel.StrongRumble;
-                config.WeakRumble = content._viewmodel.WeakRumble;
+                config.StrongRumble = content.ViewModel.StrongRumble;
+                config.WeakRumble = content.ViewModel.WeakRumble;
             };
-            
+
             await contentDialog.ShowAsync();
         }
     }

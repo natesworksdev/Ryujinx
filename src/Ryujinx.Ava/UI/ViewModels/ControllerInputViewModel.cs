@@ -334,7 +334,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async void ShowRumbleConfig()
         {
-            await RumbleSettingsWindow.Show(this);
+            await RumbleInputView.Show(this);
         }
 
         private void LoadInputDriver()
