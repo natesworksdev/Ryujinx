@@ -339,7 +339,9 @@ namespace Ryujinx.Graphics.Shader.Instructions
             int count = GetVectorCount(size);
             StorageKind storageKind = GetStorageKind(size);
 
-            (Operand addrLow, Operand addrHigh) = Get40BitsAddress(context, new Register(ra, RegisterType.Gpr), extended, offset);
+            (_, Operand addrHigh) = Get40BitsAddress(context, new Register(ra, RegisterType.Gpr), extended, offset);
+
+            Operand srcA = context.Copy(new Operand(new Register(ra, RegisterType.Gpr)));
 
             for (int index = 0; index < count; index++)
             {
@@ -350,7 +352,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     break;
                 }
 
-                Operand value = context.Load(storageKind, context.IAdd(addrLow, Const(index * 4)), addrHigh);
+                Operand value = context.Load(storageKind, context.IAdd(srcA, Const(offset + index * 4)), addrHigh);
 
                 context.Copy(Register(dest), value);
             }
@@ -439,9 +441,9 @@ namespace Ryujinx.Graphics.Shader.Instructions
             int count = GetVectorCount((LsSize)size);
             StorageKind storageKind = GetStorageKind((LsSize)size);
 
-            (Operand addrLow, Operand addrHigh) = Get40BitsAddress(context, new Register(ra, RegisterType.Gpr), extended, offset);
+            (_, Operand addrHigh) = Get40BitsAddress(context, new Register(ra, RegisterType.Gpr), extended, offset);
 
-            Operand bitOffset = GetBitOffset(context, addrLow);
+            Operand srcA = context.Copy(new Operand(new Register(ra, RegisterType.Gpr)));
 
             for (int index = 0; index < count; index++)
             {
@@ -449,7 +451,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 Operand value = Register(isRz ? rd : rd + index, RegisterType.Gpr);
 
-                Operand addrLowOffset = context.IAdd(addrLow, Const(index * 4));
+                Operand addrLowOffset = context.IAdd(srcA, Const(offset + index * 4));
 
                 context.Store(storageKind, addrLowOffset, addrHigh, value);
             }

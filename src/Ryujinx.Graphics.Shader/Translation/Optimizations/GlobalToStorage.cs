@@ -1,6 +1,7 @@
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
@@ -36,11 +37,13 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             }
 
             private readonly List<Entry> _entries;
+            private readonly Dictionary<Operand, Dictionary<uint, SearchResult>> _sharedEntries;
             private readonly HelperFunctionManager _hfm;
 
             public GtsContext(HelperFunctionManager hfm)
             {
                 _entries = new List<Entry>();
+                _sharedEntries = new Dictionary<Operand, Dictionary<uint, SearchResult>>();
                 _hfm = hfm;
             }
 
@@ -86,6 +89,58 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 functionId = -1;
                 return false;
             }
+
+            public void AddSharedMemoryTargetCb(Operand baseOffset, uint targetCb, SearchResult result)
+            {
+                if (!_sharedEntries.TryGetValue(baseOffset, out Dictionary<uint, SearchResult> targetCbs))
+                {
+                    // No entry with this base offset, create a new one.
+
+                    targetCbs = new Dictionary<uint, SearchResult>() { { targetCb, result } };
+
+                    _sharedEntries.Add(baseOffset, targetCbs);
+                }
+                else if (targetCbs.TryGetValue(targetCb, out SearchResult existingResult))
+                {
+                    // If our entry already exists, but does not many the new result,
+                    // just invalidate it since we have multiple different offsets stored
+                    // on the same shared memory address, and this case is not supported right now.
+
+                    if (existingResult.Found &&
+                        (existingResult.Offset != result.Offset ||
+                        existingResult.ConstOffset != result.ConstOffset))
+                    {
+                        targetCbs[targetCb] = SearchResult.NotFound;
+                    }
+                }
+                else
+                {
+                    // An entry for this base offset already exists, but not for the specified
+                    // constant buffer region where the storage buffer base address and size
+                    // comes from.
+
+                    targetCbs.Add(targetCb, result);
+                }
+            }
+
+            public bool TryGetSharedMemoryTargetCb(Operand baseOffset, out SearchResult result)
+            {
+                if (_sharedEntries.TryGetValue(baseOffset, out Dictionary<uint, SearchResult> targetCbs) && targetCbs.Count == 1)
+                {
+                    SearchResult candidateResult = targetCbs.Values.First();
+
+                    if (candidateResult.Found)
+                    {
+                        result = candidateResult;
+
+                        return true;
+                    }
+                }
+
+                result = default;
+
+                return false;
+            }
         }
 
         private struct SearchResult
@@ -129,6 +184,24 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     {
                         node = ReplaceGlobalMemoryWithStorage(gtsContext, config, block, node);
                     }
+                    else if (operation.Inst == Instruction.StoreShared)
+                    {
+                        // The NVIDIA compiler can sometimes use shared memory as temporary
+                        // storage to place the base address and size on, so we need
+                        // to be able to find such information stored in shared memory too.
+
+                        if (TryGetSharedMemoryOffset(operation, out Operand baseOffset))
+                        {
+                            Operand value = operation.GetSource(operation.SourcesCount - 1);
+
+                            var result = FindUniqueBaseAddressCb(gtsContext, block, value);
+                            if (result.Found)
+                            {
+                                uint targetCb = PackCbSlotAndOffset(result.SbCbSlot, result.SbCbOffset);
+                                gtsContext.AddSharedMemoryTargetCb(baseOffset, targetCb, result);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -158,7 +231,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
         {
             Operation operation = node.Value as Operation;
             Operand globalAddress = operation.GetSource(0);
-            SearchResult result = FindUniqueBaseAddressCb(block, globalAddress);
+            SearchResult result = FindUniqueBaseAddressCb(gtsContext, block, globalAddress);
 
             if (result.Found)
             {
@@ -218,7 +291,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 // the base address might be stored.
                 // Generate a helper function that will check all possible storage buffers and use the right one.
 
-                int functionId = GenerateMultiTargetStorageOp(gtsContext, config, block, operation);
+                int functionId = GenerateMultiTargetStorageOp(gtsContext, config, block, operation, node);
 
                 return GenerateCallStorageOp(node, operation, null, functionId);
             }
@@ -414,7 +487,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             return functionId;
         }
 
-        private static int GenerateMultiTargetStorageOp(GtsContext gtsContext, ShaderConfig config, BasicBlock block, Operation operation)
+        private static int GenerateMultiTargetStorageOp(GtsContext gtsContext, ShaderConfig config, BasicBlock block, Operation operation, LinkedListNode<INode> node)
         {
             Queue<PhiNode> phis = new Queue<PhiNode>();
             HashSet<PhiNode> visited = new HashSet<PhiNode>();
@@ -449,7 +522,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     BasicBlock phiBlock = phi.GetBlock(srcIndex);
                     Operand phiSource = phi.GetSource(srcIndex);
 
-                    SearchResult result = FindUniqueBaseAddressCb(phiBlock, phiSource);
+                    SearchResult result = FindUniqueBaseAddressCb(gtsContext, phiBlock, phiSource);
 
                     if (result.Found)
                     {
@@ -471,6 +544,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
             if (targetCbs.Count == 0)
             {
+                node.List.AddBefore(node, new CommentNode("global elimination failed"));
                 config.GpuAccessor.Log($"Failed to find storage buffer for global memory operation \"{operation.Inst}\".");
             }
 
@@ -780,7 +854,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             return oldValue;
         }
 
-        private static SearchResult FindUniqueBaseAddressCb(BasicBlock block, Operand globalAddress)
+        private static SearchResult FindUniqueBaseAddressCb(GtsContext gtsContext, BasicBlock block, Operand globalAddress)
         {
             globalAddress = Utils.FindLastOperation(globalAddress, block);
 
@@ -791,8 +865,20 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
             Operation operation = globalAddress.AsgOp as Operation;
 
-            if (operation == null || operation.Inst != Instruction.Add)
+            if (operation == null)
             {
+                return SearchResult.NotFound;
+            }
+
+            if (operation.Inst != Instruction.Add)
+            {
+                if (operation.Inst == Instruction.LoadShared &&
+                    TryGetSharedMemoryOffset(operation, out Operand sharedBo) &&
+                    gtsContext.TryGetSharedMemoryTargetCb(sharedBo, out SearchResult result))
+                {
+                    return result;
+                }
+
                 return SearchResult.NotFound;
             }
 
@@ -863,6 +949,27 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             }
 
             return SearchResult.NotFound;
+        }
+
+        private static bool TryGetSharedMemoryOffset(Operation operation, out Operand baseOffset)
+        {
+            baseOffset = operation.GetSource(0);
+
+            // The byte offset is right shifted by 2 to get the 32-bit word offset,
+            // so we want to get the byte offset back, since each one of those word
+            // offsets are a new "local variable" which will not match.
+
+            if (baseOffset.AsgOp is Operation shiftRightOp &&
+                shiftRightOp.Inst == Instruction.ShiftRightU32 &&
+                shiftRightOp.GetSource(1).Type == OperandType.Constant &&
+                shiftRightOp.GetSource(1).Value == 2)
+            {
+                baseOffset = shiftRightOp.GetSource(0);
+
+                return baseOffset.Type == OperandType.LocalVariable;
+            }
+
+            return false;
         }
     }
 }
