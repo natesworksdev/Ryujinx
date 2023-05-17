@@ -220,10 +220,8 @@ namespace Ryujinx.Graphics.Gpu
         /// <returns>The current GPU timestamp</returns>
         public ulong GetTimestamp()
         {
-            ulong ticks = ConvertNanosecondsToTicks((ulong)PerformanceCounter.ElapsedNanoseconds);
-
             // Initialize ticks counter to start at 0, instead of host value.
-            ticks -= _firstTimestamp;
+            ulong ticks = ConvertNanosecondsToTicks((ulong)PerformanceCounter.ElapsedNanoseconds) - _firstTimestamp;
 
             if (GraphicsConfig.FastGpuTime)
             {
