@@ -4,7 +4,7 @@
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
+    xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels.Input"
     xmlns:helpers="clr-namespace:Ryujinx.Ava.UI.Helpers"
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch"

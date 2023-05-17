@@ -2,7 +2,7 @@ using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
 
-namespace Ryujinx.Ava.UI.Models
+namespace Ryujinx.Ava.UI.Models.Input
 {
     public class KeyboardInputConfig : BaseModel
     {

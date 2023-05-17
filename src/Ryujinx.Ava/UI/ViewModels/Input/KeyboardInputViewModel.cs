@@ -1,5 +1,5 @@
 using Avalonia.Svg.Skia;
-using Ryujinx.Ava.UI.Models;
+using Ryujinx.Ava.UI.Models.Input;
 
 namespace Ryujinx.Ava.UI.ViewModels.Input
 {

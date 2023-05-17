@@ -4,55 +4,10 @@ using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Controller.Motion;
 using System;
 
-namespace Ryujinx.Ava.UI.Models
+namespace Ryujinx.Ava.UI.Models.Input
 {
     public class ControllerInputConfig : BaseModel
     {
-        private StickInputId _leftJoystick;
-        private bool _leftInvertStickX;
-        private bool _leftInvertStickY;
-        private bool _leftRotate90;
-        private GamepadInputId _leftControllerStickButton;
-
-        private StickInputId _rightJoystick;
-        private bool _rightInvertStickX;
-        private bool _rightInvertStickY;
-        private bool _rightRotate90;
-        private GamepadInputId _rightControllerStickButton;
-
-        private GamepadInputId _buttonA;
-        private GamepadInputId _buttonB;
-        private GamepadInputId _buttonX;
-        private GamepadInputId _buttonY;
-        private GamepadInputId _buttonR;
-        private GamepadInputId _rightButtonSl;
-        private GamepadInputId _rightButtonSr;
-        private GamepadInputId _buttonZr;
-        private GamepadInputId _buttonPlus;
-
-        private GamepadInputId _dpadUp;
-        private GamepadInputId _dpadDown;
-        private GamepadInputId _dpadLeft;
-        private GamepadInputId _dpadRight;
-        private GamepadInputId _buttonL;
-        private GamepadInputId _leftButtonSl;
-        private GamepadInputId _leftButtonSr;
-        private GamepadInputId _buttonZl;
-        private GamepadInputId _buttonMinus;
-
-        private float _deadzoneLeft;
-        private float _deadzoneRight;
-        private float _rangeLeft;
-        private float _rangeRight;
-        private float _triggerThreshold;
-        private double _gyroDeadzone;
-        private int _sensitivity;
-        private bool _enableRumble;
-        private bool _enableMotion;
-        private float _weakRumble;
-        private float _strongRumble;
-        private MotionInputBackendType _motionBackend;
-
         public bool EnableCemuHookMotion { get; set; }
         public string DsuServerHost { get; set; }
         public int DsuServerPort { get; set; }
@@ -64,6 +19,7 @@ namespace Ryujinx.Ava.UI.Models
         public ControllerType ControllerType { get; set; }
         public PlayerIndex PlayerIndex { get; set; }
 
+        private StickInputId _leftJoystick;
         public StickInputId LeftJoystick
         {
             get => _leftJoystick;
@@ -74,6 +30,7 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
+        private bool _leftInvertStickX;
         public bool LeftInvertStickX
         {
             get => _leftInvertStickX;
@@ -84,6 +41,7 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
+        private bool _leftInvertStickY;
         public bool LeftInvertStickY
         {
             get => _leftInvertStickY;
@@ -94,6 +52,7 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
+        private bool _leftRotate90;
         public bool LeftRotate90
         {
             get => _leftRotate90;
@@ -104,6 +63,7 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
+        private GamepadInputId _leftControllerStickButton;
         public GamepadInputId LeftControllerStickButton
         {
             get => _leftControllerStickButton;
@@ -114,6 +74,7 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
+        private StickInputId _rightJoystick;
         public StickInputId RightJoystick
         {
             get => _rightJoystick;
@@ -124,6 +85,7 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
+        private bool _rightInvertStickX;
         public bool RightInvertStickX
         {
             get => _rightInvertStickX;
@@ -134,6 +96,7 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
+        private bool _rightInvertStickY;
         public bool RightInvertStickY
         {
             get => _rightInvertStickY;
@@ -144,6 +107,7 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
+        private bool _rightRotate90;
         public bool RightRotate90
         {
             get => _rightRotate90;
@@ -154,6 +118,7 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
+        private GamepadInputId _rightControllerStickButton;
         public GamepadInputId RightControllerStickButton
         {
             get => _rightControllerStickButton;
@@ -164,96 +129,7 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
-        public GamepadInputId ButtonA
-        {
-            get => _buttonA;
-            set
-            {
-                _buttonA = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public GamepadInputId ButtonB
-        {
-            get => _buttonB;
-            set
-            {
-                _buttonB = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public GamepadInputId ButtonX
-        {
-            get => _buttonX;
-            set
-            {
-                _buttonX = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public GamepadInputId ButtonY
-        {
-            get => _buttonY;
-            set
-            {
-                _buttonY = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public GamepadInputId ButtonR
-        {
-            get => _buttonR;
-            set
-            {
-                _buttonR = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public GamepadInputId RightButtonSl
-        {
-            get => _rightButtonSl;
-            set
-            {
-                _rightButtonSl = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public GamepadInputId RightButtonSr
-        {
-            get => _rightButtonSr;
-            set
-            {
-                _rightButtonSr = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public GamepadInputId ButtonZr
-        {
-            get => _buttonZr;
-            set
-            {
-                _buttonZr = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public GamepadInputId ButtonPlus
-        {
-            get => _buttonPlus;
-            set
-            {
-                _buttonPlus = value;
-                OnPropertyChanged();
-            }
-        }
-
+        private GamepadInputId _dpadUp;
         public GamepadInputId DpadUp
         {
             get => _dpadUp;
@@ -264,6 +140,7 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
+        private GamepadInputId _dpadDown;
         public GamepadInputId DpadDown
         {
             get => _dpadDown;
@@ -274,6 +151,7 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
+        private GamepadInputId _dpadLeft;
         public GamepadInputId DpadLeft
         {
             get => _dpadLeft;
@@ -284,6 +162,7 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
+        private GamepadInputId _dpadRight;
         public GamepadInputId DpadRight
         {
             get => _dpadRight;
@@ -294,6 +173,7 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
+        private GamepadInputId _buttonL;
         public GamepadInputId ButtonL
         {
             get => _buttonL;
@@ -304,36 +184,7 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
-        public GamepadInputId LeftButtonSl
-        {
-            get => _leftButtonSl;
-            set
-            {
-                _leftButtonSl = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public GamepadInputId LeftButtonSr
-        {
-            get => _leftButtonSr;
-            set
-            {
-                _leftButtonSr = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public GamepadInputId ButtonZl
-        {
-            get => _buttonZl;
-            set
-            {
-                _buttonZl = value;
-                OnPropertyChanged();
-            }
-        }
-
+        private GamepadInputId _buttonMinus;
         public GamepadInputId ButtonMinus
         {
             get => _buttonMinus;
@@ -344,6 +195,139 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
+        private GamepadInputId _leftButtonSl;
+        public GamepadInputId LeftButtonSl
+        {
+            get => _leftButtonSl;
+            set
+            {
+                _leftButtonSl = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private GamepadInputId _leftButtonSr;
+        public GamepadInputId LeftButtonSr
+        {
+            get => _leftButtonSr;
+            set
+            {
+                _leftButtonSr = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private GamepadInputId _buttonZl;
+        public GamepadInputId ButtonZl
+        {
+            get => _buttonZl;
+            set
+            {
+                _buttonZl = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private GamepadInputId _buttonA;
+        public GamepadInputId ButtonA
+        {
+            get => _buttonA;
+            set
+            {
+                _buttonA = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private GamepadInputId _buttonB;
+        public GamepadInputId ButtonB
+        {
+            get => _buttonB;
+            set
+            {
+                _buttonB = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private GamepadInputId _buttonX;
+        public GamepadInputId ButtonX
+        {
+            get => _buttonX;
+            set
+            {
+                _buttonX = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private GamepadInputId _buttonY;
+        public GamepadInputId ButtonY
+        {
+            get => _buttonY;
+            set
+            {
+                _buttonY = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private GamepadInputId _buttonR;
+        public GamepadInputId ButtonR
+        {
+            get => _buttonR;
+            set
+            {
+                _buttonR = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private GamepadInputId _buttonPlus;
+        public GamepadInputId ButtonPlus
+        {
+            get => _buttonPlus;
+            set
+            {
+                _buttonPlus = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private GamepadInputId _rightButtonSl;
+        public GamepadInputId RightButtonSl
+        {
+            get => _rightButtonSl;
+            set
+            {
+                _rightButtonSl = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private GamepadInputId _rightButtonSr;
+        public GamepadInputId RightButtonSr
+        {
+            get => _rightButtonSr;
+            set
+            {
+                _rightButtonSr = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private GamepadInputId _buttonZr;
+        public GamepadInputId ButtonZr
+        {
+            get => _buttonZr;
+            set
+            {
+                _buttonZr = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private float _deadzoneLeft;
         public float DeadzoneLeft
         {
             get => _deadzoneLeft;
@@ -355,6 +339,7 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
+        private float _deadzoneRight;
         public float DeadzoneRight
         {
             get => _deadzoneRight;
@@ -366,6 +351,7 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
+        private float _rangeLeft;
         public float RangeLeft
         {
             get => _rangeLeft;
@@ -377,6 +363,7 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
+        private float _rangeRight;
         public float RangeRight
         {
             get => _rangeRight;
@@ -388,6 +375,7 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
+        private float _triggerThreshold;
         public float TriggerThreshold
         {
             get => _triggerThreshold;
@@ -399,17 +387,29 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
-        public int Sensitivity
+        private bool _enableMotion;
+        public bool EnableMotion
         {
-            get => _sensitivity;
+            get => _enableMotion;
             set
             {
-                _sensitivity = value;
-
+                _enableMotion = value;
                 OnPropertyChanged();
             }
         }
 
+        private MotionInputBackendType _motionBackend;
+        public MotionInputBackendType MotionBackend
+        {
+            get => _motionBackend;
+            set
+            {
+                _motionBackend = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private double _gyroDeadzone;
         public double GyroDeadzone
         {
             get => _gyroDeadzone;
@@ -421,16 +421,19 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
-        public MotionInputBackendType MotionBackend
+        private int _sensitivity;
+        public int Sensitivity
         {
-            get => _motionBackend;
+            get => _sensitivity;
             set
             {
-                _motionBackend = value;
+                _sensitivity = value;
+
                 OnPropertyChanged();
             }
         }
 
+        private bool _enableRumble;
         public bool EnableRumble
         {
             get => _enableRumble;
@@ -441,16 +444,7 @@ namespace Ryujinx.Ava.UI.Models
             }
         }
 
-        public bool EnableMotion
-        {
-            get => _enableMotion;
-            set
-            {
-                _enableMotion = value;
-                OnPropertyChanged();
-            }
-        }
-
+        private float _weakRumble;
         public float WeakRumble
         {
             get => _weakRumble;
@@ -460,6 +454,8 @@ namespace Ryujinx.Ava.UI.Models
                 OnPropertyChanged();
             }
         }
+
+        private float _strongRumble;
         public float StrongRumble
         {
             get => _strongRumble;

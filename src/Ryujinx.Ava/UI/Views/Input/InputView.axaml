@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="clr-namespace:Ryujinx.Ava.UI.Models"
     xmlns:views="clr-namespace:Ryujinx.Ava.UI.Views.Input"
-    xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
+    xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels.Input"
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch"
     d:DesignHeight="800"
