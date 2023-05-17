@@ -18,7 +18,7 @@ namespace Ryujinx.Ava.UI.Windows
             DataContext = _viewmodel;
         }
 
-        public RumbleSettingsWindow(ControllerSettingsViewModel viewmodel)
+        public RumbleSettingsWindow(ControllerInputViewModel viewmodel)
         {
             var config = viewmodel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
 
@@ -31,7 +31,7 @@ namespace Ryujinx.Ava.UI.Windows
             DataContext = _viewmodel;
         }
 
-        public static async Task Show(ControllerSettingsViewModel viewmodel)
+        public static async Task Show(ControllerInputViewModel viewmodel)
         {
             RumbleSettingsWindow content = new RumbleSettingsWindow(viewmodel);
 

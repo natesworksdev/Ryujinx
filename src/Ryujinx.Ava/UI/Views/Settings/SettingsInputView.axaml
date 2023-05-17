@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
-    xmlns:window="clr-namespace:Ryujinx.Ava.UI.Windows"
+    xmlns:views="clr-namespace:Ryujinx.Ava.UI.Views.Input"
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     mc:Ignorable="d"
     x:CompileBindings="True"
@@ -28,7 +28,7 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <window:ControllerSettingsWindow
+                    <views:ControllerInputView
                         Grid.Row="0"
                         Name="ControllerSettings" />
                     <StackPanel

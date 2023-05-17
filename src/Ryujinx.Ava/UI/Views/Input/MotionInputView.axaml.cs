@@ -6,23 +6,22 @@ using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using System.Threading.Tasks;
 
-namespace Ryujinx.Ava.UI.Windows
+namespace Ryujinx.Ava.UI.Views.Input
 {
-    public partial class MotionSettingsWindow : UserControl
+    public partial class MotionInputView : UserControl
     {
-        private readonly InputConfiguration<GamepadInputId, StickInputId> _viewmodel;
+        private MotionInputViewModel ViewModel;
 
-        public MotionSettingsWindow()
+        public MotionInputView()
         {
             InitializeComponent();
-            DataContext = _viewmodel;
         }
 
-        public MotionSettingsWindow(ControllerSettingsViewModel viewmodel)
+        public MotionInputView(ControllerInputViewModel viewmodel)
         {
             var config = viewmodel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
 
-            _viewmodel = new InputConfiguration<GamepadInputId, StickInputId>()
+            ViewModel = new MotionInputViewModel
             {
                 Slot = config.Slot,
                 AltSlot = config.AltSlot,
@@ -36,12 +35,12 @@ namespace Ryujinx.Ava.UI.Windows
             };
 
             InitializeComponent();
-            DataContext = _viewmodel;
+            DataContext = ViewModel;
         }
 
-        public static async Task Show(ControllerSettingsViewModel viewmodel)
+        public static async Task Show(ControllerInputViewModel viewmodel)
         {
-            MotionSettingsWindow content = new MotionSettingsWindow(viewmodel);
+            MotionInputView content = new MotionInputView(viewmodel);
 
             ContentDialog contentDialog = new ContentDialog
             {
@@ -54,15 +53,15 @@ namespace Ryujinx.Ava.UI.Windows
             contentDialog.PrimaryButtonClick += (sender, args) =>
             {
                 var config = viewmodel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
-                config.Slot = content._viewmodel.Slot;
-                config.EnableMotion = content._viewmodel.EnableMotion;
-                config.Sensitivity = content._viewmodel.Sensitivity;
-                config.GyroDeadzone = content._viewmodel.GyroDeadzone;
-                config.AltSlot = content._viewmodel.AltSlot;
-                config.DsuServerHost = content._viewmodel.DsuServerHost;
-                config.DsuServerPort = content._viewmodel.DsuServerPort;
-                config.EnableCemuHookMotion = content._viewmodel.EnableCemuHookMotion;
-                config.MirrorInput = content._viewmodel.MirrorInput;
+                config.Slot = content.ViewModel.Slot;
+                config.EnableMotion = content.ViewModel.EnableMotion;
+                config.Sensitivity = content.ViewModel.Sensitivity;
+                config.GyroDeadzone = content.ViewModel.GyroDeadzone;
+                config.AltSlot = content.ViewModel.AltSlot;
+                config.DsuServerHost = content.ViewModel.DsuServerHost;
+                config.DsuServerPort = content.ViewModel.DsuServerPort;
+                config.EnableCemuHookMotion = content.ViewModel.EnableCemuHookMotion;
+                config.MirrorInput = content.ViewModel.MirrorInput;
             };
 
             await contentDialog.ShowAsync();
