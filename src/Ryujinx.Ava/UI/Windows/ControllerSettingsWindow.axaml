@@ -699,7 +699,7 @@
                 <!-- Controller Picture -->
                 <Image
                     Margin="0,10,0,0"
-                    MaxHeight="250"
+                    MaxHeight="300"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Source="{Binding Image}" />
