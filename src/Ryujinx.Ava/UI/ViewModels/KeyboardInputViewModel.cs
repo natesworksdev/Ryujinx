@@ -1,18 +1,17 @@
 using Avalonia.Svg.Skia;
 using Ryujinx.Ava.UI.Models;
-using Ryujinx.Ava.UI.Views.Input;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
-    public class ControllerInputViewModel : BaseModel
+    public class KeyboardInputViewModel : BaseModel
     {
-        private ControllerInputConfig _config;
+        private KeyboardInputConfig _config;
         private bool _isLeft;
         private bool _isRight;
         private bool _showSettings;
         private SvgImage _image;
 
-        public ControllerInputConfig Config
+        public KeyboardInputConfig Config
         {
             get => _config;
             set
@@ -60,16 +59,6 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _image = value;
                 OnPropertyChanged();
             }
-        }
-
-        public async void ShowMotionConfig()
-        {
-            await MotionInputView.Show(this);
-        }
-
-        public async void ShowRumbleConfig()
-        {
-            await RumbleInputView.Show(this);
         }
     }
 }
