@@ -12,7 +12,8 @@ namespace Ryujinx.Ava.UI.Helpers
     internal class KeyValueConverter : IValueConverter
     {
         public static KeyValueConverter Instance = new();
-        internal static readonly Dictionary<Key, LocaleKeys> KeysMap = new()
+
+        private static readonly Dictionary<Key, LocaleKeys> KeysMap = new()
         {
             { Key.Unknown, LocaleKeys.KeyUnknown },
             { Key.ShiftLeft, LocaleKeys.KeyShiftLeft },
@@ -36,32 +37,77 @@ namespace Ryujinx.Ava.UI.Helpers
             { Key.Delete, LocaleKeys.KeyDelete },
             { Key.PageUp, LocaleKeys.KeyPageUp },
             { Key.PageDown, LocaleKeys.KeyPageDown },
+            { Key.Home, LocaleKeys.KeyHome },
+            { Key.End, LocaleKeys.KeyEnd },
+            { Key.CapsLock, LocaleKeys.KeyCapsLock },
+            { Key.ScrollLock, LocaleKeys.KeyScrollLock },
+            { Key.PrintScreen, LocaleKeys.KeyPrintScreen },
+            { Key.Pause, LocaleKeys.KeyPause },
+            { Key.NumLock, LocaleKeys.KeyNumLock },
+            { Key.Clear, LocaleKeys.KeyClear },
+            { Key.Keypad0, LocaleKeys.KeyKeypad0 },
+            { Key.Keypad1, LocaleKeys.KeyKeypad1 },
+            { Key.Keypad2, LocaleKeys.KeyKeypad2 },
+            { Key.Keypad3, LocaleKeys.KeyKeypad3 },
+            { Key.Keypad4, LocaleKeys.KeyKeypad4 },
+            { Key.Keypad5, LocaleKeys.KeyKeypad5 },
+            { Key.Keypad6, LocaleKeys.KeyKeypad6 },
+            { Key.Keypad7, LocaleKeys.KeyKeypad7 },
+            { Key.Keypad8, LocaleKeys.KeyKeypad8 },
+            { Key.Keypad9, LocaleKeys.KeyKeypad9 },
+            { Key.KeypadDivide, LocaleKeys.KeyKeypadDivide },
+            { Key.KeypadMultiply, LocaleKeys.KeyKeypadMultiply },
+            { Key.KeypadSubtract, LocaleKeys.KeyKeypadSubtract },
+            { Key.KeypadAdd, LocaleKeys.KeyKeypadAdd },
+            { Key.KeypadDecimal, LocaleKeys.KeyKeypadDecimal },
+            { Key.KeypadEnter, LocaleKeys.KeyKeypadEnter },
+            { Key.Number0, LocaleKeys.KeyNumber0 },
+            { Key.Number1, LocaleKeys.KeyNumber1 },
+            { Key.Number2, LocaleKeys.KeyNumber2 },
+            { Key.Number3, LocaleKeys.KeyNumber3 },
+            { Key.Number4, LocaleKeys.KeyNumber4 },
+            { Key.Number5, LocaleKeys.KeyNumber5 },
+            { Key.Number6, LocaleKeys.KeyNumber6 },
+            { Key.Number7, LocaleKeys.KeyNumber7 },
+            { Key.Number8, LocaleKeys.KeyNumber8 },
+            { Key.Number9, LocaleKeys.KeyNumber9 },
+            { Key.Tilde, LocaleKeys.KeyTilde },
+            { Key.Grave, LocaleKeys.KeyGrave },
+            { Key.Minus, LocaleKeys.KeyMinus },
+            { Key.Plus, LocaleKeys.KeyPlus },
+            { Key.BracketLeft, LocaleKeys.KeyBracketLeft },
+            { Key.BracketRight, LocaleKeys.KeyBracketRight },
+            { Key.Semicolon, LocaleKeys.KeySemicolon },
+            { Key.Quote, LocaleKeys.KeyQuote },
+            { Key.Comma, LocaleKeys.KeyComma },
+            { Key.Period, LocaleKeys.KeyPeriod },
+            { Key.Slash, LocaleKeys.KeySlash },
+            { Key.BackSlash, LocaleKeys.KeyBackSlash },
+            { Key.Unbound, LocaleKeys.KeyUnbound },
         };
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             string keyString = "";
 
-            if (value != null)
+            if (value is Key key)
             {
-                if (value is Key key)
+                if (KeysMap.TryGetValue(key, out LocaleKeys localeKey))
                 {
-                    if (KeysMap.TryGetValue(key, out LocaleKeys localeKey))
-                    {
-                        keyString = LocaleManager.Instance[localeKey];
-                    }
-                    else
-                    {
-                        keyString = key.ToString();
-                    }
+                    keyString = LocaleManager.Instance[localeKey];
                 }
-                else if (value is GamepadInputId gamepadInputId)
+                else
                 {
-                    keyString = value.ToString();
+                    keyString = key.ToString();
                 }
-                else if (value is StickInputId stickInputId)
-                {   keyString = value.ToString();
-                }
+            }
+            else if (value is GamepadInputId gamepadInputId)
+            {
+                keyString = value.ToString();
+            }
+            else if (value is StickInputId stickInputId)
+            {
+                keyString = value.ToString();
             }
 
             return keyString;
