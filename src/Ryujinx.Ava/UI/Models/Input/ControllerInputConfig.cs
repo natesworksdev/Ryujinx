@@ -474,69 +474,71 @@ namespace Ryujinx.Ava.UI.Models.Input
                 ControllerType = config.ControllerType;
                 PlayerIndex = config.PlayerIndex;
 
-                if (config is StandardControllerInputConfig controllerInput)
+                if (config is not StandardControllerInputConfig controllerInput)
                 {
-                    LeftJoystick               = controllerInput.LeftJoyconStick.Joystick;
-                    LeftInvertStickX           = controllerInput.LeftJoyconStick.InvertStickX;
-                    LeftInvertStickY           = controllerInput.LeftJoyconStick.InvertStickY;
-                    LeftRotate90               = controllerInput.LeftJoyconStick.Rotate90CW;
-                    LeftControllerStickButton  = controllerInput.LeftJoyconStick.StickButton;
+                    return;
+                }
 
-                    RightJoystick              = controllerInput.RightJoyconStick.Joystick;
-                    RightInvertStickX          = controllerInput.RightJoyconStick.InvertStickX;
-                    RightInvertStickY          = controllerInput.RightJoyconStick.InvertStickY;
-                    RightRotate90              = controllerInput.RightJoyconStick.Rotate90CW;
-                    RightControllerStickButton = controllerInput.RightJoyconStick.StickButton;
+                LeftJoystick               = controllerInput.LeftJoyconStick.Joystick;
+                LeftInvertStickX           = controllerInput.LeftJoyconStick.InvertStickX;
+                LeftInvertStickY           = controllerInput.LeftJoyconStick.InvertStickY;
+                LeftRotate90               = controllerInput.LeftJoyconStick.Rotate90CW;
+                LeftControllerStickButton  = controllerInput.LeftJoyconStick.StickButton;
 
-                    DpadUp        = controllerInput.LeftJoycon.DpadUp;
-                    DpadDown      = controllerInput.LeftJoycon.DpadDown;
-                    DpadLeft      = controllerInput.LeftJoycon.DpadLeft;
-                    DpadRight     = controllerInput.LeftJoycon.DpadRight;
-                    ButtonL       = controllerInput.LeftJoycon.ButtonL;
-                    ButtonMinus   = controllerInput.LeftJoycon.ButtonMinus;
-                    LeftButtonSl  = controllerInput.LeftJoycon.ButtonSl;
-                    LeftButtonSr  = controllerInput.LeftJoycon.ButtonSr;
-                    ButtonZl      = controllerInput.LeftJoycon.ButtonZl;
+                RightJoystick              = controllerInput.RightJoyconStick.Joystick;
+                RightInvertStickX          = controllerInput.RightJoyconStick.InvertStickX;
+                RightInvertStickY          = controllerInput.RightJoyconStick.InvertStickY;
+                RightRotate90              = controllerInput.RightJoyconStick.Rotate90CW;
+                RightControllerStickButton = controllerInput.RightJoyconStick.StickButton;
 
-                    ButtonA       = controllerInput.RightJoycon.ButtonA;
-                    ButtonB       = controllerInput.RightJoycon.ButtonB;
-                    ButtonX       = controllerInput.RightJoycon.ButtonX;
-                    ButtonY       = controllerInput.RightJoycon.ButtonY;
-                    ButtonR       = controllerInput.RightJoycon.ButtonR;
-                    ButtonPlus    = controllerInput.RightJoycon.ButtonPlus;
-                    RightButtonSl = controllerInput.RightJoycon.ButtonSl;
-                    RightButtonSr = controllerInput.RightJoycon.ButtonSr;
-                    ButtonZr      = controllerInput.RightJoycon.ButtonZr;
+                DpadUp        = controllerInput.LeftJoycon.DpadUp;
+                DpadDown      = controllerInput.LeftJoycon.DpadDown;
+                DpadLeft      = controllerInput.LeftJoycon.DpadLeft;
+                DpadRight     = controllerInput.LeftJoycon.DpadRight;
+                ButtonL       = controllerInput.LeftJoycon.ButtonL;
+                ButtonMinus   = controllerInput.LeftJoycon.ButtonMinus;
+                LeftButtonSl  = controllerInput.LeftJoycon.ButtonSl;
+                LeftButtonSr  = controllerInput.LeftJoycon.ButtonSr;
+                ButtonZl      = controllerInput.LeftJoycon.ButtonZl;
 
-                    DeadzoneLeft = controllerInput.DeadzoneLeft;
-                    DeadzoneRight = controllerInput.DeadzoneRight;
-                    RangeLeft = controllerInput.RangeLeft;
-                    RangeRight = controllerInput.RangeRight;
-                    TriggerThreshold = controllerInput.TriggerThreshold;
+                ButtonA       = controllerInput.RightJoycon.ButtonA;
+                ButtonB       = controllerInput.RightJoycon.ButtonB;
+                ButtonX       = controllerInput.RightJoycon.ButtonX;
+                ButtonY       = controllerInput.RightJoycon.ButtonY;
+                ButtonR       = controllerInput.RightJoycon.ButtonR;
+                ButtonPlus    = controllerInput.RightJoycon.ButtonPlus;
+                RightButtonSl = controllerInput.RightJoycon.ButtonSl;
+                RightButtonSr = controllerInput.RightJoycon.ButtonSr;
+                ButtonZr      = controllerInput.RightJoycon.ButtonZr;
 
-                    if (controllerInput.Motion != null)
+                DeadzoneLeft = controllerInput.DeadzoneLeft;
+                DeadzoneRight = controllerInput.DeadzoneRight;
+                RangeLeft = controllerInput.RangeLeft;
+                RangeRight = controllerInput.RangeRight;
+                TriggerThreshold = controllerInput.TriggerThreshold;
+
+                if (controllerInput.Motion != null)
+                {
+                    EnableMotion = controllerInput.Motion.EnableMotion;
+                    MotionBackend = controllerInput.Motion.MotionBackend;
+                    GyroDeadzone = controllerInput.Motion.GyroDeadzone;
+                    Sensitivity = controllerInput.Motion.Sensitivity;
+
+                    if (controllerInput.Motion is CemuHookMotionConfigController cemuHook)
                     {
-                        EnableMotion = controllerInput.Motion.EnableMotion;
-                        MotionBackend = controllerInput.Motion.MotionBackend;
-                        GyroDeadzone = controllerInput.Motion.GyroDeadzone;
-                        Sensitivity = controllerInput.Motion.Sensitivity;
+                        EnableCemuHookMotion = true;
+                        DsuServerHost = cemuHook.DsuServerHost;
+                        DsuServerPort = cemuHook.DsuServerPort;
+                        Slot = cemuHook.Slot;
+                        AltSlot = cemuHook.AltSlot;
+                        MirrorInput = cemuHook.MirrorInput;
+                    }
 
-                        if (controllerInput.Motion is CemuHookMotionConfigController cemuHook)
-                        {
-                            EnableCemuHookMotion = true;
-                            DsuServerHost = cemuHook.DsuServerHost;
-                            DsuServerPort = cemuHook.DsuServerPort;
-                            Slot = cemuHook.Slot;
-                            AltSlot = cemuHook.AltSlot;
-                            MirrorInput = cemuHook.MirrorInput;
-                        }
-
-                        if (controllerInput.Rumble != null)
-                        {
-                            EnableRumble = controllerInput.Rumble.EnableRumble;
-                            WeakRumble = controllerInput.Rumble.WeakRumble;
-                            StrongRumble = controllerInput.Rumble.StrongRumble;
-                        }
+                    if (controllerInput.Rumble != null)
+                    {
+                        EnableRumble = controllerInput.Rumble.EnableRumble;
+                        WeakRumble = controllerInput.Rumble.WeakRumble;
+                        StrongRumble = controllerInput.Rumble.StrongRumble;
                     }
                 }
             }

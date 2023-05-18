@@ -322,38 +322,44 @@ namespace Ryujinx.Ava.UI.Models.Input
         {
             if (config != null)
             {
-                if (config is StandardKeyboardInputConfig keyboardConfig)
+                Id = config.Id;
+                ControllerType = config.ControllerType;
+                PlayerIndex = config.PlayerIndex;
+
+                if (config is not StandardKeyboardInputConfig keyboardConfig)
                 {
-                    LeftStickUp     = keyboardConfig.LeftJoyconStick.StickUp;
-                    LeftStickDown   = keyboardConfig.LeftJoyconStick.StickDown;
-                    LeftStickLeft   = keyboardConfig.LeftJoyconStick.StickLeft;
-                    LeftStickRight  = keyboardConfig.LeftJoyconStick.StickRight;
-
-                    RightStickUp    = keyboardConfig.RightJoyconStick.StickUp;
-                    RightStickDown  = keyboardConfig.RightJoyconStick.StickDown;
-                    RightStickLeft  = keyboardConfig.RightJoyconStick.StickLeft;
-                    RightStickRight = keyboardConfig.RightJoyconStick.StickRight;
-
-                    DpadUp        = keyboardConfig.LeftJoycon.DpadUp;
-                    DpadDown      = keyboardConfig.LeftJoycon.DpadDown;
-                    DpadLeft      = keyboardConfig.LeftJoycon.DpadLeft;
-                    DpadRight     = keyboardConfig.LeftJoycon.DpadRight;
-                    ButtonL       = keyboardConfig.LeftJoycon.ButtonL;
-                    ButtonMinus   = keyboardConfig.LeftJoycon.ButtonMinus;
-                    LeftButtonSl  = keyboardConfig.LeftJoycon.ButtonSl;
-                    LeftButtonSr  = keyboardConfig.LeftJoycon.ButtonSr;
-                    ButtonZl      = keyboardConfig.LeftJoycon.ButtonZl;
-
-                    ButtonA       = keyboardConfig.RightJoycon.ButtonA;
-                    ButtonB       = keyboardConfig.RightJoycon.ButtonB;
-                    ButtonX       = keyboardConfig.RightJoycon.ButtonX;
-                    ButtonY       = keyboardConfig.RightJoycon.ButtonY;
-                    ButtonR       = keyboardConfig.RightJoycon.ButtonR;
-                    ButtonPlus    = keyboardConfig.RightJoycon.ButtonPlus;
-                    RightButtonSl = keyboardConfig.RightJoycon.ButtonSl;
-                    RightButtonSr = keyboardConfig.RightJoycon.ButtonSr;
-                    ButtonZr      = keyboardConfig.RightJoycon.ButtonZr;
+                    return;
                 }
+
+                LeftStickUp     = keyboardConfig.LeftJoyconStick.StickUp;
+                LeftStickDown   = keyboardConfig.LeftJoyconStick.StickDown;
+                LeftStickLeft   = keyboardConfig.LeftJoyconStick.StickLeft;
+                LeftStickRight  = keyboardConfig.LeftJoyconStick.StickRight;
+
+                RightStickUp    = keyboardConfig.RightJoyconStick.StickUp;
+                RightStickDown  = keyboardConfig.RightJoyconStick.StickDown;
+                RightStickLeft  = keyboardConfig.RightJoyconStick.StickLeft;
+                RightStickRight = keyboardConfig.RightJoyconStick.StickRight;
+
+                DpadUp        = keyboardConfig.LeftJoycon.DpadUp;
+                DpadDown      = keyboardConfig.LeftJoycon.DpadDown;
+                DpadLeft      = keyboardConfig.LeftJoycon.DpadLeft;
+                DpadRight     = keyboardConfig.LeftJoycon.DpadRight;
+                ButtonL       = keyboardConfig.LeftJoycon.ButtonL;
+                ButtonMinus   = keyboardConfig.LeftJoycon.ButtonMinus;
+                LeftButtonSl  = keyboardConfig.LeftJoycon.ButtonSl;
+                LeftButtonSr  = keyboardConfig.LeftJoycon.ButtonSr;
+                ButtonZl      = keyboardConfig.LeftJoycon.ButtonZl;
+
+                ButtonA       = keyboardConfig.RightJoycon.ButtonA;
+                ButtonB       = keyboardConfig.RightJoycon.ButtonB;
+                ButtonX       = keyboardConfig.RightJoycon.ButtonX;
+                ButtonY       = keyboardConfig.RightJoycon.ButtonY;
+                ButtonR       = keyboardConfig.RightJoycon.ButtonR;
+                ButtonPlus    = keyboardConfig.RightJoycon.ButtonPlus;
+                RightButtonSl = keyboardConfig.RightJoycon.ButtonSl;
+                RightButtonSr = keyboardConfig.RightJoycon.ButtonSr;
+                ButtonZr      = keyboardConfig.RightJoycon.ButtonZr;
             }
         }
 
