@@ -63,13 +63,13 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
-        private GamepadInputId _leftControllerStickButton;
-        public GamepadInputId LeftControllerStickButton
+        private GamepadInputId _leftStickButton;
+        public GamepadInputId LeftStickButton
         {
-            get => _leftControllerStickButton;
+            get => _leftStickButton;
             set
             {
-                _leftControllerStickButton = value;
+                _leftStickButton = value;
                 OnPropertyChanged();
             }
         }
@@ -118,13 +118,13 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
-        private GamepadInputId _rightControllerStickButton;
-        public GamepadInputId RightControllerStickButton
+        private GamepadInputId _rightStickButton;
+        public GamepadInputId RightStickButton
         {
-            get => _rightControllerStickButton;
+            get => _rightStickButton;
             set
             {
-                _rightControllerStickButton = value;
+                _rightStickButton = value;
                 OnPropertyChanged();
             }
         }
@@ -479,17 +479,17 @@ namespace Ryujinx.Ava.UI.Models.Input
                     return;
                 }
 
-                LeftJoystick               = controllerInput.LeftJoyconStick.Joystick;
-                LeftInvertStickX           = controllerInput.LeftJoyconStick.InvertStickX;
-                LeftInvertStickY           = controllerInput.LeftJoyconStick.InvertStickY;
-                LeftRotate90               = controllerInput.LeftJoyconStick.Rotate90CW;
-                LeftControllerStickButton  = controllerInput.LeftJoyconStick.StickButton;
+                LeftJoystick      = controllerInput.LeftJoyconStick.Joystick;
+                LeftInvertStickX  = controllerInput.LeftJoyconStick.InvertStickX;
+                LeftInvertStickY  = controllerInput.LeftJoyconStick.InvertStickY;
+                LeftRotate90      = controllerInput.LeftJoyconStick.Rotate90CW;
+                LeftStickButton   = controllerInput.LeftJoyconStick.StickButton;
 
-                RightJoystick              = controllerInput.RightJoyconStick.Joystick;
-                RightInvertStickX          = controllerInput.RightJoyconStick.InvertStickX;
-                RightInvertStickY          = controllerInput.RightJoyconStick.InvertStickY;
-                RightRotate90              = controllerInput.RightJoyconStick.Rotate90CW;
-                RightControllerStickButton = controllerInput.RightJoyconStick.StickButton;
+                RightJoystick     = controllerInput.RightJoyconStick.Joystick;
+                RightInvertStickX = controllerInput.RightJoyconStick.InvertStickX;
+                RightInvertStickY = controllerInput.RightJoyconStick.InvertStickY;
+                RightRotate90     = controllerInput.RightJoyconStick.Rotate90CW;
+                RightStickButton  = controllerInput.RightJoyconStick.StickButton;
 
                 DpadUp        = controllerInput.LeftJoycon.DpadUp;
                 DpadDown      = controllerInput.LeftJoycon.DpadDown;
@@ -582,7 +582,7 @@ namespace Ryujinx.Ava.UI.Models.Input
                     InvertStickX = LeftInvertStickX,
                     InvertStickY = LeftInvertStickY,
                     Rotate90CW = LeftRotate90,
-                    StickButton = LeftControllerStickButton,
+                    StickButton = LeftStickButton,
                 },
                 RightJoyconStick = new JoyconConfigControllerStick<GamepadInputId, StickInputId>
                 {
@@ -590,7 +590,7 @@ namespace Ryujinx.Ava.UI.Models.Input
                     InvertStickX = RightInvertStickX,
                     InvertStickY = RightInvertStickY,
                     Rotate90CW = RightRotate90,
-                    StickButton = RightControllerStickButton,
+                    StickButton = RightStickButton,
                 },
                 Rumble = new RumbleConfigController
                 {
