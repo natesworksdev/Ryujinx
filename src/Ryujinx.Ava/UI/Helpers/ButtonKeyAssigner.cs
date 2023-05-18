@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
+using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Input;
 using Ryujinx.Input.Assigner;
 using System;
@@ -82,7 +83,7 @@ namespace Ryujinx.Ava.UI.Helpers
 
                 if (_shouldUnbind)
                 {
-                    SetButtonText(ToggledButton, "Unbound");
+                    SetButtonText(ToggledButton, LocaleManager.Instance[LocaleKeys.KeyUnbound]);
                 }
                 else if (pressedButton != "")
                 {
