@@ -49,12 +49,21 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
             }
         }
 
+        public InputViewModel parentModel;
+
         public KeyboardInputViewModel(InputViewModel model, KeyboardInputConfig config)
         {
-            IsLeft = model.IsLeft;
-            IsRight = model.IsRight;
-            Image = model.Image;
+            parentModel = model;
+            model.NotifyChangesEvent += UpdateParentModelValues;
+            UpdateParentModelValues();
             Config = config;
+        }
+
+        public void UpdateParentModelValues()
+        {
+            IsLeft = parentModel.IsLeft;
+            IsRight = parentModel.IsRight;
+            Image = parentModel.Image;
         }
     }
 }
