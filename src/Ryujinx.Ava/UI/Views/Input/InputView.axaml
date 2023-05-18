@@ -211,7 +211,15 @@
                 </Grid>
             </Grid>
         </StackPanel>
-        <views:ControllerInputView IsVisible="{Binding IsController}"/>
-        <views:KeyboardInputView IsVisible="{Binding !IsController}"/>
+        <ContentControl Content="{Binding ConfigViewModel}" IsVisible="{Binding ShowSettings}">
+            <ContentControl.DataTemplates>
+                <DataTemplate DataType="viewModels:ControllerInputViewModel">
+                    <views:ControllerInputView/>
+                </DataTemplate>
+                <DataTemplate DataType="viewModels:KeyboardInputViewModel">
+                    <views:KeyboardInputView/>
+                </DataTemplate>
+            </ContentControl.DataTemplates>
+        </ContentControl>
     </StackPanel>
 </UserControl>

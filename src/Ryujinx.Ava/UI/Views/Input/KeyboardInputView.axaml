@@ -35,8 +35,7 @@
         <!-- Button / JoyStick Settings -->
         <Grid
             Name="SettingButtons"
-            MinHeight="450"
-            IsVisible="{Binding ShowSettings}">
+            MinHeight="450">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />

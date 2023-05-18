@@ -27,14 +27,15 @@ namespace Ryujinx.Ava.UI.Views.Input
 
             InitializeComponent();
 
-            foreach (ILogical visual in SettingButtons.GetLogicalDescendants())
+            // TODO: Move this stuff to Controller/KeyboardInputView
+            /*foreach (ILogical visual in SettingButtons.GetLogicalDescendants())
             {
                 if (visual is ToggleButton button && !(visual is CheckBox))
                 {
                     button.Checked += Button_Checked;
                     button.Unchecked += Button_Unchecked;
                 }
-            }
+            }*/
         }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
