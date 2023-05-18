@@ -649,20 +649,20 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             }
 
-            using IMemoryOwner<byte> result = ConvertToHostCompatibleFormat(data);
+            IMemoryOwner<byte> result = ConvertToHostCompatibleFormat(data);
 
             if (ScaleFactor != 1f && AllowScaledSetData())
             {
                 // If needed, create a texture to load from 1x scale.
                 ITexture texture = _setHostTexture = GetScaledHostTexture(1f, false, _setHostTexture);
 
-                texture.SetData(result.Memory.Span);
+                texture.SetData(result);
 
                 texture.CopyTo(HostTexture, new Extents2D(0, 0, texture.Width, texture.Height), new Extents2D(0, 0, HostTexture.Width, HostTexture.Height), true);
             }
             else
             {
-                HostTexture.SetData(result.Memory.Span);
+                HostTexture.SetData(result);
             }
 
             _hasData = true;
