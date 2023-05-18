@@ -214,10 +214,10 @@
         <ContentControl Content="{Binding ConfigViewModel}" IsVisible="{Binding ShowSettings}">
             <ContentControl.DataTemplates>
                 <DataTemplate DataType="viewModels:ControllerInputViewModel">
-                    <views:ControllerInputView/>
+                    <views:ControllerInputView />
                 </DataTemplate>
                 <DataTemplate DataType="viewModels:KeyboardInputViewModel">
-                    <views:KeyboardInputView/>
+                    <views:KeyboardInputView />
                 </DataTemplate>
             </ContentControl.DataTemplates>
         </ContentControl>
