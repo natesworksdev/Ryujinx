@@ -398,17 +398,6 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
-        private MotionInputBackendType _motionBackend;
-        public MotionInputBackendType MotionBackend
-        {
-            get => _motionBackend;
-            set
-            {
-                _motionBackend = value;
-                OnPropertyChanged();
-            }
-        }
-
         private double _gyroDeadzone;
         public double GyroDeadzone
         {
@@ -520,7 +509,6 @@ namespace Ryujinx.Ava.UI.Models.Input
                 if (controllerInput.Motion != null)
                 {
                     EnableMotion = controllerInput.Motion.EnableMotion;
-                    MotionBackend = controllerInput.Motion.MotionBackend;
                     GyroDeadzone = controllerInput.Motion.GyroDeadzone;
                     Sensitivity = controllerInput.Motion.Sensitivity;
 
@@ -598,13 +586,6 @@ namespace Ryujinx.Ava.UI.Models.Input
                     WeakRumble = WeakRumble,
                     StrongRumble = StrongRumble
                 },
-                Motion = new MotionConfigController
-                {
-                    EnableMotion = EnableMotion,
-                    MotionBackend = MotionBackend,
-                    GyroDeadzone = GyroDeadzone,
-                    Sensitivity = Sensitivity,
-                },
                 Version = InputConfig.CurrentVersion,
                 DeadzoneLeft = DeadzoneLeft,
                 DeadzoneRight = DeadzoneRight,
@@ -615,13 +596,28 @@ namespace Ryujinx.Ava.UI.Models.Input
 
             if (EnableCemuHookMotion)
             {
-                var cemuHook = (CemuHookMotionConfigController)config.Motion;
-                cemuHook.DsuServerHost = DsuServerHost;
-                cemuHook.DsuServerPort = DsuServerPort;
-                cemuHook.Slot = Slot;
-                cemuHook.AltSlot = AltSlot;
-                cemuHook.MirrorInput = MirrorInput;
-                config.Motion = cemuHook;
+                config.Motion = new CemuHookMotionConfigController
+                {
+                    EnableMotion = EnableMotion,
+                    MotionBackend = MotionInputBackendType.CemuHook,
+                    GyroDeadzone = GyroDeadzone,
+                    Sensitivity = Sensitivity,
+                    DsuServerHost = DsuServerHost,
+                    DsuServerPort = DsuServerPort,
+                    Slot = Slot,
+                    AltSlot = AltSlot,
+                    MirrorInput = MirrorInput
+                };
+            }
+            else
+            {
+               config.Motion = new MotionConfigController
+                {
+                    EnableMotion = EnableMotion,
+                    MotionBackend = MotionInputBackendType.GamepadDriver,
+                    GyroDeadzone = GyroDeadzone,
+                    Sensitivity = Sensitivity
+                };
             }
 
             return config;
