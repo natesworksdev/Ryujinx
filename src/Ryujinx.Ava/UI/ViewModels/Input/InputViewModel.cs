@@ -71,6 +71,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         public bool IsLeft { get; set; }
 
         public bool IsModified { get; set; }
+        public event Action NotifyChangesEvent;
 
         public object ConfigViewModel
         {
@@ -873,6 +874,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
             OnPropertyChanged(nameof(IsKeyboard));
             OnPropertyChanged(nameof(IsRight));
             OnPropertyChanged(nameof(IsLeft));
+            NotifyChangesEvent?.Invoke();
         }
 
         public void Dispose()

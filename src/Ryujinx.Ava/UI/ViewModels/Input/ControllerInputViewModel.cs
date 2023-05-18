@@ -50,6 +50,8 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
             }
         }
 
+        public InputViewModel parentModel;
+
         public async void ShowMotionConfig()
         {
             await MotionInputView.Show(this);
@@ -62,10 +64,17 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
 
         public ControllerInputViewModel(InputViewModel model, ControllerInputConfig config)
         {
-            IsLeft = model.IsLeft;
-            IsRight = model.IsRight;
-            Image = model.Image;
+            parentModel = model;
+            model.NotifyChangesEvent += UpdateParentModelValues;
+            UpdateParentModelValues();
             Config = config;
+        }
+
+        public void UpdateParentModelValues()
+        {
+            IsLeft = parentModel.IsLeft;
+            IsRight = parentModel.IsRight;
+            Image = parentModel.Image;
         }
     }
 }
