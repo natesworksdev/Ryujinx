@@ -39,17 +39,6 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
             }
         }
 
-        private bool _showSettings;
-        public bool ShowSettings
-        {
-            get => _showSettings;
-            set
-            {
-                _showSettings = value;
-                OnPropertyChanged();
-            }
-        }
-
         private SvgImage _image;
         public SvgImage Image
         {
@@ -69,6 +58,14 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         public async void ShowRumbleConfig()
         {
             await RumbleInputView.Show(this);
+        }
+
+        public ControllerInputViewModel(InputViewModel model, ControllerInputConfig config)
+        {
+            IsLeft = model.IsLeft;
+            IsRight = model.IsRight;
+            Image = model.Image;
+            Config = config;
         }
     }
 }

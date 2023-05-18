@@ -35,8 +35,7 @@
         <!-- Button / JoyStick Settings -->
         <Grid
             Name="SettingButtons"
-            MinHeight="450"
-            IsVisible="{Binding ShowSettings}">
+            MinHeight="450">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
@@ -451,7 +450,7 @@
                             <Button
                                 Margin="10"
                                 Grid.Column="1"
-                                Command="{Binding ShowMotionConfig}">
+                                Command="{ReflectionBinding ShowMotionConfig}">
                                 <TextBlock Text="{locale:Locale ControllerSettingsConfigureGeneral}" />
                             </Button>
                         </Grid>
@@ -477,7 +476,7 @@
                             <Button
                                 Margin="10"
                                 Grid.Column="1"
-                                Command="{Binding ShowRumbleConfig}">
+                                Command="{ReflectionBinding ShowRumbleConfig}">
                                 <TextBlock Text="{locale:Locale ControllerSettingsConfigureGeneral}" />
                             </Button>
                         </Grid>

@@ -38,17 +38,6 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
             }
         }
 
-        private bool _showSettings;
-        public bool ShowSettings
-        {
-            get => _showSettings;
-            set
-            {
-                _showSettings = value;
-                OnPropertyChanged();
-            }
-        }
-
         private SvgImage _image;
         public SvgImage Image
         {
@@ -58,6 +47,14 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
                 _image = value;
                 OnPropertyChanged();
             }
+        }
+
+        public KeyboardInputViewModel(InputViewModel model, KeyboardInputConfig config)
+        {
+            IsLeft = model.IsLeft;
+            IsRight = model.IsRight;
+            Image = model.Image;
+            Config = config;
         }
     }
 }

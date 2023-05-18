@@ -47,7 +47,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         private int _controllerNumber = 0;
         private string _controllerImage;
         private int _device;
-        private object _configuration;
+        private object _configViewModel;
         private string _profileName;
         private bool _isLoaded;
         private readonly UserControl _owner;
@@ -72,12 +72,12 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
 
         public bool IsModified { get; set; }
 
-        public object Configuration
+        public object ConfigViewModel
         {
-            get => _configuration;
+            get => _configViewModel;
             set
             {
-                _configuration = value;
+                _configViewModel = value;
 
                 OnPropertyChanged();
             }
@@ -286,12 +286,12 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
 
             if (Config is StandardKeyboardInputConfig keyboardInputConfig)
             {
-                Configuration = new KeyboardInputConfig(keyboardInputConfig);
+                ConfigViewModel = new KeyboardInputViewModel(this, new KeyboardInputConfig(keyboardInputConfig));
             }
 
             if (Config is StandardControllerInputConfig controllerInputConfig)
             {
-                Configuration = new ControllerInputConfig(controllerInputConfig);
+                ConfigViewModel = new ControllerInputViewModel(this, new ControllerInputConfig(controllerInputConfig));
             }
         }
 
@@ -733,7 +733,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
                 return;
             }
 
-            if (Configuration == null)
+            if (ConfigViewModel == null)
             {
                 return;
             }
@@ -756,11 +756,11 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
 
                     if (IsKeyboard)
                     {
-                        config = (Configuration as KeyboardInputConfig).GetConfig();
+                        config = (ConfigViewModel as KeyboardInputViewModel).Config.GetConfig();
                     }
                     else if (IsController)
                     {
-                        config = (Configuration as ControllerInputConfig).GetConfig();
+                        config = (ConfigViewModel as ControllerInputViewModel).Config.GetConfig();
                     }
 
                     config.ControllerType = Controllers[_controller].Type;
@@ -825,18 +825,18 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
 
                 if (device.Type == DeviceType.Keyboard)
                 {
-                    var inputConfig = Configuration as KeyboardInputConfig;
+                    var inputConfig = (ConfigViewModel as KeyboardInputViewModel).Config;
                     inputConfig.Id = device.Id;
                 }
                 else
                 {
-                    var inputConfig = Configuration as ControllerInputConfig;
+                    var inputConfig = (ConfigViewModel as ControllerInputViewModel).Config;
                     inputConfig.Id = device.Id.Split(" ")[0];
                 }
 
                 var config = !IsController
-                    ? (Configuration as KeyboardInputConfig).GetConfig()
-                    : (Configuration as ControllerInputConfig).GetConfig();
+                    ? (ConfigViewModel as KeyboardInputViewModel).Config.GetConfig()
+                    : (ConfigViewModel as ControllerInputViewModel).Config.GetConfig();
                 config.ControllerType = Controllers[_controller].Type;
                 config.PlayerIndex = _playerId;
 
@@ -867,7 +867,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
 
         public void NotifyChanges()
         {
-            OnPropertyChanged(nameof(Configuration));
+            OnPropertyChanged(nameof(ConfigViewModel));
             OnPropertyChanged(nameof(IsController));
             OnPropertyChanged(nameof(ShowSettings));
             OnPropertyChanged(nameof(IsKeyboard));
