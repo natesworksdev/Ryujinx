@@ -533,13 +533,13 @@ namespace Ryujinx.Ava.UI.Models.Input
                         AltSlot = cemuHook.AltSlot;
                         MirrorInput = cemuHook.MirrorInput;
                     }
+                }
 
-                    if (controllerInput.Rumble != null)
-                    {
-                        EnableRumble = controllerInput.Rumble.EnableRumble;
-                        WeakRumble = controllerInput.Rumble.WeakRumble;
-                        StrongRumble = controllerInput.Rumble.StrongRumble;
-                    }
+                if (controllerInput.Rumble != null)
+                {
+                    EnableRumble = controllerInput.Rumble.EnableRumble;
+                    WeakRumble = controllerInput.Rumble.WeakRumble;
+                    StrongRumble = controllerInput.Rumble.StrongRumble;
                 }
             }
         }
@@ -598,6 +598,13 @@ namespace Ryujinx.Ava.UI.Models.Input
                     WeakRumble = WeakRumble,
                     StrongRumble = StrongRumble
                 },
+                Motion = new MotionConfigController
+                {
+                    EnableMotion = EnableMotion,
+                    MotionBackend = MotionBackend,
+                    GyroDeadzone = GyroDeadzone,
+                    Sensitivity = Sensitivity,
+                },
                 Version = InputConfig.CurrentVersion,
                 DeadzoneLeft = DeadzoneLeft,
                 DeadzoneRight = DeadzoneRight,
@@ -606,9 +613,16 @@ namespace Ryujinx.Ava.UI.Models.Input
                 TriggerThreshold = TriggerThreshold,
             };
 
-            config.Motion.Sensitivity = Sensitivity;
-            config.Motion.EnableMotion = EnableMotion;
-            config.Motion.GyroDeadzone = GyroDeadzone;
+            if (EnableCemuHookMotion)
+            {
+                var cemuHook = (CemuHookMotionConfigController)config.Motion;
+                cemuHook.DsuServerHost = DsuServerHost;
+                cemuHook.DsuServerPort = DsuServerPort;
+                cemuHook.Slot = Slot;
+                cemuHook.AltSlot = AltSlot;
+                cemuHook.MirrorInput = MirrorInput;
+                config.Motion = cemuHook;
+            }
 
             return config;
         }
