@@ -426,9 +426,9 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                             ReadOnlySpan<byte> data = dataSpan.Slice(offset - spanBase);
 
-                            using IMemoryOwner<byte> result = Storage.ConvertToHostCompatibleFormat(data, info.BaseLevel + level, true);
+                            IMemoryOwner<byte> result = Storage.ConvertToHostCompatibleFormat(data, info.BaseLevel + level, true);
 
-                            Storage.SetData(result.Memory.Span, info.BaseLayer + layer, info.BaseLevel + level);
+                            Storage.SetData(result, info.BaseLayer + layer, info.BaseLevel + level);
                         }
                     }
                 }

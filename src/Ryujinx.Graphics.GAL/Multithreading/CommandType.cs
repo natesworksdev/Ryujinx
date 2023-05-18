@@ -38,7 +38,6 @@
         TextureGetData,
         TextureGetDataSlice,
         TextureRelease,
-        TextureSetByteMemoryData,
         TextureSetData,
         TextureSetDataSlice,
         TextureSetDataSliceRegion,

@@ -10,20 +10,11 @@ namespace Ryujinx.Graphics.OpenGL.Image
 {
     static class FormatConverter
     {
-        public static IMemoryOwner<byte> ConvertS8D24ToD24S8AsMemoryOwner(ReadOnlySpan<byte> data)
+        public static IMemoryOwner<byte> ConvertS8D24ToD24S8(ReadOnlySpan<byte> data)
         {
             IMemoryOwner<byte> output = ByteMemoryPool.Shared.Rent(data.Length);
 
             ConvertS8D24ToD24S8(data, output.Memory.Span);
-
-            return output;
-        }
-
-        public static byte[] ConvertS8D24ToD24S8(ReadOnlySpan<byte> data)
-        {
-            byte[] output = new byte[data.Length];
-
-            ConvertS8D24ToD24S8(data, output);
 
             return output;
         }

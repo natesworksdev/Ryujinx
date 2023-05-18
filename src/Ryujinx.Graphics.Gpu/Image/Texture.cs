@@ -1,5 +1,4 @@
 using Ryujinx.Common.Logging;
-using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Texture;
@@ -686,29 +685,12 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Uploads new texture data to the host GPU.
-        /// </summary>
-        /// <param name="data">New data</param>
-        public void SetData(SpanOrArray<byte> data)
-        {
-            BlacklistScale();
-
-            Group.CheckDirty(this, true);
-
-            AlwaysFlushOnOverlap = true;
-
-            HostTexture.SetData(data);
-
-            _hasData = true;
-        }
-
-        /// <summary>
         /// Uploads new texture data to the host GPU for a specific layer/level.
         /// </summary>
         /// <param name="data">New data</param>
         /// <param name="layer">Target layer</param>
         /// <param name="level">Target level</param>
-        public void SetData(SpanOrArray<byte> data, int layer, int level)
+        public void SetData(IMemoryOwner<byte> data, int layer, int level)
         {
             BlacklistScale();
 
@@ -726,7 +708,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="layer">Target layer</param>
         /// <param name="level">Target level</param>
         /// <param name="region">Target sub-region of the texture to update</param>
-        public void SetData(ReadOnlySpan<byte> data, int layer, int level, Rectangle<int> region)
+        public void SetData(IMemoryOwner<byte> data, int layer, int level, Rectangle<int> region)
         {
             BlacklistScale();
 
@@ -925,7 +907,9 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             if (!ReferenceEquals(linear, result))
+            {
                 linear.Dispose();
+            }
 
             return result;
         }

@@ -89,10 +89,24 @@ namespace Ryujinx.Common.Memory
         public IMemoryOwner<byte> RentCleared(int length)
         {
             var buffer = RentImpl(length);
-            
+
             buffer.Memory.Span.Clear();
-            
+
             return buffer;
+        }
+
+        /// <summary>
+        /// Copies <paramref name="buffer"/> into a newly rented byte memory buffer.
+        /// </summary>
+        /// <param name="buffer">The byte buffer to copy.</param>
+        /// <returns>A <see cref="IMemoryOwner{Byte}"/> wrapping the rented memory with <paramref name="buffer"/> copied to it.</returns>
+        public IMemoryOwner<byte> RentCopy(ReadOnlySpan<byte> buffer)
+        {
+            var copy = RentImpl(buffer.Length);
+
+            buffer.CopyTo(copy.Memory.Span);
+
+            return copy;
         }
 
         private static ByteMemoryPoolBuffer RentImpl(int length)

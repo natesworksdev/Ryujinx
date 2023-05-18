@@ -1,6 +1,6 @@
 ﻿using Ryujinx.Graphics.GAL.Multithreading.Model;
 using Ryujinx.Graphics.GAL.Multithreading.Resources;
-using System;
+using System.Buffers;
 
 namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Texture
 {
@@ -8,11 +8,11 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Texture
     {
         public CommandType CommandType => CommandType.TextureSetDataSlice;
         private TableRef<ThreadedTexture> _texture;
-        private TableRef<byte[]> _data;
+        private TableRef<IMemoryOwner<byte>> _data;
         private int _layer;
         private int _level;
 
-        public void Set(TableRef<ThreadedTexture> texture, TableRef<byte[]> data, int layer, int level)
+        public void Set(TableRef<ThreadedTexture> texture, TableRef<IMemoryOwner<byte>> data, int layer, int level)
         {
             _texture = texture;
             _data = data;
@@ -23,7 +23,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Texture
         public static void Run(ref TextureSetDataSliceCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
             ThreadedTexture texture = command._texture.Get(threaded);
-            texture.Base.SetData(new ReadOnlySpan<byte>(command._data.Get(threaded)), command._layer, command._level);
+            IMemoryOwner<byte> data = command._data.Get(threaded);
+            texture.Base.SetData(data, command._layer, command._level);
+            data.Dispose();
         }
     }
 }

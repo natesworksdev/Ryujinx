@@ -622,19 +622,14 @@ namespace Ryujinx.Graphics.Vulkan
             SetData(data.Memory.Span, 0, 0, Info.GetLayers(), Info.Levels, singleSlice: false);
         }
 
-        public void SetData(SpanOrArray<byte> data)
+        public void SetData(IMemoryOwner<byte> data, int layer, int level)
         {
-            SetData(data, 0, 0, Info.GetLayers(), Info.Levels, singleSlice: false);
+            SetData(data.Memory.Span, layer, level, 1, 1, singleSlice: true);
         }
 
-        public void SetData(SpanOrArray<byte> data, int layer, int level)
+        public void SetData(IMemoryOwner<byte> data, int layer, int level, Rectangle<int> region)
         {
-            SetData(data, layer, level, 1, 1, singleSlice: true);
-        }
-
-        public void SetData(SpanOrArray<byte> data, int layer, int level, Rectangle<int> region)
-        {
-            SetData(data, layer, level, 1, 1, singleSlice: true, region);
+            SetData(data.Memory.Span, layer, level, 1, 1, singleSlice: true, region);
         }
 
         private void SetData(ReadOnlySpan<byte> data, int layer, int level, int layers, int levels, bool singleSlice, Rectangle<int>? region = null)

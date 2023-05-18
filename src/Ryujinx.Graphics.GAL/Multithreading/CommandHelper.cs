@@ -76,7 +76,6 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             Register<TextureGetDataCommand>(CommandType.TextureGetData);
             Register<TextureGetDataSliceCommand>(CommandType.TextureGetDataSlice);
             Register<TextureReleaseCommand>(CommandType.TextureRelease);
-            Register<TextureSetByteMemoryDataCommand>(CommandType.TextureSetByteMemoryData);
             Register<TextureSetDataCommand>(CommandType.TextureSetData);
             Register<TextureSetDataSliceCommand>(CommandType.TextureSetDataSlice);
             Register<TextureSetDataSliceRegionCommand>(CommandType.TextureSetDataSliceRegion);
