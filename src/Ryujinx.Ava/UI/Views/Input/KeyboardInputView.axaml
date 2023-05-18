@@ -143,7 +143,7 @@
                                     TextAlignment="Center" />
                                 <ToggleButton>
                                     <TextBlock
-                                        Text="{Binding Config.LeftKeyboardStickButton, Mode=TwoWay, Converter={StaticResource Key}}"
+                                        Text="{Binding Config.LeftStickButton, Mode=TwoWay, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
@@ -481,7 +481,7 @@
                         </StackPanel>
                     </Grid>
                 </Border>
-                <!-- Right Joystick -->
+                <!-- Right Buttons -->
                 <Border
                     BorderBrush="{DynamicResource ThemeControlBorderColor}"
                     BorderThickness="1"
@@ -596,7 +596,7 @@
                                     TextAlignment="Center" />
                                 <ToggleButton>
                                     <TextBlock
-                                        Text="{Binding Config.RightKeyboardStickButton, Mode=TwoWay, Converter={StaticResource Key}}"
+                                        Text="{Binding Config.RightStickButton, Mode=TwoWay, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>

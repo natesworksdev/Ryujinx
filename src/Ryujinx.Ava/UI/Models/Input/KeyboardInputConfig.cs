@@ -54,13 +54,13 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
-        private Key _leftKeyboardStickButton;
-        public Key LeftKeyboardStickButton
+        private Key _leftStickButton;
+        public Key LeftStickButton
         {
-            get => _leftKeyboardStickButton;
+            get => _leftStickButton;
             set
             {
-                _leftKeyboardStickButton = value;
+                _leftStickButton = value;
                 OnPropertyChanged();
             }
         }
@@ -109,13 +109,13 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
-        private Key _rightKeyboardStickButton;
-        public Key RightKeyboardStickButton
+        private Key _rightStickButton;
+        public Key RightStickButton
         {
-            get => _rightKeyboardStickButton;
+            get => _rightStickButton;
             set
             {
-                _rightKeyboardStickButton = value;
+                _rightStickButton = value;
                 OnPropertyChanged();
             }
         }
@@ -331,15 +331,17 @@ namespace Ryujinx.Ava.UI.Models.Input
                     return;
                 }
 
-                LeftStickUp     = keyboardConfig.LeftJoyconStick.StickUp;
-                LeftStickDown   = keyboardConfig.LeftJoyconStick.StickDown;
-                LeftStickLeft   = keyboardConfig.LeftJoyconStick.StickLeft;
-                LeftStickRight  = keyboardConfig.LeftJoyconStick.StickRight;
+                LeftStickUp      = keyboardConfig.LeftJoyconStick.StickUp;
+                LeftStickDown    = keyboardConfig.LeftJoyconStick.StickDown;
+                LeftStickLeft    = keyboardConfig.LeftJoyconStick.StickLeft;
+                LeftStickRight   = keyboardConfig.LeftJoyconStick.StickRight;
+                LeftStickButton  = keyboardConfig.LeftJoyconStick.StickButton;
 
-                RightStickUp    = keyboardConfig.RightJoyconStick.StickUp;
-                RightStickDown  = keyboardConfig.RightJoyconStick.StickDown;
-                RightStickLeft  = keyboardConfig.RightJoyconStick.StickLeft;
-                RightStickRight = keyboardConfig.RightJoyconStick.StickRight;
+                RightStickUp     = keyboardConfig.RightJoyconStick.StickUp;
+                RightStickDown   = keyboardConfig.RightJoyconStick.StickDown;
+                RightStickLeft   = keyboardConfig.RightJoyconStick.StickLeft;
+                RightStickRight  = keyboardConfig.RightJoyconStick.StickRight;
+                RightStickButton = keyboardConfig.RightJoyconStick.StickButton;
 
                 DpadUp        = keyboardConfig.LeftJoycon.DpadUp;
                 DpadDown      = keyboardConfig.LeftJoycon.DpadDown;
@@ -371,48 +373,45 @@ namespace Ryujinx.Ava.UI.Models.Input
                 Backend = InputBackendType.WindowKeyboard,
                 PlayerIndex = PlayerIndex,
                 ControllerType = ControllerType,
-                LeftJoycon =
-                    new LeftJoyconCommonConfig<Key>
-                    {
-                        DpadUp = DpadUp,
-                        DpadDown = DpadDown,
-                        DpadLeft = DpadLeft,
-                        DpadRight = DpadRight,
-                        ButtonL = ButtonL,
-                        ButtonMinus = ButtonMinus,
-                        ButtonZl = ButtonZl,
-                        ButtonSl = LeftButtonSl,
-                        ButtonSr = LeftButtonSr,
-                    },
-                RightJoycon =
-                    new RightJoyconCommonConfig<Key>
-                    {
-                        ButtonA = ButtonA,
-                        ButtonB = ButtonB,
-                        ButtonX = ButtonX,
-                        ButtonY = ButtonY,
-                        ButtonPlus = ButtonPlus,
-                        ButtonSl = RightButtonSl,
-                        ButtonSr = RightButtonSr,
-                        ButtonR = ButtonR,
-                        ButtonZr = ButtonZr
-                    },
-                LeftJoyconStick =
-                    new JoyconConfigKeyboardStick<Key>
-                    {
-                        StickUp = LeftStickUp,
-                        StickDown = LeftStickDown,
-                        StickRight = LeftStickRight,
-                        StickLeft = LeftStickLeft,
-                        StickButton = LeftKeyboardStickButton
-                    },
+                LeftJoycon = new LeftJoyconCommonConfig<Key>
+                {
+                    DpadUp = DpadUp,
+                    DpadDown = DpadDown,
+                    DpadLeft = DpadLeft,
+                    DpadRight = DpadRight,
+                    ButtonL = ButtonL,
+                    ButtonMinus = ButtonMinus,
+                    ButtonZl = ButtonZl,
+                    ButtonSl = LeftButtonSl,
+                    ButtonSr = LeftButtonSr,
+                },
+                RightJoycon = new RightJoyconCommonConfig<Key>
+                {
+                    ButtonA = ButtonA,
+                    ButtonB = ButtonB,
+                    ButtonX = ButtonX,
+                    ButtonY = ButtonY,
+                    ButtonPlus = ButtonPlus,
+                    ButtonSl = RightButtonSl,
+                    ButtonSr = RightButtonSr,
+                    ButtonR = ButtonR,
+                    ButtonZr = ButtonZr
+                },
+                LeftJoyconStick = new JoyconConfigKeyboardStick<Key>
+                {
+                    StickUp = LeftStickUp,
+                    StickDown = LeftStickDown,
+                    StickRight = LeftStickRight,
+                    StickLeft = LeftStickLeft,
+                    StickButton = LeftStickButton
+                },
                 RightJoyconStick = new JoyconConfigKeyboardStick<Key>
                 {
                     StickUp = RightStickUp,
                     StickDown = RightStickDown,
                     StickLeft = RightStickLeft,
                     StickRight = RightStickRight,
-                    StickButton = RightKeyboardStickButton
+                    StickButton = RightStickButton
                 },
                 Version = InputConfig.CurrentVersion
             };
