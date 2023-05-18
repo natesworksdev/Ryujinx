@@ -25,13 +25,32 @@ error_handler() {
     exit 1
 }
 
-# Wait for Ryujinx to exit
-# NOTE: in case no fds are open, lsof could be returning with a process still living.
-# We wait 1s and assume the process stopped after that
-lsof -p $APP_PID +r 1 &>/dev/null
-sleep 1
-
 trap 'error_handler ${LINENO}' ERR
+
+# Wait for Ryujinx to exit
+
+wait_script="""
+on get_apps()
+    tell application \"System Events\"
+        return name of every process whose bundle identifier = \"org.ryujinx.Ryujinx\"
+    end tell
+end get_apps
+
+
+set apps to get_apps()
+
+if apps is not {} then
+    repeat while (count of apps) > 0
+        delay 1
+        set apps to get_apps()
+    end repeat
+    return \"No Ryujinx processes running\"
+else
+    return \"No Ryujinx processes running\"
+end if
+"""
+osascript -e "$wait_script"
+
 
 # Now replace and reopen.
 rm -rf "$INSTALL_DIRECTORY"
