@@ -88,12 +88,37 @@ namespace Ryujinx.Ava.UI.Helpers
 
         private static readonly Dictionary<GamepadInputId, LocaleKeys> GamepadInputIdMap = new()
         {
-
+            { GamepadInputId.LeftStick, LocaleKeys.GamepadLeftStick },
+            { GamepadInputId.RightStick, LocaleKeys.GamepadRightStick },
+            { GamepadInputId.LeftShoulder, LocaleKeys.GamepadLeftShoulder },
+            { GamepadInputId.RightShoulder, LocaleKeys.GamepadRightShoulder },
+            { GamepadInputId.LeftTrigger, LocaleKeys.GamepadLeftTrigger },
+            { GamepadInputId.RightTrigger, LocaleKeys.GamepadRightTrigger },
+            { GamepadInputId.DpadUp, LocaleKeys.GamepadDpadUp},
+            { GamepadInputId.DpadDown, LocaleKeys.GamepadDpadDown},
+            { GamepadInputId.DpadLeft, LocaleKeys.GamepadDpadLeft},
+            { GamepadInputId.DpadRight, LocaleKeys.GamepadDpadRight},
+            { GamepadInputId.Minus, LocaleKeys.GamepadMinus},
+            { GamepadInputId.Plus, LocaleKeys.GamepadPlus},
+            { GamepadInputId.Guide, LocaleKeys.GamepadGuide},
+            { GamepadInputId.Misc1, LocaleKeys.GamepadMisc1},
+            { GamepadInputId.Paddle1, LocaleKeys.GamepadPaddle1},
+            { GamepadInputId.Paddle2, LocaleKeys.GamepadPaddle2},
+            { GamepadInputId.Paddle3, LocaleKeys.GamepadPaddle3},
+            { GamepadInputId.Paddle4, LocaleKeys.GamepadPaddle4},
+            { GamepadInputId.Touchpad, LocaleKeys.GamepadTouchpad},
+            { GamepadInputId.SingleLeftTrigger0, LocaleKeys.GamepadSingleLeftTrigger0},
+            { GamepadInputId.SingleRightTrigger0, LocaleKeys.GamepadSingleRightTrigger0},
+            { GamepadInputId.SingleLeftTrigger1, LocaleKeys.GamepadSingleLeftTrigger1},
+            { GamepadInputId.SingleRightTrigger1, LocaleKeys.GamepadSingleRightTrigger1},
+            { GamepadInputId.Unbound, LocaleKeys.KeyUnbound},
         };
 
         private static readonly Dictionary<StickInputId, LocaleKeys> StickInputIdMap = new()
         {
-
+            { StickInputId.Left, LocaleKeys.StickLeft},
+            { StickInputId.Right, LocaleKeys.StickRight},
+            { StickInputId.Unbound, LocaleKeys.KeyUnbound},
         };
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
