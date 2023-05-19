@@ -369,11 +369,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                         if (hostCode != null)
                         {
                             bool hasFragmentShader = shaders.Length > 5 && shaders[5] != null;
-                            int fragmentOutputMap = hasFragmentShader ? shaders[5].Info.FragmentOutputMap : -1;
 
-                            ShaderInfo shaderInfo = specState.PipelineState.HasValue
-                                ? new ShaderInfo(fragmentOutputMap, specState.PipelineState.Value, fromCache: true)
-                                : new ShaderInfo(fragmentOutputMap, fromCache: true);
+                            ShaderInfo shaderInfo = ShaderInfoBuilder.BuildForGraphics(context, shaders, specState.PipelineState, fromCache: true);
 
                             IProgram hostProgram;
 
