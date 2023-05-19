@@ -25,6 +25,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
             {
                 _isLeft = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(HasSides));
             }
         }
 
@@ -36,8 +37,11 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
             {
                 _isRight = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(HasSides));
             }
         }
+
+        public bool HasSides => IsLeft ^ IsRight;
 
         private SvgImage _image;
         public SvgImage Image
