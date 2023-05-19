@@ -567,12 +567,15 @@ namespace Ryujinx.Modules
 
             if (OperatingSystem.IsWindows())
             {
+                var reshadeFiles = Directory.EnumerateFiles(HomeDir, "ReShade*.*").ToList();
+                IEnumerable<string> filesModified = files.Except(reshadeFiles);
+
                 foreach (string dir in WindowsDependencyDirs)
                 {
                     string dirPath = Path.Combine(HomeDir, dir);
                     if (Directory.Exists(dirPath))
                     {
-                        files = files.Concat(Directory.EnumerateFiles(dirPath, "*", SearchOption.AllDirectories));
+                        files = filesModified.Concat(Directory.EnumerateFiles(dirPath, "*", SearchOption.AllDirectories));
                     }
                 }
             }
