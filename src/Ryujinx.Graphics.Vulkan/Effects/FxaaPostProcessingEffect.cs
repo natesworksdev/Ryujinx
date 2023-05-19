@@ -38,12 +38,6 @@ namespace Ryujinx.Graphics.Vulkan.Effects
 
             var shader = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Effects/Shaders/Fxaa.spv");
 
-            var computeBindings = new ShaderBindings(
-                new[] { 2 },
-                Array.Empty<int>(),
-                new[] { 1 },
-                new[] { 0 });
-
             var resourceLayout = new ResourceLayoutBuilder()
                 .Add(ResourceStages.Compute, ResourceType.UniformBuffer, 2)
                 .Add(ResourceStages.Compute, ResourceType.TextureAndSampler, 1)
@@ -53,7 +47,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
 
             _shaderProgram = _renderer.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(shader, computeBindings, ShaderStage.Compute, TargetLanguage.Spirv)
+                new ShaderSource(shader, ShaderStage.Compute, TargetLanguage.Spirv)
             }, resourceLayout);
         }
 

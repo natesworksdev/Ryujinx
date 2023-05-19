@@ -10,7 +10,6 @@ using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Vulkan
@@ -658,7 +657,7 @@ namespace Ryujinx.Graphics.Vulkan
             Logger.Notice.Print(LogClass.Gpu, $"{GpuVendor} {GpuRenderer} ({GpuVersion})");
         }
 
-        public GAL.PrimitiveTopology TopologyRemap(GAL.PrimitiveTopology topology)
+        internal GAL.PrimitiveTopology TopologyRemap(GAL.PrimitiveTopology topology)
         {
             return topology switch
             {
@@ -669,7 +668,7 @@ namespace Ryujinx.Graphics.Vulkan
             };
         }
 
-        public bool TopologyUnsupported(GAL.PrimitiveTopology topology)
+        internal bool TopologyUnsupported(GAL.PrimitiveTopology topology)
         {
             return topology switch
             {

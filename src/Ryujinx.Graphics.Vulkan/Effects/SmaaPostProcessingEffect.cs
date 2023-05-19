@@ -77,24 +77,6 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             var blendShader = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Effects/Shaders/SmaaBlend.spv");
             var neighbourShader = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Effects/Shaders/SmaaNeighbour.spv");
 
-            var edgeBindings = new ShaderBindings(
-                new[] { 2 },
-                Array.Empty<int>(),
-                new[] { 1 },
-                new[] { 0 });
-
-            var blendBindings = new ShaderBindings(
-                new[] { 2 },
-                Array.Empty<int>(),
-                new[] { 1, 3, 4 },
-                new[] { 0 });
-
-            var neighbourBindings = new ShaderBindings(
-                new[] { 2 },
-                Array.Empty<int>(),
-                new[] { 1, 3 },
-                new[] { 0 });
-
             var edgeResourceLayout = new ResourceLayoutBuilder()
                 .Add(ResourceStages.Compute, ResourceType.UniformBuffer, 2)
                 .Add(ResourceStages.Compute, ResourceType.TextureAndSampler, 1)
@@ -135,17 +117,17 @@ namespace Ryujinx.Graphics.Vulkan.Effects
 
             _edgeProgram = _renderer.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(edgeShader, edgeBindings, ShaderStage.Compute, TargetLanguage.Spirv)
+                new ShaderSource(edgeShader, ShaderStage.Compute, TargetLanguage.Spirv)
             }, edgeResourceLayout, new[] { specInfo });
 
             _blendProgram = _renderer.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(blendShader, blendBindings, ShaderStage.Compute, TargetLanguage.Spirv)
+                new ShaderSource(blendShader, ShaderStage.Compute, TargetLanguage.Spirv)
             }, blendResourceLayout, new[] { specInfo });
 
             _neighbourProgram = _renderer.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(neighbourShader, neighbourBindings, ShaderStage.Compute, TargetLanguage.Spirv)
+                new ShaderSource(neighbourShader, ShaderStage.Compute, TargetLanguage.Spirv)
             }, neighbourResourceLayout, new[] { specInfo });
         }
 

@@ -469,7 +469,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>Shader source</returns>
         public static ShaderSource CreateShaderSource(ShaderProgram program)
         {
-            return new ShaderSource(program.Code, program.BinaryCode, GetBindings(program.Info), program.Info.Stage, program.Language);
+            return new ShaderSource(program.Code, program.BinaryCode, program.Info.Stage, program.Language);
         }
 
         /// <summary>
@@ -718,25 +718,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 ShaderStage.Fragment => 4,
                 _ => 0
             };
-        }
-
-        /// <summary>
-        /// Gets information about the bindings used by a shader program.
-        /// </summary>
-        /// <param name="info">Shader program information to get the information from</param>
-        /// <returns>Shader bindings</returns>
-        public static ShaderBindings GetBindings(ShaderProgramInfo info)
-        {
-            var uniformBufferBindings = info.CBuffers.Select(x => x.Binding).ToArray();
-            var storageBufferBindings = info.SBuffers.Select(x => x.Binding).ToArray();
-            var textureBindings = info.Textures.Select(x => x.Binding).ToArray();
-            var imageBindings = info.Images.Select(x => x.Binding).ToArray();
-
-            return new ShaderBindings(
-                uniformBufferBindings,
-                storageBufferBindings,
-                textureBindings,
-                imageBindings);
         }
 
         /// <summary>

@@ -26,8 +26,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         public ResourceBindingSegment[][] BindingSegments { get; }
 
-        public int[][][] Bindings { get; }
-
         public ProgramLinkStatus LinkStatus { get; private set; }
 
         public readonly SpecDescription[] SpecDescriptions;
@@ -116,29 +114,6 @@ namespace Ryujinx.Graphics.Vulkan
             UsePushDescriptors = usePushDescriptors;
 
             Stages = stages;
-
-            int[][] GrabAll(Func<ShaderBindings, IReadOnlyCollection<int>> selector)
-            {
-                bool hasAny = false;
-                int[][] bindings = new int[internalShaders.Length][];
-
-                for (int i = 0; i < internalShaders.Length; i++)
-                {
-                    var collection = selector(internalShaders[i].Bindings);
-                    hasAny |= collection.Count != 0;
-                    bindings[i] = collection.ToArray();
-                }
-
-                return hasAny ? bindings : Array.Empty<int[]>();
-            }
-
-            Bindings = new[]
-            {
-                GrabAll(x => x.UniformBufferBindings),
-                GrabAll(x => x.StorageBufferBindings),
-                GrabAll(x => x.TextureBindings),
-                GrabAll(x => x.ImageBindings)
-            };
 
             BindingSegments = BuildBindingSegments(resourceLayout.SetUsages);
 

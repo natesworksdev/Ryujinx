@@ -46,18 +46,6 @@ namespace Ryujinx.Graphics.Vulkan
             (DescriptorSetLayouts, PipelineLayout) = PipelineLayoutFactory.Create(gd, device, setDescriptors, usePushDescriptors);
         }
 
-        public PipelineLayoutCacheEntry(VulkanRenderer gd, Device device, uint stages, bool usePd) : this(gd, device, PipelineBase.DescriptorSetLayouts)
-        {
-            DescriptorSetLayouts = PipelineLayoutFactory.Create(gd, device, stages, usePd, out var pipelineLayout);
-            PipelineLayout = pipelineLayout;
-        }
-
-        public PipelineLayoutCacheEntry(VulkanRenderer gd, Device device, ShaderSource[] shaders) : this(gd, device, PipelineBase.DescriptorSetLayouts)
-        {
-            DescriptorSetLayouts = PipelineLayoutFactory.CreateMinimal(gd, device, shaders, out var pipelineLayout);
-            PipelineLayout = pipelineLayout;
-        }
-
         public Auto<DescriptorSetCollection> GetNewDescriptorSetCollection(
             VulkanRenderer gd,
             int commandBufferIndex,
