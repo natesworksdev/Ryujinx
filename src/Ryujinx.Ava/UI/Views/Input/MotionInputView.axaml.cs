@@ -17,9 +17,9 @@ namespace Ryujinx.Ava.UI.Views.Input
             InitializeComponent();
         }
 
-        public MotionInputView(ControllerInputViewModel viewmodel)
+        public MotionInputView(ControllerInputViewModel viewModel)
         {
-            var config = viewmodel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
+            var config = viewModel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
 
             _viewModel = new MotionInputViewModel
             {
