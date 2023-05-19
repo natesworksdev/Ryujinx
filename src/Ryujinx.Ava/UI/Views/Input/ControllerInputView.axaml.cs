@@ -8,6 +8,8 @@ using Ryujinx.Ava.UI.ViewModels.Input;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Input;
 using Ryujinx.Input.Assigner;
+using System;
+using StickInputId = Ryujinx.Common.Configuration.Hid.Controller.StickInputId;
 
 namespace Ryujinx.Ava.UI.Views.Input
 {
@@ -65,7 +67,82 @@ namespace Ryujinx.Ava.UI.Views.Input
                     {
                         if (e.IsAssigned)
                         {
-                            (DataContext as ControllerInputViewModel).parentModel.IsModified = true;
+                            var viewModel = (DataContext as ControllerInputViewModel);
+                            viewModel.parentModel.IsModified = true;
+
+                            // This is a crime against code but I can't think of anything better rn
+                            switch (button.Name)
+                            {
+                                case "ButtonZl":
+                                    viewModel.Config.ButtonZl = (GamepadInputId)e.Key;
+                                    break;
+                                case "ButtonL":
+                                    viewModel.Config.ButtonL = (GamepadInputId)e.Key;
+                                    break;
+                                case "ButtonMinus":
+                                    viewModel.Config.ButtonMinus = (GamepadInputId)e.Key;
+                                    break;
+                                case "LeftStickButton":
+                                    viewModel.Config.LeftStickButton = (GamepadInputId)e.Key;
+                                    break;
+                                case "LeftJoystick":
+                                    viewModel.Config.LeftJoystick = (StickInputId)e.Key;
+                                    break;
+                                case "DpadUp":
+                                    viewModel.Config.DpadUp = (GamepadInputId)e.Key;
+                                    break;
+                                case "DpadDown":
+                                    viewModel.Config.DpadDown = (GamepadInputId)e.Key;
+                                    break;
+                                case "DpadLeft":
+                                    viewModel.Config.DpadLeft = (GamepadInputId)e.Key;
+                                    break;
+                                case "DpadRight":
+                                    viewModel.Config.DpadRight = (GamepadInputId)e.Key;
+                                    break;
+                                case "LeftButtonSr":
+                                    viewModel.Config.LeftButtonSr = (GamepadInputId)e.Key;
+                                    break;
+                                case "LeftButtonSl":
+                                    viewModel.Config.LeftButtonSl = (GamepadInputId)e.Key;
+                                    break;
+                                case "RightButtonSr":
+                                    viewModel.Config.RightButtonSr = (GamepadInputId)e.Key;
+                                    break;
+                                case "RightButtonSl":
+                                    viewModel.Config.RightButtonSl = (GamepadInputId)e.Key;
+                                    break;
+                                case "ButtonZr":
+                                    viewModel.Config.ButtonZr = (GamepadInputId)e.Key;
+                                    break;
+                                case "ButtonR":
+                                    viewModel.Config.ButtonR = (GamepadInputId)e.Key;
+                                    break;
+                                case "ButtonPlus":
+                                    viewModel.Config.ButtonPlus = (GamepadInputId)e.Key;
+                                    break;
+                                case "ButtonA":
+                                    viewModel.Config.ButtonA = (GamepadInputId)e.Key;
+                                    break;
+                                case "ButtonB":
+                                    viewModel.Config.ButtonB = (GamepadInputId)e.Key;
+                                    break;
+                                case "ButtonX":
+                                    viewModel.Config.ButtonX = (GamepadInputId)e.Key;
+                                    break;
+                                case "ButtonY":
+                                    viewModel.Config.ButtonY = (GamepadInputId)e.Key;
+                                    break;
+                                case "RightStickButton":
+                                    viewModel.Config.RightStickButton = (GamepadInputId)e.Key;
+                                    break;
+                                case "RightJoystick":
+                                    viewModel.Config.RightJoystick = (StickInputId)e.Key;
+                                    break;
+                                default:
+                                    Console.WriteLine(button.Name);
+                                    break;
+                            }
                         }
                     };
 

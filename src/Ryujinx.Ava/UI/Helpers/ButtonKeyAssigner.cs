@@ -1,3 +1,5 @@
+using Avalonia;
+using Avalonia.Data;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;
@@ -17,11 +19,13 @@ namespace Ryujinx.Ava.UI.Helpers
         {
             public ToggleButton Button { get; }
             public bool IsAssigned { get; }
+            public object Key { get;  }
 
-            public ButtonAssignedEventArgs(ToggleButton button, bool isAssigned)
+            public ButtonAssignedEventArgs(ToggleButton button, bool isAssigned, object key)
             {
                 Button = button;
                 IsAssigned = isAssigned;
+                Key = key;
             }
         }
 
@@ -79,15 +83,11 @@ namespace Ryujinx.Ava.UI.Helpers
 
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                string pressedButton = assigner.GetPressedButton();
+                object pressedButton = assigner.GetPressedButton();
 
                 if (_shouldUnbind)
                 {
-                    SetButtonText(ToggledButton, LocaleManager.Instance[LocaleKeys.KeyUnbound]);
-                }
-                else if (pressedButton != "")
-                {
-                    SetButtonText(ToggledButton, pressedButton);
+                    pressedButton = null;
                 }
 
                 _shouldUnbind = false;
@@ -95,17 +95,8 @@ namespace Ryujinx.Ava.UI.Helpers
 
                 ToggledButton.IsChecked = false;
 
-                ButtonAssigned?.Invoke(this, new ButtonAssignedEventArgs(ToggledButton, pressedButton != null));
+                ButtonAssigned?.Invoke(this, new ButtonAssignedEventArgs(ToggledButton, pressedButton != null, pressedButton));
 
-                static void SetButtonText(ToggleButton button, string text)
-                {
-                    ILogical textBlock = button.GetLogicalDescendants().First(x => x is TextBlock);
-
-                    if (textBlock != null && textBlock is TextBlock block)
-                    {
-                        block.Text = text;
-                    }
-                }
             });
         }
 
