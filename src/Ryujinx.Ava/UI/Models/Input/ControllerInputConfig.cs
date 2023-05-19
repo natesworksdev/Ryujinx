@@ -14,6 +14,11 @@ namespace Ryujinx.Ava.UI.Models.Input
         public int Slot { get; set; }
         public int AltSlot { get; set; }
         public bool MirrorInput { get; set; }
+        public int Sensitivity { get; set;  }
+        public double GyroDeadzone { get; set; }
+
+        public float WeakRumble { get; set; }
+        public float StrongRumble { get; set;  }
 
         public string Id { get; set; }
         public ControllerType ControllerType { get; set; }
@@ -398,30 +403,6 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
-        private double _gyroDeadzone;
-        public double GyroDeadzone
-        {
-            get => _gyroDeadzone;
-            set
-            {
-                _gyroDeadzone = Math.Round(value, 3);
-
-                OnPropertyChanged();
-            }
-        }
-
-        private int _sensitivity;
-        public int Sensitivity
-        {
-            get => _sensitivity;
-            set
-            {
-                _sensitivity = value;
-
-                OnPropertyChanged();
-            }
-        }
-
         private bool _enableRumble;
         public bool EnableRumble
         {
@@ -429,28 +410,6 @@ namespace Ryujinx.Ava.UI.Models.Input
             set
             {
                 _enableRumble = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private float _weakRumble;
-        public float WeakRumble
-        {
-            get => _weakRumble;
-            set
-            {
-                _weakRumble = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private float _strongRumble;
-        public float StrongRumble
-        {
-            get => _strongRumble;
-            set
-            {
-                _strongRumble = value;
                 OnPropertyChanged();
             }
         }
