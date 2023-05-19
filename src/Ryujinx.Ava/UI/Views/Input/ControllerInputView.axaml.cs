@@ -70,7 +70,6 @@ namespace Ryujinx.Ava.UI.Views.Input
                             var viewModel = (DataContext as ControllerInputViewModel);
                             viewModel.parentModel.IsModified = true;
 
-                            // This is a crime against code but I can't think of anything better rn
                             switch (button.Name)
                             {
                                 case "ButtonZl":

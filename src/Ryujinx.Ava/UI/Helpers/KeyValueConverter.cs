@@ -1,5 +1,4 @@
 using Avalonia.Data.Converters;
-using DynamicData.Kernel;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;

@@ -68,7 +68,6 @@ namespace Ryujinx.Ava.UI.Views.Input
                             var viewModel = (DataContext as KeyboardInputViewModel);
                             viewModel.parentModel.IsModified = true;
 
-                            // More crimes against humanity incoming
                             switch (button.Name)
                             {
                                 case "ButtonZl":
