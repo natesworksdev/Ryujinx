@@ -66,17 +66,29 @@ namespace Ryujinx.Graphics.Vulkan.Effects
                 new[] { 1 },
                 new[] { 0 });
 
+            var scalingResourceLayout = new ResourceLayoutBuilder()
+                .Add(ResourceStages.Compute, ResourceType.UniformBuffer, 2)
+                .Add(ResourceStages.Compute, ResourceType.TextureAndSampler, 1)
+                .Add(ResourceStages.Compute, ResourceType.Image, 0).Build();
+
+            var sharpeningResourceLayout = new ResourceLayoutBuilder()
+                .Add(ResourceStages.Compute, ResourceType.UniformBuffer, 2)
+                .Add(ResourceStages.Compute, ResourceType.UniformBuffer, 3)
+                .Add(ResourceStages.Compute, ResourceType.UniformBuffer, 4)
+                .Add(ResourceStages.Compute, ResourceType.TextureAndSampler, 1)
+                .Add(ResourceStages.Compute, ResourceType.Image, 0).Build();
+
             _sampler = _renderer.CreateSampler(GAL.SamplerCreateInfo.Create(MinFilter.Linear, MagFilter.Linear));
 
             _scalingProgram = _renderer.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(scalingShader, computeBindings, ShaderStage.Compute, TargetLanguage.Spirv)
-            });
+            }, scalingResourceLayout);
 
             _sharpeningProgram = _renderer.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(sharpeningShader, sharpeningBindings, ShaderStage.Compute, TargetLanguage.Spirv)
-            });
+            }, sharpeningResourceLayout);
         }
 
         public void Run(

@@ -35,7 +35,7 @@ namespace Ryujinx.Graphics.GAL
         Fragment = 1 << 5
     }
 
-    public readonly struct ResourceDescriptor
+    public readonly struct ResourceDescriptor : IEquatable<ResourceDescriptor>
     {
         public int Binding { get; }
         public int Count { get; }
@@ -49,19 +49,51 @@ namespace Ryujinx.Graphics.GAL
             Type = type;
             Stages = stages;
         }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Binding, Count, Type, Stages);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is ResourceDescriptor other && Equals(other);
+        }
+
+        public bool Equals(ResourceDescriptor other)
+        {
+            return Binding == other.Binding && Count == other.Count && Type == other.Type && Stages == other.Stages;
+        }
     }
 
-    public readonly struct ResourceUsage
+    public readonly struct ResourceUsage : IEquatable<ResourceUsage>
     {
         public int Binding { get; }
+        public ResourceType Type { get; }
         public ResourceStages Stages { get; }
         public ResourceAccess Access { get; }
 
-        public ResourceUsage(int binding, ResourceStages stages, ResourceAccess access)
+        public ResourceUsage(int binding, ResourceType type, ResourceStages stages, ResourceAccess access)
         {
             Binding = binding;
+            Type = type;
             Stages = stages;
             Access = access;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Binding, Type, Stages, Access);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is ResourceUsage other && Equals(other);
+        }
+
+        public bool Equals(ResourceUsage other)
+        {
+            return Binding == other.Binding && Type == other.Type && Stages == other.Stages && Access == other.Access;
         }
     }
 
@@ -72,6 +104,52 @@ namespace Ryujinx.Graphics.GAL
         public ResourceDescriptorCollection(ReadOnlyCollection<ResourceDescriptor> descriptors)
         {
             Descriptors = descriptors;
+        }
+
+        public override int GetHashCode()
+        {
+            HashCode hasher = new HashCode();
+
+            if (Descriptors != null)
+            {
+                foreach (var descriptor in Descriptors)
+                {
+                    hasher.Add(descriptor);
+                }
+            }
+
+            return hasher.ToHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is ResourceDescriptorCollection other && Equals(other);
+        }
+
+        public bool Equals(ResourceDescriptorCollection other)
+        {
+            if ((Descriptors == null) != (other.Descriptors == null))
+            {
+                return false;
+            }
+
+            if (Descriptors != null)
+            {
+                if (Descriptors.Count != other.Descriptors.Count)
+                {
+                    return false;
+                }
+
+                for (int index = 0; index < Descriptors.Count; index++)
+                {
+                    if (!Descriptors[index].Equals(other.Descriptors[index]))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
     }
 

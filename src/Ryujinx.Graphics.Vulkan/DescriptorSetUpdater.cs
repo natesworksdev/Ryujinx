@@ -372,6 +372,165 @@ namespace Ryujinx.Graphics.Vulkan
         private void UpdateAndBind(CommandBufferScoped cbs, int setIndex, PipelineBindPoint pbp)
         {
             var program = _program;
+            var bindingSegments = program.BindingSegments[setIndex];
+
+            if (bindingSegments.Length == 0 && setIndex != PipelineBase.UniformSetIndex)
+            {
+                return;
+            }
+
+            var dummyBuffer = _dummyBuffer?.GetBuffer();
+
+            var dsc = program.GetNewDescriptorSetCollection(_gd, cbs.CommandBufferIndex, setIndex, out var isNew).Get(cbs);
+
+            if (!program.HasMinimalLayout)
+            {
+                if (isNew)
+                {
+                    Initialize(cbs, setIndex, dsc);
+                }
+
+                if (setIndex == PipelineBase.UniformSetIndex)
+                {
+                    Span<DescriptorBufferInfo> uniformBuffer = stackalloc DescriptorBufferInfo[1];
+
+                    if (!_uniformSet[0])
+                    {
+                        _cachedSupportBuffer = _gd.BufferManager.GetBuffer(cbs.CommandBuffer, _pipeline.SupportBufferUpdater.Handle, false).Get(cbs, 0, SupportBuffer.RequiredSize).Value;
+                        _uniformSet[0] = true;
+                    }
+
+                    uniformBuffer[0] = new DescriptorBufferInfo()
+                    {
+                        Offset = 0,
+                        Range = (ulong)SupportBuffer.RequiredSize,
+                        Buffer = _cachedSupportBuffer
+                    };
+
+                    dsc.UpdateBuffers(0, 0, uniformBuffer, DescriptorType.UniformBuffer);
+                }
+            }
+
+            foreach (ResourceBindingSegment segment in bindingSegments)
+            {
+                int binding = segment.Binding;
+                int count = segment.Count;
+
+                if (setIndex == PipelineBase.UniformSetIndex)
+                {
+                    for (int i = 0; i < count; i++)
+                    {
+                        int index = binding + i;
+
+                        if (!_uniformSet[index])
+                        {
+                            UpdateBuffer(cbs, ref _uniformBuffers[index], _uniformBufferRefs[index], dummyBuffer);
+
+                            _uniformSet[index] = true;
+                        }
+                    }
+
+                    ReadOnlySpan<DescriptorBufferInfo> uniformBuffers = _uniformBuffers;
+                    dsc.UpdateBuffers(0, binding, uniformBuffers.Slice(binding, count), DescriptorType.UniformBuffer);
+                }
+                else if (setIndex == PipelineBase.StorageSetIndex)
+                {
+                    for (int i = 0; i < count; i++)
+                    {
+                        int index = binding + i;
+
+                        if (!_storageSet[index])
+                        {
+                            UpdateBuffer(cbs, ref _storageBuffers[index], _storageBufferRefs[index], dummyBuffer);
+
+                            _storageSet[index] = true;
+                        }
+                    }
+
+                    ReadOnlySpan<DescriptorBufferInfo> storageBuffers = _storageBuffers;
+                    if (program.HasMinimalLayout)
+                    {
+                        dsc.UpdateBuffers(0, binding, storageBuffers.Slice(binding, count), DescriptorType.StorageBuffer);
+                    }
+                    else
+                    {
+                        dsc.UpdateStorageBuffers(0, binding, storageBuffers.Slice(binding, count));
+                    }
+                }
+                else if (setIndex == PipelineBase.TextureSetIndex)
+                {
+                    if (segment.Type != ResourceType.BufferTexture)
+                    {
+                        Span<DescriptorImageInfo> textures = _textures;
+
+                        for (int i = 0; i < count; i++)
+                        {
+                            ref var texture = ref textures[i];
+
+                            texture.ImageView = _textureRefs[binding + i]?.Get(cbs).Value ?? default;
+                            texture.Sampler = _samplerRefs[binding + i]?.Get(cbs).Value ?? default;
+
+                            if (texture.ImageView.Handle == 0)
+                            {
+                                texture.ImageView = _dummyTexture.GetImageView().Get(cbs).Value;
+                            }
+
+                            if (texture.Sampler.Handle == 0)
+                            {
+                                texture.Sampler = _dummySampler.GetSampler().Get(cbs).Value;
+                            }
+                        }
+
+                        dsc.UpdateImages(0, binding, textures.Slice(0, count), DescriptorType.CombinedImageSampler);
+                    }
+                    else
+                    {
+                        Span<BufferView> bufferTextures = _bufferTextures;
+
+                        for (int i = 0; i < count; i++)
+                        {
+                            bufferTextures[i] = _bufferTextureRefs[binding + i]?.GetBufferView(cbs) ?? default;
+                        }
+
+                        dsc.UpdateBufferImages(0, binding, bufferTextures.Slice(0, count), DescriptorType.UniformTexelBuffer);
+                    }
+                }
+                else if (setIndex == PipelineBase.ImageSetIndex)
+                {
+                    if (segment.Type != ResourceType.BufferImage)
+                    {
+                        Span<DescriptorImageInfo> images = _images;
+
+                        for (int i = 0; i < count; i++)
+                        {
+                            images[i].ImageView = _imageRefs[binding + i]?.Get(cbs).Value ?? default;
+                        }
+
+                        dsc.UpdateImages(0, binding, images.Slice(0, count), DescriptorType.StorageImage);
+                    }
+                    else
+                    {
+                        Span<BufferView> bufferImages = _bufferImages;
+
+                        for (int i = 0; i < count; i++)
+                        {
+                            bufferImages[i] = _bufferImageRefs[binding + i]?.GetBufferView(cbs, _bufferImageFormats[binding + i]) ?? default;
+                        }
+
+                        dsc.UpdateBufferImages(0, binding, bufferImages.Slice(0, count), DescriptorType.StorageTexelBuffer);
+                    }
+                }
+            }
+
+            var sets = dsc.GetSets();
+
+            _gd.Api.CmdBindDescriptorSets(cbs.CommandBuffer, pbp, _program.PipelineLayout, (uint)setIndex, 1, sets, 0, ReadOnlySpan<uint>.Empty);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void UpdateAndBindOld(CommandBufferScoped cbs, int setIndex, PipelineBindPoint pbp)
+        {
+            var program = _program;
             int stagesCount = program.Bindings[setIndex].Length;
             if (stagesCount == 0 && setIndex != PipelineBase.UniformSetIndex)
             {

@@ -3,6 +3,7 @@ using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,6 +23,8 @@ namespace Ryujinx.Graphics.Vulkan
         public bool IsCompute { get; }
 
         public uint Stages { get; }
+
+        public ResourceBindingSegment[][] BindingSegments { get; }
 
         public int[][][] Bindings { get; }
 
@@ -54,7 +57,13 @@ namespace Ryujinx.Graphics.Vulkan
         private Task _compileTask;
         private bool _firstBackgroundUse;
 
-        public ShaderCollection(VulkanRenderer gd, Device device, ShaderSource[] shaders, SpecDescription[] specDescription = null, bool isMinimal = false)
+        public ShaderCollection(
+            VulkanRenderer gd,
+            Device device,
+            ShaderSource[] shaders,
+            ResourceLayout resourceLayout,
+            SpecDescription[] specDescription = null,
+            bool isMinimal = false)
         {
             _gd = gd;
             _device = device;
@@ -99,14 +108,14 @@ namespace Ryujinx.Graphics.Vulkan
 
             _shaders = internalShaders;
 
-            bool usePd = !isMinimal && VulkanConfiguration.UsePushDescriptors && _gd.Capabilities.SupportsPushDescriptors;
+            bool usePushDescriptors = !isMinimal && VulkanConfiguration.UsePushDescriptors && _gd.Capabilities.SupportsPushDescriptors;
 
             _plce = isMinimal
                 ? gd.PipelineLayoutCache.Create(gd, device, shaders)
-                : gd.PipelineLayoutCache.GetOrCreate(gd, device, stages, usePd);
+                : gd.PipelineLayoutCache.GetOrCreate(gd, device, stages, usePushDescriptors);
 
             HasMinimalLayout = isMinimal;
-            UsePushDescriptors = usePd;
+            UsePushDescriptors = usePushDescriptors;
 
             Stages = stages;
 
@@ -133,6 +142,8 @@ namespace Ryujinx.Graphics.Vulkan
                 GrabAll(x => x.ImageBindings)
             };
 
+            BindingSegments = BuildBindingSegments(resourceLayout.SetUsages);
+
             _compileTask = Task.CompletedTask;
             _firstBackgroundUse = false;
         }
@@ -141,13 +152,75 @@ namespace Ryujinx.Graphics.Vulkan
             VulkanRenderer gd,
             Device device,
             ShaderSource[] sources,
+            ResourceLayout resourceLayout,
             ProgramPipelineState state,
-            bool fromCache) : this(gd, device, sources)
+            bool fromCache) : this(gd, device, sources, resourceLayout)
         {
             _state = state;
 
             _compileTask = BackgroundCompilation();
             _firstBackgroundUse = !fromCache;
+        }
+
+        private static ResourceBindingSegment[][] BuildBindingSegments(ReadOnlyCollection<ResourceUsageCollection> setUsages)
+        {
+            ResourceBindingSegment[][] segments = new ResourceBindingSegment[setUsages.Count][];
+
+            for (int setIndex = 0; setIndex < setUsages.Count; setIndex++)
+            {
+                List<ResourceBindingSegment> currentSegments = new List<ResourceBindingSegment>();
+
+                ResourceUsage currentUsage = default;
+                int currentCount = 0;
+
+                for (int index = 0; index < setUsages[setIndex].Usages.Count; index++)
+                {
+                    ResourceUsage usage = setUsages[setIndex].Usages[index];
+
+                    // If the resource is not accessed, we don't need to update it.
+                    if (usage.Access == ResourceAccess.None)
+                    {
+                        continue;
+                    }
+
+                    if (currentUsage.Binding + currentCount != usage.Binding ||
+                        currentUsage.Type != usage.Type ||
+                        currentUsage.Stages != usage.Stages ||
+                        currentUsage.Access != usage.Access)
+                    {
+                        if (currentCount != 0)
+                        {
+                            currentSegments.Add(new ResourceBindingSegment(
+                                currentUsage.Binding,
+                                currentCount,
+                                currentUsage.Type,
+                                currentUsage.Stages,
+                                currentUsage.Access));
+                        }
+
+                        currentUsage = usage;
+                        currentCount = 1;
+                    }
+                    else
+                    {
+                        currentCount++;
+                    }
+                }
+
+                if (currentCount != 0)
+                {
+                    currentSegments.Add(new ResourceBindingSegment(
+                        currentUsage.Binding,
+                        currentCount,
+                        currentUsage.Type,
+                        currentUsage.Stages,
+                        currentUsage.Access));
+                }
+
+                segments[setIndex] = currentSegments.ToArray();
+            }
+
+            return segments;
         }
 
         private async Task BackgroundCompilation()

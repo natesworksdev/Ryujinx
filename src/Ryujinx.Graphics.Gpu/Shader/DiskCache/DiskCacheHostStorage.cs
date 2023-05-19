@@ -370,7 +370,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                         {
                             bool hasFragmentShader = shaders.Length > 5 && shaders[5] != null;
 
-                            ShaderInfo shaderInfo = ShaderInfoBuilder.BuildForGraphics(context, shaders, specState.PipelineState, fromCache: true);
+                            ShaderInfo shaderInfo = ShaderInfoBuilder.BuildForCache(context, shaders, specState.PipelineState, fromCache: true);
 
                             IProgram hostProgram;
 

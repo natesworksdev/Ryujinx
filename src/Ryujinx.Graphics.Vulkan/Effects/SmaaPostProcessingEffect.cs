@@ -95,6 +95,24 @@ namespace Ryujinx.Graphics.Vulkan.Effects
                 new[] { 1, 3 },
                 new[] { 0 });
 
+            var edgeResourceLayout = new ResourceLayoutBuilder()
+                .Add(ResourceStages.Compute, ResourceType.UniformBuffer, 2)
+                .Add(ResourceStages.Compute, ResourceType.TextureAndSampler, 1)
+                .Add(ResourceStages.Compute, ResourceType.Image, 0).Build();
+
+            var blendResourceLayout = new ResourceLayoutBuilder()
+                .Add(ResourceStages.Compute, ResourceType.UniformBuffer, 2)
+                .Add(ResourceStages.Compute, ResourceType.TextureAndSampler, 1)
+                .Add(ResourceStages.Compute, ResourceType.TextureAndSampler, 3)
+                .Add(ResourceStages.Compute, ResourceType.TextureAndSampler, 4)
+                .Add(ResourceStages.Compute, ResourceType.Image, 0).Build();
+
+            var neighbourResourceLayout = new ResourceLayoutBuilder()
+                .Add(ResourceStages.Compute, ResourceType.UniformBuffer, 2)
+                .Add(ResourceStages.Compute, ResourceType.TextureAndSampler, 1)
+                .Add(ResourceStages.Compute, ResourceType.TextureAndSampler, 3)
+                .Add(ResourceStages.Compute, ResourceType.Image, 0).Build();
+
             _samplerLinear = _renderer.CreateSampler(GAL.SamplerCreateInfo.Create(MinFilter.Linear, MagFilter.Linear));
 
             _specConstants = new SmaaConstants()
@@ -118,17 +136,17 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             _edgeProgram = _renderer.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(edgeShader, edgeBindings, ShaderStage.Compute, TargetLanguage.Spirv)
-            }, new[] { specInfo });
+            }, edgeResourceLayout, new[] { specInfo });
 
             _blendProgram = _renderer.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(blendShader, blendBindings, ShaderStage.Compute, TargetLanguage.Spirv)
-            }, new[] { specInfo });
+            }, blendResourceLayout, new[] { specInfo });
 
             _neighbourProgram = _renderer.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(neighbourShader, neighbourBindings, ShaderStage.Compute, TargetLanguage.Spirv)
-            }, new[] { specInfo });
+            }, neighbourResourceLayout, new[] { specInfo });
         }
 
         public void DeletePipelines()

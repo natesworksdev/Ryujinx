@@ -81,10 +81,10 @@ namespace Ryujinx.Graphics.Gpu.Shader
             AddDualDescriptor(stages, ResourceType.TextureAndSampler, ResourceType.BufferTexture, TextureSetIndex, textureBinding, texturesPerStage);
             AddDualDescriptor(stages, ResourceType.Image, ResourceType.BufferImage, ImageSetIndex, imageBinding, imagesPerStage);
 
-            AddUsage(info.CBuffers, stages, UniformSetIndex);
-            AddUsage(info.SBuffers, stages, StorageSetIndex);
-            AddUsage(info.Textures, stages, TextureSetIndex);
-            AddUsage(info.Images, stages, ImageSetIndex);
+            AddUsage(info.CBuffers, stages, UniformSetIndex, isStorage: false);
+            AddUsage(info.SBuffers, stages, StorageSetIndex, isStorage: true);
+            AddUsage(info.Textures, stages, TextureSetIndex, isImage: false);
+            AddUsage(info.Images, stages, ImageSetIndex, isImage: true);
         }
 
         private void AddDescriptor(ResourceStages stages, ResourceType type, int setIndex, int binding, int count)
@@ -106,23 +106,31 @@ namespace Ryujinx.Graphics.Gpu.Shader
             _resourceDescriptors[setIndex].Add(new ResourceDescriptor(binding, count, type, stages));
         }
 
-        private void AddUsage(IEnumerable<BufferDescriptor> buffers, ResourceStages stages, int setIndex)
+        private void AddUsage(IEnumerable<BufferDescriptor> buffers, ResourceStages stages, int setIndex, bool isStorage)
         {
             foreach (BufferDescriptor buffer in buffers)
             {
                 _resourceUsages[setIndex].Add(new ResourceUsage(
                     buffer.Binding,
+                    isStorage ? ResourceType.StorageBuffer : ResourceType.UniformBuffer,
                     stages,
                     buffer.Flags.HasFlag(BufferUsageFlags.Write) ? ResourceAccess.ReadWrite : ResourceAccess.Read));
             }
         }
 
-        private void AddUsage(IEnumerable<TextureDescriptor> textures, ResourceStages stages, int setIndex)
+        private void AddUsage(IEnumerable<TextureDescriptor> textures, ResourceStages stages, int setIndex, bool isImage)
         {
             foreach (TextureDescriptor texture in textures)
             {
+                bool isBuffer = (texture.Type & SamplerType.Mask) == SamplerType.TextureBuffer;
+
+                ResourceType type = isBuffer
+                    ? (isImage ? ResourceType.BufferImage : ResourceType.BufferTexture)
+                    : (isImage ? ResourceType.Image : ResourceType.TextureAndSampler);
+
                 _resourceUsages[setIndex].Add(new ResourceUsage(
                     texture.Binding,
+                    type,
                     stages,
                     texture.Flags.HasFlag(TextureUsageFlags.ImageStore) ? ResourceAccess.ReadWrite : ResourceAccess.Read));
             }
@@ -151,7 +159,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             }
         }
 
-        public static ShaderInfo BuildForGraphics(
+        public static ShaderInfo BuildForCache(
             GpuContext context,
             IEnumerable<CachedShaderStage> programs,
             ProgramPipelineState? pipeline,

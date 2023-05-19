@@ -398,17 +398,17 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (info.State.HasValue || isCompute)
             {
-                return new ShaderCollection(this, _device, sources, info.State ?? default, info.FromCache);
+                return new ShaderCollection(this, _device, sources, info.ResourceLayout, info.State ?? default, info.FromCache);
             }
             else
             {
-                return new ShaderCollection(this, _device, sources);
+                return new ShaderCollection(this, _device, sources, info.ResourceLayout);
             }
         }
 
-        internal ShaderCollection CreateProgramWithMinimalLayout(ShaderSource[] sources, SpecDescription[] specDescription = null)
+        internal ShaderCollection CreateProgramWithMinimalLayout(ShaderSource[] sources, ResourceLayout resourceLayout, SpecDescription[] specDescription = null)
         {
-            return new ShaderCollection(this, _device, sources, specDescription: specDescription, isMinimal: true);
+            return new ShaderCollection(this, _device, sources, resourceLayout, specDescription, isMinimal: true);
         }
 
         public ISampler CreateSampler(GAL.SamplerCreateInfo info)
