@@ -139,9 +139,6 @@ namespace Ryujinx.Ava.UI.Views.Input
                                 case "RightJoystick":
                                     viewModel.Config.RightJoystick = (StickInputId)e.Key;
                                     break;
-                                default:
-                                    Console.WriteLine(button.Name);
-                                    break;
                             }
                         }
                     };
