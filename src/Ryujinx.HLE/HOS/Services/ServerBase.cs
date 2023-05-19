@@ -482,9 +482,9 @@ namespace Ryujinx.HLE.HOS.Services
             {
                 if (_selfThread.HostThread.ManagedThreadId != Environment.CurrentManagedThreadId && _selfThread.HostThread.Join(ThreadJoinTimeout) == false)
                 {
-                    Logger.Warning?.Print(LogClass.Service, $"The ServerBase thread didn't terminate within {ThreadJoinTimeout:g}, resources will not have Dispose() called to avoid a race condition.");
+                    Logger.Warning?.Print(LogClass.Service, $"The ServerBase thread didn't terminate within {ThreadJoinTimeout:g}, waiting longer.");
 
-                    return;
+                    _selfThread.HostThread.Join(Timeout.Infinite);
                 }
 
                 if (Interlocked.Exchange(ref _isDisposed, 1) == 0)
