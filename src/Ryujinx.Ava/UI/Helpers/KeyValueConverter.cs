@@ -164,49 +164,7 @@ namespace Ryujinx.Ava.UI.Helpers
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            object key = null;
-
-            if (value != null)
-            {
-                if (targetType == typeof(Key))
-                {
-                    var optionalKey = KeysMap.FirstOrOptional(x => LocaleManager.Instance[x.Value] == value.ToString());
-                    if (optionalKey.HasValue)
-                    {
-                        key = optionalKey.Value;
-                    }
-                    else
-                    {
-                        key = Enum.Parse<Key>(value.ToString());
-                    }
-                }
-                else if (targetType == typeof(GamepadInputId))
-                {
-                    var optionalKey = GamepadInputIdMap.FirstOrOptional(x => LocaleManager.Instance[x.Value] == value.ToString());
-                    if (optionalKey.HasValue)
-                    {
-                        key = optionalKey.Value;
-                    }
-                    else
-                    {
-                        key = Enum.Parse<Key>(value.ToString());
-                    }
-                }
-                else if (targetType == typeof(StickInputId))
-                {
-                    var optionalKey = StickInputIdMap.FirstOrOptional(x => LocaleManager.Instance[x.Value] == value.ToString());
-                    if (optionalKey.HasValue)
-                    {
-                        key = optionalKey.Value;
-                    }
-                    else
-                    {
-                        key = Enum.Parse<Key>(value.ToString());
-                    }
-                }
-            }
-
-            return key;
+            throw new NotSupportedException();
         }
     }
 }
