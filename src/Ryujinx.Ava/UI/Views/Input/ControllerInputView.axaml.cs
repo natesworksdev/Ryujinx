@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -182,8 +183,9 @@ namespace Ryujinx.Ava.UI.Views.Input
             return assigner;
         }
 
-        public void Dispose()
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
+            base.OnDetachedFromVisualTree(e);
             _currentAssigner?.Cancel();
             _currentAssigner = null;
         }
