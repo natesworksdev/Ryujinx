@@ -86,6 +86,16 @@ namespace Ryujinx.Ava.UI.Helpers
             { Key.Unbound, LocaleKeys.KeyUnbound },
         };
 
+        private static readonly Dictionary<GamepadInputId, LocaleKeys> GamepadInputIdMap = new()
+        {
+
+        };
+
+        private static readonly Dictionary<StickInputId, LocaleKeys> StickInputIdMap = new()
+        {
+
+        };
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             string keyString = "";
@@ -103,11 +113,25 @@ namespace Ryujinx.Ava.UI.Helpers
             }
             else if (value is GamepadInputId gamepadInputId)
             {
-                keyString = value.ToString();
+                if (GamepadInputIdMap.TryGetValue(gamepadInputId, out LocaleKeys localeKey))
+                {
+                    keyString = LocaleManager.Instance[localeKey];
+                }
+                else
+                {
+                    keyString = gamepadInputId.ToString();
+                }
             }
             else if (value is StickInputId stickInputId)
             {
-                keyString = value.ToString();
+                if (StickInputIdMap.TryGetValue(stickInputId, out LocaleKeys localeKey))
+                {
+                    keyString = LocaleManager.Instance[localeKey];
+                }
+                else
+                {
+                    keyString = stickInputId.ToString();
+                }
             }
 
             return keyString;
@@ -133,11 +157,27 @@ namespace Ryujinx.Ava.UI.Helpers
                 }
                 else if (targetType == typeof(GamepadInputId))
                 {
-                    key = Enum.Parse<GamepadInputId>(value.ToString());
+                    var optionalKey = GamepadInputIdMap.FirstOrOptional(x => LocaleManager.Instance[x.Value] == value.ToString());
+                    if (optionalKey.HasValue)
+                    {
+                        key = optionalKey.Value;
+                    }
+                    else
+                    {
+                        key = Enum.Parse<Key>(value.ToString());
+                    }
                 }
                 else if (targetType == typeof(StickInputId))
                 {
-                    key = Enum.Parse<StickInputId>(value.ToString());
+                    var optionalKey = StickInputIdMap.FirstOrOptional(x => LocaleManager.Instance[x.Value] == value.ToString());
+                    if (optionalKey.HasValue)
+                    {
+                        key = optionalKey.Value;
+                    }
+                    else
+                    {
+                        key = Enum.Parse<Key>(value.ToString());
+                    }
                 }
             }
 
