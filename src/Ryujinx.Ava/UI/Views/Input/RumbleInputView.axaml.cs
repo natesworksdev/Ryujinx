@@ -10,7 +10,7 @@ namespace Ryujinx.Ava.UI.Views.Input
 {
     public partial class RumbleInputView : UserControl
     {
-        private RumbleInputViewModel ViewModel;
+        private RumbleInputViewModel _viewModel;
 
         public RumbleInputView()
         {
@@ -21,21 +21,21 @@ namespace Ryujinx.Ava.UI.Views.Input
         {
             var config = viewmodel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
 
-            ViewModel = new RumbleInputViewModel
+            _viewModel = new RumbleInputViewModel
             {
                 StrongRumble = config.StrongRumble,
                 WeakRumble = config.WeakRumble
             };
 
             InitializeComponent();
-            DataContext = ViewModel;
+            DataContext = _viewModel;
         }
 
-        public static async Task Show(ControllerInputViewModel viewmodel)
+        public static async Task Show(ControllerInputViewModel viewModel)
         {
-            RumbleInputView content = new RumbleInputView(viewmodel);
+            RumbleInputView content = new(viewModel);
 
-            ContentDialog contentDialog = new ContentDialog
+            ContentDialog contentDialog = new()
             {
                 Title = LocaleManager.Instance[LocaleKeys.ControllerRumbleTitle],
                 PrimaryButtonText = LocaleManager.Instance[LocaleKeys.ControllerSettingsSave],
@@ -46,9 +46,9 @@ namespace Ryujinx.Ava.UI.Views.Input
 
             contentDialog.PrimaryButtonClick += (sender, args) =>
             {
-                var config = viewmodel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
-                config.StrongRumble = content.ViewModel.StrongRumble;
-                config.WeakRumble = content.ViewModel.WeakRumble;
+                var config = viewModel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
+                config.StrongRumble = content._viewModel.StrongRumble;
+                config.WeakRumble = content._viewModel.WeakRumble;
             };
 
             await contentDialog.ShowAsync();

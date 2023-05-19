@@ -10,7 +10,7 @@ namespace Ryujinx.Ava.UI.Views.Input
 {
     public partial class MotionInputView : UserControl
     {
-        private MotionInputViewModel ViewModel;
+        private MotionInputViewModel _viewModel;
 
         public MotionInputView()
         {
@@ -21,28 +21,27 @@ namespace Ryujinx.Ava.UI.Views.Input
         {
             var config = viewmodel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
 
-            ViewModel = new MotionInputViewModel
+            _viewModel = new MotionInputViewModel
             {
                 Slot = config.Slot,
                 AltSlot = config.AltSlot,
                 DsuServerHost = config.DsuServerHost,
                 DsuServerPort = config.DsuServerPort,
                 MirrorInput = config.MirrorInput,
-                EnableMotion = config.EnableMotion,
                 Sensitivity = config.Sensitivity,
                 GyroDeadzone = config.GyroDeadzone,
                 EnableCemuHookMotion = config.EnableCemuHookMotion
             };
 
             InitializeComponent();
-            DataContext = ViewModel;
+            DataContext = _viewModel;
         }
 
-        public static async Task Show(ControllerInputViewModel viewmodel)
+        public static async Task Show(ControllerInputViewModel viewModel)
         {
-            MotionInputView content = new MotionInputView(viewmodel);
+            MotionInputView content = new(viewModel);
 
-            ContentDialog contentDialog = new ContentDialog
+            ContentDialog contentDialog = new()
             {
                 Title = LocaleManager.Instance[LocaleKeys.ControllerMotionTitle],
                 PrimaryButtonText = LocaleManager.Instance[LocaleKeys.ControllerSettingsSave],
@@ -52,16 +51,15 @@ namespace Ryujinx.Ava.UI.Views.Input
             };
             contentDialog.PrimaryButtonClick += (sender, args) =>
             {
-                var config = viewmodel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
-                config.Slot = content.ViewModel.Slot;
-                config.EnableMotion = content.ViewModel.EnableMotion;
-                config.Sensitivity = content.ViewModel.Sensitivity;
-                config.GyroDeadzone = content.ViewModel.GyroDeadzone;
-                config.AltSlot = content.ViewModel.AltSlot;
-                config.DsuServerHost = content.ViewModel.DsuServerHost;
-                config.DsuServerPort = content.ViewModel.DsuServerPort;
-                config.EnableCemuHookMotion = content.ViewModel.EnableCemuHookMotion;
-                config.MirrorInput = content.ViewModel.MirrorInput;
+                var config = viewModel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
+                config.Slot = content._viewModel.Slot;
+                config.Sensitivity = content._viewModel.Sensitivity;
+                config.GyroDeadzone = content._viewModel.GyroDeadzone;
+                config.AltSlot = content._viewModel.AltSlot;
+                config.DsuServerHost = content._viewModel.DsuServerHost;
+                config.DsuServerPort = content._viewModel.DsuServerPort;
+                config.EnableCemuHookMotion = content._viewModel.EnableCemuHookMotion;
+                config.MirrorInput = content._viewModel.MirrorInput;
             };
 
             await contentDialog.ShowAsync();

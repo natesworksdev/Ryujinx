@@ -3,15 +3,6 @@ namespace Ryujinx.Ava.UI.ViewModels
     public class MotionInputViewModel : BaseModel
     {
         private int _slot;
-        private int _altSlot;
-        private string _dsuServerHost;
-        private int _dsuServerPort;
-        private bool _mirrorInput;
-        private bool _enableMotion;
-        private int _sensitivity;
-        private double _gryoDeadzone;
-        private bool _enableCemuHookMotion;
-
         public int Slot
         {
             get => _slot;
@@ -22,6 +13,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        private int _altSlot;
         public int AltSlot
         {
             get => _altSlot;
@@ -32,6 +24,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        private string _dsuServerHost;
         public string DsuServerHost
         {
             get => _dsuServerHost;
@@ -42,6 +35,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        private int _dsuServerPort;
         public int DsuServerPort
         {
             get => _dsuServerPort;
@@ -52,6 +46,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        private bool _mirrorInput;
         public bool MirrorInput
         {
             get => _mirrorInput;
@@ -62,16 +57,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public bool EnableMotion
-        {
-            get => _enableMotion;
-            set
-            {
-                _enableMotion = value;
-                OnPropertyChanged();
-            }
-        }
-
+        private int _sensitivity;
         public int Sensitivity
         {
             get => _sensitivity;
@@ -82,6 +68,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        private double _gryoDeadzone;
         public double GyroDeadzone
         {
             get => _gryoDeadzone;
@@ -92,6 +79,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        private bool _enableCemuHookMotion;
         public bool EnableCemuHookMotion
         {
             get => _enableCemuHookMotion;

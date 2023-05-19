@@ -3,8 +3,6 @@ namespace Ryujinx.Ava.UI.ViewModels
     public class RumbleInputViewModel : BaseModel
     {
         private float _strongRumble;
-        private float _weakRumble;
-
         public float StrongRumble
         {
             get => _strongRumble;
@@ -15,6 +13,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        private float _weakRumble;
         public float WeakRumble
         {
             get => _weakRumble;
