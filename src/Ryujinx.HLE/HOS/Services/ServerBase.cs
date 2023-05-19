@@ -87,6 +87,7 @@ namespace Ryujinx.HLE.HOS.Services
             try
             {
                 lockTaken = _handleLock.TryEnterWriteLock(Timeout.Infinite);
+
                 _ports.Add(serverPortHandle, objectFactory);
             }
             finally
@@ -104,6 +105,7 @@ namespace Ryujinx.HLE.HOS.Services
             InitDone.WaitOne();
 
             _selfProcess.HandleTable.GenerateHandle(serverSession, out int serverSessionHandle);
+
             AddSessionObj(serverSessionHandle, obj);
         }
 
@@ -113,6 +115,7 @@ namespace Ryujinx.HLE.HOS.Services
             try
             {
                 lockTaken = _handleLock.TryEnterWriteLock(Timeout.Infinite);
+
                 _sessions.Add(serverSessionHandle, obj);
             }
             finally
@@ -130,6 +133,7 @@ namespace Ryujinx.HLE.HOS.Services
             try
             {
                 lockTaken = _handleLock.TryEnterReadLock(Timeout.Infinite);
+
                 return _sessions[serverSessionHandle];
             }
             finally
@@ -147,6 +151,7 @@ namespace Ryujinx.HLE.HOS.Services
             try
             {
                 lockTaken = _handleLock.TryEnterWriteLock(Timeout.Infinite);
+
                 return _sessions.Remove(serverSessionHandle, out obj);
             }
             finally
@@ -475,10 +480,10 @@ namespace Ryujinx.HLE.HOS.Services
         {
             if (disposing && _selfThread != null)
             {
-                if (_selfThread.HostThread.ManagedThreadId != Environment.CurrentManagedThreadId
-                    && _selfThread.HostThread.Join(ThreadJoinTimeout) == false)
+                if (_selfThread.HostThread.ManagedThreadId != Environment.CurrentManagedThreadId && _selfThread.HostThread.Join(ThreadJoinTimeout) == false)
                 {
                     Logger.Warning?.Print(LogClass.Service, $"The ServerBase thread didn't terminate within {ThreadJoinTimeout:g}, resources will not have Dispose() called to avoid a race condition.");
+
                     return;
                 }
 
