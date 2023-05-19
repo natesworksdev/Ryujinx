@@ -316,6 +316,13 @@
                 Grid.Column="1"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch">
+                <!-- Controller Picture -->
+                <Image
+                    Margin="0,10"
+                    MaxHeight="300"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Source="{Binding Image}" />
                 <Border
                     BorderBrush="{DynamicResource ThemeControlBorderColor}"
                     BorderThickness="1"
@@ -346,7 +353,7 @@
                             Margin="0,4,0,0"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            IsVisible="{Binding !IsRight}"
+                            IsVisible="{Binding IsLeft}"
                             Orientation="Horizontal">
                             <TextBlock
                                 Width="20"
@@ -364,7 +371,7 @@
                             Margin="0,4,0,0"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            IsVisible="{Binding !IsRight}"
+                            IsVisible="{Binding IsLeft}"
                             Orientation="Horizontal">
                             <TextBlock
                                 Width="20"
@@ -382,7 +389,7 @@
                             Margin="0,4,0,0"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            IsVisible="{Binding !IsLeft}"
+                            IsVisible="{Binding IsRight}"
                             Orientation="Horizontal">
                             <TextBlock
                                 Width="20"
@@ -400,7 +407,7 @@
                             Margin="0,4,0,0"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            IsVisible="{Binding !IsLeft}"
+                            IsVisible="{Binding IsRight}"
                             Orientation="Horizontal">
                             <TextBlock
                                 Width="20"
@@ -416,13 +423,6 @@
                         </StackPanel>
                     </StackPanel>
                 </Border>
-                <!-- Controller Picture -->
-                <Image
-                    Margin="0,10,0,0"
-                    MaxHeight="300"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    Source="{Binding Image}" />
                 <!-- Motion + Rumble -->
                 <StackPanel
                     Margin="0,10,0,0"
