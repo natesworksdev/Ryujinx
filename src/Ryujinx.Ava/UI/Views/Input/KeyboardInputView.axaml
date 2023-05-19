@@ -74,9 +74,9 @@
                                 VerticalAlignment="Center"
                                 Text="{locale:Locale ControllerSettingsTriggerZL}"
                                 TextAlignment="Center" />
-                            <ToggleButton>
+                            <ToggleButton Name="ButtonZl">
                                 <TextBlock
-                                    Text="{Binding Config.ButtonZl, Mode=TwoWay, Converter={StaticResource Key}}"
+                                    Text="{Binding Config.ButtonZl, Converter={StaticResource Key}}"
                                     TextAlignment="Center" />
                             </ToggleButton>
                         </StackPanel>
@@ -90,9 +90,9 @@
                                 VerticalAlignment="Center"
                                 Text="{locale:Locale ControllerSettingsTriggerL}"
                                 TextAlignment="Center" />
-                            <ToggleButton>
+                            <ToggleButton Name="ButtonL">
                                 <TextBlock
-                                    Text="{Binding Config.ButtonL, Mode=TwoWay, Converter={StaticResource Key}}"
+                                    Text="{Binding Config.ButtonL, Converter={StaticResource Key}}"
                                     TextAlignment="Center" />
                             </ToggleButton>
                         </StackPanel>
@@ -106,9 +106,9 @@
                                 VerticalAlignment="Center"
                                 Text="{locale:Locale ControllerSettingsButtonMinus}"
                                 TextAlignment="Center" />
-                            <ToggleButton>
+                            <ToggleButton Name="ButtonMinus">
                                 <TextBlock
-                                    Text="{Binding Config.ButtonMinus, Mode=TwoWay, Converter={StaticResource Key}}"
+                                    Text="{Binding Config.ButtonMinus, Converter={StaticResource Key}}"
                                     TextAlignment="Center" />
                             </ToggleButton>
                         </StackPanel>
@@ -141,9 +141,9 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsStickButton}"
                                     TextAlignment="Center" />
-                                <ToggleButton>
+                                <ToggleButton Name="LeftStickButton">
                                     <TextBlock
-                                        Text="{Binding Config.LeftStickButton, Mode=TwoWay, Converter={StaticResource Key}}"
+                                        Text="{Binding Config.LeftStickButton, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
@@ -158,9 +158,9 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsStickUp}"
                                     TextAlignment="Center" />
-                                <ToggleButton>
+                                <ToggleButton Name="LeftStickUp">
                                     <TextBlock
-                                        Text="{Binding Config.LeftStickUp, Mode=TwoWay, Converter={StaticResource Key}}"
+                                        Text="{Binding Config.LeftStickUp, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
@@ -175,9 +175,9 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsStickDown}"
                                     TextAlignment="Center" />
-                                <ToggleButton>
+                                <ToggleButton Name="LeftStickDown">
                                     <TextBlock
-                                        Text="{Binding Config.LeftStickDown, Mode=TwoWay, Converter={StaticResource Key}}"
+                                        Text="{Binding Config.LeftStickDown, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
@@ -192,9 +192,9 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsStickLeft}"
                                     TextAlignment="Center" />
-                                <ToggleButton>
+                                <ToggleButton Name="LeftStickLeft">
                                     <TextBlock
-                                        Text="{Binding Config.LeftStickLeft, Mode=TwoWay, Converter={StaticResource Key}}"
+                                        Text="{Binding Config.LeftStickLeft, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
@@ -209,9 +209,9 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsStickRight}"
                                     TextAlignment="Center" />
-                                <ToggleButton>
+                                <ToggleButton Name="LeftStickRight">
                                     <TextBlock
-                                        Text="{Binding Config.LeftStickRight, Mode=TwoWay, Converter={StaticResource Key}}"
+                                        Text="{Binding Config.LeftStickRight, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
@@ -245,9 +245,9 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsDPadUp}"
                                     TextAlignment="Center" />
-                                <ToggleButton>
+                                <ToggleButton Name="DpadUp">
                                     <TextBlock
-                                        Text="{Binding Config.DpadUp, Mode=TwoWay, Converter={StaticResource Key}}"
+                                        Text="{Binding Config.DpadUp, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
@@ -262,9 +262,9 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsDPadDown}"
                                     TextAlignment="Center" />
-                                <ToggleButton>
+                                <ToggleButton Name="DpadDown">
                                     <TextBlock
-                                        Text="{Binding Config.DpadDown, Mode=TwoWay, Converter={StaticResource Key}}"
+                                        Text="{Binding Config.DpadDown, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
@@ -279,9 +279,9 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsDPadLeft}"
                                     TextAlignment="Center" />
-                                <ToggleButton>
+                                <ToggleButton Name="DpadLeft">
                                     <TextBlock
-                                        Text="{Binding Config.DpadLeft, Mode=TwoWay, Converter={StaticResource Key}}"
+                                        Text="{Binding Config.DpadLeft, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
@@ -296,9 +296,9 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsDPadRight}"
                                     TextAlignment="Center" />
-                                <ToggleButton>
+                                <ToggleButton Name="DpadRight">
                                     <TextBlock
-                                        Text="{Binding Config.DpadRight, Mode=TwoWay, Converter={StaticResource Key}}"
+                                        Text="{Binding Config.DpadRight, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
@@ -334,9 +334,9 @@
                                 VerticalAlignment="Center"
                                 Text="{locale:Locale ControllerSettingsLeftSR}"
                                 TextAlignment="Center" />
-                            <ToggleButton>
+                            <ToggleButton Name="LeftButtonSr">
                                 <TextBlock
-                                    Text="{Binding Config.LeftButtonSr, Mode=TwoWay, Converter={StaticResource Key}}"
+                                    Text="{Binding Config.LeftButtonSr, Converter={StaticResource Key}}"
                                     TextAlignment="Center" />
                             </ToggleButton>
                         </StackPanel>
@@ -352,9 +352,9 @@
                                 VerticalAlignment="Center"
                                 Text="{locale:Locale ControllerSettingsLeftSL}"
                                 TextAlignment="Center" />
-                            <ToggleButton>
+                            <ToggleButton Name="LeftButtonSl">
                                 <TextBlock
-                                    Text="{Binding Config.LeftButtonSl, Mode=TwoWay, Converter={StaticResource Key}}"
+                                    Text="{Binding Config.LeftButtonSl, Converter={StaticResource Key}}"
                                     TextAlignment="Center" />
                             </ToggleButton>
                         </StackPanel>
@@ -370,9 +370,9 @@
                                 VerticalAlignment="Center"
                                 Text="{locale:Locale ControllerSettingsRightSR}"
                                 TextAlignment="Center" />
-                            <ToggleButton>
+                            <ToggleButton Name="RightButtonSr">
                                 <TextBlock
-                                    Text="{Binding Config.RightButtonSr, Mode=TwoWay, Converter={StaticResource Key}}"
+                                    Text="{Binding Config.RightButtonSr, Converter={StaticResource Key}}"
                                     TextAlignment="Center" />
                             </ToggleButton>
                         </StackPanel>
@@ -388,9 +388,9 @@
                                 VerticalAlignment="Center"
                                 Text="{locale:Locale ControllerSettingsRightSL}"
                                 TextAlignment="Center" />
-                            <ToggleButton>
+                            <ToggleButton Name="RightButtonSl">
                                 <TextBlock
-                                    Text="{Binding Config.RightButtonSl, Mode=TwoWay, Converter={StaticResource Key}}"
+                                    Text="{Binding Config.RightButtonSl, Converter={StaticResource Key}}"
                                     TextAlignment="Center" />
                             </ToggleButton>
                         </StackPanel>
@@ -437,9 +437,9 @@
                                 VerticalAlignment="Center"
                                 Text="{locale:Locale ControllerSettingsTriggerZR}"
                                 TextAlignment="Center" />
-                            <ToggleButton>
+                            <ToggleButton Name="ButtonZr">
                                 <TextBlock
-                                    Text="{Binding Config.ButtonZr, Mode=TwoWay, Converter={StaticResource Key}}"
+                                    Text="{Binding Config.ButtonZr, Converter={StaticResource Key}}"
                                     TextAlignment="Center" />
                             </ToggleButton>
                         </StackPanel>
@@ -455,9 +455,9 @@
                                 VerticalAlignment="Center"
                                 Text="{locale:Locale ControllerSettingsTriggerR}"
                                 TextAlignment="Center" />
-                            <ToggleButton>
+                            <ToggleButton Name="ButtonR">
                                 <TextBlock
-                                    Text="{Binding Config.ButtonR, Mode=TwoWay, Converter={StaticResource Key}}"
+                                    Text="{Binding Config.ButtonR, Converter={StaticResource Key}}"
                                     TextAlignment="Center" />
                             </ToggleButton>
                         </StackPanel>
@@ -473,9 +473,9 @@
                                 VerticalAlignment="Center"
                                 Text="{locale:Locale ControllerSettingsButtonPlus}"
                                 TextAlignment="Center" />
-                            <ToggleButton>
+                            <ToggleButton Name="ButtonPlus">
                                 <TextBlock
-                                    Text="{Binding Config.ButtonPlus, Mode=TwoWay, Converter={StaticResource Key}}"
+                                    Text="{Binding Config.ButtonPlus, Converter={StaticResource Key}}"
                                     TextAlignment="Center" />
                             </ToggleButton>
                         </StackPanel>
@@ -508,9 +508,9 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsButtonA}"
                                     TextAlignment="Center" />
-                                <ToggleButton>
+                                <ToggleButton Name="ButtonA">
                                     <TextBlock
-                                        Text="{Binding Config.ButtonA, Mode=TwoWay, Converter={StaticResource Key}}"
+                                        Text="{Binding Config.ButtonA, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
@@ -525,9 +525,9 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsButtonB}"
                                     TextAlignment="Center" />
-                                <ToggleButton>
+                                <ToggleButton Name="ButtonB">
                                     <TextBlock
-                                        Text="{Binding Config.ButtonB, Mode=TwoWay, Converter={StaticResource Key}}"
+                                        Text="{Binding Config.ButtonB, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
@@ -542,9 +542,9 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsButtonX}"
                                     TextAlignment="Center" />
-                                <ToggleButton>
+                                <ToggleButton Name="ButtonX">
                                     <TextBlock
-                                        Text="{Binding Config.ButtonX, Mode=TwoWay, Converter={StaticResource Key}}"
+                                        Text="{Binding Config.ButtonX, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
@@ -559,9 +559,9 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsButtonY}"
                                     TextAlignment="Center" />
-                                <ToggleButton>
+                                <ToggleButton Name="ButtonY">
                                     <TextBlock
-                                        Text="{Binding Config.ButtonY, Mode=TwoWay, Converter={StaticResource Key}}"
+                                        Text="{Binding Config.ButtonY, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
@@ -594,9 +594,9 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsStickButton}"
                                     TextAlignment="Center" />
-                                <ToggleButton>
+                                <ToggleButton Name="RightStickButton">
                                     <TextBlock
-                                        Text="{Binding Config.RightStickButton, Mode=TwoWay, Converter={StaticResource Key}}"
+                                        Text="{Binding Config.RightStickButton, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
@@ -611,9 +611,9 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsStickUp}"
                                     TextAlignment="Center" />
-                                <ToggleButton>
+                                <ToggleButton Name="RightStickUp">
                                     <TextBlock
-                                        Text="{Binding Config.RightStickUp, Mode=TwoWay, Converter={StaticResource Key}}"
+                                        Text="{Binding Config.RightStickUp, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
@@ -628,9 +628,9 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsStickDown}"
                                     TextAlignment="Center" />
-                                <ToggleButton>
+                                <ToggleButton Name="RightStickDown">
                                     <TextBlock
-                                        Text="{Binding Config.RightStickDown, Mode=TwoWay, Converter={StaticResource Key}}"
+                                        Text="{Binding Config.RightStickDown, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
@@ -645,9 +645,9 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsStickLeft}"
                                     TextAlignment="Center" />
-                                <ToggleButton>
+                                <ToggleButton Name="RightStickLeft">
                                     <TextBlock
-                                        Text="{Binding Config.RightStickLeft, Mode=TwoWay, Converter={StaticResource Key}}"
+                                        Text="{Binding Config.RightStickLeft, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
@@ -662,9 +662,9 @@
                                     VerticalAlignment="Center"
                                     Text="{locale:Locale ControllerSettingsStickRight}"
                                     TextAlignment="Center" />
-                                <ToggleButton>
+                                <ToggleButton Name="RightStickRight">
                                     <TextBlock
-                                        Text="{Binding Config.RightStickRight, Mode=TwoWay, Converter={StaticResource Key}}"
+                                        Text="{Binding Config.RightStickRight, Converter={StaticResource Key}}"
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
