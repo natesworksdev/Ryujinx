@@ -53,7 +53,14 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 _fragmentOutputMap = info.FragmentOutputMap;
             }
 
-            int stageIndex = GpuAccessorBase.GetStageIndex((int)info.Stage);
+            int stageIndex = GpuAccessorBase.GetStageIndex(info.Stage switch
+            {
+                ShaderStage.TessellationControl => 1,
+                ShaderStage.TessellationEvaluation => 2,
+                ShaderStage.Geometry => 3,
+                ShaderStage.Fragment => 4,
+                _ => 0
+            });
 
             ResourceStages stages = info.Stage switch
             {

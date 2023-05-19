@@ -110,9 +110,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             bool usePushDescriptors = !isMinimal && VulkanConfiguration.UsePushDescriptors && _gd.Capabilities.SupportsPushDescriptors;
 
-            _plce = isMinimal
-                ? gd.PipelineLayoutCache.Create(gd, device, shaders)
-                : gd.PipelineLayoutCache.GetOrCreate(gd, device, stages, usePushDescriptors);
+            _plce = gd.PipelineLayoutCache.GetOrCreate(gd, device, resourceLayout.Sets, usePushDescriptors);
 
             HasMinimalLayout = isMinimal;
             UsePushDescriptors = usePushDescriptors;
