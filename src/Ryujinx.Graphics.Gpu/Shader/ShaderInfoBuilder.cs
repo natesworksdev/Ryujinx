@@ -232,7 +232,10 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             foreach (CachedShaderStage program in programs)
             {
-                builder.AddStageInfo(program.Info);
+                if (program?.Info != null)
+                {
+                    builder.AddStageInfo(program.Info);
+                }
             }
 
             return builder.Build(pipeline, fromCache: true);
