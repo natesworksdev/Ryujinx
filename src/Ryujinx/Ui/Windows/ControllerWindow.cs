@@ -893,7 +893,7 @@ namespace Ryujinx.Ui.Windows
                     }
                 }
 
-                string pressedButton = assigner.GetPressedButton();
+                object pressedButton = assigner.GetPressedButton();
 
                 Application.Invoke(delegate
                 {
@@ -903,7 +903,7 @@ namespace Ryujinx.Ui.Windows
                     }
                     else if (pressedButton != "")
                     {
-                        button.Label = pressedButton;
+                        button.Label = pressedButton.ToString();
                     }
 
                     _middleMousePressed = false;
