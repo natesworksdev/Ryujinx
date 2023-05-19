@@ -1580,6 +1580,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 lod = Src(coordType);
             }
+            else if (!hasDerivatives && context.Config.Stage != ShaderStage.Fragment)
+            {
+                // Implicit LOD is only valid on fragment.
+
+                hasLodLevel = true;
+                lod = context.Constant(context.TypeFP32(), 0f);
+            }
 
             SpvInstruction AssembleOffsetVector(int count)
             {
