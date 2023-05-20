@@ -1580,13 +1580,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 lod = Src(coordType);
             }
-            else if (!hasDerivatives && context.Config.Stage != ShaderStage.Fragment)
-            {
-                // Implicit LOD is only valid on fragment.
-
-                hasLodLevel = true;
-                lod = context.Constant(context.TypeFP32(), 0f);
-            }
 
             SpvInstruction AssembleOffsetVector(int count)
             {
@@ -1630,7 +1623,19 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             if (hasLodBias)
             {
-               lodBias = Src(AggregateType.FP32);
+                lodBias = Src(AggregateType.FP32);
+            }
+
+            if (!isGather && !intCoords && !isMultisample && !hasLodLevel && !hasDerivatives && context.Config.Stage != ShaderStage.Fragment)
+            {
+                // Implicit LOD is only valid on fragment.
+                // Use the LOD bias as explicit LOD if available.
+
+                lod = lodBias ?? context.Constant(context.TypeFP32(), 0f);
+
+                lodBias = null;
+                hasLodBias = false;
+                hasLodLevel = true;
             }
 
             SpvInstruction compIdx = null;
