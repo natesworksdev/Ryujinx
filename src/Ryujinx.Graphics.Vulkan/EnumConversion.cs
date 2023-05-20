@@ -82,7 +82,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ResourceType.Image => DescriptorType.StorageImage,
                 ResourceType.BufferTexture => DescriptorType.UniformTexelBuffer,
                 ResourceType.BufferImage => DescriptorType.StorageTexelBuffer,
-                _ => throw new ArgumentException($"Invalod resource type \"{type}\".")
+                _ => throw new ArgumentException($"Invalid resource type \"{type}\".")
             };
         }
 
