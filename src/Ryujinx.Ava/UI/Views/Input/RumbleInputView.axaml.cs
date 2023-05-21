@@ -28,6 +28,7 @@ namespace Ryujinx.Ava.UI.Views.Input
             };
 
             InitializeComponent();
+            
             DataContext = _viewModel;
         }
 
