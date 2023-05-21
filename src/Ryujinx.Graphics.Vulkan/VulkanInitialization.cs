@@ -41,8 +41,8 @@ namespace Ryujinx.Graphics.Vulkan
             "VK_EXT_subgroup_size_control",
             "VK_NV_geometry_shader_passthrough",
             "VK_NV_viewport_array2",
-            "VK_KHR_portability_subset", // As per spec, we should enable this if present.
-            "VK_EXT_depth_clip_control"
+            "VK_EXT_depth_clip_control",
+            "VK_KHR_portability_subset" // As per spec, we should enable this if present.
         };
 
         private static readonly string[] _requiredExtensions = new string[]
@@ -346,6 +346,17 @@ namespace Ryujinx.Graphics.Vulkan
                 features2.PNext = &supportedFeaturesRobustness2;
             }
 
+            PhysicalDeviceDepthClipControlFeaturesEXT supportedFeaturesDepthClipControl = new PhysicalDeviceDepthClipControlFeaturesEXT()
+            {
+                SType = StructureType.PhysicalDeviceDepthClipControlFeaturesExt,
+                PNext = features2.PNext
+            };
+
+            if (physicalDevice.IsDeviceExtensionPresent("VK_EXT_depth_clip_control"))
+            {
+                features2.PNext = &supportedFeaturesDepthClipControl;
+            }
+
             api.GetPhysicalDeviceFeatures2(physicalDevice.PhysicalDevice, &features2);
 
             var supportedFeatures = features2.Features;
@@ -510,7 +521,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             PhysicalDeviceDepthClipControlFeaturesEXT featuresDepthClipControl;
 
-            if (physicalDevice.IsDeviceExtensionPresent("VK_EXT_depth_clip_control"))
+            if (physicalDevice.IsDeviceExtensionPresent("VK_EXT_depth_clip_control") &&
+                supportedFeaturesDepthClipControl.DepthClipControl)
             {
                 featuresDepthClipControl = new PhysicalDeviceDepthClipControlFeaturesEXT()
                 {
