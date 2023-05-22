@@ -1451,33 +1451,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 }
             }
 
-            SpvInstruction ApplyBias(SpvInstruction vector, SpvInstruction image)
-            {
-                int gatherBiasPrecision = context.Config.GpuAccessor.QueryHostGatherBiasPrecision();
-                if (isGather && gatherBiasPrecision != 0)
-                {
-                    // GPU requires texture gather to be slightly offset to match NVIDIA behaviour when point is exactly between two texels.
-                    // Offset by the gather precision divided by 2 to correct for rounding.
-                    var sizeType = pCount == 1 ? context.TypeS32() : context.TypeVector(context.TypeS32(), pCount);
-                    var pVectorType = pCount == 1 ? context.TypeFP32() : context.TypeVector(context.TypeFP32(), pCount);
-
-                    var bias = context.Constant(context.TypeFP32(), (float)(1 << (gatherBiasPrecision + 1)));
-                    var biasVector = context.CompositeConstruct(pVectorType, Enumerable.Repeat(bias, pCount).ToArray());
-
-                    var one = context.Constant(context.TypeFP32(), 1f);
-                    var oneVector = context.CompositeConstruct(pVectorType, Enumerable.Repeat(one, pCount).ToArray());
-
-                    var divisor = context.FMul(
-                        pVectorType,
-                        context.ConvertSToF(pVectorType, context.ImageQuerySize(sizeType, image)),
-                        biasVector);
-
-                    vector = context.FAdd(pVectorType, vector, context.FDiv(pVectorType, oneVector, divisor));
-                }
-
-                return vector;
-            }
-
             SpvInstruction pCoords = AssemblePVector(pCount);
 
             SpvInstruction AssembleDerivativesVector(int count)
@@ -1648,8 +1621,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 image = context.Image(imageType, image);
             }
-
-            pCoords = ApplyBias(pCoords, image);
 
             var operands = operandsList.ToArray();
 
