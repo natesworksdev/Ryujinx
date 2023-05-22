@@ -1,0 +1,26 @@
+name: Missing Shader Instruction
+description: Shader Instruction is missing in Ryujinx.
+title: "[GPU]"
+labels: [gpu, not-implemented]
+body:
+  - type: textarea
+    id: instruction
+    attributes:
+      label: Shader instruction
+      description: What shader instruction is missing?
+    validations:
+      required: true
+  - type: textarea
+    id: name
+    attributes:
+      label: Instruction name
+      description: Include the name from _tbd_ in the above code block
+    validations:
+      required: true
+  - type: textarea
+    id: required
+    attributes:
+      label: Required by
+      description: Add links to the [compatibility list page(s)](https://github.com/Ryujinx/Ryujinx-Games-List/issues) of the game(s) that require this instruction.
+    validations:
+      required: true
