@@ -29,11 +29,11 @@
                     IsSnapToTickEnabled="True"
                     Maximum="10"
                     Minimum="0"
-                    Value="{ReflectionBinding StrongRumble, Mode=TwoWay}" />
+                    Value="{Binding StrongRumble, Mode=TwoWay}" />
                 <TextBlock
                     VerticalAlignment="Center"
                     Margin="5,0"
-                    Text="{ReflectionBinding StrongRumble, StringFormat=\{0:0.00\}}" />
+                    Text="{Binding StrongRumble, StringFormat=\{0:0.00\}}" />
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock
@@ -49,11 +49,11 @@
                     TickFrequency="0.01"
                     IsSnapToTickEnabled="True"
                     Minimum="0"
-                    Value="{ReflectionBinding WeakRumble, Mode=TwoWay}" />
+                    Value="{Binding WeakRumble, Mode=TwoWay}" />
                 <TextBlock
                     VerticalAlignment="Center"
                     Margin="5,0"
-                    Text="{ReflectionBinding WeakRumble, StringFormat=\{0:0.00\}}" />
+                    Text="{Binding WeakRumble, StringFormat=\{0:0.00\}}" />
             </StackPanel>
         </StackPanel>
     </Grid>
