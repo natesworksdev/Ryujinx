@@ -33,9 +33,9 @@ trap 'error_handler ${LINENO}' ERR
 # After the third time checking, this script exits with status 1
 
 attempt=0
-while [ attempt -lt 3 ]; do
+do
     if lsof -p $APP_PID +r 1 &>/dev/null; then
-        if [ attempt -eq 2 ]; then
+        if [ $attempt -eq 2 ]; then
             exit 1
         fi
         sleep 1
