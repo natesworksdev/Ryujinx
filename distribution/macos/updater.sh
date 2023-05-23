@@ -28,21 +28,25 @@ error_handler() {
 trap 'error_handler ${LINENO}' ERR
 
 # Wait for Ryujinx to exit
-# NOTE: in case no fds are open, lsof could be returning with a process still living.
-# If the process is still acitve, we wait for 1 second and check it again.
+# If the main process as well as child processes are still acitve, we wait for 1 second and check it again.
 # After the third time checking, this script exits with status 1
 
 attempt=0
+
 while true; do
-    if lsof -p $APP_PID +r 1 &>/dev/null || kill -0 "$APP_PID" 2>/dev/null; then
-        if [ $attempt -eq 2 ]; then
+    process_status=$(ps -p "$APP_PID" -o state=)
+    child_processes=$(pgrep -P "$APP_PID")
+
+    if [ -n "$process_status" ] || [ -n "$child_processes" ]; then
+        if [ "$attempt" -eq 2 ]; then
             exit 1
         fi
         sleep 1
     else
         break
     fi
-  (( attempt++ ))
+
+    (( attempt++ ))
 done
 
 # Now replace and reopen.
