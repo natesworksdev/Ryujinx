@@ -57,10 +57,16 @@ namespace Ryujinx.Graphics.Shader.Translation
             return binding;
         }
 
-        public int GetStorageBufferBinding(int sbCbSlot, int sbCbOffset, bool write)
+        public bool TryGetStorageBufferBinding(int sbCbSlot, int sbCbOffset, bool write, out int binding)
         {
-            int slot = GetSbSlot((byte)sbCbSlot, (ushort)sbCbOffset);
-            int binding = _sbSlotToBindingMap[slot];
+            if (!TryGetSbSlot((byte)sbCbSlot, (ushort)sbCbOffset, out int slot))
+            {
+                binding = 0;
+                return false;
+            }
+
+            binding = _sbSlotToBindingMap[slot];
+
             if (binding < 0)
             {
                 binding = _gpuAccessor.QueryBindingConstantBuffer(slot);
@@ -74,7 +80,27 @@ namespace Ryujinx.Graphics.Shader.Translation
                 _sbSlotWritten |= 1u << slot;
             }
 
-            return binding;
+            return true;
+        }
+
+        private bool TryGetSbSlot(byte sbCbSlot, ushort sbCbOffset, out int slot)
+        {
+            int key = PackSbCbInfo(sbCbSlot, sbCbOffset);
+
+            if (!_sbSlots.TryGetValue(key, out slot))
+            {
+                slot = _sbSlots.Count;
+
+                if (slot >= _sbSlotToBindingMap.Length)
+                {
+                    return false;
+                }
+
+                _sbSlots.Add(key, slot);
+                _sbSlotsReverse.Add(slot, key);
+            }
+
+            return true;
         }
 
         public bool TryGetConstantBufferSlot(int binding, out int slot)
@@ -94,40 +120,6 @@ namespace Ryujinx.Graphics.Shader.Translation
         public void SetUsedConstantBufferBinding(int binding)
         {
             _usedConstantBufferBindings.Add(binding);
-        }
-
-        public int GetSbSlot(byte sbCbSlot, ushort sbCbOffset)
-        {
-            int key = PackSbCbInfo(sbCbSlot, sbCbOffset);
-
-            if (!_sbSlots.TryGetValue(key, out int slot))
-            {
-                slot = _sbSlots.Count;
-                _sbSlots.Add(key, slot);
-                _sbSlotsReverse.Add(slot, key);
-            }
-
-            return slot;
-        }
-
-        public (int, int) GetSbCbInfo(int slot)
-        {
-            if (_sbSlotsReverse.TryGetValue(slot, out int key))
-            {
-                return UnpackSbCbInfo(key);
-            }
-
-            throw new ArgumentException($"Invalid slot {slot}.", nameof(slot));
-        }
-
-        private static int PackSbCbInfo(int sbCbSlot, int sbCbOffset)
-        {
-            return sbCbOffset | ((int)sbCbSlot << 16);
-        }
-
-        private static (int, int) UnpackSbCbInfo(int key)
-        {
-            return ((byte)(key >> 16), (ushort)key);
         }
 
         public BufferDescriptor[] GetConstantBufferDescriptors()
@@ -212,6 +204,16 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
 
             return _stagePrefixes[index];
+        }
+
+        private static int PackSbCbInfo(int sbCbSlot, int sbCbOffset)
+        {
+            return sbCbOffset | ((int)sbCbSlot << 16);
+        }
+
+        private static (int, int) UnpackSbCbInfo(int key)
+        {
+            return ((byte)(key >> 16), (ushort)key);
         }
     }
 }

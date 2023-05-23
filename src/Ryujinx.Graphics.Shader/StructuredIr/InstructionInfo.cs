@@ -160,7 +160,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             {
                 return AggregateType.FP32;
             }
-            else if (inst == Instruction.Call || inst == Instruction.Load || inst == Instruction.Store)
+            else if (inst == Instruction.Call || inst == Instruction.Load || inst == Instruction.Store || inst.IsAtomic())
             {
                 return AggregateType.S32;
             }
