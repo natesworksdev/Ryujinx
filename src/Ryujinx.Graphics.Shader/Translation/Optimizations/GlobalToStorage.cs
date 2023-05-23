@@ -1016,7 +1016,12 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             // the driver reserved constant buffer, as those are the ones that
             // contains the base address.
 
+            // If both are constant buffer, give preference to the second operand,
+            // because constant buffer are always encoded as the second operand,
+            // so the second operand will always be the one from the last instruction.
+
             if (src1.Type != OperandType.ConstantBuffer ||
+                (src1.Type == OperandType.ConstantBuffer && src2.Type == OperandType.ConstantBuffer) ||
                 (src2.Type == OperandType.ConstantBuffer && src2.GetCbufSlot() == DriverReservedCb))
             {
                 return GetBaseAddressCbWithOffset(src2, src1, constOffset);
