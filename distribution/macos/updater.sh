@@ -35,8 +35,7 @@ attempt=0
 
 while true; do
     process_status=$(ps -p "$APP_PID" -o state=)
-    child_processes=$(pgrep -P "$APP_PID")
-    if [ -n "$process_status" ] || [ -n "$child_processes" ]; then
+    if [ -n "$process_status" ]; then
         if [ "$attempt" -eq 4 ]; then
             exit 1
         fi
