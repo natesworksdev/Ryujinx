@@ -473,6 +473,8 @@ namespace Ryujinx.Modules
             {
                 foreach (string file in allFiles)
                 {
+                    if (file.Contains("ReShade", StringComparison.OrdinalIgnoreCase) || file.Contains("opengl32", StringComparison.OrdinalIgnoreCase))
+                        break;
                     try
                     {
                         File.Move(file, file + ".ryuold");
