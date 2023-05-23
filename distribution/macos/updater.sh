@@ -34,8 +34,7 @@ trap 'error_handler ${LINENO}' ERR
 attempt=0
 
 while true; do
-    process_status=$(ps -p "$APP_PID" -o state=)
-    if [ -n "$process_status" ]; then
+    if kill -0 $APP_PID 2>/dev/null; then
         if [ "$attempt" -eq 4 ]; then
             exit 1
         fi
