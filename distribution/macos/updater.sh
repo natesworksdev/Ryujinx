@@ -28,8 +28,8 @@ error_handler() {
 trap 'error_handler ${LINENO}' ERR
 
 # Wait for Ryujinx to exit
-# If the main process as well as child processes are still acitve, we wait for 1 second and check it again.
-# After the third time checking, this script exits with status 1
+# If the main process is still acitve, we wait for 1 second and check it again.
+# After the fifth time checking, this script exits with status 1
 
 attempt=0
 
