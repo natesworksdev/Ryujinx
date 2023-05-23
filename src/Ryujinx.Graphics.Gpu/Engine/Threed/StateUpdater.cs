@@ -269,7 +269,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _prevFirstVertex = _state.State.FirstVertex;
             }
 
-            bool tfEnable = _state.State.TfEnable;
+            bool tfEnable = _state.State.TfEnable && _context.Capabilities.SupportsTransformFeedback;
 
             if (!tfEnable && _prevTfEnable)
             {

@@ -368,7 +368,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 
                         if (hostCode != null)
                         {
-                            ShaderInfo shaderInfo = ShaderInfoBuilder.BuildForCache(context, shaders, specState.PipelineState);
+                            ShaderInfo shaderInfo = ShaderInfoBuilder.BuildForCache(
+                                context,
+                                shaders,
+                                specState.PipelineState,
+                                specState.TransformFeedbackDescriptors != null);
 
                             IProgram hostProgram;
 
