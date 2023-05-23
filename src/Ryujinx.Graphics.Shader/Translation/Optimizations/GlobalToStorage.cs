@@ -301,10 +301,9 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
                 Operand offset = result.Offset;
 
-                bool storageAligned = !(config.GpuAccessor.QueryHasUnalignedStorageBuffer() ||
-                    config.GpuAccessor.QueryHostStorageBufferOffsetAlignment() > Constants.StorageAlignment);
+                bool storageUnaligned = config.GpuAccessor.QueryHasUnalignedStorageBuffer();
 
-                if (!storageAligned)
+                if (storageUnaligned)
                 {
                     Operand baseAddress = Cbuf(result.SbCbSlot, result.SbCbOffset);
 
