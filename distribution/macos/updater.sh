@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 INSTALL_DIRECTORY=$1
 NEW_APP_DIRECTORY=$2
 APP_PID=$3
@@ -42,8 +44,6 @@ while true; do
     fi
   (( attempt++ ))
 done
-
-set -e
 
 # Now replace and reopen.
 rm -rf "$INSTALL_DIRECTORY"
