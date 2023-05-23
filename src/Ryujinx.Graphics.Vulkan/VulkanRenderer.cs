@@ -869,6 +869,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         public bool PrepareHostMapping(nint address, ulong size)
         {
+            if (OperatingSystem.IsMacOS())
+            {
+                return false;
+            }
+
             return Capabilities.SupportsHostImportedMemory &&
                 HostMemoryAllocator.TryImport(BufferManager.HostImportedBufferMemoryRequirements, BufferManager.DefaultBufferMemoryFlags, address, size);
         }
