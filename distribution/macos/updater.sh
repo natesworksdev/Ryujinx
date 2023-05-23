@@ -34,7 +34,7 @@ trap 'error_handler ${LINENO}' ERR
 
 attempt=0
 while true; do
-    if lsof -p $APP_PID +r 1 &>/dev/null; then
+    if lsof -p $APP_PID +r 1 &>/dev/null || kill -0 "$APP_PID" 2>/dev/null; then
         if [ $attempt -eq 2 ]; then
             exit 1
         fi
