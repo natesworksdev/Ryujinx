@@ -47,6 +47,8 @@ while true; do
     (( attempt++ ))
 done
 
+sleep 1
+
 # Now replace and reopen.
 rm -rf "$INSTALL_DIRECTORY"
 mv "$NEW_APP_DIRECTORY" "$INSTALL_DIRECTORY"
