@@ -31,7 +31,7 @@ namespace Ryujinx.Common.Utilities
 
         /// <summary>
         /// This method formats a <see cref="TimeSpan"/> so it can be displayed in the UI.
-        /// Only used as a canonical way to format the LastPlayed value.
+        /// Only used as a canonical way to format the TimePlayed value.
         /// </summary>
         /// <param name="timeSpan">The <see cref="TimeSpan"/> to be formatted.</param>
         /// <returns>A formatted string that can be displayed in the UI.</returns>
@@ -85,7 +85,7 @@ namespace Ryujinx.Common.Utilities
 
         /// <summary>
         /// This method formats a <see cref="DateTime"/> so it can be displayed in the UI.
-        /// Only used as a canonical way to format the TimePlayed value.
+        /// Only used as a canonical way to format the LastPlayed value.
         /// </summary>
         /// <param name="utcDateTime">The <see cref="DateTime"/> to be formatted. This is expected to be UTC-based.</param>
         /// <param name="culture">The <see cref="CultureInfo"/> that's used in formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.</param>
@@ -138,7 +138,7 @@ namespace Ryujinx.Common.Utilities
             {
                 unitIndex = Convert.ToInt32(Math.Floor(Math.Log(size, _base)));
 
-                // Applying an upper bound so that exabytes are the biggest used unit when formatting.
+                // Apply an upper bound so that exabytes are the biggest unit used when formatting.
                 if (unitIndex > 6)
                 {
                     unitIndex = 6;
