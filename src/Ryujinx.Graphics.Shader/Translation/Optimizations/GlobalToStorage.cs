@@ -228,14 +228,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                             }
                             else
                             {
-                                node.List.Remove(node);
-
-                                for (int srcIndex = 0; srcIndex < operation.SourcesCount; srcIndex++)
-                                {
-                                    operation.SetSource(srcIndex, null);
-                                }
-
-                                operation.Dest = null;
+                                Utils.DeleteNode(node, operation);
                             }
                         }
                         else
@@ -352,7 +345,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 // the base address might be stored.
                 // Generate a helper function that will check all possible storage buffers and use the right one.
 
-                if (!TryGenerateMultiTargetStorageOp(gtsContext, config, block, operation, node, out int functionId))
+                if (!TryGenerateMultiTargetStorageOp(gtsContext, config, block, operation, out int functionId))
                 {
                     return null;
                 }
@@ -414,14 +407,8 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
             node.List.AddBefore(node, shiftOp);
             LinkedListNode<INode> newNode = node.List.AddBefore(node, storageOp);
-            node.List.Remove(node);
 
-            for (int srcIndex = 0; srcIndex < operation.SourcesCount; srcIndex++)
-            {
-                operation.SetSource(srcIndex, null);
-            }
-
-            operation.Dest = null;
+            Utils.DeleteNode(node, operation);
 
             return newNode;
         }
@@ -470,14 +457,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             }
             else
             {
-                node.List.Remove(node);
-
-                for (int srcIndex = 0; srcIndex < operation.SourcesCount; srcIndex++)
-                {
-                    operation.SetSource(srcIndex, null);
-                }
-
-                operation.Dest = null;
+                Utils.DeleteNode(node, operation);
 
                 return newNode;
             }
@@ -569,7 +549,6 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             ShaderConfig config,
             BasicBlock block,
             Operation operation,
-            LinkedListNode<INode> node,
             out int functionId)
         {
             Queue<PhiNode> phis = new Queue<PhiNode>();
@@ -627,7 +606,6 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
             if (targetCbs.Count == 0)
             {
-                node.List.AddBefore(node, new CommentNode("global elimination failed"));
                 config.GpuAccessor.Log($"Failed to find storage buffer for global memory operation \"{operation.Inst}\".");
             }
 
