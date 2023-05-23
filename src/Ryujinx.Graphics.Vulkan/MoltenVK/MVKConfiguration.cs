@@ -100,5 +100,6 @@ namespace Ryujinx.Graphics.Vulkan.MoltenVK
         public MVKConfigAdvertiseExtensions AdvertiseExtensions;
         public Bool32 ResumeLostDevice;
         public Bool32 UseMetalArgumentBuffers;
+        public Bool32 ShaderSourceCompressionAlgorithm;
     }
 }
