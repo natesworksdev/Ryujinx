@@ -11,7 +11,7 @@ namespace Ryujinx.Common.Utilities
         private static readonly string[] FILE_SIZE_UNITS =
         {
             "B", "KB", "MB", "GB", "TB", "PB", "EB",
-            "KiB", "MiB", "GiB", "TiB", "PiB", "EiB",
+            "KiB", "MiB", "GiB", "TiB", "PiB", "EiB"
         };
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace Ryujinx.Common.Utilities
             Gigabytes = 3,
             Terabytes = 4,
             Petabytes = 5,
-            Exabytes = 6,
+            Exabytes = 6
         }
 
         /// <summary>
@@ -52,6 +52,7 @@ namespace Ryujinx.Common.Utilities
             // Game was played for more than a day
             TimeSpan onlyTime = timeSpan.Value.Subtract(TimeSpan.FromDays(timeSpan.Value.Days));
             string onlyTimeString = onlyTime.ToString("c", CultureInfo.InvariantCulture);
+
             return $"{timeSpan.Value.Days}d, {onlyTimeString}";
         }
 
@@ -62,7 +63,7 @@ namespace Ryujinx.Common.Utilities
         /// <returns>A <see cref="TimeSpan"/> object. If the input string couldn't been parsed, <see cref="TimeSpan.Zero"/> is returned.</returns>
         public static TimeSpan ParseTimeSpan(string timeSpanString)
         {
-            var returnTimeSpan = TimeSpan.Zero;
+            TimeSpan returnTimeSpan = TimeSpan.Zero;
 
             var valueSplit = timeSpanString.Split(", ");
             if (valueSplit.Length > 1)
@@ -185,6 +186,7 @@ namespace Ryujinx.Common.Utilities
                 }
                 
                 number *= Math.Pow(_base, i);
+
                 return Convert.ToInt64(number);
             }
 

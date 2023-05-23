@@ -271,7 +271,7 @@ namespace Ryujinx.Ui
                 typeof(string),
                 typeof(string),
                 typeof(BlitStruct<ApplicationControlProperty>));
-            
+
             _tableStore.SetSortFunc(5, SortHelper.TimePlayedSort);
             _tableStore.SetSortFunc(6, SortHelper.LastPlayedSort);
             _tableStore.SetSortFunc(8, SortHelper.FileSizeSort);
