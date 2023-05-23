@@ -69,7 +69,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             if (binding < 0)
             {
-                binding = _gpuAccessor.QueryBindingConstantBuffer(slot);
+                binding = _gpuAccessor.QueryBindingStorageBuffer(slot);
                 _sbSlotToBindingMap[slot] = binding;
                 string slotNumber = slot.ToString(CultureInfo.InvariantCulture);
                 AddNewStorageBuffer(binding, $"{_stagePrefix}_s{slotNumber}");
