@@ -524,19 +524,22 @@ namespace Ryujinx.Ui.App.Common
                 }
                 catch (Exception ex) when (ex is JsonException || ex is DirectoryNotFoundException)
                 {
+                    if (ex is DirectoryNotFoundException)
+                    {
+                        Directory.CreateDirectory(metadataFolder);
+                    }
+
                     Logger.Warning?.Print(LogClass.Application, $"Failed to parse metadata json for {titleId}. Loading defaults.");
                     appMetadata = new ApplicationMetadata();
                 }
-                finally
-                {
-                    _metadataCache.Add(metadataFile, appMetadata);
-                }
+
+                _metadataCache.Add(metadataFile, appMetadata);
             }
 
             modifyFunction?.Invoke(appMetadata);
+
             _ = Task.Run(async () =>
             {
-                Directory.CreateDirectory(metadataFolder);
                 await JsonHelper.SerializeToFileAsync(metadataFile, appMetadata, SerializerContext.ApplicationMetadata);
             });
 

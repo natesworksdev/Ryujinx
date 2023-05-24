@@ -190,8 +190,8 @@ namespace Ryujinx.Ui
 
             WindowStateEvent += WindowStateEvent_Changed;
             DeleteEvent      += Window_Close;
-            FocusInEvent     += (_, _) => MainWindow_FocusEventHandler(true);
-            FocusOutEvent    += (_, _) => MainWindow_FocusEventHandler(false);
+            FocusInEvent     += MainWindow_FocusInEvent;
+            FocusOutEvent    += MainWindow_FocusOutEvent;
 
             _applicationLibrary.ApplicationAdded        += Application_Added;
             _applicationLibrary.ApplicationCountUpdated += ApplicationCount_Updated;
@@ -247,7 +247,7 @@ namespace Ryujinx.Ui
             if (ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn) _lastPlayedToggle.Active = true;
             if (ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)    _fileExtToggle.Active    = true;
             if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)   _fileSizeToggle.Active   = true;
-            _pathToggle.Active       = ConfigurationState.Instance.Ui.GuiColumns.PathColumn;
+            if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn)       _pathToggle.Active       = true;
 
             _favToggle.Toggled        += Fav_Toggled;
             _iconToggle.Toggled       += Icon_Toggled;
@@ -299,7 +299,7 @@ namespace Ryujinx.Ui
                 }
             };
 
-            _ = Task.Run(RefreshFirmwareLabel);
+            Task.Run(RefreshFirmwareLabel);
 
             InputManager = new InputManager(new GTK3KeyboardDriver(this), new SDL2GamepadDriver());
         }
@@ -322,7 +322,10 @@ namespace Ryujinx.Ui
 
         private void UpdateDockedModeState(object sender, ReactiveEventArgs<bool> e)
         {
-            _emulationContext?.System.ChangeDockedModeState(e.NewValue);
+            if (_emulationContext != null)
+            {
+                _emulationContext.System.ChangeDockedModeState(e.NewValue);
+            }
         }
 
         private void UpdateAudioVolumeState(object sender, ReactiveEventArgs<float> e)
@@ -335,9 +338,14 @@ namespace Ryujinx.Ui
             _fullScreen.Label = args.Event.NewWindowState.HasFlag(Gdk.WindowState.Fullscreen) ? "Exit Fullscreen" : "Enter Fullscreen";
         }
 
-        private void MainWindow_FocusEventHandler(bool isFocused)
-        { 
-            IsFocused = isFocused;
+        private void MainWindow_FocusOutEvent(object o, FocusOutEventArgs args)
+        {
+            IsFocused = false;
+        }
+
+        private void MainWindow_FocusInEvent(object o, FocusInEventArgs args)
+        {
+            IsFocused = true;
         }
 
         private void UpdateColumns()
@@ -645,10 +653,13 @@ namespace Ryujinx.Ui
             }
 
             _updatingGameTable = true;
+
             _tableStore.Clear();
 
-            _ = Task.Run(() => {
+            _ = Task.Run(() => 
+            {
                 _applicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs, ConfigurationState.Instance.System.Language);
+
                 _updatingGameTable = false;
             });
         }
