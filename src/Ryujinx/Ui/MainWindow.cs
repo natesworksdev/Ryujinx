@@ -656,7 +656,7 @@ namespace Ryujinx.Ui
 
             _tableStore.Clear();
 
-            _ = Task.Run(() => 
+            _ = Task.Run(() =>
             {
                 _applicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs, ConfigurationState.Instance.System.Language);
 

@@ -133,13 +133,11 @@ namespace Ryujinx.Ui.App.Common
                                 return;
                             }
 
-                            // TODO: cache file info
                             var fileInfo = new FileInfo(app);
                             string extension = fileInfo.Extension.ToLower();
 
                             if (!fileInfo.Attributes.HasFlag(FileAttributes.Hidden) && extension is ".nsp" or ".pfs0" or ".xci" or ".nca" or ".nro" or ".nso")
                             {
-                                // TODO: cache file path and extension since we've already resolved them
                                 var fullPath = fileInfo.ResolveLinkTarget(true)?.FullName ?? fileInfo.FullName;
                                 applications.Add(fullPath);
                                 numApplicationsFound++;
@@ -160,7 +158,6 @@ namespace Ryujinx.Ui.App.Common
                         return;
                     }
 
-                    // TODO: represent as record
                     double fileSize = new FileInfo(applicationPath).Length * 0.000000000931;
                     string titleName = "Unknown";
                     string titleId = "0000000000000000";
@@ -519,7 +516,6 @@ namespace Ryujinx.Ui.App.Common
             {
                 try
                 {
-                    // TODO: use async version
                     appMetadata = JsonHelper.DeserializeFromFile(metadataFile, SerializerContext.ApplicationMetadata);
                 }
                 catch (Exception ex) when (ex is JsonException || ex is DirectoryNotFoundException)
