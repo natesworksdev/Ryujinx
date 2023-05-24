@@ -15,8 +15,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// </summary>
     class BufferManager
     {
-        private const int TfInfoBufferSize = 20;
-        private const int TfInfoVertexCountOffset = 16;
+        private const int TfInfoVertexCountOffset = Constants.TotalTransformFeedbackBuffers * sizeof(int);
+        private const int TfInfoBufferSize = TfInfoVertexCountOffset + sizeof(int);
 
         private readonly GpuContext _context;
         private readonly GpuChannel _channel;
@@ -103,6 +103,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private readonly BuffersPerStage[] _gpUniformBuffers;
 
         private BufferHandle _tfInfoBuffer;
+        private int[] _tfInfoData;
 
         private bool _gpStorageBuffersDirty;
         private bool _gpUniformBuffersDirty;
@@ -143,6 +144,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _bufferTextures = new List<BufferTextureBinding>();
 
             _ranges = new BufferAssignment[Constants.TotalGpUniformBuffers * Constants.ShaderStages];
+
+            if (!context.Capabilities.SupportsTransformFeedback)
+            {
+                _tfInfoData = new int[Constants.TotalTransformFeedbackBuffers];
+            }
         }
 
 
@@ -333,9 +339,23 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             if (!_context.Capabilities.SupportsTransformFeedback && _tfInfoBuffer != BufferHandle.Null)
             {
-                Span<byte> data = stackalloc byte[sizeof(int)];
-                MemoryMarshal.Cast<byte, int>(data)[0] = vertexCount;
-                _context.Renderer.SetBufferData(_tfInfoBuffer, TfInfoVertexCountOffset, data);
+                bool hasTransformFeedbackBuffer = false;
+
+                for (int index = 0; index < Constants.TotalTransformFeedbackBuffers; index++)
+                {
+                    if (_transformFeedbackBuffers[index].Address != 0)
+                    {
+                        hasTransformFeedbackBuffer = true;
+                        break;
+                    }
+                }
+
+                if (hasTransformFeedbackBuffer)
+                {
+                    Span<byte> data = stackalloc byte[sizeof(int)];
+                    MemoryMarshal.Cast<byte, int>(data)[0] = vertexCount;
+                    _context.Renderer.SetBufferData(_tfInfoBuffer, TfInfoVertexCountOffset, data);
+                }
             }
         }
 
@@ -578,9 +598,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 }
                 else
                 {
-                    Span<byte> infoData = stackalloc byte[TfInfoVertexCountOffset];
-                    Span<int> info = MemoryMarshal.Cast<byte, int>(infoData);
+                    Span<int> info = _tfInfoData.AsSpan();
                     Span<BufferAssignment> buffers = stackalloc BufferAssignment[Constants.TotalTransformFeedbackBuffers + 1];
+
+                    bool needsDataUpdate = false;
 
                     if (_tfInfoBuffer == BufferHandle.Null)
                     {
@@ -605,13 +626,24 @@ namespace Ryujinx.Graphics.Gpu.Memory
                             ulong address = BitUtils.AlignDown(tfb.Address, (ulong)alignment);
                             ulong size = endAddress - address;
 
-                            info[index] = ((int)tfb.Address & (alignment - 1)) / 4;
+                            int tfeOffset = ((int)tfb.Address & (alignment - 1)) / 4;
+
+                            if (info[index] != tfeOffset)
+                            {
+                                info[index] = tfeOffset;
+                                needsDataUpdate = true;
+                            }
 
                             buffers[1 + index] = new BufferAssignment(1 + index, bufferCache.GetBufferRange(address, size, write: true));
                         }
                     }
 
-                    _context.Renderer.SetBufferData(_tfInfoBuffer, 0, infoData);
+                    if (needsDataUpdate)
+                    {
+                        Span<byte> infoData = MemoryMarshal.Cast<int, byte>(info);
+                        _context.Renderer.SetBufferData(_tfInfoBuffer, 0, infoData);
+                    }
+
                     _context.Renderer.Pipeline.SetStorageBuffers(buffers);
                 }
             }
