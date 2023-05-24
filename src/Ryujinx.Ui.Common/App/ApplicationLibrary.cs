@@ -26,6 +26,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using Path = System.IO.Path;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Ui.App.Common
 {
@@ -46,6 +47,8 @@ namespace Ryujinx.Ui.App.Common
 
         private static readonly ApplicationJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
         private static readonly TitleUpdateMetadataJsonSerializerContext TitleSerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
+
+        private readonly Dictionary<string, ApplicationMetadata> _metadataCache = new();
 
         public ApplicationLibrary(VirtualFileSystem virtualFileSystem)
         {
@@ -113,13 +116,14 @@ namespace Ryujinx.Ui.App.Common
                     {
                         IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", SearchOption.AllDirectories).Where(file =>
                         {
+                            string ext = Path.GetExtension(file).ToLower();
                             return
-                            (Path.GetExtension(file).ToLower() is ".nsp"  && ConfigurationState.Instance.Ui.ShownFileTypes.NSP.Value)  ||
-                            (Path.GetExtension(file).ToLower() is ".pfs0" && ConfigurationState.Instance.Ui.ShownFileTypes.PFS0.Value) ||
-                            (Path.GetExtension(file).ToLower() is ".xci"  && ConfigurationState.Instance.Ui.ShownFileTypes.XCI.Value)  ||
-                            (Path.GetExtension(file).ToLower() is ".nca"  && ConfigurationState.Instance.Ui.ShownFileTypes.NCA.Value)  ||
-                            (Path.GetExtension(file).ToLower() is ".nro"  && ConfigurationState.Instance.Ui.ShownFileTypes.NRO.Value)  ||
-                            (Path.GetExtension(file).ToLower() is ".nso"  && ConfigurationState.Instance.Ui.ShownFileTypes.NSO.Value);
+                            (ext is ".nsp"  && ConfigurationState.Instance.Ui.ShownFileTypes.NSP.Value)  ||
+                            (ext is ".pfs0" && ConfigurationState.Instance.Ui.ShownFileTypes.PFS0.Value) ||
+                            (ext is ".xci"  && ConfigurationState.Instance.Ui.ShownFileTypes.XCI.Value)  ||
+                            (ext is ".nca"  && ConfigurationState.Instance.Ui.ShownFileTypes.NCA.Value)  ||
+                            (ext is ".nro"  && ConfigurationState.Instance.Ui.ShownFileTypes.NRO.Value)  ||
+                            (ext is ".nso"  && ConfigurationState.Instance.Ui.ShownFileTypes.NSO.Value);
                         });
                         
                         foreach (string app in files)
@@ -129,11 +133,13 @@ namespace Ryujinx.Ui.App.Common
                                 return;
                             }
 
+                            // TODO: cache file info
                             var fileInfo = new FileInfo(app);
                             string extension = fileInfo.Extension.ToLower();
 
                             if (!fileInfo.Attributes.HasFlag(FileAttributes.Hidden) && extension is ".nsp" or ".pfs0" or ".xci" or ".nca" or ".nro" or ".nso")
                             {
+                                // TODO: cache file path and extension since we've already resolved them
                                 var fullPath = fileInfo.ResolveLinkTarget(true)?.FullName ?? fileInfo.FullName;
                                 applications.Add(fullPath);
                                 numApplicationsFound++;
@@ -154,6 +160,7 @@ namespace Ryujinx.Ui.App.Common
                         return;
                     }
 
+                    // TODO: represent as record
                     double fileSize = new FileInfo(applicationPath).Length * 0.000000000931;
                     string titleName = "Unknown";
                     string titleId = "0000000000000000";
@@ -506,34 +513,32 @@ namespace Ryujinx.Ui.App.Common
             string metadataFolder = Path.Combine(AppDataManager.GamesDirPath, titleId, "gui");
             string metadataFile   = Path.Combine(metadataFolder, "metadata.json");
 
-            ApplicationMetadata appMetadata;
+            bool isCached = _metadataCache.TryGetValue(metadataFile, out ApplicationMetadata appMetadata);
 
-            if (!File.Exists(metadataFile))
+            if (!isCached)
+            {
+                try
+                {
+                    // TODO: use async version
+                    appMetadata = JsonHelper.DeserializeFromFile(metadataFile, SerializerContext.ApplicationMetadata);
+                }
+                catch (Exception ex) when (ex is JsonException || ex is DirectoryNotFoundException)
+                {
+                    Logger.Warning?.Print(LogClass.Application, $"Failed to parse metadata json for {titleId}. Loading defaults.");
+                    appMetadata = new ApplicationMetadata();
+                }
+                finally
+                {
+                    _metadataCache.Add(metadataFile, appMetadata);
+                }
+            }
+
+            modifyFunction?.Invoke(appMetadata);
+            _ = Task.Run(async () =>
             {
                 Directory.CreateDirectory(metadataFolder);
-
-                appMetadata = new ApplicationMetadata();
-
-                JsonHelper.SerializeToFile(metadataFile, appMetadata, SerializerContext.ApplicationMetadata);
-            }
-
-            try
-            {
-                appMetadata = JsonHelper.DeserializeFromFile(metadataFile, SerializerContext.ApplicationMetadata);
-            }
-            catch (JsonException)
-            {
-                Logger.Warning?.Print(LogClass.Application, $"Failed to parse metadata json for {titleId}. Loading defaults.");
-
-                appMetadata = new ApplicationMetadata();
-            }
-
-            if (modifyFunction != null)
-            {
-                modifyFunction(appMetadata);
-
-                JsonHelper.SerializeToFile(metadataFile, appMetadata, SerializerContext.ApplicationMetadata);
-            }
+                await JsonHelper.SerializeToFileAsync(metadataFile, appMetadata, SerializerContext.ApplicationMetadata);
+            });
 
             return appMetadata;
         }

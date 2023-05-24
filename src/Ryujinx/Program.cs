@@ -286,16 +286,19 @@ namespace Ryujinx
                 };
 
                 ResponseType response = GtkDialog.CreateCustomDialog(
-                    "Ryujinx - Default graphics backend",
-                    "Use Vulkan as default graphics backend?",
-                    "Ryujinx now supports the Vulkan API. " +
+                    title: "Ryujinx - Default graphics backend",
+                    mainText: "Use Vulkan as default graphics backend?",
+
+                    """
+                    Ryujinx now supports the Vulkan API. " +
                     "Vulkan greatly improves shader compilation performance, " +
                     "and fixes some graphical glitches; however, since it is a new feature, " +
                     "you may experience some issues that did not occur with OpenGL.\n\n" +
                     "Note that you will also lose any existing shader cache the first time you start a game " +
                     "on version 1.1.200 onwards, because Vulkan required changes to the shader cache that makes it incompatible with previous versions.\n\n" +
                     "Would you like to set Vulkan as the default graphics backend? " +
-                    "You can change this at any time on the settings window.",
+                    "You can change this at any time on the settings window.
+                    """,
                     buttonTexts,
                     MessageType.Question);
 
