@@ -244,12 +244,16 @@ namespace Ryujinx.Graphics.Shader.Translation
                     var stride = Config.GpuAccessor.QueryTransformFeedbackStride(tfbIndex);
 
                     Operand baseOffset = this.Load(StorageKind.StorageBuffer, Constants.TfeInfoBinding, Const(0), Const(tfbIndex));
-                    Operand instanceIndex = this.Load(StorageKind.Input, IoVariable.InstanceIndex);
-                    Operand vertexIndex = this.Load(StorageKind.Input, IoVariable.VertexIndex);
                     Operand baseVertex = this.Load(StorageKind.Input, IoVariable.BaseVertex);
+                    Operand baseInstance = this.Load(StorageKind.Input, IoVariable.BaseInstance);
+                    Operand vertexIndex = this.Load(StorageKind.Input, IoVariable.VertexIndex);
+                    Operand instanceIndex = this.Load(StorageKind.Input, IoVariable.InstanceIndex);
 
-                    Operand outputBaseVertex = this.IMultiply(instanceIndex, vertexCount);
                     Operand outputVertexOffset = this.ISubtract(vertexIndex, baseVertex);
+                    Operand outputInstanceOffset = this.ISubtract(instanceIndex, baseInstance);
+
+                    Operand outputBaseVertex = this.IMultiply(outputInstanceOffset, vertexCount);
+
                     Operand vertexOffset = this.IMultiply(this.IAdd(outputBaseVertex, outputVertexOffset), Const(stride / 4));
                     baseOffset = this.IAdd(baseOffset, vertexOffset);
 

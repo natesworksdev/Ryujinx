@@ -536,7 +536,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             _drawState.DrawIndexed = indexed;
             _currentSpecState.SetHasConstantBufferDrawParameters(true);
-            _channel.BufferManager.SetInstancedDrawVertexCount(count);
+
+            if (instanceCount > 1)
+            {
+                _channel.BufferManager.SetInstancedDrawVertexCount(count);
+            }
 
             engine.UpdateState();
 
