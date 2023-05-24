@@ -96,7 +96,7 @@ namespace Ryujinx.Common.Utilities
 
             if (!utcDateTime.HasValue)
             {
-                // TODO: maybe put localized string here instead of just "Never"
+                // In the Avalonia UI, this is turned into a localized version of "Never" by LocalizedNeverConverter.
                 return "Never";
             }
 
