@@ -26,7 +26,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using Path = System.IO.Path;
-using System.Threading.Tasks;
 
 namespace Ryujinx.Ui.App.Common
 {
