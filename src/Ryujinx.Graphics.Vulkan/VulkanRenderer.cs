@@ -10,7 +10,6 @@ using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Vulkan
@@ -296,6 +295,7 @@ namespace Ryujinx.Graphics.Vulkan
                 supportsSubgroupSizeControl,
                 featuresShaderInt8.ShaderInt8,
                 _physicalDevice.IsDeviceExtensionPresent("VK_EXT_shader_stencil_export"),
+                features2.Features.ShaderStorageImageMultisample,
                 _physicalDevice.IsDeviceExtensionPresent(ExtConditionalRendering.ExtensionName),
                 _physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState.ExtensionName),
                 features2.Features.MultiViewport,
@@ -398,17 +398,17 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (info.State.HasValue || isCompute)
             {
-                return new ShaderCollection(this, _device, sources, info.State ?? default, info.FromCache);
+                return new ShaderCollection(this, _device, sources, info.ResourceLayout, info.State ?? default, info.FromCache);
             }
             else
             {
-                return new ShaderCollection(this, _device, sources);
+                return new ShaderCollection(this, _device, sources, info.ResourceLayout);
             }
         }
 
-        internal ShaderCollection CreateProgramWithMinimalLayout(ShaderSource[] sources, SpecDescription[] specDescription = null)
+        internal ShaderCollection CreateProgramWithMinimalLayout(ShaderSource[] sources, ResourceLayout resourceLayout, SpecDescription[] specDescription = null)
         {
-            return new ShaderCollection(this, _device, sources, specDescription: specDescription, isMinimal: true);
+            return new ShaderCollection(this, _device, sources, resourceLayout, specDescription, isMinimal: true);
         }
 
         public ISampler CreateSampler(GAL.SamplerCreateInfo info)
@@ -600,6 +600,25 @@ namespace Ryujinx.Graphics.Vulkan
             return new HardwareInfo(GpuVendor, GpuRenderer);
         }
 
+        /// <summary>
+        /// Gets the available Vulkan devices using the default Vulkan API
+        /// object returned by <see cref="Vk.GetApi()"/>
+        /// </summary>
+        /// <returns></returns>
+        public static DeviceInfo[] GetPhysicalDevices()
+        {
+            try
+            {
+                return VulkanInitialization.GetSuitablePhysicalDevices(Vk.GetApi());
+            }
+            catch (Exception ex)
+            {
+                Logger.Error?.PrintMsg(LogClass.Gpu, $"Error querying Vulkan devices: {ex.Message}");
+
+                return Array.Empty<DeviceInfo>();
+            }
+        }
+
         public static DeviceInfo[] GetPhysicalDevices(Vk api)
         {
             try
@@ -658,7 +677,7 @@ namespace Ryujinx.Graphics.Vulkan
             Logger.Notice.Print(LogClass.Gpu, $"{GpuVendor} {GpuRenderer} ({GpuVersion})");
         }
 
-        public GAL.PrimitiveTopology TopologyRemap(GAL.PrimitiveTopology topology)
+        internal GAL.PrimitiveTopology TopologyRemap(GAL.PrimitiveTopology topology)
         {
             return topology switch
             {
@@ -669,7 +688,7 @@ namespace Ryujinx.Graphics.Vulkan
             };
         }
 
-        public bool TopologyUnsupported(GAL.PrimitiveTopology topology)
+        internal bool TopologyUnsupported(GAL.PrimitiveTopology topology)
         {
             return topology switch
             {

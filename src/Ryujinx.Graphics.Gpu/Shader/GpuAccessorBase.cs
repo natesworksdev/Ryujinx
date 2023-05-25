@@ -4,6 +4,7 @@ using Ryujinx.Graphics.Gpu.Engine.Threed;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Shader.Translation;
+using System;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
@@ -16,6 +17,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         private readonly ResourceCounts _resourceCounts;
         private readonly int _stageIndex;
 
+        private readonly int[] _constantBufferBindings;
+
         /// <summary>
         /// Creates a new GPU accessor.
         /// </summary>
@@ -25,6 +28,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
             _context = context;
             _resourceCounts = resourceCounts;
             _stageIndex = stageIndex;
+
+            if (context.Capabilities.Api != TargetApi.Vulkan)
+            {
+                _constantBufferBindings = new int[Constants.TotalGpUniformBuffers];
+                _constantBufferBindings.AsSpan().Fill(-1);
+            }
         }
 
         public int QueryBindingConstantBuffer(int index)
@@ -36,7 +45,15 @@ namespace Ryujinx.Graphics.Gpu.Shader
             }
             else
             {
-                return _resourceCounts.UniformBuffersCount++;
+                int binding = _constantBufferBindings[index];
+
+                if (binding < 0)
+                {
+                    binding = _resourceCounts.UniformBuffersCount++;
+                    _constantBufferBindings[index] = binding;
+                }
+
+                return binding;
             }
         }
 
@@ -93,16 +110,16 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 Logger.Error?.Print(LogClass.Gpu, $"{resourceName} index {index} exceeds per stage limit of {maxPerStage}.");
             }
 
-            return GetStageIndex() * (int)maxPerStage + index;
+            return GetStageIndex(_stageIndex) * (int)maxPerStage + index;
         }
 
-        private int GetStageIndex()
+        public static int GetStageIndex(int stageIndex)
         {
             // This is just a simple remapping to ensure that most frequently used shader stages
             // have the lowest binding numbers.
             // This is useful because if we need to run on a system with a low limit on the bindings,
             // then we can still get most games working as the most common shaders will have low binding numbers.
-            return _stageIndex switch
+            return stageIndex switch
             {
                 4 => 1, // Fragment
                 3 => 2, // Geometry
