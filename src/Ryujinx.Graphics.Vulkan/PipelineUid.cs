@@ -303,7 +303,7 @@ namespace Ryujinx.Graphics.Vulkan
                 case Format.R8G8B8A8Sscaled:
                     return Format.R8G8B8Sscaled;
                 case Format.B8G8R8A8Unorm:
-                    return Format.R8G8B8Unorm;
+                    return Format.B8G8R8Unorm;
                 case Format.B8G8R8A8Srgb:
                     return Format.B8G8R8Srgb;
 
