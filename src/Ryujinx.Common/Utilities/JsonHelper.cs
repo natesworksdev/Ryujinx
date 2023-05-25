@@ -2,7 +2,6 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
-using System.Threading.Tasks;
 
 namespace Ryujinx.Common.Utilities
 {
@@ -48,22 +47,10 @@ namespace Ryujinx.Common.Utilities
             JsonSerializer.Serialize(file, value, typeInfo);
         }
 
-        public static async Task SerializeToFileAsync<T>(string filePath, T value, JsonTypeInfo<T> typeInfo)
-        {
-            using FileStream file = File.Create(filePath, DefaultFileWriteBufferSize, FileOptions.WriteThrough);
-            await JsonSerializer.SerializeAsync(file, value, typeInfo);
-        }
-
         public static T DeserializeFromFile<T>(string filePath, JsonTypeInfo<T> typeInfo)
         {
             using FileStream file = File.OpenRead(filePath);
             return JsonSerializer.Deserialize(file, typeInfo);
-        }
-
-        public static async Task<T> DeserializeFromFileAsync<T>(string filePath, JsonTypeInfo<T> typeInfo)
-        {
-            using FileStream file = File.OpenRead(filePath);
-            return await JsonSerializer.DeserializeAsync(file, typeInfo);
         }
 
         public static void SerializeToStream<T>(Stream stream, T value, JsonTypeInfo<T> typeInfo)

@@ -35,6 +35,8 @@ namespace Ryujinx.Ui.App.Common
         public event EventHandler<ApplicationAddedEventArgs>        ApplicationAdded;
         public event EventHandler<ApplicationCountUpdatedEventArgs> ApplicationCountUpdated;
 
+        private readonly Dictionary<string, ApplicationMetadata> _metadataCache;
+
         private readonly byte[] _nspIcon;
         private readonly byte[] _xciIcon;
         private readonly byte[] _ncaIcon;
@@ -48,11 +50,11 @@ namespace Ryujinx.Ui.App.Common
         private static readonly ApplicationJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
         private static readonly TitleUpdateMetadataJsonSerializerContext TitleSerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
-        private readonly Dictionary<string, ApplicationMetadata> _metadataCache = new();
-
         public ApplicationLibrary(VirtualFileSystem virtualFileSystem)
         {
             _virtualFileSystem = virtualFileSystem;
+
+            _metadataCache = new();
 
             _nspIcon = GetResourceBytes("Ryujinx.Ui.Common.Resources.Icon_NSP.png");
             _xciIcon = GetResourceBytes("Ryujinx.Ui.Common.Resources.Icon_XCI.png");
@@ -526,18 +528,19 @@ namespace Ryujinx.Ui.App.Common
                     }
 
                     Logger.Warning?.Print(LogClass.Application, $"Failed to parse metadata json for {titleId}. Loading defaults.");
+                    
                     appMetadata = new ApplicationMetadata();
                 }
 
                 _metadataCache.Add(metadataFile, appMetadata);
             }
 
-            modifyFunction?.Invoke(appMetadata);
-
-            _ = Task.Run(async () =>
+            if (modifyFunction != null)
             {
-                await JsonHelper.SerializeToFileAsync(metadataFile, appMetadata, SerializerContext.ApplicationMetadata);
-            });
+                modifyFunction(appMetadata);
+
+                JsonHelper.SerializeToFile(metadataFile, appMetadata, SerializerContext.ApplicationMetadata);
+            }
 
             return appMetadata;
         }
