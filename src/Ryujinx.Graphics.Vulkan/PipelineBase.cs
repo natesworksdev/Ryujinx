@@ -53,7 +53,6 @@ namespace Ryujinx.Graphics.Vulkan
         private int _writtenAttachmentCount;
 
         private bool _framebufferUsingColorWriteMask;
-        private bool _vertexAttributesOrBuffersChanged;
 
         private ITexture[] _preMaskColors;
         private ITexture _preMaskDepthStencil;
@@ -1183,7 +1182,6 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             _newState.VertexAttributeDescriptionsCount = (uint)count;
-            _vertexAttributesOrBuffersChanged = true;
             SignalStateChange();
         }
 
@@ -1281,7 +1279,6 @@ namespace Ryujinx.Graphics.Vulkan
             _vertexBufferUpdater.Commit(Cbs);
 
             _newState.VertexBindingDescriptionsCount = (uint)validCount;
-            _vertexAttributesOrBuffersChanged = true;
             SignalStateChange();
         }
 
@@ -1648,12 +1645,6 @@ namespace Ryujinx.Graphics.Vulkan
                 if (pbp == PipelineBindPoint.Graphics && _renderPass == null)
                 {
                     CreateRenderPass();
-                }
-
-                if (Gd.IsMoltenVk && _vertexAttributesOrBuffersChanged)
-                {
-                    _newState.Internal.TruncateVertexAttributeFormats();
-                    _vertexAttributesOrBuffersChanged = false;
                 }
 
                 var pipeline = pbp == PipelineBindPoint.Compute
