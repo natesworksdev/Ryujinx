@@ -267,6 +267,11 @@ namespace Ryujinx.Graphics.Vulkan
 
             pipeline.VertexBindingDescriptionsCount = (uint)descriptorIndex;
 
+            if (gd.IsMoltenVk)
+            {
+                pipeline.Internal.TruncateVertexAttributeFormats();
+            }
+
             // NOTE: Viewports, Scissors are dynamic.
 
             for (int i = 0; i < Constants.MaxRenderTargets; i++)
