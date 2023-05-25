@@ -623,7 +623,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void UpdateVertexAttributeDescriptions()
+        private void UpdateVertexAttributeDescriptions()
         {
             // Vertex attributes exceeding the stride are invalid.
             // In metal, they cause glitches with the vertex shader fetching incorrect values.
