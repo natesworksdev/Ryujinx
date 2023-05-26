@@ -50,6 +50,8 @@ namespace Ryujinx.Graphics.Shader.Translation
                         InsertVectorComponentSelect(node, config);
                     }
 
+                    EnableForcePreciseIfNeeded(operation);
+
                     LinkedListNode<INode> nextNode = node.Next;
 
                     if (operation is TextureOperation texOp)
@@ -157,6 +159,19 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
 
             operation.TurnIntoCopy(result);
+        }
+
+        private static void EnableForcePreciseIfNeeded(Operation operation)
+        {
+            if (operation.Inst == (Instruction.FP32 | Instruction.Divide) &&
+                operation.GetSource(0).Type == OperandType.Constant &&
+                operation.GetSource(0).AsFloat() == 1f &&
+                operation.GetSource(1).AsgOp is Operation addOp &&
+                addOp.Inst == (Instruction.FP32 | Instruction.Add) &&
+                addOp.GetSource(1).Type == OperandType.Constant)
+            {
+                addOp.ForcePrecise = true;
+            }
         }
 
         private static LinkedListNode<INode> RewriteGlobalAccess(LinkedListNode<INode> node, ShaderConfig config)
