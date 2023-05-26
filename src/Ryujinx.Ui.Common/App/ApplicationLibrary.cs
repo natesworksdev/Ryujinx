@@ -90,6 +90,8 @@ namespace Ryujinx.Ui.App.Common
             int numApplicationsFound  = 0;
             int numApplicationsLoaded = 0;
 
+            _metadataCache.Clear();
+
             _desiredTitleLanguage = desiredTitleLanguage;
 
             _cancellationToken = new CancellationTokenSource();
@@ -118,6 +120,7 @@ namespace Ryujinx.Ui.App.Common
                         IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", SearchOption.AllDirectories).Where(file =>
                         {
                             string ext = Path.GetExtension(file).ToLower();
+
                             return
                             (ext is ".nsp"  && ConfigurationState.Instance.Ui.ShownFileTypes.NSP.Value)  ||
                             (ext is ".pfs0" && ConfigurationState.Instance.Ui.ShownFileTypes.PFS0.Value) ||

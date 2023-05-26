@@ -41,7 +41,6 @@ using SPB.Graphics.Vulkan;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -293,7 +292,7 @@ namespace Ryujinx.Ui
 
             ConfigurationState.Instance.Ui.GameDirs.Event += (sender, args) =>
             {
-                if (!args.OldValue.SequenceEqual(args.NewValue))
+                if (args.OldValue != args.NewValue)
                 {
                     UpdateGameTable();
                 }
@@ -656,12 +655,15 @@ namespace Ryujinx.Ui
 
             _tableStore.Clear();
 
-            _ = Task.Run(() =>
+            Thread applicationLibraryThread = new Thread(() =>
             {
                 _applicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs, ConfigurationState.Instance.System.Language);
 
                 _updatingGameTable = false;
             });
+            applicationLibraryThread.Name         = "GUI.ApplicationLibraryThread";
+            applicationLibraryThread.IsBackground = true;
+            applicationLibraryThread.Start();
         }
 
         [Conditional("RELEASE")]
