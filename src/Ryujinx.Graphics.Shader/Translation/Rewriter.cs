@@ -14,6 +14,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         public static void RunPass(HelperFunctionManager hfm, BasicBlock[] blocks, ShaderConfig config)
         {
             bool isVertexShader = config.Stage == ShaderStage.Vertex;
+            bool isImpreciseFragmentShader = config.Stage == ShaderStage.Fragment && config.GpuAccessor.QueryHostReducedPrecision();
             bool hasConstantBufferDrawParameters = config.GpuAccessor.QueryHasConstantBufferDrawParameters();
             bool hasVectorIndexingBug = config.GpuAccessor.QueryHostHasVectorIndexingBug();
             bool supportsSnormBufferTextureFormat = config.GpuAccessor.QueryHostSupportsSnormBufferTextureFormat();
@@ -45,12 +46,15 @@ namespace Ryujinx.Graphics.Shader.Translation
                         }
                     }
 
+                    if (isImpreciseFragmentShader)
+                    {
+                        EnableForcePreciseIfNeeded(operation);
+                    }
+
                     if (hasVectorIndexingBug)
                     {
                         InsertVectorComponentSelect(node, config);
                     }
-
-                    EnableForcePreciseIfNeeded(operation);
 
                     LinkedListNode<INode> nextNode = node.Next;
 
@@ -80,6 +84,25 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                     node = nextNode;
                 }
+            }
+        }
+
+        private static void EnableForcePreciseIfNeeded(Operation operation)
+        {
+            // There are some cases where a small bias is added to values to prevent division by zero.
+            // When operating with reduced precision, it is possible for this bias to get rounded to 0
+            // and cause a division by zero.
+            // To prevent that, we force those operations to be precise even if the host wants
+            // imprecise operations for performance.
+
+            if (operation.Inst == (Instruction.FP32 | Instruction.Divide) &&
+                operation.GetSource(0).Type == OperandType.Constant &&
+                operation.GetSource(0).AsFloat() == 1f &&
+                operation.GetSource(1).AsgOp is Operation addOp &&
+                addOp.Inst == (Instruction.FP32 | Instruction.Add) &&
+                addOp.GetSource(1).Type == OperandType.Constant)
+            {
+                addOp.ForcePrecise = true;
             }
         }
 
@@ -159,19 +182,6 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
 
             operation.TurnIntoCopy(result);
-        }
-
-        private static void EnableForcePreciseIfNeeded(Operation operation)
-        {
-            if (operation.Inst == (Instruction.FP32 | Instruction.Divide) &&
-                operation.GetSource(0).Type == OperandType.Constant &&
-                operation.GetSource(0).AsFloat() == 1f &&
-                operation.GetSource(1).AsgOp is Operation addOp &&
-                addOp.Inst == (Instruction.FP32 | Instruction.Add) &&
-                addOp.GetSource(1).Type == OperandType.Constant)
-            {
-                addOp.ForcePrecise = true;
-            }
         }
 
         private static LinkedListNode<INode> RewriteGlobalAccess(LinkedListNode<INode> node, ShaderConfig config)
