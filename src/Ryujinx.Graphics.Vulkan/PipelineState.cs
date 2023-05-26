@@ -633,28 +633,47 @@ namespace Ryujinx.Graphics.Vulkan
             for (int index = 0; index < VertexAttributeDescriptionsCount; index++)
             {
                 var attribute = Internal.VertexAttributeDescriptions[index];
-                ref var vb = ref Internal.VertexBindingDescriptions[(int)attribute.Binding];
+                int vbIndex = GetVertexBufferIndex(attribute.Binding);
 
-                Format format = attribute.Format;
-
-                while (vb.Stride != 0 && attribute.Offset + FormatTable.GetAttributeFormatSize(format) > vb.Stride)
+                if (vbIndex >= 0)
                 {
-                    Format newFormat = FormatTable.DropLastComponent(format);
+                    ref var vb = ref Internal.VertexBindingDescriptions[vbIndex];
 
-                    if (newFormat == format)
+                    Format format = attribute.Format;
+
+                    while (vb.Stride != 0 && attribute.Offset + FormatTable.GetAttributeFormatSize(format) > vb.Stride)
                     {
-                        // That case means we failed to find a format that fits within the stride,
-                        // so just restore the original format and give up.
-                        format = attribute.Format;
-                        break;
+                        Format newFormat = FormatTable.DropLastComponent(format);
+
+                        if (newFormat == format)
+                        {
+                            // That case means we failed to find a format that fits within the stride,
+                            // so just restore the original format and give up.
+                            format = attribute.Format;
+                            break;
+                        }
+
+                        format = newFormat;
                     }
 
-                    format = newFormat;
+                    attribute.Format = format;
                 }
 
-                attribute.Format = format;
                 _vertexAttributeDescriptions2[index] = attribute;
             }
+        }
+
+        private int GetVertexBufferIndex(uint binding)
+        {
+            for (int index = 0; index < VertexBindingDescriptionsCount; index++)
+            {
+                if (Internal.VertexBindingDescriptions[index].Binding == binding)
+                {
+                    return index;
+                }
+            }
+
+            return -1;
         }
 
         public void Dispose()
