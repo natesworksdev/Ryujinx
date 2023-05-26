@@ -25,15 +25,20 @@ error_handler() {
     exit 1
 }
 
-trap 'error_handler ${LINENO}' ERR
-
 # Wait for Ryujinx to exit
 # NOTE: in case no fds are open, lsof could be returning with a process still living.
 # We wait 1s and assume the process stopped after that
 lsof -p $APP_PID +r 1 &>/dev/null
 sleep 1
 
+trap 'error_handler ${LINENO}' ERR
+
 # Now replace and reopen.
 rm -rf "$INSTALL_DIRECTORY"
 mv "$NEW_APP_DIRECTORY" "$INSTALL_DIRECTORY"
-open -a "$INSTALL_DIRECTORY" --args "$APP_ARGUMENTS"
+
+if [ "$#" -le 3 ]; then
+    open -a "$INSTALL_DIRECTORY"
+else
+    open -a "$INSTALL_DIRECTORY" --args "$APP_ARGUMENTS"
+fi

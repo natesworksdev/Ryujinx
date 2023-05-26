@@ -97,30 +97,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 texCallBuilder.Append(str);
             }
 
-            string ApplyScaling(string vector)
-            {
-                if (context.Config.Stage.SupportsRenderScale() &&
-                    texOp.Inst == Instruction.ImageLoad &&
-                    !isBindless &&
-                    !isIndexed)
-                {
-                    // Image scales start after texture ones.
-                    int scaleIndex = context.Config.GetTextureDescriptors().Length + context.Config.FindImageDescriptorIndex(texOp);
-
-                    if (pCount == 3 && isArray)
-                    {
-                        // The array index is not scaled, just x and y.
-                        vector = $"ivec3(Helper_TexelFetchScale(({vector}).xy, {scaleIndex}), ({vector}).z)";
-                    }
-                    else if (pCount == 2 && !isArray)
-                    {
-                        vector = $"Helper_TexelFetchScale({vector}, {scaleIndex})";
-                    }
-                }
-
-                return vector;
-            }
-
             if (pCount > 1)
             {
                 string[] elems = new string[pCount];
@@ -130,7 +106,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     elems[index] = Src(AggregateType.S32);
                 }
 
-                Append(ApplyScaling($"ivec{pCount}({string.Join(", ", elems)})"));
+                Append($"ivec{pCount}({string.Join(", ", elems)})");
             }
             else
             {
@@ -213,29 +189,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
         public static string Load(CodeGenContext context, AstOperation operation)
         {
             return GenerateLoadOrStore(context, operation, isStore: false);
-        }
-
-        public static string LoadConstant(CodeGenContext context, AstOperation operation)
-        {
-            IAstNode src1 = operation.GetSource(0);
-            IAstNode src2 = operation.GetSource(1);
-
-            string offsetExpr = GetSoureExpr(context, src2, GetSrcVarType(operation.Inst, 1));
-            offsetExpr = Enclose(offsetExpr, src2, Instruction.ShiftRightS32, isLhs: true);
-
-            var config = context.Config;
-            bool indexElement = !config.GpuAccessor.QueryHostHasVectorIndexingBug();
-
-            if (src1 is AstOperand operand && operand.Type == OperandType.Constant)
-            {
-                bool cbIndexable = config.UsedFeatures.HasFlag(Translation.FeatureFlags.CbIndexing);
-                return OperandManager.GetConstantBufferName(operand.Value, offsetExpr, config.Stage, cbIndexable, indexElement);
-            }
-            else
-            {
-                string slotExpr = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
-                return OperandManager.GetConstantBufferName(slotExpr, offsetExpr, config.Stage, indexElement);
-            }
         }
 
         public static string LoadLocal(CodeGenContext context, AstOperation operation)
@@ -607,53 +560,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 }
             }
 
-            string ApplyScaling(string vector)
-            {
-                if (intCoords)
-                {
-                    if (context.Config.Stage.SupportsRenderScale() &&
-                        !isBindless &&
-                        !isIndexed)
-                    {
-                        int index = context.Config.FindTextureDescriptorIndex(texOp);
-
-                        if (pCount == 3 && isArray)
-                        {
-                            // The array index is not scaled, just x and y.
-                            vector = "ivec3(Helper_TexelFetchScale((" + vector + ").xy, " + index + "), (" + vector + ").z)";
-                        }
-                        else if (pCount == 2 && !isArray)
-                        {
-                            vector = "Helper_TexelFetchScale(" + vector + ", " + index + ")";
-                        }
-                    }
-                }
-
-                return vector;
-            }
-
-            string ApplyBias(string vector)
-            {
-                int gatherBiasPrecision = context.Config.GpuAccessor.QueryHostGatherBiasPrecision();
-                if (isGather && gatherBiasPrecision != 0)
-                {
-                    // GPU requires texture gather to be slightly offset to match NVIDIA behaviour when point is exactly between two texels.
-                    // Offset by the gather precision divided by 2 to correct for rounding.
-
-                    if (pCount == 1)
-                    {
-                        vector = $"{vector} + (1.0 / (float(textureSize({samplerName}, 0)) * float({1 << (gatherBiasPrecision + 1)})))";
-                    }
-                    else
-                    {
-                        vector = $"{vector} + (1.0 / (vec{pCount}(textureSize({samplerName}, 0).{"xyz".Substring(0, pCount)}) * float({1 << (gatherBiasPrecision + 1)})))";
-                    }
-                }
-
-                return vector;
-            }
-
-            Append(ApplyBias(ApplyScaling(AssemblePVector(pCount))));
+            Append(AssemblePVector(pCount));
 
             string AssembleDerivativesVector(int count)
             {
@@ -773,7 +680,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             }
             else
             {
-                (TextureDescriptor descriptor, int descriptorIndex) = context.Config.FindTextureDescriptor(texOp);
+                TextureDescriptor descriptor = context.Config.FindTextureDescriptor(texOp);
                 bool hasLod = !descriptor.Type.HasFlag(SamplerType.Multisample) && descriptor.Type != SamplerType.TextureBuffer;
                 string texCall;
 
@@ -790,14 +697,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     texCall = $"textureSize({samplerName}){GetMask(texOp.Index)}";
                 }
 
-                if (context.Config.Stage.SupportsRenderScale() &&
-                    (texOp.Index < 2 || (texOp.Type & SamplerType.Mask) == SamplerType.Texture3D) &&
-                    !isBindless &&
-                    !isIndexed)
-                {
-                    texCall = $"Helper_TextureSizeUnscale({texCall}, {descriptorIndex})";
-                }
-
                 return texCall;
             }
         }
@@ -809,9 +708,29 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             string varName;
             AggregateType varType;
             int srcIndex = 0;
+            int inputsCount = isStore ? operation.SourcesCount - 1 : operation.SourcesCount;
 
             switch (storageKind)
             {
+                case StorageKind.ConstantBuffer:
+                    if (!(operation.GetSource(srcIndex++) is AstOperand bindingIndex) || bindingIndex.Type != OperandType.Constant)
+                    {
+                        throw new InvalidOperationException($"First input of {operation.Inst} with {storageKind} storage must be a constant operand.");
+                    }
+
+                    int binding = bindingIndex.Value;
+                    BufferDefinition buffer = context.Config.Properties.ConstantBuffers[binding];
+
+                    if (!(operation.GetSource(srcIndex++) is AstOperand fieldIndex) || fieldIndex.Type != OperandType.Constant)
+                    {
+                        throw new InvalidOperationException($"Second input of {operation.Inst} with {storageKind} storage must be a constant operand.");
+                    }
+
+                    StructureField field = buffer.Type.Fields[fieldIndex.Value];
+                    varName = $"{buffer.Name}.{field.Name}";
+                    varType = field.Type;
+                    break;
+
                 case StorageKind.Input:
                 case StorageKind.InputPerPatch:
                 case StorageKind.Output:
@@ -864,38 +783,37 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                             varName = $"gl_out[{expr}].{varName}";
                         }
                     }
-
-                    int firstSrcIndex = srcIndex;
-                    int inputsCount = isStore ? operation.SourcesCount - 1 : operation.SourcesCount;
-
-                    for (; srcIndex < inputsCount; srcIndex++)
-                    {
-                        IAstNode src = operation.GetSource(srcIndex);
-
-                        if ((varType & AggregateType.ElementCountMask) != 0 &&
-                            srcIndex == inputsCount - 1 &&
-                            src is AstOperand elementIndex &&
-                            elementIndex.Type == OperandType.Constant)
-                        {
-                            varName += "." + "xyzw"[elementIndex.Value & 3];
-                        }
-                        else if (srcIndex == firstSrcIndex && context.Config.Stage == ShaderStage.TessellationControl && storageKind == StorageKind.Output)
-                        {
-                            // GLSL requires that for tessellation control shader outputs,
-                            // that the index expression must be *exactly* "gl_InvocationID",
-                            // otherwise the compilation fails.
-                            // TODO: Get rid of this and use expression propagation to make sure we generate the correct code from IR.
-                            varName += "[gl_InvocationID]";
-                        }
-                        else
-                        {
-                            varName += $"[{GetSoureExpr(context, src, AggregateType.S32)}]";
-                        }
-                    }
                     break;
 
                 default:
                     throw new InvalidOperationException($"Invalid storage kind {storageKind}.");
+            }
+
+            int firstSrcIndex = srcIndex;
+
+            for (; srcIndex < inputsCount; srcIndex++)
+            {
+                IAstNode src = operation.GetSource(srcIndex);
+
+                if ((varType & AggregateType.ElementCountMask) != 0 &&
+                    srcIndex == inputsCount - 1 &&
+                    src is AstOperand elementIndex &&
+                    elementIndex.Type == OperandType.Constant)
+                {
+                    varName += "." + "xyzw"[elementIndex.Value & 3];
+                }
+                else if (srcIndex == firstSrcIndex && context.Config.Stage == ShaderStage.TessellationControl && storageKind == StorageKind.Output)
+                {
+                    // GLSL requires that for tessellation control shader outputs,
+                    // that the index expression must be *exactly* "gl_InvocationID",
+                    // otherwise the compilation fails.
+                    // TODO: Get rid of this and use expression propagation to make sure we generate the correct code from IR.
+                    varName += "[gl_InvocationID]";
+                }
+                else
+                {
+                    varName += $"[{GetSoureExpr(context, src, AggregateType.S32)}]";
+                }
             }
 
             if (isStore)
