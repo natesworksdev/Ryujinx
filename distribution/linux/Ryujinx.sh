@@ -11,9 +11,10 @@ if [ -f "$SCRIPT_DIR/Ryujinx.Headless.SDL2" ]; then
     RYUJINX_BIN="Ryujinx.Headless.SDL2"
 fi
 
-if command -v gamemoderun >/dev/null 2>&1
-then
-    env DOTNET_EnableAlternateStackCheck=1 gamemoderun "$SCRIPT_DIR/$RYUJINX_BIN" "$@"
-else
-    env DOTNET_EnableAlternateStackCheck=1 "$SCRIPT_DIR/$RYUJINX_BIN" "$@"
+COMMAND="env DOTNET_EnableAlternateStackCheck=1"
+
+if command -v gamemoderun > /dev/null 2>&1; then
+    COMMAND="$COMMAND gamemoderun"
 fi
+
+$COMMAND "$SCRIPT_DIR/$RYUJINX_BIN" "$@"
