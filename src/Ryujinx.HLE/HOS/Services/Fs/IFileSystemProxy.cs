@@ -70,7 +70,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
                 return ResultCode.PathDoesNotExist;
             }
 
-            FileStream fileStream = new FileStream(fullPath, FileMode.Open, FileAccess.Read);
+            using FileStream fileStream = new FileStream(fullPath, FileMode.Open, FileAccess.Read);
             string extension = System.IO.Path.GetExtension(fullPath);
 
             if (extension == ".nca")

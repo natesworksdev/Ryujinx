@@ -915,7 +915,7 @@ namespace Ryujinx.Ui.App.Common
 
                     if (File.Exists(updatePath))
                     {
-                        FileStream file = new FileStream(updatePath, FileMode.Open, FileAccess.Read);
+                        using FileStream file = new FileStream(updatePath, FileMode.Open, FileAccess.Read);
                         PartitionFileSystem nsp = new PartitionFileSystem(file.AsStorage());
 
                         return GetGameUpdateDataFromPartition(fileSystem, nsp, titleIdBase.ToString("x16"), programIndex);

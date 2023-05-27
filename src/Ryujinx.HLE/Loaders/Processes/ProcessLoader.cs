@@ -34,7 +34,7 @@ namespace Ryujinx.HLE.Loaders.Processes
 
         public bool LoadXci(string path)
         {
-            FileStream stream = new(path, FileMode.Open, FileAccess.Read);
+            using FileStream stream = new(path, FileMode.Open, FileAccess.Read);
             Xci        xci    = new(_device.Configuration.VirtualFileSystem.KeySet, stream.AsStorage());
 
             if (!xci.HasPartition(XciPartitionType.Secure))
@@ -68,7 +68,7 @@ namespace Ryujinx.HLE.Loaders.Processes
 
         public bool LoadNsp(string path)
         {
-            FileStream          file                = new(path, FileMode.Open, FileAccess.Read);
+            using FileStream          file                = new(path, FileMode.Open, FileAccess.Read);
             PartitionFileSystem partitionFileSystem = new(file.AsStorage());
 
             (bool success, ProcessResult processResult) = partitionFileSystem.TryLoad(_device, path, out string errorMessage);
@@ -99,7 +99,7 @@ namespace Ryujinx.HLE.Loaders.Processes
 
         public bool LoadNca(string path)
         {
-            FileStream file = new(path, FileMode.Open, FileAccess.Read);
+            using FileStream file = new(path, FileMode.Open, FileAccess.Read);
             Nca        nca  = new(_device.Configuration.VirtualFileSystem.KeySet, file.AsStorage(false));
 
             ProcessResult processResult = nca.Load(_device, null, null);
@@ -152,7 +152,7 @@ namespace Ryujinx.HLE.Loaders.Processes
 
             if (Path.GetExtension(path).ToLower() == ".nro")
             {
-                FileStream    input = new(path, FileMode.Open);
+                using FileStream    input = new(path, FileMode.Open);
                 NroExecutable nro   = new(input.AsStorage());
 
                 executable = nro;

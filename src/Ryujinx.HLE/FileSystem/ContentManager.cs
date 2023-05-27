@@ -269,7 +269,7 @@ namespace Ryujinx.HLE.FileSystem
 
             if (_aocData.TryGetValue(aocTitleId, out AocItem aoc))
             {
-                var file = new FileStream(aoc.ContainerPath, FileMode.Open, FileAccess.Read);
+                using var file = new FileStream(aoc.ContainerPath, FileMode.Open, FileAccess.Read);
                 using var ncaFile = new UniqueRef<IFile>();
                 PartitionFileSystem pfs;
 

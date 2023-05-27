@@ -83,7 +83,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 
             if (archivePath.Extension == ".nsp" && File.Exists(archivePath.FullName))
             {
-                FileStream pfsFile = new FileStream(
+                using FileStream pfsFile = new FileStream(
                     archivePath.FullName.TrimEnd(Path.DirectorySeparatorChar),
                     FileMode.Open,
                     FileAccess.Read);
