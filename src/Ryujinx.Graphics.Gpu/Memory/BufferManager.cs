@@ -360,6 +360,15 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Forces transform feedback and storage buffers to be updated on the next draw.
+        /// </summary>
+        public void ForceTransformFeedbackAndStorageBuffersDirty()
+        {
+            _transformFeedbackBuffersDirty = true;
+            _gpStorageBuffersDirty = true;
+        }
+
+        /// <summary>
         /// Sets the binding points for the storage buffers bound on the compute pipeline.
         /// </summary>
         /// <param name="bindings">Bindings for the active shader</param>
