@@ -90,7 +90,7 @@
                             Margin="5,5,0,0"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Top"
-                            FontSize="16"
+                            FontSize="18"
                             Foreground="{DynamicResource SystemAccentColor}"
                             IsVisible="{Binding Favorite}"
                             Symbol="StarFilled" />

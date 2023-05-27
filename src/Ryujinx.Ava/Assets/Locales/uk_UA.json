@@ -76,6 +76,7 @@
   "SettingsTabGeneralEnableDiscordRichPresence": "Увімкнути розширену присутність Discord",
   "SettingsTabGeneralCheckUpdatesOnLaunch": "Перевіряти наявність оновлень під час запуску",
   "SettingsTabGeneralShowConfirmExitDialog": "Показати діалогове вікно «Підтвердити вихід».",
+  "SettingsTabGeneralLoadFromCacheOnStartup": "Завантажувати з кешу під час запуску",
   "SettingsTabGeneralHideCursorOnIdle": "Приховати курсор у режимі очікування",
   "SettingsTabGeneralGameDirectories": "Каталоги ігор",
   "SettingsTabGeneralAdd": "Додати",

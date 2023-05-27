@@ -16,7 +16,7 @@ using System.Text.Json.Serialization;
 
 namespace Ryujinx.Ui.App.Common
 {
-    public class ApplicationData
+    public record class ApplicationData
     {
         public bool      Favorite      { get; set; }
         public byte[]    Icon          { get; set; }

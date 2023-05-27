@@ -76,6 +76,7 @@
   "SettingsTabGeneralEnableDiscordRichPresence": "Habilitar estado en Discord",
   "SettingsTabGeneralCheckUpdatesOnLaunch": "Buscar actualizaciones al iniciar",
   "SettingsTabGeneralShowConfirmExitDialog": "Mostrar diálogo de confirmación al cerrar",
+  "SettingsTabGeneralLoadFromCacheOnStartup": "Cargar desde caché al iniciar",
   "SettingsTabGeneralHideCursorOnIdle": "Ocultar cursor cuando esté inactivo",
   "SettingsTabGeneralGameDirectories": "Carpetas de juegos",
   "SettingsTabGeneralAdd": "Agregar",

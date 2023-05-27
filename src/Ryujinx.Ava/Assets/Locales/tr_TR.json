@@ -76,6 +76,7 @@
   "SettingsTabGeneralEnableDiscordRichPresence": "Discord Zengin İçerik'i Etkinleştir",
   "SettingsTabGeneralCheckUpdatesOnLaunch": "Her Açılışta Güncellemeleri Denetle",
   "SettingsTabGeneralShowConfirmExitDialog": "\"Çıkışı Onayla\" Diyaloğunu Göster",
+  "SettingsTabGeneralLoadFromCacheOnStartup": "Başlangıçta Önbellekten Yükle",
   "SettingsTabGeneralHideCursorOnIdle": "Hareketsizlik durumunda imleci gizle",
   "SettingsTabGeneralGameDirectories": "Oyun Dizinleri",
   "SettingsTabGeneralAdd": "Ekle",

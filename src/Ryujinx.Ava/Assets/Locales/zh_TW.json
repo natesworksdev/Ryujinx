@@ -76,6 +76,7 @@
   "SettingsTabGeneralEnableDiscordRichPresence": "啟用 Discord 動態狀態展示",
   "SettingsTabGeneralCheckUpdatesOnLaunch": "自動檢查更新",
   "SettingsTabGeneralShowConfirmExitDialog": "顯示「確認離開」對話框",
+  "SettingsTabGeneralLoadFromCacheOnStartup": "啟動時從緩存加載",
   "SettingsTabGeneralHideCursorOnIdle": "自動隱藏滑鼠",
   "SettingsTabGeneralGameDirectories": "遊戲資料夾",
   "SettingsTabGeneralAdd": "新增",

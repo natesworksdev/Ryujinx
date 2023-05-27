@@ -14,7 +14,7 @@
     WindowState="{Binding WindowState}"
     Width="{Binding WindowWidth}"
     Height="{Binding WindowHeight}"
-    MinWidth="1092"
+    MinWidth="850"
     MinHeight="672"
     d:DesignHeight="720"
     d:DesignWidth="1280"

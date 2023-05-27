@@ -5,6 +5,7 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using DynamicData;
 using DynamicData.Binding;
+using FluentAvalonia.UI.Controls;
 using LibHac.Common;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
@@ -77,6 +78,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private bool _showAll;
         private string _lastScannedAmiiboId;
         private bool _statusBarVisible;
+        private Symbol _loadApplicationSymbol;
         private ReadOnlyObservableCollection<ApplicationData> _appsObservableList;
 
         private string _showUiKey = "F4";
@@ -239,6 +241,17 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        public Symbol LoadApplicationsSymbol
+        {
+            get => _loadApplicationSymbol;
+            set
+            {
+                _loadApplicationSymbol = value;
+
+                OnPropertyChanged();
+            }
+        }
+
         public bool EnableNonGameRunningControls => !IsGameRunning;
 
         public bool ShowFirmwareStatus => !ShowLoadProgress;
@@ -258,6 +271,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(EnableNonGameRunningControls));
                 OnPropertyChanged(nameof(StatusBarVisible));
+                OnPropertyChanged(nameof(LoadApplicationsSymbol));
                 OnPropertyChanged(nameof(ShowFirmwareStatus));
             }
         }
@@ -342,6 +356,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        // will need control bit read if cache startup, won't be present
         public bool OpenUserSaveDirectoryEnabled => !Utilities.IsZeros(SelectedApplication.ControlHolder.ByteSpan) && SelectedApplication.ControlHolder.Value.UserAccountSaveDataSize > 0;
 
         public bool OpenDeviceSaveDirectoryEnabled => !Utilities.IsZeros(SelectedApplication.ControlHolder.ByteSpan) && SelectedApplication.ControlHolder.Value.DeviceSaveDataSize > 0;
@@ -1364,19 +1379,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             AppHost.Device.System.SimulateWakeUpMessage();
         }
 
-        public async void LoadApplications()
+        public void LoadApplications()
         {
-            await Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                Applications.Clear();
-
-                StatusBarVisible         = true;
-                StatusBarProgressMaximum = 0;
-                StatusBarProgressValue   = 0;
-
-                LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.StatusBarGamesLoaded, 0, 0);
-            });
-
             ReloadGameList?.Invoke();
         }
 

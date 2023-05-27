@@ -76,6 +76,7 @@
   "SettingsTabGeneralEnableDiscordRichPresence": "Aktiviere Discord Rich Presence",
   "SettingsTabGeneralCheckUpdatesOnLaunch": "Beim Start nach Updates suchen",
   "SettingsTabGeneralShowConfirmExitDialog": "Zeige den \"Beenden bestätigen\" Dialog",
+  "SettingsTabGeneralLoadFromCacheOnStartup": "Beim Start aus dem Cache laden",
   "SettingsTabGeneralHideCursorOnIdle": "Mauszeiger bei Inaktivität ausblenden",
   "SettingsTabGeneralGameDirectories": "Spielverzeichnisse",
   "SettingsTabGeneralAdd": "Hinzufügen",

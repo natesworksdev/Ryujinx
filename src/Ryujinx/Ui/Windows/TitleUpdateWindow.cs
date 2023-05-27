@@ -195,7 +195,7 @@ namespace Ryujinx.Ui.Windows
 
             JsonHelper.SerializeToFile(_updateJsonPath, _titleUpdateWindowData, SerializerContext.TitleUpdateMetadata);
 
-            _parent.UpdateGameTable();
+            _parent.UpdateGameTable(true);
 
             Dispose();
         }

@@ -36,7 +36,10 @@
                     </CheckBox>
                     <CheckBox IsChecked="{Binding ShowConfirmExit}">
                         <TextBlock Text="{locale:Locale SettingsTabGeneralShowConfirmExitDialog}" />
-                    </CheckBox>
+					</CheckBox>
+					<CheckBox IsChecked="{Binding LoadFromCacheOnStartup}">
+						<TextBlock Text="{locale:Locale SettingsTabGeneralLoadFromCacheOnStartup}" />
+					</CheckBox>
                     <StackPanel Margin="0, 15, 0, 10" Orientation="Horizontal">
                         <TextBlock VerticalAlignment="Center"
                                    Text="{locale:Locale SettingsTabGeneralHideCursor}"

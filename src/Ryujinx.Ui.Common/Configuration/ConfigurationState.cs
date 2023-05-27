@@ -611,6 +611,11 @@ namespace Ryujinx.Ui.Common.Configuration
         public ReactiveObject<bool> ShowConfirmExit { get; private set; }
 
         /// <summary>
+        /// If library data should be loaded from cache rather than the underlying application files
+        /// </summary>
+        public ReactiveObject<bool> LoadFromCacheOnStartup { get; private set; }
+
+        /// <summary>
         /// Hide Cursor on Idle
         /// </summary>
         public ReactiveObject<HideCursorMode> HideCursor { get; private set; }
@@ -626,6 +631,7 @@ namespace Ryujinx.Ui.Common.Configuration
             EnableDiscordIntegration = new ReactiveObject<bool>();
             CheckUpdatesOnStart      = new ReactiveObject<bool>();
             ShowConfirmExit          = new ReactiveObject<bool>();
+            LoadFromCacheOnStartup   = new ReactiveObject<bool>();
             HideCursor               = new ReactiveObject<HideCursorMode>();
         }
 
@@ -662,6 +668,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 EnableDiscordIntegration   = EnableDiscordIntegration,
                 CheckUpdatesOnStart        = CheckUpdatesOnStart,
                 ShowConfirmExit            = ShowConfirmExit,
+                LoadFromCacheOnStartup     = LoadFromCacheOnStartup,
                 HideCursor                 = HideCursor,
                 EnableVsync                = Graphics.EnableVsync,
                 EnableShaderCache          = Graphics.EnableShaderCache,
@@ -767,6 +774,7 @@ namespace Ryujinx.Ui.Common.Configuration
             EnableDiscordIntegration.Value            = true;
             CheckUpdatesOnStart.Value                 = true;
             ShowConfirmExit.Value                     = true;
+            LoadFromCacheOnStartup.Value              = false;
             HideCursor.Value                          = Ryujinx.Common.Configuration.HideCursorMode.Never;
             Graphics.EnableVsync.Value                = true;
             Graphics.EnableShaderCache.Value          = true;
@@ -1427,6 +1435,7 @@ namespace Ryujinx.Ui.Common.Configuration
             EnableDiscordIntegration.Value            = configurationFileFormat.EnableDiscordIntegration;
             CheckUpdatesOnStart.Value                 = configurationFileFormat.CheckUpdatesOnStart;
             ShowConfirmExit.Value                     = configurationFileFormat.ShowConfirmExit;
+            LoadFromCacheOnStartup.Value              = configurationFileFormat.LoadFromCacheOnStartup;
             HideCursor.Value                          = configurationFileFormat.HideCursor;
             Graphics.EnableVsync.Value                = configurationFileFormat.EnableVsync;
             Graphics.EnableShaderCache.Value          = configurationFileFormat.EnableShaderCache;

@@ -50,7 +50,7 @@
                     <ui:SymbolIcon
                         Width="50"
                         Height="100"
-                        Symbol="Refresh" />
+                        Symbol="{Binding LoadApplicationsSymbol}" />
                 </Button>
                 <TextBlock
                     Name="LoadStatus"
@@ -59,7 +59,7 @@
                     VerticalAlignment="Center"
                     IsVisible="{Binding EnableNonGameRunningControls}"
                     Text="{locale:Locale StatusBarGamesLoaded}" />
-                <ProgressBar
+				<ProgressBar
                     Name="LoadProgressBar"
                     Grid.Column="2"
                     Height="6"

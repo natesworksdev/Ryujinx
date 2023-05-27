@@ -76,6 +76,7 @@
   "SettingsTabGeneralEnableDiscordRichPresence": "Ενεργοποίηση Εμπλουτισμένης Παρουσίας Discord",
   "SettingsTabGeneralCheckUpdatesOnLaunch": "Έλεγχος για Ενημερώσεις στην Εκκίνηση",
   "SettingsTabGeneralShowConfirmExitDialog": "Εμφάνιση διαλόγου \"Επιβεβαίωση Εξόδου\".",
+  "SettingsTabGeneralLoadFromCacheOnStartup": "Φόρτωση από την προσωρινή μνήμη κατά την εκκίνηση",
   "SettingsTabGeneralHideCursorOnIdle": "Απόκρυψη Δρομέα στην Αδράνεια",
   "SettingsTabGeneralGameDirectories": "Τοποθεσίες παιχνιδιών",
   "SettingsTabGeneralAdd": "Προσθήκη",

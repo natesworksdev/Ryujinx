@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using DynamicData;
 using LibHac.Fs;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Ava.Common;
@@ -10,7 +11,6 @@ using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Configuration;
-using Ryujinx.Ui.App.Common;
 using Ryujinx.HLE.HOS;
 using Ryujinx.Ui.Common.Helper;
 using System;
@@ -47,7 +47,10 @@ namespace Ryujinx.Ava.UI.Controls
                     appMetadata.Favorite = viewModel.SelectedApplication.Favorite;
                 });
 
-                viewModel.RefreshView();
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    viewModel.Applications.Replace(viewModel.SelectedApplication, viewModel.SelectedApplication);
+                });
             }
         }
 

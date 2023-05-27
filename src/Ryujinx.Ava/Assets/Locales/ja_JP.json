@@ -76,6 +76,7 @@
   "SettingsTabGeneralEnableDiscordRichPresence": "Discord リッチプレゼンスを有効",
   "SettingsTabGeneralCheckUpdatesOnLaunch": "起動時にアップデートを確認",
   "SettingsTabGeneralShowConfirmExitDialog": "\"終了を確認\" ダイアログを表示",
+  "SettingsTabGeneralLoadFromCacheOnStartup": "起動時にキャッシュからロード",
   "SettingsTabGeneralHideCursorOnIdle": "アイドル時にカーソルを隠す",
   "SettingsTabGeneralGameDirectories": "ゲームディレクトリ",
   "SettingsTabGeneralAdd": "追加",

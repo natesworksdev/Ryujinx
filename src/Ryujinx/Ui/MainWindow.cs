@@ -288,13 +288,13 @@ namespace Ryujinx.Ui
             _hideUi.Label = _hideUi.Label.Replace("SHOWUIKEY", ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi.ToString());
 
             UpdateColumns();
-            UpdateGameTable();
+            UpdateGameTable(false);
 
             ConfigurationState.Instance.Ui.GameDirs.Event += (sender, args) =>
             {
                 if (args.OldValue != args.NewValue)
                 {
-                    UpdateGameTable();
+                    UpdateGameTable(true);
                 }
             };
 
@@ -644,7 +644,7 @@ namespace Ryujinx.Ui
             });
         }
 
-        public void UpdateGameTable()
+        public void UpdateGameTable(bool readFromDisk)
         {
             if (_updatingGameTable || _gameLoaded)
             {
@@ -657,7 +657,7 @@ namespace Ryujinx.Ui
 
             Thread applicationLibraryThread = new Thread(() =>
             {
-                _applicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs, ConfigurationState.Instance.System.Language);
+                _applicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs, ConfigurationState.Instance.System.Language, readFromDisk);
 
                 _updatingGameTable = false;
             });
@@ -952,7 +952,7 @@ namespace Ryujinx.Ui
             RecreateFooterForMenu();
 
             UpdateColumns();
-            UpdateGameTable();
+            UpdateGameTable(false);
 
             RefreshFirmwareLabel();
             HandleRelaunch();
@@ -1811,7 +1811,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.Ui.ShownFileTypes.NSP.Value = _nspShown.Active;
 
             SaveConfig();
-            UpdateGameTable();
+            UpdateGameTable(true);
         }
 
         private void PFS0_Shown_Toggled(object sender, EventArgs args)
@@ -1819,7 +1819,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.Ui.ShownFileTypes.PFS0.Value = _pfs0Shown.Active;
 
             SaveConfig();
-            UpdateGameTable();
+            UpdateGameTable(true);
         }
 
         private void XCI_Shown_Toggled (object sender, EventArgs args)
@@ -1827,7 +1827,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.Ui.ShownFileTypes.XCI.Value = _xciShown.Active;
 
             SaveConfig();
-            UpdateGameTable();
+            UpdateGameTable(true);
         }
 
         private void NCA_Shown_Toggled (object sender, EventArgs args)
@@ -1835,7 +1835,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.Ui.ShownFileTypes.NCA.Value = _ncaShown.Active;
 
             SaveConfig();
-            UpdateGameTable();
+            UpdateGameTable(true);
         }
 
         private void NRO_Shown_Toggled (object sender, EventArgs args)
@@ -1843,7 +1843,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.Ui.ShownFileTypes.NRO.Value = _nroShown.Active;
 
             SaveConfig();
-            UpdateGameTable();
+            UpdateGameTable(true);
         }
 
         private void NSO_Shown_Toggled (object sender, EventArgs args)
@@ -1851,12 +1851,12 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.Ui.ShownFileTypes.NSO.Value = _nsoShown.Active;
 
             SaveConfig();
-            UpdateGameTable();
+            UpdateGameTable(true);
         }
 
         private void RefreshList_Pressed(object sender, ButtonReleaseEventArgs args)
         {
-            UpdateGameTable();
+            UpdateGameTable(true);
         }
     }
 }

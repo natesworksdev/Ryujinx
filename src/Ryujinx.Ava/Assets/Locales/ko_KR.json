@@ -76,6 +76,7 @@
   "SettingsTabGeneralEnableDiscordRichPresence": "디스코드 활동 상태 활성화\n",
   "SettingsTabGeneralCheckUpdatesOnLaunch": "실행 시 업데이트 확인\n",
   "SettingsTabGeneralShowConfirmExitDialog": "\"종료 확인\" 대화 상자 표시",
+  "SettingsTabGeneralLoadFromCacheOnStartup": "시작 시 캐시에서 로드",
   "SettingsTabGeneralHideCursorOnIdle": "유휴 상태에서 커서 숨기기",
   "SettingsTabGeneralGameDirectories": "게임 디렉토리",
   "SettingsTabGeneralAdd": "추가",

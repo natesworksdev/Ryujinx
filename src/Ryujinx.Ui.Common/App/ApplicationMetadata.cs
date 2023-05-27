@@ -15,5 +15,13 @@ namespace Ryujinx.Ui.App.Common
         [JsonPropertyName("last_played")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public string LastPlayedOld { get; set; }
+
+        public string HostPath { get; set; }
+        public string FileType { get; set; }
+        public string TitleId { get; set; }
+        public string Developer { get; set; }
+        public string Version { get; set; }
+        public byte[] AppIcon { get; set; }
+        public double FileSize { get; set; }
     }
 }

@@ -162,6 +162,11 @@ namespace Ryujinx.Ui.Common.Configuration
         public bool ShowConfirmExit { get; set; }
 
         /// <summary>
+        /// Load Applications from Cache on Startup
+        /// </summary>
+        public bool LoadFromCacheOnStartup { get; set; }
+
+        /// <summary>
         /// Whether to hide cursor on idle, always or never
         /// </summary>
         public HideCursorMode HideCursor { get; set; }

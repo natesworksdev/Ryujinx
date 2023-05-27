@@ -23,6 +23,7 @@ using Ryujinx.Ui.Common.Helper;
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using InputManager = Ryujinx.Input.HLE.InputManager;
 
@@ -98,14 +99,23 @@ namespace Ryujinx.Ava.UI.Windows
 
                 ViewModel.RefreshFirmwareStatus();
 
-                LoadGameList();
+                ApplicationLibrary_ApplicationCountUpdated(null!, new()
+                {
+                    NumAppsFound = 0,
+                    NumAppsLoaded = 0
+                });
+
+                _ = Task.Run(() =>
+                {
+                    LoadApplications(!ConfigurationState.Instance.LoadFromCacheOnStartup.Value);
+                });
 
                 this.GetObservable(IsActiveProperty).Subscribe(IsActiveChanged);
             }
 
             ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
             ApplicationLibrary.ApplicationAdded += ApplicationLibrary_ApplicationAdded;
-            ViewModel.ReloadGameList += ReloadGameList;
+            ViewModel.ReloadGameList += ViewModel_LoadApplications;
 
             NotificationHelper.SetNotificationManager(this);
         }
@@ -113,20 +123,6 @@ namespace Ryujinx.Ava.UI.Windows
         private void IsActiveChanged(bool obj)
         {
             ViewModel.IsActive = obj;
-        }
-
-        public void LoadGameList()
-        {
-            if (_isLoading)
-            {
-                return;
-            }
-
-            _isLoading = true;
-
-            LoadApplications();
-
-            _isLoading = false;
         }
 
         protected override void HandleScalingChanged(double scale)
@@ -157,15 +153,32 @@ namespace Ryujinx.Ava.UI.Windows
                 ViewModel.StatusBarProgressValue   = e.NumAppsLoaded;
                 ViewModel.StatusBarProgressMaximum = e.NumAppsFound;
 
-                if (e.NumAppsFound == 0)
+                if ((e.NumAppsFound == 0) || (e.NumAppsLoaded == e.NumAppsFound))
                 {
                     StatusBarView.LoadProgressBar.IsVisible = false;
+                    ViewModel.LoadApplicationsSymbol = Symbol.Refresh;
                 }
+            });
+        }
 
-                if (e.NumAppsLoaded == e.NumAppsFound)
+        private void ViewModel_LoadApplications()
+        {
+            if (_isLoading)
+            {
+                ApplicationLibrary.CancelLoading();
+
+                Dispatcher.UIThread.Post(() =>
                 {
                     StatusBarView.LoadProgressBar.IsVisible = false;
-                }
+                    ViewModel.LoadApplicationsSymbol = Symbol.Refresh;
+                });
+
+                return;
+            }
+
+            _ = Task.Run(() =>
+            {
+                LoadApplications(true);
             });
         }
 
@@ -457,23 +470,30 @@ namespace Ryujinx.Ava.UI.Windows
            });
         }
 
-        public async void LoadApplications()
+        public async void LoadApplications(bool readFromDisk)
         {
+            if (_isLoading)
+            {
+                return;
+            }
+
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 ViewModel.Applications.Clear();
 
+                ViewModel.LoadApplicationsSymbol        = Symbol.Cancel;
                 StatusBarView.LoadProgressBar.IsVisible = true;
+
                 ViewModel.StatusBarProgressMaximum      = 0;
                 ViewModel.StatusBarProgressValue        = 0;
 
                 LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.StatusBarGamesLoaded, 0, 0);
             });
 
-            ReloadGameList();
+            ReloadGameList(readFromDisk);
         }
 
-        private void ReloadGameList()
+        private void ReloadGameList(bool readFromDisk)
         {
             if (_isLoading)
             {
@@ -482,7 +502,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             _isLoading = true;
 
-            ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs.Value, ConfigurationState.Instance.System.Language);
+            ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs.Value, ConfigurationState.Instance.System.Language, readFromDisk);
 
             _isLoading = false;
         }
