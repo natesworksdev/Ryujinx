@@ -170,12 +170,15 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
         internal ref T New<T>() where T : struct
         {
-            while (_producerPtr == (Volatile.Read(ref _consumerPtr) + QueueCount - 1) % QueueCount)
+            if (_running && !_disposed)
             {
-                // If incrementing the producer pointer would overflow, we need to wait.
-                // _consumerPtr can only move forward, so there's no race to worry about here.
+                while (_producerPtr == (Volatile.Read(ref _consumerPtr) + QueueCount - 1) % QueueCount)
+                {
+                    // If incrementing the producer pointer would overflow, we need to wait.
+                    // _consumerPtr can only move forward, so there's no race to worry about here.
 
-                Thread.Sleep(1);
+                    Thread.Sleep(1);
+                }
             }
 
             int taken = _producerPtr;
