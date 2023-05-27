@@ -19,18 +19,13 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             int cbufSlot,
             int handle,
             int index,
-            params IAstNode[] sources) : base(inst, StorageKind.None, index, sources, sources.Length)
+            params IAstNode[] sources) : base(inst, StorageKind.None, false, index, sources, sources.Length)
         {
             Type = type;
             Format = format;
             Flags = flags;
             CbufSlot = cbufSlot;
             Handle = handle;
-        }
-
-        public AstTextureOperation WithType(SamplerType type)
-        {
-            return new AstTextureOperation(Inst, type, Format, Flags, CbufSlot, Handle, Index);
         }
     }
 }
