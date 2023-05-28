@@ -170,15 +170,15 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
         internal ref T New<T>() where T : struct
         {
-            if (_running && !_disposed)
+            while (_producerPtr == (Volatile.Read(ref _consumerPtr) + QueueCount - 1) % QueueCount)
             {
-                while (_producerPtr == (Volatile.Read(ref _consumerPtr) + QueueCount - 1) % QueueCount)
-                {
-                    // If incrementing the producer pointer would overflow, we need to wait.
-                    // _consumerPtr can only move forward, so there's no race to worry about here.
+                // If incrementing the producer pointer would overflow, we need to wait.
+                // _consumerPtr can only move forward, so there's no race to worry about here.
 
-                    Thread.Sleep(1);
-                }
+                Thread.Sleep(1);
+
+                // Execute the commands remaining in _commandQueue to avoid getting stuck in an infinite loop here when the app exits.
+                DisposeCommandQueueRun();
             }
 
             int taken = _producerPtr;
@@ -192,6 +192,26 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             memory[memory.Length - 1] = (byte)((IGALCommand)result).CommandType;
 
             return ref result;
+        }
+
+        internal void DisposeCommandQueueRun()
+        {
+            // Execute commands left in _commandQueue when the app exits
+
+            while (!_running && _disposed && Volatile.Read(ref _commandCount) > 0)
+            {
+                int commandPtr = _consumerPtr;
+
+                Span<byte> command = new Span<byte>(_commandQueue, commandPtr * _elementSize, _elementSize);
+
+                // Run the command.
+
+                CommandHelper.RunCommand(command, this, _baseRenderer);
+
+                _consumerPtr = (_consumerPtr + 1) % QueueCount;
+
+                Interlocked.Decrement(ref _commandCount);
+            }
         }
 
         internal int AddTableRef(object obj)
@@ -227,6 +247,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             {
                 _galWorkAvailable.Set();
             }
+
+            // Execute commands left in Queue when the app exits
+            DisposeCommandQueueRun();
         }
 
         internal void InvokeCommand()
