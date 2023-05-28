@@ -216,7 +216,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PhysicalDeviceCustomBorderColorFeaturesExt
             };
 
-            PhysicalDeviceDepthClipControlFeaturesEXT featuresDepthClipControl = new PhysicalDeviceDepthClipControlFeaturesEXT()
+            PhysicalDeviceDepthClipControlFeaturesEXT featuresDepthClipControl = new()
             {
                 SType = StructureType.PhysicalDeviceDepthClipControlFeaturesExt
             };

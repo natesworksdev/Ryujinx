@@ -346,7 +346,7 @@ namespace Ryujinx.Graphics.Vulkan
                 features2.PNext = &supportedFeaturesRobustness2;
             }
 
-            PhysicalDeviceDepthClipControlFeaturesEXT supportedFeaturesDepthClipControl = new PhysicalDeviceDepthClipControlFeaturesEXT()
+            PhysicalDeviceDepthClipControlFeaturesEXT supportedFeaturesDepthClipControl = new()
             {
                 SType = StructureType.PhysicalDeviceDepthClipControlFeaturesExt,
                 PNext = features2.PNext
