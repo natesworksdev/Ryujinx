@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         private int  _messageEventHandle;
         private int  _displayResolutionChangedEventHandle;
 
-        private KEvent _acquiredSleepLockEvent;
+        private readonly KEvent _acquiredSleepLockEvent;
         private int _acquiredSleepLockEventHandle;
 
         public ICommonStateGetter(ServiceCtx context)
@@ -128,12 +128,14 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(10)]
         // RequestToAcquireSleepLock()
+#pragma warning disable IDE0060
         public ResultCode RequestToAcquireSleepLock(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
             return ResultCode.Success;
         }
+#pragma warning restore IDE0060
 
         [CommandCmif(13)]
         // GetAcquiredSleepLockEvent() -> handle<copy>

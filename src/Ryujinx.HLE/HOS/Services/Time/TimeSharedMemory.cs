@@ -62,7 +62,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         {
             TimeSpanType ticksTimeSpan = TimeSpanType.FromTicks(tickSource.Counter, tickSource.Frequency);
 
-            ContinuousAdjustmentTimePoint adjustmentTimePoint = new ContinuousAdjustmentTimePoint
+            ContinuousAdjustmentTimePoint adjustmentTimePoint = new()
             {
                 ClockOffset = (ulong)ticksTimeSpan.NanoSeconds,
                 Multiplier = 1,
@@ -80,7 +80,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             WriteObjectToSharedMemory(ContinuousAdjustmentTimePointOffset, 4, adjustmentTimePoint);
 
-            SteadyClockContext context = new SteadyClockContext
+            SteadyClockContext context = new()
             {
                 InternalOffset = (ulong)(currentTimePoint.NanoSeconds - ticksTimeSpan.NanoSeconds),
                 ClockSourceId = clockSourceId
