@@ -569,11 +569,8 @@ namespace Ryujinx.Modules
             if (Running)
             {
                 //Compare the loose files in base directory against the loose files from the incoming update, and store foreign ones in a user list.
-                var oldFiles = Directory.EnumerateFiles(HomeDir, "*", SearchOption.TopDirectoryOnly).ToList();
-                oldFiles = oldFiles.Select(Path.GetFileName).ToList();
-
-                var newFiles = Directory.EnumerateFiles(UpdatePublishDir, "*", SearchOption.TopDirectoryOnly).ToList();
-                newFiles = newFiles.Select(Path.GetFileName).ToList();
+                var oldFiles = Directory.EnumerateFiles(HomeDir, "*", SearchOption.TopDirectoryOnly).Select(Path.GetFileName);
+                var newFiles = Directory.EnumerateFiles(UpdatePublishDir, "*", SearchOption.TopDirectoryOnly).Select(Path.GetFileName);
 
                 var UserFiles = oldFiles.Except(newFiles).ToList();
 
