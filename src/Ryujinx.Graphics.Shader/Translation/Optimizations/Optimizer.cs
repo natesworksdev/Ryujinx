@@ -323,7 +323,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             Operand rhs = operation.GetSource(1);
 
             // Check LHS of the the main multiplication operation. We expect an input being multiplied by gl_FragCoord.w.
-            if (!(lhs.AsgOp is Operation attrMulOp) || attrMulOp.Inst != (Instruction.FP32 | Instruction.Multiply))
+            if (lhs.AsgOp is not Operation attrMulOp || attrMulOp.Inst != (Instruction.FP32 | Instruction.Multiply))
             {
                 return;
             }
@@ -338,7 +338,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             }
 
             // RHS of the main multiplication should be a reciprocal operation (1.0 / x).
-            if (!(rhs.AsgOp is Operation reciprocalOp) || reciprocalOp.Inst != (Instruction.FP32 | Instruction.Divide))
+            if (rhs.AsgOp is not Operation reciprocalOp || reciprocalOp.Inst != (Instruction.FP32 | Instruction.Divide))
             {
                 return;
             }

@@ -219,7 +219,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private Function GenerateTexelFetchScaleFunction()
         {
-            EmitterContext context = new EmitterContext();
+            EmitterContext context = new();
 
             Operand input = Argument(0);
             Operand samplerIndex = Argument(1);
@@ -270,7 +270,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private Function GenerateTextureSizeUnscaleFunction()
         {
-            EmitterContext context = new EmitterContext();
+            EmitterContext context = new();
 
             Operand input = Argument(0);
             Operand samplerIndex = Argument(1);

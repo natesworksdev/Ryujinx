@@ -30,6 +30,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             return name;
         }
 
+#pragma warning disable IDE0060
         public string GetExpression(CodeGenContext context, AstOperand operand)
         {
             return operand.Type switch
@@ -41,6 +42,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 _ => throw new ArgumentException($"Invalid operand type \"{operand.Type}\".")
             };
         }
+#pragma warning restore IDE0060
 
         public static string GetSamplerName(ShaderStage stage, AstTextureOperation texOp, string indexExpr)
         {
@@ -96,11 +98,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             return _stagePrefixes[index];
         }
 
-        private static char GetSwizzleMask(int value)
-        {
-            return "xyzw"[value];
-        }
-
         public static string GetArgumentName(int argIndex)
         {
             return $"{DefaultNames.ArgumentNamePrefix}{argIndex}";
@@ -119,12 +116,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     {
                         case StorageKind.ConstantBuffer:
                         case StorageKind.StorageBuffer:
-                            if (!(operation.GetSource(0) is AstOperand bindingIndex) || bindingIndex.Type != OperandType.Constant)
+                            if (operation.GetSource(0) is not AstOperand bindingIndex || bindingIndex.Type != OperandType.Constant)
                             {
                                 throw new InvalidOperationException($"First input of {operation.Inst} with {operation.StorageKind} storage must be a constant operand.");
                             }
 
-                            if (!(operation.GetSource(1) is AstOperand fieldIndex) || fieldIndex.Type != OperandType.Constant)
+                            if (operation.GetSource(1) is not AstOperand fieldIndex || fieldIndex.Type != OperandType.Constant)
                             {
                                 throw new InvalidOperationException($"Second input of {operation.Inst} with {operation.StorageKind} storage must be a constant operand.");
                             }

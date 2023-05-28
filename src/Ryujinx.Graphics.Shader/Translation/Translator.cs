@@ -45,14 +45,14 @@ namespace Ryujinx.Graphics.Shader.Translation
                 }
             }
 
-            List<Function> funcs = new List<Function>(functions.Length);
+            List<Function> funcs = new(functions.Length);
 
             for (int i = 0; i < functions.Length; i++)
             {
                 funcs.Add(null);
             }
 
-            HelperFunctionManager hfm = new HelperFunctionManager(funcs, config.Stage);
+            HelperFunctionManager hfm = new(funcs, config.Stage);
 
             for (int i = 0; i < functions.Length; i++)
             {

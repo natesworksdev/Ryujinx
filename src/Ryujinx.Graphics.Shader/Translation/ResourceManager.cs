@@ -226,7 +226,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private void AddNewConstantBuffer(int binding, string name)
         {
-            StructureType type = new StructureType(new[]
+            StructureType type = new(new[]
             {
                 new StructureField(AggregateType.Array | AggregateType.Vector4 | AggregateType.FP32, "data", Constants.ConstantBufferSize / 16)
             });
