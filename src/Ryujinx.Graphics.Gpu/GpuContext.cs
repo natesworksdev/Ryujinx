@@ -99,7 +99,7 @@ namespace Ryujinx.Graphics.Gpu
         private bool _pendingSync;
 
         private long _modifiedSequence;
-        private ulong _firstTimestamp;
+        private readonly ulong _firstTimestamp;
 
         /// <summary>
         /// Creates a new instance of the GPU emulation context.
