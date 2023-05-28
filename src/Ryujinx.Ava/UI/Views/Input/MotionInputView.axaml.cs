@@ -10,7 +10,7 @@ namespace Ryujinx.Ava.UI.Views.Input
 {
     public partial class MotionInputView : UserControl
     {
-        private MotionInputViewModel _viewModel;
+        private readonly MotionInputViewModel _viewModel;
 
         public MotionInputView()
         {
