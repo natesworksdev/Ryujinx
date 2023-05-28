@@ -514,9 +514,7 @@ namespace Ryujinx.Ui.App.Common
             string metadataFolder = Path.Combine(AppDataManager.GamesDirPath, titleId, "gui");
             string metadataFile   = Path.Combine(metadataFolder, "metadata.json");
 
-            bool isCached = _metadataCache.TryGetValue(metadataFile, out ApplicationMetadata appMetadata);
-
-            if (!isCached)
+            if (!_metadataCache.TryGetValue(metadataFile, out ApplicationMetadata appMetadata))
             {
                 try
                 {
