@@ -272,12 +272,11 @@ namespace Ryujinx.Graphics.Vulkan
             for (int i = 0; i < Constants.MaxRenderTargets; i++)
             {
                 var blend = state.BlendDescriptors[i];
-                bool blendEnable = blend.Enable && !state.AttachmentFormats[i].IsInteger();
 
-                if (blendEnable && state.ColorWriteMask[i] != 0)
+                if (blend.Enable && state.ColorWriteMask[i] != 0)
                 {
                     pipeline.Internal.ColorBlendAttachmentState[i] = new PipelineColorBlendAttachmentState(
-                        blendEnable,
+                        blend.Enable,
                         blend.ColorSrcFactor.Convert(),
                         blend.ColorDstFactor.Convert(),
                         blend.ColorOp.Convert(),
@@ -295,6 +294,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             int attachmentCount = 0;
             int maxColorAttachmentIndex = -1;
+            uint attachmentIntegerFormatMask = 0;
 
             for (int i = 0; i < Constants.MaxRenderTargets; i++)
             {
@@ -302,6 +302,11 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     pipeline.Internal.AttachmentFormats[attachmentCount++] = gd.FormatCapabilities.ConvertToVkFormat(state.AttachmentFormats[i]);
                     maxColorAttachmentIndex = i;
+
+                    if (state.AttachmentFormats[i].IsInteger())
+                    {
+                        attachmentIntegerFormatMask |= 1u << i;
+                    }
                 }
             }
 
@@ -312,6 +317,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             pipeline.ColorBlendAttachmentStateCount = (uint)(maxColorAttachmentIndex + 1);
             pipeline.VertexAttributeDescriptionsCount = (uint)Math.Min(Constants.MaxVertexAttributes, state.VertexAttribCount);
+            pipeline.Internal.AttachmentIntegerFormatMask = attachmentIntegerFormatMask;
 
             return pipeline;
         }
