@@ -19,7 +19,7 @@ namespace Ryujinx.Audio.Backends.SDL2
         private readonly ManualResetEvent _pauseEvent;
         private readonly ConcurrentDictionary<SDL2HardwareDeviceSession, byte> _sessions;
 
-        private bool _supportSurroundConfiguration;
+        private readonly bool _supportSurroundConfiguration;
 
         // TODO: Add this to SDL2-CS
         // NOTE: We use a DllImport here because of marshaling issue for spec.
