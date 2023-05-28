@@ -128,14 +128,14 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(10)]
         // RequestToAcquireSleepLock()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060, CA1822
         public ResultCode RequestToAcquireSleepLock(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
+#pragma warning restore IDE0060, CA1822
 
         [CommandCmif(13)]
         // GetAcquiredSleepLockEvent() -> handle<copy>
