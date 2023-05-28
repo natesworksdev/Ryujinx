@@ -3,7 +3,7 @@ using System;
 using System.Reflection;
 using System.Text;
 
-namespace Ryujinx.Common.Logging
+namespace Ryujinx.Common.Logging.Formatters
 {
     internal class DynamicObjectFormatter
     {
@@ -17,7 +17,7 @@ namespace Ryujinx.Common.Logging
             }
 
             StringBuilder sb = StringBuilderPool.Allocate();
-            
+
             try
             {
                 Format(sb, dynamicObject);

@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Text;
 
-namespace Ryujinx.Common.Logging
+namespace Ryujinx.Common.Logging.Formatters
 {
     internal class DefaultLogFormatter : ILogFormatter
     {

@@ -1,3 +1,4 @@
+using Ryujinx.Common.Logging.Targets;
 using Ryujinx.Common.SystemInterop;
 using System;
 using System.Collections.Generic;
