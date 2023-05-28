@@ -407,7 +407,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (isMoltenVk)
             {
-                UpdateVertexAttributeDescriptions();
+                UpdateVertexAttributeDescriptions(gd);
             }
 
             fixed (VertexInputAttributeDescription* pVertexAttributeDescriptions = &Internal.VertexAttributeDescriptions[0])
@@ -623,7 +623,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        private void UpdateVertexAttributeDescriptions()
+        private void UpdateVertexAttributeDescriptions(VulkanRenderer gd)
         {
             // Vertex attributes exceeding the stride are invalid.
             // In metal, they cause glitches with the vertex shader fetching incorrect values.
@@ -656,7 +656,10 @@ namespace Ryujinx.Graphics.Vulkan
                         format = newFormat;
                     }
 
-                    attribute.Format = format;
+                    if (attribute.Format != format && gd.FormatCapabilities.BufferFormatSupports(FormatFeatureFlags.VertexBufferBit, format))
+                    {
+                        attribute.Format = format;
+                    }
                 }
 
                 _vertexAttributeDescriptions2[index] = attribute;
