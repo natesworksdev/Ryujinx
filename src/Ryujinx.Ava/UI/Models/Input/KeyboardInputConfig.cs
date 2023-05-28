@@ -331,37 +331,37 @@ namespace Ryujinx.Ava.UI.Models.Input
                     return;
                 }
 
-                LeftStickUp      = keyboardConfig.LeftJoyconStick.StickUp;
-                LeftStickDown    = keyboardConfig.LeftJoyconStick.StickDown;
-                LeftStickLeft    = keyboardConfig.LeftJoyconStick.StickLeft;
-                LeftStickRight   = keyboardConfig.LeftJoyconStick.StickRight;
-                LeftStickButton  = keyboardConfig.LeftJoyconStick.StickButton;
+                LeftStickUp = keyboardConfig.LeftJoyconStick.StickUp;
+                LeftStickDown = keyboardConfig.LeftJoyconStick.StickDown;
+                LeftStickLeft = keyboardConfig.LeftJoyconStick.StickLeft;
+                LeftStickRight = keyboardConfig.LeftJoyconStick.StickRight;
+                LeftStickButton = keyboardConfig.LeftJoyconStick.StickButton;
 
-                RightStickUp     = keyboardConfig.RightJoyconStick.StickUp;
-                RightStickDown   = keyboardConfig.RightJoyconStick.StickDown;
-                RightStickLeft   = keyboardConfig.RightJoyconStick.StickLeft;
-                RightStickRight  = keyboardConfig.RightJoyconStick.StickRight;
+                RightStickUp = keyboardConfig.RightJoyconStick.StickUp;
+                RightStickDown = keyboardConfig.RightJoyconStick.StickDown;
+                RightStickLeft = keyboardConfig.RightJoyconStick.StickLeft;
+                RightStickRight = keyboardConfig.RightJoyconStick.StickRight;
                 RightStickButton = keyboardConfig.RightJoyconStick.StickButton;
 
-                DpadUp        = keyboardConfig.LeftJoycon.DpadUp;
-                DpadDown      = keyboardConfig.LeftJoycon.DpadDown;
-                DpadLeft      = keyboardConfig.LeftJoycon.DpadLeft;
-                DpadRight     = keyboardConfig.LeftJoycon.DpadRight;
-                ButtonL       = keyboardConfig.LeftJoycon.ButtonL;
-                ButtonMinus   = keyboardConfig.LeftJoycon.ButtonMinus;
-                LeftButtonSl  = keyboardConfig.LeftJoycon.ButtonSl;
-                LeftButtonSr  = keyboardConfig.LeftJoycon.ButtonSr;
-                ButtonZl      = keyboardConfig.LeftJoycon.ButtonZl;
+                DpadUp = keyboardConfig.LeftJoycon.DpadUp;
+                DpadDown = keyboardConfig.LeftJoycon.DpadDown;
+                DpadLeft = keyboardConfig.LeftJoycon.DpadLeft;
+                DpadRight = keyboardConfig.LeftJoycon.DpadRight;
+                ButtonL = keyboardConfig.LeftJoycon.ButtonL;
+                ButtonMinus = keyboardConfig.LeftJoycon.ButtonMinus;
+                LeftButtonSl = keyboardConfig.LeftJoycon.ButtonSl;
+                LeftButtonSr = keyboardConfig.LeftJoycon.ButtonSr;
+                ButtonZl = keyboardConfig.LeftJoycon.ButtonZl;
 
-                ButtonA       = keyboardConfig.RightJoycon.ButtonA;
-                ButtonB       = keyboardConfig.RightJoycon.ButtonB;
-                ButtonX       = keyboardConfig.RightJoycon.ButtonX;
-                ButtonY       = keyboardConfig.RightJoycon.ButtonY;
-                ButtonR       = keyboardConfig.RightJoycon.ButtonR;
-                ButtonPlus    = keyboardConfig.RightJoycon.ButtonPlus;
+                ButtonA = keyboardConfig.RightJoycon.ButtonA;
+                ButtonB = keyboardConfig.RightJoycon.ButtonB;
+                ButtonX = keyboardConfig.RightJoycon.ButtonX;
+                ButtonY = keyboardConfig.RightJoycon.ButtonY;
+                ButtonR = keyboardConfig.RightJoycon.ButtonR;
+                ButtonPlus = keyboardConfig.RightJoycon.ButtonPlus;
                 RightButtonSl = keyboardConfig.RightJoycon.ButtonSl;
                 RightButtonSr = keyboardConfig.RightJoycon.ButtonSr;
-                ButtonZr      = keyboardConfig.RightJoycon.ButtonZr;
+                ButtonZr = keyboardConfig.RightJoycon.ButtonZr;
             }
         }
 
@@ -383,7 +383,7 @@ namespace Ryujinx.Ava.UI.Models.Input
                     ButtonMinus = ButtonMinus,
                     ButtonZl = ButtonZl,
                     ButtonSl = LeftButtonSl,
-                    ButtonSr = LeftButtonSr,
+                    ButtonSr = LeftButtonSr
                 },
                 RightJoycon = new RightJoyconCommonConfig<Key>
                 {

@@ -14,11 +14,11 @@ namespace Ryujinx.Ava.UI.Models.Input
         public int Slot { get; set; }
         public int AltSlot { get; set; }
         public bool MirrorInput { get; set; }
-        public int Sensitivity { get; set;  }
+        public int Sensitivity { get; set; }
         public double GyroDeadzone { get; set; }
 
         public float WeakRumble { get; set; }
-        public float StrongRumble { get; set;  }
+        public float StrongRumble { get; set; }
 
         public string Id { get; set; }
         public ControllerType ControllerType { get; set; }
@@ -339,7 +339,6 @@ namespace Ryujinx.Ava.UI.Models.Input
             set
             {
                 _deadzoneLeft = MathF.Round(value, 3);
-
                 OnPropertyChanged();
             }
         }
@@ -351,7 +350,6 @@ namespace Ryujinx.Ava.UI.Models.Input
             set
             {
                 _deadzoneRight = MathF.Round(value, 3);
-
                 OnPropertyChanged();
             }
         }
@@ -363,7 +361,6 @@ namespace Ryujinx.Ava.UI.Models.Input
             set
             {
                 _rangeLeft = MathF.Round(value, 3);
-
                 OnPropertyChanged();
             }
         }
@@ -375,7 +372,6 @@ namespace Ryujinx.Ava.UI.Models.Input
             set
             {
                 _rangeRight = MathF.Round(value, 3);
-
                 OnPropertyChanged();
             }
         }
@@ -387,7 +383,6 @@ namespace Ryujinx.Ava.UI.Models.Input
             set
             {
                 _triggerThreshold = MathF.Round(value, 3);
-
                 OnPropertyChanged();
             }
         }
@@ -427,37 +422,37 @@ namespace Ryujinx.Ava.UI.Models.Input
                     return;
                 }
 
-                LeftJoystick      = controllerInput.LeftJoyconStick.Joystick;
-                LeftInvertStickX  = controllerInput.LeftJoyconStick.InvertStickX;
-                LeftInvertStickY  = controllerInput.LeftJoyconStick.InvertStickY;
-                LeftRotate90      = controllerInput.LeftJoyconStick.Rotate90CW;
-                LeftStickButton   = controllerInput.LeftJoyconStick.StickButton;
+                LeftJoystick = controllerInput.LeftJoyconStick.Joystick;
+                LeftInvertStickX = controllerInput.LeftJoyconStick.InvertStickX;
+                LeftInvertStickY = controllerInput.LeftJoyconStick.InvertStickY;
+                LeftRotate90 = controllerInput.LeftJoyconStick.Rotate90CW;
+                LeftStickButton = controllerInput.LeftJoyconStick.StickButton;
 
-                RightJoystick     = controllerInput.RightJoyconStick.Joystick;
+                RightJoystick = controllerInput.RightJoyconStick.Joystick;
                 RightInvertStickX = controllerInput.RightJoyconStick.InvertStickX;
                 RightInvertStickY = controllerInput.RightJoyconStick.InvertStickY;
-                RightRotate90     = controllerInput.RightJoyconStick.Rotate90CW;
-                RightStickButton  = controllerInput.RightJoyconStick.StickButton;
+                RightRotate90 = controllerInput.RightJoyconStick.Rotate90CW;
+                RightStickButton = controllerInput.RightJoyconStick.StickButton;
 
-                DpadUp        = controllerInput.LeftJoycon.DpadUp;
-                DpadDown      = controllerInput.LeftJoycon.DpadDown;
-                DpadLeft      = controllerInput.LeftJoycon.DpadLeft;
-                DpadRight     = controllerInput.LeftJoycon.DpadRight;
-                ButtonL       = controllerInput.LeftJoycon.ButtonL;
-                ButtonMinus   = controllerInput.LeftJoycon.ButtonMinus;
-                LeftButtonSl  = controllerInput.LeftJoycon.ButtonSl;
-                LeftButtonSr  = controllerInput.LeftJoycon.ButtonSr;
-                ButtonZl      = controllerInput.LeftJoycon.ButtonZl;
+                DpadUp = controllerInput.LeftJoycon.DpadUp;
+                DpadDown = controllerInput.LeftJoycon.DpadDown;
+                DpadLeft = controllerInput.LeftJoycon.DpadLeft;
+                DpadRight = controllerInput.LeftJoycon.DpadRight;
+                ButtonL = controllerInput.LeftJoycon.ButtonL;
+                ButtonMinus = controllerInput.LeftJoycon.ButtonMinus;
+                LeftButtonSl = controllerInput.LeftJoycon.ButtonSl;
+                LeftButtonSr = controllerInput.LeftJoycon.ButtonSr;
+                ButtonZl = controllerInput.LeftJoycon.ButtonZl;
 
-                ButtonA       = controllerInput.RightJoycon.ButtonA;
-                ButtonB       = controllerInput.RightJoycon.ButtonB;
-                ButtonX       = controllerInput.RightJoycon.ButtonX;
-                ButtonY       = controllerInput.RightJoycon.ButtonY;
-                ButtonR       = controllerInput.RightJoycon.ButtonR;
-                ButtonPlus    = controllerInput.RightJoycon.ButtonPlus;
+                ButtonA = controllerInput.RightJoycon.ButtonA;
+                ButtonB = controllerInput.RightJoycon.ButtonB;
+                ButtonX = controllerInput.RightJoycon.ButtonX;
+                ButtonY = controllerInput.RightJoycon.ButtonY;
+                ButtonR = controllerInput.RightJoycon.ButtonR;
+                ButtonPlus = controllerInput.RightJoycon.ButtonPlus;
                 RightButtonSl = controllerInput.RightJoycon.ButtonSl;
                 RightButtonSr = controllerInput.RightJoycon.ButtonSr;
-                ButtonZr      = controllerInput.RightJoycon.ButtonZr;
+                ButtonZr = controllerInput.RightJoycon.ButtonZr;
 
                 DeadzoneLeft = controllerInput.DeadzoneLeft;
                 DeadzoneRight = controllerInput.DeadzoneRight;
@@ -521,7 +516,7 @@ namespace Ryujinx.Ava.UI.Models.Input
                     ButtonSl = RightButtonSl,
                     ButtonSr = RightButtonSr,
                     ButtonR = ButtonR,
-                    ButtonZr = ButtonZr,
+                    ButtonZr = ButtonZr
                 },
                 LeftJoyconStick = new JoyconConfigControllerStick<GamepadInputId, StickInputId>
                 {
@@ -529,7 +524,7 @@ namespace Ryujinx.Ava.UI.Models.Input
                     InvertStickX = LeftInvertStickX,
                     InvertStickY = LeftInvertStickY,
                     Rotate90CW = LeftRotate90,
-                    StickButton = LeftStickButton,
+                    StickButton = LeftStickButton
                 },
                 RightJoyconStick = new JoyconConfigControllerStick<GamepadInputId, StickInputId>
                 {
@@ -537,7 +532,7 @@ namespace Ryujinx.Ava.UI.Models.Input
                     InvertStickX = RightInvertStickX,
                     InvertStickY = RightInvertStickY,
                     Rotate90CW = RightRotate90,
-                    StickButton = RightStickButton,
+                    StickButton = RightStickButton
                 },
                 Rumble = new RumbleConfigController
                 {
@@ -550,7 +545,7 @@ namespace Ryujinx.Ava.UI.Models.Input
                 DeadzoneRight = DeadzoneRight,
                 RangeLeft = RangeLeft,
                 RangeRight = RangeRight,
-                TriggerThreshold = TriggerThreshold,
+                TriggerThreshold = TriggerThreshold
             };
 
             if (EnableCemuHookMotion)
