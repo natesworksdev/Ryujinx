@@ -197,7 +197,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             for (int setIndex = 0; setIndex < setUsages.Count; setIndex++)
             {
-                List<ResourceBindingSegment> currentSegments = new List<ResourceBindingSegment>();
+                List<ResourceBindingSegment> currentSegments = new();
 
                 ResourceUsage currentUsage = default;
                 int currentCount = 0;

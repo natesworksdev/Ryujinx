@@ -21,7 +21,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             public override int GetHashCode()
             {
-                HashCode hasher = new HashCode();
+                HashCode hasher = new();
 
                 if (SetDescriptors != null)
                 {

@@ -190,11 +190,11 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (hasTimeout)
             {
-                signaled = FenceHelper.AllSignaled(api, device, fences.Slice(0, fenceCount), timeout);
+                signaled = FenceHelper.AllSignaled(api, device, fences[..fenceCount], timeout);
             }
             else
             {
-                FenceHelper.WaitAllIndefinitely(api, device, fences.Slice(0, fenceCount));
+                FenceHelper.WaitAllIndefinitely(api, device, fences[..fenceCount]);
             }
 
             for (int i = 0; i < fenceCount; i++)
