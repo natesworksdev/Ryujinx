@@ -113,9 +113,7 @@
                     InputGesture="Escape"
                     IsEnabled="{Binding IsGameRunning}"
                     ToolTip.Tip="{locale:Locale StopEmulationTooltip}" />
-                <MenuItem 
-					Command="{ReflectionBinding SimulateWakeUpMessage}" 
-					Header="{locale:Locale MenuBarOptionsSimulateWakeUpMessage}" />
+                <MenuItem Command="{ReflectionBinding SimulateWakeUpMessage}" Header="{locale:Locale MenuBarOptionsSimulateWakeUpMessage}" />
                 <Separator />
                 <MenuItem
                     Name="ScanAmiiboMenuItem"
