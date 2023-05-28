@@ -8,11 +8,11 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 {
     static class StructuredProgram
     {
-        public static StructuredProgramInfo MakeStructuredProgram(Function[] functions, ShaderConfig config)
+        public static StructuredProgramInfo MakeStructuredProgram(IReadOnlyList<Function> functions, ShaderConfig config)
         {
             StructuredProgramContext context = new StructuredProgramContext(config);
 
-            for (int funcIndex = 0; funcIndex < functions.Length; funcIndex++)
+            for (int funcIndex = 0; funcIndex < functions.Count; funcIndex++)
             {
                 Function function = functions[funcIndex];
 
@@ -156,7 +156,13 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 }
                 else
                 {
-                    source = new AstOperation(inst, operation.StorageKind, operation.Index, sources, operation.SourcesCount);
+                    source = new AstOperation(
+                        inst,
+                        operation.StorageKind,
+                        operation.ForcePrecise,
+                        operation.Index,
+                        sources,
+                        operation.SourcesCount);
                 }
 
                 AggregateType destElemType = destType;
@@ -179,7 +185,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
                     dest.VarType = destElemType;
 
-                    context.AddNode(new AstAssignment(dest, new AstOperation(Instruction.VectorExtract, StorageKind.None, new[] { destVec, index }, 2)));
+                    context.AddNode(new AstAssignment(dest, new AstOperation(Instruction.VectorExtract, StorageKind.None, false, new[] { destVec, index }, 2)));
                 }
             }
             else if (operation.Dest != null)
@@ -227,7 +233,13 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 }
                 else if (!isCopy)
                 {
-                    source = new AstOperation(inst, operation.StorageKind, operation.Index, sources, operation.SourcesCount);
+                    source = new AstOperation(
+                        inst,
+                        operation.StorageKind,
+                        operation.ForcePrecise,
+                        operation.Index,
+                        sources,
+                        operation.SourcesCount);
                 }
                 else
                 {
@@ -248,7 +260,13 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             }
             else
             {
-                context.AddNode(new AstOperation(inst, operation.StorageKind, operation.Index, sources, operation.SourcesCount));
+                context.AddNode(new AstOperation(
+                    inst,
+                    operation.StorageKind,
+                    operation.ForcePrecise,
+                    operation.Index,
+                    sources,
+                    operation.SourcesCount));
             }
 
             // Those instructions needs to be emulated by using helper functions,
