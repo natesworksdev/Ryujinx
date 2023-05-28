@@ -12,7 +12,6 @@ using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
 using System;
 using System.IO;
-using System.Text.Json.Serialization;
 
 namespace Ryujinx.Ui.App.Common
 {
