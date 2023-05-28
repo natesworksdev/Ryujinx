@@ -64,6 +64,16 @@ namespace Ryujinx.Graphics.GAL
         {
             return Binding == other.Binding && Count == other.Count && Type == other.Type && Stages == other.Stages;
         }
+
+        public static bool operator ==(ResourceDescriptor left, ResourceDescriptor right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ResourceDescriptor left, ResourceDescriptor right)
+        {
+            return !(left == right);
+        }
     }
 
     public readonly struct ResourceUsage : IEquatable<ResourceUsage>
@@ -94,6 +104,16 @@ namespace Ryujinx.Graphics.GAL
         public bool Equals(ResourceUsage other)
         {
             return Binding == other.Binding && Type == other.Type && Stages == other.Stages && Access == other.Access;
+        }
+
+        public static bool operator ==(ResourceUsage left, ResourceUsage right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ResourceUsage left, ResourceUsage right)
+        {
+            return !(left == right);
         }
     }
 
@@ -150,6 +170,16 @@ namespace Ryujinx.Graphics.GAL
             }
 
             return true;
+        }
+
+        public static bool operator ==(ResourceDescriptorCollection left, ResourceDescriptorCollection right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ResourceDescriptorCollection left, ResourceDescriptorCollection right)
+        {
+            return !(left == right);
         }
     }
 
