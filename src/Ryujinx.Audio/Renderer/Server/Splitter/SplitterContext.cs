@@ -114,7 +114,7 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
         /// </summary>
         /// <param name="splitters">The <see cref="SplitterState"/> storage.</param>
         /// <param name="splitterDestinations">The <see cref="SplitterDestination"/> storage.</param>
-        /// <param name="isBugFixed">If set to true, trust the user destination count in <see cref="SplitterState.Update(SplitterContext, ref SplitterInParameter, ReadOnlySequence{Byte})"/>.</param>
+        /// <param name="isBugFixed">If set to true, trust the user destination count in <see cref="SplitterState.Update(SplitterContext, in SplitterInParameter, ref SequenceReader{Byte})"/>.</param>
         private void Setup(Memory<SplitterState> splitters, Memory<SplitterDestination> splitterDestinations, bool isBugFixed)
         {
             _splitters = splitters;
@@ -166,13 +166,16 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
                     {
                         ref SplitterState splitter = ref GetState(parameter.Id);
 
-                        splitter.Update(this, in parameter, input.UnreadSequence);
+                        splitter.Update(this, in parameter, ref input);
                     }
 
-                    // This literal was 0x1C when we were reading parameter without advancing input. Now we're advancing
-                    // input so I adjusted this contant 0xC (== 0x1C - sizeof(SplitterInParameter)), but... where
-                    // does 0xC come from?
-                    input.Advance(0xC + parameter.DestinationCount * 4);
+                    // What is this?
+                    input.Advance(0xC);
+                }
+                else
+                {
+                    input.Rewind(Unsafe.SizeOf<SplitterInParameter>());
+                    break;
                 }
             }
         }
@@ -198,6 +201,11 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
 
                         destination.Update(parameter);
                     }
+                }
+                else
+                {
+                    input.Rewind(Unsafe.SizeOf<SplitterDestinationInParameter>());
+                    break;
                 }
             }
         }
