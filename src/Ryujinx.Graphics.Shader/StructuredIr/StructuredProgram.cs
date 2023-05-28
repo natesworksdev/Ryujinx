@@ -80,7 +80,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                     IoVariable ioVariable = (IoVariable)operation.GetSource(0).Value;
                     bool isOutput = storageKind.IsOutput();
                     int location = 0;
-                int component = 0;
+                    int component = 0;
 
                     if (context.Config.HasPerLocationInputOrOutput(ioVariable, isOutput))
                     {
