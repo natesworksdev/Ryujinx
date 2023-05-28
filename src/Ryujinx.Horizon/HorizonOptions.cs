@@ -13,7 +13,7 @@ namespace Ryujinx.Horizon
         {
             IgnoreMissingServices = ignoreMissingServices;
             ThrowOnInvalidCommandIds = true;
-            BcatClient               = bcatClient;
+            BcatClient = bcatClient;
         }
     }
 }

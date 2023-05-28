@@ -8,7 +8,7 @@ namespace Ryujinx.Horizon.Bcat
     internal class BcatIpcServer
     {
         private const int BcatMaxSessionsCount = 8;
-        private const int BcatTotalMaxSessionsCount = BcatMaxSessionsCount * 4; 
+        private const int BcatTotalMaxSessionsCount = BcatMaxSessionsCount * 4;
 
         private const int PointerBufferSize = 0x400;
         private const int MaxDomains = 64;
@@ -29,10 +29,10 @@ namespace Ryujinx.Horizon.Bcat
 
             _serverManager = new BcatServerManager(allocator, _sm, MaxPortsCount, _bcatManagerOptions, BcatTotalMaxSessionsCount);
 
-            _serverManager.RegisterServer((int)BcatPortIndex.Admin,   ServiceName.Encode("bcat:a"), BcatMaxSessionsCount);
+            _serverManager.RegisterServer((int)BcatPortIndex.Admin, ServiceName.Encode("bcat:a"), BcatMaxSessionsCount);
             _serverManager.RegisterServer((int)BcatPortIndex.Manager, ServiceName.Encode("bcat:m"), BcatMaxSessionsCount);
-            _serverManager.RegisterServer((int)BcatPortIndex.User,    ServiceName.Encode("bcat:u"), BcatMaxSessionsCount);
-            _serverManager.RegisterServer((int)BcatPortIndex.System,  ServiceName.Encode("bcat:s"), BcatMaxSessionsCount);
+            _serverManager.RegisterServer((int)BcatPortIndex.User, ServiceName.Encode("bcat:u"), BcatMaxSessionsCount);
+            _serverManager.RegisterServer((int)BcatPortIndex.System, ServiceName.Encode("bcat:s"), BcatMaxSessionsCount);
         }
 
         public void ServiceRequests()
