@@ -743,29 +743,19 @@ namespace Ryujinx.Modules
             // Determine and exclude user files only when the updater is running, not when cleaning old files
             if (_running)
             {
-                //Get loose files in base directory and store them in a list
-                var dirFiles = Directory.EnumerateFiles(HomeDir, "*", SearchOption.TopDirectoryOnly);
-                List<string> DirFiles = new List<string>();
-                foreach (string dFile in dirFiles)
-                {
-                    DirFiles.Add(Path.GetFileName(dFile));
-                }
+                //Compare the loose files in base directory against the loose files from the incoming update, and store foreign ones in a user list.
+                var oldFiles = Directory.EnumerateFiles(HomeDir, "*", SearchOption.TopDirectoryOnly).ToList();
+                oldFiles = oldFiles.Select(Path.GetFileName).ToList();
 
-                //Get loose file that are supposed to be in base directory from temporary update files
-                var oldFiles = Directory.EnumerateFiles(UpdatePublishDir, "*", SearchOption.TopDirectoryOnly);
-                List<string> OldFiles = new List<string>();
-                foreach (string oFile in oldFiles)
-                {
-                    OldFiles.Add(Path.GetFileName(oFile));
-                }
+                var newFiles = Directory.EnumerateFiles(UpdatePublishDir, "*", SearchOption.TopDirectoryOnly).ToList();
+                newFiles = newFiles.Select(Path.GetFileName).ToList();
 
-                //Compare the loose files in base directory against the loose files from the incoming update, and store foreign ones in a user list
-                List<string> UserFiles = DirFiles.Except(OldFiles).ToList();
+                var UserFiles = oldFiles.Except(newFiles).ToList();
 
                 //Remove user files from the paths in files
-                foreach (var uFiles in UserFiles)
+                foreach (var userFile in UserFiles)
                 {
-                    files = files.Where(u => !u.Contains(uFiles)).ToList();
+                    files = files.Where(u => !u.Contains(userFile)).ToList();
                 }
             }
 
