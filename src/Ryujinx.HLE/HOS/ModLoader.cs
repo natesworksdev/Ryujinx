@@ -218,15 +218,18 @@ namespace Ryujinx.HLE.HOS
 
             if (StrEquals(AmsNsoPatchDir, patchDir.Name))
             {
-                patches = cache.NsoPatches; type = "NSO";
+                patches = cache.NsoPatches;
+                type = "NSO";
             }
             else if (StrEquals(AmsNroPatchDir, patchDir.Name))
             {
-                patches = cache.NroPatches; type = "NRO";
+                patches = cache.NroPatches;
+                type = "NRO";
             }
             else if (StrEquals(AmsKipPatchDir, patchDir.Name))
             {
-                patches = cache.KipPatches; type = "KIP";
+                patches = cache.KipPatches;
+                type = "KIP";
             }
             else
             {
