@@ -108,7 +108,7 @@ namespace Ryujinx.Graphics.GAL
 
         public override int GetHashCode()
         {
-            HashCode hasher = new HashCode();
+            HashCode hasher = new();
 
             if (Descriptors != null)
             {
