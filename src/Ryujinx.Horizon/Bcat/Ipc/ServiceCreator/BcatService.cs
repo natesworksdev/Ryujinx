@@ -7,7 +7,9 @@ namespace Ryujinx.Horizon.Bcat.Ipc
 {
     partial class BcatService : IBcatService
     {
+#pragma warning disable IDE0052
         private readonly BcatServicePermissionLevel _permissionLevel;
+#pragma warning restore IDE0052
 
         public BcatService(BcatServicePermissionLevel permissionLevel)
         {
