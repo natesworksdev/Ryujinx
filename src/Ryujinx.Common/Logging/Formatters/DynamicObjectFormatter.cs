@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Ryujinx.Common.Logging.Formatters
 {
-    internal class DynamicObjectFormatter
+    internal static class DynamicObjectFormatter
     {
         private static readonly ObjectPool<StringBuilder> StringBuilderPool = SharedPools.Default<StringBuilder>();
 
