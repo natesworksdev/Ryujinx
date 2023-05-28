@@ -24,12 +24,14 @@ namespace Ryujinx.Ui.App.Common
 
         public void UpdateTimePlayed()
         {
-            if (LastPlayed.HasValue)
+            if (!LastPlayed.HasValue)
             {
-                TimeSpan diff = DateTime.UtcNow - LastPlayed.Value;
-                double newTotalSeconds = TimePlayed.Add(diff).TotalSeconds;
-                TimePlayed = TimeSpan.FromSeconds(Math.Round(newTotalSeconds, MidpointRounding.AwayFromZero));
+                return;
             }
+            
+            TimeSpan diff = DateTime.UtcNow - LastPlayed.Value;
+            double newTotalSeconds = TimePlayed.Add(diff).TotalSeconds;
+            TimePlayed = TimeSpan.FromSeconds(Math.Round(newTotalSeconds, MidpointRounding.AwayFromZero));
         }
     }
 }
