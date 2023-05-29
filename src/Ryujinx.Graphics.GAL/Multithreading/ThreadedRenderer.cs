@@ -30,7 +30,6 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         private IRenderer _baseRenderer;
         private Thread _gpuThread;
         private Thread _backendThread;
-        private bool _disposed;
         private bool _running;
 
         private AutoResetEvent _frameComplete = new AutoResetEvent(true);
@@ -106,8 +105,6 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
             _gpuThread = new Thread(() => {
                 gpuLoop();
-                _running = false;
-                _galWorkAvailable.Set();
             });
 
             _gpuThread.Name = "GPU.MainThread";
@@ -120,7 +117,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         {
             // Power through the render queue until the Gpu thread work is done.
 
-            while (_running && !_disposed)
+            while (_running)
             {
                 _galWorkAvailable.Wait();
                 _galWorkAvailable.Reset();
@@ -488,12 +485,23 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             return _baseRenderer.PrepareHostMapping(address, size);
         }
 
+        public void Flush()
+        {
+            SpinWait wait = new();
+
+            while (Volatile.Read(ref _commandCount) > 0)
+            {
+                wait.SpinOnce();
+            }
+        }
+
         public void Dispose()
         {
             // Dispose must happen from the render thread, after all commands have completed.
 
             // Stop the GPU thread.
-            _disposed = true;
+            _running = false;
+            _galWorkAvailable.Set();
 
             if (_gpuThread != null && _gpuThread.IsAlive)
             {
