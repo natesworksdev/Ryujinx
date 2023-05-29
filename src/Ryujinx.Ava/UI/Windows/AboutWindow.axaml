@@ -86,6 +86,7 @@
                     Click="Button_OnClick"
                     Tag="https://github.com/Ryujinx/Ryujinx/wiki/Changelog#ryujinx-changelog">
                     <TextBlock
+                        FontSize="11"
                         Text="{locale:Locale AboutChangelogButton}"
                         TextAlignment="Center"
                         ToolTip.Tip="{locale:Locale AboutChangelogButtonTooltipMessage}" />
@@ -228,6 +229,7 @@
                     Click="Button_OnClick"
                     Tag="https://github.com/Ryujinx/Ryujinx/graphs/contributors?type=a">
                     <TextBlock
+                        FontSize="11"
                         Text="{locale:Locale AboutRyujinxContributorsButtonHeader}"
                         TextAlignment="Right"
                         ToolTip.Tip="{locale:Locale AboutRyujinxMaintainersContentTooltipMessage}" />
