@@ -20,6 +20,22 @@
     <DockPanel
         Margin="0,0,0,5"
         HorizontalAlignment="Stretch">
+	    <StackPanel
+			Name="UserPanel"
+            Margin="5,2,0,2"
+            VerticalAlignment="Stretch">
+		    <Border
+			    CornerRadius="50"
+			    ClipToBounds="True"
+			    Height="30">
+			    <Image
+				    Name="UserProfileIcon"
+				    VerticalAlignment="Center"
+				    HorizontalAlignment="Stretch"
+				    PointerPressed="UserProfileIcon_Click"
+				    Source="{Binding UserProfileIcon, Converter={StaticResource ByteImage}}" />
+		    </Border>
+		</StackPanel>
         <Button
             Width="40"
             MinWidth="40"
@@ -175,18 +191,5 @@
             VerticalAlignment="Center"
             DockPanel.Dock="Right"
             Text="{locale:Locale CommonSort}" />
-		<Button
-			VerticalAlignment="Stretch"
-            HorizontalAlignment="Right"
-			DockPanel.Dock="Right"
-            Command="{ReflectionBinding ManageProfiles}">
-			<Image
-			    Width="40"
-                MinWidth="40"
-                VerticalAlignment="Stretch"
-                HorizontalAlignment="Right"
-			    DockPanel.Dock="Right"
-                Source="{Binding UserProfileIcon, Converter={StaticResource ByteImage}}" />
-		</Button>
     </DockPanel>
 </UserControl>

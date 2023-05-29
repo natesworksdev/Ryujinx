@@ -50,5 +50,30 @@ namespace Ryujinx.Ava.UI.Views.Main
         {
             ViewModel.SearchText = SearchBox.Text;
         }
+
+        public void UserProfileIcon_Click(object sender, PointerPressedEventArgs e)
+        {
+            ViewModel.ManageProfiles();
+        }
+
+        public void UserProfileIcon_Enter(object sender, PointerEventArgs e)
+        {
+            /*if (sender is Image img)
+            {
+                img.Height *= 2;
+                img.Width *= 2;
+                img.ClipToBounds = false;
+            }//*/
+        }
+
+        public void UserProfileIcon_Leave(object sender, PointerEventArgs e)
+        {
+            /*if (sender is Image img)
+            {
+                img.Height /= 2;
+                img.Width /= 2;
+                //img.ClipToBounds = true;
+            }//*/
+        }
     }
 }
