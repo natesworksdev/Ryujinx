@@ -55,6 +55,8 @@ jobs:
       - uses: actions/setup-dotnet@v3
         with:
           global-json-file: global.json
+          cache: true
+          cache-dependency-path: packages.lock.json
 
       - name: Get git short hash
         id: git_short_hash
@@ -121,6 +123,8 @@ jobs:
       - uses: actions/setup-dotnet@v3
         with:
           global-json-file: global.json
+          cache: true
+          cache-dependency-path: packages.lock.json
 
       - name: Setup LLVM 14
         run: |
