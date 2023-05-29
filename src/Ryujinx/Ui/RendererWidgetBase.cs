@@ -503,7 +503,11 @@ namespace Ryujinx.Ui
                 }
 
                 // Make sure all commands in the run loop are fully executed before leaving the loop.
-                Device.Gpu.Renderer.Flush();
+                if (Device.Gpu.Renderer is ThreadedRenderer threaded)
+                {
+                    threaded.FlushThreadedCommands();
+                }
+
                 _gpuDoneEvent.Set();
             });
         }

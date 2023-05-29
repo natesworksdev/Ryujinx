@@ -103,9 +103,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
             _backendThread = Thread.CurrentThread;
 
-            _gpuThread = new Thread(() => {
-                gpuLoop();
-            });
+            _gpuThread = new Thread(() => gpuLoop());
 
             _gpuThread.Name = "GPU.MainThread";
             _gpuThread.Start();
@@ -485,7 +483,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             return _baseRenderer.PrepareHostMapping(address, size);
         }
 
-        public void Flush()
+        public void FlushThreadedCommands()
         {
             SpinWait wait = new();
 

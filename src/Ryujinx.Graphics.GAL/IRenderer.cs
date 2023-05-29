@@ -64,10 +64,5 @@ namespace Ryujinx.Graphics.GAL
         void SetInterruptAction(Action<Action> interruptAction);
 
         void Screenshot();
-
-        void Flush()
-        {
-            // On renderers without threading, doesn't need to wait.
-        }
     }
 }
