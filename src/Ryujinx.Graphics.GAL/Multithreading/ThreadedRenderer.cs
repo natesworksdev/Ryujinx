@@ -97,13 +97,13 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _refQueue = new object[MaxRefsPerCommand * QueueCount];
         }
 
-        public void RunLoop(Action gpuLoop)
+        public void RunLoop(ThreadStart gpuLoop)
         {
             _running = true;
 
             _backendThread = Thread.CurrentThread;
 
-            _gpuThread = new Thread(() => gpuLoop());
+            _gpuThread = new Thread(gpuLoop);
 
             _gpuThread.Name = "GPU.MainThread";
             _gpuThread.Start();
