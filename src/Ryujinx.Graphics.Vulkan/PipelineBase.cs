@@ -80,6 +80,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private PipelineColorBlendAttachmentState[] _storedBlend;
 
+        private ulong _drawCountSinceBarrier;
         public ulong DrawCount { get; private set; }
         public bool RenderPassActive { get; private set; }
 
@@ -133,6 +134,18 @@ namespace Ryujinx.Graphics.Vulkan
 
         public unsafe void Barrier()
         {
+            if (_drawCountSinceBarrier != DrawCount)
+            {
+                _drawCountSinceBarrier = DrawCount;
+
+                // Barriers apparently have no effect inside a render pass on MoltenVK.
+                // As a workaround, end the render pass.
+                if (Gd.IsMoltenVk)
+                {
+                    EndRenderPass();
+                }
+            }
+
             MemoryBarrier memoryBarrier = new MemoryBarrier()
             {
                 SType = StructureType.MemoryBarrier,
@@ -551,7 +564,6 @@ namespace Ryujinx.Graphics.Vulkan
                         (uint)maxDrawCount,
                         (uint)stride);
                 }
-
             }
             else
             {
@@ -1475,6 +1487,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             var dstAttachmentFormats = _newState.Internal.AttachmentFormats.AsSpan();
             FramebufferParams.AttachmentFormats.CopyTo(dstAttachmentFormats);
+            _newState.Internal.AttachmentIntegerFormatMask = FramebufferParams.AttachmentIntegerFormatMask;
 
             for (int i = FramebufferParams.AttachmentFormats.Length; i < dstAttachmentFormats.Length; i++)
             {

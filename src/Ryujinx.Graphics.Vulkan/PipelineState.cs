@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Common.Memory;
 using Silk.NET.Vulkan;
 using System;
+using System.Numerics;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -414,7 +415,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (isMoltenVk)
             {
-                UpdateVertexAttributeDescriptions();
+                UpdateVertexAttributeDescriptions(gd);
             }
 
             fixed (VertexInputAttributeDescription* pVertexAttributeDescriptions = &Internal.VertexAttributeDescriptions[0])
@@ -542,6 +543,27 @@ namespace Ryujinx.Graphics.Vulkan
                     MaxDepthBounds = MaxDepthBounds
                 };
 
+                uint blendEnables = 0;
+
+                if (gd.IsMoltenVk && Internal.AttachmentIntegerFormatMask != 0)
+                {
+                    // Blend can't be enabled for integer formats, so let's make sure it is disabled.
+                    uint attachmentIntegerFormatMask = Internal.AttachmentIntegerFormatMask;
+
+                    while (attachmentIntegerFormatMask != 0)
+                    {
+                        int i = BitOperations.TrailingZeroCount(attachmentIntegerFormatMask);
+
+                        if (Internal.ColorBlendAttachmentState[i].BlendEnable)
+                        {
+                            blendEnables |= 1u << i;
+                        }
+
+                        Internal.ColorBlendAttachmentState[i].BlendEnable = false;
+                        attachmentIntegerFormatMask &= ~(1u << i);
+                    }
+                }
+
                 var colorBlendState = new PipelineColorBlendStateCreateInfo()
                 {
                     SType = StructureType.PipelineColorBlendStateCreateInfo,
@@ -619,6 +641,15 @@ namespace Ryujinx.Graphics.Vulkan
                 };
 
                 gd.Api.CreateGraphicsPipelines(device, cache, 1, &pipelineCreateInfo, null, &pipelineHandle).ThrowOnError();
+
+                // Restore previous blend enable values if we changed it.
+                while (blendEnables != 0)
+                {
+                    int i = BitOperations.TrailingZeroCount(blendEnables);
+
+                    Internal.ColorBlendAttachmentState[i].BlendEnable = true;
+                    blendEnables &= ~(1u << i);
+                }
             }
 
             pipeline = new Auto<DisposablePipeline>(new DisposablePipeline(gd.Api, device, pipelineHandle));
@@ -641,7 +672,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        private void UpdateVertexAttributeDescriptions()
+        private void UpdateVertexAttributeDescriptions(VulkanRenderer gd)
         {
             // Vertex attributes exceeding the stride are invalid.
             // In metal, they cause glitches with the vertex shader fetching incorrect values.
@@ -651,28 +682,50 @@ namespace Ryujinx.Graphics.Vulkan
             for (int index = 0; index < VertexAttributeDescriptionsCount; index++)
             {
                 var attribute = Internal.VertexAttributeDescriptions[index];
-                ref var vb = ref Internal.VertexBindingDescriptions[(int)attribute.Binding];
+                int vbIndex = GetVertexBufferIndex(attribute.Binding);
 
-                Format format = attribute.Format;
-
-                while (vb.Stride != 0 && attribute.Offset + FormatTable.GetAttributeFormatSize(format) > vb.Stride)
+                if (vbIndex >= 0)
                 {
-                    Format newFormat = FormatTable.DropLastComponent(format);
+                    ref var vb = ref Internal.VertexBindingDescriptions[vbIndex];
 
-                    if (newFormat == format)
+                    Format format = attribute.Format;
+
+                    while (vb.Stride != 0 && attribute.Offset + FormatTable.GetAttributeFormatSize(format) > vb.Stride)
                     {
-                        // That case means we failed to find a format that fits within the stride,
-                        // so just restore the original format and give up.
-                        format = attribute.Format;
-                        break;
+                        Format newFormat = FormatTable.DropLastComponent(format);
+
+                        if (newFormat == format)
+                        {
+                            // That case means we failed to find a format that fits within the stride,
+                            // so just restore the original format and give up.
+                            format = attribute.Format;
+                            break;
+                        }
+
+                        format = newFormat;
                     }
 
-                    format = newFormat;
+                    if (attribute.Format != format && gd.FormatCapabilities.BufferFormatSupports(FormatFeatureFlags.VertexBufferBit, format))
+                    {
+                        attribute.Format = format;
+                    }
                 }
 
-                attribute.Format = format;
                 _vertexAttributeDescriptions2[index] = attribute;
             }
+        }
+
+        private int GetVertexBufferIndex(uint binding)
+        {
+            for (int index = 0; index < VertexBindingDescriptionsCount; index++)
+            {
+                if (Internal.VertexBindingDescriptions[index].Binding == binding)
+                {
+                    return index;
+                }
+            }
+
+            return -1;
         }
 
         public void Dispose()
