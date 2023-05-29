@@ -49,13 +49,17 @@ namespace Ryujinx.Graphics.Shader.Translation
         private readonly List<Operation> _operations;
         private readonly Dictionary<ulong, BlockLabel> _labels;
 
-        public EmitterContext(DecodedProgram program, ShaderConfig config, bool isNonMain)
+        public EmitterContext()
+        {
+            _operations = new List<Operation>();
+            _labels = new Dictionary<ulong, BlockLabel>();
+        }
+
+        public EmitterContext(DecodedProgram program, ShaderConfig config, bool isNonMain) : this()
         {
             Program = program;
             Config = config;
             IsNonMain = isNonMain;
-            _operations = new List<Operation>();
-            _labels = new Dictionary<ulong, BlockLabel>();
 
             EmitStart();
         }
@@ -242,7 +246,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 this.Store(StorageKind.Output, IoVariable.Position, null, Const(1), this.FPFusedMultiplyAdd(y, yScale, negativeOne));
             }
 
-            if (Config.Options.TargetApi == TargetApi.Vulkan && Config.GpuAccessor.QueryTransformDepthMinusOneToOne())
+            if (Config.GpuAccessor.QueryTransformDepthMinusOneToOne() && !Config.GpuAccessor.QueryHostSupportsDepthClipControl())
             {
                 Operand z = this.Load(StorageKind.Output, IoVariable.Position, null, Const(2));
                 Operand w = this.Load(StorageKind.Output, IoVariable.Position, null, Const(3));
@@ -279,7 +283,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 oldYLocal = null;
             }
 
-            if (Config.Options.TargetApi == TargetApi.Vulkan && Config.GpuAccessor.QueryTransformDepthMinusOneToOne())
+            if (Config.GpuAccessor.QueryTransformDepthMinusOneToOne() && !Config.GpuAccessor.QueryHostSupportsDepthClipControl())
             {
                 oldZLocal = Local();
                 this.Copy(oldZLocal, this.Load(StorageKind.Output, IoVariable.Position, null, Const(2)));
