@@ -198,7 +198,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         {
             // Execute commands left in _commandQueue when the app exits
 
-            while (!_running && _disposed && Volatile.Read(ref _commandCount) > 0)
+            while (!_running && !_disposed && Volatile.Read(ref _commandCount) > 0)
             {
                 int commandPtr = _consumerPtr;
 
@@ -247,9 +247,6 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             {
                 _galWorkAvailable.Set();
             }
-
-            // Execute commands left in Queue when the app exits
-            DisposeCommandQueueRun();
         }
 
         internal void InvokeCommand()
@@ -517,6 +514,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         public void Dispose()
         {
             // Dispose must happen from the render thread, after all commands have completed.
+
+            // Execute commands left in Queue when the app exits
+            DisposeCommandQueueRun();
 
             // Stop the GPU thread.
             _disposed = true;
