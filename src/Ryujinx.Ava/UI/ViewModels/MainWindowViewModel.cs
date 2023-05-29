@@ -77,6 +77,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private bool _showAll;
         private string _lastScannedAmiiboId;
         private bool _statusBarVisible;
+        private byte[] _userProfileIcon;
         private ReadOnlyObservableCollection<ApplicationData> _appsObservableList;
 
         private string _showUiKey = "F4";
@@ -464,6 +465,17 @@ namespace Ryujinx.Ava.UI.ViewModels
             set
             {
                 _fifoStatusText = value;
+
+                OnPropertyChanged();
+            }
+        }
+
+        public byte[] UserProfileIcon
+        {
+            get => _userProfileIcon;
+            set
+            {
+                _userProfileIcon = value;
 
                 OnPropertyChanged();
             }
@@ -1357,6 +1369,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public async void ManageProfiles()
         {
             await NavigationDialogHost.Show(AccountManager, ContentManager, VirtualFileSystem, LibHacHorizonManager.RyujinxClient);
+            RefreshActiveProfileIcon();
         }
 
         public void SimulateWakeUpMessage()
@@ -1557,6 +1570,11 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
 
             IsAppletMenuActive = hasApplet;
+        }
+
+        public void RefreshActiveProfileIcon()
+        {
+            UserProfileIcon = AccountManager.LastOpenedUser.Image;
         }
 
         public void AppHost_AppExit(object sender, EventArgs e)

@@ -97,6 +97,7 @@ namespace Ryujinx.Ava.UI.Windows
                     this);
 
                 ViewModel.RefreshFirmwareStatus();
+                ViewModel.RefreshActiveProfileIcon();
 
                 LoadGameList();
 

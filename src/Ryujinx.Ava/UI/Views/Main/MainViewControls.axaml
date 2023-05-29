@@ -11,6 +11,9 @@
     x:Class="Ryujinx.Ava.UI.Views.Main.MainViewControls"
     x:CompileBindings="True"
     x:DataType="viewModels:MainWindowViewModel">
+	<UserControl.Resources>
+		<helpers:BitmapArrayValueConverter x:Key="ByteImage" />
+	</UserControl.Resources>
     <Design.DataContext>
         <viewModels:MainWindowViewModel />
     </Design.DataContext>
@@ -68,7 +71,8 @@
             IsVisible="{Binding IsGrid}">
             <TextBlock Margin="5,3,0,0" Text="{locale:Locale CommonShowNames}" />
         </CheckBox>
-        <TextBox
+
+		<TextBox
             Name="SearchBox"
             MinWidth="200"
             Margin="5,0,5,0"
@@ -171,5 +175,18 @@
             VerticalAlignment="Center"
             DockPanel.Dock="Right"
             Text="{locale:Locale CommonSort}" />
+		<Button
+			VerticalAlignment="Stretch"
+            HorizontalAlignment="Right"
+			DockPanel.Dock="Right"
+            Command="{ReflectionBinding ManageProfiles}">
+			<Image
+			    Width="40"
+                MinWidth="40"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Right"
+			    DockPanel.Dock="Right"
+                Source="{Binding UserProfileIcon, Converter={StaticResource ByteImage}}" />
+		</Button>
     </DockPanel>
 </UserControl>
