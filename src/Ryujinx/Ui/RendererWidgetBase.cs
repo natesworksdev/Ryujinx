@@ -555,6 +555,7 @@ namespace Ryujinx.Ui
             // NOTE: The render loop is allowed to stay alive until the renderer itself is disposed, as it may handle resource dispose.
             // We only need to wait for all commands submitted during the main gpu loop to be processed.
             _gpuDoneEvent.WaitOne();
+            _gpuDoneEvent.Dispose();
             nvStutterWorkaround?.Join();
 
             Exit();
