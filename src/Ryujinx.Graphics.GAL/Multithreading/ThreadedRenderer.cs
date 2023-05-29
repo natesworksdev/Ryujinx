@@ -103,9 +103,11 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
             _backendThread = Thread.CurrentThread;
 
-            _gpuThread = new Thread(gpuLoop);
+            _gpuThread = new Thread(gpuLoop)
+            {
+                Name = "GPU.MainThread"
+            };
 
-            _gpuThread.Name = "GPU.MainThread";
             _gpuThread.Start();
 
             RenderLoop();
