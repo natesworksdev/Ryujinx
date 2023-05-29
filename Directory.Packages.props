@@ -1,6 +1,8 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <NuGetLockFilePath>../../packages.lock.json</NuGetLockFilePath>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Avalonia" Version="0.10.21" />
