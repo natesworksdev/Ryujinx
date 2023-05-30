@@ -13,9 +13,9 @@ namespace Ryujinx.Tests.Cpu
     [TestFixture]
     public class CpuTest
     {
-        protected const ulong Size = 0x1000;
-        protected const ulong CodeBaseAddress = 0x1000;
-        protected const ulong DataBaseAddress = CodeBaseAddress + Size;
+        protected static readonly ulong Size = MemoryBlock.GetPageSize();
+        protected static readonly ulong CodeBaseAddress = Size;
+        protected static ulong DataBaseAddress = CodeBaseAddress + Size;
 
         private static bool Ignore_FpcrFz = false;
         private static bool Ignore_FpcrDn = false;
@@ -41,8 +41,10 @@ namespace Ryujinx.Tests.Cpu
         {
             _currAddress = CodeBaseAddress;
 
+            int pageBits = (int)MathF.Log2(Size);
+
             _ram = new MemoryBlock(Size * 2);
-            _memory = new MemoryManager(_ram, 1ul << 16);
+            _memory = new MemoryManager(_ram, 1ul << (pageBits + 4));
             _memory.IncrementReferenceCount();
             _memory.Map(CodeBaseAddress, 0, Size * 2, MemoryMapFlags.Private);
 
