@@ -18,19 +18,13 @@ namespace Ryujinx.Common.Utilities
         public override TEnum Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var enumValue = reader.GetString();
-            if (string.IsNullOrEmpty(enumValue))
+
+            if (Enum.TryParse(enumValue, out TEnum value))
             {
-                return default;
+                return value;
             }
 
-            try
-            {
-                return Enum.Parse<TEnum>(enumValue);
-            }
-            catch
-            {
-                return default;
-            }
+            return default;
         }
 
         public override void Write(Utf8JsonWriter writer, TEnum value, JsonSerializerOptions options)
