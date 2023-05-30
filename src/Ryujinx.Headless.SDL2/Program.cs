@@ -339,6 +339,12 @@ namespace Ryujinx.Headless.SDL2
 
             GraphicsConfig.EnableShaderCache = true;
 
+            if (OperatingSystem.IsMacOS())
+            {
+                option.GraphicsBackend = GraphicsBackend.Vulkan;
+                Logger.Warning?.Print(LogClass.Application, "OpenGL is not supported on macOS, switching to Vulkan!");
+            }
+
             IGamepad gamepad;
 
             if (option.ListInputIds)
