@@ -639,5 +639,6 @@
   "NetworkInterfaceDefault": "Default",
   "PackagingShaders": "Packaging Shaders",
   "AboutChangelogButton": "View Changelog on GitHub",
-  "AboutChangelogButtonTooltipMessage": "Click to open the changelog for this version in your default browser."
+  "AboutChangelogButtonTooltipMessage": "Click to open the changelog for this version in your default browser.",
+  "DialogMessageOnlyOneInstance": "Only 1 instance of Ryujinx is allowed. Please close other Ryujinx instances if necessary."
 }

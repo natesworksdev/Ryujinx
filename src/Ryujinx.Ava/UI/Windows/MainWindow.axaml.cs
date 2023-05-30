@@ -25,6 +25,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 using InputManager = Ryujinx.Input.HLE.InputManager;
+using System.Diagnostics;
 
 namespace Ryujinx.Ava.UI.Windows
 {
@@ -53,6 +54,8 @@ namespace Ryujinx.Ava.UI.Windows
 
         public static bool ShowKeyErrorOnLoad { get; set; }
         public ApplicationLibrary ApplicationLibrary { get; set; }
+
+        public static bool ShowMultipleInstancesDialog { get; set; }
 
         public MainWindow()
         {
@@ -281,6 +284,18 @@ namespace Ryujinx.Ava.UI.Windows
                 {
                     Logger.Error?.Print(LogClass.Application, $"Updater Error: {task.Exception}");
                 }, TaskContinuationOptions.OnlyOnFaulted);
+            }
+
+            // Check for multiple instances of Ryujinx
+            if (ShowMultipleInstancesDialog)
+            {
+                ShowMultipleInstancesDialog = false;
+
+                Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogMessageOnlyOneInstance]);
+                    Process.GetCurrentProcess().Kill();
+                });
             }
         }
 
