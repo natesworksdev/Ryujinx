@@ -14,12 +14,7 @@ namespace Ryujinx.Ui.Common.Helper
         {
             if (OperatingSystem.IsWindows())
             {
-                if (Process.GetProcessesByName("WindowsTerminal").Length < 0) {
-                    SetConsoleWindowStateWindows(show);
-                }
-                else {
-                    Logger.Warning?.Print(LogClass.Application, "Windows Terminal doesn't support hiding console window");
-                }
+                SetConsoleWindowStateWindows(show);
             }
             else if (show == false)
             {
