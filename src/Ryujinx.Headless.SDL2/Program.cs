@@ -341,8 +341,11 @@ namespace Ryujinx.Headless.SDL2
 
             if (OperatingSystem.IsMacOS())
             {
-                option.GraphicsBackend = GraphicsBackend.Vulkan;
-                Logger.Warning?.Print(LogClass.Application, "OpenGL is not supported on macOS, switching to Vulkan!");
+                if (option.GraphicsBackend == GraphicsBackend.OpenGl)
+                {
+                    option.GraphicsBackend = GraphicsBackend.Vulkan;
+                    Logger.Warning?.Print(LogClass.Application, "OpenGL is not supported on macOS, switching to Vulkan!");
+                }
             }
 
             IGamepad gamepad;
@@ -556,7 +559,7 @@ namespace Ryujinx.Headless.SDL2
                                                                   options.IgnoreMissingServices,
                                                                   options.AspectRatio,
                                                                   options.AudioVolume,
-                                                                  options.UseHypervisor,
+                                                                  options.UseHypervisor ?? true,
                                                                   options.MultiplayerLanInterfaceId);
 
             return new Switch(configuration);
