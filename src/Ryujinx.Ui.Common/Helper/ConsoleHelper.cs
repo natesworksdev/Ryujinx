@@ -28,6 +28,7 @@ namespace Ryujinx.Ui.Common.Helper
                     if (process.MainWindowTitle.Contains("Ryujinx Console"))
                     {
                         Logger.Warning?.Print(LogClass.Application, "Windows Terminal doesn't support hiding console window");
+                        return;
                     }
                 }
             }
