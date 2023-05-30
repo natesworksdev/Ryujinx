@@ -23,7 +23,14 @@ namespace Ryujinx.Common.Utilities
                 return default;
             }
 
-            return Enum.Parse<TEnum>(enumValue);
+            try
+            {
+                return Enum.Parse<TEnum>(enumValue);
+            }
+            catch
+            {
+                return default;
+            }
         }
 
         public override void Write(Utf8JsonWriter writer, TEnum value, JsonSerializerOptions options)
