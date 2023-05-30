@@ -17,6 +17,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace Ryujinx.Ava
 {
@@ -125,6 +126,17 @@ namespace Ryujinx.Ava
             if (CommandLineState.LaunchPathArg != null)
             {
                 MainWindow.DeferLoadApplication(CommandLineState.LaunchPathArg, CommandLineState.StartFullscreenArg);
+            }
+
+            // Check for multiple instances of Ryujinx
+            Process currentProcess = Process.GetCurrentProcess();
+            foreach (Process process in Process.GetProcessesByName(currentProcess.ProcessName))
+            {
+                if (process.Id != currentProcess.Id)
+                {
+                   MainWindow.ShowMultipleInstancesDialog = true;
+                   Logger.Warning?.PrintMsg(LogClass.Application, "Only 1 instance of Ryujinx is allowed, please close other Ryujinx instances if necessary"); // Add warning in the console just in case the GUI sometimes doesn't show up.
+                }
             }
         }
 

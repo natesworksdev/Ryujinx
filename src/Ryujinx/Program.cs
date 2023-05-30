@@ -260,6 +260,18 @@ namespace Ryujinx
                 UserErrorDialog.CreateUserErrorDialog(UserError.NoKeys);
             }
 
+            // Check for multiple instances of Ryujinx
+            Process currentProcess = Process.GetCurrentProcess();
+            foreach (Process process in Process.GetProcessesByName(currentProcess.ProcessName))
+            {
+                if (process.Id != currentProcess.Id)
+                {
+                    Logger.Warning?.PrintMsg(LogClass.Application, "Only 1 instance of Ryujinx is allowed, please close other Ryujinx instances if necessary"); // Add warning in the console just in case the GUI sometimes doesn't show up.
+                    GtkDialog.CreateErrorDialog("Only 1 instance of Ryujinx is allowed. Please close other Ryujinx instances if necessary.");
+                    Process.GetCurrentProcess().Kill();
+                }
+            }
+
             // Show the main window UI.
             MainWindow mainWindow = new MainWindow();
             mainWindow.Show();
