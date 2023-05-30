@@ -18,7 +18,6 @@ using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
-using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common.Helper;
@@ -411,6 +410,46 @@ namespace Ryujinx.Ava.Common
             }
 
             return Result.Success;
+        }
+
+        public static async Task<bool> BackupSaveData(ulong titleId)
+        {
+            var userId = new LibHac.Fs.UserId((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low);
+            
+            // get the data for user -- dataType.Account
+            // device
+            // bcat directory
+            var saveDataFilter = SaveDataFilter.Make(titleId, SaveDataType.Account, userId, saveDataId: default, index: default);
+
+            // would be nice to cache save data id per user profile per game
+            var result = _horizonClient.Fs.FindSaveDataWithFilter(out var saveDataInfo, SaveDataSpaceId.User, in saveDataFilter);
+
+            if (result.IsFailure())
+            {
+                if (result.ErrorCode is "2002-1002")
+                { 
+                    // save directory for the user doesn't exist they may not have loaded up the game in this profile
+                }
+
+                _ = Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogMessageFindSaveErrorMessage, result.ToStringWithName()));
+                });
+                return false;
+            }
+
+            string saveRootPath = Path.Combine(_virtualFileSystem.GetNandPath(), $"user/save/{saveDataInfo.SaveDataId:x16}");
+
+            if (!Directory.Exists(saveRootPath))
+            {
+                // Inconsistent state. Create the directory
+                Directory.CreateDirectory(saveRootPath);
+            }
+
+            // TODO: backup async
+            OpenHelper.OpenFolder(saveRootPath);
+
+            return true;
         }
     }
 }

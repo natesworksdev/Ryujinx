@@ -323,5 +323,24 @@ namespace Ryujinx.Ava.UI.Controls
                 await ApplicationHelper.ExtractSection(NcaSectionType.Logo, viewModel.SelectedApplication.Path, viewModel.SelectedApplication.TitleName);
             }
         }
+
+        public async void BackupSaveData_Click(object sender, RoutedEventArgs args)
+        {
+            if (!(sender is MenuItem { DataContext: MainWindowViewModel { SelectedApplication: ApplicationData selectedApp } }))
+            {
+                return;
+            }
+
+            if (!ulong.TryParse(selectedApp.TitleId, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ulong titleIdNumber))
+            {
+                _ = Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogRyujinxErrorMessage], LocaleManager.Instance[LocaleKeys.DialogInvalidTitleIdErrorMessage]);
+                });
+                return;
+            }
+
+            await ApplicationHelper.BackupSaveData(titleIdNumber);
+        }
     }
 }
