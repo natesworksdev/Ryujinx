@@ -16,6 +16,7 @@ using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Windows;
+using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
@@ -24,6 +25,7 @@ using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Buffers;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Path = System.IO.Path;
@@ -149,8 +151,8 @@ namespace Ryujinx.Ava.Common
                 Title = LocaleManager.Instance[LocaleKeys.FolderDialogExtractTitle]
             };
 
-            string destination       = await folderDialog.ShowAsync(_owner);
-            var    cancellationToken = new CancellationTokenSource();
+            string destination = await folderDialog.ShowAsync(_owner);
+            var cancellationToken = new CancellationTokenSource();
 
             UpdateWaitWindow waitingDialog = new(
                 LocaleManager.Instance[LocaleKeys.DialogNcaExtractionTitle],
@@ -165,7 +167,7 @@ namespace Ryujinx.Ava.Common
 
                     using FileStream file = new(titleFilePath, FileMode.Open, FileAccess.Read);
 
-                    Nca mainNca  = null;
+                    Nca mainNca = null;
                     Nca patchNca = null;
 
                     string extension = Path.GetExtension(titleFilePath).ToLower();
@@ -414,39 +416,54 @@ namespace Ryujinx.Ava.Common
 
         public static async Task<bool> BackupSaveData(ulong titleId)
         {
+            var saveTasks = await Task.WhenAll(
+                BackupApplication(titleId, SaveDataType.Account),
+                // always use default uid for bcat and device data
+                BackupApplication(titleId, SaveDataType.Bcat),
+                BackupApplication(titleId, SaveDataType.Device));
+
+            return saveTasks.All(outcome => outcome is true);
+        }
+
+        public static async Task<bool> BackupApplication(ulong titleId, SaveDataType saveType)
+        {
             var userId = new LibHac.Fs.UserId((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low);
-            
-            // get the data for user -- dataType.Account
-            // device
-            // bcat directory
-            var saveDataFilter = SaveDataFilter.Make(titleId, SaveDataType.Account, userId, saveDataId: default, index: default);
+            var actingId = saveType is SaveDataType.Account
+                ? userId
+                : default;
 
-            // would be nice to cache save data id per user profile per game
+            var saveDataFilter = SaveDataFilter.Make(titleId, saveType, actingId, saveDataId: default, index: default);
+
             var result = _horizonClient.Fs.FindSaveDataWithFilter(out var saveDataInfo, SaveDataSpaceId.User, in saveDataFilter);
-
             if (result.IsFailure())
             {
-                if (result.ErrorCode is "2002-1002")
-                { 
-                    // save directory for the user doesn't exist they may not have loaded up the game in this profile
+                if (result.ErrorCode is "2002-1002"
+                    && saveType is SaveDataType.Device or SaveDataType.Bcat)
+                {
+                    Logger.Debug?.Print(LogClass.Application, $"Title {titleId} does not have {saveType} data.");
+                    return true;
                 }
 
+                // Postback instead of throwing UI error?
                 _ = Dispatcher.UIThread.InvokeAsync(async () =>
                 {
                     await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogMessageFindSaveErrorMessage, result.ToStringWithName()));
                 });
+
                 return false;
             }
 
             string saveRootPath = Path.Combine(_virtualFileSystem.GetNandPath(), $"user/save/{saveDataInfo.SaveDataId:x16}");
-
             if (!Directory.Exists(saveRootPath))
             {
-                // Inconsistent state. Create the directory
-                Directory.CreateDirectory(saveRootPath);
+                // there's no save data anyway
+                return true;
             }
 
-            // TODO: backup async
+            // /backup/user/[userid]/[titleId]
+            var backupDestination = Path.Combine(AppDataManager.BackupDirPath, "user", userId.ToString(), titleId.ToString());
+            Directory.CreateDirectory(backupDestination);
+
             OpenHelper.OpenFolder(saveRootPath);
 
             return true;
