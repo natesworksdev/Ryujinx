@@ -25,6 +25,7 @@ using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Buffers;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -460,13 +461,33 @@ namespace Ryujinx.Ava.Common
                 return true;
             }
 
-            // /backup/user/[userid]/[titleId]
-            var backupDestination = Path.Combine(AppDataManager.BackupDirPath, "user", userId.ToString(), titleId.ToString());
+            // /backup/user/[userid]/[titleId]/[saveType]_backup.zip
+            var backupDestination = Path.Combine(AppDataManager.BackupDirPath, "user", userId.ToString(), titleId.ToString(), DateTime.UtcNow.ToString("yyyy-MM-dd"));
             Directory.CreateDirectory(backupDestination);
 
-            OpenHelper.OpenFolder(saveRootPath);
+            var backupFullPath = Path.Combine(backupDestination, $"{saveType}_backup.zip");
 
-            return true;
+            try
+            {
+                if (File.Exists(backupFullPath)) 
+                { 
+                    File.Delete(backupFullPath);
+                }
+
+                ZipFile.CreateFromDirectory(saveRootPath, backupFullPath, CompressionLevel.SmallestSize, false);
+
+                if (saveType is SaveDataType.Account)
+                {
+                    OpenHelper.OpenFolder(backupDestination);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error?.Print(LogClass.Application, $"Failed to backup {saveType} directory for {titleId}.\n{ex.Message}");
+                return false;
+            }
         }
     }
 }
