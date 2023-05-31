@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Ryujinx.Common.Logging.Targets
 {
-    public class JsonLogTarget : ILogTarget
+    public sealed class JsonLogTarget : ILogTarget
     {
         private Stream _stream;
         private bool   _leaveOpen;

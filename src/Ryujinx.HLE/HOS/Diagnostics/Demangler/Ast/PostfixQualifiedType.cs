@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class PostfixQualifiedType : ParentNode
+    public sealed class PostfixQualifiedType : ParentNode
     {
         private string _postfixQualifier;
 

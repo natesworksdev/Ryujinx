@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class LimiterCommandVersion2 : ICommand
+    public sealed class LimiterCommandVersion2 : ICommand
     {
         public bool Enabled { get; set; }
 

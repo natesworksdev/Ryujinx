@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Cpu
 {
-    public class MemoryEhMeilleure : IDisposable
+    public sealed class MemoryEhMeilleure : IDisposable
     {
         private delegate bool TrackingEventDelegate(ulong address, ulong size, bool write);
 

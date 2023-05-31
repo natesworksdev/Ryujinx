@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Account.Acc
 {
-    public class UserProfile
+    public sealed class UserProfile
     {
         public UserId UserId { get; }
 

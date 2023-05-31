@@ -4,7 +4,7 @@ using Avalonia.Interactivity;
 
 namespace Ryujinx.Ava.UI.Helpers
 {
-    public class OffscreenTextBox : TextBox
+    public sealed class OffscreenTextBox : TextBox
     {
         public RoutedEvent<KeyEventArgs> GetKeyDownRoutedEvent()
         {

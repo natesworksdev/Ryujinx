@@ -983,7 +983,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             967,  973,  988,  996,  1002, 1006, 1014, 1018, 1021, 1023,
         };
 
-        public class ScanOrder
+        public sealed class ScanOrder
         {
             public short[] Scan { get; }
             public short[] IScan { get; }

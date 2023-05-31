@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.Ui
 {
-    public class OpenToolkitBindingsContext : OpenTK.IBindingsContext
+    public sealed class OpenToolkitBindingsContext : OpenTK.IBindingsContext
     {
         private IBindingsContext _bindingContext;
 

@@ -2,7 +2,7 @@ using ARMeilleure.Memory;
 
 namespace Ryujinx.Cpu.AppleHv
 {
-    public class HvEngine : ICpuEngine
+    public sealed class HvEngine : ICpuEngine
     {
         private readonly ITickSource _tickSource;
 

@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace Ryujinx.HLE.Loaders.Processes
 {
-    public class ProcessResult
+    public sealed class ProcessResult
     {
         public static ProcessResult Failed => new(null, new BlitStruct<ApplicationControlProperty>(1), false, false, null, 0, 0, 0, TitleLanguage.AmericanEnglish);
 

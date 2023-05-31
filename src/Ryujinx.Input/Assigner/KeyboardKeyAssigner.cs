@@ -3,7 +3,7 @@ namespace Ryujinx.Input.Assigner
     /// <summary>
     /// <see cref="IButtonAssigner"/> implementation for <see cref="IKeyboard"/>.
     /// </summary>
-    public class KeyboardKeyAssigner : IButtonAssigner
+    public sealed class KeyboardKeyAssigner : IButtonAssigner
     {
         private IKeyboard _keyboard;
 

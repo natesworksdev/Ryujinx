@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class ArraySubscriptingExpression : BaseNode
+    public sealed class ArraySubscriptingExpression : BaseNode
     {
         private BaseNode _leftNode;
         private BaseNode _subscript;
@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
             _leftNode.Print(writer);
             writer.Write(")[");
             _subscript.Print(writer);
-            writer.Write("]");            
+            writer.Write("]");
         }
     }
 }

@@ -13,7 +13,7 @@ namespace Ryujinx.Audio.Renderer.Server.Effect
     /// <summary>
     /// Server state for a delay effect.
     /// </summary>
-    public class DelayEffect : BaseEffect
+    public sealed class DelayEffect : BaseEffect
     {
         /// <summary>
         /// The delay parameter.

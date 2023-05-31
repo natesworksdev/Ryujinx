@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Ui.Widgets
 {
-    public class RawInputToTextEntry : Entry
+    public sealed class RawInputToTextEntry : Entry
     {
         public void SendKeyPressEvent(object o, KeyPressEventArgs args)
         {

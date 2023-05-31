@@ -13,7 +13,7 @@ namespace Ryujinx.Audio.Renderer.Server.MemoryPool
     /// <summary>
     /// Memory pool mapping helper.
     /// </summary>
-    public class PoolMapper
+    public sealed class PoolMapper
     {
         const uint CurrentProcessPseudoHandle = 0xFFFF8001;
 

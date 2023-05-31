@@ -1,6 +1,6 @@
 namespace Ryujinx.Ava.UI.ViewModels
 {
-    public class RumbleInputViewModel : BaseModel
+    public sealed class RumbleInputViewModel : BaseModel
     {
         private float _strongRumble;
         public float StrongRumble

@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.Cpu.AppleHv
 {
-    public class DummyDiskCacheLoadState : IDiskCacheLoadState
+    public sealed class DummyDiskCacheLoadState : IDiskCacheLoadState
     {
 #pragma warning disable CS0067
         /// <inheritdoc/>

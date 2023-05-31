@@ -7,7 +7,7 @@ namespace Ryujinx.Cpu.AppleHv
     {
         private const ulong InvalidOffset = ulong.MaxValue;
 
-        public class Block : PrivateMemoryAllocator.Block
+        public sealed class Block : PrivateMemoryAllocator.Block
         {
             private readonly HvIpaAllocator _ipaAllocator;
             public ulong Ipa { get; }

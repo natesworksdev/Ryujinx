@@ -29,7 +29,7 @@ using Silk.NET.Vulkan;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
-    public class SettingsViewModel : BaseModel
+    public sealed class SettingsViewModel : BaseModel
     {
         private readonly VirtualFileSystem _virtualFileSystem;
         private readonly ContentManager _contentManager;

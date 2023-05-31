@@ -5,7 +5,7 @@ using static Ryujinx.Audio.Backends.SoundIo.Native.SoundIo;
 
 namespace Ryujinx.Audio.Backends.SoundIo.Native
 {
-    public class SoundIoDeviceContext
+    public sealed class SoundIoDeviceContext
     {
         private readonly IntPtr _context;
 

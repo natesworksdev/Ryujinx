@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
-    public class NpadDevices : BaseDevice
+    public sealed class NpadDevices : BaseDevice
     {
         private const int NoMatchNotifyFrequencyMs = 2000;
         private int _activeCount;

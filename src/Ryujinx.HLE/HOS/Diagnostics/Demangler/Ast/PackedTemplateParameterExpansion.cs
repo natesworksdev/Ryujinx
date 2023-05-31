@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class PackedTemplateParameterExpansion : ParentNode
+    public sealed class PackedTemplateParameterExpansion : ParentNode
     {
         public PackedTemplateParameterExpansion(BaseNode child) : base(NodeType.PackedTemplateParameterExpansion, child) {}
 

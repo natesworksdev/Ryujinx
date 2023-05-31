@@ -17,7 +17,7 @@ using GUI = Gtk.Builder.ObjectAttribute;
 
 namespace Ryujinx.Ui.Windows
 {
-    public class DlcWindow : Window
+    public sealed class DlcWindow : Window
     {
         private readonly VirtualFileSystem                  _virtualFileSystem;
         private readonly string                             _titleId;
@@ -51,7 +51,7 @@ namespace Ryujinx.Ui.Windows
             {
                 _dlcContainerList = new List<DownloadableContentContainer>();
             }
-            
+
             _dlcTreeView.Model = new TreeStore(typeof(bool), typeof(string), typeof(string));
 
             CellRendererToggle enableToggle = new CellRendererToggle();
@@ -206,7 +206,7 @@ namespace Ryujinx.Ui.Windows
                 }
             }
         }
-        
+
         private void RemoveAllButton_Clicked(object sender, EventArgs args)
         {
             List<TreeIter> toRemove = new List<TreeIter>();
@@ -216,7 +216,7 @@ namespace Ryujinx.Ui.Windows
                 do
                 {
                     toRemove.Add(iter);
-                } 
+                }
                 while (_dlcTreeView.Model.IterNext(ref iter));
             }
 

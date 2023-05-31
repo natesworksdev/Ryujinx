@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class SpecialSubstitution : BaseNode
+    public sealed class SpecialSubstitution : BaseNode
     {
         public enum SpecialType
         {

@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Ui
 {
-    public class StatusUpdatedEventArgs : EventArgs
+    public sealed class StatusUpdatedEventArgs : EventArgs
     {
         public bool   VSyncEnabled;
         public float  Volume;

@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class FunctionParameter : BaseNode
+    public sealed class FunctionParameter : BaseNode
     {
         private string _number;
 

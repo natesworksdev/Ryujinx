@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Horizon.Common
 {
-    public class InvalidResultException : Exception
+    public sealed class InvalidResultException : Exception
     {
         public InvalidResultException()
         {

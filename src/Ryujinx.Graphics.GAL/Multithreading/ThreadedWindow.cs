@@ -5,7 +5,7 @@ using System;
 
 namespace Ryujinx.Graphics.GAL.Multithreading
 {
-    public class ThreadedWindow : IWindow
+    public sealed class ThreadedWindow : IWindow
     {
         private ThreadedRenderer _renderer;
         private IRenderer _impl;

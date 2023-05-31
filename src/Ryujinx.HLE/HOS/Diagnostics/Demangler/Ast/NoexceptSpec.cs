@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class NoexceptSpec : ParentNode
+    public sealed class NoexceptSpec : ParentNode
     {
         public NoexceptSpec(BaseNode child) : base(NodeType.NoexceptSpec, child) { }
 

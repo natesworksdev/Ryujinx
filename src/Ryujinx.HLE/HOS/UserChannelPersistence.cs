@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS
 {
-    public class UserChannelPersistence
+    public sealed class UserChannelPersistence
     {
         private Stack<byte[]> _userChannelStorages;
         public int PreviousIndex { get; private set; }

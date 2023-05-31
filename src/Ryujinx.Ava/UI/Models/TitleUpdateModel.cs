@@ -3,7 +3,7 @@ using Ryujinx.Ava.Common.Locale;
 
 namespace Ryujinx.Ava.UI.Models
 {
-    public class TitleUpdateModel
+    public sealed class TitleUpdateModel
     {
         public ApplicationControlProperty Control { get; }
         public string Path { get; }

@@ -5,7 +5,7 @@ using System;
 
 namespace Ryujinx.Input.HLE
 {
-    public class TouchScreenManager : IDisposable
+    public sealed class TouchScreenManager : IDisposable
     {
         private readonly IMouse _mouse;
         private Switch _device;

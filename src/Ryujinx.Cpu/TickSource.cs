@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.Cpu
 {
-    public class TickSource : ITickSource
+    public sealed class TickSource : ITickSource
     {
         private static Stopwatch _tickCounter;
 

@@ -21,7 +21,7 @@ using SpanHelpers = LibHac.Common.SpanHelpers;
 
 namespace Ryujinx.Ui.Windows
 {
-    public class TitleUpdateWindow : Window
+    public sealed class TitleUpdateWindow : Window
     {
         private readonly MainWindow        _parent;
         private readonly VirtualFileSystem _virtualFileSystem;
@@ -66,7 +66,7 @@ namespace Ryujinx.Ui.Windows
             }
 
             _baseTitleInfoLabel.Text = $"Updates Available for {titleName} [{titleId.ToUpper()}]";
-            
+
             foreach (string path in _titleUpdateWindowData.Paths)
             {
                 AddUpdate(path);

@@ -5,7 +5,7 @@ namespace Ryujinx.Audio.Renderer.Device
     /// <summary>
     /// Represents a virtual device used by IAudioDevice.
     /// </summary>
-    public class VirtualDevice
+    public sealed class VirtualDevice
     {
         /// <summary>
         /// All the defined virtual devices.

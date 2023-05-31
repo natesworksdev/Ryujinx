@@ -23,7 +23,7 @@ using Image = SixLabors.ImageSharp.Image;
 
 namespace Ryujinx.Ui.Windows
 {
-    public class AvatarWindow : Window
+    public sealed class AvatarWindow : Window
     {
         public byte[] SelectedProfileImage;
         public bool   NewUser;
@@ -207,7 +207,7 @@ namespace Ryujinx.Ui.Windows
             {
                 colorChooserDialog.UseAlpha = false;
                 colorChooserDialog.Rgba     = _backgroundColor;
-                
+
                 if (colorChooserDialog.Run() == (int)ResponseType.Ok)
                 {
                     _backgroundColor = colorChooserDialog.Rgba;
@@ -229,7 +229,7 @@ namespace Ryujinx.Ui.Windows
             using (BinaryReader reader = new BinaryReader(stream))
             {
                 reader.ReadInt32(); // Magic
-                
+
                 uint decodedLength = BinaryPrimitives.ReverseEndianness(reader.ReadUInt32());
 
                 reader.ReadInt64(); // Padding

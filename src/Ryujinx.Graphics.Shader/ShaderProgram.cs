@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.Graphics.Shader
 {
-    public class ShaderProgram
+    public sealed class ShaderProgram
     {
         public ShaderProgramInfo Info { get; }
         public TargetLanguage Language { get; }

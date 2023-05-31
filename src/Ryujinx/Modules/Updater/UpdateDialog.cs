@@ -10,7 +10,7 @@ using System.Reflection;
 
 namespace Ryujinx.Modules
 {
-    public class UpdateDialog : Gtk.Window
+    public sealed class UpdateDialog : Gtk.Window
     {
 #pragma warning disable CS0649, IDE0044
         [Builder.Object] public Label    MainText;

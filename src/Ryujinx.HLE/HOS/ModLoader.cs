@@ -21,7 +21,7 @@ using Path = System.IO.Path;
 
 namespace Ryujinx.HLE.HOS
 {
-    public class ModLoader
+    public sealed class ModLoader
     {
         private const string RomfsDir = "romfs";
         private const string ExefsDir = "exefs";
@@ -68,7 +68,7 @@ namespace Ryujinx.HLE.HOS
         }
 
         // Title dependent mods
-        public class ModCache
+        public sealed class ModCache
         {
             public List<Mod<FileInfo>> RomfsContainers { get; }
             public List<Mod<FileInfo>> ExefsContainers { get; }

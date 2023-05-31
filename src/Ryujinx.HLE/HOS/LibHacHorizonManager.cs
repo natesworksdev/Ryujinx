@@ -13,7 +13,7 @@ using StorageId = LibHac.Ncm.StorageId;
 
 namespace Ryujinx.HLE.HOS
 {
-    public class LibHacHorizonManager
+    public sealed class LibHacHorizonManager
     {
         private LibHac.Horizon Server { get; set; }
 

@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
     /// Partitioned hash table.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class PartitionedHashTable<T>
+    public sealed class PartitionedHashTable<T>
     {
         /// <summary>
         /// Entry for a given data size.

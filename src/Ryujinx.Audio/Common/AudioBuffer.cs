@@ -5,7 +5,7 @@ namespace Ryujinx.Audio.Common
     /// <summary>
     /// Represent an audio buffer that will be used by an <see cref="IHardwareDeviceSession"/>.
     /// </summary>
-    public class AudioBuffer
+    public sealed class AudioBuffer
     {
         /// <summary>
         /// Unique tag of this buffer.

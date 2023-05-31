@@ -1,6 +1,6 @@
 namespace Ryujinx.Audio.Renderer.Dsp.Effect
 {
-    public class DecayDelay : IDelayLine
+    public sealed class DecayDelay : IDelayLine
     {
         private readonly IDelayLine _delayLine;
 

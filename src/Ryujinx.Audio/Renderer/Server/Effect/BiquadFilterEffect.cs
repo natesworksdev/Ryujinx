@@ -12,7 +12,7 @@ namespace Ryujinx.Audio.Renderer.Server.Effect
     /// <summary>
     /// Server state for a biquad filter effect.
     /// </summary>
-    public class BiquadFilterEffect : BaseEffect
+    public sealed class BiquadFilterEffect : BaseEffect
     {
         /// <summary>
         /// The biquad filter parameter.

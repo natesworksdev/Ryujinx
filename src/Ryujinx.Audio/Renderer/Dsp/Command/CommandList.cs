@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class CommandList : IDisposable
+    public sealed class CommandList : IDisposable
     {
         public ulong StartTime { get; private set; }
         public ulong EndTime { get; private set; }

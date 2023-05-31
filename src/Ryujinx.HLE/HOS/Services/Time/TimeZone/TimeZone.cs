@@ -13,7 +13,7 @@ using static Ryujinx.HLE.HOS.Services.Time.TimeZone.TimeZoneRule;
 
 namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 {
-    public class TimeZone
+    public sealed class TimeZone
     {
         private const int TimeTypeSize     = 8;
         private const int EpochYear        = 1970;

@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Ui.Common.Models.Amiibo
 {
-    public class AmiiboApiUsage
+    public sealed class AmiiboApiUsage
     {
         [JsonPropertyName("Usage")]
         public string Usage { get; set; }

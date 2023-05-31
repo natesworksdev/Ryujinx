@@ -29,7 +29,7 @@ using Path = System.IO.Path;
 
 namespace Ryujinx.Ui.App.Common
 {
-    public class ApplicationLibrary
+    public sealed class ApplicationLibrary
     {
         public event EventHandler<ApplicationAddedEventArgs>        ApplicationAdded;
         public event EventHandler<ApplicationCountUpdatedEventArgs> ApplicationCountUpdated;
@@ -121,7 +121,7 @@ namespace Ryujinx.Ui.App.Common
                             (Path.GetExtension(file).ToLower() is ".nro"  && ConfigurationState.Instance.Ui.ShownFileTypes.NRO.Value)  ||
                             (Path.GetExtension(file).ToLower() is ".nso"  && ConfigurationState.Instance.Ui.ShownFileTypes.NSO.Value);
                         });
-                        
+
                         foreach (string app in files)
                         {
                             if (_cancellationToken.Token.IsCancellationRequested)

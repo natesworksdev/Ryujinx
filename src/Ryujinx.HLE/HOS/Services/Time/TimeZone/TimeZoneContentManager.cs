@@ -20,7 +20,7 @@ using TimeZoneRuleBox = Ryujinx.Common.Memory.Box<Ryujinx.HLE.HOS.Services.Time.
 
 namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 {
-    public class TimeZoneContentManager
+    public sealed class TimeZoneContentManager
     {
         private const long TimeZoneBinaryTitleId = 0x010000000000080E;
 

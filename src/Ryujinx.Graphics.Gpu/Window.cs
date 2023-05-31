@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Gpu
     /// <summary>
     /// GPU image presentation window.
     /// </summary>
-    public class Window
+    public sealed class Window
     {
         private readonly GpuContext _context;
 

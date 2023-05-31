@@ -13,7 +13,7 @@ namespace Ryujinx.Audio.Renderer.Server.Effect
     /// <summary>
     /// Server state for an capture buffer effect.
     /// </summary>
-    public class CaptureBufferEffect : BaseEffect
+    public sealed class CaptureBufferEffect : BaseEffect
     {
         /// <summary>
         /// The capture buffer parameter.

@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace Ryujinx.HLE.HOS.Services.Account.Acc
 {
-    public class AccountManager
+    public sealed class AccountManager
     {
         public static readonly UserId DefaultUserId = new UserId("00000000000000010000000000000000");
 

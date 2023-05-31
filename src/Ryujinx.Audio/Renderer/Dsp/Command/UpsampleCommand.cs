@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class UpsampleCommand : ICommand
+    public sealed class UpsampleCommand : ICommand
     {
         public bool Enabled { get; set; }
 

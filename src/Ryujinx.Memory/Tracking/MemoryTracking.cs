@@ -7,7 +7,7 @@ namespace Ryujinx.Memory.Tracking
     /// <summary>
     /// Manages memory tracking for a given virutal/physical memory block.
     /// </summary>
-    public class MemoryTracking
+    public sealed class MemoryTracking
     {
         private readonly IVirtualMemoryManager _memoryManager;
         private readonly InvalidAccessHandler _invalidAccessHandler;

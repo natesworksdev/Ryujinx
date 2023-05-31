@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace Ryujinx.Input.GTK3
 {
-    public class GTK3Mouse : IMouse
+    public sealed class GTK3Mouse : IMouse
     {
         private GTK3MouseDriver _driver;
 

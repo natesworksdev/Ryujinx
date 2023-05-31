@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Ryujinx.Graphics.Host1x
 {
-    public class Host1xClass : IDeviceState
+    public sealed class Host1xClass : IDeviceState
     {
         private readonly SynchronizationManager _syncMgr;
         private readonly DeviceState<Host1xClassRegisters> _state;

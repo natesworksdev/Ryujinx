@@ -6,7 +6,7 @@ namespace Ryujinx.Audio.Renderer.Server
     /// <summary>
     /// <see cref="ICommandProcessingTimeEstimator"/> version 1.
     /// </summary>
-    public class CommandProcessingTimeEstimatorVersion1 : ICommandProcessingTimeEstimator
+    public sealed class CommandProcessingTimeEstimatorVersion1 : ICommandProcessingTimeEstimator
     {
         private uint _sampleCount;
         private uint _bufferCount;

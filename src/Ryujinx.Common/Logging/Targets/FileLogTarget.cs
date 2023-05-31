@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Ryujinx.Common.Logging.Targets
 {
-    public class FileLogTarget : ILogTarget
+    public sealed class FileLogTarget : ILogTarget
     {
         private readonly StreamWriter  _logWriter;
         private readonly ILogFormatter _formatter;

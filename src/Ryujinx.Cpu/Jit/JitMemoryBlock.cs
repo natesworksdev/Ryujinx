@@ -4,7 +4,7 @@ using System;
 
 namespace Ryujinx.Cpu.Jit
 {
-    public class JitMemoryBlock : IJitMemoryBlock
+    public sealed class JitMemoryBlock : IJitMemoryBlock
     {
         private readonly MemoryBlock _impl;
 

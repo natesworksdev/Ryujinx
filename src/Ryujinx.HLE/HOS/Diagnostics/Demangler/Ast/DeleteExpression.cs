@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class DeleteExpression : ParentNode
+    public sealed class DeleteExpression : ParentNode
     {
         private bool _isGlobal;
         private bool _isArrayExpression;

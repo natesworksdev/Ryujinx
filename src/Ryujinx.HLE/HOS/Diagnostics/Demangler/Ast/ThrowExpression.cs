@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class ThrowExpression : BaseNode
+    public sealed class ThrowExpression : BaseNode
     {
         private BaseNode _expression;
 

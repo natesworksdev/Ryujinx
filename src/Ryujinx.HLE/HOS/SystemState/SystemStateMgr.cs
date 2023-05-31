@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.SystemState
 {
-    public class SystemStateMgr
+    public sealed class SystemStateMgr
     {
         internal static string[] LanguageCodes = new string[]
         {

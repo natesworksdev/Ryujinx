@@ -15,7 +15,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.Audio.Renderer.Server
 {
-    public class CommandGenerator
+    public sealed class CommandGenerator
     {
         private CommandBuffer _commandBuffer;
         private RendererSystemContext _rendererContext;

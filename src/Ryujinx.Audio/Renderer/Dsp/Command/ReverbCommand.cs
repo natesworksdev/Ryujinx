@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class ReverbCommand : ICommand
+    public sealed class ReverbCommand : ICommand
     {
         private static readonly int[] OutputEarlyIndicesTableMono = new int[10] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         private static readonly int[] TargetEarlyDelayLineIndicesTableMono = new int[10] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };

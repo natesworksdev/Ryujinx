@@ -6,7 +6,7 @@ namespace Ryujinx.Audio.Renderer.Device
     /// <summary>
     /// Represent an instance containing a registry of <see cref="VirtualDeviceSession"/>.
     /// </summary>
-    public class VirtualDeviceSessionRegistry
+    public sealed class VirtualDeviceSessionRegistry
     {
         /// <summary>
         /// The session registry, used to store the sessions of a given AppletResourceId.

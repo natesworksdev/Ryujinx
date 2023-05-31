@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace Ryujinx.Common
 {
-    public class ObjectPool<T>
+    public sealed class ObjectPool<T>
         where T : class
     {
         private T _firstItem;

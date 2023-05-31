@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Input.Motion.CemuHook
 {
-    public class Client : IDisposable
+    public sealed class Client : IDisposable
     {
         public const uint   Magic   = 0x43555344; // DSUC
         public const ushort Version = 1001;

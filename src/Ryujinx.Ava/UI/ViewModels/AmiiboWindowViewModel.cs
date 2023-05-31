@@ -22,7 +22,7 @@ using AmiiboJsonSerializerContext = Ryujinx.Ui.Common.Models.Amiibo.AmiiboJsonSe
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
-    public class AmiiboWindowViewModel : BaseModel, IDisposable
+    public sealed class AmiiboWindowViewModel : BaseModel, IDisposable
     {
         private const string DefaultJson = "{ \"amiibo\": [] }";
         private const float AmiiboImageSize = 350f;

@@ -9,7 +9,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
     {
         public AstBlock Block { get; private set; }
 
-        public class BlockVisitationEventArgs : EventArgs
+        public sealed class BlockVisitationEventArgs : EventArgs
         {
             public AstBlock Block { get; }
 

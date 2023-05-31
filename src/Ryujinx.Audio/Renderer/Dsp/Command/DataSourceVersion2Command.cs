@@ -5,7 +5,7 @@ using static Ryujinx.Audio.Renderer.Parameter.VoiceInParameter;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class DataSourceVersion2Command : ICommand
+    public sealed class DataSourceVersion2Command : ICommand
     {
         public bool Enabled { get; set; }
 

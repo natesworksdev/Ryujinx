@@ -12,7 +12,7 @@ namespace Ryujinx.Audio.Renderer.Server.Effect
     /// <summary>
     /// Server state for a compressor effect.
     /// </summary>
-    public class CompressorEffect : BaseEffect
+    public sealed class CompressorEffect : BaseEffect
     {
         /// <summary>
         /// The compressor parameter.

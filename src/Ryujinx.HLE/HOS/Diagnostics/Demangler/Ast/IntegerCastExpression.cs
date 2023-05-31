@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class IntegerCastExpression : ParentNode
+    public sealed class IntegerCastExpression : ParentNode
     {
         private string _number;
 

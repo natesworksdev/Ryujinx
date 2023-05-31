@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class InitListExpression : BaseNode
+    public sealed class InitListExpression : BaseNode
     {
         private BaseNode       _typeNode;
         private List<BaseNode> _nodes;

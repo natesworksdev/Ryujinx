@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace Ryujinx.Tests.Memory
 {
-    public class TrackingTests
+    public sealed class TrackingTests
     {
         private const int RndCnt = 3;
 

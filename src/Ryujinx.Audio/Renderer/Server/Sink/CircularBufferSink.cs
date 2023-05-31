@@ -10,7 +10,7 @@ namespace Ryujinx.Audio.Renderer.Server.Sink
     /// <summary>
     /// Server information for a circular buffer sink.
     /// </summary>
-    public class CircularBufferSink : BaseSink
+    public sealed class CircularBufferSink : BaseSink
     {
         /// <summary>
         /// The circular buffer parameter.

@@ -25,7 +25,7 @@ using GUI = Gtk.Builder.ObjectAttribute;
 
 namespace Ryujinx.Ui.Windows
 {
-    public class SettingsWindow : Window
+    public sealed class SettingsWindow : Window
     {
         private readonly MainWindow             _parent;
         private readonly ListStore              _gameDirsBoxStore;

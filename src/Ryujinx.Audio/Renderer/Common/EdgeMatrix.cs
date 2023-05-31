@@ -10,7 +10,7 @@ namespace Ryujinx.Audio.Renderer.Common
     /// Represents a adjacent matrix.
     /// </summary>
     /// <remarks>This is used for splitter routing.</remarks>
-    public class EdgeMatrix
+    public sealed class EdgeMatrix
     {
         /// <summary>
         /// Backing <see cref="BitArray"/> used for node connections.

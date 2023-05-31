@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Effect
 {
-    public class DelayLine3d : IDelayLine
+    public sealed class DelayLine3d : IDelayLine
     {
         private float[] _workBuffer;
         private uint _sampleRate;

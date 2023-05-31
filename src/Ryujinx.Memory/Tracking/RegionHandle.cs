@@ -10,7 +10,7 @@ namespace Ryujinx.Memory.Tracking
     /// A tracking handle for a given region of virtual memory. The Dirty flag is updated whenever any changes are made,
     /// and an action can be performed when the region is read to or written from.
     /// </summary>
-    public class RegionHandle : IRegionHandle
+    public sealed class RegionHandle : IRegionHandle
     {
         /// <summary>
         /// If more than this number of checks have been performed on a dirty flag since its last reprotect,

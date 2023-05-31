@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Ryujinx.Ui.Applet
 {
-    public class SwkbdAppletDialog : MessageDialog
+    public sealed class SwkbdAppletDialog : MessageDialog
     {
         private int _inputMin;
         private int _inputMax;

@@ -4,7 +4,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
-    public class TouchDevice : BaseDevice
+    public sealed class TouchDevice : BaseDevice
     {
         public TouchDevice(Switch device, bool active) : base(device, active) { }
 

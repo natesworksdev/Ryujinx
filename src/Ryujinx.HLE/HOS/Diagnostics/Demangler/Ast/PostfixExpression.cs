@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class PostfixExpression : ParentNode
+    public sealed class PostfixExpression : ParentNode
     {
         private string _operator;
 

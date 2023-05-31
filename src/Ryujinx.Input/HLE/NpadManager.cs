@@ -271,7 +271,7 @@ namespace Ryujinx.Input.HLE
 
                     _device.Hid.Mouse.Update((int)position.X, (int)position.Y, buttons, (int)mouseInput.Scroll.X, (int)mouseInput.Scroll.Y, true);
                 }
-                else 
+                else
                 {
                     _device.Hid.Mouse.Update(0, 0);
                 }

@@ -3,7 +3,7 @@ using Ryujinx.Audio.Renderer.Parameter.Effect;
 
 namespace Ryujinx.Audio.Renderer.Dsp.State
 {
-    public class CompressorState
+    public sealed class CompressorState
     {
         public ExponentialMovingAverage InputMovingAverage;
         public float Unknown4;

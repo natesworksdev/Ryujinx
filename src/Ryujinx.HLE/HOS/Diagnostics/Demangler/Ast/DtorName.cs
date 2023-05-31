@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class DtorName : ParentNode
+    public sealed class DtorName : ParentNode
     {
         public DtorName(BaseNode name) : base(NodeType.DtOrName, name) { }
 

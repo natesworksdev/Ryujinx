@@ -73,7 +73,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
 #pragma warning restore CS0649
         }
 
-        public class CertStoreEntry
+        public sealed class CertStoreEntry
         {
             public CaCertificateId Id;
             public TrustedCertStatus Status;

@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.Common.Logging
 {
-    public class LogEventArgs : EventArgs
+    public sealed class LogEventArgs : EventArgs
     {
         public readonly LogLevel Level;
         public readonly TimeSpan Time;

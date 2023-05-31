@@ -6,7 +6,7 @@ namespace Ryujinx.Audio.Renderer.Utils
     /// <summary>
     /// A simple bit array implementation backed by a <see cref="Memory{T}"/>.
     /// </summary>
-    public class BitArray
+    public sealed class BitArray
     {
         /// <summary>
         /// The backing storage of the <see cref="BitArray"/>.

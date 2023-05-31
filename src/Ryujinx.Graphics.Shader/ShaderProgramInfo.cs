@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 
 namespace Ryujinx.Graphics.Shader
 {
-    public class ShaderProgramInfo
+    public sealed class ShaderProgramInfo
     {
         public ReadOnlyCollection<BufferDescriptor> CBuffers { get; }
         public ReadOnlyCollection<BufferDescriptor> SBuffers { get; }

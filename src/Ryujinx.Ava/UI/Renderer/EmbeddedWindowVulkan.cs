@@ -8,7 +8,7 @@ using System;
 
 namespace Ryujinx.Ava.UI.Renderer
 {
-    public class EmbeddedWindowVulkan : EmbeddedWindow
+    public sealed class EmbeddedWindowVulkan : EmbeddedWindow
     {
         public SurfaceKHR CreateSurface(Instance instance)
         {

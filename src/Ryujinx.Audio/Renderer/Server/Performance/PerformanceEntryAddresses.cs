@@ -5,7 +5,7 @@ namespace Ryujinx.Audio.Renderer.Server.Performance
     /// <summary>
     /// Information used by the performance command to store informations in the performance entry.
     /// </summary>
-    public class PerformanceEntryAddresses
+    public sealed class PerformanceEntryAddresses
     {
         /// <summary>
         /// The memory storing the performance entry.

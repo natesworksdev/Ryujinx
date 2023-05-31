@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class DelayCommand : ICommand
+    public sealed class DelayCommand : ICommand
     {
         public bool Enabled { get; set; }
 

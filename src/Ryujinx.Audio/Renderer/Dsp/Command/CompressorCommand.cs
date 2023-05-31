@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class CompressorCommand : ICommand
+    public sealed class CompressorCommand : ICommand
     {
         private const int FixedPointPrecision = 15;
 

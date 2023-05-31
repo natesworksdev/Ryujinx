@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// <summary>
     /// GPU memory manager.
     /// </summary>
-    public class MemoryManager : IWritableBlock
+    public sealed class MemoryManager : IWritableBlock
     {
         private const int PtLvl0Bits = 14;
         private const int PtLvl1Bits = 14;

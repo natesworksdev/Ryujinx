@@ -2,7 +2,7 @@ using Ryujinx.Audio.Renderer.Server.Performance;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class PerformanceCommand : ICommand
+    public sealed class PerformanceCommand : ICommand
     {
         public enum Type
         {

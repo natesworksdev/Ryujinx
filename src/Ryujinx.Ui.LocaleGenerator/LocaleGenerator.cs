@@ -4,7 +4,7 @@ using System.Linq;
 namespace Ryujinx.Ui.LocaleGenerator
 {
     [Generator]
-    public class LocaleGenerator : IIncrementalGenerator
+    public sealed class LocaleGenerator : IIncrementalGenerator
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {

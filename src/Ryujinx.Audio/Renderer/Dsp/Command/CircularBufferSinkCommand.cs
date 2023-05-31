@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class CircularBufferSinkCommand : ICommand
+    public sealed class CircularBufferSinkCommand : ICommand
     {
         public bool Enabled { get; set; }
 

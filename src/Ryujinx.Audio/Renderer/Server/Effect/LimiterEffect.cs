@@ -12,7 +12,7 @@ namespace Ryujinx.Audio.Renderer.Server.Effect
     /// <summary>
     /// Server state for a limiter effect.
     /// </summary>
-    public class LimiterEffect : BaseEffect
+    public sealed class LimiterEffect : BaseEffect
     {
         /// <summary>
         /// The limiter parameter.

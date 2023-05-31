@@ -11,7 +11,7 @@ using static Ryujinx.Audio.Integration.IHardwareDeviceDriver;
 
 namespace Ryujinx.Audio.Backends.CompatLayer
 {
-    public class CompatLayerHardwareDeviceDriver : IHardwareDeviceDriver
+    public sealed class CompatLayerHardwareDeviceDriver : IHardwareDeviceDriver
     {
         private IHardwareDeviceDriver _realDriver;
 

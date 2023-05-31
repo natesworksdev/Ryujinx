@@ -9,7 +9,7 @@ namespace Ryujinx.Common.Collections
     /// </summary>
     /// <typeparam name="K">Key</typeparam>
     /// <typeparam name="V">Value</typeparam>
-    public class IntervalTree<K, V> : IntrusiveRedBlackTreeImpl<IntervalTreeNode<K, V>> where K : IComparable<K>
+    public sealed class IntervalTree<K, V> : IntrusiveRedBlackTreeImpl<IntervalTreeNode<K, V>> where K : IComparable<K>
     {
         private const int ArrayGrowthSize = 32;
 
@@ -465,7 +465,7 @@ namespace Ryujinx.Common.Collections
     /// </summary>
     /// <typeparam name="K">Key type of the node</typeparam>
     /// <typeparam name="V">Value type of the node</typeparam>
-    public class IntervalTreeNode<K, V> : IntrusiveRedBlackTreeNode<IntervalTreeNode<K, V>>
+    public sealed class IntervalTreeNode<K, V> : IntrusiveRedBlackTreeNode<IntervalTreeNode<K, V>>
     {
         /// <summary>
         /// The start of the range.

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Tests.Memory
 {
-    public class Tests
+    public sealed class Tests
     {
         private static readonly ulong MemorySize = MemoryBlock.GetPageSize() * 8;
 

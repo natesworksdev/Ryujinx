@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.Horizon.Common
 {
-    public class ThreadTerminatedException : Exception
+    public sealed class ThreadTerminatedException : Exception
     {
         public ThreadTerminatedException() : base("The thread has been terminated.")
         {

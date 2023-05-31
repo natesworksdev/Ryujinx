@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Audio.Renderer.Common
 {
-    public class WorkBufferAllocator
+    public sealed class WorkBufferAllocator
     {
         public Memory<byte> BackingMemory { get; }
 

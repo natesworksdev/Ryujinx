@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class NameType : BaseNode
+    public sealed class NameType : BaseNode
     {
         private string _nameValue;
 

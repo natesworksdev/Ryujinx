@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.Ava.UI.Models
 {
-    public class CheatModel : BaseModel
+    public sealed class CheatModel : BaseModel
     {
         private bool _isEnabled;
 

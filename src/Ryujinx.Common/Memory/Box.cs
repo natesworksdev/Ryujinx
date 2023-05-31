@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Common.Memory
 {
-    public class Box<T> where T : unmanaged
+    public sealed class Box<T> where T : unmanaged
     {
         public T Data;
 

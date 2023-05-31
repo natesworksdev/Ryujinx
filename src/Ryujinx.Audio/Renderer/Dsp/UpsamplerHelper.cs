@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Audio.Renderer.Dsp
 {
-    public class UpsamplerHelper
+    public sealed class UpsamplerHelper
     {
         private const int HistoryLength = UpsamplerBufferState.HistoryLength;
         private const int FilterBankLength = 20;
@@ -38,7 +38,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
                 const float a2 = 0.5f * a;
                 return a0 + a1 * MathF.Cos(2 * MathF.PI * x) + a2 * MathF.Cos(4 * MathF.PI * x);
             }
-            
+
             Array20<float> result = new Array20<float>();
 
             for (int i = 0; i < FilterBankLength; i++)
@@ -112,7 +112,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             int inputBufferIndex = 0;
 
             switch (state.Scale)
-            { 
+            {
                 case 6.0f:
                     for (int i = 0; i < outputSampleCount; i++)
                     {

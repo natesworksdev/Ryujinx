@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class PackedTemplateParameter : NodeArray
+    public sealed class PackedTemplateParameter : NodeArray
     {
         public PackedTemplateParameter(List<BaseNode> nodes) : base(nodes, NodeType.PackedTemplateParameter) { }
 

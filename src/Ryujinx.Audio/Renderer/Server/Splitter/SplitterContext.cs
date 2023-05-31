@@ -12,7 +12,7 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
     /// <summary>
     /// Splitter context.
     /// </summary>
-    public class SplitterContext
+    public sealed class SplitterContext
     {
         /// <summary>
         /// Storage for <see cref="SplitterState"/>.

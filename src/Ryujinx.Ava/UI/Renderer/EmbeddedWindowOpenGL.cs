@@ -14,7 +14,7 @@ using System;
 
 namespace Ryujinx.Ava.UI.Renderer
 {
-    public class EmbeddedWindowOpenGL : EmbeddedWindow
+    public sealed class EmbeddedWindowOpenGL : EmbeddedWindow
     {
         private SwappableNativeWindowBase _window;
 

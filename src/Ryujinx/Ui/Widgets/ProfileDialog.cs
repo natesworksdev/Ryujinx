@@ -6,7 +6,7 @@ using GUI = Gtk.Builder.ObjectAttribute;
 
 namespace Ryujinx.Ui.Widgets
 {
-    public class ProfileDialog : Dialog
+    public sealed class ProfileDialog : Dialog
     {
         public string FileName { get; private set; }
 

@@ -7,7 +7,7 @@ using System.Runtime.Intrinsics.X86;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class MixCommand : ICommand
+    public sealed class MixCommand : ICommand
     {
         public bool Enabled { get; set; }
 

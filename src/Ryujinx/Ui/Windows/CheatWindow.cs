@@ -11,7 +11,7 @@ using GUI = Gtk.Builder.ObjectAttribute;
 
 namespace Ryujinx.Ui.Windows
 {
-    public class CheatWindow : Window
+    public sealed class CheatWindow : Window
     {
         private readonly string _enabledCheatsPath;
         private readonly bool _noCheatsFound;

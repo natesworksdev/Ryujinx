@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 
 namespace Ryujinx.Common.Configuration.Hid
 {
-    public class JsonInputConfigConverter : JsonConverter<InputConfig>
+    public sealed class JsonInputConfigConverter : JsonConverter<InputConfig>
     {
         private static readonly InputConfigJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 

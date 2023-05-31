@@ -6,13 +6,13 @@ using Size = System.Drawing.Size;
 
 namespace Ryujinx.Input.GTK3
 {
-    public class GTK3MouseDriver : IGamepadDriver
+    public sealed class GTK3MouseDriver : IGamepadDriver
     {
         private Widget _widget;
         private bool _isDisposed;
 
         public bool[] PressedButtons { get; }
-        
+
         public Vector2 CurrentPosition { get; private set; }
         public Vector2 Scroll{ get; private set; }
 
@@ -67,7 +67,7 @@ namespace Ryujinx.Input.GTK3
         }
 
         public string DriverName => "GTK3";
-        
+
         public event Action<string> OnGamepadConnected
         {
             add    { }
@@ -81,7 +81,7 @@ namespace Ryujinx.Input.GTK3
         }
 
         public ReadOnlySpan<string> GamepadsIds => new[] {"0"};
-        
+
         public IGamepad GetGamepad(string id)
         {
             return new GTK3Mouse(this);

@@ -5,7 +5,7 @@ namespace Ryujinx.Input
     /// <summary>
     /// A snapshot of a <see cref="IKeyboard"/>.
     /// </summary>
-    public class KeyboardStateSnapshot
+    public sealed class KeyboardStateSnapshot
     {
         private bool[] _keysState;
 

@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class TemplateArguments : NodeArray
+    public sealed class TemplateArguments : NodeArray
     {
         public TemplateArguments(List<BaseNode> nodes) : base(nodes, NodeType.TemplateArguments) { }
 

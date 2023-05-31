@@ -2,7 +2,7 @@ using ARMeilleure.Memory;
 
 namespace Ryujinx.Cpu.Jit
 {
-    public class JitEngine : ICpuEngine
+    public sealed class JitEngine : ICpuEngine
     {
         private readonly ITickSource _tickSource;
 

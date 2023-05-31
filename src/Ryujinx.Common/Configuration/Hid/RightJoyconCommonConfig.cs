@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Common.Configuration.Hid
 {
-    public class RightJoyconCommonConfig<Button>
+    public sealed class RightJoyconCommonConfig<Button>
     {
         public Button ButtonPlus { get; set; }
         public Button ButtonR { get; set; }

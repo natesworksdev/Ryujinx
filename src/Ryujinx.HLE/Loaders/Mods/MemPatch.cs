@@ -5,12 +5,12 @@ using System.Linq;
 
 namespace Ryujinx.HLE.Loaders.Mods
 {
-    public class MemPatch
+    public sealed class MemPatch
     {
         readonly Dictionary<uint, byte[]> _patches = new Dictionary<uint, byte[]>();
 
         /// <summary>
-        /// Adds a patch to specified offset. Overwrites if already present. 
+        /// Adds a patch to specified offset. Overwrites if already present.
         /// </summary>
         /// <param name="offset">Memory offset</param>
         /// <param name="patch">The patch to add</param>

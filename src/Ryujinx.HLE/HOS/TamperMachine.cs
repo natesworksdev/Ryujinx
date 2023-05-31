@@ -10,7 +10,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS
 {
-    public class TamperMachine
+    public sealed class TamperMachine
     {
         // Atmosphere specifies a delay of 83 milliseconds between the execution of the last
         // cheat and the re-execution of the first one.

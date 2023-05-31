@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class CtorVtableSpecialName : BaseNode
+    public sealed class CtorVtableSpecialName : BaseNode
     {
         private BaseNode _firstType;
         private BaseNode _secondType;

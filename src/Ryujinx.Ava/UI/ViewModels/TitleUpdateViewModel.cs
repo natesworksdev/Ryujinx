@@ -27,7 +27,7 @@ using SpanHelpers = LibHac.Common.SpanHelpers;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
-    public class TitleUpdateViewModel : BaseModel
+    public sealed class TitleUpdateViewModel : BaseModel
     {
         public TitleUpdateMetadata _titleUpdateWindowData;
         public readonly string     _titleUpdateJsonPath;

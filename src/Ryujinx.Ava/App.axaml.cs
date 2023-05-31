@@ -18,7 +18,7 @@ using System.IO;
 
 namespace Ryujinx.Ava
 {
-    public class App : Application
+    public sealed class App : Application
     {
         public override void Initialize()
         {

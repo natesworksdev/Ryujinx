@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class PrefixExpression : ParentNode
+    public sealed class PrefixExpression : ParentNode
     {
         private string _prefix;
 

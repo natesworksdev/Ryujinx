@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         LValue
     }
 
-    public class CvType : ParentNode
+    public sealed class CvType : ParentNode
     {
         public Cv Qualifier;
 
@@ -68,7 +68,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         }
     }
 
-    public class SimpleReferenceType : ParentNode
+    public sealed class SimpleReferenceType : ParentNode
     {
         public Reference Qualifier;
 

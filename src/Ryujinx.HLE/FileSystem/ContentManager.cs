@@ -23,7 +23,7 @@ using Path = System.IO.Path;
 
 namespace Ryujinx.HLE.FileSystem
 {
-    public class ContentManager
+    public sealed class ContentManager
     {
         private const ulong SystemVersionTitleId = 0x0100000000000809;
         private const ulong SystemUpdateTitleId  = 0x0100000000000816;

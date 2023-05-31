@@ -3,7 +3,7 @@ using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Mouse;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
-    public class MouseDevice : BaseDevice
+    public sealed class MouseDevice : BaseDevice
     {
         public MouseDevice(Switch device, bool active) : base(device, active) { }
 
@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             ref RingLifo<MouseState> lifo = ref _device.Hid.SharedMemory.Mouse;
 
             ref MouseState previousEntry = ref lifo.GetCurrentEntryRef();
-            
+
             MouseState newState = new MouseState()
             {
                 SamplingNumber = previousEntry.SamplingNumber + 1,

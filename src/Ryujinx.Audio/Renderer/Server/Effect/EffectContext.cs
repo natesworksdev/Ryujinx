@@ -8,7 +8,7 @@ namespace Ryujinx.Audio.Renderer.Server.Effect
     /// <summary>
     /// Effect context.
     /// </summary>
-    public class EffectContext
+    public sealed class EffectContext
     {
         /// <summary>
         /// Storage for <see cref="BaseEffect"/>.

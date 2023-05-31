@@ -9,7 +9,7 @@ using System.Text.Json.Nodes;
 
 namespace Ryujinx.Ui.Common.Configuration
 {
-    public class ConfigurationFileFormat
+    public sealed class ConfigurationFileFormat
     {
         /// <summary>
         /// The current version of the file format

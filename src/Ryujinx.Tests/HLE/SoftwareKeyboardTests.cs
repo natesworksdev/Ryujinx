@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Ryujinx.Tests.HLE
 {
-    public class SoftwareKeyboardTests
+    public sealed class SoftwareKeyboardTests
     {
         [Test]
         public void StripUnicodeControlCodes_NullInput()

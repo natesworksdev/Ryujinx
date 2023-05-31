@@ -7,7 +7,7 @@ using Ryujinx.Horizon.Sm.Types;
 
 namespace Ryujinx.Horizon.Sm
 {
-    public class SmMain
+    public sealed class SmMain
     {
         private const int SmMaxSessionsCount      = 64;
         private const int SmmMaxSessionsCount     = 1;

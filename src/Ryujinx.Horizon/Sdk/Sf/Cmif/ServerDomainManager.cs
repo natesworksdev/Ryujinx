@@ -8,7 +8,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
     {
         private class EntryManager
         {
-            public class Entry
+            public sealed class Entry
             {
                 public int Id { get; }
                 public Domain Owner { get; set; }

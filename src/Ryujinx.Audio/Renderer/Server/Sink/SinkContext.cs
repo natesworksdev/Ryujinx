@@ -5,7 +5,7 @@ namespace Ryujinx.Audio.Renderer.Server.Sink
     /// <summary>
     /// Sink context.
     /// </summary>
-    public class SinkContext
+    public sealed class SinkContext
     {
         /// <summary>
         /// Storage for <see cref="BaseSink"/>.

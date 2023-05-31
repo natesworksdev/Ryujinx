@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class EncodedFunction : BaseNode
+    public sealed class EncodedFunction : BaseNode
     {
         private BaseNode _name;
         private BaseNode _params;

@@ -6,7 +6,7 @@ namespace Ryujinx.Audio.Renderer.Server.Upsampler
     /// <summary>
     /// Upsampler manager.
     /// </summary>
-    public class UpsamplerManager
+    public sealed class UpsamplerManager
     {
         /// <summary>
         /// Work buffer for upsampler.

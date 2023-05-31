@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.FileSystem
 {
-    public class SystemVersion
+    public sealed class SystemVersion
     {
         public byte   Major          { get; }
         public byte   Minor          { get; }

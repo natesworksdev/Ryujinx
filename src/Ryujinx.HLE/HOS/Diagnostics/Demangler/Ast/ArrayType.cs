@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class ArrayType : BaseNode
+    public sealed class ArrayType : BaseNode
     {
         private BaseNode _base;
         private BaseNode _dimensionExpression;

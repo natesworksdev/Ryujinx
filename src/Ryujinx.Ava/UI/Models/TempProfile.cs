@@ -4,7 +4,7 @@ using System;
 
 namespace Ryujinx.Ava.UI.Models
 {
-    public class TempProfile : BaseModel
+    public sealed class TempProfile : BaseModel
     {
         private readonly UserProfile _profile;
         private byte[] _image;

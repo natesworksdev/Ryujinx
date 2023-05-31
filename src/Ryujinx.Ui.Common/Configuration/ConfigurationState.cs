@@ -13,14 +13,14 @@ using System.Text.Json.Nodes;
 
 namespace Ryujinx.Ui.Common.Configuration
 {
-    public class ConfigurationState
+    public sealed class ConfigurationState
     {
         /// <summary>
         /// UI configuration section
         /// </summary>
-        public class UiSection
+        public sealed class UiSection
         {
-            public class Columns
+            public sealed class Columns
             {
                 public ReactiveObject<bool> FavColumn        { get; private set; }
                 public ReactiveObject<bool> IconColumn       { get; private set; }
@@ -48,7 +48,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 }
             }
 
-            public class ColumnSortSettings
+            public sealed class ColumnSortSettings
             {
                 public ReactiveObject<int>  SortColumnId  { get; private set; }
                 public ReactiveObject<bool> SortAscending { get; private set; }
@@ -63,7 +63,7 @@ namespace Ryujinx.Ui.Common.Configuration
             /// <summary>
             /// Used to toggle which file types are shown in the UI
             /// </summary>
-            public class ShownFileTypeSettings
+            public sealed class ShownFileTypeSettings
             {
                 public ReactiveObject<bool> NSP { get; private set; }
                 public ReactiveObject<bool> PFS0 { get; private set; }
@@ -86,7 +86,7 @@ namespace Ryujinx.Ui.Common.Configuration
             // <summary>
             /// Determines main window start-up position, size and state
             ///<summary>
-            public class WindowStartupSettings
+            public sealed class WindowStartupSettings
             {
                 public ReactiveObject<int> WindowSizeWidth { get; private set; }
                 public ReactiveObject<int> WindowSizeHeight { get; private set; }
@@ -209,7 +209,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// Logger configuration section
         /// </summary>
-        public class LoggerSection
+        public sealed class LoggerSection
         {
             /// <summary>
             /// Enables printing debug log messages
@@ -286,7 +286,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// System configuration section
         /// </summary>
-        public class SystemSection
+        public sealed class SystemSection
         {
             /// <summary>
             /// Change System Language
@@ -397,7 +397,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// Hid configuration section
         /// </summary>
-        public class HidSection
+        public sealed class HidSection
         {
             /// <summary>
             /// Enable or disable keyboard support (Independent from controllers binding)
@@ -433,7 +433,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// Graphics configuration section
         /// </summary>
-        public class GraphicsSection
+        public sealed class GraphicsSection
         {
             /// <summary>
             /// Whether or not backend threading is enabled. The "Auto" setting will determine whether threading should be enabled at runtime.
@@ -547,7 +547,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// Multiplayer configuration section
         /// </summary>
-        public class MultiplayerSection
+        public sealed class MultiplayerSection
         {
             /// <summary>
             /// GUID for the network interface used by LAN (or 0 for default)
@@ -1393,7 +1393,7 @@ namespace Ryujinx.Ui.Common.Configuration
                     WindowSizeWidth = 1280,
                     WindowMaximized = false,
                 };
-                
+
                 configurationFileUpdated = true;
             }
 

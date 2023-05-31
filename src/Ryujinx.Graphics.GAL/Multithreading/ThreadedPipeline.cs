@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Ryujinx.Graphics.GAL.Multithreading
 {
-    public class ThreadedPipeline : IPipeline
+    public sealed class ThreadedPipeline : IPipeline
     {
         private ThreadedRenderer _renderer;
         private IPipeline _impl;

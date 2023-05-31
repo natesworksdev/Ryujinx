@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class CallExpression : NodeArray
+    public sealed class CallExpression : NodeArray
     {
         private BaseNode _callee;
 

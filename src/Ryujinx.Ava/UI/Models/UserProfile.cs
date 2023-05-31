@@ -7,7 +7,7 @@ using Profile = Ryujinx.HLE.HOS.Services.Account.Acc.UserProfile;
 
 namespace Ryujinx.Ava.UI.Models
 {
-    public class UserProfile : BaseModel
+    public sealed class UserProfile : BaseModel
     {
         private readonly Profile _profile;
         private readonly NavigationDialogHost _owner;

@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class IntegerLiteral : BaseNode
+    public sealed class IntegerLiteral : BaseNode
     {
         private string _literalName;
         private string _literalValue;

@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class DepopPrepareCommand : ICommand
+    public sealed class DepopPrepareCommand : ICommand
     {
         public bool Enabled { get; set; }
 

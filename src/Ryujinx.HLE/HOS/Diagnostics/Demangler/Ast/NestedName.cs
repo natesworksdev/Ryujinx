@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class NestedName : ParentNode
+    public sealed class NestedName : ParentNode
     {
         private BaseNode _name;
 

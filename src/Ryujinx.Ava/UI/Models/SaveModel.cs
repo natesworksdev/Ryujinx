@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.UI.Models
 {
-    public class SaveModel : BaseModel
+    public sealed class SaveModel : BaseModel
     {
         private long _size;
 

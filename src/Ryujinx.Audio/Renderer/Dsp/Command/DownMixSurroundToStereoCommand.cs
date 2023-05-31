@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class DownMixSurroundToStereoCommand : ICommand
+    public sealed class DownMixSurroundToStereoCommand : ICommand
     {
         public bool Enabled { get; set; }
 

@@ -16,7 +16,7 @@ using Path = System.IO.Path;
 
 namespace Ryujinx.HLE.Loaders.Processes
 {
-    public class ProcessLoader
+    public sealed class ProcessLoader
     {
         private readonly Switch _device;
 

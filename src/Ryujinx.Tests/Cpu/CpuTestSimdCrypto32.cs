@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace Ryujinx.Tests.Cpu
 {
-    public class CpuTestSimdCrypto32 : CpuTest32
+    public sealed class CpuTestSimdCrypto32 : CpuTest32
     {
         [Test, Description("AESD.8 <Qd>, <Qm>")]
         public void Aesd_V([Values(0u)] uint rd,

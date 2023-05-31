@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.Audio.Renderer.Common
 {
-    public class NodeStates
+    public sealed class NodeStates
     {
         private class Stack
         {

@@ -8,7 +8,7 @@ namespace Ryujinx.Audio.Renderer.Server
     /// Behaviour context.
     /// </summary>
     /// <remarks>This handles features based on the audio renderer revision provided by the user.</remarks>
-    public class BehaviourContext
+    public sealed class BehaviourContext
     {
         /// <summary>
         /// The base magic of the Audio Renderer revision.

@@ -8,7 +8,7 @@ namespace Ryujinx.Memory.Tracking
     /// to avoid iterating over granular chunks for canonically large regions.
     /// If minimum granularity is to be expected, use MultiRegionHandle.
     /// </summary>
-    public class SmartMultiRegionHandle : IMultiRegionHandle
+    public sealed class SmartMultiRegionHandle : IMultiRegionHandle
     {
         /// <summary>
         /// A list of region handles starting at each granularity size increment.

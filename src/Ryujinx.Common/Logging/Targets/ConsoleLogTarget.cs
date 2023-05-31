@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.Common.Logging.Targets
 {
-    public class ConsoleLogTarget : ILogTarget
+    public sealed class ConsoleLogTarget : ILogTarget
     {
         private readonly ILogFormatter _formatter;
 

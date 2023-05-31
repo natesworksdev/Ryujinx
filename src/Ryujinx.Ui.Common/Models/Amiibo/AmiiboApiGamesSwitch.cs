@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Ryujinx.Ui.Common.Models.Amiibo
 {
-    public class AmiiboApiGamesSwitch
+    public sealed class AmiiboApiGamesSwitch
     {
         [JsonPropertyName("amiiboUsage")]
         public List<AmiiboApiUsage> AmiiboUsage { get; set; }

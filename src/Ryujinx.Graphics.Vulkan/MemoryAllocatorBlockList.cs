@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Vulkan
     {
         private const ulong InvalidOffset = ulong.MaxValue;
 
-        public class Block : IComparable<Block>
+        public sealed class Block : IComparable<Block>
         {
             public DeviceMemory Memory { get; private set; }
             public IntPtr HostPointer { get; private set; }

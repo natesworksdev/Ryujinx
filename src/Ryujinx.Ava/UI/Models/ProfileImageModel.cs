@@ -3,7 +3,7 @@ using Ryujinx.Ava.UI.ViewModels;
 
 namespace Ryujinx.Ava.UI.Models
 {
-    public class ProfileImageModel : BaseModel
+    public sealed class ProfileImageModel : BaseModel
     {
         public ProfileImageModel(string name, byte[] data)
         {

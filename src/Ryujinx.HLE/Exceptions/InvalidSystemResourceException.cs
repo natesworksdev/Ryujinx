@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.Exceptions
 {
-    public class InvalidSystemResourceException : Exception
+    public sealed class InvalidSystemResourceException : Exception
     {
         public InvalidSystemResourceException(string message) : base(message) { }
     }

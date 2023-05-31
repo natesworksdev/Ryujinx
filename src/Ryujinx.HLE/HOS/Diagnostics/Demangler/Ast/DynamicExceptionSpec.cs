@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class DynamicExceptionSpec : ParentNode
+    public sealed class DynamicExceptionSpec : ParentNode
     {
         public DynamicExceptionSpec(BaseNode child) : base(NodeType.DynamicExceptionSpec, child) { }
 

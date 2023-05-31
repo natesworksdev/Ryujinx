@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.GAL
 {
-    public class SupportBufferUpdater : IDisposable
+    public sealed class SupportBufferUpdater : IDisposable
     {
         public SupportBuffer Data;
         public BufferHandle Handle;

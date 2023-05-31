@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class ConditionalExpression : BaseNode
+    public sealed class ConditionalExpression : BaseNode
     {
         private BaseNode _thenNode;
         private BaseNode _elseNode;

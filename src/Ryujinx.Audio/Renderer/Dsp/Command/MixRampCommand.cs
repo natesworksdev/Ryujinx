@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class MixRampCommand : ICommand
+    public sealed class MixRampCommand : ICommand
     {
         public bool Enabled { get; set; }
 

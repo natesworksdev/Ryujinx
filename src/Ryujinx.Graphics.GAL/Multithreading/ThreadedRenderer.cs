@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
     /// A new thread is created to handle the GPU command processing, separate from the renderer thread.
     /// Calls to the renderer, pipeline and resources are queued to happen on the renderer thread.
     /// </summary>
-    public class ThreadedRenderer : IRenderer
+    public sealed class ThreadedRenderer : IRenderer
     {
         private const int SpanPoolBytes = 4 * 1024 * 1024;
         private const int MaxRefsPerCommand = 2;

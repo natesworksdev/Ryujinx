@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Ryujinx.Tests.Memory
 {
-    public class MultiRegionTrackingTests
+    public sealed class MultiRegionTrackingTests
     {
         private const int RndCnt = 3;
 

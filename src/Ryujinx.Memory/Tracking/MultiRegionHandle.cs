@@ -11,7 +11,7 @@ namespace Ryujinx.Memory.Tracking
     /// granular tracking that can be used to track partial updates. Backed by a bitmap
     /// to improve performance when scanning large regions.
     /// </summary>
-    public class MultiRegionHandle : IMultiRegionHandle
+    public sealed class MultiRegionHandle : IMultiRegionHandle
     {
         /// <summary>
         /// A list of region handles for each granularity sized chunk of the whole region.

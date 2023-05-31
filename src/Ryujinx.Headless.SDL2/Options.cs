@@ -4,7 +4,7 @@ using Ryujinx.HLE.HOS.SystemState;
 
 namespace Ryujinx.Headless.SDL2
 {
-    public class Options
+    public sealed class Options
     {
         // General
 

@@ -8,7 +8,7 @@ using CpuAddress = System.UInt64;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class CaptureBufferCommand : ICommand
+    public sealed class CaptureBufferCommand : ICommand
     {
         public bool Enabled { get; set; }
 

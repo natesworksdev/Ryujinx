@@ -7,7 +7,7 @@ using System.Runtime.Intrinsics.X86;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class VolumeCommand : ICommand
+    public sealed class VolumeCommand : ICommand
     {
         public bool Enabled { get; set; }
 

@@ -5,7 +5,7 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace Ryujinx.Common.Utilities
 {
-    public class JsonHelper
+    public sealed class JsonHelper
     {
         private static readonly JsonNamingPolicy SnakeCasePolicy = new SnakeCaseNamingPolicy();
         private const int DefaultFileWriteBufferSize = 4096;

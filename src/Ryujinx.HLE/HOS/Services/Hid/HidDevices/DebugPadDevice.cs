@@ -3,7 +3,7 @@ using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.DebugPad;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
-    public class DebugPadDevice : BaseDevice
+    public sealed class DebugPadDevice : BaseDevice
     {
         public DebugPadDevice(Switch device, bool active) : base(device, active) { }
 

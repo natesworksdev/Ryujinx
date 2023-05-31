@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Ui.Common.Models.Github
 {
-    public class GithubReleaseAssetJsonResponse
+    public sealed class GithubReleaseAssetJsonResponse
     {
         public string Name { get; set; }
         public string State { get; set; }

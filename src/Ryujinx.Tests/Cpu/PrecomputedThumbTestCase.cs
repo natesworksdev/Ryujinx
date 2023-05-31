@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Tests.Cpu
 {
-    public class PrecomputedThumbTestCase
+    public sealed class PrecomputedThumbTestCase
     {
         public ushort[] Instructions;
         public uint[] StartRegs;

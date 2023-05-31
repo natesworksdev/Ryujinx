@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class LimiterCommandVersion1 : ICommand
+    public sealed class LimiterCommandVersion1 : ICommand
     {
         public bool Enabled { get; set; }
 

@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Spv.Generator
 {
-    public class LiteralInteger : Operand, IEquatable<LiteralInteger>
+    public sealed class LiteralInteger : Operand, IEquatable<LiteralInteger>
     {
         [ThreadStatic]
         private static GeneratorPool<LiteralInteger> _pool;

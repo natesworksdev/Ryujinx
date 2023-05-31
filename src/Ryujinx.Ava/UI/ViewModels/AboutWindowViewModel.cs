@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
-    public class AboutWindowViewModel : BaseModel
+    public sealed class AboutWindowViewModel : BaseModel
     {
         private Bitmap _githubLogo;
         private Bitmap _discordLogo;

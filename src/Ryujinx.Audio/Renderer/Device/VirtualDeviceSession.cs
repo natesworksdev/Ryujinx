@@ -3,7 +3,7 @@ namespace Ryujinx.Audio.Renderer.Device
     /// <summary>
     /// Represents a virtual device session used by IAudioDevice.
     /// </summary>
-    public class VirtualDeviceSession
+    public sealed class VirtualDeviceSession
     {
         /// <summary>
         /// The <see cref="VirtualDevice"/> associated to this session.

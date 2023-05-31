@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Ui.App.Common
 {
-    public class ApplicationAddedEventArgs : EventArgs
+    public sealed class ApplicationAddedEventArgs : EventArgs
     {
         public ApplicationData AppData { get; set; }
     }

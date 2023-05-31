@@ -3,7 +3,7 @@ using Ryujinx.Audio.Renderer.Server;
 
 namespace Ryujinx.Tests.Audio.Renderer.Server
 {
-    public class BehaviourContextTests
+    public sealed class BehaviourContextTests
     {
         [Test]
         public void TestCheckFeature()

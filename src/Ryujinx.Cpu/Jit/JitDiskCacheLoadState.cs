@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.Cpu.Jit
 {
-    public class JitDiskCacheLoadState : IDiskCacheLoadState
+    public sealed class JitDiskCacheLoadState : IDiskCacheLoadState
     {
         /// <inheritdoc/>
         public event Action<LoadState, int, int> StateChanged;

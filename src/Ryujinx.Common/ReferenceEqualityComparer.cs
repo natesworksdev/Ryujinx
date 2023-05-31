@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Ryujinx.Common
 {
-    public class ReferenceEqualityComparer<T> : IEqualityComparer<T>
+    public sealed class ReferenceEqualityComparer<T> : IEqualityComparer<T>
         where T : class
     {
         public bool Equals(T x, T y)

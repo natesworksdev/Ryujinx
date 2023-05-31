@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Ui.Widgets
 {
-    public class GtkInputDialog : MessageDialog
+    public sealed class GtkInputDialog : MessageDialog
     {
         public Entry InputEntry { get; }
 

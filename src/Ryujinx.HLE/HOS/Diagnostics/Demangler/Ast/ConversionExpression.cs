@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class ConversionExpression : BaseNode
+    public sealed class ConversionExpression : BaseNode
     {
         private BaseNode _typeNode;
         private BaseNode _expressions;

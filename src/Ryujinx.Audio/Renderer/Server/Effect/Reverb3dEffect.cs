@@ -12,7 +12,7 @@ namespace Ryujinx.Audio.Renderer.Server.Effect
     /// <summary>
     /// Server state for a 3D reverberation effect.
     /// </summary>
-    public class Reverb3dEffect : BaseEffect
+    public sealed class Reverb3dEffect : BaseEffect
     {
         /// <summary>
         /// The 3D reverberation parameter.

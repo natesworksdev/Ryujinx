@@ -8,7 +8,7 @@ namespace Ryujinx.Input.Assigner
     /// <summary>
     /// <see cref="IButtonAssigner"/> implementation for regular <see cref="IGamepad"/>.
     /// </summary>
-    public class GamepadButtonAssigner : IButtonAssigner
+    public sealed class GamepadButtonAssigner : IButtonAssigner
     {
         private IGamepad _gamepad;
 
@@ -35,7 +35,7 @@ namespace Ryujinx.Input.Assigner
             {
                 _currState = _gamepad.GetStateSnapshot();
                 _prevState = _currState;
-            }    
+            }
         }
 
         public void ReadInput()

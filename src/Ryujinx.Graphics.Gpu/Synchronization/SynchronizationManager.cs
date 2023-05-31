@@ -7,7 +7,7 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
     /// <summary>
     /// GPU synchronization manager.
     /// </summary>
-    public class SynchronizationManager
+    public sealed class SynchronizationManager
     {
         /// <summary>
         /// The maximum number of syncpoints supported by the GM20B.

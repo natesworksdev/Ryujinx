@@ -2,7 +2,7 @@
 
 namespace Spv.Generator
 {
-    public class GeneratorPool<T> where T : class, new()
+    public sealed class GeneratorPool<T> where T : class, new()
     {
         private List<T[]> _pool;
         private int _chunkIndex = -1;

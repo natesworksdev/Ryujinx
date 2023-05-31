@@ -12,7 +12,7 @@ namespace Ryujinx.Audio.Renderer.Server.Sink
     /// <summary>
     /// Server information for a device sink.
     /// </summary>
-    public class DeviceSink : BaseSink
+    public sealed class DeviceSink : BaseSink
     {
         /// <summary>
         /// The downmix coefficients.

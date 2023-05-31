@@ -15,7 +15,7 @@ namespace Ryujinx.Audio.Renderer.Server
     /// <summary>
     /// An API to generate commands and aggregate them into a <see cref="CommandList"/>.
     /// </summary>
-    public class CommandBuffer
+    public sealed class CommandBuffer
     {
         /// <summary>
         /// The command processing time estimator in use.

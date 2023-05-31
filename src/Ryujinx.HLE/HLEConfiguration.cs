@@ -14,7 +14,7 @@ namespace Ryujinx.HLE
     /// <summary>
     /// HLE configuration.
     /// </summary>
-    public class HLEConfiguration
+    public sealed class HLEConfiguration
     {
         /// <summary>
         /// The virtual file system used by the FS service.

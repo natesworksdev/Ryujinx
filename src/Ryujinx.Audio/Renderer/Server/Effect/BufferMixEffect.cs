@@ -10,7 +10,7 @@ namespace Ryujinx.Audio.Renderer.Server.Effect
     /// <summary>
     /// Server state for a buffer mix effect.
     /// </summary>
-    public class BufferMixEffect : BaseEffect
+    public sealed class BufferMixEffect : BaseEffect
     {
         /// <summary>
         /// The buffer mix parameter.

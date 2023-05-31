@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class CtorDtorNameType : ParentNode
+    public sealed class CtorDtorNameType : ParentNode
     {
         private bool _isDestructor;
 

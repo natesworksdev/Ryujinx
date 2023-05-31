@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace Ryujinx.Graphics.Nvdec
 {
-    public class NvdecDevice : IDeviceStateWithContext
+    public sealed class NvdecDevice : IDeviceStateWithContext
     {
         private readonly ResourceManager _rm;
         private readonly DeviceState<NvdecRegisters> _state;

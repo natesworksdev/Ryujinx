@@ -6,7 +6,7 @@ namespace Ryujinx.Input
     /// <summary>
     /// A snapshot of a <see cref="IMouse"/>.
     /// </summary>
-    public class MouseStateSnapshot
+    public sealed class MouseStateSnapshot
     {
         private bool[] _buttonState;
 

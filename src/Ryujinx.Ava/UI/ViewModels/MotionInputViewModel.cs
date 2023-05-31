@@ -1,6 +1,6 @@
 namespace Ryujinx.Ava.UI.ViewModels
 {
-    public class MotionInputViewModel : BaseModel
+    public sealed class MotionInputViewModel : BaseModel
     {
         private int _slot;
         public int Slot

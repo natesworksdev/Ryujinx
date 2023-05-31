@@ -8,7 +8,7 @@ using System.Collections.ObjectModel;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
-    public class UserSaveManagerViewModel : BaseModel
+    public sealed class UserSaveManagerViewModel : BaseModel
     {
         private int _sortIndex;
         private int _orderIndex;

@@ -20,7 +20,7 @@ using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
 namespace ARMeilleure.Translation
 {
-    public class Translator
+    public sealed class Translator
     {
         private static readonly AddressTable<ulong>.Level[] Levels64Bit =
             new AddressTable<ulong>.Level[]

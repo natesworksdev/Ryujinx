@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class ForwardTemplateReference : BaseNode
+    public sealed class ForwardTemplateReference : BaseNode
     {
         // TODO: Compute inside the Demangler
         public BaseNode Reference;

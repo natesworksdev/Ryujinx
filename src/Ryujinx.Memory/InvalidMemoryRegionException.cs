@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Memory
 {
-    public class InvalidMemoryRegionException : Exception
+    public sealed class InvalidMemoryRegionException : Exception
     {
         public InvalidMemoryRegionException() : base("Attempted to access an invalid memory region.")
         {

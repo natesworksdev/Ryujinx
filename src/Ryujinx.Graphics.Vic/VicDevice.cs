@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Vic
 {
-    public class VicDevice : IDeviceState
+    public sealed class VicDevice : IDeviceState
     {
         private readonly MemoryManager _gmm;
         private readonly ResourceManager _rm;

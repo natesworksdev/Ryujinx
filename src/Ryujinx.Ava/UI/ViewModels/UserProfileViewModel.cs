@@ -5,7 +5,7 @@ using UserProfile = Ryujinx.Ava.UI.Models.UserProfile;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
-    public class UserProfileViewModel : BaseModel, IDisposable
+    public sealed class UserProfileViewModel : BaseModel, IDisposable
     {
         public UserProfileViewModel()
         {

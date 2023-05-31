@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class LiteralOperator : ParentNode
+    public sealed class LiteralOperator : ParentNode
     {
         public LiteralOperator(BaseNode child) : base(NodeType.LiteralOperator, child) { }
 

@@ -10,7 +10,7 @@ namespace Ryujinx.Common.Collections
     /// </summary>
     /// <typeparam name="K">Key</typeparam>
     /// <typeparam name="V">Value</typeparam>
-    public class TreeDictionary<K, V> : IntrusiveRedBlackTreeImpl<Node<K, V>>, IDictionary<K, V> where K : IComparable<K>
+    public sealed class TreeDictionary<K, V> : IntrusiveRedBlackTreeImpl<Node<K, V>>, IDictionary<K, V> where K : IComparable<K>
     {
         #region Public Methods
 
@@ -602,7 +602,7 @@ namespace Ryujinx.Common.Collections
     /// </summary>
     /// <typeparam name="K">Key of the node</typeparam>
     /// <typeparam name="V">Value of the node</typeparam>
-    public class Node<K, V> : IntrusiveRedBlackTreeNode<Node<K, V>> where K : IComparable<K>
+    public sealed class Node<K, V> : IntrusiveRedBlackTreeNode<Node<K, V>> where K : IComparable<K>
     {
         internal K Key;
         internal V Value;

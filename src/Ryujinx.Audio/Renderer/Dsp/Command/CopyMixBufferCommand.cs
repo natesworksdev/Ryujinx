@@ -1,6 +1,6 @@
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class CopyMixBufferCommand : ICommand
+    public sealed class CopyMixBufferCommand : ICommand
     {
         public bool Enabled { get; set; }
 

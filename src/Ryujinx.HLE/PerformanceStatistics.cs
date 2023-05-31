@@ -3,7 +3,7 @@ using System.Timers;
 
 namespace Ryujinx.HLE
 {
-    public class PerformanceStatistics
+    public sealed class PerformanceStatistics
     {
         private const int FrameTypeGame   = 0;
         private const int PercentTypeFifo = 0;

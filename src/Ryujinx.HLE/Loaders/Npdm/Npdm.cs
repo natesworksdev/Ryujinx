@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
     // https://github.com/SciresM/hactool/blob/master/npdm.c
     // https://github.com/SciresM/hactool/blob/master/npdm.h
     // http://switchbrew.org/index.php?title=NPDM
-    public class Npdm
+    public sealed class Npdm
     {
         private const int MetaMagic = 'M' << 0 | 'E' << 8 | 'T' << 16 | 'A' << 24;
 

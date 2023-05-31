@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Ryujinx.Ava.UI.Models
 {
-    public class DownloadableContentModel : BaseModel
+    public sealed class DownloadableContentModel : BaseModel
     {
         private bool _enabled;
 

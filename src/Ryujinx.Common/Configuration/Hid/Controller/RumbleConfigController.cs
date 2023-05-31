@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Common.Configuration.Hid.Controller
 {
-    public class RumbleConfigController
+    public sealed class RumbleConfigController
     {
         /// <summary>
         /// Controller Strong Rumble Multiplier

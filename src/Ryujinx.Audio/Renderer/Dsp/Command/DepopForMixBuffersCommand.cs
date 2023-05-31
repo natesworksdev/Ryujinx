@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class DepopForMixBuffersCommand : ICommand
+    public sealed class DepopForMixBuffersCommand : ICommand
     {
         public bool Enabled { get; set; }
 

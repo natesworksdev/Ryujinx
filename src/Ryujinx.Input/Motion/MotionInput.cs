@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace Ryujinx.Input
 {
-    public class MotionInput
+    public sealed class MotionInput
     {
         public ulong   TimeStamp     { get; set; }
         public Vector3 Accelerometer { get; set; }

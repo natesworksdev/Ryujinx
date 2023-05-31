@@ -6,7 +6,7 @@ using Ryujinx.Cpu.Jit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    public class CpuContext
+    public sealed class CpuContext
     {
         private readonly Translator _translator;
 

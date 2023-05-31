@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Memory.Range
 {
-    public class MultiRangeList<T> : IEnumerable<T> where T : IMultiRangeItem
+    public sealed class MultiRangeList<T> : IEnumerable<T> where T : IMultiRangeItem
     {
         private readonly IntervalTree<ulong, T> _items;
 

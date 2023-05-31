@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class DeviceSinkCommand : ICommand
+    public sealed class DeviceSinkCommand : ICommand
     {
         public bool Enabled { get; set; }
 

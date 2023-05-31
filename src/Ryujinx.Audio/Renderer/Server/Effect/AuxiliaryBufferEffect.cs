@@ -14,7 +14,7 @@ namespace Ryujinx.Audio.Renderer.Server.Effect
     /// <summary>
     /// Server state for an auxiliary buffer effect.
     /// </summary>
-    public class AuxiliaryBufferEffect : BaseEffect
+    public sealed class AuxiliaryBufferEffect : BaseEffect
     {
         /// <summary>
         /// The auxiliary buffer parameter.

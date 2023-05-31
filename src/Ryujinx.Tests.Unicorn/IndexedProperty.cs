@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.Tests.Unicorn
 {
-    public class IndexedProperty<TIndex, TValue>
+    public sealed class IndexedProperty<TIndex, TValue>
     {
         private Func<TIndex, TValue>   _getFunc;
         private Action<TIndex, TValue> _setAction;

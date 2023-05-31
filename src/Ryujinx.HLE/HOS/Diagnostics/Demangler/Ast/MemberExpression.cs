@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class MemberExpression : BaseNode
+    public sealed class MemberExpression : BaseNode
     {
         private BaseNode _leftNode;
         private string   _kind;

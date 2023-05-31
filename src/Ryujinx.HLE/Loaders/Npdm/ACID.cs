@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.Loaders.Npdm
 {
-    public class Acid
+    public sealed class Acid
     {
         private const int AcidMagic = 'A' << 0 | 'C' << 8 | 'I' << 16 | 'D' << 24;
 

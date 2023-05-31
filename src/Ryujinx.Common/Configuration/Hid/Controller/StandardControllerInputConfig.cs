@@ -1,4 +1,4 @@
 ﻿namespace Ryujinx.Common.Configuration.Hid.Controller
 {
-    public class StandardControllerInputConfig : GenericControllerInputConfig<GamepadInputId, StickInputId> { }
+    public sealed class StandardControllerInputConfig : GenericControllerInputConfig<GamepadInputId, StickInputId> { }
 }

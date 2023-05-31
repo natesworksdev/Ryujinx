@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class QualifiedName : BaseNode
+    public sealed class QualifiedName : BaseNode
     {
         private BaseNode _qualifier;
         private BaseNode _name;

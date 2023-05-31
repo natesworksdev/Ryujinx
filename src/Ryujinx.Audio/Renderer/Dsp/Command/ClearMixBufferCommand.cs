@@ -1,6 +1,6 @@
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class ClearMixBufferCommand : ICommand
+    public sealed class ClearMixBufferCommand : ICommand
     {
         public bool Enabled { get; set; }
 

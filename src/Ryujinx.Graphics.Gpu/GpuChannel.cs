@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Gpu
     /// <summary>
     /// Represents a GPU channel.
     /// </summary>
-    public class GpuChannel : IDisposable
+    public sealed class GpuChannel : IDisposable
     {
         private readonly GpuContext _context;
         private readonly GPFifoDevice _device;

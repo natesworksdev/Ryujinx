@@ -22,7 +22,7 @@ using UserId = LibHac.Fs.UserId;
 
 namespace Ryujinx.Ava.UI.Controls
 {
-    public class ApplicationContextMenu : MenuFlyout
+    public sealed class ApplicationContextMenu : MenuFlyout
     {
         public ApplicationContextMenu()
         {

@@ -6,7 +6,7 @@ using LibHac.FsSrv.FsCreator;
 
 namespace Ryujinx.HLE.FileSystem
 {
-    public class EncryptedFileSystemCreator : IEncryptedFileSystemCreator
+    public sealed class EncryptedFileSystemCreator : IEncryptedFileSystemCreator
     {
         public Result Create(ref SharedRef<IFileSystem> outEncryptedFileSystem,
             ref SharedRef<IFileSystem> baseFileSystem, IEncryptedFileSystemCreator.KeyId idIndex,

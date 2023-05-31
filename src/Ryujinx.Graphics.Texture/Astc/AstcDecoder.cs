@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.Graphics.Texture.Astc
 {
     // https://github.com/GammaUNC/FasTC/blob/master/ASTCEncoder/src/Decompressor.cpp
-    public class AstcDecoder
+    public sealed class AstcDecoder
     {
         private ReadOnlyMemory<byte> InputBuffer { get; }
         private Memory<byte> OutputBuffer { get; }

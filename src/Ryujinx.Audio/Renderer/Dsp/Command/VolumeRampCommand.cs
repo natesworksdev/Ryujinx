@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class VolumeRampCommand : ICommand
+    public sealed class VolumeRampCommand : ICommand
     {
         public bool Enabled { get; set; }
 

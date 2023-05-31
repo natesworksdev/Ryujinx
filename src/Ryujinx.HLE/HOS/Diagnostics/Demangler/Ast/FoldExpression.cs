@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class FoldExpression : BaseNode
+    public sealed class FoldExpression : BaseNode
     {
         private bool     _isLeftFold;
         private string   _operatorName;

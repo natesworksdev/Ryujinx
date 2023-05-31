@@ -4,7 +4,7 @@ using System;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
-    public class GroupedBiquadFilterCommand : ICommand
+    public sealed class GroupedBiquadFilterCommand : ICommand
     {
         public bool Enabled { get; set; }
 

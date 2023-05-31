@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
     class ConsumerBase : IConsumerListener
     {
-        public class Slot
+        public sealed class Slot
         {
             public AndroidStrongPointer<GraphicBuffer> GraphicBuffer;
             public AndroidFence                        Fence;
@@ -168,7 +168,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             Slot slot = Slots[slotIndex];
 
-            // TODO: Check this. On Android, this checks the "handle". I assume NvMapHandle is the handle, but it might not be. 
+            // TODO: Check this. On Android, this checks the "handle". I assume NvMapHandle is the handle, but it might not be.
             return !slot.GraphicBuffer.IsNull && slot.GraphicBuffer.Object.Buffer.Surfaces[0].NvMapHandle == graphicBuffer.Object.Buffer.Surfaces[0].NvMapHandle;
         }
     }

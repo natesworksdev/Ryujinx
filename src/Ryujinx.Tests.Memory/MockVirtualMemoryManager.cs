@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Tests.Memory
 {
-    public class MockVirtualMemoryManager : IVirtualMemoryManager
+    public sealed class MockVirtualMemoryManager : IVirtualMemoryManager
     {
         public bool Supports4KBPages => true;
 

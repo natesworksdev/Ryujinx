@@ -8,7 +8,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
     /// <summary>
     /// Voice context.
     /// </summary>
-    public class VoiceContext
+    public sealed class VoiceContext
     {
         /// <summary>
         /// Storage of the sorted indices to <see cref="VoiceState"/>.

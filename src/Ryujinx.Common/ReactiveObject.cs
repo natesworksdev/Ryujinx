@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace Ryujinx.Common
 {
-    public class ReactiveObject<T>
+    public sealed class ReactiveObject<T>
     {
         private ReaderWriterLock _readerWriterLock = new ReaderWriterLock();
         private bool _isInitialized = false;
@@ -47,7 +47,7 @@ namespace Ryujinx.Common
         }
     }
 
-    public class ReactiveEventArgs<T>
+    public sealed class ReactiveEventArgs<T>
     {
         public T OldValue { get; }
         public T NewValue { get; }

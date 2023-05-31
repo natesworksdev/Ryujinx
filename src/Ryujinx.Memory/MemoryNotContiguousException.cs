@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Memory
 {
-    public class MemoryNotContiguousException : Exception
+    public sealed class MemoryNotContiguousException : Exception
     {
         public MemoryNotContiguousException() : base("The specified memory region is not contiguous.")
         {

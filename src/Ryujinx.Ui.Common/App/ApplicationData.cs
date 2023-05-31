@@ -16,7 +16,7 @@ using System.Text.Json.Serialization;
 
 namespace Ryujinx.Ui.App.Common
 {
-    public class ApplicationData
+    public sealed class ApplicationData
     {
         public bool      Favorite      { get; set; }
         public byte[]    Icon          { get; set; }
@@ -161,7 +161,7 @@ namespace Ryujinx.Ui.App.Common
 
             NsoReader reader = new NsoReader();
             reader.Initialize(nsoFile.Release().AsStorage().AsFile(OpenMode.Read)).ThrowIfFailure();
-            
+
             return BitConverter.ToString(reader.Header.ModuleId.ItemsRo.ToArray()).Replace("-", "").ToUpper()[..16];
         }
     }

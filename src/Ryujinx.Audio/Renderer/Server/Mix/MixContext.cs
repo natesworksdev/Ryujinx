@@ -9,7 +9,7 @@ namespace Ryujinx.Audio.Renderer.Server.Mix
     /// <summary>
     /// Mix context.
     /// </summary>
-    public class MixContext
+    public sealed class MixContext
     {
         /// <summary>
         /// The total mix count.

@@ -4,7 +4,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
-    public class KeyboardDevice : BaseDevice
+    public sealed class KeyboardDevice : BaseDevice
     {
         public KeyboardDevice(Switch device, bool active) : base(device, active) { }
 

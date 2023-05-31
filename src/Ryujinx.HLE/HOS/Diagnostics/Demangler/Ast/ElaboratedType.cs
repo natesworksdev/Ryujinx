@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class ElaboratedType : ParentNode
+    public sealed class ElaboratedType : ParentNode
     {
         private string _elaborated;
 

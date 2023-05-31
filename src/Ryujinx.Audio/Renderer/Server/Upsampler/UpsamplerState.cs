@@ -5,7 +5,7 @@ namespace Ryujinx.Audio.Renderer.Server.Upsampler
     /// <summary>
     /// Server state for a upsampling.
     /// </summary>
-    public class UpsamplerState
+    public sealed class UpsamplerState
     {
         /// <summary>
         /// The output buffer containing the target samples.

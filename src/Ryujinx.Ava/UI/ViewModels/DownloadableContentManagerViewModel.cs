@@ -26,7 +26,7 @@ using Path = System.IO.Path;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
-    public class DownloadableContentManagerViewModel : BaseModel
+    public sealed class DownloadableContentManagerViewModel : BaseModel
     {
         private readonly List<DownloadableContentContainer> _downloadableContentContainerList;
         private readonly string                             _downloadableContentJsonPath;
@@ -132,7 +132,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                         Nca nca = TryOpenNca(ncaFile.Get.AsStorage(), downloadableContentContainer.ContainerPath);
                         if (nca != null)
-                        {   
+                        {
                             var content = new DownloadableContentModel(nca.Header.TitleId.ToString("X16"),
                                 downloadableContentContainer.ContainerPath,
                                 downloadableContentNca.FullPath,

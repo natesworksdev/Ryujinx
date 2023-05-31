@@ -15,7 +15,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
-    public class Hid
+    public sealed class Hid
     {
         private readonly Switch _device;
 

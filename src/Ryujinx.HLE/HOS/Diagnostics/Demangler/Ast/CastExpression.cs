@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class CastExpression : BaseNode
+    public sealed class CastExpression : BaseNode
     {
         private string   _kind;
         private BaseNode _to;

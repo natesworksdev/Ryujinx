@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class LocalName : BaseNode
+    public sealed class LocalName : BaseNode
     {
         private BaseNode _encoding;
         private BaseNode _entity;

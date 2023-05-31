@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Audio.Renderer.Dsp.State
 {
-    public class DelayState
+    public sealed class DelayState
     {
         public DelayLine[] DelayLines { get; }
         public float[] LowPassZ { get; set; }

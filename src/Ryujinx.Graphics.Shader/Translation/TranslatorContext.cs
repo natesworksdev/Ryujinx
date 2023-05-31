@@ -13,7 +13,7 @@ using static Ryujinx.Graphics.Shader.Translation.Translator;
 
 namespace Ryujinx.Graphics.Shader.Translation
 {
-    public class TranslatorContext
+    public sealed class TranslatorContext
     {
         private readonly DecodedProgram _program;
         private ShaderConfig _config;

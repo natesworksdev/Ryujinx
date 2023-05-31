@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class NameTypeWithTemplateArguments : BaseNode
+    public sealed class NameTypeWithTemplateArguments : BaseNode
     {
         private BaseNode _prev;
         private BaseNode _templateArgument;
@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         {
             return _prev.GetName();
         }
-        
+
         public override void PrintLeft(TextWriter writer)
         {
             _prev.Print(writer);

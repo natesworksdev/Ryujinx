@@ -6,7 +6,7 @@ namespace Ryujinx.Audio.Backends.Common
     /// <summary>
     /// A ring buffer that grow if data written to it is too big to fit.
     /// </summary>
-    public class DynamicRingBuffer
+    public sealed class DynamicRingBuffer
     {
         private const int RingBufferAlignment = 2048;
 

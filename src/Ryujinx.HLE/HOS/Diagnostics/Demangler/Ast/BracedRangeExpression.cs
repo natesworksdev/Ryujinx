@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
-    public class BracedRangeExpression : BaseNode
+    public sealed class BracedRangeExpression : BaseNode
     {
         private BaseNode _firstNode;
         private BaseNode _lastNode;

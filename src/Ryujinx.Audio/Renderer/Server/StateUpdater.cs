@@ -19,7 +19,7 @@ using static Ryujinx.Audio.Renderer.Common.BehaviourParameter;
 
 namespace Ryujinx.Audio.Renderer.Server
 {
-    public class StateUpdater
+    public sealed class StateUpdater
     {
         private readonly ReadOnlyMemory<byte> _inputOrigin;
         private ReadOnlyMemory<byte> _outputOrigin;
@@ -151,7 +151,7 @@ namespace Ryujinx.Audio.Renderer.Server
             }
 
             Memory<VoiceUpdateState>[] voiceUpdateStatesArray = ArrayPool<Memory<VoiceUpdateState>>.Shared.Rent(Constants.VoiceChannelCountMax);
-            
+
             Span<Memory<VoiceUpdateState>> voiceUpdateStates = voiceUpdateStatesArray.AsSpan(0, Constants.VoiceChannelCountMax);
 
             // Start processing

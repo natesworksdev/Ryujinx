@@ -5,7 +5,7 @@ using static Ryujinx.Graphics.Texture.BlockLinearConstants;
 
 namespace Ryujinx.Graphics.Texture
 {
-    public class OffsetCalculator
+    public sealed class OffsetCalculator
     {
         private int  _width;
         private int  _height;
