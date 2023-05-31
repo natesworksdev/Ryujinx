@@ -12,7 +12,7 @@ namespace Ryujinx.Input.SDL2
 {
     class SDL2Keyboard : IKeyboard
     {
-        private class ButtonMappingEntry
+        private sealed class ButtonMappingEntry
         {
             public readonly GamepadButtonInputId To;
             public readonly Key From;

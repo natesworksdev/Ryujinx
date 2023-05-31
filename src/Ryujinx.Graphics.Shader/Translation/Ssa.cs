@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Shader.Translation
     {
         private const int GprsAndPredsCount = RegisterConsts.GprsCount + RegisterConsts.PredsCount;
 
-        private class DefMap
+        private sealed class DefMap
         {
             private Dictionary<Register, Operand> _map;
 
@@ -63,7 +63,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
         }
 
-        private class LocalDefMap
+        private sealed class LocalDefMap
         {
             private Operand[] _map;
             private int[] _uses;

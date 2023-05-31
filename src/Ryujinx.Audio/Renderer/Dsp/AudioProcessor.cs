@@ -21,7 +21,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             RenderEnd
         }
 
-        private class RendererSession
+        private sealed class RendererSession
         {
             public CommandList CommandList;
             public int RenderingLimit;

@@ -42,7 +42,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         private readonly Dictionary<int, Instruction> _funcArgs = new Dictionary<int, Instruction>();
         private readonly Dictionary<int, (StructuredFunction, Instruction)> _functions = new Dictionary<int, (StructuredFunction, Instruction)>();
 
-        private class BlockState
+        private sealed class BlockState
         {
             private int _entryCount;
             private readonly List<Instruction> _labels = new List<Instruction>();

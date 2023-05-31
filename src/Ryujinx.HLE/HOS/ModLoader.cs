@@ -89,7 +89,7 @@ namespace Ryujinx.HLE.HOS
         }
 
         // Title independent mods
-        private class PatchCache
+        private sealed class PatchCache
         {
             public List<Mod<DirectoryInfo>> NsoPatches { get; }
             public List<Mod<DirectoryInfo>> NroPatches { get; }

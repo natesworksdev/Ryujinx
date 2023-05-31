@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
     {
         public const int MaxThreadSleep = 100;
 
-        private class SleepSubstepData
+        private sealed class SleepSubstepData
         {
             public readonly int SleepMilliseconds;
             public readonly int SleepCount;

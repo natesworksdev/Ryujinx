@@ -114,7 +114,7 @@ namespace Ryujinx.Input.Assigner
             }
         }
 
-        private class JoystickButtonDetector
+        private sealed class JoystickButtonDetector
         {
             private Dictionary<GamepadButtonInputId, InputSummary> _stats;
 
@@ -165,7 +165,7 @@ namespace Ryujinx.Input.Assigner
             }
         }
 
-        private class InputSummary
+        private sealed class InputSummary
         {
             public float Min, Max, Sum, Avg;
 

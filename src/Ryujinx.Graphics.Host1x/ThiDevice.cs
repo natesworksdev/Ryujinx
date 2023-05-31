@@ -27,7 +27,7 @@ namespace Ryujinx.Graphics.Host1x
             }
         }
 
-        private class MethodCallAction : CommandAction
+        private sealed class MethodCallAction : CommandAction
         {
             public int Method { get; }
 
@@ -37,7 +37,7 @@ namespace Ryujinx.Graphics.Host1x
             }
         }
 
-        private class SyncptIncrAction : CommandAction
+        private sealed class SyncptIncrAction : CommandAction
         {
             public SyncptIncrAction(long contextId, uint syncptIncrHandle) : base(contextId, (int)syncptIncrHandle)
             {

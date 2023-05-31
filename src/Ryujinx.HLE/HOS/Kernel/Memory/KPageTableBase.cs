@@ -130,7 +130,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             return result;
         }
 
-        private class Region
+        private sealed class Region
         {
             public ulong Start;
             public ulong End;

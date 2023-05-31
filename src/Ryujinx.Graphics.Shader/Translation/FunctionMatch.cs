@@ -116,7 +116,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             Label
         }
 
-        private class TreeNode
+        private sealed class TreeNode
         {
             public readonly InstOp Op;
             public readonly List<TreeNodeUse> Uses;
@@ -364,7 +364,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
         }
 
-        private class PatternTreeNode<T> : IPatternTreeNode
+        private sealed class PatternTreeNode<T> : IPatternTreeNode
         {
             public List<PatternTreeNodeUse> Uses { get; }
             private readonly Func<T, bool> _match;

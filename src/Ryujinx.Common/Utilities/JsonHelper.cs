@@ -58,7 +58,7 @@ namespace Ryujinx.Common.Utilities
             JsonSerializer.Serialize(stream, value, typeInfo);
         }
 
-        private class SnakeCaseNamingPolicy : JsonNamingPolicy
+        private sealed class SnakeCaseNamingPolicy : JsonNamingPolicy
         {
             public override string ConvertName(string name)
             {

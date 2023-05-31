@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.OpenGL
 {
     class Sync : IDisposable
     {
-        private class SyncHandle
+        private sealed class SyncHandle
         {
             public ulong ID;
             public IntPtr Handle;
@@ -102,7 +102,7 @@ namespace Ryujinx.Graphics.OpenGL
                     }
 
                     WaitSyncStatus syncResult = GL.ClientWaitSync(result.Handle, _syncFlags, 1000000000);
-                    
+
                     if (syncResult == WaitSyncStatus.TimeoutExpired)
                     {
                         Logger.Error?.PrintMsg(LogClass.Gpu, $"GL Sync Object {result.ID} failed to signal within 1000ms. Continuing...");

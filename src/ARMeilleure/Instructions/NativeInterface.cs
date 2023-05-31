@@ -7,7 +7,7 @@ namespace ARMeilleure.Instructions
 {
     static class NativeInterface
     {
-        private class ThreadContext
+        private sealed class ThreadContext
         {
             public ExecutionContext Context { get; }
             public IMemoryManager Memory { get; }

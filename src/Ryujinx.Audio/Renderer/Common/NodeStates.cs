@@ -6,7 +6,7 @@ namespace Ryujinx.Audio.Renderer.Common
 {
     public sealed class NodeStates
     {
-        private class Stack
+        private sealed class Stack
         {
             private Memory<int> _storage;
             private int _index;

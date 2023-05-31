@@ -11,7 +11,7 @@ namespace ARMeilleure.CodeGen.Arm64
 {
     static class PreAllocator
     {
-        private class ConstantDict
+        private sealed class ConstantDict
         {
             private readonly Dictionary<(ulong, OperandType), Operand> _constants;
 

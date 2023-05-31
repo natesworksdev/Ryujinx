@@ -9,7 +9,7 @@ namespace Ryujinx.ShaderTools
 {
     class Program
     {
-        private class GpuAccessor : IGpuAccessor
+        private sealed class GpuAccessor : IGpuAccessor
         {
             private readonly byte[] _data;
 
@@ -24,7 +24,7 @@ namespace Ryujinx.ShaderTools
             }
         }
 
-        private class Options
+        private sealed class Options
         {
             [Option("compute", Required = false, Default = false, HelpText = "Indicate that the shader is a compute shader.")]
             public bool Compute { get; set; }

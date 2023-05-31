@@ -10,7 +10,7 @@ namespace ARMeilleure.Translation
 {
     static partial class Ssa
     {
-        private class DefMap
+        private sealed class DefMap
         {
             private readonly Dictionary<int, Operand> _map;
             private readonly BitMap _phiMasks;

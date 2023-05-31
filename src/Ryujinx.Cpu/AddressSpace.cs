@@ -18,7 +18,7 @@ namespace Ryujinx.Cpu
             Shared
         }
 
-        private class Mapping : IntrusiveRedBlackTreeNode<Mapping>, IComparable<Mapping>
+        private sealed class Mapping : IntrusiveRedBlackTreeNode<Mapping>, IComparable<Mapping>
         {
             public ulong Address { get; private set; }
             public ulong Size { get; private set; }
@@ -72,7 +72,7 @@ namespace Ryujinx.Cpu
             }
         }
 
-        private class PrivateMapping : IntrusiveRedBlackTreeNode<PrivateMapping>, IComparable<PrivateMapping>
+        private sealed class PrivateMapping : IntrusiveRedBlackTreeNode<PrivateMapping>, IComparable<PrivateMapping>
         {
             public ulong Address { get; private set; }
             public ulong Size { get; private set; }

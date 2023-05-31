@@ -35,7 +35,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <summary>
         /// Holds shader stage buffer state and binding information.
         /// </summary>
-        private class BuffersPerStage
+        private sealed class BuffersPerStage
         {
             /// <summary>
             /// Shader buffer binding information.

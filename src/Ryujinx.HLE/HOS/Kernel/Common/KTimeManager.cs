@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
     {
         public static readonly long DefaultTimeIncrementNanoseconds = ConvertGuestTicksToNanoseconds(2);
 
-        private class WaitingObject
+        private sealed class WaitingObject
         {
             public IKFutureSchedulerObject Object { get; }
             public long TimePoint { get; }

@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu.Types
             }
         }
 
-        private class MappedMemory : Range
+        private sealed class MappedMemory : Range
         {
             public ulong PhysicalAddress { get; }
             public bool  VaAllocated     { get; }

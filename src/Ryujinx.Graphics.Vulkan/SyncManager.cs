@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class SyncManager
     {
-        private class SyncHandle
+        private sealed class SyncHandle
         {
             public ulong ID;
             public MultiFenceHolder Waitable;

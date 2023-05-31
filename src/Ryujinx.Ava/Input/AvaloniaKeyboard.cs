@@ -23,7 +23,7 @@ namespace Ryujinx.Ava.Input
         public bool                IsConnected => true;
         public GamepadFeaturesFlag Features    => GamepadFeaturesFlag.None;
 
-        private class ButtonMappingEntry
+        private sealed class ButtonMappingEntry
         {
             public readonly Key                  From;
             public readonly GamepadButtonInputId To;
