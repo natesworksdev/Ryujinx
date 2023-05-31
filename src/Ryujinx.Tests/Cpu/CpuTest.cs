@@ -14,7 +14,7 @@ namespace Ryujinx.Tests.Cpu
     public class CpuTest
     {
         protected static readonly ulong Size = MemoryBlock.GetPageSize();
-        protected static readonly ulong CodeBaseAddress = Size;
+        protected static ulong CodeBaseAddress = Size;
         protected static ulong DataBaseAddress = CodeBaseAddress + Size;
 
         private static bool Ignore_FpcrFz = false;
@@ -39,14 +39,24 @@ namespace Ryujinx.Tests.Cpu
         [SetUp]
         public void Setup()
         {
-            _currAddress = CodeBaseAddress;
-
             int pageBits = (int)MathF.Log2(Size);
 
             _ram = new MemoryBlock(Size * 2);
             _memory = new MemoryManager(_ram, 1ul << (pageBits + 4));
             _memory.IncrementReferenceCount();
-            _memory.Map(CodeBaseAddress, 0, Size * 2, MemoryMapFlags.Private);
+
+            // Some tests depends on hardcoded address that were computed for 4KiB.
+            // We change the layout on non 4KiB platform to keep compat here.
+            if (Size > 0x1000)
+            {
+                DataBaseAddress = 0;
+                CodeBaseAddress = Size;
+            }
+
+            _currAddress = CodeBaseAddress;
+
+            _memory.Map(CodeBaseAddress, 0, Size, MemoryMapFlags.Private);
+            _memory.Map(DataBaseAddress, Size, Size, MemoryMapFlags.Private);
 
             _context = CpuContext.CreateExecutionContext();
             Translator.IsReadyForTranslation.Set();
