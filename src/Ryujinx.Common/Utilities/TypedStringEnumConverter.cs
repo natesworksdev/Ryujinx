@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using Ryujinx.Common.Logging;
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -24,6 +25,7 @@ namespace Ryujinx.Common.Utilities
                 return value;
             }
 
+            Logger.Warning?.Print(LogClass.Configuration, $"Failed to parse enum value \"{enumValue}\" for {typeof(TEnum)}, using default \"{default(TEnum)}\"");
             return default;
         }
 
