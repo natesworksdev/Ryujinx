@@ -19,9 +19,7 @@ namespace Ryujinx.Ava.UI.Applet
             Message = message;
             DataContext = this;
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
+
             int responseId = 0;
 
             if (buttons != null)
@@ -42,9 +40,6 @@ namespace Ryujinx.Ava.UI.Applet
         {
             DataContext = this;
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
 
         public string Message { get; set; }

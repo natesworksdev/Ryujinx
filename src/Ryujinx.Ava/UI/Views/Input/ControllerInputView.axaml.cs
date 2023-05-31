@@ -63,7 +63,7 @@ namespace Ryujinx.Ava.UI.Views.Input
                     {
                         _currentAssigner = new ButtonKeyAssigner(button);
 
-                        FocusManager.Instance.Focus(this, NavigationMethod.Pointer);
+                        this.Focus(NavigationMethod.Pointer);
 
                         PointerPressed += MouseClick;
 

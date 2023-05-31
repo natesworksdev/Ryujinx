@@ -1,8 +1,5 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:avconv="using:Avalonia.Controls.Converters"
-                    xmlns:sty="using:FluentAvalonia.Styling"
-                    xmlns:conv="using:FluentAvalonia.Converters">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <SolidColorBrush x:Key="DataGridSelectionBackgroundBrush"
@@ -64,10 +61,8 @@
             <SolidColorBrush x:Key="ThemeAccentBrush4"
                              Color="{DynamicResource ThemeAccentColor4}" />
             <Color x:Key="ControlFillColorSecondary">#008AA8</Color>
-            <SolidColorBrush x:Key="ControlFillColorSecondaryBrush"
-                             Color="{StaticResource ControlFillColorSecondary}" />
             <StaticResource x:Key="ButtonBackgroundPointerOver"
-                            ResourceKey="ControlFillColorSecondaryBrush" />
+                            ResourceKey="{StaticResource ControlFillColorSecondary}" />
             <Color x:Key="SystemAccentColor">#FF00C3E3</Color>
             <Color x:Key="SystemAccentColorDark1">#FF99b000</Color>
             <Color x:Key="SystemAccentColorDark2">#FF006d7d</Color>

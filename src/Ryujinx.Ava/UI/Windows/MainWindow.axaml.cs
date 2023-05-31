@@ -132,11 +132,12 @@ namespace Ryujinx.Ava.UI.Windows
             _isLoading = false;
         }
 
-        protected override void HandleScalingChanged(double scale)
+        // TODO: Deal with this
+        /*protected override void HandleScalingChanged(double scale)
         {
             Program.DesktopScaleFactor = scale;
             base.HandleScalingChanged(scale);
-        }
+        }*/
 
         public void AddApplication(ApplicationData applicationData)
         {
@@ -223,7 +224,8 @@ namespace Ryujinx.Ava.UI.Windows
             });
         }
 
-        protected override void HandleWindowStateChanged(WindowState state)
+        // TODO: Deal with this
+        /*protected override void HandleWindowStateChanged(WindowState state)
         {
             ViewModel.WindowState = state;
 
@@ -231,7 +233,7 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 Renderer.Start();
             }
-        }
+        }*/
 
         private void Initialize()
         {
@@ -375,14 +377,14 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void SetWindowSizePosition()
         {
-            PixelPoint SavedPoint = new PixelPoint(ConfigurationState.Instance.Ui.WindowStartup.WindowPositionX, 
+            PixelPoint SavedPoint = new PixelPoint(ConfigurationState.Instance.Ui.WindowStartup.WindowPositionX,
                                                    ConfigurationState.Instance.Ui.WindowStartup.WindowPositionY);
 
             ViewModel.WindowHeight = ConfigurationState.Instance.Ui.WindowStartup.WindowSizeHeight * Program.WindowScaleFactor;
             ViewModel.WindowWidth = ConfigurationState.Instance.Ui.WindowStartup.WindowSizeWidth * Program.WindowScaleFactor;
 
             ViewModel.WindowState = ConfigurationState.Instance.Ui.WindowStartup.WindowMaximized.Value is true ? WindowState.Maximized : WindowState.Normal;
-        
+
             if (CheckScreenBounds(SavedPoint))
             {
                 Position = SavedPoint;
@@ -392,7 +394,7 @@ namespace Ryujinx.Ava.UI.Windows
         }
 
         private bool CheckScreenBounds(PixelPoint configPoint)
-        {   
+        {
             for (int i = 0; i < Screens.ScreenCount; i++)
             {
                 if (Screens.All[i].Bounds.Contains(configPoint))

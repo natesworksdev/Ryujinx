@@ -10,11 +10,9 @@ namespace Ryujinx.Ava.UI.Windows
         public ContentDialogOverlayWindow()
         {
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
+
             ExtendClientAreaToDecorationsHint = true;
-            TransparencyLevelHint = WindowTransparencyLevel.Transparent;
+            TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent };
             WindowStartupLocation = WindowStartupLocation.Manual;
             SystemDecorations = SystemDecorations.None;
             ExtendClientAreaTitleBarHeightHint = 0;
