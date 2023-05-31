@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Diagnostics;
 
 namespace Ryujinx.Common.Logging
 {
@@ -31,8 +32,11 @@ namespace Ryujinx.Common.Logging
 
             string version = ReleaseInformation.GetVersion();
 
+            Process currentProcess = Process.GetCurrentProcess();
+            string processID = currentProcess.Id.ToString();
+
             // Get path for the current time
-            path = Path.Combine(logDir.FullName, $"Ryujinx_{version}_{DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss")}.log");
+            path = Path.Combine(logDir.FullName, $"Ryujinx_{version}_{DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss")}_PID{processID}.log");
 
             _name      = name;
             _logWriter = new StreamWriter(File.Open(path, fileMode, FileAccess.Write, fileShare));
