@@ -7,7 +7,7 @@ namespace Ryujinx.Memory.Range
     /// A range list that assumes ranges are non-overlapping, with list items that can be split in two to avoid overlaps.
     /// </summary>
     /// <typeparam name="T">Type of the range.</typeparam>
-    class NonOverlappingRangeList<T> : RangeList<T> where T : INonOverlappingRange
+    sealed class NonOverlappingRangeList<T> : RangeList<T> where T : INonOverlappingRange
     {
         /// <summary>
         /// Finds a list of regions that cover the desired (address, size) range.
@@ -88,7 +88,7 @@ namespace Ryujinx.Memory.Range
         }
 
         /// <summary>
-        /// Splits a region around a target point and updates the region list. 
+        /// Splits a region around a target point and updates the region list.
         /// The original region's size is modified, but its address stays the same.
         /// A new region starting from the split address is added to the region list and returned.
         /// </summary>

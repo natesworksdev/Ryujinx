@@ -9,7 +9,7 @@ using System.Security.Authentication;
 
 namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 {
-    class SslManagedSocketConnection : ISslConnectionBase
+    sealed class SslManagedSocketConnection : ISslConnectionBase
     {
         public int SocketFd { get; }
 

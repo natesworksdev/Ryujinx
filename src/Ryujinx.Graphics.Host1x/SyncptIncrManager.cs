@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Host1x
 {
-    class SyncptIncrManager
+    sealed class SyncptIncrManager
     {
         private readonly SynchronizationManager _syncMgr;
 

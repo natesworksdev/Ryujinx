@@ -1,7 +1,7 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Lbl
 {
     [Service("lbl")]
-    class LblControllerServer : ILblController
+    sealed class LblControllerServer : ILblController
     {
         private bool  _vrModeEnabled;
         private float _currentBrightnessSettingForVrMode;

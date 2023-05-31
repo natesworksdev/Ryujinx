@@ -40,7 +40,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     /// GPU state update tracker.
     /// </summary>
     /// <typeparam name="TState">State type</typeparam>
-    class StateUpdateTracker<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] TState>
+    sealed class StateUpdateTracker<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] TState>
     {
         private const int BlockSize = 0xe00;
         private const int RegisterSize = sizeof(uint);

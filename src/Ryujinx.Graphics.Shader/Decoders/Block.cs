@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Ryujinx.Graphics.Shader.Decoders
 {
-    class PushOpInfo
+    sealed class PushOpInfo
     {
         public InstOp Op { get; }
         public Dictionary<Block, Operand> Consumers;
@@ -29,7 +29,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         }
     }
 
-    class Block
+    sealed class Block
     {
         public ulong Address { get; set; }
         public ulong EndAddress { get; set; }

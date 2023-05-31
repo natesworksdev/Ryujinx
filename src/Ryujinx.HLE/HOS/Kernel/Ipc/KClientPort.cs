@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel.Ipc
 {
-    class KClientPort : KSynchronizationObject
+    sealed class KClientPort : KSynchronizationObject
     {
         private int _sessionsCount;
         private readonly int _maxSessions;

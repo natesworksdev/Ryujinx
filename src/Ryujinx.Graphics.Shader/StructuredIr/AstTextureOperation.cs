@@ -2,7 +2,7 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
-    class AstTextureOperation : AstOperation
+    sealed class AstTextureOperation : AstOperation
     {
         public SamplerType Type { get; }
         public TextureFormat Format { get; }

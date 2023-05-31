@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
     /// <summary>
     /// Macro code interpreter.
     /// </summary>
-    class MacroInterpreter : IMacroEE
+    sealed class MacroInterpreter : IMacroEE
     {
         /// <summary>
         /// Arguments FIFO.

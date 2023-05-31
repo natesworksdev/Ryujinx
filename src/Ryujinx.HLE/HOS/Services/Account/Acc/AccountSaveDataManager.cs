@@ -9,7 +9,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Services.Account.Acc
 {
-    class AccountSaveDataManager
+    sealed class AccountSaveDataManager
     {
         private readonly string _profilesJsonPath = Path.Join(AppDataManager.BaseDirPath, "system", "Profiles.json");
 
@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             if (File.Exists(_profilesJsonPath))
             {
-                try 
+                try
                 {
                     ProfilesJson profilesJson = JsonHelper.DeserializeFromFile(_profilesJsonPath, SerializerContext.ProfilesJson);
 
@@ -36,7 +36,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
                     LastOpened = new UserId(profilesJson.LastOpened);
                 }
-                catch (Exception e) 
+                catch (Exception e)
                 {
                     Logger.Error?.Print(LogClass.Application, $"Failed to parse {_profilesJsonPath}: {e.Message} Loading default profile!");
 

@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     /// <summary>
     /// Represents a 2D engine class.
     /// </summary>
-    class TwodClass : IDeviceState
+    sealed class TwodClass : IDeviceState
     {
         private readonly GpuChannel _channel;
         private readonly DeviceState<TwodClassState> _state;

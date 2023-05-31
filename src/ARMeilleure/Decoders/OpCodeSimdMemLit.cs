@@ -1,6 +1,6 @@
 namespace ARMeilleure.Decoders
 {
-    class OpCodeSimdMemLit : OpCode, IOpCodeSimd, IOpCodeLit
+    sealed class OpCodeSimdMemLit : OpCode, IOpCodeSimd, IOpCodeLit
     {
         public int  Rt        { get; }
         public long Immediate { get; }

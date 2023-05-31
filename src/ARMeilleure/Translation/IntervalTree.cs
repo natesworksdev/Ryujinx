@@ -8,7 +8,7 @@ namespace ARMeilleure.Translation
     /// </summary>
     /// <typeparam name="K">Key</typeparam>
     /// <typeparam name="V">Value</typeparam>
-    class IntervalTree<K, V> where K : IComparable<K>
+    sealed class IntervalTree<K, V> where K : IComparable<K>
     {
         private const int ArrayGrowthSize = 32;
 
@@ -706,7 +706,7 @@ namespace ARMeilleure.Translation
     /// </summary>
     /// <typeparam name="K">Key type of the node</typeparam>
     /// <typeparam name="V">Value type of the node</typeparam>
-    class IntervalTreeNode<K, V>
+    sealed class IntervalTreeNode<K, V>
     {
         public bool Color = true;
         public IntervalTreeNode<K, V> Left = null;

@@ -1,6 +1,6 @@
 namespace ARMeilleure.Decoders
 {
-    class OpCodeT32AluImm12 : OpCodeT32Alu, IOpCode32AluImm
+    sealed class OpCodeT32AluImm12 : OpCodeT32Alu, IOpCode32AluImm
     {
         public int Immediate { get; }
 

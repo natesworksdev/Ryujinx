@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services
 {
-    class DummyService : IpcService
+    sealed class DummyService : IpcService
     {
         public string ServiceName { get; set; }
 

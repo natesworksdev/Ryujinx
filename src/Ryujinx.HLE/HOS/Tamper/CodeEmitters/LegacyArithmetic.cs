@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
     /// Code type 7 allows performing arithmetic on registers. However, it has been deprecated by Code
     /// type 9, and is only kept for backwards compatibility.
     /// </summary>
-    class LegacyArithmetic
+    sealed class LegacyArithmetic
     {
         const int OperationWidthIndex  = 1;
         const int DestinationRegisterIndex = 3;

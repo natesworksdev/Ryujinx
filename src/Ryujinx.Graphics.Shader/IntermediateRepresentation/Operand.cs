@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 {
-    class Operand
+    sealed class Operand
     {
         private const int CbufSlotBits = 5;
         private const int CbufSlotLsb  = 32 - CbufSlotBits;

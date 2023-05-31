@@ -5,7 +5,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     /// <summary>
     /// Draw state.
     /// </summary>
-    class DrawState
+    sealed class DrawState
     {
         /// <summary>
         /// First index to be used for the draw on the index buffer.

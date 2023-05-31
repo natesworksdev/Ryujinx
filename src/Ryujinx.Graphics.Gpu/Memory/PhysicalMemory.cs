@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// Represents physical memory, accessible from the GPU.
     /// This is actually working CPU virtual addresses, of memory mapped on the application process.
     /// </summary>
-    class PhysicalMemory : IDisposable
+    sealed class PhysicalMemory : IDisposable
     {
         private readonly GpuContext _context;
         private IVirtualMemoryManagerTracked _cpuMemory;

@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Ro
 {
-    class NrrInfo
+    sealed class NrrInfo
     {
         public NrrHeader    Header     { get; private set; }
         public List<byte[]> Hashes     { get; private set; }

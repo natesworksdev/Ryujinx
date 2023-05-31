@@ -1,6 +1,6 @@
 ﻿namespace ARMeilleure.Decoders
 {
-    class OpCode32SimdRev : OpCode32SimdCmpZ
+    sealed class OpCode32SimdRev : OpCode32SimdCmpZ
     {
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdRev(inst, address, opCode, false);
         public new static OpCode CreateT32(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdRev(inst, address, opCode, true);

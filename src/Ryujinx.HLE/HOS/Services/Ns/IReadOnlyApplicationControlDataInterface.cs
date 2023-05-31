@@ -3,7 +3,7 @@ using LibHac.Ns;
 
 namespace Ryujinx.HLE.HOS.Services.Ns
 {
-    class IReadOnlyApplicationControlDataInterface : IpcService
+    sealed class IReadOnlyApplicationControlDataInterface : IpcService
     {
         public IReadOnlyApplicationControlDataInterface(ServiceCtx context) { }
 

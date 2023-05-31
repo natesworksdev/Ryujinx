@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// <summary>
     /// An entry on the short duration texture cache.
     /// </summary>
-    class ShortTextureCacheEntry
+    sealed class ShortTextureCacheEntry
     {
         public bool IsAutoDelete;
         public readonly TextureDescriptor Descriptor;
@@ -42,7 +42,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// The cache works with a rotated list with a fixed size. When new textures are added, the
     /// old ones at the bottom of the list are deleted.
     /// </summary>
-    class AutoDeleteCache : IEnumerable<Texture>
+    sealed class AutoDeleteCache : IEnumerable<Texture>
     {
         private const int MinCountForDeletion = 32;
         private const int MaxCapacity = 2048;

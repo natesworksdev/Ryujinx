@@ -2,7 +2,7 @@ using System;
 
 namespace ARMeilleure.Decoders
 {
-    class OpCodeAluImm : OpCodeAlu, IOpCodeAluImm
+    sealed class OpCodeAluImm : OpCodeAlu, IOpCodeAluImm
     {
         public long Immediate { get; }
 

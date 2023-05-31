@@ -7,7 +7,7 @@ using static Ryujinx.HLE.Utilities.StringUtils;
 
 namespace Ryujinx.HLE.HOS.Services.Ncm.Lr.LocationResolverManager
 {
-    class ILocationResolver : IpcService
+    sealed class ILocationResolver : IpcService
     {
         private StorageId _storageId;
 

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.HLE.HOS.Services.Account.Acc
 {
-    class ApplicationServiceServer
+    sealed class ApplicationServiceServer
     {
         readonly AccountServiceFlag _serviceFlag;
 

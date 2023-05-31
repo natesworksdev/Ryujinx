@@ -5,7 +5,7 @@ using System;
 
 namespace Ryujinx.Graphics.OpenGL.Image
 {
-    class TextureBuffer : TextureBase, ITexture
+    sealed class TextureBuffer : TextureBase, ITexture
     {
         private OpenGLRenderer _renderer;
         private int _bufferOffset;

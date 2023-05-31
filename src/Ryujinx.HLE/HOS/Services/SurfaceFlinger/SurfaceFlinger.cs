@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
     using ResultCode = Ryujinx.HLE.HOS.Services.Vi.ResultCode;
 
-    class SurfaceFlinger : IConsumerListener, IDisposable
+    sealed class SurfaceFlinger : IConsumerListener, IDisposable
     {
         private const int TargetFps = 60;
 

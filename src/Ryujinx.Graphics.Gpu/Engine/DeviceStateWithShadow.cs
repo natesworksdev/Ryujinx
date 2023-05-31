@@ -22,7 +22,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
     /// Represents a device's state, with a additional shadow state.
     /// </summary>
     /// <typeparam name="TState">Type of the state</typeparam>
-    class DeviceStateWithShadow<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] TState> : IDeviceState where TState : unmanaged, IShadowState
+    sealed class DeviceStateWithShadow<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] TState> : IDeviceState where TState : unmanaged, IShadowState
     {
         private readonly DeviceState<TState> _state;
         private readonly DeviceState<TState> _shadowState;

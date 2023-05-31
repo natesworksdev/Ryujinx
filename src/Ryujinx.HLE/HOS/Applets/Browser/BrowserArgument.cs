@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Applets.Browser
 {
-    class BrowserArgument
+    sealed class BrowserArgument
     {
         public WebArgTLVType Type  { get; }
         public byte[]        Value { get; }

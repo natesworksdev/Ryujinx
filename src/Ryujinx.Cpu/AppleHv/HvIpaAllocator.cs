@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.Cpu.AppleHv
 {
-    class HvIpaAllocator
+    sealed class HvIpaAllocator
     {
         private const ulong AllocationGranule = 1UL << 14;
         private const ulong IpaRegionSize = 1UL << 35;

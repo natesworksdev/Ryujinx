@@ -6,7 +6,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy
 {
-    class IHomeMenuFunctions : IpcService
+    sealed class IHomeMenuFunctions : IpcService
     {
         private KEvent _channelEvent;
         private int    _channelEventHandle;

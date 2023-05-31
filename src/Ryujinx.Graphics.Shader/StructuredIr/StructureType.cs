@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         }
     }
 
-    class StructureType
+    sealed class StructureType
     {
         public StructureField[] Fields { get; }
 

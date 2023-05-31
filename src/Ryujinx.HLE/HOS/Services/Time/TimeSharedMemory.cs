@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Time
 {
-    class TimeSharedMemory
+    sealed class TimeSharedMemory
     {
         private Switch              _device;
         private KSharedMemory       _sharedMemory;

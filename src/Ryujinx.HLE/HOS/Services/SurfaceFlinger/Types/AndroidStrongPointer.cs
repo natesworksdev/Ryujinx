@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger.Types
 {
-    class AndroidStrongPointer<T> where T: unmanaged, IFlattenable
+    sealed class AndroidStrongPointer<T> where T: unmanaged, IFlattenable
     {
         public T Object;
 

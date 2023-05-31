@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Ryujinx.Cpu.AppleHv
 {
-    class HvAddressSpaceRange : IDisposable
+    sealed class HvAddressSpaceRange : IDisposable
     {
         private const ulong AllocationGranule = 1UL << 14;
 

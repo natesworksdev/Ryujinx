@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
     /// <summary>
     /// Output streams for the disk shader cache.
     /// </summary>
-    class DiskCacheOutputStreams : IDisposable
+    sealed class DiskCacheOutputStreams : IDisposable
     {
         /// <summary>
         /// Shared table of contents (TOC) file stream.

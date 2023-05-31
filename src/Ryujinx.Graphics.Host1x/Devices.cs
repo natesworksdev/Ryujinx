@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Host1x
 {
-    class Devices : IDisposable
+    sealed class Devices : IDisposable
     {
         private readonly Dictionary<ClassId, IDeviceState> _devices = new Dictionary<ClassId, IDeviceState>();
 

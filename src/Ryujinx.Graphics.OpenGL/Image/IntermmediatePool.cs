@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.OpenGL.Image
 {
-    class IntermediatePool : IDisposable
+    sealed class IntermediatePool : IDisposable
     {
         private readonly OpenGLRenderer _renderer;
         private readonly List<TextureView> _entries;

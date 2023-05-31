@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
     /// <summary>
     /// Code type 0xFF0 pauses the current process.
     /// </summary>
-    class PauseProcess
+    sealed class PauseProcess
     {
         // FF0?????
 

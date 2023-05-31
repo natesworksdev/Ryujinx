@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.Loaders.Mods
 {
-    class IPSwitchPatcher
+    sealed class IPSwitchPatcher
     {
         const string BidHeader = "@nsobid-";
 

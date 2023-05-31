@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
 {
     [Service("aoc:u")]
-    class IAddOnContentManager : IpcService
+    sealed class IAddOnContentManager : IpcService
     {
         private readonly KEvent _addOnContentListChangedEvent;
         private int             _addOnContentListChangedEventHandle;

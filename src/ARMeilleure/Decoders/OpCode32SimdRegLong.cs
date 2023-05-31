@@ -1,6 +1,6 @@
 ﻿namespace ARMeilleure.Decoders
 {
-    class OpCode32SimdRegLong : OpCode32SimdReg
+    sealed class OpCode32SimdRegLong : OpCode32SimdReg
     {
         public bool Polynomial { get; }
 

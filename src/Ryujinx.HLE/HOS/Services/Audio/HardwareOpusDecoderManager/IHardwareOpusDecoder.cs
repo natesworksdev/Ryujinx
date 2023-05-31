@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Audio.HardwareOpusDecoderManager
 {
-    class IHardwareOpusDecoder : IpcService
+    sealed class IHardwareOpusDecoder : IpcService
     {
         private readonly IDecoder _decoder;
         private readonly OpusDecoderFlags _flags;

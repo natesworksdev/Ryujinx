@@ -6,7 +6,7 @@ using System.Net;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 {
-    class IUserLocalCommunicationService : IpcService
+    sealed class IUserLocalCommunicationService : IpcService
     {
         // TODO(Ac_K): Determine what the hardcoded unknown value is.
         private const int UnknownValue = 90;

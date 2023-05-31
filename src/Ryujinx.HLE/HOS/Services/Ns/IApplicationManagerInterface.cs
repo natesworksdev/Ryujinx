@@ -5,7 +5,7 @@ using System;
 namespace Ryujinx.HLE.HOS.Services.Ns
 {
     [Service("ns:am")]
-    class IApplicationManagerInterface : IpcService
+    sealed class IApplicationManagerInterface : IpcService
     {
         public IApplicationManagerInterface(ServiceCtx context) { }
 

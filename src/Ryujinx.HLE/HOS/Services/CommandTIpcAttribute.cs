@@ -3,7 +3,7 @@
 namespace Ryujinx.HLE.HOS.Services
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    class CommandTipcAttribute : Attribute
+    sealed class CommandTipcAttribute : Attribute
     {
         public readonly int Id;
 

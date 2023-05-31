@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy
 {
-    class IGlobalStateController : IpcService
+    sealed class IGlobalStateController : IpcService
     {
         public IGlobalStateController() { }
     }

@@ -2,7 +2,7 @@ using Ryujinx.HLE.HOS.Kernel.Common;
 
 namespace Ryujinx.HLE.HOS.Kernel.Ipc
 {
-    class KLightServerSession : KAutoObject
+    sealed class KLightServerSession : KAutoObject
     {
         private readonly KLightSession _parent;
 

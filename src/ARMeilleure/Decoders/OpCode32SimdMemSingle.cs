@@ -2,7 +2,7 @@
 
 namespace ARMeilleure.Decoders
 {
-    class OpCode32SimdMemSingle : OpCode32, IOpCode32Simd
+    sealed class OpCode32SimdMemSingle : OpCode32, IOpCode32Simd
     {
         public int Vd { get; }
         public int Rn { get; }

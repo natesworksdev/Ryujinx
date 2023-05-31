@@ -6,7 +6,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
 {
-    class IPurchaseEventManager : IpcService
+    sealed class IPurchaseEventManager : IpcService
     {
         private readonly KEvent _purchasedEvent;
 

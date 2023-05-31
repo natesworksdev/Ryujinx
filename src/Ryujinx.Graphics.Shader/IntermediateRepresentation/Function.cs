@@ -1,6 +1,6 @@
 namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 {
-    class Function
+    sealed class Function
     {
         public BasicBlock[] Blocks { get; }
 

@@ -17,7 +17,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
 {
-    class SharedFontManager
+    sealed class SharedFontManager
     {
         private static readonly uint FontKey    = 0x06186249;
         private static readonly uint BFTTFMagic = 0x18029a7f;

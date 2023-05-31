@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Resources
     /// <summary>
     /// Threaded representation of a texture.
     /// </summary>
-    class ThreadedTexture : ITexture
+    sealed class ThreadedTexture : ITexture
     {
         private ThreadedRenderer _renderer;
         private TextureCreateInfo _info;

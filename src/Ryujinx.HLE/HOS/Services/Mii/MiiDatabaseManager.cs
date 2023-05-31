@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.HLE.HOS.Services.Mii
 {
-    class MiiDatabaseManager
+    sealed class MiiDatabaseManager
     {
         private static bool IsTestModeEnabled = false;
         private static uint MountCounter      = 0;

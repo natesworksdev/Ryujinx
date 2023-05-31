@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Tests.Audio.Renderer.Common
 {
-    class VoiceUpdateStateTests
+    sealed class VoiceUpdateStateTests
     {
         [Test]
         public void EnsureTypeSize()

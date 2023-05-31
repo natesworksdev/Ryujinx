@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
-    class HOSBinderDriverServer : IHOSBinderDriver
+    sealed class HOSBinderDriverServer : IHOSBinderDriver
     {
         private static Dictionary<int, IBinder> _registeredBinderObjects = new Dictionary<int, IBinder>();
 

@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Tests.Audio.Renderer.Parameter.Effect
 {
-    class AuxParameterTests
+    sealed class AuxParameterTests
     {
         [Test]
         public void EnsureTypeSize()

@@ -7,7 +7,7 @@ using SPB.Windowing;
 
 namespace Ryujinx.Ui
 {
-    class SPBOpenGLContext : IOpenGLContext
+    sealed class SPBOpenGLContext : IOpenGLContext
     {
         private OpenGLContextBase _context;
         private NativeWindowBase _window;

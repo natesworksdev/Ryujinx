@@ -8,7 +8,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Services.Time
 {
-    class TimeManager
+    sealed class TimeManager
     {
         private static TimeManager _instance;
 

@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// <summary>
     /// Cached sampler entry for sampler pools.
     /// </summary>
-    class Sampler : IDisposable
+    sealed class Sampler : IDisposable
     {
         /// <summary>
         /// True if the sampler is disposed, false otherwise.

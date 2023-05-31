@@ -6,7 +6,7 @@ using System.Text;
 namespace Ryujinx.HLE.HOS.Services.Settings
 {
     [Service("set")]
-    class ISettingsServer : IpcService
+    sealed class ISettingsServer : IpcService
     {
         public ISettingsServer(ServiceCtx context) { }
 

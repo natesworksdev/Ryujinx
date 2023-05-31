@@ -3,7 +3,7 @@
     /// <summary>
     /// A cached entry for easily locating a buffer that is used often internally.
     /// </summary>
-    class BufferCacheEntry
+    sealed class BufferCacheEntry
     {
         /// <summary>
         /// The CPU VA of the buffer destination.

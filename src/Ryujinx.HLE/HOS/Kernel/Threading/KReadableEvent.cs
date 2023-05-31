@@ -3,7 +3,7 @@ using Ryujinx.Horizon.Common;
 
 namespace Ryujinx.HLE.HOS.Kernel.Threading
 {
-    class KReadableEvent : KSynchronizationObject
+    sealed class KReadableEvent : KSynchronizationObject
     {
         private readonly KEvent _parent;
 

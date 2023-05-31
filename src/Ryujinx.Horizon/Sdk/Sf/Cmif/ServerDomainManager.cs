@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Horizon.Sdk.Sf.Cmif
 {
-    class ServerDomainManager
+    sealed class ServerDomainManager
     {
         private sealed class EntryManager
         {

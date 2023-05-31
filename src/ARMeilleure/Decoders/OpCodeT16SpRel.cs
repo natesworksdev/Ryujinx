@@ -2,7 +2,7 @@ using ARMeilleure.State;
 
 namespace ARMeilleure.Decoders
 {
-    class OpCodeT16SpRel : OpCodeT16, IOpCode32AluImm
+    sealed class OpCodeT16SpRel : OpCodeT16, IOpCode32AluImm
     {
         public int Rd { get; }
         public int Rn => RegisterAlias.Aarch32Sp;

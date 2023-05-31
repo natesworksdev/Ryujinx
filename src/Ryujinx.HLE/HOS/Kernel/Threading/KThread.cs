@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel.Threading
 {
-    class KThread : KSynchronizationObject, IKFutureSchedulerObject
+    sealed class KThread : KSynchronizationObject, IKFutureSchedulerObject
     {
         private const int TlsUserDisableCountOffset = 0x100;
         private const int TlsUserInterruptFlagOffset = 0x102;

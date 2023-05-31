@@ -4,7 +4,7 @@ using Ryujinx.Graphics.GAL;
 
 namespace Ryujinx.Graphics.OpenGL.Image
 {
-    class TextureStorage : ITextureInfo
+    sealed class TextureStorage : ITextureInfo
     {
         public ITextureInfo Storage => this;
         public int Handle { get; private set; }

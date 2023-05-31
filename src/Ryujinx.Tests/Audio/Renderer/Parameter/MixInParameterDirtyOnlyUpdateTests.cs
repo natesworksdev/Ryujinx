@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Tests.Audio.Renderer.Parameter
 {
-    class MixInParameterDirtyOnlyUpdateTests
+    sealed class MixInParameterDirtyOnlyUpdateTests
     {
         [Test]
         public void EnsureTypeSize()

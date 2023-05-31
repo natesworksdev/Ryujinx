@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
-    class KMemoryBlockManager
+    sealed class KMemoryBlockManager
     {
         private const int PageSize = KPageTableBase.PageSize;
 

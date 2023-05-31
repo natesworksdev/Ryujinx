@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
     /// <summary>
     /// Represents a GPU General Purpose FIFO command processor.
     /// </summary>
-    class GPFifoProcessor
+    sealed class GPFifoProcessor
     {
         private const int MacrosCount = 0x80;
         private const int MacroIndexMask = MacrosCount - 1;

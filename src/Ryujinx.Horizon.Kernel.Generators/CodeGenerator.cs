@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Horizon.Generators
 {
-    class CodeGenerator
+    sealed class CodeGenerator
     {
         private const string Indent = "    ";
         private readonly StringBuilder _sb;

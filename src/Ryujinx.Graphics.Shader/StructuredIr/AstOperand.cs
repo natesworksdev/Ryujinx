@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
-    class AstOperand : AstNode
+    sealed class AstOperand : AstNode
     {
         public HashSet<IAstNode> Defs { get; }
         public HashSet<IAstNode> Uses { get; }

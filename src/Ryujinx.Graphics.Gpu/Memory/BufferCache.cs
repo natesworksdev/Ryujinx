@@ -9,7 +9,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// <summary>
     /// Buffer cache.
     /// </summary>
-    class BufferCache : IDisposable
+    sealed class BufferCache : IDisposable
     {
         private const int OverlapsBufferInitialCapacity = 10;
         private const int OverlapsBufferMaxCapacity     = 10000;

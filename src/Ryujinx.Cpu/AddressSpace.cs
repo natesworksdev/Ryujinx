@@ -5,7 +5,7 @@ using System;
 
 namespace Ryujinx.Cpu
 {
-    class AddressSpace : IDisposable
+    sealed class AddressSpace : IDisposable
     {
         private const ulong PageSize = 0x1000;
 

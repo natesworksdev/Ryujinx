@@ -2,7 +2,7 @@ using Concentus.Structs;
 
 namespace Ryujinx.HLE.HOS.Services.Audio.HardwareOpusDecoderManager
 {
-    class MultiSampleDecoder : IDecoder
+    sealed class MultiSampleDecoder : IDecoder
     {
         private readonly OpusMSDecoder _decoder;
 

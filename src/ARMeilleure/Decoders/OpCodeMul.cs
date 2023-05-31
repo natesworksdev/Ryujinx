@@ -1,6 +1,6 @@
 namespace ARMeilleure.Decoders
 {
-    class OpCodeMul : OpCodeAlu
+    sealed class OpCodeMul : OpCodeAlu
     {
         public int Rm { get; }
         public int Ra { get; }

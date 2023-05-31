@@ -6,7 +6,7 @@ using VkFormat = Silk.NET.Vulkan.Format;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class FormatCapabilities
+    sealed class FormatCapabilities
     {
         private readonly FormatFeatureFlags[] _bufferTable;
         private readonly FormatFeatureFlags[] _optimalTable;

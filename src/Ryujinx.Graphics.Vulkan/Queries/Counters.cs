@@ -4,7 +4,7 @@ using System;
 
 namespace Ryujinx.Graphics.Vulkan.Queries
 {
-    class Counters : IDisposable
+    sealed class Counters : IDisposable
     {
         private readonly CounterQueue[] _counterQueues;
         private readonly PipelineFull _pipeline;

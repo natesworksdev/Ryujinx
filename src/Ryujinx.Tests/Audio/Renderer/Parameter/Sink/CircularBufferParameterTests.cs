@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Tests.Audio.Renderer.Parameter.Sink
 {
-    class CircularBufferParameterTests
+    sealed class CircularBufferParameterTests
     {
         [Test]
         public void EnsureTypeSize()

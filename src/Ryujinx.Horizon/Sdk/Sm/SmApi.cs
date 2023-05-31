@@ -5,7 +5,7 @@ using System;
 
 namespace Ryujinx.Horizon.Sdk.Sm
 {
-    class SmApi
+    sealed class SmApi
     {
         private const string SmName = "sm:";
 

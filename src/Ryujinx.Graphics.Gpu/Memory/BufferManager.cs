@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// <summary>
     /// Buffer manager.
     /// </summary>
-    class BufferManager
+    sealed class BufferManager
     {
         private const int TfInfoVertexCountOffset = Constants.TotalTransformFeedbackBuffers * sizeof(int);
         private const int TfInfoBufferSize = TfInfoVertexCountOffset + sizeof(int);

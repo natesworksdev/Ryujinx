@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Ryujinx.Graphics.Vulkan.Queries
 {
-    class BufferedQuery : IDisposable
+    sealed class BufferedQuery : IDisposable
     {
         private const int MaxQueryRetries = 5000;
         private const long DefaultValue = -1;

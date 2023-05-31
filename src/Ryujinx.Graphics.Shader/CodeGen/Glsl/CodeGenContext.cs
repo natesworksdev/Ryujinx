@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 {
-    class CodeGenContext
+    sealed class CodeGenContext
     {
         public const string Tab = "    ";
 

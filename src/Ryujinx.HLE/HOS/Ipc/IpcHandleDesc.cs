@@ -6,7 +6,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Ipc
 {
-    class IpcHandleDesc
+    sealed class IpcHandleDesc
     {
         public bool HasPId { get; private set; }
 

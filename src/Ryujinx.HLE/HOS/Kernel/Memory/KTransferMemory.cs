@@ -6,7 +6,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
-    class KTransferMemory : KAutoObject
+    sealed class KTransferMemory : KAutoObject
     {
         private KProcess _creator;
 

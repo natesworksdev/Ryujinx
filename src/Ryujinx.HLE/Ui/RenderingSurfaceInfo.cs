@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.Ui
     /// <summary>
     /// Information about the indirect layer that is being drawn to.
     /// </summary>
-    class RenderingSurfaceInfo : IEquatable<RenderingSurfaceInfo>
+    sealed class RenderingSurfaceInfo : IEquatable<RenderingSurfaceInfo>
     {
         public ColorFormat ColorFormat { get; }
         public uint Width { get; }

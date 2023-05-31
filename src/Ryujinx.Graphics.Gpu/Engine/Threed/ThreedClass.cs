@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     /// <summary>
     /// Represents a 3D engine class.
     /// </summary>
-    class ThreedClass : IDeviceState
+    sealed class ThreedClass : IDeviceState
     {
         private readonly GpuContext _context;
         private readonly GPFifoClass _fifoClass;

@@ -2,7 +2,7 @@ using static Ryujinx.Graphics.Shader.StructuredIr.AstHelper;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
-    class AstAssignment : AstNode
+    sealed class AstAssignment : AstNode
     {
         public IAstNode Destination { get; }
 

@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
     [Service("nvdrv:a")]
     [Service("nvdrv:s")]
     [Service("nvdrv:t")]
-    class INvDrvServices : IpcService
+    sealed class INvDrvServices : IpcService
     {
         private static readonly List<string> _deviceFileDebugRegistry = new List<string>()
         {

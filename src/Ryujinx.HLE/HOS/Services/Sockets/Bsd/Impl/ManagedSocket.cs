@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
 {
-    class ManagedSocket : ISocket
+    sealed class ManagedSocket : ISocket
     {
         public int Refcount { get; set; }
 

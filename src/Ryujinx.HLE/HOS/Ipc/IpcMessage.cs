@@ -9,7 +9,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Ipc
 {
-    class IpcMessage
+    sealed class IpcMessage
     {
         public IpcMessageType Type { get; set; }
 
@@ -71,12 +71,12 @@ namespace Ryujinx.HLE.HOS.Ipc
                 static List<IpcBuffDesc> ReadBuff(BinaryReader reader, int count)
                 {
                     List<IpcBuffDesc> buff = new List<IpcBuffDesc>(count);
-                    
+
                     for (int index = 0; index < count; index++)
                     {
                         buff.Add(new IpcBuffDesc(reader));
                     }
-                    
+
                     return buff;
                 }
 

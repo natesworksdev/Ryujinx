@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Horizon.Prepo
 {
-    class PrepoMain : IService
+    sealed class PrepoMain : IService
     {
         public static void Main(ServiceTable serviceTable)
         {

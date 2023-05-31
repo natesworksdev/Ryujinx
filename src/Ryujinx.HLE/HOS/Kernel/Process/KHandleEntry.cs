@@ -2,7 +2,7 @@ using Ryujinx.HLE.HOS.Kernel.Common;
 
 namespace Ryujinx.HLE.HOS.Kernel.Process
 {
-    class KHandleEntry
+    sealed class KHandleEntry
     {
         public KHandleEntry Next { get; set; }
 

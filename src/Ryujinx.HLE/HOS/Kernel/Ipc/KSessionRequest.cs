@@ -3,7 +3,7 @@ using Ryujinx.HLE.HOS.Kernel.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel.Ipc
 {
-    class KSessionRequest
+    sealed class KSessionRequest
     {
         public KBufferDescriptorTable BufferDescriptorTable { get; }
 

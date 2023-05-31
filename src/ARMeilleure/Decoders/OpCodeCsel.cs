@@ -1,6 +1,6 @@
 namespace ARMeilleure.Decoders
 {
-    class OpCodeCsel : OpCodeAlu, IOpCodeCond
+    sealed class OpCodeCsel : OpCodeAlu, IOpCodeCond
     {
         public int Rm { get; }
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
-    class StructuredFunction
+    sealed class StructuredFunction
     {
         public AstBlock MainBlock { get; }
 

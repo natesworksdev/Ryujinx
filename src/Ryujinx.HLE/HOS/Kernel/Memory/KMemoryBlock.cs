@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
-    class KMemoryBlock : IntrusiveRedBlackTreeNode<KMemoryBlock>, IComparable<KMemoryBlock>, IComparable<ulong>
+    sealed class KMemoryBlock : IntrusiveRedBlackTreeNode<KMemoryBlock>, IComparable<KMemoryBlock>, IComparable<ulong>
     {
         public ulong BaseAddress { get; private set; }
         public ulong PagesCount { get; private set; }

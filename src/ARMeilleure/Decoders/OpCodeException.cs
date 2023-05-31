@@ -1,6 +1,6 @@
 namespace ARMeilleure.Decoders
 {
-    class OpCodeException : OpCode
+    sealed class OpCodeException : OpCode
     {
         public int Id { get; }
 

@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
 {
-    class NvHostCtrlGpuDeviceFile : NvDeviceFile
+    sealed class NvHostCtrlGpuDeviceFile : NvDeviceFile
     {
         private static Stopwatch _pTimer    = new Stopwatch();
         private static double    _ticksToNs = (1.0 / Stopwatch.Frequency) * 1_000_000_000;

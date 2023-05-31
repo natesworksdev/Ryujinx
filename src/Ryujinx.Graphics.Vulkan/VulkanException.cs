@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
     }
 
-    class VulkanException : Exception
+    sealed class VulkanException : Exception
     {
         public VulkanException()
         {

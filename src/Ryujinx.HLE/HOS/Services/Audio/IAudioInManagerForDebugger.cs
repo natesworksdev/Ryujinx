@@ -1,7 +1,7 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Audio
 {
     [Service("audin:d")]
-    class IAudioInManagerForDebugger : IpcService
+    sealed class IAudioInManagerForDebugger : IpcService
     {
         public IAudioInManagerForDebugger(ServiceCtx context) { }
     }

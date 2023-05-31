@@ -7,7 +7,7 @@ using SPB.Windowing;
 
 namespace Ryujinx.Ava.UI.Renderer
 {
-    class SPBOpenGLContext : IOpenGLContext
+    sealed class SPBOpenGLContext : IOpenGLContext
     {
         private readonly OpenGLContextBase _context;
         private readonly NativeWindowBase  _window;

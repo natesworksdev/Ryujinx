@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Cpu.AppleHv
 {
-    class HvMemoryBlockAllocator : PrivateMemoryAllocatorImpl<HvMemoryBlockAllocator.Block>
+    sealed class HvMemoryBlockAllocator : PrivateMemoryAllocatorImpl<HvMemoryBlockAllocator.Block>
     {
         private const ulong InvalidOffset = ulong.MaxValue;
 

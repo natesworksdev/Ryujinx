@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Tests.Audio.Renderer.Parameter
 {
-    class SinkInParameterTests
+    sealed class SinkInParameterTests
     {
         [Test]
         public void EnsureTypeSize()

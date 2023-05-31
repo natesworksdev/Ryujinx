@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// <summary>
     /// Represents a cached GPU texture.
     /// </summary>
-    class Texture : IMultiRangeItem, IDisposable
+    sealed class Texture : IMultiRangeItem, IDisposable
     {
         // How many updates we need before switching to the byte-by-byte comparison
         // modification check method.

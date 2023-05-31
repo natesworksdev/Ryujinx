@@ -6,7 +6,7 @@ using static ARMeilleure.IntermediateRepresentation.Operand;
 
 namespace ARMeilleure.CodeGen.Arm64
 {
-    class Assembler
+    sealed class Assembler
     {
         public const uint SfFlag = 1u << 31;
 

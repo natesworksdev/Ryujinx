@@ -3,7 +3,7 @@
     /// <summary>
     /// Code type 0 allows writing a static value to a memory address.
     /// </summary>
-    class StoreConstantToAddress
+    sealed class StoreConstantToAddress
     {
         private const int OperationWidthIndex = 1;
         private const int MemoryRegionIndex = 2;

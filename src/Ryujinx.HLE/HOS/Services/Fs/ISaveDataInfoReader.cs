@@ -4,7 +4,7 @@ using LibHac.Sf;
 
 namespace Ryujinx.HLE.HOS.Services.Fs
 {
-    class ISaveDataInfoReader : DisposableIpcService
+    sealed class ISaveDataInfoReader : DisposableIpcService
     {
         private SharedRef<LibHac.FsSrv.Sf.ISaveDataInfoReader> _baseReader;
 

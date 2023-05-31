@@ -9,7 +9,7 @@ namespace ARMeilleure.IntermediateRepresentation
     /// Represents a efficient linked list that stores the pointer on the object directly and does not allocate.
     /// </summary>
     /// <typeparam name="T">Type of the list items</typeparam>
-    class IntrusiveList<T> where T : IEquatable<T>, IIntrusiveListNode<T>
+    sealed class IntrusiveList<T> where T : IEquatable<T>, IIntrusiveListNode<T>
     {
         /// <summary>
         /// First item of the list, or null if empty.

@@ -3,7 +3,7 @@ namespace Ryujinx.HLE.HOS.Services.Apm
     // NOTE: This service doesn’t exist anymore after firmware 7.0.1. But some outdated homebrew still uses it.
 
     [Service("apm:p")] // 1.0.0-7.0.1
-    class IManagerPrivileged : IpcService
+    sealed class IManagerPrivileged : IpcService
     {
         public IManagerPrivileged(ServiceCtx context) { }
 

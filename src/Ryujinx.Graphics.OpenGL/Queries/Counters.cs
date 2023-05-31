@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.Graphics.OpenGL.Queries
 {
-    class Counters : IDisposable
+    sealed class Counters : IDisposable
     {
         private CounterQueue[] _counterQueues;
 

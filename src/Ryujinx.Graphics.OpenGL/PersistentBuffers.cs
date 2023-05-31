@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.OpenGL
 {
-    class PersistentBuffers : IDisposable
+    sealed class PersistentBuffers : IDisposable
     {
         private PersistentBuffer _main = new PersistentBuffer();
         private PersistentBuffer _background = new PersistentBuffer();
@@ -49,7 +49,7 @@ namespace Ryujinx.Graphics.OpenGL
         }
     }
 
-    class PersistentBuffer : IDisposable
+    sealed class PersistentBuffer : IDisposable
     {
         private IntPtr _bufferMap;
         private int _copyBufferHandle;

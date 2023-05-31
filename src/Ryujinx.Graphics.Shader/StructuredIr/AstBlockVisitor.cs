@@ -5,7 +5,7 @@ using static Ryujinx.Graphics.Shader.StructuredIr.AstHelper;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
-    class AstBlockVisitor
+    sealed class AstBlockVisitor
     {
         public AstBlock Block { get; private set; }
 

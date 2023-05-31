@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Translation.Cache
 {
-    class JitCacheInvalidation
+    sealed class JitCacheInvalidation
     {
         private static int[] _invalidationCode = new int[]
         {

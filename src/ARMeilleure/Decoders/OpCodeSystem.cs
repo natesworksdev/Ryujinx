@@ -1,6 +1,6 @@
 namespace ARMeilleure.Decoders
 {
-    class OpCodeSystem : OpCode
+    sealed class OpCodeSystem : OpCode
     {
         public int Rt  { get; }
         public int Op2 { get; }

@@ -8,7 +8,7 @@ using System;
 namespace Ryujinx.HLE.HOS.Services.Bluetooth
 {
     [Service("btdrv")]
-    class IBluetoothDriver : IpcService
+    sealed class IBluetoothDriver : IpcService
     {
 #pragma warning disable CS0414
         private string _unknownLowEnergy;

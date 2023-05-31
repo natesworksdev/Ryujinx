@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Tamper.Operations
 {
-    class ForBlock : IOperation
+    sealed class ForBlock : IOperation
     {
         private ulong _count;
         private Register _register;

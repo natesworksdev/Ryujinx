@@ -5,7 +5,7 @@
     /// between classed that need to be disposed and, thus, can't share their references.
     /// </summary>
     /// <typeparam name="T">The internal type.</typeparam>
-    class TRef<T>
+    sealed class TRef<T>
     {
         public T Value;
 

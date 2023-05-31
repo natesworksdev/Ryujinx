@@ -2,7 +2,7 @@ using System.Numerics;
 
 namespace ARMeilleure.Decoders
 {
-    class OpCodeT32MemMult : OpCodeT32, IOpCode32MemMult
+    sealed class OpCodeT32MemMult : OpCodeT32, IOpCode32MemMult
     {
         public int Rn { get; }
 

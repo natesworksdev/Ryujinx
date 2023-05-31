@@ -1,6 +1,6 @@
 ﻿namespace ARMeilleure.Decoders
 {
-    class OpCode32SimdMovGp : OpCode32, IOpCode32Simd
+    sealed class OpCode32SimdMovGp : OpCode32, IOpCode32Simd
     {
         public int Size => 2;
 

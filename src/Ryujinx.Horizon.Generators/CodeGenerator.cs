@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Horizon.Generators
 {
-    class CodeGenerator
+    sealed class CodeGenerator
     {
         private const int IndentLength = 4;
 
@@ -40,7 +40,7 @@ namespace Ryujinx.Horizon.Generators
         {
             if (_currentIndentCount - 1 >= 0)
             {
-                _currentIndentCount--;   
+                _currentIndentCount--;
             }
         }
 

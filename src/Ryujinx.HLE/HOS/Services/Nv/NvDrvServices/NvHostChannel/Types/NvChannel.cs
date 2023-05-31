@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 {
-    class NvChannel
+    sealed class NvChannel
     {
 #pragma warning disable CS0649
         public int Timeout;

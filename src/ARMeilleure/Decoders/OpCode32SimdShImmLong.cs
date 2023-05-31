@@ -1,6 +1,6 @@
 ﻿namespace ARMeilleure.Decoders
 {
-    class OpCode32SimdShImmLong : OpCode32Simd
+    sealed class OpCode32SimdShImmLong : OpCode32Simd
     {
         public int Shift { get; }
 

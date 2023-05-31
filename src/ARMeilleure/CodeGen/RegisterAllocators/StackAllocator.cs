@@ -2,7 +2,7 @@ using ARMeilleure.IntermediateRepresentation;
 
 namespace ARMeilleure.CodeGen.RegisterAllocators
 {
-    class StackAllocator
+    sealed class StackAllocator
     {
         private int _offset;
 

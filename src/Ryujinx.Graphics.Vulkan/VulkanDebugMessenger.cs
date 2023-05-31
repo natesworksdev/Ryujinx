@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class VulkanDebugMessenger : IDisposable
+    sealed class VulkanDebugMessenger : IDisposable
     {
         private static string[] _excludedMessages = new string[]
         {
@@ -48,7 +48,7 @@ namespace Ryujinx.Graphics.Vulkan
         private Result TryInitialize(out DebugUtilsMessengerEXT? debugUtilsMessengerHandle)
         {
             debugUtilsMessengerHandle = null;
-            
+
             if (_debugUtils != null && _logLevel != GraphicsDebugLevel.None)
             {
                 var messageType = _logLevel switch

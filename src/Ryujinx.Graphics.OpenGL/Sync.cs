@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Ryujinx.Graphics.OpenGL
 {
-    class Sync : IDisposable
+    sealed class Sync : IDisposable
     {
         private sealed class SyncHandle
         {

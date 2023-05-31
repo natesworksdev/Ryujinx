@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Tamper.Operations
 {
-    class Block : IOperation
+    sealed class Block : IOperation
     {
         private IEnumerable<IOperation> _operations;
 

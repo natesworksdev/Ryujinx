@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Ryujinx.Common.Configuration.Hid.Controller.Motion
 {
-    class JsonMotionConfigControllerConverter : JsonConverter<MotionConfigController>
+    sealed class JsonMotionConfigControllerConverter : JsonConverter<MotionConfigController>
     {
         private static readonly MotionConfigJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 

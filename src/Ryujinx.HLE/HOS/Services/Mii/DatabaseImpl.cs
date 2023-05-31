@@ -5,7 +5,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Mii
 {
-    class DatabaseImpl
+    sealed class DatabaseImpl
     {
         private static DatabaseImpl _instance;
 

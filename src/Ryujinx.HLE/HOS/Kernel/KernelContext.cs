@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KernelContext : IDisposable
+    sealed class KernelContext : IDisposable
     {
         public long PrivilegedProcessLowestId { get; set; } = 1;
         public long PrivilegedProcessHighestId { get; set; } = 8;

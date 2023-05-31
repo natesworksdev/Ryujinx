@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
     /// <summary>
     /// Code type 4 allows setting a register to a constant value.
     /// </summary>
-    class LoadRegisterWithConstant
+    sealed class LoadRegisterWithConstant
     {
         const int RegisterIndex = 3;
         const int ValueImmediateIndex = 8;

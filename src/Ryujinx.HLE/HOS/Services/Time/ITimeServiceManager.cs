@@ -11,7 +11,7 @@ using System.IO;
 namespace Ryujinx.HLE.HOS.Services.Time
 {
     [Service("time:m")] // 9.0.0+
-    class ITimeServiceManager : IpcService
+    sealed class ITimeServiceManager : IpcService
     {
         private TimeManager _timeManager;
         private int         _automaticCorrectionEvent;

@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
-    class KPageTable : KPageTableBase
+    sealed class KPageTable : KPageTableBase
     {
         private readonly IVirtualMemoryManager _cpuMemory;
 

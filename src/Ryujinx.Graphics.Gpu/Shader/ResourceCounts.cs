@@ -3,7 +3,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// <summary>
     /// Holds counts for the resources used by a shader.
     /// </summary>
-    class ResourceCounts
+    sealed class ResourceCounts
     {
         /// <summary>
         /// Total of uniform buffers used by the shaders.

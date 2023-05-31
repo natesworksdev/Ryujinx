@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Types
 {
-    class BsdMMsgHdr
+    sealed class BsdMMsgHdr
     {
         public BsdMsgHdr[] Messages { get; }
 

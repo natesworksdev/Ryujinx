@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
     /// <summary>
     /// Represents a GPU General Purpose FIFO class.
     /// </summary>
-    class GPFifoClass : IDeviceState
+    sealed class GPFifoClass : IDeviceState
     {
         private readonly GpuContext _context;
         private readonly GPFifoProcessor _parent;

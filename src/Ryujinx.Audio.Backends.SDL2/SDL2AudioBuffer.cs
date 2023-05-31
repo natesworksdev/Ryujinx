@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Audio.Backends.SDL2
 {
-    class SDL2AudioBuffer
+    sealed class SDL2AudioBuffer
     {
         public readonly ulong DriverIdentifier;
         public readonly ulong SampleCount;

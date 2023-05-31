@@ -9,7 +9,7 @@ using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
 namespace Ryujinx.Graphics.Shader.Translation
 {
-    class EmitterContext
+    sealed class EmitterContext
     {
         public DecodedProgram Program { get; }
         public ShaderConfig Config { get; }

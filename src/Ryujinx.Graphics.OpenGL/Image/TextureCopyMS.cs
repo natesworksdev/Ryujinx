@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace Ryujinx.Graphics.OpenGL.Image
 {
-    class TextureCopyMS
+    sealed class TextureCopyMS
     {
         private const string ComputeShaderMSToNonMS = @"#version 450 core
 

@@ -4,7 +4,7 @@ using Ryujinx.Horizon.Sdk.Sm;
 
 namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 {
-    class Server : MultiWaitHolderOfHandle
+    sealed class Server : MultiWaitHolderOfHandle
     {
         public int                 PortIndex    { get; }
         public int                 PortHandle   { get; }

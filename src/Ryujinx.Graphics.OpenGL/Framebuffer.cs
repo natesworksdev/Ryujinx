@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.OpenGL
 {
-    class Framebuffer : IDisposable
+    sealed class Framebuffer : IDisposable
     {
         public int Handle { get; private set; }
         private int _clearFbHandle;

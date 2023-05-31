@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 {
-    class NvHostSyncpt
+    sealed class NvHostSyncpt
     {
         public const int VBlank0SyncpointId = 26;
         public const int VBlank1SyncpointId = 27;

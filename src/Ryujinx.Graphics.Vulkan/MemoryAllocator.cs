@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class MemoryAllocator : IDisposable
+    sealed class MemoryAllocator : IDisposable
     {
         private ulong MaxDeviceMemoryUsageEstimate = 16UL * 1024 * 1024 * 1024;
 

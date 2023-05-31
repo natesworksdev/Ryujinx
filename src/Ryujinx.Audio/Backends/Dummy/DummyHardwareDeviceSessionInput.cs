@@ -5,7 +5,7 @@ using System;
 
 namespace Ryujinx.Audio.Backends.Dummy
 {
-    class DummyHardwareDeviceSessionInput : IHardwareDeviceSession
+    sealed class DummyHardwareDeviceSessionInput : IHardwareDeviceSession
     {
         private float _volume;
         private IHardwareDeviceDriver _manager;

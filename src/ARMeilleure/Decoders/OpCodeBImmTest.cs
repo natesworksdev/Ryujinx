@@ -1,6 +1,6 @@
 namespace ARMeilleure.Decoders
 {
-    class OpCodeBImmTest : OpCodeBImm
+    sealed class OpCodeBImmTest : OpCodeBImm
     {
         public int Rt  { get; }
         public int Bit { get; }

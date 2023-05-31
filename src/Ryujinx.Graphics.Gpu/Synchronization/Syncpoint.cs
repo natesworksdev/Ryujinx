@@ -7,7 +7,7 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
     /// <summary>
     /// Represents GPU hardware syncpoint.
     /// </summary>
-    class Syncpoint
+    sealed class Syncpoint
     {
         private int _storedValue;
 

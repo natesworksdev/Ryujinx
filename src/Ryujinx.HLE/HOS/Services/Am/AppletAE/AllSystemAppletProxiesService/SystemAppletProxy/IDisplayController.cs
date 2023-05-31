@@ -6,7 +6,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy
 {
-    class IDisplayController : IpcService
+    sealed class IDisplayController : IpcService
     {
         private KTransferMemory _transferMem;
         private bool            _lastApplicationCaptureBufferAcquired;

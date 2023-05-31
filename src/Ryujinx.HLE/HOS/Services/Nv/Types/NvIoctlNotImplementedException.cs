@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.Types
 {
-    class NvIoctlNotImplementedException : Exception
+    sealed class NvIoctlNotImplementedException : Exception
     {
         public ServiceCtx   Context    { get; }
         public NvDeviceFile DeviceFile { get; }

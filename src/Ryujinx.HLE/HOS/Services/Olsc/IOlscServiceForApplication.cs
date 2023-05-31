@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace Ryujinx.HLE.HOS.Services.Olsc
 {
     [Service("olsc:u")] // 10.0.0+
-    class IOlscServiceForApplication : IpcService
+    sealed class IOlscServiceForApplication : IpcService
     {
         private bool                     _initialized;
         private Dictionary<UserId, bool> _saveDataBackupSettingDatabase;

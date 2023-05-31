@@ -37,7 +37,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// The group iteratively adds more granular tracking as views of different kinds are added.
     /// Note that a texture group can be absorbed into another when it becomes a view parent.
     /// </summary>
-    class TextureGroup : IDisposable
+    sealed class TextureGroup : IDisposable
     {
         /// <summary>
         /// Threshold of layers to force granular handles (and thus partial loading) on array/3D textures.

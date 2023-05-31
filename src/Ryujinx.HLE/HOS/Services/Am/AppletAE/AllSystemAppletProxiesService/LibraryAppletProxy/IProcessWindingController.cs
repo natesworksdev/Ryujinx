@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.LibraryAppletProxy
 {
-    class IProcessWindingController : IpcService
+    sealed class IProcessWindingController : IpcService
     {
         public IProcessWindingController() { }
 

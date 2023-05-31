@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// <summary>
     /// List of cached shader programs that differs only by specialization state.
     /// </summary>
-    class ShaderSpecializationList : IEnumerable<CachedShaderProgram>
+    sealed class ShaderSpecializationList : IEnumerable<CachedShaderProgram>
     {
         private readonly List<CachedShaderProgram> _entries = new List<CachedShaderProgram>();
 

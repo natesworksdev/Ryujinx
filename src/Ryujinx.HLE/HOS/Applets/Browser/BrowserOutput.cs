@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Applets.Browser
 {
-    class BrowserOutput
+    sealed class BrowserOutput
     {
         public BrowserOutputType Type { get; }
         public byte[] Value { get; }
@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
         public BrowserOutput(BrowserOutputType type, uint value)
         {
             Type  = type;
-            Value = BitConverter.GetBytes(value); 
+            Value = BitConverter.GetBytes(value);
         }
 
         public BrowserOutput(BrowserOutputType type, ulong value)

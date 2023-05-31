@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Tests.Audio.Renderer.Server
 {
-    class SplitterStateTests
+    sealed class SplitterStateTests
     {
         [Test]
         public void EnsureTypeSize()

@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Resources
     /// <summary>
     /// A structure handling multithreaded compilation for programs.
     /// </summary>
-    class ProgramQueue
+    sealed class ProgramQueue
     {
         private const int MaxConcurrentCompilations = 8;
 

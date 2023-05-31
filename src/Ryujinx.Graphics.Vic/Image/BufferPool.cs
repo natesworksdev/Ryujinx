@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Graphics.Vic.Image
 {
-    class BufferPool<T>
+    sealed class BufferPool<T>
     {
         /// <summary>
         /// Maximum number of buffers on the pool.

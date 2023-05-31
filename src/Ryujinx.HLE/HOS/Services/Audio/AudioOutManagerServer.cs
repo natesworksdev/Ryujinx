@@ -8,7 +8,7 @@ using System.Text;
 namespace Ryujinx.HLE.HOS.Services.Audio
 {
     [Service("audout:u")]
-    class AudioOutManagerServer : IpcService
+    sealed class AudioOutManagerServer : IpcService
     {
         private const int AudioOutNameSize = 0x100;
 

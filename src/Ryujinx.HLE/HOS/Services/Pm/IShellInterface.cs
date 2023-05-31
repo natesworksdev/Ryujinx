@@ -1,7 +1,7 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Pm
 {
     [Service("pm:shell")]
-    class IShellInterface : IpcService
+    sealed class IShellInterface : IpcService
     {
         public IShellInterface(ServiceCtx context) { }
 

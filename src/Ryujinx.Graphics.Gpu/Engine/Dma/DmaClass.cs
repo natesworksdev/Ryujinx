@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
     /// <summary>
     /// Represents a DMA copy engine class.
     /// </summary>
-    class DmaClass : IDeviceState
+    sealed class DmaClass : IDeviceState
     {
         private readonly GpuContext _context;
         private readonly GpuChannel _channel;

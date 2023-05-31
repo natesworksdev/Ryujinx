@@ -7,7 +7,7 @@ using System.Linq;
 namespace Ryujinx.Horizon.Generators.Hipc
 {
     [Generator]
-    class HipcGenerator : ISourceGenerator
+    sealed class HipcGenerator : ISourceGenerator
     {
         private const string ArgVariablePrefix = "arg";
         private const string ResultVariableName = "result";

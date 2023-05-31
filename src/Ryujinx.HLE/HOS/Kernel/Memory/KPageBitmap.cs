@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
-    class KPageBitmap
+    sealed class KPageBitmap
     {
         private struct RandomNumberGenerator
         {

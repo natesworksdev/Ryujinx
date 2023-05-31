@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     /// <summary>
     /// Semaphore updater.
     /// </summary>
-    class SemaphoreUpdater
+    sealed class SemaphoreUpdater
     {
         /// <summary>
         /// GPU semaphore operation.

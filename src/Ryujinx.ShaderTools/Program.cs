@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.ShaderTools
 {
-    class Program
+    sealed class Program
     {
         private sealed class GpuAccessor : IGpuAccessor
         {

@@ -9,7 +9,7 @@ using static Ryujinx.Graphics.Vic.Image.SurfaceCommon;
 
 namespace Ryujinx.Graphics.Vic.Image
 {
-    class SurfaceWriter
+    sealed class SurfaceWriter
     {
         public static void Write(ResourceManager rm, Surface input, ref OutputSurfaceConfig config, ref PlaneOffsets offsets)
         {

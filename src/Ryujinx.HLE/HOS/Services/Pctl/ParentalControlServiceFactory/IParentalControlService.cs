@@ -6,7 +6,7 @@ using static LibHac.Ns.ApplicationControlProperty;
 
 namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 {
-    class IParentalControlService : IpcService
+    sealed class IParentalControlService : IpcService
     {
         private ulong                    _pid;
         private int                      _permissionFlag;
@@ -202,7 +202,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
                 {
                     _stereoVisionRestriction = stereoVisionRestriction;
 
-                    // TODO: It signals an internal event of service. We have to determine where this event is used. 
+                    // TODO: It signals an internal event of service. We have to determine where this event is used.
                 }
             }
 

@@ -2,7 +2,7 @@ using Ryujinx.Common.Logging;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy
 {
-    class IWindowController : IpcService
+    sealed class IWindowController : IpcService
     {
         private readonly ulong _pid;
 

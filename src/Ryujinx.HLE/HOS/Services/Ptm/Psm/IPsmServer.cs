@@ -3,7 +3,7 @@
 namespace Ryujinx.HLE.HOS.Services.Ptm.Psm
 {
     [Service("psm")]
-    class IPsmServer : IpcService
+    sealed class IPsmServer : IpcService
     {
         public IPsmServer(ServiceCtx context) { }
 

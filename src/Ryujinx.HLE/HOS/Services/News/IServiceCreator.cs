@@ -5,7 +5,7 @@
     [Service("news:m")]
     [Service("news:p")]
     [Service("news:v")]
-    class IServiceCreator : IpcService
+    sealed class IServiceCreator : IpcService
     {
         public IServiceCreator(ServiceCtx context) { }
     }

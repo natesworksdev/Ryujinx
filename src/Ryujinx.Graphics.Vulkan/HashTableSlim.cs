@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.Vulkan
         bool Equals(ref T other);
     }
 
-    class HashTableSlim<K, V> where K : IRefEquatable<K>
+    sealed class HashTableSlim<K, V> where K : IRefEquatable<K>
     {
         private const int TotalBuckets = 16; // Must be power of 2
         private const int TotalBucketsMask = TotalBuckets - 1;

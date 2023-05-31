@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Hid.HidServer
 {
-    class IActiveApplicationDeviceList : IpcService
+    sealed class IActiveApplicationDeviceList : IpcService
     {
         public IActiveApplicationDeviceList() { }
 

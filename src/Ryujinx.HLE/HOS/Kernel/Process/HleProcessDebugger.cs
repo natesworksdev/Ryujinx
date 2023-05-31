@@ -10,7 +10,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel.Process
 {
-    class HleProcessDebugger
+    sealed class HleProcessDebugger
     {
         private const int Mod0 = 'M' << 0 | 'O' << 8 | 'D' << 16 | '0' << 24;
 

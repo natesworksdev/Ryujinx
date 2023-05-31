@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// <summary>
     /// Texture manager.
     /// </summary>
-    class TextureManager : IDisposable
+    sealed class TextureManager : IDisposable
     {
         private readonly GpuContext _context;
         private readonly GpuChannel _channel;

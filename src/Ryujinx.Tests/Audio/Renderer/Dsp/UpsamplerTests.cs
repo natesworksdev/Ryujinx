@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Tests.Audio.Renderer.Dsp
 {
-    class UpsamplerTests
+    sealed class UpsamplerTests
     {
         [Test]
         public void TestUpsamplerConsistency()

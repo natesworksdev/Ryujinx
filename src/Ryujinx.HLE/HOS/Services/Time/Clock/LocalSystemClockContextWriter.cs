@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
-    class LocalSystemClockContextWriter : SystemClockContextUpdateCallback
+    sealed class LocalSystemClockContextWriter : SystemClockContextUpdateCallback
     {
         private TimeSharedMemory _sharedMemory;
 

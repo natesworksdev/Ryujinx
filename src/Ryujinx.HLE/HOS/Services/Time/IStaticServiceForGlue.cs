@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
     [Service("time:a", TimePermissions.Admin)]
     [Service("time:r", TimePermissions.Repair)]
     [Service("time:u", TimePermissions.User)]
-    class IStaticServiceForGlue : IpcService
+    sealed class IStaticServiceForGlue : IpcService
     {
         private IStaticServiceForPsc _inner;
         private TimePermissions      _permissions;

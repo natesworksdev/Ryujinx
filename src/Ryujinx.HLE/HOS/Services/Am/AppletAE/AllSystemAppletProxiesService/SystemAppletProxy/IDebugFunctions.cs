@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy
 {
-    class IDebugFunctions : IpcService
+    sealed class IDebugFunctions : IpcService
     {
         public IDebugFunctions() { }
     }

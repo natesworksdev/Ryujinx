@@ -5,7 +5,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// <summary>
     /// Cached shader code for a single shader stage.
     /// </summary>
-    class CachedShaderStage
+    sealed class CachedShaderStage
     {
         /// <summary>
         /// Shader program information.

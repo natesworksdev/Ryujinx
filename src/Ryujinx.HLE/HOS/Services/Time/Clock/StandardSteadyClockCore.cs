@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
-    class StandardSteadyClockCore : SteadyClockCore
+    sealed class StandardSteadyClockCore : SteadyClockCore
     {
         private TimeSpanType _setupValue;
         private TimeSpanType _testOffset;

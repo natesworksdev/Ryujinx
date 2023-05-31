@@ -5,7 +5,7 @@ using System;
 
 namespace Ryujinx.Graphics.OpenGL.Image
 {
-    class TextureCopy : IDisposable
+    sealed class TextureCopy : IDisposable
     {
         private readonly OpenGLRenderer _renderer;
 

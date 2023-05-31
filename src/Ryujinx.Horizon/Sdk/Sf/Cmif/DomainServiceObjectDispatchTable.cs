@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Horizon.Sdk.Sf.Cmif
 {
-    class DomainServiceObjectDispatchTable : ServiceDispatchTableBase
+    sealed class DomainServiceObjectDispatchTable : ServiceDispatchTableBase
     {
         public override Result ProcessMessage(ref ServiceDispatchContext context, ReadOnlySpan<byte> inRawData)
         {

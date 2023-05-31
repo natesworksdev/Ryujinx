@@ -6,7 +6,7 @@ using VkFormat = Silk.NET.Vulkan.Format;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class FramebufferParams
+    sealed class FramebufferParams
     {
         private readonly Device _device;
         private readonly Auto<DisposableImageView>[] _attachments;

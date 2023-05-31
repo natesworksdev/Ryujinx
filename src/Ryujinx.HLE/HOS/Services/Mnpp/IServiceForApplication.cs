@@ -6,7 +6,7 @@ using Ryujinx.HLE.HOS.Services.Account.Acc;
 namespace Ryujinx.HLE.HOS.Services.Mnpp
 {
     [Service("mnpp:app")] // 13.0.0+
-    class IServiceForApplication : IpcService
+    sealed class IServiceForApplication : IpcService
     {
         public IServiceForApplication(ServiceCtx context) { }
 

@@ -3,7 +3,7 @@
 namespace Ryujinx.HLE.HOS.Services.Ldn
 {
     [Service("ldn:u")]
-    class IUserServiceCreator : IpcService
+    sealed class IUserServiceCreator : IpcService
     {
         public IUserServiceCreator(ServiceCtx context) { }
 

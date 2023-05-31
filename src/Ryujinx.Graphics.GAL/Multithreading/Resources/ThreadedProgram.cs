@@ -3,7 +3,7 @@ using Ryujinx.Graphics.GAL.Multithreading.Model;
 
 namespace Ryujinx.Graphics.GAL.Multithreading.Resources
 {
-    class ThreadedProgram : IProgram
+    sealed class ThreadedProgram : IProgram
     {
         private ThreadedRenderer _renderer;
 

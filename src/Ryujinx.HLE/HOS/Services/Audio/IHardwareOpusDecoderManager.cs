@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.HLE.HOS.Services.Audio
 {
     [Service("hwopus")]
-    class IHardwareOpusDecoderManager : IpcService
+    sealed class IHardwareOpusDecoderManager : IpcService
     {
         public IHardwareOpusDecoderManager(ServiceCtx context) { }
 

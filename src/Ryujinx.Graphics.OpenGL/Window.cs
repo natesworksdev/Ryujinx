@@ -7,7 +7,7 @@ using System;
 
 namespace Ryujinx.Graphics.OpenGL
 {
-    class Window : IWindow, IDisposable
+    sealed class Window : IWindow, IDisposable
     {
         private readonly OpenGLRenderer _renderer;
 

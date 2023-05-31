@@ -7,7 +7,7 @@ using System.Numerics;
 
 namespace Ryujinx.Graphics.Shader.Translation
 {
-    class ShaderConfig
+    sealed class ShaderConfig
     {
         // TODO: Non-hardcoded array size.
         public const int SamplerArraySize = 4;

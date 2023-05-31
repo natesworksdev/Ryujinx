@@ -11,7 +11,7 @@ using System.Reflection;
 
 namespace Ryujinx.HLE.HOS.Services.Sm
 {
-    class IUserInterface : IpcService
+    sealed class IUserInterface : IpcService
     {
         private static Dictionary<string, Type> _services;
 

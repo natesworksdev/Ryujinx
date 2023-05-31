@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
-    class BufferQueueCore
+    sealed class BufferQueueCore
     {
         public BufferSlotArray       Slots;
         public int                   OverrideMaxBufferCount;

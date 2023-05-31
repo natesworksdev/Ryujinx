@@ -9,7 +9,7 @@ using System.Security.Cryptography;
 
 namespace Ryujinx.HLE.HOS.Services.Caps
 {
-    class CaptureManager
+    sealed class CaptureManager
     {
         private string _sdCardPath;
 

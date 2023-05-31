@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.OpenGL
 {
-    class DisposedTexture
+    sealed class DisposedTexture
     {
         public TextureCreateInfo Info;
         public TextureView View;
@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.OpenGL
     /// <summary>
     /// A structure for pooling resources that can be reused without recreation, such as textures.
     /// </summary>
-    class ResourcePool : IDisposable
+    sealed class ResourcePool : IDisposable
     {
         private const int DisposedLiveFrames = 2;
 

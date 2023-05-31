@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 {
-    class AudioDeviceServer : IpcService
+    sealed class AudioDeviceServer : IpcService
     {
         private const int AudioDeviceNameSize = 0x100;
 

@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Horizon.LogManager
 {
-    class LmMain : IService
+    sealed class LmMain : IService
     {
         public static void Main(ServiceTable serviceTable)
         {

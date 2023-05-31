@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace Ryujinx.Graphics.GAL.Multithreading
 {
-    class SyncMap : IDisposable
+    sealed class SyncMap : IDisposable
     {
         private HashSet<ulong> _inFlight = new HashSet<ulong>();
         private AutoResetEvent _inFlightChanged = new AutoResetEvent(false);

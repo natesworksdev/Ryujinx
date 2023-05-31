@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.Cpu
 {
-    class PrivateMemoryAllocator : PrivateMemoryAllocatorImpl<PrivateMemoryAllocator.Block>
+    sealed class PrivateMemoryAllocator : PrivateMemoryAllocatorImpl<PrivateMemoryAllocator.Block>
     {
         public const ulong InvalidOffset = ulong.MaxValue;
 

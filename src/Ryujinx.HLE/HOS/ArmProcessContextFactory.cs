@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS
 {
-    class ArmProcessContextFactory : IProcessContextFactory
+    sealed class ArmProcessContextFactory : IProcessContextFactory
     {
         private readonly ITickSource _tickSource;
         private readonly GpuContext _gpu;

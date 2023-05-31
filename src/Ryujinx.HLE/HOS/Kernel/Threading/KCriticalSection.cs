@@ -2,7 +2,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel.Threading
 {
-    class KCriticalSection
+    sealed class KCriticalSection
     {
         private readonly KernelContext _context;
         private readonly object _lock;

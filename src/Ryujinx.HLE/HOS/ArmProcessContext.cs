@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS
             ulong codeSize);
     }
 
-    class ArmProcessContext<T> : IArmProcessContext where T : class, IVirtualMemoryManagerTracked, IMemoryManager
+    sealed class ArmProcessContext<T> : IArmProcessContext where T : class, IVirtualMemoryManagerTracked, IMemoryManager
     {
         private readonly ulong _pid;
         private readonly GpuContext _gpuContext;

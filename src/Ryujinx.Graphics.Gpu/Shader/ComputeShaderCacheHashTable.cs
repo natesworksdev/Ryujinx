@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// <summary>
     /// Compute shader cache hash table.
     /// </summary>
-    class ComputeShaderCacheHashTable
+    sealed class ComputeShaderCacheHashTable
     {
         private readonly PartitionedHashTable<ShaderSpecializationList> _cache;
         private readonly List<CachedShaderProgram> _shaderPrograms;

@@ -8,7 +8,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 {
-    class ISystemClock : IpcService
+    sealed class ISystemClock : IpcService
     {
         private SystemClockCore _clockCore;
         private bool            _writePermission;

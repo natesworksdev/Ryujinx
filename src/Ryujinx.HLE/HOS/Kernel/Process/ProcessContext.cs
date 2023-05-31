@@ -4,7 +4,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Kernel.Process
 {
-    class ProcessContext : IProcessContext
+    sealed class ProcessContext : IProcessContext
     {
         public IVirtualMemoryManager AddressSpace { get; }
 

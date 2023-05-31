@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
     /// <summary>
     /// Code type 3 allows for iterating in a loop a fixed number of times.
     /// </summary>
-    class StartEndLoop
+    sealed class StartEndLoop
     {
         private const int StartOrEndIndex = 1;
         private const int IterationRegisterIndex = 3;

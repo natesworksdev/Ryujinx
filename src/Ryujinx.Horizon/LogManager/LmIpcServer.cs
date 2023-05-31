@@ -4,7 +4,7 @@ using Ryujinx.Horizon.Sdk.Sm;
 
 namespace Ryujinx.Horizon.LogManager
 {
-    class LmIpcServer
+    sealed class LmIpcServer
     {
         private const int LogMaxSessionsCount = 42;
 

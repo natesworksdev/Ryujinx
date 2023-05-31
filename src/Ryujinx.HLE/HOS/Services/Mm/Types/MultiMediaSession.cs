@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Mm.Types
 {
-    class MultiMediaSession
+    sealed class MultiMediaSession
     {
         public MultiMediaOperationType Type { get; }
 

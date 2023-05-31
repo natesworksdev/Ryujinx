@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.Ui.Input
     /// <summary>
     /// Class that converts Hid entries for the Npad into pressed / released events.
     /// </summary>
-    class NpadReader
+    sealed class NpadReader
     {
         private readonly Switch _device;
         private NpadCommonState[] _lastStates;

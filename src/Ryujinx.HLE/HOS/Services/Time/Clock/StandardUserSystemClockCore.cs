@@ -4,7 +4,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
-    class StandardUserSystemClockCore : SystemClockCore
+    sealed class StandardUserSystemClockCore : SystemClockCore
     {
         private StandardLocalSystemClockCore   _localSystemClockCore;
         private StandardNetworkSystemClockCore _networkSystemClockCore;

@@ -8,7 +8,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.LibraryAppletCreator
 {
-    class ILibraryAppletAccessor : DisposableIpcService
+    sealed class ILibraryAppletAccessor : DisposableIpcService
     {
         private KernelContext _kernelContext;
 

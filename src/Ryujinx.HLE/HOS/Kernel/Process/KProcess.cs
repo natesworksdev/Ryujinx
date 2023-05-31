@@ -14,7 +14,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel.Process
 {
-    class KProcess : KSynchronizationObject
+    sealed class KProcess : KSynchronizationObject
     {
         public const uint KernelVersionMajor = 10;
         public const uint KernelVersionMinor = 4;

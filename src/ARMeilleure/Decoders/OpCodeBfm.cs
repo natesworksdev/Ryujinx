@@ -1,6 +1,6 @@
 namespace ARMeilleure.Decoders
 {
-    class OpCodeBfm : OpCodeAlu
+    sealed class OpCodeBfm : OpCodeAlu
     {
         public long WMask { get; }
         public long TMask { get; }

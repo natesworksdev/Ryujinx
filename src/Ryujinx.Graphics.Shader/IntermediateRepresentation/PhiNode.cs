@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 {
-    class PhiNode : INode
+    sealed class PhiNode : INode
     {
         private Operand _dest;
 

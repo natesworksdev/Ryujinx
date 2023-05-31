@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Services.Spl
     [Service("spl:manu")]
     [Service("spl:mig")]
     [Service("spl:ssl")]
-    class IGeneralInterface : IpcService
+    sealed class IGeneralInterface : IpcService
     {
         public IGeneralInterface(ServiceCtx context) { }
 
@@ -80,9 +80,9 @@ namespace Ryujinx.HLE.HOS.Services.Spl
                         configValue = (ulong)DramId.IcosaSamsung4GiB;
                     }
                     break;
-                case ConfigItem.SecurityEngineInterruptNumber: 
+                case ConfigItem.SecurityEngineInterruptNumber:
                     return SmcResult.NotImplemented;
-                case ConfigItem.FuseVersion: 
+                case ConfigItem.FuseVersion:
                     return SmcResult.NotImplemented;
                 case ConfigItem.HardwareType:
                     configValue = (ulong)HardwareType.Icosa;
@@ -93,7 +93,7 @@ namespace Ryujinx.HLE.HOS.Services.Spl
                 case ConfigItem.IsRecoveryBoot:
                     configValue = 0;
                     break;
-                case ConfigItem.DeviceId: 
+                case ConfigItem.DeviceId:
                     return SmcResult.NotImplemented;
                 case ConfigItem.BootReason:
                     // This was removed in firmware 4.0.0.

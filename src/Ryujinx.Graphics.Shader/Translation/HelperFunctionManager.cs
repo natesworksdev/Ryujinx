@@ -6,7 +6,7 @@ using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
 namespace Ryujinx.Graphics.Shader.Translation
 {
-    class HelperFunctionManager
+    sealed class HelperFunctionManager
     {
         private readonly List<Function> _functionList;
         private readonly Dictionary<HelperFunctionName, int> _functionIds;

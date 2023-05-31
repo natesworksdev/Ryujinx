@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 {
-    class INfp : IpcService
+    sealed class INfp : IpcService
     {
         private ulong  _appletResourceUserId;
         private ulong  _mcuVersionData;

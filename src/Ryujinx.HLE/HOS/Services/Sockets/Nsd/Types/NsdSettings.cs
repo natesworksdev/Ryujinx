@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 {
-    class NsdSettings
+    sealed class NsdSettings
     {
         public bool   Initialized;
         public bool   TestMode;

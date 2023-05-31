@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
     /// <summary>
     /// Advanced blend manager.
     /// </summary>
-    class AdvancedBlendManager
+    sealed class AdvancedBlendManager
     {
         private const int InstructionRamSize = 128;
         private const int InstructionRamSizeMask = InstructionRamSize - 1;

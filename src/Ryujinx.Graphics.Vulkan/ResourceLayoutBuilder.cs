@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class ResourceLayoutBuilder
+    sealed class ResourceLayoutBuilder
     {
         private const int TotalSets = PipelineBase.DescriptorSetLayouts;
 

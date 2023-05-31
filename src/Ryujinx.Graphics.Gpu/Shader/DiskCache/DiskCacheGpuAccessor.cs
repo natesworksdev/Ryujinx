@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
     /// <summary>
     /// Represents a GPU state and memory accessor.
     /// </summary>
-    class DiskCacheGpuAccessor : GpuAccessorBase, IGpuAccessor
+    sealed class DiskCacheGpuAccessor : GpuAccessorBase, IGpuAccessor
     {
         private readonly ReadOnlyMemory<byte> _data;
         private readonly ReadOnlyMemory<byte> _cb1Data;

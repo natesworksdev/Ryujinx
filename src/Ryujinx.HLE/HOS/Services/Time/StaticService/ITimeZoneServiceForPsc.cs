@@ -12,7 +12,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 {
-    class ITimeZoneServiceForPsc : IpcService
+    sealed class ITimeZoneServiceForPsc : IpcService
     {
         private TimeZoneManager _timeZoneManager;
         private bool            _writePermission;

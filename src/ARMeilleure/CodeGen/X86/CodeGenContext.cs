@@ -6,7 +6,7 @@ using System.Numerics;
 
 namespace ARMeilleure.CodeGen.X86
 {
-    class CodeGenContext
+    sealed class CodeGenContext
     {
         private readonly Stream _stream;
         private readonly Operand[] _blockLabels;

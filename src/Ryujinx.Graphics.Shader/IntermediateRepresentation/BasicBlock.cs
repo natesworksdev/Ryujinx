@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 {
-    class BasicBlock
+    sealed class BasicBlock
     {
         public int Index { get; set; }
 

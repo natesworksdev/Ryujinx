@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace Ryujinx.HLE.HOS.Tamper
 {
-    class InstructionHelper
+    sealed class InstructionHelper
     {
         private const int CodeTypeIndex = 0;
 

@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Tests.Audio.Renderer.Parameter.Effect
 {
-    class BiquadFilterEffectParameterTests
+    sealed class BiquadFilterEffectParameterTests
     {
         [Test]
         public void EnsureTypeSize()

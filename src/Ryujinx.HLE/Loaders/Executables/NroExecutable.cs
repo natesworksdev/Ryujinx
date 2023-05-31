@@ -4,7 +4,7 @@ using System;
 
 namespace Ryujinx.HLE.Loaders.Executables
 {
-    class NroExecutable : Nro, IExecutable
+    sealed class NroExecutable : Nro, IExecutable
     {
         public byte[] Program { get; }
         public Span<byte> Text => Program.AsSpan((int)TextOffset, (int)Header.NroSegments[0].Size);

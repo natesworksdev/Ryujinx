@@ -4,7 +4,7 @@ using System.Threading;
 namespace ARMeilleure.Diagnostics
 {
     [EventSource(Name = "ARMeilleure")]
-    class TranslatorEventSource : EventSource
+    sealed class TranslatorEventSource : EventSource
     {
         public static readonly TranslatorEventSource Log = new();
 

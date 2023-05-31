@@ -23,7 +23,7 @@ using RightsId = LibHac.Fs.RightsId;
 namespace Ryujinx.HLE.HOS.Services.Fs
 {
     [Service("fsp-srv")]
-    class IFileSystemProxy : DisposableIpcService
+    sealed class IFileSystemProxy : DisposableIpcService
     {
         private SharedRef<LibHac.FsSrv.Sf.IFileSystemProxy> _baseFileSystemProxy;
         private ulong _pid;

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Host1x
 {
-    class ThiDevice : IDeviceStateWithContext, IDisposable
+    sealed class ThiDevice : IDeviceStateWithContext, IDisposable
     {
         private readonly ClassId _classId;
         private readonly IDeviceState _device;

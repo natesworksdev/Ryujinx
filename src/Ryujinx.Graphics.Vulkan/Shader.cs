@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class Shader : IDisposable
+    sealed class Shader : IDisposable
     {
         // The shaderc.net dependency's Options constructor and dispose are not thread safe.
         // Take this lock when using them.

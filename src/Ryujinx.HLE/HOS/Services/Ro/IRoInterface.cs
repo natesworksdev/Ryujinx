@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 {
     [Service("ldr:ro")]
     [Service("ro:1")] // 7.0.0+
-    class IRoInterface : DisposableIpcService
+    sealed class IRoInterface : DisposableIpcService
     {
         private const int MaxNrr         = 0x40;
         private const int MaxNro         = 0x40;

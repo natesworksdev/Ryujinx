@@ -12,7 +12,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
     // Based on:
     // "Linear Scan Register Allocation for the Java(tm) HotSpot Client Compiler".
     // http://www.christianwimmer.at/Publications/Wimmer04a/Wimmer04a.pdf
-    class LinearScanAllocator : IRegisterAllocator
+    sealed class LinearScanAllocator : IRegisterAllocator
     {
         private const int InstructionGap     = 2;
         private const int InstructionGapMask = InstructionGap - 1;

@@ -1,6 +1,6 @@
 namespace ARMeilleure.Decoders
 {
-    class OpCode32MemImm : OpCode32Mem
+    sealed class OpCode32MemImm : OpCode32Mem
     {
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32MemImm(inst, address, opCode);
 

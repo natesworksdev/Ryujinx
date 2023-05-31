@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.HLE.HOS.Tamper
 {
-    class Pointer : IOperand
+    sealed class Pointer : IOperand
     {
         private IOperand _position;
         private ITamperedProcess _process;

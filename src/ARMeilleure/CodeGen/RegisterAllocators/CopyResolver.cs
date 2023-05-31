@@ -7,7 +7,7 @@ using static ARMeilleure.IntermediateRepresentation.Operation.Factory;
 
 namespace ARMeilleure.CodeGen.RegisterAllocators
 {
-    class CopyResolver
+    sealed class CopyResolver
     {
         private sealed class ParallelCopy
         {

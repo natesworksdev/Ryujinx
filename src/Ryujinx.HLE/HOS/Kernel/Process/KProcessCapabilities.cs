@@ -6,7 +6,7 @@ using System.Numerics;
 
 namespace Ryujinx.HLE.HOS.Kernel.Process
 {
-    class KProcessCapabilities
+    sealed class KProcessCapabilities
     {
         public byte[] SvcAccessMask { get; }
         public byte[] IrqAccessMask { get; }

@@ -11,7 +11,7 @@ using static Ryujinx.Graphics.Gpu.Shader.ShaderCache;
 
 namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 {
-    class ParallelDiskCacheLoader
+    sealed class ParallelDiskCacheLoader
     {
         private const int ThreadCount = 8;
 

@@ -8,7 +8,7 @@ using System.IO;
 
 namespace ARMeilleure.CodeGen.Arm64
 {
-    class CodeGenContext
+    sealed class CodeGenContext
     {
         private const int BccInstLength = 4;
         private const int CbnzInstLength = 4;

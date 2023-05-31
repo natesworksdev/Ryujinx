@@ -7,7 +7,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
     /// <summary>
     /// Represents a execution engine that uses a Just-in-Time compiler for fast execution.
     /// </summary>
-    class MacroJit : IMacroEE
+    sealed class MacroJit : IMacroEE
     {
         private readonly MacroJitContext _context = new MacroJitContext();
 

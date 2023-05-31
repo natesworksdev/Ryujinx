@@ -3,7 +3,7 @@ using Ryujinx.HLE.HOS.Services.Time.Clock;
 
 namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
-    class BufferSlot
+    sealed class BufferSlot
     {
         public AndroidStrongPointer<GraphicBuffer> GraphicBuffer;
         public BufferState                         BufferState;

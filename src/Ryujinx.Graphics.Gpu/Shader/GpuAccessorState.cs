@@ -3,7 +3,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// <summary>
     /// State used by the <see cref="GpuAccessor"/>.
     /// </summary>
-    class GpuAccessorState
+    sealed class GpuAccessorState
     {
         /// <summary>
         /// GPU texture pool state.

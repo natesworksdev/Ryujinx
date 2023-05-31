@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
-    class StandardNetworkSystemClockCore : SystemClockCore
+    sealed class StandardNetworkSystemClockCore : SystemClockCore
     {
         private TimeSpanType _standardNetworkClockSufficientAccuracy;
 

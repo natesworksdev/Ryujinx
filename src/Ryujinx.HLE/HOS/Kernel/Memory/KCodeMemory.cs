@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
-    class KCodeMemory : KAutoObject
+    sealed class KCodeMemory : KAutoObject
     {
         public KProcess Owner { get; private set; }
         private readonly KPageList _pageList;

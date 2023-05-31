@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.OpenGL
 {
-    class VertexArray : IDisposable
+    sealed class VertexArray : IDisposable
     {
         public int Handle { get; private set; }
 

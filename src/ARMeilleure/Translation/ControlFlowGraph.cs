@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace ARMeilleure.Translation
 {
-    class ControlFlowGraph
+    sealed class ControlFlowGraph
     {
         private BasicBlock[] _postOrderBlocks;
         private int[] _postOrderMap;

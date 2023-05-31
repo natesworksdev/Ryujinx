@@ -3,7 +3,7 @@ using Ryujinx.Graphics.GAL;
 
 namespace Ryujinx.Graphics.OpenGL.Image
 {
-    class Sampler : ISampler
+    sealed class Sampler : ISampler
     {
         public int Handle { get; private set; }
 

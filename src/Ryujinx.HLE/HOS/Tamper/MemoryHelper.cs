@@ -3,7 +3,7 @@ using Ryujinx.HLE.HOS.Tamper.Operations;
 
 namespace Ryujinx.HLE.HOS.Tamper
 {
-    class MemoryHelper
+    sealed class MemoryHelper
     {
         public static ulong GetAddressShift(MemoryRegion source, CompilationContext context)
         {

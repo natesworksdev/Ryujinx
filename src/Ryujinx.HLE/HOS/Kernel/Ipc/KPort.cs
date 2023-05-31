@@ -3,7 +3,7 @@ using Ryujinx.Horizon.Common;
 
 namespace Ryujinx.HLE.HOS.Kernel.Ipc
 {
-    class KPort : KAutoObject
+    sealed class KPort : KAutoObject
     {
         public KServerPort ServerPort { get; }
         public KClientPort ClientPort { get; }

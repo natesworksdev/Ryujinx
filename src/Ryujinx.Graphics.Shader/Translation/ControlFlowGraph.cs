@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Shader.Translation
 {
-    class ControlFlowGraph
+    sealed class ControlFlowGraph
     {
         public BasicBlock[] Blocks { get; }
         public BasicBlock[] PostOrderBlocks { get; }

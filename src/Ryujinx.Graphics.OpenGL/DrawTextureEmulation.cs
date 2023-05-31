@@ -4,7 +4,7 @@ using System;
 
 namespace Ryujinx.Graphics.OpenGL
 {
-    class DrawTextureEmulation
+    sealed class DrawTextureEmulation
     {
         private const string VertexShader = @"#version 430 core
 

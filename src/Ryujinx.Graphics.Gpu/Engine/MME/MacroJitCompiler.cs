@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
     /// <summary>
     /// Represents a Macro Just-in-Time compiler.
     /// </summary>R
-    class MacroJitCompiler
+    sealed class MacroJitCompiler
     {
         private readonly DynamicMethod _meth;
         private readonly ILGenerator _ilGen;

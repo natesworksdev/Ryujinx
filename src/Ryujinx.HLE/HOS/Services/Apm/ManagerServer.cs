@@ -2,7 +2,7 @@
 {
     [Service("apm")]
     [Service("apm:am")] // 8.0.0+
-    class ManagerServer : IManager
+    sealed class ManagerServer : IManager
     {
         private readonly ServiceCtx _context;
 

@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Ryujinx.Graphics.OpenGL.Queries
 {
-    class CounterQueueEvent : ICounterEvent
+    sealed class CounterQueueEvent : ICounterEvent
     {
         public event EventHandler<ulong> OnResult;
 

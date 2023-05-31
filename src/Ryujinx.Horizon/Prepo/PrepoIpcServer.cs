@@ -4,7 +4,7 @@ using Ryujinx.Horizon.Sdk.Sm;
 
 namespace Ryujinx.Horizon.Prepo
 {
-    class PrepoIpcServer
+    sealed class PrepoIpcServer
     {
         private const int PrepoMaxSessionsCount      = 12;
         private const int PrepoTotalMaxSessionsCount = PrepoMaxSessionsCount * 6;

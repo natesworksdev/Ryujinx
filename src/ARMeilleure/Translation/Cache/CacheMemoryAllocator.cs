@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace ARMeilleure.Translation.Cache
 {
-    class CacheMemoryAllocator
+    sealed class CacheMemoryAllocator
     {
         private readonly struct MemoryBlock : IComparable<MemoryBlock>
         {

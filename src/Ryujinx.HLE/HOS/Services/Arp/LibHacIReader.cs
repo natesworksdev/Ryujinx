@@ -8,7 +8,7 @@ using ApplicationId = LibHac.ApplicationId;
 
 namespace Ryujinx.HLE.HOS.Services.Arp
 {
-    class LibHacIReader : LibHac.Arp.Impl.IReader
+    sealed class LibHacIReader : LibHac.Arp.Impl.IReader
     {
         public ApplicationId ApplicationId { get; set; }
 

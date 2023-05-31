@@ -4,7 +4,7 @@ using Ryujinx.HLE.HOS.Services.Ptm.Ts.Types;
 namespace Ryujinx.HLE.HOS.Services.Ptm.Ts
 {
     [Service("ts")]
-    class IMeasurementServer : IpcService
+    sealed class IMeasurementServer : IpcService
     {
         private const uint DefaultTemperature = 42u;
 

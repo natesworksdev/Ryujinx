@@ -5,7 +5,7 @@ using Ryujinx.HLE.HOS.Services.Settings;
 namespace Ryujinx.HLE.HOS.Services.Bluetooth
 {
     [Service("bt")]
-    class IBluetoothUser : IpcService
+    sealed class IBluetoothUser : IpcService
     {
         public IBluetoothUser(ServiceCtx context) { }
 

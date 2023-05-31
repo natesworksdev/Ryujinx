@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Ryujinx.Cpu.AppleHv
 {
-    class HvExecutionContextVcpu : IHvExecutionContext
+    sealed class HvExecutionContextVcpu : IHvExecutionContext
     {
         private static MemoryBlock _setSimdFpRegFuncMem;
         private delegate hv_result_t SetSimdFpReg(ulong vcpu, hv_simd_fp_reg_t reg, in V128 value, IntPtr funcPtr);

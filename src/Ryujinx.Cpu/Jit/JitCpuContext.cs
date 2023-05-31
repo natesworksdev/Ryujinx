@@ -3,7 +3,7 @@ using ARMeilleure.Translation;
 
 namespace Ryujinx.Cpu.Jit
 {
-    class JitCpuContext : ICpuContext
+    sealed class JitCpuContext : ICpuContext
     {
         private readonly ITickSource _tickSource;
         private readonly Translator _translator;

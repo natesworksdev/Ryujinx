@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Horizon.Sdk.Sf
 {
-    class HipcCommandProcessor : ServerMessageProcessor
+    sealed class HipcCommandProcessor : ServerMessageProcessor
     {
         private readonly CommandArg[] _args;
 

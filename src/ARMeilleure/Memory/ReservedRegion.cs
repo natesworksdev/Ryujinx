@@ -2,7 +2,7 @@
 
 namespace ARMeilleure.Memory
 {
-    class ReservedRegion
+    sealed class ReservedRegion
     {
         public const int DefaultGranularity = 65536; // Mapping granularity in Windows.
 

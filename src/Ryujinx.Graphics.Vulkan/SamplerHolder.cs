@@ -3,7 +3,7 @@ using Silk.NET.Vulkan;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class SamplerHolder : ISampler
+    sealed class SamplerHolder : ISampler
     {
         private readonly VulkanRenderer _gd;
         private readonly Auto<DisposableSampler> _sampler;

@@ -3,7 +3,7 @@
 namespace Ryujinx.HLE.HOS.Services
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-    class ServiceAttribute : Attribute
+    sealed class ServiceAttribute : Attribute
     {
         public readonly string Name;
         public readonly object Parameter;

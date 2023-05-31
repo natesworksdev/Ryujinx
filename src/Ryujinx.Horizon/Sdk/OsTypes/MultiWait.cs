@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Horizon.Sdk.OsTypes
 {
-    class MultiWait
+    sealed class MultiWait
     {
         private readonly MultiWaitImpl _impl;
 

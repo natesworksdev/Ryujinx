@@ -8,7 +8,7 @@ using AudioRendererManagerImpl = Ryujinx.Audio.Renderer.Server.AudioRendererMana
 
 namespace Ryujinx.HLE.HOS.Services.Audio
 {
-    class AudioRendererManager : IAudioRendererManager
+    sealed class AudioRendererManager : IAudioRendererManager
     {
         private AudioRendererManagerImpl _impl;
         private VirtualDeviceSessionRegistry _registry;

@@ -3,7 +3,7 @@ using Ryujinx.HLE.HOS.Kernel.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 {
-    class AudioKernelEvent : IWritableEvent
+    sealed class AudioKernelEvent : IWritableEvent
     {
         public KEvent Event { get; }
 

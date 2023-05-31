@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl.Types
 {
-    class GetConfigurationArguments
+    sealed class GetConfigurationArguments
     {
         public string Domain;
         public string Parameter;

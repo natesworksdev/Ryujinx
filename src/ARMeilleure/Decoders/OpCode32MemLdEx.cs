@@ -1,6 +1,6 @@
 ﻿namespace ARMeilleure.Decoders
 {
-    class OpCode32MemLdEx : OpCode32Mem, IOpCode32MemEx
+    sealed class OpCode32MemLdEx : OpCode32Mem, IOpCode32MemEx
     {
         public int Rd { get; }
 

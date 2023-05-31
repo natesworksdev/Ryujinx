@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     /// <summary>
     /// Draw manager.
     /// </summary>
-    class DrawManager
+    sealed class DrawManager
     {
         // Since we don't know the index buffer size for indirect draws,
         // we must assume a minimum and maximum size and use that for buffer data update purposes.

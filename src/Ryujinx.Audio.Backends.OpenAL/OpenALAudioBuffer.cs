@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Audio.Backends.OpenAL
 {
-    class OpenALAudioBuffer
+    sealed class OpenALAudioBuffer
     {
         public int BufferId;
         public ulong DriverIdentifier;

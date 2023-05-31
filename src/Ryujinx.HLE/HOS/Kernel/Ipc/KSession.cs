@@ -3,7 +3,7 @@ using Ryujinx.HLE.HOS.Kernel.Process;
 
 namespace Ryujinx.HLE.HOS.Kernel.Ipc
 {
-    class KSession : KAutoObject
+    sealed class KSession : KAutoObject
     {
         public KServerSession ServerSession { get; }
         public KClientSession ClientSession { get; }

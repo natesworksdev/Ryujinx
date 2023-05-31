@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Tamper.Operations
 {
-    class OpProcCtrl : IOperation
+    sealed class OpProcCtrl : IOperation
     {
         private ITamperedProcess _process;
         private bool _pause;

@@ -7,7 +7,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy
 {
-    class ISelfController : IpcService
+    sealed class ISelfController : IpcService
     {
         private readonly ulong _pid;
 

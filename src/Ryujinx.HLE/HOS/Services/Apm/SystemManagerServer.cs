@@ -1,7 +1,7 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Apm
 {
     [Service("apm:sys")]
-    class SystemManagerServer : ISystemManager
+    sealed class SystemManagerServer : ISystemManager
     {
         private readonly ServiceCtx _context;
 

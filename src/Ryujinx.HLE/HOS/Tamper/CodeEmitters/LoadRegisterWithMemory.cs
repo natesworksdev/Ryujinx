@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
     /// Code type 5 allows loading a value from memory into a register, either using a fixed address or by
     /// dereferencing the destination register.
     /// </summary>
-    class LoadRegisterWithMemory
+    sealed class LoadRegisterWithMemory
     {
         private const int OperationWidthIndex = 1;
         private const int MemoryRegionIndex = 2;

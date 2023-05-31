@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class BackgroundResource : IDisposable
+    sealed class BackgroundResource : IDisposable
     {
         private VulkanRenderer _gd;
         private Device _device;
@@ -53,7 +53,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
     }
 
-    class BackgroundResources : IDisposable
+    sealed class BackgroundResources : IDisposable
     {
         private VulkanRenderer _gd;
         private Device _device;

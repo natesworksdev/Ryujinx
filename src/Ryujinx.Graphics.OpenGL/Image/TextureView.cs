@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.Graphics.OpenGL.Image
 {
-    class TextureView : TextureBase, ITexture, ITextureInfo
+    sealed class TextureView : TextureBase, ITexture, ITextureInfo
     {
         private readonly OpenGLRenderer _renderer;
 

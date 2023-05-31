@@ -1,6 +1,6 @@
 namespace ARMeilleure.Decoders
 {
-    class OpCodeSimdMemImm : OpCodeMemImm, IOpCodeSimd
+    sealed class OpCodeSimdMemImm : OpCodeMemImm, IOpCodeSimd
     {
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeSimdMemImm(inst, address, opCode);
 

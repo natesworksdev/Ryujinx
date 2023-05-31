@@ -3,7 +3,7 @@
     /// <summary>
     /// Marks the begin of a conditional block (started by Code Type 1, Code Type 8 or Code Type C0).
     /// </summary>
-    class BeginConditionalBlock
+    sealed class BeginConditionalBlock
     {
         public static void Emit(byte[] instruction, CompilationContext context)
         {

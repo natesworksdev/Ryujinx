@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Tests.Audio.Renderer.Dsp
 {
-    class ResamplerTests
+    sealed class ResamplerTests
     {
         [Test]
         [TestCase(VoiceInParameter.SampleRateConversionQuality.Low)]

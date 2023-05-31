@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
-    class Parcel
+    sealed class Parcel
     {
         private readonly byte[] _rawData;
 

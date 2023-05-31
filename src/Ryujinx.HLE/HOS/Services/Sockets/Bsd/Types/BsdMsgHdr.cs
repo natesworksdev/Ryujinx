@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Types
 {
-    class BsdMsgHdr
+    sealed class BsdMsgHdr
     {
         public byte[] Name { get; }
         public byte[][] Iov { get; }

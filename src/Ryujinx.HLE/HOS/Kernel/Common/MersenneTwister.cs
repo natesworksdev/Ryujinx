@@ -2,7 +2,7 @@ using System.Numerics;
 
 namespace Ryujinx.HLE.HOS.Kernel.Common
 {
-    class MersenneTwister
+    sealed class MersenneTwister
     {
         private int _index;
         private uint[] _mt;

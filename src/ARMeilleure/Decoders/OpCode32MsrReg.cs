@@ -2,7 +2,7 @@
 
 namespace ARMeilleure.Decoders
 {
-    class OpCode32MsrReg : OpCode32
+    sealed class OpCode32MsrReg : OpCode32
     {
         public bool R      { get; }
         public int  Mask   { get; }

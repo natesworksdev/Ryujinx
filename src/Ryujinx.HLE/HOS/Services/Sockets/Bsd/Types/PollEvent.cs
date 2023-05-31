@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Types
 {
-    class PollEvent
+    sealed class PollEvent
     {
         public PollEventData Data;
         public IFileDescriptor FileDescriptor { get; }

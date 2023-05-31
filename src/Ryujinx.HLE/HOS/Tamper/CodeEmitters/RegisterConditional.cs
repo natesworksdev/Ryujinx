@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
     /// This code support multiple operand types, see below. If the condition is not met,
     /// all instructions until the appropriate conditional block terminator are skipped.
     /// </summary>
-    class RegisterConditional
+    sealed class RegisterConditional
     {
         private const int OperationWidthIndex = 2;
         private const int ComparisonTypeIndex = 3;

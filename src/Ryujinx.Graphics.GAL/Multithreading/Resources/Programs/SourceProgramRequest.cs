@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Graphics.GAL.Multithreading.Resources.Programs
 {
-    class SourceProgramRequest : IProgramRequest
+    sealed class SourceProgramRequest : IProgramRequest
     {
         public ThreadedProgram Threaded { get; set; }
 

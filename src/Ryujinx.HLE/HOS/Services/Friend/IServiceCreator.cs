@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
     [Service("friend:s", FriendServicePermissionLevel.System)]
     [Service("friend:u", FriendServicePermissionLevel.User)]
     [Service("friend:v", FriendServicePermissionLevel.Viewer)]
-    class IServiceCreator : IpcService
+    sealed class IServiceCreator : IpcService
     {
         private FriendServicePermissionLevel _permissionLevel;
 

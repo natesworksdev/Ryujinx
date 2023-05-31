@@ -8,7 +8,7 @@ using System.Net;
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy
 {
-    class DnsMitmResolver
+    sealed class DnsMitmResolver
     {
         private const string HostsFilePath = "/atmosphere/hosts/default.txt";
 

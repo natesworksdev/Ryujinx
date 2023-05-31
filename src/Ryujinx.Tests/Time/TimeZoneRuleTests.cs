@@ -6,7 +6,7 @@ namespace Ryujinx.Tests.Time
 {
     internal sealed class TimeZoneRuleTests
     {
-        class EffectInfoParameterTests
+        sealed class EffectInfoParameterTests
         {
             [Test]
             public void EnsureTypeSize()

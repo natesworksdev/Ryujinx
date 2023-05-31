@@ -5,7 +5,7 @@
     /// NOTE: Registers are saved and restored to a different set of registers than the ones used
     /// for the other opcodes (Save Registers).
     /// </summary>
-    class SaveOrRestoreRegisterWithMask
+    sealed class SaveOrRestoreRegisterWithMask
     {
         private const int OperationTypeIndex = 2;
         private const int RegisterMaskIndex = 4;

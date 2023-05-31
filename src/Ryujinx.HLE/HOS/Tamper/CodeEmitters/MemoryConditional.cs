@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
     /// If the condition is not met, all instructions until the appropriate conditional block terminator
     /// are skipped.
     /// </summary>
-    class MemoryConditional
+    sealed class MemoryConditional
     {
         private const int OperationWidthIndex = 1;
         private const int MemoryRegionIndex = 2;

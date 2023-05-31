@@ -3,7 +3,7 @@ using Ryujinx.HLE.HOS.Services.Nim.ShopServiceAccessServerInterface.ShopServiceA
 
 namespace Ryujinx.HLE.HOS.Services.Nim.ShopServiceAccessServerInterface
 {
-    class IShopServiceAccessServer : IpcService
+    sealed class IShopServiceAccessServer : IpcService
     {
         public IShopServiceAccessServer() { }
 

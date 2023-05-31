@@ -2,11 +2,11 @@
 
 namespace Ryujinx.HLE.HOS.Services.Apm
 {
-    class SessionServer : ISession
+    sealed class SessionServer : ISession
     {
         private readonly ServiceCtx _context;
 
-        public SessionServer(ServiceCtx context) : base(context) 
+        public SessionServer(ServiceCtx context) : base(context)
         {
             _context = context;
         }

@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.Horizon.Sdk.Sf.Cmif
 {
-    class ServiceObjectHolder
+    sealed class ServiceObjectHolder
     {
         public IServiceObject ServiceObject { get; }
 

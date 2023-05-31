@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     /// <summary>
     /// GPU state updater.
     /// </summary>
-    class StateUpdater
+    sealed class StateUpdater
     {
         public const int ShaderStateIndex = 26;
         public const int RasterizerStateIndex = 15;

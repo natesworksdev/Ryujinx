@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 {
-    class NvMapIdDictionary
+    sealed class NvMapIdDictionary
     {
         private readonly ConcurrentDictionary<int, NvMapHandle> _nvmapHandles;
         private int _id;

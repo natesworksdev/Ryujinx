@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
-    class SharedMemoryStorage
+    sealed class SharedMemoryStorage
     {
         private readonly KernelContext _context;
         private readonly KPageList _pageList;

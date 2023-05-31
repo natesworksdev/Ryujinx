@@ -2,7 +2,7 @@
 
 namespace ARMeilleure.Decoders
 {
-    class OpCode32AluUx : OpCode32AluReg, IOpCode32AluUx
+    sealed class OpCode32AluUx : OpCode32AluReg, IOpCode32AluUx
     {
         public int Rotate { get; }
         public int RotateBits => Rotate * 8;

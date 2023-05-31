@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
     /// <summary>
     /// Code type 6 allows writing a fixed value to a memory address specified by a register.
     /// </summary>
-    class StoreConstantToMemory
+    sealed class StoreConstantToMemory
     {
         private const int OperationWidthIndex = 1;
         private const int AddressRegisterIndex = 3;

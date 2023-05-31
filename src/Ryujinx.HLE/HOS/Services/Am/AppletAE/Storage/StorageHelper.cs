@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.Storage
 {
-    class StorageHelper
+    sealed class StorageHelper
     {
         private const uint LaunchParamsMagic = 0xc79497ca;
 

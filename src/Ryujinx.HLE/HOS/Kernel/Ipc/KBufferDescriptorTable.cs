@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Kernel.Ipc
 {
-    class KBufferDescriptorTable
+    sealed class KBufferDescriptorTable
     {
         private const int MaxInternalBuffersCount = 8;
 

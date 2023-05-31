@@ -7,7 +7,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Nim.ShopServiceAccessServerInterface.ShopServiceAccessServer
 {
-    class IShopServiceAccessor : IpcService
+    sealed class IShopServiceAccessor : IpcService
     {
         private readonly KEvent _event;
 

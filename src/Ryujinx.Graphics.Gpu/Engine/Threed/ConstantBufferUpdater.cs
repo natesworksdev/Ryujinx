@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     /// <summary>
     /// Constant buffer updater.
     /// </summary>
-    class ConstantBufferUpdater
+    sealed class ConstantBufferUpdater
     {
         private const int UniformDataCacheSize = 512;
 

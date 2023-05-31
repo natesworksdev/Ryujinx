@@ -18,7 +18,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         }
     }
 
-    class StructuredProgramInfo
+    sealed class StructuredProgramInfo
     {
         public List<StructuredFunction> Functions { get; }
 

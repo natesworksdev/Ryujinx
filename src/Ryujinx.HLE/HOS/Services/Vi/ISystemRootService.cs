@@ -4,7 +4,7 @@ using Ryujinx.HLE.HOS.Services.Vi.Types;
 namespace Ryujinx.HLE.HOS.Services.Vi
 {
     [Service("vi:s")]
-    class ISystemRootService : IpcService
+    sealed class ISystemRootService : IpcService
     {
         // vi:u/m/s aren't on 3 separate threads but we can't put them together with the current ServerBase
         public ISystemRootService(ServiceCtx context) : base(context.Device.System.ViServerS) { }

@@ -1,7 +1,7 @@
 namespace Ryujinx.HLE.HOS.Services.Cec
 {
     [Service("cec-mgr")]
-    class ICecManager : IpcService
+    sealed class ICecManager : IpcService
     {
         public ICecManager(ServiceCtx context) { }
     }

@@ -7,7 +7,7 @@ using GpuContext = Ryujinx.Graphics.Gpu.GpuContext;
 
 namespace Ryujinx.HLE.HOS.Services.Nv
 {
-    class Host1xContext : IDisposable
+    sealed class Host1xContext : IDisposable
     {
         public MemoryManager Smmu { get; }
         public NvMemoryAllocator MemoryAllocator { get; }

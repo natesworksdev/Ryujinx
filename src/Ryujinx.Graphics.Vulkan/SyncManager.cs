@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class SyncManager
+    sealed class SyncManager
     {
         private sealed class SyncHandle
         {

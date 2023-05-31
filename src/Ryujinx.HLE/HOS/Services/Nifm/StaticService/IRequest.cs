@@ -6,7 +6,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 {
-    class IRequest : IpcService
+    sealed class IRequest : IpcService
     {
         private enum RequestState
         {

@@ -2,7 +2,7 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
-    class GotoStatement
+    sealed class GotoStatement
     {
         public AstOperation  Goto  { get; }
         public AstAssignment Label { get; }

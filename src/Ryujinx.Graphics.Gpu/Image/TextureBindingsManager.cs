@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// <summary>
     /// Texture bindings manager.
     /// </summary>
-    class TextureBindingsManager
+    sealed class TextureBindingsManager
     {
         private const int InitialTextureStateSize = 32;
         private const int InitialImageStateSize = 8;

@@ -1,6 +1,6 @@
 namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 {
-    class TextureOperation : Operation
+    sealed class TextureOperation : Operation
     {
         public const int DefaultCbufSlot = -1;
 

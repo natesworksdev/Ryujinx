@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel.Common
 {
-    class KTimeManager : IDisposable
+    sealed class KTimeManager : IDisposable
     {
         public static readonly long DefaultTimeIncrementNanoseconds = ConvertGuestTicksToNanoseconds(2);
 

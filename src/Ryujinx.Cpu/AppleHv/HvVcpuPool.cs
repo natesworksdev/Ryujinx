@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace Ryujinx.Cpu.AppleHv
 {
-    class HvVcpuPool
+    sealed class HvVcpuPool
     {
         // Since there's a limit on the number of VCPUs we can create,
         // and we assign one VCPU per guest thread, we need to ensure

@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
-    class TickBasedSteadyClockCore : SteadyClockCore
+    sealed class TickBasedSteadyClockCore : SteadyClockCore
     {
         public TickBasedSteadyClockCore() {}
 

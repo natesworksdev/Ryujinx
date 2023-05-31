@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Tamper
 {
-    class CompilationContext
+    sealed class CompilationContext
     {
         public OperationBlock CurrentBlock => BlockStack.Peek();
         public List<IOperation> CurrentOperations => CurrentBlock.Operations;

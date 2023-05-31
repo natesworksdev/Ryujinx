@@ -4,7 +4,7 @@ using Ryujinx.HLE.HOS.Services.Ncm.Lr.LocationResolverManager;
 namespace Ryujinx.HLE.HOS.Services.Ncm.Lr
 {
     [Service("lr")]
-    class ILocationResolverManager : IpcService
+    sealed class ILocationResolverManager : IpcService
     {
         public ILocationResolverManager(ServiceCtx context) { }
 

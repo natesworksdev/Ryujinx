@@ -8,7 +8,7 @@ using static ARMeilleure.IntermediateRepresentation.Operation.Factory;
 
 namespace ARMeilleure.CodeGen.X86
 {
-    class PreAllocatorWindows : PreAllocator
+    sealed class PreAllocatorWindows : PreAllocator
     {
         public static void InsertCallCopies(IntrusiveList<Operation> nodes, StackAllocator stackAlloc, Operation node)
         {

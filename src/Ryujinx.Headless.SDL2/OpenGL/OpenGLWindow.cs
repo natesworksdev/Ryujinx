@@ -9,7 +9,7 @@ using static SDL2.SDL;
 
 namespace Ryujinx.Headless.SDL2.OpenGL
 {
-    class OpenGLWindow : WindowBase
+    sealed class OpenGLWindow : WindowBase
     {
         private static void SetupOpenGLAttributes(bool sharedContext, GraphicsDebugLevel debugLevel)
         {

@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Arp
 {
-    class ApplicationLaunchProperty
+    sealed class ApplicationLaunchProperty
     {
         public ulong TitleId;
         public int   Version;

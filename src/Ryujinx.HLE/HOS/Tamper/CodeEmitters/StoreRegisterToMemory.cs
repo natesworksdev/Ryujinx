@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
     /// <summary>
     /// Code type 10 allows writing a register to memory.
     /// </summary>
-    class StoreRegisterToMemory
+    sealed class StoreRegisterToMemory
     {
         private const int OperationWidthIndex = 1;
         private const int SourceRegisterIndex = 2;

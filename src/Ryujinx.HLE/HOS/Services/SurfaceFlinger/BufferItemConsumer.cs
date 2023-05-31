@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
-    class BufferItemConsumer : ConsumerBase
+    sealed class BufferItemConsumer : ConsumerBase
     {
         private GpuContext _gpuContext;
 

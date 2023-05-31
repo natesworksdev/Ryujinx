@@ -4,7 +4,7 @@ using System;
 namespace Ryujinx.Horizon.Sdk.Sf
 {
     [AttributeUsage(AttributeTargets.Parameter)]
-    class BufferAttribute : Attribute
+    sealed class BufferAttribute : Attribute
     {
         public HipcBufferFlags Flags     { get; }
         public ushort          FixedSize { get; }
@@ -22,17 +22,17 @@ namespace Ryujinx.Horizon.Sdk.Sf
     }
 
     [AttributeUsage(AttributeTargets.Parameter)]
-    class ClientProcessIdAttribute : Attribute
+    sealed class ClientProcessIdAttribute : Attribute
     {
     }
 
     [AttributeUsage(AttributeTargets.Parameter)]
-    class CopyHandleAttribute : Attribute
+    sealed class CopyHandleAttribute : Attribute
     {
     }
 
     [AttributeUsage(AttributeTargets.Parameter)]
-    class MoveHandleAttribute : Attribute
+    sealed class MoveHandleAttribute : Attribute
     {
     }
 }

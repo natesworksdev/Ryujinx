@@ -2,7 +2,7 @@
 
 namespace ARMeilleure.Decoders
 {
-    class OpCodeT16IfThen : OpCodeT16
+    sealed class OpCodeT16IfThen : OpCodeT16
     {
         public Condition[] IfThenBlockConds { get; }
 

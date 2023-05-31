@@ -15,7 +15,7 @@ using System.Text;
 namespace Ryujinx.HLE.HOS.Services.Settings
 {
     [Service("set:sys")]
-    class ISystemSettingsServer : IpcService
+    sealed class ISystemSettingsServer : IpcService
     {
         public ISystemSettingsServer(ServiceCtx context) { }
 

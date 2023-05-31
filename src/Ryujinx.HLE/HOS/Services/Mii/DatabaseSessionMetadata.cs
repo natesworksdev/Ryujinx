@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Mii
 {
-    class DatabaseSessionMetadata
+    sealed class DatabaseSessionMetadata
     {
         public uint  InterfaceVersion;
         public ulong UpdateCounter;

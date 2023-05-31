@@ -8,7 +8,7 @@ using DspAddress = System.UInt64;
 
 namespace Ryujinx.Tests.Audio.Renderer.Server
 {
-    class PoolMapperTests
+    sealed class PoolMapperTests
     {
         private const uint DummyProcessHandle = 0xCAFEBABE;
 

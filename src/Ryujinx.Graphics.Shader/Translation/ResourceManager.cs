@@ -5,7 +5,7 @@ using System.Globalization;
 
 namespace Ryujinx.Graphics.Shader.Translation
 {
-    class ResourceManager
+    sealed class ResourceManager
     {
         private static readonly string[] _stagePrefixes = new string[] { "cp", "vp", "tcp", "tep", "gp", "fp" };
 

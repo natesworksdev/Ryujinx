@@ -2,7 +2,7 @@
 
 namespace ARMeilleure.Decoders
 {
-    class OpCode32SimdMemPair : OpCode32, IOpCode32Simd
+    sealed class OpCode32SimdMemPair : OpCode32, IOpCode32Simd
     {
         private static int[] _regsMap =
         {

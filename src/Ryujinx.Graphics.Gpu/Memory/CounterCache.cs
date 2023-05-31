@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// <summary>
     /// Represents the GPU counter cache.
     /// </summary>
-    class CounterCache
+    sealed class CounterCache
     {
         private readonly struct CounterEntry
         {
@@ -127,7 +127,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 _items[index].Event?.Flush();
 
                 return true;
-            } 
+            }
             else
             {
                 return false;

@@ -10,7 +10,7 @@ using ConfigKey = Ryujinx.Common.Configuration.Hid.Key;
 
 namespace Ryujinx.Input.SDL2
 {
-    class SDL2Keyboard : IKeyboard
+    sealed class SDL2Keyboard : IKeyboard
     {
         private sealed class ButtonMappingEntry
         {

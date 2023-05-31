@@ -3,7 +3,7 @@ using VkFormat = Silk.NET.Vulkan.Format;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class PipelineHelperShader : PipelineBase
+    sealed class PipelineHelperShader : PipelineBase
     {
         public PipelineHelperShader(VulkanRenderer gd, Device device) : base(gd, device)
         {

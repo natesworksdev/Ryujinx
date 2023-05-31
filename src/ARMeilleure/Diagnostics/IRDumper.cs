@@ -7,7 +7,7 @@ using System.Text;
 
 namespace ARMeilleure.Diagnostics
 {
-    class IRDumper
+    sealed class IRDumper
     {
         private const string Indentation = " ";
 

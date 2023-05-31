@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Ryujinx.Graphics.OpenGL.Queries
 {
-    class BufferedQuery : IDisposable
+    sealed class BufferedQuery : IDisposable
     {
         private const int MaxQueryRetries = 5000;
         private const long DefaultValue = -1;

@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Ryujinx.Graphics.Vulkan.Queries
 {
-    class CounterQueue : IDisposable
+    sealed class CounterQueue : IDisposable
     {
         private const int QueryPoolInitialSize = 100;
 

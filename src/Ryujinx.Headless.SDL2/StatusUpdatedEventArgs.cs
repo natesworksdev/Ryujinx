@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Headless.SDL2
 {
-    class StatusUpdatedEventArgs : EventArgs
+    sealed class StatusUpdatedEventArgs : EventArgs
     {
         public bool VSyncEnabled;
         public string DockedMode;

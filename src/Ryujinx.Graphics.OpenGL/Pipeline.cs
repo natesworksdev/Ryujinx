@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.OpenGL
 {
-    class Pipeline : IPipeline, IDisposable
+    sealed class Pipeline : IPipeline, IDisposable
     {
         private const int SavedImages = 2;
 

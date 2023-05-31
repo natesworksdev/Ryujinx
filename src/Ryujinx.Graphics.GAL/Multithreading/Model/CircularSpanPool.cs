@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Model
     /// Data is copied on creation to part of the pool, then that region is reserved until it is disposed by the consumer.
     /// Similar to the command queue, this pool assumes that data is created and disposed in the same order.
     /// </summary>
-    class CircularSpanPool
+    sealed class CircularSpanPool
     {
         private ThreadedRenderer _renderer;
         private byte[] _pool;

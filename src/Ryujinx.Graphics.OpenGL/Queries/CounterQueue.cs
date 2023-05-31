@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Ryujinx.Graphics.OpenGL.Queries
 {
-    class CounterQueue : IDisposable
+    sealed class CounterQueue : IDisposable
     {
         private const int QueryPoolInitialSize = 100;
 

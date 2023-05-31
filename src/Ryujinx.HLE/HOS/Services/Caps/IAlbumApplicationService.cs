@@ -5,7 +5,7 @@ using Ryujinx.HLE.HOS.Services.Caps.Types;
 namespace Ryujinx.HLE.HOS.Services.Caps
 {
     [Service("caps:u")]
-    class IAlbumApplicationService : IpcService
+    sealed class IAlbumApplicationService : IpcService
     {
         public IAlbumApplicationService(ServiceCtx context) { }
 
@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
 
         [CommandCmif(102)]
         // GetAlbumFileList0AafeAruidDeprecated(pid, u16 content_type, u64 start_time, u64 end_time, nn::applet::AppletResourceUserId) -> (u64 count, buffer<ApplicationAlbumFileEntry, 0x6>)
-        public ResultCode GetAlbumFileList0AafeAruidDeprecated(ServiceCtx context) 
+        public ResultCode GetAlbumFileList0AafeAruidDeprecated(ServiceCtx context)
         {
             // NOTE: ApplicationAlbumFileEntry size is 0x30.
             return GetAlbumFileList(context);

@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd.Manager
 {
-    class FqdnResolver
+    sealed class FqdnResolver
     {
         private const string _dummyAddress = "unknown.dummy.nintendo.net";
 

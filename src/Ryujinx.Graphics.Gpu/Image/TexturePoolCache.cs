@@ -5,7 +5,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// This can keep multiple texture pools, and return the current one as needed.
     /// It is useful for applications that uses multiple texture pools.
     /// </summary>
-    class TexturePoolCache : PoolCache<TexturePool>
+    sealed class TexturePoolCache : PoolCache<TexturePool>
     {
         /// <summary>
         /// Constructs a new instance of the texture pool.

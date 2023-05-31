@@ -5,7 +5,7 @@ using Ryujinx.HLE.HOS.Ipc;
 
 namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 {
-    class IStorage : DisposableIpcService
+    sealed class IStorage : DisposableIpcService
     {
         private SharedRef<LibHac.FsSrv.Sf.IStorage> _baseStorage;
 

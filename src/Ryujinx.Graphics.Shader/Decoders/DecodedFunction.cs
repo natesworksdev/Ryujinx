@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Shader.Decoders
 {
-    class DecodedFunction
+    sealed class DecodedFunction
     {
         private readonly HashSet<DecodedFunction> _callers;
 

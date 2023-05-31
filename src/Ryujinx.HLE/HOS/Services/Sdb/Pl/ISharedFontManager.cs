@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
 {
     [Service("pl:u")]
     [Service("pl:s")] // 9.0.0+
-    class ISharedFontManager : IpcService
+    sealed class ISharedFontManager : IpcService
     {
         private int _fontSharedMemHandle;
 

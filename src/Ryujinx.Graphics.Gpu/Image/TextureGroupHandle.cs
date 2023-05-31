@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// Also tracks copy dependencies for the handle - references to other handles that must be kept
     /// in sync with this one before use.
     /// </summary>
-    class TextureGroupHandle : ISyncActionHandler, IDisposable
+    sealed class TextureGroupHandle : ISyncActionHandler, IDisposable
     {
         private const int FlushBalanceIncrement = 6;
         private const int FlushBalanceWriteCost = 1;

@@ -7,7 +7,7 @@ using System;
 
 namespace Ryujinx.Horizon.Bcat
 {
-    class BcatServerManager : ServerManager
+    sealed class BcatServerManager : ServerManager
     {
         public BcatServerManager(HeapAllocator allocator, SmApi sm, int maxPorts, ManagerOptions options, int maxSessions) : base(allocator, sm, maxPorts, options, maxSessions)
         {

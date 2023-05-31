@@ -4,7 +4,7 @@ using Ryujinx.HLE.HOS.Services.Vi.Types;
 namespace Ryujinx.HLE.HOS.Services.Vi
 {
     [Service("vi:u")]
-    class IApplicationRootService : IpcService
+    sealed class IApplicationRootService : IpcService
     {
         public IApplicationRootService(ServiceCtx context) : base(context.Device.System.ViServer) { }
 

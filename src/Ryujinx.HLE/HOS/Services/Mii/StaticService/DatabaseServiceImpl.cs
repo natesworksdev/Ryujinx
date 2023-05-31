@@ -4,7 +4,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
 {
-    class DatabaseServiceImpl : IDatabaseService
+    sealed class DatabaseServiceImpl : IDatabaseService
     {
         private DatabaseImpl            _database;
         private DatabaseSessionMetadata _metadata;

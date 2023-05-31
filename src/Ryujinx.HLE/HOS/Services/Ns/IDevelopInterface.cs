@@ -1,7 +1,7 @@
 namespace Ryujinx.HLE.HOS.Services.Ns
 {
     [Service("ns:dev")]
-    class IDevelopInterface : IpcService
+    sealed class IDevelopInterface : IpcService
     {
         public IDevelopInterface(ServiceCtx context) { }
     }

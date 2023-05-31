@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.Graphics.Nvdec
 {
-    class NvdecDecoderContext : IDisposable
+    sealed class NvdecDecoderContext : IDisposable
     {
         private FFmpeg.H264.Decoder _h264Decoder;
         private FFmpeg.Vp8.Decoder _vp8Decoder;

@@ -5,7 +5,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// <summary>
     /// Shader dumper, writes binary shader code to disk.
     /// </summary>
-    class ShaderDumper
+    sealed class ShaderDumper
     {
         private string _runtimeDir;
         private string _dumpPath;

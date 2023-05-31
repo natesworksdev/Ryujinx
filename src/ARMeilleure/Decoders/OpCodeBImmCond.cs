@@ -1,6 +1,6 @@
 namespace ARMeilleure.Decoders
 {
-    class OpCodeBImmCond : OpCodeBImm, IOpCodeCond
+    sealed class OpCodeBImmCond : OpCodeBImm, IOpCodeCond
     {
         public Condition Cond { get; }
 

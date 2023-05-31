@@ -4,7 +4,7 @@
     /// One side of a two-way dependency between one texture view and another.
     /// Contains a reference to the handle owning the dependency, and the other dependency.
     /// </summary>
-    class TextureDependency
+    sealed class TextureDependency
     {
         /// <summary>
         /// The handle that owns this dependency.

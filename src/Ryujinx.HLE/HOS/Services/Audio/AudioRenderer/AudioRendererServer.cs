@@ -8,7 +8,7 @@ using System.Buffers;
 
 namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 {
-    class AudioRendererServer : DisposableIpcService
+    sealed class AudioRendererServer : DisposableIpcService
     {
         private IAudioRenderer _impl;
 

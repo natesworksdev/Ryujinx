@@ -16,7 +16,7 @@ using System.Text;
 namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 {
     [Service("sfdnsres")]
-    class IResolver : IpcService
+    sealed class IResolver : IpcService
     {
         public IResolver(ServiceCtx context)
         {

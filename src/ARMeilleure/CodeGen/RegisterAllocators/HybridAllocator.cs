@@ -9,7 +9,7 @@ using static ARMeilleure.IntermediateRepresentation.Operation.Factory;
 
 namespace ARMeilleure.CodeGen.RegisterAllocators
 {
-    class HybridAllocator : IRegisterAllocator
+    sealed class HybridAllocator : IRegisterAllocator
     {
         private readonly struct BlockInfo
         {

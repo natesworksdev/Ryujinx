@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 {
-    class ISslConnection : IpcService, IDisposable
+    sealed class ISslConnection : IpcService, IDisposable
     {
         private bool _doNotClockSocket;
         private bool _getServerCertChain;

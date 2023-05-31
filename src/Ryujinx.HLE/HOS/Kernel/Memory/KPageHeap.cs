@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
-    class KPageHeap
+    sealed class KPageHeap
     {
         private sealed class Block
         {

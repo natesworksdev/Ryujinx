@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
-    class BufferQueueProducer : IGraphicBufferProducer
+    sealed class BufferQueueProducer : IGraphicBufferProducer
     {
         public BufferQueueCore Core { get; }
 

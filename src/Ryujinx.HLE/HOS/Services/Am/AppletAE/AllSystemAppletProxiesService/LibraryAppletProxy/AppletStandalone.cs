@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.LibraryAppletProxy
 {
-    class AppletStandalone
+    sealed class AppletStandalone
     {
         public AppletId          AppletId;
         public LibraryAppletMode LibraryAppletMode;

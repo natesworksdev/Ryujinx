@@ -1,7 +1,7 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Sm
 {
     [Service("sm:m")]
-    class IManagerInterface : IpcService
+    sealed class IManagerInterface : IpcService
     {
         public IManagerInterface(ServiceCtx context) { }
     }

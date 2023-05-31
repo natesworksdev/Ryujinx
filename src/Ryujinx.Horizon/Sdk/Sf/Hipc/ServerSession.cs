@@ -3,7 +3,7 @@ using Ryujinx.Horizon.Sdk.Sf.Cmif;
 
 namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 {
-    class ServerSession : MultiWaitHolderOfHandle
+    sealed class ServerSession : MultiWaitHolderOfHandle
     {
         public ServiceObjectHolder ServiceObjectHolder { get; set; }
         public PointerAndSize      PointerBuffer       { get; set; }

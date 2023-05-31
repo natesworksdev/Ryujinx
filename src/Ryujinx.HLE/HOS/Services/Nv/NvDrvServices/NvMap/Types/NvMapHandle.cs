@@ -2,7 +2,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 {
-    class NvMapHandle
+    sealed class NvMapHandle
     {
 #pragma warning disable CS0649
         public int   Handle;

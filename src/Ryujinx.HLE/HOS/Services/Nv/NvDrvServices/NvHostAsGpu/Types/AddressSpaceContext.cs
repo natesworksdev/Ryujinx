@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu.Types
 {
-    class AddressSpaceContext
+    sealed class AddressSpaceContext
     {
         private class Range
         {

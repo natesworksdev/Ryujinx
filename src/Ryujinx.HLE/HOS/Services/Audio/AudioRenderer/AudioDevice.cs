@@ -5,7 +5,7 @@ using Ryujinx.HLE.HOS.Kernel.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 {
-    class AudioDevice : IAudioDevice
+    sealed class AudioDevice : IAudioDevice
     {
         private VirtualDeviceSession[] _sessions;
         private ulong _appletResourceId;

@@ -3,7 +3,7 @@ using Ryujinx.HLE.HOS.Services.Hid;
 
 namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp.NfpManager
 {
-    class NfpDevice
+    sealed class NfpDevice
     {
         public KEvent ActivateEvent;
         public KEvent DeactivateEvent;

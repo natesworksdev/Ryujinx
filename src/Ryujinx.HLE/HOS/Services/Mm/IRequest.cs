@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Ryujinx.HLE.HOS.Services.Mm
 {
     [Service("mm:u")]
-    class IRequest : IpcService
+    sealed class IRequest : IpcService
     {
         private static object                  _sessionListLock = new object();
         private static List<MultiMediaSession> _sessionList     = new List<MultiMediaSession>();

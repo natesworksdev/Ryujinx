@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
-    class KMemoryRegionManager
+    sealed class KMemoryRegionManager
     {
         private readonly KPageHeap _pageHeap;
 

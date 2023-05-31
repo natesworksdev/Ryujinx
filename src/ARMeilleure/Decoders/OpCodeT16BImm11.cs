@@ -1,6 +1,6 @@
 ﻿namespace ARMeilleure.Decoders
 {
-    class OpCodeT16BImm11 : OpCodeT16, IOpCode32BImm
+    sealed class OpCodeT16BImm11 : OpCodeT16, IOpCode32BImm
     {
         public long Immediate { get; }
 
@@ -8,7 +8,7 @@
 
         public OpCodeT16BImm11(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
-            int imm = (opCode << 21) >> 20; 
+            int imm = (opCode << 21) >> 20;
             Immediate = GetPc() + imm;
         }
     }

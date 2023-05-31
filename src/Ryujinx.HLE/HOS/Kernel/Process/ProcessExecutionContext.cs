@@ -3,7 +3,7 @@ using Ryujinx.Cpu;
 
 namespace Ryujinx.HLE.HOS.Kernel.Process
 {
-    class ProcessExecutionContext : IExecutionContext
+    sealed class ProcessExecutionContext : IExecutionContext
     {
         public ulong Pc => 0UL;
 

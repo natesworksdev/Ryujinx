@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Sm
 {
-    class SmRegistry
+    sealed class SmRegistry
     {
         private readonly ConcurrentDictionary<string, KPort> _registeredServices;
         private readonly AutoResetEvent _serviceRegistrationEvent;

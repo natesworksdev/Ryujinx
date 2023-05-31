@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Audio.Backends.SoundIo
 {
-    class SoundIoAudioBuffer
+    sealed class SoundIoAudioBuffer
     {
         public readonly ulong DriverIdentifier;
         public readonly ulong SampleCount;

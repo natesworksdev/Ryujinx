@@ -2,7 +2,7 @@ using ARMeilleure.Common;
 
 namespace ARMeilleure.Decoders
 {
-    class OpCodeSimdShImm : OpCodeSimd
+    sealed class OpCodeSimdShImm : OpCodeSimd
     {
         public int Imm { get; }
 

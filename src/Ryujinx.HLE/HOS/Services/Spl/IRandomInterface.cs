@@ -3,7 +3,7 @@
 namespace Ryujinx.HLE.HOS.Services.Spl
 {
     [Service("csrng")]
-    class IRandomInterface : DisposableIpcService
+    sealed class IRandomInterface : DisposableIpcService
     {
         private RandomNumberGenerator _rng;
 

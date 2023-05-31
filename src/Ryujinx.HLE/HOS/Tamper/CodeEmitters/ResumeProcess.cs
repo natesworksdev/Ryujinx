@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
     /// <summary>
     /// Code type 0xFF1 resumes the current process.
     /// </summary>
-    class ResumeProcess
+    sealed class ResumeProcess
     {
         // FF1?????
 

@@ -1,6 +1,6 @@
 namespace ARMeilleure.Decoders
 {
-    class OpCodeSimdFmov : OpCode, IOpCodeSimd
+    sealed class OpCodeSimdFmov : OpCode, IOpCodeSimd
     {
         public int  Rd        { get; }
         public long Immediate { get; }

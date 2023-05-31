@@ -18,7 +18,7 @@ namespace Ryujinx.Graphics.Vulkan
         void AddCommandBufferDependencies(CommandBufferScoped cbs);
     }
 
-    class Auto<T> : IAutoPrivate, IDisposable where T : IDisposable
+    sealed class Auto<T> : IAutoPrivate, IDisposable where T : IDisposable
     {
         private int _referenceCount;
         private T _value;

@@ -9,7 +9,7 @@ using VkFormat = Silk.NET.Vulkan.Format;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class TextureStorage : IDisposable
+    sealed class TextureStorage : IDisposable
     {
         private const MemoryPropertyFlags DefaultImageMemoryFlags =
             MemoryPropertyFlags.DeviceLocalBit;

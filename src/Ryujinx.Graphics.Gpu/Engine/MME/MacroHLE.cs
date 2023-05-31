@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
     /// <summary>
     /// Macro High-level emulation.
     /// </summary>
-    class MacroHLE : IMacroEE
+    sealed class MacroHLE : IMacroEE
     {
         private const int ColorLayerCountOffset = 0x818;
         private const int ColorStructSize = 0x40;

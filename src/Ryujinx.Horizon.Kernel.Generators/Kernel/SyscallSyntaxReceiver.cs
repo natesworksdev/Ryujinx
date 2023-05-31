@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Ryujinx.Horizon.Generators.Kernel
 {
-    class SyscallSyntaxReceiver : ISyntaxReceiver
+    sealed class SyscallSyntaxReceiver : ISyntaxReceiver
     {
         public List<MethodDeclarationSyntax> SvcImplementations { get; }
 

@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Ryujinx.Horizon.Generators.Hipc
 {
-    class HipcSyntaxReceiver : ISyntaxReceiver
+    sealed class HipcSyntaxReceiver : ISyntaxReceiver
     {
         public List<CommandInterface> CommandInterfaces { get; }
 

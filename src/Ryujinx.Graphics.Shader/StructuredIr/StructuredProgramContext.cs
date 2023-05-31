@@ -8,7 +8,7 @@ using static Ryujinx.Graphics.Shader.StructuredIr.AstHelper;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
-    class StructuredProgramContext
+    sealed class StructuredProgramContext
     {
         private HashSet<BasicBlock> _loopTails;
 

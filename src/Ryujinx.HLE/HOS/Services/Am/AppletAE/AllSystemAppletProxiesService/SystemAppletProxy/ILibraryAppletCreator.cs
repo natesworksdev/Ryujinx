@@ -3,7 +3,7 @@ using Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Library
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy
 {
-    class ILibraryAppletCreator : IpcService
+    sealed class ILibraryAppletCreator : IpcService
     {
         public ILibraryAppletCreator() { }
 

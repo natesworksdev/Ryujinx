@@ -5,7 +5,7 @@ using System;
 
 namespace Ryujinx.Cpu.AppleHv
 {
-    class HvExecutionContext : IExecutionContext
+    sealed class HvExecutionContext : IExecutionContext
     {
         /// <inheritdoc/>
         public ulong Pc => _impl.ElrEl1;

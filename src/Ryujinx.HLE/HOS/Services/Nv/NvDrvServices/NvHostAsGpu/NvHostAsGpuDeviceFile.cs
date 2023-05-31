@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 {
-    class NvHostAsGpuDeviceFile : NvDeviceFile
+    sealed class NvHostAsGpuDeviceFile : NvDeviceFile
     {
         private const uint SmallPageSize = 0x1000;
         private const uint BigPageSize = 0x10000;

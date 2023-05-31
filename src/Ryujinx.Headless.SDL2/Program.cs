@@ -40,7 +40,7 @@ using Key = Ryujinx.Common.Configuration.Hid.Key;
 
 namespace Ryujinx.Headless.SDL2
 {
-    class Program
+    sealed class Program
     {
         public static string Version { get; private set; }
 

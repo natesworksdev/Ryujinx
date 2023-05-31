@@ -36,7 +36,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         }
     }
 
-    class ShaderHeader
+    sealed class ShaderHeader
     {
         public int SphType { get; }
         public int Version { get; }

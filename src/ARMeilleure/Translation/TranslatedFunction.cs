@@ -3,7 +3,7 @@ using System;
 
 namespace ARMeilleure.Translation
 {
-    class TranslatedFunction
+    sealed class TranslatedFunction
     {
         private readonly GuestFunction _func; // Ensure that this delegate will not be garbage collected.
 

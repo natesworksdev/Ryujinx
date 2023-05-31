@@ -25,7 +25,7 @@ namespace ARMeilleure.Translation.PTC
     using Arm64HardwareCapabilities = ARMeilleure.CodeGen.Arm64.HardwareCapabilities;
     using X86HardwareCapabilities = ARMeilleure.CodeGen.X86.HardwareCapabilities;
 
-    class Ptc : IPtcLoadState
+    sealed class Ptc : IPtcLoadState
     {
         private const string OuterHeaderMagicString = "PTCohd\0\0";
         private const string InnerHeaderMagicString = "PTCihd\0\0";

@@ -1,6 +1,6 @@
 namespace ARMeilleure.Decoders
 {
-    class OpCodeSimdFcond : OpCodeSimdReg, IOpCodeCond
+    sealed class OpCodeSimdFcond : OpCodeSimdReg, IOpCodeCond
     {
         public int Nzcv { get; }
 

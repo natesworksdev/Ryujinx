@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
-    class BasicBlock : IEquatable<BasicBlock>, IIntrusiveListNode<BasicBlock>
+    sealed class BasicBlock : IEquatable<BasicBlock>, IIntrusiveListNode<BasicBlock>
     {
         private const uint MaxSuccessors = 2;
 
@@ -108,7 +108,7 @@ namespace ARMeilleure.IntermediateRepresentation
 
             oldBlock.Predecessors.Remove(this);
             block.Predecessors.Add(this);
-            
+
             oldBlock = block;
         }
 

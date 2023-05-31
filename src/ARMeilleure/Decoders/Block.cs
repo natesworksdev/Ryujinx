@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ARMeilleure.Decoders
 {
-    class Block
+    sealed class Block
     {
         public ulong Address    { get; set; }
         public ulong EndAddress { get; set; }

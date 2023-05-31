@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
     /// <summary>
     /// Represents a Inline-to-Memory engine class.
     /// </summary>
-    class InlineToMemoryClass : IDeviceState
+    sealed class InlineToMemoryClass : IDeviceState
     {
         private readonly GpuContext _context;
         private readonly GpuChannel _channel;

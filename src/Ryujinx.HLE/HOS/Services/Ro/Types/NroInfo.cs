@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Ro
 {
-    class NroInfo
+    sealed class NroInfo
     {
         public NroExecutable Executable { get; private set; }
 

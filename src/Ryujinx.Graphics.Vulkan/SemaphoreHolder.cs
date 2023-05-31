@@ -5,7 +5,7 @@ using VkSemaphore = Silk.NET.Vulkan.Semaphore;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class SemaphoreHolder : IDisposable
+    sealed class SemaphoreHolder : IDisposable
     {
         private readonly Vk _api;
         private readonly Device _device;

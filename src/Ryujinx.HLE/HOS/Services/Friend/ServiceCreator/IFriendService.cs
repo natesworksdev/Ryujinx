@@ -13,7 +13,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 {
-    class IFriendService : IpcService
+    sealed class IFriendService : IpcService
     {
         private FriendServicePermissionLevel _permissionLevel;
         private KEvent                       _completionEvent;

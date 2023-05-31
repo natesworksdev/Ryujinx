@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
 {
-    class Demangler
+    sealed class Demangler
     {
         private static readonly string Base36     = "0123456789abcdefghijklmnopqrstuvwxyz";
         private List<BaseNode> _substitutionList  = new List<BaseNode>();
@@ -1324,7 +1324,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
         //                  ::= C3  # complete object allocating constructor
         //                  ::= D0  # deleting destructor
         //                  ::= D1  # complete object destructor
-        //                  ::= D2  # base object destructor 
+        //                  ::= D2  # base object destructor
         private BaseNode ParseCtorDtorName(NameParserContext context, BaseNode prev)
         {
             if (prev.Type == NodeType.SpecialSubstitution && prev is SpecialSubstitution)
@@ -2684,7 +2684,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
             }
         }
 
-        class NameParserContext
+        sealed class NameParserContext
         {
             public CvType Cv;
             public SimpleReferenceType Ref;

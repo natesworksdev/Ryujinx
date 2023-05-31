@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// <summary>
     /// A range within a buffer that has been modified by the GPU.
     /// </summary>
-    class BufferModifiedRange : IRange
+    sealed class BufferModifiedRange : IRange
     {
         /// <summary>
         /// Start address of the range in guest memory.
@@ -67,7 +67,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// <summary>
     /// A structure used to track GPU modified ranges within a buffer.
     /// </summary>
-    class BufferModifiedRangeList : RangeList<BufferModifiedRange>
+    sealed class BufferModifiedRangeList : RangeList<BufferModifiedRange>
     {
         private const int BackingInitialSize = 8;
 
@@ -125,7 +125,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 for (int i = 0; i < count; i++)
                 {
                     BufferModifiedRange overlap = overlaps[i];
-                    
+
                     if (overlap.Address > address)
                     {
                         // The start of the remaining region is uncovered by this overlap. Call the action for it.

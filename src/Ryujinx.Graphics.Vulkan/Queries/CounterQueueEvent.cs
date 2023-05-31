@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace Ryujinx.Graphics.Vulkan.Queries
 {
-    class CounterQueueEvent : ICounterEvent
+    sealed class CounterQueueEvent : ICounterEvent
     {
         public event EventHandler<ulong> OnResult;
 

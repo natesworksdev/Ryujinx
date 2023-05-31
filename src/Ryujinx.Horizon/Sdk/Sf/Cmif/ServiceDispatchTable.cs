@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Horizon.Sdk.Sf.Cmif
 {
-    class ServiceDispatchTable : ServiceDispatchTableBase
+    sealed class ServiceDispatchTable : ServiceDispatchTableBase
     {
         private readonly string _objectName;
         private readonly IReadOnlyDictionary<int, CommandHandler> _entries;

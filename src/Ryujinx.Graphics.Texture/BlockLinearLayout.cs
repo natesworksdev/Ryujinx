@@ -6,7 +6,7 @@ using static Ryujinx.Graphics.Texture.BlockLinearConstants;
 
 namespace Ryujinx.Graphics.Texture
 {
-    class BlockLinearLayout
+    sealed class BlockLinearLayout
     {
         private struct RobAndSliceSizes
         {

@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Horizon.Sdk.Sf.Cmif
 {
-    class DomainServiceObjectProcessor : ServerMessageProcessor
+    sealed class DomainServiceObjectProcessor : ServerMessageProcessor
     {
         public const int MaximumObjects = 8;
 

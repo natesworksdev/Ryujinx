@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Horizon.Generators.Hipc
 {
-    class CommandInterface
+    sealed class CommandInterface
     {
         public ClassDeclarationSyntax ClassDeclarationSyntax { get; }
         public List<MethodDeclarationSyntax> CommandImplementations { get; }

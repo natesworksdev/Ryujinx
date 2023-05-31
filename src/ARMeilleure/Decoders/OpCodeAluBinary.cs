@@ -1,6 +1,6 @@
 namespace ARMeilleure.Decoders
 {
-    class OpCodeAluBinary : OpCodeAlu
+    sealed class OpCodeAluBinary : OpCodeAlu
     {
         public int Rm { get; }
 

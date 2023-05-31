@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
     /// NOTE: Registers are saved and restored to a different set of registers than the ones used
     /// for the other opcodes (Save Registers).
     /// </summary>
-    class SaveOrRestoreRegister
+    sealed class SaveOrRestoreRegister
     {
         private const int DestinationRegisterIndex = 3;
         private const int SourceRegisterIndex = 5;

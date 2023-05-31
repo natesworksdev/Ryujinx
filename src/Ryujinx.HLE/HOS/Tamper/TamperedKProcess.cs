@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.HLE.HOS.Tamper
 {
-    class TamperedKProcess : ITamperedProcess
+    sealed class TamperedKProcess : ITamperedProcess
     {
         private KProcess _process;
 

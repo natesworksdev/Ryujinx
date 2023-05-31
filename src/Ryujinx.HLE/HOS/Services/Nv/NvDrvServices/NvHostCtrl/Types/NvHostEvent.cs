@@ -10,7 +10,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 {
-    class NvHostEvent
+    sealed class NvHostEvent
     {
         public NvFence          Fence;
         public NvHostEventState State;

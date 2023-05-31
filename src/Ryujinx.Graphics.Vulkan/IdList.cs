@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class IdList<T> where T : class
+    sealed class IdList<T> where T : class
     {
         private readonly List<T> _list;
         private int _freeMin;

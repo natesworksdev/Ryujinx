@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// <summary>
     /// Texture cache.
     /// </summary>
-    class TextureCache : IDisposable
+    sealed class TextureCache : IDisposable
     {
         private readonly struct OverlapInfo
         {
@@ -224,7 +224,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             for (int i = 0; i < overlapCount; i++)
             {
                 var other = _textureOverlaps[i];
-                
+
                 if (texture != other &&
                     (texture.IsViewCompatible(other.Info, other.Range, true, other.LayerSize, _context.Capabilities, out _, out _) != TextureViewCompatibility.Incompatible ||
                     other.IsViewCompatible(texture.Info, texture.Range, true, texture.LayerSize, _context.Capabilities, out _, out _) != TextureViewCompatibility.Incompatible))

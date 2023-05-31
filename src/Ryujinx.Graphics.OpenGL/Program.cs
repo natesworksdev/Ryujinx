@@ -8,7 +8,7 @@ using System.Buffers.Binary;
 
 namespace Ryujinx.Graphics.OpenGL
 {
-    class Program : IProgram
+    sealed class Program : IProgram
     {
         private const int MaxShaderLogLength = 2048;
 

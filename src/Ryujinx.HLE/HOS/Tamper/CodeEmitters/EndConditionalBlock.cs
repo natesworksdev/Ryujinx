@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
     /// <summary>
     /// Code type 2 marks the end of a conditional block (started by Code Type 1, Code Type 8 or Code Type C0).
     /// </summary>
-    class EndConditionalBlock
+    sealed class EndConditionalBlock
     {
         const int TerminationTypeIndex = 1;
 

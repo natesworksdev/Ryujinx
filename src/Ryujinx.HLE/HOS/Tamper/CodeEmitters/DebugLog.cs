@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
     /// <summary>
     /// Code type 0xFFF writes a debug log.
     /// </summary>
-    class DebugLog
+    sealed class DebugLog
     {
         private const int OperationWidthIndex = 3;
         private const int LogIdIndex = 4;

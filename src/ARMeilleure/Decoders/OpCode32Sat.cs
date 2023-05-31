@@ -1,6 +1,6 @@
 namespace ARMeilleure.Decoders
 {
-    class OpCode32Sat : OpCode32
+    sealed class OpCode32Sat : OpCode32
     {
         public int Rn { get; }
         public int Imm5 { get; }

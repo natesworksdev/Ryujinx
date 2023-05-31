@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class VulkanInstance : IDisposable
+    sealed class VulkanInstance : IDisposable
     {
         private readonly Vk _api;
         public readonly Instance Instance;

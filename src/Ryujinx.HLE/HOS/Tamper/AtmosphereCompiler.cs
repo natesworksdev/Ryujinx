@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Tamper
 {
-    class AtmosphereCompiler
+    sealed class AtmosphereCompiler
     {
         private ulong            _exeAddress;
         private ulong            _heapAddress;

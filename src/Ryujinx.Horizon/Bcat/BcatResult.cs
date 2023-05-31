@@ -2,7 +2,7 @@ using Ryujinx.Horizon.Common;
 
 namespace Ryujinx.Horizon.Bcat
 {
-    class BcatResult
+    sealed class BcatResult
     {
         private const int ModuleId = 122;
 

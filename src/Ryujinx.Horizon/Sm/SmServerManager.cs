@@ -8,7 +8,7 @@ using System;
 
 namespace Ryujinx.Horizon.Sm
 {
-    class SmServerManager : ServerManager
+    sealed class SmServerManager : ServerManager
     {
         private readonly ServiceManager _serviceManager;
 

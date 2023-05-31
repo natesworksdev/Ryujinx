@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Tests.Audio.Renderer.Server
 {
-    class AddressInfoTests
+    sealed class AddressInfoTests
     {
         [Test]
         public void EnsureTypeSize()

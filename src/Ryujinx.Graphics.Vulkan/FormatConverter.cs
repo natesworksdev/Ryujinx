@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class FormatConverter
+    sealed class FormatConverter
     {
         public static void ConvertD24S8ToD32FS8(Span<byte> output, ReadOnlySpan<byte> input)
         {

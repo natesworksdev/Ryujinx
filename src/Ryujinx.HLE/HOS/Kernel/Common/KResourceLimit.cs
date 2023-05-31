@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Kernel.Common
 {
-    class KResourceLimit : KAutoObject
+    sealed class KResourceLimit : KAutoObject
     {
         private const int DefaultTimeoutMs = 10000; // 10s
 

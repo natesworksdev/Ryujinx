@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// <summary>
     /// Texture pool.
     /// </summary>
-    class TexturePool : Pool<Texture, TextureDescriptor>, IPool<TexturePool>
+    sealed class TexturePool : Pool<Texture, TextureDescriptor>, IPool<TexturePool>
     {
         /// <summary>
         /// A request to dereference a texture from a pool.

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
 {
-    class ManagerServer
+    sealed class ManagerServer
     {
         // TODO: Determine where and how NetworkServiceAccountId is set.
         private const long NetworkServiceAccountId = 0xcafe;

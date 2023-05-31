@@ -5,7 +5,7 @@ using System;
 
 namespace Ryujinx.HLE.Loaders.Executables
 {
-    class KipExecutable : IExecutable
+    sealed class KipExecutable : IExecutable
     {
         public byte[] Program { get; }
         public Span<byte> Text => Program.AsSpan((int)TextOffset, (int)TextSize);

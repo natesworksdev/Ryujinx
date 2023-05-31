@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Tests.Audio.Renderer.Parameter.Effect
 {
-    class ReverbParameterTests
+    sealed class ReverbParameterTests
     {
         [Test]
         public void EnsureTypeSize()

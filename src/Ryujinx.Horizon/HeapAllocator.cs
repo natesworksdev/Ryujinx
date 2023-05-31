@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.Horizon
 {
-    class HeapAllocator
+    sealed class HeapAllocator
     {
         private const ulong InvalidAddress = ulong.MaxValue;
 

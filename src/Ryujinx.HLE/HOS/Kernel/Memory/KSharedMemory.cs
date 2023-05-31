@@ -6,7 +6,7 @@ using Ryujinx.Memory;
 
 namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
-    class KSharedMemory : KAutoObject
+    sealed class KSharedMemory : KAutoObject
     {
         private readonly KPageList _pageList;
 

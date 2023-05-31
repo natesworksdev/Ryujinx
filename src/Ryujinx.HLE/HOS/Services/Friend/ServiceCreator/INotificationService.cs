@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 {
-    class INotificationService : DisposableIpcService
+    sealed class INotificationService : DisposableIpcService
     {
         private readonly UserId                       _userId;
         private readonly FriendServicePermissionLevel _permissionLevel;

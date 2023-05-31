@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Kernel.Ipc
 {
-    class KServerSession : KSynchronizationObject
+    sealed class KServerSession : KSynchronizationObject
     {
         private static readonly MemoryState[] IpcMemoryStates = new MemoryState[]
         {

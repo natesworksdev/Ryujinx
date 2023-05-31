@@ -1,6 +1,6 @@
 namespace ARMeilleure.Decoders
 {
-    class OpCodeAluRs : OpCodeAlu, IOpCodeAluRs
+    sealed class OpCodeAluRs : OpCodeAlu, IOpCodeAluRs
     {
         public int Shift { get; }
         public int Rm    { get; }

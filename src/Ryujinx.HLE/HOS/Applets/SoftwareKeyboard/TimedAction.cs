@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
     /// A threaded executor of periodic actions that can be cancelled. The total execution time is optional
     /// and, in this case, a progress is reported back to the action.
     /// </summary>
-    class TimedAction
+    sealed class TimedAction
     {
         public const int MaxThreadSleep = 100;
 

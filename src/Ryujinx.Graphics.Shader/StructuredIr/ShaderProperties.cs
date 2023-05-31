@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
-    class ShaderProperties
+    sealed class ShaderProperties
     {
         private readonly Dictionary<int, BufferDefinition> _constantBuffers;
         private readonly Dictionary<int, BufferDefinition> _storageBuffers;

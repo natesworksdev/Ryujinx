@@ -5,7 +5,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
-    class BufferQueueConsumer
+    sealed class BufferQueueConsumer
     {
         public BufferQueueCore Core { get; }
 

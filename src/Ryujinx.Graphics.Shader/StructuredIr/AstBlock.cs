@@ -7,7 +7,7 @@ using static Ryujinx.Graphics.Shader.StructuredIr.AstHelper;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
-    class AstBlock : AstNode, IEnumerable<IAstNode>
+    sealed class AstBlock : AstNode, IEnumerable<IAstNode>
     {
         public AstBlockType Type { get; private set; }
 

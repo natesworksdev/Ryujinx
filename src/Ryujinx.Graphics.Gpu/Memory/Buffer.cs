@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// <summary>
     /// Buffer, used to store vertex and index data, uniform and storage buffers, and others.
     /// </summary>
-    class Buffer : IRange, ISyncActionHandler, IDisposable
+    sealed class Buffer : IRange, ISyncActionHandler, IDisposable
     {
         private const ulong GranularBufferThreshold = 4096;
 

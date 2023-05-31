@@ -5,7 +5,7 @@ using Ryujinx.Horizon.Common;
 
 namespace Ryujinx.HLE.HOS.Kernel.Ipc
 {
-    class KClientSession : KSynchronizationObject
+    sealed class KClientSession : KSynchronizationObject
     {
         public KProcess CreatorProcess { get; }
 

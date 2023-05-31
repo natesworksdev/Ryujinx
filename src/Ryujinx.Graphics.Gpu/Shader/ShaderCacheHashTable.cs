@@ -39,7 +39,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// <summary>
     /// Graphics shader cache hash table.
     /// </summary>
-    class ShaderCacheHashTable
+    sealed class ShaderCacheHashTable
     {
         /// <summary>
         /// Shader ID cache.

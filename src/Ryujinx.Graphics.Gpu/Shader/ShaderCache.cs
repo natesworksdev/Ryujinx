@@ -19,7 +19,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// <summary>
     /// Memory cache of shader code.
     /// </summary>
-    class ShaderCache : IDisposable
+    sealed class ShaderCache : IDisposable
     {
         /// <summary>
         /// Default flags used on the shader translation process.

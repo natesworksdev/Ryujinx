@@ -14,7 +14,7 @@ using HidKey = Ryujinx.Common.Configuration.Hid.Key;
 
 namespace Ryujinx.Ava.UI.Applet
 {
-    class AvaloniaDynamicTextInputHandler : IDynamicTextInputHandler
+    sealed class AvaloniaDynamicTextInputHandler : IDynamicTextInputHandler
     {
         private MainWindow _parent;
         private OffscreenTextBox _hiddenTextBox;

@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS
 {
-    class HomebrewRomFsStream : Stream
+    sealed class HomebrewRomFsStream : Stream
     {
         private Stream _baseStream;
         private long   _positionOffset;

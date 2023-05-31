@@ -5,7 +5,7 @@ using Ryujinx.Horizon.Sdk.Sm;
 
 namespace Ryujinx.Horizon.Sm.Impl
 {
-    class ServiceManager
+    sealed class ServiceManager
     {
         private const int MaxServicesCount = 256;
 

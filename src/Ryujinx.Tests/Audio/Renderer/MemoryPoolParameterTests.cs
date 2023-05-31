@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Tests.Audio.Renderer
 {
-    class MemoryPoolParameterTests
+    sealed class MemoryPoolParameterTests
     {
         [Test]
         public void EnsureTypeSize()

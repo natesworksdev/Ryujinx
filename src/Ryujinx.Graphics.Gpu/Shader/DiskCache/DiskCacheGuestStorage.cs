@@ -9,7 +9,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
     /// <summary>
     /// On-disk shader cache storage for guest code.
     /// </summary>
-    class DiskCacheGuestStorage
+    sealed class DiskCacheGuestStorage
     {
         private const uint TocMagic = (byte)'T' | ((byte)'O' << 8) | ((byte)'C' << 16) | ((byte)'G' << 24);
 

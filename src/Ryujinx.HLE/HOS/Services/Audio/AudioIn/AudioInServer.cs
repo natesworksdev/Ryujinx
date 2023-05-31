@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Audio.AudioIn
 {
-    class AudioInServer : DisposableIpcService
+    sealed class AudioInServer : DisposableIpcService
     {
         private IAudioIn _impl;
 

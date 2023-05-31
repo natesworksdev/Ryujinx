@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
-    class ColorShift
+    sealed class ColorShift
     {
         public const int Swizzle   = 16;
         public const int DataType  = 14;

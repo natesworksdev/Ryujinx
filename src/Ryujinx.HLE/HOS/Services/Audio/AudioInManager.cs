@@ -6,7 +6,7 @@ using AudioInManagerImpl = Ryujinx.Audio.Input.AudioInputManager;
 
 namespace Ryujinx.HLE.HOS.Services.Audio
 {
-    class AudioInManager : IAudioInManager
+    sealed class AudioInManager : IAudioInManager
     {
         private AudioInManagerImpl _impl;
 

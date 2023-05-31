@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.HLE.HOS.Services.Account.Acc.AsyncContext
 {
-    class AsyncExecution
+    sealed class AsyncExecution
     {
         private readonly CancellationTokenSource _tokenSource;
         private readonly CancellationToken       _token;

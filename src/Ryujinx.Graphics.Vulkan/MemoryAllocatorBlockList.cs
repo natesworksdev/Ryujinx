@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class MemoryAllocatorBlockList : IDisposable
+    sealed class MemoryAllocatorBlockList : IDisposable
     {
         private const ulong InvalidOffset = ulong.MaxValue;
 

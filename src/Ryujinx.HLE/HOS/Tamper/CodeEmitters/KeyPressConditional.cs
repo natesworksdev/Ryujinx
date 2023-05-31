@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
     /// <summary>
     /// Code type 8 enters or skips a conditional block based on whether a key combination is pressed.
     /// </summary>
-    class KeyPressConditional
+    sealed class KeyPressConditional
     {
         private const int InputMaskIndex = 1;
 

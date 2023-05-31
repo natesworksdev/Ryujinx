@@ -1,6 +1,6 @@
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
-    class AstComment : AstNode
+    sealed class AstComment : AstNode
     {
         public string Comment { get; }
 

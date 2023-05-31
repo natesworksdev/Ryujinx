@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Nv
 {
-    class NvMemoryAllocator
+    sealed class NvMemoryAllocator
     {
         private const ulong AddressSpaceSize = 1UL << 40;
 

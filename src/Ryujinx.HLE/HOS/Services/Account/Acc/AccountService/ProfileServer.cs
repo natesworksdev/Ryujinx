@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
 {
-    class ProfileServer
+    sealed class ProfileServer
     {
         private UserProfile _profile;
 

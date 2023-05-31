@@ -7,7 +7,7 @@ using System.Numerics;
 
 namespace Ryujinx.Graphics.OpenGL.Image
 {
-    class TextureCopyIncompatible
+    sealed class TextureCopyIncompatible
     {
         private const string ComputeShaderShortening = @"#version 450 core
 

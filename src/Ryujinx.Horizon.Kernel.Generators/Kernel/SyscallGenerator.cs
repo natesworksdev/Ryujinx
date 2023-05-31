@@ -9,7 +9,7 @@ using System.Linq;
 namespace Ryujinx.Horizon.Generators.Kernel
 {
     [Generator]
-    class SyscallGenerator : ISourceGenerator
+    sealed class SyscallGenerator : ISourceGenerator
     {
         private const string ClassNamespace = "Ryujinx.HLE.HOS.Kernel.SupervisorCall";
         private const string ClassName = "SyscallDispatch";
@@ -369,7 +369,7 @@ namespace Ryujinx.Horizon.Generators.Kernel
                 {
                     generator.AppendLine($"context.SetX({returnRegisterIndex++}, (ulong){ResultVariableName});");
                 }
-  
+
                 result = GetFormattedLogValue(ResultVariableName, canonicalReturnTypeName);
             }
             else

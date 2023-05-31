@@ -1,6 +1,6 @@
 ﻿namespace ARMeilleure.Decoders
 {
-    class OpCode32SimdDupElem : OpCode32Simd
+    sealed class OpCode32SimdDupElem : OpCode32Simd
     {
         public int Index { get; }
 

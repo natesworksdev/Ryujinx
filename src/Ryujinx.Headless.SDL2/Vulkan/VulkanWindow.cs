@@ -8,7 +8,7 @@ using static SDL2.SDL;
 
 namespace Ryujinx.Headless.SDL2.Vulkan
 {
-    class VulkanWindow : WindowBase
+    sealed class VulkanWindow : WindowBase
     {
         private GraphicsDebugLevel _glLogLevel;
 

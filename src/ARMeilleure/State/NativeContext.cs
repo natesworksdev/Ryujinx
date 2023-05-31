@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace ARMeilleure.State
 {
-    class NativeContext : IDisposable
+    sealed class NativeContext : IDisposable
     {
         private unsafe struct NativeCtxStorage
         {

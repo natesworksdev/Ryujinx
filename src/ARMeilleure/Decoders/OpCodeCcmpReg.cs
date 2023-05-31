@@ -1,6 +1,6 @@
 namespace ARMeilleure.Decoders
 {
-    class OpCodeCcmpReg : OpCodeCcmp, IOpCodeAluRs
+    sealed class OpCodeCcmpReg : OpCodeCcmp, IOpCodeAluRs
     {
         public int Rm => RmImm;
 

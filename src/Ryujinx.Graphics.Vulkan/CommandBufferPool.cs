@@ -6,7 +6,7 @@ using Thread = System.Threading.Thread;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class CommandBufferPool : IDisposable
+    sealed class CommandBufferPool : IDisposable
     {
         public const int MaxCommandBuffers = 16;
 

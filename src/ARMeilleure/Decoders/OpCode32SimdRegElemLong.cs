@@ -1,6 +1,6 @@
 ﻿namespace ARMeilleure.Decoders
 {
-    class OpCode32SimdRegElemLong : OpCode32SimdRegElem
+    sealed class OpCode32SimdRegElemLong : OpCode32SimdRegElem
     {
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdRegElemLong(inst, address, opCode, false);
         public new static OpCode CreateT32(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdRegElemLong(inst, address, opCode, true);

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.Loaders.Mods
 {
-    class IpsPatcher
+    sealed class IpsPatcher
     {
         MemPatch _patches;
 

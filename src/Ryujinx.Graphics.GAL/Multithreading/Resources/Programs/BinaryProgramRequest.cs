@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Graphics.GAL.Multithreading.Resources.Programs
 {
-    class BinaryProgramRequest : IProgramRequest
+    sealed class BinaryProgramRequest : IProgramRequest
     {
         public ThreadedProgram Threaded { get; set; }
 

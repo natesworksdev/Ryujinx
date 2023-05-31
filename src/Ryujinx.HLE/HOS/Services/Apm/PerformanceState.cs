@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Apm
 {
-    class PerformanceState
+    sealed class PerformanceState
     {
         public PerformanceState() { }
 

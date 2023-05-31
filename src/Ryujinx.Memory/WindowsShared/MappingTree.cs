@@ -7,7 +7,7 @@ namespace Ryujinx.Memory.WindowsShared
     /// A intrusive Red-Black Tree that also supports getting nodes overlapping a given range.
     /// </summary>
     /// <typeparam name="T">Type of the value stored on the node</typeparam>
-    class MappingTree<T> : IntrusiveRedBlackTree<RangeNode<T>>
+    sealed class MappingTree<T> : IntrusiveRedBlackTree<RangeNode<T>>
     {
         private const int ArrayGrowthSize = 16;
 
@@ -34,7 +34,7 @@ namespace Ryujinx.Memory.WindowsShared
         }
     }
 
-    class RangeNode<T> : IntrusiveRedBlackTreeNode<RangeNode<T>>, IComparable<RangeNode<T>>, IComparable<ulong>
+    sealed class RangeNode<T> : IntrusiveRedBlackTreeNode<RangeNode<T>>, IComparable<RangeNode<T>>, IComparable<ulong>
     {
         public ulong Start { get; }
         public ulong End { get; private set; }

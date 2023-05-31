@@ -1,7 +1,7 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Ins
 {
     [Service("ins:s")]
-    class ISenderManager : IpcService
+    sealed class ISenderManager : IpcService
     {
         public ISenderManager(ServiceCtx context) { }
     }

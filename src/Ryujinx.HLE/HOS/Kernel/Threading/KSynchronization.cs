@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Kernel.Threading
 {
-    class KSynchronization
+    sealed class KSynchronization
     {
         private KernelContext _context;
 

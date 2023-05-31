@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
     /// <summary>
     /// Code type 9 allows performing arithmetic on registers.
     /// </summary>
-    class Arithmetic
+    sealed class Arithmetic
     {
         private const int OperationWidthIndex = 1;
         private const int OperationTypeIndex = 2;

@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
     /// NOTE: Registers are saved and restored to a different set of registers than the ones used
     /// for the other opcodes (Static Registers).
     /// </summary>
-    class ReadOrWriteStaticRegister
+    sealed class ReadOrWriteStaticRegister
     {
         private const int StaticRegisterIndex = 5;
         private const int RegisterIndex = 7;

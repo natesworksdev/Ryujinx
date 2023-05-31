@@ -3,7 +3,7 @@
 namespace Ryujinx.HLE.HOS.Services.Nfc
 {
     [Service("nfc:user")]
-    class IUserManager : IpcService
+    sealed class IUserManager : IpcService
     {
         public IUserManager(ServiceCtx context) { }
 

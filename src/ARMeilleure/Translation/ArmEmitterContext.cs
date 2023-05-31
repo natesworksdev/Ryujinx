@@ -13,7 +13,7 @@ using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
 namespace ARMeilleure.Translation
 {
-    class ArmEmitterContext : EmitterContext
+    sealed class ArmEmitterContext : EmitterContext
     {
         private readonly Dictionary<ulong, Operand> _labels;
 

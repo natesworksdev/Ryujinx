@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.Cpu.AppleHv
 {
-    class HvCpuContext : ICpuContext
+    sealed class HvCpuContext : ICpuContext
     {
         private readonly ITickSource _tickSource;
         private readonly HvMemoryManager _memoryManager;

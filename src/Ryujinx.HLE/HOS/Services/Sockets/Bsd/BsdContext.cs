@@ -6,7 +6,7 @@ using System.Numerics;
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 {
-    class BsdContext
+    sealed class BsdContext
     {
         private static ConcurrentDictionary<ulong, BsdContext> _registry = new ConcurrentDictionary<ulong, BsdContext>();
 

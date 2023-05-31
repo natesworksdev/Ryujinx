@@ -1,7 +1,7 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Am.Omm
 {
     [Service("omm")]
-    class IOperationModeManager : IpcService
+    sealed class IOperationModeManager : IpcService
     {
         public IOperationModeManager(ServiceCtx context) { }
     }

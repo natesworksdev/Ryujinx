@@ -7,7 +7,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// <summary>
     /// Shader info structure builder.
     /// </summary>
-    class ShaderInfoBuilder
+    sealed class ShaderInfoBuilder
     {
         private const int TotalSets = 4;
 

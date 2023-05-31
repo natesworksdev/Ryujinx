@@ -3,7 +3,7 @@ using System.Runtime.Intrinsics;
 
 namespace ARMeilleure.Decoders
 {
-    class OpCodeT32AluImm : OpCodeT32Alu, IOpCode32AluImm
+    sealed class OpCodeT32AluImm : OpCodeT32Alu, IOpCode32AluImm
     {
         public int Immediate { get; }
 

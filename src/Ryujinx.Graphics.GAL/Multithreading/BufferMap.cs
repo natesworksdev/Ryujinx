@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
     /// The handle returned is a unique identifier that will map to the real buffer when it is available.
     /// Note that any uses within the queue should be safe, but outside you must use MapBufferBlocking.
     /// </summary>
-    class BufferMap
+    sealed class BufferMap
     {
         private ulong _bufferHandle = 0;
 
@@ -59,7 +59,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         internal BufferHandle MapBuffer(BufferHandle handle)
         {
             // Maps a threaded buffer to a backend one.
-            // Threaded buffers are returned on creation as the buffer 
+            // Threaded buffers are returned on creation as the buffer
             // isn't actually created until the queue runs the command.
 
             BufferHandle result;

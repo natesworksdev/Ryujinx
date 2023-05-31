@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
-    class BufferSlotArray
+    sealed class BufferSlotArray
     {
         // TODO: move to BufferQueue
         public const int NumBufferSlots     = 0x40;

@@ -1,6 +1,6 @@
 namespace ARMeilleure.Decoders
 {
-    class OpCodeBImmAl : OpCodeBImm
+    sealed class OpCodeBImmAl : OpCodeBImm
     {
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeBImmAl(inst, address, opCode);
 

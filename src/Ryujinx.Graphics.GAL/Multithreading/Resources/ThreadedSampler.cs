@@ -3,7 +3,7 @@ using Ryujinx.Graphics.GAL.Multithreading.Model;
 
 namespace Ryujinx.Graphics.GAL.Multithreading.Resources
 {
-    class ThreadedSampler : ISampler
+    sealed class ThreadedSampler : ISampler
     {
         private ThreadedRenderer _renderer;
         public ISampler Base;

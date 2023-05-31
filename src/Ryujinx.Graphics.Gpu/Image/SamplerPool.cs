@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// <summary>
     /// Sampler pool.
     /// </summary>
-    class SamplerPool : Pool<Sampler, SamplerDescriptor>, IPool<SamplerPool>
+    sealed class SamplerPool : Pool<Sampler, SamplerDescriptor>, IPool<SamplerPool>
     {
         private float _forcedAnisotropy;
 

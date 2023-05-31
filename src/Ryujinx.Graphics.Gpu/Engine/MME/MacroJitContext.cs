@@ -7,7 +7,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
     /// <summary>
     /// Represents a Macro Just-in-Time compiler execution context.
     /// </summary>
-    class MacroJitContext
+    sealed class MacroJitContext
     {
         /// <summary>
         /// Arguments FIFO.

@@ -17,7 +17,7 @@ using static ARMeilleure.Translation.PTC.PtcFormatter;
 
 namespace ARMeilleure.Translation.PTC
 {
-    class PtcProfiler
+    sealed class PtcProfiler
     {
         private const string OuterHeaderMagicString = "Pohd\0\0\0\0";
 

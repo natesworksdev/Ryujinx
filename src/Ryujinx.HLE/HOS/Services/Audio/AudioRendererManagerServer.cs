@@ -8,7 +8,7 @@ using Ryujinx.HLE.HOS.Services.Audio.AudioRenderer;
 namespace Ryujinx.HLE.HOS.Services.Audio
 {
     [Service("audren:u")]
-    class AudioRendererManagerServer : IpcService
+    sealed class AudioRendererManagerServer : IpcService
     {
         private const int InitialRevision = ('R' << 0) | ('E' << 8) | ('V' << 16) | ('1' << 24);
 

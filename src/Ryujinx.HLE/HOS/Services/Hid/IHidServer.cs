@@ -13,7 +13,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
     [Service("hid")]
-    class IHidServer : IpcService
+    sealed class IHidServer : IpcService
     {
         private KEvent _xpadIdEvent;
         private KEvent _palmaOperationCompleteEvent;

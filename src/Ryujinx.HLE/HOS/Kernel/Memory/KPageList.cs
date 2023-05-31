@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
-    class KPageList : IEnumerable<KPageNode>
+    sealed class KPageList : IEnumerable<KPageNode>
     {
         public LinkedList<KPageNode> Nodes { get; }
 

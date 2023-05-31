@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Tests.Audio.Renderer.Common
 {
-    class WaveBufferTests
+    sealed class WaveBufferTests
     {
         [Test]
         public void EnsureTypeSize()

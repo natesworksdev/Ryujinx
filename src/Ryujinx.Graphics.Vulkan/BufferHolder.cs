@@ -10,7 +10,7 @@ using VkFormat = Silk.NET.Vulkan.Format;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class BufferHolder : IDisposable
+    sealed class BufferHolder : IDisposable
     {
         private const int MaxUpdateBufferSize = 0x10000;
 

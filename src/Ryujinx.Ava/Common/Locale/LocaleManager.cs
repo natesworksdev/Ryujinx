@@ -9,7 +9,7 @@ using System.Globalization;
 
 namespace Ryujinx.Ava.Common.Locale
 {
-    class LocaleManager : BaseModel
+    sealed class LocaleManager : BaseModel
     {
         private const string DefaultLanguageCode = "en_US";
 

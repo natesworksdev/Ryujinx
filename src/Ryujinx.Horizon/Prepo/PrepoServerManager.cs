@@ -7,7 +7,7 @@ using System;
 
 namespace Ryujinx.Horizon.Prepo
 {
-    class PrepoServerManager : ServerManager
+    sealed class PrepoServerManager : ServerManager
     {
         public PrepoServerManager(HeapAllocator allocator, SmApi sm, int maxPorts, ManagerOptions options, int maxSessions) : base(allocator, sm, maxPorts, options, maxSessions)
         {

@@ -4,7 +4,7 @@ using Ryujinx.HLE.HOS.Services.Time.Clock;
 
 namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 {
-    class ISteadyClock : IpcService
+    sealed class ISteadyClock : IpcService
     {
         private SteadyClockCore _steadyClock;
         private bool            _writePermission;

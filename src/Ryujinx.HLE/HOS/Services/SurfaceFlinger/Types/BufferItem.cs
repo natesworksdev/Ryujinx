@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
-    class BufferItem : ICloneable
+    sealed class BufferItem : ICloneable
     {
         public AndroidStrongPointer<GraphicBuffer> GraphicBuffer;
         public AndroidFence                        Fence;

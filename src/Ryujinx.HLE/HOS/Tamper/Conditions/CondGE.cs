@@ -2,7 +2,7 @@ using Ryujinx.HLE.HOS.Tamper.Operations;
 
 namespace Ryujinx.HLE.HOS.Tamper.Conditions
 {
-    class CondGE<T> : ICondition where T : unmanaged
+    sealed class CondGE<T> : ICondition where T : unmanaged
     {
         private IOperand _lhs;
         private IOperand _rhs;

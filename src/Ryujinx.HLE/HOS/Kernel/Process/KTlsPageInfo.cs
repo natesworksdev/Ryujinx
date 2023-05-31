@@ -2,7 +2,7 @@ using Ryujinx.HLE.HOS.Kernel.Memory;
 
 namespace Ryujinx.HLE.HOS.Kernel.Process
 {
-    class KTlsPageInfo
+    sealed class KTlsPageInfo
     {
         public const int TlsEntrySize = 0x200;
 

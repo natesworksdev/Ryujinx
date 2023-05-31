@@ -3,7 +3,7 @@ using ARMeilleure.State;
 
 namespace Ryujinx.Cpu.Jit
 {
-    class JitExecutionContext : IExecutionContext
+    sealed class JitExecutionContext : IExecutionContext
     {
         private readonly ExecutionContext _impl;
         internal ExecutionContext Impl => _impl;

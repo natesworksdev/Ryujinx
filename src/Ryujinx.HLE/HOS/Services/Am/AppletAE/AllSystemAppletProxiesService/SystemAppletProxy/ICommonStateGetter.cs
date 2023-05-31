@@ -9,7 +9,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy
 {
-    class ICommonStateGetter : DisposableIpcService
+    sealed class ICommonStateGetter : DisposableIpcService
     {
         private readonly ServiceCtx _context;
 

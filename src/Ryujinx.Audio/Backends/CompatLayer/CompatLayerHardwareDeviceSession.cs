@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Audio.Backends.CompatLayer
 {
-    class CompatLayerHardwareDeviceSession : HardwareDeviceSessionOutputBase
+    sealed class CompatLayerHardwareDeviceSession : HardwareDeviceSessionOutputBase
     {
         private HardwareDeviceSessionOutputBase _realSession;
         private SampleFormat _userSampleFormat;

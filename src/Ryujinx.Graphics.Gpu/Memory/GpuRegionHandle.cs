@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// <summary>
     /// A tracking handle for a region of GPU VA, represented by one or more tracking handles in CPU VA.
     /// </summary>
-    class GpuRegionHandle : IRegionHandle
+    sealed class GpuRegionHandle : IRegionHandle
     {
         private readonly RegionHandle[] _cpuRegionHandles;
 

@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
 {
-    class EventFileDescriptor : IFileDescriptor
+    sealed class EventFileDescriptor : IFileDescriptor
     {
         private ulong _value;
         private readonly EventFdFlags _flags;

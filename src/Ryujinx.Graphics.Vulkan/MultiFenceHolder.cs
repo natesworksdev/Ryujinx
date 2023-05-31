@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Vulkan
     /// <summary>
     /// Holder for multiple host GPU fences.
     /// </summary>
-    class MultiFenceHolder
+    sealed class MultiFenceHolder
     {
         private static int BufferUsageTrackingGranularity = 4096;
 

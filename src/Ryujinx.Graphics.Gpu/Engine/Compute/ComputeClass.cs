@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     /// <summary>
     /// Represents a compute engine class.
     /// </summary>
-    class ComputeClass : IDeviceState
+    sealed class ComputeClass : IDeviceState
     {
         private readonly GpuContext _context;
         private readonly GpuChannel _channel;

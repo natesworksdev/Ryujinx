@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Kernel.Ipc
 {
-    class KServerPort : KSynchronizationObject
+    sealed class KServerPort : KSynchronizationObject
     {
         private readonly LinkedList<KServerSession>      _incomingConnections;
         private readonly LinkedList<KLightServerSession> _lightIncomingConnections;

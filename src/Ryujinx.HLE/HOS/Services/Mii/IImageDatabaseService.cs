@@ -3,7 +3,7 @@
 namespace Ryujinx.HLE.HOS.Services.Mii
 {
     [Service("miiimg")] // 5.0.0+
-    class IImageDatabaseService : IpcService
+    sealed class IImageDatabaseService : IpcService
     {
         private uint _imageCount;
         private bool _isDirty;

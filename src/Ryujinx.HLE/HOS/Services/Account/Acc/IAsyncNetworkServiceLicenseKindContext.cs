@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Account.Acc
 {
-    class IAsyncNetworkServiceLicenseKindContext : IAsyncContext
+    sealed class IAsyncNetworkServiceLicenseKindContext : IAsyncContext
     {
         private NetworkServiceLicenseKind? _serviceLicenseKind;
 

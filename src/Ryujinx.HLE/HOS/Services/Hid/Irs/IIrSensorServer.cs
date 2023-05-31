@@ -9,7 +9,7 @@ using System;
 namespace Ryujinx.HLE.HOS.Services.Hid.Irs
 {
     [Service("irs")]
-    class IIrSensorServer : IpcService
+    sealed class IIrSensorServer : IpcService
     {
         private int _irsensorSharedMemoryHandle = 0;
 

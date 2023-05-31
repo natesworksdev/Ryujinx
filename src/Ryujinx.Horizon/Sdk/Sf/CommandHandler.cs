@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Horizon.Sdk.Sf
 {
-    class CommandHandler
+    sealed class CommandHandler
     {
         public delegate Result MethodInvoke(
             ref ServiceDispatchContext   context,

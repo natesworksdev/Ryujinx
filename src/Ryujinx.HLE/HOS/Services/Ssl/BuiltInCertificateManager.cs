@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Ssl
 {
-    class BuiltInCertificateManager
+    sealed class BuiltInCertificateManager
     {
         private const long CertStoreTitleId = 0x0100000000000800;
 

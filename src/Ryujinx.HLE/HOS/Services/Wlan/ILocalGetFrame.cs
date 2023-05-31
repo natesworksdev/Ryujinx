@@ -1,7 +1,7 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Wlan
 {
     [Service("wlan:lg")]
-    class ILocalGetFrame : IpcService
+    sealed class ILocalGetFrame : IpcService
     {
         public ILocalGetFrame(ServiceCtx context) { }
     }

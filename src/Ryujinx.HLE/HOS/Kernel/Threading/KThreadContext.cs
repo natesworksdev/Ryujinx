@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel.Threading
 {
-    class KThreadContext : IThreadContext
+    sealed class KThreadContext : IThreadContext
     {
         private readonly IExecutionContext _context;
 

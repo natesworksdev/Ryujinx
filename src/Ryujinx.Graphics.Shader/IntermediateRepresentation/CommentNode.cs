@@ -1,6 +1,6 @@
 namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 {
-    class CommentNode : Operation
+    sealed class CommentNode : Operation
     {
         public string Comment { get; }
 

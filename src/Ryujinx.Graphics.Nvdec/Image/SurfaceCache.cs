@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.Graphics.Nvdec.Image
 {
-    class SurfaceCache
+    sealed class SurfaceCache
     {
         // Must be equal to at least the maximum number of surfaces
         // that can be in use simultaneously (which is 17, since H264

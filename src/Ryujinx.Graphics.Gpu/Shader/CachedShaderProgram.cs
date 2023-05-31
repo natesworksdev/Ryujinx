@@ -7,7 +7,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// Represents a program composed of one or more shader stages (for graphics shaders),
     /// or a single shader (for compute shaders).
     /// </summary>
-    class CachedShaderProgram : IDisposable
+    sealed class CachedShaderProgram : IDisposable
     {
         /// <summary>
         /// Host shader program object.

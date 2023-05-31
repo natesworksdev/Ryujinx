@@ -1,6 +1,6 @@
 namespace ARMeilleure.Decoders
 {
-    class OpCodeSimdIns : OpCodeSimd
+    sealed class OpCodeSimdIns : OpCodeSimd
     {
         public int SrcIndex { get; }
         public int DstIndex { get; }

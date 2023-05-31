@@ -5,7 +5,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Kernel.Process
 {
-    class KHandleTable
+    sealed class KHandleTable
     {
         public const int SelfThreadHandle  = (0x1ffff << 15) | 0;
         public const int SelfProcessHandle = (0x1ffff << 15) | 1;

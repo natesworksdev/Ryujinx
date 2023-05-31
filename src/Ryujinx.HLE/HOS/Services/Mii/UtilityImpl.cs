@@ -7,7 +7,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Mii
 {
-    class UtilityImpl
+    sealed class UtilityImpl
     {
         private uint _x;
         private uint _y;

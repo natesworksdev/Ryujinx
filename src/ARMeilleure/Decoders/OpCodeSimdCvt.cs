@@ -1,6 +1,6 @@
 namespace ARMeilleure.Decoders
 {
-    class OpCodeSimdCvt : OpCodeSimd
+    sealed class OpCodeSimdCvt : OpCodeSimd
     {
         public int FBits { get; }
 

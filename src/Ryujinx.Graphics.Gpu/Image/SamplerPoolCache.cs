@@ -5,7 +5,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// This can keep multiple sampler pools, and return the current one as needed.
     /// It is useful for applications that uses multiple sampler pools.
     /// </summary>
-    class SamplerPoolCache : PoolCache<SamplerPool>
+    sealed class SamplerPoolCache : PoolCache<SamplerPool>
     {
         /// <summary>
         /// Constructs a new instance of the texture pool.

@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
-    class KMemoryInfo
+    sealed class KMemoryInfo
     {
         public ulong Address { get; }
         public ulong Size    { get; }

@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace Ryujinx.Graphics.GAL.Multithreading.Resources
 {
-    class ThreadedCounterEvent : ICounterEvent
+    sealed class ThreadedCounterEvent : ICounterEvent
     {
         private ThreadedRenderer _renderer;
         public ICounterEvent Base;

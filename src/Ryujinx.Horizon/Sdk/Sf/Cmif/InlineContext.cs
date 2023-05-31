@@ -1,6 +1,6 @@
 namespace Ryujinx.Horizon.Sdk.Sf.Cmif
 {
-    class InlineContext
+    sealed class InlineContext
     {
         public static int Set(int newContext)
         {

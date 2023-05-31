@@ -5,7 +5,7 @@ using System.Net.Sockets;
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
 {
-    class ManagedSocketPollManager : IPollManager
+    sealed class ManagedSocketPollManager : IPollManager
     {
         private static ManagedSocketPollManager _instance;
 

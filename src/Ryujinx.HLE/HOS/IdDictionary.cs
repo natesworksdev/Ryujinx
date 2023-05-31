@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS
 {
-    class IdDictionary
+    sealed class IdDictionary
     {
         private ConcurrentDictionary<int, object> _objs;
 

@@ -12,7 +12,7 @@ namespace Ryujinx.Memory.WindowsShared
     /// Windows memory placeholder manager.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    class PlaceholderManager
+    sealed class PlaceholderManager
     {
         private const int InitialOverlapsSize = 10;
 

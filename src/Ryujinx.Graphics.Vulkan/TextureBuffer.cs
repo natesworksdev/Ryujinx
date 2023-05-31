@@ -7,7 +7,7 @@ using VkFormat = Silk.NET.Vulkan.Format;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class TextureBuffer : ITexture
+    sealed class TextureBuffer : ITexture
     {
         private readonly VulkanRenderer _gd;
 

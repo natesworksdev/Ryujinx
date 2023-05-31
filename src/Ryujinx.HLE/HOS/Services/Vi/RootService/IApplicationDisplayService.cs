@@ -18,7 +18,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 {
-    class IApplicationDisplayService : IpcService
+    sealed class IApplicationDisplayService : IpcService
     {
         private readonly ViServiceType _serviceType;
 

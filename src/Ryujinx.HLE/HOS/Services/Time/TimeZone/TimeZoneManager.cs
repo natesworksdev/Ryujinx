@@ -5,7 +5,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 {
-    class TimeZoneManager
+    sealed class TimeZoneManager
     {
         private bool                 _isInitialized;
         private Box<TimeZoneRule>    _myRules;

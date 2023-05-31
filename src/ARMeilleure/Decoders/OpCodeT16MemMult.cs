@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace ARMeilleure.Decoders
 {
-    class OpCodeT16MemMult : OpCodeT16, IOpCode32MemMult
+    sealed class OpCodeT16MemMult : OpCodeT16, IOpCode32MemMult
     {
         public int Rn { get; }
         public int RegisterMask { get; }

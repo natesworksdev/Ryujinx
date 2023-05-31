@@ -1,7 +1,7 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Loader
 {
     [Service("ldr:shel")]
-    class IShellInterface : IpcService
+    sealed class IShellInterface : IpcService
     {
         public IShellInterface(ServiceCtx context) { }
     }

@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
 {
-    class EventFileDescriptorPollManager : IPollManager
+    sealed class EventFileDescriptorPollManager : IPollManager
     {
         private static EventFileDescriptorPollManager _instance;
 

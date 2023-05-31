@@ -1,7 +1,7 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Ngct
 {
     [Service("ngct:u")] // 9.0.0+
-    class IService : IpcService
+    sealed class IService : IpcService
     {
         public IService(ServiceCtx context) { }
 

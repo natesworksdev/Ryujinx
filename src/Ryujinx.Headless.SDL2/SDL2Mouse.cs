@@ -6,7 +6,7 @@ using System.Numerics;
 
 namespace Ryujinx.Headless.SDL2
 {
-    class SDL2Mouse : IMouse
+    sealed class SDL2Mouse : IMouse
     {
         private SDL2MouseDriver _driver;
 

@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Types
 {
-    class AddrInfoSerialized
+    sealed class AddrInfoSerialized
     {
         public AddrInfoSerializedHeader Header;
         public AddrInfo4? SocketAddress;

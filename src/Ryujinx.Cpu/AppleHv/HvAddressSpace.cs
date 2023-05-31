@@ -4,7 +4,7 @@ using System;
 
 namespace Ryujinx.Cpu.AppleHv
 {
-    class HvAddressSpace : IDisposable
+    sealed class HvAddressSpace : IDisposable
     {
         private const ulong KernelRegionBase = unchecked((ulong)-(1L << 39));
         private const ulong KernelRegionCodeOffset = 0UL;

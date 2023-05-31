@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.Types
 {
-    class NvQueryEventNotImplementedException : Exception
+    sealed class NvQueryEventNotImplementedException : Exception
     {
         public ServiceCtx   Context    { get; }
         public NvDeviceFile DeviceFile { get; }

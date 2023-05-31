@@ -1,6 +1,6 @@
 namespace ARMeilleure.Decoders
 {
-    class OpCodeBImmCmp : OpCodeBImm
+    sealed class OpCodeBImmCmp : OpCodeBImm
     {
         public int Rt { get; }
 

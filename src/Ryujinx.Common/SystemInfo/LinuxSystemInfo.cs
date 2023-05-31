@@ -8,7 +8,7 @@ using System.Runtime.Versioning;
 namespace Ryujinx.Common.SystemInfo
 {
     [SupportedOSPlatform("linux")]
-    class LinuxSystemInfo : SystemInfo
+    sealed class LinuxSystemInfo : SystemInfo
     {
         internal LinuxSystemInfo()
         {

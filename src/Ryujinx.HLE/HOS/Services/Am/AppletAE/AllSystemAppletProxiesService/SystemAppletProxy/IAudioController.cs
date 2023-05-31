@@ -2,7 +2,7 @@ using Ryujinx.Common.Logging;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy
 {
-    class IAudioController : IpcService
+    sealed class IAudioController : IpcService
     {
         public IAudioController() { }
 

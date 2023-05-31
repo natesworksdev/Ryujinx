@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 {
-    class BindlessElimination
+    sealed class BindlessElimination
     {
         public static void RunPass(BasicBlock block, ShaderConfig config)
         {

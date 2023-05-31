@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class FenceHolder : IDisposable
+    sealed class FenceHolder : IDisposable
     {
         private readonly Vk _api;
         private readonly Device _device;
