@@ -6,7 +6,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Applets
 {
-    internal class PlayerSelectApplet : IApplet
+    internal sealed class PlayerSelectApplet : IApplet
     {
         private Horizon _system;
 

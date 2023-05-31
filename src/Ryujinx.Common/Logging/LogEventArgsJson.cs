@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace Ryujinx.Common.Logging
 {
-    internal class LogEventArgsJson
+    internal sealed class LogEventArgsJson
     {
         public LogLevel Level { get; }
         public TimeSpan Time { get; }

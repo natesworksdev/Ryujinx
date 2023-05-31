@@ -5,7 +5,7 @@ using System.Net;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn
 {
-    internal class NetworkInterface
+    internal sealed class NetworkInterface
     {
         public ResultCode NifmState        { get; set; }
         public KEvent     StateChangeEvent { get; private set; }

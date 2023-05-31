@@ -9,7 +9,7 @@ namespace Ryujinx.Ava.UI.Helpers
     using RyuLogClass = Ryujinx.Common.Logging.LogClass;
     using RyuLogger   = Ryujinx.Common.Logging.Logger;
 
-    internal class LoggerAdapter : Avalonia.Logging.ILogSink
+    internal sealed class LoggerAdapter : Avalonia.Logging.ILogSink
     {
         public static void Register()
         {

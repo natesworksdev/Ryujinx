@@ -5,7 +5,7 @@ using VkBuffer = Silk.NET.Vulkan.Buffer;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    internal class VertexBufferUpdater : IDisposable
+    internal sealed class VertexBufferUpdater : IDisposable
     {
         private VulkanRenderer _gd;
 

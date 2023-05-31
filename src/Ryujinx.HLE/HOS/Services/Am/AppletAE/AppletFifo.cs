@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE
 {
-    internal class AppletFifo<T> : IAppletFifo<T>
+    internal sealed class AppletFifo<T> : IAppletFifo<T>
     {
         private ConcurrentQueue<T> _dataQueue;
 

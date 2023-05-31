@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Spv.Generator
 {
-    internal class DeterministicStringKey : IEquatable<DeterministicStringKey>
+    internal sealed class DeterministicStringKey : IEquatable<DeterministicStringKey>
     {
         private string _value;
 

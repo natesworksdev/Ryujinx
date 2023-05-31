@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Tests.Cpu
 {
-    internal class EnvironmentTests
+    internal sealed class EnvironmentTests
     {
         private static Translator _translator;
 

@@ -12,7 +12,7 @@ using System.Text;
 namespace Ryujinx.HLE.Exceptions
 {
     [Serializable]
-    internal class ServiceNotImplementedException : Exception
+    internal sealed class ServiceNotImplementedException : Exception
     {
         public IpcService Service { get; }
         public ServiceCtx Context { get; }

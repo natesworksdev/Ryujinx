@@ -9,7 +9,7 @@ namespace Ryujinx.Ui.Applet
     /// <summary>
     /// Class that forwards key events to a GTK Entry so they can be processed into text.
     /// </summary>
-    internal class GtkDynamicTextInputHandler : IDynamicTextInputHandler
+    internal sealed class GtkDynamicTextInputHandler : IDynamicTextInputHandler
     {
         private readonly Window              _parent;
         private readonly OffscreenWindow     _inputToTextWindow = new OffscreenWindow();
@@ -44,7 +44,7 @@ namespace Ryujinx.Ui.Applet
 
             _inputToTextEntry.TruncateMultiline = true;
 
-            // Start with input processing turned off so the text box won't accumulate text 
+            // Start with input processing turned off so the text box won't accumulate text
             // if the user is playing on the keyboard.
             _canProcessInput = false;
         }

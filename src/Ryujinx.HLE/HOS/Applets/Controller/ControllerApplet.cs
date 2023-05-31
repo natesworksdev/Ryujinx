@@ -11,7 +11,7 @@ using static Ryujinx.HLE.HOS.Services.Hid.HidServer.HidUtils;
 
 namespace Ryujinx.HLE.HOS.Applets
 {
-    internal class ControllerApplet : IApplet
+    internal sealed class ControllerApplet : IApplet
     {
         private Horizon _system;
 

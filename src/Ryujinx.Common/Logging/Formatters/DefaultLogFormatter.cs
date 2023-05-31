@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Ryujinx.Common.Logging.Formatters
 {
-    internal class DefaultLogFormatter : ILogFormatter
+    internal sealed class DefaultLogFormatter : ILogFormatter
     {
         private static readonly ObjectPool<StringBuilder> StringBuilderPool = SharedPools.Default<StringBuilder>();
 

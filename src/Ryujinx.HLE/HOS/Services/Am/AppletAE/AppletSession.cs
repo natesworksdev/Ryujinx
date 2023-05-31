@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE
 {
-    internal class AppletSession
+    internal sealed class AppletSession
     {
         private IAppletFifo<byte[]> _inputData;
         private IAppletFifo<byte[]> _outputData;

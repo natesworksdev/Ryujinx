@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
     /// <summary>
     /// Class that manages the renderer base class and its state in a multithreaded context.
     /// </summary>
-    internal class SoftwareKeyboardRenderer : IDisposable
+    internal sealed class SoftwareKeyboardRenderer : IDisposable
     {
         private const int TextBoxBlinkSleepMilliseconds   = 100;
         private const int RendererWaitTimeoutMilliseconds = 100;

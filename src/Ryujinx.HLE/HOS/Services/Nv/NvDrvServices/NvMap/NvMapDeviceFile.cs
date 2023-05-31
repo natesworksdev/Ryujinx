@@ -6,7 +6,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 {
-    internal class NvMapDeviceFile : NvDeviceFile
+    internal sealed class NvMapDeviceFile : NvDeviceFile
     {
         private const int FlagNotFreedYet = 1;
 

@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Ryujinx.Ui.Applet
 {
-    internal class ErrorAppletDialog : MessageDialog
+    internal sealed class ErrorAppletDialog : MessageDialog
     {
         public ErrorAppletDialog(Window parentWindow, DialogFlags dialogFlags, MessageType messageType, string[] buttons) : base(parentWindow, dialogFlags, messageType, ButtonsType.None, null)
         {
@@ -24,7 +24,7 @@ namespace Ryujinx.Ui.Applet
             {
                 AddButton("OK", 0);
             }
-            
+
             ShowAll();
         }
     }

@@ -6,11 +6,11 @@ using System.Reflection;
 
 namespace Ryujinx.Ui.Widgets
 {
-    internal class GtkDialog : MessageDialog
+    internal sealed class GtkDialog : MessageDialog
     {
         private static bool _isChoiceDialogOpen;
 
-        private GtkDialog(string title, string mainText, string secondaryText, MessageType messageType = MessageType.Other, ButtonsType buttonsType = ButtonsType.Ok) 
+        private GtkDialog(string title, string mainText, string secondaryText, MessageType messageType = MessageType.Other, ButtonsType buttonsType = ButtonsType.Ok)
             : base(null, DialogFlags.Modal, messageType, buttonsType, null)
         {
             Title              = title;

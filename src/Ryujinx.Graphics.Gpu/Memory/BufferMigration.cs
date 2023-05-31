@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// A record of when buffer data was copied from one buffer to another, along with the SyncNumber when the migration will be complete.
     /// Keeps the source buffer alive for data flushes until the migration is complete.
     /// </summary>
-    internal class BufferMigration : IDisposable
+    internal sealed class BufferMigration : IDisposable
     {
         /// <summary>
         /// The offset for the migrated region.

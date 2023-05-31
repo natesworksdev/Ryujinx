@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Tests.Time
 {
-    internal class TimeZoneRuleTests
+    internal sealed class TimeZoneRuleTests
     {
         class EffectInfoParameterTests
         {

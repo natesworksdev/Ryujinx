@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Horizon.Bcat
 {
-    internal class BcatMain : IService
+    internal sealed class BcatMain : IService
     {
         public static void Main(ServiceTable serviceTable)
         {

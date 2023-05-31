@@ -9,7 +9,7 @@ using Action = System.Action;
 
 namespace Ryujinx.Ui.Applet
 {
-    internal class GtkHostUiHandler : IHostUiHandler
+    internal sealed class GtkHostUiHandler : IHostUiHandler
     {
         private readonly Window _parent;
 

@@ -9,7 +9,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     /// <summary>
     /// Maintains a "current" specialiation state, and provides a flag to check if it has changed meaningfully.
     /// </summary>
-    internal class SpecializationStateUpdater
+    internal sealed class SpecializationStateUpdater
     {
         private readonly GpuContext _context;
         private GpuChannelGraphicsState _graphics;

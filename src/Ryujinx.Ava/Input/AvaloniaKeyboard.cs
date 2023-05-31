@@ -9,7 +9,7 @@ using Key = Ryujinx.Input.Key;
 
 namespace Ryujinx.Ava.Input
 {
-    internal class AvaloniaKeyboard : IKeyboard
+    internal sealed class AvaloniaKeyboard : IKeyboard
     {
         private readonly List<ButtonMappingEntry> _buttonsUserMapping;
         private readonly AvaloniaKeyboardDriver   _driver;

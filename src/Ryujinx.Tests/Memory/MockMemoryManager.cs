@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.Tests.Memory
 {
-    internal class MockMemoryManager : IMemoryManager
+    internal sealed class MockMemoryManager : IMemoryManager
     {
         public int AddressSpaceBits => throw new NotImplementedException();
 

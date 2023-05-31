@@ -6,7 +6,7 @@ using System.Numerics;
 
 namespace Ryujinx.Ava.Input
 {
-    internal class AvaloniaMouse : IMouse
+    internal sealed class AvaloniaMouse : IMouse
     {
         private AvaloniaMouseDriver _driver;
 

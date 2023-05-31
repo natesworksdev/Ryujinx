@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    internal class HostMemoryAllocator
+    internal sealed class HostMemoryAllocator
     {
         private struct HostMemoryAllocation
         {

@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace ARMeilleure.Translation
 {
-    internal class TranslatorCache<T>
+    internal sealed class TranslatorCache<T>
     {
         private readonly IntervalTree<ulong, T> _tree;
         private readonly ReaderWriterLock _treeLock;

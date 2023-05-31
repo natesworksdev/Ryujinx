@@ -7,7 +7,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// <summary>
     /// A writable block that targets a given MultiRange within a PhysicalMemory instance.
     /// </summary>
-    internal class MultiRangeWritableBlock : IWritableBlock
+    internal sealed class MultiRangeWritableBlock : IWritableBlock
     {
         private readonly MultiRange _range;
         private readonly PhysicalMemory _physicalMemory;

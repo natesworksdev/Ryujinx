@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// <summary>
     /// A collection of shader bindings ready for insertion into the buffer and texture managers.
     /// </summary>
-    internal class CachedShaderBindings
+    internal sealed class CachedShaderBindings
     {
         public TextureBindingInfo[][] TextureBindings { get; }
         public TextureBindingInfo[][] ImageBindings { get; }

@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    internal class AutoFlushCounter
+    internal sealed class AutoFlushCounter
     {
         // How often to flush on framebuffer change.
         private readonly static long FramebufferFlushTimer = Stopwatch.Frequency / 1000; // (1ms)

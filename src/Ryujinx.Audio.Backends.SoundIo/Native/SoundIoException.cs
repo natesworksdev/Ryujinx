@@ -4,7 +4,7 @@ using static Ryujinx.Audio.Backends.SoundIo.Native.SoundIo;
 
 namespace Ryujinx.Audio.Backends.SoundIo.Native
 {
-    internal class SoundIoException : Exception
+    internal sealed class SoundIoException : Exception
     {
         internal SoundIoException(SoundIoError error) : base(Marshal.PtrToStringAnsi(soundio_strerror(error))) { }
     }

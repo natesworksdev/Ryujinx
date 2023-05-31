@@ -7,7 +7,7 @@ using static Ryujinx.Graphics.OpenGL.Effects.ShaderHelper;
 
 namespace Ryujinx.Graphics.OpenGL.Effects
 {
-    internal class FsrScalingFilter : IScalingFilter
+    internal sealed class FsrScalingFilter : IScalingFilter
     {
         private readonly OpenGLRenderer _renderer;
         private int _inputUniform;

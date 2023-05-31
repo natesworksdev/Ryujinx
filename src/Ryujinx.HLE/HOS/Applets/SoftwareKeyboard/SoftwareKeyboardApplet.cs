@@ -17,7 +17,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Applets
 {
-    internal class SoftwareKeyboardApplet : IApplet
+    internal sealed class SoftwareKeyboardApplet : IApplet
     {
         private const string DefaultInputText = "Ryujinx";
 

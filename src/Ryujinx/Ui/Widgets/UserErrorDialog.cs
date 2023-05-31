@@ -4,7 +4,7 @@ using Ryujinx.Ui.Common.Helper;
 
 namespace Ryujinx.Ui.Widgets
 {
-    internal class UserErrorDialog : MessageDialog
+    internal sealed class UserErrorDialog : MessageDialog
     {
         private const string SetupGuideUrl        = "https://github.com/Ryujinx/Ryujinx/wiki/Ryujinx-Setup-&-Configuration-Guide";
         private const int    OkResponseId         = 0;
@@ -82,7 +82,7 @@ namespace Ryujinx.Ui.Widgets
             return error switch
             {
                 UserError.NoKeys or
-                UserError.NoFirmware or 
+                UserError.NoFirmware or
                 UserError.FirmwareParsingFailed => true,
                 _                               => false,
             };

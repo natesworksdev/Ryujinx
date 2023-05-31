@@ -52,7 +52,7 @@ namespace Ryujinx.HLE.HOS.Services.Arp
         }
     }
 
-    internal class LibHacArpServiceObject : LibHac.Sm.IServiceObject
+    internal sealed class LibHacArpServiceObject : LibHac.Sm.IServiceObject
     {
         private SharedRef<LibHacIReader> _serviceObject;
 

@@ -7,7 +7,7 @@ using System.IO;
 
 namespace Ryujinx.Ava.UI.Helpers
 {
-    internal class BitmapArrayValueConverter : IValueConverter
+    internal sealed class BitmapArrayValueConverter : IValueConverter
     {
         public static BitmapArrayValueConverter Instance = new();
 

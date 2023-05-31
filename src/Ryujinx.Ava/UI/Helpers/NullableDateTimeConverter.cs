@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace Ryujinx.Ava.UI.Helpers
 {
-    internal class NullableDateTimeConverter : MarkupExtension, IValueConverter
+    internal sealed class NullableDateTimeConverter : MarkupExtension, IValueConverter
     {
         private static readonly NullableDateTimeConverter _instance = new();
 

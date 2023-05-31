@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    internal class IndexBufferPattern : IDisposable
+    internal sealed class IndexBufferPattern : IDisposable
     {
         public int PrimitiveVertices { get; }
         public int PrimitiveVerticesOut { get; }

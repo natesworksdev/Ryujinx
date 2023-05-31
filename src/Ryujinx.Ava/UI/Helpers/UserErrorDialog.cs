@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.UI.Helpers
 {
-    internal class UserErrorDialog
+    internal sealed class UserErrorDialog
     {
         private const string SetupGuideUrl = "https://github.com/Ryujinx/Ryujinx/wiki/Ryujinx-Setup-&-Configuration-Guide";
 

@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.Ava.UI.Renderer
 {
-    internal class OpenTKBindingsContext : IBindingsContext
+    internal sealed class OpenTKBindingsContext : IBindingsContext
     {
         private readonly Func<string, IntPtr> _getProcAddress;
 

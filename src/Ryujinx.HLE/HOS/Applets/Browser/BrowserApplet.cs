@@ -8,7 +8,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Applets.Browser
 {
-    internal class BrowserApplet : IApplet
+    internal sealed class BrowserApplet : IApplet
     {
         public event EventHandler AppletStateChanged;
 

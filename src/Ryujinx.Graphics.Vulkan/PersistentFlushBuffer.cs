@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    internal class PersistentFlushBuffer : IDisposable
+    internal sealed class PersistentFlushBuffer : IDisposable
     {
         private VulkanRenderer _gd;
 

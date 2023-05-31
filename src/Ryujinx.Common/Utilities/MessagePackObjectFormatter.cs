@@ -185,7 +185,7 @@ namespace Ryujinx.Common.Utilities
             }
         }
 
-        internal class IndentedStringBuilder
+        internal sealed class IndentedStringBuilder
         {
             const string DefaultIndent = "    ";
 

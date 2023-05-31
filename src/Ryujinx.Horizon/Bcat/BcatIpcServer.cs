@@ -5,10 +5,10 @@ using Ryujinx.Horizon.Sdk.Sm;
 
 namespace Ryujinx.Horizon.Bcat
 {
-    internal class BcatIpcServer
+    internal sealed class BcatIpcServer
     {
         private const int BcatMaxSessionsCount = 8;
-        private const int BcatTotalMaxSessionsCount = BcatMaxSessionsCount * 4; 
+        private const int BcatTotalMaxSessionsCount = BcatMaxSessionsCount * 4;
 
         private const int PointerBufferSize = 0x400;
         private const int MaxDomains = 64;

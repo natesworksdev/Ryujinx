@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace Ryujinx.Ava.UI.Helpers
 {
-    internal class KeyValueConverter : IValueConverter
+    internal sealed class KeyValueConverter : IValueConverter
     {
         public static KeyValueConverter Instance = new();
 

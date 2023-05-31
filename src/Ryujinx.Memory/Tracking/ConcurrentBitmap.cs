@@ -6,7 +6,7 @@ namespace Ryujinx.Memory.Tracking
     /// <summary>
     /// A bitmap that can be safely modified from multiple threads.
     /// </summary>
-    internal class ConcurrentBitmap
+    internal sealed class ConcurrentBitmap
     {
         public const int IntSize = 64;
 

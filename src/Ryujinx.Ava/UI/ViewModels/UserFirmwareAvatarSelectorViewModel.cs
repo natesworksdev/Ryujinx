@@ -20,7 +20,7 @@ using Color = Avalonia.Media.Color;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
-    internal class UserFirmwareAvatarSelectorViewModel : BaseModel
+    internal sealed class UserFirmwareAvatarSelectorViewModel : BaseModel
     {
         private static readonly Dictionary<string, byte[]> _avatarStore = new();
 

@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Graphics.Vulkan
 {
-    internal class BufferUsageBitmap
+    internal sealed class BufferUsageBitmap
     {
         private BitMap _bitmap;
         private int _size;

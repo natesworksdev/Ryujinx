@@ -26,10 +26,10 @@ using Color = Avalonia.Media.Color;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
-    internal class AvatarProfileViewModel : BaseModel, IDisposable
+    internal sealed class AvatarProfileViewModel : BaseModel, IDisposable
     {
         private const int MaxImageTasks = 4;
-        
+
         private static readonly Dictionary<string, byte[]> _avatarStore = new();
         private static bool _isPreloading;
         private static Action _loadCompleteAction;
@@ -53,7 +53,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             _images = new ObservableCollection<ProfileImageModel>();
         }
-        
+
         public AvatarProfileViewModel(Action loadCompleteAction)
         {
             _images = new ObservableCollection<ProfileImageModel>();
@@ -76,7 +76,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _backgroundColor = value;
 
                 IsActive = false;
-                
+
                 ReloadImages();
             }
         }
@@ -97,7 +97,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             set
             {
                 _isIndeterminate = value;
-                
+
                 OnPropertyChanged();
             }
         }
@@ -154,7 +154,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 Images.Clear();
                 int selectedIndex = _selectedIndex;
                 int index = 0;
-                
+
                 ImagesLoaded = 0;
                 IsIndeterminate = false;
 
@@ -170,7 +170,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 }
 
                 Task.WaitAll(tasks.ToArray());
-                
+
                 Images.AddRange(newImages);
 
                 void ImageTask(int start)

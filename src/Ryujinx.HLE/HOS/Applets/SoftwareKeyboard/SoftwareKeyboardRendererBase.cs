@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
     /// <summary>
     /// Base class that generates the graphics for the software keyboard applet during inline mode.
     /// </summary>
-    internal class SoftwareKeyboardRendererBase
+    internal sealed class SoftwareKeyboardRendererBase
     {
         public const int TextBoxBlinkThreshold = 8;
 
@@ -311,7 +311,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
         private static RectangleF MeasureString(ReadOnlySpan<char> text, Font font)
         {
             RendererOptions options = new RendererOptions(font);
-            
+
             if (text == "")
             {
                 FontRectangle emptyRectangle = TextMeasurer.Measure(" ", options);

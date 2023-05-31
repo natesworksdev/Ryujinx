@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Headless.SDL2
 {
-    internal class HeadlessHostUiTheme : IHostUiTheme
+    internal sealed class HeadlessHostUiTheme : IHostUiTheme
     {
         public string FontFamily => "sans-serif";
 

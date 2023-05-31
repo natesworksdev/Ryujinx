@@ -6,7 +6,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 {
-    internal class NvHostGpuDeviceFile : NvHostChannelDeviceFile
+    internal sealed class NvHostGpuDeviceFile : NvHostChannelDeviceFile
     {
         private KEvent _smExceptionBptIntReportEvent;
         private KEvent _smExceptionBptPauseReportEvent;

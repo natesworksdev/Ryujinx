@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 {
-    internal class InlineResponses
+    internal sealed class InlineResponses
     {
         private const uint MaxStrLenUTF8 = 0x7D4;
         private const uint MaxStrLenUTF16 = 0x3EC;

@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Ryujinx.Audio.Backends.Dummy
 {
-    internal class DummyHardwareDeviceSessionOutput : HardwareDeviceSessionOutputBase
+    internal sealed class DummyHardwareDeviceSessionOutput : HardwareDeviceSessionOutputBase
     {
         private float _volume;
         private IHardwareDeviceDriver _manager;

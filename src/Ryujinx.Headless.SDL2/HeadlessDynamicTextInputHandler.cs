@@ -7,7 +7,7 @@ namespace Ryujinx.Headless.SDL2
     /// <summary>
     /// Headless text processing class, right now there is no way to forward the input to it.
     /// </summary>
-    internal class HeadlessDynamicTextInputHandler : IDynamicTextInputHandler
+    internal sealed class HeadlessDynamicTextInputHandler : IDynamicTextInputHandler
     {
         private bool _canProcessInput;
 

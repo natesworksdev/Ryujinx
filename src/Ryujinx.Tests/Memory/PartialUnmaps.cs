@@ -16,7 +16,7 @@ using System.Threading;
 namespace Ryujinx.Tests.Memory
 {
     [TestFixture]
-    internal class PartialUnmaps
+    internal sealed class PartialUnmaps
     {
         private static Translator _translator;
 

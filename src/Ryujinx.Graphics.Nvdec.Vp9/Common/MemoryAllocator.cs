@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Nvdec.Vp9.Common
 {
-    internal class MemoryAllocator : IDisposable
+    internal sealed class MemoryAllocator : IDisposable
     {
         private const int PoolEntries = 10;
 

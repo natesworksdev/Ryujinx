@@ -10,7 +10,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 {
-    internal class NvHostCtrlDeviceFile : NvDeviceFile
+    internal sealed class NvHostCtrlDeviceFile : NvDeviceFile
     {
         public const int EventsCount = 64;
 

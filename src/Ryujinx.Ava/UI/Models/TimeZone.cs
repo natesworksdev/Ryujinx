@@ -1,6 +1,6 @@
 namespace Ryujinx.Ava.UI.Models
 {
-    internal class TimeZone
+    internal sealed class TimeZone
     {
         public TimeZone(string utcDifference, string location, string abbreviation)
         {

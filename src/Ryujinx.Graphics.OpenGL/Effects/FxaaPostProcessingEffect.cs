@@ -4,7 +4,7 @@ using Ryujinx.Graphics.OpenGL.Image;
 
 namespace Ryujinx.Graphics.OpenGL.Effects
 {
-    internal class FxaaPostProcessingEffect : IPostProcessingEffect
+    internal sealed class FxaaPostProcessingEffect : IPostProcessingEffect
     {
         private readonly OpenGLRenderer _renderer;
         private int _resolutionUniform;

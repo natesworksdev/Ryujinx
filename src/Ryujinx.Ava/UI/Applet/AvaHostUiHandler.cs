@@ -14,7 +14,7 @@ using System.Threading;
 
 namespace Ryujinx.Ava.UI.Applet
 {
-    internal class AvaHostUiHandler : IHostUiHandler
+    internal sealed class AvaHostUiHandler : IHostUiHandler
     {
         private readonly MainWindow _parent;
 
