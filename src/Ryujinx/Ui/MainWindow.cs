@@ -876,7 +876,7 @@ namespace Ryujinx.Ui
 
                 _applicationLibrary.LoadAndSaveMetaData(_emulationContext.Processes.ActiveApplication.ProgramIdText, appMetadata =>
                 {
-                    appMetadata.LastPlayed = DateTime.UtcNow;
+                    appMetadata.UpdatePreGame();
                 });
             }
         }
@@ -1019,7 +1019,7 @@ namespace Ryujinx.Ui
             {
                 _applicationLibrary.LoadAndSaveMetaData(titleId, appMetadata =>
                 {
-                    appMetadata.UpdateTimePlayed();
+                    appMetadata.UpdatePostGame();
                 });
             }
         }

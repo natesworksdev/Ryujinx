@@ -22,14 +22,28 @@ namespace Ryujinx.Ui.App.Common
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public string LastPlayedOld { get; set; }
 
-        public void UpdateTimePlayed()
+        /// <summary>
+        /// Updates <see cref="LastPlayed"/>. Call this before launching a game.
+        /// </summary>
+        public void UpdatePreGame()
         {
-            if (!LastPlayed.HasValue)
+            LastPlayed = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Updates <see cref="LastPlayed"/> and <see cref="TimePlayed"/>. Call this after a game ends.
+        /// </summary>
+        public void UpdatePostGame()
+        {
+            DateTime? prevLastPlayed = LastPlayed;
+            UpdatePreGame();
+
+            if(!prevLastPlayed.HasValue)
             {
                 return;
             }
-            
-            TimeSpan diff = DateTime.UtcNow - LastPlayed.Value;
+
+            TimeSpan diff = DateTime.UtcNow - prevLastPlayed.Value;
             double newTotalSeconds = TimePlayed.Add(diff).TotalSeconds;
             TimePlayed = TimeSpan.FromSeconds(Math.Round(newTotalSeconds, MidpointRounding.AwayFromZero));
         }

@@ -429,7 +429,6 @@ namespace Ryujinx.Ui.App.Common
                             // Migrate from string-based last_played to DateTime-based last_played_utc.
                             if (DateTime.TryParse(appMetadata.LastPlayedOld, out DateTime lastPlayedOldParsed))
                             {
-                                Logger.Info?.Print(LogClass.Application, $"last_played found: \"{appMetadata.LastPlayedOld}\", migrating to last_played_utc");
                                 appMetadata.LastPlayed = lastPlayedOldParsed;
 
                                 // Migration successful: deleting last_played from the metadata file.

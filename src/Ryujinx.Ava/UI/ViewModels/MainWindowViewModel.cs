@@ -1523,7 +1523,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             ApplicationLibrary.LoadAndSaveMetaData(titleId, appMetadata =>
             {
-                appMetadata.UpdateTimePlayed();
+                appMetadata.UpdatePostGame();
             });
         }
 
