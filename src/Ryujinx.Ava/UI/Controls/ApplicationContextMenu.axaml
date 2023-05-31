@@ -5,6 +5,9 @@
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     x:DataType="viewModels:MainWindowViewModel">
+	<MenuItem
+        Click="RunApplication_Click"
+        Header="{locale:Locale GameListContextMenuRunApplication}" />
     <MenuItem
         Click="ToggleFavorite_Click"
         Header="{locale:Locale GameListContextMenuToggleFavorite}"
