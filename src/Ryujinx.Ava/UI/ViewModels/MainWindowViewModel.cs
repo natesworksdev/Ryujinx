@@ -1458,7 +1458,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             Logger.RestartTime();
 
-            if (SelectedIcon == null || SelectedIcon.All(b => b == 0))
+            if (SelectedIcon == null)
             {
                 SelectedIcon = ApplicationLibrary.GetApplicationIcon(path);
             }
