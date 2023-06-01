@@ -87,7 +87,6 @@
             IsVisible="{Binding IsGrid}">
             <TextBlock Margin="5,3,0,0" Text="{locale:Locale CommonShowNames}" />
         </CheckBox>
-
         <TextBox
             Name="SearchBox"
             MinWidth="200"
