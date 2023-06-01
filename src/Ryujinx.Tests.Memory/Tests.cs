@@ -63,7 +63,7 @@ namespace Ryujinx.Tests.Memory
         public void Test_AliasRandom()
         {
             ulong pageSize = MemoryBlock.GetPageSize();
-            int pageBits = (int)MathF.Log2(pageSize);
+            int pageBits = (int)ulong.Log2(pageSize);
             ulong blockSize = MemoryBlock.GetPageSize() * 128;
 
             using MemoryBlock backing = new MemoryBlock(blockSize, MemoryAllocationFlags.Mirrorable);

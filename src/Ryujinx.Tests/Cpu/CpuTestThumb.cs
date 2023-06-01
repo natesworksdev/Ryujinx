@@ -270,7 +270,7 @@ namespace Ryujinx.Tests.Cpu
         {
             if (Size != 0x1000)
             {
-                // TODO: Change it to depends on DataBaseAddress instead.
+                // TODO: Change it to depend on DataBaseAddress instead.
                 Assert.Ignore("This test currently only support 4KiB page size");
             }
 

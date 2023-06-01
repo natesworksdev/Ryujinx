@@ -33,14 +33,14 @@ namespace Ryujinx.Tests.Cpu
         [SetUp]
         public void Setup()
         {
-            int pageBits = (int)MathF.Log2(Size);
+            int pageBits = (int)ulong.Log2(Size);
 
             _ram = new MemoryBlock(Size * 2);
             _memory = new MemoryManager(_ram, 1ul << (pageBits + 4));
             _memory.IncrementReferenceCount();
 
             // Some tests depends on hardcoded address that were computed for 4KiB.
-            // We change the layout on non 4KiB platform to keep compat here.
+            // We change the layout on non 4KiB platforms to keep compat here.
             if (Size > 0x1000)
             {
                 DataBaseAddress = 0;
