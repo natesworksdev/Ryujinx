@@ -10,13 +10,14 @@ using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Configuration;
-using Ryujinx.Ui.App.Common;
 using Ryujinx.HLE.HOS;
+using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Threading.Tasks;
 using Path = System.IO.Path;
 using UserId = LibHac.Fs.UserId;
 
@@ -332,6 +333,27 @@ namespace Ryujinx.Ava.UI.Controls
             {
                 viewModel.LoadApplication(viewModel.SelectedApplication.Path);
             }
+        }
+
+        public void BackupSaveData_Click(object sender, RoutedEventArgs args)
+        {
+            if (sender is not MenuItem { DataContext: MainWindowViewModel { SelectedApplication: ApplicationData selectedApp } })
+            {
+                return;
+            }
+
+            if (!ulong.TryParse(selectedApp.TitleId, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ulong titleIdNumber))
+            {
+                _ = Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogRyujinxErrorMessage], LocaleManager.Instance[LocaleKeys.DialogInvalidTitleIdErrorMessage]);
+                });
+                return;
+            }
+
+            _ = Task.Run(async () => {
+                await ApplicationHelper.BackupSaveData(titleIdNumber);
+            });
         }
     }
 }

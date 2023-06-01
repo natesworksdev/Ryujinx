@@ -1,8 +1,10 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
 using Avalonia.Threading;
+using DiscordRPC;
 using LibHac;
 using LibHac.Account;
+using LibHac.Bcat;
 using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
@@ -16,15 +18,17 @@ using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Windows;
+using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
-using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Buffers;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Path = System.IO.Path;
@@ -114,6 +118,11 @@ namespace Ryujinx.Ava.Common
 
         public static void OpenSaveDir(ulong saveDataId)
         {
+            OpenHelper.OpenFolder(FindValidSaveDir(saveDataId));
+        }
+
+        public static string FindValidSaveDir(ulong saveDataId)
+        {
             string saveRootPath = Path.Combine(_virtualFileSystem.GetNandPath(), $"user/save/{saveDataId:x16}");
 
             if (!Directory.Exists(saveRootPath))
@@ -122,25 +131,24 @@ namespace Ryujinx.Ava.Common
                 Directory.CreateDirectory(saveRootPath);
             }
 
-            string committedPath = Path.Combine(saveRootPath, "0");
-            string workingPath = Path.Combine(saveRootPath, "1");
+            // commited expected to be at /0, otherwise working is /1
+            string attemptPath = Path.Combine(saveRootPath, "0");
 
             // If the committed directory exists, that path will be loaded the next time the savedata is mounted
-            if (Directory.Exists(committedPath))
+            if (Directory.Exists(attemptPath))
             {
-                OpenHelper.OpenFolder(committedPath);
+                return attemptPath;
             }
-            else
+            
+            // If the working directory exists and the committed directory doesn't,
+            // the working directory will be loaded the next time the savedata is mounted
+            attemptPath = Path.Combine(saveRootPath, "1");
+            if (!Directory.Exists(attemptPath))
             {
-                // If the working directory exists and the committed directory doesn't,
-                // the working directory will be loaded the next time the savedata is mounted
-                if (!Directory.Exists(workingPath))
-                {
-                    Directory.CreateDirectory(workingPath);
-                }
+                Directory.CreateDirectory(attemptPath);
+            }
 
-                OpenHelper.OpenFolder(workingPath);
-            }
+            return attemptPath;
         }
 
         public static async Task ExtractSection(NcaSectionType ncaSectionType, string titleFilePath, string titleName, int programIndex = 0)
@@ -150,8 +158,8 @@ namespace Ryujinx.Ava.Common
                 Title = LocaleManager.Instance[LocaleKeys.FolderDialogExtractTitle]
             };
 
-            string destination       = await folderDialog.ShowAsync(_owner);
-            var    cancellationToken = new CancellationTokenSource();
+            string destination = await folderDialog.ShowAsync(_owner);
+            var cancellationToken = new CancellationTokenSource();
 
             UpdateWaitWindow waitingDialog = new(
                 LocaleManager.Instance[LocaleKeys.DialogNcaExtractionTitle],
@@ -166,7 +174,7 @@ namespace Ryujinx.Ava.Common
 
                     using FileStream file = new(titleFilePath, FileMode.Open, FileAccess.Read);
 
-                    Nca mainNca  = null;
+                    Nca mainNca = null;
                     Nca patchNca = null;
 
                     string extension = Path.GetExtension(titleFilePath).ToLower();
@@ -411,6 +419,144 @@ namespace Ryujinx.Ava.Common
             }
 
             return Result.Success;
+        }
+
+        public static async Task<bool> BackupSaveData(ulong titleId)
+        {
+            var userId = new LibHac.Fs.UserId((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low);
+         
+            // /backup/user/[userid]/[titleId]/[saveType]_backup.zip
+            // /backup/[titleid]/[userid]/
+            var backupRootDirectory = Path.Combine(AppDataManager.BackupDirPath, titleId.ToString(), userId.ToString());
+
+            // Temp is where all save data will be moved to as an intermediate directory before beign zipped and cleaned up
+            // /backup/[titleid]/[userid]/[date]/temp
+            var currDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
+            var backupTempDir = Path.Combine(backupRootDirectory, currDate, "temp");
+            if (Directory.Exists(backupTempDir)) 
+            {
+                Directory.Delete(backupTempDir, true);
+            }
+            
+            Directory.CreateDirectory(backupTempDir);
+
+            // Move all application save data for the user, account, and device to the temp folder
+            // TODO: use cancellation token for better bail out since they're running in parallel
+            var copyBackupFiles = await Task.WhenAll(
+                CopySaveDataToTemp(titleId, userId, SaveDataType.Account, backupTempDir),
+                // always use default uid for bcat and device data -- there's only one instance per combination of application and device
+                CopySaveDataToTemp(titleId, userId: default, SaveDataType.Bcat, backupTempDir),
+                CopySaveDataToTemp(titleId, userId: default, SaveDataType.Device, backupTempDir));
+
+            if (copyBackupFiles.Any(outcome => outcome is false))
+            {
+                Directory.Delete(Path.Combine(backupTempDir, ".."), true);
+                return false;
+            }
+
+            // Zip up the save data and delete the temp
+            var backupFile = Path.Combine(backupRootDirectory, $"{currDate}_{titleId}_save.zip");
+            var result = CreateApplicationSaveBackupZip(titleId, backupTempDir, backupFile);
+            Directory.Delete(Path.Combine(backupTempDir, ".."), true);
+
+            if (result)
+            {
+                OpenHelper.OpenFolder(backupRootDirectory);
+            }
+
+            return result;
+        }
+
+        public static async Task<bool> CopySaveDataToTemp(ulong titleId, LibHac.Fs.UserId userId, SaveDataType saveType, string backupTempDirectory)
+        {
+            // save with the user metadata to avoid having to do lookups with libhac?
+            var saveDataFilter = SaveDataFilter.Make(titleId, saveType, userId, saveDataId: default, index: default);
+
+            var result = _horizonClient.Fs.FindSaveDataWithFilter(out var saveDataInfo, SaveDataSpaceId.User, in saveDataFilter);
+            if (result.IsFailure())
+            {
+                if (result.ErrorCode is "2002-1002"
+                    && saveType is SaveDataType.Device or SaveDataType.Bcat)
+                {
+                    Logger.Debug?.Print(LogClass.Application, $"Title {titleId} does not have {saveType} data.");
+                    return true;
+                }
+
+                // Postback instead of throwing UI error?
+                _ = Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogMessageFindSaveErrorMessage, "No save data found"));
+                });
+
+                return false;
+            }
+
+            // Find the most recent version of the data, there is a commited (0) and working (1) paths directory
+            string saveRootPath = FindValidSaveDir(saveDataInfo.SaveDataId);
+            var copyDestPath = Path.Combine(backupTempDirectory, saveType.ToString());
+
+            return await CopyDirectoryAsync(saveRootPath, copyDestPath);
+        }
+
+        public static async Task<bool> CopyDirectoryAsync(string sourceDirectory, string destDirectory)
+        {
+            bool result = true;
+            Directory.CreateDirectory(destDirectory);
+
+            foreach (string filename in Directory.EnumerateFileSystemEntries(sourceDirectory))
+            {
+                var itemDest = Path.Combine(destDirectory, Path.GetFileName(filename));
+                var attrs = File.GetAttributes(filename);
+
+                result &= attrs switch 
+                { 
+                    _ when ((attrs & FileAttributes.Directory) == FileAttributes.Directory) => await CopyDirectoryAsync(filename, itemDest),
+                    _ => await CopyFileAsync(filename, itemDest)
+                };
+
+                if (!result)
+                {
+                    break;
+                }
+            }
+
+            return result;
+
+            static async Task<bool> CopyFileAsync(string source, string destination)
+            {
+                try
+                {
+                    using FileStream sourceStream = File.Open(source, FileMode.Open);
+                    using FileStream destinationStream = File.Create(destination);
+
+                    await sourceStream.CopyToAsync(destinationStream);
+                    return true;
+                }
+                catch (Exception ex) 
+                {
+                    // TODO: log
+                    return false;
+                }
+            }
+        }
+
+        public static bool CreateApplicationSaveBackupZip(ulong titleId, string sourceDataPath, string backupDestinationFullPath)
+        {
+            try
+            {
+                if (File.Exists(backupDestinationFullPath)) 
+                { 
+                    File.Delete(backupDestinationFullPath);
+                }
+
+                ZipFile.CreateFromDirectory(sourceDataPath, backupDestinationFullPath, CompressionLevel.SmallestSize, false);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error?.Print(LogClass.Application, $"Failed to backup save data for {titleId}.\n{ex.Message}");
+                return false;
+            }
         }
     }
 }

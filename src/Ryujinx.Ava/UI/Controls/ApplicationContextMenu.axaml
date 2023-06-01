@@ -3,7 +3,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale">
-	<MenuItem
+    <MenuItem
         Click="RunApplication_Click"
         Header="{locale:Locale GameListContextMenuRunApplication}" />
     <MenuItem
@@ -79,5 +79,12 @@
             Click="ExtractApplicationLogo_Click"
             Header="{locale:Locale GameListContextMenuExtractDataLogo}"
             ToolTip.Tip="{locale:Locale GameListContextMenuExtractDataLogoToolTip}" />
+    </MenuItem>
+    <MenuItem Header="{locale:Locale GameListContextMenuSaveManagement}">
+        <MenuItem
+            Click="BackupSaveData_Click"
+            Header="{locale:Locale GameListContextMenuBackupUserSaveData}"
+            IsEnabled="True"
+            ToolTip.Tip="{locale:Locale GameListContextMenuBackupUserSaveDataToolTip}" />
     </MenuItem>
 </MenuFlyout>
