@@ -11,13 +11,6 @@ body:
     validations:
       required: true
   - type: textarea
-    id: name
-    attributes:
-      label: Instruction description
-      description: Include the description/explanation from _tbd_ in this field
-    validations:
-      required: true
-  - type: textarea
     id: required
     attributes:
       label: Required by
