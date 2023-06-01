@@ -1,10 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
 using Avalonia.Threading;
-using DiscordRPC;
 using LibHac;
 using LibHac.Account;
-using LibHac.Bcat;
 using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
@@ -139,7 +137,7 @@ namespace Ryujinx.Ava.Common
             {
                 return attemptPath;
             }
-            
+
             // If the working directory exists and the committed directory doesn't,
             // the working directory will be loaded the next time the savedata is mounted
             attemptPath = Path.Combine(saveRootPath, "1");
@@ -424,7 +422,7 @@ namespace Ryujinx.Ava.Common
         public static async Task<bool> BackupSaveData(ulong titleId)
         {
             var userId = new LibHac.Fs.UserId((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low);
-         
+
             // /backup/user/[userid]/[titleId]/[saveType]_backup.zip
             // /backup/[titleid]/[userid]/
             var backupRootDirectory = Path.Combine(AppDataManager.BackupDirPath, titleId.ToString(), userId.ToString());
@@ -433,11 +431,11 @@ namespace Ryujinx.Ava.Common
             // /backup/[titleid]/[userid]/[date]/temp
             var currDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
             var backupTempDir = Path.Combine(backupRootDirectory, currDate, "temp");
-            if (Directory.Exists(backupTempDir)) 
+            if (Directory.Exists(backupTempDir))
             {
                 Directory.Delete(backupTempDir, true);
             }
-            
+
             Directory.CreateDirectory(backupTempDir);
 
             // Move all application save data for the user, account, and device to the temp folder
@@ -508,8 +506,8 @@ namespace Ryujinx.Ava.Common
                 var itemDest = Path.Combine(destDirectory, Path.GetFileName(filename));
                 var attrs = File.GetAttributes(filename);
 
-                result &= attrs switch 
-                { 
+                result &= attrs switch
+                {
                     _ when ((attrs & FileAttributes.Directory) == FileAttributes.Directory) => await CopyDirectoryAsync(filename, itemDest),
                     _ => await CopyFileAsync(filename, itemDest)
                 };
@@ -532,7 +530,7 @@ namespace Ryujinx.Ava.Common
                     await sourceStream.CopyToAsync(destinationStream);
                     return true;
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
                     // TODO: log
                     return false;
@@ -544,8 +542,8 @@ namespace Ryujinx.Ava.Common
         {
             try
             {
-                if (File.Exists(backupDestinationFullPath)) 
-                { 
+                if (File.Exists(backupDestinationFullPath))
+                {
                     File.Delete(backupDestinationFullPath);
                 }
 
