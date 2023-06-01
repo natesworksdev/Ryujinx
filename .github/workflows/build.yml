@@ -63,6 +63,9 @@ jobs:
         run: echo "result=$(git rev-parse --short "${{ github.sha }}")" >> $GITHUB_OUTPUT
         shell: bash
 
+      - name: Restore
+        run: dotnet restore --locked-mode
+
       - name: Build
         run: dotnet build -c "${{ matrix.configuration }}" -p:Version="${{ env.RYUJINX_BASE_VERSION }}" -p:SourceRevisionId="${{ steps.git_short_hash.outputs.result }}" -p:ExtraDefineConstants=DISABLE_UPDATER
 
@@ -146,6 +149,9 @@ jobs:
       - name: Get git short hash
         id: git_short_hash
         run: echo "result=$(git rev-parse --short "${{ github.sha }}")" >> $GITHUB_OUTPUT
+
+      - name: Restore
+        run: dotnet restore --locked-mode
 
       - name: Publish macOS
         run: |

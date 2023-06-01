@@ -1,0 +1,40 @@
+name: Update additional dependency files
+
+on:
+  pull_request:
+    branches:
+      - "dependabot/**"
+
+jobs:
+  nuget:
+    runs-on: ubuntu-latest
+    env:
+      GIT_COMMITTER_NAME: "RyujinxBot"
+      GIT_COMMITTER_EMAIL: "61127645+RyujinxBot@users.noreply.github.com"
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.RYUJINX_BOT_PAT }}
+
+      - uses: actions/setup-dotnet@v3
+        with:
+          global-json-file: global.json
+
+      - name: Restore packages
+        run: dotnet restore
+
+      - name: Check if files have been modified
+        id: mod_check
+        run: |
+          [[ $(git status -s | wc -l) -le 1 ]] \
+          && echo "is-dirty=false" >> "$GITHUB_OUTPUT" \
+          || echo "is-dirty=true" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push changes
+        if: steps.mod_check.outputs.is-dirty == 'true'
+        run: |
+          git config user.name "${{ env.GIT_COMMITTER_NAME }}"
+          git config user.email "${{ env.GIT_COMMITTER_EMAIL }}"
+          git add .
+          git commit -m "Update NuGet packages"
+          git push
