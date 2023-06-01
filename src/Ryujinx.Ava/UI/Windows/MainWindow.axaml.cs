@@ -108,7 +108,6 @@ namespace Ryujinx.Ava.UI.Windows
             ApplicationLibrary.ApplicationAdded += ApplicationLibrary_ApplicationAdded;
             ViewModel.ReloadGameList += ReloadGameList;
 
-
             NotificationHelper.SetNotificationManager(this);
         }
 
