@@ -9,6 +9,7 @@ using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Controller.Motion;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Logging.Targets;
 using Ryujinx.Common.SystemInterop;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Cpu;
@@ -339,6 +340,15 @@ namespace Ryujinx.Headless.SDL2
 
             GraphicsConfig.EnableShaderCache = true;
 
+            if (OperatingSystem.IsMacOS())
+            {
+                if (option.GraphicsBackend == GraphicsBackend.OpenGl)
+                {
+                    option.GraphicsBackend = GraphicsBackend.Vulkan;
+                    Logger.Warning?.Print(LogClass.Application, "OpenGL is not supported on macOS, switching to Vulkan!");
+                }
+            }
+
             IGamepad gamepad;
 
             if (option.ListInputIds)
@@ -550,7 +560,7 @@ namespace Ryujinx.Headless.SDL2
                                                                   options.IgnoreMissingServices,
                                                                   options.AspectRatio,
                                                                   options.AudioVolume,
-                                                                  options.UseHypervisor,
+                                                                  options.UseHypervisor ?? true,
                                                                   options.MultiplayerLanInterfaceId);
 
             return new Switch(configuration);
