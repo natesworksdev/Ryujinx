@@ -23,10 +23,7 @@ namespace Ryujinx.Graphics.GAL
         void SetData(IMemoryOwner<byte> data);
         void SetData(IMemoryOwner<byte> data, int layer, int level);
         void SetData(IMemoryOwner<byte> data, int layer, int level, Rectangle<int> region);
-        //void SetData(ReadOnlySpan<byte> data, int layer, int level, Rectangle<int> region);
-        //void SetData(SpanOrArray<byte> data);
-        //void SetData(SpanOrArray<byte> data, int layer, int level);
-        //void SetData(SpanOrArray<byte> data, int layer, int level, Rectangle<int> region);
+
         void SetStorage(BufferRange buffer);
         void Release();
     }
