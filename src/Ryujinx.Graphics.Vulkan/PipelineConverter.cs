@@ -165,6 +165,7 @@ namespace Ryujinx.Graphics.Vulkan
             pipeline.DepthTestEnable = state.DepthTest.TestEnable;
             pipeline.DepthWriteEnable = state.DepthTest.WriteEnable;
             pipeline.DepthCompareOp = state.DepthTest.Func.Convert();
+            pipeline.DepthMode = state.DepthMode == DepthMode.MinusOneToOne;
 
             pipeline.FrontFace = state.FrontFace.Convert();
 
@@ -294,6 +295,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             int attachmentCount = 0;
             int maxColorAttachmentIndex = -1;
+            uint attachmentIntegerFormatMask = 0;
 
             for (int i = 0; i < Constants.MaxRenderTargets; i++)
             {
@@ -301,6 +303,11 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     pipeline.Internal.AttachmentFormats[attachmentCount++] = gd.FormatCapabilities.ConvertToVkFormat(state.AttachmentFormats[i]);
                     maxColorAttachmentIndex = i;
+
+                    if (state.AttachmentFormats[i].IsInteger())
+                    {
+                        attachmentIntegerFormatMask |= 1u << i;
+                    }
                 }
             }
 
@@ -311,6 +318,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             pipeline.ColorBlendAttachmentStateCount = (uint)(maxColorAttachmentIndex + 1);
             pipeline.VertexAttributeDescriptionsCount = (uint)Math.Min(Constants.MaxVertexAttributes, state.VertexAttribCount);
+            pipeline.Internal.AttachmentIntegerFormatMask = attachmentIntegerFormatMask;
 
             return pipeline;
         }

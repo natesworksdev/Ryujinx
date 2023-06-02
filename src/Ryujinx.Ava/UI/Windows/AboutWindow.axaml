@@ -58,11 +58,20 @@
                         JustifyContent="SpaceAround"
                         RowSpacing="2">
                         <TextBlock
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
                             FontSize="28"
                             FontWeight="Bold"
                             Text="Ryujinx"
-                            TextAlignment="Left" />
-                        <TextBlock Text="(REE-YOU-JINX)" TextAlignment="Left" />
+                            TextAlignment="Center"
+                            Width="100" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontSize="11"
+                            Text="(REE-YOU-JINX)"
+                            TextAlignment="Center"
+                            Width="100" />
                     </flex:FlexPanel>
                 </Grid>
                 <TextBlock
@@ -72,6 +81,18 @@
                     LineHeight="12"
                     Text="{Binding Version}"
                     TextAlignment="Center" />
+                <Button
+                    Padding="5"
+                    HorizontalAlignment="Center"
+                    Background="Transparent"
+                    Click="Button_OnClick"
+                    Tag="https://github.com/Ryujinx/Ryujinx/wiki/Changelog#ryujinx-changelog">
+                    <TextBlock
+                        FontSize="10"
+                        Text="{locale:Locale AboutChangelogButton}"
+                        TextAlignment="Center"
+                        ToolTip.Tip="{locale:Locale AboutChangelogButtonTooltipMessage}" />
+                </Button>
             </StackPanel>
             <StackPanel
                 Grid.Row="2"

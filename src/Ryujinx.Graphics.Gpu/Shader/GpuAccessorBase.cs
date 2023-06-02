@@ -17,8 +17,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
         private readonly ResourceCounts _resourceCounts;
         private readonly int _stageIndex;
 
-        private readonly int[] _constantBufferBindings;
-
         /// <summary>
         /// Creates a new GPU accessor.
         /// </summary>
@@ -28,12 +26,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
             _context = context;
             _resourceCounts = resourceCounts;
             _stageIndex = stageIndex;
-
-            if (context.Capabilities.Api != TargetApi.Vulkan)
-            {
-                _constantBufferBindings = new int[Constants.TotalGpUniformBuffers];
-                _constantBufferBindings.AsSpan().Fill(-1);
-            }
         }
 
         public int QueryBindingConstantBuffer(int index)
@@ -45,15 +37,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             }
             else
             {
-                int binding = _constantBufferBindings[index];
-
-                if (binding < 0)
-                {
-                    binding = _resourceCounts.UniformBuffersCount++;
-                    _constantBufferBindings[index] = binding;
-                }
-
-                return binding;
+                return _resourceCounts.UniformBuffersCount++;
             }
         }
 
@@ -164,6 +148,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public bool QueryHostSupportsViewportIndexVertexTessellation() => _context.Capabilities.SupportsViewportIndexVertexTessellation;
 
         public bool QueryHostSupportsViewportMask() => _context.Capabilities.SupportsViewportMask;
+
+        public bool QueryHostSupportsDepthClipControl() => _context.Capabilities.SupportsDepthClipControl;
 
         /// <summary>
         /// Converts a packed Maxwell texture format to the shader translator texture format.
