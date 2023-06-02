@@ -318,7 +318,7 @@ namespace Ryujinx.Ava.UI.Helpers
 
             Window parent = GetMainWindow();
 
-            if (parent.IsActive == true && (parent as MainWindow).ViewModel.IsGameRunning)
+            if (parent != null && parent.IsActive && (parent as MainWindow).ViewModel.IsGameRunning)
             {
                 contentDialogOverlayWindow = new()
                 {
