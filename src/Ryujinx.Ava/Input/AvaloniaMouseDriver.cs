@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using FluentAvalonia.Core;
 using Ryujinx.Input;
 using System;
 using System.Numerics;
@@ -70,22 +69,18 @@ namespace Ryujinx.Ava.Input
 
         private void Parent_PointerReleasedEvent(object o, PointerReleasedEventArgs args)
         {
-            if (args.InitialPressMouseButton != Avalonia.Input.MouseButton.None)
-            {
-                int button = (int)args.InitialPressMouseButton - 1;
+            uint button = (uint)args.InitialPressMouseButton - 1;
 
-                if (PressedButtons.Count() >= button)
-                {
-                    PressedButtons[button] = false;
-                }
+            if ((uint)PressedButtons.Length > button)
+            {
+                PressedButtons[button] = false;
             }
         }
-
         private void Parent_PointerPressedEvent(object o, PointerPressedEventArgs args)
         {
-            int button = (int)args.GetCurrentPoint(_widget).Properties.PointerUpdateKind;
+            uint button = (uint)args.GetCurrentPoint(_widget).Properties.PointerUpdateKind;
 
-            if (PressedButtons.Count() >= button)
+            if ((uint)PressedButtons.Length > button)
             {
                 PressedButtons[button] = true;
             }
@@ -100,17 +95,17 @@ namespace Ryujinx.Ava.Input
 
         public void SetMousePressed(MouseButton button)
         {
-            if (PressedButtons.Count() >= (int)button)
+            if ((uint)PressedButtons.Length > (uint)button)
             {
-                PressedButtons[(int)button] = true;
+                PressedButtons[(uint)button] = true;
             }
         }
 
         public void SetMouseReleased(MouseButton button)
         {
-            if (PressedButtons.Count() >= (int)button)
+            if ((uint)PressedButtons.Length > (uint)button)
             {
-                PressedButtons[(int)button] = false;
+                PressedButtons[(uint)button] = false;
             }
         }
 
@@ -121,9 +116,9 @@ namespace Ryujinx.Ava.Input
 
         public bool IsButtonPressed(MouseButton button)
         {
-            if (PressedButtons.Count() >= (int)button)
+            if ((uint)PressedButtons.Length > (uint)button)
             {
-                return PressedButtons[(int)button];
+                return PressedButtons[(uint)button];
             }
 
             return false;
