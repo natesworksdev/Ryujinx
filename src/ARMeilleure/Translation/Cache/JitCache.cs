@@ -41,7 +41,11 @@ namespace ARMeilleure.Translation.Cache
                 if (_initialized) return;
 
                 _jitRegion = new ReservedRegion(allocator, CacheSize);
-                _jitCacheInvalidator = new JitCacheInvalidation(allocator);
+
+                if (!OperatingSystem.IsWindows() && !OperatingSystem.IsMacOS())
+                {
+                    _jitCacheInvalidator = new JitCacheInvalidation(allocator);
+                }
 
                 _cacheAllocator = new CacheMemoryAllocator(CacheSize);
 
@@ -88,7 +92,7 @@ namespace ARMeilleure.Translation.Cache
                     }
                     else
                     {
-                        _jitCacheInvalidator.Invalidate(funcPtr, (ulong)code.Length);
+                        _jitCacheInvalidator?.Invalidate(funcPtr, (ulong)code.Length);
                     }
                 }
 
