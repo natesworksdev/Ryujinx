@@ -90,8 +90,9 @@ namespace Ryujinx.Ui.Common.Helper
 
             if (OperatingSystem.IsLinux())
             {
-                string iconPath = Path.Combine("$HOME", ".local", "share", "icons", "Ryujinx", titleId);
-                CreateShortcutLinux(iconData, iconPath, desktopPath, cleanedAppName, basePath);
+                string iconPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "icons", "Ryujinx");
+                Directory.CreateDirectory(iconPath);
+                CreateShortcutLinux(iconData, Path.Combine(iconPath, titleId), desktopPath, cleanedAppName, basePath);
                 return;
             }
 
