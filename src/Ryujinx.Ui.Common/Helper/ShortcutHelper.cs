@@ -49,34 +49,18 @@ namespace Ryujinx.Ui.Common.Helper
         }
 
         [SupportedOSPlatform("linux")]
-        private static void CreateShortcutLinux(byte[] iconData, string iconPath, string desktopPath, string cleanedAppName, string basePath)
+        private static void CreateShortcutLinux(string appFilePath, byte[] iconData, string iconPath, string desktopPath, string cleanedAppName, string basePath)
         {
             var image = SixLabors.ImageSharp.Image.Load<Rgba32>(iconData);
             image.SaveAsPng(iconPath + ".png");
-            var desktopFile = """
-                    [Desktop Entry]
-                    Version=1.0
-                    Name={0}
-                    Type=Application
-                    Icon={1}
-                    Exec={2} {3} %f
-                    Comment=A Nintendo Switch Emulator
-                    GenericName=Nintendo Switch Emulator
-                    Terminal=false
-                    Categories=Game;Emulator;
-                    MimeType=application/x-nx-nca;application/x-nx-nro;application/x-nx-nso;application/x-nx-nsp;application/x-nx-xci;
-                    Keywords=Switch;Nintendo;Emulator;
-                    StartupWMClass=Ryujinx
-                    PrefersNonDefaultGPU=true
-
-                    """;
+            var desktopFile = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "shortcut-template.desktop"));
             using StreamWriter outputFile = new(Path.Combine(desktopPath, cleanedAppName + ".desktop"));
-            outputFile.Write(desktopFile, cleanedAppName, iconPath + ".png", basePath, "\"appFilePath\"");
+            outputFile.Write(desktopFile, cleanedAppName, iconPath + ".png", basePath, $"\"{appFilePath}\"");
         }
 
         public static void CreateAppShortcut(string appFilePath, string appName, string titleId, byte[] iconData)
         {
-            string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName);
+            string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx.sh");
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
             string cleanedAppName = string.Join("_", appName.Split(Path.GetInvalidFileNameChars()));
@@ -92,7 +76,7 @@ namespace Ryujinx.Ui.Common.Helper
             {
                 string iconPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "icons", "Ryujinx");
                 Directory.CreateDirectory(iconPath);
-                CreateShortcutLinux(iconData, Path.Combine(iconPath, titleId), desktopPath, cleanedAppName, basePath);
+                CreateShortcutLinux(appFilePath, iconData, Path.Combine(iconPath, titleId), desktopPath, cleanedAppName, basePath);
                 return;
             }
 
