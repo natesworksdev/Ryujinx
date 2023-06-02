@@ -1,4 +1,5 @@
-﻿using Ryujinx.Common.Memory;
+﻿using Microsoft.IO;
+using Ryujinx.Common.Memory;
 using System.Buffers;
 using System.IO;
 using System.Threading;
@@ -10,28 +11,53 @@ namespace Ryujinx.Common.Utilities
     {
         public static byte[] StreamToBytes(Stream input)
         {
-            using (MemoryStream stream = MemoryStreamManager.Shared.GetStream())
-            {
-                input.CopyTo(stream);
+            using RecyclableMemoryStream output = StreamToRecyclableMemoryStream(input);
 
-                return stream.ToArray();
-            }
+            return output.ToArray();
         }
 
         public static IMemoryOwner<byte> StreamToOwnedMemory(Stream input)
         {
-            long bytesExpected = input.Length;
-
-            IMemoryOwner<byte> ownedMemory = ByteMemoryPool.Shared.Rent(bytesExpected);
-
-            int bytesRead = input.Read(ownedMemory.Memory.Span);
-
-            if (bytesRead != bytesExpected)
+            if (input.CanSeek)
             {
-                throw new IOException($"Read {bytesRead} but expected to read {bytesExpected}.");
-            }
+                long bytesExpected = input.Length;
 
-            return ownedMemory;
+                IMemoryOwner<byte> ownedMemory = ByteMemoryPool.Shared.Rent(bytesExpected);
+
+                var destSpan = ownedMemory.Memory.Span;
+
+                int totalBytesRead = 0;
+
+                while (totalBytesRead < bytesExpected)
+                {
+                    int bytesRead = input.Read(destSpan.Slice(totalBytesRead));
+
+                    if (bytesRead == 0)
+                    {
+                        ownedMemory.Dispose();
+
+                        throw new IOException($"Tried reading {bytesExpected} but the stream closed after reading {totalBytesRead}.");
+                    }
+
+                    totalBytesRead += bytesRead;
+                }
+
+                return ownedMemory;
+            }
+            else
+            {
+                // If input is (non-seekable) then copy twice: first into a RecyclableMemoryStream, then to a rented IMemoryOwner<byte>.
+
+                using RecyclableMemoryStream output = StreamToRecyclableMemoryStream(input);
+
+                output.Position = 0;
+
+                IMemoryOwner<byte> ownedMemory = ByteMemoryPool.Shared.Rent(output.Length);
+
+                output.Read(ownedMemory.Memory.Span);
+
+                return ownedMemory;
+            }
         }
 
         public static async Task<byte[]> StreamToBytesAsync(Stream input, CancellationToken cancellationToken = default)
@@ -42,6 +68,15 @@ namespace Ryujinx.Common.Utilities
 
                 return stream.ToArray();
             }
+        }
+
+        private static RecyclableMemoryStream StreamToRecyclableMemoryStream(Stream input)
+        {
+            RecyclableMemoryStream stream = MemoryStreamManager.Shared.GetStream();
+
+            input.CopyTo(stream);
+
+            return stream;
         }
     }
 }
