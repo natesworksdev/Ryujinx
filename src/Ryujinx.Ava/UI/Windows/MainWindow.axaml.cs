@@ -520,12 +520,12 @@ namespace Ryujinx.Ava.UI.Windows
         {
             Dispatcher.UIThread.InvokeAsync(async () =>
             {
-               ViewModel.IsClosing = await ContentDialogHelper.CreateExitDialog();
+                ViewModel.IsClosing = await ContentDialogHelper.CreateExitDialog();
 
-               if (ViewModel.IsClosing)
-               {
-                   Close();
-               }
+                if (ViewModel.IsClosing)
+                {
+                    Close();
+                }
             });
         }
 
