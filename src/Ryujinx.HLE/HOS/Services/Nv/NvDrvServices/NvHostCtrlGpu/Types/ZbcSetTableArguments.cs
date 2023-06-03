@@ -27,7 +27,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu.Types
                 {
                     return element2;
                 }
-                else if (index == 2)
+                else if (index == 3)
                 {
                     return element3;
                 }
