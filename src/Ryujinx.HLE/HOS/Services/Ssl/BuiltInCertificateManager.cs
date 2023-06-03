@@ -40,10 +40,10 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
             }
         }
 
-        private VirtualFileSystem   _virtualFileSystem;
+        private VirtualFileSystem _virtualFileSystem;
         private IntegrityCheckLevel _fsIntegrityCheckLevel;
-        private ContentManager      _contentManager;
-        private bool                _initialized;
+        private ContentManager _contentManager;
+        private bool _initialized;
         private Dictionary<CaCertificateId, CertStoreEntry> _certificates;
 
         private readonly object _lock = new object();

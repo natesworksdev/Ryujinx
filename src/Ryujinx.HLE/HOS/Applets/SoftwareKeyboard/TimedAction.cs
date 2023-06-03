@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
         }
 
         private TRef<bool> _cancelled = null;
-        private Thread     _thread    = null;
+        private Thread _thread = null;
         private readonly object _lock = new object();
 
         public bool IsRunning
