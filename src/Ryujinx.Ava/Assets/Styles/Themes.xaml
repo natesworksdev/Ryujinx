@@ -61,8 +61,6 @@
             <SolidColorBrush x:Key="ThemeAccentBrush4"
                              Color="{DynamicResource ThemeAccentColor4}" />
             <Color x:Key="ControlFillColorSecondary">#008AA8</Color>
-            <StaticResource x:Key="ButtonBackgroundPointerOver"
-                            ResourceKey="{StaticResource ControlFillColorSecondary}" />
             <Color x:Key="SystemAccentColor">#FF00C3E3</Color>
             <Color x:Key="SystemAccentColorDark1">#FF99b000</Color>
             <Color x:Key="SystemAccentColorDark2">#FF006d7d</Color>
