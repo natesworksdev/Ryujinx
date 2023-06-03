@@ -54,6 +54,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc/>
         public void SetData(IMemoryOwner<byte> data)
         {
             var dataSpan = data.Memory.Span;
@@ -61,11 +62,13 @@ namespace Ryujinx.Graphics.OpenGL.Image
             Buffer.SetData(_buffer, _bufferOffset, dataSpan.Slice(0, Math.Min(dataSpan.Length, _bufferSize)));
         }
 
+        /// <inheritdoc/>
         public void SetData(IMemoryOwner<byte> data, int layer, int level)
         {
             throw new NotSupportedException();
         }
 
+        /// <inheritdoc/>
         public void SetData(IMemoryOwner<byte> data, int layer, int level, Rectangle<int> region)
         {
             throw new NotSupportedException();

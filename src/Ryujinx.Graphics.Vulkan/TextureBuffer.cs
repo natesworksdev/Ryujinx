@@ -96,16 +96,19 @@ namespace Ryujinx.Graphics.Vulkan
             _bufferView = null;
         }
 
+        /// <inheritdoc/>
         public void SetData(IMemoryOwner<byte> data)
         {
             _gd.SetBufferData(_bufferHandle, _offset, data.Memory.Span);
         }
 
+        /// <inheritdoc/>
         public void SetData(IMemoryOwner<byte> data, int layer, int level)
         {
             throw new NotSupportedException();
         }
 
+        /// <inheritdoc/>
         public void SetData(IMemoryOwner<byte> data, int layer, int level, Rectangle<int> region)
         {
             throw new NotSupportedException();

@@ -617,16 +617,19 @@ namespace Ryujinx.Graphics.Vulkan
             return GetDataFromBuffer(result, size, result);
         }
 
+        /// <inheritdoc/>
         public void SetData(IMemoryOwner<byte> data)
         {
             SetData(data.Memory.Span, 0, 0, Info.GetLayers(), Info.Levels, singleSlice: false);
         }
 
+        /// <inheritdoc/>
         public void SetData(IMemoryOwner<byte> data, int layer, int level)
         {
             SetData(data.Memory.Span, layer, level, 1, 1, singleSlice: true);
         }
 
+        /// <inheritdoc/>
         public void SetData(IMemoryOwner<byte> data, int layer, int level, Rectangle<int> region)
         {
             SetData(data.Memory.Span, layer, level, 1, 1, singleSlice: true, region);

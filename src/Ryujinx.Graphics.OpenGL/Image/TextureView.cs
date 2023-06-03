@@ -421,6 +421,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             }
         }
 
+        /// <inheritdoc/>
         public void SetData(IMemoryOwner<byte> data)
         {
             if (Format == Format.S8UintD24Unorm)
@@ -443,6 +444,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             }
         }
 
+        /// <inheritdoc/>
         public void SetData(IMemoryOwner<byte> data, int layer, int level)
         {
             if (Format == Format.S8UintD24Unorm)
@@ -467,6 +469,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             }
         }
 
+        /// <inheritdoc/>
         public void SetData(IMemoryOwner<byte> data, int layer, int level, Rectangle<int> region)
         {
             if (Format == Format.S8UintD24Unorm)

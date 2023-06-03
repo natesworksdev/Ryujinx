@@ -668,7 +668,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Uploads new texture data to the host GPU.
+        /// Uploads new texture data to the host GPU. The data passed as a <see cref="IMemoryOwner{Byte}" /> will be disposed when the operation completes.
         /// </summary>
         /// <param name="data">New data</param>
         public void SetData(IMemoryOwner<byte> data)
@@ -685,7 +685,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Uploads new texture data to the host GPU for a specific layer/level.
+        /// Uploads new texture data to the host GPU for a specific layer/level. The data passed as a <see cref="IMemoryOwner{Byte}" /> will be disposed when the operation completes.
         /// </summary>
         /// <param name="data">New data</param>
         /// <param name="layer">Target layer</param>
@@ -702,7 +702,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Uploads new texture data to the host GPU for a specific layer/level and 2D sub-region.
+        /// Uploads new texture data to the host GPU for a specific layer/level and 2D sub-region. The data passed as a <see cref="IMemoryOwner{Byte}" /> will be disposed when the operation completes.
         /// </summary>
         /// <param name="data">New data</param>
         /// <param name="layer">Target layer</param>
