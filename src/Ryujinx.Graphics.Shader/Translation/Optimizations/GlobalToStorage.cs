@@ -131,7 +131,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 }
                 else if (targetCbs.TryGetValue(targetCb, out SearchResult existingResult))
                 {
-                    // If our entry already exists, but does not many the new result,
+                    // If our entry already exists, but does not match the new result,
                     // just invalidate it since we have multiple different offsets stored
                     // on the same shared memory address, and this case is not supported right now.
 
