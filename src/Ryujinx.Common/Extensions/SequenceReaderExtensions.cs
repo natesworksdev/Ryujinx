@@ -9,37 +9,6 @@ namespace Ryujinx.Common.Extensions
     public static class SequenceReaderExtensions
     {
         /// <summary>
-        /// Reads an <see cref="int"/> as little endian.
-        /// </summary>
-        /// <param name="reader">The <see cref="SequenceReader{Byte}"/> to read from</param>
-        /// <param name="value">A location to receive the read value</param>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if there wasn't enough data for an <see cref="int"/></exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ReadLittleEndian(this ref SequenceReader<byte> reader, out int value)
-        {
-            if (!reader.TryReadLittleEndian(out value))
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), "The sequence is not long enough to read the desired value.");
-            }
-        }
-
-        /// <summary>
-        /// Reads the desired unmanaged value by copying it to the specified <paramref name="value"/>.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="reader">The <see cref="SequenceReader{Byte}"/> to read from</param>
-        /// <param name="value">The target that will receive the read value</param>
-        /// <exception cref="ArgumentOutOfRangeException">The <see cref="SequenceReader{Byte}"/> does not contain enough data to read a value of type <typeparamref name="T"/></exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ReadUnmanaged<T>(this ref SequenceReader<byte> reader, out T value) where T : unmanaged
-        {
-            if (!reader.TryReadUnmanaged(out value))
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), "The sequence is not long enough to read the desired value.");
-            }
-        }
-
-        /// <summary>
         /// Returns a reference to the desired value. This ref should always be used. The argument passed in <paramref name="copyDestinationIfRequiredDoNotUse"/> should never be used, as this is only used for storage if the value
         /// must be copied from multiple <see cref="ReadOnlyMemory{Byte}"/> segments held by the <see cref="SequenceReader{Byte}"/>.
         /// </summary>
@@ -87,6 +56,38 @@ namespace Ryujinx.Common.Extensions
                 reader.Advance(lengthRequired);
 
                 return ref valueSpan[0];
+            }
+        }
+
+
+        /// <summary>
+        /// Reads an <see cref="int"/> as little endian.
+        /// </summary>
+        /// <param name="reader">The <see cref="SequenceReader{Byte}"/> to read from</param>
+        /// <param name="value">A location to receive the read value</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if there wasn't enough data for an <see cref="int"/></exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ReadLittleEndian(this ref SequenceReader<byte> reader, out int value)
+        {
+            if (!reader.TryReadLittleEndian(out value))
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), "The sequence is not long enough to read the desired value.");
+            }
+        }
+
+        /// <summary>
+        /// Reads the desired unmanaged value by copying it to the specified <paramref name="value"/>.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="reader">The <see cref="SequenceReader{Byte}"/> to read from</param>
+        /// <param name="value">The target that will receive the read value</param>
+        /// <exception cref="ArgumentOutOfRangeException">The <see cref="SequenceReader{Byte}"/> does not contain enough data to read a value of type <typeparamref name="T"/></exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ReadUnmanaged<T>(this ref SequenceReader<byte> reader, out T value) where T : unmanaged
+        {
+            if (!reader.TryReadUnmanaged(out value))
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), "The sequence is not long enough to read the desired value.");
             }
         }
 
