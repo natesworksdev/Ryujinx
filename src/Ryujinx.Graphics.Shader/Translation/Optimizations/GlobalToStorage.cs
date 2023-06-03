@@ -11,6 +11,12 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
     {
         private const int DriverReservedCb = 0;
 
+        enum LsMemoryType
+        {
+            Local,
+            Shared
+        }
+
         private class GtsContext
         {
             private struct Entry
@@ -36,41 +42,43 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 }
             }
 
-            private struct SharedKey : IEquatable<SharedKey>
+            private struct LsKey : IEquatable<LsKey>
             {
                 public readonly Operand BaseOffset;
                 public readonly int ConstOffset;
+                public readonly LsMemoryType Type;
 
-                public SharedKey(Operand baseOffset, int constOffset)
+                public LsKey(Operand baseOffset, int constOffset, LsMemoryType type)
                 {
                     BaseOffset = baseOffset;
                     ConstOffset = constOffset;
+                    Type = type;
                 }
 
                 public override int GetHashCode()
                 {
-                    return HashCode.Combine(BaseOffset, ConstOffset);
+                    return HashCode.Combine(BaseOffset, ConstOffset, Type);
                 }
 
                 public override bool Equals(object obj)
                 {
-                    return obj is SharedKey other && Equals(other);
+                    return obj is LsKey other && Equals(other);
                 }
 
-                public bool Equals(SharedKey other)
+                public bool Equals(LsKey other)
                 {
-                    return other.BaseOffset == BaseOffset && other.ConstOffset == ConstOffset;
+                    return other.BaseOffset == BaseOffset && other.ConstOffset == ConstOffset && other.Type == Type;
                 }
             }
 
             private readonly List<Entry> _entries;
-            private readonly Dictionary<SharedKey, Dictionary<uint, SearchResult>> _sharedEntries;
+            private readonly Dictionary<LsKey, Dictionary<uint, SearchResult>> _sharedEntries;
             private readonly HelperFunctionManager _hfm;
 
             public GtsContext(HelperFunctionManager hfm)
             {
                 _entries = new List<Entry>();
-                _sharedEntries = new Dictionary<SharedKey, Dictionary<uint, SearchResult>>();
+                _sharedEntries = new Dictionary<LsKey, Dictionary<uint, SearchResult>>();
                 _hfm = hfm;
             }
 
@@ -117,9 +125,9 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 return false;
             }
 
-            public void AddSharedMemoryTargetCb(Operand baseOffset, int constOffset, uint targetCb, SearchResult result)
+            public void AddMemoryTargetCb(LsMemoryType type, Operand baseOffset, int constOffset, uint targetCb, SearchResult result)
             {
-                SharedKey key = new SharedKey(baseOffset, constOffset);
+                LsKey key = new LsKey(baseOffset, constOffset, type);
 
                 if (!_sharedEntries.TryGetValue(key, out Dictionary<uint, SearchResult> targetCbs))
                 {
@@ -132,14 +140,14 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 else if (targetCbs.TryGetValue(targetCb, out SearchResult existingResult))
                 {
                     // If our entry already exists, but does not match the new result,
-                    // just invalidate it since we have multiple different offsets stored
-                    // on the same shared memory address, and this case is not supported right now.
+                    // we set the offset to null to indicate there are multiple possible offsets.
+                    // This will be used on the multi-target access that does not need to know the offset.
 
-                    if (existingResult.Found &&
+                    if (existingResult.Offset != null &&
                         (existingResult.Offset != result.Offset ||
                         existingResult.ConstOffset != result.ConstOffset))
                     {
-                        targetCbs[targetCb] = SearchResult.NotFound;
+                        targetCbs[targetCb] = new SearchResult(result.SbCbSlot, result.SbCbOffset);
                     }
                 }
                 else
@@ -152,9 +160,9 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 }
             }
 
-            public bool TryGetSharedMemoryTargetCb(Operand baseOffset, int constOffset, out SearchResult result)
+            public bool TryGetMemoryTargetCb(LsMemoryType type, Operand baseOffset, int constOffset, out SearchResult result)
             {
-                SharedKey key = new SharedKey(baseOffset, constOffset);
+                LsKey key = new LsKey(baseOffset, constOffset, type);
 
                 if (_sharedEntries.TryGetValue(key, out Dictionary<uint, SearchResult> targetCbs) && targetCbs.Count == 1)
                 {
@@ -236,21 +244,21 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                             node = nextNode;
                         }
                     }
-                    else if (operation.Inst == Instruction.StoreShared)
+                    else if (operation.Inst == Instruction.StoreShared || operation.Inst == Instruction.StoreLocal)
                     {
-                        // The NVIDIA compiler can sometimes use shared memory as temporary
+                        // The NVIDIA compiler can sometimes use shared or local memory as temporary
                         // storage to place the base address and size on, so we need
-                        // to be able to find such information stored in shared memory too.
+                        // to be able to find such information stored in memory too.
 
-                        if (TryGetSharedMemoryOffsets(operation, out Operand baseOffset, out int constOffset))
+                        if (TryGetMemoryOffsets(operation, out LsMemoryType type, out Operand baseOffset, out int constOffset))
                         {
                             Operand value = operation.GetSource(operation.SourcesCount - 1);
 
-                            var result = FindUniqueBaseAddressCb(gtsContext, block, value);
+                            var result = FindUniqueBaseAddressCb(gtsContext, block, value, needsOffset: false);
                             if (result.Found)
                             {
                                 uint targetCb = PackCbSlotAndOffset(result.SbCbSlot, result.SbCbOffset);
-                                gtsContext.AddSharedMemoryTargetCb(baseOffset, constOffset, targetCb, result);
+                                gtsContext.AddMemoryTargetCb(type, baseOffset, constOffset, targetCb, result);
                             }
                         }
                     }
@@ -283,7 +291,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
         {
             Operation operation = node.Value as Operation;
             Operand globalAddress = operation.GetSource(0);
-            SearchResult result = FindUniqueBaseAddressCb(gtsContext, block, globalAddress);
+            SearchResult result = FindUniqueBaseAddressCb(gtsContext, block, globalAddress, needsOffset: true);
 
             if (result.Found)
             {
@@ -576,6 +584,15 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             {
                 phis.Enqueue(phi);
             }
+            else
+            {
+                SearchResult result = FindUniqueBaseAddressCb(gtsContext, block, operation.GetSource(0), needsOffset: false);
+
+                if (result.Found)
+                {
+                    targetCbs.Add(PackCbSlotAndOffset(result.SbCbSlot, result.SbCbOffset));
+                }
+            }
 
             while (phis.TryDequeue(out phi))
             {
@@ -584,7 +601,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     BasicBlock phiBlock = phi.GetBlock(srcIndex);
                     Operand phiSource = phi.GetSource(srcIndex);
 
-                    SearchResult result = FindUniqueBaseAddressCb(gtsContext, phiBlock, phiSource);
+                    SearchResult result = FindUniqueBaseAddressCb(gtsContext, phiBlock, phiSource, needsOffset: false);
 
                     if (result.Found)
                     {
@@ -933,7 +950,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             return oldValue;
         }
 
-        private static SearchResult FindUniqueBaseAddressCb(GtsContext gtsContext, BasicBlock block, Operand globalAddress)
+        private static SearchResult FindUniqueBaseAddressCb(GtsContext gtsContext, BasicBlock block, Operand globalAddress, bool needsOffset)
         {
             globalAddress = Utils.FindLastOperation(globalAddress, block);
 
@@ -946,7 +963,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
             if (operation == null || operation.Inst != Instruction.Add)
             {
-                return FindBaseAddressCbFromMemory(gtsContext, operation, 0);
+                return FindBaseAddressCbFromMemory(gtsContext, operation, 0, needsOffset);
             }
 
             Operand src1 = operation.GetSource(0);
@@ -982,7 +999,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
                 if (operation == null || operation.Inst != Instruction.Add)
                 {
-                    return FindBaseAddressCbFromMemory(gtsContext, operation, constOffset);
+                    return FindBaseAddressCbFromMemory(gtsContext, operation, constOffset, needsOffset);
                 }
             }
 
@@ -1007,23 +1024,25 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             return GetBaseAddressCbWithOffset(src1, src2, constOffset);
         }
 
-        private static SearchResult FindBaseAddressCbFromMemory(GtsContext gtsContext, Operation operation, int constOffset)
+        private static SearchResult FindBaseAddressCbFromMemory(GtsContext gtsContext, Operation operation, int constOffset, bool needsOffset)
         {
-            if (operation != null &&
-                operation.Inst == Instruction.LoadShared &&
-                TryGetSharedMemoryOffsets(operation, out Operand sharedBo, out int sharedCo) &&
-                gtsContext.TryGetSharedMemoryTargetCb(sharedBo, sharedCo, out SearchResult result))
+            if (operation != null)
             {
-                if (constOffset != 0)
+                if (TryGetMemoryOffsets(operation, out LsMemoryType type, out Operand bo, out int co) &&
+                    gtsContext.TryGetMemoryTargetCb(type, bo, co, out SearchResult result) &&
+                    (result.Offset != null || !needsOffset))
                 {
-                    return new SearchResult(
-                        result.SbCbSlot,
-                        result.SbCbOffset,
-                        result.Offset,
-                        result.ConstOffset + constOffset);
-                }
+                    if (constOffset != 0)
+                    {
+                        return new SearchResult(
+                            result.SbCbSlot,
+                            result.SbCbOffset,
+                            result.Offset,
+                            result.ConstOffset + constOffset);
+                    }
 
-                return result;
+                    return result;
+                }
             }
 
             return SearchResult.NotFound;
@@ -1045,6 +1064,26 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             }
 
             return SearchResult.NotFound;
+        }
+
+        private static bool TryGetMemoryOffsets(Operation operation, out LsMemoryType type, out Operand baseOffset, out int constOffset)
+        {
+            baseOffset = null;
+
+            if (operation.Inst == Instruction.LoadShared || operation.Inst == Instruction.StoreShared)
+            {
+                type = LsMemoryType.Shared;
+                return TryGetSharedMemoryOffsets(operation, out baseOffset, out constOffset);
+            }
+            else if (operation.Inst == Instruction.LoadLocal || operation.Inst == Instruction.StoreLocal)
+            {
+                type = LsMemoryType.Local;
+                return TryGetLocalMemoryOffset(operation, out constOffset);
+            }
+
+            type = default;
+            constOffset = 0;
+            return false;
         }
 
         private static bool TryGetSharedMemoryOffsets(Operation operation, out Operand baseOffset, out int constOffset)
@@ -1084,6 +1123,18 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             }
 
             return baseOffset != null && baseOffset.Type == OperandType.LocalVariable;
+        }
+
+        private static bool TryGetLocalMemoryOffset(Operation operation, out int constOffset)
+        {
+            if (operation.GetSource(0).Type == OperandType.Constant)
+            {
+                constOffset = operation.GetSource(0).Value;
+                return true;
+            }
+
+            constOffset = 0;
+            return false;
         }
     }
 }
