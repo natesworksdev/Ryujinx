@@ -18,7 +18,11 @@ namespace Ryujinx.Common.Utilities
 
         public static IMemoryOwner<byte> StreamToOwnedMemory(Stream input)
         {
-            if (input.CanSeek)
+            if (input is MemoryStream inputMemoryStream)
+            {
+                return MemoryStreamToOwnedMemory(inputMemoryStream);
+            }
+            else if (input.CanSeek)
             {
                 long bytesExpected = input.Length;
 
@@ -47,16 +51,9 @@ namespace Ryujinx.Common.Utilities
             else
             {
                 // If input is (non-seekable) then copy twice: first into a RecyclableMemoryStream, then to a rented IMemoryOwner<byte>.
-
                 using RecyclableMemoryStream output = StreamToRecyclableMemoryStream(input);
 
-                output.Position = 0;
-
-                IMemoryOwner<byte> ownedMemory = ByteMemoryPool.Shared.Rent(output.Length);
-
-                output.Read(ownedMemory.Memory.Span);
-
-                return ownedMemory;
+                return MemoryStreamToOwnedMemory(output);
             }
         }
 
@@ -68,6 +65,17 @@ namespace Ryujinx.Common.Utilities
 
                 return stream.ToArray();
             }
+        }
+
+        private static IMemoryOwner<byte> MemoryStreamToOwnedMemory(MemoryStream input)
+        {
+            input.Position = 0;
+
+            IMemoryOwner<byte> ownedMemory = ByteMemoryPool.Shared.Rent(input.Length);
+
+            input.Read(ownedMemory.Memory.Span);
+
+            return ownedMemory;
         }
 
         private static RecyclableMemoryStream StreamToRecyclableMemoryStream(Stream input)
