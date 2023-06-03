@@ -14,7 +14,7 @@ namespace Ryujinx.Audio.Input
     /// </summary>
     public class AudioInputManager : IDisposable
     {
-        private object _lock = new object();
+        private readonly object _lock = new object();
 
         /// <summary>
         /// Lock used for session allocation.
