@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Nvdec.FFmpeg.Native
 {
     struct AVPacket
     {
-#pragma warning disable CS0649
+#pragma warning disable CS0649 // Field is never assigned to
         public unsafe AVBufferRef *Buf;
         public long Pts;
         public long Dts;

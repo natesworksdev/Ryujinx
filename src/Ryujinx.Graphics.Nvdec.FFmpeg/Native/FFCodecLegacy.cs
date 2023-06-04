@@ -4,7 +4,7 @@ namespace Ryujinx.Graphics.Nvdec.FFmpeg.Native
 {
     struct FFCodecLegacy<T> where T : struct
     {
-#pragma warning disable CS0649
+#pragma warning disable CS0649 // Field is never assigned to
         public T Base;
         public uint CapsInternalOrCbType;
         public int PrivDataSize;
