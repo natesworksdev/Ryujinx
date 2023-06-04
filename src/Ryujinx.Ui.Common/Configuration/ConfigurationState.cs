@@ -828,7 +828,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 ToggleVsync = Key.F1,
                 ToggleMute = Key.F2,
                 Screenshot = Key.F8,
-                ShowUi = Key.F4,
+                ShowUi = Key.Unbound,
                 Pause = Key.F5,
                 ResScaleUp = Key.Unbound,
                 ResScaleDown = Key.Unbound,
