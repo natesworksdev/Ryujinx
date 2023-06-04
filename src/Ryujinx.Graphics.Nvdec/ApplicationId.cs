@@ -9,6 +9,6 @@
         Vp8 = 5,
         Hevc = 7,
         Vp9 = 9,
-        HevcParser = 12,
+        HevcParser = 12
     }
 }
