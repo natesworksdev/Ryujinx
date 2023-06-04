@@ -163,7 +163,7 @@ namespace Ryujinx.Headless.SDL2
                             StickDown = Key.S,
                             StickLeft = Key.A,
                             StickRight = Key.D,
-                            StickButton = Key.F,
+                            StickButton = Key.F
                         },
 
                         RightJoycon = new RightJoyconCommonConfig<Key>
@@ -185,7 +185,7 @@ namespace Ryujinx.Headless.SDL2
                             StickDown = Key.K,
                             StickLeft = Key.J,
                             StickRight = Key.L,
-                            StickButton = Key.H,
+                            StickButton = Key.H
                         }
                     };
                 }
@@ -215,7 +215,7 @@ namespace Ryujinx.Headless.SDL2
                             ButtonL      = ConfigGamepadInputId.LeftShoulder,
                             ButtonZl     = ConfigGamepadInputId.LeftTrigger,
                             ButtonSl     = ConfigGamepadInputId.Unbound,
-                            ButtonSr     = ConfigGamepadInputId.Unbound,
+                            ButtonSr     = ConfigGamepadInputId.Unbound
                         },
 
                         LeftJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
@@ -224,7 +224,7 @@ namespace Ryujinx.Headless.SDL2
                             StickButton  = ConfigGamepadInputId.LeftStick,
                             InvertStickX = false,
                             InvertStickY = false,
-                            Rotate90CW   = false,
+                            Rotate90CW   = false
                         },
 
                         RightJoycon = new RightJoyconCommonConfig<ConfigGamepadInputId>
@@ -237,7 +237,7 @@ namespace Ryujinx.Headless.SDL2
                             ButtonR      = ConfigGamepadInputId.RightShoulder,
                             ButtonZr     = ConfigGamepadInputId.RightTrigger,
                             ButtonSl     = ConfigGamepadInputId.Unbound,
-                            ButtonSr     = ConfigGamepadInputId.Unbound,
+                            ButtonSr     = ConfigGamepadInputId.Unbound
                         },
 
                         RightJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
@@ -246,7 +246,7 @@ namespace Ryujinx.Headless.SDL2
                             StickButton  = ConfigGamepadInputId.RightStick,
                             InvertStickX = false,
                             InvertStickY = false,
-                            Rotate90CW   = false,
+                            Rotate90CW   = false
                         },
 
                         Motion = new StandardMotionConfigController
@@ -254,7 +254,7 @@ namespace Ryujinx.Headless.SDL2
                             MotionBackend = MotionInputBackendType.GamepadDriver,
                             EnableMotion = true,
                             Sensitivity  = 100,
-                            GyroDeadzone = 1,
+                            GyroDeadzone = 1
                         },
                         Rumble = new RumbleConfigController
                         {
@@ -474,7 +474,7 @@ namespace Ryujinx.Headless.SDL2
             {
                 LoadState => $"PTC : {current}/{total}",
                 ShaderCacheState => $"Shaders : {current}/{total}",
-                _ => throw new ArgumentException($"Unknown Progress Handler type {typeof(T)}"),
+                _ => throw new ArgumentException($"Unknown Progress Handler type {typeof(T)}")
             };
             Logger.Info?.Print(LogClass.Application, label);
         }
