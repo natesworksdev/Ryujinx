@@ -651,4 +651,43 @@ namespace Ryujinx.Common.Memory
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 73);
     }
+
+    public struct Array127<T> : IArray<T> where T : unmanaged
+    {
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
+        T _e0;
+        Array64<T> _other;
+        Array62<T> _other2;
+#pragma warning restore CS0169, IDE0051
+
+        public int Length => 127;
+        public ref T this[int index] => ref AsSpan()[index];
+        public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 127);
+    }
+
+    public struct Array128<T> : IArray<T> where T : unmanaged
+    {
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
+        T _e0;
+        Array64<T> _other;
+        Array63<T> _other2;
+#pragma warning restore CS0169, IDE0051
+
+        public int Length => 128;
+        public ref T this[int index] => ref AsSpan()[index];
+        public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 128);
+    }
+
+    public struct Array256<T> : IArray<T> where T : unmanaged
+    {
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
+        T _e0;
+        Array128<T> _other;
+        Array127<T> _other2;
+#pragma warning restore CS0169, IDE0051
+
+        public int Length => 256;
+        public ref T this[int index] => ref AsSpan()[index];
+        public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 256);
+    }
 }
