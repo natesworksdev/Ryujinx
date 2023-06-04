@@ -96,7 +96,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         /// <param name="engine">3D engine where this method is being called</param>
         /// <param name="argument">Method call argument</param>
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public void DrawEnd(ThreedClass engine, int argument)
         {
             DrawEnd(
@@ -202,7 +202,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             }
             else
             {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                 var drawState = _state.State.VertexBufferDrawState;
 #pragma warning restore IDE0059
 
@@ -286,7 +286,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// This also sets internal state that indicates that the next draw is an indexed draw.
         /// </summary>
         /// <param name="argument">Method call argument</param>
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public void SetIndexBufferCount(int argument)
         {
             _drawState.DrawIndexed = true;
@@ -434,7 +434,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         /// <param name="engine">3D engine where this method is being called</param>
         /// <param name="argument">Method call argument</param>
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public void DrawTexture(ThreedClass engine, int argument)
         {
             static float FixedToFloat(int fixedValue)

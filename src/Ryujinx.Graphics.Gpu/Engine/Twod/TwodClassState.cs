@@ -486,7 +486,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     /// </summary>
     struct RenderSolidPrimPoint
     {
-#pragma warning disable CS0649
+#pragma warning disable CS0649 // Field is never assigned to
         public uint SetX;
         public uint Y;
 #pragma warning restore CS0649
@@ -497,7 +497,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     /// </summary>
     unsafe struct TwodClassState : IShadowState
     {
-#pragma warning disable CS0649
+#pragma warning disable CS0649 // Field is never assigned to
         public uint SetObject;
         public int SetObjectClassId => (int)(SetObject & 0xFFFF);
         public int SetObjectEngineId => (int)((SetObject >> 16) & 0x1F);

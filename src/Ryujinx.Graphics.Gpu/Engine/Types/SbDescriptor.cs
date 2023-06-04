@@ -5,7 +5,7 @@
     /// </summary>
     struct SbDescriptor
     {
-#pragma warning disable CS0649
+#pragma warning disable CS0649 // Field is never assigned to
         public uint AddressLow;
         public uint AddressHigh;
         public int Size;

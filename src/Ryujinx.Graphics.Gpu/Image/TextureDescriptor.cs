@@ -9,7 +9,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// </summary>
     struct TextureDescriptor : ITextureDescriptor, IEquatable<TextureDescriptor>
     {
-#pragma warning disable CS0649
+#pragma warning disable CS0649 // Field is never assigned to
         public uint Word0;
         public uint Word1;
         public uint Word2;

@@ -53,7 +53,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
         private const float Frac8ToF32 = 1.0f / 256.0f;
 
-#pragma warning disable CS0649
+#pragma warning disable CS0649 // Field is never assigned to
         public uint Word0;
         public uint Word1;
         public uint Word2;

@@ -9,7 +9,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// </summary>
     struct ShaderAddresses : IEquatable<ShaderAddresses>
     {
-#pragma warning disable CS0649
+#pragma warning disable CS0649 // Field is never assigned to
         public ulong VertexA;
         public ulong VertexB;
         public ulong TessControl;

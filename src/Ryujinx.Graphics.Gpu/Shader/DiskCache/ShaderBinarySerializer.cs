@@ -26,7 +26,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             return output.ToArray();
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ShaderSource[] Unpack(CachedShaderStage[] stages, byte[] code)
         {
             using MemoryStream input = new(code);

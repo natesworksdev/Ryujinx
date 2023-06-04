@@ -151,7 +151,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
     /// </summary>
     struct GPFifoClassState
     {
-#pragma warning disable CS0649
+#pragma warning disable CS0649 // Field is never assigned to
         public uint SetObject;
         public int SetObjectNvclass => (int)(SetObject & 0xFFFF);
         public int SetObjectEngine => (int)((SetObject >> 16) & 0x1F);

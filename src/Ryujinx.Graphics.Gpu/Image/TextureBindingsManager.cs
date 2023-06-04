@@ -418,7 +418,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
         }
 
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         /// <summary>
         /// Counts the total number of texture bindings used by all shader stages.
         /// </summary>

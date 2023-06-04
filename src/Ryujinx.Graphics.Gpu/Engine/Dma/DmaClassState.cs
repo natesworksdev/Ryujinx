@@ -179,7 +179,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
     /// </summary>
     unsafe struct DmaClassState
     {
-#pragma warning disable CS0649
+#pragma warning disable CS0649 // Field is never assigned to
         public fixed uint Reserved00[64];
         public uint Nop;
         public fixed uint Reserved104[15];

@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         private readonly GPFifoProcessor _parent;
         private readonly DeviceState<GPFifoClassState> _state;
 
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         private readonly int _previousSubChannel;
 #pragma warning restore IDE0051
         private bool _createSyncPending;

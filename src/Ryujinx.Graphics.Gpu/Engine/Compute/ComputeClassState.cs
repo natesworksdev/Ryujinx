@@ -98,7 +98,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     /// </summary>
     unsafe struct ComputeClassState
     {
-#pragma warning disable CS0649
+#pragma warning disable CS0649 // Field is never assigned to
         public uint SetObject;
         public int SetObjectClassId => (int)(SetObject & 0xFFFF);
         public int SetObjectEngineId => (int)((SetObject >> 16) & 0x1F);

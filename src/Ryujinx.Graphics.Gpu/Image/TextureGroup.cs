@@ -1500,7 +1500,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             for (int i = 0; i < _allOffsets.Length; i++)
             {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                 (int layer, int level) = GetLayerLevelForView(i);
 #pragma warning restore IDE0059
                 MultiRange handleRange = Storage.Range.Slice((ulong)_allOffsets[i], 1);
@@ -1508,7 +1508,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 for (int j = 0; j < other._handles.Length; j++)
                 {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                     (int otherLayer, int otherLevel) = other.GetLayerLevelForView(j);
 #pragma warning restore IDE0059
                     MultiRange otherHandleRange = other.Storage.Range.Slice((ulong)other._allOffsets[j], 1);
@@ -1625,7 +1625,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="handle">The handle this flush action is for</param>
         /// <param name="address">The address of the flushing memory access</param>
         /// <param name="size">The size of the flushing memory access</param>
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public void FlushAction(TextureGroupHandle handle, ulong address, ulong size)
         {
             // If the page size is larger than 4KB, we will have a lot of false positives for flushing.

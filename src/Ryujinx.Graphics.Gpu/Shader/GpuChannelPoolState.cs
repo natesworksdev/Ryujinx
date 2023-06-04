@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
-#pragma warning disable CS0659
+#pragma warning disable CS0659 // Class overrides Object.Equals(object o) but does not override Object.GetHashCode()
     /// <summary>
     /// State used by the <see cref="GpuAccessor"/>.
     /// </summary>

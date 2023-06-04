@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
         private const int ColorStructSize = 0x40;
         private const int ZetaLayerCountOffset = 0x1230;
 
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         private const int IndirectDataEntrySize = 0x10;
 #pragma warning restore IDE0051
         private const int IndirectIndexedDataEntrySize = 0x14;
@@ -219,7 +219,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
         /// </summary>
         /// <param name="state">GPU state at the time of the call</param>
         /// <param name="arg0">First argument of the call</param>
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private void MultiDrawElementsIndirectCount(IDeviceState state, int arg0)
         {
             int arg1 = FetchParam().Word;
@@ -265,7 +265,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
             for (int i = 0; i < maxDrawCount; i++)
             {
                 var count = FetchParam();
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                 var instanceCount = FetchParam();
                 var firstIndex = FetchParam();
                 var firstVertex = FetchParam();
