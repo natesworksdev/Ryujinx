@@ -54,9 +54,10 @@ namespace Ryujinx.Common.SystemInterop
             }
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
-        private void Dispose(bool disposing)
+        public void Dispose()
         {
+            GC.SuppressFinalize(this);
+
             if (_disposable)
             {
                 _disposable = false;
@@ -69,13 +70,6 @@ namespace Ryujinx.Common.SystemInterop
                     _pipeWriter?.Close();
                 }
             }
-        }
-#pragma warning restore IDE0060
-
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-            Dispose(true);
         }
 
         [LibraryImport("libc", SetLastError = true)]
