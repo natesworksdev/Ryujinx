@@ -54,7 +54,7 @@ namespace Ryujinx.Ava.UI.Controls
             InitializeComponent();
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public void GoBack(object parameter = null)
         {
             if (ContentFrame.BackStack.Count > 0)

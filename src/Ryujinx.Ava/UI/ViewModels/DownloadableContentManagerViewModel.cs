@@ -38,7 +38,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private string _search;
         private readonly ulong _titleId;
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly string _titleName;
 #pragma warning restore IDE0052
 

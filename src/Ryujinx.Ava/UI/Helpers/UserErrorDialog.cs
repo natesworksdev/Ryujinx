@@ -67,7 +67,7 @@ namespace Ryujinx.Ava.UI.Helpers
             };
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static async Task ShowUserErrorDialog(UserError error, StyleableWindow owner)
         {
             string errorCode = GetErrorCode(error);

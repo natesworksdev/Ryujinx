@@ -50,7 +50,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private object _configuration;
         private string _profileName;
         private bool _isLoaded;
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly UserControl _owner;
 #pragma warning restore IDE0052
 

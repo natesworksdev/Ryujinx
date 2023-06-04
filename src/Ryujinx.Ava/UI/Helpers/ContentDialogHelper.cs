@@ -18,7 +18,7 @@ namespace Ryujinx.Ava.UI.Helpers
     {
         private static bool _isChoiceDialogOpen;
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private async static Task<UserResult> ShowContentDialog(
              string title,
              object content,

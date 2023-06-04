@@ -32,7 +32,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public readonly string     _titleUpdateJsonPath;
         private VirtualFileSystem VirtualFileSystem { get; }
         private ulong TitleId { get; }
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private string TitleName { get; }
 #pragma warning restore IDE0052
 

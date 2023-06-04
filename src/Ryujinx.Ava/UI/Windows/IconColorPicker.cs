@@ -68,7 +68,7 @@ namespace Ryujinx.Ava.UI.Windows
             int w8 = w << 8;
             int h8 = image.Height << 8;
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             int xStep = w8 / ColorsPerLine;
             int yStep = h8 / ColorsPerLine;
 #pragma warning restore IDE0059
