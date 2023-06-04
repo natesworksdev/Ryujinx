@@ -22,7 +22,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
         public static void Depbar(EmitterContext context)
         {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             InstDepbar op = context.GetOp<InstDepbar>();
 #pragma warning restore IDE0059
 

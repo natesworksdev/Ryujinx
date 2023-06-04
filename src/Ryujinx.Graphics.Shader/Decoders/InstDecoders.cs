@@ -3664,7 +3664,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
     readonly struct InstLepc
     {
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly ulong _opcode;
 #pragma warning restore IDE0052
         public InstLepc(ulong opcode) => _opcode = opcode;
@@ -4181,7 +4181,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
     readonly struct InstRam
     {
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly ulong _opcode;
 #pragma warning restore IDE0052
         public InstRam(ulong opcode) => _opcode = opcode;
@@ -4252,7 +4252,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
     readonly struct InstRtt
     {
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly ulong _opcode;
 #pragma warning restore IDE0052
         public InstRtt(ulong opcode) => _opcode = opcode;
@@ -4270,7 +4270,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
     readonly struct InstSam
     {
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly ulong _opcode;
 #pragma warning restore IDE0052
         public InstSam(ulong opcode) => _opcode = opcode;

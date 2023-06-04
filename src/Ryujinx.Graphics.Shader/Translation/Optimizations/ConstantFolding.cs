@@ -278,7 +278,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             operation.TurnIntoCopy(ConstF((float)BitConverter.UInt16BitsToHalf((ushort)value)));
         }
 
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         private static void FPNegate(Operation operation)
         {
             float value = operation.GetSource(0).AsFloat();

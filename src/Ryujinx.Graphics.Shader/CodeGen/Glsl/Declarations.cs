@@ -244,7 +244,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
         }
 
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         private static string GetTfLayout(TransformFeedbackOutput tfOutput)
         {
             if (tfOutput.Valid)
@@ -498,7 +498,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private static void DeclareInputAttribute(CodeGenContext context, StructuredProgramInfo info, int attr)
         {
             string suffix = IsArrayAttributeGlsl(context.Config.Stage, isOutAttr: false) ? "[]" : string.Empty;
@@ -568,7 +568,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             context.AppendLine($"layout (location = {location}) patch in vec4 {name};");
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private static void DeclareOutputAttributes(CodeGenContext context, StructuredProgramInfo info)
         {
             if (context.Config.UsedFeatures.HasFlag(FeatureFlags.OaIndexing))

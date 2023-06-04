@@ -421,7 +421,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private static void EmitFsetp(
             EmitterContext context,
             FComp cmpOp,

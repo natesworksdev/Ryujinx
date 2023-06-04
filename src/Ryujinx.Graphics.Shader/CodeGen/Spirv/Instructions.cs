@@ -627,13 +627,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 return context.Get(type, texOp.GetSource(srcIndex++));
             }
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             SpvInstruction index = null;
 #pragma warning restore IDE0059
 
             if (isIndexed)
             {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                 index = Src(AggregateType.S32);
 #pragma warning restore IDE0059
             }
@@ -665,7 +665,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             (var imageType, var imageVariable) = context.Images[new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format)];
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             var image = context.Load(imageType, imageVariable);
 #pragma warning restore IDE0059
 
@@ -722,13 +722,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 return context.Get(type, texOp.GetSource(srcIndex++));
             }
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             SpvInstruction index = null;
 #pragma warning restore IDE0059
 
             if (isIndexed)
             {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                 index = Src(AggregateType.S32);
 #pragma warning restore IDE0059
             }
@@ -790,13 +790,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 return context.Get(type, texOp.GetSource(srcIndex++));
             }
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             SpvInstruction index = null;
 #pragma warning restore IDE0059
 
             if (isIndexed)
             {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                 index = Src(AggregateType.S32);
 #pragma warning restore IDE0059
             }
@@ -902,13 +902,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 return context.Get(type, texOp.GetSource(srcIndex++));
             }
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             SpvInstruction index = null;
 #pragma warning restore IDE0059
 
             if (isIndexed)
             {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                 index = Src(AggregateType.S32);
 #pragma warning restore IDE0059
             }
@@ -993,7 +993,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 loopBlock = loopBlock.Parent;
             }
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             (var loopTarget, var continueTarget) = context.LoopTargets[loopBlock];
 #pragma warning restore IDE0059
 
@@ -1329,13 +1329,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 return context.Get(type, texOp.GetSource(srcIndex++));
             }
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             SpvInstruction index = null;
 #pragma warning restore IDE0059
 
             if (isIndexed)
             {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                 index = Src(AggregateType.S32);
 #pragma warning restore IDE0059
             }
@@ -1621,13 +1621,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             SpvInstruction index = null;
 #pragma warning restore IDE0059
 
             if (isIndexed)
             {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                 index = context.GetS32(texOp.GetSource(0));
 #pragma warning restore IDE0059
             }

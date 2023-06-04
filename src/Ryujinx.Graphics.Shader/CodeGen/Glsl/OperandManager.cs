@@ -30,7 +30,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             return name;
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public string GetExpression(CodeGenContext context, AstOperand operand)
         {
             return operand.Type switch

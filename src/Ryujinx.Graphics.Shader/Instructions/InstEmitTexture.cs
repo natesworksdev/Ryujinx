@@ -1096,7 +1096,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             context.Add(operation);
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private static void EmitTxq(
             EmitterContext context,
             TexQuery query,

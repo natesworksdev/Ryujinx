@@ -270,7 +270,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             bool isBindless = (texOp.Flags & TextureFlags.Bindless)  != 0;
             bool intCoords  = (texOp.Flags & TextureFlags.IntCoords) != 0;
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             bool isArray   = (texOp.Type & SamplerType.Array)   != 0;
 #pragma warning restore IDE0059
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
@@ -320,7 +320,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             TextureOperation texOp = (TextureOperation)node.Value;
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             bool isBindless = (texOp.Flags & TextureFlags.Bindless)  != 0;
             bool intCoords  = (texOp.Flags & TextureFlags.IntCoords) != 0;
 
@@ -397,7 +397,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 return node;
             }
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             bool isArray   = (texOp.Type & SamplerType.Array)   != 0;
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
 #pragma warning restore IDE0059
@@ -468,7 +468,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 return node;
             }
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             bool intCoords = (texOp.Flags & TextureFlags.IntCoords) != 0;
 
             bool isArray   = (texOp.Type & SamplerType.Array)   != 0;
