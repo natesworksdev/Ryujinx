@@ -8,8 +8,6 @@ namespace Ryujinx.Common.Memory
     /// </summary>
     public sealed partial class ByteMemoryPool
     {
-        private static readonly ByteMemoryPool _shared = new();
-
         /// <summary>
         /// Constructs a <see cref="ByteMemoryPool"/> instance. Private to force access through
         /// the <see cref="ByteMemoryPool.Shared"/> instance.
@@ -22,7 +20,7 @@ namespace Ryujinx.Common.Memory
         /// <summary>
         /// Retrieves a shared <see cref="ByteMemoryPool"/> instance.
         /// </summary>
-        public static ByteMemoryPool Shared => _shared;
+        public static ByteMemoryPool Shared { get; } = new();
 
         /// <summary>
         /// Returns the maximum buffer size supported by this pool.

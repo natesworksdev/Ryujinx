@@ -19,7 +19,7 @@ namespace Ryujinx.Common.Logging.Targets
             LogLevel.Stub => ConsoleColor.DarkGray,
             LogLevel.Notice => ConsoleColor.Cyan,
             LogLevel.Trace => ConsoleColor.DarkCyan,
-            _ => ConsoleColor.Gray,
+            _ => ConsoleColor.Gray
         };
 
         public ConsoleLogTarget(string name)
