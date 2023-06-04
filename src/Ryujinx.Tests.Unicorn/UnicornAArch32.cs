@@ -138,7 +138,7 @@ namespace Ryujinx.Tests.Unicorn
             Arm.UC_ARM_REG_R12,
             Arm.UC_ARM_REG_R13,
             Arm.UC_ARM_REG_R14,
-            Arm.UC_ARM_REG_R15,
+            Arm.UC_ARM_REG_R15
         };
 
 #pragma warning disable IDE0051, IDE0052 // Remove unused private member
