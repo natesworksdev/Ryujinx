@@ -21,8 +21,7 @@ namespace Ryujinx.Tests.HLE
         [Test]
         public void StripUnicodeControlCodes_Passthrough()
         {
-            string[] prompts = new string[]
-            {
+            string[] prompts = {
                 "Please name him.",
                 "Name her, too.",
                 "Name your friend.",
@@ -30,7 +29,7 @@ namespace Ryujinx.Tests.HLE
                 "Name your pet.",
                 "Favorite homemade food?",
                 "What’s your favorite thing?",
-                "Are you sure?",
+                "Are you sure?"
             };
 
             foreach (string prompt in prompts)
@@ -64,7 +63,7 @@ namespace Ryujinx.Tests.HLE
         public void StripUnicodeControlCodes_PreservesMultiCodePoints()
         {
             // Turtles are a good example of multi-codepoint Unicode chars
-            string specialInput = "♀ 🐢 🐢 ♂ ";
+            const string specialInput = "♀ 🐢 🐢 ♂ ";
             Assert.AreEqual(specialInput, SoftwareKeyboardApplet.StripUnicodeControlCodes(specialInput));
         }
     }

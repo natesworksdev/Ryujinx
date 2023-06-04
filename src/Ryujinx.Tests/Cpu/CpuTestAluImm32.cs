@@ -28,7 +28,7 @@ namespace Ryujinx.Tests.Cpu
                 0xe2c00000u, // SBC R0, R0, #0
                 0xe2d00000u, // SBCS R0, R0, #0
                 0xe2400000u, // SUB R0, R0, #0
-                0xe2500000u, // SUBS R0, R0, #0
+                0xe2500000u // SUBS R0, R0, #0
             };
         }
 #pragma warning restore IDE1006

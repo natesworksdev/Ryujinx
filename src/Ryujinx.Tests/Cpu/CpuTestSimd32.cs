@@ -179,9 +179,9 @@ namespace Ryujinx.Tests.Cpu
 
         private const int RndCnt = 2;
 
-        private static readonly bool NoZeros = false;
-        private static readonly bool NoInfs  = false;
-        private static readonly bool NoNaNs  = false;
+        private const bool NoZeros = false;
+        private const bool NoInfs = false;
+        private const bool NoNaNs = false;
 
         [Test, Pairwise, Description("SHA256SU0.32 <Qd>, <Qm>")]
         public void Sha256su0_V([Values(0xF3BA03C0u)] uint opcode,

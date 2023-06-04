@@ -111,7 +111,7 @@ namespace Ryujinx.Tests.Cpu
             {
                 0xf2000a00u, // VPMAX .S8 D0, D0, D0
                 0xf2000a10u, // VPMIN .S8 D0, D0, D0
-                0xf2000100u, // VRHADD.S8 D0, D0, D0
+                0xf2000100u // VRHADD.S8 D0, D0, D0
             };
         }
 
@@ -270,9 +270,9 @@ namespace Ryujinx.Tests.Cpu
 
         private const int RndCnt = 2;
 
-        private static readonly bool NoZeros = false;
-        private static readonly bool NoInfs  = false;
-        private static readonly bool NoNaNs  = false;
+        private const bool NoZeros = false;
+        private const bool NoInfs = false;
+        private const bool NoNaNs = false;
 
         [Test, Pairwise, Description("SHA256H.32 <Qd>, <Qn>, <Qm>")]
         public void Sha256h_V([Values(0xF3000C40u)] uint opcode,
@@ -454,8 +454,8 @@ namespace Ryujinx.Tests.Cpu
                          [Values] bool e)
         {
             uint opcode = 0xeeb40840u;
-            uint rm = 1;
-            uint rd = 2;
+            const uint rm = 1;
+            const uint rd = 2;
 
             if (size == 3)
             {

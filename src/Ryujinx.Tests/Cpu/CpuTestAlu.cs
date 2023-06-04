@@ -43,9 +43,9 @@ namespace Ryujinx.Tests.Cpu
             }
 
             uint rnd  = TestContext.CurrentContext.Random.NextUInt();
-            int  mask = int.MinValue;
+            const int mask = int.MinValue;
 
-            return (rnd >> (cnt + 1)) | ((uint)mask >> cnt);
+            return (rnd >> (cnt + 1)) | (unchecked((uint)mask) >> cnt);
         }
 
         private static ulong GenLeadingZeros64(int cnt) // 0 <= cnt <= 64
@@ -60,9 +60,9 @@ namespace Ryujinx.Tests.Cpu
             }
 
             ulong rnd  = TestContext.CurrentContext.Random.NextULong();
-            long  mask = long.MinValue;
+            const long mask = long.MinValue;
 
-            return (rnd >> (cnt + 1)) | ((ulong)mask >> cnt);
+            return (rnd >> (cnt + 1)) | (unchecked((ulong)mask) >> cnt);
         }
         #endregion
 

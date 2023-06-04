@@ -55,9 +55,9 @@ namespace Ryujinx.Tests.Cpu
             }
 
             byte  rnd  = TestContext.CurrentContext.Random.NextByte();
-            sbyte mask = sbyte.MinValue;
+            const sbyte mask = sbyte.MinValue;
 
-            return (byte)(((uint)rnd >> (cnt + 1)) | ((uint)((byte)mask) >> cnt));
+            return (byte)(((uint)rnd >> (cnt + 1)) | ((uint)(unchecked((byte)mask)) >> cnt));
         }
 
         private static ushort GenLeadingZeros16(int cnt) // 0 <= cnt <= 16
@@ -72,9 +72,9 @@ namespace Ryujinx.Tests.Cpu
             }
 
             ushort rnd  = TestContext.CurrentContext.Random.NextUShort();
-            short  mask = short.MinValue;
+            const short mask = short.MinValue;
 
-            return (ushort)(((uint)rnd >> (cnt + 1)) | ((uint)((ushort)mask) >> cnt));
+            return (ushort)(((uint)rnd >> (cnt + 1)) | ((uint)(unchecked((ushort)mask)) >> cnt));
         }
 
         private static uint GenLeadingZeros32(int cnt) // 0 <= cnt <= 32
@@ -89,9 +89,9 @@ namespace Ryujinx.Tests.Cpu
             }
 
             uint rnd  = TestContext.CurrentContext.Random.NextUInt();
-            int  mask = int.MinValue;
+            const int mask = int.MinValue;
 
-            return (rnd >> (cnt + 1)) | ((uint)mask >> cnt);
+            return (rnd >> (cnt + 1)) | (unchecked((uint)mask) >> cnt);
         }
         #endregion
 
@@ -1220,9 +1220,9 @@ namespace Ryujinx.Tests.Cpu
 
         private const int RndCnt = 2;
 
-        private static readonly bool NoZeros = false;
-        private static readonly bool NoInfs  = false;
-        private static readonly bool NoNaNs  = false;
+        private const bool NoZeros = false;
+        private const bool NoInfs = false;
+        private const bool NoNaNs = false;
 
         [Test, Pairwise, Description("ABS <V><d>, <V><n>")]
         public void Abs_S_D([Values(0u)] uint rd,

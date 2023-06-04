@@ -11,11 +11,11 @@ namespace Ryujinx.Tests.Audio.Renderer.Dsp
         public void TestUpsamplerConsistency()
         {
             UpsamplerBufferState bufferState = new();
-            int inputBlockSize = 160;
-            int numInputSamples = 32000;
-            int numOutputSamples = 48000;
-            float inputSampleRate = numInputSamples;
-            float outputSampleRate = numOutputSamples;
+            const int inputBlockSize = 160;
+            const int numInputSamples = 32000;
+            const int numOutputSamples = 48000;
+            const float inputSampleRate = numInputSamples;
+            const float outputSampleRate = numOutputSamples;
             float[] inputBuffer = new float[numInputSamples + 100];
             float[] outputBuffer = new float[numOutputSamples + 100];
             for (int sample = 0; sample < inputBuffer.Length; sample++)
