@@ -23,7 +23,7 @@ namespace Ryujinx.Horizon.Sm
             {
                 SmPortIndex.User => AcceptImpl(server, new UserService(_serviceManager)),
                 SmPortIndex.Manager => AcceptImpl(server, new ManagerService()),
-                _ => throw new ArgumentOutOfRangeException(nameof(portIndex)),
+                _ => throw new ArgumentOutOfRangeException(nameof(portIndex))
             };
         }
     }
