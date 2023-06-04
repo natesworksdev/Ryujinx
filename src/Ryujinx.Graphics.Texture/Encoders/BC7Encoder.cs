@@ -995,7 +995,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
             return onesCount >= 2 ? 1 : 0;
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private static int GetPBit(uint c0, uint c1, int colorDepth, int alphaDepth)
         {
             // Giving preference to the first endpoint yields better results,

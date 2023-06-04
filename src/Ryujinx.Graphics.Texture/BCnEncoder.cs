@@ -28,7 +28,7 @@ namespace Ryujinx.Graphics.Texture
 
             for (int l = 0; l < levels; l++)
             {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                 int rgba8Size = width * height * depth * layers * 4;
 #pragma warning restore IDE0059
 
