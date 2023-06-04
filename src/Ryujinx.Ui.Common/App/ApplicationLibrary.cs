@@ -611,7 +611,7 @@ namespace Ryujinx.Ui.App.Common
         public ApplicationMetadata LoadAndSaveMetaData(string titleId, Action<ApplicationMetadata> modifyFunction = null)
         {
             string metadataFolder = Path.Combine(AppDataManager.GamesDirPath, titleId, "gui");
-            string metadataFile   = Path.Combine(metadataFolder, "metadata.json");
+            string metadataFile = Path.Combine(metadataFolder, "metadata.json");
 
             bool isCached = _metadataCache.TryGetValue(metadataFile, out ApplicationMetadata appMetadata);
 
@@ -621,7 +621,7 @@ namespace Ryujinx.Ui.App.Common
                 {
                     appMetadata = JsonHelper.DeserializeFromFile(metadataFile, SerializerContext.ApplicationMetadata);
                 }
-                catch (Exception ex) when (ex is JsonException || ex is DirectoryNotFoundException)
+                catch (Exception ex)
                 {
                     if (ex is DirectoryNotFoundException)
                     {
