@@ -141,7 +141,7 @@ namespace Ryujinx.Tests.Unicorn
             Arm.UC_ARM_REG_R15,
         };
 
-#pragma warning disable IDE0051, IDE0052
+#pragma warning disable IDE0051, IDE0052 // Remove unused private member
         private static readonly int[] QRegisters =
         {
             Arm.UC_ARM_REG_Q0,
