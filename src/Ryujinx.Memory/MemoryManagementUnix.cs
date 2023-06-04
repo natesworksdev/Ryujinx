@@ -185,14 +185,14 @@ namespace Ryujinx.Memory
 
         public static void DestroySharedMemory(IntPtr handle)
         {
-#pragma warning disable CA2020
+#pragma warning disable CA2020 // Prevent behavioral change caused by built-in operators of IntPtr/UIntPtr
             close((int)handle);
 #pragma warning restore CA2020
         }
 
         public static IntPtr MapSharedMemory(IntPtr handle, ulong size)
         {
-#pragma warning disable CA2020
+#pragma warning disable CA2020 // Prevent behavioral change caused by built-in operators of IntPtr/UIntPtr
             return mmap(IntPtr.Zero, size, MmapProts.PROT_READ | MmapProts.PROT_WRITE, MmapFlags.MAP_SHARED, (int)handle, 0);
 #pragma warning restore CA2020
         }
@@ -204,7 +204,7 @@ namespace Ryujinx.Memory
 
         public static void MapView(IntPtr sharedMemory, ulong srcOffset, IntPtr location, ulong size)
         {
-#pragma warning disable CA2020
+#pragma warning disable CA2020 // Prevent behavioral change caused by built-in operators of IntPtr/UIntPtr
             mmap(location, size, MmapProts.PROT_READ | MmapProts.PROT_WRITE, MmapFlags.MAP_FIXED | MmapFlags.MAP_SHARED, (int)sharedMemory, (long)srcOffset);
 #pragma warning restore CA2020
         }

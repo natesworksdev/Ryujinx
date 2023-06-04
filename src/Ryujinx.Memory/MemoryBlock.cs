@@ -366,7 +366,7 @@ namespace Ryujinx.Memory
         /// <returns>Native pointer with the added offset</returns>
         private static IntPtr PtrAddr(IntPtr pointer, ulong offset)
         {
-#pragma warning disable CA2020
+#pragma warning disable CA2020 // Prevent behavioral change caused by built-in operators of IntPtr/UIntPtr
             return (IntPtr)(pointer.ToInt64() + (long)offset);
 #pragma warning restore CA2020
         }

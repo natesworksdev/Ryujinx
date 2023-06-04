@@ -706,7 +706,7 @@ namespace Ryujinx.Memory.WindowsShared
                 count = _protections.GetNodes(address, endAddress, ref overlaps);
             }
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong startAddress = address;
 #pragma warning restore IDE0059
 
