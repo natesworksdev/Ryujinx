@@ -22,7 +22,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
         private readonly HashSet<ServerSession> _sessions;
         private readonly HashSet<Server> _servers;
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ServerManager(HeapAllocator allocator, SmApi sm, int maxPorts, ManagerOptions options, int maxSessions) : base(sm, options)
         {
             _sm = sm;

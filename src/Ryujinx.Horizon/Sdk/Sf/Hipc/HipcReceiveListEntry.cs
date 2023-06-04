@@ -2,7 +2,7 @@
 {
     readonly struct HipcReceiveListEntry
     {
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly uint _addressLow;
         private readonly uint _word1;
 #pragma warning restore IDE0052

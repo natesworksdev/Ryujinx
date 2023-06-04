@@ -2,7 +2,7 @@
 {
     struct CmifRequestFormat
     {
-#pragma warning disable CS0649
+#pragma warning disable CS0649 // Field is never assigned to
         public int  ObjectId;
         public uint RequestId;
         public uint Context;

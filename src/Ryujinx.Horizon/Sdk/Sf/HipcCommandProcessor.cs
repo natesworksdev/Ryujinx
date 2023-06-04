@@ -386,7 +386,7 @@ namespace Ryujinx.Horizon.Sdk.Sf
             outRawData = MemoryMarshal.Cast<uint, byte>(response.DataWords);
         }
 
-#pragma warning disable CA1822
+#pragma warning disable CA1822 // Mark member as static
         public void SetOutObjects(ref ServiceDispatchContext context, HipcMessageData response, Span<IServiceObject> objects)
 #pragma warning restore CA1822
         {

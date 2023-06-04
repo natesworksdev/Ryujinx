@@ -326,7 +326,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
             return result;
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ServerSessionManager GetSessionManagerByTag(uint tag)
         {
             // Official FW does not do anything with the tag currently.

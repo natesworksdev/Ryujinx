@@ -19,7 +19,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
 
         private int InObjectsCount => _inObjectIds.Length;
         private int OutObjectsCount => _implMetadata.OutObjectsCount;
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         private int ImplOutHeadersSize => _implMetadata.OutHeadersSize;
 #pragma warning restore IDE0051
         private int ImplOutDataTotalSize => _implMetadata.OutDataSize + _implMetadata.OutHeadersSize;

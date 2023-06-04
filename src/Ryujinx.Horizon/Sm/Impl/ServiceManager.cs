@@ -16,7 +16,7 @@ namespace Ryujinx.Horizon.Sm.Impl
             _services = new ServiceInfo[MaxServicesCount];
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public Result GetService(out int handle, ulong processId, ServiceName name)
         {
             handle = 0;

@@ -2,7 +2,7 @@
 {
     readonly struct HipcBufferDescriptor
     {
-#pragma warning disable CS0649
+#pragma warning disable CS0649 // Field is never assigned to
         private readonly uint _sizeLow;
         private readonly uint _addressLow;
         private readonly uint _word2;
