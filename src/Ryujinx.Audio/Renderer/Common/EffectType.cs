@@ -53,6 +53,6 @@ namespace Ryujinx.Audio.Renderer.Common
         /// <summary>
         /// Effect applying a compressor filter (DRC).
         /// </summary>
-        Compressor,
+        Compressor
     }
 }

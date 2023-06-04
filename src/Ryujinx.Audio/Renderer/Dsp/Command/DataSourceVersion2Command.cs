@@ -77,7 +77,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                 SampleFormat.Adpcm => CommandType.AdpcmDataSourceVersion2,
                 SampleFormat.PcmInt16 => CommandType.PcmInt16DataSourceVersion2,
                 SampleFormat.PcmFloat => CommandType.PcmFloatDataSourceVersion2,
-                _ => throw new NotImplementedException($"{sampleFormat}"),
+                _ => throw new NotImplementedException($"{sampleFormat}")
             };
         }
 

@@ -133,7 +133,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
                 throw new InvalidOperationException("Audio Processor Wait response was invalid!");
             }
 
-            long increment = Constants.AudioProcessorMaxUpdateTimeTarget;
+            const long increment = Constants.AudioProcessorMaxUpdateTimeTarget;
 
             long timeNow = PerformanceCounter.ElapsedNanoseconds;
 

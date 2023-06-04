@@ -95,13 +95,13 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                 Vector2 channelInput = new()
                 {
                     X = *((float*)inputBuffers[0] + i) * 64,
-                    Y = *((float*)inputBuffers[1] + i) * 64,
+                    Y = *((float*)inputBuffers[1] + i) * 64
                 };
 
                 Vector2 delayLineValues = new()
                 {
                     X = state.DelayLines[0].Read(),
-                    Y = state.DelayLines[1].Read(),
+                    Y = state.DelayLines[1].Read()
                 };
 
                 Vector2 temp = MatrixHelper.Transform(ref delayLineValues, ref delayFeedback) + channelInput * inGain;

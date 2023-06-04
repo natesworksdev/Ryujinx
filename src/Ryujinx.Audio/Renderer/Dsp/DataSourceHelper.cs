@@ -38,7 +38,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             {
                 SampleRateConversionQuality.Default or SampleRateConversionQuality.Low => 4,
                 SampleRateConversionQuality.High => 8,
-                _ => throw new ArgumentException(quality.ToString()),
+                _ => throw new ArgumentException(quality.ToString())
             };
         }
 

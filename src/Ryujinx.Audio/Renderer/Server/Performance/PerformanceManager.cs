@@ -96,7 +96,7 @@ namespace Ryujinx.Audio.Renderer.Server.Performance
                                                                                                                                                               ref parameter),
                 2 => new PerformanceManagerGeneric<PerformanceFrameHeaderVersion2, PerformanceEntryVersion2, PerformanceDetailVersion2>(performanceBuffer,
                                                                                                                                                               ref parameter),
-                _ => throw new NotImplementedException($"Unknown Performance metrics data format version {version}"),
+                _ => throw new NotImplementedException($"Unknown Performance metrics data format version {version}")
             };
         }
     }

@@ -66,7 +66,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                 ExtraParameter = AdpcmParameter,
                 ExtraParameterSize = AdpcmParameterSize,
                 ChannelIndex = 0,
-                ChannelCount = 1,
+                ChannelCount = 1
             };
 
             DataSourceHelper.ProcessWaveBuffers(context.MemoryManager, outputBuffer, ref info, WaveBuffers, ref State.Span[0], context.SampleRate, (int)context.SampleCount);

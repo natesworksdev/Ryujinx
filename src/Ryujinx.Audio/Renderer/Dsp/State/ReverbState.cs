@@ -18,7 +18,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
             // Cathedral
             47.03f, 71f, 103f, 170f,
             // Max delay (Hall is the one with the highest values so identical to Hall)
-            53.953247f, 79.192566f, 116.238770f, 170.615295f,
+            53.953247f, 79.192566f, 116.238770f, 170.615295f
         };
 
         private static readonly float[] DecayDelayTimes = new float[20]
@@ -32,7 +32,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
             // Cathedral
             7f, 7f, 13f, 9f,
             // Max delay (Hall is the one with the highest values so identical to Hall)
-            7f, 9f, 13f, 17f,
+            7f, 9f, 13f, 17f
         };
 
         private static readonly float[] EarlyDelayTimes = new float[50]

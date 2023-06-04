@@ -14,7 +14,7 @@ namespace Ryujinx.Audio.Backends.Common
                 SampleFormat.PcmInt24 => 3,
                 SampleFormat.PcmInt32 => sizeof(int),
                 SampleFormat.PcmFloat => sizeof(float),
-                _ => throw new ArgumentException($"{format}"),
+                _ => throw new ArgumentException($"{format}")
             };
         }
 

@@ -16,7 +16,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
                 Z = value2.M31 * value1.X + value2.M32 * value1.Y + value2.M33 * value1.Z + value2.M34 * value1.W + value2.M35 * value1.V + value2.M36 * value1.U,
                 W = value2.M41 * value1.X + value2.M42 * value1.Y + value2.M43 * value1.Z + value2.M44 * value1.W + value2.M45 * value1.V + value2.M46 * value1.U,
                 V = value2.M51 * value1.X + value2.M52 * value1.Y + value2.M53 * value1.Z + value2.M54 * value1.W + value2.M55 * value1.V + value2.M56 * value1.U,
-                U = value2.M61 * value1.X + value2.M62 * value1.Y + value2.M63 * value1.Z + value2.M64 * value1.W + value2.M65 * value1.V + value2.M66 * value1.U,
+                U = value2.M61 * value1.X + value2.M62 * value1.Y + value2.M63 * value1.Z + value2.M64 * value1.W + value2.M65 * value1.V + value2.M66 * value1.U
             };
         }
 
@@ -38,7 +38,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             return new Vector2
             {
                 X = value2.M11 * value1.X + value2.M12 * value1.Y,
-                Y = value2.M21 * value1.X + value2.M22 * value1.Y,
+                Y = value2.M21 * value1.X + value2.M22 * value1.Y
             };
         }
     }

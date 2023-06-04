@@ -169,7 +169,7 @@ namespace Ryujinx.Audio
             1.0f,
             0.707f,
             0.251f,
-            0.707f,
+            0.707f
         };
     }
 }

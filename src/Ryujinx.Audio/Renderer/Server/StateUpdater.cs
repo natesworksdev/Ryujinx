@@ -230,7 +230,7 @@ namespace Ryujinx.Audio.Renderer.Server
                 EffectType.Limiter => new LimiterEffect(),
                 EffectType.CaptureBuffer => new CaptureBufferEffect(),
                 EffectType.Compressor => new CompressorEffect(),
-                _ => throw new NotImplementedException($"EffectType {parameter.Type} not implemented!"),
+                _ => throw new NotImplementedException($"EffectType {parameter.Type} not implemented!")
             };
         }
 
@@ -489,7 +489,7 @@ namespace Ryujinx.Audio.Renderer.Server
                 SinkType.Invalid => new BaseSink(),
                 SinkType.CircularBuffer => new CircularBufferSink(),
                 SinkType.Device => new DeviceSink(),
-                _ => throw new NotImplementedException($"SinkType {parameter.Type} not implemented!"),
+                _ => throw new NotImplementedException($"SinkType {parameter.Type} not implemented!")
             };
         }
 

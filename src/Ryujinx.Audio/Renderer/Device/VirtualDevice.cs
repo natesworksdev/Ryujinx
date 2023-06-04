@@ -16,7 +16,7 @@ namespace Ryujinx.Audio.Renderer.Device
             new VirtualDevice("AudioBuiltInSpeakerOutput", 2, false),
             new VirtualDevice("AudioTvOutput", 6, false),
             new VirtualDevice("AudioUsbDeviceOutput", 2, true),
-            new VirtualDevice("AudioExternalOutput", 6, true),
+            new VirtualDevice("AudioExternalOutput", 6, true)
         };
 
         /// <summary>
