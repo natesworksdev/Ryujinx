@@ -18,7 +18,6 @@ using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Time.TimeZone;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Configuration.System;
-using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

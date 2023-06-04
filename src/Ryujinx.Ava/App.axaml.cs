@@ -5,7 +5,6 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using FluentAvalonia.Styling;
 using Ryujinx.Ava.Common.Locale;
-using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
