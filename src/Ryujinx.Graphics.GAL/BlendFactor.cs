@@ -43,7 +43,6 @@ namespace Ryujinx.Graphics.GAL
     {
         public static bool IsDualSource(this BlendFactor factor)
         {
-#pragma warning disable IDE0066
             switch (factor)
             {
                 case BlendFactor.Src1Color:
@@ -58,7 +57,6 @@ namespace Ryujinx.Graphics.GAL
                 default:
                     return false;
             }
-#pragma warning restore IDE0066
         }
     }
 }
