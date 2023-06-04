@@ -113,7 +113,7 @@ namespace Ryujinx.Graphics.Texture
 
                     if (gobRemainderZ != 0 && level == levels - 1)
                     {
-                        // The slice only covers up to the end of this slice's depth, rather than the full area.
+                        // The slice only covers up to the end of this slice's depth, rather than the full aligned size.
                         // Avoids size being too large on partial views of 3d textures.
 
                         sliceSizes[level] -= gobSize * (mipGobBlocksInZ - gobRemainderZ);
