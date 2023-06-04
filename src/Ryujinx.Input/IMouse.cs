@@ -8,7 +8,7 @@ namespace Ryujinx.Input
     /// </summary>
     public interface IMouse : IGamepad
     {
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         private const int SwitchPanelWidth = 1280;
 #pragma warning restore IDE0051
         private const int SwitchPanelHeight = 720;
