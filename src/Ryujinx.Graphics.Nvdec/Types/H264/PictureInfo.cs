@@ -5,7 +5,7 @@ namespace Ryujinx.Graphics.Nvdec.Types.H264
 {
     struct PictureInfo
     {
-#pragma warning disable IDE0051, CS0169, CS0649
+#pragma warning disable IDE0051, CS0169, CS0649 // Remove unused private member
         Array18<uint> Unknown0;
 #pragma warning restore IDE0051
         public uint BitstreamSize;

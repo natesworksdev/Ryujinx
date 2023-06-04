@@ -4,7 +4,7 @@ namespace Ryujinx.Graphics.Nvdec.Types.H264
 {
     struct ReferenceFrame
     {
-#pragma warning disable CS0649
+#pragma warning disable CS0649 // Field is never assigned to
         public uint Flags;
         public Array2<uint> FieldOrderCnt;
         public uint FrameNum;
