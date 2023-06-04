@@ -45,7 +45,7 @@ namespace Ryujinx.Audio.Renderer.Server.Effect
             Update(out updateErrorInfo, ref parameter, mapper);
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public void Update<T>(out BehaviourParameter.ErrorInfo updateErrorInfo, ref T parameter, PoolMapper mapper) where T : unmanaged, IEffectInParameter
         {
             Debug.Assert(IsTypeValid(ref parameter));

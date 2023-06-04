@@ -12,7 +12,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
         private const int SamplesPerFrame = 14;
         private const int NibblesPerFrame = SamplesPerFrame + 2;
         private const int BytesPerFrame = 8;
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         private const int BitsPerFrame = BytesPerFrame * 8;
 #pragma warning restore IDE0051
 

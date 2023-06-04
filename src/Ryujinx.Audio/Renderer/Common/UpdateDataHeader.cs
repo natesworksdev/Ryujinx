@@ -19,7 +19,7 @@ namespace Ryujinx.Audio.Renderer.Common
         public uint Unknown24;
         public uint RenderInfoSize;
 
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         private unsafe fixed int _reserved[4];
 #pragma warning restore IDE0051
 

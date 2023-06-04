@@ -311,7 +311,7 @@ namespace Ryujinx.Audio.Common
             return false;
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static bool AppendUacBuffer(AudioBuffer buffer, uint handle)
         {
             // NOTE: On hardware, there is another RegisterBuffer method taking a handle.

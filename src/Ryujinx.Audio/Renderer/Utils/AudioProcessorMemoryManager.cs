@@ -18,7 +18,7 @@ namespace Ryujinx.Audio.Renderer.Utils
         /// <param name="size">The size of the CPU memory region to map.</param>
         /// <returns>The address on the <see cref="Dsp.AudioProcessor"/> address space.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static DspAddress Map(uint processHandle, CpuAddress cpuAddress, ulong size)
         {
             return cpuAddress;
@@ -32,7 +32,7 @@ namespace Ryujinx.Audio.Renderer.Utils
         /// <param name="cpuAddress">The <see cref="CpuAddress"/> to unmap.</param>
         /// <param name="size">The size of the CPU memory region to unmap.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static void Unmap(uint processHandle, CpuAddress cpuAddress, ulong size)
         {
         }
@@ -44,7 +44,7 @@ namespace Ryujinx.Audio.Renderer.Utils
         /// <param name="address">The base DSP address to invalidate</param>
         /// <param name="size">The size of the DSP memory region to invalidate.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static void InvalidateDspCache(DspAddress address, ulong size)
         {
         }
@@ -56,7 +56,7 @@ namespace Ryujinx.Audio.Renderer.Utils
         /// <param name="address">The base <see cref="CpuAddress"/> to invalidate</param>
         /// <param name="size">The size of the CPU memory region to invalidate.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static void InvalidateDataCache(CpuAddress address, ulong size)
         {
         }

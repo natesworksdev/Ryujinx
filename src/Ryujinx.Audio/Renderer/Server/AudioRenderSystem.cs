@@ -41,7 +41,7 @@ namespace Ryujinx.Audio.Renderer.Server
         private UpsamplerManager _upsamplerManager;
         private bool _isActive;
         private BehaviourContext _behaviourContext;
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private ulong _totalElapsedTicksUpdating;
         private ulong _totalElapsedTicks;
 #pragma warning restore IDE0052

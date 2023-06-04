@@ -45,7 +45,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             _event = new ManualResetEvent(false);
         }
 
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         private static uint GetHardwareChannelCount(IHardwareDeviceDriver deviceDriver)
         {
             // Get the real device driver (In case the compat layer is on top of it).
