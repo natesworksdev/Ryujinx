@@ -1,9 +1,7 @@
 ﻿using Ryujinx.Graphics.Device;
-using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Engine.InlineToMemory;
 using Ryujinx.Graphics.Gpu.Engine.Threed;
 using Ryujinx.Graphics.Gpu.Engine.Types;
-using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Gpu.Shader;
 using Ryujinx.Graphics.Shader;
 using System;
@@ -190,7 +188,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
 
                 _context.Renderer.Pipeline.SetProgram(cs.HostProgram);
 
+#pragma warning disable IDE0059
                 info = cs.Shaders[0].Info;
+#pragma warning restore IDE0059
             }
 
             _channel.BufferManager.SetComputeBufferBindings(cs.Bindings);

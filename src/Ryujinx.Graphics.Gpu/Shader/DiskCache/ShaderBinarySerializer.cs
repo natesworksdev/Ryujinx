@@ -3,7 +3,6 @@ using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Shader.Translation;
-using System;
 using System.Collections.Generic;
 using System.IO;
 

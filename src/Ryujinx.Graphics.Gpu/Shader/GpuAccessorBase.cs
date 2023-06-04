@@ -4,7 +4,6 @@ using Ryujinx.Graphics.Gpu.Engine.Threed;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Shader.Translation;
-using System;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
