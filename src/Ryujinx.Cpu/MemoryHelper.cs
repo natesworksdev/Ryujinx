@@ -2,7 +2,6 @@
 using Ryujinx.Common.Memory;
 using Ryujinx.Memory;
 using System;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;

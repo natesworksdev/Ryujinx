@@ -1,5 +1,4 @@
 using Ryujinx.Memory;
-using System.Collections.Generic;
 
 namespace Ryujinx.Cpu.AppleHv
 {
