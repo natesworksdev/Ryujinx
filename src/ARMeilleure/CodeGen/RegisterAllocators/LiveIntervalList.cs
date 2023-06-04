@@ -5,15 +5,15 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
     unsafe struct LiveIntervalList
     {
         private LiveInterval* _items;
-        private int _count;
         private int _capacity;
 
-        public int Count => _count;
-        public Span<LiveInterval> Span => new(_items, _count);
+        public int Count { get; private set; }
+
+        public Span<LiveInterval> Span => new(_items, Count);
 
         public void Add(LiveInterval interval)
         {
-            if (_count + 1 > _capacity)
+            if (Count + 1 > _capacity)
             {
                 var oldSpan = Span;
 
@@ -26,7 +26,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
 
             int position = interval.GetStart();
-            int i = _count - 1;
+            int i = Count - 1;
 
             while (i >= 0 && _items[i].GetStart() > position)
             {
@@ -34,7 +34,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
 
             _items[i + 1] = interval;
-            _count++;
+            Count++;
         }
     }
 }

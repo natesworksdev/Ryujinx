@@ -10,7 +10,7 @@ namespace ARMeilleure.Instructions
         {
             IOpCode32Exception op = (IOpCode32Exception)context.CurrOp;
 
-            string name = nameof(NativeInterface.SupervisorCall);
+            const string name = nameof(NativeInterface.SupervisorCall);
 
             context.StoreToContext();
 
@@ -25,7 +25,7 @@ namespace ARMeilleure.Instructions
         {
             IOpCode32Exception op = (IOpCode32Exception)context.CurrOp;
 
-            string name = nameof(NativeInterface.Break);
+            const string name = nameof(NativeInterface.Break);
 
             context.StoreToContext();
 

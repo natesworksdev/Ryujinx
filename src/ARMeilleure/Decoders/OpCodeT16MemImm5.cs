@@ -41,7 +41,7 @@ namespace ARMeilleure.Decoders
                 InstName.Str or InstName.Ldr => ((opCode >> 6) & 0x1f) << 2,
                 InstName.Strb or InstName.Ldrb => ((opCode >> 6) & 0x1f),
                 InstName.Strh or InstName.Ldrh => ((opCode >> 6) & 0x1f) << 1,
-                _ => throw new InvalidOperationException(),
+                _ => throw new InvalidOperationException()
             };
         }
     }

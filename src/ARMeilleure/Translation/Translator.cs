@@ -23,7 +23,6 @@ namespace ARMeilleure.Translation
     public class Translator
     {
         private static readonly AddressTable<ulong>.Level[] Levels64Bit =
-            new AddressTable<ulong>.Level[]
             {
                 new(31, 17),
                 new(23,  8),
@@ -33,7 +32,6 @@ namespace ARMeilleure.Translation
             };
 
         private static readonly AddressTable<ulong>.Level[] Levels32Bit =
-            new AddressTable<ulong>.Level[]
             {
                 new(31, 17),
                 new(23,  8),
@@ -289,7 +287,7 @@ namespace ARMeilleure.Translation
 
             Logger.EndPass(PassName.RegisterUsage);
 
-            var retType = OperandType.I64;
+            const OperandType retType = OperandType.I64;
             var argTypes = new OperandType[] { OperandType.I64 };
 
             var options = highCq ? CompilerOptions.HighCq : CompilerOptions.None;
@@ -394,7 +392,7 @@ namespace ARMeilleure.Translation
                 {
                     // Left option here as it may be useful if we need to return to managed rather than tail call in
                     // future. (eg. for debug)
-                    bool useReturns = false;
+                    const bool useReturns = false;
 
                     InstEmitFlowHelper.EmitVirtualJump(context, Const(block.Address), isReturn: useReturns);
                 }

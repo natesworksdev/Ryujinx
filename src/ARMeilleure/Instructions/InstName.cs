@@ -680,6 +680,6 @@ namespace ARMeilleure.Instructions
         Vtrn,
         Vtst,
         Vuzp,
-        Vzip,
+        Vzip
     }
 }

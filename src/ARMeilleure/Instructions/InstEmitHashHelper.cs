@@ -30,7 +30,7 @@ namespace ARMeilleure.Instructions
                 {
                     0 => Intrinsic.X86Crc32_8,
                     1 => Intrinsic.X86Crc32_16,
-                    _ => Intrinsic.X86Crc32,
+                    _ => Intrinsic.X86Crc32
                 };
 
                 return (size == 3) ? context.ConvertI64ToI32(context.AddIntrinsicLong(op, crc, value)) : context.AddIntrinsicInt(op, crc, value);
@@ -40,7 +40,7 @@ namespace ARMeilleure.Instructions
                 return size switch
                 {
                     3 => EmitCrc32Optimized64(context, crc, value, castagnoli),
-                    _ => EmitCrc32Optimized(context, crc, value, castagnoli, size),
+                    _ => EmitCrc32Optimized(context, crc, value, castagnoli, size)
                 };
             }
             else

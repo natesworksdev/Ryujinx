@@ -4,9 +4,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 {
     class StackAllocator
     {
-        private int _offset;
-
-        public int TotalSize => _offset;
+        public int TotalSize { get; private set; }
 
         public int Allocate(OperandType type)
         {
@@ -15,9 +13,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public int Allocate(int sizeInBytes)
         {
-            int offset = _offset;
+            int offset = TotalSize;
 
-            _offset += sizeInBytes;
+            TotalSize += sizeInBytes;
 
             return offset;
         }

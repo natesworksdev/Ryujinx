@@ -156,7 +156,7 @@ namespace ARMeilleure.Translation
                 {
                     Operand fpsr = AddIntrinsicInt(Intrinsic.Arm64MrsFpsr);
 
-                    uint qcFlagMask = (uint)FPSR.Qc;
+                    const uint qcFlagMask = (uint)FPSR.Qc;
 
                     Operand qcClearLabel = Label();
 

@@ -11,7 +11,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeException op = (OpCodeException)context.CurrOp;
 
-            string name = nameof(NativeInterface.Break);
+            const string name = nameof(NativeInterface.Break);
 
             context.StoreToContext();
 
@@ -26,7 +26,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeException op = (OpCodeException)context.CurrOp;
 
-            string name = nameof(NativeInterface.SupervisorCall);
+            const string name = nameof(NativeInterface.SupervisorCall);
 
             context.StoreToContext();
 
@@ -41,7 +41,7 @@ namespace ARMeilleure.Instructions
         {
             OpCode op = context.CurrOp;
 
-            string name = nameof(NativeInterface.Undefined);
+            const string name = nameof(NativeInterface.Undefined);
 
             context.StoreToContext();
 

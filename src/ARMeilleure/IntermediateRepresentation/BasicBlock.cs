@@ -8,7 +8,6 @@ namespace ARMeilleure.IntermediateRepresentation
     {
         private const uint MaxSuccessors = 2;
 
-        private int _succCount;
         private BasicBlock _succ0;
         private readonly BasicBlock _succ1;
         private HashSet<BasicBlock> _domFrontiers;
@@ -21,7 +20,7 @@ namespace ARMeilleure.IntermediateRepresentation
         public List<BasicBlock> Predecessors { get; }
         public BasicBlock ImmediateDominator { get; set; }
 
-        public int SuccessorsCount => _succCount;
+        public int SuccessorsCount { get; private set; }
 
         public HashSet<BasicBlock> DominanceFrontiers
         {
@@ -47,19 +46,19 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             ArgumentNullException.ThrowIfNull(block);
 
-            if ((uint)_succCount + 1 > MaxSuccessors)
+            if ((uint)SuccessorsCount + 1 > MaxSuccessors)
             {
                 ThrowSuccessorOverflow();
             }
 
             block.Predecessors.Add(this);
 
-            GetSuccessorUnsafe(_succCount++) = block;
+            GetSuccessorUnsafe(SuccessorsCount++) = block;
         }
 
         public void RemoveSuccessor(int index)
         {
-            if ((uint)index >= (uint)_succCount)
+            if ((uint)index >= (uint)SuccessorsCount)
             {
                 ThrowOutOfRange(nameof(index));
             }
@@ -74,12 +73,12 @@ namespace ARMeilleure.IntermediateRepresentation
                 _succ0 = _succ1;
             }
 
-            _succCount--;
+            SuccessorsCount--;
         }
 
         public BasicBlock GetSuccessor(int index)
         {
-            if ((uint)index >= (uint)_succCount)
+            if ((uint)index >= (uint)SuccessorsCount)
             {
                 ThrowOutOfRange(nameof(index));
             }
@@ -96,7 +95,7 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             ArgumentNullException.ThrowIfNull(block);
 
-            if ((uint)index >= (uint)_succCount)
+            if ((uint)index >= (uint)SuccessorsCount)
             {
                 ThrowOutOfRange(nameof(index));
             }

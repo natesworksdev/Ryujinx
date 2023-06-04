@@ -381,7 +381,7 @@ namespace ARMeilleure.Translation
                 RegisterType.FpFlag => OperandType.I32,
                 RegisterType.Integer => (mode == ExecutionMode.Aarch64) ? OperandType.I64 : OperandType.I32,
                 RegisterType.Vector => OperandType.V128,
-                _ => throw new ArgumentException($"Invalid register type \"{type}\"."),
+                _ => throw new ArgumentException($"Invalid register type \"{type}\".")
             };
         }
 

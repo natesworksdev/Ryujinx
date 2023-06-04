@@ -27,7 +27,7 @@ namespace ARMeilleure.Instructions
             Exclusive = 8,
 
             LoadZx = Load,
-            LoadSx = Load | Signed,
+            LoadSx = Load | Signed
         }
 
         public static void Ldm(ArmEmitterContext context)

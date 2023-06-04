@@ -32,7 +32,7 @@ namespace ARMeilleure.Instructions
                 return input;
             }
 
-            Intrinsic vType = Intrinsic.Arm64VDWord | Intrinsic.Arm64V128;
+            const Intrinsic vType = Intrinsic.Arm64VDWord | Intrinsic.Arm64V128;
 
             if (targetSide == 1)
             {

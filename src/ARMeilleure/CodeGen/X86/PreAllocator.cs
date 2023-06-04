@@ -711,7 +711,7 @@ namespace ARMeilleure.CodeGen.X86
             return inst switch
             {
                 Instruction.Copy or Instruction.LoadArgument or Instruction.Spill or Instruction.SpillArg => true,
-                _ => false,
+                _ => false
             };
         }
 

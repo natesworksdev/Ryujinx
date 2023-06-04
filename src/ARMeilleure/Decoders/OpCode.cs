@@ -36,7 +36,7 @@ namespace ARMeilleure.Decoders
                 RegisterSize.Int64 => 64,
                 RegisterSize.Simd64 => 64,
                 RegisterSize.Simd128 => 128,
-                _ => throw new InvalidOperationException(),
+                _ => throw new InvalidOperationException()
             };
         }
 

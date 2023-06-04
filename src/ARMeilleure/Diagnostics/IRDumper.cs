@@ -320,7 +320,7 @@ namespace ARMeilleure.Diagnostics
                 OperandType.FP32 => "f32",
                 OperandType.FP64 => "f64",
                 OperandType.V128 => "v128",
-                _ => throw new ArgumentException($"Invalid operand type \"{type}\"."),
+                _ => throw new ArgumentException($"Invalid operand type \"{type}\".")
             };
         }
     }

@@ -693,7 +693,7 @@ namespace ARMeilleure.Instructions
                 IOpCode32MemReg op => GetIntA32(context, op.Rm),
                 IOpCode32Mem op => Const(op.Immediate),
                 OpCode32SimdMemImm op => Const(op.Immediate),
-                _ => throw InvalidOpCodeType(context.CurrOp),
+                _ => throw InvalidOpCodeType(context.CurrOp)
             };
         }
 
