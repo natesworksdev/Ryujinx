@@ -706,7 +706,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 
             ShaderProgram program = translatorContext.Translate();
 
-            CachedShaderStage[] shaders = new[] { new CachedShaderStage(program.Info, shader.Code, shader.Cb1Data) };
+            CachedShaderStage[] shaders = { new CachedShaderStage(program.Info, shader.Code, shader.Cb1Data) };
 
             _compilationQueue.Enqueue(new ProgramCompilation(new[] { program }, shaders, newSpecState, programIndex, isCompute: true));
         }

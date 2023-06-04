@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     enum NotifyType
     {
         WriteOnly = 0,
-        WriteThenAwaken = 1,
+        WriteThenAwaken = 1
     }
 
     /// <summary>
@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     enum SetCwdControlSmSelection
     {
         LoadBalanced = 0,
-        RoundRobin = 1,
+        RoundRobin = 1
     }
 
     /// <summary>
@@ -29,7 +29,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     enum InvalidateCacheLines
     {
         All = 0,
-        One = 1,
+        One = 1
     }
 
     /// <summary>
@@ -38,7 +38,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     enum SetGwcScgTypeScgType
     {
         GraphicsCompute0 = 0,
-        Compute1 = 1,
+        Compute1 = 1
     }
 
     /// <summary>
@@ -48,7 +48,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     {
         UseRenderEnable = 0,
         AlwaysRender = 1,
-        NeverRender = 2,
+        NeverRender = 2
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     enum SetReportSemaphoreDOperation
     {
         Release = 0,
-        Trap = 3,
+        Trap = 3
     }
 
     /// <summary>
@@ -66,7 +66,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     enum SetReportSemaphoreDStructureSize
     {
         FourWords = 0,
-        OneWord = 1,
+        OneWord = 1
     }
 
     /// <summary>
@@ -81,7 +81,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
         RedDec = 4,
         RedAnd = 5,
         RedOr = 6,
-        RedXor = 7,
+        RedXor = 7
     }
 
     /// <summary>
@@ -90,7 +90,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     enum SetReportSemaphoreDReductionFormat
     {
         Unsigned32 = 0,
-        Signed32 = 1,
+        Signed32 = 1
     }
 
     /// <summary>

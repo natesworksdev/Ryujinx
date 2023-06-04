@@ -808,7 +808,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 Format.Astc10x10Srgb or Format.Astc10x10Unorm => FormatClass.Astc10x10,
                 Format.Astc12x10Srgb or Format.Astc12x10Unorm => FormatClass.Astc12x10,
                 Format.Astc12x12Srgb or Format.Astc12x12Unorm => FormatClass.Astc12x12,
-                _ => FormatClass.Unclassified,
+                _ => FormatClass.Unclassified
             };
         }
     }
