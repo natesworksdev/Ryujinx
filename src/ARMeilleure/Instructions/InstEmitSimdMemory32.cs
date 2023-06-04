@@ -127,8 +127,6 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                OpCode32SimdMemPair op = (OpCode32SimdMemPair)context.CurrOp;
-
                 int increment = count > 1 ? op.Increment : 1;
                 int eBytes = 1 << op.Size;
 
