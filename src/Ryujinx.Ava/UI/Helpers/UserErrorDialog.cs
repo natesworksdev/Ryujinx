@@ -1,5 +1,4 @@
 ﻿using Ryujinx.Ava.Common.Locale;
-using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Helper;
 using System.Threading.Tasks;
@@ -67,8 +66,7 @@ namespace Ryujinx.Ava.UI.Helpers
             };
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
-        public static async Task ShowUserErrorDialog(UserError error, StyleableWindow owner)
+        public static async Task ShowUserErrorDialog(UserError error)
         {
             string errorCode = GetErrorCode(error);
 
@@ -88,6 +86,5 @@ namespace Ryujinx.Ava.UI.Helpers
                 OpenHelper.OpenUrl(GetSetupGuideUrl(error));
             }
         }
-#pragma warning restore IDE0060
     }
 }

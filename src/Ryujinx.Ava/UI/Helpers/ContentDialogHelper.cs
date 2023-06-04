@@ -18,7 +18,6 @@ namespace Ryujinx.Ava.UI.Helpers
     {
         private static bool _isChoiceDialogOpen;
 
-#pragma warning disable IDE0060 // Remove unused parameter
         private async static Task<UserResult> ShowContentDialog(
              string title,
              object content,
@@ -65,7 +64,6 @@ namespace Ryujinx.Ava.UI.Helpers
 
             return result;
         }
-#pragma warning restore IDE0060
 
         public async static Task<UserResult> ShowTextDialog(
             string title,
@@ -97,7 +95,6 @@ namespace Ryujinx.Ava.UI.Helpers
             Func<Window, Task> doWhileDeferred = null)
         {
             bool startedDeferring = false;
-            UserResult result = UserResult.None;
 
             return await ShowTextDialog(
                 title,
@@ -123,8 +120,6 @@ namespace Ryujinx.Ava.UI.Helpers
                 startedDeferring = true;
 
                 var deferral = args.GetDeferral();
-
-                result = primaryButton == LocaleManager.Instance[LocaleKeys.InputDialogYes] ? UserResult.Yes : UserResult.Ok;
 
                 sender.PrimaryButtonClick -= DeferClose;
 
@@ -390,7 +385,7 @@ namespace Ryujinx.Ava.UI.Helpers
 
         private static Window GetMainWindow()
         {
-            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime al)
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime al)
             {
                 foreach (Window item in al.Windows)
                 {

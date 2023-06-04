@@ -323,7 +323,7 @@ namespace Ryujinx.Ava.UI.Windows
                 ShowKeyErrorOnLoad = false;
 
                 Dispatcher.UIThread.Post(async () => await
-                    UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys, this));
+                    UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys));
             }
 
             if (OperatingSystem.IsLinux() && LinuxHelper.VmMaxMapCount < LinuxHelper.RecommendedVmMaxMapCount)
