@@ -16,7 +16,7 @@ namespace Ryujinx.Ui.Windows
         private readonly string _enabledCheatsPath;
         private readonly bool _noCheatsFound;
 
-#pragma warning disable CS0649, IDE0044
+#pragma warning disable CS0649, IDE0044 // Field is never assigned to, Add readonly modifier
         [GUI] Label    _baseTitleInfoLabel;
         [GUI] TextView _buildIdTextView;
         [GUI] TreeView _cheatTreeView;

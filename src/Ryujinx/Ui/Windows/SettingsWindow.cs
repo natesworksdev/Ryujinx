@@ -36,7 +36,7 @@ namespace Ryujinx.Ui.Windows
         private float _previousVolumeLevel;
         private bool _directoryChanged = false;
 
-#pragma warning disable CS0649, IDE0044
+#pragma warning disable CS0649, IDE0044 // Field is never assigned to, Add readonly modifier
         [GUI] CheckButton     _traceLogToggle;
         [GUI] CheckButton     _errorLogToggle;
         [GUI] CheckButton     _warningLogToggle;

@@ -12,7 +12,7 @@ namespace Ryujinx.Modules
 {
     public class UpdateDialog : Gtk.Window
     {
-#pragma warning disable CS0649, IDE0044
+#pragma warning disable CS0649, IDE0044 // Field is never assigned to, Add readonly modifier
         [Builder.Object] public Label    MainText;
         [Builder.Object] public Label    SecondaryText;
         [Builder.Object] public LevelBar ProgressBar;

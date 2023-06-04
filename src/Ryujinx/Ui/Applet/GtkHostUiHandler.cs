@@ -193,7 +193,7 @@ namespace Ryujinx.Ui.Applet
             return showDetails;
         }
 
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         private static void SynchronousGtkInvoke(Action action)
         {
             var waitHandle = new ManualResetEventSlim();

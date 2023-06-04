@@ -54,8 +54,6 @@ namespace Ryujinx.Ui.Windows
         private void InitializeComponent()
         {
 
-#pragma warning disable CS0612
-
             //
             // AboutWindow
             //
@@ -77,9 +75,9 @@ namespace Ryujinx.Ui.Windows
             //
             _leftBox = new Box(Orientation.Vertical, 0)
             {
-                Margin      = 15,
-                MarginLeft  = 30,
-                MarginRight = 0
+                Margin = 15,
+                MarginStart = 30,
+                MarginEnd = 0
             };
 
             //
@@ -92,8 +90,8 @@ namespace Ryujinx.Ui.Windows
             //
             _ryujinxLogo = new Image(new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png", 100, 100))
             {
-                Margin     = 10,
-                MarginLeft = 15
+                Margin = 10,
+                MarginStart = 15
             };
 
             //
@@ -388,7 +386,7 @@ namespace Ryujinx.Ui.Windows
                 Editable      = false,
                 CursorVisible = false,
                 Margin        = 15,
-                MarginRight   = 30
+                MarginEnd     = 30
             };
             _createdByText.Buffer.Text = "gdkchan, Ac_K, Thog, rip in peri peri, LDj3SNuD, emmaus, Thealexbarney, Xpl0itR, GoffyDude, »jD« and more...";
 
@@ -404,7 +402,7 @@ namespace Ryujinx.Ui.Windows
             _contributorsLinkLabel = new Label("See All Contributors...")
             {
                 TooltipText = "Click to open the Contributors page in your default browser.",
-                MarginRight = 30,
+                MarginEnd   = 30,
                 Halign      = Align.End,
                 Attributes  = new AttrList()
             };
@@ -427,7 +425,7 @@ namespace Ryujinx.Ui.Windows
             _patreonNamesScrolled = new ScrolledWindow()
             {
                 Margin      = 15,
-                MarginRight = 30,
+                MarginEnd   = 30,
                 Expand      = true,
                 ShadowType  = ShadowType.In
             };
@@ -442,8 +440,6 @@ namespace Ryujinx.Ui.Windows
             };
             _patreonNamesText.Buffer.Text = "Loading...";
             _patreonNamesText.SetProperty("editable", new GLib.Value(false));
-
-#pragma warning restore CS0612
 
             ShowComponent();
         }

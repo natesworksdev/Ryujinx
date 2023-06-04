@@ -31,7 +31,7 @@ namespace Ryujinx.Ui.Windows
 
         private bool _isWaitingForInput;
 
-#pragma warning disable CS0649, IDE0044
+#pragma warning disable CS0649, IDE0044 // Field is never assigned to, Add readonly modifier
         [GUI] Adjustment   _controllerStrongRumble;
         [GUI] Adjustment   _controllerWeakRumble;
         [GUI] Adjustment   _controllerDeadzoneLeft;

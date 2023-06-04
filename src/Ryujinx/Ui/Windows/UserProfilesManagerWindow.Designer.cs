@@ -1,5 +1,6 @@
 ﻿using Gtk;
 using Pango;
+using System;
 
 namespace Ryujinx.Ui.Windows
 {
@@ -27,9 +28,6 @@ namespace Ryujinx.Ui.Windows
 
         private void InitializeComponent()
         {
-
-#pragma warning disable CS0612
-
             //
             // UserProfilesManagerWindow
             //
@@ -67,7 +65,7 @@ namespace Ryujinx.Ui.Windows
             //
             _selectedUserBox = new Box(Orientation.Horizontal, 0)
             {
-                MarginLeft = 30
+                MarginStart = 30
             };
 
             //
@@ -78,15 +76,19 @@ namespace Ryujinx.Ui.Windows
             //
             // _selectedUserInfoBox
             //
-            _selectedUserInfoBox = new VBox(true, 0);
+            _selectedUserInfoBox = new VBox(IntPtr.Zero)
+            {
+                Homogeneous = true,
+                Spacing = 0
+            };
 
             //
             // _selectedUserNameEntry
             //
             _selectedUserNameEntry = new Entry("")
             {
-                MarginLeft = 15,
-                MaxLength  = (int)MaxProfileNameLength
+                MarginStart = 15,
+                MaxLength   = (int)MaxProfileNameLength
             };
             _selectedUserNameEntry.KeyReleaseEvent += SelectedUserNameEntry_KeyReleaseEvent;
 
@@ -95,16 +97,16 @@ namespace Ryujinx.Ui.Windows
             //
             _selectedUserIdLabel = new Label("")
             {
-                MarginTop  = 15,
-                MarginLeft = 15
+                MarginTop   = 15,
+                MarginStart = 15
             };
 
             //
             // _selectedUserButtonsBox
             //
-            _selectedUserButtonsBox = new VBox()
+            _selectedUserButtonsBox = new VBox(IntPtr.Zero)
             {
-                MarginRight = 30
+                MarginEnd = 30
             };
 
             //
@@ -150,8 +152,8 @@ namespace Ryujinx.Ui.Windows
                 ShadowType   = ShadowType.In,
                 CanFocus     = true,
                 Expand       = true,
-                MarginLeft   = 30,
-                MarginRight  = 30,
+                MarginStart  = 30,
+                MarginEnd    = 30,
                 MarginBottom = 15
             };
 
@@ -175,8 +177,8 @@ namespace Ryujinx.Ui.Windows
             //
             _bottomBox = new Box(Orientation.Horizontal, 0)
             {
-                MarginLeft   = 30,
-                MarginRight  = 30,
+                MarginStart  = 30,
+                MarginEnd    = 30,
                 MarginBottom = 15
             };
 
@@ -201,7 +203,7 @@ namespace Ryujinx.Ui.Windows
                 CanFocus        = true,
                 ReceivesDefault = true,
                 HeightRequest   = 35,
-                MarginLeft      = 10
+                MarginStart     = 10
             };
             _deleteButton.Clicked += DeleteButton_Pressed;
 
@@ -217,8 +219,6 @@ namespace Ryujinx.Ui.Windows
                 WidthRequest    = 80
             };
             _closeButton.Clicked += CloseButton_Pressed;
-
-#pragma warning restore CS0612
 
             ShowComponent();
         }

@@ -23,8 +23,6 @@ namespace Ryujinx.Ui.Windows
 
         private void InitializeComponent()
         {
-#pragma warning disable CS0612
-
             //
             // AmiiboWindow
             //
@@ -58,7 +56,7 @@ namespace Ryujinx.Ui.Windows
                 Label           = "Scan It!",
                 CanFocus        = true,
                 ReceivesDefault = true,
-                MarginLeft      = 10
+                MarginStart     = 10
             };
             _scanButton.Clicked += ScanButton_Pressed;
 
@@ -79,7 +77,7 @@ namespace Ryujinx.Ui.Windows
                 Label           = "Cancel",
                 CanFocus        = true,
                 ReceivesDefault = true,
-                MarginLeft      = 10
+                MarginStart     = 10
             };
             _cancelButton.Clicked += CancelButton_Pressed;
 
@@ -157,8 +155,6 @@ namespace Ryujinx.Ui.Windows
             {
                 MarginTop = 20
             };
-
-#pragma warning restore CS0612
 
             ShowComponent();
         }

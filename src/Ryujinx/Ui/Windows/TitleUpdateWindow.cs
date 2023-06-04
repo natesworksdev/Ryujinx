@@ -32,7 +32,7 @@ namespace Ryujinx.Ui.Windows
         private readonly Dictionary<RadioButton, string> _radioButtonToPathDictionary;
         private static readonly TitleUpdateMetadataJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
-#pragma warning disable CS0649, IDE0044
+#pragma warning disable CS0649, IDE0044 // Field is never assigned to, Add readonly modifier
         [GUI] Label       _baseTitleInfoLabel;
         [GUI] Box         _availableUpdatesBox;
         [GUI] RadioButton _noUpdateRadioButton;

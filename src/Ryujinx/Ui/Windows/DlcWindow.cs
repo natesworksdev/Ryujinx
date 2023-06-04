@@ -26,7 +26,7 @@ namespace Ryujinx.Ui.Windows
 
         private static readonly DownloadableContentJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
-#pragma warning disable CS0649, IDE0044
+#pragma warning disable CS0649, IDE0044 // Field is never assigned to, Add readonly modifier
         [GUI] Label         _baseTitleInfoLabel;
         [GUI] TreeView      _dlcTreeView;
         [GUI] TreeSelection _dlcTreeSelection;

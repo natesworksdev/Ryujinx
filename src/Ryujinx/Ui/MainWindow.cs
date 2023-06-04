@@ -81,7 +81,7 @@ namespace Ryujinx.Ui
 
         public bool IsFocused;
 
-#pragma warning disable CS0169, CS0649, IDE0044, IDE0051
+#pragma warning disable CS0169, CS0649, IDE0044, IDE0051 // Field is never assigned to, Add readonly modifier, Remove unused private member
 
         [GUI] public MenuItem ExitMenuItem;
         [GUI] public MenuItem UpdateMenuItem;

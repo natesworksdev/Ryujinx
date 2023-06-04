@@ -9,7 +9,7 @@ namespace Ryujinx.Ui.Applet
     {
         private int _inputMin;
         private int _inputMax;
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private KeyboardMode _mode;
 #pragma warning restore IDE0052
 
