@@ -212,7 +212,7 @@ namespace Ryujinx.Tests.Memory
 
             // Query some large regions to prep the subdivision of the tracking region.
 
-            int[] regionSizes = new int[] { 6, 4, 3, 2, 6, 1 };
+            int[] regionSizes = { 6, 4, 3, 2, 6, 1 };
             ulong address = 0;
 
             for (int i = 0; i < regionSizes.Length; i++)
@@ -271,7 +271,7 @@ namespace Ryujinx.Tests.Memory
             PreparePages(handleHigh, pageCount, PageSize * overlapStart);
 
             // Combined pages (and assuming overlapStart <= pageCount) should be pageCount after overlapStart.
-            int totalPages = overlapStart + pageCount;
+            const int totalPages = overlapStart + pageCount;
 
             Assert.AreEqual(totalPages, _tracking.GetRegionCount());
 
@@ -337,8 +337,7 @@ namespace Ryujinx.Tests.Memory
 
             // Finally, create a granular handle that inherits all these handles.
 
-            IEnumerable<IRegionHandle>[] handleGroups = new IEnumerable<IRegionHandle>[]
-            {
+            IEnumerable<IRegionHandle>[] handleGroups = {
                 granular.GetHandles(),
                 singlePages,
                 doublePages
@@ -346,8 +345,7 @@ namespace Ryujinx.Tests.Memory
 
             MultiRegionHandle combined = _tracking.BeginGranularTracking(0, PageSize * 18, handleGroups.SelectMany((handles) => handles), PageSize, 0);
 
-            bool[] expectedDirty = new bool[]
-            {
+            bool[] expectedDirty = {
                 true, true, true, // Gap.
                 false, true, false, // Multi-region.
                 true, true, // Gap.
