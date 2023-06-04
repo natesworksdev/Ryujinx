@@ -1,5 +1,4 @@
-﻿using Microsoft.IO;
-using Ryujinx.Common.Memory;
+﻿using Ryujinx.Common.Memory;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;

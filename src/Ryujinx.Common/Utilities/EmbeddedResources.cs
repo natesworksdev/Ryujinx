@@ -1,4 +1,3 @@
-using Ryujinx.Common.Memory;
 using Ryujinx.Common.Utilities;
 using System;
 using System.IO;
