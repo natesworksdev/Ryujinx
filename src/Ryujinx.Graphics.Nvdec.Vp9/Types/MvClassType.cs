@@ -12,6 +12,6 @@
         MvClass7 = 7,   /* (128, 256] integer pel */
         MvClass8 = 8,   /* (256, 512] integer pel */
         MvClass9 = 9,   /* (512, 1024] integer pel */
-        MvClass10 = 10, /* (1024,2048] integer pel */
+        MvClass10 = 10 /* (1024,2048] integer pel */
     }
 }
