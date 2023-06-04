@@ -18,6 +18,6 @@ namespace Ryujinx.Graphics.GAL
         GreaterGl        = 0x204,
         NotEqualGl       = 0x205,
         GreaterOrEqualGl = 0x206,
-        AlwaysGl         = 0x207,
+        AlwaysGl         = 0x207
     }
 }
