@@ -81,7 +81,7 @@ namespace Ryujinx.Ui.App.Common
             controlFile.Get.Read(out _, 0, outProperty, ReadOption.None).ThrowIfFailure();
         }
 
-        public void LoadApplications(List<string> appDirs, Language desiredTitleLanguage)
+        public void LoadApplications(UserId userId, List<string> appDirs, Language desiredTitleLanguage)
         {
             int numApplicationsFound  = 0;
             int numApplicationsLoaded = 0;
@@ -418,7 +418,7 @@ namespace Ryujinx.Ui.App.Common
                         continue;
                     }
 
-                    ApplicationMetadata appMetadata = LoadAndSaveMetaData(titleId, appMetadata =>
+                    ApplicationMetadata appMetadata = LoadAndSaveMetaData(userId, titleId, appMetadata =>
                     {
                         appMetadata.Title = titleName;
 
@@ -508,17 +508,29 @@ namespace Ryujinx.Ui.App.Common
             titleId   = controlNca?.Header.TitleId.ToString("x16");
         }
 
-        public ApplicationMetadata LoadAndSaveMetaData(string titleId, Action<ApplicationMetadata> modifyFunction = null)
+        public ApplicationMetadata LoadAndSaveMetaData(UserId userId, string titleId, Action<ApplicationMetadata> modifyFunction = null)
         {
-            string metadataFolder = Path.Combine(AppDataManager.GamesDirPath, titleId, "gui");
+            string guiFolder      = Path.Combine(AppDataManager.GamesDirPath, titleId, "gui");
+            string metadataFolder = Path.Combine(guiFolder, userId.ToString());
             string metadataFile   = Path.Combine(metadataFolder, "metadata.json");
+
+            if (!Directory.Exists(metadataFolder))
+            {
+                Directory.CreateDirectory(metadataFolder);
+            }
+
+            // Handle migration from old default to current user
+            string legacyFile = Path.Combine(guiFolder, "metadata.json");
+            if (File.Exists(legacyFile) && !File.Exists(metadataFile))
+            {
+                File.Move(legacyFile, metadataFile);
+                File.Delete(legacyFile);
+            }
 
             ApplicationMetadata appMetadata;
 
             if (!File.Exists(metadataFile))
             {
-                Directory.CreateDirectory(metadataFolder);
-
                 appMetadata = new ApplicationMetadata();
 
                 JsonHelper.SerializeToFile(metadataFile, appMetadata, SerializerContext.ApplicationMetadata);

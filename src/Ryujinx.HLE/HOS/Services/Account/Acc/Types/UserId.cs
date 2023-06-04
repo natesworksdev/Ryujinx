@@ -56,6 +56,11 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return new Uid((ulong)High, (ulong)Low);
         }
 
+        public LibHac.Fs.UserId ToLibHacFsUid()
+        {
+            return new LibHac.Fs.UserId((ulong)High, (ulong)Low);
+        }
+
         public UInt128 ToUInt128()
         {
             return new UInt128((ulong)High, (ulong)Low);

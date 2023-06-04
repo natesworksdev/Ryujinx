@@ -1523,7 +1523,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void UpdateGameMetadata(string titleId)
         {
-            ApplicationLibrary.LoadAndSaveMetaData(titleId, appMetadata =>
+            ApplicationLibrary.LoadAndSaveMetaData(AccountManager.LastOpenedUser.UserId.ToLibHacFsUid(), titleId, appMetadata =>
             {
                 if (appMetadata.LastPlayed.HasValue)
                 {

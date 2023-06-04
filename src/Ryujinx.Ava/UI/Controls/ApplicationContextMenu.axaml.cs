@@ -42,7 +42,7 @@ namespace Ryujinx.Ava.UI.Controls
             {
                 viewModel.SelectedApplication.Favorite = !viewModel.SelectedApplication.Favorite;
 
-                viewModel.ApplicationLibrary.LoadAndSaveMetaData(viewModel.SelectedApplication.TitleId, appMetadata =>
+                viewModel.ApplicationLibrary.LoadAndSaveMetaData(viewModel.AccountManager.LastOpenedUser.UserId.ToLibHacFsUid(), viewModel.SelectedApplication.TitleId, appMetadata =>
                 {
                     appMetadata.Favorite = viewModel.SelectedApplication.Favorite;
                 });
