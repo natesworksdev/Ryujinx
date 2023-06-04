@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
     public class ThreadedPipeline : IPipeline
     {
         private readonly ThreadedRenderer _renderer;
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly IPipeline _impl;
 #pragma warning restore IDE0052
 
