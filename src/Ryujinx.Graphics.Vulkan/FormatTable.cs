@@ -183,7 +183,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         public static int GetAttributeFormatSize(VkFormat format)
         {
-#pragma warning disable IDE0066
             switch (format)
             {
                 case VkFormat.R8Unorm:
@@ -277,7 +276,6 @@ namespace Ryujinx.Graphics.Vulkan
                 case VkFormat.R32G32B32A32Sint:
                     return 16;
             }
-#pragma warning restore IDE0066
 
             return 1;
         }
