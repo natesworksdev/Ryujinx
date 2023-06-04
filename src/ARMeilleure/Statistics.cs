@@ -1,4 +1,6 @@
+#if M_PROFILE
 using System;
+#endif
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,16 +13,16 @@ namespace ARMeilleure
     {
         private const int ReportMaxFunctions = 100;
 
-#pragma warning disable IDE0051, CS0169 // Remove unused private member
+#if M_PROFILE
         [ThreadStatic]
         private static Stopwatch _executionTimer;
-#pragma warning restore IDE0051, CS0169
+#endif
 
-        private static readonly ConcurrentDictionary<ulong, long> _ticksPerFunction;
+        private static readonly ConcurrentDictionary<ulong, long> TicksPerFunction;
 
         static Statistics()
         {
-            _ticksPerFunction = new ConcurrentDictionary<ulong, long>();
+            TicksPerFunction = new ConcurrentDictionary<ulong, long>();
         }
 
         public static void InitializeTimer()
@@ -47,7 +49,7 @@ namespace ARMeilleure
 
             long ticks = _executionTimer.ElapsedTicks;
 
-            _ticksPerFunction.AddOrUpdate(funcAddr, ticks, (key, oldTicks) => oldTicks + ticks);
+            TicksPerFunction.AddOrUpdate(funcAddr, ticks, (key, oldTicks) => oldTicks + ticks);
 #endif
         }
 
@@ -74,7 +76,7 @@ namespace ARMeilleure
             sb.AppendLine(" Function address   | Time");
             sb.AppendLine("--------------------------");
 
-            KeyValuePair<ulong, long>[] funcTable = _ticksPerFunction.ToArray();
+            KeyValuePair<ulong, long>[] funcTable = TicksPerFunction.ToArray();
 
             foreach (KeyValuePair<ulong, long> kv in funcTable.OrderByDescending(x => x.Value))
             {

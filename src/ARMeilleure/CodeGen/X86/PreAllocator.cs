@@ -470,9 +470,7 @@ namespace ARMeilleure.CodeGen.X86
                 Operand zex = Local(OperandType.I64);
 
                 node = nodes.AddAfter(node, Operation(Instruction.ZeroExtend32, zex, source));
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-                node = nodes.AddAfter(node, Operation(Instruction.ConvertToFP, dest, zex));
-#pragma warning restore IDE0059
+                nodes.AddAfter(node, Operation(Instruction.ConvertToFP, dest, zex));
             }
             else /* if (source.Type == OperandType.I64) */
             {

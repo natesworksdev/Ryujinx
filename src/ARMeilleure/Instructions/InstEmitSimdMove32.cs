@@ -218,9 +218,7 @@ namespace ARMeilleure.Instructions
                 for (int index = 1; index < length; index++)
                 {
                     int newVn = (op.Vn + index) & 0x1F;
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-                    (int qn, int ind) = GetQuadwordAndSubindex(newVn, op.RegisterSize);
-#pragma warning restore IDE0059
+                    (int qn, _) = GetQuadwordAndSubindex(newVn, op.RegisterSize);
                     Operand ni = EmitMoveDoubleWordToSide(context, GetVecA32(qn), newVn, 0);
 
                     Operand idxMask = X86GetAllElements(context, 0x0808080808080808L * index);
