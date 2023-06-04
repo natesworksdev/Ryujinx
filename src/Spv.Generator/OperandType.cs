@@ -5,6 +5,6 @@
         Invalid,
         Number,
         String,
-        Instruction,
+        Instruction
     }
 }

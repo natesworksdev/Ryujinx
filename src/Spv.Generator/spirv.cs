@@ -62,7 +62,7 @@ namespace Spv
             GLSL = 2,
             OpenCL_C = 3,
             OpenCL_CPP = 4,
-            HLSL = 5,
+            HLSL = 5
         }
 
         [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
@@ -88,7 +88,7 @@ namespace Spv
             MissKHR = 5317,
             MissNV = 5317,
             CallableKHR = 5318,
-            CallableNV = 5318,
+            CallableNV = 5318
         }
 
         [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
@@ -98,7 +98,7 @@ namespace Spv
             Physical32 = 1,
             Physical64 = 2,
             PhysicalStorageBuffer64 = 5348,
-            PhysicalStorageBuffer64EXT = 5348,
+            PhysicalStorageBuffer64EXT = 5348
         }
 
         [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
@@ -108,7 +108,7 @@ namespace Spv
             GLSL450 = 1,
             OpenCL = 2,
             Vulkan = 3,
-            VulkanKHR = 3,
+            VulkanKHR = 3
         }
 
         public enum ExecutionMode
@@ -172,7 +172,7 @@ namespace Spv
             MaxWorkgroupSizeINTEL = 5893,
             MaxWorkDimINTEL = 5894,
             NoGlobalOffsetINTEL = 5895,
-            NumSIMDWorkitemsINTEL = 5896,
+            NumSIMDWorkitemsINTEL = 5896
         }
 
         [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
@@ -205,7 +205,7 @@ namespace Spv
             ShaderRecordBufferNV = 5343,
             PhysicalStorageBuffer = 5349,
             PhysicalStorageBufferEXT = 5349,
-            CodeSectionINTEL = 5605,
+            CodeSectionINTEL = 5605
         }
 
         public enum Dim
@@ -216,7 +216,7 @@ namespace Spv
             Cube = 3,
             Rect = 4,
             Buffer = 5,
-            SubpassData = 6,
+            SubpassData = 6
         }
 
         public enum SamplerAddressingMode
@@ -225,13 +225,13 @@ namespace Spv
             ClampToEdge = 1,
             Clamp = 2,
             Repeat = 3,
-            RepeatMirrored = 4,
+            RepeatMirrored = 4
         }
 
         public enum SamplerFilterMode
         {
             Nearest = 0,
-            Linear = 1,
+            Linear = 1
         }
 
         public enum ImageFormat
@@ -277,7 +277,7 @@ namespace Spv
             R16ui = 38,
             R8ui = 39,
             R64ui = 40,
-            R64i = 41,
+            R64i = 41
         }
 
         public enum ImageChannelOrder
@@ -301,7 +301,7 @@ namespace Spv
             sRGBx = 16,
             sRGBA = 17,
             sBGRA = 18,
-            ABGR = 19,
+            ABGR = 19
         }
 
         public enum ImageChannelDataType
@@ -322,7 +322,7 @@ namespace Spv
             HalfFloat = 13,
             Float = 14,
             UnormInt24 = 15,
-            UnormInt101010_2 = 16,
+            UnormInt101010_2 = 16
         }
 
         [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
@@ -345,7 +345,7 @@ namespace Spv
             VolatileTexel = 11,
             VolatileTexelKHR = 11,
             SignExtend = 12,
-            ZeroExtend = 13,
+            ZeroExtend = 13
         }
 
         [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
@@ -370,7 +370,7 @@ namespace Spv
             VolatileTexelKHR = 0x00000800,
             SignExtend = 0x00001000,
             ZeroExtend = 0x00002000,
-            Offsets = 0x00010000,
+            Offsets = 0x00010000
         }
 
         public enum FPFastMathModeShift
@@ -379,7 +379,7 @@ namespace Spv
             NotInf = 1,
             NSZ = 2,
             AllowRecip = 3,
-            Fast = 4,
+            Fast = 4
         }
 
         public enum FPFastMathModeMask
@@ -389,7 +389,7 @@ namespace Spv
             NotInf = 0x00000002,
             NSZ = 0x00000004,
             AllowRecip = 0x00000008,
-            Fast = 0x00000010,
+            Fast = 0x00000010
         }
 
         public enum FPRoundingMode
@@ -397,20 +397,20 @@ namespace Spv
             RTE = 0,
             RTZ = 1,
             RTP = 2,
-            RTN = 3,
+            RTN = 3
         }
 
         public enum LinkageType
         {
             Export = 0,
-            Import = 1,
+            Import = 1
         }
 
         public enum AccessQualifier
         {
             ReadOnly = 0,
             WriteOnly = 1,
-            ReadWrite = 2,
+            ReadWrite = 2
         }
 
         public enum FunctionParameterAttribute
@@ -422,7 +422,7 @@ namespace Spv
             NoAlias = 4,
             NoCapture = 5,
             NoWrite = 6,
-            NoReadWrite = 7,
+            NoReadWrite = 7
         }
 
         [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
@@ -509,7 +509,7 @@ namespace Spv
             SimpleDualPortINTEL = 5833,
             MergeINTEL = 5834,
             BankBitsINTEL = 5835,
-            ForcePow2DepthINTEL = 5836,
+            ForcePow2DepthINTEL = 5836
         }
 
         [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
@@ -632,20 +632,20 @@ namespace Spv
             WarpsPerSMNV = 5374,
             SMCountNV = 5375,
             WarpIDNV = 5376,
-            SMIDNV = 5377,
+            SMIDNV = 5377
         }
 
         public enum SelectionControlShift
         {
             Flatten = 0,
-            DontFlatten = 1,
+            DontFlatten = 1
         }
 
         public enum SelectionControlMask
         {
             MaskNone = 0,
             Flatten = 0x00000001,
-            DontFlatten = 0x00000002,
+            DontFlatten = 0x00000002
         }
 
         public enum LoopControlShift
@@ -665,7 +665,7 @@ namespace Spv
             PipelineEnableINTEL = 19,
             LoopCoalesceINTEL = 20,
             MaxInterleavingINTEL = 21,
-            SpeculatedIterationsINTEL = 22,
+            SpeculatedIterationsINTEL = 22
         }
 
         public enum LoopControlMask
@@ -686,7 +686,7 @@ namespace Spv
             PipelineEnableINTEL = 0x00080000,
             LoopCoalesceINTEL = 0x00100000,
             MaxInterleavingINTEL = 0x00200000,
-            SpeculatedIterationsINTEL = 0x00400000,
+            SpeculatedIterationsINTEL = 0x00400000
         }
 
         public enum FunctionControlShift
@@ -694,7 +694,7 @@ namespace Spv
             Inline = 0,
             DontInline = 1,
             Pure = 2,
-            Const = 3,
+            Const = 3
         }
 
         public enum FunctionControlMask
@@ -703,7 +703,7 @@ namespace Spv
             Inline = 0x00000001,
             DontInline = 0x00000002,
             Pure = 0x00000004,
-            Const = 0x00000008,
+            Const = 0x00000008
         }
 
         [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
@@ -725,7 +725,7 @@ namespace Spv
             MakeAvailableKHR = 13,
             MakeVisible = 14,
             MakeVisibleKHR = 14,
-            Volatile = 15,
+            Volatile = 15
         }
 
         [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
@@ -748,7 +748,7 @@ namespace Spv
             MakeAvailableKHR = 0x00002000,
             MakeVisible = 0x00004000,
             MakeVisibleKHR = 0x00004000,
-            Volatile = 0x00008000,
+            Volatile = 0x00008000
         }
 
         [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
@@ -762,7 +762,7 @@ namespace Spv
             MakePointerVisible = 4,
             MakePointerVisibleKHR = 4,
             NonPrivatePointer = 5,
-            NonPrivatePointerKHR = 5,
+            NonPrivatePointerKHR = 5
         }
 
         [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
@@ -777,7 +777,7 @@ namespace Spv
             MakePointerVisible = 0x00000010,
             MakePointerVisibleKHR = 0x00000010,
             NonPrivatePointer = 0x00000020,
-            NonPrivatePointerKHR = 0x00000020,
+            NonPrivatePointerKHR = 0x00000020
         }
 
         [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
@@ -790,7 +790,7 @@ namespace Spv
             Invocation = 4,
             QueueFamily = 5,
             QueueFamilyKHR = 5,
-            ShaderCallKHR = 6,
+            ShaderCallKHR = 6
         }
 
         public enum GroupOperation
@@ -801,25 +801,25 @@ namespace Spv
             ClusteredReduce = 3,
             PartitionedReduceNV = 6,
             PartitionedInclusiveScanNV = 7,
-            PartitionedExclusiveScanNV = 8,
+            PartitionedExclusiveScanNV = 8
         }
 
         public enum KernelEnqueueFlags
         {
             NoWait = 0,
             WaitKernel = 1,
-            WaitWorkGroup = 2,
+            WaitWorkGroup = 2
         }
 
         public enum KernelProfilingInfoShift
         {
-            CmdExecTime = 0,
+            CmdExecTime = 0
         }
 
         public enum KernelProfilingInfoMask
         {
             MaskNone = 0,
-            CmdExecTime = 0x00000001,
+            CmdExecTime = 0x00000001
         }
 
         [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
@@ -1001,7 +1001,7 @@ namespace Spv
             BlockingPipesINTEL = 5945,
             FPGARegINTEL = 5948,
             AtomicFloat32AddEXT = 6033,
-            AtomicFloat64AddEXT = 6034,
+            AtomicFloat64AddEXT = 6034
         }
 
         public enum RayFlagsShift
@@ -1015,7 +1015,7 @@ namespace Spv
             CullOpaqueKHR = 6,
             CullNoOpaqueKHR = 7,
             SkipTrianglesKHR = 8,
-            SkipAABBsKHR = 9,
+            SkipAABBsKHR = 9
         }
 
         public enum RayFlagsMask
@@ -1030,26 +1030,26 @@ namespace Spv
             CullOpaqueKHR = 0x00000040,
             CullNoOpaqueKHR = 0x00000080,
             SkipTrianglesKHR = 0x00000100,
-            SkipAABBsKHR = 0x00000200,
+            SkipAABBsKHR = 0x00000200
         }
 
         public enum RayQueryIntersection
         {
             RayQueryCandidateIntersectionKHR = 0,
-            RayQueryCommittedIntersectionKHR = 1,
+            RayQueryCommittedIntersectionKHR = 1
         }
 
         public enum RayQueryCommittedIntersectionType
         {
             RayQueryCommittedIntersectionNoneKHR = 0,
             RayQueryCommittedIntersectionTriangleKHR = 1,
-            RayQueryCommittedIntersectionGeneratedKHR = 2,
+            RayQueryCommittedIntersectionGeneratedKHR = 2
         }
 
         public enum RayQueryCandidateIntersectionType
         {
             RayQueryCandidateIntersectionTriangleKHR = 0,
-            RayQueryCandidateIntersectionAABBKHR = 1,
+            RayQueryCandidateIntersectionAABBKHR = 1
         }
 
         public enum FragmentShadingRateShift
@@ -1057,7 +1057,7 @@ namespace Spv
             Vertical2Pixels = 0,
             Vertical4Pixels = 1,
             Horizontal2Pixels = 2,
-            Horizontal4Pixels = 3,
+            Horizontal4Pixels = 3
         }
 
         public enum FragmentShadingRateMask
@@ -1066,7 +1066,7 @@ namespace Spv
             Vertical2Pixels = 0x00000001,
             Vertical4Pixels = 0x00000002,
             Horizontal2Pixels = 0x00000004,
-            Horizontal4Pixels = 0x00000008,
+            Horizontal4Pixels = 0x00000008
         }
 
         [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
@@ -1635,7 +1635,7 @@ namespace Spv
             OpRayQueryGetWorldRayOriginKHR = 6030,
             OpRayQueryGetIntersectionObjectToWorldKHR = 6031,
             OpRayQueryGetIntersectionWorldToObjectKHR = 6032,
-            OpAtomicFAddEXT = 6035,
+            OpAtomicFAddEXT = 6035
         }
     }
 }

@@ -27,7 +27,7 @@ namespace Spv.Generator
             UInt64,
             Int64,
             Float32,
-            Float64,
+            Float64
         }
 
         private IntegerType _integerType;
