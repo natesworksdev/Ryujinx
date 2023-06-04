@@ -104,11 +104,11 @@ namespace ARMeilleure.CodeGen.X86
                         case Instruction.Tailcall:
                             if (callConv == CallConvName.Windows)
                             {
-                                PreAllocatorWindows.InsertTailcallCopies(block.Operations, stackAlloc, node);
+                                PreAllocatorWindows.InsertTailcallCopies(block.Operations, node);
                             }
                             else
                             {
-                                PreAllocatorSystemV.InsertTailcallCopies(block.Operations, stackAlloc, node);
+                                PreAllocatorSystemV.InsertTailcallCopies(block.Operations, node);
                             }
                             break;
 

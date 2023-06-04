@@ -92,7 +92,7 @@ namespace ARMeilleure.CodeGen.Arm64
                             InsertReturnCopy(block.Operations, node);
                             break;
                         case Instruction.Tailcall:
-                            InsertTailcallCopies(constants, block.Operations, stackAlloc, node, node);
+                            InsertTailcallCopies(constants, block.Operations, node, node);
                             break;
                     }
                 }
@@ -361,11 +361,8 @@ namespace ARMeilleure.CodeGen.Arm64
             operation.SetSources(sources.ToArray());
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
-        private static void InsertTailcallCopies(
-            ConstantDict constants,
+        private static void InsertTailcallCopies(ConstantDict constants,
             IntrusiveList<Operation> nodes,
-            StackAllocator stackAlloc,
             Operation node,
             Operation operation)
         {
@@ -441,7 +438,6 @@ namespace ARMeilleure.CodeGen.Arm64
 
             operation.SetSources(sources.ToArray());
         }
-#pragma warning restore IDE0060
 
         private static Operation GenerateCompareAndSwap(IntrusiveList<Operation> nodes, Operation node)
         {

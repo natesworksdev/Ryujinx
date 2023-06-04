@@ -172,7 +172,7 @@ namespace ARMeilleure.CodeGen.Arm64
 
             bool relocatable = (cctx.Options & CompilerOptions.Relocatable) != 0;
 
-            CodeGenContext context = new(allocResult, maxCallArgs, cfg.Blocks.Count, relocatable);
+            CodeGenContext context = new(allocResult, maxCallArgs, relocatable);
 
             UnwindInfo unwindInfo = WritePrologue(context);
 
