@@ -17,6 +17,6 @@
         BackendDisconnected = 12,
         Interrupted = 13,
         Underflow = 14,
-        EncodingString = 15,
+        EncodingString = 15
     }
 }
