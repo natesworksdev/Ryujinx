@@ -16,9 +16,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
         private const int ColorStructSize = 0x40;
         private const int ZetaLayerCountOffset = 0x1230;
 
-#pragma warning disable IDE0051 // Remove unused private member
-        private const int IndirectDataEntrySize = 0x10;
-#pragma warning restore IDE0051
         private const int IndirectIndexedDataEntrySize = 0x14;
 
         private readonly GPFifoProcessor _processor;

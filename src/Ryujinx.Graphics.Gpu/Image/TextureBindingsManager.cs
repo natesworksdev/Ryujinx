@@ -427,11 +427,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             int count = 0;
 
-            for (int i = 0; i < _textureBindings.Length; i++)
+            foreach (TextureBindingInfo[] textureInfo in _textureBindings)
             {
-                if (_textureBindings[i] != null)
+                if (textureInfo != null)
                 {
-                    count += _textureBindings[i].Length;
+                    count += textureInfo.Length;
                 }
             }
 

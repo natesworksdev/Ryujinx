@@ -85,9 +85,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
 
         private readonly ConcurrentQueue<CommandBuffer> _commandBufferQueue;
 
-#pragma warning disable IDE0052 // Remove unread private member
-        private CommandBuffer _currentCommandBuffer;
-#pragma warning restore IDE0052
         private GPFifoProcessor _prevChannelProcessor;
 
         private readonly bool _ibEnable;
@@ -219,7 +216,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
                     flushCommandBuffer = false;
                 }
 
-                _currentCommandBuffer = entry;
                 ReadOnlySpan<int> words = entry.Fetch(entry.Processor.MemoryManager, flushCommandBuffer);
 
                 // If we are changing the current channel,

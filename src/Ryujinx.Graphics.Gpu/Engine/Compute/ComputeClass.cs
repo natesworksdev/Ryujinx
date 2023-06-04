@@ -187,10 +187,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
                 cs = memoryManager.Physical.ShaderCache.GetComputeShader(_channel, poolState, computeState, shaderGpuVa);
 
                 _context.Renderer.Pipeline.SetProgram(cs.HostProgram);
-
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-                info = cs.Shaders[0].Info;
-#pragma warning restore IDE0059
             }
 
             _channel.BufferManager.SetComputeBufferBindings(cs.Bindings);
