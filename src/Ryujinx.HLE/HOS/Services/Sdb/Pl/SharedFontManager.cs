@@ -19,8 +19,8 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
 {
     class SharedFontManager
     {
-        private static readonly uint FontKey    = 0x06186249;
-        private static readonly uint BFTTFMagic = 0x18029a7f;
+        private const uint FontKey = 0x06186249;
+        private const uint BFTTFMagic = 0x18029a7f;
 
         private readonly Switch              _device;
         private readonly SharedMemoryStorage _storage;

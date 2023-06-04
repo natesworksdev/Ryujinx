@@ -47,7 +47,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             }
         }
 
-        public AccountState _onlinePlayState;
+        private AccountState _onlinePlayState;
 
         public AccountState OnlinePlayState
         {
