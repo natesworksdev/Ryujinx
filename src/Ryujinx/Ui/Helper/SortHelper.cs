@@ -27,12 +27,7 @@ namespace Ryujinx.Ui.Helper
             long aSize = ValueFormatUtils.ParseFileSize(model.GetValue(a, 8).ToString());
             long bSize = ValueFormatUtils.ParseFileSize(model.GetValue(b, 8).ToString());
 
-            if (aSize == bSize)
-            {
-                return 0;
-            }
-
-            return (aSize < bSize) ? -1 : 1;
+            return aSize.CompareTo(bSize);
         }
     }
 }

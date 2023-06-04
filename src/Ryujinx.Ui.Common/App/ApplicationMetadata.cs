@@ -38,7 +38,7 @@ namespace Ryujinx.Ui.App.Common
             DateTime? prevLastPlayed = LastPlayed;
             UpdatePreGame();
 
-            if(!prevLastPlayed.HasValue)
+            if (!prevLastPlayed.HasValue)
             {
                 return;
             }
