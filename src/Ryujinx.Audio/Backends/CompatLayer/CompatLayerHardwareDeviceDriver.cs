@@ -111,7 +111,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
                 {
                     Logger.Warning?.Print(LogClass.Audio, "The selected audio backend doesn't support audio input, fallback to dummy...");
 
-                    return new DummyHardwareDeviceSessionInput(this, memoryManager, sampleFormat, sampleRate, channelCount);
+                    return new DummyHardwareDeviceSessionInput(this, memoryManager);
                 }
 
                 throw new NotImplementedException();
@@ -144,7 +144,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
                 // TODO: We currently don't support audio input upsampling/downsampling, implement this.
                 realSession.Dispose();
 
-                return new DummyHardwareDeviceSessionInput(this, memoryManager, sampleFormat, sampleRate, channelCount);
+                return new DummyHardwareDeviceSessionInput(this, memoryManager);
             }
 
             // It must be a HardwareDeviceSessionOutputBase.
