@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         private const int DefaultLocalMemorySize = 128;
         private const int DefaultSharedMemorySize = 4096;
 
-        private static readonly string[] _stagePrefixes = new string[] { "cp", "vp", "tcp", "tep", "gp", "fp" };
+        private static readonly string[] _stagePrefixes = { "cp", "vp", "tcp", "tep", "gp", "fp" };
 
         private readonly IGpuAccessor _gpuAccessor;
         private readonly ShaderProperties _properties;
@@ -236,7 +236,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private void AddNewStorageBuffer(int binding, string name)
         {
-            StructureType type = new StructureType(new[]
+            StructureType type = new(new[]
             {
                 new StructureField(AggregateType.Array | AggregateType.U32, "data", 0)
             });
@@ -258,7 +258,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private static int PackSbCbInfo(int sbCbSlot, int sbCbOffset)
         {
-            return sbCbOffset | ((int)sbCbSlot << 16);
+            return sbCbOffset | (sbCbSlot << 16);
         }
 
         private static (int, int) UnpackSbCbInfo(int key)

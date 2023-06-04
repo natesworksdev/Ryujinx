@@ -19,7 +19,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
         private class GtsContext
         {
-            private struct Entry
+            private readonly struct Entry
             {
                 public readonly int FunctionId;
                 public readonly Instruction Inst;
@@ -42,7 +42,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 }
             }
 
-            private struct LsKey : IEquatable<LsKey>
+            private readonly struct LsKey : IEquatable<LsKey>
             {
                 public readonly Operand BaseOffset;
                 public readonly int ConstOffset;
@@ -127,7 +127,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
             public void AddMemoryTargetCb(LsMemoryType type, Operand baseOffset, int constOffset, uint targetCb, SearchResult result)
             {
-                LsKey key = new LsKey(baseOffset, constOffset, type);
+                LsKey key = new(baseOffset, constOffset, type);
 
                 if (!_sharedEntries.TryGetValue(key, out Dictionary<uint, SearchResult> targetCbs))
                 {
@@ -162,7 +162,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
             public bool TryGetMemoryTargetCb(LsMemoryType type, Operand baseOffset, int constOffset, out SearchResult result)
             {
-                LsKey key = new LsKey(baseOffset, constOffset, type);
+                LsKey key = new(baseOffset, constOffset, type);
 
                 if (_sharedEntries.TryGetValue(key, out Dictionary<uint, SearchResult> targetCbs) && targetCbs.Count == 1)
                 {
@@ -182,9 +182,9 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             }
         }
 
-        private struct SearchResult
+        private readonly struct SearchResult
         {
-            public static SearchResult NotFound => new SearchResult(-1, 0);
+            public static SearchResult NotFound => new(-1, 0);
             public bool Found => SbCbSlot != -1;
             public int SbCbSlot { get; }
             public int SbCbOffset { get; }
@@ -208,13 +208,13 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
         public static void RunPass(HelperFunctionManager hfm, BasicBlock[] blocks, ShaderConfig config)
         {
-            GtsContext gtsContext = new GtsContext(hfm);
+            GtsContext gtsContext = new(hfm);
 
             foreach (BasicBlock block in blocks)
             {
                 for (LinkedListNode<INode> node = block.Operations.First; node != null; node = node.Next)
                 {
-                    if (!(node.Value is Operation operation))
+                    if (node.Value is not Operation operation)
                     {
                         continue;
                     }
@@ -315,8 +315,8 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
                     int alignment = config.GpuAccessor.QueryHostStorageBufferOffsetAlignment();
 
-                    Operation maskOp = new Operation(Instruction.BitwiseAnd, baseAddressMasked, new[] { baseAddress, Const(-alignment) });
-                    Operation subOp = new Operation(Instruction.Subtract, hostOffset, new[] { globalAddress, baseAddressMasked });
+                    Operation maskOp = new(Instruction.BitwiseAnd, baseAddressMasked, baseAddress, Const(-alignment));
+                    Operation subOp = new(Instruction.Subtract, hostOffset, globalAddress, baseAddressMasked);
 
                     node.List.AddBefore(node, maskOp);
                     node.List.AddBefore(node, subOp);
@@ -327,7 +327,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 {
                     Operand newOffset = Local();
 
-                    Operation addOp = new Operation(Instruction.Add, newOffset, new[] { offset, Const(result.ConstOffset) });
+                    Operation addOp = new(Instruction.Add, newOffset, offset, Const(result.ConstOffset));
 
                     node.List.AddBefore(node, addOp);
 
@@ -394,7 +394,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
             if (operation.Inst == Instruction.AtomicCompareAndSwap)
             {
-                sources = new Operand[]
+                sources = new[]
                 {
                     Const(binding),
                     Const(0),
@@ -405,15 +405,15 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             }
             else if (isStore)
             {
-                sources = new Operand[] { Const(binding), Const(0), wordOffset, operation.GetSource(operation.SourcesCount - 1) };
+                sources = new[] { Const(binding), Const(0), wordOffset, operation.GetSource(operation.SourcesCount - 1) };
             }
             else
             {
-                sources = new Operand[] { Const(binding), Const(0), wordOffset };
+                sources = new[] { Const(binding), Const(0), wordOffset };
             }
 
-            Operation shiftOp = new Operation(Instruction.ShiftRightU32, wordOffset, new[] { offset, Const(2) });
-            Operation storageOp = new Operation(operation.Inst, StorageKind.StorageBuffer, operation.Dest, sources);
+            Operation shiftOp = new(Instruction.ShiftRightU32, wordOffset, offset, Const(2));
+            Operation storageOp = new(operation.Inst, StorageKind.StorageBuffer, operation.Dest, sources);
 
             node.List.AddBefore(node, shiftOp);
             LinkedListNode<INode> newNode = node.List.AddBefore(node, storageOp);
@@ -455,7 +455,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             bool returnsValue = operation.Dest != null;
             Operand returnValue = returnsValue ? Local() : null;
 
-            Operation callOp = new Operation(Instruction.Call, returnValue, sources);
+            Operation callOp = new(Instruction.Call, returnValue, sources);
 
             LinkedListNode<INode> newNode = node.List.AddBefore(node, callOp);
 
@@ -480,7 +480,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             SearchResult result,
             out int functionId)
         {
-            List<uint> targetCbs = new List<uint>() { PackCbSlotAndOffset(result.SbCbSlot, result.SbCbOffset) };
+            List<uint> targetCbs = new() { PackCbSlotAndOffset(result.SbCbSlot, result.SbCbOffset) };
 
             if (gtsContext.TryGetFunctionId(operation, isMultiTarget: false, targetCbs, out functionId))
             {
@@ -498,7 +498,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 inArgumentsCount = 2;
             }
 
-            EmitterContext context = new EmitterContext();
+            EmitterContext context = new();
 
             Operand offset = Argument(0);
             Operand compare = null;
@@ -542,7 +542,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
             string functionName = GetFunctionName(operation, isMultiTarget: false, targetCbs);
 
-            Function function = new Function(
+            Function function = new(
                 ControlFlowGraph.Create(context.GetOperations()).Blocks,
                 functionName,
                 returnsValue,
@@ -561,9 +561,9 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             Operation operation,
             out int functionId)
         {
-            Queue<PhiNode> phis = new Queue<PhiNode>();
-            HashSet<PhiNode> visited = new HashSet<PhiNode>();
-            List<uint> targetCbs = new List<uint>();
+            Queue<PhiNode> phis = new();
+            HashSet<PhiNode> visited = new();
+            List<uint> targetCbs = new();
 
             Operand globalAddress = operation.GetSource(0);
 
@@ -644,7 +644,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 inArgumentsCount = 3;
             }
 
-            EmitterContext context = new EmitterContext();
+            EmitterContext context = new();
 
             Operand globalAddressLow = Argument(0);
             Operand globalAddressHigh = Argument(1);
@@ -684,7 +684,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     value = Argument(2);
                 }
 
-                SearchResult result = new SearchResult(sbCbSlot, sbCbOffset);
+                SearchResult result = new(sbCbSlot, sbCbOffset);
 
                 int alignment = config.GpuAccessor.QueryHostStorageBufferOffsetAlignment();
 
@@ -731,7 +731,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
             string functionName = GetFunctionName(operation, isMultiTarget: true, targetCbs);
 
-            Function function = new Function(
+            Function function = new(
                 ControlFlowGraph.Create(context.GetOperations()).Blocks,
                 functionName,
                 returnsValue,

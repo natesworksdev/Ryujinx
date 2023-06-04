@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 {
     static class Declarations
     {
-        private static readonly string[] StagePrefixes = new string[] { "cp", "vp", "tcp", "tep", "gp", "fp" };
+        private static readonly string[] StagePrefixes = { "cp", "vp", "tcp", "tep", "gp", "fp" };
 
         public static void DeclareParameters(CodeGenContext context, StructuredFunction function)
         {
@@ -107,7 +107,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static void DeclareBuffers(CodeGenContext context, IEnumerable<BufferDefinition> buffers, bool isBuffer)
         {
-            HashSet<SpvInstruction> decoratedTypes = new HashSet<SpvInstruction>();
+            HashSet<SpvInstruction> decoratedTypes = new();
 
             foreach (BufferDefinition buffer in buffers)
             {
@@ -352,7 +352,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         (_, AggregateType varType) = IoMap.GetSpirvBuiltIn(ioVariable);
                         AggregateType elemType = varType & AggregateType.ElementTypeMask;
 
-                        if (elemType == AggregateType.S32 || elemType == AggregateType.U32)
+                        if (elemType is AggregateType.S32 or AggregateType.U32)
                         {
                             iq = PixelImap.Constant;
                         }
@@ -420,7 +420,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             if (!isPerPatch && IoMap.IsPerVertex(ioVariable, context.Config.Stage, isOutput))
             {
                 int arraySize = context.Config.Stage == ShaderStage.Geometry ? context.InputVertices : 32;
-                spvType = context.TypeArray(spvType, context.Constant(context.TypeU32(), (LiteralInteger)arraySize));
+                spvType = context.TypeArray(spvType, context.Constant(context.TypeU32(), arraySize));
 
                 if (context.Config.GpPassthrough && context.Config.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough())
                 {
