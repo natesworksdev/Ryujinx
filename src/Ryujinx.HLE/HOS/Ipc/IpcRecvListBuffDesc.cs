@@ -1,5 +1,3 @@
-using System.IO;
-
 namespace Ryujinx.HLE.HOS.Ipc
 {
     struct IpcRecvListBuffDesc

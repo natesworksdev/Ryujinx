@@ -1,7 +1,6 @@
 using Ryujinx.Common.Logging;
 using System;
 using System.IO;
-using System.Text;
 
 namespace Ryujinx.HLE.Loaders.Mods
 {

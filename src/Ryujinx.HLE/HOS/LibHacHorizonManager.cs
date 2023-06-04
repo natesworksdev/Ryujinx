@@ -1,8 +1,6 @@
 ﻿using LibHac;
 using LibHac.Bcat;
 using LibHac.Common;
-using LibHac.Fs.Fsa;
-using LibHac.Fs.Shim;
 using LibHac.FsSrv.Impl;
 using LibHac.Loader;
 using LibHac.Ncm;

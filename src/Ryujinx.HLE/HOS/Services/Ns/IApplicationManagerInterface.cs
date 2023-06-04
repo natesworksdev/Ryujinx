@@ -1,6 +1,5 @@
 ﻿using LibHac.Ns;
 using Ryujinx.Common.Utilities;
-using System;
 
 namespace Ryujinx.HLE.HOS.Services.Ns
 {

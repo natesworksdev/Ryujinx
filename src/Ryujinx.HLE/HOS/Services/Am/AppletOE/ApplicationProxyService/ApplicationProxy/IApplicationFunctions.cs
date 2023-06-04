@@ -1,5 +1,4 @@
 using LibHac.Account;
-using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Ncm;
 using LibHac.Ns;
