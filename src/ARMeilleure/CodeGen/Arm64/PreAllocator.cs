@@ -361,7 +361,7 @@ namespace ARMeilleure.CodeGen.Arm64
             operation.SetSources(sources.ToArray());
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private static void InsertTailcallCopies(
             ConstantDict constants,
             IntrusiveList<Operation> nodes,

@@ -137,7 +137,7 @@ namespace ARMeilleure.Signal
             return context.Add(structsPtr, context.SignExtend32(OperandType.I64, offset));
         }
 
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         private static void EmitThreadLocalMapIntRelease(EmitterContext context, IntPtr threadLocalMapPtr, Operand threadId, Operand index)
         {
             Operand offset = context.Multiply(index, Const(sizeof(int)));

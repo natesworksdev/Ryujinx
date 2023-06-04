@@ -116,7 +116,7 @@ namespace ARMeilleure.CodeGen.X86
             }
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static void InsertTailcallCopies(IntrusiveList<Operation> nodes, StackAllocator stackAlloc, Operation node)
         {
             List<Operand> sources = new()

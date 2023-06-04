@@ -17,7 +17,7 @@ namespace ARMeilleure.State
 
         public ulong Pc => _nativeContext.GetPc();
 
-#pragma warning disable CA1822
+#pragma warning disable CA1822 // Mark member as static
         public uint CtrEl0 => 0x8444c004;
         public uint DczidEl0 => 0x00000004;
 #pragma warning restore CA1822

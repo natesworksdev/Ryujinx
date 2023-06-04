@@ -202,7 +202,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static void ExitArmFpMode(EmitterContext context, Action<FPState, Operand> setFpFlag)
         {
             if (Optimizations.UseSse2)

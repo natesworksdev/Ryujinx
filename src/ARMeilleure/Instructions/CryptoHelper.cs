@@ -8,7 +8,7 @@ namespace ARMeilleure.Instructions
     static class CryptoHelper
     {
         #region "LookUp Tables"
-#pragma warning disable IDE1006
+#pragma warning disable IDE1006 // Naming rule violation
         private static ReadOnlySpan<byte> _sBox => new byte[]
         {
             0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,

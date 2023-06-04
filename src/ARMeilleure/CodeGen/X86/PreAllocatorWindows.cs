@@ -155,7 +155,7 @@ namespace ARMeilleure.CodeGen.X86
             node.SetSources(sources);
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static void InsertTailcallCopies(IntrusiveList<Operation> nodes, StackAllocator stackAlloc, Operation node)
         {
             int argsCount = node.SourcesCount - 1;

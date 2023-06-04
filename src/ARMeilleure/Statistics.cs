@@ -11,7 +11,7 @@ namespace ARMeilleure
     {
         private const int ReportMaxFunctions = 100;
 
-#pragma warning disable IDE0051, CS0169
+#pragma warning disable IDE0051, CS0169 // Remove unused private member
         [ThreadStatic]
         private static Stopwatch _executionTimer;
 #pragma warning restore IDE0051, CS0169

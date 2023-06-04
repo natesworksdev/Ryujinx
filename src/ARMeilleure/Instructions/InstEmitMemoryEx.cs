@@ -26,7 +26,7 @@ namespace ARMeilleure.Instructions
             EmitClearExclusive(context);
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static void Csdb(ArmEmitterContext context)
         {
             // Execute as no-op.
@@ -109,7 +109,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static void Prfm(ArmEmitterContext context)
         {
             // Memory Prefetch, execute as no-op.

@@ -1128,7 +1128,7 @@ namespace ARMeilleure.CodeGen.Arm64
             };
         }
 
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         private void WriteInt16(short value)
         {
             WriteUInt16((ushort)value);

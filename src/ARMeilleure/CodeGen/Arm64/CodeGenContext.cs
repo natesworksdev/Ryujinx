@@ -58,7 +58,7 @@ namespace ARMeilleure.CodeGen.Arm64
 
         private readonly bool _relocatable;
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public CodeGenContext(AllocationResult allocResult, int maxCallArgs, int blocksCount, bool relocatable)
         {
             _stream = MemoryStreamManager.Shared.GetStream();

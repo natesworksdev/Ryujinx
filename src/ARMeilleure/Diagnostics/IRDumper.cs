@@ -34,7 +34,7 @@ namespace ARMeilleure.Diagnostics
 
             for (int index = 0; index < _indentLevel; index++)
             {
-#pragma warning disable CA1834
+#pragma warning disable CA1834 // Use StringBuilder.Append(char) for single character strings
                 _builder.Append(Indentation);
 #pragma warning restore CA1834
             }

@@ -1570,7 +1570,7 @@ namespace ARMeilleure.CodeGen.Arm64
             Debug.Assert(op1.Type == op3.Type);
         }
 
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         private static void EnsureSameType(Operand op1, Operand op2, Operand op3, Operand op4)
         {
             Debug.Assert(op1.Type == op2.Type);
