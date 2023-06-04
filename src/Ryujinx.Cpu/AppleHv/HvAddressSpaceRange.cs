@@ -278,8 +278,8 @@ namespace Ryujinx.Cpu.AppleHv
             // Both virtual and physical addresses must be aligned to the block size.
             ulong combinedAddress = va | pa;
 
-            ulong l0Alignment = 1UL << (PageBits + LevelBits * 2);
-            ulong l1Alignment = 1UL << (PageBits + LevelBits);
+            const ulong l0Alignment = 1UL << (PageBits + LevelBits * 2);
+            const ulong l1Alignment = 1UL << (PageBits + LevelBits);
 
             if ((combinedAddress & (l0Alignment - 1)) == 0 && AlignDown(endVa, l0Alignment) > va)
             {

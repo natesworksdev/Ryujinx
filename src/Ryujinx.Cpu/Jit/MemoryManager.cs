@@ -613,7 +613,7 @@ namespace Ryujinx.Cpu.Jit
 
             int pages = GetPagesCount(va, (uint)size, out va);
             ulong pageStart = va >> PageBits;
-            long invTagMask = ~(0xffffL << 48);
+            const long invTagMask = ~(0xffffL << 48);
 
             for (int page = 0; page < pages; page++)
             {
