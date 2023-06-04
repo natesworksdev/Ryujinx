@@ -270,6 +270,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(EnableNonGameRunningControls));
+                OnPropertyChanged(nameof(IsAppletMenuActive));
                 OnPropertyChanged(nameof(StatusBarVisible));
                 OnPropertyChanged(nameof(LoadApplicationsSymbol));
                 OnPropertyChanged(nameof(ShowFirmwareStatus));
@@ -1533,6 +1534,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                     double sessionTimePlayed = DateTime.UtcNow.Subtract(appMetadata.LastPlayed.Value).TotalSeconds;
                     appMetadata.TimePlayed += Math.Round(sessionTimePlayed, MidpointRounding.AwayFromZero);
                 }
+
+                appMetadata.LastPlayed = DateTime.UtcNow;
             });
         }
 

@@ -79,7 +79,7 @@ namespace Ryujinx.Graphics.Shader
         /// <returns>Binding number</returns>
         int QueryBindingConstantBuffer(int index)
         {
-            return index;
+            return index + 1;
         }
 
         /// <summary>
@@ -363,6 +363,15 @@ namespace Ryujinx.Graphics.Shader
         /// </summary>
         /// <returns>True if the GPU and driver supports shader viewport mask output, false otherwise</returns>
         bool QueryHostSupportsViewportMask()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Queries whether the host supports depth clip control.
+        /// </summary>
+        /// <returns>True if the GPU and driver supports depth clip control, false otherwise</returns>
+        bool QueryHostSupportsDepthClipControl()
         {
             return true;
         }

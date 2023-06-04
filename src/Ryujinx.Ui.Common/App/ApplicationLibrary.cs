@@ -465,6 +465,7 @@ namespace Ryujinx.Ui.App.Common
 
                         int assetOffset = reader.ReadInt32();
 
+                        applicationIcon = _nroIcon;
                         if (Encoding.ASCII.GetString(Read(assetOffset, 4)) == "ASET")
                         {
                             byte[] iconSectionInfo = Read(assetOffset + 8, 0x10);
@@ -476,16 +477,14 @@ namespace Ryujinx.Ui.App.Common
                             ulong nacpSize = reader.ReadUInt64();
 
                             // Reads and stores game icon as byte array
-                            applicationIcon = Read(assetOffset + iconOffset, (int)iconSize);
+                            applicationIcon = iconSize > 0
+                                ? Read(assetOffset + iconOffset, (int)iconSize)
+                                : _nroIcon;
 
                             // Read the NACP data
                             Read(assetOffset + (int)nacpOffset, (int)nacpSize).AsSpan().CopyTo(controlHolder.ByteSpan);
 
                             GetGameInformation(ref controlHolder.Value, out titleName, out titleId, out developer, out version);
-                        }
-                        else
-                        {
-                            applicationIcon = _nroIcon;
                         }
                     }
                     catch
@@ -766,6 +765,7 @@ namespace Ryujinx.Ui.App.Common
 
                             int assetOffset = reader.ReadInt32();
 
+                            applicationIcon = _nroIcon;
                             if (Encoding.ASCII.GetString(Read(assetOffset, 4)) == "ASET")
                             {
                                 byte[] iconSectionInfo = Read(assetOffset + 8, 0x10);
@@ -774,11 +774,9 @@ namespace Ryujinx.Ui.App.Common
                                 long iconSize = BitConverter.ToInt64(iconSectionInfo, 8);
 
                                 // Reads and stores game icon as byte array
-                                applicationIcon = Read(assetOffset + iconOffset, (int)iconSize);
-                            }
-                            else
-                            {
-                                applicationIcon = _nroIcon;
+                                applicationIcon = iconSize > 0
+                                    ? Read(assetOffset + iconOffset, (int)iconSize)
+                                    : _nroIcon;
                             }
                         }
                         catch
