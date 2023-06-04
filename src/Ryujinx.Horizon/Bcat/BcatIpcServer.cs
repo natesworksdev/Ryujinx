@@ -1,5 +1,4 @@
-﻿using Ryujinx.Horizon.Bcat.Ipc;
-using Ryujinx.Horizon.Bcat.Types;
+﻿using Ryujinx.Horizon.Bcat.Types;
 using Ryujinx.Horizon.Sdk.Sf.Hipc;
 using Ryujinx.Horizon.Sdk.Sm;
 
