@@ -28,8 +28,7 @@ namespace Ryujinx.Input.HLE
             }
         }
 
-        private static readonly HLEButtonMappingEntry[] _hleButtonMapping = new HLEButtonMappingEntry[]
-        {
+        private static readonly HLEButtonMappingEntry[] _hleButtonMapping = {
             new HLEButtonMappingEntry(GamepadButtonInputId.A, ControllerKeys.A),
             new HLEButtonMappingEntry(GamepadButtonInputId.B, ControllerKeys.B),
             new HLEButtonMappingEntry(GamepadButtonInputId.X, ControllerKeys.X),
@@ -50,7 +49,7 @@ namespace Ryujinx.Input.HLE
             new HLEButtonMappingEntry(GamepadButtonInputId.SingleLeftTrigger0, ControllerKeys.SlLeft),
             new HLEButtonMappingEntry(GamepadButtonInputId.SingleRightTrigger0, ControllerKeys.SrLeft),
             new HLEButtonMappingEntry(GamepadButtonInputId.SingleLeftTrigger1, ControllerKeys.SlRight),
-            new HLEButtonMappingEntry(GamepadButtonInputId.SingleRightTrigger1, ControllerKeys.SrRight),
+            new HLEButtonMappingEntry(GamepadButtonInputId.SingleRightTrigger1, ControllerKeys.SrRight)
         };
 
         private class HLEKeyboardMappingEntry
@@ -65,8 +64,7 @@ namespace Ryujinx.Input.HLE
             }
         }
 
-        private static readonly HLEKeyboardMappingEntry[] KeyMapping = new HLEKeyboardMappingEntry[]
-        {
+        private static readonly HLEKeyboardMappingEntry[] KeyMapping = {
             new HLEKeyboardMappingEntry(Key.A, 0x4),
             new HLEKeyboardMappingEntry(Key.B, 0x5),
             new HLEKeyboardMappingEntry(Key.C, 0x6),
@@ -189,11 +187,10 @@ namespace Ryujinx.Input.HLE
             new HLEKeyboardMappingEntry(Key.ControlRight, 0xE4),
             new HLEKeyboardMappingEntry(Key.ShiftRight,   0xE5),
             new HLEKeyboardMappingEntry(Key.AltRight,     0xE6),
-            new HLEKeyboardMappingEntry(Key.WinRight,     0xE7),
+            new HLEKeyboardMappingEntry(Key.WinRight,     0xE7)
         };
 
-        private static readonly HLEKeyboardMappingEntry[] KeyModifierMapping = new HLEKeyboardMappingEntry[]
-        {
+        private static readonly HLEKeyboardMappingEntry[] KeyModifierMapping = {
             new HLEKeyboardMappingEntry(Key.ControlLeft,  0),
             new HLEKeyboardMappingEntry(Key.ShiftLeft,    1),
             new HLEKeyboardMappingEntry(Key.AltLeft,      2),
@@ -204,11 +201,10 @@ namespace Ryujinx.Input.HLE
             new HLEKeyboardMappingEntry(Key.WinRight,     7),
             new HLEKeyboardMappingEntry(Key.CapsLock,     8),
             new HLEKeyboardMappingEntry(Key.ScrollLock,   9),
-            new HLEKeyboardMappingEntry(Key.NumLock,      10),
+            new HLEKeyboardMappingEntry(Key.NumLock,      10)
         };
 
         private bool _isValid;
-        private string _id;
 
         private MotionInput _leftMotionInput;
         private MotionInput _rightMotionInput;
@@ -219,14 +215,14 @@ namespace Ryujinx.Input.HLE
         public IGamepadDriver GamepadDriver { get; private set; }
         public GamepadStateSnapshot State { get; private set; }
 
-        public string Id => _id;
+        public string Id { get; private set; }
 
         private readonly CemuHookClient _cemuHookClient;
 
         public NpadController(CemuHookClient cemuHookClient)
         {
             State = default;
-            _id = null;
+            Id = null;
             _isValid = false;
             _cemuHookClient = cemuHookClient;
         }
@@ -237,8 +233,8 @@ namespace Ryujinx.Input.HLE
 
             _gamepad?.Dispose();
 
-            _id = config.Id;
-            _gamepad = GamepadDriver.GetGamepad(_id);
+            Id = config.Id;
+            _gamepad = GamepadDriver.GetGamepad(Id);
             _isValid = _gamepad != null;
 
             UpdateUserConfiguration(config);
