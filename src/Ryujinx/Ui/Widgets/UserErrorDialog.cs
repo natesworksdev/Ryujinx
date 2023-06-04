@@ -60,7 +60,7 @@ namespace Ryujinx.Ui.Widgets
                 UserError.FirmwareParsingFailed => "Firmware parsing error",
                 UserError.ApplicationNotFound => "Application not found",
                 UserError.Unknown => "Unknown error",
-                _ => "Undefined error",
+                _ => "Undefined error"
             };
         }
 
@@ -73,7 +73,7 @@ namespace Ryujinx.Ui.Widgets
                 UserError.FirmwareParsingFailed => "Ryujinx was unable to parse the provided firmware. This is usually caused by outdated keys.",
                 UserError.ApplicationNotFound => "Ryujinx couldn't find a valid application at the given path.",
                 UserError.Unknown => "An unknown error occured!",
-                _ => "An undefined error occured! This shouldn't happen, please contact a dev!",
+                _ => "An undefined error occured! This shouldn't happen, please contact a dev!"
             };
         }
 
@@ -84,7 +84,7 @@ namespace Ryujinx.Ui.Widgets
                 UserError.NoKeys or
                 UserError.NoFirmware or
                 UserError.FirmwareParsingFailed => true,
-                _ => false,
+                _ => false
             };
         }
 
@@ -99,7 +99,7 @@ namespace Ryujinx.Ui.Widgets
             {
                 UserError.NoKeys => SetupGuideUrl + "#initial-setup---placement-of-prodkeys",
                 UserError.NoFirmware => SetupGuideUrl + "#initial-setup-continued---installation-of-firmware",
-                _ => SetupGuideUrl,
+                _ => SetupGuideUrl
             };
         }
 

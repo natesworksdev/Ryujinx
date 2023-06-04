@@ -72,7 +72,7 @@ namespace Ryujinx.Ui.Applet
             Debug.Assert(data.Length == 4 * RenderSurfaceWidth * RenderSurfaceHeight);
 
             // Take the center-bottom pixel of the surface.
-            int position = 4 * (RenderSurfaceWidth * (RenderSurfaceHeight - 1) + RenderSurfaceWidth / 2);
+            const int position = 4 * (RenderSurfaceWidth * (RenderSurfaceHeight - 1) + RenderSurfaceWidth / 2);
 
             if (position + 4 > data.Length)
             {
