@@ -168,7 +168,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             bool not3DOr3DCompressionSupported = target != Target.Texture3D || caps.Supports3DTextureCompression;
 
-#pragma warning disable IDE0066
             switch (format)
             {
                 case Format.Bc1RgbaSrgb:
@@ -189,7 +188,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                 case Format.Bc7Unorm:
                     return caps.SupportsBc67Compression && not3DOr3DCompressionSupported;
             }
-#pragma warning restore IDE0066
 
             return true;
         }
