@@ -7,7 +7,7 @@ namespace Ryujinx.Cpu
 {
     public class AddressSpace : IDisposable
     {
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         private const ulong PageSize = 0x1000;
 #pragma warning restore IDE0051
 
@@ -393,7 +393,7 @@ namespace Ryujinx.Cpu
             ulong vaAligned = BitUtils.AlignDown(va, alignment);
             ulong endAddressAligned = BitUtils.AlignUp(endAddress, alignment);
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong sizeAligned = endAddressAligned - vaAligned;
 #pragma warning restore IDE0059
 
@@ -440,7 +440,7 @@ namespace Ryujinx.Cpu
                 return;
             }
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong alignedSize = endAddressAligned - vaAligned;
 #pragma warning restore IDE0059
 

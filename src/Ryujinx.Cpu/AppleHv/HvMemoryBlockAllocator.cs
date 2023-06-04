@@ -4,7 +4,7 @@ namespace Ryujinx.Cpu.AppleHv
 {
     class HvMemoryBlockAllocator : PrivateMemoryAllocatorImpl<HvMemoryBlockAllocator.Block>
     {
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         private const ulong InvalidOffset = ulong.MaxValue;
 #pragma warning restore IDE0051
 

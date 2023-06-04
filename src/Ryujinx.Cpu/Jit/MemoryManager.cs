@@ -84,7 +84,7 @@ namespace Ryujinx.Cpu.Jit
 
             ulong remainingSize = size;
             ulong oVa = va;
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong oPa = pa;
 #pragma warning restore IDE0059
             while (remainingSize != 0)
@@ -578,7 +578,7 @@ namespace Ryujinx.Cpu.Jit
             }
         }
 
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         private ulong GetPhysicalAddress(ulong va)
         {
             // We return -1L if the virtual address is invalid or unmapped.
@@ -702,7 +702,7 @@ namespace Ryujinx.Cpu.Jit
         /// </summary>
         protected override void Destroy() => _pageTable.Dispose();
 
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         private static void ThrowInvalidMemoryRegionException(string message) => throw new InvalidMemoryRegionException(message);
 #pragma warning restore IDE0051
     }

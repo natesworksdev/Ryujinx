@@ -18,7 +18,7 @@ namespace Ryujinx.Cpu.AppleHv
         private const ulong AllocationGranule = 1UL << 14;
 
         private readonly ulong _asBase;
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly ulong _asSize;
 #pragma warning restore IDE0052
         private readonly ulong _backingSize;

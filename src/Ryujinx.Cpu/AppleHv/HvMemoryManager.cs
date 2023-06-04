@@ -126,7 +126,7 @@ namespace Ryujinx.Cpu.AppleHv
             }
         }
 
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         /// <summary>
         /// Ensures the combination of virtual address and size is part of the addressable space and fully mapped.
         /// </summary>

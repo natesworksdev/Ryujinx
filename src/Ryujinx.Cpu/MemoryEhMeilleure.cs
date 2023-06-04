@@ -10,7 +10,7 @@ namespace Ryujinx.Cpu
     {
         private delegate bool TrackingEventDelegate(ulong address, ulong size, bool write);
 
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly MemoryTracking _tracking;
 #pragma warning restore IDE0052
         private readonly TrackingEventDelegate _trackingEvent;

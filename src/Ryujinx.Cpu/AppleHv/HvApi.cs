@@ -3,10 +3,10 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Cpu.AppleHv
 {
-#pragma warning disable IDE1006
+#pragma warning disable IDE1006 // Naming rule violation
     struct hv_vcpu_exit_exception_t
     {
-#pragma warning disable CS0649
+#pragma warning disable CS0649 // Field is never assigned to
         public ulong syndrome;
         public ulong virtual_address;
         public ulong physical_address;
@@ -15,7 +15,7 @@ namespace Ryujinx.Cpu.AppleHv
 
     struct hv_vcpu_exit_t
     {
-#pragma warning disable CS0649
+#pragma warning disable CS0649 // Field is never assigned to
         public uint reason;
         public hv_vcpu_exit_exception_t exception;
 #pragma warning restore CS0649
@@ -261,7 +261,7 @@ namespace Ryujinx.Cpu.AppleHv
     {
         public const string LibraryName = "/System/Library/Frameworks/Hypervisor.framework/Hypervisor";
 
-#pragma warning disable IDE1006
+#pragma warning disable IDE1006 // Naming rule violation
 
         [LibraryImport(LibraryName, SetLastError = true)]
         public static partial hv_result_t hv_vm_get_max_vcpu_count(out uint max_vcpu_count);
