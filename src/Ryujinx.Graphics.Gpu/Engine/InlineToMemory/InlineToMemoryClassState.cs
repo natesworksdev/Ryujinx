@@ -1,5 +1,7 @@
 ﻿// This file was auto-generated from NVIDIA official Maxwell definitions.
 
+using Ryujinx.Common.Memory;
+
 namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
 {
     /// <summary>
@@ -175,7 +177,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
         public uint SetI2mSpareNoop02;
         public uint SetI2mSpareNoop03;
         public fixed uint Reserved200[3200];
-        public MmeShadowScratch SetMmeShadowScratch;
+        public Array256<uint> SetMmeShadowScratch;
 #pragma warning restore CS0649
     }
 }

@@ -429,7 +429,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
         public uint StopShaderPerformanceCounter;
         public int StopShaderPerformanceCounterCounterMask => (int)(StopShaderPerformanceCounter & 0xFF);
         public fixed uint Reserved33E8[6];
-        public MmeShadowScratch SetMmeShadowScratch;
+        public Array256<uint> SetMmeShadowScratch;
 #pragma warning restore CS0649
     }
 }

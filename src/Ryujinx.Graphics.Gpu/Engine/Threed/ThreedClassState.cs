@@ -1042,7 +1042,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public fixed uint Reserved260C[125];
         public Array4<Array32<uint>> TfVaryingLocations;
         public fixed uint Reserved2A00[640];
-        public MmeShadowScratch SetMmeShadowScratch;
+        public Array256<uint> SetMmeShadowScratch;
 #pragma warning restore CS0649
     }
 }

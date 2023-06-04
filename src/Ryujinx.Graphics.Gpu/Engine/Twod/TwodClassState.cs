@@ -810,7 +810,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         public uint MmeDmaWriteMethodBarrier;
         public bool MmeDmaWriteMethodBarrierV => (MmeDmaWriteMethodBarrier & 0x1) != 0;
         public fixed uint ReservedDF0[2436];
-        public MmeShadowScratch SetMmeShadowScratch;
+        public Array256<uint> SetMmeShadowScratch;
 #pragma warning restore CS0649
     }
 }
