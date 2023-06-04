@@ -646,7 +646,6 @@ namespace ARMeilleure.CodeGen.X86
 
         private static bool IsSameOperandDestSrc1(Operation operation)
         {
-#pragma warning disable IDE0066
             switch (operation.Instruction)
             {
                 case Instruction.Add:
@@ -678,7 +677,6 @@ namespace ARMeilleure.CodeGen.X86
                 case Instruction.Extended:
                     return IsIntrinsicSameOperandDestSrc1(operation);
             }
-#pragma warning restore IDE0066
 
             return IsVexSameOperandDestSrc1(operation);
         }
@@ -719,7 +717,6 @@ namespace ARMeilleure.CodeGen.X86
 
         private static bool HasConstSrc2(Instruction inst)
         {
-#pragma warning disable IDE0066
             switch (inst)
             {
                 case Instruction.Add:
@@ -742,7 +739,6 @@ namespace ARMeilleure.CodeGen.X86
                 case Instruction.VectorExtract8:
                     return true;
             }
-#pragma warning restore IDE0066
 
             return false;
         }
