@@ -187,7 +187,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ReadOnlySpan<ImageMemoryBarrier>.Empty);
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public void BeginTransformFeedback(GAL.PrimitiveTopology topology)
         {
             _tfEnabled = true;
@@ -719,8 +719,8 @@ namespace Ryujinx.Graphics.Vulkan
             return CommandBuffer.Handle == cb.Handle;
         }
 
-#pragma warning disable CA1822
-#pragma warning disable IDE0060
+#pragma warning disable CA1822 // Mark member as static
+#pragma warning disable IDE0060 // Remove unused parameter
         public void SetAlphaTest(bool enable, float reference, GAL.CompareOp op)
 #pragma warning restore CA1822
         {
@@ -828,8 +828,8 @@ namespace Ryujinx.Graphics.Vulkan
             SignalStateChange();
         }
 
-#pragma warning disable CA1822
-#pragma warning disable IDE0060
+#pragma warning disable CA1822 // Mark member as static
+#pragma warning disable IDE0060 // Remove unused parameter
         public void SetDepthMode(DepthMode mode)
 #pragma warning restore CA1822
         {
@@ -886,7 +886,7 @@ namespace Ryujinx.Graphics.Vulkan
             _needsIndexBufferRebind = true;
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public void SetLineParameters(float width, bool smooth)
         {
             _newState.LineWidth = width;
@@ -908,14 +908,14 @@ namespace Ryujinx.Graphics.Vulkan
             SignalStateChange();
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static void SetOrigin(Origin origin)
         {
             // TODO.
         }
 #pragma warning restore IDE0060
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public unsafe void SetPatchParameters(int vertices, ReadOnlySpan<float> defaultOuterLevel, ReadOnlySpan<float> defaultInnerLevel)
         {
             _newState.PatchControlPoints = (uint)vertices;
@@ -925,8 +925,8 @@ namespace Ryujinx.Graphics.Vulkan
         }
 #pragma warning restore IDE0060
 
-#pragma warning disable CA1822
-#pragma warning disable IDE0060
+#pragma warning disable CA1822 // Mark member as static
+#pragma warning disable IDE0060 // Remove unused parameter
         public void SetPointParameters(float size, bool isProgramPointSize, bool enablePointSprite, Origin origin)
 #pragma warning restore CA1822
         {
@@ -934,8 +934,8 @@ namespace Ryujinx.Graphics.Vulkan
         }
 #pragma warning restore IDE0060
 
-#pragma warning disable CA1822
-#pragma warning disable IDE0060
+#pragma warning disable CA1822 // Mark member as static
+#pragma warning disable IDE0060 // Remove unused parameter
         public void SetPolygonMode(GAL.PolygonMode frontMode, GAL.PolygonMode backMode)
 #pragma warning restore CA1822
         {
@@ -943,7 +943,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 #pragma warning restore IDE0060
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public void SetPrimitiveRestart(bool enable, int index)
         {
             _newState.PrimitiveRestartEnable = enable;
@@ -1174,8 +1174,8 @@ namespace Ryujinx.Graphics.Vulkan
             _descriptorSetUpdater.SetUniformBuffers(CommandBuffer, buffers);
         }
 
-#pragma warning disable CA1822
-#pragma warning disable IDE0060
+#pragma warning disable CA1822 // Mark member as static
+#pragma warning disable IDE0060 // Remove unused parameter
         public void SetUserClipDistance(int index, bool enableClip)
 #pragma warning restore CA1822
         {

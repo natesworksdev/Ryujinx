@@ -24,7 +24,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private uint VertexAttributeDescriptionsCount => (byte)((Id6 >> 38) & 0xFF);
         private uint VertexBindingDescriptionsCount => (byte)((Id6 >> 46) & 0xFF);
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         private uint ViewportsCount => (byte)((Id6 >> 54) & 0xFF);
         private uint ScissorsCount => (byte)(Id7 & 0xFF);
 #pragma warning restore IDE0051

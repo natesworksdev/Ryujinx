@@ -119,7 +119,7 @@ namespace Ryujinx.Graphics.Vulkan
                         var buffer = evt.GetBuffer().Get(Cbs, 0, sizeof(long)).Value;
                         var flags = isEqual ? ConditionalRenderingFlagsEXT.InvertedBitExt : 0;
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                         var conditionalRenderingBeginInfo = new ConditionalRenderingBeginInfoEXT()
                         {
                             SType = StructureType.ConditionalRenderingBeginInfoExt,
@@ -251,7 +251,7 @@ namespace Ryujinx.Graphics.Vulkan
             Restore();
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public void BeginQuery(BufferedQuery query, QueryPool pool, bool needsReset, bool isOcclusion, bool fromSamplePool)
         {
             if (needsReset)

@@ -311,7 +311,7 @@ namespace Ryujinx.Graphics.Vulkan
             return _buffer;
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public Auto<DisposableBuffer> GetBuffer(CommandBuffer commandBuffer, bool isWrite = false, bool isSSBO = false)
         {
             if (isWrite)
@@ -333,7 +333,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 #pragma warning restore IDE0060
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public Auto<DisposableBuffer> GetBuffer(CommandBuffer commandBuffer, int offset, int size, bool isWrite = false)
         {
             if (isWrite)
@@ -367,7 +367,7 @@ namespace Ryujinx.Graphics.Vulkan
             return Unsafe.As<ulong, BufferHandle>(ref handle);
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public unsafe IntPtr Map(int offset, int mappingSize)
         {
             return _map;

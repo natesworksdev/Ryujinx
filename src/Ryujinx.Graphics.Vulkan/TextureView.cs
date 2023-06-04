@@ -830,7 +830,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private void CopyFromOrToBuffer(
             CommandBuffer commandBuffer,
             VkBuffer buffer,

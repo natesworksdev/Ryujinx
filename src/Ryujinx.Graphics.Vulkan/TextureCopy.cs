@@ -226,7 +226,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 dstZ = dstDepthOrLayer;
                 dstLayer = 0;
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                 dstDepth = depthOrLayers;
 #pragma warning restore IDE0059
                 dstLayers = 1;
@@ -235,7 +235,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 dstZ = 0;
                 dstLayer = dstDepthOrLayer;
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                 dstDepth = 1;
 #pragma warning restore IDE0059
                 dstLayers = depthOrLayers;
