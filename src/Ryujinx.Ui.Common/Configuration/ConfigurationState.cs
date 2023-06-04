@@ -1498,7 +1498,7 @@ namespace Ryujinx.Ui.Common.Configuration
             return result;
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private static void LogValueChange<T>(object sender, ReactiveEventArgs<T> eventArgs, string valueName)
         {
             Ryujinx.Common.Logging.Logger.Info?.Print(LogClass.Configuration, $"{valueName} set to: {eventArgs.NewValue}");
