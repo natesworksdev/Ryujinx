@@ -41,7 +41,7 @@ namespace Ryujinx.Memory
             O_TRUNC = 32,
             O_APPEND = 64,
             O_NONBLOCK = 128,
-            O_SYNC = 256,
+            O_SYNC = 256
         }
 
         public const IntPtr MAP_FAILED = -1;
