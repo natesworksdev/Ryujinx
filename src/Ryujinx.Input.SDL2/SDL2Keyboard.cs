@@ -171,7 +171,7 @@ namespace Ryujinx.Input.SDL2
             SDL_Keycode.SDLK_BACKSLASH,
 
             // Invalids
-            SDL_Keycode.SDLK_0,
+            SDL_Keycode.SDLK_0
         };
 
         public SDL2Keyboard(SDL2KeyboardDriver driver, string id, string name)
@@ -221,7 +221,7 @@ namespace Ryujinx.Input.SDL2
                 Key.WinLeft => SDL_Keymod.KMOD_LGUI,
                 Key.WinRight => SDL_Keymod.KMOD_RGUI,
                 // NOTE: Menu key isn't supported by SDL2.
-                _ => SDL_Keymod.KMOD_NONE,
+                _ => SDL_Keymod.KMOD_NONE
             };
         }
 
