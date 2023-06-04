@@ -78,7 +78,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             renderer.ScreenCaptured += (sender, info) => ScreenCaptured?.Invoke(this, info);
             renderer.SetInterruptAction(Interrupt);
 
-            Pipeline = new ThreadedPipeline(this, renderer.Pipeline);
+            Pipeline = new ThreadedPipeline(this);
             Window = new ThreadedWindow(this, renderer);
             Buffers = new BufferMap();
             Sync = new SyncMap();
