@@ -13,7 +13,7 @@ namespace Ryujinx.Tests.Cpu
 #if SimdCvt
 
         #region "ValueSource (Types)"
-#pragma warning disable IDE1006
+#pragma warning disable IDE1006 // Naming rule violation
         private static uint[] _W_()
         {
             return new[] { 0x00000000u, 0x7FFFFFFFu,

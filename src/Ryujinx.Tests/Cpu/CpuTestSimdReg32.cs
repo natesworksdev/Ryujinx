@@ -13,7 +13,7 @@ namespace Ryujinx.Tests.Cpu
 #if SimdReg32
 
         #region "ValueSource (Opcodes)"
-#pragma warning disable IDE1006
+#pragma warning disable IDE1006 // Naming rule violation
         private static uint[] _V_Add_Sub_Long_Wide_I_()
         {
             return new[]

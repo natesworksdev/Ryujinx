@@ -12,7 +12,7 @@ namespace Ryujinx.Tests.Cpu
 #if SimdFcond
 
         #region "ValueSource (Types)"
-#pragma warning disable IDE1006
+#pragma warning disable IDE1006 // Naming rule violation
         private static IEnumerable<ulong> _1S_F_()
         {
             yield return 0x00000000FF7FFFFFul; // -Max Normal    (float.MinValue)

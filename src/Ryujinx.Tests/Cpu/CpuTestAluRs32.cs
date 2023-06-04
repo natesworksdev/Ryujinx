@@ -10,7 +10,7 @@ namespace Ryujinx.Tests.Cpu
 #if AluRs32
 
         #region "ValueSource (Opcodes)"
-#pragma warning disable IDE0051, IDE1006
+#pragma warning disable IDE0051, IDE1006 // Remove unused private member, Naming rule violation
         private static uint[] _Add_Adds_Rsb_Rsbs_()
         {
             return new[]

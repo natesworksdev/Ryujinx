@@ -10,7 +10,7 @@ namespace Ryujinx.Tests.Cpu
 #if Mul32
 
         #region "ValueSource (Opcodes)"
-#pragma warning disable IDE0051, IDE1006
+#pragma warning disable IDE0051, IDE1006 // Remove unused private member, Naming rule violation
         private static uint[] _Smlabb_Smlabt_Smlatb_Smlatt_()
         {
             return new[]

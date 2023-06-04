@@ -13,7 +13,7 @@ namespace Ryujinx.Tests.Cpu
 #if SimdShImm
 
         #region "ValueSource (Types)"
-#pragma warning disable IDE1006
+#pragma warning disable IDE1006 // Naming rule violation
         private static ulong[] _1D_()
         {
             return new[] { 0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,

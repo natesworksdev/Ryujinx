@@ -13,7 +13,7 @@ namespace Ryujinx.Tests.Cpu
 #if SimdCvt32
 
         #region "ValueSource (Opcodes)"
-#pragma warning disable IDE1006
+#pragma warning disable IDE1006 // Naming rule violation
         private static uint[] _Vrint_AMNP_V_F32_()
         {
             return new[]

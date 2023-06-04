@@ -96,7 +96,7 @@ namespace Ryujinx.Tests.Cpu
         #endregion
 
         #region "ValueSource (Types)"
-#pragma warning disable IDE1006
+#pragma warning disable IDE1006 // Naming rule violation
         private static ulong[] _1B1H1S1D_()
         {
             return new[] { 0x0000000000000000ul, 0x000000000000007Ful,

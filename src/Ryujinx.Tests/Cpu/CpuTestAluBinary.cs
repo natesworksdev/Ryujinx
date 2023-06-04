@@ -27,7 +27,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         #region "ValueSource (CRC32)"
-#pragma warning disable IDE1006
+#pragma warning disable IDE1006 // Naming rule violation
         private static CrcTest[] _CRC32_Test_Values_()
         {
             // Created with http://www.sunshine2k.de/coding/javascript/crc/crc_js.html, with:

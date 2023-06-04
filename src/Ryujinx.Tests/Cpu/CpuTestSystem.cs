@@ -12,7 +12,7 @@ namespace Ryujinx.Tests.Cpu
 #if System
 
         #region "ValueSource (Types)"
-#pragma warning disable IDE0051, IDE1006
+#pragma warning disable IDE0051, IDE1006 // Remove unused private member, Naming rule violation
         private static IEnumerable<ulong> _GenNzcv_()
         {
             yield return 0x0000000000000000ul;

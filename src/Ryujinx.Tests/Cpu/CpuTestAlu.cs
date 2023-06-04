@@ -67,7 +67,7 @@ namespace Ryujinx.Tests.Cpu
         #endregion
 
         #region "ValueSource (Types)"
-#pragma warning disable IDE1006
+#pragma warning disable IDE1006 // Naming rule violation
         private static IEnumerable<ulong> _GenLeadingSignsX_()
         {
             for (int cnt = 0; cnt <= 63; cnt++)

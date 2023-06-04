@@ -10,7 +10,7 @@ namespace Ryujinx.Tests.Cpu
 #if AluRs32
 
         #region "ValueSource (Opcodes)"
-#pragma warning disable IDE1006
+#pragma warning disable IDE1006 // Naming rule violation
         private static uint[] _opcodes()
         {
             return new[]

@@ -11,7 +11,7 @@ namespace Ryujinx.Tests.Cpu
 #if SimdFmov
 
         #region "ValueSource"
-#pragma warning disable IDE1006
+#pragma warning disable IDE1006 // Naming rule violation
         private static uint[] _F_Mov_Si_S_()
         {
             return new[]
