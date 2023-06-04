@@ -67,7 +67,7 @@ namespace Ryujinx.Ava
                     EnableMultitouch = true,
                     UseWgl = false,
                     AllowEglInitialization = false,
-                    CompositionBackdropCornerRadius = 8.0f,
+                    CompositionBackdropCornerRadius = 8.0f
                 })
                 .UseSkia();
         }

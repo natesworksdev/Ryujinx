@@ -39,15 +39,9 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private int _selectedIndex;
         private int _imagesLoaded;
-        private bool _isActive;
-        private byte[] _selectedImage;
         private bool _isIndeterminate = true;
 
-        public bool IsActive
-        {
-            get => _isActive;
-            set => _isActive = value;
-        }
+        public bool IsActive { get; set; }
 
         public AvatarProfileViewModel()
         {
@@ -134,11 +128,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public byte[] SelectedImage
-        {
-            get => _selectedImage;
-            private set => _selectedImage = value;
-        }
+        public byte[] SelectedImage { get; private set; }
 
         public void ReloadImages()
         {

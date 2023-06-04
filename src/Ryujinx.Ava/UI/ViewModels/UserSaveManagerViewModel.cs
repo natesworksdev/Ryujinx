@@ -110,7 +110,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 1 => OrderIndex == 0
                                         ? SortExpressionComparer<SaveModel>.Ascending(save => save.Size)
                                         : SortExpressionComparer<SaveModel>.Descending(save => save.Size),
-                _ => null,
+                _ => null
             };
         }
     }

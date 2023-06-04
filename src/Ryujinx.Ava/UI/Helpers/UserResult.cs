@@ -7,6 +7,6 @@ namespace Ryujinx.Ava.UI.Helpers
         No,
         Abort,
         Cancel,
-        None,
+        None
     }
 }

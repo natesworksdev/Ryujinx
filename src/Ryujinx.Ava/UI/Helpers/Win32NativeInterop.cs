@@ -12,7 +12,7 @@ namespace Ryujinx.Ava.UI.Helpers
         public enum ClassStyles : uint
         {
             CS_CLASSDC = 0x40,
-            CS_OWNDC = 0x20,
+            CS_OWNDC = 0x20
         }
 
         [Flags]
