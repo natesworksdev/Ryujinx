@@ -24,9 +24,9 @@ namespace Ryujinx.Ava.UI.Windows
             InitializeComponent();
         }
 
-        public DownloadableContentManagerWindow(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
+        public DownloadableContentManagerWindow(VirtualFileSystem virtualFileSystem, ulong titleId)
         {
-            DataContext = ViewModel = new DownloadableContentManagerViewModel(virtualFileSystem, titleId, titleName);
+            DataContext = ViewModel = new DownloadableContentManagerViewModel(virtualFileSystem, titleId);
 
             InitializeComponent();
         }
@@ -38,7 +38,7 @@ namespace Ryujinx.Ava.UI.Windows
                 PrimaryButtonText   = "",
                 SecondaryButtonText = "",
                 CloseButtonText     = "",
-                Content             = new DownloadableContentManagerWindow(virtualFileSystem, titleId, titleName),
+                Content             = new DownloadableContentManagerWindow(virtualFileSystem, titleId),
                 Title               = string.Format(LocaleManager.Instance[LocaleKeys.DlcWindowTitle], titleName, titleId.ToString("X16"))
             };
 

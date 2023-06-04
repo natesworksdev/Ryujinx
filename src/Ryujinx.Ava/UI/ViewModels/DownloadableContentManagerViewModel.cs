@@ -38,9 +38,6 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private string _search;
         private readonly ulong _titleId;
-#pragma warning disable IDE0052 // Remove unread private member
-        private readonly string _titleName;
-#pragma warning restore IDE0052
 
         private static readonly DownloadableContentJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
@@ -92,12 +89,11 @@ namespace Ryujinx.Ava.UI.ViewModels
             get => string.Format(LocaleManager.Instance[LocaleKeys.DlcWindowHeading], DownloadableContents.Count);
         }
 
-        public DownloadableContentManagerViewModel(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
+        public DownloadableContentManagerViewModel(VirtualFileSystem virtualFileSystem, ulong titleId)
         {
             _virtualFileSystem = virtualFileSystem;
 
             _titleId = titleId;
-            _titleName = titleName;
 
             _downloadableContentJsonPath = Path.Combine(AppDataManager.GamesDirPath, titleId.ToString("x16"), "dlc.json");
 

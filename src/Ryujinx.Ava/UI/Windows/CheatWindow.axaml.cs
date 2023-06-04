@@ -59,9 +59,6 @@ namespace Ryujinx.Ava.UI.Windows
 
             string currentCheatFile = string.Empty;
             string buildId = string.Empty;
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            string parentPath = string.Empty;
-#pragma warning restore IDE0059
 
             CheatsList currentGroup = null;
 
@@ -70,7 +67,7 @@ namespace Ryujinx.Ava.UI.Windows
                 if (cheat.Path.FullName != currentCheatFile)
                 {
                     currentCheatFile = cheat.Path.FullName;
-                    parentPath = currentCheatFile.Replace(titleModsPath, "");
+                    string parentPath = currentCheatFile.Replace(titleModsPath, "");
 
                     buildId = Path.GetFileNameWithoutExtension(currentCheatFile).ToUpper();
                     currentGroup = new CheatsList(buildId, parentPath);

@@ -50,9 +50,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         private object _configuration;
         private string _profileName;
         private bool _isLoaded;
-#pragma warning disable IDE0052 // Remove unread private member
-        private readonly UserControl _owner;
-#pragma warning restore IDE0052
 
         private static readonly InputConfigJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
@@ -236,8 +233,6 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public ControllerInputViewModel(UserControl owner) : this()
         {
-            _owner = owner;
-
             if (Program.PreviewerDetached)
             {
                 _mainWindow =

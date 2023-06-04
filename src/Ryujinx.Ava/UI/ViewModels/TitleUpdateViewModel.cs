@@ -32,9 +32,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         public readonly string     _titleUpdateJsonPath;
         private VirtualFileSystem VirtualFileSystem { get; }
         private ulong TitleId { get; }
-#pragma warning disable IDE0052 // Remove unread private member
-        private string TitleName { get; }
-#pragma warning restore IDE0052
 
         private AvaloniaList<TitleUpdateModel> _titleUpdates = new();
         private AvaloniaList<object> _views = new();
@@ -72,12 +69,11 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public TitleUpdateViewModel(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
+        public TitleUpdateViewModel(VirtualFileSystem virtualFileSystem, ulong titleId)
         {
             VirtualFileSystem = virtualFileSystem;
 
             TitleId = titleId;
-            TitleName = titleName;
 
             _titleUpdateJsonPath = Path.Combine(AppDataManager.GamesDirPath, titleId.ToString("x16"), "updates.json");
 

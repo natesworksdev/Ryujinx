@@ -26,7 +26,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         public TitleUpdateWindow(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
         {
-            DataContext = ViewModel = new TitleUpdateViewModel(virtualFileSystem, titleId, titleName);
+            DataContext = ViewModel = new TitleUpdateViewModel(virtualFileSystem, titleId);
 
             InitializeComponent();
         }
