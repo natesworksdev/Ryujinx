@@ -103,7 +103,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
                 QualityLow = Quality == 0 ? 1 : 0,
                 QualityMedium = Quality == 1 ? 1 : 0,
                 QualityHigh = Quality == 2 ? 1 : 0,
-                QualityUltra = Quality == 3 ? 1 : 0,
+                QualityUltra = Quality == 3 ? 1 : 0
             };
 
             var specInfo = new SpecDescription(

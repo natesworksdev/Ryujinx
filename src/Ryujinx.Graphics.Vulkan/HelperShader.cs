@@ -62,19 +62,19 @@ namespace Ryujinx.Graphics.Vulkan
             _programColorBlit = gd.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(ShaderBinaries.ColorBlitVertexShaderSource, ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ShaderBinaries.ColorBlitFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ShaderBinaries.ColorBlitFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv)
             }, blitResourceLayout);
 
             _programColorBlitMs = gd.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(ShaderBinaries.ColorBlitVertexShaderSource, ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ShaderBinaries.ColorBlitMsFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ShaderBinaries.ColorBlitMsFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv)
             }, blitResourceLayout);
 
             _programColorBlitClearAlpha = gd.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(ShaderBinaries.ColorBlitVertexShaderSource, ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ShaderBinaries.ColorBlitClearAlphaFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ShaderBinaries.ColorBlitClearAlphaFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv)
             }, blitResourceLayout);
 
             var colorClearResourceLayout = new ResourceLayoutBuilder().Add(ResourceStages.Vertex, ResourceType.UniformBuffer, 1).Build();
@@ -82,19 +82,19 @@ namespace Ryujinx.Graphics.Vulkan
             _programColorClearF = gd.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(ShaderBinaries.ColorClearVertexShaderSource, ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ShaderBinaries.ColorClearFFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ShaderBinaries.ColorClearFFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv)
             }, colorClearResourceLayout);
 
             _programColorClearSI = gd.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(ShaderBinaries.ColorClearVertexShaderSource, ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ShaderBinaries.ColorClearSIFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ShaderBinaries.ColorClearSIFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv)
             }, colorClearResourceLayout);
 
             _programColorClearUI = gd.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(ShaderBinaries.ColorClearVertexShaderSource, ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ShaderBinaries.ColorClearUIFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ShaderBinaries.ColorClearUIFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv)
             }, colorClearResourceLayout);
 
             var strideChangeResourceLayout = new ResourceLayoutBuilder()
@@ -104,7 +104,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _programStrideChange = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ShaderBinaries.ChangeBufferStrideShaderSource, ShaderStage.Compute, TargetLanguage.Spirv),
+                new ShaderSource(ShaderBinaries.ChangeBufferStrideShaderSource, ShaderStage.Compute, TargetLanguage.Spirv)
             }, strideChangeResourceLayout);
 
             var colorCopyResourceLayout = new ResourceLayoutBuilder()
@@ -114,17 +114,17 @@ namespace Ryujinx.Graphics.Vulkan
 
             _programColorCopyShortening = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ShaderBinaries.ColorCopyShorteningComputeShaderSource, ShaderStage.Compute, TargetLanguage.Spirv),
+                new ShaderSource(ShaderBinaries.ColorCopyShorteningComputeShaderSource, ShaderStage.Compute, TargetLanguage.Spirv)
             }, colorCopyResourceLayout);
 
             _programColorCopyToNonMs = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ShaderBinaries.ColorCopyToNonMsComputeShaderSource, ShaderStage.Compute, TargetLanguage.Spirv),
+                new ShaderSource(ShaderBinaries.ColorCopyToNonMsComputeShaderSource, ShaderStage.Compute, TargetLanguage.Spirv)
             }, colorCopyResourceLayout);
 
             _programColorCopyWidening = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ShaderBinaries.ColorCopyWideningComputeShaderSource, ShaderStage.Compute, TargetLanguage.Spirv),
+                new ShaderSource(ShaderBinaries.ColorCopyWideningComputeShaderSource, ShaderStage.Compute, TargetLanguage.Spirv)
             }, colorCopyResourceLayout);
 
             var colorDrawToMsResourceLayout = new ResourceLayoutBuilder()
@@ -134,7 +134,7 @@ namespace Ryujinx.Graphics.Vulkan
             _programColorDrawToMs = gd.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(ShaderBinaries.ColorDrawToMsVertexShaderSource, ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ShaderBinaries.ColorDrawToMsFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ShaderBinaries.ColorDrawToMsFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv)
             }, colorDrawToMsResourceLayout);
 
             var convertD32S8ToD24S8ResourceLayout = new ResourceLayoutBuilder()
@@ -144,7 +144,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _programConvertD32S8ToD24S8 = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ShaderBinaries.ConvertD32S8ToD24S8ShaderSource, ShaderStage.Compute, TargetLanguage.Spirv),
+                new ShaderSource(ShaderBinaries.ConvertD32S8ToD24S8ShaderSource, ShaderStage.Compute, TargetLanguage.Spirv)
             }, convertD32S8ToD24S8ResourceLayout);
 
             var convertIndexBufferResourceLayout = new ResourceLayoutBuilder()
@@ -154,7 +154,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _programConvertIndexBuffer = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ShaderBinaries.ConvertIndexBufferShaderSource, ShaderStage.Compute, TargetLanguage.Spirv),
+                new ShaderSource(ShaderBinaries.ConvertIndexBufferShaderSource, ShaderStage.Compute, TargetLanguage.Spirv)
             }, convertIndexBufferResourceLayout);
 
             var convertIndirectDataResourceLayout = new ResourceLayoutBuilder()
@@ -165,31 +165,31 @@ namespace Ryujinx.Graphics.Vulkan
 
             _programConvertIndirectData = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ShaderBinaries.ConvertIndirectDataShaderSource, ShaderStage.Compute, TargetLanguage.Spirv),
+                new ShaderSource(ShaderBinaries.ConvertIndirectDataShaderSource, ShaderStage.Compute, TargetLanguage.Spirv)
             }, convertIndirectDataResourceLayout);
 
             _programDepthBlit = gd.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(ShaderBinaries.ColorBlitVertexShaderSource, ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ShaderBinaries.DepthBlitFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ShaderBinaries.DepthBlitFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv)
             }, blitResourceLayout);
 
             _programDepthBlitMs = gd.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(ShaderBinaries.ColorBlitVertexShaderSource, ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ShaderBinaries.DepthBlitMsFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ShaderBinaries.DepthBlitMsFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv)
             }, blitResourceLayout);
 
             _programDepthDrawToMs = gd.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(ShaderBinaries.ColorDrawToMsVertexShaderSource, ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ShaderBinaries.DepthDrawToMsFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ShaderBinaries.DepthDrawToMsFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv)
             }, colorDrawToMsResourceLayout);
 
             _programDepthDrawToNonMs = gd.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(ShaderBinaries.ColorDrawToMsVertexShaderSource, ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ShaderBinaries.DepthDrawToNonMsFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ShaderBinaries.DepthDrawToNonMsFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv)
             }, colorDrawToMsResourceLayout);
 
             if (gd.Capabilities.SupportsShaderStencilExport)
@@ -197,25 +197,25 @@ namespace Ryujinx.Graphics.Vulkan
                 _programStencilBlit = gd.CreateProgramWithMinimalLayout(new[]
                 {
                     new ShaderSource(ShaderBinaries.ColorBlitVertexShaderSource, ShaderStage.Vertex, TargetLanguage.Spirv),
-                    new ShaderSource(ShaderBinaries.StencilBlitFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv),
+                    new ShaderSource(ShaderBinaries.StencilBlitFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv)
                 }, blitResourceLayout);
 
                 _programStencilBlitMs = gd.CreateProgramWithMinimalLayout(new[]
                 {
                     new ShaderSource(ShaderBinaries.ColorBlitVertexShaderSource, ShaderStage.Vertex, TargetLanguage.Spirv),
-                    new ShaderSource(ShaderBinaries.StencilBlitMsFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv),
+                    new ShaderSource(ShaderBinaries.StencilBlitMsFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv)
                 }, blitResourceLayout);
 
                 _programStencilDrawToMs = gd.CreateProgramWithMinimalLayout(new[]
                 {
                     new ShaderSource(ShaderBinaries.ColorDrawToMsVertexShaderSource, ShaderStage.Vertex, TargetLanguage.Spirv),
-                    new ShaderSource(ShaderBinaries.StencilDrawToMsFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv),
+                    new ShaderSource(ShaderBinaries.StencilDrawToMsFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv)
                 }, colorDrawToMsResourceLayout);
 
                 _programStencilDrawToNonMs = gd.CreateProgramWithMinimalLayout(new[]
                 {
                     new ShaderSource(ShaderBinaries.ColorDrawToMsVertexShaderSource, ShaderStage.Vertex, TargetLanguage.Spirv),
-                    new ShaderSource(ShaderBinaries.StencilDrawToNonMsFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv),
+                    new ShaderSource(ShaderBinaries.StencilDrawToNonMsFragmentShaderSource, ShaderStage.Fragment, TargetLanguage.Spirv)
                 }, colorDrawToMsResourceLayout);
             }
         }
@@ -882,7 +882,7 @@ namespace Ryujinx.Graphics.Vulkan
             // TODO: Convert with a compute shader?
 
             int convertedCount = pattern.GetConvertedCount(indexCount);
-            int outputIndexSize = 4;
+            const int outputIndexSize = 4;
 
             var srcBuffer = src.GetBuffer().Get(cbs, srcOffset, indexCount * indexSize).Value;
             var dstBuffer = dst.GetBuffer().Get(cbs, 0, convertedCount * outputIndexSize).Value;
@@ -1534,7 +1534,7 @@ namespace Ryujinx.Graphics.Vulkan
             int indexCount = srcIndexBufferSize / indexSize;
             int primitivesCount = pattern.GetPrimitiveCount(indexCount);
             int convertedCount = pattern.GetConvertedCount(indexCount);
-            int outputIndexSize = 4;
+            const int outputIndexSize = 4;
 
             var srcBuffer = srcIndexBuffer.GetBuffer().Get(cbs, srcIndexBufferOffset, indexCount * indexSize).Value;
             var dstBuffer = dstIndexBuffer.GetBuffer().Get(cbs, 0, convertedCount * outputIndexSize).Value;
@@ -1642,8 +1642,8 @@ namespace Ryujinx.Graphics.Vulkan
             var srcBuffer = srcBufferAuto.Get(cbs, 0, inSize).Value;
             var dstBuffer = dstBufferAuto.Get(cbs, dstOffset, outSize).Value;
 
-            var access = AccessFlags.ShaderWriteBit;
-            var stage = PipelineStageFlags.ComputeShaderBit;
+            const AccessFlags access = AccessFlags.ShaderWriteBit;
+            const PipelineStageFlags stage = PipelineStageFlags.ComputeShaderBit;
 
             BufferHolder.InsertBufferBarrier(
                 gd,

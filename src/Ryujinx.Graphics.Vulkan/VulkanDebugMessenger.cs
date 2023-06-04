@@ -10,8 +10,7 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class VulkanDebugMessenger : IDisposable
     {
-        private static readonly string[] _excludedMessages = new string[]
-        {
+        private static readonly string[] _excludedMessages = {
             // NOTE: Done on purpose right now.
             "UNASSIGNED-CoreValidation-Shader-OutputNotConsumed",
             // TODO: Figure out if fixable

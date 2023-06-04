@@ -20,8 +20,7 @@ namespace Ryujinx.Graphics.Vulkan
         private const string AppName = "Ryujinx.Graphics.Vulkan";
         private const int QueuesCount = 2;
 
-        private static readonly string[] _desirableExtensions = new string[]
-        {
+        private static readonly string[] _desirableExtensions = {
             ExtConditionalRendering.ExtensionName,
             ExtExtendedDynamicState.ExtensionName,
             ExtTransformFeedback.ExtensionName,
@@ -45,8 +44,7 @@ namespace Ryujinx.Graphics.Vulkan
             "VK_KHR_portability_subset" // As per spec, we should enable this if present.
         };
 
-        private static readonly string[] _requiredExtensions = new string[]
-        {
+        private static readonly string[] _requiredExtensions = {
             KhrSwapchain.ExtensionName
         };
 
@@ -513,7 +511,7 @@ namespace Ryujinx.Graphics.Vulkan
                     SType = StructureType.PhysicalDeviceCustomBorderColorFeaturesExt,
                     PNext = pExtendedFeatures,
                     CustomBorderColors = true,
-                    CustomBorderColorWithoutFormat = true,
+                    CustomBorderColorWithoutFormat = true
                 };
 
                 pExtendedFeatures = &featuresCustomBorderColor;

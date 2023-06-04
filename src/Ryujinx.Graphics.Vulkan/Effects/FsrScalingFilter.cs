@@ -147,7 +147,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             var sharpeningBufferHandle = _renderer.BufferManager.CreateWithHandle(_renderer, sizeof(float));
             _renderer.BufferManager.SetData(sharpeningBufferHandle, 0, sharpeningBuffer);
 
-            int threadGroupWorkRegionDim = 16;
+            const int threadGroupWorkRegionDim = 16;
             int dispatchX = (width + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
             int dispatchY = (height + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
 

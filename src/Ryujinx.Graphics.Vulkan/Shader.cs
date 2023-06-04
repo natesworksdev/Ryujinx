@@ -19,12 +19,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly Vk _api;
         private readonly Device _device;
-        private readonly ShaderStageFlags _stage;
 
         private bool _disposed;
         private ShaderModule _module;
 
-        public ShaderStageFlags StageFlags => _stage;
+        public ShaderStageFlags StageFlags { get; }
 
         public ProgramLinkStatus CompileStatus { private set; get; }
 
@@ -37,7 +36,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             CompileStatus = ProgramLinkStatus.Incomplete;
 
-            _stage = shaderSource.Stage.Convert();
+            StageFlags = shaderSource.Stage.Convert();
 
             CompileTask = Task.Run(() =>
             {
@@ -137,7 +136,7 @@ namespace Ryujinx.Graphics.Vulkan
             return new PipelineShaderStageCreateInfo()
             {
                 SType = StructureType.PipelineShaderStageCreateInfo,
-                Stage = _stage,
+                Stage = StageFlags,
                 Module = _module,
                 PName = (byte*)_ptrMainEntryPointName
             };
