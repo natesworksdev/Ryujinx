@@ -1,7 +1,6 @@
 ﻿using ARMeilleure.CodeGen.X86;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
-using ARMeilleure.Translation;
 using System;
 using System.Runtime.InteropServices;
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;

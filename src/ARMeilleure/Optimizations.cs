@@ -1,5 +1,3 @@
-using System.Runtime.Intrinsics.Arm;
-
 namespace ARMeilleure
 {
     using Arm64HardwareCapabilities = ARMeilleure.CodeGen.Arm64.HardwareCapabilities;
