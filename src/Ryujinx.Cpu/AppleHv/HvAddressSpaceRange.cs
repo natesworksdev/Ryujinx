@@ -52,14 +52,10 @@ namespace Ryujinx.Cpu.AppleHv
 
         private int _tlbInvalidationPending;
 
-#pragma warning disable IDE0052 // Remove unread private member
-        private readonly HvIpaAllocator _ipaAllocator;
-#pragma warning restore IDE0052
         private readonly HvMemoryBlockAllocator _blockAllocator;
 
         public HvAddressSpaceRange(HvIpaAllocator ipaAllocator)
         {
-            _ipaAllocator = ipaAllocator;
             _blockAllocator = new HvMemoryBlockAllocator(ipaAllocator, (int)AllocationGranule);
         }
 
@@ -131,9 +127,7 @@ namespace Ryujinx.Cpu.AppleHv
             ulong endVa = (va + size + PageMask) & ~((ulong)PageMask);
             va &= ~((ulong)PageMask);
 
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            (ulong blockSize, int blockShift) = GetBlockSizeAndShift(depth);
-#pragma warning restore IDE0059
+            (ulong blockSize, _) = GetBlockSizeAndShift(depth);
 
             while (va < endVa)
             {
@@ -194,9 +188,7 @@ namespace Ryujinx.Cpu.AppleHv
             ulong endVa = (va + size + PageSize - 1) & ~((ulong)PageSize - 1);
             va &= ~((ulong)PageSize - 1);
 
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            (ulong blockSize, int blockShift) = GetBlockSizeAndShift(depth);
-#pragma warning restore IDE0059
+            (ulong blockSize, _) = GetBlockSizeAndShift(depth);
 
             while (va < endVa)
             {
@@ -249,9 +241,7 @@ namespace Ryujinx.Cpu.AppleHv
             PtLevel level = new(_blockAllocator, LevelCount, depth < 2);
             Span<ulong> currentLevel = level.AsSpan();
 
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            (ulong blockSize, int blockShift) = GetBlockSizeAndShift(depth);
-#pragma warning restore IDE0059
+            (_, int blockShift) = GetBlockSizeAndShift(depth);
 
             // Fill in the blocks.
             for (int i = 0; i < LevelCount; i++)
