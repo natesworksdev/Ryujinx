@@ -171,9 +171,11 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
                 return ResultCode.Success;
             }
             else
+#pragma warning disable CS0162
             {
                 return ResultCode.StereoVisionRestrictionConfigurableDisabled;
             }
+#pragma warning restore CS0162
         }
 #pragma warning restore IDE0060
 
