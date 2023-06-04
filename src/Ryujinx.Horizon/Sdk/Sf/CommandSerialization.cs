@@ -26,13 +26,6 @@ namespace Ryujinx.Horizon.Sdk.Sf
             return ref MemoryMarshal.Cast<byte, T>(writableRegion.Memory.Span)[0];
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
-        public static object DeserializeArg<T>(ref ServiceDispatchContext context, ReadOnlySpan<byte> inRawData, int offset) where T : unmanaged
-        {
-            return MemoryMarshal.Cast<byte, T>(inRawData.Slice(offset, Unsafe.SizeOf<T>()))[0];
-        }
-#pragma warning restore IDE0060
-
         public static T DeserializeArg<T>(ReadOnlySpan<byte> inRawData, int offset) where T : unmanaged
         {
             return MemoryMarshal.Cast<byte, T>(inRawData.Slice(offset, Unsafe.SizeOf<T>()))[0];
