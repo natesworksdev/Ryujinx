@@ -1,5 +1,4 @@
-﻿using Silk.NET.Vulkan;
-using System;
+﻿using System;
 
 using VkBuffer = Silk.NET.Vulkan.Buffer;
 
