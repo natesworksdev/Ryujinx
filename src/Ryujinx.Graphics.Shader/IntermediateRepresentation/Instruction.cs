@@ -139,7 +139,6 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
     {
         public static bool IsAtomic(this Instruction inst)
         {
-#pragma warning disable IDE0066
             switch (inst & Instruction.Mask)
             {
                 case Instruction.AtomicAdd:
@@ -154,7 +153,6 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
                 case Instruction.AtomicXor:
                     return true;
             }
-#pragma warning restore IDE0066
 
             return false;
         }

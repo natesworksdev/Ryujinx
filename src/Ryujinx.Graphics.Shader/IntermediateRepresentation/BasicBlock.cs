@@ -75,7 +75,6 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 
         private static bool IsControlFlowInst(Instruction inst)
         {
-#pragma warning disable IDE0066
             switch (inst)
             {
                 case Instruction.Branch:
@@ -87,7 +86,6 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
                 default:
                     return false;
             }
-#pragma warning restore IDE0066
         }
     }
 }
