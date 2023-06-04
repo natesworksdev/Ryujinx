@@ -102,7 +102,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public (Operand, Operand) Add(Instruction inst, (Operand, Operand) dest, params Operand[] sources)
         {
-            Operand[] dests = new[] { dest.Item1, dest.Item2 };
+            Operand[] dests = { dest.Item1, dest.Item2 };
 
             Operation operation = new(inst, 0, dests, sources);
 

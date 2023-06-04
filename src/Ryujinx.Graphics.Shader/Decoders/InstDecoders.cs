@@ -7,7 +7,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         _32 = 0,
         _64 = 1,
         _96 = 2,
-        _128 = 3,
+        _128 = 3
     }
 
     enum AtomSize
@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         U64 = 2,
         F32FtzRn = 3,
         F16x2FtzRn = 4,
-        S64 = 5,
+        S64 = 5
     }
 
     enum AtomOp
@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Or = 6,
         Xor = 7,
         Exch = 8,
-        Safeadd = 10,
+        Safeadd = 10
     }
 
     enum AtomsSize
@@ -39,14 +39,14 @@ namespace Ryujinx.Graphics.Shader.Decoders
         U32 = 0,
         S32 = 1,
         U64 = 2,
-        S64 = 3,
+        S64 = 3
     }
 
     enum BarMode
     {
         Bar = 0,
         Result = 1,
-        Warp = 2,
+        Warp = 2
     }
 
     enum BarOp
@@ -55,14 +55,14 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Arv = 1,
         Red = 2,
         Scan = 3,
-        SyncAll = 4,
+        SyncAll = 4
     }
 
     enum BarRedOp
     {
         Popc = 0,
         And = 1,
-        Or = 2,
+        Or = 2
     }
 
     enum Bpt
@@ -72,7 +72,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Pause = 2,
         Trap = 3,
         Int = 4,
-        Drain = 5,
+        Drain = 5
     }
 
     enum Ccc
@@ -108,7 +108,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         FcsmTr = 28,
         FcsmMx = 29,
         Rle = 30,
-        Rgt = 31,
+        Rgt = 31
     }
 
     enum CacheType
@@ -116,7 +116,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         U = 1,
         C = 2,
         I = 3,
-        Crs = 4,
+        Crs = 4
     }
 
     enum CctlOp
@@ -128,19 +128,19 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Iv = 5,
         Ivall = 6,
         Rs = 7,
-        Rslb = 9,
+        Rslb = 9
     }
 
     enum CctltOp
     {
-        Ivth = 1,
+        Ivth = 1
     }
 
     enum BoolOp
     {
         And = 0,
         Or = 1,
-        Xor = 2,
+        Xor = 2
     }
 
     enum SReg
@@ -218,7 +218,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         HwTaskId = 96,
         CircularQueueEntryIndex = 97,
         CircularQueueEntryAddressLow = 98,
-        CircularQueueEntryAddressHigh = 99,
+        CircularQueueEntryAddressHigh = 99
     }
 
     enum RoundMode
@@ -226,7 +226,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Rn = 0,
         Rm = 1,
         Rp = 2,
-        Rz = 3,
+        Rz = 3
     }
 
     enum FComp
@@ -246,7 +246,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Gtu = 12,
         Neu = 13,
         Geu = 14,
-        T = 15,
+        T = 15
     }
 
     enum IntegerRound
@@ -255,7 +255,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Round = 4,
         Floor = 5,
         Ceil = 6,
-        Trunc = 7,
+        Trunc = 7
     }
 
     enum IDstFmt
@@ -265,7 +265,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         U64 = 3,
         S16 = 5,
         S32 = 6,
-        S64 = 7,
+        S64 = 7
     }
 
     enum ISrcFmt
@@ -277,7 +277,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         S8 = 4,
         S16 = 5,
         S32 = 6,
-        S64 = 7,
+        S64 = 7
     }
 
     enum ISrcDstFmt
@@ -287,7 +287,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         U32 = 2,
         S8 = 4,
         S16 = 5,
-        S32 = 6,
+        S32 = 6
     }
 
     enum RoundMode2
@@ -295,18 +295,18 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Round = 0,
         Floor = 1,
         Ceil = 2,
-        Trunc = 3,
+        Trunc = 3
     }
 
     enum ChkModeF
     {
-        Divide = 0,
+        Divide = 0
     }
 
     enum Fmz
     {
         Ftz = 1,
-        Fmz = 2,
+        Fmz = 2
     }
 
     enum MultiplyScale
@@ -317,7 +317,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         D8 = 3,
         M8 = 4,
         M4 = 5,
-        M2 = 6,
+        M2 = 6
     }
 
     enum OFmt
@@ -325,7 +325,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         F16 = 0,
         F32 = 1,
         MrgH0 = 2,
-        MrgH1 = 3,
+        MrgH1 = 3
     }
 
     enum HalfSwizzle
@@ -333,7 +333,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         F16 = 0,
         F32 = 1,
         H0H0 = 2,
-        H1H1 = 3,
+        H1H1 = 3
     }
 
     enum ByteSel
@@ -341,14 +341,14 @@ namespace Ryujinx.Graphics.Shader.Decoders
         B0 = 0,
         B1 = 1,
         B2 = 2,
-        B3 = 3,
+        B3 = 3
     }
 
     enum DstFmt
     {
         F16 = 1,
         F32 = 2,
-        F64 = 3,
+        F64 = 3
     }
 
     enum AvgMode
@@ -356,21 +356,21 @@ namespace Ryujinx.Graphics.Shader.Decoders
         NoNeg = 0,
         NegB = 1,
         NegA = 2,
-        PlusOne = 3,
+        PlusOne = 3
     }
 
     enum Lrs
     {
         None = 0,
         RightShift = 1,
-        LeftShift = 2,
+        LeftShift = 2
     }
 
     enum HalfSelect
     {
         B32 = 0,
         H0 = 1,
-        H1 = 2,
+        H1 = 2
     }
 
     enum IComp
@@ -382,14 +382,14 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Gt = 4,
         Ne = 5,
         Ge = 6,
-        T = 7,
+        T = 7
     }
 
     enum XMode
     {
         Xlo = 1,
         Xmed = 2,
-        Xhi = 3,
+        Xhi = 3
     }
 
     enum IpaOp
@@ -397,14 +397,14 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Pass = 0,
         Multiply = 1,
         Constant = 2,
-        Sc = 3,
+        Sc = 3
     }
 
     enum IBase
     {
         Patch = 1,
         Prim = 2,
-        Attr = 3,
+        Attr = 3
     }
 
     enum CacheOpLd
@@ -412,7 +412,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Ca = 0,
         Cg = 1,
         Ci = 2,
-        Cv = 3,
+        Cv = 3
     }
 
     enum CacheOpSt
@@ -420,7 +420,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Wb = 0,
         Cg = 1,
         Ci = 2,
-        Wt = 3,
+        Wt = 3
     }
 
     enum LsSize
@@ -432,7 +432,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         B32 = 4,
         B64 = 5,
         B128 = 6,
-        UB128 = 7,
+        UB128 = 7
     }
 
     enum LsSize2
@@ -443,21 +443,21 @@ namespace Ryujinx.Graphics.Shader.Decoders
         S16 = 3,
         B32 = 4,
         B64 = 5,
-        B128 = 6,
+        B128 = 6
     }
 
     enum AddressMode
     {
         Il = 1,
         Is = 2,
-        Isl = 3,
+        Isl = 3
     }
 
     enum CacheOp2
     {
         Lu = 1,
         Ci = 2,
-        Cv = 3,
+        Cv = 3
     }
 
     enum PredicateOp
@@ -465,7 +465,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         F = 0,
         T = 1,
         Z = 2,
-        Nz = 3,
+        Nz = 3
     }
 
     enum LogicOp
@@ -473,7 +473,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         And = 0,
         Or = 1,
         Xor = 2,
-        PassB = 3,
+        PassB = 3
     }
 
     enum Membar
@@ -481,14 +481,14 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Cta = 0,
         Gl = 1,
         Sys = 2,
-        Vc = 3,
+        Vc = 3
     }
 
     enum Ivall
     {
         Ivalld = 1,
         Ivallt = 2,
-        Ivalltd = 3,
+        Ivalltd = 3
     }
 
     enum MufuOp
@@ -501,14 +501,14 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Rsq = 5,
         Rcp64h = 6,
         Rsq64h = 7,
-        Sqrt = 8,
+        Sqrt = 8
     }
 
     enum OutType
     {
         Emit = 1,
         Cut = 2,
-        EmitThenCut = 3,
+        EmitThenCut = 3
     }
 
     enum PixMode
@@ -517,7 +517,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Covered = 2,
         Offset = 3,
         CentroidOffset = 4,
-        MyIndex = 5,
+        MyIndex = 5
     }
 
     enum PMode
@@ -527,7 +527,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Rc8 = 3,
         Ecl = 4,
         Ecr = 5,
-        Rc16 = 6,
+        Rc16 = 6
     }
 
     enum RedOp
@@ -539,20 +539,20 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Dec = 4,
         And = 5,
         Or = 6,
-        Xor = 7,
+        Xor = 7
     }
 
     enum XModeShf
     {
         Hi = 1,
         X = 2,
-        Xhi = 3,
+        Xhi = 3
     }
 
     enum MaxShift
     {
         U64 = 2,
-        S64 = 3,
+        S64 = 3
     }
 
     enum ShflMode
@@ -560,13 +560,13 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Idx = 0,
         Up = 1,
         Down = 2,
-        Bfly = 3,
+        Bfly = 3
     }
 
     enum Clamp
     {
         Ign = 0,
-        Trap = 2,
+        Trap = 2
     }
 
     enum SuatomSize
@@ -578,7 +578,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         F16x2FtzRn = 4,
         S64 = 5,
         Sd32 = 6,
-        Sd64 = 7,
+        Sd64 = 7
     }
 
     enum SuDim
@@ -588,7 +588,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         _1dArray = 2,
         _2d = 3,
         _2dArray = 4,
-        _3d = 5,
+        _3d = 5
     }
 
     enum SuatomOp
@@ -601,7 +601,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         And = 5,
         Or = 6,
         Xor = 7,
-        Exch = 8,
+        Exch = 8
     }
 
     enum SuSize
@@ -613,7 +613,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         B32 = 4,
         B64 = 5,
         B128 = 6,
-        UB128 = 7,
+        UB128 = 7
     }
 
     enum SuRgba
@@ -632,7 +632,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Ba = 12,
         Rba = 13,
         Gba = 14,
-        Rgba = 15,
+        Rgba = 15
     }
 
     enum Lod
@@ -641,7 +641,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Lb = 2,
         Ll = 3,
         Lba = 6,
-        Lla = 7,
+        Lla = 7
     }
 
     enum TexDim
@@ -653,7 +653,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         _3d = 4,
         Array3d = 5,
         Cube = 6,
-        ArrayCube = 7,
+        ArrayCube = 7
     }
 
     enum TexsTarget
@@ -671,7 +671,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Texture3D = 10,
         Texture3DLodZero = 11,
         TextureCube = 12,
-        TextureCubeLodLevel = 13,
+        TextureCubeLodLevel = 13
     }
 
     enum TldsTarget
@@ -692,14 +692,14 @@ namespace Ryujinx.Graphics.Shader.Decoders
         R = 0,
         G = 1,
         B = 2,
-        A = 3,
+        A = 3
     }
 
     enum TexOffset
     {
         None = 0,
         Aoffi = 1,
-        Ptp = 2,
+        Ptp = 2
     }
 
     enum TexQuery
@@ -710,7 +710,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         TexSamplerFilter = 16,
         TexSamplerLod = 18,
         TexSamplerWrap = 20,
-        TexSamplerBorderColor = 22,
+        TexSamplerBorderColor = 22
     }
 
     [Flags]
@@ -729,7 +729,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         S8B3 = 11,
         S16H0 = 12,
         S16H1 = 13,
-        S32 = 14,
+        S32 = 14
     }
 
     enum VideoOp
@@ -740,12 +740,12 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Mrg8b2 = 3,
         Acc = 4,
         Min = 5,
-        Max = 6,
+        Max = 6
     }
 
     enum VideoRed
     {
-        Acc = 1,
+        Acc = 1
     }
 
     enum LaneMask4
@@ -764,7 +764,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Xy = 12,
         Xyz = 13,
         Xyw = 14,
-        Xyzw = 15,
+        Xyzw = 15
     }
 
     enum ASelect4
@@ -781,7 +781,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         _0213 = 10,
         _3120 = 11,
         _1230 = 12,
-        _2310 = 13,
+        _2310 = 13
     }
 
     enum BSelect4
@@ -795,20 +795,20 @@ namespace Ryujinx.Graphics.Shader.Decoders
         _4321 = 7,
         _4567 = 8,
         _6745 = 9,
-        _5476 = 10,
+        _5476 = 10
     }
 
     enum VideoScale
     {
         Shr7 = 1,
-        Shr15 = 2,
+        Shr15 = 2
     }
 
     enum VoteMode
     {
         All = 0,
         Any = 1,
-        Eq = 2,
+        Eq = 2
     }
 
     enum XmadCop
@@ -817,7 +817,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Clo = 1,
         Chi = 2,
         Csfu = 3,
-        Cbcc = 4,
+        Cbcc = 4
     }
 
     enum XmadCop2
@@ -825,7 +825,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Cfull = 0,
         Clo = 1,
         Chi = 2,
-        Csfu = 3,
+        Csfu = 3
     }
 
     enum ImadspASelect
@@ -837,7 +837,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         U16h0 = 4,
         S16h0 = 5,
         U16h1 = 6,
-        S16h1 = 7,
+        S16h1 = 7
     }
 
     enum ImadspBSelect
@@ -845,7 +845,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         U24 = 0,
         S24 = 1,
         U16h0 = 2,
-        S16h0 = 3,
+        S16h0 = 3
     }
 
     readonly struct InstConditional

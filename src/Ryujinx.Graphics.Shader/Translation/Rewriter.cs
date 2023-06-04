@@ -357,7 +357,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                         }
                     }
 
-                    Operand[] callArgs = new Operand[] { Const(functionId), dest, Const(samplerIndex) };
+                    Operand[] callArgs = { Const(functionId), dest, Const(samplerIndex) };
 
                     node.List.AddAfter(node, new Operation(Instruction.Call, 0, unscaledSize, callArgs));
                 }

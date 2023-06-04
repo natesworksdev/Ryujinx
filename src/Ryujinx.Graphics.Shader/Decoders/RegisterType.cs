@@ -4,6 +4,6 @@ namespace Ryujinx.Graphics.Shader.Decoders
     {
         Flag,
         Gpr,
-        Predicate,
+        Predicate
     }
 }

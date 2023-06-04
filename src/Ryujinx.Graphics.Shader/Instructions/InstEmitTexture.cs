@@ -11,8 +11,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 {
     static partial class InstEmit
     {
-        private static readonly int[,] _maskLut = new int[,]
-        {
+        private static readonly int[,] _maskLut = {
             { 0b0001, 0b0010, 0b0100, 0b1000, 0b0011, 0b1001, 0b1010, 0b1100 },
             { 0b0111, 0b1011, 0b1101, 0b1110, 0b1111, 0b0000, 0b0000, 0b0000 }
         };
@@ -71,7 +70,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             context.Config.SetUsedFeature(FeatureFlags.IntegerSampling);
 
-            var flags = TextureFlags.IntCoords | TextureFlags.Bindless;
+            const TextureFlags flags = TextureFlags.IntCoords | TextureFlags.Bindless;
             var lod = op.Lod ? Lod.Ll : Lod.Lz;
 
             EmitTex(context, flags, op.Dim, lod, 0, op.WMask, op.SrcA, op.SrcB, op.Dest, op.Ms, false, op.Toff);
@@ -1114,7 +1113,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             context.Config.SetUsedFeature(FeatureFlags.IntegerSampling);
 
             // TODO: Validate and use query.
-            Instruction inst = Instruction.TextureSize;
+            const Instruction inst = Instruction.TextureSize;
             TextureFlags flags = isBindless ? TextureFlags.Bindless : TextureFlags.None;
 
             Operand Ra()

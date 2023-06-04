@@ -556,7 +556,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     FComp.Gt => Instruction.CompareGreater,
                     FComp.Ne => Instruction.CompareNotEqual,
                     FComp.Ge => Instruction.CompareGreaterOrEqual,
-                    _ => throw new ArgumentException($"Unexpected condition \"{cond}\"."),
+                    _ => throw new ArgumentException($"Unexpected condition \"{cond}\".")
                 };
                 res = context.Add(inst | fpType, Local(), srcA, srcB);
 

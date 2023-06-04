@@ -486,7 +486,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             {
                 LsSize.B64 => 2,
                 LsSize.B128 or LsSize.UB128 => 4,
-                _ => 1,
+                _ => 1
             };
         }
 
