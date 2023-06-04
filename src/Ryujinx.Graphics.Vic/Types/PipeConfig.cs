@@ -4,7 +4,7 @@ namespace Ryujinx.Graphics.Vic.Types
 {
     readonly struct PipeConfig
     {
-#pragma warning disable CS0169, CS0649, IDE0051
+#pragma warning disable CS0169, CS0649, IDE0051 // Remove unused private member
         private readonly long _word0;
         private readonly long _word1;
 #pragma warning restore CS0169, CS0649, IDE0051

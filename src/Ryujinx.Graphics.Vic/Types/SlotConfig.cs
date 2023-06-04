@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Vic.Types
         private readonly long _word4;
         private readonly long _word5;
         private readonly long _word6;
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         private readonly long _word7;
 #pragma warning restore IDE0051
 
