@@ -9,9 +9,9 @@ namespace Ryujinx.Tests.Memory
 {
     public class MultiRegionTrackingTests
     {
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
         private const int RndCnt = 3;
-#pragma warning disable IDE0051
+#pragma warning disable IDE0051 // Remove unused private member
 
         private const ulong MemorySize = 0x8000;
         private const int PageSize = 4096;
