@@ -28,7 +28,7 @@ namespace Ryujinx.Common.SystemInterop
         {
             public int GdiplusVersion;
 
-#pragma warning disable CS0649
+#pragma warning disable CS0649 // Field is never assigned to
             public IntPtr DebugEventCallback;
             public int SuppressBackgroundThread;
             public int SuppressExternalCodecs;

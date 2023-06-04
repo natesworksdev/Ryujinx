@@ -182,7 +182,7 @@ namespace Ryujinx.Common.Collections
 
                 if (ParentOf(element) == old)
                 {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                     parent = element;
 #pragma warning restore IDE0059
                 }

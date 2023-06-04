@@ -54,7 +54,7 @@ namespace Ryujinx.Common.SystemInterop
             }
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private void Dispose(bool disposing)
         {
             if (_disposable)

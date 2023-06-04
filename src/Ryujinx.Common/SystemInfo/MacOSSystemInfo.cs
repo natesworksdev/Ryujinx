@@ -63,7 +63,7 @@ namespace Ryujinx.Common.SystemInfo
         [LibraryImport(SystemLibraryName, SetLastError = true)]
         private static partial int sysctlbyname([MarshalAs(UnmanagedType.LPStr)] string name, IntPtr oldValue, ref ulong oldSize, IntPtr newValue, ulong newValueSize);
 
-#pragma warning disable IDE1006
+#pragma warning disable IDE1006 // Naming rule violation
         private static int sysctlbyname(string name, IntPtr oldValue, ref ulong oldSize)
         {
             if (sysctlbyname(name, oldValue, ref oldSize, IntPtr.Zero, 0) == -1)
@@ -154,7 +154,7 @@ namespace Ryujinx.Common.SystemInfo
         }
 
         [LibraryImport(SystemLibraryName, SetLastError = true)]
-#pragma warning disable IDE1006
+#pragma warning disable IDE1006 // Naming rule violation
         private static partial int host_statistics64(uint host_priv, int host_flavor, ref VMStatistics64 host_info64_out, ref uint host_info64_outCnt);
 #pragma warning restore IDE1006
     }

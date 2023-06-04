@@ -12,7 +12,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array2<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array1<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -22,7 +22,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array3<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array2<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -32,7 +32,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array4<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array3<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -42,7 +42,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array5<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array4<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -52,7 +52,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array6<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array5<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -62,7 +62,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array7<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array6<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -72,7 +72,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array8<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array7<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -82,7 +82,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array9<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array8<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -92,7 +92,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array10<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array9<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -102,7 +102,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array11<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array10<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -112,7 +112,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array12<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array11<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -122,7 +122,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array13<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array12<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -132,7 +132,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array14<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array13<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -142,7 +142,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array15<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array14<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -152,7 +152,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array16<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array15<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -162,7 +162,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array17<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array16<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -172,7 +172,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array18<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array17<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -182,7 +182,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array19<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array18<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -192,7 +192,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array20<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array19<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -202,7 +202,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array21<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array20<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -212,7 +212,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array22<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array21<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -222,7 +222,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array23<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array22<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -232,7 +232,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array24<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array23<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -242,7 +242,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array25<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array24<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -252,7 +252,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array26<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array25<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -262,7 +262,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array27<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array26<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -272,7 +272,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array28<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array27<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -282,7 +282,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array29<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array28<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -292,7 +292,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array30<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array29<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -302,7 +302,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array31<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array30<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -312,7 +312,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array32<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array31<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -322,7 +322,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array33<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array32<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -332,7 +332,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array34<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array33<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -342,7 +342,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array35<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array34<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -352,7 +352,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array36<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array35<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -362,7 +362,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array37<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array36<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -372,7 +372,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array38<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array37<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -382,7 +382,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array39<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array38<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -392,7 +392,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array40<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array39<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -402,7 +402,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array41<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array40<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -412,7 +412,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array42<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array41<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -422,7 +422,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array43<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array42<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -432,7 +432,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array44<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array43<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -442,7 +442,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array45<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array44<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -452,7 +452,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array46<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array45<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -462,7 +462,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array47<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array46<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -472,7 +472,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array48<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array47<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -482,7 +482,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array49<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array48<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -492,7 +492,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array50<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array49<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -502,7 +502,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array51<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array50<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -512,7 +512,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array52<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array51<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -522,7 +522,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array53<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array52<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -532,7 +532,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array54<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array53<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -542,7 +542,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array55<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array54<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -552,7 +552,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array56<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array55<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -562,7 +562,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array57<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array56<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -572,7 +572,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array58<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array57<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -582,7 +582,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array59<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array58<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -592,7 +592,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array60<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array59<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -602,7 +602,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array61<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array60<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -612,7 +612,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array62<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array61<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -622,7 +622,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array63<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array62<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -632,7 +632,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array64<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array63<T> _other;
 #pragma warning restore CS0169, IDE0051
@@ -642,7 +642,7 @@ namespace Ryujinx.Common.Memory
     }
     public struct Array73<T> : IArray<T> where T : unmanaged
     {
-#pragma warning disable CS0169, IDE0051
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         T _e0;
         Array64<T> _other;
         Array8<T> _other2;
