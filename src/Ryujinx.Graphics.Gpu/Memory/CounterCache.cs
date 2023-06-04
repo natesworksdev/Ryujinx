@@ -34,6 +34,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// Adds a new counter to the counter cache, or updates a existing one.
         /// </summary>
         /// <param name="gpuVa">GPU virtual address where the counter will be written in memory</param>
+        /// <param name="evt">The new counter</param>
         public void AddOrUpdate(ulong gpuVa, ICounterEvent evt)
         {
             int index = BinarySearch(gpuVa);
@@ -55,7 +56,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="sender">Sender object</param>
         /// <param name="e">Event arguments</param>
-#pragma warning disable IDE0060 // Remove unused parameter
         public void MemoryUnmappedHandler(object sender, UnmapEventArgs e) => RemoveRange(e.Address, e.Size);
 
         private void RemoveRange(ulong gpuVa, ulong size)
