@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         private readonly Lbl.LblControllerServer _lblControllerServer;
 
         private bool _vrModeEnabled;
-#pragma warning disable CS0169, IDE0051 // Remove unused private member
+#pragma warning disable CS0414, IDE0052 // Remove unread private member
         private bool _lcdBacklighOffEnabled;
         private bool _requestExitToLibraryAppletAtExecuteNextProgramEnabled;
 #pragma warning restore CS0414, IDE0052

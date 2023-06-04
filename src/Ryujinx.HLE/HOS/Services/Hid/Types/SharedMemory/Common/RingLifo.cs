@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Common
 #pragma warning disable IDE0051, CS0169 // Remove unused private member
         private readonly ulong _unused;
 #pragma warning restore IDE0051, CS0169
-#pragma warning disable CS0169, IDE0051 // Remove unused private member
+#pragma warning disable CS0414, IDE0052 // Remove unread private member
         private ulong _bufferCount;
 #pragma warning restore CS0414, IDE0052
         private ulong _index;
