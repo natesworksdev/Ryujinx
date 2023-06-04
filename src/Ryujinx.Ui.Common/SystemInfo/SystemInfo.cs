@@ -1,11 +1,11 @@
 ﻿using Ryujinx.Common.Logging;
-using Ryujinx.Common.Utilities;
+using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
 
-namespace Ryujinx.Common.SystemInfo
+namespace Ryujinx.Ui.Common.SystemInfo
 {
     public class SystemInfo
     {

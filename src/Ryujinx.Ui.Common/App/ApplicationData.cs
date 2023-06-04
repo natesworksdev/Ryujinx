@@ -8,8 +8,8 @@ using LibHac.Tools.Fs;
 using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common.Logging;
-using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
+using Ryujinx.Ui.Common.Helper;
 using System;
 using System.IO;
 

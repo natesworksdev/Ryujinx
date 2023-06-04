@@ -1,5 +1,5 @@
 ﻿using Gtk;
-using Ryujinx.Common.Utilities;
+using Ryujinx.Ui.Common.Helper;
 using System;
 
 namespace Ryujinx.Ui.Helper
