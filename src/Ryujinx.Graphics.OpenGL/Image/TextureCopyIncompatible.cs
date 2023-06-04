@@ -81,7 +81,7 @@ void main()
 
         public void CopyIncompatibleFormats(ITextureInfo src, ITextureInfo dst, int srcLayer, int dstLayer, int srcLevel, int dstLevel, int depth, int levels)
         {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             TextureCreateInfo srcInfo = src.Info;
             TextureCreateInfo dstInfo = dst.Info;
 #pragma warning restore IDE0059

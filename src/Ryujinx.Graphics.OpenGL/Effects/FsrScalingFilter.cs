@@ -37,7 +37,7 @@ namespace Ryujinx.Graphics.OpenGL.Effects
             }
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public FsrScalingFilter(OpenGLRenderer renderer, IPostProcessingEffect filter)
         {
             Initialize();
