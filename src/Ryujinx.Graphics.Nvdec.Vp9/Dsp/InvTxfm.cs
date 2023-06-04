@@ -1901,7 +1901,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             }
         }
 
-#pragma warning disable IDE1006
+#pragma warning disable IDE1006 // Naming rule violation
         public static void vpx_Highbdidct8x8_1_add_c(ReadOnlySpan<int> input, Span<ushort> dest, int stride, int bd)
         {
             int i, j;

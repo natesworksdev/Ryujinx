@@ -322,7 +322,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             VPredictor(dst, stride, 32, above, left);
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private static unsafe void VPredictor(byte* dst, int stride, int bs, byte* above, byte* left)
         {
             int r;
@@ -422,7 +422,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             Dc128Predictor(dst, stride, 32, above, left);
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private static unsafe void Dc128Predictor(byte* dst, int stride, int bs, byte* above, byte* left)
         {
             int r;
@@ -1034,7 +1034,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             HighbdVPredictor(dst, stride, 32, above, left, bd);
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private static unsafe void HighbdVPredictor(ushort* dst, int stride, int bs, ushort* above, ushort* left, int bd)
         {
             int r;
@@ -1132,7 +1132,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             HighbdDc128Predictor(dst, stride, 32, above, left, bd);
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private static unsafe void HighbdDc128Predictor(ushort* dst, int stride, int bs, ushort* above, ushort* left, int bd)
         {
             int r;
