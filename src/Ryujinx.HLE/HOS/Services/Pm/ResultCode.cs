@@ -12,6 +12,6 @@ namespace Ryujinx.HLE.HOS.Services.Pm
         NotTerminated      = (3 << ErrorCodeShift) | ModuleId,
         DebugHookInUse     = (4 << ErrorCodeShift) | ModuleId,
         ApplicationRunning = (5 << ErrorCodeShift) | ModuleId,
-        InvalidSize        = (6 << ErrorCodeShift) | ModuleId,
+        InvalidSize        = (6 << ErrorCodeShift) | ModuleId
     }
 }

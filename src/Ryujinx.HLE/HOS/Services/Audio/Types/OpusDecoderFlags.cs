@@ -6,6 +6,6 @@ namespace Ryujinx.HLE.HOS.Services.Audio.Types
     enum OpusDecoderFlags : uint
     {
         None,
-        LargeFrameSize = 1 << 0,
+        LargeFrameSize = 1 << 0
     }
 }

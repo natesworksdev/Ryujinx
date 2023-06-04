@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Ptm.Psm
         // GetBatteryChargePercentage() -> u32
         public static ResultCode GetBatteryChargePercentage(ServiceCtx context)
         {
-            int chargePercentage = 100;
+            const int chargePercentage = 100;
 
             context.ResponseData.Write(chargePercentage);
 
@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.Ptm.Psm
         // GetChargerType() -> u32
         public static ResultCode GetChargerType(ServiceCtx context)
         {
-            ChargerType chargerType = ChargerType.ChargerOrDock;
+            const ChargerType chargerType = ChargerType.ChargerOrDock;
 
             context.ResponseData.Write((int)chargerType);
 

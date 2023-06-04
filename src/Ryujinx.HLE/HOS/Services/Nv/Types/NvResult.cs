@@ -25,6 +25,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         IoctlFailed              = 0x3000F,
         AccessDenied             = 0x30010,
         FileNotFound             = 0x30013,
-        ModuleNotPresent         = 0xA000E,
+        ModuleNotPresent         = 0xA000E
     }
 }

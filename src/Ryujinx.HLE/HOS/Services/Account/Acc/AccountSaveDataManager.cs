@@ -66,7 +66,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
                     AccountState = profile.Value.AccountState,
                     OnlinePlayState = profile.Value.OnlinePlayState,
                     LastModifiedTimestamp = profile.Value.LastModifiedTimestamp,
-                    Image = profile.Value.Image,
+                    Image = profile.Value.Image
                 });
             }
 

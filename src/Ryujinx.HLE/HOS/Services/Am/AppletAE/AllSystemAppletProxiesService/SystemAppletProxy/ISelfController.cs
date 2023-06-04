@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         private int _fatalSectionCount;
 
         // TODO: Set this when the game goes in suspension (go back to home menu ect), we currently don't support that so we can keep it set to 0.
-        private readonly ulong _accumulatedSuspendedTickValue = 0;
+        private const ulong AccumulatedSuspendedTickValue = 0;
 
         // TODO: Determine where those fields are used.
 #pragma warning disable IDE0052 // Remove unread private member
@@ -381,7 +381,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // GetAccumulatedSuspendedTickValue() -> u64
         public ResultCode GetAccumulatedSuspendedTickValue(ServiceCtx context)
         {
-            context.ResponseData.Write(_accumulatedSuspendedTickValue);
+            context.ResponseData.Write(AccumulatedSuspendedTickValue);
 
             return ResultCode.Success;
         }

@@ -14,6 +14,6 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
         SettingsNotLoaded      = (  6 << ErrorCodeShift) | ModuleId,
         InvalidArgument        = (  8 << ErrorCodeShift) | ModuleId,
         SettingsNotInitialized = ( 10 << ErrorCodeShift) | ModuleId,
-        ServiceNotInitialized  = (400 << ErrorCodeShift) | ModuleId,
+        ServiceNotInitialized  = (400 << ErrorCodeShift) | ModuleId
     }
 }

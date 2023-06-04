@@ -51,7 +51,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 BsdAddressFamily.InterNetwork => AddressFamily.InterNetwork,
                 BsdAddressFamily.InterNetworkV6 => AddressFamily.InterNetworkV6,
                 BsdAddressFamily.Unknown => AddressFamily.Unknown,
-                _ => throw new NotImplementedException(family.ToString()),
+                _ => throw new NotImplementedException(family.ToString())
             };
         }
 

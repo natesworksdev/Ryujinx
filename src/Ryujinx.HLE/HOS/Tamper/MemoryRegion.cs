@@ -24,6 +24,6 @@
         /// <summary>
         /// The address of the code region with address space layout randomization included.
         /// </summary>
-        Asrl = 0x3,
+        Asrl = 0x3
     }
 }

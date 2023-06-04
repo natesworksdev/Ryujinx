@@ -62,7 +62,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Npad
                 JoyDualRightSixAxisSensor = RingLifo<SixAxisSensorState>.Create(),
                 JoyLeftSixAxisSensor = RingLifo<SixAxisSensorState>.Create(),
                 JoyRightSixAxisSensor = RingLifo<SixAxisSensorState>.Create(),
-                GcTrigger = RingLifo<NpadGcTriggerState>.Create(),
+                GcTrigger = RingLifo<NpadGcTriggerState>.Create()
             };
         }
     }

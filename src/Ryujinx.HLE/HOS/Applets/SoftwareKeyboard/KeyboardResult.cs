@@ -7,6 +7,6 @@
     {
         NotSet = 0,
         Accept = 1,
-        Cancel = 2,
+        Cancel = 2
     }
 }

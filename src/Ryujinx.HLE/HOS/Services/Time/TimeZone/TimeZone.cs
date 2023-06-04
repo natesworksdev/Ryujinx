@@ -34,8 +34,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         private const long SecondsPerRepeat      = YearsPerRepeat * AverageSecondsPerYear;
 
         private static readonly int[] YearLengths     = { DaysPerNYear, DaysPerLYear };
-        private static readonly int[][] MonthsLengths = new int[][]
-        {
+        private static readonly int[][] MonthsLengths = {
             new int[] { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
             new int[] { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
         };
@@ -666,7 +665,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                         }
                     }
 
-                    bool isDaySavingTime = false;
+                    const bool isDaySavingTime = false;
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
                     long theirOffset     = theirStdOffset;
 #pragma warning restore IDE0059

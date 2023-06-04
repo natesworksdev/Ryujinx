@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             KeyboardState newState = new()
             {
-                SamplingNumber = previousEntry.SamplingNumber + 1,
+                SamplingNumber = previousEntry.SamplingNumber + 1
             };
 
             keyState.Keys.AsSpan().CopyTo(newState.Keys.RawData.AsSpan());

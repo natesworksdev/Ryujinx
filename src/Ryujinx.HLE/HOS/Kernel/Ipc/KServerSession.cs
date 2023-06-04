@@ -10,8 +10,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 {
     class KServerSession : KSynchronizationObject
     {
-        private static readonly MemoryState[] IpcMemoryStates = new MemoryState[]
-        {
+        private static readonly MemoryState[] IpcMemoryStates = {
             MemoryState.IpcBuffer3,
             MemoryState.IpcBuffer0,
             MemoryState.IpcBuffer1,

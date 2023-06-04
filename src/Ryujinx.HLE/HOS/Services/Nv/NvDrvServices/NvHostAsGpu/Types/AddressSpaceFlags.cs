@@ -6,6 +6,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu.Types
     enum AddressSpaceFlags : uint
     {
         FixedOffset   = 1,
-        RemapSubRange = 0x100,
+        RemapSubRange = 0x100
     }
 }

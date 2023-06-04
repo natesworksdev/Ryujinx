@@ -78,7 +78,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
                 SslVersion.TlsV11 => SslProtocols.Tls11,
                 SslVersion.TlsV12 => SslProtocols.Tls12,
                 SslVersion.TlsV13 => SslProtocols.Tls13,
-                _ => throw new NotImplementedException(version.ToString()),
+                _ => throw new NotImplementedException(version.ToString())
             };
         }
 #pragma warning restore SYSLIB0039

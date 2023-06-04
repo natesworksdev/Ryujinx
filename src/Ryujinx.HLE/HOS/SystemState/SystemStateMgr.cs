@@ -4,8 +4,7 @@ namespace Ryujinx.HLE.HOS.SystemState
 {
     public class SystemStateMgr
     {
-        internal static string[] LanguageCodes = new string[]
-        {
+        internal static string[] LanguageCodes = {
             "ja",
             "en-US",
             "fr",
@@ -60,7 +59,7 @@ namespace Ryujinx.HLE.HOS.SystemState
                 SystemLanguage.TraditionalChinese => TitleLanguage.TraditionalChinese,
                 SystemLanguage.Chinese or
                 SystemLanguage.SimplifiedChinese => TitleLanguage.SimplifiedChinese,
-                _ => Enum.Parse<TitleLanguage>(Enum.GetName<SystemLanguage>(language)),
+                _ => Enum.Parse<TitleLanguage>(Enum.GetName<SystemLanguage>(language))
             };
         }
 

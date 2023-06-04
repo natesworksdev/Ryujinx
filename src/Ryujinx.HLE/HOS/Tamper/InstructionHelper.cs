@@ -40,7 +40,7 @@ namespace Ryujinx.HLE.HOS.Tamper
                 Comparison.LessOrEqual => Create(typeof(CondLE<>)),
                 Comparison.Equal => Create(typeof(CondEQ<>)),
                 Comparison.NotEqual => Create(typeof(CondNE<>)),
-                _ => throw new TamperCompilationException($"Invalid comparison {comparison} in Atmosphere cheat"),
+                _ => throw new TamperCompilationException($"Invalid comparison {comparison} in Atmosphere cheat")
             };
         }
 
@@ -52,7 +52,7 @@ namespace Ryujinx.HLE.HOS.Tamper
                 2 => instruction.MakeGenericType(typeof(ushort)),
                 4 => instruction.MakeGenericType(typeof(uint)),
                 8 => instruction.MakeGenericType(typeof(ulong)),
-                _ => throw new TamperCompilationException($"Invalid instruction width {width} in Atmosphere cheat"),
+                _ => throw new TamperCompilationException($"Invalid instruction width {width} in Atmosphere cheat")
             };
             return Activator.CreateInstance(realType, operands);
         }

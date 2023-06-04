@@ -141,7 +141,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
             {
                 Type         = InternetConnectionType.WiFi,
                 WifiStrength = 3,
-                State        = InternetConnectionState.Connected,
+                State        = InternetConnectionState.Connected
             };
 
             context.ResponseData.WriteStruct(internetConnectionStatus);

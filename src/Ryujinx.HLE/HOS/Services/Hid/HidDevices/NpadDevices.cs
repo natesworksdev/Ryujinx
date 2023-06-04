@@ -387,12 +387,12 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 AnalogStickL = new AnalogStickState
                 {
                     X        = state.LStick.Dx,
-                    Y        = state.LStick.Dy,
+                    Y        = state.LStick.Dy
                 },
                 AnalogStickR = new AnalogStickState
                 {
                     X        = state.RStick.Dx,
-                    Y        = state.RStick.Dy,
+                    Y        = state.RStick.Dy
                 },
                 Attributes   = NpadAttribute.IsConnected
             };

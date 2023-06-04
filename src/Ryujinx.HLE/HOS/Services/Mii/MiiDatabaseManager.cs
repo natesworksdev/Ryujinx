@@ -11,8 +11,8 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 {
     class MiiDatabaseManager
     {
-        private static readonly bool IsTestModeEnabled = false;
-        private static uint MountCounter      = 0;
+        private const bool IsTestModeEnabled = false;
+        private static uint _mountCounter      = 0;
 
         private const ulong  DatabaseTestSaveDataId = 0x8000000000000031;
         private const ulong  DatabaseSaveDataId     = 0x8000000000000030;
@@ -106,9 +106,9 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
         private Result MountSave()
         {
-            if (MountCounter != 0)
+            if (_mountCounter != 0)
             {
-                MountCounter++;
+                _mountCounter++;
                 return Result.Success;
             }
 
@@ -151,7 +151,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
             if (result == Result.Success)
             {
-                MountCounter++;
+                _mountCounter++;
             }
             return result;
         }
@@ -169,7 +169,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
         {
             isBroken = false;
 
-            if (MountCounter == 0)
+            if (_mountCounter == 0)
             {
                 return ResultCode.InvalidArgument;
             }

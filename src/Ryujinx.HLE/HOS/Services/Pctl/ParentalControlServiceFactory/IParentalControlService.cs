@@ -16,15 +16,14 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
         private int[]                    _ratingAge;
 #pragma warning restore IDE0052
 
-#pragma warning disable CS0414 // Remove unread private member
         // TODO: Find where they are set.
-        private readonly bool _restrictionEnabled                  = false;
-        private readonly bool _featuresRestriction                 = false;
-#pragma warning disable IDE0052 // Remove unread private member
-        private bool _freeCommunicationEnabled            = false;
+        private const bool RestrictionEnabled = false;
+        private const bool FeaturesRestriction = false;
+#pragma warning disable IDE0052, CS0414 // Remove unread private member
+        private bool _freeCommunicationEnabled = false;
 #pragma warning restore IDE0052
-        private readonly bool _stereoVisionRestrictionConfigurable = true;
-        private bool _stereoVisionRestriction             = false;
+        private const bool StereoVisionRestrictionConfigurable = true;
+        private bool _stereoVisionRestriction = false;
 #pragma warning restore CS0414
 
         public IParentalControlService(ServiceCtx context, ulong pid, bool withInitialize, int permissionFlag)
@@ -88,7 +87,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 #pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode CheckFreeCommunicationPermission(ServiceCtx context)
         {
-            if (_parentalControlFlag == ParentalControlFlagValue.FreeCommunication && _restrictionEnabled)
+            if (_parentalControlFlag == ParentalControlFlagValue.FreeCommunication && RestrictionEnabled)
             {
                 // TODO: It seems to checks if an entry exists in the FreeCommunicationApplicationList using the TitleId.
                 //       Then it returns FreeCommunicationDisabled if the entry doesn't exist.
@@ -129,7 +128,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 #pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode IsFreeCommunicationAvailable(ServiceCtx context)
         {
-            if (_parentalControlFlag == ParentalControlFlagValue.FreeCommunication && _restrictionEnabled)
+            if (_parentalControlFlag == ParentalControlFlagValue.FreeCommunication && RestrictionEnabled)
             {
                 // TODO: It seems to checks if an entry exists in the FreeCommunicationApplicationList using the TitleId.
                 //       Then it returns FreeCommunicationDisabled if the entry doesn't exist.
@@ -152,7 +151,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
                 return ResultCode.PermissionDenied;
             }
 
-            context.ResponseData.Write(_restrictionEnabled);
+            context.ResponseData.Write(RestrictionEnabled);
 
             return ResultCode.Success;
         }
@@ -167,7 +166,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
                 return ResultCode.PermissionDenied;
             }
 
-            if (_stereoVisionRestrictionConfigurable)
+            if (StereoVisionRestrictionConfigurable)
             {
                 return ResultCode.Success;
             }
@@ -189,7 +188,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 
             bool stereoVisionRestriction = false;
 
-            if (_stereoVisionRestrictionConfigurable)
+            if (StereoVisionRestrictionConfigurable)
             {
                 stereoVisionRestriction = _stereoVisionRestriction;
             }
@@ -210,9 +209,9 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 
             bool stereoVisionRestriction = context.RequestData.ReadBoolean();
 
-            if (!_featuresRestriction)
+            if (!FeaturesRestriction)
             {
-                if (_stereoVisionRestrictionConfigurable)
+                if (StereoVisionRestrictionConfigurable)
                 {
                     _stereoVisionRestriction = stereoVisionRestriction;
 
@@ -262,7 +261,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
                 }
             */
 
-            if (_stereoVisionRestrictionConfigurable && _stereoVisionRestriction)
+            if (StereoVisionRestrictionConfigurable && _stereoVisionRestriction)
             {
                 return ResultCode.StereoVisionDenied;
             }

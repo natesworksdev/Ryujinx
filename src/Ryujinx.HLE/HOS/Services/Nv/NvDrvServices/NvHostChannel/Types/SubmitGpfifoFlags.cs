@@ -10,6 +10,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel.Types
         FenceIncrement     = 1 << 1,
         HwFormat           = 1 << 2,
         SuppressWfi        = 1 << 4,
-        IncrementWithValue = 1 << 8,
+        IncrementWithValue = 1 << 8
     }
 }

@@ -62,7 +62,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
                 SpecialType.IStream => "std::basic_istream<char, std::char_traits<char> >",
                 SpecialType.OStream => "std::basic_ostream<char, std::char_traits<char> >",
                 SpecialType.IOStream => "std::basic_iostream<char, std::char_traits<char> >",
-                _ => null,
+                _ => null
             };
         }
 

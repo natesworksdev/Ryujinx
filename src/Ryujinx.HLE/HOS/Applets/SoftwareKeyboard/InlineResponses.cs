@@ -58,7 +58,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] FinishedInitialize(InlineKeyboardState state)
         {
-            uint resSize = 2 * sizeof(uint) + 0x1;
+            const uint resSize = 2 * sizeof(uint) + 0x1;
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
@@ -70,7 +70,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] Default(InlineKeyboardState state)
         {
-            uint resSize = 2 * sizeof(uint);
+            const uint resSize = 2 * sizeof(uint);
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
@@ -81,7 +81,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] ChangedString(string text, uint cursor, InlineKeyboardState state)
         {
-            uint resSize = 6 * sizeof(uint) + MaxStrLenUTF16;
+            const uint resSize = 6 * sizeof(uint) + MaxStrLenUTF16;
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
@@ -93,7 +93,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] MovedCursor(string text, uint cursor, InlineKeyboardState state)
         {
-            uint resSize = 4 * sizeof(uint) + MaxStrLenUTF16;
+            const uint resSize = 4 * sizeof(uint) + MaxStrLenUTF16;
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
@@ -107,7 +107,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
         {
             // Should be the same as MovedCursor.
 
-            uint resSize = 4 * sizeof(uint) + MaxStrLenUTF16;
+            const uint resSize = 4 * sizeof(uint) + MaxStrLenUTF16;
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
@@ -119,7 +119,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] DecidedEnter(string text, InlineKeyboardState state)
         {
-            uint resSize = 3 * sizeof(uint) + MaxStrLenUTF16;
+            const uint resSize = 3 * sizeof(uint) + MaxStrLenUTF16;
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
@@ -131,7 +131,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] DecidedCancel(InlineKeyboardState state)
         {
-            uint resSize = 2 * sizeof(uint);
+            const uint resSize = 2 * sizeof(uint);
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
@@ -142,7 +142,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] ChangedStringUtf8(string text, uint cursor, InlineKeyboardState state)
         {
-            uint resSize = 6 * sizeof(uint) + MaxStrLenUTF8;
+            const uint resSize = 6 * sizeof(uint) + MaxStrLenUTF8;
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
@@ -154,7 +154,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] MovedCursorUtf8(string text, uint cursor, InlineKeyboardState state)
         {
-            uint resSize = 4 * sizeof(uint) + MaxStrLenUTF8;
+            const uint resSize = 4 * sizeof(uint) + MaxStrLenUTF8;
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
@@ -166,7 +166,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] DecidedEnterUtf8(string text, InlineKeyboardState state)
         {
-            uint resSize = 3 * sizeof(uint) + MaxStrLenUTF8;
+            const uint resSize = 3 * sizeof(uint) + MaxStrLenUTF8;
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
@@ -178,7 +178,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] UnsetCustomizeDic(InlineKeyboardState state)
         {
-            uint resSize = 2 * sizeof(uint);
+            const uint resSize = 2 * sizeof(uint);
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
@@ -189,7 +189,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] ReleasedUserWordInfo(InlineKeyboardState state)
         {
-            uint resSize = 2 * sizeof(uint);
+            const uint resSize = 2 * sizeof(uint);
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
@@ -200,7 +200,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] UnsetCustomizedDictionaries(InlineKeyboardState state)
         {
-            uint resSize = 2 * sizeof(uint);
+            const uint resSize = 2 * sizeof(uint);
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
@@ -211,7 +211,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] ChangedStringV2(string text, uint cursor, InlineKeyboardState state)
         {
-            uint resSize = 6 * sizeof(uint) + MaxStrLenUTF16 + 0x1;
+            const uint resSize = 6 * sizeof(uint) + MaxStrLenUTF16 + 0x1;
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
@@ -224,7 +224,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] MovedCursorV2(string text, uint cursor, InlineKeyboardState state)
         {
-            uint resSize = 4 * sizeof(uint) + MaxStrLenUTF16 + 0x1;
+            const uint resSize = 4 * sizeof(uint) + MaxStrLenUTF16 + 0x1;
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
@@ -237,7 +237,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] ChangedStringUtf8V2(string text, uint cursor, InlineKeyboardState state)
         {
-            uint resSize = 6 * sizeof(uint) + MaxStrLenUTF8 + 0x1;
+            const uint resSize = 6 * sizeof(uint) + MaxStrLenUTF8 + 0x1;
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
@@ -250,7 +250,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] MovedCursorUtf8V2(string text, uint cursor, InlineKeyboardState state)
         {
-            uint resSize = 4 * sizeof(uint) + MaxStrLenUTF8 + 0x1;
+            const uint resSize = 4 * sizeof(uint) + MaxStrLenUTF8 + 0x1;
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);

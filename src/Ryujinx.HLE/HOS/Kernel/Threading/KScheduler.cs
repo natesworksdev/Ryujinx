@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         private const int RoundRobinTimeQuantumMs = 10;
 
-        private static readonly int[] PreemptionPriorities = new int[] { 59, 59, 59, 63 };
+        private static readonly int[] PreemptionPriorities = { 59, 59, 59, 63 };
 
         private static readonly int[] _srcCoresHighestPrioThreads = new int[CpuCoresCount];
 
@@ -31,12 +31,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         private AutoResetEvent _idleInterruptEvent;
         private readonly object _idleInterruptEventLock;
 
-        private KThread _previousThread;
-        private KThread _currentThread;
         private readonly KThread _idleThread;
 
-        public KThread PreviousThread => _previousThread;
-        public KThread CurrentThread => _currentThread;
+        public KThread PreviousThread { get; private set; }
+
+        public KThread CurrentThread { get; private set; }
+
         public long LastContextSwitchTime { get; private set; }
         public long TotalIdleTimeTicks => _idleThread.TotalTimeRunning;
 
@@ -50,7 +50,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             KThread idleThread = CreateIdleThread(context, coreId);
 
-            _currentThread = idleThread;
+            CurrentThread = idleThread;
             _idleThread = idleThread;
 
             idleThread.StartHostThread();
@@ -234,7 +234,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             {
                 int coreToSignal = BitOperations.TrailingZeroCount(scheduledCoresMask);
 
-                KThread threadToSignal = context.Schedulers[coreToSignal]._currentThread;
+                KThread threadToSignal = context.Schedulers[coreToSignal].CurrentThread;
 
                 // Request the thread running on that core to stop and reschedule, if we have one.
                 if (threadToSignal != context.Schedulers[coreToSignal]._idleThread)
@@ -384,11 +384,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
                 if (currentProcess != null)
                 {
-                    _previousThread = !currentThread.TerminationRequested && currentThread.ActiveCore == _coreId ? currentThread : null;
+                    PreviousThread = !currentThread.TerminationRequested && currentThread.ActiveCore == _coreId ? currentThread : null;
                 }
                 else if (currentThread == _idleThread)
                 {
-                    _previousThread = null;
+                    PreviousThread = null;
                 }
             }
 
@@ -397,7 +397,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 nextThread.CurrentCore = _coreId;
             }
 
-            _currentThread = nextThread;
+            CurrentThread = nextThread;
         }
 
         public static void PreemptionThreadLoop(KernelContext context)

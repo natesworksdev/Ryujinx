@@ -521,7 +521,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 ColorFormat.R5G6B5 => Format.B5G6R5Unorm,
                 ColorFormat.A8R8G8B8 => Format.B8G8R8A8Unorm,
                 ColorFormat.A4B4G4R4 => Format.R4G4B4A4Unorm,
-                _ => throw new NotImplementedException($"Color Format \"{colorFormat}\" not implemented!"),
+                _ => throw new NotImplementedException($"Color Format \"{colorFormat}\" not implemented!")
             };
         }
 

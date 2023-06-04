@@ -34,6 +34,6 @@
         TraditionalChinese = 6,
         Korean             = 7,
         LanguageSet2       = 8,
-        LanguageSet2Latin  = 9,
+        LanguageSet2Latin  = 9
     }
 }

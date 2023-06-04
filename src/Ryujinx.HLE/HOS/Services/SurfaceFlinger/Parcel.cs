@@ -123,7 +123,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             {
                 Type     = 2,
                 Flags    = 0,
-                BinderId = HOSBinderDriverServer.GetBinderId(obj),
+                BinderId = HOSBinderDriverServer.GetBinderId(obj)
             };
 
             Encoding.ASCII.GetBytes(serviceName).CopyTo(flatBinderObject.ServiceName);

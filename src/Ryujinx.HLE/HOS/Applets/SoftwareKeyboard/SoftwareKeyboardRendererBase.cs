@@ -65,14 +65,14 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public SoftwareKeyboardRendererBase(IHostUiTheme uiTheme)
         {
-            int ryujinxLogoSize = 32;
+            const int ryujinxLogoSize = 32;
 
-            string ryujinxIconPath = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Logo_Ryujinx.png";
+            const string ryujinxIconPath = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Logo_Ryujinx.png";
             _ryujinxLogo = LoadResource(Assembly.GetExecutingAssembly(), ryujinxIconPath, ryujinxLogoSize, ryujinxLogoSize);
 
-            string padAcceptIconPath = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Icon_BtnA.png";
-            string padCancelIconPath = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Icon_BtnB.png";
-            string keyModeIconPath   = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Icon_KeyF6.png";
+            const string padAcceptIconPath = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Icon_BtnA.png";
+            const string padCancelIconPath = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Icon_BtnB.png";
+            const string keyModeIconPath = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Icon_KeyF6.png";
 
 #pragma warning disable IDE0055 // Disable formatting
             _padAcceptIcon = LoadResource(Assembly.GetExecutingAssembly(), padAcceptIconPath  , 0, 0);
@@ -91,7 +91,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             _textOverCursorColor = ToColor(uiTheme.DefaultForegroundColor, null, true);
 #pragma warning restore IDE0055
 
-            float cursorWidth = 2;
+            const float cursorWidth = 2;
 
             _textBoxOutlineWidth = 2;
             _padPressedPenWidth = 2;
@@ -115,8 +115,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
         {
             // Try a list of fonts in case any of them is not available in the system.
 
-            string[] availableFonts = new string[]
-            {
+            string[] availableFonts = {
                 uiThemeFontFamily,
                 "Liberation Sans",
                 "FreeSans",
@@ -286,7 +285,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             int totalWidth  = (int)_surfaceInfo.Width;
             int totalHeight = (int)_surfaceInfo.Height;
 
-            int panelHeight    = 240;
+            const int panelHeight = 240;
             int panelPositionY = totalHeight - panelHeight;
 
             _panelRectangle = new RectangleF(0, panelPositionY, totalWidth, panelHeight);
@@ -334,7 +333,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             var inputTextRectangle = MeasureString(state.InputText, _inputTextFont);
 
             float boxWidth  = (int)(Math.Max(300, inputTextRectangle.Width + inputTextRectangle.X + 8));
-            float boxHeight = 32;
+            const float boxHeight = 32;
             float boxY      = _panelRectangle.Y + 110;
             float boxX      = (int)((_panelRectangle.Width - boxWidth) / 2);
 
@@ -437,10 +436,9 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
                 if (cursorWidth == 0)
                 {
-                    PointF[] points = new PointF[]
-                    {
+                    PointF[] points = {
                         new PointF(cursorPositionXLeft, cursorPositionYTop),
-                        new PointF(cursorPositionXLeft, cursorPositionYBottom),
+                        new PointF(cursorPositionXLeft, cursorPositionYBottom)
                     };
 
                     context.DrawLines(cursorPen, points);
@@ -484,7 +482,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             var labelRectangle = MeasureString(label, _labelsTextFont);
 
             float labelPositionX = iconWidth + 8 - labelRectangle.X;
-            float labelPositionY = 3;
+            const float labelPositionY = 3;
 
             float fullWidth  = labelPositionX + labelRectangle.Width + labelRectangle.X;
             float fullHeight = iconHeight;

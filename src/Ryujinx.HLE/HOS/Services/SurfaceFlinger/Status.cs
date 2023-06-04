@@ -20,6 +20,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         // Consumer errors
         StaleBufferSlot    = 1,
         NoBufferAvailaible = 2,
-        PresentLater       = 3,
+        PresentLater       = 3
     }
 }

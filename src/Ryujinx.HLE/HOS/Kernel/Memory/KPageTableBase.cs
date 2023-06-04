@@ -12,8 +12,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
     abstract class KPageTableBase
     {
-        private static readonly int[] MappingUnitSizes = new int[]
-        {
+        private static readonly int[] MappingUnitSizes = {
             0x1000,
             0x10000,
             0x200000,
@@ -98,7 +97,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             _reservedAddressSpaceSize = reservedAddressSpaceSize;
         }
 
-        private static readonly int[] AddrSpaceSizes = new int[] { 32, 36, 32, 39 };
+        private static readonly int[] AddrSpaceSizes = { 32, 36, 32, 39 };
 
         public Result InitializeForProcess(
             AddressSpaceType addrSpaceType,
@@ -116,7 +115,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             _contextId = Context.ContextIdManager.GetId();
 
-            ulong addrSpaceBase = 0;
+            const ulong addrSpaceBase = 0;
             ulong addrSpaceSize = 1UL << AddrSpaceSizes[(int)addrSpaceType];
 
             Result result = CreateUserAddressSpace(
