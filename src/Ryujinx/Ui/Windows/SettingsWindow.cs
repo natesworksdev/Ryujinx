@@ -13,7 +13,6 @@ using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Configuration.System;
 using Ryujinx.Ui.Helper;
 using Ryujinx.Ui.Widgets;
-using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
