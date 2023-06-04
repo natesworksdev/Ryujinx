@@ -29,7 +29,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioIn
 
         [CommandCmif(1)]
         // Start()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode Start(ServiceCtx context)
         {
             return _impl.Start();
@@ -38,7 +38,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioIn
 
         [CommandCmif(2)]
         // Stop()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode StopAudioIn(ServiceCtx context)
         {
             return _impl.Stop();

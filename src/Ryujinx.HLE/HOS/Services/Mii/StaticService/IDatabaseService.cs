@@ -223,7 +223,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
 
         [CommandCmif(15)]
         // DestroyFile()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode DestroyFile(ServiceCtx context)
         {
             return DestroyFile();
@@ -232,7 +232,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
 
         [CommandCmif(16)]
         // DeleteFile()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode DeleteFile(ServiceCtx context)
         {
             return DeleteFile();
@@ -241,7 +241,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
 
         [CommandCmif(17)]
         // Format()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode Format(ServiceCtx context)
         {
             return Format();

@@ -62,7 +62,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             }
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public Result UnmapFromProcess(KPageTableBase memoryManager, ulong address, ulong size, KProcess process)
         {
             if (_pageList.GetPagesCount() != BitUtils.DivRoundUp<ulong>(size, KPageTableBase.PageSize))

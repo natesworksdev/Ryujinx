@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 {
     internal class NvHostGpuDeviceFile : NvHostChannelDeviceFile
     {
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly KEvent _smExceptionBptIntReportEvent;
         private readonly KEvent _smExceptionBptPauseReportEvent;
         private readonly KEvent _errorNotifierEvent;

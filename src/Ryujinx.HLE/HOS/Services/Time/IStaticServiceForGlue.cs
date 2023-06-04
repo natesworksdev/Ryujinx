@@ -83,7 +83,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
                 return ResultCode.PermissionDenied;
             }
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             TimeSpanType internalOffset = context.RequestData.ReadStruct<TimeSpanType>();
 #pragma warning restore IDE0059
 

@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns
     [Service("ns:am")]
     class IApplicationManagerInterface : IpcService
     {
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IApplicationManagerInterface(ServiceCtx context) { }
 #pragma warning restore IDE0060
 
@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns
         // GetApplicationControlData(u8, u64) -> (unknown<4>, buffer<unknown, 6>)
         public static ResultCode GetApplicationControlData(ServiceCtx context)
         {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             byte  source  = (byte)context.RequestData.ReadInt64();
             ulong titleId = context.RequestData.ReadUInt64();
 #pragma warning restore IDE0059

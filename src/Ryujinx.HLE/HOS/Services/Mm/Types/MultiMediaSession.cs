@@ -16,7 +16,7 @@
             CurrentValue = 0;
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public void SetAndWait(uint value, int timeout)
         {
             CurrentValue = value;

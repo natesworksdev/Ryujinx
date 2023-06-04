@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS.Services.Nim.Ntc.StaticService
 
         [CommandCmif(2)]
         // GetResult()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode GetResult(ServiceCtx context)
         {
             return _taskResultCode;
@@ -64,7 +64,7 @@ namespace Ryujinx.HLE.HOS.Services.Nim.Ntc.StaticService
 
         [CommandCmif(3)]
         // Cancel()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode Cancel(ServiceCtx context)
         {
             // NOTE: The update task should be canceled here.

@@ -106,7 +106,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             return false;
         }
 
-#pragma warning disable CS8632
+#pragma warning disable CS8632 // The annotation for nullable reference types should only be used within a '#nullable' context
         public void UpdateTextState(string? inputText, int? cursorBegin, int? cursorEnd, bool? overwriteMode, bool? typingEnabled)
 #pragma warning restore CS8632
         {

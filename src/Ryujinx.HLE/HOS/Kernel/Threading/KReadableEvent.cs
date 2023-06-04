@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 {
     class KReadableEvent : KSynchronizationObject
     {
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly KEvent _parent;
 #pragma warning restore IDE0052
 

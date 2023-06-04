@@ -181,7 +181,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
         [CommandCmif(8)]
         // DoHandshake()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode DoHandshake(ServiceCtx context)
         {
             if (_connection == null)

@@ -174,7 +174,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         [Svc(0x5f)]
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public Result FlushProcessDataCache(int processHandle, ulong address, ulong size)
         {
             // FIXME: This needs to be implemented as ARMv7 doesn't have any way to do cache maintenance operations on EL0.
@@ -381,7 +381,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         [Svc(0x40)]
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public Result CreateSession(
             out int serverSessionHandle,
             out int clientSessionHandle,
@@ -726,7 +726,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         [Svc(0x70)]
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public Result CreatePort(
             out int serverPortHandle,
             out int clientPortHandle,

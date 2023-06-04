@@ -61,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             return result;
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public Result MapIntoProcess(
             KPageTableBase memoryManager,
             ulong address,
@@ -92,7 +92,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         }
 #pragma warning restore IDE0060
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public Result UnmapFromProcess(
             KPageTableBase memoryManager,
             ulong address,

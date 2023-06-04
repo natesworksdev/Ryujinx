@@ -3,7 +3,7 @@
     [Service("wlan:inf")]
     class IInfraManager : IpcService
     {
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IInfraManager(ServiceCtx context) { }
 #pragma warning restore IDE0060
     }

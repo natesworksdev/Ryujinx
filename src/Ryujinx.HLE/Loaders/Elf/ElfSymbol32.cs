@@ -2,7 +2,7 @@
 {
     struct ElfSymbol32
     {
-#pragma warning disable CS0649
+#pragma warning disable CS0649 // Field is never assigned to
         public uint   NameOffset;
         public uint   ValueAddress;
         public uint   Size;

@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
         private readonly ushort[] _pageReferenceCounts;
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public KMemoryRegionManager(ulong address, ulong size, ulong endAddr)
         {
             Address = address;

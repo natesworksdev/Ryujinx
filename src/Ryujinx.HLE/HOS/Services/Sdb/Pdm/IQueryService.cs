@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pdm
     [Service("pdm:qry")]
     class IQueryService : IpcService
     {
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IQueryService(ServiceCtx context) { }
 #pragma warning restore IDE0060
 

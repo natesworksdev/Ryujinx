@@ -146,7 +146,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 
         [CommandCmif(10)]
         // Commit()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode Commit(ServiceCtx context)
         {
             return (ResultCode)_fileSystem.Get.Commit().Value;

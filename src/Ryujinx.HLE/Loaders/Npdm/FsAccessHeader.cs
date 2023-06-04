@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
         public int Version { get; private set; }
         public ulong PermissionsBitmask { get; private set; }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public FsAccessHeader(Stream stream, int offset, int size)
         {
             stream.Seek(offset, SeekOrigin.Begin);
@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
             {
                 throw new InvalidNpdmException("FsAccessHeader is corrupted!");
             }
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             int contentOwnerIdSize        = reader.ReadInt32();
 #pragma warning restore IDE0059
             int dataAndContentOwnerIdSize = reader.ReadInt32();

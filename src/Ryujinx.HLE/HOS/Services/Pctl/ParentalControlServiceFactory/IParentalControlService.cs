@@ -12,15 +12,15 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
         private readonly int                      _permissionFlag;
         private ulong                    _titleId;
         private ParentalControlFlagValue _parentalControlFlag;
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private int[]                    _ratingAge;
 #pragma warning restore IDE0052
 
-#pragma warning disable CS0414
+#pragma warning disable CS0414 // Remove unread private member
         // TODO: Find where they are set.
         private readonly bool _restrictionEnabled                  = false;
         private readonly bool _featuresRestriction                 = false;
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private bool _freeCommunicationEnabled            = false;
 #pragma warning restore IDE0052
         private readonly bool _stereoVisionRestrictionConfigurable = true;
@@ -85,7 +85,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 
         [CommandCmif(1001)]
         // CheckFreeCommunicationPermission()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode CheckFreeCommunicationPermission(ServiceCtx context)
         {
             if (_parentalControlFlag == ParentalControlFlagValue.FreeCommunication && _restrictionEnabled)
@@ -106,7 +106,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 
         [CommandCmif(1017)] // 10.0.0+
         // EndFreeCommunication()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode EndFreeCommunication(ServiceCtx context)
         {
             _freeCommunicationEnabled = false;
@@ -117,7 +117,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 
         [CommandCmif(1013)] // 4.0.0+
         // ConfirmStereoVisionPermission()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode ConfirmStereoVisionPermission(ServiceCtx context)
         {
             return IsStereoVisionPermittedImpl();
@@ -126,7 +126,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 
         [CommandCmif(1018)]
         // IsFreeCommunicationAvailable()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode IsFreeCommunicationAvailable(ServiceCtx context)
         {
             if (_parentalControlFlag == ParentalControlFlagValue.FreeCommunication && _restrictionEnabled)
@@ -159,7 +159,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 
         [CommandCmif(1061)] // 4.0.0+
         // ConfirmStereoVisionRestrictionConfigurable()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode ConfirmStereoVisionRestrictionConfigurable(ServiceCtx context)
         {
             if ((_permissionFlag & 2) == 0)
@@ -216,7 +216,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
                 {
                     _stereoVisionRestriction = stereoVisionRestriction;
 
-                    // TODO: It signals an internal event of service. We have to determine where this event is used. 
+                    // TODO: It signals an internal event of service. We have to determine where this event is used.
                 }
             }
 
@@ -225,7 +225,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 
         [CommandCmif(1064)] // 5.0.0+
         // ResetConfirmedStereoVisionPermission()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode ResetConfirmedStereoVisionPermission(ServiceCtx context)
         {
             return ResultCode.Success;

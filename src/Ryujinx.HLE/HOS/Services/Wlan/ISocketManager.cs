@@ -3,7 +3,7 @@
     [Service("wlan:soc")]
     class ISocketManager : IpcService
     {
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ISocketManager(ServiceCtx context) { }
 #pragma warning restore IDE0060
     }

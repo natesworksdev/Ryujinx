@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Pcv.Clkrst
     {
         private int _moduleStateTableEventHandle = 0;
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IClkrstManager(ServiceCtx context) { }
 #pragma warning restore IDE0060
 

@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
         private static uint _uniqueId = 1;
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IRequest(ServiceCtx context) { }
 #pragma warning restore IDE0060
 
@@ -182,7 +182,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
             return null;
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private static uint Register(MultiMediaOperationType type, int fgmId, bool isAutoClearEvent)
         {
             lock (_sessionListLock)

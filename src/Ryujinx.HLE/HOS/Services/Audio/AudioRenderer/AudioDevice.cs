@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
     class AudioDevice : IAudioDevice
     {
         private readonly VirtualDeviceSession[] _sessions;
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly ulong _appletResourceId;
         private readonly int _revision;
 #pragma warning restore IDE0052

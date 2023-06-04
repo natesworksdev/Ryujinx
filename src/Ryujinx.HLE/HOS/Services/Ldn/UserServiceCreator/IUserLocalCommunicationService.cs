@@ -62,7 +62,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         [CommandCmif(400)]
         // InitializeOld(u64, pid)
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode InitializeOld(ServiceCtx context)
         {
             return NetworkInterface.Initialize(UnknownValue, 0, null, null);
@@ -71,7 +71,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         [CommandCmif(401)]
         // Finalize()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode Finalize(ServiceCtx context)
         {
             return _networkInterface.Finalize();

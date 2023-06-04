@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn
             _state = NetworkState.None;
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode Initialize(int unknown, int version, IPAddress ipv4Address, IPAddress subnetMaskAddress)
         {
             // TODO(Ac_K): Call nn::nifm::InitializeSystem().

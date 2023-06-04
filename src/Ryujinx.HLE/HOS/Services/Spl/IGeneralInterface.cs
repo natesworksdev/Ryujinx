@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Spl
     [Service("spl:ssl")]
     class IGeneralInterface : IpcService
     {
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IGeneralInterface(ServiceCtx context) { }
 #pragma warning restore IDE0060
 
@@ -60,7 +60,7 @@ namespace Ryujinx.HLE.HOS.Services.Spl
         {
             configValue = default;
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             SystemVersion version    = context.Device.System.ContentManager.GetCurrentFirmwareVersion();
 #pragma warning restore IDE0059
             MemorySize    memorySize = context.Device.Configuration.MemoryConfiguration.ToKernelMemorySize();

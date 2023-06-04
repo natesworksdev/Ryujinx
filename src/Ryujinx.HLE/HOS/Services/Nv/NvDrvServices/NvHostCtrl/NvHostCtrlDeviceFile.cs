@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         private readonly Switch        _device;
         private readonly NvHostEvent[] _events;
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public NvHostCtrlDeviceFile(ServiceCtx context, IVirtualMemoryManager memory, ulong owner) : base(context, owner)
         {
             if (NxSettings.Settings.TryGetValue("nv!rmos_set_production_mode", out object productionModeSetting))

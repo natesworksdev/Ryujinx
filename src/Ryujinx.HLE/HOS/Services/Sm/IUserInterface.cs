@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
         [CommandCmif(0)]
         [CommandTipc(0)] // 12.0.0+
         // Initialize(pid, u64 reserved)
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode Initialize(ServiceCtx context)
         {
             _isInitialized = true;
@@ -217,7 +217,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
 
             context.RequestData.BaseStream.Seek(namePosition + 8, SeekOrigin.Begin);
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             bool isLight = (context.RequestData.ReadInt32() & 1) != 0;
             int maxSessions = context.RequestData.ReadInt32();
 #pragma warning restore IDE0059

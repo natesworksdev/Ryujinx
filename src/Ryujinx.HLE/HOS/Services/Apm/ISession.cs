@@ -2,7 +2,7 @@ namespace Ryujinx.HLE.HOS.Services.Apm
 {
     abstract class ISession : IpcService
     {
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ISession(ServiceCtx context) { }
 #pragma warning restore IDE0060
 

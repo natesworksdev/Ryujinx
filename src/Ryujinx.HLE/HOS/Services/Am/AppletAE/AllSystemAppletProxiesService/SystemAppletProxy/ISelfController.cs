@@ -24,7 +24,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         private readonly ulong _accumulatedSuspendedTickValue = 0;
 
         // TODO: Determine where those fields are used.
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private bool _screenShotPermission               = false;
         private bool _operationModeChangedNotification   = false;
         private bool _performanceModeChangedNotification = false;
@@ -33,7 +33,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         private bool _handlesRequestToDisplay            = false;
 #pragma warning restore IDE0052
         private bool _autoSleepDisabled                  = false;
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private bool _albumImageTakenNotificationEnabled = false;
         private bool _recordVolumeMuted = false;
 
@@ -49,7 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(0)]
         // Exit()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode Exit(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
@@ -60,7 +60,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(1)]
         // LockExit()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode LockExit(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
@@ -71,7 +71,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(2)]
         // UnlockExit()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode UnlockExit(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
@@ -82,7 +82,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(3)] // 2.0.0+
         // EnterFatalSection()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode EnterFatalSection(ServiceCtx context)
         {
             lock (_fatalSectionLock)
@@ -96,7 +96,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(4)] // 2.0.0+
         // LeaveFatalSection()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode LeaveFatalSection(ServiceCtx context)
         {
             ResultCode result = ResultCode.Success;
@@ -243,7 +243,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(41)] // 4.0.0+
         // IsSystemBufferSharingEnabled()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode IsSystemBufferSharingEnabled(ServiceCtx context)
         {
             // NOTE: Service checks a private field and return an error if the SystemBufferSharing is disabled.
@@ -305,7 +305,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(65)]
         // ReportUserIsActive()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode ReportUserIsActive(ServiceCtx context)
         {
             // TODO: Call idle:sys ReportUserIsActive when implemented.

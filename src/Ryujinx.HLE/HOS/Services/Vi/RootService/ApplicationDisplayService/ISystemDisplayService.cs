@@ -4,7 +4,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
 {
     class ISystemDisplayService : IpcService
     {
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly IApplicationDisplayService _applicationDisplayService;
 #pragma warning restore IDE0052
 
@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
 
         [CommandCmif(2205)]
         // SetLayerZ(u64, u64)
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode SetLayerZ(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceVi);
@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
 
         [CommandCmif(2207)]
         // SetLayerVisibility(b8, u64)
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode SetLayerVisibility(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceVi);

@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(10)]
         // RequestToGetForeground()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode RequestToGetForeground(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);

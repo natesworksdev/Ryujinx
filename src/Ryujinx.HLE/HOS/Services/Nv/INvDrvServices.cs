@@ -92,7 +92,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         private static NvResult GetIoctlArgument(ServiceCtx context, NvIoctl ioctlCommand, out Span<byte> arguments)
         {
             (ulong inputDataPosition, ulong inputDataSize) = context.Request.GetBufferType0x21(0);
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             (ulong outputDataPosition, ulong outputDataSize) = context.Request.GetBufferType0x22(0);
 #pragma warning restore IDE0059
 
@@ -306,7 +306,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         // Initialize(u32 transfer_memory_size, handle<copy, process> current_process, handle<copy, transfer_memory> transfer_memory) -> u32 error_code
         public ResultCode Initialize(ServiceCtx context)
         {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             long transferMemSize   = context.RequestData.ReadInt64();
 #pragma warning restore IDE0059
             int  transferMemHandle = context.Request.HandleDesc.ToCopy[1];
@@ -430,7 +430,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         // SetClientPID(u64, pid) -> u32 error_code
         public static ResultCode SetClientPid(ServiceCtx context)
         {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             long pid = context.RequestData.ReadInt64();
 #pragma warning restore IDE0059
 
@@ -441,7 +441,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
         [CommandCmif(9)]
         // DumpGraphicsMemoryInfo()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode DumpGraphicsMemoryInfo(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNv);
@@ -558,7 +558,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
         [CommandCmif(13)] // 3.0.0+
         // FinishInitialize(unknown<8>)
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode FinishInitialize(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNv);

@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
     {
         private readonly FriendServicePermissionLevel _permissionLevel;
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IServiceCreator(ServiceCtx context, FriendServicePermissionLevel permissionLevel)
         {
             _permissionLevel = permissionLevel;

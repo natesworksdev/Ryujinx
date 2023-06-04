@@ -65,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             }
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private bool TestBit(int bit)
         {
             return (_idMasks[_nextFreeBitHint / 32] & (1 << (_nextFreeBitHint & 31))) != 0;

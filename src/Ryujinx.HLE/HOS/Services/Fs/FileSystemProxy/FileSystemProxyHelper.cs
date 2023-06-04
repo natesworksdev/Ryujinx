@@ -42,7 +42,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
             return ResultCode.Success;
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode OpenNcaFs(ServiceCtx context, string ncaPath, LibHac.Fs.IStorage ncaStorage, out IFileSystem openedFileSystem)
         {
             openedFileSystem = null;

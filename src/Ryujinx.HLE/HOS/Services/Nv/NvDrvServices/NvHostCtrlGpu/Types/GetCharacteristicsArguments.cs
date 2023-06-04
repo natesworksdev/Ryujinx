@@ -44,7 +44,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu.Types
 
     struct CharacteristicsHeader
     {
-#pragma warning disable CS0649
+#pragma warning disable CS0649 // Field is never assigned to
         public long BufferSize;
         public long BufferAddress;
 #pragma warning restore CS0649

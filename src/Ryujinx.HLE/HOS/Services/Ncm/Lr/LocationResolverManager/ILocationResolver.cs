@@ -221,7 +221,7 @@ namespace Ryujinx.HLE.HOS.Services.Ncm.Lr.LocationResolverManager
             context.Device.System.ContentManager.RedirectLocation(newLocation, _storageId);
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private bool ResolvePath(ServiceCtx context, ulong titleId, NcaContentType contentType)
         {
             ContentManager contentManager = context.Device.System.ContentManager;
@@ -230,7 +230,7 @@ namespace Ryujinx.HLE.HOS.Services.Ncm.Lr.LocationResolverManager
             if (!string.IsNullOrWhiteSpace(contentPath))
             {
                 ulong position = context.Request.RecvListBuff[0].Position;
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                 ulong size     = context.Request.RecvListBuff[0].Size;
 #pragma warning restore IDE0059
 
@@ -247,11 +247,11 @@ namespace Ryujinx.HLE.HOS.Services.Ncm.Lr.LocationResolverManager
         }
 #pragma warning restore IDE0060
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private void DeleteContentPath(ServiceCtx context, ulong titleId, NcaContentType contentType)
         {
             ContentManager contentManager = context.Device.System.ContentManager;
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             string         contentPath    = contentManager.GetInstalledContentPath(titleId, _storageId, NcaContentType.Manual);
 #pragma warning restore IDE0059
 

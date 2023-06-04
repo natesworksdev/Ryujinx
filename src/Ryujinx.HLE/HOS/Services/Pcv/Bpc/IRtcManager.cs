@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Services.Pcv.Bpc
     [Service("bpc:r")] //  1.0.0 - 8.1.0
     class IRtcManager : IpcService
     {
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IRtcManager(ServiceCtx context) { }
 #pragma warning restore IDE0060
 

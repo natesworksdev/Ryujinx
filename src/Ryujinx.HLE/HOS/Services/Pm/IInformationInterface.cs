@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Services.Pm
     [Service("pm:info")]
     class IInformationInterface : IpcService
     {
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IInformationInterface(ServiceCtx context) { }
 #pragma warning restore IDE0060
 

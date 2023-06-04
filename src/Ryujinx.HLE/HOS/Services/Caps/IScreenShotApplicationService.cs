@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
     [Service("caps:su")] // 6.0.0+
     class IScreenShotApplicationService : IpcService
     {
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IScreenShotApplicationService(ServiceCtx context) { }
 #pragma warning restore IDE0060
 
@@ -22,13 +22,13 @@ namespace Ryujinx.HLE.HOS.Services.Caps
         public static ResultCode SaveScreenShotEx0(ServiceCtx context)
         {
             // TODO: Use the ScreenShotAttribute.
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ScreenShotAttribute screenShotAttribute = context.RequestData.ReadStruct<ScreenShotAttribute>();
 
             uint  unknown              = context.RequestData.ReadUInt32();
 #pragma warning restore IDE0059
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong pidPlaceholder       = context.RequestData.ReadUInt64();
 #pragma warning restore IDE0059
 

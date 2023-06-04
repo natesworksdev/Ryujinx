@@ -49,7 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
         {
             private const uint ValidMagic = 0x546C7373;
 
-#pragma warning disable CS0649
+#pragma warning disable CS0649 // Field is never assigned to
             public uint Magic;
             public uint EntriesCount;
 #pragma warning restore CS0649
@@ -62,7 +62,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
 
         private struct CertStoreFileEntry
         {
-#pragma warning disable CS0649
+#pragma warning disable CS0649 // Field is never assigned to
             public CaCertificateId Id;
             public TrustedCertStatus Status;
             public uint DataSize;

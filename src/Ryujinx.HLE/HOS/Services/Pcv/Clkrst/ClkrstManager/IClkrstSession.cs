@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Services.Pcv.Clkrst.ClkrstManager
     class IClkrstSession : IpcService
     {
         private readonly DeviceCode _deviceCode;
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly uint       _unknown;
 #pragma warning restore IDE0052
         private uint       _clockRate;

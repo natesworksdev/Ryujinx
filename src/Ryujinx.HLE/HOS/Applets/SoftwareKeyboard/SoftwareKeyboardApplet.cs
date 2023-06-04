@@ -42,7 +42,7 @@ namespace Ryujinx.HLE.HOS.Applets
         private SoftwareKeyboardConfig _keyboardForegroundConfig;
 
         // Configuration for background (inline) mode.
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private SoftwareKeyboardInitialize   _keyboardBackgroundInitialize;
         private SoftwareKeyboardCustomizeDic _keyboardBackgroundDic;
         private SoftwareKeyboardDictSet      _keyboardBackgroundDictSet;
@@ -284,7 +284,7 @@ namespace Ryujinx.HLE.HOS.Applets
             }
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private void OnForegroundInteractiveData(byte[] data)
         {
             if (_foregroundState == SoftwareKeyboardState.ValidationPending)

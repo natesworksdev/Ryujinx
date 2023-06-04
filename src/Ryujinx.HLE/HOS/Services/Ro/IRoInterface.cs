@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
         private KProcess _owner;
         private IVirtualMemoryManager _ownerMm;
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IRoInterface(ServiceCtx context)
         {
             _nrrInfos = new List<NrrInfo>(MaxNrr);
@@ -42,7 +42,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
         }
 #pragma warning restore IDE0060
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private ResultCode ParseNrr(out NrrInfo nrrInfo, ServiceCtx context, ulong nrrAddress, ulong nrrSize)
         {
             nrrInfo = null;

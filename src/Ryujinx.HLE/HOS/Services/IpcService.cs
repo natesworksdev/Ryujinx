@@ -106,7 +106,7 @@ namespace Ryujinx.HLE.HOS.Services
                 }
             }
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             long sfciMagic = context.RequestData.ReadInt64();
 #pragma warning restore IDE0059
             int commandId = (int)context.RequestData.ReadInt64();

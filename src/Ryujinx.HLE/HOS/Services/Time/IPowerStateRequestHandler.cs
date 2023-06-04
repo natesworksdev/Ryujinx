@@ -3,7 +3,7 @@
     [Service("time:p")] // 9.0.0+
     class IPowerStateRequestHandler : IpcService
     {
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IPowerStateRequestHandler(ServiceCtx context) { }
 #pragma warning restore IDE0060
     }

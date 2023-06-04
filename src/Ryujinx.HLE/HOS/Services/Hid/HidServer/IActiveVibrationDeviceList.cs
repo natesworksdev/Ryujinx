@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.HidServer
         // ActivateVibrationDevice(nn::hid::VibrationDeviceHandle)
         public static ResultCode ActivateVibrationDevice(ServiceCtx context)
         {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             int vibrationDeviceHandle = context.RequestData.ReadInt32();
 #pragma warning restore IDE0059
 

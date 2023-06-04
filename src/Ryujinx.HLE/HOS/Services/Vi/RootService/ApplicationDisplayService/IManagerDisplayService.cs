@@ -4,7 +4,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
 {
     class IManagerDisplayService : IpcService
     {
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly IApplicationDisplayService _applicationDisplayService;
 #pragma warning restore IDE0052
 
@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
         // CreateManagedLayer(u32, u64, nn::applet::AppletResourceUserId) -> u64
         public static ResultCode CreateManagedLayer(ServiceCtx context)
         {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             long layerFlags           = context.RequestData.ReadInt64();
             long displayId            = context.RequestData.ReadInt64();
 #pragma warning restore IDE0059
@@ -65,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
 
         [CommandCmif(6000)]
         // AddToLayerStack(u32, u64)
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode AddToLayerStack(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceVi);
@@ -76,7 +76,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
 
         [CommandCmif(6002)]
         // SetLayerVisibility(b8, u64)
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode SetLayerVisibility(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceVi);

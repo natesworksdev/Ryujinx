@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         private int _event0Handle;
         private int _event1Handle;
 
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly uint _version;
 #pragma warning restore IDE0052
 
@@ -50,7 +50,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         [CommandCmif(1)]
         // GetResult()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode GetResult(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNifm);
@@ -91,7 +91,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         [CommandCmif(3)]
         // Cancel()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode Cancel(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNifm);
@@ -102,7 +102,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         [CommandCmif(4)]
         // Submit()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode Submit(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNifm);
@@ -113,7 +113,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         [CommandCmif(11)]
         // SetConnectionConfirmationOption(i8)
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode SetConnectionConfirmationOption(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNifm);
@@ -126,7 +126,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         // GetAppletInfo(u32) -> (u32, u32, u32, buffer<bytes, 6>)
         public static ResultCode GetAppletInfo(ServiceCtx context)
         {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             uint themeColor = context.RequestData.ReadUInt32();
 #pragma warning restore IDE0059
 

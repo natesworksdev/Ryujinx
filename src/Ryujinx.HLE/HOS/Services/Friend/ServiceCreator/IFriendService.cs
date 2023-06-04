@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 {
     class IFriendService : IpcService
     {
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly FriendServicePermissionLevel _permissionLevel;
 #pragma warning restore IDE0052
         private KEvent                       _completionEvent;
@@ -43,7 +43,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
         [CommandCmif(1)]
         // nn::friends::Cancel()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode Cancel(ServiceCtx context)
         {
             // TODO: Original service sets an internal field to 1 here. Determine usage.
@@ -319,7 +319,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
             // Pid placeholder
             context.RequestData.ReadInt64();
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong pid = context.Request.HandleDesc.PId;
 
             ulong playHistoryRegistrationKeyPosition = context.Request.PtrBuff[0].Position;
@@ -329,7 +329,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 #pragma warning restore IDE0059
             ulong inAppScreenName1Size     = context.Request.PtrBuff[1].Size;
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong inAppScreenName2Position = context.Request.PtrBuff[2].Position;
 #pragma warning restore IDE0059
             ulong inAppScreenName2Size     = context.Request.PtrBuff[2].Size;
@@ -340,7 +340,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
             }
 
             // TODO: Call nn::arp::GetApplicationControlProperty here when implemented.
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ApplicationControlProperty controlProperty = context.Device.Processes.ActiveApplication.ApplicationControlProperties;
 #pragma warning restore IDE0059
 

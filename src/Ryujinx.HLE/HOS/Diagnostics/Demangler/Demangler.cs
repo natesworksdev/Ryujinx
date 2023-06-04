@@ -418,7 +418,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
             // Temporary context
             context ??= new NameParserContext();
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             BaseNode result = null;
 #pragma warning restore IDE0059
             switch (Peek())
@@ -1444,7 +1444,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
 
             _position++;
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             string operatorName = null;
 #pragma warning restore IDE0059
 
@@ -1823,7 +1823,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
         private BaseNode ParseExpression()
         {
             bool isGlobal = ConsumeIf("gs");
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             BaseNode expression = null;
 #pragma warning restore IDE0059
             if (Count() < 2)
@@ -1930,7 +1930,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                     }
                     return null;
                 case 'd':
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                     BaseNode leftNode = null;
                     BaseNode rightNode = null;
 #pragma warning restore IDE0059
@@ -2313,7 +2313,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                             return new EnclosedExpression("sizeof (", expression, ")");
                         case 'Z':
                             _position += 2;
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                             BaseNode sizeofParamNode = null;
 #pragma warning restore IDE0059
                             switch (Peek())
@@ -2809,7 +2809,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
             return operatorName;
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         // <unresolved-name> ::= [gs] <base-unresolved-name>                     # x or (with "gs") ::x
         //                   ::= sr <unresolved-type> <base-unresolved-name>     # T::x / decltype(p)::x
         //                   ::= srN <unresolved-type> <unresolved-qualifier-level>+ E <base-unresolved-name>

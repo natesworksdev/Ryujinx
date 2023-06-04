@@ -48,7 +48,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         // -> object<nn::fssrv::sf::IFileSystem> contentFs
         public ResultCode OpenFileSystemWithId(ServiceCtx context)
         {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             FileSystemType fileSystemType = (FileSystemType)context.RequestData.ReadInt32();
             ulong titleId = context.RequestData.ReadUInt64();
 #pragma warning restore IDE0059
@@ -141,7 +141,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
         [CommandCmif(13)]
         // InvalidateBisCache() -> ()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode InvalidateBisCache(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.InvalidateBisCache().Value;
@@ -167,7 +167,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
         [CommandCmif(19)]
         // FormatSdCardFileSystem() -> ()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode FormatSdCardFileSystem(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.FormatSdCardFileSystem().Value;
@@ -226,7 +226,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
         [CommandCmif(26)]
         // FormatSdCardDryRun() -> ()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode FormatSdCardDryRun(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.FormatSdCardDryRun().Value;
@@ -807,7 +807,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         public ResultCode OpenDataStorageByDataId(ServiceCtx context)
         {
             StorageId storageId = (StorageId)context.RequestData.ReadByte();
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             byte[] padding = context.RequestData.ReadBytes(7);
 #pragma warning restore IDE0059
             ulong titleId = context.RequestData.ReadUInt64();
@@ -948,7 +948,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         }
 
         [CommandCmif(511)]
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode NotifySystemDataUpdateEvent(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.NotifySystemDataUpdateEvent().Value;
@@ -994,7 +994,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         }
 
         [CommandCmif(605)]
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode DeleteAllPaddingFiles(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.DeleteAllPaddingFiles().Value;
@@ -1028,7 +1028,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         }
 
         [CommandCmif(608)]
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode UnregisterAllExternalKey(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.UnregisterAllExternalKey().Value;
@@ -1274,7 +1274,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         }
 
         [CommandCmif(1003)]
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode DisableAutoSaveDataCreation(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.DisableAutoSaveDataCreation().Value;
@@ -1316,7 +1316,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         }
 
         [CommandCmif(1007)]
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode RegisterUpdatePartition(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.RegisterUpdatePartition().Value;
@@ -1385,7 +1385,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         }
 
         [CommandCmif(1013)]
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode UnsetSaveDataRootPath(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.UnsetSaveDataRootPath().Value;
@@ -1393,7 +1393,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 #pragma warning restore IDE0060
 
         [CommandCmif(1014)]
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode OutputMultiProgramTagAccessLog(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.OutputMultiProgramTagAccessLog().Value;
@@ -1401,7 +1401,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 #pragma warning restore IDE0060
 
         [CommandCmif(1016)]
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode FlushAccessLogOnSdCard(ServiceCtx context)
         {
             return (ResultCode)_baseFileSystemProxy.Get.FlushAccessLogOnSdCard().Value;

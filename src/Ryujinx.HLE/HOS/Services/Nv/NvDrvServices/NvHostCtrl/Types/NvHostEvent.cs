@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         public int              EventHandle;
 
         private readonly uint                  _eventId;
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly NvHostSyncpt          _syncpointManager;
 #pragma warning restore IDE0052
         private SyncpointWaiterHandle _waiterInformation;

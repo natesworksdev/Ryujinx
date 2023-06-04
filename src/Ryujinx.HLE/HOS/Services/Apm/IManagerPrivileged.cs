@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Services.Apm
     [Service("apm:p")] // 1.0.0-7.0.1
     class IManagerPrivileged : IpcService
     {
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IManagerPrivileged(ServiceCtx context) { }
 #pragma warning restore IDE0060
 

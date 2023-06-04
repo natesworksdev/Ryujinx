@@ -86,7 +86,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
         private static readonly int[] _memoryBlockPageShifts = new int[] { 12, 16, 21, 22, 25, 29, 30 };
 
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly ulong _heapAddress;
         private readonly ulong _heapSize;
         private ulong _usedSize;

@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
     {
         // TODO: Compute inside the Demangler
         public BaseNode Reference;
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly int     _index;
 #pragma warning restore IDE0052
 

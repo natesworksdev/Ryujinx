@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Pm
     [Service("pm:dmnt")]
     class IDebugMonitorInterface : IpcService
     {
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IDebugMonitorInterface(ServiceCtx context) { }
 #pragma warning restore IDE0060
 

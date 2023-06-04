@@ -271,7 +271,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(30)]
         // BeginBlockingHomeButtonShortAndLongPressed()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode BeginBlockingHomeButtonShortAndLongPressed(ServiceCtx context)
         {
             // NOTE: This set two internal fields at offsets 0x89 and 0x8B to value 1 then it signals an internal event.
@@ -284,7 +284,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(31)]
         // EndBlockingHomeButtonShortAndLongPressed()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode EndBlockingHomeButtonShortAndLongPressed(ServiceCtx context)
         {
             // NOTE: This set two internal fields at offsets 0x89 and 0x8B to value 0 then it signals an internal event.
@@ -310,7 +310,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(33)] // 2.0.0+
         // EndBlockingHomeButton()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode EndBlockingHomeButton(ServiceCtx context)
         {
             // NOTE: This set two internal fields at offsets 0x89 and 0x90 to value 0 then it signals an internal event.
@@ -366,7 +366,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(66)] // 3.0.0+
         // InitializeGamePlayRecording(u64, handle<copy>)
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode InitializeGamePlayRecording(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
@@ -610,7 +610,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(141)] // 9.0.0+
         // TryPopFromFriendInvitationStorageChannel() -> object<nn::am::service::IStorage>
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode TryPopFromFriendInvitationStorageChannel(ServiceCtx context)
         {
             // NOTE: IStorage are pushed in the channel with IApplicationAccessor PushToFriendInvitationStorageChannel

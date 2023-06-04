@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         public ResultCode CreateLibraryApplet(ServiceCtx context)
         {
             AppletId appletId          = (AppletId)context.RequestData.ReadInt32();
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             int      libraryAppletMode = context.RequestData.ReadInt32();
 #pragma warning restore IDE0059
 

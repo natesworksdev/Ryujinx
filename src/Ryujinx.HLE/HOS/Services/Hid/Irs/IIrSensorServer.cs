@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
     {
         private int _irsensorSharedMemoryHandle = 0;
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IIrSensorServer(ServiceCtx context) { }
 #pragma warning restore IDE0060
 

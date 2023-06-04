@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl
     {
         private readonly int _permissionFlag;
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IParentalControlServiceFactory(ServiceCtx context, int permissionFlag)
         {
             _permissionFlag = permissionFlag;

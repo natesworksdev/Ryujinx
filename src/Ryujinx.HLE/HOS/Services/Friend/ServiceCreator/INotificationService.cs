@@ -56,7 +56,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
         [CommandCmif(1)] //2.0.0+
         // nn::friends::detail::ipc::INotificationService::Clear()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode Clear(ServiceCtx context)
         {
             lock (_lock)

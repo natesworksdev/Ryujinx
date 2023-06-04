@@ -66,7 +66,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         public bool IsApplication { get; private set; }
         public ulong Pid { get; private set; }
 
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private long _creationTimestamp;
 #pragma warning restore IDE0052
         private ulong _entrypoint;
@@ -74,7 +74,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         private ulong _imageSize;
         private ulong _mainThreadStackSize;
         private ulong _memoryUsageCapacity;
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private int _version;
 #pragma warning restore IDE0052
 
@@ -1185,7 +1185,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             }
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static bool IsExceptionUserThread(KThread thread)
         {
             // TODO

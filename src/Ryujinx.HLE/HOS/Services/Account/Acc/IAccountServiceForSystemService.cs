@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
     {
         private readonly ApplicationServiceServer _applicationServiceServer;
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IAccountServiceForSystemService(ServiceCtx context, AccountServiceFlag serviceFlag)
         {
             _applicationServiceServer = new ApplicationServiceServer(serviceFlag);

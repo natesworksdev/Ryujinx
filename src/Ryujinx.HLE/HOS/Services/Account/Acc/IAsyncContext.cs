@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         [CommandCmif(1)]
         // Cancel()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode Cancel(ServiceCtx context)
         {
             if (!AsyncExecution.IsInitialized)
@@ -63,7 +63,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         [CommandCmif(3)]
         // GetResult()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode GetResult(ServiceCtx context)
         {
             if (!AsyncExecution.IsInitialized)

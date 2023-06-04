@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Services.Nim.Ntc
     [Service("ntc")]
     class IStaticService : IpcService
     {
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IStaticService(ServiceCtx context) { }
 #pragma warning restore IDE0060
 

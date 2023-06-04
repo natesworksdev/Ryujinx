@@ -14,13 +14,13 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
     class IManager : IpcService
     {
         public static readonly NsdSettings NsdSettings;
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly FqdnResolver _fqdnResolver;
 #pragma warning restore IDE0052
 
         private readonly bool _isInitialized = false;
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IManager(ServiceCtx context)
         {
             _fqdnResolver = new FqdnResolver();
@@ -87,7 +87,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
         [CommandCmif(12)]
         // GetDeviceId() -> bytes<0x10, 1>
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode GetDeviceId(ServiceCtx context)
         {
             // NOTE: Stubbed in system module.
@@ -276,7 +276,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
         [CommandCmif(60)]
         // ReadSaveDataFromFsForTest() -> buffer<unknown<0x12bf0>, 0x16>
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode ReadSaveDataFromFsForTest(ServiceCtx context)
         {
             if (!_isInitialized)
@@ -294,7 +294,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
         [CommandCmif(61)]
         // WriteSaveDataToFsForTest(buffer<unknown<0x12bf0>, 0x15>)
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode WriteSaveDataToFsForTest(ServiceCtx context)
         {
             if (!_isInitialized)
@@ -325,7 +325,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
         [CommandCmif(62)]
         // DeleteSaveDataOfFsForTest()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode DeleteSaveDataOfFsForTest(ServiceCtx context)
         {
             if (!_isInitialized)

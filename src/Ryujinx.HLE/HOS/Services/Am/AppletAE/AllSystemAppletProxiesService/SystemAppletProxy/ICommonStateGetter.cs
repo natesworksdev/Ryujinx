@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         private readonly Lbl.LblControllerServer _lblControllerServer;
 
         private bool _vrModeEnabled;
-#pragma warning disable CS0414, IDE0052
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         private bool _lcdBacklighOffEnabled;
         private bool _requestExitToLibraryAppletAtExecuteNextProgramEnabled;
 #pragma warning restore CS0414, IDE0052
@@ -128,7 +128,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(10)]
         // RequestToAcquireSleepLock()
-#pragma warning disable IDE0060, CA1822
+#pragma warning disable IDE0060, CA1822 // Remove unused parameter, Mark member as static
         public ResultCode RequestToAcquireSleepLock(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
@@ -192,7 +192,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(53)] // 7.0.0+
         // BeginVrModeEx()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode BeginVrModeEx(ServiceCtx context)
         {
             UpdateVrMode(true);
@@ -203,7 +203,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(54)] // 7.0.0+
         // EndVrModeEx()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode EndVrModeEx(ServiceCtx context)
         {
             UpdateVrMode(false);
@@ -317,7 +317,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(900)] // 11.0.0+
         // SetRequestExitToLibraryAppletAtExecuteNextProgramEnabled()
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode SetRequestExitToLibraryAppletAtExecuteNextProgramEnabled(ServiceCtx context)
         {
             // TODO : Find where the field is used.

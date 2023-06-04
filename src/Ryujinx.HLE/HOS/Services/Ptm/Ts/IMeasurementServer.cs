@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Ptm.Ts
     {
         private const uint DefaultTemperature = 42u;
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IMeasurementServer(ServiceCtx context) { }
 #pragma warning restore IDE0060
 

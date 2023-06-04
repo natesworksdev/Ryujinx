@@ -43,7 +43,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             return Result.Success;
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public Result Map(ulong address, ulong size, KMemoryPermission perm)
         {
             if (_pageList.GetPagesCount() != BitUtils.DivRoundUp<ulong>(size, (ulong)KPageTableBase.PageSize))

@@ -82,7 +82,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 playerMin = playerMax = 1;
             }
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             int configuredCount = 0;
             PlayerIndex primaryIndex = PlayerIndex.Unknown;
 #pragma warning restore IDE0059

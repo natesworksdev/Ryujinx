@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
         private readonly bool _isSystem;
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IStaticService(ServiceCtx context, bool isSystem)
         {
             _isSystem = isSystem;

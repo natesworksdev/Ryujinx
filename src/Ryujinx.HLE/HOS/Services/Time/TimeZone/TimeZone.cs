@@ -310,7 +310,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         {
             rule = new Rule();
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             bool isValid = false;
 #pragma warning restore IDE0059
 
@@ -652,7 +652,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                         }
                     }
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                     long theirDstOffset = 0;
 #pragma warning restore IDE0059
                     for (int i = 0; i < outRules.TimeCount; i++)
@@ -660,14 +660,14 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                         int j = outRules.Types[i];
                         if (outRules.Ttis[j].IsDaySavingTime)
                         {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                             theirDstOffset = -outRules.Ttis[j].GmtOffset;
 #pragma warning restore IDE0059
                         }
                     }
 
                     bool isDaySavingTime = false;
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                     long theirOffset     = theirStdOffset;
 #pragma warning restore IDE0059
                     for (int i = 0; i < outRules.TimeCount; i++)
@@ -689,7 +689,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                         theirOffset = -outRules.Ttis[j].GmtOffset;
                         if (outRules.Ttis[j].IsDaySavingTime)
                         {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                             theirDstOffset = theirOffset;
 #pragma warning restore IDE0059
                         }

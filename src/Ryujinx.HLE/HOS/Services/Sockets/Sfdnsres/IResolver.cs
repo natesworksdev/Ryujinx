@@ -28,7 +28,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         public static ResultCode SetDnsAddressesPrivateRequest(ServiceCtx context)
         {
             uint cancelHandleRequest = context.RequestData.ReadUInt32();
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong bufferPosition     = context.Request.SendBuff[0].Position;
             ulong bufferSize         = context.Request.SendBuff[0].Size;
 #pragma warning restore IDE0059
@@ -44,7 +44,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         public static ResultCode GetDnsAddressPrivateRequest(ServiceCtx context)
         {
             uint cancelHandleRequest = context.RequestData.ReadUInt32();
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong bufferPosition     = context.Request.ReceiveBuff[0].Position;
             ulong bufferSize         = context.Request.ReceiveBuff[0].Size;
 #pragma warning restore IDE0059
@@ -170,7 +170,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         // GetCancelHandleRequest(u64, pid) -> u32
         public static ResultCode GetCancelHandleRequest(ServiceCtx context)
         {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong pidPlaceHolder      = context.RequestData.ReadUInt64();
 #pragma warning restore IDE0059
             uint  cancelHandleRequest = 0;
@@ -187,7 +187,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         public static ResultCode CancelRequest(ServiceCtx context)
         {
             uint  cancelHandleRequest = context.RequestData.ReadUInt32();
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong pidPlaceHolder      = context.RequestData.ReadUInt64();
 #pragma warning restore IDE0059
 
@@ -280,7 +280,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             return ResultCode.Success;
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private static ResultCode GetHostByNameRequestImpl(
             ServiceCtx context,
             ulong inputBufferPosition,
@@ -304,7 +304,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
             // TODO: Use params.
             bool  enableNsdResolve = (context.RequestData.ReadInt32() & 1) != 0;
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             int   timeOut          = context.RequestData.ReadInt32();
             ulong pidPlaceholder   = context.RequestData.ReadUInt64();
 #pragma warning restore IDE0059
@@ -381,7 +381,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         }
 #pragma warning restore IDE0060
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private static ResultCode GetHostByAddrRequestImpl(
             ServiceCtx context,
             ulong inputBufferPosition,
@@ -406,7 +406,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             context.Memory.Read(inputBufferPosition, rawIp);
 
             // TODO: Use params.
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             uint  socketLength   = context.RequestData.ReadUInt32();
             uint  type           = context.RequestData.ReadUInt32();
             int   timeOut        = context.RequestData.ReadInt32();
@@ -455,7 +455,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         }
 #pragma warning restore IDE0060
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private static int SerializeHostEntries(ServiceCtx context, ulong outputBufferPosition, ulong outputBufferSize, IPHostEntry hostEntry, IEnumerable<IPAddress> addresses = null)
         {
             ulong originalBufferPosition = outputBufferPosition;
@@ -503,7 +503,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         }
 #pragma warning restore IDE0060
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private static ResultCode GetAddrInfoRequestImpl(
             ServiceCtx context,
             ulong responseBufferPosition,
@@ -513,7 +513,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             ulong optionsBufferSize)
         {
             bool enableNsdResolve = (context.RequestData.ReadInt32() & 1) != 0;
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             uint cancelHandle     = context.RequestData.ReadUInt32();
 #pragma warning restore IDE0059
 
@@ -530,19 +530,19 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             }
 
             // NOTE: We ignore hints for now.
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             List<AddrInfoSerialized> hints = DeserializeAddrInfos(context.Memory, context.Request.SendBuff[2].Position, context.Request.SendBuff[2].Size);
 #pragma warning restore IDE0059
 
             if (withOptions)
             {
                 // TODO: Find unknown, Parse and use options.
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                 uint unknown = context.RequestData.ReadUInt32();
 #pragma warning restore IDE0059
             }
 
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong pidPlaceHolder = context.RequestData.ReadUInt64();
 #pragma warning restore IDE0059
 
@@ -634,7 +634,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         private static int SerializeAddrInfos(ServiceCtx context, ulong responseBufferPosition, ulong responseBufferSize, IPHostEntry hostEntry, int port)
         {
             ulong originalBufferPosition = responseBufferPosition;
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong bufferPosition         = originalBufferPosition;
 
             byte[] hostName = Encoding.ASCII.GetBytes(hostEntry.HostName + '\0');

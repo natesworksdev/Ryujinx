@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private readonly ITickSource _tickSource;
 
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private uint _stickyTransform;
 #pragma warning restore IDE0052
 

@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         public KMemoryPermission Permission;
         public int IpcRefCount;
         public int DeviceRefCount;
-#pragma warning disable CS0414, IDE0052
+#pragma warning disable CS0169, IDE0051 // Remove unused private member
         private readonly int _padding;
 #pragma warning restore CS0414, IDE0052
 

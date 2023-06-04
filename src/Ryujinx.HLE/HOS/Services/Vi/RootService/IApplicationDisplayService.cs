@@ -206,7 +206,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
         [CommandCmif(1101)]
         // SetDisplayEnabled(u32 enabled_bool, u64 display_id)
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode SetDisplayEnabled(ServiceCtx context)
         {
             // NOTE: Stubbed in original service.
@@ -235,12 +235,12 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         public static ResultCode OpenLayer(ServiceCtx context)
         {
             // TODO: support multi display.
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             byte[] displayName = context.RequestData.ReadBytes(0x40);
 #pragma warning restore IDE0059
 
             long  layerId   = context.RequestData.ReadInt64();
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             long  userId    = context.RequestData.ReadInt64();
 #pragma warning restore IDE0059
             ulong parcelPtr = context.Request.ReceiveBuff[0].Position;
@@ -316,7 +316,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
         [CommandCmif(2101)]
         // SetLayerScalingMode(u32, u64)
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode SetLayerScalingMode(ServiceCtx context)
         {
             /*

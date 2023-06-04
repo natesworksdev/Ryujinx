@@ -3,7 +3,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns
     [Service("ns:dev")]
     class IDevelopInterface : IpcService
     {
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IDevelopInterface(ServiceCtx context) { }
 #pragma warning restore IDE0060
     }

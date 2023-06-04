@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
         // TODO: Determine where and how NetworkServiceAccountId is set.
         private const long NetworkServiceAccountId = 0xcafe;
 
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private readonly UserId _userId;
 #pragma warning restore IDE0052
 
@@ -70,7 +70,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
             return new JwtSecurityTokenHandler().WriteToken(securityToken);
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode CheckAvailability(ServiceCtx context)
         {
             // NOTE: This opens the file at "su/baas/USERID_IN_UUID_STRING.dat" where USERID_IN_UUID_STRING is formatted as "%08x-%04x-%04x-%02x%02x-%08x%04x".
@@ -127,7 +127,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
         public static ResultCode LoadIdTokenCache(ServiceCtx context)
         {
             ulong bufferPosition = context.Request.ReceiveBuff[0].Position;
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong bufferSize     = context.Request.ReceiveBuff[0].Size;
 #pragma warning restore IDE0059
 

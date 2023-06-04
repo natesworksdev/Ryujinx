@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Nim
     [Service("nim:eca")] // 5.0.0+
     class IShopServiceAccessServerInterface : IpcService
     {
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IShopServiceAccessServerInterface(ServiceCtx context) { }
 #pragma warning restore IDE0060
 

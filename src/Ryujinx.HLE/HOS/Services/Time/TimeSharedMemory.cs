@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         private Switch              _device;
         private KSharedMemory       _sharedMemory;
         private SharedMemoryStorage _timeSharedMemoryStorage;
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private int                 _timeSharedMemorySize;
 #pragma warning restore IDE0052
 

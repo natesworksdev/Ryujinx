@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
 
         private uint _shimLibraryVersion;
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public CaptureManager(Switch device)
         {
             _sdCardPath = FileSystem.VirtualFileSystem.GetSdCardPath();
@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
         public ResultCode SetShimLibraryVersion(ServiceCtx context)
         {
             ulong shimLibraryVersion   = context.RequestData.ReadUInt64();
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
 #pragma warning restore IDE0059
 
@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
             return resultCode;
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode SaveScreenShot(byte[] screenshotData, ulong appletResourceUserId, ulong titleId, out ApplicationAlbumEntry applicationAlbumEntry)
         {
             applicationAlbumEntry = default;

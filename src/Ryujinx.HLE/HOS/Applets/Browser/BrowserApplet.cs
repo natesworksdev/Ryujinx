@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
         public event EventHandler AppletStateChanged;
 
         private AppletSession _normalSession;
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private AppletSession _interactiveSession;
 #pragma warning restore IDE0052
 
@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
         private List<BrowserArgument> _arguments;
         private ShimKind _shimKind;
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public BrowserApplet(Horizon system) { }
 #pragma warning restore IDE0060
 

@@ -3,7 +3,7 @@
     [Service("pdm:ntfy")]
     class INotifyService : IpcService
     {
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public INotifyService(ServiceCtx context) { }
 #pragma warning restore IDE0060
     }

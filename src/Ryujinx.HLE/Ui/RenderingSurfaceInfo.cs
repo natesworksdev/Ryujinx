@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.HLE.Ui
 {
-#pragma warning disable CS0659
+#pragma warning disable CS0659 // Class overrides Object.Equals(object o) but does not override Object.GetHashCode()
     /// <summary>
     /// Information about the indirect layer that is being drawn to.
     /// </summary>

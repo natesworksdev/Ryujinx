@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private const uint MaxModuleSyncpoint = 16;
 
-#pragma warning disable IDE0052
+#pragma warning disable IDE0052 // Remove unread private member
         private uint _timeout;
         private uint _submitTimeout;
         private uint _timeslice;
@@ -147,7 +147,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
         {
             SubmitArguments     submitHeader    = GetSpanAndSkip<SubmitArguments>(ref arguments, 1)[0];
             Span<CommandBuffer> commandBuffers  = GetSpanAndSkip<CommandBuffer>(ref arguments, submitHeader.CmdBufsCount);
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             Span<Reloc>         relocs          = GetSpanAndSkip<Reloc>(ref arguments, submitHeader.RelocsCount);
             Span<uint>          relocShifts     = GetSpanAndSkip<uint>(ref arguments, submitHeader.RelocsCount);
 #pragma warning restore IDE0059

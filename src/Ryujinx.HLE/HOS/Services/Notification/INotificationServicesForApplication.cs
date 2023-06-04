@@ -3,7 +3,7 @@
     [Service("notif:a")] // 9.0.0+
     class INotificationServicesForApplication : IpcService
     {
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public INotificationServicesForApplication(ServiceCtx context) { }
 #pragma warning restore IDE0060
     }

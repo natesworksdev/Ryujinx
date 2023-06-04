@@ -3,7 +3,7 @@
     [Service("ethc:i")]
     class IEthInterfaceGroup : IpcService
     {
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IEthInterfaceGroup(ServiceCtx context) { }
 #pragma warning restore IDE0060
     }

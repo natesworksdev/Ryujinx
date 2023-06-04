@@ -3,7 +3,7 @@
     [Service("fsp-pr")]
     class IProgramRegistry : IpcService
     {
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public IProgramRegistry(ServiceCtx context) { }
 #pragma warning restore IDE0060
     }

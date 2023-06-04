@@ -44,7 +44,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
         // CountAddOnContent(pid) -> u32
         public ResultCode CountAddOnContent(ServiceCtx context)
         {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong pid = context.Request.HandleDesc.PId;
 #pragma warning restore IDE0059
 
@@ -57,7 +57,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
         // ListAddOnContent(u32 start_index, u32 buffer_size, pid) -> (u32 count, buffer<u32>)
         public ResultCode ListAddOnContent(ServiceCtx context)
         {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong pid = context.Request.HandleDesc.PId;
 #pragma warning restore IDE0059
 
@@ -79,7 +79,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
         // GetAddOnContentBaseId(pid) -> u64
         public ResultCode GetAddOnContentBaseId(ServiceCtx context)
         {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong pid = context.Request.HandleDesc.PId;
 #pragma warning restore IDE0059
 
@@ -101,7 +101,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
         // PrepareAddOnContent(u32 index, pid)
         public ResultCode PrepareAddOnContent(ServiceCtx context)
         {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong pid = context.Request.HandleDesc.PId;
 #pragma warning restore IDE0059
 
@@ -131,7 +131,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
         // GetAddOnContentListChangedEventWithProcessId(pid) -> handle<copy>
         public ResultCode GetAddOnContentListChangedEventWithProcessId(ServiceCtx context)
         {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong pid = context.Request.HandleDesc.PId;
 #pragma warning restore IDE0059
 
@@ -152,7 +152,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
         // NotifyMountAddOnContent(pid, u64 title_id)
         public ResultCode NotifyMountAddOnContent(ServiceCtx context)
         {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong pid = context.Request.HandleDesc.PId;
 #pragma warning restore IDE0059
 
@@ -172,7 +172,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
         // NotifyUnmountAddOnContent(pid, u64 title_id)
         public ResultCode NotifyUnmountAddOnContent(ServiceCtx context)
         {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong pid = context.Request.HandleDesc.PId;
 #pragma warning restore IDE0059
 
@@ -189,7 +189,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
         // CheckAddOnContentMountStatus(pid)
         public static ResultCode CheckAddOnContentMountStatus(ServiceCtx context)
         {
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong pid = context.Request.HandleDesc.PId;
 #pragma warning restore IDE0059
 
@@ -320,7 +320,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
             return ResultCode.Success;
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         private ResultCode PrepareAddOnContentImpl(ServiceCtx context, ulong titleId)
         {
             uint index = context.RequestData.ReadUInt32();

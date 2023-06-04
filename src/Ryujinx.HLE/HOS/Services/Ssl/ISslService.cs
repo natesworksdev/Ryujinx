@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
     {
         // NOTE: The SSL service is used by games to connect it to various official online services, which we do not intend to support.
         //       In this case it is acceptable to stub all calls of the service.
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public ISslService(ServiceCtx context) { }
 #pragma warning restore IDE0060
 
@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
         public ResultCode CreateContext(ServiceCtx context)
         {
             SslVersion sslVersion     = (SslVersion)context.RequestData.ReadUInt32();
-#pragma warning disable IDE0059
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong      pidPlaceholder = context.RequestData.ReadUInt64();
 #pragma warning restore IDE0059
 

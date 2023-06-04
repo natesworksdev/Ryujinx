@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             _context = context;
         }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060 // Remove unused parameter
         public void SvcCall(IExecutionContext context, ulong address, int id)
         {
             KThread currentThread = KernelStatic.GetCurrentThread();
