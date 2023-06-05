@@ -289,8 +289,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             int count = size switch
             {
-                LsSize2.B64 => count = 2,
-                LsSize2.B128 => count = 4,
+                LsSize2.B64 => 2,
+                LsSize2.B128 => 4,
                 _ => 1
             };
 
@@ -370,8 +370,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             int count = size switch
             {
-                LsSize2.B64 => count = 2,
-                LsSize2.B128 => count = 4,
+                LsSize2.B64 => 2,
+                LsSize2.B128 => 4,
                 _ => 1
             };
 
