@@ -571,6 +571,13 @@ namespace Ryujinx.Modules
                 // Compare the loose files in base directory against the loose files from the incoming update, and store foreign ones in a user list.
                 var oldFiles = Directory.EnumerateFiles(HomeDir, "*", SearchOption.TopDirectoryOnly).Select(Path.GetFileName);
                 var newFiles = Directory.EnumerateFiles(UpdatePublishDir, "*", SearchOption.TopDirectoryOnly).Select(Path.GetFileName);
+
+                // Filter out renamed Ryujinx executables for proper disposal
+                if (Path.GetFileName(Environment.GetCommandLineArgs()[0]) != "Ryujinx.exe")
+                {
+                    oldFiles = oldFiles.Where(s => !s.Contains(Path.GetFileName(Environment.GetCommandLineArgs()[0])));
+                }
+
                 var userFiles = oldFiles.Except(newFiles).Select(filename => Path.Combine(HomeDir, filename));
 
                 // Remove user files from the paths in files.

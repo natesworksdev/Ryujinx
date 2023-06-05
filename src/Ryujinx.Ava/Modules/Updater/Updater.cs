@@ -748,6 +748,12 @@ namespace Ryujinx.Modules
                 var newFiles = Directory.EnumerateFiles(UpdatePublishDir, "*", SearchOption.TopDirectoryOnly).Select(Path.GetFileName);
                 var userFiles = oldFiles.Except(newFiles).Select(filename => Path.Combine(HomeDir, filename));
 
+                // Filter out renamed Ryujinx executables for proper disposal
+                if (Path.GetFileName(Environment.GetCommandLineArgs()[0]) != "Ryujinx.exe")
+                {
+                    oldFiles = oldFiles.Where(s => !s.Contains(Path.GetFileName(Environment.GetCommandLineArgs()[0])));
+                }
+
                 // Remove user files from the paths in files.
                 files = files.Except(userFiles);
             }
