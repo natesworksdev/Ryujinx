@@ -18,8 +18,6 @@ namespace Ryujinx.Ava.UI.Renderer
 
         public OpenGLContextBase Context { get; set; }
 
-        public EmbeddedWindowOpenGL() { }
-
         protected override void OnWindowDestroying()
         {
             Context.Dispose();

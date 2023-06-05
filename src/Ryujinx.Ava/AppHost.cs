@@ -40,6 +40,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using SPB.Graphics.Exceptions;
 using SPB.Graphics.Vulkan;
 using System;
 using System.Collections.Generic;
@@ -475,11 +476,34 @@ namespace Ryujinx.Ava
                 _windowsMultimediaTimerResolution = null;
             }
 
-            (_rendererHost.EmbeddedWindow as EmbeddedWindowOpenGL)?.MakeCurrent();
+            if (_rendererHost.EmbeddedWindow is EmbeddedWindowOpenGL openGlWindow)
+            {
+                // Try to bind the OpenGL context before calling the shutdown event
+                try
+                {
+                    openGlWindow.MakeCurrent();
+                }
+                catch (ContextException e)
+                {
+                    Logger.Warning?.Print(LogClass.Ui, $"Failed to bind OpenGL context: {e}");
+                }
 
-            Device.DisposeGpu();
+                Device.DisposeGpu();
 
-            (_rendererHost.EmbeddedWindow as EmbeddedWindowOpenGL)?.MakeCurrent(null);
+                // Unbind context and destroy everything
+                try
+                {
+                    openGlWindow.MakeCurrent(null);
+                }
+                catch (ContextException e)
+                {
+                    Logger.Warning?.Print(LogClass.Ui, $"Failed to unbind OpenGL context: {e}");
+                }
+            }
+            else
+            {
+                Device.DisposeGpu();
+            }
         }
 
         private void HideCursorState_Changed(object sender, ReactiveEventArgs<HideCursorMode> state)
