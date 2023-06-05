@@ -318,7 +318,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     _ => "std430"
                 };
 
-                context.AppendLine($"layout (binding = {buffer.Binding}, {layout}) {declType} _{buffer.Name}");
+                string set = string.Empty;
+
+                if (context.Config.Options.TargetApi == TargetApi.Vulkan)
+                {
+                    set = $"set = {buffer.Set}, ";
+                }
+
+                context.AppendLine($"layout ({set}binding = {buffer.Binding}, {layout}) {declType} _{buffer.Name}");
                 context.EnterScope();
 
                 foreach (StructureField field in buffer.Type.Fields)
