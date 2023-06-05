@@ -21,7 +21,7 @@
         ASCII = 2,
 
         /// <summary>
-        /// Synonymous with default
+        /// Synonymous with default.
         /// </summary>
         FullLatin = 3,
         
