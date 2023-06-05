@@ -24,12 +24,14 @@ namespace Ryujinx.Ava.UI.Windows
             InitializeComponent();
         }
 
+#pragma warning disable IDE0060 // Remove unused parameter
         public TitleUpdateWindow(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
         {
             DataContext = ViewModel = new TitleUpdateViewModel(virtualFileSystem, titleId);
 
             InitializeComponent();
         }
+#pragma warning restore IDE0060
 
         public static async Task Show(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
         {
