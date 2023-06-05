@@ -1363,13 +1363,29 @@ namespace Ryujinx.Ava.UI.ViewModels
             if (prevUserId != AccountManager.LastOpenedUser.UserId)
             {
                 // current user changed, so refresh application metadata
-                LoadApplications();
+                RefreshApplicationsMetadata();
             }
         }
 
         public void SimulateWakeUpMessage()
         {
             AppHost.Device.System.SimulateWakeUpMessage();
+        }
+
+        private async void RefreshApplicationsMetadata()
+        {
+            await Task.Run(() => {
+                foreach (var app in _applications)
+                {
+                    var metadata = ApplicationLibrary.LoadAndSaveMetaData(AccountManager.LastOpenedUser.UserId.ToLibHacFsUid(), app.TitleId);
+                    app.Favorite = metadata.Favorite;
+                    app.LastPlayed = metadata.LastPlayed;
+                    app.TimePlayedNum = metadata.TimePlayed;
+                    app.TimePlayed = ApplicationLibrary.ConvertSecondsToFormattedString(metadata.TimePlayed);
+                }
+            });
+
+            RefreshView();
         }
 
         public async void LoadApplications()

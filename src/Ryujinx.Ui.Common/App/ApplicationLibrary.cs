@@ -733,7 +733,7 @@ namespace Ryujinx.Ui.App.Common
             return applicationIcon ?? _ncaIcon;
         }
 
-        private static string ConvertSecondsToFormattedString(double seconds)
+        public static string ConvertSecondsToFormattedString(double seconds)
         {
             System.TimeSpan time = System.TimeSpan.FromSeconds(seconds);
 
