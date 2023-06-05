@@ -1363,7 +1363,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             if (prevUserId != AccountManager.LastOpenedUser.UserId)
             {
                 // current user changed, so refresh application metadata
-                RefreshApplicationsMetadata();
+                _ = Task.Run(() => RefreshApplicationsMetadata());
             }
         }
 
@@ -1374,16 +1374,14 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private async void RefreshApplicationsMetadata()
         {
-            await Task.Run(() => {
-                foreach (var app in _applications)
-                {
-                    var metadata = ApplicationLibrary.LoadAndSaveMetaData(AccountManager.LastOpenedUser.UserId.ToLibHacFsUid(), app.TitleId);
-                    app.Favorite = metadata.Favorite;
-                    app.LastPlayed = metadata.LastPlayed;
-                    app.TimePlayedNum = metadata.TimePlayed;
-                    app.TimePlayed = ApplicationLibrary.ConvertSecondsToFormattedString(metadata.TimePlayed);
-                }
-            });
+            foreach (var app in _applications)
+            {
+                var metadata = ApplicationLibrary.LoadAndSaveMetaData(AccountManager.LastOpenedUser.UserId.ToLibHacFsUid(), app.TitleId);
+                app.Favorite = metadata.Favorite;
+                app.LastPlayed = metadata.LastPlayed;
+                app.TimePlayedNum = metadata.TimePlayed;
+                app.TimePlayed = ApplicationLibrary.ConvertSecondsToFormattedString(metadata.TimePlayed);
+            }
 
             RefreshView();
         }
