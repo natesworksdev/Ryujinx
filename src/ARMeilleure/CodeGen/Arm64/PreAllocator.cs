@@ -31,6 +31,7 @@ namespace ARMeilleure.CodeGen.Arm64
             }
         }
 
+#pragma warning disable IDE0060 // Remove unused parameter
         public static void RunPass(CompilerContext cctx, StackAllocator stackAlloc, out int maxCallArgs)
         {
             maxCallArgs = -1;
@@ -98,6 +99,7 @@ namespace ARMeilleure.CodeGen.Arm64
                 }
             }
         }
+#pragma warning restore IDE0060
 
         private static void InsertConstantRegCopies(ConstantDict constants, IntrusiveList<Operation> nodes, Operation node)
         {
