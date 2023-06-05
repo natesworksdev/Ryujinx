@@ -121,7 +121,7 @@ namespace Ryujinx.Graphics.Texture
 
                         if (sliceSizes[level] > levelSizes[level])
                         {
-                            levelSizes[level] = sliceSizes[level];
+                            sliceSizes[level] = levelSizes[level];
                         }
                     }
                 }
