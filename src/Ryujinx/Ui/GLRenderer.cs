@@ -1,8 +1,10 @@
 ﻿using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.Input.HLE;
 using SPB.Graphics;
+using SPB.Graphics.Exceptions;
 using SPB.Graphics.OpenGL;
 using SPB.Platform;
 using SPB.Platform.GLX;
@@ -117,7 +119,10 @@ namespace Ryujinx.Ui
             {
                 _openGLContext?.MakeCurrent(_nativeWindow);
             }
-            catch (Exception) { }
+            catch (ContextException e)
+            {
+                Logger.Warning?.Print(LogClass.Ui, $"Failed to bind OpenGL context: {e}");
+            }
 
             Device?.DisposeGpu();
             NpadManager.Dispose();
@@ -127,7 +132,10 @@ namespace Ryujinx.Ui
             {
                 _openGLContext?.MakeCurrent(null);
             }
-            catch (Exception) { }
+            catch (ContextException e)
+            {
+                Logger.Warning?.Print(LogClass.Ui, $"Failed to unbind OpenGL context: {e}");
+            }
 
             _openGLContext?.Dispose();
         }
