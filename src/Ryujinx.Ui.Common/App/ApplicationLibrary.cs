@@ -521,12 +521,20 @@ namespace Ryujinx.Ui.App.Common
 
             // Handle migration from old default to current user
             string legacyFile = Path.Combine(guiFolder, "metadata.json");
-            if (File.Exists(legacyFile) && !File.Exists(metadataFile))
+            if (File.Exists(legacyFile))
             {
-                File.Move(legacyFile, metadataFile);
-                File.Delete(legacyFile);
+                if (!File.Exists(metadataFile))
+                {
+                    File.Move(legacyFile, metadataFile);
+                }
+                
+                if (File.Exists(metadataFile))
+                {
+                    File.Delete(legacyFile);
+                }
             }
 
+            // Create metadata file if it doesn't exist yet
             ApplicationMetadata appMetadata;
 
             if (!File.Exists(metadataFile))
@@ -536,6 +544,7 @@ namespace Ryujinx.Ui.App.Common
                 JsonHelper.SerializeToFile(metadataFile, appMetadata, SerializerContext.ApplicationMetadata);
             }
 
+            // Read from the metadata file
             try
             {
                 appMetadata = JsonHelper.DeserializeFromFile(metadataFile, SerializerContext.ApplicationMetadata);
@@ -547,6 +556,7 @@ namespace Ryujinx.Ui.App.Common
                 appMetadata = new ApplicationMetadata();
             }
 
+            // Modify the metadata and save it back to the file
             if (modifyFunction != null)
             {
                 modifyFunction(appMetadata);
