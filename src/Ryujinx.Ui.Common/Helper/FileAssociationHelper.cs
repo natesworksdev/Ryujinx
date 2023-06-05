@@ -116,16 +116,18 @@ namespace Ryujinx.Ui.Common.Helper
                 }
                 else
                 {
-                    RegistryKey key = Registry.CurrentUser.CreateSubKey(keyString);
-                    if (key is null)
+                    using (var key = Registry.CurrentUser.CreateSubKey(keyString))
                     {
-                        return false;
+                        if (key is null)
+                        {
+                            return false;
+                        }
+
+                        using (var openCmd = key.CreateSubKey(@"shell\open\command"))
+                        {
+                            openCmd.SetValue("", $"\"{Environment.ProcessPath}\" \"%1\"");
+                        }
                     }
-
-                    key.CreateSubKey(@"shell\open\command");
-
-                    key.SetValue("", $"\"{Environment.ProcessPath}\" \"%1\"");
-                    key.Close();
                 }
 
                 // Notify Explorer the file association has been changed.
