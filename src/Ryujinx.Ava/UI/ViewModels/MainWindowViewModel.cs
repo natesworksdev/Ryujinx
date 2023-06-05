@@ -1357,7 +1357,14 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async void ManageProfiles()
         {
+            var prevUserId = AccountManager.LastOpenedUser.UserId;
             await NavigationDialogHost.Show(AccountManager, ContentManager, VirtualFileSystem, LibHacHorizonManager.RyujinxClient);
+            
+            if (prevUserId != AccountManager.LastOpenedUser.UserId)
+            {
+                // current user changed, so refresh application metadata
+                LoadApplications();
+            }
         }
 
         public void SimulateWakeUpMessage()
