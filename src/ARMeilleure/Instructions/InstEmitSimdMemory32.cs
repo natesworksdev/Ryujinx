@@ -53,15 +53,15 @@ namespace ARMeilleure.Instructions
 
         public static void EmitVStoreOrLoadN(ArmEmitterContext context, int count, bool load)
         {
-            if (context.CurrOp is OpCode32SimdMemSingle op)
+            if (context.CurrOp is OpCode32SimdMemSingle opSingle)
             {
-                int eBytes = 1 << op.Size;
+                int eBytes = 1 << opSingle.Size;
 
-                Operand n = context.Copy(GetIntA32(context, op.Rn));
+                Operand n = context.Copy(GetIntA32(context, opSingle.Rn));
 
                 // TODO: Check alignment.
                 int offset = 0;
-                int d = op.Vd;
+                int d = opSingle.Vd;
 
                 for (int i = 0; i < count; i++)
                 {
@@ -80,63 +80,63 @@ namespace ARMeilleure.Instructions
                     }
                     else
                     {
-                        int index = ((d & 1) << (3 - op.Size)) + op.Index;
+                        int index = ((d & 1) << (3 - opSingle.Size)) + opSingle.Index;
                         if (load)
                         {
-                            if (op.Replicate)
+                            if (opSingle.Replicate)
                             {
-                                var regs = (count > 1) ? 1 : op.Increment;
+                                var regs = (count > 1) ? 1 : opSingle.Increment;
                                 for (int reg = 0; reg < regs; reg++)
                                 {
                                     int dreg = reg + d;
-                                    int rIndex = ((dreg & 1) << (3 - op.Size));
-                                    int limit = rIndex + (1 << (3 - op.Size));
+                                    int rIndex = ((dreg & 1) << (3 - opSingle.Size));
+                                    int limit = rIndex + (1 << (3 - opSingle.Size));
 
                                     while (rIndex < limit)
                                     {
-                                        EmitLoadSimd(context, address, GetVecA32(dreg >> 1), dreg >> 1, rIndex++, op.Size);
+                                        EmitLoadSimd(context, address, GetVecA32(dreg >> 1), dreg >> 1, rIndex++, opSingle.Size);
                                     }
                                 }
                             }
                             else
                             {
-                                EmitLoadSimd(context, address, GetVecA32(d >> 1), d >> 1, index, op.Size);
+                                EmitLoadSimd(context, address, GetVecA32(d >> 1), d >> 1, index, opSingle.Size);
                             }
                         }
                         else
                         {
-                            EmitStoreSimd(context, address, d >> 1, index, op.Size);
+                            EmitStoreSimd(context, address, d >> 1, index, opSingle.Size);
                         }
                     }
                     offset += eBytes;
-                    d += op.Increment;
+                    d += opSingle.Increment;
                 }
 
-                if (op.WBack)
+                if (opSingle.WBack)
                 {
-                    if (op.RegisterIndex)
+                    if (opSingle.RegisterIndex)
                     {
-                        Operand m = GetIntA32(context, op.Rm);
-                        SetIntA32(context, op.Rn, context.Add(n, m));
+                        Operand m = GetIntA32(context, opSingle.Rm);
+                        SetIntA32(context, opSingle.Rn, context.Add(n, m));
                     }
                     else
                     {
-                        SetIntA32(context, op.Rn, context.Add(n, Const(count * eBytes)));
+                        SetIntA32(context, opSingle.Rn, context.Add(n, Const(count * eBytes)));
                     }
                 }
             }
-            else
+            else if (context.CurrOp is OpCode32SimdMemPair opPair)
             {
-                int increment = count > 1 ? op.Increment : 1;
-                int eBytes = 1 << op.Size;
+                int increment = count > 1 ? opPair.Increment : 1;
+                int eBytes = 1 << opPair.Size;
 
-                Operand n = context.Copy(GetIntA32(context, op.Rn));
+                Operand n = context.Copy(GetIntA32(context, opPair.Rn));
                 int offset = 0;
-                int d = op.Vd;
+                int d = opPair.Vd;
 
-                for (int reg = 0; reg < op.Regs; reg++)
+                for (int reg = 0; reg < opPair.Regs; reg++)
                 {
-                    for (int elem = 0; elem < op.Elems; elem++)
+                    for (int elem = 0; elem < opPair.Elems; elem++)
                     {
                         int elemD = d + reg;
                         for (int i = 0; i < count; i++)
@@ -144,7 +144,7 @@ namespace ARMeilleure.Instructions
                             // Accesses an element from a double simd register,
                             // add ebytes for each element.
                             Operand address = context.Add(n, Const(offset));
-                            int index = ((elemD & 1) << (3 - op.Size)) + elem;
+                            int index = ((elemD & 1) << (3 - opPair.Size)) + elem;
                             if (eBytes == 8)
                             {
                                 if (load)
@@ -160,11 +160,11 @@ namespace ARMeilleure.Instructions
                             {
                                 if (load)
                                 {
-                                    EmitLoadSimd(context, address, GetVecA32(elemD >> 1), elemD >> 1, index, op.Size);
+                                    EmitLoadSimd(context, address, GetVecA32(elemD >> 1), elemD >> 1, index, opPair.Size);
                                 }
                                 else
                                 {
-                                    EmitStoreSimd(context, address, elemD >> 1, index, op.Size);
+                                    EmitStoreSimd(context, address, elemD >> 1, index, opPair.Size);
                                 }
                             }
 
@@ -174,16 +174,16 @@ namespace ARMeilleure.Instructions
                     }
                 }
 
-                if (op.WBack)
+                if (opPair.WBack)
                 {
-                    if (op.RegisterIndex)
+                    if (opPair.RegisterIndex)
                     {
-                        Operand m = GetIntA32(context, op.Rm);
-                        SetIntA32(context, op.Rn, context.Add(n, m));
+                        Operand m = GetIntA32(context, opPair.Rm);
+                        SetIntA32(context, opPair.Rn, context.Add(n, m));
                     }
                     else
                     {
-                        SetIntA32(context, op.Rn, context.Add(n, Const(count * 8 * op.Regs)));
+                        SetIntA32(context, opPair.Rn, context.Add(n, Const(count * 8 * opPair.Regs)));
                     }
                 }
             }
