@@ -43,13 +43,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 context.AddLocalVariable(spvLocal);
                 context.DeclareLocal(local, spvLocal);
             }
-
-            var ivector2Type = context.TypeVector(context.TypeS32(), 2);
-            var coordTempPointerType = context.TypePointer(StorageClass.Function, ivector2Type);
-            var coordTemp = context.Variable(coordTempPointerType, StorageClass.Function);
-
-            context.AddLocalVariable(coordTemp);
-            context.CoordTemp = coordTemp;
         }
 
         public static void DeclareLocalForArgs(CodeGenContext context, List<StructuredFunction> functions)
