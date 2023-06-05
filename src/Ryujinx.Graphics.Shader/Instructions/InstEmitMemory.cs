@@ -294,6 +294,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 _ => 1
             };
 
+            Operand baseOffset = context.Copy(srcA);
+
             for (int index = 0; index < count; index++)
             {
                 Register dest = new Register(rd + index, RegisterType.Gpr);
@@ -303,9 +305,9 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     break;
                 }
 
-                Operand baseOffset = context.IAdd(srcA, Const(offset + index * 4));
-                Operand wordOffset = context.ShiftRightU32(baseOffset, Const(2)); // Word offset = byte offset / 4 (one word = 4 bytes).
-                Operand bitOffset = GetBitOffset(context, baseOffset);
+                Operand byteOffset = context.IAdd(baseOffset, Const(offset + index * 4));
+                Operand wordOffset = context.ShiftRightU32(byteOffset, Const(2)); // Word offset = byte offset / 4 (one word = 4 bytes).
+                Operand bitOffset = GetBitOffset(context, byteOffset);
                 Operand value = context.Load(storageKind, id, wordOffset);
 
                 if (isSmallInt)
@@ -373,14 +375,16 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 _ => 1
             };
 
+            Operand baseOffset = context.Copy(srcA);
+
             for (int index = 0; index < count; index++)
             {
                 bool isRz = rd + index >= RegisterConsts.RegisterZeroIndex;
 
                 Operand value = Register(isRz ? rd : rd + index, RegisterType.Gpr);
-                Operand baseOffset = context.IAdd(srcA, Const(offset + index * 4));
-                Operand wordOffset = context.ShiftRightU32(baseOffset, Const(2));
-                Operand bitOffset = GetBitOffset(context, baseOffset);
+                Operand byteOffset = context.IAdd(baseOffset, Const(offset + index * 4));
+                Operand wordOffset = context.ShiftRightU32(byteOffset, Const(2));
+                Operand bitOffset = GetBitOffset(context, byteOffset);
 
                 if (isSmallInt && storageKind == StorageKind.LocalMemory)
                 {
@@ -399,11 +403,11 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     {
                         case LsSize2.U8:
                         case LsSize2.S8:
-                            context.Store(StorageKind.SharedMemory8, id, baseOffset, value);
+                            context.Store(StorageKind.SharedMemory8, id, byteOffset, value);
                             break;
                         case LsSize2.U16:
                         case LsSize2.S16:
-                            context.Store(StorageKind.SharedMemory16, id, baseOffset, value);
+                            context.Store(StorageKind.SharedMemory16, id, byteOffset, value);
                             break;
                         default:
                             context.Store(storageKind, id, wordOffset, value);
