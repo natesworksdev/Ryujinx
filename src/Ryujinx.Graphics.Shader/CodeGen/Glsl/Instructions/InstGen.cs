@@ -162,12 +162,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     case Instruction.Load:
                         return Load(context, operation);
 
-                    case Instruction.LoadLocal:
-                        return LoadLocal(context, operation);
-
-                    case Instruction.LoadShared:
-                        return LoadShared(context, operation);
-
                     case Instruction.Lod:
                         return Lod(context, operation);
 
@@ -182,18 +176,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                     case Instruction.Store:
                         return Store(context, operation);
-
-                    case Instruction.StoreLocal:
-                        return StoreLocal(context, operation);
-
-                    case Instruction.StoreShared:
-                        return StoreShared(context, operation);
-
-                    case Instruction.StoreShared16:
-                        return StoreShared16(context, operation);
-
-                    case Instruction.StoreShared8:
-                        return StoreShared8(context, operation);
 
                     case Instruction.TextureSample:
                         return TextureSample(context, operation);

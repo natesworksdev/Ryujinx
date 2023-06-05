@@ -71,38 +71,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             context.AppendLine($"const int {DefaultNames.UndefinedName} = 0;");
             context.AppendLine();
 
-            if (context.Config.Stage == ShaderStage.Compute)
-            {
-                int localMemorySize = BitUtils.DivRoundUp(context.Config.GpuAccessor.QueryComputeLocalMemorySize(), 4);
-
-                if (localMemorySize != 0)
-                {
-                    string localMemorySizeStr = NumberFormatter.FormatInt(localMemorySize);
-
-                    context.AppendLine($"uint {DefaultNames.LocalMemoryName}[{localMemorySizeStr}];");
-                    context.AppendLine();
-                }
-
-                int sharedMemorySize = BitUtils.DivRoundUp(context.Config.GpuAccessor.QueryComputeSharedMemorySize(), 4);
-
-                if (sharedMemorySize != 0)
-                {
-                    string sharedMemorySizeStr = NumberFormatter.FormatInt(sharedMemorySize);
-
-                    context.AppendLine($"shared uint {DefaultNames.SharedMemoryName}[{sharedMemorySizeStr}];");
-                    context.AppendLine();
-                }
-            }
-            else if (context.Config.LocalMemorySize != 0)
-            {
-                int localMemorySize = BitUtils.DivRoundUp(context.Config.LocalMemorySize, 4);
-
-                string localMemorySizeStr = NumberFormatter.FormatInt(localMemorySize);
-
-                context.AppendLine($"uint {DefaultNames.LocalMemoryName}[{localMemorySizeStr}];");
-                context.AppendLine();
-            }
-
             DeclareConstantBuffers(context, context.Config.Properties.ConstantBuffers.Values);
             DeclareStorageBuffers(context, context.Config.Properties.StorageBuffers.Values);
             DeclareMemories(context, context.Config.Properties.LocalMemories.Values, isShared: false);
@@ -240,11 +208,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 context.AppendLine();
             }
 
-            if ((info.HelperFunctionsMask & HelperFunctionsMask.AtomicMinMaxS32Shared) != 0)
-            {
-                AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/AtomicMinMaxS32Shared.glsl");
-            }
-
             if ((info.HelperFunctionsMask & HelperFunctionsMask.MultiplyHighS32) != 0)
             {
                 AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/MultiplyHighS32.glsl");
@@ -273,11 +236,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             if ((info.HelperFunctionsMask & HelperFunctionsMask.ShuffleXor) != 0)
             {
                 AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/ShuffleXor.glsl");
-            }
-
-            if ((info.HelperFunctionsMask & HelperFunctionsMask.StoreSharedSmallInt) != 0)
-            {
-                AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/StoreSharedSmallInt.glsl");
             }
 
             if ((info.HelperFunctionsMask & HelperFunctionsMask.SwizzleAdd) != 0)
@@ -740,7 +698,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             string code = EmbeddedResources.ReadAllText(filename);
 
             code = code.Replace("\t", CodeGenContext.Tab);
-            code = code.Replace("$SHARED_MEM$", DefaultNames.SharedMemoryName);
 
             if (context.Config.GpuAccessor.QueryHostSupportsShaderBallot())
             {

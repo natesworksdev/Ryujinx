@@ -384,7 +384,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 if (isSmallInt && storageKind == StorageKind.LocalMemory)
                 {
-                    Operand word = context.LoadLocal(wordOffset);
+                    Operand word = context.Load(storageKind, id, wordOffset);
 
                     value = InsertSmallInt(context, (LsSize)size, bitOffset, word, value);
                 }
