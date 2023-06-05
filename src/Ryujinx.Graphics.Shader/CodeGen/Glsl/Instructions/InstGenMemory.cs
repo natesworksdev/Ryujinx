@@ -675,6 +675,21 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     varType = field.Type;
                     break;
 
+                case StorageKind.LocalMemory:
+                case StorageKind.SharedMemory:
+                    if (!(operation.GetSource(srcIndex++) is AstOperand bindingId) || bindingId.Type != OperandType.Constant)
+                    {
+                        throw new InvalidOperationException($"First input of {operation.Inst} with {storageKind} storage must be a constant operand.");
+                    }
+
+                    MemoryDefinition memory = storageKind == StorageKind.LocalMemory
+                        ? context.Config.Properties.LocalMemories[bindingId.Value]
+                        : context.Config.Properties.SharedMemories[bindingId.Value];
+
+                    varName = memory.Name;
+                    varType = memory.Type;
+                    break;
+
                 case StorageKind.Input:
                 case StorageKind.InputPerPatch:
                 case StorageKind.Output:

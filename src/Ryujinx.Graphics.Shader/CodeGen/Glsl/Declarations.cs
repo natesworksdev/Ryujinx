@@ -105,6 +105,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
             DeclareConstantBuffers(context, context.Config.Properties.ConstantBuffers.Values);
             DeclareStorageBuffers(context, context.Config.Properties.StorageBuffers.Values);
+            DeclareMemories(context, context.Config.Properties.LocalMemories.Values, isShared: false);
+            DeclareMemories(context, context.Config.Properties.SharedMemories.Values, isShared: true);
 
             var textureDescriptors = context.Config.GetTextureDescriptors();
             if (textureDescriptors.Length != 0)
@@ -388,6 +390,27 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                 context.LeaveScope($" {buffer.Name};");
                 context.AppendLine();
+            }
+        }
+
+        private static void DeclareMemories(CodeGenContext context, IEnumerable<MemoryDefinition> memories, bool isShared)
+        {
+            string prefix = isShared ? "shared " : string.Empty;
+
+            foreach (MemoryDefinition memory in memories)
+            {
+                string typeName = GetVarTypeName(context, memory.Type & ~AggregateType.Array);
+
+                if (memory.ArrayLength > 0)
+                {
+                    string arraySize = memory.ArrayLength.ToString(CultureInfo.InvariantCulture);
+
+                    context.AppendLine($"{prefix}{typeName} {memory.Name}[{arraySize}];");
+                }
+                else
+                {
+                    context.AppendLine($"{prefix}{typeName} {memory.Name}[];");
+                }
             }
         }
 

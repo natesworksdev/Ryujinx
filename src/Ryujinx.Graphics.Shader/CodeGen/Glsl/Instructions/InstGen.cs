@@ -68,7 +68,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                 string args = string.Empty;
 
-                if (atomic && operation.StorageKind == StorageKind.StorageBuffer)
+                if (atomic && (operation.StorageKind == StorageKind.StorageBuffer || operation.StorageKind == StorageKind.SharedMemory))
                 {
                     args = GenerateLoadOrStore(context, operation, isStore: false);
 
@@ -79,23 +79,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     for (int argIndex = operation.SourcesCount - arity + 2; argIndex < operation.SourcesCount; argIndex++)
                     {
                         args += ", " + GetSoureExpr(context, operation.GetSource(argIndex), dstType);
-                    }
-                }
-                else if (atomic && operation.StorageKind == StorageKind.SharedMemory)
-                {
-                    args = LoadShared(context, operation);
-
-                    // For shared memory access, the second argument is unused and should be ignored.
-                    // It is there to make both storage and shared access have the same number of arguments.
-                    // For storage, both inputs are consumed when the argument index is 0, so we should skip it here.
-
-                    for (int argIndex = 2; argIndex < arity; argIndex++)
-                    {
-                        args += ", ";
-
-                        AggregateType dstType = GetSrcVarType(inst, argIndex);
-
-                        args += GetSoureExpr(context, operation.GetSource(argIndex), dstType);
                     }
                 }
                 else

@@ -25,8 +25,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public Dictionary<int, Instruction> ConstantBuffers { get; } = new Dictionary<int, Instruction>();
         public Dictionary<int, Instruction> StorageBuffers { get; } = new Dictionary<int, Instruction>();
-        public Instruction LocalMemory { get; set; }
-        public Instruction SharedMemory { get; set; }
+        public Dictionary<int, Instruction> LocalMemories { get; } = new Dictionary<int, Instruction>();
+        public Dictionary<int, Instruction> SharedMemories { get; } = new Dictionary<int, Instruction>();
         public Dictionary<TextureMeta, SamplerType> SamplersTypes { get; } = new Dictionary<TextureMeta, SamplerType>();
         public Dictionary<TextureMeta, (Instruction, Instruction, Instruction)> Samplers { get; } = new Dictionary<TextureMeta, (Instruction, Instruction, Instruction)>();
         public Dictionary<TextureMeta, (Instruction, Instruction)> Images { get; } = new Dictionary<TextureMeta, (Instruction, Instruction)>();

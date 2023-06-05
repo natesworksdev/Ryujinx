@@ -67,6 +67,11 @@ namespace Ryujinx.Graphics.Shader.Translation
             return context.Add(Instruction.AtomicAnd, storageKind, Local(), Const(binding), e0, e1, value);
         }
 
+        public static Operand AtomicCompareAndSwap(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand compare, Operand value)
+        {
+            return context.Add(Instruction.AtomicCompareAndSwap, storageKind, Local(), Const(binding), e0, compare, value);
+        }
+
         public static Operand AtomicCompareAndSwap(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand compare, Operand value)
         {
             return context.Add(Instruction.AtomicCompareAndSwap, storageKind, Local(), Const(binding), e0, e1, compare, value);
@@ -751,6 +756,11 @@ namespace Ryujinx.Graphics.Shader.Translation
         public static Operand Store(this EmitterContext context, StorageKind storageKind, Operand e0, Operand e1, Operand value)
         {
             return context.Add(Instruction.Store, storageKind, null, e0, e1, value);
+        }
+
+        public static Operand Store(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand value)
+        {
+            return context.Add(Instruction.Store, storageKind, null, Const(binding), e0, value);
         }
 
         public static Operand Store(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
