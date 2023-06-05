@@ -13,7 +13,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Image = SixLabors.ImageSharp.Image;
-using UserId = Ryujinx.HLE.HOS.Services.Account.Acc.UserId;
 
 namespace Ryujinx.Ui.Windows
 {
@@ -24,6 +23,9 @@ namespace Ryujinx.Ui.Windows
         private readonly AccountManager _accountManager;
         private readonly ContentManager _contentManager;
 
+        public delegate void ChangedUserDelegate();
+        private readonly ChangedUserDelegate _changedUserDelegate;
+
         private byte[] _bufferImageProfile;
         private string _tempNewProfileName;
 
@@ -31,7 +33,7 @@ namespace Ryujinx.Ui.Windows
 
         private ManualResetEvent _avatarsPreloadingEvent = new ManualResetEvent(false);
 
-        public UserProfilesManagerWindow(AccountManager accountManager, ContentManager contentManager, VirtualFileSystem virtualFileSystem) : base($"Ryujinx {Program.Version} - Manage User Profiles")
+        public UserProfilesManagerWindow(AccountManager accountManager, ContentManager contentManager, VirtualFileSystem virtualFileSystem, ChangedUserDelegate changedUserDelegate) : base($"Ryujinx {Program.Version} - Manage User Profiles")
         {
             Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
 
@@ -44,6 +46,7 @@ namespace Ryujinx.Ui.Windows
 
             _accountManager = accountManager;
             _contentManager = contentManager;
+            _changedUserDelegate = changedUserDelegate;
 
             CellRendererToggle userSelectedToggle = new CellRendererToggle();
             userSelectedToggle.Toggled += UserSelectedToggle_Toggled;
@@ -128,6 +131,7 @@ namespace Ryujinx.Ui.Windows
 
             // Open the selected one.
             _accountManager.OpenUser(new UserId(userId));
+            _changedUserDelegate();
 
             _deleteButton.Sensitive = userId != AccountManager.DefaultUserId.ToString();
 

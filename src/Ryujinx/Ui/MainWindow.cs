@@ -1648,7 +1648,7 @@ namespace Ryujinx.Ui
 
         private void ManageUserProfiles_Pressed(object sender, EventArgs args)
         {
-            UserProfilesManagerWindow userProfilesManagerWindow = new UserProfilesManagerWindow(_accountManager, _contentManager, _virtualFileSystem);
+            UserProfilesManagerWindow userProfilesManagerWindow = new UserProfilesManagerWindow(_accountManager, _contentManager, _virtualFileSystem, UpdateGameTable);
 
             userProfilesManagerWindow.SetSizeRequest((int)(userProfilesManagerWindow.DefaultWidth * Program.WindowScaleFactor), (int)(userProfilesManagerWindow.DefaultHeight * Program.WindowScaleFactor));
             userProfilesManagerWindow.Show();
