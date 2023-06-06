@@ -1363,7 +1363,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             if (prevUserId != AccountManager.LastOpenedUser.UserId)
             {
                 // current user changed, so refresh application metadata
-                _ = Task.Run(() => RefreshApplicationsMetadata());
+                _ = Task.Run(RefreshApplicationsMetadata);
             }
         }
 
@@ -1372,7 +1372,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             AppHost.Device.System.SimulateWakeUpMessage();
         }
 
-        private async void RefreshApplicationsMetadata()
+        private void RefreshApplicationsMetadata()
         {
             foreach (var app in _applications)
             {
