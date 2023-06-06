@@ -518,17 +518,9 @@ namespace Ryujinx.Ui.App.Common
 
             // Handle migration from old default to current user
             string legacyFile = Path.Combine(guiFolder, "metadata.json");
-            if (File.Exists(legacyFile))
+            if (File.Exists(legacyFile) && !File.Exists(metadataFile))
             {
-                if (!File.Exists(metadataFile))
-                {
-                    File.Move(legacyFile, metadataFile);
-                }
-                
-                if (File.Exists(metadataFile))
-                {
-                    File.Delete(legacyFile);
-                }
+                File.Move(legacyFile, metadataFile);
             }
 
             // Create metadata file if it doesn't exist yet
