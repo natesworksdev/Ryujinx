@@ -3,12 +3,14 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
+using Microsoft.CodeAnalysis;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Input;
 using Ryujinx.Ava.UI.Applet;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
+using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.FileSystem;
@@ -44,6 +46,7 @@ namespace Ryujinx.Ava.UI.Windows
         public VirtualFileSystem VirtualFileSystem { get; private set; }
         public ContentManager ContentManager { get; private set; }
         public AccountManager AccountManager { get; private set; }
+        public BackupManager BackupManager { get; private set; }
 
         public LibHacHorizonManager LibHacHorizonManager { get; private set; }
 
@@ -100,6 +103,19 @@ namespace Ryujinx.Ava.UI.Windows
                 ViewModel.RefreshFirmwareStatus();
 
                 LoadGameList();
+
+                // TODO: move to it's own function
+                _ = Task.Run(async () =>
+                {
+                    var lastActiveUser = new LibHac.Fs.UserId((ulong)AccountManager.LastOpenedUser.UserId.High, (ulong)AccountManager.LastOpenedUser.UserId.Low);
+                    var saveOptions = SaveOptions.Account | SaveOptions.Bcat | SaveOptions.Device;
+                    var outcome = await BackupManager.BackupUserSaveData(lastActiveUser, AppDataManager.BackupDirPath, saveOptions);
+
+                    if (outcome)
+                    {
+                        OpenHelper.OpenFolder(AppDataManager.BackupDirPath);
+                    }
+                });
 
                 this.GetObservable(IsActiveProperty).Subscribe(IsActiveChanged);
             }
@@ -253,6 +269,7 @@ namespace Ryujinx.Ava.UI.Windows
             VirtualFileSystem.FixExtraData(LibHacHorizonManager.RyujinxClient);
 
             AccountManager = new AccountManager(LibHacHorizonManager.RyujinxClient, CommandLineState.Profile);
+            BackupManager = new BackupManager(LibHacHorizonManager.RyujinxClient, ApplicationLibrary, AccountManager);
 
             VirtualFileSystem.ReloadKeySet();
 

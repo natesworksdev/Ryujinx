@@ -337,7 +337,7 @@ namespace Ryujinx.Ava.UI.Controls
 
         public void BackupSaveData_Click(object sender, RoutedEventArgs args)
         {
-            if (sender is not MenuItem { DataContext: MainWindowViewModel { SelectedApplication: ApplicationData selectedApp } })
+            if (sender is not MenuItem { DataContext: MainWindowViewModel { SelectedApplication: ApplicationData selectedApp } mainWindowView })
             {
                 return;
             }
