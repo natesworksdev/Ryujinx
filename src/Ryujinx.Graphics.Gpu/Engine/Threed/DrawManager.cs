@@ -537,12 +537,15 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             _drawState.DrawIndexed = indexed;
             _currentSpecState.SetHasConstantBufferDrawParameters(true);
 
+            engine.UpdateState();
+
             if (instanceCount > 1)
             {
+                // Must be called after UpdateState and it assumes the shader state
+                // has already been set, and that bindings have been updated already.
+
                 _channel.BufferManager.SetInstancedDrawVertexCount(count);
             }
-
-            engine.UpdateState();
 
             if (indexed)
             {
