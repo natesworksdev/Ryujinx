@@ -1,5 +1,4 @@
 ﻿using LibHac;
-using LibHac.Bcat;
 using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Shim;
@@ -7,7 +6,6 @@ using LibHac.Ncm;
 using Microsoft.IdentityModel.Tokens;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
-using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common.Helper;
@@ -16,8 +14,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Path = System.IO.Path;
 
 namespace Ryujinx.Ava.Common
@@ -32,6 +30,21 @@ namespace Ryujinx.Ava.Common
 
         // Title Id
         public ProgramId ProgramId { get; init; }
+    }
+
+    internal readonly record struct UserFriendlySaveMetadata
+    {
+        public string UserId { get; init; }
+        public string ProfileName { get; init; }
+        public DateTime CreationTimeUtc { get; init; }
+        public IEnumerable<UserFriendlyAppData> ApplicationMap { get; init; }
+    }
+
+    internal readonly record struct UserFriendlyAppData
+    {
+        public ulong TitleId { get; init; }
+        public string Title { get; init; }
+        public string TitleIdHex { get; init; }
     }
 
     [Flags]
@@ -61,7 +74,8 @@ namespace Ryujinx.Ava.Common
         #region Save
         public async Task<bool> BackupUserSaveData(LibHac.Fs.UserId userId,
             string location,
-            SaveOptions saveOptions = SaveOptions.Account)
+            SaveOptions saveOptions = SaveOptions.Account,
+            CancellationToken cancellationToken = default)
         {
             var userSaves = GetUserSaveData(userId, saveOptions);
             if (userSaves.IsNullOrEmpty())
@@ -124,7 +138,7 @@ namespace Ryujinx.Ava.Common
 
                 return userSaves;
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 Logger.Error?.Print(LogClass.Application, $"Failed to enumerate user save data - {ex.Message}");
             }
@@ -182,7 +196,7 @@ namespace Ryujinx.Ava.Common
         private async Task<bool> BatchCopySavesToTempDir(IEnumerable<SaveMeta> userSaves, string backupTempDir)
         {
             // keep track of save data metadata <programId, app title>
-            Dictionary<ulong, string> userFriendlyMetadataMap = new();
+            Dictionary<ulong, UserFriendlyAppData> userFriendlyMetadataMap = new();
 
             try
             {
@@ -196,30 +210,30 @@ namespace Ryujinx.Ava.Common
                     // if the buffer is full, wait for it to drain
                     if (tempCopyTasks.Count >= BATCH_SIZE)
                     {
-                        var completedCopies = await Task.WhenAll(tempCopyTasks);
-                        if (completedCopies.Any(o => o == false))
-                        {
-                            // Failed to migrate intermediate path - fail or keep going?
-                            continue;
-                        }
-
+                        // TODO: error handling?
+                        _ = await Task.WhenAll(tempCopyTasks);
                         tempCopyTasks.Clear();
                     }
 
-                    // Resolve the titleID and add the copy task
-                    if (!userFriendlyMetadataMap.TryGetValue(meta.ProgramId.Value, out var title))
+                    // Add backup task
+                    tempCopyTasks.Add(CopySaveDataToIntermediateDirectory(meta, backupTempDir));
+
+                    // Add title metadata entry - might be dupe from bcat/device
+                    if (!userFriendlyMetadataMap.ContainsKey(meta.ProgramId.Value))
                     {
                         // This is not great since it's going to incur a disk read per metadata lookup...
                         // TODO: optimize later
-                        var appMeta = _applicationLibrary.LoadAndSaveMetaData(meta.ProgramId.Value.ToString("x16"));
-                        title = (appMeta is not null && !string.IsNullOrWhiteSpace(appMeta.Title))
-                            ? appMeta.Title
-                            : "Unkown Title";
+                        var titleIdHex = meta.ProgramId.Value.ToString("x16");
 
-                        userFriendlyMetadataMap.Add(meta.ProgramId.Value, title);
+                        // TODO: add metadata element of "lastBackupTimestamp"?
+                        var appMeta = _applicationLibrary.LoadAndSaveMetaData(titleIdHex);
+                        userFriendlyMetadataMap.Add(meta.ProgramId.Value, new UserFriendlyAppData
+                        {
+                            Title = appMeta?.Title,
+                            TitleId = meta.ProgramId.Value,
+                            TitleIdHex = titleIdHex
+                        });
                     }
-
-                    tempCopyTasks.Add(CopySaveDataToIntermediateDirectory(meta, backupTempDir));
                 }
 
                 // wait for any outstanding temp copies to complete
@@ -237,14 +251,21 @@ namespace Ryujinx.Ava.Common
 
             return false;
 
-            static async Task WriteMetadataFile(string backupTempDir, Dictionary<ulong, string> userFriendlyMetadataMap)
+            #region LocalMethods
+            async Task WriteMetadataFile(string backupTempDir, Dictionary<ulong, UserFriendlyAppData> userFriendlyMetadataMap)
             {
                 try
                 {
                     var tagFile = Path.Combine(backupTempDir, "tag.json");
 
-                    // TODO: serialize user info too like ID and profile name just in case, generation date? i mean file timestamps
-                    var completeMeta = System.Text.Json.JsonSerializer.Serialize(userFriendlyMetadataMap);
+                    var completeMeta = System.Text.Json.JsonSerializer.Serialize(new UserFriendlySaveMetadata
+                    {
+                        // TODO: fix this user access.
+                        UserId = _accountManager.LastOpenedUser.UserId.ToString(),
+                        ProfileName = _accountManager.LastOpenedUser.Name,
+                        CreationTimeUtc = DateTime.UtcNow,
+                        ApplicationMap = userFriendlyMetadataMap.Values
+                    });
                     await File.WriteAllTextAsync(tagFile, completeMeta);
                 }
                 catch (Exception ex)
@@ -252,6 +273,7 @@ namespace Ryujinx.Ava.Common
                     Logger.Error?.Print(LogClass.Application, $"Failed to write user friendly save metadata file - {ex.Message}");
                 }
             }
+            #endregion
         }
 
         private static async Task<bool> CopySaveDataToIntermediateDirectory(SaveMeta saveMeta, string destinationDir)
@@ -369,10 +391,17 @@ namespace Ryujinx.Ava.Common
 
             return result;
 
-            static async Task<bool> CopyFileAsync(string source, string destination)
+            #region LocalMethod
+            static async Task<bool> CopyFileAsync(string source, string destination, int retryCount = 0)
             {
                 try
                 {
+                    if (retryCount > 0)
+                    {
+                        Logger.Debug?.Print(LogClass.Application, $"Backing off for a retry of copying {source}");
+                        await Task.Delay((int)(Math.Pow(2, retryCount) * 500));
+                    }
+
                     using FileStream sourceStream = File.Open(source, FileMode.Open);
                     using FileStream destinationStream = File.Create(destination);
 
@@ -381,10 +410,18 @@ namespace Ryujinx.Ava.Common
                 }
                 catch (Exception ex)
                 {
+                    if (ex.Message.Contains("is being used by another process", StringComparison.OrdinalIgnoreCase))
+                    {
+                        const int retryThreshold = 3;
+                        return (++retryCount < retryThreshold)
+                            && await CopyFileAsync(source, destination, retryCount);
+                    }
+
                     Logger.Error?.Print(LogClass.Application, $"Failed to copy file {source} - {ex.Message}");
                     return false;
                 }
             }
+            #endregion
         }
 
         public static bool CreateOrReplaceZipFile(string sourceDataDirectory, string backupDestinationFullPath)
