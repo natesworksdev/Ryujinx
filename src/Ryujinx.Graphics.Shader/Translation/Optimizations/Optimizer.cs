@@ -13,6 +13,8 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
             // TODO: Some of those are not optimizations and shouldn't be here.
 
+            GlobalToStorage.RunPass(hfm, blocks, config);
+
             bool hostSupportsShaderFloat64 = config.GpuAccessor.QueryHostSupportsShaderFloat64();
 
             // Those passes are looking for specific patterns and only needs to run once.
