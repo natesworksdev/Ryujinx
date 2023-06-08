@@ -7,6 +7,8 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 {
     static class BindlessToIndexed
     {
+        private const int NvnTextureBufferIndex = 2;
+
         public static void RunPass(BasicBlock block, ShaderConfig config)
         {
             // We can turn a bindless texture access into a indexed access,
@@ -43,7 +45,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
                 if (ldcSrc0.Type != OperandType.Constant ||
                     !config.ResourceManager.TryGetConstantBufferSlot(ldcSrc0.Value, out int src0CbufSlot) ||
-                    src0CbufSlot != 2)
+                    src0CbufSlot != NvnTextureBufferIndex)
                 {
                     continue;
                 }
@@ -107,7 +109,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 texOp.Type | SamplerType.Indexed,
                 texOp.Format,
                 texOp.Flags & ~TextureFlags.Bindless,
-                texOp.CbufSlot,
+                NvnTextureBufferIndex,
                 handle);
 
             texOp.TurnIntoIndexed(binding);

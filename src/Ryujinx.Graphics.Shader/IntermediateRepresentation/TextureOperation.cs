@@ -8,16 +8,14 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
         public TextureFormat Format { get; set; }
         public TextureFlags Flags { get; private set; }
 
-        public int CbufSlot { get; private set; }
-        public int Handle { get; private set; }
+        public int Binding { get; private set; }
 
         public TextureOperation(
             Instruction inst,
             SamplerType type,
             TextureFormat format,
             TextureFlags flags,
-            int cbufSlot,
-            int handle,
+            int binding,
             int compIndex,
             Operand[] dests,
             Operand[] sources) : base(inst, compIndex, dests, sources)
@@ -25,27 +23,14 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
             Type = type;
             Format = format;
             Flags = flags;
-            CbufSlot = cbufSlot;
-            Handle = handle;
-        }
-
-        public TextureOperation(
-            Instruction inst,
-            SamplerType type,
-            TextureFormat format,
-            TextureFlags flags,
-            int handle,
-            int compIndex,
-            Operand[] dests,
-            Operand[] sources) : this(inst, type, format, flags, DefaultCbufSlot, handle, compIndex, dests, sources)
-        {
+            Binding = binding;
         }
 
         public void TurnIntoIndexed(int binding)
         {
             Type |= SamplerType.Indexed;
             Flags &= ~TextureFlags.Bindless;
-            Handle = binding;
+            Binding = binding;
         }
 
         public void SetBinding(int binding)
@@ -57,7 +42,7 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
                 RemoveSource(0);
             }
 
-            Handle = binding;
+            Binding = binding;
         }
 
         public void SetLodLevelFlag()

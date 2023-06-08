@@ -2,16 +2,12 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 
 namespace Ryujinx.Graphics.Shader.Translation
 {
     class ShaderConfig
     {
-        // TODO: Non-hardcoded array size.
-        public const int SamplerArraySize = 4;
-
         private const int ThreadsPerWarp = 32;
 
         public ShaderStage Stage { get; }
@@ -110,18 +106,6 @@ namespace Ryujinx.Graphics.Shader.Translation
         public UInt128 NextInputAttributesComponents { get; private set; }
         public UInt128 ThisInputAttributesComponents { get; private set; }
 
-        private readonly record struct TextureInfo(int CbufSlot, int Handle, bool Indexed, TextureFormat Format);
-
-        private struct TextureMeta
-        {
-            public bool AccurateType;
-            public SamplerType Type;
-            public TextureUsageFlags UsageFlags;
-        }
-
-        private readonly Dictionary<TextureInfo, TextureMeta> _usedTextures;
-        private readonly Dictionary<TextureInfo, TextureMeta> _usedImages;
-
         public ShaderConfig(ShaderStage stage, IGpuAccessor gpuAccessor, TranslationOptions options, int localMemorySize)
         {
             Stage = stage;
@@ -138,9 +122,6 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             UsedInputAttributesPerPatch = new HashSet<int>();
             UsedOutputAttributesPerPatch = new HashSet<int>();
-
-            _usedTextures = new Dictionary<TextureInfo, TextureMeta>();
-            _usedImages = new Dictionary<TextureInfo, TextureMeta>();
 
             ResourceManager = new ResourceManager(stage, gpuAccessor, new ShaderProperties());
 
@@ -441,22 +422,6 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             UsedInputAttributes |= other.UsedInputAttributes;
             UsedOutputAttributes |= other.UsedOutputAttributes;
-
-            foreach (var kv in other._usedTextures)
-            {
-                if (!_usedTextures.TryAdd(kv.Key, kv.Value))
-                {
-                    _usedTextures[kv.Key] = MergeTextureMeta(kv.Value, _usedTextures[kv.Key]);
-                }
-            }
-
-            foreach (var kv in other._usedImages)
-            {
-                if (!_usedImages.TryAdd(kv.Key, kv.Value))
-                {
-                    _usedImages[kv.Key] = MergeTextureMeta(kv.Value, _usedImages[kv.Key]);
-                }
-            }
         }
 
         public void SetLayerOutputAttribute(int attr)
@@ -638,111 +603,6 @@ namespace Ryujinx.Graphics.Shader.Translation
         public void SetUsedFeature(FeatureFlags flags)
         {
             UsedFeatures |= flags;
-        }
-
-        public void SetUsedTexture(
-            Instruction inst,
-            SamplerType type,
-            TextureFormat format,
-            TextureFlags flags,
-            int cbufSlot,
-            int handle)
-        {
-            inst &= Instruction.Mask;
-            bool isImage = inst == Instruction.ImageLoad || inst == Instruction.ImageStore || inst == Instruction.ImageAtomic;
-            bool isWrite = inst == Instruction.ImageStore || inst == Instruction.ImageAtomic;
-            bool accurateType = inst != Instruction.Lod && inst != Instruction.TextureSize;
-            bool coherent = flags.HasFlag(TextureFlags.Coherent);
-
-            if (isImage)
-            {
-                SetUsedTextureOrImage(_usedImages, cbufSlot, handle, type, format, true, isWrite, false, coherent);
-            }
-            else
-            {
-                bool intCoords = flags.HasFlag(TextureFlags.IntCoords) || inst == Instruction.TextureSize;
-                SetUsedTextureOrImage(_usedTextures, cbufSlot, handle, type, TextureFormat.Unknown, intCoords, false, accurateType, coherent);
-            }
-
-            GpuAccessor.RegisterTexture(handle, cbufSlot);
-        }
-
-        private void SetUsedTextureOrImage(
-            Dictionary<TextureInfo, TextureMeta> dict,
-            int cbufSlot,
-            int handle,
-            SamplerType type,
-            TextureFormat format,
-            bool intCoords,
-            bool write,
-            bool accurateType,
-            bool coherent)
-        {
-            var dimensions = type.GetDimensions();
-            var isIndexed = type.HasFlag(SamplerType.Indexed);
-
-            var usageFlags = TextureUsageFlags.None;
-
-            if (intCoords)
-            {
-                usageFlags |= TextureUsageFlags.NeedsScaleValue;
-
-                var canScale = Stage.SupportsRenderScale() && !isIndexed && !write && dimensions == 2;
-
-                if (!canScale)
-                {
-                    // Resolution scaling cannot be applied to this texture right now.
-                    // Flag so that we know to blacklist scaling on related textures when binding them.
-                    usageFlags |= TextureUsageFlags.ResScaleUnsupported;
-                }
-            }
-
-            if (write)
-            {
-                usageFlags |= TextureUsageFlags.ImageStore;
-            }
-
-            if (coherent)
-            {
-                usageFlags |= TextureUsageFlags.ImageCoherent;
-            }
-
-            int arraySize = isIndexed ? SamplerArraySize : 1;
-
-            for (int layer = 0; layer < arraySize; layer++)
-            {
-                var info = new TextureInfo(cbufSlot, handle + layer * 2, isIndexed, format);
-                var meta = new TextureMeta()
-                {
-                    AccurateType = accurateType,
-                    Type = type,
-                    UsageFlags = usageFlags,
-                };
-
-                if (dict.TryGetValue(info, out var existingMeta))
-                {
-                    dict[info] = MergeTextureMeta(meta, existingMeta);
-                }
-                else
-                {
-                    dict.Add(info, meta);
-                }
-            }
-        }
-
-        private static TextureMeta MergeTextureMeta(TextureMeta meta, TextureMeta existingMeta)
-        {
-            meta.UsageFlags |= existingMeta.UsageFlags;
-
-            // If the texture we have has inaccurate type information, then
-            // we prefer the most accurate one.
-            if (existingMeta.AccurateType)
-            {
-                meta.AccurateType = true;
-                meta.Type = existingMeta.Type;
-            }
-
-            return meta;
         }
 
         public ShaderProgramInfo CreateProgramInfo(ShaderIdentification identification = ShaderIdentification.None)
