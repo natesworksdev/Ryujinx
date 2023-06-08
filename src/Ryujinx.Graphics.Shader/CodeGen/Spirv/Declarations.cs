@@ -72,8 +72,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             DeclareStorageBuffers(context, context.Config.Properties.StorageBuffers.Values);
             DeclareMemories(context, context.Config.Properties.LocalMemories, context.LocalMemories, StorageClass.Private);
             DeclareMemories(context, context.Config.Properties.SharedMemories, context.SharedMemories, StorageClass.Workgroup);
-            DeclareSamplers(context, context.Config.GetTextureDescriptors());
-            DeclareImages(context, context.Config.GetImageDescriptors());
+            DeclareSamplers(context, context.Config.Properties.Textures.Values);
+            DeclareImages(context, context.Config.Properties.Images.Values);
             DeclareInputsAndOutputs(context, info);
         }
 
@@ -178,92 +178,82 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
         }
 
-        private static void DeclareSamplers(CodeGenContext context, TextureDescriptor[] descriptors)
+        private static void DeclareSamplers(CodeGenContext context, IEnumerable<TextureDefinition> definitions)
         {
-            foreach (var descriptor in descriptors)
+            foreach (var definition in definitions)
             {
-                var meta = new TextureMeta(descriptor.CbufSlot, descriptor.HandleIndex, descriptor.Format);
-
-                if (context.Samplers.ContainsKey(meta))
+                if (context.Samplers.ContainsKey(definition.Binding))
                 {
                     continue;
                 }
 
                 int setIndex = context.Config.Options.TargetApi == TargetApi.Vulkan ? 2 : 0;
 
-                var dim = (descriptor.Type & SamplerType.Mask) switch
+                var dim = (definition.Type & SamplerType.Mask) switch
                 {
                     SamplerType.Texture1D => Dim.Dim1D,
                     SamplerType.Texture2D => Dim.Dim2D,
                     SamplerType.Texture3D => Dim.Dim3D,
                     SamplerType.TextureCube => Dim.Cube,
                     SamplerType.TextureBuffer => Dim.Buffer,
-                    _ => throw new InvalidOperationException($"Invalid sampler type \"{descriptor.Type & SamplerType.Mask}\"."),
+                    _ => throw new InvalidOperationException($"Invalid sampler type \"{definition.Type & SamplerType.Mask}\"."),
                 };
 
                 var imageType = context.TypeImage(
                     context.TypeFP32(),
                     dim,
-                    descriptor.Type.HasFlag(SamplerType.Shadow),
-                    descriptor.Type.HasFlag(SamplerType.Array),
-                    descriptor.Type.HasFlag(SamplerType.Multisample),
+                    definition.Type.HasFlag(SamplerType.Shadow),
+                    definition.Type.HasFlag(SamplerType.Array),
+                    definition.Type.HasFlag(SamplerType.Multisample),
                     1,
                     ImageFormat.Unknown);
-
-                var nameSuffix = meta.CbufSlot < 0 ? $"_tcb_{meta.Handle:X}" : $"_cb{meta.CbufSlot}_{meta.Handle:X}";
 
                 var sampledImageType = context.TypeSampledImage(imageType);
                 var sampledImagePointerType = context.TypePointer(StorageClass.UniformConstant, sampledImageType);
                 var sampledImageVariable = context.Variable(sampledImagePointerType, StorageClass.UniformConstant);
 
-                context.Samplers.Add(meta, (imageType, sampledImageType, sampledImageVariable));
-                context.SamplersTypes.Add(meta, descriptor.Type);
+                context.Samplers.Add(definition.Binding, (imageType, sampledImageType, sampledImageVariable));
+                context.SamplersTypes.Add(definition.Binding, definition.Type);
 
-                context.Name(sampledImageVariable, $"{GetStagePrefix(context.Config.Stage)}_tex{nameSuffix}");
+                context.Name(sampledImageVariable, definition.Name);
                 context.Decorate(sampledImageVariable, Decoration.DescriptorSet, (LiteralInteger)setIndex);
-                context.Decorate(sampledImageVariable, Decoration.Binding, (LiteralInteger)descriptor.Binding);
+                context.Decorate(sampledImageVariable, Decoration.Binding, (LiteralInteger)definition.Binding);
                 context.AddGlobalVariable(sampledImageVariable);
             }
         }
 
-        private static void DeclareImages(CodeGenContext context, TextureDescriptor[] descriptors)
+        private static void DeclareImages(CodeGenContext context, IEnumerable<TextureDefinition> definitions)
         {
-            foreach (var descriptor in descriptors)
+            foreach (var definition in definitions)
             {
-                var meta = new TextureMeta(descriptor.CbufSlot, descriptor.HandleIndex, descriptor.Format);
-
-                if (context.Images.ContainsKey(meta))
+                if (context.Images.ContainsKey(definition.Binding))
                 {
                     continue;
                 }
 
                 int setIndex = context.Config.Options.TargetApi == TargetApi.Vulkan ? 3 : 0;
 
-                var dim = GetDim(descriptor.Type);
+                var dim = GetDim(definition.Type);
 
                 var imageType = context.TypeImage(
-                    context.GetType(meta.Format.GetComponentType()),
+                    context.GetType(definition.Format.GetComponentType()),
                     dim,
-                    descriptor.Type.HasFlag(SamplerType.Shadow),
-                    descriptor.Type.HasFlag(SamplerType.Array),
-                    descriptor.Type.HasFlag(SamplerType.Multisample),
+                    definition.Type.HasFlag(SamplerType.Shadow),
+                    definition.Type.HasFlag(SamplerType.Array),
+                    definition.Type.HasFlag(SamplerType.Multisample),
                     AccessQualifier.ReadWrite,
-                    GetImageFormat(meta.Format));
-
-                var nameSuffix = meta.CbufSlot < 0 ?
-                    $"_tcb_{meta.Handle:X}_{meta.Format.ToGlslFormat()}" :
-                    $"_cb{meta.CbufSlot}_{meta.Handle:X}_{meta.Format.ToGlslFormat()}";
+                    GetImageFormat(definition.Format));
 
                 var imagePointerType = context.TypePointer(StorageClass.UniformConstant, imageType);
                 var imageVariable = context.Variable(imagePointerType, StorageClass.UniformConstant);
 
-                context.Images.Add(meta, (imageType, imageVariable));
+                context.Images.Add(definition.Binding, (imageType, imageVariable));
 
-                context.Name(imageVariable, $"{GetStagePrefix(context.Config.Stage)}_img{nameSuffix}");
+                context.Name(imageVariable, definition.Name);
                 context.Decorate(imageVariable, Decoration.DescriptorSet, (LiteralInteger)setIndex);
-                context.Decorate(imageVariable, Decoration.Binding, (LiteralInteger)descriptor.Binding);
+                context.Decorate(imageVariable, Decoration.Binding, (LiteralInteger)definition.Binding);
 
-                if (descriptor.Flags.HasFlag(TextureUsageFlags.ImageCoherent))
+                if (definition.Flags.HasFlag(TextureUsageFlags.ImageCoherent))
                 {
                     context.Decorate(imageVariable, Decoration.Coherent);
                 }

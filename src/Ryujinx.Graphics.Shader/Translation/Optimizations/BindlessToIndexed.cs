@@ -102,8 +102,15 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
         private static void TurnIntoIndexed(ShaderConfig config, TextureOperation texOp, int handle)
         {
-            texOp.TurnIntoIndexed(handle);
-            config.SetUsedTexture(texOp.Inst, texOp.Type, texOp.Format, texOp.Flags, texOp.CbufSlot, handle);
+            int binding = config.ResourceManager.GetTextureOrImageBinding(
+                texOp.Inst,
+                texOp.Type | SamplerType.Indexed,
+                texOp.Format,
+                texOp.Flags & ~TextureFlags.Bindless,
+                texOp.CbufSlot,
+                handle);
+
+            texOp.TurnIntoIndexed(binding);
         }
     }
 }

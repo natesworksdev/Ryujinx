@@ -41,14 +41,14 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
         {
         }
 
-        public void TurnIntoIndexed(int handle)
+        public void TurnIntoIndexed(int binding)
         {
             Type |= SamplerType.Indexed;
             Flags &= ~TextureFlags.Bindless;
-            Handle = handle;
+            Handle = binding;
         }
 
-        public void SetHandle(int handle, int cbufSlot = DefaultCbufSlot)
+        public void SetBinding(int binding)
         {
             if ((Flags & TextureFlags.Bindless) != 0)
             {
@@ -57,8 +57,7 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
                 RemoveSource(0);
             }
 
-            CbufSlot = cbufSlot;
-            Handle = handle;
+            Handle = binding;
         }
 
         public void SetLodLevelFlag()
