@@ -47,7 +47,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private IndexType _prevIndexType;
         private uint _prevFirstVertex;
         private bool _prevTfEnable;
-        private bool _prevShaderHasTf;
 
         private uint _prevRtNoAlphaMask;
 
@@ -1369,7 +1368,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             _vsClipDistancesWritten = gs.Shaders[1]?.Info.ClipDistancesWritten ?? 0;
 
             bool hasTransformFeedback = gs.SpecializationState.TransformFeedbackDescriptors != null;
-            if (hasTransformFeedback != _prevShaderHasTf)
+            if (hasTransformFeedback != _channel.BufferManager.HasTransformFeedbackOutputs)
             {
                 if (!_context.Capabilities.SupportsTransformFeedback)
                 {
@@ -1381,7 +1380,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     _channel.BufferManager.ForceTransformFeedbackAndStorageBuffersDirty();
                 }
 
-                _prevShaderHasTf = hasTransformFeedback;
+                _channel.BufferManager.HasTransformFeedbackOutputs = hasTransformFeedback;
             }
 
             if (oldVsClipDistancesWritten != _vsClipDistancesWritten)

@@ -24,6 +24,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private int _unalignedStorageBuffers;
         public bool HasUnalignedStorageBuffers => _unalignedStorageBuffers > 0;
 
+        public bool HasTransformFeedbackOutputs { get; set; }
+
         private IndexBuffer _indexBuffer;
         private readonly VertexBuffer[] _vertexBuffers;
         private readonly BufferBounds[] _transformFeedbackBuffers;
@@ -337,25 +339,13 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="vertexCount">Vertex count per instance</param>
         public void SetInstancedDrawVertexCount(int vertexCount)
         {
-            if (!_context.Capabilities.SupportsTransformFeedback && _tfInfoBuffer != BufferHandle.Null)
+            if (!_context.Capabilities.SupportsTransformFeedback &&
+                HasTransformFeedbackOutputs &&
+                _tfInfoBuffer != BufferHandle.Null)
             {
-                bool hasTransformFeedbackBuffer = false;
-
-                for (int index = 0; index < Constants.TotalTransformFeedbackBuffers; index++)
-                {
-                    if (_transformFeedbackBuffers[index].Address != 0)
-                    {
-                        hasTransformFeedbackBuffer = true;
-                        break;
-                    }
-                }
-
-                if (hasTransformFeedbackBuffer)
-                {
-                    Span<byte> data = stackalloc byte[sizeof(int)];
-                    MemoryMarshal.Cast<byte, int>(data)[0] = vertexCount;
-                    _context.Renderer.SetBufferData(_tfInfoBuffer, TfInfoVertexCountOffset, data);
-                }
+                Span<byte> data = stackalloc byte[sizeof(int)];
+                MemoryMarshal.Cast<byte, int>(data)[0] = vertexCount;
+                _context.Renderer.SetBufferData(_tfInfoBuffer, TfInfoVertexCountOffset, data);
             }
         }
 
@@ -605,7 +595,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                     _context.Renderer.Pipeline.SetTransformFeedbackBuffers(tfbs);
                 }
-                else
+                else if (HasTransformFeedbackOutputs)
                 {
                     Span<int> info = _tfInfoData.AsSpan();
                     Span<BufferAssignment> buffers = stackalloc BufferAssignment[Constants.TotalTransformFeedbackBuffers + 1];
