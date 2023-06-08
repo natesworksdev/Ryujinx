@@ -52,7 +52,8 @@ namespace Ryujinx.Ava.Common
     {
         Account,
         Bcat,
-        Device
+        Device,
+        All = Account | Bcat | Device
     }
 
     public class BackupManager

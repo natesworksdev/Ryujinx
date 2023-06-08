@@ -203,7 +203,8 @@
         <StackPanel
             Grid.Row="2"
             Margin="0 24 0 0"
-            Orientation="Horizontal">
+            Orientation="Horizontal"
+			Spacing="10">
             <Button
                 Width="50"
                 MinWidth="50"
@@ -211,5 +212,18 @@
                 <ui:SymbolIcon Symbol="Back" />
             </Button>
         </StackPanel>
+		<StackPanel
+            Grid.Row="2"
+            Margin="0 24 0 0"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal"
+			Spacing="10">
+			<Button
+                Click="GenerateProfileSaveBackup"
+                Content="Generate Backup" />
+			<Button
+                Click="ImportSaveBackup"
+                Content="Import From Backup" />
+		</StackPanel>
     </Grid>
 </UserControl>

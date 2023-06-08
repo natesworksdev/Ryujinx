@@ -530,9 +530,8 @@ namespace Ryujinx.Ava.Common
                     await sourceStream.CopyToAsync(destinationStream);
                     return true;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    // TODO: log
                     return false;
                 }
             }

@@ -1357,7 +1357,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async void ManageProfiles()
         {
-            await NavigationDialogHost.Show(AccountManager, ContentManager, VirtualFileSystem, LibHacHorizonManager.RyujinxClient);
+            await NavigationDialogHost.Show(AccountManager, ContentManager, VirtualFileSystem, LibHacHorizonManager.RyujinxClient, ApplicationLibrary);
         }
 
         public void SimulateWakeUpMessage()
