@@ -653,5 +653,7 @@
   "NetworkInterfaceDefault": "Default",
   "PackagingShaders": "Packaging Shaders",
   "AboutChangelogButton": "View Changelog on GitHub",
-  "AboutChangelogButtonTooltipMessage": "Click to open the changelog for this version in your default browser."
+  "AboutChangelogButtonTooltipMessage": "Click to open the changelog for this version in your default browser.",
+  "ExportUserSaveBackup": "Export Saves",
+  "ImportUserSaveBackup": "Import from Backup"
 }
