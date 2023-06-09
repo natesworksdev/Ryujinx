@@ -87,12 +87,16 @@ then
     # cargo install --git "https://github.com/marysaka/apple-platform-rs" --branch "fix/adhoc-app-bundle" apple-codesign --bin "rcodesign"
     echo "Using rcodesign for ad-hoc signing"
     for FILE in "$UNIVERSAL_OUTPUT"/*; do
-        rcodesign sign --entitlements-xml-path "$ENTITLEMENTS_FILE_PATH" "$FILE"
+        if [[ $(file "$FILE") == *"Mach-O"* ]]; then
+            rcodesign sign --entitlements-xml-path "$ENTITLEMENTS_FILE_PATH" "$FILE"
+        fi
     done  
 else
     echo "Using codesign for ad-hoc signing"
     for FILE in "$UNIVERSAL_OUTPUT"/*; do
-        codesign --entitlements "$ENTITLEMENTS_FILE_PATH" -f --deep -s - "$FILE"
+        if [[ $(file "$FILE") == *"Mach-O"* ]]; then
+            codesign --entitlements "$ENTITLEMENTS_FILE_PATH" -f --deep -s - "$FILE"
+        fi
     done    
 fi
 
