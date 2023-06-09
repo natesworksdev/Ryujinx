@@ -120,7 +120,10 @@ namespace Ryujinx.Ava.UI.Views.User
 
         private void GoBack(object sender, RoutedEventArgs e)
         {
-            _parent?.GoBack();
+            if (ViewModel.IsGoBackEnabled)
+            {
+                _parent?.GoBack();
+            }
         }
 
         private void OpenLocation(object sender, RoutedEventArgs e)
@@ -169,21 +172,20 @@ namespace Ryujinx.Ava.UI.Views.User
                 return;
             }
 
-            // Setup feddback UI
+            // Disable the user from doing anything until we complete
             ViewModel.IsGoBackEnabled = false;
 
             try
             {
-                // Do the backup
+                // Could potentially seed with existing saves already enumerated but we still need bcat and device data
                 var result = await _backupManager.BackupUserSaveData(
                     userId: new UserId((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low),
                     location: backupDir,
                     saveOptions: SaveOptions.Default);
 
-                // TODO: as callback with message form the backup manager?
-                if (!result)
+                if (result.DidFail)
                 {
-                    await ContentDialogHelper.CreateErrorDialog("Failed to generate backup");
+                    await ContentDialogHelper.CreateErrorDialog(result.Message);
                     return;
                 }
 
@@ -196,8 +198,8 @@ namespace Ryujinx.Ava.UI.Views.User
             }
             finally
             {
-                ViewModel.IsGoBackEnabled = true;
                 ViewModel.LoadingBarData = new();
+                ViewModel.IsGoBackEnabled = true;
             }
         }
 
@@ -210,6 +212,7 @@ namespace Ryujinx.Ava.UI.Views.User
         {
             Dispatcher.UIThread.Post(() =>
             {
+                // TODO: fix this so we can just set the properties, will require a trigger of OnPropChange
                 ViewModel.LoadingBarData = new() { 
                     Curr = e.Curr,
                     Max = e.Max

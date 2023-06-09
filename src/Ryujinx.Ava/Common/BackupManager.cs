@@ -15,12 +15,18 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Path = System.IO.Path;
 
 namespace Ryujinx.Ava.Common
 {
+    #region HelperClasses
+    public readonly record struct BackupRequestOutcome
+    {
+        public bool DidFail { get; init; }
+        public string Message { get; init; }
+    }
+
     internal readonly record struct SaveMeta
     {
         public ulong SaveDataId { get; init; }
@@ -56,14 +62,16 @@ namespace Ryujinx.Ava.Common
         SaveTypeBcat,
         SaveTypeDevice,
         SaveTypeAll = SaveTypeAccount | SaveTypeBcat | SaveTypeDevice,
-        // Other options
+        
+        // Request Semantics
         SkipEmptyDirectories,
-        // StopOnFailure,
-        // UseDateInName,
+        FlattenSaveStructure,
+        StopOnFailure,
+        UseDateInName,
 
         Default = SaveTypeAll
-
     }
+    #endregion
 
     public class BackupManager
     {
@@ -88,16 +96,21 @@ namespace Ryujinx.Ava.Common
         }
 
         #region Save
-        public async Task<bool> BackupUserSaveData(LibHac.Fs.UserId userId,
+        public async Task<BackupRequestOutcome> BackupUserSaveData(LibHac.Fs.UserId userId,
             string location,
-            SaveOptions saveOptions = SaveOptions.Default,
-            CancellationToken cancellationToken = default)
+            SaveOptions saveOptions = SaveOptions.Default)
         {
+            // TODO: cancellation source
+
             var userSaves = GetUserSaveData(userId, saveOptions);
             if (userSaves.IsNullOrEmpty())
             {
                 Logger.Warning?.Print(LogClass.Application, "No save data found");
-                return true;
+                return new BackupRequestOutcome
+                {
+                    DidFail = false,
+                    Message = "No save data found"
+                };
             }
 
             _loadingEventArgs.Curr = 0;
@@ -115,17 +128,32 @@ namespace Ryujinx.Ava.Common
                 // Delete temp for good measure?
                 _ = Directory.CreateDirectory(backupTempDir);
 
-                return await BatchCopySavesToTempDir(userSaves, backupTempDir)
+                var outcome = await BatchCopySavesToTempDir(userSaves, backupTempDir)
                     && CompleteBackup(location, userId, backupTempDir);
+
+                return new BackupRequestOutcome
+                {
+                    DidFail = !outcome,
+                    Message = outcome
+                        ? string.Empty
+                        : "Failed to backup user saves"
+                };
             }
             catch (Exception ex)
             {
                 Logger.Error?.Print(LogClass.Application, $"Failed to backup user data - {ex.Message}");
-                return false;
+                return new BackupRequestOutcome
+                {
+                    DidFail = true,
+                    Message = $"Failed to backup user data - {ex.Message}"
+                };
             }
             finally
             {
-                Directory.Delete(backupTempDir, true);
+                if (Directory.Exists(backupTempDir))
+                {
+                    Directory.Delete(backupTempDir, true);
+                }
             }
 
             // Produce the actual zip
@@ -427,8 +455,8 @@ namespace Ryujinx.Ava.Common
                 {
                     if (retryCount > 0)
                     {
-                        Logger.Debug?.Print(LogClass.Application, $"Backing off for a retry of copying {source}");
-                        await Task.Delay((int)(Math.Pow(2, retryCount) * 500));
+                        Logger.Debug?.Print(LogClass.Application, $"Backing off retrying copy of {source}");
+                        await Task.Delay((int)(Math.Pow(2, retryCount) * 200));
                     }
 
                     using FileStream sourceStream = File.Open(source, FileMode.Open);
