@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         private KEvent _accumulatedSuspendedTickChangedEvent;
         private int    _accumulatedSuspendedTickChangedEventHandle;
 
-        private object _fatalSectionLock = new object();
+        private readonly object _fatalSectionLock = new object();
         private int    _fatalSectionCount;
 
         // TODO: Set this when the game goes in suspension (go back to home menu ect), we currently don't support that so we can keep it set to 0.
