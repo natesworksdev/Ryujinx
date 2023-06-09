@@ -179,7 +179,7 @@ namespace Ryujinx.Ava.UI.Views.User
             {
                 // Could potentially seed with existing saves already enumerated but we still need bcat and device data
                 var result = await _backupManager.BackupUserSaveData(
-                    userId: new UserId((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low),
+                    userId: _accountManager.LastOpenedUser.UserId.ToLibHacUserId(),
                     location: backupDir,
                     saveOptions: SaveOptions.Default);
 

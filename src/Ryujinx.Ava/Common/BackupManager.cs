@@ -68,6 +68,7 @@ namespace Ryujinx.Ava.Common
         FlattenSaveStructure,
         StopOnFailure,
         UseDateInName,
+        ObfuscateZipExtension,
 
         Default = SaveTypeAll
     }
@@ -156,10 +157,14 @@ namespace Ryujinx.Ava.Common
             }
 
             // Produce the actual zip
-            static bool CompleteBackup(string location, LibHac.Fs.UserId userId, string backupTempDir)
+            bool CompleteBackup(string location, LibHac.Fs.UserId userId, string backupTempDir)
             {
                 var currDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
-                var backupFile = Path.Combine(location, $"{currDate}_{userId}_saves.zip");
+                var profileName = _accountManager
+                    .GetAllUsers()
+                    .FirstOrDefault(u => u.UserId.ToLibHacUserId() == userId)?.Name;
+
+                var backupFile = Path.Combine(location, $"{profileName}_{currDate}_saves.zip");
                 return CreateOrReplaceZipFile(backupTempDir, backupFile);
             }
         }
