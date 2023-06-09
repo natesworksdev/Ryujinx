@@ -478,27 +478,13 @@ namespace Ryujinx.Ava
 
             if (_rendererHost.EmbeddedWindow is EmbeddedWindowOpenGL openGlWindow)
             {
-                // Try to bind the OpenGL context before calling the shutdown event
-                try
-                {
-                    openGlWindow.MakeCurrent();
-                }
-                catch (ContextException e)
-                {
-                    Logger.Warning?.Print(LogClass.Ui, $"Failed to bind OpenGL context: {e}");
-                }
+                // Try to bind the OpenGL context before calling the shutdown event.
+                openGlWindow.MakeCurrent(false, false);
 
                 Device.DisposeGpu();
 
-                // Unbind context and destroy everything
-                try
-                {
-                    openGlWindow.MakeCurrent(null);
-                }
-                catch (ContextException e)
-                {
-                    Logger.Warning?.Print(LogClass.Ui, $"Failed to unbind OpenGL context: {e}");
-                }
+                // Unbind context and destroy everything.
+                openGlWindow.MakeCurrent(true, false);
             }
             else
             {
@@ -954,7 +940,7 @@ namespace Ryujinx.Ava
                 _gpuDoneEvent.Set();
             });
 
-            (_rendererHost.EmbeddedWindow as EmbeddedWindowOpenGL)?.MakeCurrent(null);
+            (_rendererHost.EmbeddedWindow as EmbeddedWindowOpenGL)?.MakeCurrent(true);
         }
 
         public void UpdateStatus()

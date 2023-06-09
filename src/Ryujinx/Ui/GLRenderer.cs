@@ -114,7 +114,7 @@ namespace Ryujinx.Ui
 
         protected override void Dispose(bool disposing)
         {
-            // Try to bind the OpenGL context before calling the shutdown event
+            // Try to bind the OpenGL context before calling the shutdown event.
             try
             {
                 _openGLContext?.MakeCurrent(_nativeWindow);
@@ -127,7 +127,7 @@ namespace Ryujinx.Ui
             Device?.DisposeGpu();
             NpadManager.Dispose();
 
-            // Unbind context and destroy everything
+            // Unbind context and destroy everything.
             try
             {
                 _openGLContext?.MakeCurrent(null);
