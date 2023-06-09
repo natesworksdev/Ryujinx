@@ -34,6 +34,8 @@ namespace Ryujinx.Graphics.GAL
         public readonly bool SupportsCubemapView;
         public readonly bool SupportsNonConstantTextureOffset;
         public readonly bool SupportsShaderBallot;
+        public readonly bool SupportsShaderBarrierDivergence;
+        public readonly bool SupportsShaderFloat64;
         public readonly bool SupportsTextureShadowLod;
         public readonly bool SupportsViewportIndexVertexTessellation;
         public readonly bool SupportsViewportMask;
@@ -81,6 +83,8 @@ namespace Ryujinx.Graphics.GAL
             bool supportsCubemapView,
             bool supportsNonConstantTextureOffset,
             bool supportsShaderBallot,
+            bool supportsShaderBarrierDivergence,
+            bool supportsShaderFloat64,
             bool supportsTextureShadowLod,
             bool supportsViewportIndexVertexTessellation,
             bool supportsViewportMask,
@@ -124,6 +128,8 @@ namespace Ryujinx.Graphics.GAL
             SupportsCubemapView = supportsCubemapView;
             SupportsNonConstantTextureOffset = supportsNonConstantTextureOffset;
             SupportsShaderBallot = supportsShaderBallot;
+            SupportsShaderBarrierDivergence = supportsShaderBarrierDivergence;
+            SupportsShaderFloat64 = supportsShaderFloat64;
             SupportsTextureShadowLod = supportsTextureShadowLod;
             SupportsViewportIndexVertexTessellation = supportsViewportIndexVertexTessellation;
             SupportsViewportMask = supportsViewportMask;
