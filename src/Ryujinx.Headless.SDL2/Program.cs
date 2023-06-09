@@ -608,7 +608,7 @@ namespace Ryujinx.Headless.SDL2
 
             if (Directory.Exists(path))
             {
-                string[] romFsFiles = Directory.GetFiles(path, "*.istorage");
+                Span<string> romFsFiles = Directory.GetFiles(path, "*.istorage");
 
                 if (romFsFiles.Length == 0)
                 {

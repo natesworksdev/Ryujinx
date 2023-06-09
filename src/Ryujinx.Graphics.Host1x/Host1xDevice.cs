@@ -95,7 +95,7 @@ namespace Ryujinx.Graphics.Host1x
         private void Process(Command command)
         {
             SetNvdecContext(command.ContextId);
-            int[] commandBuffer = command.Buffer;
+            Span<int> commandBuffer = command.Buffer;
 
             for (int index = 0; index < commandBuffer.Length; index++)
             {

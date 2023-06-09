@@ -1,10 +1,11 @@
 ﻿using Ryujinx.HLE.HOS.Kernel.Threading;
+using System;
 
 namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 {
     interface IAudioDevice
     {
-        string[] ListAudioDeviceName();
+        Span<string> ListAudioDeviceName();
         ResultCode SetAudioDeviceOutputVolume(string name, float volume);
         ResultCode GetAudioDeviceOutputVolume(string name,  out float volume);
         string GetActiveAudioDeviceName();
@@ -13,6 +14,6 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
         KEvent QueryAudioDeviceInputEvent();
         KEvent QueryAudioDeviceOutputEvent();
         string GetActiveAudioOutputDeviceName();
-        string[] ListAudioOutputDeviceName();
+        Span<string> ListAudioOutputDeviceName();
     }
 }

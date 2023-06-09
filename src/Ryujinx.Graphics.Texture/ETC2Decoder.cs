@@ -208,7 +208,7 @@ namespace Ryujinx.Graphics.Texture
                                 DecodeBlock(tile, colorBlock);
 
                                 byte alphaBase = (byte)alphaBlock;
-                                int[] alphaTable = _etc2AlphaLut[(alphaBlock >> 8) & 0xf];
+                                Span<int> alphaTable = _etc2AlphaLut[(alphaBlock >> 8) & 0xf];
                                 int alphaMultiplier = (int)(alphaBlock >> 12) & 0xf;
                                 ulong alphaIndices = BinaryPrimitives.ReverseEndianness(alphaBlock);
 

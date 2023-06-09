@@ -2,6 +2,7 @@
 using Ryujinx.Audio.Renderer.Server;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using System;
 
 namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 {
@@ -112,7 +113,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
             return _registry.ActiveDevice.GetOutputDeviceName();
         }
 
-        public string[] ListAudioDeviceName()
+        public Span<string> ListAudioDeviceName()
         {
             int deviceCount = _sessions.Length;
 
@@ -121,7 +122,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
                 deviceCount--;
             }
 
-            string[] result = new string[deviceCount];
+            Span<string> result = new string[deviceCount];
 
             int i = 0;
 
@@ -140,11 +141,11 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
             return result;
         }
 
-        public string[] ListAudioOutputDeviceName()
+        public Span<string> ListAudioOutputDeviceName()
         {
             int deviceCount = _sessions.Length;
 
-            string[] result = new string[deviceCount];
+            Span<string> result = new string[deviceCount];
 
             for (int i = 0; i < deviceCount; i++)
             {

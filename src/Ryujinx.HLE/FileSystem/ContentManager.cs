@@ -585,7 +585,7 @@ namespace Ryujinx.HLE.FileSystem
                     {
                         // Clean up the name and get the NcaId
 
-                        string[] pathComponents = entry.FullName.Replace(".cnmt", "").Split('/');
+                        Span<string> pathComponents = entry.FullName.Replace(".cnmt", "").Split('/');
 
                         string ncaId = pathComponents[pathComponents.Length - 1];
 

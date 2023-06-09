@@ -337,7 +337,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             int xMask = 0;
             int xBits = 0;
 
-            int[] xPos = new int[encodingPart.Length];
+            Span<int> xPos = new int[encodingPart.Length];
 
             for (int index = 0; index < encodingPart.Length; index++, bit--)
             {

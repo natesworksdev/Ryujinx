@@ -61,7 +61,7 @@ namespace Ryujinx.Common.SystemInfo
                 string line;
                 while ((line = file.ReadLine()) != null)
                 {
-                    string[] kvPair = line.Split(':', 2, StringSplitOptions.TrimEntries);
+                    Span<string> kvPair = line.Split(':', 2, StringSplitOptions.TrimEntries);
 
                     if (kvPair.Length < 2) continue;
 

@@ -116,7 +116,7 @@ namespace Ryujinx.HLE.FileSystem
 
         public string SwitchPathToSystemPath(string switchPath)
         {
-            string[] parts = switchPath.Split(":");
+            Span<string> parts = switchPath.Split(":");
 
             if (parts.Length != 2)
             {

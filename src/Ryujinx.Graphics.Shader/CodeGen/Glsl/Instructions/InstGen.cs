@@ -127,7 +127,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                 int arity = (int)(info.Type & InstType.ArityMask);
 
-                string[] expr = new string[arity];
+                Span<string> expr = new string[arity];
 
                 for (int index = 0; index < arity; index++)
                 {

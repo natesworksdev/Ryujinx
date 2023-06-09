@@ -533,7 +533,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.UserCopyFailed;
             }
 
-            int[] handles = new int[handlesCount];
+            Span<int> handles = new int[handlesCount];
 
             if (!KernelTransfer.UserToKernelArray<int>(handlesPtr, handles))
             {
@@ -652,7 +652,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return result;
             }
 
-            int[] handles = new int[handlesCount];
+            Span<int> handles = new int[handlesCount];
 
             if (!KernelTransfer.UserToKernelArray<int>(handlesPtr, handles))
             {

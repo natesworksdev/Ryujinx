@@ -148,7 +148,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 int offset = 0;
 
                 SpvInstruction[] structFieldTypes = new SpvInstruction[buffer.Type.Fields.Length];
-                int[] structFieldOffsets = new int[buffer.Type.Fields.Length];
+                Span<int> structFieldOffsets = new int[buffer.Type.Fields.Length];
 
                 for (int fieldIndex = 0; fieldIndex < buffer.Type.Fields.Length; fieldIndex++)
                 {

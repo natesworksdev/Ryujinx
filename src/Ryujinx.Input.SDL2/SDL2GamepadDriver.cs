@@ -49,7 +49,7 @@ namespace Ryujinx.Input.SDL2
 
         private int GetJoystickIndexByGamepadId(string id)
         {
-            string[] data = id.Split("-");
+            Span<string> data = id.Split("-");
 
             if (data.Length != 6 || !int.TryParse(data[0], out int joystickIndex))
             {

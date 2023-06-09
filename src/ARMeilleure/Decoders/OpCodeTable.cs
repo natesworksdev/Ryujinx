@@ -1405,7 +1405,7 @@ namespace ARMeilleure.Decoders
             int xMask = 0;
             int xBits = 0;
 
-            int[] xPos = new int[encoding.Length];
+            Span<int> xPos = new int[encoding.Length];
 
             int blacklisted = 0;
 

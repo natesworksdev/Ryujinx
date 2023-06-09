@@ -96,7 +96,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         {
         }
 
-        public KPageHeap(ulong address, ulong size, int[] blockShifts)
+        public KPageHeap(ulong address, ulong size, Span<int> blockShifts)
         {
             _heapAddress = address;
             _heapSize = size;
@@ -266,7 +266,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             return GetBlockSize(index) / KPageTableBase.PageSize;
         }
 
-        private static int CalculateManagementOverheadSize(ulong regionSize, int[] blockShifts)
+        private static int CalculateManagementOverheadSize(ulong regionSize, Span<int> blockShifts)
         {
             int overheadSize = 0;
 

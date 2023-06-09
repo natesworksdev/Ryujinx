@@ -1328,7 +1328,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             calendarTime.Minute = (sbyte)(remainingSeconds / SecondsPerMinute);
             calendarTime.Second = (sbyte)(remainingSeconds % SecondsPerMinute);
 
-            int[] ip = MonthsLengths[IsLeap((int)year)];
+            Span<int> ip = MonthsLengths[IsLeap((int)year)];
 
             for (calendarTime.Month = 0; dayOfYear >= ip[calendarTime.Month]; ++calendarTime.Month)
             {

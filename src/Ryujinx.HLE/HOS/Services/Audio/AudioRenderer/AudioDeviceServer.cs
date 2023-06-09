@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
         // ListAudioDeviceName() -> (u32, buffer<bytes, 6>)
         public ResultCode ListAudioDeviceName(ServiceCtx context)
         {
-            string[] deviceNames = _impl.ListAudioDeviceName();
+            Span<string> deviceNames = _impl.ListAudioDeviceName();
 
             ulong position = context.Request.ReceiveBuff[0].Position;
             ulong size = context.Request.ReceiveBuff[0].Size;
@@ -142,7 +142,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
         // ListAudioDeviceNameAuto() -> (u32, buffer<bytes, 0x22>)
         public ResultCode ListAudioDeviceNameAuto(ServiceCtx context)
         {
-            string[] deviceNames = _impl.ListAudioDeviceName();
+            Span<string> deviceNames = _impl.ListAudioDeviceName();
 
             (ulong position, ulong size) = context.Request.GetBufferType0x22();
 
@@ -287,7 +287,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
         // ListAudioOutputDeviceName() -> (u32, buffer<bytes, 6>)
         public ResultCode ListAudioOutputDeviceName(ServiceCtx context)
         {
-            string[] deviceNames = _impl.ListAudioOutputDeviceName();
+            Span<string> deviceNames = _impl.ListAudioOutputDeviceName();
 
             ulong position = context.Request.ReceiveBuff[0].Position;
             ulong size = context.Request.ReceiveBuff[0].Size;

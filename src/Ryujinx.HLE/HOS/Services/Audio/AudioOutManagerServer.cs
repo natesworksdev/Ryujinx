@@ -3,6 +3,7 @@ using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Services.Audio.AudioOut;
+using System;
 using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Audio
@@ -25,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
         // ListAudioOuts() -> (u32, buffer<bytes, 6>)
         public ResultCode ListAudioOuts(ServiceCtx context)
         {
-            string[] deviceNames = _impl.ListAudioOuts();
+            Span<string> deviceNames = _impl.ListAudioOuts();
 
             ulong position = context.Request.ReceiveBuff[0].Position;
             ulong size = context.Request.ReceiveBuff[0].Size;
@@ -96,7 +97,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
         // ListAudioOutsAuto() -> (u32, buffer<bytes, 0x22>)
         public ResultCode ListAudioOutsAuto(ServiceCtx context)
         {
-            string[] deviceNames = _impl.ListAudioOuts();
+            Span<string> deviceNames = _impl.ListAudioOuts();
 
             (ulong position, ulong size) = context.Request.GetBufferType0x22();
 
