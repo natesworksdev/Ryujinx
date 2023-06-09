@@ -10,14 +10,13 @@ using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Configuration;
-using Ryujinx.HLE.HOS;
 using Ryujinx.Ui.App.Common;
+using Ryujinx.HLE.HOS;
 using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Threading.Tasks;
 using Path = System.IO.Path;
 using UserId = LibHac.Fs.UserId;
 
