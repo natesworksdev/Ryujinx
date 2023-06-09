@@ -216,7 +216,6 @@ namespace Ryujinx.Ava.UI.Controls
 
         public void ManageSaves()
         {
-            // TODO: inject backup manager
             Navigate(typeof(UserSaveManagerView), (this, AccountManager, HorizonClient, VirtualFileSystem, ApplicationLibrary));
         }
     }
