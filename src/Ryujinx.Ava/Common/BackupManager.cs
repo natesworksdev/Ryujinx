@@ -81,7 +81,6 @@ namespace Ryujinx.Ava.Common
 
         private readonly HorizonClient _horizonClient;
         private readonly ApplicationLibrary _applicationLibrary;
-        // TODO: remove and pass in
         private readonly AccountManager _accountManager;
 
         public BackupManager(HorizonClient hzClient,
@@ -342,85 +341,6 @@ namespace Ryujinx.Ava.Common
             BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
 
             return result;
-        }
-        //---//
-
-
-        public async Task<bool> BackupSaveData(ulong titleId)
-        {
-            var userId = new LibHac.Fs.UserId((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low);
-
-            // /backup/user/[userid]/[titleId]/[saveType]_backup.zip
-            // /backup/[titleid]/[userid]/
-            var backupRootDirectory = Path.Combine(AppDataManager.BackupDirPath, titleId.ToString(), userId.ToString());
-
-            // Temp is where all save data will be moved to as an intermediate directory before beign zipped and cleaned up
-            // /backup/[titleid]/[userid]/[date]/temp
-            var currDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
-            var backupTempDir = Path.Combine(backupRootDirectory, currDate, "temp");
-            if (Directory.Exists(backupTempDir))
-            {
-                Directory.Delete(backupTempDir, true);
-            }
-
-            Directory.CreateDirectory(backupTempDir);
-
-            // Move all application save data for the user, account, and device to the temp folder
-            // TODO: use cancellation token for better bail out since they're running in parallel
-            var copyBackupFiles = await Task.WhenAll(
-                CopySaveDataToTemp(titleId, userId, SaveDataType.Account, backupTempDir),
-                // always use default uid for bcat and device data -- there's only one instance per combination of application and device
-                CopySaveDataToTemp(titleId, userId: default, SaveDataType.Bcat, backupTempDir),
-                CopySaveDataToTemp(titleId, userId: default, SaveDataType.Device, backupTempDir));
-
-            if (copyBackupFiles.Any(outcome => outcome is false))
-            {
-                Directory.Delete(Path.Combine(backupTempDir, ".."), true);
-                return false;
-            }
-
-            // Zip up the save data and delete the temp
-            var backupFile = Path.Combine(backupRootDirectory, $"{currDate}_{titleId}_save.zip");
-            var result = CreateOrReplaceZipFile(backupTempDir, backupFile);
-            Directory.Delete(Path.Combine(backupTempDir, ".."), true);
-
-            if (result)
-            {
-                OpenHelper.OpenFolder(backupRootDirectory);
-            }
-
-            return result;
-        }
-
-        private async Task<bool> CopySaveDataToTemp(ulong titleId,
-            LibHac.Fs.UserId userId,
-            SaveDataType saveType,
-            string backupTempDirectory)
-        {
-            var saveDataFilter = SaveDataFilter.Make(titleId,
-                saveType,
-                userId,
-                saveDataId: default,
-                index: default);
-
-            var result = _horizonClient.Fs.FindSaveDataWithFilter(out var saveDataInfo, SaveDataSpaceId.User, in saveDataFilter);
-            if (result.IsFailure())
-            {
-                //if (result.ErrorCode is "2002-1002"
-                //    && saveType is SaveDataType.Device or SaveDataType.Bcat)
-                //{
-                //    Logger.Debug?.Print(LogClass.Application, $"Title {titleId} does not have {saveType} data.");
-                //    return true;
-                //}
-
-                return false;
-            }
-
-            // Find the most recent version of the data, there is a commited (0) and working (1) paths directory
-            string saveRootPath = ApplicationHelper.FindValidSaveDir(saveDataInfo.SaveDataId);
-            var copyDestPath = Path.Combine(backupTempDirectory, saveType.ToString());
-
-            return await CopyDirectoryAsync(saveRootPath, copyDestPath);
         }
 
         private static async Task<bool> CopyDirectoryAsync(string sourceDirectory, string destDirectory)

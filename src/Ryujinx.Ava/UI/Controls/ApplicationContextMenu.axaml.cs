@@ -334,26 +334,5 @@ namespace Ryujinx.Ava.UI.Controls
                 viewModel.LoadApplication(viewModel.SelectedApplication.Path);
             }
         }
-
-        public void BackupSaveData_Click(object sender, RoutedEventArgs args)
-        {
-            if (sender is not MenuItem { DataContext: MainWindowViewModel { SelectedApplication: ApplicationData selectedApp } mainWindowView })
-            {
-                return;
-            }
-
-            if (!ulong.TryParse(selectedApp.TitleId, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ulong titleIdNumber))
-            {
-                _ = Dispatcher.UIThread.InvokeAsync(async () =>
-                {
-                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogRyujinxErrorMessage], LocaleManager.Instance[LocaleKeys.DialogInvalidTitleIdErrorMessage]);
-                });
-                return;
-            }
-
-            _ = Task.Run(async () => {
-                await ApplicationHelper.BackupSaveData(titleIdNumber);
-            });
-        }
     }
 }
