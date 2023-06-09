@@ -3,16 +3,38 @@ using DynamicData.Binding;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
+    public record class LoadingBarData
+    {
+        public int Max { get; set; } = 0;
+        public int Curr { get; set; } = 0;
+        public bool IsVisible => Max > 0 && Curr < Max;
+
+        public void Reset()
+        {
+            Max = 0;
+            Curr = 0;
+        }
+    }
+
+    public class LoadingBarEventArgs : EventArgs
+    { 
+        public int Curr { get; set; }
+        public int Max { get; set; }
+    }
+
     public class UserSaveManagerViewModel : BaseModel
     {
         private int _sortIndex;
         private int _orderIndex;
         private string _search;
+        private bool _isGoBackEnabled = true;
+        private LoadingBarData _loadingBarData = new();
         private ObservableCollection<SaveModel> _saves = new();
         private ObservableCollection<SaveModel> _views = new();
         private AccountManager _accountManager;
@@ -49,6 +71,28 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _search = value;
                 OnPropertyChanged();
                 Sort();
+            }
+        }
+
+        public bool IsGoBackEnabled
+        { 
+            get => _isGoBackEnabled;
+            set
+            {
+                _isGoBackEnabled = value;
+
+                OnPropertyChanged();
+            }
+        }
+
+        public LoadingBarData LoadingBarData
+        {
+            get => _loadingBarData;
+            set
+            {
+                _loadingBarData = value;
+
+                OnPropertyChanged();
             }
         }
 

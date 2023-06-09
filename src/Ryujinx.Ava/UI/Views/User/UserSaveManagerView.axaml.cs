@@ -14,15 +14,12 @@ using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
-using Ryujinx.Common.Configuration;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using UserId = LibHac.Fs.UserId;
 
@@ -65,6 +62,7 @@ namespace Ryujinx.Ava.UI.Views.User
                     _appLib = args.appLib;
 
                     _backupManager = new BackupManager(_horizonClient, _appLib, _accountManager);
+                    _backupManager.BackupProgressUpdated += BackupManager_ProgressUpdate;
 
                     _parent = args.parent;
                     break;
@@ -162,36 +160,61 @@ namespace Ryujinx.Ava.UI.Views.User
             OpenFolderDialog dialog = new()
             {
                 Title = "Choose Save Backup Folder", // TODO: localize
+                // LocaleManager.Instance[LocaleKeys.UserProfileWindowTitle]
             };
 
             var backupDir = await dialog.ShowAsync(((TopLevel)_parent.GetVisualRoot()) as Window);
             if (string.IsNullOrWhiteSpace(backupDir))
             {
-                // Assume cancel
                 return;
             }
 
-            // TODO: open Dialog blocking the user from interacting until complete?
+            // Setup feddback UI
+            ViewModel.IsGoBackEnabled = false;
 
-            var result = await _backupManager.BackupUserSaveData(
-                userId: new UserId((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low),
-                location: backupDir,
-                SaveOptions.All);
-
-            // show error dialog on failure
-            if (!result)
+            try
             {
-                await ContentDialogHelper.CreateErrorDialog("Failed to generate backup");
+                // Do the backup
+                var result = await _backupManager.BackupUserSaveData(
+                    userId: new UserId((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low),
+                    location: backupDir,
+                    saveOptions: SaveOptions.Default);
+
+                // TODO: as callback with message form the backup manager?
+                if (!result)
+                {
+                    await ContentDialogHelper.CreateErrorDialog("Failed to generate backup");
+                    return;
+                }
+
+                OpenHelper.OpenFolder(backupDir);
                 return;
             }
-
-            OpenHelper.OpenFolder(backupDir);
-            return;
+            catch (Exception ex)
+            {
+                await ContentDialogHelper.CreateErrorDialog($"Failed to generate backup - {ex.Message}");
+            }
+            finally
+            {
+                ViewModel.IsGoBackEnabled = true;
+                ViewModel.LoadingBarData = new();
+            }
         }
 
         private void ImportSaveBackup(object sender, RoutedEventArgs e)
         {
             return;
+        }
+
+        private void BackupManager_ProgressUpdate(object sender, LoadingBarEventArgs e)
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                ViewModel.LoadingBarData = new() { 
+                    Curr = e.Curr,
+                    Max = e.Max
+                };
+            });
         }
     }
 }

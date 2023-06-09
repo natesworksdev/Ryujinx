@@ -4,6 +4,7 @@ using LibHac.Fs;
 using LibHac.Fs.Shim;
 using LibHac.Ncm;
 using Microsoft.IdentityModel.Tokens;
+using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
@@ -50,14 +51,26 @@ namespace Ryujinx.Ava.Common
     [Flags]
     public enum SaveOptions
     {
-        Account,
-        Bcat,
-        Device,
-        All = Account | Bcat | Device
+        // save types to use
+        SaveTypeAccount,
+        SaveTypeBcat,
+        SaveTypeDevice,
+        SaveTypeAll = SaveTypeAccount | SaveTypeBcat | SaveTypeDevice,
+        // Other options
+        SkipEmptyDirectories,
+        // StopOnFailure,
+        // UseDateInName,
+
+        Default = SaveTypeAll
+
     }
 
     public class BackupManager
     {
+        // UI callbacks
+        public event EventHandler<LoadingBarEventArgs> BackupProgressUpdated;
+        private LoadingBarEventArgs _loadingEventArgs;
+
         private readonly HorizonClient _horizonClient;
         private readonly ApplicationLibrary _applicationLibrary;
         // TODO: remove and pass in
@@ -67,6 +80,8 @@ namespace Ryujinx.Ava.Common
             ApplicationLibrary appLib,
             AccountManager acctManager)
         {
+            _loadingEventArgs = new();
+
             _horizonClient = hzClient;
             _applicationLibrary = appLib;
             _accountManager = acctManager;
@@ -75,7 +90,7 @@ namespace Ryujinx.Ava.Common
         #region Save
         public async Task<bool> BackupUserSaveData(LibHac.Fs.UserId userId,
             string location,
-            SaveOptions saveOptions = SaveOptions.Account,
+            SaveOptions saveOptions = SaveOptions.Default,
             CancellationToken cancellationToken = default)
         {
             var userSaves = GetUserSaveData(userId, saveOptions);
@@ -84,6 +99,10 @@ namespace Ryujinx.Ava.Common
                 Logger.Warning?.Print(LogClass.Application, "No save data found");
                 return true;
             }
+
+            _loadingEventArgs.Curr = 0;
+            _loadingEventArgs.Max = userSaves.Count() + 1; // add one for metadata file
+            BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
 
             // Create the top level temp dir for the intermediate copies - ensure it's empty
             // TODO: should this go in the location since data has to go there anyway? might make the ultimate zip faster since IO is local?
@@ -127,13 +146,13 @@ namespace Ryujinx.Ava.Common
                     .ToList();
 
                 // Device and bcat are optional but enumerate those dirs too if needed
-                var deviceSaves = saveOptions.HasFlag(SaveOptions.Device)
+                var deviceSaves = saveOptions.HasFlag(SaveOptions.SaveTypeDevice)
                     ? GetSaveData(default, SaveDataType.Device)
                     : Enumerable.Empty<SaveMeta>();
                 userSaves.AddRange(deviceSaves);
 
-                var bcatSaves = saveOptions.HasFlag(SaveOptions.Device)
-                    ? GetSaveData(default, SaveDataType.Device)
+                var bcatSaves = saveOptions.HasFlag(SaveOptions.SaveTypeDevice)
+                    ? GetSaveData(default, SaveDataType.Bcat)
                     : Enumerable.Empty<SaveMeta>();
                 userSaves.AddRange(bcatSaves);
 
@@ -226,7 +245,7 @@ namespace Ryujinx.Ava.Common
                         // TODO: optimize later
                         var titleIdHex = meta.ProgramId.Value.ToString("x16");
 
-                        // TODO: add metadata element of "lastBackupTimestamp"?
+                        // TODO: MainWindow.MainWindowViewModel.Applications.FirstOrDefault(x => x.TitleId.ToUpper() == TitleIdString);
                         var appMeta = _applicationLibrary.LoadAndSaveMetaData(titleIdHex);
                         userFriendlyMetadataMap.Add(meta.ProgramId.Value, new UserFriendlyAppData
                         {
@@ -240,8 +259,10 @@ namespace Ryujinx.Ava.Common
                 // wait for any outstanding temp copies to complete
                 _ = await Task.WhenAll(tempCopyTasks);
 
-                // finally, move the metadata tag file intol the backup dir
+                // finally, move the metadata tag file into the backup dir and track progress
                 await WriteMetadataFile(backupTempDir, userFriendlyMetadataMap);
+                _loadingEventArgs.Curr++;
+                BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
 
                 return true;
             }
@@ -277,7 +298,7 @@ namespace Ryujinx.Ava.Common
             #endregion
         }
 
-        private static async Task<bool> CopySaveDataToIntermediateDirectory(SaveMeta saveMeta, string destinationDir)
+        private async Task<bool> CopySaveDataToIntermediateDirectory(SaveMeta saveMeta, string destinationDir)
         {
             // Find the most recent version of the data, there is a commited (0) and working (1) paths directory
             var saveRootPath = ApplicationHelper.FindValidSaveDir(saveMeta.SaveDataId);
@@ -286,7 +307,13 @@ namespace Ryujinx.Ava.Common
             // [backupLocation]/[titleId]/[saveType]
             var copyDestPath = Path.Combine(destinationDir, saveMeta.ProgramId.Value.ToString(), saveMeta.Type.ToString());
 
-            return await CopyDirectoryAsync(saveRootPath, copyDestPath);
+            var result = await CopyDirectoryAsync(saveRootPath, copyDestPath);
+
+            // Update progress for each dir we copy save data for
+            _loadingEventArgs.Curr++;
+            BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
+
+            return result;
         }
         //---//
 
@@ -386,7 +413,8 @@ namespace Ryujinx.Ava.Common
 
                 if (!result)
                 {
-                    break;
+                    // TODO: use options to decide? or hard fail
+                    continue;
                 }
             }
 
