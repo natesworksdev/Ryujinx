@@ -481,7 +481,9 @@ namespace Ryujinx.Ava.Common
             // Lookup the saveId based on title for the user we're importing too
             var saveDataFilter = SaveDataFilter.Make(meta.TitleId,
                 meta.SaveType,
-                userId,
+                meta.SaveType == SaveDataType.Account 
+                    ? userId
+                    : default,
                 saveDataId: default,
                 index: default);
 
@@ -501,9 +503,11 @@ namespace Ryujinx.Ava.Common
                         return false;
                     }
                 }
-
-                Logger.Warning?.Print(LogClass.Application, $"Title {meta.TitleId} does not have {meta.SaveType} data - ErrorCode: {result.ErrorCode}");
-                return false;
+                else
+                {
+                    Logger.Warning?.Print(LogClass.Application, $"Title {meta.TitleId} does not have {meta.SaveType} data - ErrorCode: {result.ErrorCode}");
+                    return false;
+                }
             }
 
             // Find the most recent version of the data, there is a commited (0) and working (1) directory
