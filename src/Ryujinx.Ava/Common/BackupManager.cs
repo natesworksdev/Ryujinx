@@ -1,16 +1,17 @@
 ﻿using LibHac;
+using LibHac.Account;
 using LibHac.Common;
-using LibHac.Diag;
 using LibHac.Fs;
 using LibHac.Fs.Shim;
 using LibHac.Ncm;
+using LibHac.Ns;
 using Microsoft.IdentityModel.Tokens;
 using Ryujinx.Ava.UI.ViewModels;
+using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.Ui.App.Common;
-using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -63,7 +64,7 @@ namespace Ryujinx.Ava.Common
         SaveTypeBcat,
         SaveTypeDevice,
         SaveTypeAll = SaveTypeAccount | SaveTypeBcat | SaveTypeDevice,
-        
+
         // Request Semantics
         SkipEmptyDirectories,
         FlattenSaveStructure,
@@ -77,7 +78,7 @@ namespace Ryujinx.Ava.Common
     internal readonly record struct ImportMeta
     {
         public ulong TitleId { get; init; }
-        public SaveDataType Type { get; init; }
+        public SaveDataType SaveType { get; init; }
         public string ImportPath { get; init; }
     }
     #endregion
@@ -377,7 +378,7 @@ namespace Ryujinx.Ava.Common
         #endregion
 
         #region Load
-        public async Task<BackupRequestOutcome> LoadSaveData(LibHac.Fs.UserId userId, 
+        public async Task<BackupRequestOutcome> LoadSaveData(LibHac.Fs.UserId userId,
             string sourceDataPath)
         {
             var sourceInfo = new FileInfo(sourceDataPath);
@@ -402,7 +403,8 @@ namespace Ryujinx.Ava.Common
                     var error = $"Failed to extract save backup zip {ex.Message}";
                     Logger.Error?.Print(LogClass.Application, error);
 
-                    return new() { 
+                    return new()
+                    {
                         DidFail = true,
                         Message = error
                     };
@@ -429,30 +431,132 @@ namespace Ryujinx.Ava.Common
                 _loadingEventArgs.Max = identifiedTitleDirectories.Count();
                 BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
 
-                // find the saveId for each titleId and migrate it. Use cache to avoid duplicate lookups of known titleId
-                foreach (var importMeta in identifiedTitleDirectories) 
-                {
-                    // find the save data Id from libhac, move it to that directory
-                    ulong saveId = default;
+                // buffer of concurrent saves to import -- limited so we don't overwhelm systems
+                const int BUFFER_SIZE = 4; // multiple of cores is ideal
+                List<Task<bool>> importBuffer = new(BUFFER_SIZE);
 
-                    ApplicationHelper.FindValidSaveDir(saveId);
+                // find the saveId for each titleId and migrate it. Use cache to avoid duplicate lookups of known titleId
+                foreach (var importMeta in identifiedTitleDirectories)
+                {
+                    if (importBuffer.Count >= BUFFER_SIZE)
+                    {
+                        _ = await Task.WhenAll(importBuffer);
+                        importBuffer.Clear();
+                    }
+
+                    importBuffer.Add(ImportSaveData(importMeta, userId));
 
                     // Mark complete
                     _loadingEventArgs.Curr++;
                     BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
-                } // end for each metadata
+                }
 
-                return new BackupRequestOutcome { 
+                // let the import complete
+                _ = await Task.WhenAll(importBuffer);
+
+                return new BackupRequestOutcome
+                {
                     DidFail = false
                 };
             }
-            finally 
+            catch (Exception ex)
+            {
+                Logger.Error?.Print(LogClass.Application, $"Failed to import save data - {ex.Message}");
+                return new BackupRequestOutcome
+                {
+                    DidFail = false
+                };
+            }
+            finally
             {
                 if (requireSourceCleanup)
                 {
                     Directory.Delete(determinedSourcePath, true);
                 }
             }
+        }
+
+        private async Task<bool> ImportSaveData(ImportMeta meta, LibHac.Fs.UserId userId)
+        {
+            // Lookup the saveId based on title for the user we're importing too
+            var saveDataFilter = SaveDataFilter.Make(meta.TitleId,
+                meta.SaveType,
+                userId,
+                saveDataId: default,
+                index: default);
+
+            var result = _horizonClient.Fs.FindSaveDataWithFilter(out var saveDataInfo, SaveDataSpaceId.User, in saveDataFilter);
+            if (result.IsFailure())
+            {
+                if (ResultFs.TargetNotFound.Includes(result))
+                {
+                    Logger.Debug?.Print(LogClass.Application, $"Title {meta.TitleId} does not have existing {meta.SaveType} data");
+
+                    // Try to create it and re-fetch it
+                    TryGenerateSaveEntry(meta.TitleId, userId);
+                    result = _horizonClient.Fs.FindSaveDataWithFilter(out saveDataInfo, SaveDataSpaceId.User, in saveDataFilter);
+
+                    if (result.IsFailure())
+                    {
+                        return false;
+                    }
+                }
+
+                Logger.Warning?.Print(LogClass.Application, $"Title {meta.TitleId} does not have {meta.SaveType} data - ErrorCode: {result.ErrorCode}");
+                return false;
+            }
+
+            // Find the most recent version of the data, there is a commited (0) and working (1) directory
+            var userHostSavePath = ApplicationHelper.FindValidSaveDir(saveDataInfo.SaveDataId);
+            if (string.IsNullOrWhiteSpace(userHostSavePath))
+            {
+                Logger.Warning?.Print(LogClass.Application, $"Unable to locate host save directory for {meta.TitleId}");
+                return false;
+            }
+
+            // copy from backup path to host save path
+            var copyResult = await CopyDirectoryAsync(meta.ImportPath, userHostSavePath);
+
+            _loadingEventArgs.Curr++;
+            BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
+
+            return copyResult;
+
+            #region LocalFunction
+            bool TryGenerateSaveEntry(ulong titleId, LibHac.Fs.UserId userId)
+            {
+                // resolve from app data
+                var titleIdHex = titleId.ToString("x16");
+                var appData = MainWindow.MainWindowViewModel.Applications
+                    .FirstOrDefault(x => x.TitleId.Equals(titleIdHex, StringComparison.OrdinalIgnoreCase));
+                if (appData is null)
+                {
+                    Logger.Error?.Print(LogClass.Application, $"No application loaded with titleId {titleIdHex}");
+                    return false;
+                }
+
+                ref ApplicationControlProperty control = ref appData.ControlHolder.Value;
+
+                Logger.Info?.Print(LogClass.Application, $"Creating save directory for Title: [{titleId:x16}]");
+
+                if (Utilities.IsZeros(appData.ControlHolder.ByteSpan))
+                {
+                    // If the current application doesn't have a loaded control property, create a dummy one
+                    // and set the savedata sizes so a user savedata will be created.
+                    control = ref new BlitStruct<ApplicationControlProperty>(1).Value;
+
+                    // The set sizes don't actually matter as long as they're non-zero because we use directory savedata.
+                    control.UserAccountSaveDataSize = 0x4000;
+                    control.UserAccountSaveDataJournalSize = 0x4000;
+
+                    Logger.Warning?.Print(LogClass.Application, "No control file was found for this game. Using a dummy one instead. This may cause inaccuracies in some games.");
+                }
+
+                Uid user = new(userId.Id.High, userId.Id.Low);
+                return _horizonClient.Fs.EnsureApplicationSaveData(out _, new LibHac.Ncm.ApplicationId(titleId), in control, in user)
+                    .IsSuccess();
+            }
+            #endregion
         }
 
         private IEnumerable<ImportMeta> GetTitleDirectories(FileInfo sourceInfo)
@@ -465,7 +569,7 @@ namespace Ryujinx.Ava.Common
 
             // Find the "root" save directories
             var outcome = new List<ImportMeta>();
-            foreach (var entry in Directory.EnumerateDirectories(sourceInfo.FullName)) 
+            foreach (var entry in Directory.EnumerateDirectories(sourceInfo.FullName))
             {
                 // check if the leaf directory is a titleId
                 if (!ulong.TryParse(entry[(entry.LastIndexOf(Path.DirectorySeparatorChar) + 1)..], out var titleId))
@@ -482,9 +586,10 @@ namespace Ryujinx.Ava.Common
                     // Check empty dirs?
                     if (Enum.TryParse<SaveDataType>(saveTypeEntryInfo.Name, out var saveType))
                     {
-                        outcome.Add(new ImportMeta { 
+                        outcome.Add(new ImportMeta
+                        {
                             TitleId = titleId,
-                            Type = saveType,
+                            SaveType = saveType,
                             ImportPath = saveTypeEntryInfo.FullName
                         });
                     }
