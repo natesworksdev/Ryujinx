@@ -1502,7 +1502,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                 
                 if (!loadSuccessful)
                 {
-                    PostAppCleanup();
+                    AppHost.DisposeContext();
+                    AppHost = null;
 
                     return;
                 }
@@ -1580,11 +1581,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         }
 
         public void AppHost_AppExit(object sender, EventArgs e)
-        {
-            PostAppCleanup();
-        }
-
-        private void PostAppCleanup()
         {
             if (IsClosing)
             {
