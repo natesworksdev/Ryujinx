@@ -1,5 +1,6 @@
 ﻿using LibHac;
 using LibHac.Common;
+using LibHac.Diag;
 using LibHac.Fs;
 using LibHac.Fs.Shim;
 using LibHac.Ncm;
@@ -71,6 +72,13 @@ namespace Ryujinx.Ava.Common
         ObfuscateZipExtension,
 
         Default = SaveTypeAll
+    }
+
+    internal readonly record struct ImportMeta
+    {
+        public ulong TitleId { get; init; }
+        public SaveDataType Type { get; init; }
+        public string ImportPath { get; init; }
     }
     #endregion
 
@@ -348,6 +356,146 @@ namespace Ryujinx.Ava.Common
             return result;
         }
 
+        public static bool CreateOrReplaceZipFile(string sourceDataDirectory, string backupDestinationFullPath)
+        {
+            try
+            {
+                if (File.Exists(backupDestinationFullPath))
+                {
+                    File.Delete(backupDestinationFullPath);
+                }
+
+                ZipFile.CreateFromDirectory(sourceDataDirectory, backupDestinationFullPath, CompressionLevel.SmallestSize, false);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error?.Print(LogClass.Application, $"Failed to zip data.\n{ex.Message}");
+                return false;
+            }
+        }
+        #endregion
+
+        #region Load
+        public async Task<BackupRequestOutcome> LoadSaveData(LibHac.Fs.UserId userId, 
+            string sourceDataPath)
+        {
+            var sourceInfo = new FileInfo(sourceDataPath);
+
+            // First up if it's a zip unpack it
+            var determinedSourcePath = sourceInfo.FullName;
+            bool requireSourceCleanup = false;
+
+            if (sourceInfo.Extension.Equals(".zip", StringComparison.OrdinalIgnoreCase))
+            {
+                determinedSourcePath = Path.Combine(AppDataManager.BackupDirPath, userId.ToString(), "import", "temp");
+                Directory.CreateDirectory(determinedSourcePath);
+                requireSourceCleanup = true;
+
+                try
+                {
+                    ZipFile.ExtractToDirectory(sourceInfo.FullName, determinedSourcePath, true);
+                    sourceInfo = new FileInfo(determinedSourcePath);
+                }
+                catch (Exception ex)
+                {
+                    var error = $"Failed to extract save backup zip {ex.Message}";
+                    Logger.Error?.Print(LogClass.Application, error);
+
+                    return new() { 
+                        DidFail = true,
+                        Message = error
+                    };
+                }
+            }
+
+            try
+            {
+                // Reset progress bar
+                _loadingEventArgs.Curr = 0;
+                _loadingEventArgs.Max = 0;
+                BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
+
+                var identifiedTitleDirectories = GetTitleDirectories(sourceInfo);
+                if (identifiedTitleDirectories.IsNullOrEmpty())
+                {
+                    return new()
+                    {
+                        DidFail = true,
+                    };
+                }
+
+                // Start import
+                _loadingEventArgs.Max = identifiedTitleDirectories.Count();
+                BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
+
+                // find the saveId for each titleId and migrate it. Use cache to avoid duplicate lookups of known titleId
+                foreach (var importMeta in identifiedTitleDirectories) 
+                {
+                    // find the save data Id from libhac, move it to that directory
+                    ulong saveId = default;
+
+                    ApplicationHelper.FindValidSaveDir(saveId);
+
+                    // Mark complete
+                    _loadingEventArgs.Curr++;
+                    BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
+                } // end for each metadata
+
+                return new BackupRequestOutcome { 
+                    DidFail = false
+                };
+            }
+            finally 
+            {
+                if (requireSourceCleanup)
+                {
+                    Directory.Delete(determinedSourcePath, true);
+                }
+            }
+        }
+
+        private IEnumerable<ImportMeta> GetTitleDirectories(FileInfo sourceInfo)
+        {
+            if ((sourceInfo.Attributes & FileAttributes.Directory) != FileAttributes.Directory)
+            {
+                Logger.Error?.Print(LogClass.Application, $"Unsupported entry specified to extract save data from {sourceInfo.FullName}");
+                return Enumerable.Empty<ImportMeta>();
+            }
+
+            // Find the "root" save directories
+            var outcome = new List<ImportMeta>();
+            foreach (var entry in Directory.EnumerateDirectories(sourceInfo.FullName)) 
+            {
+                // check if the leaf directory is a titleId
+                if (!ulong.TryParse(entry[(entry.LastIndexOf(Path.DirectorySeparatorChar) + 1)..], out var titleId))
+                {
+                    Logger.Warning?.Print(LogClass.Application, $"Skipping import of unknown directory {entry}");
+                    continue;
+                }
+
+                // it looks like a titleId, see if we can find the save type directories we expect
+                foreach (var saveTypeDir in Directory.EnumerateDirectories(entry))
+                {
+                    var saveTypeEntryInfo = new FileInfo(saveTypeDir);
+
+                    // Check empty dirs?
+                    if (Enum.TryParse<SaveDataType>(saveTypeEntryInfo.Name, out var saveType))
+                    {
+                        outcome.Add(new ImportMeta { 
+                            TitleId = titleId,
+                            Type = saveType,
+                            ImportPath = saveTypeEntryInfo.FullName
+                        });
+                    }
+                }
+            }
+
+            return outcome;
+        }
+        #endregion
+
+        #region Utilities
         private static async Task<bool> CopyDirectoryAsync(string sourceDirectory, string destDirectory)
         {
             bool result = true;
@@ -360,7 +508,7 @@ namespace Ryujinx.Ava.Common
 
                 result &= attrs switch
                 {
-                    _ when ((attrs & FileAttributes.Directory) == FileAttributes.Directory) => await CopyDirectoryAsync(filename, itemDest),
+                    _ when (attrs & FileAttributes.Directory) == FileAttributes.Directory => await CopyDirectoryAsync(filename, itemDest),
                     _ => await CopyFileAsync(filename, itemDest)
                 };
 
@@ -404,32 +552,6 @@ namespace Ryujinx.Ava.Common
                 }
             }
             #endregion
-        }
-
-        public static bool CreateOrReplaceZipFile(string sourceDataDirectory, string backupDestinationFullPath)
-        {
-            try
-            {
-                if (File.Exists(backupDestinationFullPath))
-                {
-                    File.Delete(backupDestinationFullPath);
-                }
-
-                ZipFile.CreateFromDirectory(sourceDataDirectory, backupDestinationFullPath, CompressionLevel.SmallestSize, false);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error?.Print(LogClass.Application, $"Failed to zip data.\n{ex.Message}");
-                return false;
-            }
-        }
-        #endregion
-
-        #region Load
-        public Task<bool> LoadSaveData(ulong titleId, LibHac.Fs.UserId userId, string sourceDataPath)
-        {
-            return Task.FromResult(true);
         }
         #endregion
     }

@@ -203,9 +203,53 @@ namespace Ryujinx.Ava.UI.Views.User
             }
         }
 
-        private void ImportSaveBackup(object sender, RoutedEventArgs e)
+        private async void ImportSaveBackup(object sender, RoutedEventArgs e)
         {
-            return;
+            OpenFileDialog dialog = new()
+            {
+                Title = "Choose Save Backup Zip", // TODO: localize
+                // LocaleManager.Instance[LocaleKeys.UserProfileWindowTitle]
+                AllowMultiple = false,
+                Filters = { 
+                    new FileDialogFilter() { 
+                        Extensions = { "zip" },
+                    }
+                }
+            };
+
+            var saveBackupZip = await dialog.ShowAsync(((TopLevel)_parent.GetVisualRoot()) as Window);
+            if (saveBackupZip is null || string.IsNullOrWhiteSpace(saveBackupZip[0]))
+            {
+                return;
+            }
+
+            // Disable the user from doing anything until we complete
+            ViewModel.IsGoBackEnabled = false;
+
+            try
+            {
+                // Could potentially seed with existing saves already enumerated but we still need bcat and device data
+                var result = await _backupManager.LoadSaveData(
+                    userId: _accountManager.LastOpenedUser.UserId.ToLibHacUserId(),
+                    sourceDataPath: saveBackupZip[0]);
+
+                if (result.DidFail)
+                {
+                    await ContentDialogHelper.CreateErrorDialog(result.Message);
+                    return;
+                }
+
+                // refresh the save list so it reflects in the UI -- better yet, instead of a progress bar, show the save list populating in real time
+            }
+            catch (Exception ex)
+            {
+                await ContentDialogHelper.CreateErrorDialog($"Failed to import backup saves - {ex.Message}");
+            }
+            finally
+            {
+                ViewModel.LoadingBarData = new();
+                ViewModel.IsGoBackEnabled = true;
+            }
         }
 
         private void BackupManager_ProgressUpdate(object sender, LoadingBarEventArgs e)

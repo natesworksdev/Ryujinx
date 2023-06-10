@@ -232,8 +232,7 @@
                 Content="{locale:Locale ExportUserSaveBackup}" />
 			<Button
                 Click="ImportSaveBackup"
-                Content="{locale:Locale ImportUserSaveBackup}" 
-		        IsEnabled="False"/>
+                Content="{locale:Locale ImportUserSaveBackup}" />
 		</StackPanel>
     </Grid>
 </UserControl>
