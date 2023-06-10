@@ -17,7 +17,7 @@ namespace ARMeilleure.Instructions
 
             Operand res;
 
-            if (Optimizations.UseAdvSimd)
+            if (Optimizations.UseArm64Aes)
             {
                 res = context.AddIntrinsic(Intrinsic.Arm64AesdV, d, n);
             }
@@ -42,7 +42,7 @@ namespace ARMeilleure.Instructions
 
             Operand res;
 
-            if (Optimizations.UseAdvSimd)
+            if (Optimizations.UseArm64Aes)
             {
                 res = context.AddIntrinsic(Intrinsic.Arm64AeseV, d, n);
             }
@@ -66,7 +66,7 @@ namespace ARMeilleure.Instructions
 
             Operand res;
 
-            if (Optimizations.UseAdvSimd)
+            if (Optimizations.UseArm64Aes)
             {
                 res = context.AddIntrinsic(Intrinsic.Arm64AesimcV, n);
             }
@@ -90,7 +90,7 @@ namespace ARMeilleure.Instructions
 
             Operand res;
 
-            if (Optimizations.UseAdvSimd)
+            if (Optimizations.UseArm64Aes)
             {
                 res = context.AddIntrinsic(Intrinsic.Arm64AesmcV, n);
             }
