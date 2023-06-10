@@ -1480,10 +1480,29 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             async void Action()
             {
-                if (!await AppHost.LoadGuestApplication())
+                var loadSuccessful = false;
+                try
                 {
-                    AppHost.DisposeContext();
+                    loadSuccessful = await AppHost.LoadGuestApplication();
+                }
+                catch (HorizonResultException hex)
+                {
+                    // Apphost Cleanup
                     AppHost = null;
+                    SelectedIcon = null;
+                
+                    await Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        await ContentDialogHelper.CreateErrorDialog(
+                            string.Format(LocaleManager.Instance[LocaleKeys.DialogCorruptedGameError], hex.Message));
+                    });
+                    
+                    return;
+                }
+                
+                if (!loadSuccessful)
+                {
+                    PostAppCleanup();
 
                     return;
                 }
@@ -1505,7 +1524,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 Thread gameThread = new(InitializeGame) { Name = "GUI.WindowThread" };
                 gameThread.Start();
             }
-
+            
             Dispatcher.UIThread.Post(Action);
         }
 
@@ -1562,6 +1581,11 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void AppHost_AppExit(object sender, EventArgs e)
         {
+            PostAppCleanup();
+        }
+
+        private void PostAppCleanup()
+        {
             if (IsClosing)
             {
                 return;
@@ -1590,10 +1614,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             SelectedIcon = null;
 
-            Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                Title = $"Ryujinx {Program.Version}";
-            });
+            Dispatcher.UIThread.InvokeAsync(() => { Title = $"Ryujinx {Program.Version}"; });
         }
 
         public void ToggleFullscreen()
