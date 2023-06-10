@@ -47,6 +47,7 @@
 
   <ItemGroup>
     <PackageReference Include="DiscordRichPresence" />
+    <PackageReference Include="securifybv.ShellLink" />
     <PackageReference Include="System.Drawing.Common" />
   </ItemGroup>
 

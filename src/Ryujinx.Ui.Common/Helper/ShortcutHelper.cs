@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Common.Configuration;
+using ShellLink;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
@@ -7,10 +8,8 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
+using System.Linq;
 using System.Runtime.Versioning;
-using System.Text;
 using Image = System.Drawing.Image;
 
 namespace Ryujinx.Ui.Common.Helper
@@ -18,8 +17,9 @@ namespace Ryujinx.Ui.Common.Helper
     public static class ShortcutHelper
     {
         [SupportedOSPlatform("windows")]
-        private static void CreateShortcutWindows(string appFilePath, byte[] iconData, string iconPath, string cleanedAppName, string basePath, string desktopPath)
+        private static void CreateShortcutWindows(string appFilePath, byte[] iconData, string iconPath, string cleanedAppName, string desktopPath)
         {
+            string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName + ".exe");
             MemoryStream iconDataStream = new(iconData);
             using (Image image = Image.FromStream(iconDataStream))
             {
@@ -30,45 +30,33 @@ namespace Ryujinx.Ui.Common.Helper
                 SaveBitmapAsIcon(bitmap, iconPath + ".ico");
             }
 
-            List<string> args = new List<string>
-            {
-                basePath,
-                "--fullscreen",
-                $"\"{appFilePath}\"",
-            };
-
-            IShellLink shortcut = (IShellLink)new ShellLink();
-
-            shortcut.SetDescription(cleanedAppName);
-            shortcut.SetPath(basePath + ".exe");
-            shortcut.SetIconLocation(iconPath + ".ico", 0);
-            shortcut.SetArguments(String.Join(" ", args));
-
-            IPersistFile file = (IPersistFile)shortcut;
-            file.Save(Path.Combine(desktopPath, cleanedAppName + ".lnk"), false);
+            var shortcut = Shortcut.CreateShortcut(basePath, GetArgsString(basePath, appFilePath), iconPath + ".ico", 0);
+            shortcut.StringData.NameString = cleanedAppName;
+            shortcut.WriteToFile(Path.Combine(desktopPath, cleanedAppName + ".lnk"));
         }
 
         [SupportedOSPlatform("linux")]
-        private static void CreateShortcutLinux(string appFilePath, byte[] iconData, string iconPath, string desktopPath, string cleanedAppName, string basePath)
+        private static void CreateShortcutLinux(string appFilePath, byte[] iconData, string iconPath, string desktopPath, string cleanedAppName)
         {
+            string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx.sh");
+            var desktopFile = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "shortcut-template.desktop"));
+
             var image = SixLabors.ImageSharp.Image.Load<Rgba32>(iconData);
             image.SaveAsPng(iconPath + ".png");
-            var desktopFile = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "shortcut-template.desktop"));
+
             using StreamWriter outputFile = new(Path.Combine(desktopPath, cleanedAppName + ".desktop"));
-            outputFile.Write(desktopFile, cleanedAppName, iconPath + ".png", basePath, $"\"{appFilePath}\"");
+            outputFile.Write(desktopFile, cleanedAppName, iconPath + ".png", GetArgsString(basePath, appFilePath));
         }
 
         public static void CreateAppShortcut(string appFilePath, string appName, string titleId, byte[] iconData)
         {
-            string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx.sh");
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-
             string cleanedAppName = string.Join("_", appName.Split(Path.GetInvalidFileNameChars()));
 
             if (OperatingSystem.IsWindows())
             {
                 string iconPath = Path.Combine(AppDataManager.BaseDirPath, "games", titleId, "app");
-                CreateShortcutWindows(appFilePath, iconData, iconPath, cleanedAppName, basePath, desktopPath);
+                CreateShortcutWindows(appFilePath, iconData, iconPath, cleanedAppName, desktopPath);
                 return;
             }
 
@@ -76,11 +64,23 @@ namespace Ryujinx.Ui.Common.Helper
             {
                 string iconPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "icons", "Ryujinx");
                 Directory.CreateDirectory(iconPath);
-                CreateShortcutLinux(appFilePath, iconData, Path.Combine(iconPath, titleId), desktopPath, cleanedAppName, basePath);
+                CreateShortcutLinux(appFilePath, iconData, Path.Combine(iconPath, titleId), desktopPath, cleanedAppName);
                 return;
             }
 
             throw new NotImplementedException("Shortcut support has not been implemented yet for this OS.");
+        }
+
+        private static string GetArgsString(string basePath, string appFilePath)
+        {
+            // args are first defined as a list, for easier adjustments in the future
+            var argsList = new List<string>
+            {
+                basePath,
+                "--fullscreen",
+                $"\"{appFilePath}\"",
+            };
+            return String.Join(" ", argsList);
         }
 
         /// <summary>
@@ -105,43 +105,4 @@ namespace Ryujinx.Ui.Common.Helper
             fs.WriteByte((byte)(Len >> 8));
         }
     }
-
-    #region ShellLink Interfaces
-    [ComImport]
-    [Guid("00021401-0000-0000-C000-000000000046")]
-    internal class ShellLink
-    {
-    }
-
-    /// <summary>
-    /// The IShellLink interface is imported using ComImport, instead of directly referencing the COM library in the project (which causes issues).
-    /// This handles the various properties of shortcuts on Windows. Create the object using: <code>IShellLink shortcut = (IShellLink)new ShellLink();</code>
-    /// </summary>
-    [ComImport]
-    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    [Guid("000214F9-0000-0000-C000-000000000046")]
-    internal interface IShellLink
-    {
-        // The full list of members present here must be kept, otherwise ShellLink starts to misbehave. For additional information,
-        // visit: http://www.vbaccelerator.com/home/NET/Code/Libraries/Shell_Projects/Creating_and_Modifying_Shortcuts/article.html
-        void GetPath([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszFile, int cchMaxPath, out IntPtr pfd, int fFlags);
-        void GetIDList(out IntPtr ppidl);
-        void SetIDList(IntPtr pidl);
-        void GetDescription([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszName, int cchMaxName);
-        void SetDescription([MarshalAs(UnmanagedType.LPWStr)] string pszName);
-        void GetWorkingDirectory([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszDir, int cchMaxPath);
-        void SetWorkingDirectory([MarshalAs(UnmanagedType.LPWStr)] string pszDir);
-        void GetArguments([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszArgs, int cchMaxPath);
-        void SetArguments([MarshalAs(UnmanagedType.LPWStr)] string pszArgs);
-        void GetHotkey(out short pwHotkey);
-        void SetHotkey(short wHotkey);
-        void GetShowCmd(out int piShowCmd);
-        void SetShowCmd(int iShowCmd);
-        void GetIconLocation([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszIconPath, int cchIconPath, out int piIcon);
-        void SetIconLocation([MarshalAs(UnmanagedType.LPWStr)] string pszIconPath, int iIcon);
-        void SetRelativePath([MarshalAs(UnmanagedType.LPWStr)] string pszPathRel, int dwReserved);
-        void Resolve(IntPtr hwnd, int fFlags);
-        void SetPath([MarshalAs(UnmanagedType.LPWStr)] string pszFile);
-    }
-    #endregion
 }
