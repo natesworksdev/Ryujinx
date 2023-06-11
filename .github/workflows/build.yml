@@ -132,7 +132,7 @@ jobs:
         id: git_short_hash
         run: echo "result=$(git rev-parse --short "${{ github.sha }}")" >> $GITHUB_OUTPUT
 
-      - name: Publish macOS
+      - name: Publish macOS Ryujinx.Ava
         run: |
           ./distribution/macos/create_macos_build_ava.sh . publish_tmp_ava publish_ava ./distribution/macos/entitlements.xml "${{ env.RYUJINX_BASE_VERSION }}" "${{ steps.git_short_hash.outputs.result }}" "${{ matrix.configuration }}" "-p:ExtraDefineConstants=DISABLE_UPDATER"
 
