@@ -203,7 +203,8 @@ namespace Ryujinx.Ava
                 var point = e.GetCurrentPoint(window).Position;
                 var bounds = _rendererHost.EmbeddedWindow.TransformedBounds.Value.Clip;
 
-                _isCursorInRenderer = point.X >= bounds.X &&
+                _isCursorInRenderer = _viewModel.WindowState == WindowState.FullScreen || 
+                                        point.X >= bounds.X &&
                                         point.X <= bounds.Width + bounds.X + window.Position.X &&
                                         point.Y >= bounds.Y &&
                                         point.Y <= bounds.Height + bounds.Y + window.Position.Y;
