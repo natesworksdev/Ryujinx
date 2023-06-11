@@ -39,8 +39,8 @@ DOTNET_COMMON_ARGS="-p:DebugType=embedded -p:Version=$VERSION -p:SourceRevisionI
 
 dotnet restore
 dotnet build -c $CONFIGURATION src/Ryujinx.Headless.SDL2
-dotnet publish -c $CONFIGURATION -r osx-arm64 -o "$TEMP_DIRECTORY/publish_arm64" $DOTNET_COMMON_ARGS src/Ryujinx.Headless.SDL2 --self-contained
-dotnet publish -c $CONFIGURATION -r osx-x64 -o "$TEMP_DIRECTORY/publish_x64" $DOTNET_COMMON_ARGS src/Ryujinx.Headless.SDL2 --self-contained
+dotnet publish -c $CONFIGURATION -r osx-arm64 -o "$TEMP_DIRECTORY/publish_arm64" $DOTNET_COMMON_ARGS src/Ryujinx.Headless.SDL2
+dotnet publish -c $CONFIGURATION -r osx-x64 -o "$TEMP_DIRECTORY/publish_x64" $DOTNET_COMMON_ARGS src/Ryujinx.Headless.SDL2
 
 # Get rid of the support library for ARMeilleure for x64 (that's only for arm64)
 rm -rf "$TEMP_DIRECTORY/publish_x64/libarmeilleure-jitsupport.dylib"
