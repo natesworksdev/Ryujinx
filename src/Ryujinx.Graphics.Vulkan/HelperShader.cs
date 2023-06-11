@@ -62,34 +62,6 @@ namespace Ryujinx.Graphics.Vulkan
             _samplerLinear = gd.CreateSampler(SamplerCreateInfo.Create(MinFilter.Linear, MagFilter.Linear));
             _samplerNearest = gd.CreateSampler(SamplerCreateInfo.Create(MinFilter.Nearest, MagFilter.Nearest));
 
-            #region ShaderSources
-            var changeBufferStrideShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/ChangeBufferStrideShaderSource.spv");
-            var colorBlitClearAlphaFragmentShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/ColorBlitClearAlphaFragmentShaderSource.spv");
-            var colorBlitFragmentShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/ColorBlitFragmentShaderSource.spv");
-            var colorBlitMsFragmentShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/ColorBlitMsFragmentShaderSource.spv");
-            var colorBlitVertexShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/ColorBlitVertexShaderSource.spv");
-            var colorClearFFragmentShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/ColorClearFFragmentShaderSource.spv");
-            var colorClearSIFragmentShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/ColorClearSIFragmentShaderSource.spv");
-            var colorClearUIFragmentShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/ColorClearUIFragmentShaderSource.spv");
-            var colorClearVertexShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/ColorClearVertexShaderSource.spv");
-            var colorCopyShorteningComputeShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/ColorCopyShorteningComputeShaderSource.spv");
-            var colorCopyToNonMsComputeShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/ColorCopyToNonMsComputeShaderSource.spv");
-            var colorCopyWideningComputeShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/ColorCopyWideningComputeShaderSource.spv");
-            var colorDrawToMsFragmentShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/ColorDrawToMsFragmentShaderSource.spv");
-            var colorDrawToMsVertexShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/ColorDrawToMsVertexShaderSource.spv");
-            var convertD32S8ToD24S8ShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/ConvertD32S8ToD24S8ShaderSource.spv");
-            var convertIndexBufferShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/ConvertIndexBufferShaderSource.spv");
-            var convertIndirectDataShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/ConvertIndirectDataShaderSource.spv");
-            var depthBlitFragmentShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/DepthBlitFragmentShaderSource.spv");
-            var depthBlitMsFragmentShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/DepthBlitMsFragmentShaderSource.spv");
-            var depthDrawToMsFragmentShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/DepthDrawToMsFragmentShaderSource.spv");
-            var depthDrawToNonMsFragmentShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/DepthDrawToNonMsFragmentShaderSource.spv");
-            var stencilBlitFragmentShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/StencilBlitFragmentShaderSource.spv");
-            var stencilBlitMsFragmentShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/StencilBlitMsFragmentShaderSource.spv");
-            var stencilDrawToMsFragmentShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/StencilDrawToMsFragmentShaderSource.spv");
-            var stencilDrawToNonMsFragmentShaderSource = EmbeddedResources.Read("Ryujinx.Graphics.Vulkan/Shaders/ShaderSources/StencilDrawToNonMsFragmentShaderSource.spv");
-            #endregion
-
             var blitResourceLayout = new ResourceLayoutBuilder()
                 .Add(ResourceStages.Vertex, ResourceType.UniformBuffer, 1)
                 .Add(ResourceStages.Fragment, ResourceType.TextureAndSampler, 0).Build();
