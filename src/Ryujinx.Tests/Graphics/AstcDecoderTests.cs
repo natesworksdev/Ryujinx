@@ -11,8 +11,6 @@ namespace Ryujinx.Tests.Graphics
 {
     public class AstcDecoderTests
     {
-        private const int ASTCBlockSize;
-
         [SetUp]
         public void SetupFixture()
         {
@@ -24,7 +22,7 @@ namespace Ryujinx.Tests.Graphics
         {
             var inputData = GetTestData();
             var outputBuffer = new Memory<byte>();
-                        GraphicsConfig.EnableTextureRecompression = false;
+            GraphicsConfig.EnableTextureRecompression = false;
 
 
             AstcDecoder.TryDecodeToRgba8P()
