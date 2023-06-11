@@ -651,6 +651,6 @@
   "PackagingShaders": "Packaging Shaders",
   "AboutChangelogButton": "View Changelog on GitHub",
   "AboutChangelogButtonTooltipMessage": "Click to open the changelog for this version in your default browser.",
-  "ExportUserSaveBackup": "Export All Saves",
-  "ImportUserSaveBackup": "Import All Saves"
+  "ExportUserSaveBackup": "Backup Saves",
+  "ImportUserSaveBackup": "Restore Saves"
 }

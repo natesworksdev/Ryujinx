@@ -87,6 +87,7 @@ namespace Ryujinx.Ava.Common
     {
         // UI callbacks
         public event EventHandler<LoadingBarEventArgs> BackupProgressUpdated;
+        public event EventHandler<ImportSaveEventArgs> BackupImportSave;
         private LoadingBarEventArgs _loadingEventArgs;
 
         private readonly HorizonClient _horizonClient;
@@ -523,6 +524,10 @@ namespace Ryujinx.Ava.Common
 
             _loadingEventArgs.Curr++;
             BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
+
+            BackupImportSave?.Invoke(this, new ImportSaveEventArgs { 
+                SaveInfo = saveDataInfo
+            });
 
             return copyResult;
 

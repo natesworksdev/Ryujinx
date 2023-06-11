@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using DynamicData;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Navigation;
 using LibHac;
@@ -20,6 +21,7 @@ using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using UserId = LibHac.Fs.UserId;
 
@@ -63,6 +65,7 @@ namespace Ryujinx.Ava.UI.Views.User
 
                     _backupManager = new BackupManager(_horizonClient, _appLib, _accountManager);
                     _backupManager.BackupProgressUpdated += BackupManager_ProgressUpdate;
+                    _backupManager.BackupImportSave += BackupManager_ImportSave;
 
                     _parent = args.parent;
                     break;
@@ -109,6 +112,8 @@ namespace Ryujinx.Ava.UI.Views.User
                         saves.Add(saveModel);
                     }
                 }
+
+                IServiceProvider serviceProvider = null;
             }
 
             Dispatcher.UIThread.Post(() =>
@@ -189,6 +194,7 @@ namespace Ryujinx.Ava.UI.Views.User
                     return;
                 }
 
+                // TODO: generate notification on success
                 OpenHelper.OpenFolder(backupDir);
                 return;
             }
@@ -205,13 +211,23 @@ namespace Ryujinx.Ava.UI.Views.User
 
         private async void ImportSaveBackup(object sender, RoutedEventArgs e)
         {
+            // TODO: Use locales // LocaleManager.Instance[LocaleKeys.DialogUpdaterCompleteMessage]
+            bool userConfirmation = await ContentDialogHelper.CreateChoiceDialog("Confirm Restore",
+                "The save data in the backup will overwrite your local save files. This action is irreversible. Consider using the backup option before you continue.",
+                "Are you sure you want to continue?");
+
+            if (!userConfirmation)
+            {
+                return;
+            }
+
             OpenFileDialog dialog = new()
             {
                 Title = "Choose Save Backup Zip", // TODO: localize
                 // LocaleManager.Instance[LocaleKeys.UserProfileWindowTitle]
                 AllowMultiple = false,
-                Filters = { 
-                    new FileDialogFilter() { 
+                Filters = {
+                    new FileDialogFilter() {
                         Extensions = { "zip" },
                     }
                 }
@@ -240,6 +256,7 @@ namespace Ryujinx.Ava.UI.Views.User
                 }
 
                 // refresh the save list so it reflects in the UI -- better yet, instead of a progress bar, show the save list populating in real time
+                // TODO: generate notification on success?
             }
             catch (Exception ex)
             {
@@ -257,11 +274,37 @@ namespace Ryujinx.Ava.UI.Views.User
             Dispatcher.UIThread.Post(() =>
             {
                 // TODO: fix this so we can just set the properties, will require a trigger of OnPropChange
-                ViewModel.LoadingBarData = new() { 
+                // observable?
+                ViewModel.LoadingBarData = new()
+                {
                     Curr = e.Curr,
                     Max = e.Max
                 };
             });
+        }
+
+        private void BackupManager_ImportSave(object sender, ImportSaveEventArgs e) 
+        {
+            var existingSave = ViewModel.Saves.FirstOrDefault(s => s.TitleId == e.SaveInfo.ProgramId);
+
+            bool added = false;
+            if (existingSave == default)
+            {
+                ViewModel.Saves.Add(new SaveModel(e.SaveInfo, _virtualFileSystem));
+                added = true;
+            }
+            else
+            {
+                ViewModel.Saves.Replace(existingSave, new SaveModel(e.SaveInfo, _virtualFileSystem));
+            }
+
+            if (added)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    ViewModel.Sort();
+                });
+            }
         }
     }
 }

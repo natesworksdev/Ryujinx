@@ -1,5 +1,6 @@
 ﻿using DynamicData;
 using DynamicData.Binding;
+using LibHac.Fs;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
@@ -26,6 +27,11 @@ namespace Ryujinx.Ava.UI.ViewModels
     { 
         public int Curr { get; set; }
         public int Max { get; set; }
+    }
+
+    public class ImportSaveEventArgs : EventArgs
+    { 
+        public SaveDataInfo SaveInfo { get; init; }
     }
 
     public class UserSaveManagerViewModel : BaseModel
@@ -85,6 +91,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        // TODO: observable
         public LoadingBarData LoadingBarData
         {
             get => _loadingBarData;
