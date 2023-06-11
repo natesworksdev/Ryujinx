@@ -112,8 +112,6 @@ namespace Ryujinx.Ava.UI.Views.User
                         saves.Add(saveModel);
                     }
                 }
-
-                IServiceProvider serviceProvider = null;
             }
 
             Dispatcher.UIThread.Post(() =>
