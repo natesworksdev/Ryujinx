@@ -102,7 +102,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                             int location = 0;
                             int component = 0;
 
-                            if (context.Config.HasPerLocationInputOrOutput(ioVariable, isOutput))
+                            if (context.Config.Definitions.HasPerLocationInputOrOutput(ioVariable, isOutput))
                             {
                                 if (operation.GetSource(1) is not AstOperand vecIndex || vecIndex.Type != OperandType.Constant)
                                 {
@@ -114,7 +114,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                                 if (operation.SourcesCount > 2 &&
                                     operation.GetSource(2) is AstOperand elemIndex &&
                                     elemIndex.Type == OperandType.Constant &&
-                                    context.Config.HasPerLocationInputOrOutputComponent(ioVariable, location, elemIndex.Value, isOutput))
+                                    context.Config.Definitions.HasPerLocationInputOrOutputComponent(ioVariable, location, elemIndex.Value, isOutput))
                                 {
                                     component = elemIndex.Value;
                                 }

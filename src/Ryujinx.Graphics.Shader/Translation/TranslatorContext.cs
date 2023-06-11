@@ -19,7 +19,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public ulong Address { get; }
 
-        public ShaderStage Stage => _config.Stage;
+        public ShaderStage Stage => _config.Definitions.Stage;
         public int Size => _config.Size;
         public int Cb1DataSize => _config.Cb1DataSize;
         public bool LayerOutputWritten => _config.LayerOutputWritten;
@@ -152,7 +152,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             _config.ResourceManager.SetCurrentLocalMemory(_config.LocalMemorySize, usesLocalMemory);
 
-            if (_config.Stage == ShaderStage.Compute)
+            if (_config.Definitions.Stage == ShaderStage.Compute)
             {
                 bool usesSharedMemory = _config.UsedFeatures.HasFlag(FeatureFlags.SharedMemory);
 
@@ -163,7 +163,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             if (other != null)
             {
-                other._config.MergeOutputUserAttributes(_config.UsedOutputAttributes, Enumerable.Empty<int>());
+                other._config.MergeOutputUserAttributes(_config.AttributeUsage.UsedOutputAttributes, Enumerable.Empty<int>());
 
                 // We need to share the resource manager since both shaders accesses the same constant buffers.
                 other._config.ResourceManager = _config.ResourceManager;
@@ -181,7 +181,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public ShaderProgram GenerateGeometryPassthrough()
         {
-            int outputAttributesMask = _config.UsedOutputAttributes;
+            int outputAttributesMask = _config.AttributeUsage.UsedOutputAttributes;
             int layerOutputAttr = _config.LayerOutputAttribute;
 
             OutputTopology outputTopology;
@@ -231,10 +231,10 @@ namespace Ryujinx.Graphics.Shader.Translation
                         else
                         {
                             context.Store(StorageKind.Output, IoVariable.UserDefined, null, Const(attrIndex), Const(c), value);
-                            config.SetOutputUserAttribute(attrIndex);
+                            config.AttributeUsage.SetOutputUserAttribute(attrIndex);
                         }
 
-                        config.SetInputUserAttribute(attrIndex, c);
+                        config.AttributeUsage.SetInputUserAttribute(attrIndex, c);
                     }
                 }
 

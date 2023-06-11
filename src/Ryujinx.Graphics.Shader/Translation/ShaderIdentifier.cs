@@ -7,7 +7,7 @@ namespace Ryujinx.Graphics.Shader.Translation
     {
         public static ShaderIdentification Identify(IReadOnlyList<Function> functions, ShaderConfig config)
         {
-            if (config.Stage == ShaderStage.Geometry &&
+            if (config.Definitions.Stage == ShaderStage.Geometry &&
                 config.GpuAccessor.QueryPrimitiveTopology() == InputTopology.Triangles &&
                 !config.GpuAccessor.QueryHostSupportsGeometryShader() &&
                 IsLayerPassthroughGeometryShader(functions, out int layerInputAttr))

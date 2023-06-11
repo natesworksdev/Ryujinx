@@ -1,6 +1,4 @@
-using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
-using System;
 using System.Collections.Generic;
 using System.Numerics;
 
@@ -10,26 +8,8 @@ namespace Ryujinx.Graphics.Shader.Translation
     {
         private const int ThreadsPerWarp = 32;
 
-        public ShaderStage Stage { get; }
-
-        public bool GpPassthrough { get; }
-        public bool LastInVertexPipeline { get; private set; }
-
         public bool HasLayerInputAttribute { get; private set; }
         public int GpLayerInputAttribute { get; private set; }
-        public int ThreadsPerInputPrimitive { get; }
-
-        public OutputTopology OutputTopology { get; }
-
-        public int MaxOutputVertices { get; }
-
-        public int LocalMemorySize { get; }
-
-        public ImapPixelType[] ImapTypes { get; }
-
-        public int OmapTargets { get; }
-        public bool OmapSampleMask { get; }
-        public bool OmapDepth { get; }
 
         public IGpuAccessor GpuAccessor { get; }
 
@@ -39,49 +19,8 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public ResourceManager ResourceManager { get; set; }
 
-        public bool TransformFeedbackEnabled { get; }
-
-        private TransformFeedbackOutput[] _transformFeedbackOutputs;
-
-        readonly struct TransformFeedbackVariable : IEquatable<TransformFeedbackVariable>
-        {
-            public IoVariable IoVariable { get; }
-            public int Location { get; }
-            public int Component { get; }
-
-            public TransformFeedbackVariable(IoVariable ioVariable, int location = 0, int component = 0)
-            {
-                IoVariable = ioVariable;
-                Location = location;
-                Component = component;
-            }
-
-            public override bool Equals(object other)
-            {
-                return other is TransformFeedbackVariable tfbVar && Equals(tfbVar);
-            }
-
-            public bool Equals(TransformFeedbackVariable other)
-            {
-                return IoVariable == other.IoVariable &&
-                    Location == other.Location &&
-                    Component == other.Component;
-            }
-
-            public override int GetHashCode()
-            {
-                return (int)IoVariable | (Location << 8) | (Component << 16);
-            }
-
-            public override string ToString()
-            {
-                return $"{IoVariable}.{Location}.{Component}";
-            }
-        }
-
-        private readonly Dictionary<TransformFeedbackVariable, TransformFeedbackOutput> _transformFeedbackDefinitions;
-
         public int Size { get; private set; }
+        public int LocalMemorySize { get; }
 
         public byte ClipDistancesWritten { get; private set; }
 
@@ -92,36 +31,19 @@ namespace Ryujinx.Graphics.Shader.Translation
         public bool LayerOutputWritten { get; private set; }
         public int LayerOutputAttribute { get; private set; }
 
-        public bool NextUsesFixedFuncAttributes { get; private set; }
-        public int UsedInputAttributes { get; private set; }
-        public int UsedOutputAttributes { get; private set; }
-        public HashSet<int> UsedInputAttributesPerPatch { get; }
-        public HashSet<int> UsedOutputAttributesPerPatch { get; }
-        public HashSet<int> NextUsedInputAttributesPerPatch { get; private set; }
-        public int PassthroughAttributes { get; private set; }
-        private int _nextUsedInputAttributes;
-        private int _thisUsedInputAttributes;
-        private Dictionary<int, int> _perPatchAttributeLocations;
+        public ShaderDefinitions Definitions { get; }
 
-        public UInt128 NextInputAttributesComponents { get; private set; }
-        public UInt128 ThisInputAttributesComponents { get; private set; }
+        public AttributeUsage AttributeUsage { get; }
 
         public ShaderConfig(ShaderStage stage, IGpuAccessor gpuAccessor, TranslationOptions options, int localMemorySize)
         {
-            Stage = stage;
             GpuAccessor = gpuAccessor;
             Options = options;
             LocalMemorySize = localMemorySize;
 
-            _transformFeedbackDefinitions = new Dictionary<TransformFeedbackVariable, TransformFeedbackOutput>();
+            Definitions = new ShaderDefinitions(stage);
 
-            TransformFeedbackEnabled =
-                stage != ShaderStage.Compute &&
-                gpuAccessor.QueryTransformFeedbackEnabled() &&
-                gpuAccessor.QueryHostSupportsTransformFeedback();
-
-            UsedInputAttributesPerPatch = new HashSet<int>();
-            UsedOutputAttributesPerPatch = new HashSet<int>();
+            AttributeUsage = new AttributeUsage(gpuAccessor);
 
             ShaderProperties properties;
 
@@ -171,9 +93,19 @@ namespace Ryujinx.Graphics.Shader.Translation
             IGpuAccessor gpuAccessor,
             TranslationOptions options) : this(stage, gpuAccessor, options, 0)
         {
-            ThreadsPerInputPrimitive = 1;
-            OutputTopology = outputTopology;
-            MaxOutputVertices = maxOutputVertices;
+            Definitions = new ShaderDefinitions(
+                stage,
+                false,
+                1,
+                outputTopology,
+                maxOutputVertices,
+                null,
+                0,
+                false,
+                false,
+                false,
+                0UL,
+                null);
         }
 
         public ShaderConfig(
@@ -181,28 +113,15 @@ namespace Ryujinx.Graphics.Shader.Translation
             IGpuAccessor gpuAccessor,
             TranslationOptions options) : this(header.Stage, gpuAccessor, options, GetLocalMemorySize(header))
         {
-            GpPassthrough = header.Stage == ShaderStage.Geometry && header.GpPassthrough;
-            ThreadsPerInputPrimitive = header.ThreadsPerInputPrimitive;
-            OutputTopology = header.OutputTopology;
-            MaxOutputVertices = header.MaxOutputVertexCount;
-            ImapTypes = header.ImapTypes;
-            OmapTargets = header.OmapTargets;
-            OmapSampleMask = header.OmapSampleMask;
-            OmapDepth = header.OmapDepth;
-            LastInVertexPipeline = header.Stage < ShaderStage.Fragment;
-        }
+            bool transformFeedbackEnabled =
+                gpuAccessor.QueryTransformFeedbackEnabled() &&
+                gpuAccessor.QueryHostSupportsTransformFeedback();
+            TransformFeedbackOutput[] transformFeedbackOutputs = null;
+            ulong transformFeedbackVecMap = 0UL;
 
-        private static int GetLocalMemorySize(ShaderHeader header)
-        {
-            return header.ShaderLocalMemoryLowSize + header.ShaderLocalMemoryHighSize + (header.ShaderLocalMemoryCrsSize / ThreadsPerWarp);
-        }
-
-        private void EnsureTransformFeedbackInitialized()
-        {
-            if (HasTransformFeedbackOutputs() && _transformFeedbackOutputs == null)
+            if (transformFeedbackEnabled)
             {
-                TransformFeedbackOutput[] transformFeedbackOutputs = new TransformFeedbackOutput[0xc0];
-                ulong vecMap = 0UL;
+                transformFeedbackOutputs = new TransformFeedbackOutput[0xc0];
 
                 for (int tfbIndex = 0; tfbIndex < 4; tfbIndex++)
                 {
@@ -215,126 +134,30 @@ namespace Ryujinx.Graphics.Shader.Translation
                         if (wordOffset < 0xc0)
                         {
                             transformFeedbackOutputs[wordOffset] = new TransformFeedbackOutput(tfbIndex, i * 4, stride);
-                            vecMap |= 1UL << (wordOffset / 4);
+                            transformFeedbackVecMap |= 1UL << (wordOffset / 4);
                         }
                     }
                 }
-
-                _transformFeedbackOutputs = transformFeedbackOutputs;
-
-                while (vecMap != 0)
-                {
-                    int vecIndex = BitOperations.TrailingZeroCount(vecMap);
-
-                    for (int subIndex = 0; subIndex < 4; subIndex++)
-                    {
-                        int wordOffset = vecIndex * 4 + subIndex;
-                        int byteOffset = wordOffset * 4;
-
-                        if (transformFeedbackOutputs[wordOffset].Valid)
-                        {
-                            IoVariable ioVariable = Instructions.AttributeMap.GetIoVariable(this, byteOffset, out int location);
-                            int component = 0;
-
-                            if (HasPerLocationInputOrOutputComponent(ioVariable, location, subIndex, isOutput: true))
-                            {
-                                component = subIndex;
-                            }
-
-                            var transformFeedbackVariable = new TransformFeedbackVariable(ioVariable, location, component);
-                            _transformFeedbackDefinitions.TryAdd(transformFeedbackVariable, transformFeedbackOutputs[wordOffset]);
-                        }
-                    }
-
-                    vecMap &= ~(1UL << vecIndex);
-                }
-            }
-        }
-
-        public TransformFeedbackOutput[] GetTransformFeedbackOutputs()
-        {
-            EnsureTransformFeedbackInitialized();
-            return _transformFeedbackOutputs;
-        }
-
-        public bool TryGetTransformFeedbackOutput(IoVariable ioVariable, int location, int component, out TransformFeedbackOutput transformFeedbackOutput)
-        {
-            EnsureTransformFeedbackInitialized();
-            var transformFeedbackVariable = new TransformFeedbackVariable(ioVariable, location, component);
-            return _transformFeedbackDefinitions.TryGetValue(transformFeedbackVariable, out transformFeedbackOutput);
-        }
-
-        private bool HasTransformFeedbackOutputs()
-        {
-            return TransformFeedbackEnabled && (LastInVertexPipeline || Stage == ShaderStage.Fragment);
-        }
-
-        public bool HasTransformFeedbackOutputs(bool isOutput)
-        {
-            return TransformFeedbackEnabled && ((isOutput && LastInVertexPipeline) || (!isOutput && Stage == ShaderStage.Fragment));
-        }
-
-        public bool HasPerLocationInputOrOutput(IoVariable ioVariable, bool isOutput)
-        {
-            if (ioVariable == IoVariable.UserDefined)
-            {
-                return (!isOutput && !UsedFeatures.HasFlag(FeatureFlags.IaIndexing)) ||
-                       (isOutput && !UsedFeatures.HasFlag(FeatureFlags.OaIndexing));
             }
 
-            return ioVariable == IoVariable.FragmentOutputColor;
+            Definitions = new ShaderDefinitions(
+                header.Stage,
+                header.Stage == ShaderStage.Geometry && header.GpPassthrough,
+                header.ThreadsPerInputPrimitive,
+                header.OutputTopology,
+                header.MaxOutputVertexCount,
+                header.ImapTypes,
+                header.OmapTargets,
+                header.OmapSampleMask,
+                header.OmapDepth,
+                transformFeedbackEnabled,
+                transformFeedbackVecMap,
+                transformFeedbackOutputs);
         }
 
-        public bool HasPerLocationInputOrOutputComponent(IoVariable ioVariable, int location, int component, bool isOutput)
+        private static int GetLocalMemorySize(ShaderHeader header)
         {
-            if (ioVariable != IoVariable.UserDefined || !HasTransformFeedbackOutputs(isOutput))
-            {
-                return false;
-            }
-
-            return GetTransformFeedbackOutputComponents(location, component) == 1;
-        }
-
-        public TransformFeedbackOutput GetTransformFeedbackOutput(int wordOffset)
-        {
-            EnsureTransformFeedbackInitialized();
-
-            return _transformFeedbackOutputs[wordOffset];
-        }
-
-        public TransformFeedbackOutput GetTransformFeedbackOutput(int location, int component)
-        {
-            return GetTransformFeedbackOutput((AttributeConsts.UserAttributeBase / 4) + location * 4 + component);
-        }
-
-        public int GetTransformFeedbackOutputComponents(int location, int component)
-        {
-            EnsureTransformFeedbackInitialized();
-
-            int baseIndex = (AttributeConsts.UserAttributeBase / 4) + location * 4;
-            int index = baseIndex + component;
-            int count = 1;
-
-            for (; count < 4; count++)
-            {
-                ref var prev = ref _transformFeedbackOutputs[baseIndex + count - 1];
-                ref var curr = ref _transformFeedbackOutputs[baseIndex + count];
-
-                int prevOffset = prev.Offset;
-                int currOffset = curr.Offset;
-
-                if (!prev.Valid || !curr.Valid || prevOffset + 4 != currOffset)
-                {
-                    break;
-                }
-            }
-
-            if (baseIndex + count <= index)
-            {
-                return 1;
-            }
-
-            return count;
+            return header.ShaderLocalMemoryLowSize + header.ShaderLocalMemoryHighSize + (header.ShaderLocalMemoryCrsSize / ThreadsPerWarp);
         }
 
         public AggregateType GetFragmentOutputColorType(int location)
@@ -344,15 +167,15 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public AggregateType GetUserDefinedType(int location, bool isOutput)
         {
-            if ((!isOutput && UsedFeatures.HasFlag(FeatureFlags.IaIndexing)) ||
-                (isOutput && UsedFeatures.HasFlag(FeatureFlags.OaIndexing)))
+            if ((!isOutput && Definitions.IaIndexing) ||
+                (isOutput && Definitions.OaIndexing))
             {
                 return AggregateType.Array | AggregateType.Vector4 | AggregateType.FP32;
             }
 
             AggregateType type = AggregateType.Vector4;
 
-            if (Stage == ShaderStage.Vertex && !isOutput)
+            if (Definitions.Stage == ShaderStage.Vertex && !isOutput)
             {
                 type |= GpuAccessor.QueryAttributeType(location).ToAggregateType();
             }
@@ -367,7 +190,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         public int GetDepthRegister()
         {
             // The depth register is always two registers after the last color output.
-            return BitOperations.PopCount((uint)OmapTargets) + 1;
+            return BitOperations.PopCount((uint)Definitions.OmapTargets) + 1;
         }
 
         public uint ConstantBuffer1Read(int offset)
@@ -433,8 +256,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             ClipDistancesWritten |= other.ClipDistancesWritten;
             UsedFeatures |= other.UsedFeatures;
 
-            UsedInputAttributes |= other.UsedInputAttributes;
-            UsedOutputAttributes |= other.UsedOutputAttributes;
+            AttributeUsage.InheritFrom(other.AttributeUsage);
         }
 
         public void SetLayerOutputAttribute(int attr)
@@ -451,161 +273,25 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public void SetLastInVertexPipeline()
         {
-            LastInVertexPipeline = true;
-        }
-
-        public void SetInputUserAttributeFixedFunc(int index)
-        {
-            UsedInputAttributes |= 1 << index;
-        }
-
-        public void SetOutputUserAttributeFixedFunc(int index)
-        {
-            UsedOutputAttributes |= 1 << index;
-        }
-
-        public void SetInputUserAttribute(int index, int component)
-        {
-            int mask = 1 << index;
-
-            UsedInputAttributes |= mask;
-            _thisUsedInputAttributes |= mask;
-            ThisInputAttributesComponents |= UInt128.One << (index * 4 + component);
-        }
-
-        public void SetInputUserAttributePerPatch(int index)
-        {
-            UsedInputAttributesPerPatch.Add(index);
-        }
-
-        public void SetOutputUserAttribute(int index)
-        {
-            UsedOutputAttributes |= 1 << index;
-        }
-
-        public void SetOutputUserAttributePerPatch(int index)
-        {
-            UsedOutputAttributesPerPatch.Add(index);
+            Definitions.LastInVertexPipeline = true;
         }
 
         public void MergeFromtNextStage(ShaderConfig config)
         {
-            NextInputAttributesComponents = config.ThisInputAttributesComponents;
-            NextUsedInputAttributesPerPatch = config.UsedInputAttributesPerPatch;
-            NextUsesFixedFuncAttributes = config.UsedFeatures.HasFlag(FeatureFlags.FixedFuncAttr);
-            MergeOutputUserAttributes(config.UsedInputAttributes, config.UsedInputAttributesPerPatch);
-
-            if (UsedOutputAttributesPerPatch.Count != 0)
-            {
-                // Regular and per-patch input/output locations can't overlap,
-                // so we must assign on our location using unused regular input/output locations.
-
-                Dictionary<int, int> locationsMap = new();
-
-                int freeMask = ~UsedOutputAttributes;
-
-                foreach (int attr in UsedOutputAttributesPerPatch)
-                {
-                    int location = BitOperations.TrailingZeroCount(freeMask);
-                    if (location == 32)
-                    {
-                        config.GpuAccessor.Log($"No enough free locations for patch input/output 0x{attr:X}.");
-                        break;
-                    }
-
-                    locationsMap.Add(attr, location);
-                    freeMask &= ~(1 << location);
-                }
-
-                // Both stages must agree on the locations, so use the same "map" for both.
-                _perPatchAttributeLocations = locationsMap;
-                config._perPatchAttributeLocations = locationsMap;
-            }
+            AttributeUsage.MergeFromtNextStage(Definitions.GpPassthrough, config.UsedFeatures.HasFlag(FeatureFlags.FixedFuncAttr), config.AttributeUsage);
 
             // We don't consider geometry shaders using the geometry shader passthrough feature
             // as being the last because when this feature is used, it can't actually modify any of the outputs,
             // so the stage that comes before it is the last one that can do modifications.
-            if (config.Stage != ShaderStage.Fragment && (config.Stage != ShaderStage.Geometry || !config.GpPassthrough))
+            if (config.Definitions.Stage != ShaderStage.Fragment && (config.Definitions.Stage != ShaderStage.Geometry || !config.Definitions.GpPassthrough))
             {
-                LastInVertexPipeline = false;
+                Definitions.LastInVertexPipeline = false;
             }
         }
 
         public void MergeOutputUserAttributes(int mask, IEnumerable<int> perPatch)
         {
-            _nextUsedInputAttributes = mask;
-
-            if (GpPassthrough)
-            {
-                PassthroughAttributes = mask & ~UsedOutputAttributes;
-            }
-            else
-            {
-                UsedOutputAttributes |= mask;
-                UsedOutputAttributesPerPatch.UnionWith(perPatch);
-            }
-        }
-
-        public int GetPerPatchAttributeLocation(int index)
-        {
-            if (_perPatchAttributeLocations == null || !_perPatchAttributeLocations.TryGetValue(index, out int location))
-            {
-                return index;
-            }
-
-            return location;
-        }
-
-        public bool IsUsedOutputAttribute(int attr)
-        {
-            // The check for fixed function attributes on the next stage is conservative,
-            // returning false if the output is just not used by the next stage is also valid.
-            if (NextUsesFixedFuncAttributes &&
-                attr >= AttributeConsts.UserAttributeBase &&
-                attr < AttributeConsts.UserAttributeEnd)
-            {
-                int index = (attr - AttributeConsts.UserAttributeBase) >> 4;
-                return (_nextUsedInputAttributes & (1 << index)) != 0;
-            }
-
-            return true;
-        }
-
-        public int GetFreeUserAttribute(bool isOutput, int index)
-        {
-            int useMask = isOutput ? _nextUsedInputAttributes : _thisUsedInputAttributes;
-            int bit = -1;
-
-            while (useMask != -1)
-            {
-                bit = BitOperations.TrailingZeroCount(~useMask);
-
-                if (bit == 32)
-                {
-                    bit = -1;
-                    break;
-                }
-                else if (index < 1)
-                {
-                    break;
-                }
-
-                useMask |= 1 << bit;
-                index--;
-            }
-
-            return bit;
-        }
-
-        public void SetAllInputUserAttributes()
-        {
-            UsedInputAttributes |= Constants.AllAttributesMask;
-            ThisInputAttributesComponents |= ~UInt128.Zero >> (128 - Constants.MaxAttributes * 4);
-        }
-
-        public void SetAllOutputUserAttributes()
-        {
-            UsedOutputAttributes |= Constants.AllAttributesMask;
+            AttributeUsage.MergeOutputUserAttributes(Definitions.GpPassthrough, mask, perPatch);
         }
 
         public void SetClipDistanceWritten(int index)
@@ -627,13 +313,13 @@ namespace Ryujinx.Graphics.Shader.Translation
                 ResourceManager.GetImageDescriptors(),
                 identification,
                 GpLayerInputAttribute,
-                Stage,
+                Definitions.Stage,
                 UsedFeatures.HasFlag(FeatureFlags.FragCoordXY),
                 UsedFeatures.HasFlag(FeatureFlags.InstanceId),
                 UsedFeatures.HasFlag(FeatureFlags.DrawParameters),
                 UsedFeatures.HasFlag(FeatureFlags.RtLayer),
                 ClipDistancesWritten,
-                OmapTargets);
+                Definitions.OmapTargets);
         }
     }
 }

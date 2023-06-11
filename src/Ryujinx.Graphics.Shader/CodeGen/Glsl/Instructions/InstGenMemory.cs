@@ -636,7 +636,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     int location = -1;
                     int component = 0;
 
-                    if (context.Config.HasPerLocationInputOrOutput(ioVariable, isOutput))
+                    if (context.Config.Definitions.HasPerLocationInputOrOutput(ioVariable, isOutput))
                     {
                         if (operation.GetSource(srcIndex++) is not AstOperand vecIndex || vecIndex.Type != OperandType.Constant)
                         {
@@ -648,7 +648,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                         if (operation.SourcesCount > srcIndex &&
                             operation.GetSource(srcIndex) is AstOperand elemIndex &&
                             elemIndex.Type == OperandType.Constant &&
-                            context.Config.HasPerLocationInputOrOutputComponent(ioVariable, location, elemIndex.Value, isOutput))
+                            context.Config.Definitions.HasPerLocationInputOrOutputComponent(ioVariable, location, elemIndex.Value, isOutput))
                         {
                             component = elemIndex.Value;
                             srcIndex++;
@@ -657,7 +657,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                     (varName, varType) = IoMap.GetGlslVariable(context.Config, ioVariable, location, component, isOutput, isPerPatch);
 
-                    if (IoMap.IsPerVertexBuiltIn(context.Config.Stage, ioVariable, isOutput))
+                    if (IoMap.IsPerVertexBuiltIn(context.Config.Definitions.Stage, ioVariable, isOutput))
                     {
                         // Since those exist both as input and output on geometry and tessellation shaders,
                         // we need the gl_in and gl_out prefixes to disambiguate.
@@ -692,7 +692,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 {
                     varName += "." + "xyzw"[elementIndex.Value & 3];
                 }
-                else if (srcIndex == firstSrcIndex && context.Config.Stage == ShaderStage.TessellationControl && storageKind == StorageKind.Output)
+                else if (srcIndex == firstSrcIndex && context.Config.Definitions.Stage == ShaderStage.TessellationControl && storageKind == StorageKind.Output)
                 {
                     // GLSL requires that for tessellation control shader outputs,
                     // that the index expression must be *exactly* "gl_InvocationID",

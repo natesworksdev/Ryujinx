@@ -24,7 +24,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 BindlessElimination.RunPass(blocks[blkIndex], config);
 
                 // FragmentCoord only exists on fragment shaders, so we don't need to check other stages.
-                if (config.Stage == ShaderStage.Fragment)
+                if (config.Definitions.Stage == ShaderStage.Fragment)
                 {
                     EliminateMultiplyByFragmentCoordW(blocks[blkIndex]);
                 }

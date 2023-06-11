@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 funcs.Add(null);
             }
 
-            HelperFunctionManager hfm = new(funcs, config.Stage);
+            HelperFunctionManager hfm = new(funcs, config.Definitions.Stage);
 
             for (int i = 0; i < functions.Length; i++)
             {
@@ -178,17 +178,17 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             // Compute has no output attributes, and fragment is the last stage, so we
             // don't need to initialize outputs on those stages.
-            if (config.Stage == ShaderStage.Compute || config.Stage == ShaderStage.Fragment)
+            if (config.Definitions.Stage == ShaderStage.Compute || config.Definitions.Stage == ShaderStage.Fragment)
             {
                 return;
             }
 
-            if (config.Stage == ShaderStage.Vertex)
+            if (config.Definitions.Stage == ShaderStage.Vertex)
             {
                 InitializePositionOutput(context);
             }
 
-            UInt128 usedAttributes = context.Config.NextInputAttributesComponents;
+            UInt128 usedAttributes = context.Config.AttributeUsage.NextInputAttributesComponents;
             while (usedAttributes != UInt128.Zero)
             {
                 int index = (int)UInt128.TrailingZeroCount(usedAttributes);
@@ -197,7 +197,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 usedAttributes &= ~(UInt128.One << index);
 
                 // We don't need to initialize passthrough attributes.
-                if ((context.Config.PassthroughAttributes & (1 << vecIndex)) != 0)
+                if ((context.Config.AttributeUsage.PassthroughAttributes & (1 << vecIndex)) != 0)
                 {
                     continue;
                 }
@@ -205,22 +205,22 @@ namespace Ryujinx.Graphics.Shader.Translation
                 InitializeOutputComponent(context, vecIndex, index & 3, perPatch: false);
             }
 
-            if (context.Config.NextUsedInputAttributesPerPatch != null)
+            if (context.Config.AttributeUsage.NextUsedInputAttributesPerPatch != null)
             {
-                foreach (int vecIndex in context.Config.NextUsedInputAttributesPerPatch.Order())
+                foreach (int vecIndex in context.Config.AttributeUsage.NextUsedInputAttributesPerPatch.Order())
                 {
                     InitializeOutput(context, vecIndex, perPatch: true);
                 }
             }
 
-            if (config.NextUsesFixedFuncAttributes)
+            if (config.AttributeUsage.NextUsesFixedFuncAttributes)
             {
                 bool supportsLayerFromVertexOrTess = config.GpuAccessor.QueryHostSupportsLayerVertexTessellation();
                 int fixedStartAttr = supportsLayerFromVertexOrTess ? 0 : 1;
 
                 for (int i = fixedStartAttr; i < fixedStartAttr + 5 + AttributeConsts.TexCoordCount; i++)
                 {
-                    int index = config.GetFreeUserAttribute(isOutput: true, i);
+                    int index = config.AttributeUsage.GetFreeUserAttribute(isOutput: true, i);
                     if (index < 0)
                     {
                         break;
@@ -228,7 +228,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                     InitializeOutput(context, index, perPatch: false);
 
-                    config.SetOutputUserAttributeFixedFunc(index);
+                    config.AttributeUsage.SetOutputUserAttributeFixedFunc(index);
                 }
             }
         }
@@ -253,11 +253,11 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             StorageKind storageKind = perPatch ? StorageKind.OutputPerPatch : StorageKind.Output;
 
-            if (context.Config.UsedFeatures.HasFlag(FeatureFlags.OaIndexing))
+            if (context.Config.Definitions.OaIndexing)
             {
                 Operand invocationId = null;
 
-                if (context.Config.Stage == ShaderStage.TessellationControl && !perPatch)
+                if (context.Config.Definitions.Stage == ShaderStage.TessellationControl && !perPatch)
                 {
                     invocationId = context.Load(StorageKind.Input, IoVariable.InvocationId);
                 }
@@ -268,7 +268,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
             else
             {
-                if (context.Config.Stage == ShaderStage.TessellationControl && !perPatch)
+                if (context.Config.Definitions.Stage == ShaderStage.TessellationControl && !perPatch)
                 {
                     Operand invocationId = context.Load(StorageKind.Input, IoVariable.InvocationId);
                     context.Store(storageKind, IoVariable.UserDefined, Const(location), invocationId, Const(c), ConstF(c == 3 ? 1f : 0f));

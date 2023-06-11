@@ -22,7 +22,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             // Some of those attributes are per invocation,
             // so we should ignore any primitive vertex indexing for those.
-            bool hasPrimitiveVertex = AttributeMap.HasPrimitiveVertex(context.Config.Stage, op.O) && !op.P;
+            bool hasPrimitiveVertex = AttributeMap.HasPrimitiveVertex(context.Config.Definitions.Stage, op.O) && !op.P;
 
             if (!op.Phys)
             {
@@ -98,7 +98,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     Operand offset = context.ISubtract(GetSrcReg(context, op.SrcA), Const(AttributeConsts.UserAttributeBase));
                     Operand vecIndex = context.ShiftRightU32(offset, Const(4));
                     Operand elemIndex = context.BitwiseAnd(context.ShiftRightU32(offset, Const(2)), Const(3));
-                    Operand invocationId = AttributeMap.HasInvocationId(context.Config.Stage, isOutput: true)
+                    Operand invocationId = AttributeMap.HasInvocationId(context.Config.Definitions.Stage, isOutput: true)
                         ? context.Load(StorageKind.Input, IoVariable.InvocationId)
                         : null;
 
@@ -110,7 +110,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                     int offset = op.Imm11 + index * 4;
 
-                    if (!context.Config.IsUsedOutputAttribute(offset))
+                    if (!context.Config.AttributeUsage.IsUsedOutputAttribute(offset))
                     {
                         return;
                     }
@@ -151,7 +151,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 {
                     int index = (op.Imm10 - AttributeConsts.UserAttributeBase) >> 4;
 
-                    if (context.Config.ImapTypes[index].GetFirstUsedType() == PixelImap.Perspective)
+                    if (context.Config.Definitions.ImapTypes[index].GetFirstUsedType() == PixelImap.Perspective)
                     {
                         res = context.FPMultiply(res, context.Load(StorageKind.Input, IoVariable.FragmentCoord, null, Const(3)));
                     }
@@ -236,7 +236,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             if (emit)
             {
-                if (context.Config.LastInVertexPipeline)
+                if (context.Config.Definitions.LastInVertexPipeline)
                 {
                     context.PrepareForVertexReturn(out var tempXLocal, out var tempYLocal, out var tempZLocal);
 
@@ -323,7 +323,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             bool supportsLayerFromVertexOrTess = config.GpuAccessor.QueryHostSupportsLayerVertexTessellation();
             int fixedStartAttr = supportsLayerFromVertexOrTess ? 0 : 1;
 
-            if (attr == AttributeConsts.Layer && config.Stage != ShaderStage.Geometry && !supportsLayerFromVertexOrTess)
+            if (attr == AttributeConsts.Layer && config.Definitions.Stage != ShaderStage.Geometry && !supportsLayerFromVertexOrTess)
             {
                 attr = FixedFuncToUserAttribute(config, attr, AttributeConsts.Layer, 0, isOutput);
                 config.SetLayerOutputAttribute(attr);
@@ -347,7 +347,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
         private static int FixedFuncToUserAttribute(ShaderConfig config, int attr, int baseAttr, int baseIndex, bool isOutput)
         {
             int index = (attr - baseAttr) >> 4;
-            int userAttrIndex = config.GetFreeUserAttribute(isOutput, baseIndex + index);
+            int userAttrIndex = config.AttributeUsage.GetFreeUserAttribute(isOutput, baseIndex + index);
 
             if ((uint)userAttrIndex < Constants.MaxAttributes)
             {
@@ -355,11 +355,11 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 if (isOutput)
                 {
-                    config.SetOutputUserAttributeFixedFunc(userAttrIndex);
+                    config.AttributeUsage.SetOutputUserAttributeFixedFunc(userAttrIndex);
                 }
                 else
                 {
-                    config.SetInputUserAttributeFixedFunc(userAttrIndex);
+                    config.AttributeUsage.SetInputUserAttributeFixedFunc(userAttrIndex);
                 }
             }
             else

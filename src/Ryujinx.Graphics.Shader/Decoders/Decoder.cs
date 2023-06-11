@@ -304,13 +304,13 @@ namespace Ryujinx.Graphics.Shader.Decoders
             {
                 if (isStore)
                 {
-                    config.SetAllOutputUserAttributes();
-                    config.SetUsedFeature(FeatureFlags.OaIndexing);
+                    config.AttributeUsage.SetAllOutputUserAttributes();
+                    config.Definitions.EnableOutputIndexing();
                 }
                 else
                 {
-                    config.SetAllInputUserAttributes();
-                    config.SetUsedFeature(FeatureFlags.IaIndexing);
+                    config.AttributeUsage.SetAllInputUserAttributes();
+                    config.Definitions.EnableInputIndexing();
                 }
             }
             else
@@ -328,11 +328,11 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
                             if (isStore)
                             {
-                                config.SetOutputUserAttributePerPatch(index);
+                                config.AttributeUsage.SetOutputUserAttributePerPatch(index);
                             }
                             else
                             {
-                                config.SetInputUserAttributePerPatch(index);
+                                config.AttributeUsage.SetInputUserAttributePerPatch(index);
                             }
                         }
                     }
@@ -343,11 +343,11 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
                         if (isStore)
                         {
-                            config.SetOutputUserAttribute(index);
+                            config.AttributeUsage.SetOutputUserAttribute(index);
                         }
                         else
                         {
-                            config.SetInputUserAttribute(index, (userAttr >> 2) & 3);
+                            config.AttributeUsage.SetInputUserAttribute(index, (userAttr >> 2) & 3);
                         }
                     }
 

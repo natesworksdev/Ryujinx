@@ -82,13 +82,13 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                     int location = 0;
                     int component = 0;
 
-                    if (context.Config.HasPerLocationInputOrOutput(ioVariable, isOutput))
+                    if (context.Config.Definitions.HasPerLocationInputOrOutput(ioVariable, isOutput))
                     {
                         location = operation.GetSource(1).Value;
 
                         if (operation.SourcesCount > 2 &&
                             operation.GetSource(2).Type == OperandType.Constant &&
-                            context.Config.HasPerLocationInputOrOutputComponent(ioVariable, location, operation.GetSource(2).Value, isOutput))
+                            context.Config.Definitions.HasPerLocationInputOrOutputComponent(ioVariable, location, operation.GetSource(2).Value, isOutput))
                         {
                             component = operation.GetSource(2).Value;
                         }

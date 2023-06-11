@@ -38,7 +38,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 IoVariable.PointCoord => ("gl_PointCoord", AggregateType.Vector2 | AggregateType.FP32),
                 IoVariable.PointSize => ("gl_PointSize", AggregateType.FP32),
                 IoVariable.Position => ("gl_Position", AggregateType.Vector4 | AggregateType.FP32),
-                IoVariable.PrimitiveId => GetPrimitiveIdVariableName(config.Stage, isOutput),
+                IoVariable.PrimitiveId => GetPrimitiveIdVariableName(config.Definitions.Stage, isOutput),
                 IoVariable.SubgroupEqMask => GetSubgroupMaskVariableName(config, "Eq"),
                 IoVariable.SubgroupGeMask => GetSubgroupMaskVariableName(config, "Ge"),
                 IoVariable.SubgroupGtMask => GetSubgroupMaskVariableName(config, "Gt"),
@@ -131,7 +131,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             name += location.ToString(CultureInfo.InvariantCulture);
 
-            if (config.HasPerLocationInputOrOutputComponent(IoVariable.UserDefined, location, component, isOutput))
+            if (config.Definitions.HasPerLocationInputOrOutputComponent(IoVariable.UserDefined, location, component, isOutput))
             {
                 name += "_" + "xyzw"[component & 3];
             }

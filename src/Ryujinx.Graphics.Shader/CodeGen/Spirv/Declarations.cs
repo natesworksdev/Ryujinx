@@ -318,12 +318,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 PixelImap iq = PixelImap.Unused;
 
-                if (context.Config.Stage == ShaderStage.Fragment)
+                if (context.Config.Definitions.Stage == ShaderStage.Fragment)
                 {
                     var ioVariable = ioDefinition.IoVariable;
                     if (ioVariable == IoVariable.UserDefined)
                     {
-                        iq = context.Config.ImapTypes[ioDefinition.Location].GetFirstUsedType();
+                        iq = context.Config.Definitions.ImapTypes[ioDefinition.Location].GetFirstUsedType();
                     }
                     else
                     {
@@ -374,16 +374,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 }
             }
 
-            bool hasComponent = context.Config.HasPerLocationInputOrOutputComponent(ioVariable, ioDefinition.Location, ioDefinition.Component, isOutput);
+            bool hasComponent = context.Config.Definitions.HasPerLocationInputOrOutputComponent(ioVariable, ioDefinition.Location, ioDefinition.Component, isOutput);
 
             if (hasComponent)
             {
                 varType &= AggregateType.ElementTypeMask;
             }
-            else if (ioVariable == IoVariable.UserDefined && context.Config.HasTransformFeedbackOutputs(isOutput))
+            else if (ioVariable == IoVariable.UserDefined && context.Config.Definitions.HasTransformFeedbackOutputs(isOutput))
             {
                 varType &= AggregateType.ElementTypeMask;
-                varType |= context.Config.GetTransformFeedbackOutputComponents(ioDefinition.Location, ioDefinition.Component) switch
+                varType |= context.Config.Definitions.GetTransformFeedbackOutputComponents(ioDefinition.Location, ioDefinition.Component) switch
                 {
                     2 => AggregateType.Vector2,
                     3 => AggregateType.Vector3,
@@ -395,20 +395,20 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var spvType = context.GetType(varType, IoMap.GetSpirvBuiltInArrayLength(ioVariable));
             bool builtInPassthrough = false;
 
-            if (!isPerPatch && IoMap.IsPerVertex(ioVariable, context.Config.Stage, isOutput))
+            if (!isPerPatch && IoMap.IsPerVertex(ioVariable, context.Config.Definitions.Stage, isOutput))
             {
-                int arraySize = context.Config.Stage == ShaderStage.Geometry ? context.InputVertices : 32;
+                int arraySize = context.Config.Definitions.Stage == ShaderStage.Geometry ? context.InputVertices : 32;
                 spvType = context.TypeArray(spvType, context.Constant(context.TypeU32(), arraySize));
 
-                if (context.Config.GpPassthrough && context.Config.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough())
+                if (context.Config.Definitions.GpPassthrough && context.Config.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough())
                 {
                     builtInPassthrough = true;
                 }
             }
 
-            if (context.Config.Stage == ShaderStage.TessellationControl && isOutput && !isPerPatch)
+            if (context.Config.Definitions.Stage == ShaderStage.TessellationControl && isOutput && !isPerPatch)
             {
-                spvType = context.TypeArray(spvType, context.Constant(context.TypeU32(), context.Config.ThreadsPerInputPrimitive));
+                spvType = context.TypeArray(spvType, context.Constant(context.TypeU32(), context.Config.Definitions.ThreadsPerInputPrimitive));
             }
 
             var spvPointerType = context.TypePointer(storageClass, spvType);
@@ -439,7 +439,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                 if (ioVariable == IoVariable.UserDefined)
                 {
-                    int location = context.Config.GetPerPatchAttributeLocation(ioDefinition.Location);
+                    int location = context.Config.AttributeUsage.GetPerPatchAttributeLocation(ioDefinition.Location);
 
                     context.Decorate(spvVar, Decoration.Location, (LiteralInteger)location);
                 }
@@ -455,7 +455,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                 if (!isOutput &&
                     !isPerPatch &&
-                    (context.Config.PassthroughAttributes & (1 << ioDefinition.Location)) != 0 &&
+                    (context.Config.AttributeUsage.PassthroughAttributes & (1 << ioDefinition.Location)) != 0 &&
                     context.Config.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough())
                 {
                     context.Decorate(spvVar, Decoration.PassthroughNV);
@@ -465,13 +465,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 int location = ioDefinition.Location;
 
-                if (context.Config.Stage == ShaderStage.Fragment && context.Config.GpuAccessor.QueryDualSourceBlendEnable())
+                if (context.Config.Definitions.Stage == ShaderStage.Fragment && context.Config.GpuAccessor.QueryDualSourceBlendEnable())
                 {
-                    int firstLocation = BitOperations.TrailingZeroCount(context.Config.UsedOutputAttributes);
+                    int firstLocation = BitOperations.TrailingZeroCount(context.Config.AttributeUsage.UsedOutputAttributes);
                     int index = location - firstLocation;
                     int mask = 3 << firstLocation;
 
-                    if ((uint)index < 2 && (context.Config.UsedOutputAttributes & mask) == mask)
+                    if ((uint)index < 2 && (context.Config.AttributeUsage.UsedOutputAttributes & mask) == mask)
                     {
                         context.Decorate(spvVar, Decoration.Location, (LiteralInteger)firstLocation);
                         context.Decorate(spvVar, Decoration.Index, (LiteralInteger)index);
@@ -499,7 +499,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         break;
                 }
             }
-            else if (context.Config.TryGetTransformFeedbackOutput(
+            else if (context.Config.Definitions.TryGetTransformFeedbackOutput(
                 ioVariable,
                 ioDefinition.Location,
                 ioDefinition.Component,

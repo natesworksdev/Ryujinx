@@ -1446,7 +1446,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 lodBias = Src(AggregateType.FP32);
             }
 
-            if (!isGather && !intCoords && !isMultisample && !hasLodLevel && !hasDerivatives && context.Config.Stage != ShaderStage.Fragment)
+            if (!isGather && !intCoords && !isMultisample && !hasLodLevel && !hasDerivatives && context.Config.Definitions.Stage != ShaderStage.Fragment)
             {
                 // Implicit LOD is only valid on fragment.
                 // Use the LOD bias as explicit LOD if available.
@@ -1851,7 +1851,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     int location = 0;
                     int component = 0;
 
-                    if (context.Config.HasPerLocationInputOrOutput(ioVariable, isOutput))
+                    if (context.Config.Definitions.HasPerLocationInputOrOutput(ioVariable, isOutput))
                     {
                         if (operation.GetSource(srcIndex++) is not AstOperand vecIndex || vecIndex.Type != OperandType.Constant)
                         {
@@ -1863,7 +1863,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         if (operation.SourcesCount > srcIndex &&
                             operation.GetSource(srcIndex) is AstOperand elemIndex &&
                             elemIndex.Type == OperandType.Constant &&
-                            context.Config.HasPerLocationInputOrOutputComponent(ioVariable, location, elemIndex.Value, isOutput))
+                            context.Config.Definitions.HasPerLocationInputOrOutputComponent(ioVariable, location, elemIndex.Value, isOutput))
                         {
                             component = elemIndex.Value;
                             srcIndex++;

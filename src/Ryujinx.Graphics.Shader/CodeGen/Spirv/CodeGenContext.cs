@@ -88,7 +88,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Info = info;
             Config = config;
 
-            if (config.Stage == ShaderStage.Geometry)
+            if (config.Definitions.Stage == ShaderStage.Geometry)
             {
                 InputTopology inPrimitive = config.GpuAccessor.QueryPrimitiveTopology();
 
