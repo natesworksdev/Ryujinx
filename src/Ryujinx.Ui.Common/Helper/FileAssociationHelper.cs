@@ -1,9 +1,11 @@
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Win32;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
@@ -81,9 +83,9 @@ namespace Ryujinx.Ui.Common.Helper
                     return false;
                 }
 
-                key.OpenSubKey(@"shell\open\command");
+                var openCmd = key.OpenSubKey(@"shell\open\command");
 
-                string keyValue = (string)key.GetValue("");
+                string keyValue = (string)openCmd.GetValue("");
 
                 return keyValue is not null && (keyValue.Contains("Ryujinx") || keyValue.Contains(AppDomain.CurrentDomain.FriendlyName));
             }
@@ -107,31 +109,30 @@ namespace Ryujinx.Ui.Common.Helper
 
                 if (uninstall)
                 {
+                    // If the types don't already exist, there's nothing to do and we can call this operation successful. 
                     if (!AreMimeTypesRegisteredWindows())
+                    {
+                        return true;
+                    }
+                    Logger.Debug?.Print(LogClass.Application, $"Removing type association {ext}");
+                    Registry.CurrentUser.DeleteSubKeyTree(keyString);
+                    Logger.Debug?.Print(LogClass.Application, $"Removed type association {ext}");
+                }
+                else
+                {
+                    using var key = Registry.CurrentUser.CreateSubKey(keyString);
+
+                    if (key is null)
                     {
                         return false;
                     }
 
-                    Registry.CurrentUser.DeleteSubKeyTree(keyString);
-                }
-                else
-                {
-                    using (var key = Registry.CurrentUser.CreateSubKey(keyString))
-                    {
-                        if (key is null)
-                        {
-                            return false;
-                        }
+                    Logger.Debug?.Print(LogClass.Application, $"Adding type association {ext}");
+                    using var openCmd = key.CreateSubKey(@"shell\open\command");
+                    openCmd.SetValue("", $"\"{Environment.ProcessPath}\" \"%1\"");
+                    Logger.Debug?.Print(LogClass.Application, $"Added type association {ext}");
 
-                        using (var openCmd = key.CreateSubKey(@"shell\open\command"))
-                        {
-                            openCmd.SetValue("", $"\"{Environment.ProcessPath}\" \"%1\"");
-                        }
-                    }
                 }
-
-                // Notify Explorer the file association has been changed.
-                SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_FLUSH, IntPtr.Zero, IntPtr.Zero);
 
                 return true;
             }
@@ -142,6 +143,9 @@ namespace Ryujinx.Ui.Common.Helper
             {
                 registered |= RegisterExtension(ext, uninstall);
             }
+
+            // Notify Explorer the file association has been changed.
+            SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_FLUSH, IntPtr.Zero, IntPtr.Zero);
 
             return registered;
         }
