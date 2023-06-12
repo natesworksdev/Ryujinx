@@ -7,7 +7,7 @@ namespace Ryujinx.Graphics.Vulkan
     class ShaderCompilationQueue
     {
         private const int MaxParallelCompilations = 8;
-        private const int MaxThreadStackSize = 1 * 1024 * 1024; // MB
+        private const int MaxThreadStackSize = 2 * 1024 * 1024; // MB
 
         private struct Request
         {
