@@ -105,7 +105,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private readonly BuffersPerStage[] _gpUniformBuffers;
 
         private BufferHandle _tfInfoBuffer;
-        private int[] _tfInfoData;
+        private readonly int[] _tfInfoData;
 
         private bool _gpStorageBuffersDirty;
         private bool _gpUniformBuffersDirty;
