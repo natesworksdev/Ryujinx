@@ -40,6 +40,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using SPB.Graphics.Exceptions;
 using SPB.Graphics.Vulkan;
 using System;
 using System.Collections.Generic;
@@ -91,6 +92,8 @@ namespace Ryujinx.Ava
         private bool _isStopped;
         private bool _isActive;
         private bool _renderingStarted;
+
+        private ManualResetEvent _gpuDoneEvent;
 
         private IRenderer                        _renderer;
         private readonly Thread                  _renderingThread;
@@ -183,6 +186,7 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.Multiplayer.LanInterfaceId.Event   += UpdateLanInterfaceIdState;
 
             _gpuCancellationTokenSource = new CancellationTokenSource();
+            _gpuDoneEvent = new ManualResetEvent(false);
         }
 
         private void TopLevel_PointerEnterOrMoved(object sender, PointerEventArgs e)
@@ -270,7 +274,7 @@ namespace Ryujinx.Ava
 
                         string directory = AppDataManager.Mode switch
                         {
-                            AppDataManager.LaunchMode.Portable => Path.Combine(AppDataManager.BaseDirPath, "screenshots"),
+                            AppDataManager.LaunchMode.Portable or AppDataManager.LaunchMode.Custom => Path.Combine(AppDataManager.BaseDirPath, "screenshots"),
                             _                                  => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Ryujinx")
                         };
 
@@ -423,10 +427,10 @@ namespace Ryujinx.Ava
 
             _isActive = false;
 
-            if (_renderingThread.IsAlive)
-            {
-                _renderingThread.Join();
-            }
+            // NOTE: The render loop is allowed to stay alive until the renderer itself is disposed, as it may handle resource dispose.
+            // We only need to wait for all commands submitted during the main gpu loop to be processed.
+            _gpuDoneEvent.WaitOne();
+            _gpuDoneEvent.Dispose();
 
             DisplaySleep.Restore();
 
@@ -472,11 +476,20 @@ namespace Ryujinx.Ava
                 _windowsMultimediaTimerResolution = null;
             }
 
-            (_rendererHost.EmbeddedWindow as EmbeddedWindowOpenGL)?.MakeCurrent();
+            if (_rendererHost.EmbeddedWindow is EmbeddedWindowOpenGL openGlWindow)
+            {
+                // Try to bind the OpenGL context before calling the shutdown event.
+                openGlWindow.MakeCurrent(false, false);
 
-            Device.DisposeGpu();
+                Device.DisposeGpu();
 
-            (_rendererHost.EmbeddedWindow as EmbeddedWindowOpenGL)?.MakeCurrent(null);
+                // Unbind context and destroy everything.
+                openGlWindow.MakeCurrent(true, false);
+            }
+            else
+            {
+                Device.DisposeGpu();
+            }
         }
 
         private void HideCursorState_Changed(object sender, ReactiveEventArgs<HideCursorMode> state)
@@ -917,9 +930,17 @@ namespace Ryujinx.Ava
                         UpdateStatus();
                     }
                 }
+
+                // Make sure all commands in the run loop are fully executed before leaving the loop.
+                if (Device.Gpu.Renderer is ThreadedRenderer threaded)
+                {
+                    threaded.FlushThreadedCommands();
+                }
+
+                _gpuDoneEvent.Set();
             });
 
-            (_rendererHost.EmbeddedWindow as EmbeddedWindowOpenGL)?.MakeCurrent(null);
+            (_rendererHost.EmbeddedWindow as EmbeddedWindowOpenGL)?.MakeCurrent(true);
         }
 
         public void UpdateStatus()
@@ -1033,7 +1054,7 @@ namespace Ryujinx.Ava
                             ScreenshotRequested = true;
                             break;
                         case KeyboardHotkeyState.ShowUi:
-                            _viewModel.ShowMenuAndStatusBar = true;
+                            _viewModel.ShowMenuAndStatusBar = !_viewModel.ShowMenuAndStatusBar;
                             break;
                         case KeyboardHotkeyState.Pause:
                             if (_viewModel.IsPaused)

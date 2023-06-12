@@ -79,7 +79,7 @@ namespace Ryujinx.Graphics.Shader
         /// <returns>Binding number</returns>
         int QueryBindingConstantBuffer(int index)
         {
-            return index;
+            return index + 1;
         }
 
         /// <summary>
@@ -332,6 +332,24 @@ namespace Ryujinx.Graphics.Shader
         }
 
         /// <summary>
+        /// Queries host GPU shader support for barrier instructions on divergent control flow paths.
+        /// </summary>
+        /// <returns>True if the GPU supports barriers on divergent control flow paths, false otherwise</returns>
+        bool QueryHostSupportsShaderBarrierDivergence()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Queries host GPU support for 64-bit floating point (double precision) operations on the shader.
+        /// </summary>
+        /// <returns>True if the GPU and driver supports double operations, false otherwise</returns>
+        bool QueryHostSupportsShaderFloat64()
+        {
+            return true;
+        }
+
+        /// <summary>
         /// Queries host GPU support for signed normalized buffer texture formats.
         /// </summary>
         /// <returns>True if the GPU and driver supports the formats, false otherwise</returns>
@@ -350,6 +368,15 @@ namespace Ryujinx.Graphics.Shader
         }
 
         /// <summary>
+        /// Queries host GPU transform feedback support.
+        /// </summary>
+        /// <returns>True if the GPU and driver supports transform feedback, false otherwise</returns>
+        bool QueryHostSupportsTransformFeedback()
+        {
+            return true;
+        }
+
+        /// <summary>
         /// Queries host support for writes to the viewport index from vertex or tessellation shader stages.
         /// </summary>
         /// <returns>True if writes to the viewport index from vertex or tessellation are supported, false otherwise</returns>
@@ -363,6 +390,15 @@ namespace Ryujinx.Graphics.Shader
         /// </summary>
         /// <returns>True if the GPU and driver supports shader viewport mask output, false otherwise</returns>
         bool QueryHostSupportsViewportMask()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Queries whether the host supports depth clip control.
+        /// </summary>
+        /// <returns>True if the GPU and driver supports depth clip control, false otherwise</returns>
+        bool QueryHostSupportsDepthClipControl()
         {
             return true;
         }

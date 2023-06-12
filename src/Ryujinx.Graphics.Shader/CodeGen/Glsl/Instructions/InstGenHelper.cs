@@ -83,10 +83,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             Add(Instruction.ImageAtomic,              InstType.Special);
             Add(Instruction.IsNan,                    InstType.CallUnary,      "isnan");
             Add(Instruction.Load,                     InstType.Special);
-            Add(Instruction.LoadConstant,             InstType.Special);
             Add(Instruction.LoadLocal,                InstType.Special);
             Add(Instruction.LoadShared,               InstType.Special);
-            Add(Instruction.LoadStorage,              InstType.Special);
             Add(Instruction.Lod,                      InstType.Special);
             Add(Instruction.LogarithmB2,              InstType.CallUnary,      "log2");
             Add(Instruction.LogicalAnd,               InstType.OpBinaryCom,    "&&",              9);
@@ -102,6 +100,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             Add(Instruction.MemoryBarrier,            InstType.CallNullary,    "memoryBarrier");
             Add(Instruction.Minimum,                  InstType.CallBinary,     "min");
             Add(Instruction.MinimumU32,               InstType.CallBinary,     "min");
+            Add(Instruction.Modulo,                   InstType.CallBinary,     "mod");
             Add(Instruction.Multiply,                 InstType.OpBinaryCom,    "*",               1);
             Add(Instruction.MultiplyHighS32,          InstType.CallBinary,     HelperFunctionNames.MultiplyHighS32);
             Add(Instruction.MultiplyHighU32,          InstType.CallBinary,     HelperFunctionNames.MultiplyHighU32);
@@ -123,9 +122,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             Add(Instruction.StoreShared,              InstType.Special);
             Add(Instruction.StoreShared16,            InstType.Special);
             Add(Instruction.StoreShared8,             InstType.Special);
-            Add(Instruction.StoreStorage,             InstType.Special);
-            Add(Instruction.StoreStorage16,           InstType.Special);
-            Add(Instruction.StoreStorage8,            InstType.Special);
             Add(Instruction.Subtract,                 InstType.OpBinary,       "-",               2);
             Add(Instruction.SwizzleAdd,               InstType.CallTernary,    HelperFunctionNames.SwizzleAdd);
             Add(Instruction.TextureSample,            InstType.Special);

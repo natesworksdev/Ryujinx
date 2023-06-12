@@ -57,6 +57,56 @@ namespace Ryujinx.Graphics.Shader.Translation
             return context.Add(Instruction.AtomicXor, storageKind, Local(), a, b, c);
         }
 
+        public static Operand AtomicAdd(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.AtomicAdd, storageKind, Local(), Const(binding), e0, e1, value);
+        }
+
+        public static Operand AtomicAnd(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.AtomicAnd, storageKind, Local(), Const(binding), e0, e1, value);
+        }
+
+        public static Operand AtomicCompareAndSwap(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand compare, Operand value)
+        {
+            return context.Add(Instruction.AtomicCompareAndSwap, storageKind, Local(), Const(binding), e0, e1, compare, value);
+        }
+
+        public static Operand AtomicMaxS32(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.AtomicMaxS32, storageKind, Local(), Const(binding), e0, e1, value);
+        }
+
+        public static Operand AtomicMaxU32(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.AtomicMaxU32, storageKind, Local(), Const(binding), e0, e1, value);
+        }
+
+        public static Operand AtomicMinS32(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.AtomicMinS32, storageKind, Local(), Const(binding), e0, e1, value);
+        }
+
+        public static Operand AtomicMinU32(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.AtomicMinU32, storageKind, Local(), Const(binding), e0, e1, value);
+        }
+
+        public static Operand AtomicOr(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.AtomicOr, storageKind, Local(), Const(binding), e0, e1, value);
+        }
+
+        public static Operand AtomicSwap(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.AtomicSwap, storageKind, Local(), Const(binding), e0, e1, value);
+        }
+
+        public static Operand AtomicXor(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.AtomicXor, storageKind, Local(), Const(binding), e0, e1, value);
+        }
+
         public static Operand Ballot(this EmitterContext context, Operand a)
         {
             return context.Add(Instruction.Ballot, Local(), a);
@@ -307,6 +357,11 @@ namespace Ryujinx.Graphics.Shader.Translation
             return context.Add(fpType | Instruction.Minimum, Local(), a, b);
         }
 
+        public static Operand FPModulo(this EmitterContext context, Operand a, Operand b, Instruction fpType = Instruction.FP32)
+        {
+            return context.Add(fpType | Instruction.Modulo, Local(), a, b);
+        }
+
         public static Operand FPMultiply(this EmitterContext context, Operand a, Operand b, Instruction fpType = Instruction.FP32)
         {
             return context.Add(fpType | Instruction.Multiply, Local(), a, b);
@@ -549,11 +604,36 @@ namespace Ryujinx.Graphics.Shader.Translation
             return context.Add(fpType | Instruction.IsNan, Local(), a);
         }
 
+        public static Operand Load(this EmitterContext context, StorageKind storageKind, Operand e0, Operand e1)
+        {
+            return context.Add(Instruction.Load, storageKind, Local(), e0, e1);
+        }
+
+        public static Operand Load(this EmitterContext context, StorageKind storageKind, int binding)
+        {
+            return context.Add(Instruction.Load, storageKind, Local(), Const(binding));
+        }
+
+        public static Operand Load(this EmitterContext context, StorageKind storageKind, int binding, Operand e0)
+        {
+            return context.Add(Instruction.Load, storageKind, Local(), Const(binding), e0);
+        }
+
+        public static Operand Load(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1)
+        {
+            return context.Add(Instruction.Load, storageKind, Local(), Const(binding), e0, e1);
+        }
+
+        public static Operand Load(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand e2)
+        {
+            return context.Add(Instruction.Load, storageKind, Local(), Const(binding), e0, e1, e2);
+        }
+
         public static Operand Load(this EmitterContext context, StorageKind storageKind, IoVariable ioVariable, Operand primVertex = null)
         {
             return primVertex != null
-                ? context.Add(Instruction.Load, storageKind, Local(), Const((int)ioVariable), primVertex)
-                : context.Add(Instruction.Load, storageKind, Local(), Const((int)ioVariable));
+                ? context.Load(storageKind, (int)ioVariable, primVertex)
+                : context.Load(storageKind, (int)ioVariable);
         }
 
         public static Operand Load(
@@ -564,8 +644,8 @@ namespace Ryujinx.Graphics.Shader.Translation
             Operand elemIndex)
         {
             return primVertex != null
-                ? context.Add(Instruction.Load, storageKind, Local(), Const((int)ioVariable), primVertex, elemIndex)
-                : context.Add(Instruction.Load, storageKind, Local(), Const((int)ioVariable), elemIndex);
+                ? context.Load(storageKind, (int)ioVariable, primVertex, elemIndex)
+                : context.Load(storageKind, (int)ioVariable, elemIndex);
         }
 
         public static Operand Load(
@@ -577,27 +657,8 @@ namespace Ryujinx.Graphics.Shader.Translation
             Operand elemIndex)
         {
             return primVertex != null
-                ? context.Add(Instruction.Load, storageKind, Local(), Const((int)ioVariable), primVertex, arrayIndex, elemIndex)
-                : context.Add(Instruction.Load, storageKind, Local(), Const((int)ioVariable), arrayIndex, elemIndex);
-        }
-
-        public static Operand LoadConstant(this EmitterContext context, Operand a, Operand b)
-        {
-            if (a.Type == OperandType.Constant)
-            {
-                context.Config.SetUsedConstantBuffer(a.Value);
-            }
-            else
-            {
-                context.Config.SetUsedFeature(FeatureFlags.CbIndexing);
-            }
-
-            return context.Add(Instruction.LoadConstant, Local(), a, b);
-        }
-
-        public static Operand LoadGlobal(this EmitterContext context, Operand a, Operand b)
-        {
-            return context.Add(Instruction.LoadGlobal, Local(), a, b);
+                ? context.Load(storageKind, (int)ioVariable, primVertex, arrayIndex, elemIndex)
+                : context.Load(storageKind, (int)ioVariable, arrayIndex, elemIndex);
         }
 
         public static Operand LoadLocal(this EmitterContext context, Operand a)
@@ -644,13 +705,11 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public static void Return(this EmitterContext context)
         {
-            context.PrepareForReturn();
             context.Add(Instruction.Return);
         }
 
         public static void Return(this EmitterContext context, Operand returnValue)
         {
-            context.PrepareForReturn();
             context.Add(Instruction.Return, null, returnValue);
         }
 
@@ -687,6 +746,16 @@ namespace Ryujinx.Graphics.Shader.Translation
         public static (Operand, Operand) ShuffleXor(this EmitterContext context, Operand a, Operand b, Operand c)
         {
             return context.Add(Instruction.ShuffleXor, (Local(), Local()), a, b, c);
+        }
+
+        public static Operand Store(this EmitterContext context, StorageKind storageKind, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.Store, storageKind, null, e0, e1, value);
+        }
+
+        public static Operand Store(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.Store, storageKind, null, Const(binding), e0, e1, value);
         }
 
         public static Operand Store(
@@ -726,21 +795,6 @@ namespace Ryujinx.Graphics.Shader.Translation
             return invocationId != null
                 ? context.Add(Instruction.Store, storageKind, null, Const((int)ioVariable), invocationId, arrayIndex, elemIndex, value)
                 : context.Add(Instruction.Store, storageKind, null, Const((int)ioVariable), arrayIndex, elemIndex, value);
-        }
-
-        public static Operand StoreGlobal(this EmitterContext context, Operand a, Operand b, Operand c)
-        {
-            return context.Add(Instruction.StoreGlobal, null, a, b, c);
-        }
-
-        public static Operand StoreGlobal16(this EmitterContext context, Operand a, Operand b, Operand c)
-        {
-            return context.Add(Instruction.StoreGlobal16, null, a, b, c);
-        }
-
-        public static Operand StoreGlobal8(this EmitterContext context, Operand a, Operand b, Operand c)
-        {
-            return context.Add(Instruction.StoreGlobal8, null, a, b, c);
         }
 
         public static Operand StoreLocal(this EmitterContext context, Operand a, Operand b)

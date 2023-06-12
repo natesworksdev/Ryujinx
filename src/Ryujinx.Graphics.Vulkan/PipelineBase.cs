@@ -80,6 +80,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private PipelineColorBlendAttachmentState[] _storedBlend;
 
+        private ulong _drawCountSinceBarrier;
         public ulong DrawCount { get; private set; }
         public bool RenderPassActive { get; private set; }
 
@@ -133,6 +134,18 @@ namespace Ryujinx.Graphics.Vulkan
 
         public unsafe void Barrier()
         {
+            if (_drawCountSinceBarrier != DrawCount)
+            {
+                _drawCountSinceBarrier = DrawCount;
+
+                // Barriers apparently have no effect inside a render pass on MoltenVK.
+                // As a workaround, end the render pass.
+                if (Gd.IsMoltenVk)
+                {
+                    EndRenderPass();
+                }
+            }
+
             MemoryBarrier memoryBarrier = new MemoryBarrier()
             {
                 SType = StructureType.MemoryBarrier,
@@ -345,7 +358,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Draw(int vertexCount, int instanceCount, int firstVertex, int firstInstance)
         {
-            if (!_program.IsLinked)
+            if (!_program.IsLinked || vertexCount == 0)
             {
                 return;
             }
@@ -409,7 +422,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void DrawIndexed(int indexCount, int instanceCount, int firstIndex, int firstVertex, int firstInstance)
         {
-            if (!_program.IsLinked)
+            if (!_program.IsLinked || indexCount == 0)
             {
                 return;
             }
@@ -551,7 +564,6 @@ namespace Ryujinx.Graphics.Vulkan
                         (uint)maxDrawCount,
                         (uint)stride);
                 }
-
             }
             else
             {
@@ -813,8 +825,12 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetDepthMode(DepthMode mode)
         {
-            // Currently this is emulated on the shader, because Vulkan had no support for changing the depth mode.
-            // In the future, we may want to use the VK_EXT_depth_clip_control extension to change it here.
+            bool oldMode = _newState.DepthMode;
+            _newState.DepthMode = mode == DepthMode.MinusOneToOne;
+            if (_newState.DepthMode != oldMode)
+            {
+                SignalStateChange();
+            }
         }
 
         public void SetDepthTest(DepthTestDescriptor depthTest)
@@ -1096,6 +1112,11 @@ namespace Ryujinx.Graphics.Vulkan
         public void SetTextureAndSampler(ShaderStage stage, int binding, ITexture texture, ISampler sampler)
         {
             _descriptorSetUpdater.SetTextureAndSampler(Cbs, stage, binding, texture, sampler);
+        }
+
+        public void SetTextureAndSamplerIdentitySwizzle(ShaderStage stage, int binding, ITexture texture, ISampler sampler)
+        {
+            _descriptorSetUpdater.SetTextureAndSamplerIdentitySwizzle(Cbs, stage, binding, texture, sampler);
         }
 
         public void SetTransformFeedbackBuffers(ReadOnlySpan<BufferRange> buffers)
@@ -1466,6 +1487,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             var dstAttachmentFormats = _newState.Internal.AttachmentFormats.AsSpan();
             FramebufferParams.AttachmentFormats.CopyTo(dstAttachmentFormats);
+            _newState.Internal.AttachmentIntegerFormatMask = FramebufferParams.AttachmentIntegerFormatMask;
 
             for (int i = FramebufferParams.AttachmentFormats.Length; i < dstAttachmentFormats.Length; i++)
             {

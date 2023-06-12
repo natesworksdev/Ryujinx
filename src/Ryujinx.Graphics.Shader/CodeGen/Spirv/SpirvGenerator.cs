@@ -144,12 +144,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static void Generate(CodeGenContext context, StructuredProgramInfo info, int funcIndex)
         {
-            var function = info.Functions[funcIndex];
+            (var function, var spvFunc) = context.GetFunction(funcIndex);
 
-            (_, var spvFunc) = context.GetFunction(funcIndex);
-
+            context.CurrentFunction = function;
             context.AddFunction(spvFunc);
-            context.StartFunction();
+            context.StartFunction(isMainFunction: funcIndex == 0);
 
             Declarations.DeclareParameters(context, function);
 

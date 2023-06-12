@@ -4,7 +4,6 @@ using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Numerics;
 using static Spv.Specification;
 
@@ -98,10 +97,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.ImageStore,               GenerateImageStore);
             Add(Instruction.IsNan,                    GenerateIsNan);
             Add(Instruction.Load,                     GenerateLoad);
-            Add(Instruction.LoadConstant,             GenerateLoadConstant);
             Add(Instruction.LoadLocal,                GenerateLoadLocal);
             Add(Instruction.LoadShared,               GenerateLoadShared);
-            Add(Instruction.LoadStorage,              GenerateLoadStorage);
             Add(Instruction.Lod,                      GenerateLod);
             Add(Instruction.LogarithmB2,              GenerateLogarithmB2);
             Add(Instruction.LogicalAnd,               GenerateLogicalAnd);
@@ -115,6 +112,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.MemoryBarrier,            GenerateMemoryBarrier);
             Add(Instruction.Minimum,                  GenerateMinimum);
             Add(Instruction.MinimumU32,               GenerateMinimumU32);
+            Add(Instruction.Modulo,                   GenerateModulo);
             Add(Instruction.Multiply,                 GenerateMultiply);
             Add(Instruction.MultiplyHighS32,          GenerateMultiplyHighS32);
             Add(Instruction.MultiplyHighU32,          GenerateMultiplyHighU32);
@@ -138,9 +136,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.StoreShared,              GenerateStoreShared);
             Add(Instruction.StoreShared16,            GenerateStoreShared16);
             Add(Instruction.StoreShared8,             GenerateStoreShared8);
-            Add(Instruction.StoreStorage,             GenerateStoreStorage);
-            Add(Instruction.StoreStorage16,           GenerateStoreStorage16);
-            Add(Instruction.StoreStorage8,            GenerateStoreStorage8);
             Add(Instruction.Subtract,                 GenerateSubtract);
             Add(Instruction.SwizzleAdd,               GenerateSwizzleAdd);
             Add(Instruction.TextureSample,            GenerateTextureSample);
@@ -247,6 +242,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateBarrier(CodeGenContext context, AstOperation operation)
         {
+            // Barrier on divergent control flow paths may cause the GPU to hang,
+            // so skip emitting the barrier for those cases.
+            if (!context.Config.GpuAccessor.QueryHostSupportsShaderBarrierDivergence() &&
+                (context.CurrentBlock.Type != AstBlockType.Main || context.MayHaveReturned || !context.IsMainFunction))
+            {
+                context.Config.GpuAccessor.Log($"Shader has barrier on potentially divergent block, the barrier will be removed.");
+
+                return OperationResult.Invalid;
+            }
+
             context.ControlBarrier(
                 context.Constant(context.TypeU32(), Scope.Workgroup),
                 context.Constant(context.TypeU32(), Scope.Workgroup),
@@ -313,10 +318,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             for (int i = 0; i < args.Length; i++)
             {
-                var operand = (AstOperand)operation.GetSource(i + 1);
+                var operand = operation.GetSource(i + 1);
+
                 if (i >= function.InArguments.Length)
                 {
-                    args[i] = context.GetLocalPointer(operand);
+                    args[i] = context.GetLocalPointer((AstOperand)operand);
                 }
                 else
                 {
@@ -744,8 +750,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 pCoords = Src(AggregateType.S32);
             }
 
-            pCoords = ScalingHelpers.ApplyScaling(context, texOp, pCoords, intCoords: true, isBindless, isIndexed, isArray, pCount);
-
             (var imageType, var imageVariable) = context.Images[new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format)];
 
             var image = context.Load(imageType, imageVariable);
@@ -867,68 +871,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             return GenerateLoadOrStore(context, operation, isStore: false);
         }
 
-        private static OperationResult GenerateLoadConstant(CodeGenContext context, AstOperation operation)
-        {
-            var src1 = operation.GetSource(0);
-            var src2 = context.Get(AggregateType.S32, operation.GetSource(1));
-
-            var i1 = context.Constant(context.TypeS32(), 0);
-            var i2 = context.ShiftRightArithmetic(context.TypeS32(), src2, context.Constant(context.TypeS32(), 2));
-            var i3 = context.BitwiseAnd(context.TypeS32(), src2, context.Constant(context.TypeS32(), 3));
-
-            SpvInstruction value = null;
-
-            if (context.Config.GpuAccessor.QueryHostHasVectorIndexingBug())
-            {
-                // Test for each component individually.
-                for (int i = 0; i < 4; i++)
-                {
-                    var component = context.Constant(context.TypeS32(), i);
-
-                    SpvInstruction elemPointer;
-                    if (context.UniformBuffersArray != null)
-                    {
-                        var ubVariable = context.UniformBuffersArray;
-                        var i0 = context.Get(AggregateType.S32, src1);
-
-                        elemPointer = context.AccessChain(context.TypePointer(StorageClass.Uniform, context.TypeFP32()), ubVariable, i0, i1, i2, component);
-                    }
-                    else
-                    {
-                        var ubVariable = context.UniformBuffers[((AstOperand)src1).Value];
-
-                        elemPointer = context.AccessChain(context.TypePointer(StorageClass.Uniform, context.TypeFP32()), ubVariable, i1, i2, component);
-                    }
-
-                    SpvInstruction newValue = context.Load(context.TypeFP32(), elemPointer);
-
-                    value = value != null ? context.Select(context.TypeFP32(), context.IEqual(context.TypeBool(), i3, component), newValue, value) : newValue;
-                }
-            }
-            else
-            {
-                SpvInstruction elemPointer;
-
-                if (context.UniformBuffersArray != null)
-                {
-                    var ubVariable = context.UniformBuffersArray;
-                    var i0 = context.Get(AggregateType.S32, src1);
-
-                    elemPointer = context.AccessChain(context.TypePointer(StorageClass.Uniform, context.TypeFP32()), ubVariable, i0, i1, i2, i3);
-                }
-                else
-                {
-                    var ubVariable = context.UniformBuffers[((AstOperand)src1).Value];
-
-                    elemPointer = context.AccessChain(context.TypePointer(StorageClass.Uniform, context.TypeFP32()), ubVariable, i1, i2, i3);
-                }
-
-                value = context.Load(context.TypeFP32(), elemPointer);
-            }
-
-            return new OperationResult(AggregateType.FP32, value);
-        }
-
         private static OperationResult GenerateLoadLocal(CodeGenContext context, AstOperation operation)
         {
             return GenerateLoadLocalOrShared(context, operation, StorageClass.Private, context.LocalMemory);
@@ -948,14 +890,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var offset = context.Get(AggregateType.S32, operation.GetSource(0));
 
             var elemPointer = context.AccessChain(context.TypePointer(storageClass, context.TypeU32()), memory, offset);
-            var value = context.Load(context.TypeU32(), elemPointer);
-
-            return new OperationResult(AggregateType.U32, value);
-        }
-
-        private static OperationResult GenerateLoadStorage(CodeGenContext context, AstOperation operation)
-        {
-            var elemPointer = GetStorageElemPointer(context, operation);
             var value = context.Load(context.TypeU32(), elemPointer);
 
             return new OperationResult(AggregateType.U32, value);
@@ -1102,6 +1036,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             return GenerateBinaryU32(context, operation, context.Delegates.GlslUMin);
         }
 
+        private static OperationResult GenerateModulo(CodeGenContext context, AstOperation operation)
+        {
+            return GenerateBinary(context, operation, context.Delegates.FMod, null);
+        }
+
         private static OperationResult GenerateMultiply(CodeGenContext context, AstOperation operation)
         {
             return GenerateBinary(context, operation, context.Delegates.FMul, context.Delegates.IMul);
@@ -1163,7 +1102,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateReturn(CodeGenContext context, AstOperation operation)
         {
-            context.Return();
+            context.MayHaveReturned = true;
+
+            if (operation.SourcesCount != 0)
+            {
+                context.ReturnValue(context.Get(context.CurrentFunction.ReturnType, operation.GetSource(0)));
+            }
+            else
+            {
+                context.Return();
+            }
+
             return OperationResult.Invalid;
         }
 
@@ -1358,28 +1307,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             return OperationResult.Invalid;
         }
 
-        private static OperationResult GenerateStoreStorage(CodeGenContext context, AstOperation operation)
-        {
-            var elemPointer = GetStorageElemPointer(context, operation);
-            context.Store(elemPointer, context.Get(AggregateType.U32, operation.GetSource(2)));
-
-            return OperationResult.Invalid;
-        }
-
-        private static OperationResult GenerateStoreStorage16(CodeGenContext context, AstOperation operation)
-        {
-            GenerateStoreStorageSmallInt(context, operation, 16);
-
-            return OperationResult.Invalid;
-        }
-
-        private static OperationResult GenerateStoreStorage8(CodeGenContext context, AstOperation operation)
-        {
-            GenerateStoreStorageSmallInt(context, operation, 8);
-
-            return OperationResult.Invalid;
-        }
-
         private static OperationResult GenerateSubtract(CodeGenContext context, AstOperation operation)
         {
             return GenerateBinary(context, operation, context.Delegates.FSub, context.Delegates.ISub);
@@ -1501,35 +1428,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 }
             }
 
-            SpvInstruction ApplyBias(SpvInstruction vector, SpvInstruction image)
-            {
-                int gatherBiasPrecision = context.Config.GpuAccessor.QueryHostGatherBiasPrecision();
-                if (isGather && gatherBiasPrecision != 0)
-                {
-                    // GPU requires texture gather to be slightly offset to match NVIDIA behaviour when point is exactly between two texels.
-                    // Offset by the gather precision divided by 2 to correct for rounding.
-                    var sizeType = pCount == 1 ? context.TypeS32() : context.TypeVector(context.TypeS32(), pCount);
-                    var pVectorType = pCount == 1 ? context.TypeFP32() : context.TypeVector(context.TypeFP32(), pCount);
-
-                    var bias = context.Constant(context.TypeFP32(), (float)(1 << (gatherBiasPrecision + 1)));
-                    var biasVector = context.CompositeConstruct(pVectorType, Enumerable.Repeat(bias, pCount).ToArray());
-
-                    var one = context.Constant(context.TypeFP32(), 1f);
-                    var oneVector = context.CompositeConstruct(pVectorType, Enumerable.Repeat(one, pCount).ToArray());
-
-                    var divisor = context.FMul(
-                        pVectorType,
-                        context.ConvertSToF(pVectorType, context.ImageQuerySize(sizeType, image)),
-                        biasVector);
-
-                    vector = context.FAdd(pVectorType, vector, context.FDiv(pVectorType, oneVector, divisor));
-                }
-
-                return vector;
-            }
-
             SpvInstruction pCoords = AssemblePVector(pCount);
-            pCoords = ScalingHelpers.ApplyScaling(context, texOp, pCoords, intCoords, isBindless, isIndexed, isArray, pCount);
 
             SpvInstruction AssembleDerivativesVector(int count)
             {
@@ -1623,7 +1522,19 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             if (hasLodBias)
             {
-               lodBias = Src(AggregateType.FP32);
+                lodBias = Src(AggregateType.FP32);
+            }
+
+            if (!isGather && !intCoords && !isMultisample && !hasLodLevel && !hasDerivatives && context.Config.Stage != ShaderStage.Fragment)
+            {
+                // Implicit LOD is only valid on fragment.
+                // Use the LOD bias as explicit LOD if available.
+
+                lod = lodBias ?? context.Constant(context.TypeFP32(), 0f);
+
+                lodBias = null;
+                hasLodBias = false;
+                hasLodLevel = true;
             }
 
             SpvInstruction compIdx = null;
@@ -1687,8 +1598,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 image = context.Image(imageType, image);
             }
-
-            pCoords = ApplyBias(pCoords, image);
 
             var operands = operandsList.ToArray();
 
@@ -1805,11 +1714,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     result = context.CompositeExtract(context.TypeS32(), result, (SpvLiteralInteger)texOp.Index);
                 }
 
-                if (texOp.Index < 2 || (type & SamplerType.Mask) == SamplerType.Texture3D)
-                {
-                    result = ScalingHelpers.ApplyUnscaling(context, texOp.WithType(type), result, isBindless, isIndexed);
-                }
-
                 return new OperationResult(AggregateType.S32, result);
             }
         }
@@ -1923,13 +1827,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             AstOperation operation,
             Func<SpvInstruction, SpvInstruction, SpvInstruction, SpvInstruction, SpvInstruction, SpvInstruction> emitU)
         {
-            var value = context.GetU32(operation.GetSource(2));
+            var value = context.GetU32(operation.GetSource(operation.SourcesCount - 1));
 
             SpvInstruction elemPointer;
 
             if (operation.StorageKind == StorageKind.StorageBuffer)
             {
-                elemPointer = GetStorageElemPointer(context, operation);
+                elemPointer = GetStoragePointer(context, operation, out _);
             }
             else if (operation.StorageKind == StorageKind.SharedMemory)
             {
@@ -1949,14 +1853,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateAtomicMemoryCas(CodeGenContext context, AstOperation operation)
         {
-            var value0 = context.GetU32(operation.GetSource(2));
-            var value1 = context.GetU32(operation.GetSource(3));
+            var value0 = context.GetU32(operation.GetSource(operation.SourcesCount - 2));
+            var value1 = context.GetU32(operation.GetSource(operation.SourcesCount - 1));
 
             SpvInstruction elemPointer;
 
             if (operation.StorageKind == StorageKind.StorageBuffer)
             {
-                elemPointer = GetStorageElemPointer(context, operation);
+                elemPointer = GetStoragePointer(context, operation, out _);
             }
             else if (operation.StorageKind == StorageKind.SharedMemory)
             {
@@ -1976,14 +1880,54 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateLoadOrStore(CodeGenContext context, AstOperation operation, bool isStore)
         {
+            SpvInstruction pointer = GetStoragePointer(context, operation, out AggregateType varType);
+
+            if (isStore)
+            {
+                context.Store(pointer, context.Get(varType, operation.GetSource(operation.SourcesCount - 1)));
+                return OperationResult.Invalid;
+            }
+            else
+            {
+                var result = context.Load(context.GetType(varType), pointer);
+                return new OperationResult(varType, result);
+            }
+        }
+
+        private static SpvInstruction GetStoragePointer(CodeGenContext context, AstOperation operation, out AggregateType varType)
+        {
             StorageKind storageKind = operation.StorageKind;
 
-            SpvInstruction pointer;
-            AggregateType varType;
+            StorageClass storageClass;
+            SpvInstruction baseObj;
             int srcIndex = 0;
 
             switch (storageKind)
             {
+                case StorageKind.ConstantBuffer:
+                case StorageKind.StorageBuffer:
+                    if (!(operation.GetSource(srcIndex++) is AstOperand bindingIndex) || bindingIndex.Type != OperandType.Constant)
+                    {
+                        throw new InvalidOperationException($"First input of {operation.Inst} with {storageKind} storage must be a constant operand.");
+                    }
+
+                    if (!(operation.GetSource(srcIndex) is AstOperand fieldIndex) || fieldIndex.Type != OperandType.Constant)
+                    {
+                        throw new InvalidOperationException($"Second input of {operation.Inst} with {storageKind} storage must be a constant operand.");
+                    }
+
+                    BufferDefinition buffer = storageKind == StorageKind.ConstantBuffer
+                        ? context.Config.Properties.ConstantBuffers[bindingIndex.Value]
+                        : context.Config.Properties.StorageBuffers[bindingIndex.Value];
+                    StructureField field = buffer.Type.Fields[fieldIndex.Value];
+
+                    storageClass = StorageClass.Uniform;
+                    varType = field.Type & AggregateType.ElementTypeMask;
+                    baseObj = storageKind == StorageKind.ConstantBuffer
+                        ? context.ConstantBuffers[bindingIndex.Value]
+                        : context.StorageBuffers[bindingIndex.Value];
+                    break;
+
                 case StorageKind.Input:
                 case StorageKind.InputPerPatch:
                 case StorageKind.Output:
@@ -2026,33 +1970,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     {
                         varType = context.Config.GetFragmentOutputColorType(location);
                     }
-                    else if (ioVariable == IoVariable.FragmentOutputIsBgra)
-                    {
-                        var pointerType = context.TypePointer(StorageClass.Uniform, context.TypeU32());
-                        var elemIndex = context.Get(AggregateType.S32, operation.GetSource(srcIndex++));
-                        pointer = context.AccessChain(pointerType, context.SupportBuffer, context.Constant(context.TypeU32(), 1), elemIndex);
-                        varType = AggregateType.U32;
-
-                        break;
-                    }
-                    else if (ioVariable == IoVariable.SupportBlockRenderScale)
-                    {
-                        var pointerType = context.TypePointer(StorageClass.Uniform, context.TypeFP32());
-                        var elemIndex = context.Get(AggregateType.S32, operation.GetSource(srcIndex++));
-                        pointer = context.AccessChain(pointerType, context.SupportBuffer, context.Constant(context.TypeU32(), 4), elemIndex);
-                        varType = AggregateType.FP32;
-
-                        break;
-                    }
-                    else if (ioVariable == IoVariable.SupportBlockViewInverse)
-                    {
-                        var pointerType = context.TypePointer(StorageClass.Uniform, context.TypeFP32());
-                        var elemIndex = context.Get(AggregateType.S32, operation.GetSource(srcIndex++));
-                        pointer = context.AccessChain(pointerType, context.SupportBuffer, context.Constant(context.TypeU32(), 2), elemIndex);
-                        varType = AggregateType.FP32;
-
-                        break;
-                    }
                     else
                     {
                         (_, varType) = IoMap.GetSpirvBuiltIn(ioVariable);
@@ -2060,65 +1977,65 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                     varType &= AggregateType.ElementTypeMask;
 
-                    int inputsCount = (isStore ? operation.SourcesCount - 1 : operation.SourcesCount) - srcIndex;
-                    var storageClass = isOutput ? StorageClass.Output : StorageClass.Input;
+                    storageClass = isOutput ? StorageClass.Output : StorageClass.Input;
 
                     var ioDefinition = new IoDefinition(storageKind, ioVariable, location, component);
                     var dict = isPerPatch
                         ? (isOutput ? context.OutputsPerPatch : context.InputsPerPatch)
                         : (isOutput ? context.Outputs : context.Inputs);
 
-                    SpvInstruction baseObj = dict[ioDefinition];
-                    SpvInstruction e0, e1, e2;
-
-                    switch (inputsCount)
-                    {
-                        case 0:
-                            pointer = baseObj;
-                            break;
-                        case 1:
-                            e0 = context.Get(AggregateType.S32, operation.GetSource(srcIndex++));
-                            pointer = context.AccessChain(context.TypePointer(storageClass, context.GetType(varType)), baseObj, e0);
-                            break;
-                        case 2:
-                            e0 = context.Get(AggregateType.S32, operation.GetSource(srcIndex++));
-                            e1 = context.Get(AggregateType.S32, operation.GetSource(srcIndex++));
-                            pointer = context.AccessChain(context.TypePointer(storageClass, context.GetType(varType)), baseObj, e0, e1);
-                            break;
-                        case 3:
-                            e0 = context.Get(AggregateType.S32, operation.GetSource(srcIndex++));
-                            e1 = context.Get(AggregateType.S32, operation.GetSource(srcIndex++));
-                            e2 = context.Get(AggregateType.S32, operation.GetSource(srcIndex++));
-                            pointer = context.AccessChain(context.TypePointer(storageClass, context.GetType(varType)), baseObj, e0, e1, e2);
-                            break;
-                        default:
-                            var indexes = new SpvInstruction[inputsCount];
-                            int index = 0;
-
-                            for (; index < inputsCount; srcIndex++, index++)
-                            {
-                                indexes[index] = context.Get(AggregateType.S32, operation.GetSource(srcIndex));
-                            }
-
-                            pointer = context.AccessChain(context.TypePointer(storageClass, context.GetType(varType)), baseObj, indexes);
-                            break;
-                    }
+                    baseObj = dict[ioDefinition];
                     break;
 
                 default:
                     throw new InvalidOperationException($"Invalid storage kind {storageKind}.");
             }
 
-            if (isStore)
+            bool isStoreOrAtomic = operation.Inst == Instruction.Store || operation.Inst.IsAtomic();
+            int inputsCount = (isStoreOrAtomic ? operation.SourcesCount - 1 : operation.SourcesCount) - srcIndex;
+
+            if (operation.Inst == Instruction.AtomicCompareAndSwap)
             {
-                context.Store(pointer, context.Get(varType, operation.GetSource(srcIndex)));
-                return OperationResult.Invalid;
+                inputsCount--;
             }
-            else
+
+            SpvInstruction e0, e1, e2;
+            SpvInstruction pointer;
+
+            switch (inputsCount)
             {
-                var result = context.Load(context.GetType(varType), pointer);
-                return new OperationResult(varType, result);
+                case 0:
+                    pointer = baseObj;
+                    break;
+                case 1:
+                    e0 = context.Get(AggregateType.S32, operation.GetSource(srcIndex++));
+                    pointer = context.AccessChain(context.TypePointer(storageClass, context.GetType(varType)), baseObj, e0);
+                    break;
+                case 2:
+                    e0 = context.Get(AggregateType.S32, operation.GetSource(srcIndex++));
+                    e1 = context.Get(AggregateType.S32, operation.GetSource(srcIndex++));
+                    pointer = context.AccessChain(context.TypePointer(storageClass, context.GetType(varType)), baseObj, e0, e1);
+                    break;
+                case 3:
+                    e0 = context.Get(AggregateType.S32, operation.GetSource(srcIndex++));
+                    e1 = context.Get(AggregateType.S32, operation.GetSource(srcIndex++));
+                    e2 = context.Get(AggregateType.S32, operation.GetSource(srcIndex++));
+                    pointer = context.AccessChain(context.TypePointer(storageClass, context.GetType(varType)), baseObj, e0, e1, e2);
+                    break;
+                default:
+                    var indexes = new SpvInstruction[inputsCount];
+                    int index = 0;
+
+                    for (; index < inputsCount; srcIndex++, index++)
+                    {
+                        indexes[index] = context.Get(AggregateType.S32, operation.GetSource(srcIndex));
+                    }
+
+                    pointer = context.AccessChain(context.TypePointer(storageClass, context.GetType(varType)), baseObj, indexes);
+                    break;
             }
+
+            return pointer;
         }
 
         private static SpvInstruction GetScalarInput(CodeGenContext context, IoVariable ioVariable)
@@ -2143,25 +2060,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var memory = context.SharedMemory;
 
             var elemPointer = context.AccessChain(context.TypePointer(StorageClass.Workgroup, context.TypeU32()), memory, wordOffset);
-
-            GenerateStoreSmallInt(context, elemPointer, bitOffset, value, bitSize);
-        }
-
-        private static void GenerateStoreStorageSmallInt(CodeGenContext context, AstOperation operation, int bitSize)
-        {
-            var i0 = context.Get(AggregateType.S32, operation.GetSource(0));
-            var offset = context.Get(AggregateType.U32, operation.GetSource(1));
-            var value = context.Get(AggregateType.U32, operation.GetSource(2));
-
-            var wordOffset = context.ShiftRightLogical(context.TypeU32(), offset, context.Constant(context.TypeU32(), 2));
-            var bitOffset = context.BitwiseAnd(context.TypeU32(), offset, context.Constant(context.TypeU32(), 3));
-            bitOffset = context.ShiftLeftLogical(context.TypeU32(), bitOffset, context.Constant(context.TypeU32(), 3));
-
-            var sbVariable = context.StorageBuffersArray;
-
-            var i1 = context.Constant(context.TypeS32(), 0);
-
-            var elemPointer = context.AccessChain(context.TypePointer(StorageClass.Uniform, context.TypeU32()), sbVariable, i0, i1, wordOffset);
 
             GenerateStoreSmallInt(context, elemPointer, bitOffset, value, bitSize);
         }
@@ -2252,16 +2150,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
         }
 
-        private static SpvInstruction GetStorageElemPointer(CodeGenContext context, AstOperation operation)
-        {
-            var sbVariable = context.StorageBuffersArray;
-            var i0 = context.Get(AggregateType.S32, operation.GetSource(0));
-            var i1 = context.Constant(context.TypeS32(), 0);
-            var i2 = context.Get(AggregateType.S32, operation.GetSource(1));
-
-            return context.AccessChain(context.TypePointer(StorageClass.Uniform, context.TypeU32()), sbVariable, i0, i1, i2);
-        }
-
         private static OperationResult GenerateUnary(
             CodeGenContext context,
             AstOperation operation,
@@ -2324,7 +2212,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 var result = emitF(context.TypeFP64(), context.GetFP64(src1), context.GetFP64(src2));
 
-                if (!context.Config.GpuAccessor.QueryHostReducedPrecision())
+                if (!context.Config.GpuAccessor.QueryHostReducedPrecision() || operation.ForcePrecise)
                 {
                     context.Decorate(result, Decoration.NoContraction);
                 }
@@ -2335,7 +2223,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 var result = emitF(context.TypeFP32(), context.GetFP32(src1), context.GetFP32(src2));
 
-                if (!context.Config.GpuAccessor.QueryHostReducedPrecision())
+                if (!context.Config.GpuAccessor.QueryHostReducedPrecision() || operation.ForcePrecise)
                 {
                     context.Decorate(result, Decoration.NoContraction);
                 }
@@ -2395,7 +2283,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 var result = emitF(context.TypeFP64(), context.GetFP64(src1), context.GetFP64(src2), context.GetFP64(src3));
 
-                if (!context.Config.GpuAccessor.QueryHostReducedPrecision())
+                if (!context.Config.GpuAccessor.QueryHostReducedPrecision() || operation.ForcePrecise)
                 {
                     context.Decorate(result, Decoration.NoContraction);
                 }
@@ -2406,7 +2294,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 var result = emitF(context.TypeFP32(), context.GetFP32(src1), context.GetFP32(src2), context.GetFP32(src3));
 
-                if (!context.Config.GpuAccessor.QueryHostReducedPrecision())
+                if (!context.Config.GpuAccessor.QueryHostReducedPrecision() || operation.ForcePrecise)
                 {
                     context.Decorate(result, Decoration.NoContraction);
                 }

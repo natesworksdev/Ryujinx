@@ -7,28 +7,40 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 {
     static class Optimizer
     {
-        public static void RunPass(BasicBlock[] blocks, ShaderConfig config)
+        public static void RunPass(HelperFunctionManager hfm, BasicBlock[] blocks, ShaderConfig config)
         {
-            RunOptimizationPasses(blocks);
+            RunOptimizationPasses(blocks, config);
 
-            int sbUseMask = 0;
-            int ubeUseMask = 0;
+            // TODO: Some of those are not optimizations and shouldn't be here.
+
+            GlobalToStorage.RunPass(hfm, blocks, config);
+
+            bool hostSupportsShaderFloat64 = config.GpuAccessor.QueryHostSupportsShaderFloat64();
 
             // Those passes are looking for specific patterns and only needs to run once.
             for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
             {
-                GlobalToStorage.RunPass(blocks[blkIndex], config, ref sbUseMask, ref ubeUseMask);
                 BindlessToIndexed.RunPass(blocks[blkIndex], config);
                 BindlessElimination.RunPass(blocks[blkIndex], config);
+
+                // FragmentCoord only exists on fragment shaders, so we don't need to check other stages.
+                if (config.Stage == ShaderStage.Fragment)
+                {
+                    EliminateMultiplyByFragmentCoordW(blocks[blkIndex]);
+                }
+
+                // If the host does not support double operations, we need to turn them into float operations.
+                if (!hostSupportsShaderFloat64)
+                {
+                    DoubleToFloat.RunPass(hfm, blocks[blkIndex]);
+                }
             }
 
-            config.SetAccessibleBufferMasks(sbUseMask, ubeUseMask);
-
             // Run optimizations one last time to remove any code that is now optimizable after above passes.
-            RunOptimizationPasses(blocks);
+            RunOptimizationPasses(blocks, config);
         }
 
-        private static void RunOptimizationPasses(BasicBlock[] blocks)
+        private static void RunOptimizationPasses(BasicBlock[] blocks, ShaderConfig config)
         {
             bool modified;
 
@@ -67,7 +79,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                             continue;
                         }
 
-                        ConstantFolding.RunPass(operation);
+                        ConstantFolding.RunPass(config, operation);
                         Simplification.RunPass(operation);
 
                         if (DestIsLocalVar(operation))
@@ -279,6 +291,75 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             }
 
             return modified;
+        }
+
+        private static void EliminateMultiplyByFragmentCoordW(BasicBlock block)
+        {
+            foreach (INode node in block.Operations)
+            {
+                if (node is Operation operation)
+                {
+                    EliminateMultiplyByFragmentCoordW(operation);
+                }
+            }
+        }
+
+        private static void EliminateMultiplyByFragmentCoordW(Operation operation)
+        {
+            // We're looking for the pattern:
+            //  y = x * gl_FragCoord.w
+            //  v = y * (1.0 / gl_FragCoord.w)
+            // Then we transform it into:
+            //  v = x
+            // This pattern is common on fragment shaders due to the way how perspective correction is done.
+
+            // We are expecting a multiplication by the reciprocal of gl_FragCoord.w.
+            if (operation.Inst != (Instruction.FP32 | Instruction.Multiply))
+            {
+                return;
+            }
+
+            Operand lhs = operation.GetSource(0);
+            Operand rhs = operation.GetSource(1);
+
+            // Check LHS of the the main multiplication operation. We expect an input being multiplied by gl_FragCoord.w.
+            if (!(lhs.AsgOp is Operation attrMulOp) || attrMulOp.Inst != (Instruction.FP32 | Instruction.Multiply))
+            {
+                return;
+            }
+
+            Operand attrMulLhs = attrMulOp.GetSource(0);
+            Operand attrMulRhs = attrMulOp.GetSource(1);
+
+            // LHS should be any input, RHS should be exactly gl_FragCoord.w.
+            if (!Utils.IsInputLoad(attrMulLhs.AsgOp) || !Utils.IsInputLoad(attrMulRhs.AsgOp, IoVariable.FragmentCoord, 3))
+            {
+                return;
+            }
+
+            // RHS of the main multiplication should be a reciprocal operation (1.0 / x).
+            if (!(rhs.AsgOp is Operation reciprocalOp) || reciprocalOp.Inst != (Instruction.FP32 | Instruction.Divide))
+            {
+                return;
+            }
+
+            Operand reciprocalLhs = reciprocalOp.GetSource(0);
+            Operand reciprocalRhs = reciprocalOp.GetSource(1);
+
+            // Check if the divisor is a constant equal to 1.0.
+            if (reciprocalLhs.Type != OperandType.Constant || reciprocalLhs.AsFloat() != 1.0f)
+            {
+                return;
+            }
+
+            // Check if the dividend is gl_FragCoord.w.
+            if (!Utils.IsInputLoad(reciprocalRhs.AsgOp, IoVariable.FragmentCoord, 3))
+            {
+                return;
+            }
+
+            // If everything matches, we can replace the operation with the input load result.
+            operation.TurnIntoCopy(attrMulLhs);
         }
 
         private static void RemoveNode(BasicBlock block, LinkedListNode<INode> llNode)

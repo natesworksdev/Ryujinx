@@ -36,7 +36,7 @@ namespace Ryujinx.Graphics.Texture
             int gobBlocksInTileX,
             int gpuLayerSize = 0)
         {
-            bool is3D = depth > 1;
+            bool is3D = depth > 1 || gobBlocksInZ > 1;
 
             int layerSize = 0;
 
@@ -67,7 +67,7 @@ namespace Ryujinx.Graphics.Texture
                     mipGobBlocksInY >>= 1;
                 }
 
-                while (d <= (mipGobBlocksInZ >> 1) && mipGobBlocksInZ != 1)
+                if (level > 0 && d <= (mipGobBlocksInZ >> 1) && mipGobBlocksInZ != 1)
                 {
                     mipGobBlocksInZ >>= 1;
                 }
@@ -88,6 +88,10 @@ namespace Ryujinx.Graphics.Texture
 
                 int robSize = widthInGobs * mipGobBlocksInY * mipGobBlocksInZ * GobSize;
 
+                mipOffsets[level] = layerSize;
+                sliceSizes[level] = totalBlocksOfGobsInY * robSize;
+                levelSizes[level] = totalBlocksOfGobsInZ * sliceSizes[level];
+
                 if (is3D)
                 {
                     int gobSize = mipGobBlocksInY * GobSize;
@@ -105,11 +109,22 @@ namespace Ryujinx.Graphics.Texture
 
                         allOffsets[z + depthLevelOffset] = baseOffset + zLow * gobSize + zHigh * sliceSize;
                     }
-                }
 
-                mipOffsets[level] = layerSize;
-                sliceSizes[level] = totalBlocksOfGobsInY * robSize;
-                levelSizes[level] = totalBlocksOfGobsInZ * sliceSizes[level];
+                    int gobRemainderZ = d % mipGobBlocksInZ;
+
+                    if (gobRemainderZ != 0 && level == levels - 1)
+                    {
+                        // The slice only covers up to the end of this slice's depth, rather than the full aligned size.
+                        // Avoids size being too large on partial views of 3d textures.
+
+                        levelSizes[level] -= gobSize * (mipGobBlocksInZ - gobRemainderZ);
+
+                        if (sliceSizes[level] > levelSizes[level])
+                        {
+                            sliceSizes[level] = levelSizes[level];
+                        }
+                    }
+                }
 
                 layerSize += levelSizes[level];
 
@@ -267,7 +282,8 @@ namespace Ryujinx.Graphics.Texture
             int depth,
             int blockHeight,
             int gobBlocksInY,
-            int gobBlocksInZ)
+            int gobBlocksInZ,
+            int level = int.MaxValue)
         {
             height = BitUtils.DivRoundUp(height, blockHeight);
 
@@ -276,7 +292,7 @@ namespace Ryujinx.Graphics.Texture
                 gobBlocksInY >>= 1;
             }
 
-            while (depth <= (gobBlocksInZ >> 1) && gobBlocksInZ != 1)
+            while (level-- > 0 && depth <= (gobBlocksInZ >> 1) && gobBlocksInZ != 1)
             {
                 gobBlocksInZ >>= 1;
             }

@@ -25,7 +25,7 @@ namespace Ryujinx.Graphics.Vulkan
         private uint VertexAttributeDescriptionsCount => (byte)((Id6 >> 38) & 0xFF);
         private uint VertexBindingDescriptionsCount => (byte)((Id6 >> 46) & 0xFF);
         private uint ViewportsCount => (byte)((Id6 >> 54) & 0xFF);
-        private uint ScissorsCount => (byte)((Id7 >> 0) & 0xFF);
+        private uint ScissorsCount => (byte)(Id7 & 0xFF);
         private uint ColorBlendAttachmentStateCount => (byte)((Id7 >> 8) & 0xFF);
         private bool HasDepthStencil => ((Id7 >> 63) & 0x1) != 0UL;
 
@@ -35,6 +35,7 @@ namespace Ryujinx.Graphics.Vulkan
         public Array16<Rect2D> Scissors;
         public Array8<PipelineColorBlendAttachmentState> ColorBlendAttachmentState;
         public Array9<Format> AttachmentFormats;
+        public uint AttachmentIntegerFormatMask;
 
         public override bool Equals(object obj)
         {

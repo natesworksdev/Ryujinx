@@ -23,10 +23,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public int InputVertices { get; }
 
-        public Dictionary<int, Instruction> UniformBuffers { get; } = new Dictionary<int, Instruction>();
-        public Instruction SupportBuffer { get; set; }
-        public Instruction UniformBuffersArray { get; set; }
-        public Instruction StorageBuffersArray { get; set; }
+        public Dictionary<int, Instruction> ConstantBuffers { get; } = new Dictionary<int, Instruction>();
+        public Dictionary<int, Instruction> StorageBuffers { get; } = new Dictionary<int, Instruction>();
         public Instruction LocalMemory { get; set; }
         public Instruction SharedMemory { get; set; }
         public Dictionary<TextureMeta, SamplerType> SamplersTypes { get; } = new Dictionary<TextureMeta, SamplerType>();
@@ -38,6 +36,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         public Dictionary<IoDefinition, Instruction> OutputsPerPatch { get; } = new Dictionary<IoDefinition, Instruction>();
 
         public Instruction CoordTemp { get; set; }
+        public StructuredFunction CurrentFunction { get; set; }
         private readonly Dictionary<AstOperand, Instruction> _locals = new Dictionary<AstOperand, Instruction>();
         private readonly Dictionary<int, Instruction[]> _localForArgs = new Dictionary<int, Instruction[]>();
         private readonly Dictionary<int, Instruction> _funcArgs = new Dictionary<int, Instruction>();
@@ -77,6 +76,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public SpirvDelegates Delegates { get; }
 
+        public bool IsMainFunction { get; private set; }
+        public bool MayHaveReturned { get; set; }
+
         public CodeGenContext(
             StructuredProgramInfo info,
             ShaderConfig config,
@@ -109,8 +111,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Delegates = new SpirvDelegates(this);
         }
 
-        public void StartFunction()
+        public void StartFunction(bool isMainFunction)
         {
+            IsMainFunction = isMainFunction;
+            MayHaveReturned = false;
             _locals.Clear();
             _localForArgs.Clear();
             _funcArgs.Clear();
@@ -217,7 +221,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 {
                     IrOperandType.Argument => GetArgument(type, operand),
                     IrOperandType.Constant => GetConstant(type, operand),
-                    IrOperandType.ConstantBuffer => GetConstantBuffer(type, operand),
                     IrOperandType.LocalVariable => GetLocal(type, operand),
                     IrOperandType.Undefined => GetUndefined(type),
                     _ => throw new ArgumentException($"Invalid operand type \"{operand.Type}\".")
@@ -274,31 +277,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             };
         }
 
-        public Instruction GetConstantBuffer(AggregateType type, AstOperand operand)
-        {
-            var i1 = Constant(TypeS32(), 0);
-            var i2 = Constant(TypeS32(), operand.CbufOffset >> 2);
-            var i3 = Constant(TypeU32(), operand.CbufOffset & 3);
-
-            Instruction elemPointer;
-
-            if (UniformBuffersArray != null)
-            {
-                var ubVariable = UniformBuffersArray;
-                var i0 = Constant(TypeS32(), operand.CbufSlot);
-
-                elemPointer = AccessChain(TypePointer(StorageClass.Uniform, TypeFP32()), ubVariable, i0, i1, i2, i3);
-            }
-            else
-            {
-                var ubVariable = UniformBuffers[operand.CbufSlot];
-
-                elemPointer = AccessChain(TypePointer(StorageClass.Uniform, TypeFP32()), ubVariable, i1, i2, i3);
-            }
-
-            return BitcastIfNeeded(type, AggregateType.FP32, Load(TypeFP32(), elemPointer));
-        }
-
         public Instruction GetLocalPointer(AstOperand local)
         {
             return _locals[local];
@@ -335,7 +313,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         {
             if ((type & AggregateType.Array) != 0)
             {
-                return TypeArray(GetType(type & ~AggregateType.Array), Constant(TypeU32(), length));
+                if (length > 0)
+                {
+                    return TypeArray(GetType(type & ~AggregateType.Array), Constant(TypeU32(), length));
+                }
+                else
+                {
+                    return TypeRuntimeArray(GetType(type & ~AggregateType.Array));
+                }
             }
             else if ((type & AggregateType.ElementCountMask) != 0)
             {

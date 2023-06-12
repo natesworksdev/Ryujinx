@@ -5,6 +5,7 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using Ryujinx.Graphics.Shader.Translation.Optimizations;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
@@ -44,7 +45,14 @@ namespace Ryujinx.Graphics.Shader.Translation
                 }
             }
 
-            Function[] funcs = new Function[functions.Length];
+            List<Function> funcs = new List<Function>(functions.Length);
+
+            for (int i = 0; i < functions.Length; i++)
+            {
+                funcs.Add(null);
+            }
+
+            HelperFunctionManager hfm = new HelperFunctionManager(funcs, config.Stage);
 
             for (int i = 0; i < functions.Length; i++)
             {
@@ -70,8 +78,8 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                     Ssa.Rename(cfg.Blocks);
 
-                    Optimizer.RunPass(cfg.Blocks, config);
-                    Rewriter.RunPass(cfg.Blocks, config);
+                    Optimizer.RunPass(hfm, cfg.Blocks, config);
+                    Rewriter.RunPass(hfm, cfg.Blocks, config);
                 }
 
                 funcs[i] = new Function(cfg.Blocks, $"fun{i}", false, inArgumentsCount, outArgumentsCount);
@@ -99,7 +107,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             if (options.Flags.HasFlag(TranslationFlags.Compute))
             {
-                config = new ShaderConfig(gpuAccessor, options);
+                config = new ShaderConfig(ShaderStage.Compute, gpuAccessor, options);
 
                 program = Decoder.Decode(config, address);
             }

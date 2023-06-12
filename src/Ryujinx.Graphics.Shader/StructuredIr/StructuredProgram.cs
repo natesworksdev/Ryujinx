@@ -8,11 +8,11 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 {
     static class StructuredProgram
     {
-        public static StructuredProgramInfo MakeStructuredProgram(Function[] functions, ShaderConfig config)
+        public static StructuredProgramInfo MakeStructuredProgram(IReadOnlyList<Function> functions, ShaderConfig config)
         {
             StructuredProgramContext context = new StructuredProgramContext(config);
 
-            for (int funcIndex = 0; funcIndex < functions.Length; funcIndex++)
+            for (int funcIndex = 0; funcIndex < functions.Count; funcIndex++)
             {
                 Function function = functions[funcIndex];
 
@@ -73,27 +73,34 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             Instruction inst = operation.Inst;
             StorageKind storageKind = operation.StorageKind;
 
-            if ((inst == Instruction.Load || inst == Instruction.Store) && storageKind.IsInputOrOutput())
+            if (inst == Instruction.Load || inst == Instruction.Store)
             {
-                IoVariable ioVariable = (IoVariable)operation.GetSource(0).Value;
-                bool isOutput = storageKind.IsOutput();
-                bool perPatch = storageKind.IsPerPatch();
-                int location = 0;
-                int component = 0;
-
-                if (context.Config.HasPerLocationInputOrOutput(ioVariable, isOutput))
+                if (storageKind.IsInputOrOutput())
                 {
-                    location = operation.GetSource(1).Value;
+                    IoVariable ioVariable = (IoVariable)operation.GetSource(0).Value;
+                    bool isOutput = storageKind.IsOutput();
+                    bool perPatch = storageKind.IsPerPatch();
+                    int location = 0;
+                    int component = 0;
 
-                    if (operation.SourcesCount > 2 &&
-                        operation.GetSource(2).Type == OperandType.Constant &&
-                        context.Config.HasPerLocationInputOrOutputComponent(ioVariable, location, operation.GetSource(2).Value, isOutput))
+                    if (context.Config.HasPerLocationInputOrOutput(ioVariable, isOutput))
                     {
-                        component = operation.GetSource(2).Value;
-                    }
-                }
+                        location = operation.GetSource(1).Value;
 
-                context.Info.IoDefinitions.Add(new IoDefinition(storageKind, ioVariable, location, component));
+                        if (operation.SourcesCount > 2 &&
+                            operation.GetSource(2).Type == OperandType.Constant &&
+                            context.Config.HasPerLocationInputOrOutputComponent(ioVariable, location, operation.GetSource(2).Value, isOutput))
+                        {
+                            component = operation.GetSource(2).Value;
+                        }
+                    }
+
+                    context.Info.IoDefinitions.Add(new IoDefinition(storageKind, ioVariable, location, component));
+                }
+                else if (storageKind == StorageKind.ConstantBuffer && operation.GetSource(0).Type == OperandType.Constant)
+                {
+                    context.Config.ResourceManager.SetUsedConstantBufferBinding(operation.GetSource(0).Value);
+                }
             }
 
             bool vectorDest = IsVectorDestInst(inst);
@@ -105,7 +112,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
             for (int index = 0; index < operation.SourcesCount; index++)
             {
-                sources[index] = context.GetOperand(operation.GetSource(index));
+                sources[index] = context.GetOperandOrCbLoad(operation.GetSource(index));
             }
 
             for (int index = 0; index < outDestsCount; index++)
@@ -149,7 +156,13 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 }
                 else
                 {
-                    source = new AstOperation(inst, operation.StorageKind, operation.Index, sources, operation.SourcesCount);
+                    source = new AstOperation(
+                        inst,
+                        operation.StorageKind,
+                        operation.ForcePrecise,
+                        operation.Index,
+                        sources,
+                        operation.SourcesCount);
                 }
 
                 AggregateType destElemType = destType;
@@ -172,7 +185,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
                     dest.VarType = destElemType;
 
-                    context.AddNode(new AstAssignment(dest, new AstOperation(Instruction.VectorExtract, StorageKind.None, new[] { destVec, index }, 2)));
+                    context.AddNode(new AstAssignment(dest, new AstOperation(Instruction.VectorExtract, StorageKind.None, false, new[] { destVec, index }, 2)));
                 }
             }
             else if (operation.Dest != null)
@@ -220,7 +233,13 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 }
                 else if (!isCopy)
                 {
-                    source = new AstOperation(inst, operation.StorageKind, operation.Index, sources, operation.SourcesCount);
+                    source = new AstOperation(
+                        inst,
+                        operation.StorageKind,
+                        operation.ForcePrecise,
+                        operation.Index,
+                        sources,
+                        operation.SourcesCount);
                 }
                 else
                 {
@@ -241,7 +260,13 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             }
             else
             {
-                context.AddNode(new AstOperation(inst, operation.StorageKind, operation.Index, sources, operation.SourcesCount));
+                context.AddNode(new AstOperation(
+                    inst,
+                    operation.StorageKind,
+                    operation.ForcePrecise,
+                    operation.Index,
+                    sources,
+                    operation.SourcesCount));
             }
 
             // Those instructions needs to be emulated by using helper functions,
@@ -254,10 +279,6 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                     if (operation.StorageKind == StorageKind.SharedMemory)
                     {
                         context.Info.HelperFunctionsMask |= HelperFunctionsMask.AtomicMinMaxS32Shared;
-                    }
-                    else if (operation.StorageKind == StorageKind.StorageBuffer)
-                    {
-                        context.Info.HelperFunctionsMask |= HelperFunctionsMask.AtomicMinMaxS32Storage;
                     }
                     break;
                 case Instruction.MultiplyHighS32:
@@ -281,10 +302,6 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 case Instruction.StoreShared16:
                 case Instruction.StoreShared8:
                     context.Info.HelperFunctionsMask |= HelperFunctionsMask.StoreSharedSmallInt;
-                    break;
-                case Instruction.StoreStorage16:
-                case Instruction.StoreStorage8:
-                    context.Info.HelperFunctionsMask |= HelperFunctionsMask.StoreStorageSmallInt;
                     break;
                 case Instruction.SwizzleAdd:
                     context.Info.HelperFunctionsMask |= HelperFunctionsMask.SwizzleAdd;

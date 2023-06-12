@@ -344,7 +344,14 @@ namespace Ryujinx.Ui.App.Common
                                     ulong nacpSize = reader.ReadUInt64();
 
                                     // Reads and stores game icon as byte array
-                                    applicationIcon = Read(assetOffset + iconOffset, (int)iconSize);
+                                    if (iconSize > 0)
+                                    {
+                                        applicationIcon = Read(assetOffset + iconOffset, (int)iconSize);
+                                    }
+                                    else
+                                    {
+                                        applicationIcon = _nroIcon;
+                                    }
 
                                     // Read the NACP data
                                     Read(assetOffset + (int)nacpOffset, (int)nacpSize).AsSpan().CopyTo(controlHolder.ByteSpan);
@@ -665,7 +672,14 @@ namespace Ryujinx.Ui.App.Common
                                 long iconSize = BitConverter.ToInt64(iconSectionInfo, 8);
 
                                 // Reads and stores game icon as byte array
-                                applicationIcon = Read(assetOffset + iconOffset, (int)iconSize);
+                                if (iconSize > 0)
+                                {
+                                    applicationIcon = Read(assetOffset + iconOffset, (int)iconSize);
+                                }
+                                else
+                                {
+                                    applicationIcon = _nroIcon;
+                                }
                             }
                             else
                             {

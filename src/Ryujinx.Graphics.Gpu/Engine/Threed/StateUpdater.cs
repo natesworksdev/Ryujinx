@@ -269,7 +269,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _prevFirstVertex = _state.State.FirstVertex;
             }
 
-            bool tfEnable = _state.State.TfEnable;
+            bool tfEnable = _state.State.TfEnable && _context.Capabilities.SupportsTransformFeedback;
 
             if (!tfEnable && _prevTfEnable)
             {
@@ -356,7 +356,19 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                     SbDescriptor sbDescriptor = _channel.MemoryManager.Physical.Read<SbDescriptor>(sbDescAddress);
 
-                    _channel.BufferManager.SetGraphicsStorageBuffer(stage, sb.Slot, sbDescriptor.PackAddress(), (uint)sbDescriptor.Size, sb.Flags);
+                    uint size;
+                    if (sb.SbCbSlot == Constants.DriverReservedUniformBuffer)
+                    {
+                        // Only trust the SbDescriptor size if it comes from slot 0.
+                        size = (uint)sbDescriptor.Size;
+                    }
+                    else
+                    {
+                        // TODO: Use full mapped size and somehow speed up buffer sync.
+                        size = (uint)_channel.MemoryManager.GetMappedSize(sbDescriptor.PackAddress(), Constants.MaxUnknownStorageSize);
+                    }
+
+                    _channel.BufferManager.SetGraphicsStorageBuffer(stage, sb.Slot, sbDescriptor.PackAddress(), size, sb.Flags);
                 }
             }
         }
@@ -759,7 +771,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         private void UpdateDepthMode()
         {
-            _context.Renderer.Pipeline.SetDepthMode(GetDepthMode());
+            DepthMode mode = GetDepthMode();
+
+            _pipeline.DepthMode = mode;
+
+            _context.Renderer.Pipeline.SetDepthMode(mode);
         }
 
         /// <summary>
@@ -1350,6 +1366,22 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             _drawState.VsUsesInstanceId = gs.Shaders[1]?.Info.UsesInstanceId ?? false;
             _vsUsesDrawParameters = gs.Shaders[1]?.Info.UsesDrawParameters ?? false;
             _vsClipDistancesWritten = gs.Shaders[1]?.Info.ClipDistancesWritten ?? 0;
+
+            bool hasTransformFeedback = gs.SpecializationState.TransformFeedbackDescriptors != null;
+            if (hasTransformFeedback != _channel.BufferManager.HasTransformFeedbackOutputs)
+            {
+                if (!_context.Capabilities.SupportsTransformFeedback)
+                {
+                    // If host does not support transform feedback, and the shader changed,
+                    // we might need to update bindings as transform feedback emulation
+                    // uses storage buffer bindings that might have been used for something
+                    // else in a previous draw.
+
+                    _channel.BufferManager.ForceTransformFeedbackAndStorageBuffersDirty();
+                }
+
+                _channel.BufferManager.HasTransformFeedbackOutputs = hasTransformFeedback;
+            }
 
             if (oldVsClipDistancesWritten != _vsClipDistancesWritten)
             {

@@ -1,6 +1,7 @@
 using Ryujinx.Graphics.Shader.Decoders;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.Translation;
+using System.Numerics;
 
 using static Ryujinx.Graphics.Shader.Instructions.InstEmitHelper;
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
@@ -80,7 +81,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             Operand addr = context.IAdd(srcA, Const(Imm16ToSInt(op.CbufOffset)));
             Operand wordOffset = context.ShiftRightU32(addr, Const(2));
-            Operand bitOffset = GetBitOffset(context, addr);
 
             for (int index = 0; index < count; index++)
             {
@@ -92,11 +92,11 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 }
 
                 Operand offset = context.IAdd(wordOffset, Const(index));
-                Operand value = context.LoadConstant(slot, offset);
+                Operand value = EmitLoadConstant(context, slot, offset);
 
                 if (isSmallInt)
                 {
-                    value = ExtractSmallInt(context, (LsSize)op.LsSize, bitOffset, value);
+                    value = ExtractSmallInt(context, (LsSize)op.LsSize, GetBitOffset(context, addr), value);
                 }
 
                 context.Copy(Register(dest), value);
@@ -152,6 +152,39 @@ namespace Ryujinx.Graphics.Shader.Instructions
             InstSts op = context.GetOp<InstSts>();
 
             EmitStore(context, MemoryRegion.Shared, op.LsSize, GetSrcReg(context, op.SrcA), op.Dest, Imm24ToSInt(op.Imm24));
+        }
+
+        private static Operand EmitLoadConstant(EmitterContext context, Operand slot, Operand offset)
+        {
+            Operand vecIndex = context.ShiftRightU32(offset, Const(2));
+            Operand elemIndex = context.BitwiseAnd(offset, Const(3));
+
+            if (slot.Type == OperandType.Constant)
+            {
+                int binding = context.Config.ResourceManager.GetConstantBufferBinding(slot.Value);
+                return context.Load(StorageKind.ConstantBuffer, binding, Const(0), vecIndex, elemIndex);
+            }
+            else
+            {
+                Operand value = Const(0);
+
+                uint cbUseMask = context.Config.GpuAccessor.QueryConstantBufferUse();
+
+                while (cbUseMask != 0)
+                {
+                    int cbIndex = BitOperations.TrailingZeroCount(cbUseMask);
+                    int binding = context.Config.ResourceManager.GetConstantBufferBinding(cbIndex);
+
+                    Operand isCurrent = context.ICompareEqual(slot, Const(cbIndex));
+                    Operand currentValue = context.Load(StorageKind.ConstantBuffer, binding, Const(0), vecIndex, elemIndex);
+
+                    value = context.ConditionalSelect(isCurrent, currentValue, value);
+
+                    cbUseMask &= ~(1u << cbIndex);
+                }
+
+                return value;
+            }
         }
 
         private static Operand EmitAtomicOp(
@@ -303,13 +336,12 @@ namespace Ryujinx.Graphics.Shader.Instructions
             int offset,
             bool extended)
         {
-            bool isSmallInt = size < LsSize.B32;
-
             int count = GetVectorCount(size);
+            StorageKind storageKind = GetStorageKind(size);
 
-            (Operand addrLow, Operand addrHigh) = Get40BitsAddress(context, new Register(ra, RegisterType.Gpr), extended, offset);
+            (_, Operand addrHigh) = Get40BitsAddress(context, new Register(ra, RegisterType.Gpr), extended, offset);
 
-            Operand bitOffset = GetBitOffset(context, addrLow);
+            Operand srcA = context.Copy(new Operand(new Register(ra, RegisterType.Gpr)));
 
             for (int index = 0; index < count; index++)
             {
@@ -320,12 +352,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     break;
                 }
 
-                Operand value = context.LoadGlobal(context.IAdd(addrLow, Const(index * 4)), addrHigh);
-
-                if (isSmallInt)
-                {
-                    value = ExtractSmallInt(context, size, bitOffset, value);
-                }
+                Operand value = context.Load(storageKind, context.IAdd(srcA, Const(offset + index * 4)), addrHigh);
 
                 context.Copy(Register(dest), value);
             }
@@ -412,10 +439,11 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
 
             int count = GetVectorCount((LsSize)size);
+            StorageKind storageKind = GetStorageKind((LsSize)size);
 
-            (Operand addrLow, Operand addrHigh) = Get40BitsAddress(context, new Register(ra, RegisterType.Gpr), extended, offset);
+            (_, Operand addrHigh) = Get40BitsAddress(context, new Register(ra, RegisterType.Gpr), extended, offset);
 
-            Operand bitOffset = GetBitOffset(context, addrLow);
+            Operand srcA = context.Copy(new Operand(new Register(ra, RegisterType.Gpr)));
 
             for (int index = 0; index < count; index++)
             {
@@ -423,21 +451,22 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 Operand value = Register(isRz ? rd : rd + index, RegisterType.Gpr);
 
-                Operand addrLowOffset = context.IAdd(addrLow, Const(index * 4));
+                Operand addrLowOffset = context.IAdd(srcA, Const(offset + index * 4));
 
-                if (size == LsSize2.U8 || size == LsSize2.S8)
-                {
-                    context.StoreGlobal8(addrLowOffset, addrHigh, value);
-                }
-                else if (size == LsSize2.U16 || size == LsSize2.S16)
-                {
-                    context.StoreGlobal16(addrLowOffset, addrHigh, value);
-                }
-                else
-                {
-                    context.StoreGlobal(addrLowOffset, addrHigh, value);
-                }
+                context.Store(storageKind, addrLowOffset, addrHigh, value);
             }
+        }
+
+        private static StorageKind GetStorageKind(LsSize size)
+        {
+            return size switch
+            {
+                LsSize.U8 => StorageKind.GlobalMemoryU8,
+                LsSize.S8 => StorageKind.GlobalMemoryS8,
+                LsSize.U16 => StorageKind.GlobalMemoryU16,
+                LsSize.S16 => StorageKind.GlobalMemoryS16,
+                _ => StorageKind.GlobalMemory
+            };
         }
 
         private static int GetVectorCount(LsSize size)

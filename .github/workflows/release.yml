@@ -6,9 +6,10 @@ on:
   push:
     branches: [ master ]
     paths-ignore:
-      - '.github/*'
-      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/**'
       - '*.yml'
+      - '*.json'
+      - '*.config'
       - 'README.md'
 
 concurrency: release
@@ -33,7 +34,7 @@ jobs:
         shell: bash
 
       - name: Create tag
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           script: |
             github.rest.git.createRef({
@@ -46,7 +47,7 @@ jobs:
   release:
     name: Release ${{ matrix.OS_NAME }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 35
+    timeout-minutes: ${{ fromJSON(vars.JOB_TIMEOUT) }}
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
@@ -144,7 +145,7 @@ jobs:
   macos_release:
     name: Release MacOS universal
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: ${{ fromJSON(vars.JOB_TIMEOUT) }}
     steps:
       - uses: actions/checkout@v3
 
