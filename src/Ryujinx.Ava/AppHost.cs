@@ -196,6 +196,7 @@ namespace Ryujinx.Ava
                 return;
             }
 
+
             _latestCursorMoveTime = Stopwatch.GetTimestamp();
 
             if (_rendererHost.EmbeddedWindow.TransformedBounds != null)
@@ -1018,9 +1019,8 @@ namespace Ryujinx.Ava
                 Device.Hid.Touchscreen.Update();
             }
 
-#if DEBUG
             Device.Hid.DebugPad.Update();
-#endif
+
             return true;
         }
 
