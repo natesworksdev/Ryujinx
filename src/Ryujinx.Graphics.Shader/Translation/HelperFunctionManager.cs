@@ -69,9 +69,9 @@ namespace Ryujinx.Graphics.Shader.Translation
             };
         }
 
-        private Function GenerateConvertDoubleToFloatFunction()
+        private static Function GenerateConvertDoubleToFloatFunction()
         {
-            EmitterContext context = new EmitterContext();
+            EmitterContext context = new();
 
             Operand valueLow = Argument(0);
             Operand valueHigh = Argument(1);
@@ -119,9 +119,9 @@ namespace Ryujinx.Graphics.Shader.Translation
             return new Function(ControlFlowGraph.Create(context.GetOperations()).Blocks, "ConvertDoubleToFloat", true, 2, 0);
         }
 
-        private Function GenerateConvertFloatToDoubleFunction()
+        private static Function GenerateConvertFloatToDoubleFunction()
         {
-            EmitterContext context = new EmitterContext();
+            EmitterContext context = new();
 
             Operand value = Argument(0);
 

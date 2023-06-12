@@ -138,7 +138,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 gpuAccessor.QueryTransformFeedbackEnabled() &&
                 gpuAccessor.QueryHostSupportsTransformFeedback();
 
-            UsedInputAttributesPerPatch  = new HashSet<int>();
+            UsedInputAttributesPerPatch = new HashSet<int>();
             UsedOutputAttributesPerPatch = new HashSet<int>();
 
             _usedTextures = new Dictionary<TextureInfo, TextureMeta>();
@@ -148,25 +148,25 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             if (!gpuAccessor.QueryHostSupportsTransformFeedback() && gpuAccessor.QueryTransformFeedbackEnabled())
             {
-                StructureType tfeInfoStruct = new StructureType(new StructureField[]
+                StructureType tfeInfoStruct = new(new StructureField[]
                 {
-                    new StructureField(AggregateType.Array | AggregateType.U32, "base_offset", 4),
-                    new StructureField(AggregateType.U32, "vertex_count")
+                    new(AggregateType.Array | AggregateType.U32, "base_offset", 4),
+                    new(AggregateType.U32, "vertex_count")
                 });
 
-                BufferDefinition tfeInfoBuffer = new BufferDefinition(BufferLayout.Std430, 1, Constants.TfeInfoBinding, "tfe_info", tfeInfoStruct);
+                BufferDefinition tfeInfoBuffer = new(BufferLayout.Std430, 1, Constants.TfeInfoBinding, "tfe_info", tfeInfoStruct);
 
                 Properties.AddStorageBuffer(Constants.TfeInfoBinding, tfeInfoBuffer);
 
-                StructureType tfeDataStruct = new StructureType(new StructureField[]
+                StructureType tfeDataStruct = new(new StructureField[]
                 {
-                    new StructureField(AggregateType.Array | AggregateType.U32, "data", 0)
+                    new(AggregateType.Array | AggregateType.U32, "data", 0)
                 });
 
                 for (int i = 0; i < Constants.TfeBuffersCount; i++)
                 {
                     int binding = Constants.TfeBufferBaseBinding + i;
-                    BufferDefinition tfeDataBuffer = new BufferDefinition(BufferLayout.Std430, 1, binding, $"tfe_data{i}", tfeDataStruct);
+                    BufferDefinition tfeDataBuffer = new(BufferLayout.Std430, 1, binding, $"tfe_data{i}", tfeDataStruct);
                     Properties.AddStorageBuffer(binding, tfeDataBuffer);
                 }
             }
