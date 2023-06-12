@@ -143,7 +143,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             for (int setIndex = 0; setIndex < sets.Count; setIndex++)
             {
-                List<ResourceBindingSegment> currentSegments = new List<ResourceBindingSegment>();
+                List<ResourceBindingSegment> currentSegments = new();
 
                 ResourceDescriptor currentDescriptor = default;
                 int currentCount = 0;
