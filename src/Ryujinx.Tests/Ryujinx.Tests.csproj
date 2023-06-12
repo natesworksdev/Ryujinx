@@ -33,6 +33,18 @@
     <ProjectReference Include="..\ARMeilleure\ARMeilleure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Graphics\TestData\kodim01.l4x4.astc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\kodim01.l4x4.astc.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\kodim01.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <Target Name="CopyUnicorn" AfterTargets="Build">
     <ItemGroup>
       <UnicornLib Include="..\Ryujinx.Tests.Unicorn\libs\$(TargetOS)\*unicorn.*" />
