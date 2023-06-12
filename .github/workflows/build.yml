@@ -5,12 +5,13 @@ on:
     inputs: {}
   pull_request:
     branches: [ master ]
-    paths-ignore:
-      - '.github/**'
-      - '*.yml'
-      - '*.json'
-      - '*.config'
-      - 'README.md'
+    paths:
+      - '!.github/**'
+      - '!*.yml'
+      - '!*.json'
+      - '!*.config'
+      - '!README.md'
+      - '.github/workflows/*.yml'
 
 concurrency:
   group: pr-checks-${{ github.event.number }}
