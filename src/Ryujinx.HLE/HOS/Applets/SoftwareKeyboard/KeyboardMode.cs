@@ -24,12 +24,12 @@
         /// Synonymous with default.
         /// </summary>
         FullLatin = 3,
-        
+
         /// <summary>
         /// All UTF-16 characters except CJK characters allowed.
         /// </summary>
         Alphabet = 4,
-        
+
         SimplifiedChinese  = 5,
         TraditionalChinese = 6,
         Korean             = 7,
