@@ -1,11 +1,9 @@
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.Win32;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
@@ -13,10 +11,10 @@ namespace Ryujinx.Ui.Common.Helper
 {
     public static partial class FileAssociationHelper
     {
-        private static string[] _fileExtensions = new string[] { ".nca", ".nro", ".nso", ".nsp", ".xci" };
+        private static readonly string[] _fileExtensions = { ".nca", ".nro", ".nso", ".nsp", ".xci" };
 
         [SupportedOSPlatform("linux")]
-        private static string _mimeDbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "mime");
+        private static readonly string _mimeDbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "mime");
 
         private const int SHCNE_ASSOCCHANGED = 0x8000000;
         private const int SHCNF_FLUSH        = 0x1000;
@@ -34,7 +32,7 @@ namespace Ryujinx.Ui.Common.Helper
         {
             string installKeyword = uninstall ? "uninstall" : "install";
 
-            if (!AreMimeTypesRegisteredLinux())
+            if ((uninstall && AreMimeTypesRegisteredLinux()) || (!uninstall && !AreMimeTypesRegisteredLinux()))
             {
                 string mimeTypesFile = Path.Combine(ReleaseInformation.GetBaseApplicationDirectory(), "mime", "Ryujinx.xml");
                 string additionalArgs = !uninstall ? "--novendor" : "";
@@ -109,7 +107,7 @@ namespace Ryujinx.Ui.Common.Helper
 
                 if (uninstall)
                 {
-                    // If the types don't already exist, there's nothing to do and we can call this operation successful. 
+                    // If the types don't already exist, there's nothing to do and we can call this operation successful.
                     if (!AreMimeTypesRegisteredWindows())
                     {
                         return true;
