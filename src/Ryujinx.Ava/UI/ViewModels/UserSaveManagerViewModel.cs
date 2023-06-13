@@ -91,7 +91,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        // TODO: observable
         public LoadingBarData LoadingBarData
         {
             get => _loadingBarData;

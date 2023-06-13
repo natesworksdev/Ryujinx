@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Notifications;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -6,6 +7,7 @@ using DynamicData;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Navigation;
 using LibHac;
+using LibHac.Bcat;
 using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Shim;
@@ -165,8 +167,7 @@ namespace Ryujinx.Ava.UI.Views.User
         {
             OpenFolderDialog dialog = new()
             {
-                Title = "Choose Save Backup Folder", // TODO: localize
-                // LocaleManager.Instance[LocaleKeys.UserProfileWindowTitle]
+                Title = LocaleManager.Instance[LocaleKeys.SaveManagerChooseBackupFolderTitle]
             };
 
             var backupDir = await dialog.ShowAsync(((TopLevel)_parent.GetVisualRoot()) as Window);
@@ -186,14 +187,19 @@ namespace Ryujinx.Ava.UI.Views.User
                     location: backupDir,
                     saveOptions: SaveOptions.Default);
 
-                if (result.DidFail)
-                {
-                    await ContentDialogHelper.CreateErrorDialog(result.Message);
-                    return;
-                }
+                var notificationType = result.DidFail
+                    ? NotificationType.Error
+                    : NotificationType.Success;
 
-                // TODO: generate notification on success
-                OpenHelper.OpenFolder(backupDir);
+                var message = result.DidFail
+                    ? LocaleManager.Instance[LocaleKeys.SaveManagerBackupFailed]
+                    : LocaleManager.Instance[LocaleKeys.SaveManagerBackupComplete];
+
+                NotificationHelper.Show(LocaleManager.Instance[LocaleKeys.NotificationBackupTitle], 
+                    message,
+                    notificationType);
+
+                //OpenHelper.OpenFolder(backupDir);
                 return;
             }
             catch (Exception ex)
@@ -209,10 +215,10 @@ namespace Ryujinx.Ava.UI.Views.User
 
         private async void ImportSaveBackup(object sender, RoutedEventArgs e)
         {
-            // TODO: Use locales // LocaleManager.Instance[LocaleKeys.DialogUpdaterCompleteMessage]
-            bool userConfirmation = await ContentDialogHelper.CreateChoiceDialog("Confirm Restore",
-                "The save data in the backup will overwrite your local save files. This action is irreversible. Consider using the backup option before you continue.",
-                "Are you sure you want to continue?");
+            // TODO: Use locales // LocaleManager.Instance[LocaleKeys.SaveManagerChooseRestoreZipPrimaryMessage]
+            bool userConfirmation = await ContentDialogHelper.CreateChoiceDialog(LocaleManager.Instance[LocaleKeys.SaveManagerChooseRestoreZipTitle],
+                LocaleManager.Instance[LocaleKeys.SaveManagerChooseRestoreZipPrimaryMessage],
+                LocaleManager.Instance[LocaleKeys.SaveManagerChooseRestoreZipSecondaryMessage]);
 
             if (!userConfirmation)
             {
@@ -246,15 +252,18 @@ namespace Ryujinx.Ava.UI.Views.User
                 var result = await _backupManager.LoadSaveData(
                     userId: _accountManager.LastOpenedUser.UserId.ToLibHacUserId(),
                     sourceDataPath: saveBackupZip[0]);
+                
+                var notificationType = result.DidFail
+                    ? NotificationType.Error
+                    : NotificationType.Success;
 
-                if (result.DidFail)
-                {
-                    await ContentDialogHelper.CreateErrorDialog(result.Message);
-                    return;
-                }
+                var message = result.DidFail
+                    ? LocaleManager.Instance[LocaleKeys.SaveManagerRestoreFailed]
+                    : LocaleManager.Instance[LocaleKeys.SaveManagerRestoreComplete];
 
-                // refresh the save list so it reflects in the UI -- better yet, instead of a progress bar, show the save list populating in real time
-                // TODO: generate notification on success?
+                NotificationHelper.Show(LocaleManager.Instance[LocaleKeys.NotificationBackupTitle], 
+                    message,
+                    notificationType);
             }
             catch (Exception ex)
             {
@@ -271,8 +280,6 @@ namespace Ryujinx.Ava.UI.Views.User
         {
             Dispatcher.UIThread.Post(() =>
             {
-                // TODO: fix this so we can just set the properties, will require a trigger of OnPropChange
-                // observable?
                 ViewModel.LoadingBarData = new()
                 {
                     Curr = e.Curr,
@@ -285,23 +292,18 @@ namespace Ryujinx.Ava.UI.Views.User
         {
             var existingSave = ViewModel.Saves.FirstOrDefault(s => s.TitleId == e.SaveInfo.ProgramId);
 
-            bool added = false;
             if (existingSave == default)
             {
                 ViewModel.Saves.Add(new SaveModel(e.SaveInfo, _virtualFileSystem));
-                added = true;
-            }
-            else
-            {
-                ViewModel.Saves.Replace(existingSave, new SaveModel(e.SaveInfo, _virtualFileSystem));
-            }
 
-            if (added)
-            {
                 Dispatcher.UIThread.Post(() =>
                 {
                     ViewModel.Sort();
                 });
+            }
+            else
+            {
+                ViewModel.Saves.Replace(existingSave, new SaveModel(e.SaveInfo, _virtualFileSystem));
             }
         }
     }

@@ -568,7 +568,7 @@ namespace Ryujinx.Ava.Common
             #endregion
         }
 
-        private IEnumerable<ImportMeta> GetTitleDirectories(FileInfo sourceInfo)
+        private static IEnumerable<ImportMeta> GetTitleDirectories(FileInfo sourceInfo)
         {
             if ((sourceInfo.Attributes & FileAttributes.Directory) != FileAttributes.Directory)
             {
