@@ -58,7 +58,7 @@ namespace Ryujinx.HLE.HOS
 
                 if (!MemoryBlock.SupportsFlags(MemoryAllocationFlags.ViewCompatible))
                 {
-                    Logger.Error?.Print(LogClass.Cpu, "Host system doesn't support view, falling back to software page table");
+                    Logger.Warning?.Print(LogClass.Cpu, "Host system doesn't support views, falling back to software page table");
 
                     mode = MemoryManagerMode.SoftwarePageTable;
                 }
@@ -69,9 +69,9 @@ namespace Ryujinx.HLE.HOS
 
                 if (mode == MemoryManagerMode.HostMapped || mode == MemoryManagerMode.HostMappedUnsafe)
                 {
-                    if (!AddressSpace.TryCreate(out addressSpace, context.Memory, addressSpaceSize, MemoryManagerHostMapped.Supports4KBPageSize))
+                    if (!AddressSpace.TryCreate(context.Memory, addressSpaceSize, MemoryBlock.GetPageSize() == MemoryManagerHostMapped.PageSize, out addressSpace))
                     {
-                        Logger.Error?.Print(LogClass.Cpu, "Address space creation failed, falling back to software page table");
+                        Logger.Warning?.Print(LogClass.Cpu, "Address space creation failed, falling back to software page table");
 
                         mode = MemoryManagerMode.SoftwarePageTable;
                     }
@@ -88,7 +88,7 @@ namespace Ryujinx.HLE.HOS
                     case MemoryManagerMode.HostMappedUnsafe:
                         if (addressSpaceSize != addressSpace.AddressSpaceSize)
                         {
-                            Logger.Warning?.Print(LogClass.Emulation, $"Allocated address space (0x{addressSpace.AddressSpaceSize:x8}) is smaller than guest application requirements (0x{addressSpaceSize:x8})");
+                            Logger.Warning?.Print(LogClass.Emulation, $"Allocated address space (0x{addressSpace.AddressSpaceSize:X}) is smaller than guest application requirements (0x{addressSpaceSize:X})");
                         }
 
                         var memoryManagerHostMapped = new MemoryManagerHostMapped(addressSpace, mode == MemoryManagerMode.HostMappedUnsafe, invalidAccessHandler);

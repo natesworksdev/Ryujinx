@@ -208,23 +208,35 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     break;
 
                 case AddressSpaceType.Addr39Bits:
-                    int addressSpaceWidth = (int)ulong.Log2(_reservedAddressSpaceSize);
-
                     if (_reservedAddressSpaceSize < addrSpaceEnd)
                     {
-                        addrSpaceEnd = 1UL << addressSpaceWidth;
-                    }
+                        int addressSpaceWidth = (int)ulong.Log2(_reservedAddressSpaceSize);
 
-                    aliasRegion.Size = 1UL << (addressSpaceWidth - 3);
-                    heapRegion.Size = 0x180000000;
-                    stackRegion.Size = 1UL << (addressSpaceWidth - 8);
-                    tlsIoRegion.Size = 1UL << (addressSpaceWidth - 3);
-                    CodeRegionStart = BitUtils.AlignDown(address, RegionAlignment);
-                    codeRegionSize = BitUtils.AlignUp(endAddr, RegionAlignment) - CodeRegionStart;
-                    AslrRegionStart = 0x8000000;
-                    AslrRegionEnd = addrSpaceEnd;
-                    stackAndTlsIoStart = 0;
-                    stackAndTlsIoEnd = 0;
+                        aliasRegion.Size = 1UL << (addressSpaceWidth - 3);
+                        heapRegion.Size = 0x180000000;
+                        stackRegion.Size = 1UL << (addressSpaceWidth - 8);
+                        tlsIoRegion.Size = 1UL << (addressSpaceWidth - 3);
+                        CodeRegionStart = BitUtils.AlignDown<ulong>(address, RegionAlignment);
+                        codeRegionSize = BitUtils.AlignUp<ulong>(endAddr, RegionAlignment) - CodeRegionStart;
+                        stackAndTlsIoStart = 0;
+                        stackAndTlsIoEnd = 0;
+                        AslrRegionStart = 0x8000000;
+                        addrSpaceEnd = 1UL << addressSpaceWidth;
+                        AslrRegionEnd = addrSpaceEnd;
+                    }
+                    else
+                    {
+                        aliasRegion.Size = 0x1000000000;
+                        heapRegion.Size = 0x180000000;
+                        stackRegion.Size = 0x80000000;
+                        tlsIoRegion.Size = 0x1000000000;
+                        CodeRegionStart = BitUtils.AlignDown(address, RegionAlignment);
+                        codeRegionSize = BitUtils.AlignUp(endAddr, RegionAlignment) - CodeRegionStart;
+                        AslrRegionStart = 0x8000000;
+                        AslrRegionEnd = AslrRegionStart + 0x7ff8000000;
+                        stackAndTlsIoStart = 0;
+                        stackAndTlsIoEnd = 0;
+                    }
                     break;
 
                 default: throw new ArgumentException(nameof(addrSpaceType));

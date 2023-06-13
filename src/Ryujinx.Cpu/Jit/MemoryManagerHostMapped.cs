@@ -22,8 +22,6 @@ namespace Ryujinx.Cpu.Jit
         public const int PageToPteShift = 5; // 32 pages (2 bits each) in one ulong page table entry.
         public const ulong BlockMappedMask = 0x5555555555555555; // First bit of each table entry set.
 
-        public static bool Supports4KBPageSize => MemoryBlock.GetPageSize() == PageSize;
-
         private enum HostMappedPtBits : ulong
         {
             Unmapped = 0,
@@ -50,7 +48,7 @@ namespace Ryujinx.Cpu.Jit
         private readonly ulong[] _pageBitmap;
 
         /// <inheritdoc/>
-        public bool Supports4KBPages => Supports4KBPageSize;
+        public bool Supports4KBPages => MemoryBlock.GetPageSize() == PageSize;
 
         public int AddressSpaceBits { get; }
 

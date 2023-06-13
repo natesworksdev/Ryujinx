@@ -177,7 +177,7 @@ namespace Ryujinx.Cpu
             AddressSpaceSize = addressSpaceSize;
         }
 
-        public static bool TryCreate(out AddressSpace addressSpace, MemoryBlock backingMemory, ulong asSize, bool supports4KBPages)
+        public static bool TryCreate(MemoryBlock backingMemory, ulong asSize, bool supports4KBPages, out AddressSpace addressSpace)
         {
             addressSpace = null;
 
@@ -197,14 +197,10 @@ namespace Ryujinx.Cpu
 
                     break;
                 }
-                catch (OutOfMemoryException) { }
-                finally
+                catch (OutOfMemoryException)
                 {
-                    if (addressSpace == null)
-                    {
-                        baseMemory?.Dispose();
-                        mirrorMemory?.Dispose();
-                    }
+                    baseMemory?.Dispose();
+                    mirrorMemory?.Dispose();
                 }
             }
 
