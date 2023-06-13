@@ -196,20 +196,26 @@ namespace Ryujinx.Ava
                 return;
             }
 
-
             _latestCursorMoveTime = Stopwatch.GetTimestamp();
 
-            if (_rendererHost.EmbeddedWindow.TransformedBounds != null)
+            if (_rendererHost.EmbeddedWindow.TransformedBounds is null)
             {
-                var point = e.GetCurrentPoint(window).Position;
-                var bounds = _rendererHost.EmbeddedWindow.TransformedBounds.Value.Clip;
-
-                _isCursorInRenderer = _viewModel.WindowState == WindowState.FullScreen || 
-                                        point.X >= bounds.X &&
-                                        point.X <= bounds.Width + bounds.X + window.Position.X &&
-                                        point.Y >= bounds.Y &&
-                                        point.Y <= bounds.Height + bounds.Y + window.Position.Y;
+                return;
             }
+
+            if (_viewModel.WindowState == WindowState.FullScreen)
+            {
+                _isCursorInRenderer = true;
+                return;
+            }
+
+            var point = e.GetCurrentPoint(window).Position;
+            var bounds = _rendererHost.EmbeddedWindow.TransformedBounds.Value.Clip;
+
+            _isCursorInRenderer = point.X >= bounds.X &&
+                point.X <= bounds.Width + bounds.X + window.Position.X &&
+                point.Y >= bounds.Y &&
+                point.Y <= bounds.Height + bounds.Y + window.Position.Y;
         }
 
         private void TopLevel_PointerLeave(object sender, PointerEventArgs e)
@@ -856,7 +862,6 @@ namespace Ryujinx.Ava
         {
             while (_isActive)
             {
-                // wait for an event to trigger this rather than poll.
                 UpdateFrame();
 
                 // Polling becomes expensive if it's not slept.
@@ -999,7 +1004,6 @@ namespace Ryujinx.Ava
                 return false;
             }
 
-            // Only call if needed
             NpadManager.Update(ConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat());
 
             if (_viewModel.IsActive)
@@ -1026,7 +1030,7 @@ namespace Ryujinx.Ava
 
         private void UpdateActiveFrame()
         {
-            TriggerCursorChange();
+            UpdateCursorState();
 
             Dispatcher.UIThread.Post(() =>
             {
@@ -1036,7 +1040,7 @@ namespace Ryujinx.Ava
                 }
             });
 
-            TriggerKeyboardHotkey();
+            UpdateHotkeyState();
 
             if (ScreenshotRequested)
             {
@@ -1044,8 +1048,7 @@ namespace Ryujinx.Ava
                 _renderer.Screenshot();
             }
 
-            // TODO: refactor to avoid invoking a UI update if nothing changed.
-            void TriggerCursorChange()
+            void UpdateCursorState()
             {
                 if (_isCursorInRenderer)
                 {
@@ -1082,9 +1085,10 @@ namespace Ryujinx.Ava
                 }
             }
 
-            void TriggerKeyboardHotkey()
+            void UpdateHotkeyState()
             {
                 KeyboardHotkeyState currentHotkeyState = GetHotkeyState();
+
                 if (currentHotkeyState == _prevHotkeyState)
                 {
                     return;
