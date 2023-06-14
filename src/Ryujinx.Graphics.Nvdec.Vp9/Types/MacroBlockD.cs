@@ -54,7 +54,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
 
         public Ptr<InternalErrorInfo> ErrorInfo;
 
-        public int GetPredContextSegId()
+        public readonly int GetPredContextSegId()
         {
             sbyte aboveSip = !AboveMi.IsNull ? AboveMi.Value.SegIdPredicted : (sbyte)0;
             sbyte leftSip = !LeftMi.IsNull ? LeftMi.Value.SegIdPredicted : (sbyte)0;
@@ -62,14 +62,14 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             return aboveSip + leftSip;
         }
 
-        public int GetSkipContext()
+        public readonly int GetSkipContext()
         {
             int aboveSkip = !AboveMi.IsNull ? AboveMi.Value.Skip : 0;
             int leftSkip = !LeftMi.IsNull ? LeftMi.Value.Skip : 0;
             return aboveSkip + leftSkip;
         }
 
-        public int GetPredContextSwitchableInterp()
+        public readonly int GetPredContextSwitchableInterp()
         {
             // Note:
             // The mode info data structure has a one element border above and to the
@@ -103,7 +103,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         // 1 - intra/inter, inter/intra
         // 2 - intra/--, --/intra
         // 3 - intra/intra
-        public int GetIntraInterContext()
+        public readonly int GetIntraInterContext()
         {
             if (!AboveMi.IsNull && !LeftMi.IsNull)
             {  // Both edges available
@@ -122,7 +122,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         // The mode info data structure has a one element border above and to the
         // left of the entries corresponding to real blocks.
         // The prediction flags in these dummy entries are initialized to 0.
-        public int GetTxSizeContext()
+        public readonly int GetTxSizeContext()
         {
             int maxTxSize = (int)Luts.MaxTxSizeLookup[(int)Mi[0].Value.SbType];
             int aboveCtx = (!AboveMi.IsNull && AboveMi.Value.Skip == 0) ? (int)AboveMi.Value.TxSize : maxTxSize;

@@ -275,18 +275,18 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         public int XStepQ4;
         public int YStepQ4;
 
-        public int ScaleValueX(int val)
+        public readonly int ScaleValueX(int val)
         {
             return IsScaled() ? ScaledX(val) : val;
         }
 
-        public int ScaleValueY(int val)
+        public readonly int ScaleValueY(int val)
         {
             return IsScaled() ? ScaledY(val) : val;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void InterPredict(
+        public readonly unsafe void InterPredict(
             int horiz,
             int vert,
             int avg,
@@ -331,7 +331,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void HighbdInterPredict(
+        public readonly unsafe void HighbdInterPredict(
             int horiz,
             int vert,
             int avg,
@@ -376,12 +376,12 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             }
         }
 
-        private int ScaledX(int val)
+        private readonly int ScaledX(int val)
         {
             return (int)((long)val * XScaleFP >> RefScaleShift);
         }
 
-        private int ScaledY(int val)
+        private readonly int ScaledY(int val)
         {
             return (int)((long)val * YScaleFP >> RefScaleShift);
         }
@@ -407,12 +407,12 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             return res;
         }
 
-        public bool IsValidScale()
+        public readonly bool IsValidScale()
         {
             return XScaleFP != RefInvalidScale && YScaleFP != RefInvalidScale;
         }
 
-        public bool IsScaled()
+        public readonly bool IsScaled()
         {
             return IsValidScale() && (XScaleFP != RefNoScale || YScaleFP != RefNoScale);
         }

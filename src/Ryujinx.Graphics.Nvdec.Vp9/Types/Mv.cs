@@ -54,7 +54,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10
         };
 
-        public bool UseMvHp()
+        public readonly bool UseMvHp()
         {
             const int kMvRefThresh = 64;  // Threshold for use of high-precision 1/8 mv
             return Math.Abs(Row) < kMvRefThresh && Math.Abs(Col) < kMvRefThresh;
@@ -121,7 +121,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             }
         }
 
-        private MvJointType GetMvJoint()
+        private readonly MvJointType GetMvJoint()
         {
             if (Row == 0)
             {
@@ -133,7 +133,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             }
         }
 
-        internal void IncMv(Ptr<Vp9BackwardUpdates> counts)
+        internal readonly void IncMv(Ptr<Vp9BackwardUpdates> counts)
         {
             if (!counts.IsNull)
             {

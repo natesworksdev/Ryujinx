@@ -97,7 +97,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             Count = count;
         }
 
-        public bool HasError()
+        public readonly bool HasError()
         {
             // Check if we have reached the end of the buffer.
             //

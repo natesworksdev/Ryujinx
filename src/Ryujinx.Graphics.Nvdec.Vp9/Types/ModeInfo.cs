@@ -32,7 +32,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             return SbType < BlockSize.Block8x8 ? Bmi[block].Mode : Mode;
         }
 
-        public TxSize GetUvTxSize(ref MacroBlockDPlane pd)
+        public readonly TxSize GetUvTxSize(ref MacroBlockDPlane pd)
         {
             Debug.Assert(SbType < BlockSize.Block8x8 ||
                 Luts.SsSizeLookup[(int)SbType][pd.SubsamplingX][pd.SubsamplingY] != BlockSize.BlockInvalid);

@@ -44,7 +44,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
 
         // Checks that the given miRow, miCol and search point
         // are inside the borders of the tile.
-        public bool IsInside(int miCol, int miRow, int miRows, ref Position miPos)
+        public readonly bool IsInside(int miCol, int miRow, int miRows, ref Position miPos)
         {
             return !(miRow + miPos.Row < 0 ||
                      miCol + miPos.Col < MiColStart ||

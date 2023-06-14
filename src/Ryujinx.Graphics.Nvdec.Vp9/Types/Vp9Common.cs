@@ -88,7 +88,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         public ArrayPtr<sbyte> AboveSegContext;
         public ArrayPtr<sbyte> AboveContext;
 
-        public bool FrameIsIntraOnly()
+        public readonly bool FrameIsIntraOnly()
         {
             return FrameType == FrameType.KeyFrame || IntraOnly;
         }
@@ -132,7 +132,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             TileWorkerData = allocator.Allocate<TileWorkerData>(tileCols * tileRows + (maxThreads > 1 ? maxThreads : 0));
         }
 
-        public void FreeTileWorkerData(MemoryAllocator allocator)
+        public readonly void FreeTileWorkerData(MemoryAllocator allocator)
         {
             allocator.Free(TileWorkerData);
         }
@@ -257,7 +257,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             }
         }
 
-        private void SetPartitionProbs(ref MacroBlockD xd)
+        private readonly void SetPartitionProbs(ref MacroBlockD xd)
         {
             xd.PartitionProbs = FrameIsIntraOnly()
                 ? new ArrayPtr<Array3<byte>>(ref Fc.Value.KfPartitionProb[0], 16)
