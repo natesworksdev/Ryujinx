@@ -72,7 +72,6 @@ namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
             return result;
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         private MultiWaitHolderBase WaitAnyHandleImpl(bool infinite, long timeout)
         {
             Span<int> objectHandles = new int[64];
@@ -143,7 +142,6 @@ namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
                 }
             }
         }
-#pragma warning restore IDE0060
 
         private int FillObjectsArray(Span<int> handles, Span<MultiWaitHolderBase> objects)
         {

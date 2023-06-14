@@ -16,7 +16,6 @@ namespace Ryujinx.Horizon.Sm.Impl
             _services = new ServiceInfo[MaxServicesCount];
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public Result GetService(out int handle, ulong processId, ServiceName name)
         {
             handle = 0;
@@ -40,7 +39,6 @@ namespace Ryujinx.Horizon.Sm.Impl
 
             return result == KernelResult.SessionCountExceeded ? SmResult.OutOfSessions : result;
         }
-#pragma warning restore IDE0060
 
         private static Result GetServiceImpl(out int handle, ref ServiceInfo serviceInfo)
         {
