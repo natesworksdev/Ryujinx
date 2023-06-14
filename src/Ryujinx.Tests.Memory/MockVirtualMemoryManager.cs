@@ -13,11 +13,9 @@ namespace Ryujinx.Tests.Memory
 
         public event Action<ulong, ulong, MemoryPermission> OnProtect;
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public MockVirtualMemoryManager(ulong size, int pageSize)
         {
         }
-#pragma warning restore IDE0060
 
         public void Map(ulong va, ulong pa, ulong size, MemoryMapFlags flags)
         {
