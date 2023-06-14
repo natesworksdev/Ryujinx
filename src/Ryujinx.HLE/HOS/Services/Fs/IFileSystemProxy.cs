@@ -574,16 +574,14 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             ulong bufferAddress = context.Request.ReceiveBuff[0].Position;
             ulong bufferLen = context.Request.ReceiveBuff[0].Size;
 
-            using (var region = context.Memory.GetWritableRegion(bufferAddress, (int)bufferLen, true))
+            using var region = context.Memory.GetWritableRegion(bufferAddress, (int)bufferLen, true);
+            Result result = _baseFileSystemProxy.Get.FindSaveDataWithFilter(out long count, new OutBuffer(region.Memory.Span), spaceId, in filter);
+            if (result.IsFailure())
             {
-                Result result = _baseFileSystemProxy.Get.FindSaveDataWithFilter(out long count, new OutBuffer(region.Memory.Span), spaceId, in filter);
-                if (result.IsFailure())
-                {
-                    return (ResultCode)result.Value;
-                }
-
-                context.ResponseData.Write(count);
+                return (ResultCode)result.Value;
             }
+
+            context.ResponseData.Write(count);
 
             return ResultCode.Success;
         }

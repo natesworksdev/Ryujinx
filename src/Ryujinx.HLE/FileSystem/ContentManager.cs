@@ -627,10 +627,8 @@ namespace Ryujinx.HLE.FileSystem
         {
             MemoryStream dest = MemoryStreamManager.Shared.GetStream();
 
-            using (Stream src = entry.Open())
-            {
-                src.CopyTo(dest);
-            }
+            using Stream src = entry.Open();
+            src.CopyTo(dest);
 
             return dest;
         }
@@ -660,31 +658,29 @@ namespace Ryujinx.HLE.FileSystem
 
             FileInfo info = new(firmwarePackage);
 
-            using (FileStream file = File.OpenRead(firmwarePackage))
+            using FileStream file = File.OpenRead(firmwarePackage);
+            switch (info.Extension)
             {
-                switch (info.Extension)
-                {
-                    case ".zip":
-                        using (ZipArchive archive = ZipFile.OpenRead(firmwarePackage))
-                        {
-                            return VerifyAndGetVersionZip(archive);
-                        }
-                    case ".xci":
-                        Xci xci = new(_virtualFileSystem.KeySet, file.AsStorage());
+                case ".zip":
+                    using (ZipArchive archive = ZipFile.OpenRead(firmwarePackage))
+                    {
+                        return VerifyAndGetVersionZip(archive);
+                    }
+                case ".xci":
+                    Xci xci = new(_virtualFileSystem.KeySet, file.AsStorage());
 
-                        if (xci.HasPartition(XciPartitionType.Update))
-                        {
-                            XciPartition partition = xci.OpenPartition(XciPartitionType.Update);
+                    if (xci.HasPartition(XciPartitionType.Update))
+                    {
+                        XciPartition partition = xci.OpenPartition(XciPartitionType.Update);
 
-                            return VerifyAndGetVersion(partition);
-                        }
-                        else
-                        {
-                            throw new InvalidFirmwarePackageException("Update not found in xci file.");
-                        }
-                    default:
-                        break;
-                }
+                        return VerifyAndGetVersion(partition);
+                    }
+                    else
+                    {
+                        throw new InvalidFirmwarePackageException("Update not found in xci file.");
+                    }
+                default:
+                    break;
             }
 
             SystemVersion VerifyAndGetVersionDirectory(string firmwareDirectory)

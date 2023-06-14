@@ -140,10 +140,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 
             context.Memory.Read(bufferPosition, temp);
 
-            using (MemoryStream timeZoneBinaryStream = new(temp))
-            {
-                result = _timeZoneManager.SetDeviceLocationNameWithTimeZoneRule(locationName, timeZoneBinaryStream);
-            }
+            using MemoryStream timeZoneBinaryStream = new(temp);
+            result = _timeZoneManager.SetDeviceLocationNameWithTimeZoneRule(locationName, timeZoneBinaryStream);
 
             return result;
         }
@@ -171,13 +169,11 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 
             context.Memory.Read(bufferPosition, temp);
 
-            using (MemoryStream timeZoneBinaryStream = new(temp))
-            {
-                using WritableRegion region = context.Memory.GetWritableRegion(timeZoneRuleBufferPosition, Unsafe.SizeOf<TimeZoneRule>());
-                ref TimeZoneRule rule = ref MemoryMarshal.Cast<byte, TimeZoneRule>(region.Memory.Span)[0];
+            using MemoryStream timeZoneBinaryStream = new(temp);
+            using WritableRegion region = context.Memory.GetWritableRegion(timeZoneRuleBufferPosition, Unsafe.SizeOf<TimeZoneRule>());
+            ref TimeZoneRule rule = ref MemoryMarshal.Cast<byte, TimeZoneRule>(region.Memory.Span)[0];
 
-                result = _timeZoneManager.ParseTimeZoneRuleBinary(ref rule, timeZoneBinaryStream);
-            }
+            result = _timeZoneManager.ParseTimeZoneRuleBinary(ref rule, timeZoneBinaryStream);
 
             return result;
         }

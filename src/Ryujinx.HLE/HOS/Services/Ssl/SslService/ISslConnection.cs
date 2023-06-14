@@ -235,15 +235,13 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
             ResultCode result;
 
-            using (WritableRegion region = context.Memory.GetWritableRegion(context.Request.ReceiveBuff[0].Position, (int)context.Request.ReceiveBuff[0].Size))
-            {
-                // TODO: Better error management.
-                result = _connection.Read(out int readCount, region.Memory);
+            using WritableRegion region = context.Memory.GetWritableRegion(context.Request.ReceiveBuff[0].Position, (int)context.Request.ReceiveBuff[0].Size);
+            // TODO: Better error management.
+            result = _connection.Read(out int readCount, region.Memory);
 
-                if (result == ResultCode.Success)
-                {
-                    context.ResponseData.Write(readCount);
-                }
+            if (result == ResultCode.Success)
+            {
+                context.ResponseData.Write(readCount);
             }
 
             return result;
@@ -297,15 +295,13 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
             ResultCode result;
 
-            using (WritableRegion region = context.Memory.GetWritableRegion(context.Request.ReceiveBuff[0].Position, (int)context.Request.ReceiveBuff[0].Size))
-            {
-                // TODO: Better error management.
-                result = _connection.Peek(out int peekCount, region.Memory);
+            using WritableRegion region = context.Memory.GetWritableRegion(context.Request.ReceiveBuff[0].Position, (int)context.Request.ReceiveBuff[0].Size);
+            // TODO: Better error management.
+            result = _connection.Peek(out int peekCount, region.Memory);
 
-                if (result == ResultCode.Success)
-                {
-                    context.ResponseData.Write(peekCount);
-                }
+            if (result == ResultCode.Success)
+            {
+                context.ResponseData.Write(peekCount);
             }
 
             return result;

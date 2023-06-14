@@ -58,33 +58,31 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             const string Build      = "NintendoSDK Firmware for NX 3.0.0-10.0";
 
             // http://switchbrew.org/index.php?title=System_Version_Title
-            using (MemoryStream ms = new(0x100))
-            {
-                BinaryWriter writer = new(ms);
+            using MemoryStream ms = new(0x100);
+            BinaryWriter writer = new(ms);
 
-                writer.Write(MajorFwVersion);
-                writer.Write(MinorFwVersion);
-                writer.Write(MicroFwVersion);
-                writer.Write(Unknown);
+            writer.Write(MajorFwVersion);
+            writer.Write(MinorFwVersion);
+            writer.Write(MicroFwVersion);
+            writer.Write(Unknown);
 
-                writer.Write(RevisionNumber);
+            writer.Write(RevisionNumber);
 
-                writer.Write(Encoding.ASCII.GetBytes(Platform));
+            writer.Write(Encoding.ASCII.GetBytes(Platform));
 
-                ms.Seek(0x28, SeekOrigin.Begin);
+            ms.Seek(0x28, SeekOrigin.Begin);
 
-                writer.Write(Encoding.ASCII.GetBytes(UnknownHex));
+            writer.Write(Encoding.ASCII.GetBytes(UnknownHex));
 
-                ms.Seek(0x68, SeekOrigin.Begin);
+            ms.Seek(0x68, SeekOrigin.Begin);
 
-                writer.Write(Encoding.ASCII.GetBytes(Version));
+            writer.Write(Encoding.ASCII.GetBytes(Version));
 
-                ms.Seek(0x80, SeekOrigin.Begin);
+            ms.Seek(0x80, SeekOrigin.Begin);
 
-                writer.Write(Encoding.ASCII.GetBytes(Build));
+            writer.Write(Encoding.ASCII.GetBytes(Build));
 
-                context.Memory.Write(replyPos, ms.ToArray());
-            }
+            context.Memory.Write(replyPos, ms.ToArray());
 
             return ResultCode.Success;
         }
