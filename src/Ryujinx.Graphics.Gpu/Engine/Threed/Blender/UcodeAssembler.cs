@@ -292,12 +292,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
             _constantIndex = index;
         }
 
-        public uint[] GetCode()
+        public readonly uint[] GetCode()
         {
             return _code?.ToArray();
         }
 
-        public RgbFloat[] GetConstants()
+        public readonly RgbFloat[] GetConstants()
         {
             return _constants;
         }

@@ -57,7 +57,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
             /// <param name="memoryManager">The memory manager used to fetch the data</param>
             /// <param name="flush">If true, flushes potential GPU written data before reading the command buffer</param>
             /// <returns>The fetched data</returns>
-            private ReadOnlySpan<int> GetWords(MemoryManager memoryManager, bool flush)
+            private readonly ReadOnlySpan<int> GetWords(MemoryManager memoryManager, bool flush)
             {
                 return MemoryMarshal.Cast<byte, int>(memoryManager.GetSpan(EntryAddress, (int)EntryCount * 4, flush));
             }
@@ -77,7 +77,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
             /// <param name="memoryManager">The memory manager used to fetch the data</param>
             /// <param name="flush">If true, flushes potential GPU written data before reading the command buffer</param>
             /// <returns>The command buffer words</returns>
-            public ReadOnlySpan<int> Fetch(MemoryManager memoryManager, bool flush)
+            public readonly ReadOnlySpan<int> Fetch(MemoryManager memoryManager, bool flush)
             {
                 return Words ?? GetWords(memoryManager, flush);
             }

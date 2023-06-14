@@ -65,7 +65,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
         /// </summary>
         /// <param name="data">Data to be hashed</param>
         /// <returns>Hash of the data</returns>
-        private uint CalcHashCached(ReadOnlySpan<byte> data)
+        private readonly uint CalcHashCached(ReadOnlySpan<byte> data)
         {
             HashState state = default;
             bool found = false;

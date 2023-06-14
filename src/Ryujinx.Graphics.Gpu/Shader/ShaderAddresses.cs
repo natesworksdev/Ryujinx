@@ -23,7 +23,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         /// <param name="other">Shader addresses structure to compare with</param>
         /// <returns>True if they are equal, false otherwise</returns>
-        public override bool Equals(object other)
+        public readonly override bool Equals(object other)
         {
             return other is ShaderAddresses addresses && Equals(addresses);
         }
@@ -33,7 +33,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         /// <param name="other">Shader addresses structure to compare with</param>
         /// <returns>True if they are equal, false otherwise</returns>
-        public bool Equals(ShaderAddresses other)
+        public readonly bool Equals(ShaderAddresses other)
         {
             return VertexA == other.VertexA &&
                    VertexB == other.VertexB &&
@@ -47,7 +47,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// Computes hash code from the addresses.
         /// </summary>
         /// <returns>Hash code</returns>
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             return HashCode.Combine(VertexA, VertexB, TessControl, TessEvaluation, Geometry, Fragment);
         }

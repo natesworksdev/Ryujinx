@@ -48,7 +48,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
             /// Partial entries have no items associated with them. They just indicates that the data might be present on
             /// the table, and one must keep looking for the full entry on other tables of larger data size.
             /// </remarks>
-            public bool IsPartial => OwnSize != 0;
+            public readonly bool IsPartial => OwnSize != 0;
 
             /// <summary>
             /// Creates a new partial hash table entry.
@@ -82,7 +82,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
             /// Gets the data for this entry, either full or partial.
             /// </summary>
             /// <returns>Data sub-region</returns>
-            public ReadOnlySpan<byte> GetData()
+            public readonly ReadOnlySpan<byte> GetData()
             {
                 if (OwnSize != 0)
                 {

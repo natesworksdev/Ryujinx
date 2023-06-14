@@ -34,7 +34,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Unpacks the tessellation abstract patch type.
         /// </summary>
         /// <returns>Abtract patch type</returns>
-        public TessPatchType UnpackPatchType()
+        public readonly TessPatchType UnpackPatchType()
         {
             return (TessPatchType)(Packed & 3);
         }
@@ -43,7 +43,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Unpacks the spacing between tessellated vertices of the patch.
         /// </summary>
         /// <returns>Spacing between tessellated vertices</returns>
-        public TessSpacing UnpackSpacing()
+        public readonly TessSpacing UnpackSpacing()
         {
             return (TessSpacing)((Packed >> 4) & 3);
         }
@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Unpacks the primitive winding order.
         /// </summary>
         /// <returns>True if clockwise, false if counter-clockwise</returns>
-        public bool UnpackCw()
+        public readonly bool UnpackCw()
         {
             return (Packed & (1 << 8)) != 0;
         }
@@ -131,7 +131,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Unpacks viewport swizzle of the position X component.
         /// </summary>
         /// <returns>Swizzle enum value</returns>
-        public ViewportSwizzle UnpackSwizzleX()
+        public readonly ViewportSwizzle UnpackSwizzleX()
         {
             return (ViewportSwizzle)(Swizzle & 7);
         }
@@ -140,7 +140,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Unpacks viewport swizzle of the position Y component.
         /// </summary>
         /// <returns>Swizzle enum value</returns>
-        public ViewportSwizzle UnpackSwizzleY()
+        public readonly ViewportSwizzle UnpackSwizzleY()
         {
             return (ViewportSwizzle)((Swizzle >> 4) & 7);
         }
@@ -149,7 +149,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Unpacks viewport swizzle of the position Z component.
         /// </summary>
         /// <returns>Swizzle enum value</returns>
-        public ViewportSwizzle UnpackSwizzleZ()
+        public readonly ViewportSwizzle UnpackSwizzleZ()
         {
             return (ViewportSwizzle)((Swizzle >> 8) & 7);
         }
@@ -158,7 +158,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Unpacks viewport swizzle of the position W component.
         /// </summary>
         /// <returns>Swizzle enum value</returns>
-        public ViewportSwizzle UnpackSwizzleW()
+        public readonly ViewportSwizzle UnpackSwizzleW()
         {
             return (ViewportSwizzle)((Swizzle >> 12) & 7);
         }
@@ -327,7 +327,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Unpacks the index of the vertex buffer this attribute belongs to.
         /// </summary>
         /// <returns>Vertex buffer index</returns>
-        public int UnpackBufferIndex()
+        public readonly int UnpackBufferIndex()
         {
             return (int)(Attribute & 0x1f);
         }
@@ -336,7 +336,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Unpacks the attribute constant flag.
         /// </summary>
         /// <returns>True if the attribute is constant, false otherwise</returns>
-        public bool UnpackIsConstant()
+        public readonly bool UnpackIsConstant()
         {
             return (Attribute & 0x40) != 0;
         }
@@ -345,7 +345,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Unpacks the offset, in bytes, of the attribute on the vertex buffer.
         /// </summary>
         /// <returns>Attribute offset in bytes</returns>
-        public int UnpackOffset()
+        public readonly int UnpackOffset()
         {
             return (int)((Attribute >> 7) & 0x3fff);
         }
@@ -354,7 +354,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Unpacks the Maxwell attribute format integer.
         /// </summary>
         /// <returns>Attribute format integer</returns>
-        public uint UnpackFormat()
+        public readonly uint UnpackFormat()
         {
             return Attribute & 0x3fe00000;
         }
@@ -363,7 +363,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Unpacks the Maxwell attribute size.
         /// </summary>
         /// <returns>Attribute size</returns>
-        public VertexAttribSize UnpackSize()
+        public readonly VertexAttribSize UnpackSize()
         {
             return (VertexAttribSize)((Attribute >> 21) & 0x3f);
         }
@@ -372,7 +372,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Unpacks the Maxwell attribute component type.
         /// </summary>
         /// <returns>Attribute component type</returns>
-        public VertexAttribType UnpackType()
+        public readonly VertexAttribType UnpackType()
         {
             return (VertexAttribType)((Attribute >> 27) & 7);
         }
@@ -391,7 +391,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Unpacks the number of active draw buffers.
         /// </summary>
         /// <returns>Number of active draw buffers</returns>
-        public int UnpackCount()
+        public readonly int UnpackCount()
         {
             return (int)(Packed & 0xf);
         }
@@ -401,7 +401,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         /// <param name="index">Index of the draw buffer</param>
         /// <returns>Attachment index</returns>
-        public int UnpackPermutationIndex(int index)
+        public readonly int UnpackPermutationIndex(int index)
         {
             return (int)((Packed >> (4 + index * 3)) & 7);
         }
@@ -462,7 +462,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Unpacks the red color component as a 16-bit float value.
         /// </summary>
         /// <returns>The component value</returns>
-        public Half UnpackR()
+        public readonly Half UnpackR()
         {
             ushort value = (ushort)R;
             return Unsafe.As<ushort, Half>(ref value);
@@ -472,7 +472,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Unpacks the green color component as a 16-bit float value.
         /// </summary>
         /// <returns>The component value</returns>
-        public Half UnpackG()
+        public readonly Half UnpackG()
         {
             ushort value = (ushort)G;
             return Unsafe.As<ushort, Half>(ref value);
@@ -482,7 +482,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Unpacks the blue color component as a 16-bit float value.
         /// </summary>
         /// <returns>The component value</returns>
-        public Half UnpackB()
+        public readonly Half UnpackB()
         {
             ushort value = (ushort)B;
             return Unsafe.As<ushort, Half>(ref value);
@@ -598,7 +598,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Unpacks red channel enable.
         /// </summary>
         /// <returns>True to write the new red channel color, false to keep the old value</returns>
-        public bool UnpackRed()
+        public readonly bool UnpackRed()
         {
             return (Packed & 0x1) != 0;
         }
@@ -607,7 +607,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Unpacks green channel enable.
         /// </summary>
         /// <returns>True to write the new green channel color, false to keep the old value</returns>
-        public bool UnpackGreen()
+        public readonly bool UnpackGreen()
         {
             return (Packed & 0x10) != 0;
         }
@@ -616,7 +616,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Unpacks blue channel enable.
         /// </summary>
         /// <returns>True to write the new blue channel color, false to keep the old value</returns>
-        public bool UnpackBlue()
+        public readonly bool UnpackBlue()
         {
             return (Packed & 0x100) != 0;
         }
@@ -625,7 +625,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Unpacks alpha channel enable.
         /// </summary>
         /// <returns>True to write the new alpha channel color, false to keep the old value</returns>
-        public bool UnpackAlpha()
+        public readonly bool UnpackAlpha()
         {
             return (Packed & 0x1000) != 0;
         }
@@ -646,7 +646,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Vertex buffer stride, defined as the number of bytes occupied by each vertex in memory.
         /// </summary>
         /// <returns>Vertex buffer stride</returns>
-        public int UnpackStride()
+        public readonly int UnpackStride()
         {
             return (int)(Control & 0xfff);
         }
@@ -655,7 +655,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Vertex buffer enable.
         /// </summary>
         /// <returns>True if the vertex buffer is enabled, false otherwise</returns>
-        public bool UnpackEnable()
+        public readonly bool UnpackEnable()
         {
             return (Control & (1 << 12)) != 0;
         }
@@ -724,7 +724,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Must be ignored for vertex shaders, those are always enabled.
         /// </summary>
         /// <returns>True if the stage is enabled, false otherwise</returns>
-        public bool UnpackEnable()
+        public readonly bool UnpackEnable()
         {
             return (Control & 1) != 0;
         }
@@ -746,28 +746,28 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     {
 #pragma warning disable CS0649 // Field is never assigned to
         public uint SetObject;
-        public int SetObjectClassId => (int)(SetObject & 0xFFFF);
-        public int SetObjectEngineId => (int)((SetObject >> 16) & 0x1F);
+        public readonly int SetObjectClassId => (int)(SetObject & 0xFFFF);
+        public readonly int SetObjectEngineId => (int)((SetObject >> 16) & 0x1F);
         public fixed uint Reserved04[63];
         public uint NoOperation;
         public uint SetNotifyA;
-        public int SetNotifyAAddressUpper => (int)(SetNotifyA & 0xFF);
+        public readonly int SetNotifyAAddressUpper => (int)(SetNotifyA & 0xFF);
         public uint SetNotifyB;
         public uint Notify;
-        public NotifyType NotifyType => (NotifyType)(Notify);
+        public readonly NotifyType NotifyType => (NotifyType)(Notify);
         public uint WaitForIdle;
         public uint LoadMmeInstructionRamPointer;
         public uint LoadMmeInstructionRam;
         public uint LoadMmeStartAddressRamPointer;
         public uint LoadMmeStartAddressRam;
         public uint SetMmeShadowRamControl;
-        public SetMmeShadowRamControlMode SetMmeShadowRamControlMode => (SetMmeShadowRamControlMode)(SetMmeShadowRamControl & 0x3);
+        public readonly SetMmeShadowRamControlMode SetMmeShadowRamControlMode => (SetMmeShadowRamControlMode)(SetMmeShadowRamControl & 0x3);
         public fixed uint Reserved128[2];
         public uint SetGlobalRenderEnableA;
-        public int SetGlobalRenderEnableAOffsetUpper => (int)(SetGlobalRenderEnableA & 0xFF);
+        public readonly int SetGlobalRenderEnableAOffsetUpper => (int)(SetGlobalRenderEnableA & 0xFF);
         public uint SetGlobalRenderEnableB;
         public uint SetGlobalRenderEnableC;
-        public int SetGlobalRenderEnableCMode => (int)(SetGlobalRenderEnableC & 0x7);
+        public readonly int SetGlobalRenderEnableCMode => (int)(SetGlobalRenderEnableC & 0x7);
         public uint SendGoIdle;
         public uint PmTrigger;
         public uint PmTriggerWfi;
@@ -778,30 +778,30 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public uint LineLengthIn;
         public uint LineCount;
         public uint OffsetOutUpper;
-        public int OffsetOutUpperValue => (int)(OffsetOutUpper & 0xFF);
+        public readonly int OffsetOutUpperValue => (int)(OffsetOutUpper & 0xFF);
         public uint OffsetOut;
         public uint PitchOut;
         public uint SetDstBlockSize;
-        public SetDstBlockSizeWidth SetDstBlockSizeWidth => (SetDstBlockSizeWidth)(SetDstBlockSize & 0xF);
-        public SetDstBlockSizeHeight SetDstBlockSizeHeight => (SetDstBlockSizeHeight)((SetDstBlockSize >> 4) & 0xF);
-        public SetDstBlockSizeDepth SetDstBlockSizeDepth => (SetDstBlockSizeDepth)((SetDstBlockSize >> 8) & 0xF);
+        public readonly SetDstBlockSizeWidth SetDstBlockSizeWidth => (SetDstBlockSizeWidth)(SetDstBlockSize & 0xF);
+        public readonly SetDstBlockSizeHeight SetDstBlockSizeHeight => (SetDstBlockSizeHeight)((SetDstBlockSize >> 4) & 0xF);
+        public readonly SetDstBlockSizeDepth SetDstBlockSizeDepth => (SetDstBlockSizeDepth)((SetDstBlockSize >> 8) & 0xF);
         public uint SetDstWidth;
         public uint SetDstHeight;
         public uint SetDstDepth;
         public uint SetDstLayer;
         public uint SetDstOriginBytesX;
-        public int SetDstOriginBytesXV => (int)(SetDstOriginBytesX & 0xFFFFF);
+        public readonly int SetDstOriginBytesXV => (int)(SetDstOriginBytesX & 0xFFFFF);
         public uint SetDstOriginSamplesY;
-        public int SetDstOriginSamplesYV => (int)(SetDstOriginSamplesY & 0xFFFF);
+        public readonly int SetDstOriginSamplesYV => (int)(SetDstOriginSamplesY & 0xFFFF);
         public uint LaunchDma;
-        public LaunchDmaDstMemoryLayout LaunchDmaDstMemoryLayout => (LaunchDmaDstMemoryLayout)(LaunchDma & 0x1);
-        public LaunchDmaCompletionType LaunchDmaCompletionType => (LaunchDmaCompletionType)((LaunchDma >> 4) & 0x3);
-        public LaunchDmaInterruptType LaunchDmaInterruptType => (LaunchDmaInterruptType)((LaunchDma >> 8) & 0x3);
-        public LaunchDmaSemaphoreStructSize LaunchDmaSemaphoreStructSize => (LaunchDmaSemaphoreStructSize)((LaunchDma >> 12) & 0x1);
-        public bool LaunchDmaReductionEnable => (LaunchDma & 0x2) != 0;
-        public LaunchDmaReductionOp LaunchDmaReductionOp => (LaunchDmaReductionOp)((LaunchDma >> 13) & 0x7);
-        public LaunchDmaReductionFormat LaunchDmaReductionFormat => (LaunchDmaReductionFormat)((LaunchDma >> 2) & 0x3);
-        public bool LaunchDmaSysmembarDisable => (LaunchDma & 0x40) != 0;
+        public readonly LaunchDmaDstMemoryLayout LaunchDmaDstMemoryLayout => (LaunchDmaDstMemoryLayout)(LaunchDma & 0x1);
+        public readonly LaunchDmaCompletionType LaunchDmaCompletionType => (LaunchDmaCompletionType)((LaunchDma >> 4) & 0x3);
+        public readonly LaunchDmaInterruptType LaunchDmaInterruptType => (LaunchDmaInterruptType)((LaunchDma >> 8) & 0x3);
+        public readonly LaunchDmaSemaphoreStructSize LaunchDmaSemaphoreStructSize => (LaunchDmaSemaphoreStructSize)((LaunchDma >> 12) & 0x1);
+        public readonly bool LaunchDmaReductionEnable => (LaunchDma & 0x2) != 0;
+        public readonly LaunchDmaReductionOp LaunchDmaReductionOp => (LaunchDmaReductionOp)((LaunchDma >> 13) & 0x7);
+        public readonly LaunchDmaReductionFormat LaunchDmaReductionFormat => (LaunchDmaReductionFormat)((LaunchDma >> 2) & 0x3);
+        public readonly bool LaunchDmaSysmembarDisable => (LaunchDma & 0x40) != 0;
         public uint LoadInlineData;
         public fixed uint Reserved1B8[22];
         public Boolean32 EarlyZForce;

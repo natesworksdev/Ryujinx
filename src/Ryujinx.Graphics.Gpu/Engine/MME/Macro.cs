@@ -93,7 +93,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
         /// </summary>
         /// <param name="gpuVa">GPU virtual address where the command word is located</param>
         /// <param name="argument">Argument to be pushed</param>
-        public void PushArgument(ulong gpuVa, int argument)
+        public readonly void PushArgument(ulong gpuVa, int argument)
         {
             _executionEngine?.Fifo.Enqueue(new FifoWord(gpuVa, argument));
         }

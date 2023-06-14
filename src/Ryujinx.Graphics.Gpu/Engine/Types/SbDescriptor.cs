@@ -12,7 +12,7 @@
         public int Padding;
 #pragma warning restore CS0649
 
-        public ulong PackAddress()
+        public readonly ulong PackAddress()
         {
             return AddressLow | ((ulong)AddressHigh << 32);
         }

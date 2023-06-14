@@ -75,7 +75,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
         /// </remarks>
         /// <param name="data">Data to be hashed</param>
         /// <returns>Hash of all the data hashed with this <see cref="HashState"/></returns>
-        public uint Finalize(ReadOnlySpan<byte> data)
+        public readonly uint Finalize(ReadOnlySpan<byte> data)
         {
             ulong h = _hash;
 

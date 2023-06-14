@@ -29,7 +29,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// </summary>
         /// <typeparam name="T">Type of the data</typeparam>
         /// <param name="data">Data read</param>
-        public void Read<T>(ref T data) where T : unmanaged
+        public readonly void Read<T>(ref T data) where T : unmanaged
         {
             Span<byte> buffer = MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref data, 1));
             for (int offset = 0; offset < buffer.Length;)
@@ -44,7 +44,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// <typeparam name="T">Type of the data</typeparam>
         /// <param name="data">Data read</param>
         /// <returns>True if the read was successful, false otherwise</returns>
-        public bool TryRead<T>(ref T data) where T : unmanaged
+        public readonly bool TryRead<T>(ref T data) where T : unmanaged
         {
             // Length is unknown on compressed streams.
             if (_activeStream == _stream)
@@ -66,7 +66,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// <typeparam name="T">Type of the data</typeparam>
         /// <param name="data">Data read</param>
         /// <param name="magic">Expected magic value, for validation</param>
-        public void ReadWithMagicAndSize<T>(ref T data, uint magic) where T : unmanaged
+        public readonly void ReadWithMagicAndSize<T>(ref T data, uint magic) where T : unmanaged
         {
             uint actualMagic = 0;
             int size = 0;
@@ -96,7 +96,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// </summary>
         /// <typeparam name="T">Type of the data</typeparam>
         /// <param name="data">Data to be written</param>
-        public void Write<T>(ref T data) where T : unmanaged
+        public readonly void Write<T>(ref T data) where T : unmanaged
         {
             Span<byte> buffer = MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref data, 1));
             _activeStream.Write(buffer);
@@ -108,7 +108,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// <typeparam name="T">Type of the data</typeparam>
         /// <param name="data">Data to write</param>
         /// <param name="magic">Magic value to write</param>
-        public void WriteWithMagicAndSize<T>(ref T data, uint magic) where T : unmanaged
+        public readonly void WriteWithMagicAndSize<T>(ref T data, uint magic) where T : unmanaged
         {
             int size = Unsafe.SizeOf<T>();
             Write(ref magic);
