@@ -24,14 +24,12 @@ namespace Ryujinx.Ava.UI.Windows
             InitializeComponent();
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
-        public TitleUpdateWindow(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
+        public TitleUpdateWindow(VirtualFileSystem virtualFileSystem, ulong titleId)
         {
             DataContext = ViewModel = new TitleUpdateViewModel(virtualFileSystem, titleId);
 
             InitializeComponent();
         }
-#pragma warning restore IDE0060
 
         public static async Task Show(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
         {
@@ -40,7 +38,7 @@ namespace Ryujinx.Ava.UI.Windows
                 PrimaryButtonText   = "",
                 SecondaryButtonText = "",
                 CloseButtonText     = "",
-                Content             = new TitleUpdateWindow(virtualFileSystem, titleId, titleName),
+                Content             = new TitleUpdateWindow(virtualFileSystem, titleId),
                 Title               = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.GameUpdateWindowHeading, titleName, titleId.ToString("X16"))
             };
 
