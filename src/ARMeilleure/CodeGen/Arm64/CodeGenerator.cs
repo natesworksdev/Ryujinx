@@ -133,7 +133,7 @@ namespace ARMeilleure.CodeGen.Arm64
 
             StackAllocator stackAlloc = new();
 
-            PreAllocator.RunPass(cctx, stackAlloc, out int maxCallArgs);
+            PreAllocator.RunPass(cctx, out int maxCallArgs);
 
             Logger.EndPass(PassName.PreAllocation, cfg);
 
