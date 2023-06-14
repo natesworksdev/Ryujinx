@@ -21,6 +21,31 @@
     <EmbeddedResource Include="Effects\Shaders\SmaaBlend.spv" />
     <EmbeddedResource Include="Effects\Shaders\SmaaEdge.spv" />
     <EmbeddedResource Include="Effects\Shaders\SmaaNeighbour.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\ChangeBufferStrideShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\ColorBlitClearAlphaFragmentShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\ColorBlitFragmentShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\ColorBlitMsFragmentShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\ColorBlitVertexShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\ColorClearFFragmentShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\ColorClearSIFragmentShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\ColorClearUIFragmentShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\ColorClearVertexShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\ColorCopyShorteningComputeShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\ColorCopyToNonMsComputeShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\ColorCopyWideningComputeShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\ColorDrawToMsFragmentShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\ColorDrawToMsVertexShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\ConvertD32S8ToD24S8ShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\ConvertIndexBufferShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\ConvertIndirectDataShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\DepthBlitFragmentShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\DepthBlitMsFragmentShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\DepthDrawToMsFragmentShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\DepthDrawToNonMsFragmentShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\StencilBlitFragmentShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\StencilBlitMsFragmentShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\StencilDrawToMsFragmentShaderSource.spv" />
+    <EmbeddedResource Include="Shaders\SpirvBinaries\StencilDrawToNonMsFragmentShaderSource.spv" />
   </ItemGroup>
 
   <ItemGroup>
