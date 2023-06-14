@@ -103,7 +103,6 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
             return DecayDelayTimes.AsSpan((int)lateMode * 4, 4);
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public ReverbState(ref ReverbParameter parameter, ulong workBuffer, bool isLongSizePreDelaySupported)
         {
             FdnDelayLines = new DelayLine[4];
@@ -137,7 +136,6 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
 
             UpdateParameter(ref parameter);
         }
-#pragma warning restore IDE0060
 
         public void UpdateParameter(ref ReverbParameter parameter)
         {

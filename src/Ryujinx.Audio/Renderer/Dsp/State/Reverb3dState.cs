@@ -32,7 +32,6 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
         public float[] DecayCurrentOutputGain { get; private set; }
         public float[] PreviousFeedbackOutputDecayed { get; private set; }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public Reverb3dState(ref Reverb3dParameter parameter, ulong workBuffer)
         {
             FdnDelayLines = new IDelayLine[4];
@@ -57,7 +56,6 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
 
             UpdateParameter(ref parameter);
         }
-#pragma warning restore IDE0060
 
         public void UpdateParameter(ref Reverb3dParameter parameter)
         {

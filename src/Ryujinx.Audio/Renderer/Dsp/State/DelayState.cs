@@ -16,7 +16,6 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
 
         private const int FixedPointPrecision = 14;
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public DelayState(ref DelayParameter parameter, ulong workBuffer)
         {
             DelayLines = new DelayLine[parameter.ChannelCount];
@@ -32,7 +31,6 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
 
             UpdateParameter(ref parameter);
         }
-#pragma warning restore IDE0060
 
         public void UpdateParameter(ref DelayParameter parameter)
         {
