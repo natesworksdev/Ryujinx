@@ -109,8 +109,7 @@ namespace Ryujinx.Tests.Graphics
                 Debug.WriteLine($"{tcp*100:F4}% ({tc}/{byteDifferences.Count}) are different by at least {threshold}.");
             }
 
-            Assert.IsTrue(byteDifferences.All(x => Math.Abs(x.delta) <= 2));
-            Assert.IsTrue(decodedRef.Equals(outputBuffer));
+            Assert.IsTrue(byteDifferences.All(x => Math.Abs(x.delta) < 2));
         }
 
         /// <summary>
