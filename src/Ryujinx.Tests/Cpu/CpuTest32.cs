@@ -14,8 +14,10 @@ namespace Ryujinx.Tests.Cpu
     public class CpuTest32
     {
         protected static readonly uint Size = (uint)MemoryBlock.GetPageSize();
+#pragma warning disable CA2211 // Non-constant fields should not be visible
         protected static uint CodeBaseAddress = Size;
         protected static uint DataBaseAddress = CodeBaseAddress + Size;
+#pragma warning restore CA2211
 
         private uint _currAddress;
 
