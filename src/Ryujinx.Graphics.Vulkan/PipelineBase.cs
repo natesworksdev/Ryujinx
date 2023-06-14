@@ -719,16 +719,14 @@ namespace Ryujinx.Graphics.Vulkan
             return CommandBuffer.Handle == cb.Handle;
         }
 
-#pragma warning disable CA1822 // Mark member as static
-#pragma warning disable IDE0060 // Remove unused parameter
+#pragma warning disable IDE0060, CA1822 // Remove unused parameter, Mark member as static
         public void SetAlphaTest(bool enable, float reference, GAL.CompareOp op)
-#pragma warning restore CA1822
         {
             // This is currently handled using shader specialization, as Vulkan does not support alpha test.
             // In the future, we may want to use this to write the reference value into the support buffer,
             // to avoid creating one version of the shader per reference value used.
         }
-#pragma warning restore IDE0060
+#pragma warning restore IDE0060, CA1822
 
         public void SetBlendState(AdvancedBlendDescriptor blend)
         {
@@ -828,10 +826,8 @@ namespace Ryujinx.Graphics.Vulkan
             SignalStateChange();
         }
 
-#pragma warning disable CA1822 // Mark member as static
-#pragma warning disable IDE0060 // Remove unused parameter
+#pragma warning disable IDE0060, CA1822 // Remove unused parameter, Mark member as static
         public void SetDepthMode(DepthMode mode)
-#pragma warning restore CA1822
         {
             bool oldMode = _newState.DepthMode;
             _newState.DepthMode = mode == DepthMode.MinusOneToOne;
@@ -913,37 +909,27 @@ namespace Ryujinx.Graphics.Vulkan
         {
             // TODO.
         }
-#pragma warning restore IDE0060
 
-#pragma warning disable IDE0060 // Remove unused parameter
-        public unsafe void SetPatchParameters(int vertices, ReadOnlySpan<float> defaultOuterLevel, ReadOnlySpan<float> defaultInnerLevel)
+        public void SetPatchParameters(int vertices, ReadOnlySpan<float> defaultOuterLevel, ReadOnlySpan<float> defaultInnerLevel)
         {
             _newState.PatchControlPoints = (uint)vertices;
             SignalStateChange();
 
             // TODO: Default levels (likely needs emulation on shaders?)
         }
-#pragma warning restore IDE0060
 
 #pragma warning disable CA1822 // Mark member as static
-#pragma warning disable IDE0060 // Remove unused parameter
         public void SetPointParameters(float size, bool isProgramPointSize, bool enablePointSprite, Origin origin)
-#pragma warning restore CA1822
         {
             // TODO.
         }
-#pragma warning restore IDE0060
 
-#pragma warning disable CA1822 // Mark member as static
-#pragma warning disable IDE0060 // Remove unused parameter
         public void SetPolygonMode(GAL.PolygonMode frontMode, GAL.PolygonMode backMode)
-#pragma warning restore CA1822
         {
             // TODO.
         }
-#pragma warning restore IDE0060
+#pragma warning restore CA1822
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public void SetPrimitiveRestart(bool enable, int index)
         {
             _newState.PrimitiveRestartEnable = enable;
@@ -1174,14 +1160,12 @@ namespace Ryujinx.Graphics.Vulkan
             _descriptorSetUpdater.SetUniformBuffers(CommandBuffer, buffers);
         }
 
-#pragma warning disable CA1822 // Mark member as static
-#pragma warning disable IDE0060 // Remove unused parameter
+#pragma warning disable IDE0060, CA1822 // Remove unused parameter, Mark member as static
         public void SetUserClipDistance(int index, bool enableClip)
-#pragma warning restore CA1822
         {
             // TODO.
         }
-#pragma warning restore IDE0060
+#pragma warning restore IDE0060, CA1822
 
         public void SetVertexAttribs(ReadOnlySpan<VertexAttribDescriptor> vertexAttribs)
         {

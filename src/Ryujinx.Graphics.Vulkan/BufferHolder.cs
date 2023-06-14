@@ -331,9 +331,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             return _buffer;
         }
-#pragma warning restore IDE0060
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public Auto<DisposableBuffer> GetBuffer(CommandBuffer commandBuffer, int offset, int size, bool isWrite = false)
         {
             if (isWrite)
@@ -368,7 +366,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
 #pragma warning disable IDE0060 // Remove unused parameter
-        public unsafe IntPtr Map(int offset, int mappingSize)
+        public IntPtr Map(int offset, int mappingSize)
         {
             return _map;
         }
@@ -376,7 +374,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private void ClearFlushFence()
         {
-            // Asusmes _flushLock is held as writer.
+            // Assumes _flushLock is held as writer.
 
             if (_flushFence != null)
             {
