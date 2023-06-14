@@ -211,8 +211,7 @@ namespace Ryujinx.Ava.UI.Views.User
 
         private async void ImportSaveBackup(object sender, RoutedEventArgs e)
         {
-            // TODO: Use locales // LocaleManager.Instance[LocaleKeys.SaveManagerChooseRestoreZipPrimaryMessage]
-            bool userConfirmation = await ContentDialogHelper.CreateChoiceDialog(LocaleManager.Instance[LocaleKeys.SaveManagerChooseRestoreZipTitle],
+            bool userConfirmation = await ContentDialogHelper.CreateChoiceDialog(LocaleManager.Instance[LocaleKeys.SaveManagerConfirmRestoreTitle],
                 LocaleManager.Instance[LocaleKeys.SaveManagerChooseRestoreZipPrimaryMessage],
                 LocaleManager.Instance[LocaleKeys.SaveManagerChooseRestoreZipSecondaryMessage]);
 
@@ -223,8 +222,7 @@ namespace Ryujinx.Ava.UI.Views.User
 
             OpenFileDialog dialog = new()
             {
-                Title = "Choose Save Backup Zip", // TODO: localize
-                // LocaleManager.Instance[LocaleKeys.UserProfileWindowTitle]
+                Title = LocaleManager.Instance[LocaleKeys.SaveManagerChooseRestoreZipTitle],
                 AllowMultiple = false,
                 Filters = {
                     new FileDialogFilter() {

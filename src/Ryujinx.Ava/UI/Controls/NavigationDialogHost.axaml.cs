@@ -13,7 +13,6 @@ using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Views.User;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
-using Ryujinx.Ui.App.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,7 +41,6 @@ namespace Ryujinx.Ava.UI.Controls
             ContentManager = contentManager;
             VirtualFileSystem = virtualFileSystem;
             HorizonClient = horizonClient;
-
             ViewModel = new UserProfileViewModel();
             LoadProfiles();
 
