@@ -39,7 +39,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             private int _first;
             private int _last;
 
-            public bool IsBlockLocal => _first == _last;
+            public readonly bool IsBlockLocal => _first == _last;
 
             public LocalInfo(OperandType type, int uses, int blkIndex)
             {

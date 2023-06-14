@@ -9,8 +9,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public int Count { get; private set; }
 
-        public int FirstUse => Count > 0 ? _items[Count - 1] : LiveInterval.NotFound;
-        public Span<int> Span => new(_items, Count);
+        public readonly int FirstUse => Count > 0 ? _items[Count - 1] : LiveInterval.NotFound;
+        public readonly Span<int> Span => new(_items, Count);
 
         public void Add(int position)
         {
@@ -39,14 +39,14 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             Count++;
         }
 
-        public int NextUse(int position)
+        public readonly int NextUse(int position)
         {
             int index = NextUseIndex(position);
 
             return index != LiveInterval.NotFound ? _items[index] : LiveInterval.NotFound;
         }
 
-        public int NextUseIndex(int position)
+        public readonly int NextUseIndex(int position)
         {
             int i = Count - 1;
 

@@ -171,7 +171,7 @@ namespace ARMeilleure.State
         /// Returns a new <see cref="byte"/> array which represents the <see cref="V128"/>.
         /// </summary>
         /// <returns>A new <see cref="byte"/> array which represents the <see cref="V128"/></returns>
-        public byte[] ToArray()
+        public readonly byte[] ToArray()
         {
             byte[]     data = new byte[16];
             Span<byte> span = data;
@@ -276,7 +276,7 @@ namespace ARMeilleure.State
         /// </summary>
         /// <param name="other">Other <see cref="V128"/> instance</param>
         /// <returns>true if equal; otherwise false</returns>
-        public bool Equals(V128 other)
+        public readonly bool Equals(V128 other)
         {
             return other._e0 == _e0 && other._e1 == _e1;
         }
@@ -286,19 +286,19 @@ namespace ARMeilleure.State
         /// </summary>
         /// <param name="obj">Other <see cref="object"/> instance</param>
         /// <returns>true if equal; otherwise false</returns>
-        public override bool Equals(object obj)
+        public readonly override bool Equals(object obj)
         {
             return obj is V128 vector && Equals(vector);
         }
 
         /// <inheritdoc/>
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             return HashCode.Combine(_e0, _e1);
         }
 
         /// <inheritdoc/>
-        public override string ToString()
+        public readonly override string ToString()
         {
             return $"0x{_e1:X16}{_e0:X16}";
         }

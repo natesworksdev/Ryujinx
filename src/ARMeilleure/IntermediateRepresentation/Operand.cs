@@ -27,25 +27,25 @@ namespace ARMeilleure.IntermediateRepresentation
 
         private Data* _data;
 
-        public OperandKind Kind
+        public readonly OperandKind Kind
         {
             get => (OperandKind)_data->Kind;
             private set => _data->Kind = (byte)value;
         }
 
-        public OperandType Type
+        public readonly OperandType Type
         {
             get => (OperandType)_data->Type;
             private set => _data->Type = (byte)value;
         }
 
-        public ulong Value
+        public readonly ulong Value
         {
             get => _data->Value;
             private set => _data->Value = value;
         }
 
-        public Symbol Symbol
+        public readonly Symbol Symbol
         {
             get
             {
@@ -69,7 +69,7 @@ namespace ARMeilleure.IntermediateRepresentation
             }
         }
 
-        public ReadOnlySpan<Operation> Assignments
+        public readonly ReadOnlySpan<Operation> Assignments
         {
             get
             {
@@ -79,7 +79,7 @@ namespace ARMeilleure.IntermediateRepresentation
             }
         }
 
-        public ReadOnlySpan<Operation> Uses
+        public readonly ReadOnlySpan<Operation> Uses
         {
             get
             {
@@ -89,13 +89,13 @@ namespace ARMeilleure.IntermediateRepresentation
             }
         }
 
-        public int UsesCount => (int)_data->UsesCount;
-        public int AssignmentsCount => _data->AssignmentsCount;
+        public readonly int UsesCount => (int)_data->UsesCount;
+        public readonly int AssignmentsCount => _data->AssignmentsCount;
 
-        public bool Relocatable => Symbol.Type != SymbolType.None;
+        public readonly bool Relocatable => Symbol.Type != SymbolType.None;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Register GetRegister()
+        public readonly Register GetRegister()
         {
             Debug.Assert(Kind == OperandKind.Register);
 
@@ -103,52 +103,52 @@ namespace ARMeilleure.IntermediateRepresentation
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public MemoryOperand GetMemory()
+        public readonly MemoryOperand GetMemory()
         {
             Debug.Assert(Kind == OperandKind.Memory);
 
             return new MemoryOperand(this);
         }
 
-        public int GetLocalNumber()
+        public readonly int GetLocalNumber()
         {
             Debug.Assert(Kind == OperandKind.LocalVariable);
 
             return (int)Value;
         }
 
-        public byte AsByte()
+        public readonly byte AsByte()
         {
             return (byte)Value;
         }
 
-        public short AsInt16()
+        public readonly short AsInt16()
         {
             return (short)Value;
         }
 
-        public int AsInt32()
+        public readonly int AsInt32()
         {
             return (int)Value;
         }
 
-        public long AsInt64()
+        public readonly long AsInt64()
         {
             return (long)Value;
         }
 
-        public float AsFloat()
+        public readonly float AsFloat()
         {
             return BitConverter.Int32BitsToSingle((int)Value);
         }
 
-        public double AsDouble()
+        public readonly double AsDouble()
         {
             return BitConverter.Int64BitsToDouble((long)Value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal ref ulong GetValueUnsafe()
+        internal readonly ref ulong GetValueUnsafe()
         {
             return ref _data->Value;
         }
@@ -163,7 +163,7 @@ namespace ARMeilleure.IntermediateRepresentation
             Value = (ulong)number;
         }
 
-        public void AddAssignment(Operation operation)
+        public readonly void AddAssignment(Operation operation)
         {
             if (Kind == OperandKind.LocalVariable)
             {
@@ -187,7 +187,7 @@ namespace ARMeilleure.IntermediateRepresentation
             }
         }
 
-        public void RemoveAssignment(Operation operation)
+        public readonly void RemoveAssignment(Operation operation)
         {
             if (Kind == OperandKind.LocalVariable)
             {
@@ -211,7 +211,7 @@ namespace ARMeilleure.IntermediateRepresentation
             }
         }
 
-        public void AddUse(Operation operation)
+        public readonly void AddUse(Operation operation)
         {
             if (Kind == OperandKind.LocalVariable)
             {
@@ -235,7 +235,7 @@ namespace ARMeilleure.IntermediateRepresentation
             }
         }
 
-        public void RemoveUse(Operation operation)
+        public readonly void RemoveUse(Operation operation)
         {
             if (Kind == OperandKind.LocalVariable)
             {
@@ -259,7 +259,7 @@ namespace ARMeilleure.IntermediateRepresentation
             }
         }
 
-        public Span<Operation> GetUses(ref Span<Operation> buffer)
+        public readonly Span<Operation> GetUses(ref Span<Operation> buffer)
         {
             ReadOnlySpan<Operation> uses = Uses;
 
@@ -390,17 +390,17 @@ namespace ARMeilleure.IntermediateRepresentation
             }
         }
 
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             return ((ulong)_data).GetHashCode();
         }
 
-        public bool Equals(Operand operand)
+        public readonly bool Equals(Operand operand)
         {
             return operand._data == _data;
         }
 
-        public override bool Equals(object obj)
+        public readonly override bool Equals(object obj)
         {
             return obj is Operand operand && Equals(operand);
         }
