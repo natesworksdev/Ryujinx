@@ -13,12 +13,7 @@ namespace Ryujinx.Cpu.AppleHv
             _tickSource = tickSource;
             _memoryManager = (HvMemoryManager)memory;
         }
-
-#pragma warning disable IDE0051 // Remove unused private member
-        private static void UnmapHandler(ulong address, ulong size)
-        {
-        }
-#pragma warning restore IDE0060, IDE0051
+#pragma warning restore IDE0060
 
         /// <inheritdoc/>
         public IExecutionContext CreateExecutionContext(ExceptionCallbacks exceptionCallbacks)
