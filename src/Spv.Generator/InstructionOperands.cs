@@ -52,16 +52,16 @@ namespace Spv.Generator
             }
         }
 
-        private IEnumerable<IOperand> AllOperands => new[] { Operand1, Operand2, Operand3, Operand4, Operand5 }
+        private readonly IEnumerable<IOperand> AllOperands => new[] { Operand1, Operand2, Operand3, Operand4, Operand5 }
             .Concat(Overflow ?? Array.Empty<IOperand>())
             .Take(Count);
 
-        public override string ToString()
+        public readonly override string ToString()
         {
             return $"({string.Join(", ", AllOperands)})";
         }
 
-        public string ToString(string[] labels)
+        public readonly string ToString(string[] labels)
         {
             var labeledParams = AllOperands.Zip(labels, (op, label) => $"{label}: {op}");
             var unlabeledParams = AllOperands.Skip(labels.Length).Select(op => op.ToString());
