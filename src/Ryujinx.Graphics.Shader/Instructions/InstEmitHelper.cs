@@ -115,9 +115,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 ConstF((float)Unsafe.As<ushort, Half>(ref high))
             };
         }
-#pragma warning restore IDE0060
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static Operand[] GetHalfSrc(EmitterContext context, int imm32)
         {
             ushort low = (ushort)imm32;
