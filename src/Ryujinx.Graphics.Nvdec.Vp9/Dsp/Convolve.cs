@@ -340,9 +340,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
         {
             ConvolveHoriz(src, srcStride, dst, dstStride, filter, x0Q4, xStepQ4, w, h);
         }
-#pragma warning restore IDE0060
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static unsafe void Convolve8AvgHoriz(
             byte* src,
             int srcStride,
@@ -358,9 +356,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
         {
             ConvolveAvgHoriz(src, srcStride, dst, dstStride, filter, x0Q4, xStepQ4, w, h);
         }
-#pragma warning restore IDE0060
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static unsafe void Convolve8Vert(
             byte* src,
             int srcStride,
@@ -376,9 +372,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
         {
             ConvolveVert(src, srcStride, dst, dstStride, filter, y0Q4, yStepQ4, w, h);
         }
-#pragma warning restore IDE0060
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static unsafe void Convolve8AvgVert(
             byte* src,
             int srcStride,
@@ -807,9 +801,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
         {
             HighbdConvolveHoriz(src, srcStride, dst, dstStride, filter, x0Q4, xStepQ4, w, h, bd);
         }
-#pragma warning restore IDE0060
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static unsafe void HighbdConvolve8AvgHoriz(
             ushort* src,
             int srcStride,
@@ -826,9 +818,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
         {
             HighbdConvolveAvgHoriz(src, srcStride, dst, dstStride, filter, x0Q4, xStepQ4, w, h, bd);
         }
-#pragma warning restore IDE0060
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static unsafe void HighbdConvolve8Vert(
             ushort* src,
             int srcStride,
@@ -845,9 +835,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
         {
             HighbdConvolveVert(src, srcStride, dst, dstStride, filter, y0Q4, yStepQ4, w, h, bd);
         }
-#pragma warning restore IDE0060
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static unsafe void HighbdConvolve8AvgVert(
             ushort* src,
             int srcStride,
