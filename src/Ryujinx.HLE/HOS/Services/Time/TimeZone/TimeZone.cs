@@ -52,7 +52,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             public sbyte Minute;
             public sbyte Second;
 
-            public int CompareTo(CalendarTimeInternal other)
+            public readonly int CompareTo(CalendarTimeInternal other)
             {
                 if (Year != other.Year)
                 {

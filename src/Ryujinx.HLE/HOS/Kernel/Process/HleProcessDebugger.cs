@@ -190,9 +190,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             public ulong Offset;
             public ulong SubOffset;
 
-            public string ImageDisplay => $"{ImageName}:0x{Offset:x4}";
-            public string SubDisplay => SubOffset == 0 ? SubName : $"{SubName}:0x{SubOffset:x4}";
-            public string SpDisplay => SubOffset == 0 ? "SP" : $"SP:-0x{SubOffset:x4}";
+            public readonly string ImageDisplay => $"{ImageName}:0x{Offset:x4}";
+            public readonly string SubDisplay => SubOffset == 0 ? SubName : $"{SubName}:0x{SubOffset:x4}";
+            public readonly string SpDisplay => SubOffset == 0 ? "SP" : $"SP:-0x{SubOffset:x4}";
         }
 
         private bool AnalyzePointer(out PointerInfo info, ulong address, KThread thread)

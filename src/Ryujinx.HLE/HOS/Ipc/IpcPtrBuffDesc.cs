@@ -30,12 +30,12 @@ namespace Ryujinx.HLE.HOS.Ipc
             Size = (ushort)(word0 >> 16);
         }
 
-        public IpcPtrBuffDesc WithSize(ulong size)
+        public readonly IpcPtrBuffDesc WithSize(ulong size)
         {
             return new IpcPtrBuffDesc(Position, Index, size);
         }
 
-        public uint GetWord0()
+        public readonly uint GetWord0()
         {
             uint word0;
 
@@ -50,7 +50,7 @@ namespace Ryujinx.HLE.HOS.Ipc
             return word0;
         }
 
-        public uint GetWord1()
+        public readonly uint GetWord1()
         {
             return (uint)Position;
         }

@@ -44,7 +44,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
             private readonly RandomMiiValues _values;
 
-            public ReadOnlySpan<int> Values => _values.Values[..ValuesCount];
+            public readonly ReadOnlySpan<int> Values => _values.Values[..ValuesCount];
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 0xC8)]
@@ -57,7 +57,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
             private readonly RandomMiiValues _values;
 
-            public ReadOnlySpan<int> Values => _values.Values[..ValuesCount];
+            public readonly ReadOnlySpan<int> Values => _values.Values[..ValuesCount];
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 0xC4)]
@@ -68,7 +68,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
             private readonly RandomMiiValues _values;
 
-            public ReadOnlySpan<int> Values => _values.Values[..ValuesCount];
+            public readonly ReadOnlySpan<int> Values => _values.Values[..ValuesCount];
         }
 
         public static ReadOnlySpan<RandomMiiData4> RandomMiiFacelineArray => MemoryMarshal.Cast<byte, RandomMiiData4>(RandomMiiFacelineRawArray);

@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         public CreateId CreateId { get; private set; }
 
-        public ResultCode InvalidData => ResultCode.InvalidStoreData;
+        public readonly ResultCode InvalidData => ResultCode.InvalidStoreData;
 
         private void UpdateDataCrc()
         {
@@ -183,7 +183,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             this = storeData;
         }
 
-        public void SetSource(Source source)
+        public readonly void SetSource(Source source)
         {
             // Only implemented for Element variants.
         }
@@ -198,12 +198,12 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             return !x.Equals(y);
         }
 
-        public override bool Equals(object obj)
+        public readonly override bool Equals(object obj)
         {
             return obj is StoreData storeData && Equals(storeData);
         }
 
-        public bool Equals(StoreData cmpObj)
+        public readonly bool Equals(StoreData cmpObj)
         {
             if (!cmpObj.IsValid())
             {
@@ -220,7 +220,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             return result;
         }
 
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             HashCode hashCode = new();
 

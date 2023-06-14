@@ -59,11 +59,11 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         public byte MoleY;
         public byte Reserved;
 
-        byte IStoredData<CharInfo>.Type => Type;
+        readonly byte IStoredData<CharInfo>.Type => Type;
 
-        CreateId IStoredData<CharInfo>.CreateId => CreateId;
+        readonly CreateId IStoredData<CharInfo>.CreateId => CreateId;
 
-        public ResultCode InvalidData => ResultCode.InvalidCharInfo;
+        public readonly ResultCode InvalidData => ResultCode.InvalidCharInfo;
 
         public bool IsValid()
         {
@@ -336,7 +336,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             Reserved = 0;
         }
 
-        public void SetSource(Source source)
+        public readonly void SetSource(Source source)
         {
             // Only implemented for Element variants.
         }
@@ -351,12 +351,12 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             return !x.Equals(y);
         }
 
-        public override bool Equals(object obj)
+        public readonly override bool Equals(object obj)
         {
             return obj is CharInfo charInfo && Equals(charInfo);
         }
 
-        public bool Equals(CharInfo cmpObj)
+        public readonly bool Equals(CharInfo cmpObj)
         {
             if (!cmpObj.IsValid())
             {
@@ -420,7 +420,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             return result;
         }
 
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             HashCode hashCode = new();
 

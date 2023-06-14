@@ -11,12 +11,12 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         public GraphicBufferHeader Header;
         public NvGraphicBuffer     Buffer;
 
-        public int Width => Header.Width;
-        public int Height => Header.Height;
-        public PixelFormat Format => Header.Format;
-        public int Usage => Header.Usage;
+        public readonly int Width => Header.Width;
+        public readonly int Height => Header.Height;
+        public readonly PixelFormat Format => Header.Format;
+        public readonly int Usage => Header.Usage;
 
-        public Rect ToRect()
+        public readonly Rect ToRect()
         {
             return new Rect(Width, Height);
         }
@@ -41,7 +41,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             Buffer = parcel.ReadUnmanagedType<NvGraphicBuffer>();
         }
 
-        public void IncrementNvMapHandleRefCount(ulong pid)
+        public readonly void IncrementNvMapHandleRefCount(ulong pid)
         {
             NvMapDeviceFile.IncrementMapRefCount(pid, Buffer.NvMapId);
 
@@ -51,7 +51,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             }
         }
 
-        public void DecrementNvMapHandleRefCount(ulong pid)
+        public readonly void DecrementNvMapHandleRefCount(ulong pid)
         {
             NvMapDeviceFile.DecrementMapRefCount(pid, Buffer.NvMapId);
 
@@ -61,12 +61,12 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             }
         }
 
-        public uint GetFlattenedSize()
+        public readonly uint GetFlattenedSize()
         {
             return (uint)Unsafe.SizeOf<GraphicBuffer>();
         }
 
-        public uint GetFdCount()
+        public readonly uint GetFdCount()
         {
             return 0;
         }

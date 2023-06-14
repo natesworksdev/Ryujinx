@@ -54,7 +54,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
             public uint EntriesCount;
 #pragma warning restore CS0649
 
-            public bool IsValid()
+            public readonly bool IsValid()
             {
                 return Magic == ValidMagic;
             }

@@ -154,7 +154,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 BufferAddress = (BufferAddress << 32) | (dword >> 32);
             }
 
-            public ulong Pack()
+            public readonly ulong Pack()
             {
                 ulong dword = (ReceiveIndex & 0xf) | ((BufferSize & 0xffff) << 16);
 

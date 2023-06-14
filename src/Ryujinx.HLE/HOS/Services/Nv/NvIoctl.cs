@@ -37,9 +37,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
         public uint RawValue;
 
-        public uint Number => (RawValue >> NumberShift) & NumberMask;
-        public uint Type => (RawValue >> TypeShift) & TypeMask;
-        public uint Size => (RawValue >> SizeShift) & SizeMask;
-        public Direction DirectionValue => (Direction)((RawValue >> DirectionShift) & DirectionMask);
+        public readonly uint Number => (RawValue >> NumberShift) & NumberMask;
+        public readonly uint Type => (RawValue >> TypeShift) & TypeMask;
+        public readonly uint Size => (RawValue >> SizeShift) & SizeMask;
+        public readonly Direction DirectionValue => (Direction)((RawValue >> DirectionShift) & DirectionMask);
     }
 }

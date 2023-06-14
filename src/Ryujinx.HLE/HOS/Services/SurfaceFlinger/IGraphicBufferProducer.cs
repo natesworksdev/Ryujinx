@@ -50,12 +50,12 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 parcel.WriteUnmanagedType(ref this);
             }
 
-            public uint GetFdCount()
+            public readonly uint GetFdCount()
             {
                 return 0;
             }
 
-            public uint GetFlattenedSize()
+            public readonly uint GetFlattenedSize()
             {
                 return (uint)Unsafe.SizeOf<QueueBufferInput>();
             }

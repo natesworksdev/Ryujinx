@@ -17,17 +17,17 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             NanoSeconds = nanoSeconds;
         }
 
-        public long ToSeconds()
+        public readonly long ToSeconds()
         {
             return NanoSeconds / NanoSecondsPerSecond;
         }
 
-        public TimeSpanType AddSeconds(long seconds)
+        public readonly TimeSpanType AddSeconds(long seconds)
         {
             return new TimeSpanType(NanoSeconds + (seconds * NanoSecondsPerSecond));
         }
 
-        public bool IsDaylightSavingTime()
+        public readonly bool IsDaylightSavingTime()
         {
             return DateTime.UnixEpoch.AddSeconds(ToSeconds()).ToLocalTime().IsDaylightSavingTime();
         }

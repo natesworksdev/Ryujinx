@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator.FriendService
             public const int Size = 0xC0;
         }
 
-        public override string ToString()
+        public readonly override string ToString()
         {
             return $"UserPresence {{ UserId: {UserId}, LastTimeOnlineTimestamp: {LastTimeOnlineTimestamp}, Status: {Status} }}";
         }

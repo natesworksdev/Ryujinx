@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         // Set to true to allow fixing database with invalid storedata device crc instead of deleting them.
         private const bool AcceptInvalidDeviceCrc = true;
 
-        public int Length => _figurineCount;
+        public readonly int Length => _figurineCount;
 
         [StructLayout(LayoutKind.Sequential, Size = FigurineArraySize)]
         private struct FigurineStorageStruct { }
@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             return Figurines[index];
         }
 
-        public bool IsFull()
+        public readonly bool IsFull()
         {
             return Length >= MaxMii;
         }
