@@ -421,7 +421,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         private static void EmitFsetp(
             EmitterContext context,
             FComp cmpOp,
@@ -454,7 +453,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
             context.Copy(Register(destPred, RegisterType.Predicate), p0Res);
             context.Copy(Register(destPredInv, RegisterType.Predicate), p1Res);
         }
-#pragma warning restore IDE0060
 
         private static void EmitHset2(
             EmitterContext context,

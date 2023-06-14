@@ -30,7 +30,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             return name;
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public string GetExpression(CodeGenContext context, AstOperand operand)
         {
             return operand.Type switch
@@ -42,7 +41,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 _ => throw new ArgumentException($"Invalid operand type \"{operand.Type}\".")
             };
         }
-#pragma warning restore IDE0060
 
         public static string GetSamplerName(ShaderStage stage, AstTextureOperation texOp, string indexExpr)
         {

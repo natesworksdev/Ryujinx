@@ -103,7 +103,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
             return FPAbsNeg(context, operands, absolute, negate);
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static Operand[] GetHalfSrc(EmitterContext context, int immH0, int immH1)
         {
             ushort low = (ushort)(immH0 << 6);
@@ -127,7 +126,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 ConstF((float)Unsafe.As<ushort, Half>(ref high))
             };
         }
-#pragma warning restore IDE0060
 
         public static Operand[] FPAbsNeg(EmitterContext context, Operand[] operands, bool abs, bool neg)
         {

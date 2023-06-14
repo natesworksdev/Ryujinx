@@ -1095,7 +1095,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
             context.Add(operation);
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         private static void EmitTxq(
             EmitterContext context,
             TexQuery query,
@@ -1182,7 +1181,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 }
             }
         }
-#pragma warning restore IDE0060
 
         private static SamplerType ConvertSamplerType(TexDim dimensions)
         {
