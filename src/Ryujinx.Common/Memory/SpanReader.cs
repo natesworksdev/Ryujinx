@@ -8,7 +8,7 @@ namespace Ryujinx.Common.Memory
     {
         private ReadOnlySpan<byte> _input;
 
-        public int Length => _input.Length;
+        public readonly int Length => _input.Length;
 
         public SpanReader(ReadOnlySpan<byte> input)
         {
@@ -56,12 +56,12 @@ namespace Ryujinx.Common.Memory
             return GetSpan((int)Math.Min((uint)_input.Length, (uint)size));
         }
 
-        public T ReadAt<T>(int offset) where T : unmanaged
+        public readonly T ReadAt<T>(int offset) where T : unmanaged
         {
             return MemoryMarshal.Cast<byte, T>(_input[offset..])[0];
         }
 
-        public ReadOnlySpan<byte> GetSpanAt(int offset, int size)
+        public readonly ReadOnlySpan<byte> GetSpanAt(int offset, int size)
         {
             return _input.Slice(offset, size);
         }

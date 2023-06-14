@@ -6,7 +6,7 @@ namespace Ryujinx.Common.Memory
     public struct Array1<T> : IArray<T> where T : unmanaged
     {
         T _e0;
-        public int Length => 1;
+        public readonly int Length => 1;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 1);
     }
@@ -16,7 +16,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array1<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 2;
+        public readonly int Length => 2;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 2);
     }
@@ -26,7 +26,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array2<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 3;
+        public readonly int Length => 3;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 3);
     }
@@ -36,7 +36,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array3<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 4;
+        public readonly int Length => 4;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 4);
     }
@@ -46,7 +46,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array4<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 5;
+        public readonly int Length => 5;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 5);
     }
@@ -56,7 +56,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array5<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 6;
+        public readonly int Length => 6;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 6);
     }
@@ -66,7 +66,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array6<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 7;
+        public readonly int Length => 7;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 7);
     }
@@ -76,7 +76,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array7<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 8;
+        public readonly int Length => 8;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 8);
     }
@@ -86,7 +86,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array8<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 9;
+        public readonly int Length => 9;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 9);
     }
@@ -96,7 +96,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array9<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 10;
+        public readonly int Length => 10;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 10);
     }
@@ -106,7 +106,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array10<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 11;
+        public readonly int Length => 11;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 11);
     }
@@ -116,7 +116,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array11<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 12;
+        public readonly int Length => 12;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 12);
     }
@@ -126,7 +126,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array12<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 13;
+        public readonly int Length => 13;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 13);
     }
@@ -136,7 +136,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array13<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 14;
+        public readonly int Length => 14;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 14);
     }
@@ -146,7 +146,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array14<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 15;
+        public readonly int Length => 15;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 15);
     }
@@ -156,7 +156,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array15<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 16;
+        public readonly int Length => 16;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 16);
     }
@@ -166,7 +166,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array16<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 17;
+        public readonly int Length => 17;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 17);
     }
@@ -176,7 +176,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array17<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 18;
+        public readonly int Length => 18;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 18);
     }
@@ -186,7 +186,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array18<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 19;
+        public readonly int Length => 19;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 19);
     }
@@ -196,7 +196,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array19<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 20;
+        public readonly int Length => 20;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 20);
     }
@@ -206,7 +206,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array20<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 21;
+        public readonly int Length => 21;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 21);
     }
@@ -216,7 +216,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array21<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 22;
+        public readonly int Length => 22;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 22);
     }
@@ -226,7 +226,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array22<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 23;
+        public readonly int Length => 23;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 23);
     }
@@ -236,7 +236,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array23<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 24;
+        public readonly int Length => 24;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 24);
     }
@@ -246,7 +246,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array24<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 25;
+        public readonly int Length => 25;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 25);
     }
@@ -256,7 +256,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array25<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 26;
+        public readonly int Length => 26;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 26);
     }
@@ -266,7 +266,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array26<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 27;
+        public readonly int Length => 27;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 27);
     }
@@ -276,7 +276,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array27<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 28;
+        public readonly int Length => 28;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 28);
     }
@@ -286,7 +286,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array28<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 29;
+        public readonly int Length => 29;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 29);
     }
@@ -296,7 +296,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array29<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 30;
+        public readonly int Length => 30;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 30);
     }
@@ -306,7 +306,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array30<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 31;
+        public readonly int Length => 31;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 31);
     }
@@ -316,7 +316,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array31<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 32;
+        public readonly int Length => 32;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 32);
     }
@@ -326,7 +326,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array32<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 33;
+        public readonly int Length => 33;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 33);
     }
@@ -336,7 +336,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array33<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 34;
+        public readonly int Length => 34;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 34);
     }
@@ -346,7 +346,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array34<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 35;
+        public readonly int Length => 35;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 35);
     }
@@ -356,7 +356,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array35<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 36;
+        public readonly int Length => 36;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 36);
     }
@@ -366,7 +366,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array36<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 37;
+        public readonly int Length => 37;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 37);
     }
@@ -376,7 +376,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array37<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 38;
+        public readonly int Length => 38;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 38);
     }
@@ -386,7 +386,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array38<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 39;
+        public readonly int Length => 39;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 39);
     }
@@ -396,7 +396,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array39<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 40;
+        public readonly int Length => 40;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 40);
     }
@@ -406,7 +406,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array40<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 41;
+        public readonly int Length => 41;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 41);
     }
@@ -416,7 +416,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array41<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 42;
+        public readonly int Length => 42;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 42);
     }
@@ -426,7 +426,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array42<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 43;
+        public readonly int Length => 43;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 43);
     }
@@ -436,7 +436,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array43<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 44;
+        public readonly int Length => 44;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 44);
     }
@@ -446,7 +446,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array44<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 45;
+        public readonly int Length => 45;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 45);
     }
@@ -456,7 +456,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array45<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 46;
+        public readonly int Length => 46;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 46);
     }
@@ -466,7 +466,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array46<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 47;
+        public readonly int Length => 47;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 47);
     }
@@ -476,7 +476,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array47<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 48;
+        public readonly int Length => 48;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 48);
     }
@@ -486,7 +486,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array48<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 49;
+        public readonly int Length => 49;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 49);
     }
@@ -496,7 +496,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array49<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 50;
+        public readonly int Length => 50;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 50);
     }
@@ -506,7 +506,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array50<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 51;
+        public readonly int Length => 51;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 51);
     }
@@ -516,7 +516,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array51<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 52;
+        public readonly int Length => 52;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 52);
     }
@@ -526,7 +526,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array52<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 53;
+        public readonly int Length => 53;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 53);
     }
@@ -536,7 +536,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array53<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 54;
+        public readonly int Length => 54;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 54);
     }
@@ -546,7 +546,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array54<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 55;
+        public readonly int Length => 55;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 55);
     }
@@ -556,7 +556,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array55<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 56;
+        public readonly int Length => 56;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 56);
     }
@@ -566,7 +566,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array56<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 57;
+        public readonly int Length => 57;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 57);
     }
@@ -576,7 +576,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array57<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 58;
+        public readonly int Length => 58;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 58);
     }
@@ -586,7 +586,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array58<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 59;
+        public readonly int Length => 59;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 59);
     }
@@ -596,7 +596,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array59<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 60;
+        public readonly int Length => 60;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 60);
     }
@@ -606,7 +606,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array60<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 61;
+        public readonly int Length => 61;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 61);
     }
@@ -616,7 +616,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array61<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 62;
+        public readonly int Length => 62;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 62);
     }
@@ -626,7 +626,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array62<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 63;
+        public readonly int Length => 63;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 63);
     }
@@ -636,7 +636,7 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array63<T> _other;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 64;
+        public readonly int Length => 64;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 64);
     }
@@ -647,7 +647,7 @@ namespace Ryujinx.Common.Memory
         Array64<T> _other;
         Array8<T> _other2;
 #pragma warning restore CS0169, IDE0051
-        public int Length => 73;
+        public readonly int Length => 73;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 73);
     }
@@ -660,7 +660,7 @@ namespace Ryujinx.Common.Memory
         Array62<T> _other2;
 #pragma warning restore CS0169, IDE0051
 
-        public int Length => 127;
+        public readonly int Length => 127;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 127);
     }
@@ -673,7 +673,7 @@ namespace Ryujinx.Common.Memory
         Array63<T> _other2;
 #pragma warning restore CS0169, IDE0051
 
-        public int Length => 128;
+        public readonly int Length => 128;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 128);
     }
@@ -686,7 +686,7 @@ namespace Ryujinx.Common.Memory
         Array127<T> _other2;
 #pragma warning restore CS0169, IDE0051
 
-        public int Length => 256;
+        public readonly int Length => 256;
         public ref T this[int index] => ref AsSpan()[index];
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, 256);
     }

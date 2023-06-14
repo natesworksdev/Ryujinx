@@ -8,7 +8,7 @@ namespace Ryujinx.Common.Memory
     {
         private Span<byte> _output;
 
-        public int Length => _output.Length;
+        public readonly int Length => _output.Length;
 
         public SpanWriter(Span<byte> output)
         {
@@ -27,12 +27,12 @@ namespace Ryujinx.Common.Memory
             _output = _output[data.Length..];
         }
 
-        public void WriteAt<T>(int offset, T value) where T : unmanaged
+        public readonly void WriteAt<T>(int offset, T value) where T : unmanaged
         {
             MemoryMarshal.Cast<byte, T>(_output[offset..])[0] = value;
         }
 
-        public void WriteAt(int offset, ReadOnlySpan<byte> data)
+        public readonly void WriteAt(int offset, ReadOnlySpan<byte> data)
         {
             data.CopyTo(_output.Slice(offset, data.Length));
         }
