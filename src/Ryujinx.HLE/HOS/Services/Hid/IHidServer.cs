@@ -1095,7 +1095,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         private static void SetNpadJoyAssignmentModeSingleWithDestinationImpl(ServiceCtx context, NpadIdType npadIdType, long appletResourceUserId, NpadJoyDeviceType npadJoyDeviceType, out NpadIdType npadIdTypeSet, out bool npadIdTypeIsSet)
         {
             npadIdTypeSet = default;
@@ -1107,7 +1106,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             //       If one is found, it returns the npadIdType of the other Npad and a bool.
             //       If not, it returns nothing.
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(200)]
         // GetVibrationDeviceInfo(nn::hid::VibrationDeviceHandle) -> nn::hid::VibrationDeviceInfo
@@ -1346,14 +1344,12 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         [CommandCmif(210)] // 4.0.0+
         // EndPermitVibrationSession()
-#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode EndPermitVibrationSession(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(211)] // 7.0.0+
         // IsVibrationDeviceMounted(nn::hid::VibrationDeviceHandle, nn::applet::AppletResourceUserId)
@@ -1784,14 +1780,12 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         [CommandCmif(525)] // 5.1.0+
         // SetPalmaBoostMode(bool)
-#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode SetPalmaBoostMode(ServiceCtx context)
         {
             // NOTE: Stubbed in system module.
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(1000)]
         // SetNpadCommunicationMode(long CommunicationMode, nn::applet::AppletResourceUserId)

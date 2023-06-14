@@ -56,7 +56,6 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
         [CommandCmif(1)] //2.0.0+
         // nn::friends::detail::ipc::INotificationService::Clear()
-#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode Clear(ServiceCtx context)
         {
             lock (_lock)
@@ -69,7 +68,6 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(2)] // 2.0.0+
         // nn::friends::detail::ipc::INotificationService::Pop() -> nn::friends::detail::ipc::SizedNotificationInfo

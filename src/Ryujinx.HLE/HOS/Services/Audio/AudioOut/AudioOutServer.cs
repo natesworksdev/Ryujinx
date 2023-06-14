@@ -29,21 +29,17 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOut
 
         [CommandCmif(1)]
         // Start()
-#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode Start(ServiceCtx context)
         {
             return _impl.Start();
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(2)]
         // Stop()
-#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode Stop(ServiceCtx context)
         {
             return _impl.Stop();
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(3)]
         // AppendAudioOutBuffer(u64 bufferTag, buffer<nn::audio::AudioOutBuffer, 5> buffer)

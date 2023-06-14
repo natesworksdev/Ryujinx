@@ -13,9 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
     {
         // NOTE: The SSL service is used by games to connect it to various official online services, which we do not intend to support.
         //       In this case it is acceptable to stub all calls of the service.
-#pragma warning disable IDE0060 // Remove unused parameter
         public ISslService(ServiceCtx context) { }
-#pragma warning restore IDE0060
 
         [CommandCmif(0)]
         // CreateContext(nn::ssl::sf::SslVersion, u64, pid) -> object<nn::ssl::sf::ISslContext>

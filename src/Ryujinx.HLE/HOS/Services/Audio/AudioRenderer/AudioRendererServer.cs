@@ -94,21 +94,17 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 
         [CommandCmif(5)]
         // Start()
-#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode Start(ServiceCtx context)
         {
             return _impl.Start();
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(6)]
         // Stop()
-#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode Stop(ServiceCtx context)
         {
             return _impl.Stop();
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(7)]
         // QuerySystemEvent() -> handle<copy, event>
@@ -181,12 +177,10 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 
         [CommandCmif(11)] // 3.0.0+
         // ExecuteAudioRendererRendering()
-#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode ExecuteAudioRendererRendering(ServiceCtx context)
         {
             return _impl.ExecuteAudioRendererRendering();
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(12)] // 15.0.0+
         // SetVoiceDropParameter(f32 voiceDropParameter)

@@ -7,9 +7,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns
     [Service("ns:web")]
     class IServiceGetterInterface : IpcService
     {
-#pragma warning disable IDE0060 // Remove unused parameter
         public IServiceGetterInterface(ServiceCtx context) { }
-#pragma warning restore IDE0060
 
         [CommandCmif(7996)]
         // GetApplicationManagerInterface() -> object<nn::ns::detail::IApplicationManagerInterface>

@@ -16,13 +16,11 @@ namespace Ryujinx.HLE.HOS.Services.Time
         private readonly TimeManager _timeManager;
         private int         _automaticCorrectionEvent;
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public ITimeServiceManager(ServiceCtx context)
         {
             _timeManager = TimeManager.Instance;
             _automaticCorrectionEvent = 0;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(0)]
         // GetUserStaticService() -> object<nn::timesrv::detail::service::IStaticService>
@@ -143,14 +141,12 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         [CommandCmif(15)]
         // SetupEphemeralNetworkSystemClock()
-#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode SetupEphemeralNetworkSystemClock(ServiceCtx context)
         {
             _timeManager.SetupEphemeralNetworkSystemClock();
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(50)]
         // Unknown50() -> handle<copy>

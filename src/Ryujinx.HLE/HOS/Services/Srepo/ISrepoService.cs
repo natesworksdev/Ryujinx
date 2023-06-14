@@ -4,8 +4,6 @@
     [Service("srepo:u")] // 5.0.0+
     class ISrepoService : IpcService
     {
-#pragma warning disable IDE0060 // Remove unused parameter
         public ISrepoService(ServiceCtx context) { }
-#pragma warning restore IDE0060
     }
 }

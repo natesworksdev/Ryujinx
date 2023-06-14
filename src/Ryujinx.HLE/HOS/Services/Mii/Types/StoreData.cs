@@ -83,7 +83,6 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             return AsSpan()[..(Size - 2)];
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static StoreData BuildDefault(UtilityImpl utilImpl, uint index)
         {
             StoreData result = new()
@@ -156,14 +155,12 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
             return result;
         }
-#pragma warning restore IDE0060
 
         public static StoreData BuildRandom(UtilityImpl utilImpl, Age age, Gender gender, Race race)
         {
             return BuildFromCoreData(utilImpl, CoreData.BuildRandom(utilImpl, age, gender, race));
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static StoreData BuildFromCoreData(UtilityImpl utilImpl, CoreData coreData)
         {
             StoreData result = new()
@@ -176,7 +173,6 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
             return result;
         }
-#pragma warning restore IDE0060
 
         public void SetFromStoreData(StoreData storeData)
         {

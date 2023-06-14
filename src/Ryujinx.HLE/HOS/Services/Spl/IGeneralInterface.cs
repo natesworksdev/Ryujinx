@@ -12,9 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Spl
     [Service("spl:ssl")]
     class IGeneralInterface : IpcService
     {
-#pragma warning disable IDE0060 // Remove unused parameter
         public IGeneralInterface(ServiceCtx context) { }
-#pragma warning restore IDE0060
 
         [CommandCmif(0)]
         // GetConfig(u32 config_item) -> u64 config_value

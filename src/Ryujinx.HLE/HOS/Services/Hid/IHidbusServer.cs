@@ -6,9 +6,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
     [Service("hidbus")]
     class IHidbusServer : IpcService
     {
-#pragma warning disable IDE0060 // Remove unused parameter
         public IHidbusServer(ServiceCtx context) { }
-#pragma warning restore IDE0060
 
         [CommandCmif(1)]
         // GetBusHandle(nn::hid::NpadIdType, nn::hidbus::BusType, nn::applet::AppletResourceUserId) -> (bool HasHandle, nn::hidbus::BusHandle)

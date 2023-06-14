@@ -3,9 +3,7 @@
     [Service("ngct:s")] // 9.0.0+
     class IServiceWithManagementApi : IpcService
     {
-#pragma warning disable IDE0060 // Remove unused parameter
         public IServiceWithManagementApi(ServiceCtx context) { }
-#pragma warning restore IDE0060
 
         [CommandCmif(0)]
         // Match(buffer<string, 9>) -> b8

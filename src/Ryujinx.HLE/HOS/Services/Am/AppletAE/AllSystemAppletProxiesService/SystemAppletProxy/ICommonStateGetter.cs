@@ -128,14 +128,14 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(10)]
         // RequestToAcquireSleepLock()
-#pragma warning disable IDE0060, CA1822 // Remove unused parameter, Mark member as static
+#pragma warning disable CA1822 // Mark member as static
         public ResultCode RequestToAcquireSleepLock(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060, CA1822
+#pragma warning restore CA1822
 
         [CommandCmif(13)]
         // GetAcquiredSleepLockEvent() -> handle<copy>
@@ -192,25 +192,21 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(53)] // 7.0.0+
         // BeginVrModeEx()
-#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode BeginVrModeEx(ServiceCtx context)
         {
             UpdateVrMode(true);
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(54)] // 7.0.0+
         // EndVrModeEx()
-#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode EndVrModeEx(ServiceCtx context)
         {
             UpdateVrMode(false);
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         private void UpdateVrMode(bool vrModeEnabled)
         {
@@ -317,7 +313,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(900)] // 11.0.0+
         // SetRequestExitToLibraryAppletAtExecuteNextProgramEnabled()
-#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode SetRequestExitToLibraryAppletAtExecuteNextProgramEnabled(ServiceCtx context)
         {
             // TODO : Find where the field is used.
@@ -325,7 +320,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         protected override void Dispose(bool isDisposing)
         {

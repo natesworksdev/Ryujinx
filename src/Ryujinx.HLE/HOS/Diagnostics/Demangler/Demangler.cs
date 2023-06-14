@@ -2809,7 +2809,6 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
             return operatorName;
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         // <unresolved-name> ::= [gs] <base-unresolved-name>                     # x or (with "gs") ::x
         //                   ::= sr <unresolved-type> <base-unresolved-name>     # T::x / decltype(p)::x
         //                   ::= srN <unresolved-type> <unresolved-qualifier-level>+ E <base-unresolved-name>
@@ -2953,7 +2952,6 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
 
             return new QualifiedName(result, baseUnresolvedName);
         }
-#pragma warning restore IDE0060
 
         //    <unscoped-name> ::= <unqualified-name>
         //                    ::= St <unqualified-name>   # ::std::

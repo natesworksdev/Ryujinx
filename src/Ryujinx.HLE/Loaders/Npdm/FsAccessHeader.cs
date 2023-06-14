@@ -9,7 +9,6 @@ namespace Ryujinx.HLE.Loaders.Npdm
         public int Version { get; private set; }
         public ulong PermissionsBitmask { get; private set; }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public FsAccessHeader(Stream stream, int offset, int size)
         {
             stream.Seek(offset, SeekOrigin.Begin);
@@ -35,6 +34,5 @@ namespace Ryujinx.HLE.Loaders.Npdm
                 throw new NotImplementedException("ContentOwnerId section is not implemented!");
             }
         }
-#pragma warning restore IDE0060
     }
 }

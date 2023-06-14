@@ -40,13 +40,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
         private readonly AddressSpaceContext _asContext;
         private readonly NvMemoryAllocator _memoryAllocator;
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public NvHostAsGpuDeviceFile(ServiceCtx context, IVirtualMemoryManager memory, ulong owner) : base(context, owner)
         {
             _asContext = new AddressSpaceContext(context.Device.Gpu.CreateMemoryManager(owner));
             _memoryAllocator = new NvMemoryAllocator();
         }
-#pragma warning restore IDE0060
 
         public override NvInternalResult Ioctl(NvIoctl command, Span<byte> arguments)
         {

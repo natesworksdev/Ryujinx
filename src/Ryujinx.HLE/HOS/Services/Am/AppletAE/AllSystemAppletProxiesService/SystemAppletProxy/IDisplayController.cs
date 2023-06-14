@@ -31,7 +31,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(11)]
         // ReleaseLastApplicationCaptureBuffer()
-#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode ReleaseLastApplicationCaptureBuffer(ServiceCtx context)
         {
             if (!_lastApplicationCaptureBufferAcquired)
@@ -43,11 +42,9 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(15)]
         // ReleaseCallerAppletCaptureBuffer()
-#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode ReleaseCallerAppletCaptureBuffer(ServiceCtx context)
         {
             if (!_callerAppletCaptureBufferAcquired)
@@ -59,7 +56,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(16)]
         // AcquireLastApplicationCaptureBufferEx() -> (b8, handle<copy>)

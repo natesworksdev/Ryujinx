@@ -118,7 +118,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             return Result.Success;
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         private Result ParseCapability(uint cap, ref int mask0, ref int mask1, KPageTableBase memoryManager)
         {
             CapabilityType code = cap.GetCapabilityType();
@@ -312,7 +311,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             return Result.Success;
         }
-#pragma warning restore IDE0060
 
         private static ulong GetMaskFromMinMax(uint min, uint max)
         {

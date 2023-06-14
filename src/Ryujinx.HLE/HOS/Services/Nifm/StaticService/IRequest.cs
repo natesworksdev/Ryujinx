@@ -50,14 +50,12 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         [CommandCmif(1)]
         // GetResult()
-#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode GetResult(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNifm);
 
             return GetResultImpl();
         }
-#pragma warning restore IDE0060
 
         private static ResultCode GetResultImpl()
         {
@@ -91,36 +89,30 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         [CommandCmif(3)]
         // Cancel()
-#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode Cancel(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNifm);
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(4)]
         // Submit()
-#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode Submit(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNifm);
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(11)]
         // SetConnectionConfirmationOption(i8)
-#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode SetConnectionConfirmationOption(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNifm);
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(21)]
         // GetAppletInfo(u32) -> (u32, u32, u32, buffer<bytes, 6>)

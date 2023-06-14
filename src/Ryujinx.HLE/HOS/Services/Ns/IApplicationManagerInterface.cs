@@ -6,9 +6,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns
     [Service("ns:am")]
     class IApplicationManagerInterface : IpcService
     {
-#pragma warning disable IDE0060 // Remove unused parameter
         public IApplicationManagerInterface(ServiceCtx context) { }
-#pragma warning restore IDE0060
 
         [CommandCmif(400)]
         // GetApplicationControlData(u8, u64) -> (unknown<4>, buffer<unknown, 6>)

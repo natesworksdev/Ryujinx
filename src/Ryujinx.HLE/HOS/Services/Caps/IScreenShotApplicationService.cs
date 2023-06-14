@@ -6,9 +6,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
     [Service("caps:su")] // 6.0.0+
     class IScreenShotApplicationService : IpcService
     {
-#pragma warning disable IDE0060 // Remove unused parameter
         public IScreenShotApplicationService(ServiceCtx context) { }
-#pragma warning restore IDE0060
 
         [CommandCmif(32)] // 7.0.0+
         // SetShimLibraryVersion(pid, u64, nn::applet::AppletResourceUserId)

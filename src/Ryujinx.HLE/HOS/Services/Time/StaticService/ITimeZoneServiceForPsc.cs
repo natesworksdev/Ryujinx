@@ -39,7 +39,6 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 
         [CommandCmif(1)]
         // SetDeviceLocationName(nn::time::LocationName)
-#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode SetDeviceLocationName(ServiceCtx context)
         {
             if (!_writePermission)
@@ -49,7 +48,6 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 
             return ResultCode.NotImplemented;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(2)]
         // GetTotalLocationNameCount() -> u32
@@ -67,21 +65,17 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 
         [CommandCmif(3)]
         // LoadLocationNameList(u32 index) -> (u32 outCount, buffer<nn::time::LocationName, 6>)
-#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode LoadLocationNameList(ServiceCtx context)
         {
             return ResultCode.NotImplemented;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(4)]
         // LoadTimeZoneRule(nn::time::LocationName locationName) -> buffer<nn::time::TimeZoneRule, 0x16>
-#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode LoadTimeZoneRule(ServiceCtx context)
         {
             return ResultCode.NotImplemented;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(5)] // 2.0.0+
         // GetTimeZoneRuleVersion() -> nn::time::TimeZoneRuleVersion
@@ -180,12 +174,10 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 
         [CommandCmif(20)] // 9.0.0+
         // GetDeviceLocationNameOperationEventReadableHandle() -> handle<copy>
-#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode GetDeviceLocationNameOperationEventReadableHandle(ServiceCtx context)
         {
             return ResultCode.NotImplemented;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(100)]
         // ToCalendarTime(nn::time::PosixTime time, buffer<nn::time::TimeZoneRule, 0x15> rules) -> (nn::time::CalendarTime, nn::time::sf::CalendarAdditionalInfo)

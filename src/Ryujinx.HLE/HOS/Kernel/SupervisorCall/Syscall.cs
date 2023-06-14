@@ -174,14 +174,12 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         [Svc(0x5f)]
-#pragma warning disable IDE0060 // Remove unused parameter
         public Result FlushProcessDataCache(int processHandle, ulong address, ulong size)
         {
             // FIXME: This needs to be implemented as ARMv7 doesn't have any way to do cache maintenance operations on EL0.
             // As we don't support (and don't actually need) to flush the cache, this is stubbed.
             return Result.Success;
         }
-#pragma warning restore IDE0060
 
         // IPC
 
@@ -381,7 +379,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         [Svc(0x40)]
-#pragma warning disable IDE0060 // Remove unused parameter
         public Result CreateSession(
             out int serverSessionHandle,
             out int clientSessionHandle,
@@ -390,7 +387,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         {
             return CreateSession(out serverSessionHandle, out clientSessionHandle, isLight, null);
         }
-#pragma warning restore IDE0060
 
         public Result CreateSession(
             out int serverSessionHandle,
@@ -726,7 +722,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         [Svc(0x70)]
-#pragma warning disable IDE0060 // Remove unused parameter
         public Result CreatePort(
             out int serverPortHandle,
             out int clientPortHandle,
@@ -737,7 +732,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             // The kernel doesn't use the name pointer, so we can just pass null as the name.
             return CreatePort(out serverPortHandle, out clientPortHandle, maxSessions, isLight, null);
         }
-#pragma warning restore IDE0060
 
         public Result CreatePort(
             out int serverPortHandle,

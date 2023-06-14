@@ -21,9 +21,7 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
         private List<BrowserArgument> _arguments;
         private ShimKind _shimKind;
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public BrowserApplet(Horizon system) { }
-#pragma warning restore IDE0060
 
         public ResultCode GetResult()
         {

@@ -5,9 +5,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns
 {
     class IReadOnlyApplicationControlDataInterface : IpcService
     {
-#pragma warning disable IDE0060 // Remove unused parameter
         public IReadOnlyApplicationControlDataInterface(ServiceCtx context) { }
-#pragma warning restore IDE0060
 
         [CommandCmif(0)]
         // GetApplicationControlData(u8, u64) -> (unknown<4>, buffer<unknown, 6>)

@@ -3,8 +3,6 @@
     [Service("ldr:shel")]
     class IShellInterface : IpcService
     {
-#pragma warning disable IDE0060 // Remove unused parameter
         public IShellInterface(ServiceCtx context) { }
-#pragma warning restore IDE0060
     }
 }

@@ -280,7 +280,6 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             return ResultCode.Success;
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         private static ResultCode GetHostByNameRequestImpl(
             ServiceCtx context,
             ulong inputBufferPosition,
@@ -379,9 +378,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
-#pragma warning disable IDE0060 // Remove unused parameter
         private static ResultCode GetHostByAddrRequestImpl(
             ServiceCtx context,
             ulong inputBufferPosition,
@@ -453,9 +450,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
-#pragma warning disable IDE0060 // Remove unused parameter
         private static int SerializeHostEntries(ServiceCtx context, ulong outputBufferPosition, ulong outputBufferSize, IPHostEntry hostEntry, IEnumerable<IPAddress> addresses = null)
         {
             ulong originalBufferPosition = outputBufferPosition;
@@ -501,9 +496,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
             return (int)(bufferPosition - originalBufferPosition);
         }
-#pragma warning restore IDE0060
 
-#pragma warning disable IDE0060 // Remove unused parameter
         private static ResultCode GetAddrInfoRequestImpl(
             ServiceCtx context,
             ulong responseBufferPosition,
@@ -608,7 +601,6 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         private static List<AddrInfoSerialized> DeserializeAddrInfos(IVirtualMemoryManager memory, ulong address, ulong size)
         {

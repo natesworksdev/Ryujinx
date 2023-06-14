@@ -11,13 +11,10 @@ namespace Ryujinx.HLE.HOS.Services.Olsc
         private bool                     _initialized;
         private Dictionary<UserId, bool> _saveDataBackupSettingDatabase;
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public IOlscServiceForApplication(ServiceCtx context) { }
-#pragma warning restore IDE0060
 
         [CommandCmif(0)]
         // Initialize(pid)
-#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode Initialize(ServiceCtx context)
         {
             // NOTE: Service call arp:r GetApplicationInstanceUnregistrationNotifier with the pid and initialize some internal struct.
@@ -31,7 +28,6 @@ namespace Ryujinx.HLE.HOS.Services.Olsc
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(13)]
         // GetSaveDataBackupSetting(nn::account::Uid) -> u8

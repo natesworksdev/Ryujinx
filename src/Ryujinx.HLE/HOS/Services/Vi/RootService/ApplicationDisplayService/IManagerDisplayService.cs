@@ -65,24 +65,20 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
 
         [CommandCmif(6000)]
         // AddToLayerStack(u32, u64)
-#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode AddToLayerStack(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceVi);
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(6002)]
         // SetLayerVisibility(b8, u64)
-#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode SetLayerVisibility(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceVi);
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
     }
 }

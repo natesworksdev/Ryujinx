@@ -23,9 +23,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         private int _timeSharedMemoryNativeHandle = 0;
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public IStaticServiceForPsc(ServiceCtx context, TimePermissions permissions) : this(TimeManager.Instance, permissions) { }
-#pragma warning restore IDE0060
 
         public IStaticServiceForPsc(TimeManager manager, TimePermissions permissions)
         {
@@ -117,23 +115,19 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         [CommandCmif(50)] // 4.0.0+
         // SetStandardSteadyClockInternalOffset(nn::TimeSpanType internal_offset)
-#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode SetStandardSteadyClockInternalOffset(ServiceCtx context)
         {
             // This is only implemented in glue's StaticService.
             return ResultCode.NotImplemented;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(51)] // 9.0.0+
         // GetStandardSteadyClockRtcValue() -> u64
-#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode GetStandardSteadyClockRtcValue(ServiceCtx context)
         {
             // This is only implemented in glue's StaticService.
             return ResultCode.NotImplemented;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(100)]
         // IsStandardUserSystemClockAutomaticCorrectionEnabled() -> bool
@@ -189,13 +183,11 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         [CommandCmif(102)] // 5.0.0+
         // GetStandardUserSystemClockInitialYear() -> u32
-#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode GetStandardUserSystemClockInitialYear(ServiceCtx context)
         {
             // This is only implemented in glue's StaticService.
             return ResultCode.NotImplemented;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(200)] // 3.0.0+
         // IsStandardNetworkSystemClockAccuracySufficient() -> bool

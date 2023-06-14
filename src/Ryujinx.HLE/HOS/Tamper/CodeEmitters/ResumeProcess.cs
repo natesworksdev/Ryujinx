@@ -8,11 +8,9 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
     class ResumeProcess
     {
         // FF1?????
-#pragma warning disable IDE0060 // Remove unused parameter
         public static void Emit(byte[] instruction, CompilationContext context)
         {
             context.CurrentOperations.Add(new OpProcCtrl(context.Process, false));
         }
-#pragma warning restore IDE0060
     }
 }

@@ -320,7 +320,6 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
             return ResultCode.Success;
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         private ResultCode PrepareAddOnContentImpl(ServiceCtx context, ulong titleId)
         {
             uint index = context.RequestData.ReadUInt32();
@@ -339,7 +338,6 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         private ResultCode GetAddOnContentListChangedEventImpl(ServiceCtx context)
         {

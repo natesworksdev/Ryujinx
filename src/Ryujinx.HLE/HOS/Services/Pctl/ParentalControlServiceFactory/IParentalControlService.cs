@@ -84,7 +84,6 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 
         [CommandCmif(1001)]
         // CheckFreeCommunicationPermission()
-#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode CheckFreeCommunicationPermission(ServiceCtx context)
         {
             if (_parentalControlFlag == ParentalControlFlagValue.FreeCommunication && RestrictionEnabled)
@@ -101,31 +100,25 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(1017)] // 10.0.0+
         // EndFreeCommunication()
-#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode EndFreeCommunication(ServiceCtx context)
         {
             _freeCommunicationEnabled = false;
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(1013)] // 4.0.0+
         // ConfirmStereoVisionPermission()
-#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode ConfirmStereoVisionPermission(ServiceCtx context)
         {
             return IsStereoVisionPermittedImpl();
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(1018)]
         // IsFreeCommunicationAvailable()
-#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode IsFreeCommunicationAvailable(ServiceCtx context)
         {
             if (_parentalControlFlag == ParentalControlFlagValue.FreeCommunication && RestrictionEnabled)
@@ -140,7 +133,6 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(1031)]
         // IsRestrictionEnabled() -> b8
@@ -158,7 +150,6 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 
         [CommandCmif(1061)] // 4.0.0+
         // ConfirmStereoVisionRestrictionConfigurable()
-#pragma warning disable IDE0060 // Remove unused parameter
         public ResultCode ConfirmStereoVisionRestrictionConfigurable(ServiceCtx context)
         {
             if ((_permissionFlag & 2) == 0)
@@ -177,7 +168,6 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
             }
 #pragma warning restore CS0162
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(1062)] // 4.0.0+
         // GetStereoVisionRestriction() -> bool
@@ -228,12 +218,10 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 
         [CommandCmif(1064)] // 5.0.0+
         // ResetConfirmedStereoVisionPermission()
-#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode ResetConfirmedStereoVisionPermission(ServiceCtx context)
         {
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(1065)] // 5.0.0+
         // IsStereoVisionPermitted() -> bool

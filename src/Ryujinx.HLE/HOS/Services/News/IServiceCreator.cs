@@ -7,8 +7,6 @@
     [Service("news:v")]
     class IServiceCreator : IpcService
     {
-#pragma warning disable IDE0060 // Remove unused parameter
         public IServiceCreator(ServiceCtx context) { }
-#pragma warning restore IDE0060
     }
 }

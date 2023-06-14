@@ -206,13 +206,11 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
         [CommandCmif(1101)]
         // SetDisplayEnabled(u32 enabled_bool, u64 display_id)
-#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode SetDisplayEnabled(ServiceCtx context)
         {
             // NOTE: Stubbed in original service.
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(1102)]
         // GetDisplayResolution(u64 display_id) -> (u64 width, u64 height)
@@ -316,7 +314,6 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
         [CommandCmif(2101)]
         // SetLayerScalingMode(u32, u64)
-#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode SetLayerScalingMode(ServiceCtx context)
         {
             /*
@@ -327,7 +324,6 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(2102)] // 5.0.0+
         // ConvertScalingMode(u32 source_scaling_mode) -> u64 destination_scaling_mode

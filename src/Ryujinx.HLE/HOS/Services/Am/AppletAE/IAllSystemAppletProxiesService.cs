@@ -5,9 +5,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE
     [Service("appletAE")]
     class IAllSystemAppletProxiesService : IpcService
     {
-#pragma warning disable IDE0060 // Remove unused parameter
         public IAllSystemAppletProxiesService(ServiceCtx context) { }
-#pragma warning restore IDE0060
 
         [CommandCmif(100)]
         // OpenSystemAppletProxy(u64, pid, handle<copy>) -> object<nn::am::service::ISystemAppletProxy>

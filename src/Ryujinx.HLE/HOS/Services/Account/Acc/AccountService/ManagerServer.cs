@@ -70,7 +70,6 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
             return new JwtSecurityTokenHandler().WriteToken(securityToken);
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode CheckAvailability(ServiceCtx context)
         {
             // NOTE: This opens the file at "su/baas/USERID_IN_UUID_STRING.dat" where USERID_IN_UUID_STRING is formatted as "%08x-%04x-%04x-%02x%02x-%08x%04x".
@@ -81,7 +80,6 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
             // NOTE: Even if we try to return different error codes here, the guest still needs other calls.
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         public static ResultCode GetAccountId(ServiceCtx context)
         {

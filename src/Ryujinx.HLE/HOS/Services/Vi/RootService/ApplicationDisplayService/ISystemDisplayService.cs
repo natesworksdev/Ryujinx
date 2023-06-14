@@ -15,25 +15,21 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
 
         [CommandCmif(2205)]
         // SetLayerZ(u64, u64)
-#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode SetLayerZ(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceVi);
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(2207)]
         // SetLayerVisibility(b8, u64)
-#pragma warning disable IDE0060 // Remove unused parameter
         public static ResultCode SetLayerVisibility(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceVi);
 
             return ResultCode.Success;
         }
-#pragma warning restore IDE0060
 
         [CommandCmif(2312)] // 1.0.0-6.2.0
         // CreateStrayLayer(u32, u64) -> (u64, u64, buffer<bytes, 6>)

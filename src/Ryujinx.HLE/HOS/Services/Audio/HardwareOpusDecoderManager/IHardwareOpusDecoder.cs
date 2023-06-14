@@ -85,7 +85,6 @@ namespace Ryujinx.HLE.HOS.Services.Audio.HardwareOpusDecoderManager
             return DecodeInterleavedInternal(context, _flags, reset, withPerf: true);
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         private ResultCode DecodeInterleavedInternal(ServiceCtx context, OpusDecoderFlags flags, bool reset, bool withPerf)
         {
             ulong inPosition     = context.Request.SendBuff[0].Position;
@@ -113,6 +112,5 @@ namespace Ryujinx.HLE.HOS.Services.Audio.HardwareOpusDecoderManager
 
             return result;
         }
-#pragma warning restore IDE0060
     }
 }

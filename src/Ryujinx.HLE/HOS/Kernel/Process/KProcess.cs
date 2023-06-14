@@ -1185,12 +1185,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             }
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static bool IsExceptionUserThread(KThread thread)
         {
             // TODO
             return false;
         }
-#pragma warning restore IDE0060
     }
 }

@@ -8,9 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
         private uint _imageCount;
         private bool _isDirty;
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public IImageDatabaseService(ServiceCtx context) { }
-#pragma warning restore IDE0060
 
         [CommandCmif(0)]
         // Initialize(b8) -> b8

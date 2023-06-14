@@ -5,9 +5,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
     [Service("nfp:user")]
     class IUserManager : IpcService
     {
-#pragma warning disable IDE0060 // Remove unused parameter
         public IUserManager(ServiceCtx context) { }
-#pragma warning restore IDE0060
 
         [CommandCmif(0)]
         // CreateUserInterface() -> object<nn::nfp::detail::IUser>

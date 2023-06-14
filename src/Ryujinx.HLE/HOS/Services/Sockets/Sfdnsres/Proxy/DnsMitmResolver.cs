@@ -17,7 +17,6 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy
 
         private readonly Dictionary<string, IPAddress> _mitmHostEntries = new();
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public void ReloadEntries(ServiceCtx context)
         {
             string sdPath = FileSystem.VirtualFileSystem.GetSdCardPath();
@@ -80,7 +79,6 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy
                 }
             }
         }
-#pragma warning restore IDE0060
 
         public IPHostEntry ResolveAddress(string host)
         {

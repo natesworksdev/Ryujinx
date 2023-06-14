@@ -7,9 +7,7 @@ namespace Ryujinx.HLE.HOS.Services.Bluetooth
     [Service("bt")]
     class IBluetoothUser : IpcService
     {
-#pragma warning disable IDE0060 // Remove unused parameter
         public IBluetoothUser(ServiceCtx context) { }
-#pragma warning restore IDE0060
 
         [CommandCmif(9)]
         // RegisterBleEvent(pid) -> handle<copy>

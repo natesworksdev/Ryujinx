@@ -12,9 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Pcv.Clkrst
     {
         private int _moduleStateTableEventHandle = 0;
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public IClkrstManager(ServiceCtx context) { }
-#pragma warning restore IDE0060
 
         [CommandCmif(0)]
         // OpenSession(u32 device_code, u32 unk) -> object<nn::clkrst::IClkrstSession>

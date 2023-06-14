@@ -12,11 +12,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         private static readonly NvMapIdDictionary _maps = new();
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public NvMapDeviceFile(ServiceCtx context, IVirtualMemoryManager memory, ulong owner) : base(context, owner)
         {
         }
-#pragma warning restore IDE0060
 
         public override NvInternalResult Ioctl(NvIoctl command, Span<byte> arguments)
         {
@@ -244,12 +242,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
             return _maps.Add(map);
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         private static bool DeleteMapWithHandle(ulong pid, int handle)
         {
             return _maps.Delete(handle) != null;
         }
-#pragma warning restore IDE0060
 
         public static void IncrementMapRefCount(ulong pid, int handle)
         {
@@ -279,11 +275,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
             }
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static NvMapHandle GetMapFromHandle(ulong pid, int handle)
         {
             return _maps.Get(handle);
         }
-#pragma warning restore IDE0060
     }
 }
