@@ -324,7 +324,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             }
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static unsafe void Convolve8Horiz(
             byte* src,
             int srcStride,
@@ -388,7 +387,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
         {
             ConvolveAvgVert(src, srcStride, dst, dstStride, filter, y0Q4, yStepQ4, w, h);
         }
-#pragma warning restore IDE0060
 
         [SkipLocalsInit]
         public static unsafe void Convolve8(
@@ -453,7 +451,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             ConvolveAvg(temp, 64, dst, dstStride, null, 0, 0, 0, 0, w, h);
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static unsafe void ConvolveCopy(
             byte* src,
             int srcStride,
@@ -476,7 +473,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
                 dst += dstStride;
             }
         }
-#pragma warning restore IDE0060
 
         public static unsafe void ConvolveAvg(
             byte* src,
@@ -784,7 +780,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             HighbdConvolveVert(temp + 64 * (SubpelTaps / 2 - 1), 64, dst, dstStride, filter, y0Q4, yStepQ4, w, h, bd);
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static unsafe void HighbdConvolve8Horiz(
             ushort* src,
             int srcStride,
@@ -852,7 +847,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
         {
             HighConvolveAvgVert(src, srcStride, dst, dstStride, filter, y0Q4, yStepQ4, w, h, bd);
         }
-#pragma warning restore IDE0060
 
         public static unsafe void HighbdConvolve8(
             ushort* src,
@@ -894,7 +888,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             HighbdConvolveAvg(temp, 64, dst, dstStride, null, 0, 0, 0, 0, w, h, bd);
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static unsafe void HighbdConvolveCopy(
             ushort* src,
             int srcStride,
@@ -918,7 +911,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
                 dst += dstStride;
             }
         }
-#pragma warning restore IDE0060
 
         public static unsafe void HighbdConvolveAvg(
             ushort* src,
