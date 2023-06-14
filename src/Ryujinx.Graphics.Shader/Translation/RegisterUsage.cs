@@ -36,7 +36,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 FlagMask = flagMask;
             }
 
-            public long GetMask(int index)
+            public readonly long GetMask(int index)
             {
                 return index switch
                 {
@@ -93,12 +93,12 @@ namespace Ryujinx.Graphics.Shader.Translation
                 return !x.Equals(y);
             }
 
-            public override bool Equals(object obj)
+            public readonly override bool Equals(object obj)
             {
                 return obj is RegisterMask regMask && Equals(regMask);
             }
 
-            public bool Equals(RegisterMask other)
+            public readonly bool Equals(RegisterMask other)
             {
                 return GprMask0 == other.GprMask0 &&
                        GprMask1 == other.GprMask1 &&
@@ -108,7 +108,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                        FlagMask == other.FlagMask;
             }
 
-            public override int GetHashCode()
+            public readonly override int GetHashCode()
             {
                 return HashCode.Combine(GprMask0, GprMask1, GprMask2, GprMask3, PredMask, FlagMask);
             }
