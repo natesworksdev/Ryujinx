@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.Vulkan
     {
         private DescriptorSetManager.DescriptorPoolHolder _holder;
         private readonly DescriptorSet[] _descriptorSets;
-        public int SetsCount => _descriptorSets.Length;
+        public readonly int SetsCount => _descriptorSets.Length;
 
         public DescriptorSetCollection(DescriptorSetManager.DescriptorPoolHolder holder, DescriptorSet[] descriptorSets)
         {
@@ -208,7 +208,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public DescriptorSet[] GetSets()
+        public readonly DescriptorSet[] GetSets()
         {
             return _descriptorSets;
         }

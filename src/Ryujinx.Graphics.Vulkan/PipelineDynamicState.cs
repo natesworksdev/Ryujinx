@@ -139,7 +139,7 @@ namespace Ryujinx.Graphics.Vulkan
             api.CmdSetBlendConstants(commandBuffer, _blendConstants.AsSpan());
         }
 
-        private void RecordDepthBias(Vk api, CommandBuffer commandBuffer)
+        private readonly void RecordDepthBias(Vk api, CommandBuffer commandBuffer)
         {
             api.CmdSetDepthBias(commandBuffer, _depthBiasConstantFactor, _depthBiasClamp, _depthBiasSlopeFactor);
         }
@@ -149,7 +149,7 @@ namespace Ryujinx.Graphics.Vulkan
             api.CmdSetScissor(commandBuffer, 0, (uint)ScissorsCount, _scissors.AsSpan());
         }
 
-        private void RecordStencilMasks(Vk api, CommandBuffer commandBuffer)
+        private readonly void RecordStencilMasks(Vk api, CommandBuffer commandBuffer)
         {
             api.CmdSetStencilCompareMask(commandBuffer, StencilFaceFlags.FaceBackBit, _backCompareMask);
             api.CmdSetStencilWriteMask(commandBuffer, StencilFaceFlags.FaceBackBit, _backWriteMask);

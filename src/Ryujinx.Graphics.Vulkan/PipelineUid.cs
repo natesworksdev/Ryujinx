@@ -22,14 +22,14 @@ namespace Ryujinx.Graphics.Vulkan
         public ulong Id8;
         public ulong Id9;
 
-        private uint VertexAttributeDescriptionsCount => (byte)((Id6 >> 38) & 0xFF);
-        private uint VertexBindingDescriptionsCount => (byte)((Id6 >> 46) & 0xFF);
+        private readonly uint VertexAttributeDescriptionsCount => (byte)((Id6 >> 38) & 0xFF);
+        private readonly uint VertexBindingDescriptionsCount => (byte)((Id6 >> 46) & 0xFF);
 #pragma warning disable IDE0051 // Remove unused private member
-        private uint ViewportsCount => (byte)((Id6 >> 54) & 0xFF);
-        private uint ScissorsCount => (byte)(Id7 & 0xFF);
+        private readonly uint ViewportsCount => (byte)((Id6 >> 54) & 0xFF);
+        private readonly uint ScissorsCount => (byte)(Id7 & 0xFF);
 #pragma warning restore IDE0051
-        private uint ColorBlendAttachmentStateCount => (byte)((Id7 >> 8) & 0xFF);
-        private bool HasDepthStencil => ((Id7 >> 63) & 0x1) != 0UL;
+        private readonly uint ColorBlendAttachmentStateCount => (byte)((Id7 >> 8) & 0xFF);
+        private readonly bool HasDepthStencil => ((Id7 >> 63) & 0x1) != 0UL;
 
         public Array32<VertexInputAttributeDescription> VertexAttributeDescriptions;
         public Array33<VertexInputBindingDescription> VertexBindingDescriptions;
@@ -39,7 +39,7 @@ namespace Ryujinx.Graphics.Vulkan
         public Array9<Format> AttachmentFormats;
         public uint AttachmentIntegerFormatMask;
 
-        public override bool Equals(object obj)
+        public readonly override bool Equals(object obj)
         {
             return obj is PipelineUid other && Equals(other);
         }

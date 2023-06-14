@@ -19,7 +19,7 @@ namespace Ryujinx.Graphics.Vulkan
             buffer?.IncrementReferenceCount();
         }
 
-        public void BindTransformFeedbackBuffer(VulkanRenderer gd, CommandBufferScoped cbs, uint binding)
+        public readonly void BindTransformFeedbackBuffer(VulkanRenderer gd, CommandBufferScoped cbs, uint binding)
         {
             if (_buffer != null)
             {
@@ -40,7 +40,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void Dispose()
+        public readonly void Dispose()
         {
             _buffer?.DecrementReferenceCount();
         }

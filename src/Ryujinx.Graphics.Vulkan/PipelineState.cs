@@ -13,301 +13,301 @@ namespace Ryujinx.Graphics.Vulkan
 
         public float LineWidth
         {
-            get => BitConverter.Int32BitsToSingle((int)((Internal.Id0 >> 0) & 0xFFFFFFFF));
+            readonly get => BitConverter.Int32BitsToSingle((int)((Internal.Id0 >> 0) & 0xFFFFFFFF));
             set => Internal.Id0 = (Internal.Id0 & 0xFFFFFFFF00000000) | ((ulong)(uint)BitConverter.SingleToInt32Bits(value) << 0);
         }
 
         public float DepthBiasClamp
         {
-            get => BitConverter.Int32BitsToSingle((int)((Internal.Id0 >> 32) & 0xFFFFFFFF));
+            readonly get => BitConverter.Int32BitsToSingle((int)((Internal.Id0 >> 32) & 0xFFFFFFFF));
             set => Internal.Id0 = (Internal.Id0 & 0xFFFFFFFF) | ((ulong)(uint)BitConverter.SingleToInt32Bits(value) << 32);
         }
 
         public float DepthBiasConstantFactor
         {
-            get => BitConverter.Int32BitsToSingle((int)((Internal.Id1 >> 0) & 0xFFFFFFFF));
+            readonly get => BitConverter.Int32BitsToSingle((int)((Internal.Id1 >> 0) & 0xFFFFFFFF));
             set => Internal.Id1 = (Internal.Id1 & 0xFFFFFFFF00000000) | ((ulong)(uint)BitConverter.SingleToInt32Bits(value) << 0);
         }
 
         public float DepthBiasSlopeFactor
         {
-            get => BitConverter.Int32BitsToSingle((int)((Internal.Id1 >> 32) & 0xFFFFFFFF));
+            readonly get => BitConverter.Int32BitsToSingle((int)((Internal.Id1 >> 32) & 0xFFFFFFFF));
             set => Internal.Id1 = (Internal.Id1 & 0xFFFFFFFF) | ((ulong)(uint)BitConverter.SingleToInt32Bits(value) << 32);
         }
 
         public uint StencilFrontCompareMask
         {
-            get => (uint)((Internal.Id2 >> 0) & 0xFFFFFFFF);
+            readonly get => (uint)((Internal.Id2 >> 0) & 0xFFFFFFFF);
             set => Internal.Id2 = (Internal.Id2 & 0xFFFFFFFF00000000) | ((ulong)value << 0);
         }
 
         public uint StencilFrontWriteMask
         {
-            get => (uint)((Internal.Id2 >> 32) & 0xFFFFFFFF);
+            readonly get => (uint)((Internal.Id2 >> 32) & 0xFFFFFFFF);
             set => Internal.Id2 = (Internal.Id2 & 0xFFFFFFFF) | ((ulong)value << 32);
         }
 
         public uint StencilFrontReference
         {
-            get => (uint)((Internal.Id3 >> 0) & 0xFFFFFFFF);
+            readonly get => (uint)((Internal.Id3 >> 0) & 0xFFFFFFFF);
             set => Internal.Id3 = (Internal.Id3 & 0xFFFFFFFF00000000) | ((ulong)value << 0);
         }
 
         public uint StencilBackCompareMask
         {
-            get => (uint)((Internal.Id3 >> 32) & 0xFFFFFFFF);
+            readonly get => (uint)((Internal.Id3 >> 32) & 0xFFFFFFFF);
             set => Internal.Id3 = (Internal.Id3 & 0xFFFFFFFF) | ((ulong)value << 32);
         }
 
         public uint StencilBackWriteMask
         {
-            get => (uint)((Internal.Id4 >> 0) & 0xFFFFFFFF);
+            readonly get => (uint)((Internal.Id4 >> 0) & 0xFFFFFFFF);
             set => Internal.Id4 = (Internal.Id4 & 0xFFFFFFFF00000000) | ((ulong)value << 0);
         }
 
         public uint StencilBackReference
         {
-            get => (uint)((Internal.Id4 >> 32) & 0xFFFFFFFF);
+            readonly get => (uint)((Internal.Id4 >> 32) & 0xFFFFFFFF);
             set => Internal.Id4 = (Internal.Id4 & 0xFFFFFFFF) | ((ulong)value << 32);
         }
 
         public float MinDepthBounds
         {
-            get => BitConverter.Int32BitsToSingle((int)((Internal.Id5 >> 0) & 0xFFFFFFFF));
+            readonly get => BitConverter.Int32BitsToSingle((int)((Internal.Id5 >> 0) & 0xFFFFFFFF));
             set => Internal.Id5 = (Internal.Id5 & 0xFFFFFFFF00000000) | ((ulong)(uint)BitConverter.SingleToInt32Bits(value) << 0);
         }
 
         public float MaxDepthBounds
         {
-            get => BitConverter.Int32BitsToSingle((int)((Internal.Id5 >> 32) & 0xFFFFFFFF));
+            readonly get => BitConverter.Int32BitsToSingle((int)((Internal.Id5 >> 32) & 0xFFFFFFFF));
             set => Internal.Id5 = (Internal.Id5 & 0xFFFFFFFF) | ((ulong)(uint)BitConverter.SingleToInt32Bits(value) << 32);
         }
 
         public PolygonMode PolygonMode
         {
-            get => (PolygonMode)((Internal.Id6 >> 0) & 0x3FFFFFFF);
+            readonly get => (PolygonMode)((Internal.Id6 >> 0) & 0x3FFFFFFF);
             set => Internal.Id6 = (Internal.Id6 & 0xFFFFFFFFC0000000) | ((ulong)value << 0);
         }
 
         public uint StagesCount
         {
-            get => (byte)((Internal.Id6 >> 30) & 0xFF);
+            readonly get => (byte)((Internal.Id6 >> 30) & 0xFF);
             set => Internal.Id6 = (Internal.Id6 & 0xFFFFFFC03FFFFFFF) | ((ulong)value << 30);
         }
 
         public uint VertexAttributeDescriptionsCount
         {
-            get => (byte)((Internal.Id6 >> 38) & 0xFF);
+            readonly get => (byte)((Internal.Id6 >> 38) & 0xFF);
             set => Internal.Id6 = (Internal.Id6 & 0xFFFFC03FFFFFFFFF) | ((ulong)value << 38);
         }
 
         public uint VertexBindingDescriptionsCount
         {
-            get => (byte)((Internal.Id6 >> 46) & 0xFF);
+            readonly get => (byte)((Internal.Id6 >> 46) & 0xFF);
             set => Internal.Id6 = (Internal.Id6 & 0xFFC03FFFFFFFFFFF) | ((ulong)value << 46);
         }
 
         public uint ViewportsCount
         {
-            get => (byte)((Internal.Id6 >> 54) & 0xFF);
+            readonly get => (byte)((Internal.Id6 >> 54) & 0xFF);
             set => Internal.Id6 = (Internal.Id6 & 0xC03FFFFFFFFFFFFF) | ((ulong)value << 54);
         }
 
         public uint ScissorsCount
         {
-            get => (byte)((Internal.Id7 >> 0) & 0xFF);
+            readonly get => (byte)((Internal.Id7 >> 0) & 0xFF);
             set => Internal.Id7 = (Internal.Id7 & 0xFFFFFFFFFFFFFF00) | ((ulong)value << 0);
         }
 
         public uint ColorBlendAttachmentStateCount
         {
-            get => (byte)((Internal.Id7 >> 8) & 0xFF);
+            readonly get => (byte)((Internal.Id7 >> 8) & 0xFF);
             set => Internal.Id7 = (Internal.Id7 & 0xFFFFFFFFFFFF00FF) | ((ulong)value << 8);
         }
 
         public PrimitiveTopology Topology
         {
-            get => (PrimitiveTopology)((Internal.Id7 >> 16) & 0xF);
+            readonly get => (PrimitiveTopology)((Internal.Id7 >> 16) & 0xF);
             set => Internal.Id7 = (Internal.Id7 & 0xFFFFFFFFFFF0FFFF) | ((ulong)value << 16);
         }
 
         public LogicOp LogicOp
         {
-            get => (LogicOp)((Internal.Id7 >> 20) & 0xF);
+            readonly get => (LogicOp)((Internal.Id7 >> 20) & 0xF);
             set => Internal.Id7 = (Internal.Id7 & 0xFFFFFFFFFF0FFFFF) | ((ulong)value << 20);
         }
 
         public CompareOp DepthCompareOp
         {
-            get => (CompareOp)((Internal.Id7 >> 24) & 0x7);
+            readonly get => (CompareOp)((Internal.Id7 >> 24) & 0x7);
             set => Internal.Id7 = (Internal.Id7 & 0xFFFFFFFFF8FFFFFF) | ((ulong)value << 24);
         }
 
         public StencilOp StencilFrontFailOp
         {
-            get => (StencilOp)((Internal.Id7 >> 27) & 0x7);
+            readonly get => (StencilOp)((Internal.Id7 >> 27) & 0x7);
             set => Internal.Id7 = (Internal.Id7 & 0xFFFFFFFFC7FFFFFF) | ((ulong)value << 27);
         }
 
         public StencilOp StencilFrontPassOp
         {
-            get => (StencilOp)((Internal.Id7 >> 30) & 0x7);
+            readonly get => (StencilOp)((Internal.Id7 >> 30) & 0x7);
             set => Internal.Id7 = (Internal.Id7 & 0xFFFFFFFE3FFFFFFF) | ((ulong)value << 30);
         }
 
         public StencilOp StencilFrontDepthFailOp
         {
-            get => (StencilOp)((Internal.Id7 >> 33) & 0x7);
+            readonly get => (StencilOp)((Internal.Id7 >> 33) & 0x7);
             set => Internal.Id7 = (Internal.Id7 & 0xFFFFFFF1FFFFFFFF) | ((ulong)value << 33);
         }
 
         public CompareOp StencilFrontCompareOp
         {
-            get => (CompareOp)((Internal.Id7 >> 36) & 0x7);
+            readonly get => (CompareOp)((Internal.Id7 >> 36) & 0x7);
             set => Internal.Id7 = (Internal.Id7 & 0xFFFFFF8FFFFFFFFF) | ((ulong)value << 36);
         }
 
         public StencilOp StencilBackFailOp
         {
-            get => (StencilOp)((Internal.Id7 >> 39) & 0x7);
+            readonly get => (StencilOp)((Internal.Id7 >> 39) & 0x7);
             set => Internal.Id7 = (Internal.Id7 & 0xFFFFFC7FFFFFFFFF) | ((ulong)value << 39);
         }
 
         public StencilOp StencilBackPassOp
         {
-            get => (StencilOp)((Internal.Id7 >> 42) & 0x7);
+            readonly get => (StencilOp)((Internal.Id7 >> 42) & 0x7);
             set => Internal.Id7 = (Internal.Id7 & 0xFFFFE3FFFFFFFFFF) | ((ulong)value << 42);
         }
 
         public StencilOp StencilBackDepthFailOp
         {
-            get => (StencilOp)((Internal.Id7 >> 45) & 0x7);
+            readonly get => (StencilOp)((Internal.Id7 >> 45) & 0x7);
             set => Internal.Id7 = (Internal.Id7 & 0xFFFF1FFFFFFFFFFF) | ((ulong)value << 45);
         }
 
         public CompareOp StencilBackCompareOp
         {
-            get => (CompareOp)((Internal.Id7 >> 48) & 0x7);
+            readonly get => (CompareOp)((Internal.Id7 >> 48) & 0x7);
             set => Internal.Id7 = (Internal.Id7 & 0xFFF8FFFFFFFFFFFF) | ((ulong)value << 48);
         }
 
         public CullModeFlags CullMode
         {
-            get => (CullModeFlags)((Internal.Id7 >> 51) & 0x3);
+            readonly get => (CullModeFlags)((Internal.Id7 >> 51) & 0x3);
             set => Internal.Id7 = (Internal.Id7 & 0xFFE7FFFFFFFFFFFF) | ((ulong)value << 51);
         }
 
         public bool PrimitiveRestartEnable
         {
-            get => ((Internal.Id7 >> 53) & 0x1) != 0UL;
+            readonly get => ((Internal.Id7 >> 53) & 0x1) != 0UL;
             set => Internal.Id7 = (Internal.Id7 & 0xFFDFFFFFFFFFFFFF) | ((value ? 1UL : 0UL) << 53);
         }
 
         public bool DepthClampEnable
         {
-            get => ((Internal.Id7 >> 54) & 0x1) != 0UL;
+            readonly get => ((Internal.Id7 >> 54) & 0x1) != 0UL;
             set => Internal.Id7 = (Internal.Id7 & 0xFFBFFFFFFFFFFFFF) | ((value ? 1UL : 0UL) << 54);
         }
 
         public bool RasterizerDiscardEnable
         {
-            get => ((Internal.Id7 >> 55) & 0x1) != 0UL;
+            readonly get => ((Internal.Id7 >> 55) & 0x1) != 0UL;
             set => Internal.Id7 = (Internal.Id7 & 0xFF7FFFFFFFFFFFFF) | ((value ? 1UL : 0UL) << 55);
         }
 
         public FrontFace FrontFace
         {
-            get => (FrontFace)((Internal.Id7 >> 56) & 0x1);
+            readonly get => (FrontFace)((Internal.Id7 >> 56) & 0x1);
             set => Internal.Id7 = (Internal.Id7 & 0xFEFFFFFFFFFFFFFF) | ((ulong)value << 56);
         }
 
         public bool DepthBiasEnable
         {
-            get => ((Internal.Id7 >> 57) & 0x1) != 0UL;
+            readonly get => ((Internal.Id7 >> 57) & 0x1) != 0UL;
             set => Internal.Id7 = (Internal.Id7 & 0xFDFFFFFFFFFFFFFF) | ((value ? 1UL : 0UL) << 57);
         }
 
         public bool DepthTestEnable
         {
-            get => ((Internal.Id7 >> 58) & 0x1) != 0UL;
+            readonly get => ((Internal.Id7 >> 58) & 0x1) != 0UL;
             set => Internal.Id7 = (Internal.Id7 & 0xFBFFFFFFFFFFFFFF) | ((value ? 1UL : 0UL) << 58);
         }
 
         public bool DepthWriteEnable
         {
-            get => ((Internal.Id7 >> 59) & 0x1) != 0UL;
+            readonly get => ((Internal.Id7 >> 59) & 0x1) != 0UL;
             set => Internal.Id7 = (Internal.Id7 & 0xF7FFFFFFFFFFFFFF) | ((value ? 1UL : 0UL) << 59);
         }
 
         public bool DepthBoundsTestEnable
         {
-            get => ((Internal.Id7 >> 60) & 0x1) != 0UL;
+            readonly get => ((Internal.Id7 >> 60) & 0x1) != 0UL;
             set => Internal.Id7 = (Internal.Id7 & 0xEFFFFFFFFFFFFFFF) | ((value ? 1UL : 0UL) << 60);
         }
 
         public bool StencilTestEnable
         {
-            get => ((Internal.Id7 >> 61) & 0x1) != 0UL;
+            readonly get => ((Internal.Id7 >> 61) & 0x1) != 0UL;
             set => Internal.Id7 = (Internal.Id7 & 0xDFFFFFFFFFFFFFFF) | ((value ? 1UL : 0UL) << 61);
         }
 
         public bool LogicOpEnable
         {
-            get => ((Internal.Id7 >> 62) & 0x1) != 0UL;
+            readonly get => ((Internal.Id7 >> 62) & 0x1) != 0UL;
             set => Internal.Id7 = (Internal.Id7 & 0xBFFFFFFFFFFFFFFF) | ((value ? 1UL : 0UL) << 62);
         }
 
         public bool HasDepthStencil
         {
-            get => ((Internal.Id7 >> 63) & 0x1) != 0UL;
+            readonly get => ((Internal.Id7 >> 63) & 0x1) != 0UL;
             set => Internal.Id7 = (Internal.Id7 & 0x7FFFFFFFFFFFFFFF) | ((value ? 1UL : 0UL) << 63);
         }
 
         public uint PatchControlPoints
         {
-            get => (uint)((Internal.Id8 >> 0) & 0xFFFFFFFF);
+            readonly get => (uint)((Internal.Id8 >> 0) & 0xFFFFFFFF);
             set => Internal.Id8 = (Internal.Id8 & 0xFFFFFFFF00000000) | ((ulong)value << 0);
         }
 
         public uint SamplesCount
         {
-            get => (uint)((Internal.Id8 >> 32) & 0xFFFFFFFF);
+            readonly get => (uint)((Internal.Id8 >> 32) & 0xFFFFFFFF);
             set => Internal.Id8 = (Internal.Id8 & 0xFFFFFFFF) | ((ulong)value << 32);
         }
 
         public bool AlphaToCoverageEnable
         {
-            get => ((Internal.Id9 >> 0) & 0x1) != 0UL;
+            readonly get => ((Internal.Id9 >> 0) & 0x1) != 0UL;
             set => Internal.Id9 = (Internal.Id9 & 0xFFFFFFFFFFFFFFFE) | ((value ? 1UL : 0UL) << 0);
         }
 
         public bool AlphaToOneEnable
         {
-            get => ((Internal.Id9 >> 1) & 0x1) != 0UL;
+            readonly get => ((Internal.Id9 >> 1) & 0x1) != 0UL;
             set => Internal.Id9 = (Internal.Id9 & 0xFFFFFFFFFFFFFFFD) | ((value ? 1UL : 0UL) << 1);
         }
 
         public bool AdvancedBlendSrcPreMultiplied
         {
-            get => ((Internal.Id9 >> 2) & 0x1) != 0UL;
+            readonly get => ((Internal.Id9 >> 2) & 0x1) != 0UL;
             set => Internal.Id9 = (Internal.Id9 & 0xFFFFFFFFFFFFFFFB) | ((value ? 1UL : 0UL) << 2);
         }
 
         public bool AdvancedBlendDstPreMultiplied
         {
-            get => ((Internal.Id9 >> 3) & 0x1) != 0UL;
+            readonly get => ((Internal.Id9 >> 3) & 0x1) != 0UL;
             set => Internal.Id9 = (Internal.Id9 & 0xFFFFFFFFFFFFFFF7) | ((value ? 1UL : 0UL) << 3);
         }
 
         public BlendOverlapEXT AdvancedBlendOverlap
         {
-            get => (BlendOverlapEXT)((Internal.Id9 >> 4) & 0x3);
+            readonly get => (BlendOverlapEXT)((Internal.Id9 >> 4) & 0x3);
             set => Internal.Id9 = (Internal.Id9 & 0xFFFFFFFFFFFFFFCF) | ((ulong)value << 4);
         }
 
         public bool DepthMode
         {
-            get => ((Internal.Id9 >> 6) & 0x1) != 0UL;
+            readonly get => ((Internal.Id9 >> 6) & 0x1) != 0UL;
             set => Internal.Id9 = (Internal.Id9 & 0xFFFFFFFFFFFFFFBF) | ((value ? 1UL : 0UL) << 6);
         }
 
@@ -659,7 +659,7 @@ namespace Ryujinx.Graphics.Vulkan
             return pipeline;
         }
 
-        private unsafe void UpdateStageRequiredSubgroupSizes(VulkanRenderer gd, int count)
+        private readonly unsafe void UpdateStageRequiredSubgroupSizes(VulkanRenderer gd, int count)
         {
             for (int index = 0; index < count; index++)
             {
@@ -728,7 +728,7 @@ namespace Ryujinx.Graphics.Vulkan
             return -1;
         }
 
-        public void Dispose()
+        public readonly void Dispose()
         {
             Stages.Dispose();
             StageRequiredSubgroupSizes.Dispose();

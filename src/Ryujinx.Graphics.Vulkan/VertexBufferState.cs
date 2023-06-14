@@ -96,12 +96,12 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public bool BoundEquals(Auto<DisposableBuffer> buffer)
+        public readonly bool BoundEquals(Auto<DisposableBuffer> buffer)
         {
             return _buffer == buffer;
         }
 
-        public bool Matches(Auto<DisposableBuffer> buffer, int descriptorIndex, int offset, int size, int stride = 0)
+        public readonly bool Matches(Auto<DisposableBuffer> buffer, int descriptorIndex, int offset, int size, int stride = 0)
         {
             return _buffer == buffer && DescriptorIndex == descriptorIndex && _offset == offset && _size == size && _stride == stride;
         }
@@ -117,7 +117,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void Dispose()
+        public readonly void Dispose()
         {
             // Only dispose if this buffer is not refetched on each bind.
 

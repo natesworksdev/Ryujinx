@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Vulkan
             _buffer = null;
         }
 
-        public bool KeyEqual(ICacheKey other)
+        public readonly bool KeyEqual(ICacheKey other)
         {
             return other is I8ToI16CacheKey;
         }
@@ -30,7 +30,7 @@ namespace Ryujinx.Graphics.Vulkan
             _buffer = buffer;
         }
 
-        public void Dispose()
+        public readonly void Dispose()
         {
             _gd.PipelineInternal.DirtyIndexBuffer(_buffer);
         }
@@ -53,7 +53,7 @@ namespace Ryujinx.Graphics.Vulkan
             _buffer = null;
         }
 
-        public bool KeyEqual(ICacheKey other)
+        public readonly bool KeyEqual(ICacheKey other)
         {
             return other is AlignedVertexBufferCacheKey entry &&
                 entry._stride == _stride &&
@@ -65,7 +65,7 @@ namespace Ryujinx.Graphics.Vulkan
             _buffer = buffer;
         }
 
-        public void Dispose()
+        public readonly void Dispose()
         {
             _gd.PipelineInternal.DirtyVertexBuffer(_buffer);
         }
@@ -88,7 +88,7 @@ namespace Ryujinx.Graphics.Vulkan
             _buffer = null;
         }
 
-        public bool KeyEqual(ICacheKey other)
+        public readonly bool KeyEqual(ICacheKey other)
         {
             return other is TopologyConversionCacheKey entry &&
                 entry._pattern == _pattern &&
@@ -100,7 +100,7 @@ namespace Ryujinx.Graphics.Vulkan
             _buffer = buffer;
         }
 
-        public void Dispose()
+        public readonly void Dispose()
         {
             _gd.PipelineInternal.DirtyIndexBuffer(_buffer);
         }
@@ -168,12 +168,12 @@ namespace Ryujinx.Graphics.Vulkan
 
     struct DrawCountCacheKey : ICacheKey
     {
-        public bool KeyEqual(ICacheKey other)
+        public readonly bool KeyEqual(ICacheKey other)
         {
             return other is DrawCountCacheKey;
         }
 
-        public void Dispose()
+        public readonly void Dispose()
         {
         }
     }
@@ -214,7 +214,7 @@ namespace Ryujinx.Graphics.Vulkan
                 DependencyList = null;
             }
 
-            public void InvalidateDependencies()
+            public readonly void InvalidateDependencies()
             {
                 if (DependencyList != null)
                 {
@@ -317,7 +317,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void ClearRange(int offset, int size)
+        public readonly void ClearRange(int offset, int size)
         {
             if (_ranges != null && _ranges.Count > 0)
             {

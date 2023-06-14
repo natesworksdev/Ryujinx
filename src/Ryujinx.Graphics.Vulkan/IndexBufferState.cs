@@ -132,7 +132,7 @@ namespace Ryujinx.Graphics.Vulkan
             return indirectBufferAuto;
         }
 
-        private int GetIndexSize()
+        private readonly int GetIndexSize()
         {
             return _type switch
             {
@@ -142,7 +142,7 @@ namespace Ryujinx.Graphics.Vulkan
             };
         }
 
-        public bool BoundEquals(Auto<DisposableBuffer> buffer)
+        public readonly bool BoundEquals(Auto<DisposableBuffer> buffer)
         {
             return _buffer == buffer;
         }
