@@ -17,7 +17,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
 
         public int this[int index]
         {
-            get
+            readonly get
             {
                 return index switch
                 {
