@@ -120,7 +120,7 @@ namespace Ryujinx.Audio.Renderer.Server.Mix
         /// <summary>
         /// The array used to order effects associated to this mix.
         /// </summary>
-        public Span<int> EffectProcessingOrderArray
+        public readonly Span<int> EffectProcessingOrderArray
         {
             get
             {
@@ -175,7 +175,7 @@ namespace Ryujinx.Audio.Renderer.Server.Mix
         /// <summary>
         /// Clear the <see cref="EffectProcessingOrderArray"/> to its default state.
         /// </summary>
-        public void ClearEffectProcessingOrder()
+        public readonly void ClearEffectProcessingOrder()
         {
             EffectProcessingOrderArray.Fill(-1);
         }
@@ -184,7 +184,7 @@ namespace Ryujinx.Audio.Renderer.Server.Mix
         /// Return true if the mix has any destinations.
         /// </summary>
         /// <returns>True if the mix has any destinations.</returns>
-        public bool HasAnyDestination()
+        public readonly bool HasAnyDestination()
         {
             return DestinationMixId != UnusedMixId || DestinationSplitterId != UnusedSplitterId;
         }

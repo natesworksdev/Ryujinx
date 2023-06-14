@@ -9,7 +9,7 @@
             _mean = mean;
         }
 
-        public float Read()
+        public readonly float Read()
         {
             return _mean;
         }

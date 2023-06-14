@@ -233,7 +233,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
         /// Check if the voice needs to be skipped.
         /// </summary>
         /// <returns>Returns true if the voice needs to be skipped.</returns>
-        public bool ShouldSkip()
+        public readonly bool ShouldSkip()
         {
             return !InUse || WaveBuffersCount == 0 || DataSourceStateUnmapped || BufferInfoUnmapped || VoiceDropFlag;
         }
@@ -242,7 +242,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
         /// Return true if the mix has any destinations.
         /// </summary>
         /// <returns>True if the mix has any destinations.</returns>
-        public bool HasAnyDestination()
+        public readonly bool HasAnyDestination()
         {
             return MixId != Constants.UnusedMixId || SplitterId != Constants.UnusedSplitterId;
         }
@@ -252,7 +252,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
         /// </summary>
         /// <param name="parameter">The user parameter.</param>
         /// <returns>Return true, if the server voice information needs to be updated.</returns>
-        private bool ShouldUpdateParameters(ref VoiceInParameter parameter)
+        private readonly bool ShouldUpdateParameters(ref VoiceInParameter parameter)
         {
             if (DataSourceStateAddressInfo.CpuAddress == parameter.DataSourceStateAddress)
             {

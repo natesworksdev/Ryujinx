@@ -260,7 +260,7 @@ namespace Ryujinx.Audio.Renderer.Parameter
             /// <typeparam name="T">The PCM sample type</typeparam>
             /// <returns>Returns true if the sample offset are in range of the size.</returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private bool IsSampleOffsetInRangeForPcm<T>() where T : unmanaged
+            private readonly bool IsSampleOffsetInRangeForPcm<T>() where T : unmanaged
             {
                 uint dataTypeSize = (uint)Unsafe.SizeOf<T>();
 
@@ -273,7 +273,7 @@ namespace Ryujinx.Audio.Renderer.Parameter
             /// </summary>
             /// <param name="format">The target <see cref="SampleFormat"/></param>
             /// <returns>Returns true if the sample offset are in range of the size.</returns>
-            public bool IsSampleOffsetValid(SampleFormat format)
+            public readonly bool IsSampleOffsetValid(SampleFormat format)
             {
                 var result = format switch
                 {
