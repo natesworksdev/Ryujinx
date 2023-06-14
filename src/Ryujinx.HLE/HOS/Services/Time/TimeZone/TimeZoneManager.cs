@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         private UInt128              _timeZoneRuleVersion;
         private uint                 _totalLocationNameCount;
         private SteadyClockTimePoint _timeZoneUpdateTimePoint;
-        private readonly object      _lock = new object();
+        private readonly object      _lock = new();
 
         public TimeZoneManager()
         {

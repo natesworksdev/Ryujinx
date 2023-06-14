@@ -40,8 +40,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public ProcessState State { get; private set; }
 
-        private readonly object _processLock = new object();
-        private readonly object _threadingLock = new object();
+        private readonly object _processLock = new();
+        private readonly object _threadingLock = new();
 
         public KAddressArbiter AddressArbiter { get; private set; }
 
