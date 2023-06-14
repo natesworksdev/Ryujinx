@@ -56,9 +56,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="sender">Sender object</param>
         /// <param name="e">Event arguments</param>
-#pragma warning disable IDE0060 // Remove unused parameter
         public void MemoryUnmappedHandler(object sender, UnmapEventArgs e) => RemoveRange(e.Address, e.Size);
-#pragma warning restore IDE0060
 
         private void RemoveRange(ulong gpuVa, ulong size)
         {
