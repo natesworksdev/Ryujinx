@@ -260,7 +260,6 @@ namespace Ryujinx.Graphics.OpenGL
             PostDraw();
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         private static void DrawQuadsImpl(
             int vertexCount,
             int instanceCount,
@@ -285,7 +284,6 @@ namespace Ryujinx.Graphics.OpenGL
                 counts,
                 quadsCount);
         }
-#pragma warning restore IDE0060
 
         private static void DrawQuadStripImpl(
             int vertexCount,
@@ -490,7 +488,6 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         private void DrawQuadStripIndexedImpl(
             int indexCount,
             int instanceCount,
@@ -531,7 +528,6 @@ namespace Ryujinx.Graphics.OpenGL
                 quadsCount,
                 baseVertices);
         }
-#pragma warning restore IDE0060
 
         private void DrawIndexedImpl(
             int indexCount,
