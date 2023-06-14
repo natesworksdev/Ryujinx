@@ -3,9 +3,9 @@ using LibHac.Account;
 using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Shim;
-using LibHac.Ncm;
 using LibHac.Ns;
 using Microsoft.IdentityModel.Tokens;
+using Ryujinx.Ava.Common;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Configuration;
@@ -18,99 +18,49 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
+using LibHacUserId = LibHac.Fs.UserId;
 using Path = System.IO.Path;
 
-namespace Ryujinx.Ava.Common
+namespace Ryujinx.Ava.Common.SaveManager
 {
-    #region HelperClasses
     public readonly record struct BackupRequestOutcome
     {
         public bool DidFail { get; init; }
         public string Message { get; init; }
     }
 
-    internal readonly record struct SaveMeta
+    public class BackupManager : ISaveManager
     {
-        public ulong SaveDataId { get; init; }
-        public SaveDataType Type { get; init; }
-
-        // TODO: needed?
-        public LibHac.Fs.UserId UserId { get; init; }
-
-        // Title Id
-        public ProgramId ProgramId { get; init; }
-    }
-
-    internal readonly record struct UserFriendlySaveMetadata
-    {
-        public string UserId { get; init; }
-        public string ProfileName { get; init; }
-        public DateTime CreationTimeUtc { get; init; }
-        public IEnumerable<UserFriendlyAppData> ApplicationMap { get; init; }
-    }
-
-    internal readonly record struct UserFriendlyAppData
-    {
-        public ulong TitleId { get; init; }
-        public string Title { get; init; }
-        public string TitleIdHex { get; init; }
-    }
-
-    [Flags]
-    public enum SaveOptions
-    {
-        // save types to use
-        SaveTypeAccount,
-        SaveTypeBcat,
-        SaveTypeDevice,
-        SaveTypeAll = SaveTypeAccount | SaveTypeBcat | SaveTypeDevice,
-
-        // Request Semantics
-        SkipEmptyDirectories,
-        FlattenSaveStructure,
-        StopOnFailure,
-        UseDateInName,
-        ObfuscateZipExtension,
-
-        Default = SaveTypeAll
-    }
-
-    internal readonly record struct ImportMeta
-    {
-        public ulong TitleId { get; init; }
-        public SaveDataType SaveType { get; init; }
-        public string ImportPath { get; init; }
-    }
-    #endregion
-
-    public class BackupManager
-    {
-        // UI callbacks
+        // UI Metadata
         public event EventHandler<LoadingBarEventArgs> BackupProgressUpdated;
         public event EventHandler<ImportSaveEventArgs> BackupImportSave;
-        private LoadingBarEventArgs _loadingEventArgs;
+        private LoadingBarEventArgs _loadingEventArgs; // TODO: fix
 
         private readonly HorizonClient _horizonClient;
-        private readonly ApplicationLibrary _applicationLibrary;
         private readonly AccountManager _accountManager;
 
-        public BackupManager(HorizonClient hzClient,
-            ApplicationLibrary appLib,
-            AccountManager acctManager)
+        public BackupManager(HorizonClient hzClient, AccountManager acctManager)
         {
             _loadingEventArgs = new();
 
             _horizonClient = hzClient;
-            _applicationLibrary = appLib;
             _accountManager = acctManager;
         }
 
-        #region Save
-        public async Task<BackupRequestOutcome> BackupUserSaveData(LibHac.Fs.UserId userId,
+        #region Backup
+        public Task<BackupRequestOutcome> BackupUserTitleSaveDataToZip(LibHacUserId userId,
+            ulong titleId,
             string location,
             SaveOptions saveOptions = SaveOptions.Default)
         {
-            // TODO: cancellation source
+            throw new NotImplementedException();
+        }
+
+        public async Task<BackupRequestOutcome> BackupUserSaveDataToZip(LibHacUserId userId,
+            string location,
+            SaveOptions saveOptions = SaveOptions.Default)
+        {
+            // TODO: Eventually add cancellation source
 
             var userSaves = GetUserSaveData(userId, saveOptions);
             if (userSaves.IsNullOrEmpty())
@@ -167,7 +117,7 @@ namespace Ryujinx.Ava.Common
             }
 
             // Produce the actual zip
-            bool CompleteBackup(string location, LibHac.Fs.UserId userId, string backupTempDir)
+            bool CompleteBackup(string location, LibHacUserId userId, string backupTempDir)
             {
                 var currDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
                 var profileName = _accountManager
@@ -179,7 +129,7 @@ namespace Ryujinx.Ava.Common
             }
         }
 
-        private IEnumerable<SaveMeta> GetUserSaveData(LibHac.Fs.UserId userId, SaveOptions saveOptions)
+        private IEnumerable<BackupSaveMeta> GetUserSaveData(LibHacUserId userId, SaveOptions saveOptions)
         {
             try
             {
@@ -190,12 +140,12 @@ namespace Ryujinx.Ava.Common
                 // Device and bcat are optional but enumerate those dirs too if needed
                 var deviceSaves = saveOptions.HasFlag(SaveOptions.SaveTypeDevice)
                     ? GetSaveData(default, SaveDataType.Device)
-                    : Enumerable.Empty<SaveMeta>();
+                    : Enumerable.Empty<BackupSaveMeta>();
                 userSaves.AddRange(deviceSaves);
 
                 var bcatSaves = saveOptions.HasFlag(SaveOptions.SaveTypeDevice)
                     ? GetSaveData(default, SaveDataType.Bcat)
-                    : Enumerable.Empty<SaveMeta>();
+                    : Enumerable.Empty<BackupSaveMeta>();
                 userSaves.AddRange(bcatSaves);
 
                 return userSaves;
@@ -205,10 +155,10 @@ namespace Ryujinx.Ava.Common
                 Logger.Error?.Print(LogClass.Application, $"Failed to enumerate user save data - {ex.Message}");
             }
 
-            return Enumerable.Empty<SaveMeta>();
+            return Enumerable.Empty<BackupSaveMeta>();
         }
 
-        private IEnumerable<SaveMeta> GetSaveData(LibHac.Fs.UserId userId, SaveDataType saveType)
+        private IEnumerable<BackupSaveMeta> GetSaveData(LibHacUserId userId, SaveDataType saveType)
         {
             var saveDataFilter = SaveDataFilter.Make(
                 programId: default,
@@ -224,7 +174,7 @@ namespace Ryujinx.Ava.Common
                 .ThrowIfFailure();
 
             Span<SaveDataInfo> saveDataInfo = stackalloc SaveDataInfo[10];
-            List<SaveMeta> saves = new();
+            List<BackupSaveMeta> saves = new();
 
             do
             {
@@ -241,12 +191,11 @@ namespace Ryujinx.Ava.Common
                 {
                     if (saveDataInfo[i].ProgramId.Value != 0)
                     {
-                        saves.Add(new SaveMeta
+                        saves.Add(new BackupSaveMeta
                         {
                             SaveDataId = saveDataInfo[i].SaveDataId,
                             Type = saveDataInfo[i].Type,
-                            UserId = saveDataInfo[i].UserId,
-                            ProgramId = saveDataInfo[i].ProgramId,
+                            TitleId = saveDataInfo[i].ProgramId,
                         });
                     }
                 }
@@ -255,7 +204,7 @@ namespace Ryujinx.Ava.Common
             return saves;
         }
 
-        private async Task<bool> BatchCopySavesToTempDir(IEnumerable<SaveMeta> userSaves, string backupTempDir)
+        private async Task<bool> BatchCopySavesToTempDir(IEnumerable<BackupSaveMeta> userSaves, string backupTempDir)
         {
             // keep track of save data metadata <programId, app title>
             Dictionary<ulong, UserFriendlyAppData> userFriendlyMetadataMap = new();
@@ -281,18 +230,17 @@ namespace Ryujinx.Ava.Common
                     tempCopyTasks.Add(CopySaveDataToIntermediateDirectory(meta, backupTempDir));
 
                     // Add title metadata entry - might be dupe from bcat/device
-                    if (!userFriendlyMetadataMap.ContainsKey(meta.ProgramId.Value))
+                    if (!userFriendlyMetadataMap.ContainsKey(meta.TitleId.Value))
                     {
-                        // This is not great since it's going to incur a disk read per metadata lookup...
-                        // TODO: optimize later
-                        var titleIdHex = meta.ProgramId.Value.ToString("x16");
+                        var titleIdHex = meta.TitleId.Value.ToString("x16");
 
-                        // TODO: MainWindow.MainWindowViewModel.Applications.FirstOrDefault(x => x.TitleId.ToUpper() == TitleIdString);
-                        var appMeta = _applicationLibrary.LoadAndSaveMetaData(titleIdHex);
-                        userFriendlyMetadataMap.Add(meta.ProgramId.Value, new UserFriendlyAppData
+                        var appData = MainWindow.MainWindowViewModel.Applications
+                                .FirstOrDefault(x => x.TitleId.Equals(titleIdHex, StringComparison.OrdinalIgnoreCase));
+
+                        userFriendlyMetadataMap.Add(meta.TitleId.Value, new UserFriendlyAppData
                         {
-                            Title = appMeta?.Title,
-                            TitleId = meta.ProgramId.Value,
+                            Title = appData?.TitleName,
+                            TitleId = meta.TitleId.Value,
                             TitleIdHex = titleIdHex
                         });
                     }
@@ -340,14 +288,14 @@ namespace Ryujinx.Ava.Common
             #endregion
         }
 
-        private async Task<bool> CopySaveDataToIntermediateDirectory(SaveMeta saveMeta, string destinationDir)
+        private async Task<bool> CopySaveDataToIntermediateDirectory(BackupSaveMeta saveMeta, string destinationDir)
         {
             // Find the most recent version of the data, there is a commited (0) and working (1) paths directory
             var saveRootPath = ApplicationHelper.FindValidSaveDir(saveMeta.SaveDataId);
 
             // the actual title in the name would be nice but titleId is more reliable
             // [backupLocation]/[titleId]/[saveType]
-            var copyDestPath = Path.Combine(destinationDir, saveMeta.ProgramId.Value.ToString(), saveMeta.Type.ToString());
+            var copyDestPath = Path.Combine(destinationDir, saveMeta.TitleId.Value.ToString(), saveMeta.Type.ToString());
 
             var result = await CopyDirectoryAsync(saveRootPath, copyDestPath);
 
@@ -378,8 +326,15 @@ namespace Ryujinx.Ava.Common
         }
         #endregion
 
-        #region Load
-        public async Task<BackupRequestOutcome> LoadSaveData(LibHac.Fs.UserId userId,
+        #region Restore
+        public Task<BackupRequestOutcome> RestoreUserTitleSaveFromZip(LibHacUserId userId,
+            ulong titleId,
+            string sourceDataPath)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<BackupRequestOutcome> RestoreUserSaveDataFromZip(LibHacUserId userId,
             string sourceDataPath)
         {
             var sourceInfo = new FileInfo(sourceDataPath);
@@ -477,12 +432,12 @@ namespace Ryujinx.Ava.Common
             }
         }
 
-        private async Task<bool> ImportSaveData(ImportMeta meta, LibHac.Fs.UserId userId)
+        private async Task<bool> ImportSaveData(RestoreSaveMeta meta, LibHacUserId userId)
         {
             // Lookup the saveId based on title for the user we're importing too
             var saveDataFilter = SaveDataFilter.Make(meta.TitleId,
                 meta.SaveType,
-                meta.SaveType == SaveDataType.Account 
+                meta.SaveType == SaveDataType.Account
                     ? userId
                     : default,
                 saveDataId: default,
@@ -525,14 +480,15 @@ namespace Ryujinx.Ava.Common
             _loadingEventArgs.Curr++;
             BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
 
-            BackupImportSave?.Invoke(this, new ImportSaveEventArgs { 
+            BackupImportSave?.Invoke(this, new ImportSaveEventArgs
+            {
                 SaveInfo = saveDataInfo
             });
 
             return copyResult;
 
             #region LocalFunction
-            bool TryGenerateSaveEntry(ulong titleId, LibHac.Fs.UserId userId)
+            bool TryGenerateSaveEntry(ulong titleId, LibHacUserId userId)
             {
                 // resolve from app data
                 var titleIdHex = titleId.ToString("x16");
@@ -548,7 +504,7 @@ namespace Ryujinx.Ava.Common
 
                 Logger.Info?.Print(LogClass.Application, $"Creating save directory for Title: [{titleId:x16}]");
 
-                if (Utilities.IsZeros(appData.ControlHolder.ByteSpan))
+                if (appData.ControlHolder.ByteSpan.IsZeros())
                 {
                     // If the current application doesn't have a loaded control property, create a dummy one
                     // and set the savedata sizes so a user savedata will be created.
@@ -568,16 +524,16 @@ namespace Ryujinx.Ava.Common
             #endregion
         }
 
-        private static IEnumerable<ImportMeta> GetTitleDirectories(FileInfo sourceInfo)
+        private static IEnumerable<RestoreSaveMeta> GetTitleDirectories(FileInfo sourceInfo)
         {
             if ((sourceInfo.Attributes & FileAttributes.Directory) != FileAttributes.Directory)
             {
                 Logger.Error?.Print(LogClass.Application, $"Unsupported entry specified to extract save data from {sourceInfo.FullName}");
-                return Enumerable.Empty<ImportMeta>();
+                return Enumerable.Empty<RestoreSaveMeta>();
             }
 
             // Find the "root" save directories
-            var outcome = new List<ImportMeta>();
+            var outcome = new List<RestoreSaveMeta>();
             foreach (var entry in Directory.EnumerateDirectories(sourceInfo.FullName))
             {
                 // check if the leaf directory is a titleId
@@ -595,7 +551,7 @@ namespace Ryujinx.Ava.Common
                     // Check empty dirs?
                     if (Enum.TryParse<SaveDataType>(saveTypeEntryInfo.Name, out var saveType))
                     {
-                        outcome.Add(new ImportMeta
+                        outcome.Add(new RestoreSaveMeta
                         {
                             TitleId = titleId,
                             SaveType = saveType,
@@ -657,7 +613,7 @@ namespace Ryujinx.Ava.Common
                     if (ex.Message.Contains("is being used by another process", StringComparison.OrdinalIgnoreCase))
                     {
                         const int retryThreshold = 3;
-                        return (++retryCount < retryThreshold)
+                        return ++retryCount < retryThreshold
                             && await CopyFileAsync(source, destination, retryCount);
                     }
 

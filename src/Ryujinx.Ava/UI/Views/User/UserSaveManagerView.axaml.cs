@@ -13,6 +13,7 @@ using LibHac.Fs;
 using LibHac.Fs.Shim;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
+using Ryujinx.Ava.Common.SaveManager;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
@@ -37,8 +38,7 @@ namespace Ryujinx.Ava.UI.Views.User
         private HorizonClient _horizonClient;
         private VirtualFileSystem _virtualFileSystem;
         private NavigationDialogHost _parent;
-        private ApplicationLibrary _appLib;
-        private BackupManager _backupManager;
+        private ISaveManager _saveManager;
 
         public UserSaveManagerView()
         {
@@ -59,15 +59,14 @@ namespace Ryujinx.Ava.UI.Views.User
             switch (arg.NavigationMode)
             {
                 case NavigationMode.New:
-                    var args = ((NavigationDialogHost parent, AccountManager accountManager, HorizonClient client, VirtualFileSystem virtualFileSystem, ApplicationLibrary appLib))arg.Parameter;
+                    var args = ((NavigationDialogHost parent, AccountManager accountManager, HorizonClient client, VirtualFileSystem virtualFileSystem))arg.Parameter;
                     _accountManager = args.accountManager;
                     _horizonClient = args.client;
                     _virtualFileSystem = args.virtualFileSystem;
-                    _appLib = args.appLib;
 
-                    _backupManager = new BackupManager(_horizonClient, _appLib, _accountManager);
-                    _backupManager.BackupProgressUpdated += BackupManager_ProgressUpdate;
-                    _backupManager.BackupImportSave += BackupManager_ImportSave;
+                    _saveManager = new BackupManager(_horizonClient, _accountManager);
+                    _saveManager.BackupProgressUpdated += BackupManager_ProgressUpdate;
+                    _saveManager.BackupImportSave += BackupManager_ImportSave;
 
                     _parent = args.parent;
                     break;
@@ -182,7 +181,7 @@ namespace Ryujinx.Ava.UI.Views.User
             try
             {
                 // Could potentially seed with existing saves already enumerated but we still need bcat and device data
-                var result = await _backupManager.BackupUserSaveData(
+                var result = await _saveManager.BackupUserSaveDataToZip(
                     userId: _accountManager.LastOpenedUser.UserId.ToLibHacUserId(),
                     location: backupDir,
                     saveOptions: SaveOptions.Default);
@@ -249,7 +248,7 @@ namespace Ryujinx.Ava.UI.Views.User
             try
             {
                 // Could potentially seed with existing saves already enumerated but we still need bcat and device data
-                var result = await _backupManager.LoadSaveData(
+                var result = await _saveManager.RestoreUserSaveDataFromZip(
                     userId: _accountManager.LastOpenedUser.UserId.ToLibHacUserId(),
                     sourceDataPath: saveBackupZip[0]);
                 

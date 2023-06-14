@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Styling;
 using Avalonia.Threading;
-using FluentAvalonia.Core;
 using FluentAvalonia.UI.Controls;
 using LibHac;
 using LibHac.Common;
@@ -10,7 +9,6 @@ using LibHac.Fs;
 using LibHac.Fs.Shim;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
-using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Views.User;
 using Ryujinx.HLE.FileSystem;
@@ -30,7 +28,6 @@ namespace Ryujinx.Ava.UI.Controls
         public ContentManager ContentManager { get; }
         public VirtualFileSystem VirtualFileSystem { get; }
         public HorizonClient HorizonClient { get; }
-        public ApplicationLibrary ApplicationLibrary { get; }
         public UserProfileViewModel ViewModel { get; set; }
 
         public NavigationDialogHost()
@@ -39,13 +36,12 @@ namespace Ryujinx.Ava.UI.Controls
         }
 
         public NavigationDialogHost(AccountManager accountManager, ContentManager contentManager,
-            VirtualFileSystem virtualFileSystem, HorizonClient horizonClient, ApplicationLibrary appLib)
+            VirtualFileSystem virtualFileSystem, HorizonClient horizonClient)
         {
             AccountManager = accountManager;
             ContentManager = contentManager;
             VirtualFileSystem = virtualFileSystem;
             HorizonClient = horizonClient;
-            ApplicationLibrary = appLib;
 
             ViewModel = new UserProfileViewModel();
             LoadProfiles();
@@ -76,9 +72,9 @@ namespace Ryujinx.Ava.UI.Controls
         }
 
         public static async Task Show(AccountManager ownerAccountManager, ContentManager ownerContentManager,
-            VirtualFileSystem ownerVirtualFileSystem, HorizonClient ownerHorizonClient, ApplicationLibrary appLib)
+            VirtualFileSystem ownerVirtualFileSystem, HorizonClient ownerHorizonClient)
         {
-            var content = new NavigationDialogHost(ownerAccountManager, ownerContentManager, ownerVirtualFileSystem, ownerHorizonClient, appLib);
+            var content = new NavigationDialogHost(ownerAccountManager, ownerContentManager, ownerVirtualFileSystem, ownerHorizonClient);
             ContentDialog contentDialog = new ContentDialog
             {
                 Title = LocaleManager.Instance[LocaleKeys.UserProfileWindowTitle],
@@ -216,7 +212,7 @@ namespace Ryujinx.Ava.UI.Controls
 
         public void ManageSaves()
         {
-            Navigate(typeof(UserSaveManagerView), (this, AccountManager, HorizonClient, VirtualFileSystem, ApplicationLibrary));
+            Navigate(typeof(UserSaveManagerView), (this, AccountManager, HorizonClient, VirtualFileSystem));
         }
     }
 }
