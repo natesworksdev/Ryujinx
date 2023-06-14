@@ -37,7 +37,7 @@ namespace Ryujinx.Common.Memory
 
             value = MemoryMarshal.Cast<byte, T>(_input)[0];
 
-            _input = _input.Slice(valueSize);
+            _input = _input[valueSize..];
 
             return true;
         }
