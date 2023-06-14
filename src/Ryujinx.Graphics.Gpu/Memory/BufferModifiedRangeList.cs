@@ -78,7 +78,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private List<BufferMigration> _sources;
         private BufferMigration _migrationTarget;
 
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
 
         /// <summary>
         /// Whether the modified range list has any entries or not.

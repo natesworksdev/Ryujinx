@@ -46,7 +46,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
         private bool _initialized;
         private Dictionary<CaCertificateId, CertStoreEntry> _certificates;
 
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
 
         private struct CertStoreFileHeader
         {
