@@ -44,7 +44,7 @@ namespace Ryujinx.Graphics.Nvdec.Types.Vp9
         public uint UnknownFC;
 #pragma warning restore CS0649
 
-        public uint BitDepth => (SurfaceParams >> 1) & 0xf;
+        public readonly uint BitDepth => (SurfaceParams >> 1) & 0xf;
 
         public Vp9PictureInfo Convert()
         {

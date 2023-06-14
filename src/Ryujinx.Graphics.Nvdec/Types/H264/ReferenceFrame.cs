@@ -10,6 +10,6 @@ namespace Ryujinx.Graphics.Nvdec.Types.H264
         public uint FrameNum;
 #pragma warning restore CS0649
 
-        public uint OutputSurfaceIndex => (uint)Flags & 0x7f;
+        public readonly uint OutputSurfaceIndex => (uint)Flags & 0x7f;
     }
 }
