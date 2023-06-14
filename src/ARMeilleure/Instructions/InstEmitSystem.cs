@@ -15,12 +15,10 @@ namespace ARMeilleure.Instructions
         private const int DczSizeLog2 = 4; // Log2 size in words
         public const int DczSizeInBytes = 4 << DczSizeLog2;
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static void Isb(ArmEmitterContext context)
         {
             // Execute as no-op.
         }
-#pragma warning restore IDE0060
 
         public static void Mrs(ArmEmitterContext context)
         {
@@ -92,12 +90,10 @@ namespace ARMeilleure.Instructions
             }
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static void Nop(ArmEmitterContext context)
         {
             // Do nothing.
         }
-#pragma warning restore IDE0060
 
         public static void Sys(ArmEmitterContext context)
         {

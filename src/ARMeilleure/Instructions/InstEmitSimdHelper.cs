@@ -185,7 +185,6 @@ namespace ARMeilleure.Instructions
             }
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static void ExitArmFpMode(EmitterContext context, Action<FPState, Operand> setFpFlag)
         {
             if (Optimizations.UseSse2)
@@ -211,7 +210,6 @@ namespace ARMeilleure.Instructions
                 // TODO: Store FPSR
             }
         }
-#pragma warning restore IDE0060
 
         public static int GetImmShl(OpCodeSimdShImm op)
         {

@@ -26,12 +26,10 @@ namespace ARMeilleure.Instructions
             EmitClearExclusive(context);
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static void Csdb(ArmEmitterContext context)
         {
             // Execute as no-op.
         }
-#pragma warning restore IDE0060
 
         public static void Dmb(ArmEmitterContext context) => EmitBarrier(context);
         public static void Dsb(ArmEmitterContext context) => EmitBarrier(context);
@@ -109,12 +107,10 @@ namespace ARMeilleure.Instructions
             }
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static void Prfm(ArmEmitterContext context)
         {
             // Memory Prefetch, execute as no-op.
         }
-#pragma warning restore IDE0060
 
         public static void Stlr(ArmEmitterContext context) => EmitStr(context, AccessType.Ordered);
         public static void Stlxr(ArmEmitterContext context) => EmitStr(context, AccessType.OrderedEx);

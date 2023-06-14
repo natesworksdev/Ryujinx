@@ -16,12 +16,10 @@ namespace ARMeilleure.Instructions
             EmitClearExclusive(context);
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static void Csdb(ArmEmitterContext context)
         {
             // Execute as no-op.
         }
-#pragma warning restore IDE0060
 
         public static void Dmb(ArmEmitterContext context) => EmitBarrier(context);
 
@@ -229,13 +227,11 @@ namespace ARMeilleure.Instructions
             }
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         private static void EmitBarrier(ArmEmitterContext context)
         {
             // Note: This barrier is most likely not necessary, and probably
             // doesn't make any difference since we need to do a ton of stuff
             // (software MMU emulation) to read or write anything anyway.
         }
-#pragma warning restore IDE0060
     }
 }
