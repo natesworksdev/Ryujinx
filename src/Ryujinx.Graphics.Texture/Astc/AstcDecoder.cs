@@ -94,8 +94,8 @@ namespace Ryujinx.Graphics.Texture.Astc
             public int StartBlock { get; set; }
             public int OutputByteOffset { get; set; }
 
-            public int TotalBlockCount => BlockCountX * BlockCountY * ImageSizeZ;
-            public int PixelCount => ImageSizeX * ImageSizeY * ImageSizeZ;
+            public readonly int TotalBlockCount => BlockCountX * BlockCountY * ImageSizeZ;
+            public readonly int PixelCount => ImageSizeX * ImageSizeY * ImageSizeZ;
         }
 
         public static int QueryDecompressedSize(int sizeX, int sizeY, int sizeZ, int levelCount, int layerCount)
@@ -189,7 +189,7 @@ namespace Ryujinx.Graphics.Texture.Astc
             public bool VoidExtentLdr;
             public bool VoidExtentHdr;
 
-            public int GetPackedBitSize()
+            public readonly int GetPackedBitSize()
             {
                 // How many indices do we have?
                 int indices = Height * Width;
@@ -204,7 +204,7 @@ namespace Ryujinx.Graphics.Texture.Astc
                 return intEncoded.GetBitLength(indices);
             }
 
-            public int GetNumWeightValues()
+            public readonly int GetNumWeightValues()
             {
                 int ret = Width * Height;
 

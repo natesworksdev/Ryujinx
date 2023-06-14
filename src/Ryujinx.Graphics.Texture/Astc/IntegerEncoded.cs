@@ -40,17 +40,17 @@ namespace Ryujinx.Graphics.Texture.Astc
             QuintValue = 0;
         }
 
-        public bool MatchesEncoding(IntegerEncoded other)
+        public readonly bool MatchesEncoding(IntegerEncoded other)
         {
             return _encoding == other._encoding && NumberBits == other.NumberBits;
         }
 
-        public EIntegerEncoding GetEncoding()
+        public readonly EIntegerEncoding GetEncoding()
         {
             return _encoding;
         }
 
-        public int GetBitLength(int numberVals)
+        public readonly int GetBitLength(int numberVals)
         {
             int totalBits = NumberBits * numberVals;
             if (_encoding == EIntegerEncoding.Trit)
