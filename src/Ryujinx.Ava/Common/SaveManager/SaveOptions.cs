@@ -11,13 +11,13 @@ namespace Ryujinx.Ava.Common.SaveManager
         SaveTypeDevice,
         SaveTypeAll = SaveTypeAccount | SaveTypeBcat | SaveTypeDevice,
 
-        // Request Semantics
+        // Request Semantics -- Not Implemented
         SkipEmptyDirectories,
         FlattenSaveStructure,
         StopOnFirstFailure,
         UseDateInName,
         ObfuscateZipExtension,
 
-        Default = SaveTypeAll | UseDateInName
+        Default = SaveTypeAll
     }
 }

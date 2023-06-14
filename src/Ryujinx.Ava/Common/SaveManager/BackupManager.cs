@@ -34,7 +34,7 @@ namespace Ryujinx.Ava.Common.SaveManager
         // UI Metadata
         public event EventHandler<LoadingBarEventArgs> BackupProgressUpdated;
         public event EventHandler<ImportSaveEventArgs> BackupImportSave;
-        private LoadingBarEventArgs _loadingEventArgs; // TODO: fix
+        private LoadingBarEventArgs _loadingEventArgs;
 
         private readonly HorizonClient _horizonClient;
         private readonly AccountManager _accountManager;
@@ -88,7 +88,7 @@ namespace Ryujinx.Ava.Common.SaveManager
                 // Delete temp for good measure?
                 _ = Directory.CreateDirectory(backupTempDir);
 
-                var outcome = await BatchCopySavesToTempDir(userSaves, backupTempDir)
+                var outcome = await BatchCopySavesToTempDir(userId, userSaves, backupTempDir)
                     && CompleteBackup(location, userId, backupTempDir);
 
                 return new BackupRequestOutcome
@@ -204,7 +204,7 @@ namespace Ryujinx.Ava.Common.SaveManager
             return saves;
         }
 
-        private async Task<bool> BatchCopySavesToTempDir(IEnumerable<BackupSaveMeta> userSaves, string backupTempDir)
+        private async Task<bool> BatchCopySavesToTempDir(LibHacUserId userId, IEnumerable<BackupSaveMeta> userSaves, string backupTempDir)
         {
             // keep track of save data metadata <programId, app title>
             Dictionary<ulong, UserFriendlyAppData> userFriendlyMetadataMap = new();
@@ -221,7 +221,7 @@ namespace Ryujinx.Ava.Common.SaveManager
                     // if the buffer is full, wait for it to drain
                     if (tempCopyTasks.Count >= BATCH_SIZE)
                     {
-                        // TODO: error handling?
+                        // TODO: error handling with options
                         _ = await Task.WhenAll(tempCopyTasks);
                         tempCopyTasks.Clear();
                     }
@@ -250,7 +250,7 @@ namespace Ryujinx.Ava.Common.SaveManager
                 _ = await Task.WhenAll(tempCopyTasks);
 
                 // finally, move the metadata tag file into the backup dir and track progress
-                await WriteMetadataFile(backupTempDir, userFriendlyMetadataMap);
+                await WriteMetadataFile(backupTempDir, userId, userFriendlyMetadataMap);
                 _loadingEventArgs.Curr++;
                 BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
 
@@ -264,17 +264,21 @@ namespace Ryujinx.Ava.Common.SaveManager
             return false;
 
             #region LocalMethods
-            async Task WriteMetadataFile(string backupTempDir, Dictionary<ulong, UserFriendlyAppData> userFriendlyMetadataMap)
+            async Task WriteMetadataFile(string backupTempDir, 
+                LibHacUserId userId,
+                Dictionary<ulong, UserFriendlyAppData> userFriendlyMetadataMap)
             {
                 try
                 {
+                    var userProfile = _accountManager.GetAllUsers()
+                        .FirstOrDefault(u => u.UserId.ToLibHacUserId() == userId);
+                    
                     var tagFile = Path.Combine(backupTempDir, "tag.json");
 
                     var completeMeta = System.Text.Json.JsonSerializer.Serialize(new UserFriendlySaveMetadata
                     {
-                        // TODO: fix this user access.
-                        UserId = _accountManager.LastOpenedUser.UserId.ToString(),
-                        ProfileName = _accountManager.LastOpenedUser.Name,
+                        UserId = userId.ToString(),
+                        ProfileName = userProfile.Name,
                         CreationTimeUtc = DateTime.UtcNow,
                         ApplicationMap = userFriendlyMetadataMap.Values
                     });
@@ -584,7 +588,7 @@ namespace Ryujinx.Ava.Common.SaveManager
 
                 if (!result)
                 {
-                    // TODO: use options to decide? or hard fail
+                    // TODO: use options to decide hard fail
                     continue;
                 }
             }
