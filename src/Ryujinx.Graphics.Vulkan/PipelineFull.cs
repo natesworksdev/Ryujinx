@@ -251,7 +251,6 @@ namespace Ryujinx.Graphics.Vulkan
             Restore();
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public void BeginQuery(BufferedQuery query, QueryPool pool, bool needsReset, bool isOcclusion, bool fromSamplePool)
         {
             if (needsReset)
@@ -273,7 +272,6 @@ namespace Ryujinx.Graphics.Vulkan
 
             _activeQueries.Add((pool, isOcclusion));
         }
-#pragma warning restore IDE0060
 
         public void EndQuery(QueryPool pool)
         {

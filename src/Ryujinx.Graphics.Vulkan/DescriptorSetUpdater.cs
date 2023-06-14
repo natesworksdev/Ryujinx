@@ -200,7 +200,6 @@ namespace Ryujinx.Graphics.Vulkan
             SignalDirty(DirtyFlags.Storage);
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public void SetStorageBuffers(CommandBuffer commandBuffer, int first, ReadOnlySpan<Auto<DisposableBuffer>> buffers)
         {
             for (int i = 0; i < buffers.Length; i++)
@@ -228,7 +227,6 @@ namespace Ryujinx.Graphics.Vulkan
 
             SignalDirty(DirtyFlags.Storage);
         }
-#pragma warning restore IDE0060
 
         public void SetTextureAndSampler(
             CommandBufferScoped cbs,

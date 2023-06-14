@@ -187,12 +187,10 @@ namespace Ryujinx.Graphics.Vulkan
                 ReadOnlySpan<ImageMemoryBarrier>.Empty);
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public void BeginTransformFeedback(GAL.PrimitiveTopology topology)
         {
             _tfEnabled = true;
         }
-#pragma warning restore IDE0060
 
         public void ClearBuffer(BufferHandle destination, int offset, int size, uint value)
         {
@@ -719,14 +717,14 @@ namespace Ryujinx.Graphics.Vulkan
             return CommandBuffer.Handle == cb.Handle;
         }
 
-#pragma warning disable IDE0060, CA1822 // Remove unused parameter, Mark member as static
+#pragma warning disable CA1822 // Mark member as static
         public void SetAlphaTest(bool enable, float reference, GAL.CompareOp op)
         {
             // This is currently handled using shader specialization, as Vulkan does not support alpha test.
             // In the future, we may want to use this to write the reference value into the support buffer,
             // to avoid creating one version of the shader per reference value used.
         }
-#pragma warning restore IDE0060, CA1822
+#pragma warning restore CA1822
 
         public void SetBlendState(AdvancedBlendDescriptor blend)
         {
@@ -826,7 +824,7 @@ namespace Ryujinx.Graphics.Vulkan
             SignalStateChange();
         }
 
-#pragma warning disable IDE0060, CA1822 // Remove unused parameter, Mark member as static
+#pragma warning disable CA1822 // Mark member as static
         public void SetDepthMode(DepthMode mode)
         {
             bool oldMode = _newState.DepthMode;
@@ -836,7 +834,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SignalStateChange();
             }
         }
-#pragma warning restore IDE0060
+#pragma warning restore CA1822
 
         public void SetDepthTest(DepthTestDescriptor depthTest)
         {
@@ -882,13 +880,11 @@ namespace Ryujinx.Graphics.Vulkan
             _needsIndexBufferRebind = true;
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public void SetLineParameters(float width, bool smooth)
         {
             _newState.LineWidth = width;
             SignalStateChange();
         }
-#pragma warning restore IDE0060
 
         public void SetLogicOpState(bool enable, LogicalOp op)
         {
@@ -904,7 +900,6 @@ namespace Ryujinx.Graphics.Vulkan
             SignalStateChange();
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static void SetOrigin(Origin origin)
         {
             // TODO.
@@ -936,7 +931,6 @@ namespace Ryujinx.Graphics.Vulkan
             // TODO: What to do about the index?
             SignalStateChange();
         }
-#pragma warning restore IDE0060
 
         public void SetPrimitiveTopology(GAL.PrimitiveTopology topology)
         {
@@ -1160,12 +1154,12 @@ namespace Ryujinx.Graphics.Vulkan
             _descriptorSetUpdater.SetUniformBuffers(CommandBuffer, buffers);
         }
 
-#pragma warning disable IDE0060, CA1822 // Remove unused parameter, Mark member as static
+#pragma warning disable CA1822 // Mark member as static
         public void SetUserClipDistance(int index, bool enableClip)
         {
             // TODO.
         }
-#pragma warning restore IDE0060, CA1822
+#pragma warning restore CA1822
 
         public void SetVertexAttribs(ReadOnlySpan<VertexAttribDescriptor> vertexAttribs)
         {

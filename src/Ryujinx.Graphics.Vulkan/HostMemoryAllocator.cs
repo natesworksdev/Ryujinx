@@ -166,7 +166,6 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public void Free(DeviceMemory memory, ulong offset, ulong size)
         {
             lock (_lock)
@@ -185,6 +184,5 @@ namespace Ryujinx.Graphics.Vulkan
 
             _api.FreeMemory(_device, memory, ReadOnlySpan<AllocationCallbacks>.Empty);
         }
-#pragma warning restore IDE0060
     }
 }
