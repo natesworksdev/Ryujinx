@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.Vic.Image
             Index = index;
         }
 
-        public void Return(BufferPool<byte> pool)
+        public readonly void Return(BufferPool<byte> pool)
         {
             if (Index != -1)
             {
@@ -65,7 +65,7 @@ namespace Ryujinx.Graphics.Vic.Image
             Buffer2Index = buffer.Index;
         }
 
-        public void Return(BufferPool<byte> pool)
+        public readonly void Return(BufferPool<byte> pool)
         {
             if (Buffer0Index != -1)
             {
