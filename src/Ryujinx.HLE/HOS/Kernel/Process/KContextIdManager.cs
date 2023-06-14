@@ -65,21 +65,19 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             }
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         private bool TestBit(int bit)
         {
-            return (_idMasks[_nextFreeBitHint / 32] & (1 << (_nextFreeBitHint & 31))) != 0;
+            return (_idMasks[bit / 32] & (1 << (bit & 31))) != 0;
         }
 
         private void SetBit(int bit)
         {
-            _idMasks[_nextFreeBitHint / 32] |= (1 << (_nextFreeBitHint & 31));
+            _idMasks[bit / 32] |= (1 << (bit & 31));
         }
 
         private void ClearBit(int bit)
         {
-            _idMasks[_nextFreeBitHint / 32] &= ~(1 << (_nextFreeBitHint & 31));
+            _idMasks[bit / 32] &= ~(1 << (bit & 31));
         }
-#pragma warning restore IDE0060
     }
 }
