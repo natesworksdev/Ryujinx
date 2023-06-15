@@ -213,7 +213,9 @@ namespace Ryujinx.Ava.UI.Views.User
         {
             bool userConfirmation = await ContentDialogHelper.CreateChoiceDialog(LocaleManager.Instance[LocaleKeys.SaveManagerConfirmRestoreTitle],
                 LocaleManager.Instance[LocaleKeys.SaveManagerChooseRestoreZipPrimaryMessage],
-                LocaleManager.Instance[LocaleKeys.SaveManagerChooseRestoreZipSecondaryMessage]);
+                LocaleManager.Instance[LocaleKeys.SaveManagerChooseRestoreZipSecondaryMessage],
+                primaryButtonKey: LocaleKeys.SaveMangerRestoreUserConfirm,
+                closeButtonKey: LocaleKeys.SaveMangerRestoreUserCancel);
 
             if (!userConfirmation)
             {
@@ -255,6 +257,11 @@ namespace Ryujinx.Ava.UI.Views.User
                     ? LocaleManager.Instance[LocaleKeys.SaveManagerRestoreFailed]
                     : LocaleManager.Instance[LocaleKeys.SaveManagerRestoreComplete];
 
+                Dispatcher.UIThread.Post(() =>
+                {
+                    ViewModel.Sort();
+                });
+
                 NotificationHelper.Show(LocaleManager.Instance[LocaleKeys.NotificationBackupTitle], 
                     message,
                     notificationType);
@@ -288,12 +295,7 @@ namespace Ryujinx.Ava.UI.Views.User
 
             if (existingSave == default)
             {
-                ViewModel.Saves.Add(new SaveModel(e.SaveInfo, _virtualFileSystem));
-
-                Dispatcher.UIThread.Post(() =>
-                {
-                    ViewModel.Sort();
-                });
+                ViewModel.AddNewSaveEntry(new SaveModel(e.SaveInfo, _virtualFileSystem));
             }
             else
             {

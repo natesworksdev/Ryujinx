@@ -128,6 +128,13 @@ namespace Ryujinx.Ava.UI.ViewModels
             _accountManager = accountManager;
         }
 
+        public void AddNewSaveEntry(SaveModel model)
+        {
+            _saves.Add(model);
+            _views.Add(model);
+            OnPropertyChanged(nameof(Views));
+        }
+
         public void Sort()
         {
             Saves.AsObservableChangeSet()

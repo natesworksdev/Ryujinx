@@ -661,6 +661,8 @@
   "SaveManagerBackupComplete": "Backup Complete",
   "SaveManagerBackupFailed": "Backup Failed",
   "ImportUserSaveBackup": "Restore Saves",
+  "SaveMangerRestoreUserConfirm": "Overwrite",
+  "SaveMangerRestoreUserCancel": "Cancel",
   "SaveManagerRestoreComplete": "Restore Complete",
   "SaveManagerRestoreFailed": "Restore Failed"
 }
