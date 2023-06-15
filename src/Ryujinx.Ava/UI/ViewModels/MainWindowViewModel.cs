@@ -1480,12 +1480,12 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             async void Action()
             {
-                var loadSuccessful = false;
+                bool isApplicationLoaded = false;
                 try
                 {
-                    loadSuccessful = await AppHost.LoadGuestApplication();
+                    isApplicationLoaded = await AppHost.LoadGuestApplication();
                 }
-                catch (HorizonResultException hex)
+                catch (HorizonResultException ex)
                 {
                     // Apphost Cleanup
                     AppHost = null;
@@ -1493,14 +1493,13 @@ namespace Ryujinx.Ava.UI.ViewModels
                 
                     await Dispatcher.UIThread.InvokeAsync(async () =>
                     {
-                        await ContentDialogHelper.CreateErrorDialog(
-                            string.Format(LocaleManager.Instance[LocaleKeys.DialogCorruptedGameError], hex.Message));
+                        await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[LocaleKeys.DialogCorruptedGameError], ex.Message));
                     });
                     
                     return;
                 }
                 
-                if (!loadSuccessful)
+                if (!isApplicationLoaded)
                 {
                     AppHost.DisposeContext();
                     AppHost = null;
@@ -1610,7 +1609,10 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             SelectedIcon = null;
 
-            Dispatcher.UIThread.InvokeAsync(() => { Title = $"Ryujinx {Program.Version}"; });
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                Title = $"Ryujinx {Program.Version}";
+            });
         }
 
         public void ToggleFullscreen()
