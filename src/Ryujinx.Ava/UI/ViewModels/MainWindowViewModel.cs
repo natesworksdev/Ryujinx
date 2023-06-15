@@ -1358,6 +1358,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public async void ManageProfiles()
         {
             var oldLastOpenedUserId = AccountManager.LastOpenedUser.UserId;
+            
             await NavigationDialogHost.Show(AccountManager, ContentManager, VirtualFileSystem, LibHacHorizonManager.RyujinxClient);
             
             if (oldLastOpenedUserId != AccountManager.LastOpenedUser.UserId)
