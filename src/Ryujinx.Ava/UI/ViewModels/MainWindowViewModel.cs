@@ -1357,12 +1357,12 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async void ManageProfiles()
         {
-            var prevUserId = AccountManager.LastOpenedUser.UserId;
+            var oldLastOpenedUserId = AccountManager.LastOpenedUser.UserId;
             await NavigationDialogHost.Show(AccountManager, ContentManager, VirtualFileSystem, LibHacHorizonManager.RyujinxClient);
             
-            if (prevUserId != AccountManager.LastOpenedUser.UserId)
+            if (oldLastOpenedUserId != AccountManager.LastOpenedUser.UserId)
             {
-                // current user changed, so refresh application metadata
+                // Opened user changed, so refresh application metadata.
                 _ = Task.Run(RefreshApplicationsMetadata);
             }
         }
@@ -1377,6 +1377,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             foreach (var app in _applications)
             {
                 var metadata = ApplicationLibrary.LoadAndSaveMetaData(AccountManager.LastOpenedUser.UserId.ToLibHacFsUid(), app.TitleId);
+                
                 app.Favorite = metadata.Favorite;
                 app.LastPlayed = metadata.LastPlayed;
                 app.TimePlayedNum = metadata.TimePlayed;
