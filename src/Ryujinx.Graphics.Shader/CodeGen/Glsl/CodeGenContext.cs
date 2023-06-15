@@ -12,7 +12,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         public StructuredProgramInfo Info { get; }
 
-        public ShaderConfig Config { get; }
+        public AttributeUsage AttributeUsage { get; }
+        public ShaderDefinitions Definitions { get; }
+        public ShaderProperties Properties { get; }
+        public HostCapabilities HostCapabilities { get; }
+        public TargetApi TargetApi { get; }
 
         public OperandManager OperandManager { get; }
 
@@ -22,10 +26,20 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private string _indentation;
 
-        public CodeGenContext(StructuredProgramInfo info, ShaderConfig config)
+        public CodeGenContext(
+            StructuredProgramInfo info,
+            AttributeUsage attributeUsage,
+            ShaderDefinitions definitions,
+            ShaderProperties properties,
+            HostCapabilities hostCapabilities,
+            TargetApi targetApi)
         {
             Info = info;
-            Config = config;
+            AttributeUsage = attributeUsage;
+            Definitions = definitions;
+            Properties = properties;
+            HostCapabilities = hostCapabilities;
+            TargetApi = targetApi;
 
             OperandManager = new OperandManager();
 

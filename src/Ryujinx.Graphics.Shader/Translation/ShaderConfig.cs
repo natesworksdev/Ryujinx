@@ -35,30 +35,39 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public AttributeUsage AttributeUsage { get; }
 
+        public HostCapabilities HostCapabilities { get; }
+
         public ShaderConfig(ShaderStage stage, IGpuAccessor gpuAccessor, TranslationOptions options, int localMemorySize)
         {
             GpuAccessor = gpuAccessor;
             Options = options;
             LocalMemorySize = localMemorySize;
 
-            Definitions = new ShaderDefinitions(stage);
-
-            AttributeUsage = new AttributeUsage(gpuAccessor);
-
-            ShaderProperties properties;
-
-            switch (stage)
+            if (stage == ShaderStage.Compute)
             {
-                case ShaderStage.Fragment:
-                    bool originUpperLeft = options.TargetApi == TargetApi.Vulkan || gpuAccessor.QueryYNegateEnabled();
-                    properties = new ShaderProperties(originUpperLeft);
-                    break;
-                default:
-                    properties = new ShaderProperties();
-                    break;
+                Definitions = new ShaderDefinitions(
+                    ShaderStage.Compute,
+                    gpuAccessor.QueryComputeLocalSizeX(),
+                    gpuAccessor.QueryComputeLocalSizeY(),
+                    gpuAccessor.QueryComputeLocalSizeZ());
+            }
+            else
+            {
+                Definitions = new ShaderDefinitions(stage);
             }
 
-            ResourceManager = new ResourceManager(stage, gpuAccessor, properties);
+            AttributeUsage = new AttributeUsage(gpuAccessor);
+            ResourceManager = new ResourceManager(stage, gpuAccessor);
+
+            HostCapabilities = new HostCapabilities(
+                gpuAccessor.QueryHostReducedPrecision(),
+                gpuAccessor.QueryHostSupportsFragmentShaderInterlock(),
+                gpuAccessor.QueryHostSupportsFragmentShaderOrderingIntel(),
+                gpuAccessor.QueryHostSupportsGeometryShaderPassthrough(),
+                gpuAccessor.QueryHostSupportsShaderBallot(),
+                gpuAccessor.QueryHostSupportsShaderBarrierDivergence(),
+                gpuAccessor.QueryHostSupportsTextureShadowLod(),
+                gpuAccessor.QueryHostSupportsViewportMask());
 
             if (!gpuAccessor.QueryHostSupportsTransformFeedback() && gpuAccessor.QueryTransformFeedbackEnabled())
             {
@@ -70,7 +79,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                 BufferDefinition tfeInfoBuffer = new(BufferLayout.Std430, 1, Constants.TfeInfoBinding, "tfe_info", tfeInfoStruct);
 
-                properties.AddOrUpdateStorageBuffer(Constants.TfeInfoBinding, tfeInfoBuffer);
+                ResourceManager.Properties.AddOrUpdateStorageBuffer(Constants.TfeInfoBinding, tfeInfoBuffer);
 
                 StructureType tfeDataStruct = new(new StructureField[]
                 {
@@ -81,7 +90,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 {
                     int binding = Constants.TfeBufferBaseBinding + i;
                     BufferDefinition tfeDataBuffer = new(BufferLayout.Std430, 1, binding, $"tfe_data{i}", tfeDataStruct);
-                    properties.AddOrUpdateStorageBuffer(binding, tfeDataBuffer);
+                    ResourceManager.Properties.AddOrUpdateStorageBuffer(binding, tfeDataBuffer);
                 }
             }
         }
@@ -97,15 +106,9 @@ namespace Ryujinx.Graphics.Shader.Translation
                 stage,
                 false,
                 1,
+                gpuAccessor.QueryPrimitiveTopology(),
                 outputTopology,
-                maxOutputVertices,
-                null,
-                0,
-                false,
-                false,
-                false,
-                0UL,
-                null);
+                maxOutputVertices);
         }
 
         public ShaderConfig(
@@ -140,19 +143,75 @@ namespace Ryujinx.Graphics.Shader.Translation
                 }
             }
 
+            bool tessCw = false;
+            TessPatchType tessPatchType = default;
+            TessSpacing tessSpacing = default;
+
+            AttributeType[] attributeTypes = null;
+            AttributeType[] fragmentOutputTypes = null;
+
+            InputTopology inputTopology = default;
+            OutputTopology outputTopology = default;
+            int maxOutputVertexCount = 0;
+
+            bool dualSourceBlend = false;
+            bool earlyZForce = false;
+
+            switch (header.Stage)
+            {
+                case ShaderStage.Vertex:
+                    attributeTypes = new AttributeType[32];
+
+                    for (int location = 0; location < attributeTypes.Length; location++)
+                    {
+                        attributeTypes[location] = gpuAccessor.QueryAttributeType(location);
+                    }
+                    break;
+                case ShaderStage.TessellationEvaluation:
+                    tessCw = gpuAccessor.QueryTessCw();
+                    tessPatchType = gpuAccessor.QueryTessPatchType();
+                    tessSpacing = gpuAccessor.QueryTessSpacing();
+                    break;
+                case ShaderStage.Geometry:
+                    inputTopology = gpuAccessor.QueryPrimitiveTopology();
+                    outputTopology = header.OutputTopology;
+                    maxOutputVertexCount = header.MaxOutputVertexCount;
+                    break;
+                case ShaderStage.Fragment:
+                    dualSourceBlend = gpuAccessor.QueryDualSourceBlendEnable();
+                    earlyZForce = gpuAccessor.QueryEarlyZForce();
+
+                    fragmentOutputTypes = new AttributeType[8];
+
+                    for (int location = 0; location < fragmentOutputTypes.Length; location++)
+                    {
+                        fragmentOutputTypes[location] = gpuAccessor.QueryFragmentOutputType(location);
+                    }
+                    break;
+            }
+
             Definitions = new ShaderDefinitions(
                 header.Stage,
+                tessCw,
+                tessPatchType,
+                tessSpacing,
                 header.Stage == ShaderStage.Geometry && header.GpPassthrough,
                 header.ThreadsPerInputPrimitive,
-                header.OutputTopology,
-                header.MaxOutputVertexCount,
+                inputTopology,
+                outputTopology,
+                maxOutputVertexCount,
+                dualSourceBlend,
+                earlyZForce,
                 header.ImapTypes,
                 header.OmapTargets,
                 header.OmapSampleMask,
                 header.OmapDepth,
+                options.TargetApi == TargetApi.Vulkan || gpuAccessor.QueryYNegateEnabled(),
                 transformFeedbackEnabled,
                 transformFeedbackVecMap,
-                transformFeedbackOutputs);
+                transformFeedbackOutputs,
+                attributeTypes,
+                fragmentOutputTypes);
         }
 
         private static int GetLocalMemorySize(ShaderHeader header)

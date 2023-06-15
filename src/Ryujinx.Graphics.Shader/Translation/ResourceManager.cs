@@ -50,10 +50,10 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public ShaderProperties Properties { get; }
 
-        public ResourceManager(ShaderStage stage, IGpuAccessor gpuAccessor, ShaderProperties properties)
+        public ResourceManager(ShaderStage stage, IGpuAccessor gpuAccessor)
         {
             _gpuAccessor = gpuAccessor;
-            Properties = properties;
+            Properties = new();
             _stage = stage;
             _stagePrefix = GetShaderStagePrefix(stage);
 
@@ -70,7 +70,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             _usedTextures = new Dictionary<TextureInfo, TextureMeta>();
             _usedImages = new Dictionary<TextureInfo, TextureMeta>();
 
-            properties.AddOrUpdateConstantBuffer(0, new BufferDefinition(BufferLayout.Std140, 0, 0, "support_buffer", SupportBuffer.GetStructureType()));
+            Properties.AddOrUpdateConstantBuffer(0, new BufferDefinition(BufferLayout.Std140, 0, 0, "support_buffer", SupportBuffer.GetStructureType()));
 
             LocalMemoryId = -1;
             SharedMemoryId = -1;

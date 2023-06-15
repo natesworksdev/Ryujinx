@@ -18,8 +18,6 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         public IReadOnlyDictionary<int, MemoryDefinition> LocalMemories => _localMemories;
         public IReadOnlyDictionary<int, MemoryDefinition> SharedMemories => _sharedMemories;
 
-        public readonly bool OriginUpperLeft;
-
         public ShaderProperties()
         {
             _constantBuffers = new Dictionary<int, BufferDefinition>();
@@ -28,11 +26,6 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             _images = new Dictionary<int, TextureDefinition>();
             _localMemories = new Dictionary<int, MemoryDefinition>();
             _sharedMemories = new Dictionary<int, MemoryDefinition>();
-        }
-
-        public ShaderProperties(bool originUpperLeft) : this()
-        {
-            OriginUpperLeft = originUpperLeft;
         }
 
         public void AddOrUpdateConstantBuffer(int binding, BufferDefinition definition)

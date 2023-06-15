@@ -9,14 +9,26 @@ namespace Ryujinx.Graphics.Shader.Translation
     {
         public ShaderStage Stage { get; }
 
+        public int ComputeLocalSizeX { get; }
+        public int ComputeLocalSizeY { get; }
+        public int ComputeLocalSizeZ { get; }
+
+        public bool TessCw { get; }
+        public TessPatchType TessPatchType { get; }
+        public TessSpacing TessSpacing { get; }
+
         public bool GpPassthrough { get; }
         public bool LastInVertexPipeline { get; set; }
 
         public int ThreadsPerInputPrimitive { get; }
 
+        public InputTopology InputTopology { get; }
         public OutputTopology OutputTopology { get; }
 
         public int MaxOutputVertices { get; }
+
+        public bool DualSourceBlend { get; }
+        public bool EarlyZForce { get; }
 
         public ImapPixelType[] ImapTypes { get; }
         public bool IaIndexing { get; private set; }
@@ -25,6 +37,8 @@ namespace Ryujinx.Graphics.Shader.Translation
         public int OmapTargets { get; }
         public bool OmapSampleMask { get; }
         public bool OmapDepth { get; }
+
+        public bool OriginUpperLeft { get; }
 
         public bool TransformFeedbackEnabled { get; }
 
@@ -68,6 +82,9 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private readonly Dictionary<TransformFeedbackVariable, TransformFeedbackOutput> _transformFeedbackDefinitions;
 
+        private readonly AttributeType[] _attributeTypes;
+        private readonly AttributeType[] _fragmentOutputTypes;
+
         public ShaderDefinitions(ShaderStage stage)
         {
             Stage = stage;
@@ -75,31 +92,77 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public ShaderDefinitions(
             ShaderStage stage,
+            int computeLocalSizeX,
+            int computeLocalSizeY,
+            int computeLocalSizeZ)
+        {
+            Stage = stage;
+            ComputeLocalSizeX = computeLocalSizeX;
+            ComputeLocalSizeY = computeLocalSizeY;
+            ComputeLocalSizeZ = computeLocalSizeZ;
+        }
+
+        public ShaderDefinitions(
+            ShaderStage stage,
             bool gpPassthrough,
             int threadsPerInputPrimitive,
+            InputTopology inputTopology,
             OutputTopology outputTopology,
-            int maxOutputVertices,
-            ImapPixelType[] imapTypes,
-            int omapTargets,
-            bool omapSampleMask,
-            bool omapDepth,
-            bool transformFeedbackEnabled,
-            ulong transformFeedkbackVecMap,
-            TransformFeedbackOutput[] transformFeedbackOutputs)
+            int maxOutputVertices)
         {
             Stage = stage;
             GpPassthrough = gpPassthrough;
             ThreadsPerInputPrimitive = threadsPerInputPrimitive;
+            InputTopology = inputTopology;
             OutputTopology = outputTopology;
             MaxOutputVertices = maxOutputVertices;
+        }
+
+        public ShaderDefinitions(
+            ShaderStage stage,
+            bool tessCw,
+            TessPatchType tessPatchType,
+            TessSpacing tessSpacing,
+            bool gpPassthrough,
+            int threadsPerInputPrimitive,
+            InputTopology inputTopology,
+            OutputTopology outputTopology,
+            int maxOutputVertices,
+            bool dualSourceBlend,
+            bool earlyZForce,
+            ImapPixelType[] imapTypes,
+            int omapTargets,
+            bool omapSampleMask,
+            bool omapDepth,
+            bool originUpperLeft,
+            bool transformFeedbackEnabled,
+            ulong transformFeedkbackVecMap,
+            TransformFeedbackOutput[] transformFeedbackOutputs,
+            AttributeType[] attributeTypes,
+            AttributeType[] fragmentOutputTypes)
+        {
+            Stage = stage;
+            TessCw = tessCw;
+            TessPatchType = tessPatchType;
+            TessSpacing = tessSpacing;
+            GpPassthrough = gpPassthrough;
+            ThreadsPerInputPrimitive = threadsPerInputPrimitive;
+            InputTopology = inputTopology;
+            OutputTopology = outputTopology;
+            MaxOutputVertices = maxOutputVertices;
+            DualSourceBlend = dualSourceBlend;
+            EarlyZForce = earlyZForce;
             ImapTypes = imapTypes;
             OmapTargets = omapTargets;
             OmapSampleMask = omapSampleMask;
             OmapDepth = omapDepth;
+            OriginUpperLeft = originUpperLeft;
             LastInVertexPipeline = stage < ShaderStage.Fragment;
             TransformFeedbackEnabled = transformFeedbackEnabled;
             _transformFeedbackOutputs = transformFeedbackOutputs;
             _transformFeedbackDefinitions = new Dictionary<TransformFeedbackVariable, TransformFeedbackOutput>();
+            _attributeTypes = attributeTypes;
+            _fragmentOutputTypes = fragmentOutputTypes;
 
             while (transformFeedkbackVecMap != 0)
             {
@@ -227,6 +290,32 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
 
             return count;
+        }
+
+        public AggregateType GetFragmentOutputColorType(int location)
+        {
+            return AggregateType.Vector4 | _fragmentOutputTypes[location].ToAggregateType();
+        }
+
+        public AggregateType GetUserDefinedType(int location, bool isOutput)
+        {
+            if ((!isOutput && IaIndexing) || (isOutput && OaIndexing))
+            {
+                return AggregateType.Array | AggregateType.Vector4 | AggregateType.FP32;
+            }
+
+            AggregateType type = AggregateType.Vector4;
+
+            if (Stage == ShaderStage.Vertex && !isOutput)
+            {
+                type |= _attributeTypes[location].ToAggregateType();
+            }
+            else
+            {
+                type |= AggregateType.FP32;
+            }
+
+            return type;
         }
     }
 }

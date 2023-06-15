@@ -260,8 +260,20 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             return config.Options.TargetLanguage switch
             {
-                TargetLanguage.Glsl => new ShaderProgram(info, TargetLanguage.Glsl, GlslGenerator.Generate(sInfo, config)),
-                TargetLanguage.Spirv => new ShaderProgram(info, TargetLanguage.Spirv, SpirvGenerator.Generate(sInfo, config)),
+                TargetLanguage.Glsl => new ShaderProgram(info, TargetLanguage.Glsl, GlslGenerator.Generate(
+                    sInfo,
+                    config.AttributeUsage,
+                    config.Definitions,
+                    config.Properties,
+                    config.HostCapabilities,
+                    config.Options.TargetApi)),
+                TargetLanguage.Spirv => new ShaderProgram(info, TargetLanguage.Spirv, SpirvGenerator.Generate(
+                    sInfo,
+                    config.AttributeUsage,
+                    config.Definitions,
+                    config.Properties,
+                    config.HostCapabilities,
+                    config.Options.TargetApi)),
                 _ => throw new NotImplementedException(config.Options.TargetLanguage.ToString()),
             };
         }

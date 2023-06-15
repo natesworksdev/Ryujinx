@@ -20,17 +20,24 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public StructuredProgramInfo Info { get; }
 
-        public ShaderConfig Config { get; }
+        public AttributeUsage AttributeUsage { get; }
+        public ShaderDefinitions Definitions { get; }
+        public ShaderProperties Properties { get; }
+        public HostCapabilities HostCapabilities { get; }
+        public TargetApi TargetApi { get; }
 
         public int InputVertices { get; }
 
         public Dictionary<int, Instruction> ConstantBuffers { get; } = new Dictionary<int, Instruction>();
         public Dictionary<int, Instruction> StorageBuffers { get; } = new Dictionary<int, Instruction>();
+
         public Dictionary<int, Instruction> LocalMemories { get; } = new Dictionary<int, Instruction>();
         public Dictionary<int, Instruction> SharedMemories { get; } = new Dictionary<int, Instruction>();
+
         public Dictionary<int, SamplerType> SamplersTypes { get; } = new Dictionary<int, SamplerType>();
         public Dictionary<int, (Instruction, Instruction, Instruction)> Samplers { get; } = new Dictionary<int, (Instruction, Instruction, Instruction)>();
         public Dictionary<int, (Instruction, Instruction)> Images { get; } = new Dictionary<int, (Instruction, Instruction)>();
+
         public Dictionary<IoDefinition, Instruction> Inputs { get; } = new Dictionary<IoDefinition, Instruction>();
         public Dictionary<IoDefinition, Instruction> Outputs { get; } = new Dictionary<IoDefinition, Instruction>();
         public Dictionary<IoDefinition, Instruction> InputsPerPatch { get; } = new Dictionary<IoDefinition, Instruction>();
@@ -81,25 +88,31 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public CodeGenContext(
             StructuredProgramInfo info,
-            ShaderConfig config,
+            AttributeUsage attributeUsage,
+            ShaderDefinitions definitions,
+            ShaderProperties properties,
+            HostCapabilities hostCapabilities,
+            TargetApi targetApi,
             GeneratorPool<Instruction> instPool,
             GeneratorPool<LiteralInteger> integerPool) : base(SpirvVersionPacked, instPool, integerPool)
         {
             Info = info;
-            Config = config;
+            AttributeUsage = attributeUsage;
+            Definitions = definitions;
+            Properties = properties;
+            HostCapabilities = hostCapabilities;
+            TargetApi = targetApi;
 
-            if (config.Definitions.Stage == ShaderStage.Geometry)
+            if (definitions.Stage == ShaderStage.Geometry)
             {
-                InputTopology inPrimitive = config.GpuAccessor.QueryPrimitiveTopology();
-
-                InputVertices = inPrimitive switch
+                InputVertices = definitions.InputTopology switch
                 {
                     InputTopology.Points => 1,
                     InputTopology.Lines => 2,
                     InputTopology.LinesAdjacency => 2,
                     InputTopology.Triangles => 3,
                     InputTopology.TrianglesAdjacency => 3,
-                    _ => throw new InvalidOperationException($"Invalid input topology \"{inPrimitive}\"."),
+                    _ => throw new InvalidOperationException($"Invalid input topology \"{definitions.InputTopology}\"."),
                 };
             }
 
