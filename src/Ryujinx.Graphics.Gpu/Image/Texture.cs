@@ -1483,9 +1483,10 @@ namespace Ryujinx.Graphics.Gpu.Image
             IEnumerable<MultiRange> regions = _sizeInfo.AllRegions().Select((region) => Range.Slice((ulong)region.Offset, (ulong)region.Size));
             IEnumerable<MultiRange> otherRegions = texture._sizeInfo.AllRegions().Select((region) => otherRange.Slice((ulong)region.Offset, (ulong)region.Size));
 
+            var otherRegionList = otherRegions.ToList();
             foreach (MultiRange region in regions)
             {
-                foreach (MultiRange otherRegion in otherRegions)
+                foreach (MultiRange otherRegion in otherRegionList)
                 {
                     if (region.OverlapsWith(otherRegion))
                     {

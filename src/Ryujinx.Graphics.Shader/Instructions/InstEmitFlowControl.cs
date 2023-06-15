@@ -47,7 +47,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
             int total = context.CurrBlock.Successors.Count - startIndex;
             int count = 0;
 
-            foreach (var target in targets.OrderBy(x => x.Address))
+            var targetList = targets.ToList();
+            foreach (var target in targetList.OrderBy(x => x.Address))
             {
                 if (++count < total && (target.Predecessors.Count > 1 || target.Address <= context.CurrBlock.Address))
                 {
@@ -66,7 +67,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 // since it will be too late to insert a label, but this is something that can be improved
                 // in the future if necessary.
 
-                var sortedTargets = targets.OrderBy(x => x.Address);
+                var sortedTargets = targetList.OrderBy(x => x.Address);
 
                 Block currentTarget = null;
                 ulong firstTargetAddress = 0;
@@ -95,7 +96,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 // Emit the branches sequentially.
                 // This generates slightly worse code, but should work for all cases.
 
-                var sortedTargets = targets.OrderByDescending(x => x.Address);
+                var sortedTargets = targetList.OrderByDescending(x => x.Address);
                 ulong lastTargetAddress = ulong.MaxValue;
 
                 count = 0;
