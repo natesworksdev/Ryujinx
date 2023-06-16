@@ -2,6 +2,7 @@ using ARMeilleure.CodeGen;
 using ARMeilleure.CodeGen.Unwinding;
 using ARMeilleure.Memory;
 using ARMeilleure.Native;
+using Ryujinx.Memory;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,8 +13,8 @@ namespace ARMeilleure.Translation.Cache
 {
     static partial class JitCache
     {
-        private const int PageSize = 4 * 1024;
-        private const int PageMask = PageSize - 1;
+        private static readonly int PageSize = (int)MemoryBlock.GetPageSize();
+        private static readonly int PageMask = PageSize - 1;
 
         private const int CodeAlignment = 4; // Bytes.
         private const int CacheSize = 2047 * 1024 * 1024;
@@ -25,7 +26,7 @@ namespace ARMeilleure.Translation.Cache
 
         private static readonly List<CacheEntry> _cacheEntries = new List<CacheEntry>();
 
-        private static readonly object _lock = new object();
+        private static readonly object _lock = new();
         private static bool _initialized;
 
         [SupportedOSPlatform("windows")]
