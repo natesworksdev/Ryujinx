@@ -21,7 +21,7 @@ namespace Ryujinx.Memory.Tracking
         /// This lock must be obtained when traversing or updating the region-handle hierarchy.
         /// It is not required when reading dirty flags.
         /// </summary>
-        internal object TrackingLock = new();
+        internal readonly object TrackingLock = new();
 
         /// <summary>
         /// Create a new tracking structure for the given "physical" memory block,

@@ -174,7 +174,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         public bool HasViews => _views.Count > 0;
 
         private int _referenceCount;
-        private List<TexturePoolOwner> _poolOwners;
+        private readonly List<TexturePoolOwner> _poolOwners = new List<TexturePoolOwner>();
 
         /// <summary>
         /// Constructs a new instance of the cached GPU texture.
@@ -260,7 +260,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             _viewStorage = this;
 
             _views = new List<Texture>();
-            _poolOwners = new List<TexturePoolOwner>();
         }
 
         /// <summary>

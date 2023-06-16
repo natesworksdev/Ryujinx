@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private static int _lastBinderId = 0;
 
-        private static object _lock = new object();
+        private static readonly object _lock = new();
 
         public static int RegisterBinderObject(IBinder binder)
         {

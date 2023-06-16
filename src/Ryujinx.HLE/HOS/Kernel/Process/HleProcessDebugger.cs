@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             }
         }
 
-        private List<Image> _images;
+        private readonly List<Image> _images;
 
         private int _loaded;
 
