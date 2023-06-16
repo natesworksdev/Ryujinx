@@ -170,7 +170,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private static Function GenerateSharedAtomicSigned(int id, bool isMin)
         {
-            EmitterContext context = new EmitterContext();
+            EmitterContext context = new();
 
             Operand wordOffset = Argument(0);
             Operand value = Argument(1);
@@ -199,7 +199,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private static Function GenerateSharedStore(int id, int bitSize)
         {
-            EmitterContext context = new EmitterContext();
+            EmitterContext context = new();
 
             Operand offset = Argument(0);
             Operand value = Argument(1);

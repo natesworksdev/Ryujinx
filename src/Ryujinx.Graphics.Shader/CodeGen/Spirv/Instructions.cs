@@ -1863,7 +1863,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                 case StorageKind.LocalMemory:
                 case StorageKind.SharedMemory:
-                    if (!(operation.GetSource(srcIndex++) is AstOperand bindingId) || bindingId.Type != OperandType.Constant)
+                    if (operation.GetSource(srcIndex++) is not AstOperand { Type: OperandType.Constant } bindingId)
                     {
                         throw new InvalidOperationException($"First input of {operation.Inst} with {storageKind} storage must be a constant operand.");
                     }

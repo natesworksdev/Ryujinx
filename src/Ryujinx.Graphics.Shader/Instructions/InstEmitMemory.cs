@@ -540,10 +540,18 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             switch (size)
             {
-                case LsSize.U8: value = ZeroExtendTo32(context, value, 8); break;
-                case LsSize.U16: value = ZeroExtendTo32(context, value, 16); break;
-                case LsSize.S8: value = SignExtendTo32(context, value, 8); break;
-                case LsSize.S16: value = SignExtendTo32(context, value, 16); break;
+                case LsSize.U8:
+                    value = ZeroExtendTo32(context, value, 8);
+                    break;
+                case LsSize.U16:
+                    value = ZeroExtendTo32(context, value, 16);
+                    break;
+                case LsSize.S8:
+                    value = SignExtendTo32(context, value, 8);
+                    break;
+                case LsSize.S16:
+                    value = SignExtendTo32(context, value, 16);
+                    break;
             }
 
             return value;
