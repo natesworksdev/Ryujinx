@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -58,13 +58,166 @@
     <None Update="Graphics\TestData\kodim01.rgba">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
+    <None Update="Graphics\TestData\MoreRocks.l-10x10-100.astc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-10x10-100.astc.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-10x10-100.astc.png.rgba">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-10x10-100.astc.rgba">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-10x5-100.astc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-10x5-100.astc.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-10x5-100.astc.png.rgba">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-10x5-100.astc.rgba">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-10x6-100.astc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-10x6-100.astc.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-10x6-100.astc.png.rgba">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-10x6-100.astc.rgba">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-10x8-100.astc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-10x8-100.astc.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-10x8-100.astc.png.rgba">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-10x8-100.astc.rgba">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-12x10-100.astc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-12x10-100.astc.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-12x10-100.astc.png.rgba">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-12x10-100.astc.rgba">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-12x12-100.astc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-12x12-100.astc.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-12x12-100.astc.png.rgba">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-12x12-100.astc.rgba">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Graphics\TestData\MoreRocks.l-4x4-100.astc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Graphics\TestData\MoreRocks.l-4x4-100.astc.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-4x4-100.astc.png.rgba">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
     <None Update="Graphics\TestData\MoreRocks.l-4x4-100.astc.rgba">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-5x4-100.astc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-5x4-100.astc.rgba">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-5x5-100.astc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-5x5-100.astc.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-5x5-100.astc.png.rgba">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-5x5-100.astc.rgba">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-6x5-100.astc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-6x5-100.astc.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-6x5-100.astc.png.rgba">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-6x5-100.astc.rgba">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-6x6-100.astc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-6x6-100.astc.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-6x6-100.astc.png.rgba">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-6x6-100.astc.rgba">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-8x5-100.astc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-8x5-100.astc.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-8x5-100.astc.png.rgba">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-8x5-100.astc.rgba">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-8x6-100.astc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-8x6-100.astc.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-8x6-100.astc.png.rgba">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-8x6-100.astc.rgba">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-8x8-100.astc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-8x8-100.astc.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-8x8-100.astc.png.rgba">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Graphics\TestData\MoreRocks.l-8x8-100.astc.rgba">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Graphics\TestData\MoreRocks.png">
