@@ -32,7 +32,10 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             }
 
             writer.Write(bytes);
-            writer.Seek((int)maxSize - bytes.Length, SeekOrigin.Current);
+            if (bytes != null)
+            {
+                writer.Seek((int)maxSize - bytes.Length, SeekOrigin.Current);
+            }
             writer.Write((uint)text.Length); // String size
 
             return (uint)text.Length; // Return the cursor position at the end of the text

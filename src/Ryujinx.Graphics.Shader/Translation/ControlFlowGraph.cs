@@ -107,7 +107,10 @@ namespace Ryujinx.Graphics.Shader.Translation
                         NewNextBlock();
                     }
 
-                    currentBlock.Operations.AddLast(operation);
+                    if (currentBlock != null)
+                    {
+                        currentBlock.Operations.AddLast(operation);
+                    }
                 }
 
                 needsNewBlock = operation.Inst == Instruction.Branch ||
@@ -125,7 +128,10 @@ namespace Ryujinx.Graphics.Shader.Translation
                         labels.Add(label, branchBlock);
                     }
 
-                    currentBlock.Branch = branchBlock;
+                    if (currentBlock != null)
+                    {
+                        currentBlock.Branch = branchBlock;
+                    }
                 }
             }
 

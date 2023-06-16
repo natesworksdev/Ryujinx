@@ -111,7 +111,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 // TODO: Return invalid Fd error.
             }
 
-            channelDeviceFile.Channel.BindMemory(_asContext.Gmm);
+            if (channelDeviceFile != null)
+            {
+                channelDeviceFile.Channel.BindMemory(_asContext.Gmm);
+            }
 
             return NvInternalResult.Success;
         }

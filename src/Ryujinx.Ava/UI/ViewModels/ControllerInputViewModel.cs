@@ -773,7 +773,10 @@ namespace Ryujinx.Ava.UI.ViewModels
                         config = (Configuration as InputConfiguration<GamepadInputId, ConfigStickInputId>).GetConfig();
                     }
 
-                    config.ControllerType = Controllers[_controller].Type;
+                    if (config != null)
+                    {
+                        config.ControllerType = Controllers[_controller].Type;
+                    }
 
                     string jsonString = JsonHelper.Serialize(config, SerializerContext.InputConfig);
 

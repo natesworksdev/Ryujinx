@@ -54,7 +54,10 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
             {
                 lock (_freeList)
                 {
-                    DebugUtil.Assert(entry.Owner == null);
+                    if (entry != null)
+                    {
+                        DebugUtil.Assert(entry.Owner == null);
+                    }
                     DebugUtil.Assert(entry.Obj == null);
                     _freeList.AddFirst(entry);
                 }
@@ -120,7 +123,10 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
 
                 lock (_manager._entryOwnerLock)
                 {
-                    DebugUtil.Assert(entry.Owner == null);
+                    if (entry != null)
+                    {
+                        DebugUtil.Assert(entry.Owner == null);
+                    }
                     entry.Owner = this;
                     entry.Node = _entries.AddLast(entry);
                 }
@@ -138,7 +144,10 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
                         return SfResult.OutOfDomainEntries;
                     }
 
-                    DebugUtil.Assert(entry.Owner == null);
+                    if (entry != null)
+                    {
+                        DebugUtil.Assert(entry.Owner == null);
+                    }
 
                     outIds[i] = entry.Id;
                 }
@@ -188,7 +197,10 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
                     var entry = _manager._entryManager.GetEntry(ids[i]);
 
                     DebugUtil.Assert(entry != null);
-                    DebugUtil.Assert(entry.Owner == null);
+                    if (entry != null)
+                    {
+                        DebugUtil.Assert(entry.Owner == null);
+                    }
 
                     _manager._entryManager.FreeEntry(entry);
                 }
