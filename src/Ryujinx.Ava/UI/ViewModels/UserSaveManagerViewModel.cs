@@ -131,7 +131,12 @@ namespace Ryujinx.Ava.UI.ViewModels
         public void AddNewSaveEntry(SaveModel model)
         {
             _saves.Add(model);
-            _views.Add(model);
+
+            if (Filter(model))
+            {
+                _views.Add(model);
+            }
+            
             OnPropertyChanged(nameof(Views));
         }
 
@@ -149,12 +154,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private bool Filter(object arg)
         {
-            if (arg is SaveModel save)
-            {
-                return string.IsNullOrWhiteSpace(_search) || save.Title.ToLower().Contains(_search.ToLower());
-            }
-
-            return false;
+            return arg is SaveModel save
+                && (string.IsNullOrWhiteSpace(_search) || save.Title.Contains(_search, StringComparison.OrdinalIgnoreCase));
         }
 
         private IComparer<SaveModel> GetComparer()

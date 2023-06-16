@@ -7,7 +7,6 @@ using DynamicData;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Navigation;
 using LibHac;
-using LibHac.Bcat;
 using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Shim;
@@ -20,8 +19,6 @@ using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
-using Ryujinx.Ui.App.Common;
-using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -234,7 +231,9 @@ namespace Ryujinx.Ava.UI.Views.User
             };
 
             var saveBackupZip = await dialog.ShowAsync(((TopLevel)_parent.GetVisualRoot()) as Window);
-            if (saveBackupZip is null || string.IsNullOrWhiteSpace(saveBackupZip[0]))
+            if (saveBackupZip is null
+                || saveBackupZip.Length == 0
+                || string.IsNullOrWhiteSpace(saveBackupZip[0]))
             {
                 return;
             }

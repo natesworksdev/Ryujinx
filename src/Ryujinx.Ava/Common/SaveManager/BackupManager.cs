@@ -81,8 +81,6 @@ namespace Ryujinx.Ava.Common.SaveManager
             // TODO: should this go in the location since data has to go there anyway? might make the ultimate zip faster since IO is local?
             var backupTempDir = Path.Combine(AppDataManager.BackupDirPath, $"{userId}_library_saveTemp");
 
-            // Generate a metadata item so users know what titleIds are and such in case they're moving around, jksv, sanity, etc
-
             try
             {
                 // Delete temp for good measure?
@@ -133,11 +131,10 @@ namespace Ryujinx.Ava.Common.SaveManager
         {
             try
             {
-                // Always require user saves
+                // Almost all games have user savess
                 var userSaves = GetSaveData(userId, SaveDataType.Account)
                     .ToList();
 
-                // Device and bcat are optional but enumerate those dirs too if needed
                 var deviceSaves = saveOptions.HasFlag(SaveOptions.SaveTypeDevice)
                     ? GetSaveData(default, SaveDataType.Device)
                     : Enumerable.Empty<BackupSaveMeta>();
@@ -206,7 +203,7 @@ namespace Ryujinx.Ava.Common.SaveManager
 
         private async Task<bool> BatchCopySavesToTempDir(LibHacUserId userId, IEnumerable<BackupSaveMeta> userSaves, string backupTempDir)
         {
-            // keep track of save data metadata <programId, app title>
+            // Generate a metadata item so users know what titleIds ares in case they're moving around, jksv, sanity, etc
             Dictionary<ulong, UserFriendlyAppData> userFriendlyMetadataMap = new();
 
             try
@@ -342,8 +339,6 @@ namespace Ryujinx.Ava.Common.SaveManager
             string sourceDataPath)
         {
             var sourceInfo = new FileInfo(sourceDataPath);
-
-            // First up if it's a zip unpack it
             var determinedSourcePath = sourceInfo.FullName;
             bool requireSourceCleanup = false;
 
