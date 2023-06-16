@@ -9,8 +9,39 @@ namespace Ryujinx.Graphics.Shader.Decoders
 {
     static class Decoder
     {
-        public static DecodedProgram Decode(ShaderConfig config, ulong startAddress)
+        private class Context
         {
+            public AttributeUsage AttributeUsage { get; }
+            public FeatureFlags UsedFeatures { get; private set; }
+            public int Cb1DataSize { get; private set; }
+
+            private readonly IGpuAccessor _gpuAccessor;
+
+            public Context(IGpuAccessor gpuAccessor)
+            {
+                _gpuAccessor = gpuAccessor;
+                AttributeUsage = new(gpuAccessor);
+            }
+
+            public uint ConstantBuffer1Read(int offset)
+            {
+                if (Cb1DataSize < offset + 4)
+                {
+                    Cb1DataSize = offset + 4;
+                }
+
+                return _gpuAccessor.ConstantBuffer1Read(offset);
+            }
+
+            public void SetUsedFeature(FeatureFlags flags)
+            {
+                UsedFeatures |= flags;
+            }
+        }
+
+        public static DecodedProgram Decode(ShaderDefinitions definitions, IGpuAccessor gpuAccessor, ulong startAddress)
+        {
+            Context context = new(gpuAccessor);
             Queue<DecodedFunction> functionsQueue = new();
             Dictionary<ulong, DecodedFunction> functionsVisited = new();
 
@@ -89,7 +120,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
                             }
                         }
 
-                        FillBlock(config, currBlock, limitAddress, startAddress);
+                        FillBlock(definitions, gpuAccessor, context, currBlock, limitAddress, startAddress);
 
                         if (currBlock.OpCodes.Count != 0)
                         {
@@ -148,7 +179,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
                     }
 
                     // Try to find targets for BRX (indirect branch) instructions.
-                    hasNewTarget = FindBrxTargets(config, blocks, GetBlock);
+                    hasNewTarget = FindBrxTargets(context, blocks, GetBlock);
 
                     // If we discovered new branch targets from the BRX instruction,
                     // we need another round of decoding to decode the new blocks.
@@ -160,7 +191,12 @@ namespace Ryujinx.Graphics.Shader.Decoders
                 currentFunction.SetBlocks(blocks.ToArray());
             }
 
-            return new DecodedProgram(mainFunction, functionsVisited);
+            return new DecodedProgram(
+                mainFunction,
+                functionsVisited,
+                context.AttributeUsage,
+                context.UsedFeatures,
+                context.Cb1DataSize);
         }
 
         private static bool BinarySearch(List<Block> blocks, ulong address, out int index)
@@ -198,10 +234,14 @@ namespace Ryujinx.Graphics.Shader.Decoders
             return false;
         }
 
-        private static void FillBlock(ShaderConfig config, Block block, ulong limitAddress, ulong startAddress)
+        private static void FillBlock(
+            ShaderDefinitions definitions,
+            IGpuAccessor gpuAccessor,
+            Context context,
+            Block block,
+            ulong limitAddress,
+            ulong startAddress)
         {
-            IGpuAccessor gpuAccessor = config.GpuAccessor;
-
             ulong address = block.Address;
             int bufferOffset = 0;
             ReadOnlySpan<ulong> buffer = ReadOnlySpan<ulong>.Empty;
@@ -235,12 +275,12 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
                 if (op.Props.HasFlag(InstProps.TexB))
                 {
-                    config.SetUsedFeature(FeatureFlags.Bindless);
+                    context.SetUsedFeature(FeatureFlags.Bindless);
                 }
 
                 if (op.Name == InstName.Ald || op.Name == InstName.Ast || op.Name == InstName.Ipa)
                 {
-                    SetUserAttributeUses(config, op.Name, opCode);
+                    SetUserAttributeUses(definitions, context, op.Name, opCode);
                 }
                 else if (op.Name == InstName.Pbk || op.Name == InstName.Pcnt || op.Name == InstName.Ssy)
                 {
@@ -248,14 +288,14 @@ namespace Ryujinx.Graphics.Shader.Decoders
                 }
                 else if (op.Name == InstName.Ldl || op.Name == InstName.Stl)
                 {
-                    config.SetUsedFeature(FeatureFlags.LocalMemory);
+                    context.SetUsedFeature(FeatureFlags.LocalMemory);
                 }
                 else if (op.Name == InstName.Atoms ||
                          op.Name == InstName.AtomsCas ||
                          op.Name == InstName.Lds ||
                          op.Name == InstName.Sts)
                 {
-                    config.SetUsedFeature(FeatureFlags.SharedMemory);
+                    context.SetUsedFeature(FeatureFlags.SharedMemory);
                 }
 
                 block.OpCodes.Add(op);
@@ -267,7 +307,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             block.EndAddress = address;
         }
 
-        private static void SetUserAttributeUses(ShaderConfig config, InstName name, ulong opCode)
+        private static void SetUserAttributeUses(ShaderDefinitions definitions, Context context, InstName name, ulong opCode)
         {
             int offset;
             int count = 1;
@@ -304,13 +344,13 @@ namespace Ryujinx.Graphics.Shader.Decoders
             {
                 if (isStore)
                 {
-                    config.AttributeUsage.SetAllOutputUserAttributes();
-                    config.Definitions.EnableOutputIndexing();
+                    context.AttributeUsage.SetAllOutputUserAttributes();
+                    definitions.EnableOutputIndexing();
                 }
                 else
                 {
-                    config.AttributeUsage.SetAllInputUserAttributes();
-                    config.Definitions.EnableInputIndexing();
+                    context.AttributeUsage.SetAllInputUserAttributes();
+                    definitions.EnableInputIndexing();
                 }
             }
             else
@@ -328,11 +368,11 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
                             if (isStore)
                             {
-                                config.AttributeUsage.SetOutputUserAttributePerPatch(index);
+                                context.AttributeUsage.SetOutputUserAttributePerPatch(index);
                             }
                             else
                             {
-                                config.AttributeUsage.SetInputUserAttributePerPatch(index);
+                                context.AttributeUsage.SetInputUserAttributePerPatch(index);
                             }
                         }
                     }
@@ -343,11 +383,11 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
                         if (isStore)
                         {
-                            config.AttributeUsage.SetOutputUserAttribute(index);
+                            context.AttributeUsage.SetOutputUserAttribute(index);
                         }
                         else
                         {
-                            config.AttributeUsage.SetInputUserAttribute(index, (userAttr >> 2) & 3);
+                            context.AttributeUsage.SetInputUserAttribute(index, (userAttr >> 2) & 3);
                         }
                     }
 
@@ -356,7 +396,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
                         (attr >= AttributeConsts.FrontColorDiffuseR && attr < AttributeConsts.ClipDistance0) ||
                         (attr >= AttributeConsts.TexCoordBase && attr < AttributeConsts.TexCoordEnd)))
                     {
-                        config.SetUsedFeature(FeatureFlags.FixedFuncAttr);
+                        context.SetUsedFeature(FeatureFlags.FixedFuncAttr);
                     }
                 }
             }
@@ -379,7 +419,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             return condOp.Pred == RegisterConsts.PredicateTrueIndex && !condOp.PredInv;
         }
 
-        private static bool FindBrxTargets(ShaderConfig config, IEnumerable<Block> blocks, Func<ulong, Block> getBlock)
+        private static bool FindBrxTargets(Context context, IEnumerable<Block> blocks, Func<ulong, Block> getBlock)
         {
             bool hasNewTarget = false;
 
@@ -406,7 +446,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
                     for (int i = 0; i < cbOffsetsCount; i++)
                     {
-                        uint targetOffset = config.ConstantBuffer1Read(cbBaseOffset + i * 4);
+                        uint targetOffset = context.ConstantBuffer1Read(cbBaseOffset + i * 4);
                         ulong targetAddress = baseOffset + targetOffset;
 
                         if (visited.Add(targetAddress))

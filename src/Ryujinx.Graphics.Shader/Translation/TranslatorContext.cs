@@ -1,9 +1,6 @@
-﻿using Ryujinx.Graphics.Shader.CodeGen.Glsl;
-using Ryujinx.Graphics.Shader.CodeGen.Spirv;
-using Ryujinx.Graphics.Shader.Decoders;
+﻿using Ryujinx.Graphics.Shader.Decoders;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -15,22 +12,79 @@ namespace Ryujinx.Graphics.Shader.Translation
     public class TranslatorContext
     {
         private readonly DecodedProgram _program;
-        private readonly ShaderConfig _config;
+        private readonly int _localMemorySize;
 
         public ulong Address { get; }
+        public int Size { get; }
+        public int Cb1DataSize => _program.Cb1DataSize;
 
-        public ShaderStage Stage => _config.Definitions.Stage;
-        public int Size => _config.Size;
-        public int Cb1DataSize => _config.Cb1DataSize;
-        public bool LayerOutputWritten => _config.LayerOutputWritten;
+        internal bool HasLayerInputAttribute { get; private set; }
+        internal int GpLayerInputAttribute { get; private set; }
 
-        public IGpuAccessor GpuAccessor => _config.GpuAccessor;
+        internal AttributeUsage AttributeUsage => _program.AttributeUsage;
 
-        internal TranslatorContext(ulong address, DecodedProgram program, ShaderConfig config)
+        internal ShaderDefinitions Definitions { get; }
+
+        public ShaderStage Stage => Definitions.Stage;
+
+        internal IGpuAccessor GpuAccessor { get; }
+
+        internal TranslationOptions Options { get; }
+
+        internal ResourceManager ResourceManager { get; set; }
+
+        internal byte ClipDistancesWritten { get; private set; }
+
+        internal FeatureFlags UsedFeatures { get; private set; }
+
+        public bool LayerOutputWritten { get; private set; }
+        public int LayerOutputAttribute { get; private set; }
+
+        internal TranslatorContext(
+            ulong address,
+            int size,
+            int localMemorySize,
+            ShaderDefinitions definitions,
+            IGpuAccessor gpuAccessor,
+            TranslationOptions options,
+            DecodedProgram program)
         {
             Address = address;
+            Size = size;
             _program = program;
-            _config = config;
+            _localMemorySize = localMemorySize;
+            Definitions = definitions;
+            GpuAccessor = gpuAccessor;
+            Options = options;
+
+            SetUsedFeature(program.UsedFeatures);
+
+            ResourceManager = new ResourceManager(definitions.Stage, gpuAccessor);
+
+            if (!gpuAccessor.QueryHostSupportsTransformFeedback() && gpuAccessor.QueryTransformFeedbackEnabled())
+            {
+                StructureType tfeInfoStruct = new StructureType(new StructureField[]
+                {
+                    new StructureField(AggregateType.Array | AggregateType.U32, "base_offset", 4),
+                    new StructureField(AggregateType.U32, "vertex_count")
+                });
+
+                BufferDefinition tfeInfoBuffer = new BufferDefinition(BufferLayout.Std430, 1, Constants.TfeInfoBinding, "tfe_info", tfeInfoStruct);
+
+                ResourceManager.Properties.AddOrUpdateStorageBuffer(Constants.TfeInfoBinding, tfeInfoBuffer);
+
+                StructureType tfeDataStruct = new StructureType(new StructureField[]
+                {
+                    new StructureField(AggregateType.Array | AggregateType.U32, "data", 0)
+                });
+
+                for (int i = 0; i < Constants.TfeBuffersCount; i++)
+                {
+                    int binding = Constants.TfeBufferBaseBinding + i;
+                    BufferDefinition tfeDataBuffer = new BufferDefinition(BufferLayout.Std430, 1, binding, $"tfe_data{i}", tfeDataStruct);
+                    ResourceManager.Properties.AddOrUpdateStorageBuffer(binding, tfeDataBuffer);
+                }
+            }
         }
 
         private static bool IsLoadUserDefined(Operation operation)
@@ -131,58 +185,132 @@ namespace Ryujinx.Graphics.Shader.Translation
             return output;
         }
 
-        public void SetNextStage(TranslatorContext nextStage)
+        public int GetDepthRegister()
         {
-            _config.MergeFromtNextStage(nextStage._config);
+            // The depth register is always two registers after the last color output.
+            return BitOperations.PopCount((uint)Definitions.OmapTargets) + 1;
+        }
+
+        public void InheritFrom(TranslatorContext other)
+        {
+            ClipDistancesWritten |= other.ClipDistancesWritten;
+            UsedFeatures |= other.UsedFeatures;
+
+            AttributeUsage.InheritFrom(other.AttributeUsage);
+        }
+
+        public void SetLayerOutputAttribute(int attr)
+        {
+            LayerOutputWritten = true;
+            LayerOutputAttribute = attr;
         }
 
         public void SetGeometryShaderLayerInputAttribute(int attr)
         {
-            _config.SetGeometryShaderLayerInputAttribute(attr);
+            HasLayerInputAttribute = true;
+            GpLayerInputAttribute = attr;
         }
 
         public void SetLastInVertexPipeline()
         {
-            _config.SetLastInVertexPipeline();
+            Definitions.LastInVertexPipeline = true;
         }
 
-        public ShaderProgram Translate(TranslatorContext other = null)
+        public void SetNextStage(TranslatorContext nextStage)
         {
-            bool usesLocalMemory = _config.UsedFeatures.HasFlag(FeatureFlags.LocalMemory);
+            AttributeUsage.MergeFromtNextStage(Definitions.GpPassthrough, nextStage.UsedFeatures.HasFlag(FeatureFlags.FixedFuncAttr), nextStage.AttributeUsage);
 
-            _config.ResourceManager.SetCurrentLocalMemory(_config.LocalMemorySize, usesLocalMemory);
-
-            if (_config.Definitions.Stage == ShaderStage.Compute)
+            // We don't consider geometry shaders using the geometry shader passthrough feature
+            // as being the last because when this feature is used, it can't actually modify any of the outputs,
+            // so the stage that comes before it is the last one that can do modifications.
+            if (nextStage.Definitions.Stage != ShaderStage.Fragment && (nextStage.Definitions.Stage != ShaderStage.Geometry || !nextStage.Definitions.GpPassthrough))
             {
-                bool usesSharedMemory = _config.UsedFeatures.HasFlag(FeatureFlags.SharedMemory);
+                Definitions.LastInVertexPipeline = false;
+            }
+        }
 
-                _config.ResourceManager.SetCurrentSharedMemory(GpuAccessor.QueryComputeSharedMemorySize(), usesSharedMemory);
+        public void MergeOutputUserAttributes(int mask, IEnumerable<int> perPatch)
+        {
+            AttributeUsage.MergeOutputUserAttributes(Definitions.GpPassthrough, mask, perPatch);
+        }
+
+        public void SetClipDistanceWritten(int index)
+        {
+            ClipDistancesWritten |= (byte)(1 << index);
+        }
+
+        public void SetUsedFeature(FeatureFlags flags)
+        {
+            UsedFeatures |= flags;
+        }
+
+        public ShaderProgram Translate()
+        {
+            bool usesLocalMemory = _program.UsedFeatures.HasFlag(FeatureFlags.LocalMemory);
+
+            ResourceManager.SetCurrentLocalMemory(_localMemorySize, usesLocalMemory);
+
+            if (Stage == ShaderStage.Compute)
+            {
+                bool usesSharedMemory = _program.UsedFeatures.HasFlag(FeatureFlags.SharedMemory);
+
+                ResourceManager.SetCurrentSharedMemory(GpuAccessor.QueryComputeSharedMemorySize(), usesSharedMemory);
             }
 
-            FunctionCode[] code = EmitShader(_program, _config, initializeOutputs: other == null, out _);
+            FunctionCode[] code = EmitShader(this, _program, initializeOutputs: true, out _);
+
+            return Translator.Translate(
+                code,
+                AttributeUsage,
+                Definitions,
+                ResourceManager,
+                GpuAccessor,
+                Options,
+                UsedFeatures,
+                ClipDistancesWritten);
+        }
+
+        public ShaderProgram Translate(TranslatorContext other)
+        {
+            bool usesLocalMemory = _program.UsedFeatures.HasFlag(FeatureFlags.LocalMemory);
+
+            ResourceManager.SetCurrentLocalMemory(_localMemorySize, usesLocalMemory);
+
+            FunctionCode[] code = EmitShader(this, _program, initializeOutputs: false, out _);
 
             if (other != null)
             {
-                other._config.MergeOutputUserAttributes(_config.AttributeUsage.UsedOutputAttributes, Enumerable.Empty<int>());
+                other.MergeOutputUserAttributes(AttributeUsage.UsedOutputAttributes, Enumerable.Empty<int>());
 
                 // We need to share the resource manager since both shaders accesses the same constant buffers.
-                other._config.ResourceManager = _config.ResourceManager;
-                other._config.ResourceManager.SetCurrentLocalMemory(other._config.LocalMemorySize, other._config.UsedFeatures.HasFlag(FeatureFlags.LocalMemory));
+                other.ResourceManager = ResourceManager;
 
-                FunctionCode[] otherCode = EmitShader(other._program, other._config, initializeOutputs: true, out int aStart);
+                bool otherUsesLocalMemory = other._program.UsedFeatures.HasFlag(FeatureFlags.LocalMemory);
+
+                ResourceManager.SetCurrentLocalMemory(other._localMemorySize, otherUsesLocalMemory);
+
+                FunctionCode[] otherCode = EmitShader(other, other._program, initializeOutputs: true, out int aStart);
 
                 code = Combine(otherCode, code, aStart);
 
-                _config.InheritFrom(other._config);
+                InheritFrom(other);
             }
 
-            return Translator.Translate(code, _config);
+            return Translator.Translate(
+                code,
+                AttributeUsage,
+                Definitions,
+                ResourceManager,
+                GpuAccessor,
+                Options,
+                UsedFeatures,
+                ClipDistancesWritten);
         }
 
         public ShaderProgram GenerateGeometryPassthrough()
         {
-            int outputAttributesMask = _config.AttributeUsage.UsedOutputAttributes;
-            int layerOutputAttr = _config.LayerOutputAttribute;
+            int outputAttributesMask = AttributeUsage.UsedOutputAttributes;
+            int layerOutputAttr = LayerOutputAttribute;
 
             OutputTopology outputTopology;
             int maxOutputVertices;
@@ -204,9 +332,10 @@ namespace Ryujinx.Graphics.Shader.Translation
                     break;
             }
 
-            ShaderConfig config = new(ShaderStage.Geometry, outputTopology, maxOutputVertices, GpuAccessor, _config.Options);
+            var attributeUsage = new AttributeUsage(GpuAccessor);
+            var resourceManager = new ResourceManager(ShaderStage.Geometry, GpuAccessor);
 
-            EmitterContext context = new(default, config, false);
+            var context = new EmitterContext();
 
             for (int v = 0; v < maxOutputVertices; v++)
             {
@@ -231,10 +360,10 @@ namespace Ryujinx.Graphics.Shader.Translation
                         else
                         {
                             context.Store(StorageKind.Output, IoVariable.UserDefined, null, Const(attrIndex), Const(c), value);
-                            config.AttributeUsage.SetOutputUserAttribute(attrIndex);
+                            attributeUsage.SetOutputUserAttribute(attrIndex);
                         }
 
-                        config.AttributeUsage.SetInputUserAttribute(attrIndex, c);
+                        attributeUsage.SetInputUserAttribute(attrIndex, c);
                     }
                 }
 
@@ -254,33 +383,23 @@ namespace Ryujinx.Graphics.Shader.Translation
             var cfg = ControlFlowGraph.Create(operations);
             var function = new Function(cfg.Blocks, "main", false, 0, 0);
 
-            var sInfo = StructuredProgram.MakeStructuredProgram(
+            var definitions = new ShaderDefinitions(
+                ShaderStage.Geometry,
+                false,
+                1,
+                GpuAccessor.QueryPrimitiveTopology(),
+                outputTopology,
+                maxOutputVertices);
+
+            return Translator.Generate(
                 new[] { function },
-                config.AttributeUsage,
-                config.Definitions,
-                config.ResourceManager,
-                config.Options.Flags.HasFlag(TranslationFlags.DebugMode));
-
-            var info = config.CreateProgramInfo();
-
-            return config.Options.TargetLanguage switch
-            {
-                TargetLanguage.Glsl => new ShaderProgram(info, TargetLanguage.Glsl, GlslGenerator.Generate(
-                    sInfo,
-                    config.AttributeUsage,
-                    config.Definitions,
-                    config.Properties,
-                    config.HostCapabilities,
-                    config.Options.TargetApi)),
-                TargetLanguage.Spirv => new ShaderProgram(info, TargetLanguage.Spirv, SpirvGenerator.Generate(
-                    sInfo,
-                    config.AttributeUsage,
-                    config.Definitions,
-                    config.Properties,
-                    config.HostCapabilities,
-                    config.Options.TargetApi)),
-                _ => throw new NotImplementedException(config.Options.TargetLanguage.ToString()),
-            };
+                attributeUsage,
+                definitions,
+                resourceManager,
+                GpuAccessor,
+                FeatureFlags.RtLayer,
+                0,
+                Options);
         }
     }
 }

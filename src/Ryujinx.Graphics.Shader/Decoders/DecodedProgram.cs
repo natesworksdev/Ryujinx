@@ -1,3 +1,4 @@
+using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,11 +12,23 @@ namespace Ryujinx.Graphics.Shader.Decoders
         private readonly List<DecodedFunction> _functionsWithId;
         public int FunctionsWithIdCount => _functionsWithId.Count;
 
-        public DecodedProgram(DecodedFunction mainFunction, IReadOnlyDictionary<ulong, DecodedFunction> functions)
+        public AttributeUsage AttributeUsage { get; }
+        public FeatureFlags UsedFeatures { get; }
+        public int Cb1DataSize { get; }
+
+        public DecodedProgram(
+            DecodedFunction mainFunction,
+            IReadOnlyDictionary<ulong, DecodedFunction> functions,
+            AttributeUsage attributeUsage,
+            FeatureFlags usedFeatures,
+            int cb1DataSize)
         {
             MainFunction = mainFunction;
             _functions = functions;
             _functionsWithId = new List<DecodedFunction>();
+            AttributeUsage = attributeUsage;
+            UsedFeatures = usedFeatures;
+            Cb1DataSize = cb1DataSize;
         }
 
         public DecodedFunction GetFunctionByAddress(ulong address)

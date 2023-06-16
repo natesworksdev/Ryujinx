@@ -15,8 +15,8 @@ namespace Ryujinx.Graphics.Shader.Translation
             BasicBlock[] blocks,
             ResourceManager resourceManager,
             IGpuAccessor gpuAccessor,
-            ShaderStage stage,
             TargetLanguage targetLanguage,
+            ShaderStage stage,
             ref FeatureFlags usedFeatures)
         {
             bool isVertexShader = stage == ShaderStage.Vertex;

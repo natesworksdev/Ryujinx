@@ -127,25 +127,25 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             if (!(isPerPatch ? _attributesPerPatch : _attributes).TryGetValue(offset, out AttributeEntry entry))
             {
-                context.Config.GpuAccessor.Log($"Attribute offset 0x{offset:X} is not valid.");
+                context.TranslatorContext.GpuAccessor.Log($"Attribute offset 0x{offset:X} is not valid.");
                 return Const(0);
             }
 
             StagesMask validUseMask = isOutput ? entry.OutputMask : entry.InputMask;
 
-            if (((StagesMask)(1 << (int)context.Config.Definitions.Stage) & validUseMask) == StagesMask.None)
+            if (((StagesMask)(1 << (int)context.TranslatorContext.Definitions.Stage) & validUseMask) == StagesMask.None)
             {
-                context.Config.GpuAccessor.Log($"Attribute offset 0x{offset:X} ({entry.IoVariable}) is not valid for stage {context.Config.Definitions.Stage}.");
+                context.TranslatorContext.GpuAccessor.Log($"Attribute offset 0x{offset:X} ({entry.IoVariable}) is not valid for stage {context.TranslatorContext.Definitions.Stage}.");
                 return Const(0);
             }
 
-            if (!IsSupportedByHost(context.Config.GpuAccessor, context.Config.Definitions.Stage, entry.IoVariable))
+            if (!IsSupportedByHost(context.TranslatorContext.GpuAccessor, context.TranslatorContext.Definitions.Stage, entry.IoVariable))
             {
-                context.Config.GpuAccessor.Log($"Attribute offset 0x{offset:X} ({entry.IoVariable}) is not supported by the host for stage {context.Config.Definitions.Stage}.");
+                context.TranslatorContext.GpuAccessor.Log($"Attribute offset 0x{offset:X} ({entry.IoVariable}) is not supported by the host for stage {context.TranslatorContext.Definitions.Stage}.");
                 return Const(0);
             }
 
-            if (HasInvocationId(context.Config.Definitions.Stage, isOutput) && !isPerPatch)
+            if (HasInvocationId(context.TranslatorContext.Definitions.Stage, isOutput) && !isPerPatch)
             {
                 primVertex = context.Load(StorageKind.Input, IoVariable.InvocationId);
             }
@@ -156,12 +156,12 @@ namespace Ryujinx.Graphics.Shader.Instructions
             StorageKind storageKind = isPerPatch
                 ? (isOutput ? StorageKind.OutputPerPatch : StorageKind.InputPerPatch)
                 : (isOutput ? StorageKind.Output : StorageKind.Input);
-            IoVariable ioVariable = GetIoVariable(context.Config.Definitions.Stage, in entry);
-            AggregateType type = GetType(context.Config, isOutput, innerIndex, in entry);
+            IoVariable ioVariable = GetIoVariable(context.TranslatorContext.Definitions.Stage, in entry);
+            AggregateType type = GetType(context.TranslatorContext.Definitions, isOutput, innerIndex, in entry);
             int elementCount = GetElementCount(type);
 
             bool isArray = type.HasFlag(AggregateType.Array);
-            bool hasArrayIndex = isArray || context.Config.Definitions.HasPerLocationInputOrOutput(ioVariable, isOutput);
+            bool hasArrayIndex = isArray || context.TranslatorContext.Definitions.HasPerLocationInputOrOutput(ioVariable, isOutput);
 
             bool hasElementIndex = elementCount > 1;
 
@@ -190,25 +190,25 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             if (!(isPerPatch ? _attributesPerPatch : _attributes).TryGetValue(offset, out AttributeEntry entry))
             {
-                context.Config.GpuAccessor.Log($"Attribute offset 0x{offset:X} is not valid.");
+                context.TranslatorContext.GpuAccessor.Log($"Attribute offset 0x{offset:X} is not valid.");
                 return;
             }
 
-            if (((StagesMask)(1 << (int)context.Config.Definitions.Stage) & entry.OutputMask) == StagesMask.None)
+            if (((StagesMask)(1 << (int)context.TranslatorContext.Definitions.Stage) & entry.OutputMask) == StagesMask.None)
             {
-                context.Config.GpuAccessor.Log($"Attribute offset 0x{offset:X} ({entry.IoVariable}) is not valid for stage {context.Config.Definitions.Stage}.");
+                context.TranslatorContext.GpuAccessor.Log($"Attribute offset 0x{offset:X} ({entry.IoVariable}) is not valid for stage {context.TranslatorContext.Definitions.Stage}.");
                 return;
             }
 
-            if (!IsSupportedByHost(context.Config.GpuAccessor, context.Config.Definitions.Stage, entry.IoVariable))
+            if (!IsSupportedByHost(context.TranslatorContext.GpuAccessor, context.TranslatorContext.Definitions.Stage, entry.IoVariable))
             {
-                context.Config.GpuAccessor.Log($"Attribute offset 0x{offset:X} ({entry.IoVariable}) is not supported by the host for stage {context.Config.Definitions.Stage}.");
+                context.TranslatorContext.GpuAccessor.Log($"Attribute offset 0x{offset:X} ({entry.IoVariable}) is not supported by the host for stage {context.TranslatorContext.Definitions.Stage}.");
                 return;
             }
 
             Operand invocationId = null;
 
-            if (HasInvocationId(context.Config.Definitions.Stage, isOutput: true) && !isPerPatch)
+            if (HasInvocationId(context.TranslatorContext.Definitions.Stage, isOutput: true) && !isPerPatch)
             {
                 invocationId = context.Load(StorageKind.Input, IoVariable.InvocationId);
             }
@@ -217,12 +217,12 @@ namespace Ryujinx.Graphics.Shader.Instructions
             int innerIndex = innerOffset / 4;
 
             StorageKind storageKind = isPerPatch ? StorageKind.OutputPerPatch : StorageKind.Output;
-            IoVariable ioVariable = GetIoVariable(context.Config.Definitions.Stage, in entry);
-            AggregateType type = GetType(context.Config, isOutput: true, innerIndex, in entry);
+            IoVariable ioVariable = GetIoVariable(context.TranslatorContext.Definitions.Stage, in entry);
+            AggregateType type = GetType(context.TranslatorContext.Definitions, isOutput: true, innerIndex, in entry);
             int elementCount = GetElementCount(type);
 
             bool isArray = type.HasFlag(AggregateType.Array);
-            bool hasArrayIndex = isArray || context.Config.Definitions.HasPerLocationInputOrOutput(ioVariable, isOutput: true);
+            bool hasArrayIndex = isArray || context.TranslatorContext.Definitions.HasPerLocationInputOrOutput(ioVariable, isOutput: true);
 
             bool hasElementIndex = elementCount > 1;
 
@@ -303,17 +303,17 @@ namespace Ryujinx.Graphics.Shader.Instructions
             return entry.IoVariable;
         }
 
-        private static AggregateType GetType(ShaderConfig config, bool isOutput, int innerIndex, in AttributeEntry entry)
+        private static AggregateType GetType(ShaderDefinitions definitions, bool isOutput, int innerIndex, in AttributeEntry entry)
         {
             AggregateType type = entry.Type;
 
             if (entry.IoVariable == IoVariable.UserDefined)
             {
-                type = config.GetUserDefinedType(innerIndex / 4, isOutput);
+                type = definitions.GetUserDefinedType(innerIndex / 4, isOutput);
             }
             else if (entry.IoVariable == IoVariable.FragmentOutputColor)
             {
-                type = config.GetFragmentOutputColorType(innerIndex / 4);
+                type = definitions.GetFragmentOutputColorType(innerIndex / 4);
             }
 
             return type;
