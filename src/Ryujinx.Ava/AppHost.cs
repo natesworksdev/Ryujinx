@@ -206,16 +206,15 @@ namespace Ryujinx.Ava
             if (_viewModel.WindowState == WindowState.FullScreen)
             {
                 _isCursorInRenderer = true;
+
                 return;
             }
 
             var point = e.GetCurrentPoint(window).Position;
             var bounds = _rendererHost.EmbeddedWindow.TransformedBounds.Value.Clip;
 
-            _isCursorInRenderer = point.X >= bounds.X &&
-                point.X <= bounds.Width + bounds.X + window.Position.X &&
-                point.Y >= bounds.Y &&
-                point.Y <= bounds.Height + bounds.Y + window.Position.Y;
+            _isCursorInRenderer = point.X >= bounds.X && point.X <= bounds.Width + bounds.X + window.Position.X 
+                && point.Y >= bounds.Y && point.Y <= bounds.Height + bounds.Y + window.Position.Y;
         }
 
         private void TopLevel_PointerLeave(object sender, PointerEventArgs e)
@@ -1011,7 +1010,6 @@ namespace Ryujinx.Ava
                 UpdateActiveFrame();
             }
 
-            // Touchscreen.
             bool hasTouch = _viewModel.IsActive 
                 && !ConfigurationState.Instance.Hid.EnableMouse
                 && TouchScreenManager.Update(true, 
@@ -1047,103 +1045,104 @@ namespace Ryujinx.Ava
                 ScreenshotRequested = false;
                 _renderer.Screenshot();
             }
+        }
 
-            void UpdateCursorState()
+        private void UpdateCursorState()
+        {
+            if (_isCursorInRenderer)
             {
-                if (_isCursorInRenderer)
+                if (ConfigurationState.Instance.Hid.EnableMouse)
                 {
-                    if (ConfigurationState.Instance.Hid.EnableMouse)
-                    {
-                        HideCursor();
-                    }
-                    else
-                    {
-                        switch (ConfigurationState.Instance.HideCursor.Value)
-                        {
-                            case HideCursorMode.Never:
-                                ShowCursor();
-                                break;
-                            case HideCursorMode.OnIdle:
-                                if (Stopwatch.GetTimestamp() - _latestCursorMoveTime >= CursorHideIdleTime * Stopwatch.Frequency)
-                                {
-                                    HideCursor();
-                                }
-                                else
-                                {
-                                    ShowCursor();
-                                }
-                                break;
-                            case HideCursorMode.Always:
-                                HideCursor();
-                                break;
-                        }
-                    }
+                    HideCursor();
                 }
                 else
                 {
-                    ShowCursor();
+                    switch (ConfigurationState.Instance.HideCursor.Value)
+                    {
+                        case HideCursorMode.Never:
+                            ShowCursor();
+                            break;
+                        case HideCursorMode.OnIdle:
+                            if (Stopwatch.GetTimestamp() - _latestCursorMoveTime >= CursorHideIdleTime * Stopwatch.Frequency)
+                            {
+                                HideCursor();
+                            }
+                            else
+                            {
+                                ShowCursor();
+                            }
+                            break;
+                        case HideCursorMode.Always:
+                            HideCursor();
+                            break;
+                    }
                 }
             }
-
-            void UpdateHotkeyState()
+            else
             {
-                KeyboardHotkeyState currentHotkeyState = GetHotkeyState();
-
-                if (currentHotkeyState == _prevHotkeyState)
-                {
-                    return;
-                }
-
-                switch (currentHotkeyState)
-                {
-                    case KeyboardHotkeyState.ToggleVSync:
-                        Device.EnableDeviceVsync = !Device.EnableDeviceVsync;
-                        break;
-                    case KeyboardHotkeyState.Screenshot:
-                        ScreenshotRequested = true;
-                        break;
-                    case KeyboardHotkeyState.ShowUi:
-                        _viewModel.ShowMenuAndStatusBar = !_viewModel.ShowMenuAndStatusBar;
-                        break;
-                    case KeyboardHotkeyState.Pause:
-                        Action toggleAction = _viewModel.IsPaused
-                            ? Resume
-                            : Pause;
-
-                        toggleAction();
-                        break;
-                    case KeyboardHotkeyState.ToggleMute:
-                        float toggleValue = Device.IsAudioMuted()
-                            ? ConfigurationState.Instance.System.AudioVolume
-                            : 0;
-
-                        Device.SetVolume(toggleValue);
-                        _viewModel.Volume = Device.GetVolume();
-                        break;
-                    case KeyboardHotkeyState.ResScaleUp:
-                        GraphicsConfig.ResScale = GraphicsConfig.ResScale % MaxResolutionScale + 1;
-                        break;
-                    case KeyboardHotkeyState.ResScaleDown:
-                        GraphicsConfig.ResScale = (MaxResolutionScale + GraphicsConfig.ResScale - 2) % MaxResolutionScale + 1;
-                        break;
-                    case KeyboardHotkeyState.VolumeUp:
-                        _newVolume = MathF.Round((Device.GetVolume() + VolumeDelta), 2);
-                        Device.SetVolume(_newVolume);
-
-                        _viewModel.Volume = Device.GetVolume();
-                        break;
-                    case KeyboardHotkeyState.VolumeDown:
-                        _newVolume = MathF.Round((Device.GetVolume() - VolumeDelta), 2);
-                        Device.SetVolume(_newVolume);
-
-                        _viewModel.Volume = Device.GetVolume();
-                        break;
-                    case KeyboardHotkeyState.None:
-                        (_keyboardInterface as AvaloniaKeyboard).Clear();
-                        break;
-                }
-                _prevHotkeyState = currentHotkeyState;
+                ShowCursor();
             }
+        }
+
+        private void UpdateHotkeyState()
+        {
+            KeyboardHotkeyState currentHotkeyState = GetHotkeyState();
+
+            if (currentHotkeyState == _prevHotkeyState)
+            {
+                return;
+            }
+
+            switch (currentHotkeyState)
+            {
+                case KeyboardHotkeyState.ToggleVSync:
+                    Device.EnableDeviceVsync = !Device.EnableDeviceVsync;
+                    break;
+                case KeyboardHotkeyState.Screenshot:
+                    ScreenshotRequested = true;
+                    break;
+                case KeyboardHotkeyState.ShowUi:
+                    _viewModel.ShowMenuAndStatusBar = !_viewModel.ShowMenuAndStatusBar;
+                    break;
+                case KeyboardHotkeyState.Pause:
+                    Action toggleAction = _viewModel.IsPaused
+                        ? Resume
+                        : Pause;
+
+                    toggleAction();
+                    break;
+                case KeyboardHotkeyState.ToggleMute:
+                    float toggleValue = Device.IsAudioMuted()
+                        ? ConfigurationState.Instance.System.AudioVolume
+                        : 0;
+
+                    Device.SetVolume(toggleValue);
+                    _viewModel.Volume = Device.GetVolume();
+                    break;
+                case KeyboardHotkeyState.ResScaleUp:
+                    GraphicsConfig.ResScale = GraphicsConfig.ResScale % MaxResolutionScale + 1;
+                    break;
+                case KeyboardHotkeyState.ResScaleDown:
+                    GraphicsConfig.ResScale = (MaxResolutionScale + GraphicsConfig.ResScale - 2) % MaxResolutionScale + 1;
+                    break;
+                case KeyboardHotkeyState.VolumeUp:
+                    _newVolume = MathF.Round((Device.GetVolume() + VolumeDelta), 2);
+                    Device.SetVolume(_newVolume);
+
+                    _viewModel.Volume = Device.GetVolume();
+                    break;
+                case KeyboardHotkeyState.VolumeDown:
+                    _newVolume = MathF.Round((Device.GetVolume() - VolumeDelta), 2);
+                    Device.SetVolume(_newVolume);
+
+                    _viewModel.Volume = Device.GetVolume();
+                    break;
+                case KeyboardHotkeyState.None:
+                    (_keyboardInterface as AvaloniaKeyboard).Clear();
+                    break;
+            }
+
+            _prevHotkeyState = currentHotkeyState;
         }
 
         private KeyboardHotkeyState GetHotkeyState()
