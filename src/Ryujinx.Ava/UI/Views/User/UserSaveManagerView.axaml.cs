@@ -62,7 +62,7 @@ namespace Ryujinx.Ava.UI.Views.User
                     (_parent, _accountManager, _horizonClient, _virtualFileSystem) = 
                         ((NavigationDialogHost parent, AccountManager accountManager, HorizonClient client, VirtualFileSystem virtualFileSystem))arg.Parameter;
 
-                    _saveManager = new BackupManager(_horizonClient, _accountManager);
+                    _saveManager = new SaveManager(_horizonClient, _accountManager);
                     _saveManager.BackupProgressUpdated += BackupManager_ProgressUpdate;
                     _saveManager.BackupImportSave += BackupManager_ImportSave;
 
@@ -195,7 +195,6 @@ namespace Ryujinx.Ava.UI.Views.User
                     message,
                     notificationType);
 
-                //OpenHelper.OpenFolder(backupDir);
                 return;
             }
             catch (Exception ex)
